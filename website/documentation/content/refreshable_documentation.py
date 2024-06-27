@@ -114,16 +114,16 @@ def global_scope():
     ui.link('Open demo', demo)
 
 
-@doc.demo('Local scope (1/3)', '''
+@doc.demo('Local scope (variant A)', '''
     When defining a refreshable function in a local scope,
     refreshable UI that is created by calling this function will refresh independently.
     In contrast to the "global scope" demo,
     the time will be updated only in the tab where the "Refresh" button was clicked.
 ''')
-def local_scope_1():
+def local_scope_a():
     from datetime import datetime
 
-    @ui.page('/local_refreshable_1')
+    @ui.page('/local_refreshable_a')
     def demo():
         @ui.refreshable
         def time():
@@ -135,13 +135,13 @@ def local_scope_1():
     ui.link('Open demo', demo)
 
 
-@doc.demo('Local scope (2/3)', '''
+@doc.demo('Local scope (variant B)', '''
     In order to define refreshable UIs with local state outside of page functions,
     you can, e.g., define a class with a refreshable method.
     This way, you can create multiple instances of the class with independent state,
     because the `ui.refreshable` decorator acts on the class instance rather than the class itself.
 ''')
-def local_scope_2():
+def local_scope_b():
     from datetime import datetime
 
     class Clock:
@@ -149,7 +149,7 @@ def local_scope_2():
         def time(self):
             ui.label(f'Time: {datetime.now()}')
 
-    @ui.page('/local_refreshable_2')
+    @ui.page('/local_refreshable_b')
     def demo():
         clock = Clock()
         clock.time()
@@ -158,18 +158,18 @@ def local_scope_2():
     ui.link('Open demo', demo)
 
 
-@doc.demo('Local scope (3/3)', '''
+@doc.demo('Local scope (variant C)', '''
     As an alternative to the class definition shown above, you can also define the UI function in global scope,
     but apply the `ui.refreshable` decorator inside the page function.
     This way the refreshable UI will refresh independently.
 ''')
-def local_scope_3():
+def local_scope_c():
     from datetime import datetime
 
     def time():
         ui.label(f'Time: {datetime.now()}')
 
-    @ui.page('/local_refreshable_3')
+    @ui.page('/local_refreshable_c')
     def demo():
         refreshable_time = ui.refreshable(time)
         refreshable_time()
