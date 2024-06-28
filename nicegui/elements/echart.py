@@ -17,9 +17,9 @@ except ImportError:
     pass
 
 
-class EChart(Element, component='echart.js', exposed_libraries=['lib/echarts/echarts.min.js']):
+class EChart(Element, component='echart.js', exposed_libraries=['lib/echarts/echarts.min.js', 'lib/echarts-gl/echarts-gl.min.js']):
 
-    def __init__(self, options: Dict, on_point_click: Optional[Callable] = None) -> None:
+    def __init__(self, options: Dict, on_point_click: Optional[Callable] = None, *, enable_3d: bool = False) -> None:
         """Apache EChart
 
         An element to create a chart using `ECharts <https://echarts.apache.org/>`_.
@@ -28,9 +28,11 @@ class EChart(Element, component='echart.js', exposed_libraries=['lib/echarts/ech
 
         :param options: dictionary of EChart options
         :param on_click_point: callback that is invoked when a point is clicked
+        :param enable_3d: enforce importing the echarts-gl library
         """
         super().__init__()
         self._props['options'] = options
+        self._props['enable_3d'] = enable_3d or any('3D' in key for key in options)
         self._classes.append('nicegui-echart')
 
         if on_point_click:

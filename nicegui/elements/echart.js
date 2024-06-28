@@ -3,7 +3,12 @@ import { convertDynamicProperties } from "../../static/utils/dynamic_properties.
 
 export default {
   template: "<div></div>",
-  mounted() {
+  async mounted() {
+    await this.$nextTick(); // wait for Tailwind classes to be applied
+    if (this.enable_3d) {
+      await import("echarts-gl");
+    }
+
     this.chart = echarts.init(this.$el);
     this.chart.on("click", (e) => this.$emit("pointClick", e));
     for (const event of [
@@ -48,8 +53,16 @@ export default {
     ]) {
       this.chart.on(event, (e) => this.$emit(`chart:${event}`, e));
     }
+
+    // Prevent interruption of chart animations due to resize operations.
+    // It is recommended to register the callbacks for such an event before setOption.
+    const createResizeObserver = () => {
+      new ResizeObserver(this.chart.resize).observe(this.$el);
+      this.chart.off("finished", createResizeObserver);
+    };
+    this.chart.on("finished", createResizeObserver);
+
     this.update_chart();
-    new ResizeObserver(this.chart.resize).observe(this.$el);
   },
   beforeDestroy() {
     this.chart.dispose();
@@ -72,5 +85,6 @@ export default {
   },
   props: {
     options: Object,
+    enable_3d: Boolean,
   },
 };

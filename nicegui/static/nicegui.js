@@ -240,7 +240,7 @@ function download(src, filename, mediaType, prefix) {
   anchor.click();
   document.body.removeChild(anchor);
   if (typeof src !== "string") {
-    URL.revokeObjectURL(url);
+    URL.revokeObjectURL(anchor.href);
   }
 }
 
@@ -307,7 +307,7 @@ function createApp(elements, options) {
               console.log("reloading because handshake failed for clientId " + window.clientId);
               window.location.reload();
             }
-            document.getElementById("popup").style.opacity = 0;
+            document.getElementById("popup").ariaHidden = true;
           });
         },
         connect_error: (err) => {
@@ -317,13 +317,13 @@ function createApp(elements, options) {
           }
         },
         try_reconnect: async () => {
-          document.getElementById("popup").style.opacity = 1;
+          document.getElementById("popup").ariaHidden = false;
           await fetch(window.location.href, { headers: { "NiceGUI-Check": "try_reconnect" } });
           console.log("reloading because reconnect was requested");
           window.location.reload();
         },
         disconnect: () => {
-          document.getElementById("popup").style.opacity = 1;
+          document.getElementById("popup").ariaHidden = false;
         },
         update: async (msg) => {
           for (const [id, element] of Object.entries(msg)) {

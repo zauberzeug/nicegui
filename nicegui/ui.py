@@ -14,8 +14,10 @@ __all__ = [
     'chart',
     'chat_message',
     'checkbox',
+    'chip',
     'clipboard',
     'code',
+    'codemirror',
     'color_input',
     'color_picker',
     'colors',
@@ -69,9 +71,11 @@ __all__ = [
     'restructured_text',
     'row',
     'scene',
+    'scene_view',
     'scroll_area',
     'select',
     'separator',
+    'skeleton',
     'slider',
     'space',
     'spinner',
@@ -85,6 +89,7 @@ __all__ = [
     'tab_panel',
     'tab_panels',
     'tabs',
+    'teleport',
     'textarea',
     'time',
     'timer',
@@ -139,7 +144,9 @@ from .elements.carousel import CarouselSlide as carousel_slide
 from .elements.chart import chart
 from .elements.chat_message import ChatMessage as chat_message
 from .elements.checkbox import Checkbox as checkbox
+from .elements.chip import Chip as chip
 from .elements.code import Code as code
+from .elements.codemirror import CodeMirror as codemirror
 from .elements.color_input import ColorInput as color_input
 from .elements.color_picker import ColorPicker as color_picker
 from .elements.colors import Colors as colors
@@ -190,9 +197,11 @@ from .elements.range import Range as range  # pylint: disable=redefined-builtin
 from .elements.restructured_text import ReStructuredText as restructured_text
 from .elements.row import Row as row
 from .elements.scene import Scene as scene
+from .elements.scene_view import SceneView as scene_view
 from .elements.scroll_area import ScrollArea as scroll_area
 from .elements.select import Select as select
 from .elements.separator import Separator as separator
+from .elements.skeleton import Skeleton as skeleton
 from .elements.slider import Slider as slider
 from .elements.space import Space as space
 from .elements.spinner import Spinner as spinner
@@ -206,6 +215,7 @@ from .elements.tabs import Tab as tab
 from .elements.tabs import TabPanel as tab_panel
 from .elements.tabs import TabPanels as tab_panels
 from .elements.tabs import Tabs as tabs
+from .elements.teleport import Teleport as teleport
 from .elements.textarea import Textarea as textarea
 from .elements.time import Time as time
 from .elements.timeline import Timeline as timeline

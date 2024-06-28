@@ -35,7 +35,9 @@ def logger_handler():
                 self.handleError(record)
 
     log = ui.log(max_lines=10).classes('w-full')
-    logger.addHandler(LogElementHandler(log))
+    handler = LogElementHandler(log)
+    logger.addHandler(handler)
+    ui.context.client.on_disconnect(lambda: logger.removeHandler(handler))
     ui.button('Log time', on_click=lambda: logger.warning(datetime.now().strftime('%X.%f')[:-5]))
 
 

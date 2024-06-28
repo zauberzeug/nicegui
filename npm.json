@@ -52,6 +52,13 @@
       "package/dist/": ""
     }
   },
+  "echarts-gl": {
+    "destination": "nicegui/elements/lib",
+    "keep": ["package/dist/echarts-gl\\.min\\.js", "package/dist/echarts-gl\\.js\\.map"],
+    "rename": {
+      "package/dist/": ""
+    }
+  },
   "leaflet": {
     "destination": "nicegui/elements/lib/leaflet",
     "keep": [

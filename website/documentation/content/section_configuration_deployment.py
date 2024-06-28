@@ -134,9 +134,33 @@ doc.text('', '''
     There are other handy features in the Docker image like non-root user execution and signal pass-through.
     For more details we recommend to have a look at our [Docker example](https://github.com/zauberzeug/nicegui/tree/main/examples/docker_image).
 
-    You can provide SSL certificates directly using [FastAPI](https://fastapi.tiangolo.com/deployment/https/).
+    To serve your application with [HTTPS](https://fastapi.tiangolo.com/deployment/https/) encryption, you can provide SSL certificates in multiple ways.
+    For instance, you can directly provide your certificates to [Uvicorn](https://www.uvicorn.org/), which NiceGUI is based on, by passing the
+    relevant [options](https://www.uvicorn.org/#command-line-options) to `ui.run()`:
+''')
+
+
+@doc.ui
+def uvicorn_ssl():
+    with python_window('main.py', classes='max-w-lg w-full'):
+        ui.markdown('''
+            ```python
+            from nicegui import ui
+
+            ui.run(
+                port=443,
+                ssl_certfile="<path_to_certfile>",
+                ssl_keyfile="<path_to_keyfile>",
+            )
+            ```
+        ''')
+
+
+doc.text('', '''
     In production we also like using reverse proxies like [Traefik](https://doc.traefik.io/traefik/) or [NGINX](https://www.nginx.com/) to handle these details for us.
-    See our development [docker-compose.yml](https://github.com/zauberzeug/nicegui/blob/main/docker-compose.yml) as an example.
+    See our development [docker-compose.yml](https://github.com/zauberzeug/nicegui/blob/main/docker-compose.yml) as an example based on traefik or
+    [this example nginx.conf file](https://github.com/zauberzeug/nicegui/blob/main/examples/nginx_https/nginx.conf) showing how NGINX can be used to handle the SSL certificates and
+    reverse proxy to your NiceGUI app.
 
     You may also have a look at [our demo for using a custom FastAPI app](https://github.com/zauberzeug/nicegui/tree/main/examples/fastapi).
     This will allow you to do very flexible deployments as described in the [FastAPI documentation](https://fastapi.tiangolo.com/deployment/).
@@ -144,11 +168,11 @@ doc.text('', '''
 ''')
 
 doc.text('Package for Installation', '''
-    NiceGUI apps can also be bundled into an executable with [PyInstaller](https://www.pyinstaller.org/).
+    NiceGUI apps can also be bundled into an executable with `nicegui-pack` which is based on [PyInstaller](https://www.pyinstaller.org/).
     This allows you to distribute your app as a single file that can be executed on any computer.
 
-    Just take care your `ui.run` command does not use the `reload` argument.
-    Running the `build.py` below will create an executable `myapp` in the `dist` folder:
+    Just make sure to call `ui.run` with `reload=False` in your main script to disable the auto-reload feature.
+    Running the `nicegui-pack` command below will create an executable `myapp` in the `dist` folder:
 ''')
 
 
@@ -165,24 +189,10 @@ def pyinstaller():
                 ui.run(reload=False, port=native.find_open_port())
                 ```
             ''')
-        with python_window('build.py', classes='max-w-lg w-full'):
+        with bash_window(classes='max-w-lg w-full'):
             ui.markdown('''
-                ```python
-                import os
-                import subprocess
-                from pathlib import Path
-                import nicegui
-
-                cmd = [
-                    'python',
-                    '-m', 'PyInstaller',
-                    'main.py', # your main file with ui.run()
-                    '--name', 'myapp', # name of your app
-                    '--onefile',
-                    #'--windowed', # prevent console appearing, only use with ui.run(native=True, ...)
-                    '--add-data', f'{Path(nicegui.__file__).parent}{os.pathsep}nicegui'
-                ]
-                subprocess.call(cmd)
+                ```bash
+                nicegui-pack --onefile --name "myapp" main.py
                 ```
             ''')
 
@@ -195,27 +205,27 @@ doc.text('', '''
     The `native` parameter can be `True` or `False` depending on whether you want a native window or to launch a
     page in the user's browser - either will work in the PyInstaller generated app.
 
-    - Specifying `--windowed` to PyInstaller will prevent a terminal console from appearing.
+    - Specifying `--windowed` to `nicegui-pack` will prevent a terminal console from appearing.
     However you should only use this option if you have also specified `native=True` in your `ui.run` command.
     Without a terminal console the user won't be able to exit the app by pressing Ctrl-C.
     With the `native=True` option, the app will automatically close when the window is closed, as expected.
 
-    - Specifying `--windowed` to PyInstaller will create an `.app` file on Mac which may be more convenient to distribute.
+    - Specifying `--windowed` to `nicegui-pack` will create an `.app` file on Mac which may be more convenient to distribute.
     When you double-click the app to run it, it will not show any console output.
     You can also run the app from the command line with `./myapp.app/Contents/MacOS/myapp` to see the console output.
 
-    - Specifying `--onefile` to PyInstaller will create a single executable file.
+    - Specifying `--onefile` to `nicegui-pack` will create a single executable file.
     Whilst convenient for distribution, it will be slower to start up.
     This is not NiceGUI's fault but just the way Pyinstaller zips things into a single file, then unzips everything
     into a temporary directory before running.
-    You can mitigate this by removing `--onefile` from the PyInstaller command,
+    You can mitigate this by removing `--onefile` from the `nicegui-pack` command,
     and zip up the generated `dist` directory yourself, distribute it,
     and your end users can unzip once and be good to go,
     without the constant expansion of files due to the `--onefile` flag.
 
     - Summary of user experience for different options:
 
-        | PyInstaller              | `ui.run(...)`  | Explanation |
+        | `nicegui-pack`           | `ui.run(...)`  | Explanation |
         | :---                     | :---           | :---        |
         | `onefile`                | `native=False` | Single executable generated in `dist/`, runs in browser |
         | `onefile`                | `native=True`  | Single executable generated in `dist/`, runs in popup window |
@@ -225,7 +235,7 @@ doc.text('', '''
 
     - If you are using a Python virtual environment, ensure you `pip install pyinstaller` within your virtual environment
     so that the correct PyInstaller is used, or you may get broken apps due to the wrong version of PyInstaller being picked up.
-    That is why the build script invokes PyInstaller using `python -m PyInstaller` rather than just `pyinstaller`.
+    That is why the `nicegui-pack` invokes PyInstaller using `python -m PyInstaller` rather than just `pyinstaller`.
 ''')
 
 

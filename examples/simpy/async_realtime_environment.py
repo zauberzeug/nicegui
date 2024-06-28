@@ -39,7 +39,7 @@ class AsyncRealtimeEnvironment(RealtimeEnvironment):
             )
 
         # Sleep in a loop to fix inaccuracies of windows (see
-        # http://stackoverflow.com/a/15967564 for details) and to ignore
+        # https://stackoverflow.com/a/15967564 for details) and to ignore
         # interrupts.
         while True:
             delta = real_time - monotonic()

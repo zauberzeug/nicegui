@@ -124,16 +124,18 @@ export default {
     this.$nextTick(() => this.resize());
     window.addEventListener("resize", this.resize, false);
 
+    const gridSize = this.grid[0] || 100;
+    const gridDivisions = this.grid[1] || 100;
     if (this.grid) {
       const ground = new THREE.Mesh(
-        new THREE.PlaneGeometry(100, 100),
+        new THREE.PlaneGeometry(gridSize, gridSize),
         new THREE.MeshPhongMaterial({ color: this.background_color })
       );
       ground.translateZ(-0.01);
       ground.object_id = "ground";
       this.scene.add(ground);
 
-      const grid = new THREE.GridHelper(100, 100);
+      const grid = new THREE.GridHelper(gridSize, gridDivisions);
       grid.material.transparent = true;
       grid.material.opacity = 0.2;
       grid.rotateX(Math.PI / 2);
@@ -436,12 +438,42 @@ export default {
       }
       this.camera.updateProjectionMatrix();
     },
+    init_objects(data) {
+      for (const [
+        type,
+        id,
+        parent_id,
+        args,
+        name,
+        color,
+        opacity,
+        side,
+        x,
+        y,
+        z,
+        R,
+        sx,
+        sy,
+        sz,
+        visible,
+        draggable,
+      ] of data) {
+        this.create(type, id, parent_id, ...args);
+        this.name(id, name);
+        this.material(id, color, opacity, side);
+        this.move(id, x, y, z);
+        this.rotate(id, R);
+        this.scale(id, sx, sy, sz);
+        this.visible(id, visible);
+        this.draggable(id, draggable);
+      }
+    },
   },
 
   props: {
     width: Number,
     height: Number,
-    grid: Boolean,
+    grid: Object,
     camera_type: String,
     camera_params: Object,
     drag_constraints: String,
