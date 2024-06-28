@@ -24,7 +24,7 @@ async def _run(executor: Any, callback: Callable[P, R], *args: P.args, **kwargs:
     except RuntimeError as e:
         if 'cannot schedule new futures after shutdown' not in str(e):
             raise
-    except asyncio.exceptions.CancelledError:
+    except asyncio.CancelledError:
         pass
     return  # type: ignore  # the assumption is that the user's code no longer cares about this value
 
