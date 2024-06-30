@@ -142,14 +142,13 @@ class Outlet:
 
         @ui.page(self.base_path, **self.page_kwargs)
         @ui.page(f'{self.base_path}' + '{_:path}', **self.page_kwargs)  # all other pages
-        async def root_page(request_data=None):
+        async def root_page():
             await ui.context.client.connected()  # to ensure storage.tab and storage.client availability
-            initial_url = None
-            if request_data is not None:
-                initial_url = request_data['url']['path']
-                query = request_data['url'].get('query', None)
-                if query:
-                    initial_url += '?' + query
+            request = context.client.request
+            initial_url = request.url.path
+            query = request.url.query
+            if query:
+                initial_url += '?' + query
             self.build_page(initial_url=initial_url)
 
         return self

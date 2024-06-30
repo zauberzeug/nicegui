@@ -109,18 +109,6 @@ class page:
             with Client(self, request=request) as client:
                 if any(p.name == 'client' for p in inspect.signature(func).parameters.values()):
                     dec_kwargs['client'] = client
-                if any(p.name == 'request_data' for p in inspect.signature(func).parameters.values()):
-                    url = request.url
-                    dec_kwargs['request_data'] = {'client':
-                                                      {'host': request.client.host,
-                                                       'port': request.client.port},
-                                                  'cookies': request.cookies,
-                                                  'url':
-                                                      {'path': url.path,
-                                                       'query': url.query,
-                                                       'username': url.username,
-                                                       'password': url.password,
-                                                       'fragment': url.fragment}}
                 result = func(*dec_args, **dec_kwargs)
             if helpers.is_coroutine_function(func):
                 async def wait_for_result() -> None:
