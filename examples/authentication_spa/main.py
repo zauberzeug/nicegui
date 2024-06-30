@@ -48,7 +48,7 @@ def main_app_index():
     with ui.column() as col:
         ui.label('Login to NiceCLOUD!').classes('text-3xl')
         ui.html('<br>')
-        input_field = ui.input('Username').style('width: 100%').on('keydown.enter', lambda: pw.focus())
+        input_field = ui.input('Username').style('width: 100%').on('keydown.enter', lambda: pw.run_method('focus'))
         pw = ui.input('Password', password=True,
                       password_toggle_button=True).style('width: 100%').on('keydown.enter', handle_login)
         col.style('width: 300pt; top: 40%; left: 50%; transform: translate(-50%, -50%); position: absolute;')
