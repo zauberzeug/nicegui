@@ -71,9 +71,9 @@ class Outlet(SinglePageRouterConfig):
             raise ValueError('The outlet builder function is not defined. Use the @outlet decorator to define it or'
                              ' pass it as an argument to the SinglePageRouter constructor.')
         frame = RouterFrame.run_safe(self.outlet_builder, **kwargs)
-        if not isinstance(frame, Generator):
-            raise ValueError('The outlet builder must be a generator function and contain a yield statement'
-                             ' to separate the layout from the content area.')
+        # if not isinstance(frame, Generator):
+        #     raise ValueError('The outlet builder must be a generator function and contain a yield statement'
+        #                      ' to separate the layout from the content area.')
         properties = {}
 
         def add_properties(result):
@@ -81,12 +81,14 @@ class Outlet(SinglePageRouterConfig):
                 properties.update(result)
 
         router_frame = SinglePageRouter.current_router()
-        add_properties(next(frame))  # insert ui elements before yield
+        if isinstance(frame, Generator):
+            add_properties(next(frame))  # insert ui elements before yield
         if router_frame is not None:
             router_frame.update_user_data(properties)
         yield properties
         try:
-            add_properties(next(frame))  # if provided insert ui elements after yield
+            if isinstance(frame, Generator):
+                add_properties(next(frame))  # if provided insert ui elements after yield
             if router_frame is not None:
                 router_frame.update_user_data(properties)
         except StopIteration:
