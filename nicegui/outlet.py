@@ -1,9 +1,11 @@
-from typing import Callable, Any, Self, Optional, Generator, Union
+from typing import Any, Callable, Generator, Optional, Self, Union
 
+from nicegui import ui
 from nicegui.client import Client
+from nicegui.elements.router_frame import RouterFrame
+from nicegui.OutletView import OutletView
 from nicegui.single_page_router import SinglePageRouter
 from nicegui.single_page_router_config import SinglePageRouterConfig
-from nicegui.elements.router_frame import RouterFrame
 from nicegui.single_page_target import SinglePageTarget
 
 PAGE_TEMPLATE_METHOD_NAME = "page_template"
@@ -55,7 +57,7 @@ class Outlet(SinglePageRouterConfig):
                          parent=parent, **kwargs)
         self.outlet_builder: Optional[Callable] = None
         if parent is None:
-            Client.single_page_routes[path] = self
+            Client.top_level_outlets[path] = self
         if router_class is not None:
             # check if class defines outlet builder function
             if hasattr(router_class, PAGE_TEMPLATE_METHOD_NAME):
@@ -69,9 +71,9 @@ class Outlet(SinglePageRouterConfig):
             raise ValueError('The outlet builder function is not defined. Use the @outlet decorator to define it or'
                              ' pass it as an argument to the SinglePageRouter constructor.')
         frame = RouterFrame.run_safe(self.outlet_builder, **kwargs)
-        if not isinstance(frame, Generator):
-            raise ValueError('The outlet builder must be a generator function and contain a yield statement'
-                             ' to separate the layout from the content area.')
+        # if not isinstance(frame, Generator):
+        #     raise ValueError('The outlet builder must be a generator function and contain a yield statement'
+        #                      ' to separate the layout from the content area.')
         properties = {}
 
         def add_properties(result):
@@ -79,12 +81,14 @@ class Outlet(SinglePageRouterConfig):
                 properties.update(result)
 
         router_frame = SinglePageRouter.current_router()
-        add_properties(next(frame))  # insert ui elements before yield
+        if isinstance(frame, Generator):
+            add_properties(next(frame))  # insert ui elements before yield
         if router_frame is not None:
             router_frame.update_user_data(properties)
         yield properties
         try:
-            add_properties(next(frame))  # if provided insert ui elements after yield
+            if isinstance(frame, Generator):
+                add_properties(next(frame))  # if provided insert ui elements after yield
             if router_frame is not None:
                 router_frame.update_user_data(properties)
         except StopIteration:
@@ -98,10 +102,40 @@ class Outlet(SinglePageRouterConfig):
 
         self.outlet_builder = func
         if self.parent_config is None:
-            self.setup_pages()
+            self.setup_page()
         else:
             relative_path = self.base_path[len(self.parent_config.base_path):]
             OutletView(self.parent_config, relative_path)(outlet_view)
+        return self
+
+    def setup_page(self, overwrite=False) -> Self:
+        """Setup the NiceGUI page with all it's endpoints and their base UI structure for the root routers
+
+        :param overwrite: Optional flag to force the setup of a given page even if one with a conflicting path is
+            already existing. Default is False. Classes such as SinglePageApp use this flag to avoid conflicts with
+            other routers and resolve those conflicts by rerouting the pages."""
+        for key, route in Client.page_routes.items():
+            if route.startswith(self.base_path.rstrip('/') + '/') and route.rstrip('/') not in self.included_paths:
+                self.excluded_paths.add(route)
+            if overwrite:
+                continue
+            if self.base_path.startswith(route.rstrip('/') + '/'):  # '/sub_router' after '/' - forbidden
+                raise ValueError(f'Another router with path "{route.rstrip("/")}/*" is already registered which '
+                                 f'includes this router\'s base path "{self.base_path}". You can declare the nested '
+                                 f'router first to prioritize it and avoid this issue.')
+
+        @ui.page(self.base_path, **self.page_kwargs)
+        @ui.page(f'{self.base_path}' + '{_:path}', **self.page_kwargs)  # all other pages
+        async def root_page(request_data=None):
+            await ui.context.client.connected()  # to ensure storage.tab and storage.client availability
+            initial_url = None
+            if request_data is not None:
+                initial_url = request_data['url']['path']
+                query = request_data['url'].get('query', None)
+                if query:
+                    initial_url += '?' + query
+            self.build_page(initial_url=initial_url)
+
         return self
 
     def view(self,
@@ -131,7 +165,7 @@ class Outlet(SinglePageRouterConfig):
     @property
     def current_url(self) -> str:
         """Returns the current URL of the outlet.
-        
+
         Only works when called from within the outlet or view builder function.
 
         :return: The current URL of the outlet"""
@@ -140,41 +174,3 @@ class Outlet(SinglePageRouterConfig):
             raise ValueError('The current URL can only be retrieved from within a nested outlet or view builder '
                              'function.')
         return cur_router.target_url
-
-
-class OutletView:
-    """Defines a single view / "content page" which is displayed in an outlet"""
-
-    def __init__(self, parent: SinglePageRouterConfig, path: str, title: Optional[str] = None):
-        """
-        :param parent: The parent outlet in which this view is displayed
-        :param path: The path of the view, relative to the base path of the outlet
-        :param title: Optional title of the view. If a title is set, it will be displayed in the browser tab
-            when the view is active, otherwise the default title of the application is displayed.
-        """
-        self.path = path
-        self.title = title
-        self.parent_outlet = parent
-
-    @property
-    def url(self) -> str:
-        """The absolute URL of the view
-
-        :return: The absolute URL of the view
-        """
-        return (self.parent_outlet.base_path.rstrip('/') + '/' + self.path.lstrip('/')).rstrip('/')
-
-    def handle_resolve(self, target: SinglePageTarget, **kwargs) -> SinglePageTarget:
-        """Is called when the target is resolved to this view
-
-        :param target: The resolved target
-        :return: The resolved target or a modified target
-        """
-        return target
-
-    def __call__(self, func: Callable[..., Any]) -> Callable[..., Any]:
-        """Decorator for the view function"""
-        abs_path = self.url
-        self.parent_outlet.add_view(
-            abs_path, func, title=self.title, on_open=self.handle_resolve)
-        return self

@@ -2,11 +2,9 @@ import inspect
 import re
 import typing
 from fnmatch import fnmatch
-from typing import Callable, Dict, Union, Optional, Self, List, Set, Generator, Any
+from typing import Any, Callable, Dict, Generator, List, Optional, Self, Set, Union
 
-from nicegui import ui
 from nicegui.context import context
-from nicegui.client import Client
 from nicegui.elements.router_frame import RouterFrame
 from nicegui.single_page_router import SinglePageRouter
 from nicegui.single_page_target import SinglePageTarget
@@ -59,37 +57,6 @@ class SinglePageRouterConfig:
         self.page_kwargs = kwargs
         self.router_class = SinglePageRouter if router_class is None else router_class
 
-    def setup_pages(self, overwrite=False) -> Self:
-        """Setups the NiceGUI page endpoints and their base UI structure for the root routers
-        
-        :param overwrite: Optional flag to force the setup of a given page even if one with a conflicting path is
-            already existing. Default is False. Classes such as SinglePageApp use this flag to avoid conflicts with
-            other routers and resolve those conflicts by rerouting the pages."""
-        for key, route in Client.page_routes.items():
-            if route.startswith(
-                    self.base_path.rstrip('/') + '/') and route.rstrip('/') not in self.included_paths:
-                self.excluded_paths.add(route)
-            if overwrite:
-                continue
-            if self.base_path.startswith(route.rstrip('/') + '/'):  # '/sub_router' after '/' - forbidden
-                raise ValueError(f'Another router with path "{route.rstrip("/")}/*" is already registered which '
-                                 f'includes this router\'s base path "{self.base_path}". You can declare the nested '
-                                 f'router first to prioritize it and avoid this issue.')
-
-        @ui.page(self.base_path, **self.page_kwargs)
-        @ui.page(f'{self.base_path}' + '{_:path}', **self.page_kwargs)  # all other pages
-        async def root_page(request_data=None):
-            await ui.context.client.connected()  # to ensure storage.tab and storage.client availability
-            initial_url = None
-            if request_data is not None:
-                initial_url = request_data['url']['path']
-                query = request_data['url'].get('query', None)
-                if query:
-                    initial_url += '?' + query
-            self.build_page(initial_url=initial_url)
-
-        return self
-
     def add_view(self, path: str, builder: Callable, title: Optional[str] = None,
                  on_open: Optional[Callable[[SinglePageTarget], SinglePageTarget]] = None) -> None:
         """Add a new route to the single page router
@@ -110,46 +77,32 @@ class SinglePageRouterConfig:
         self.routes[entry.path] = entry.verify()
 
     def resolve_target(self, target: Union[Callable, str]) -> SinglePageTarget:
-        """Tries to resolve a target such as a builder function or a URL path w/ route and query parameters.
+        """Tries to resolve a target such as a builder function or a URL path with route and query parameters.
 
         :param target: The URL path to open or a builder function
         :return: The resolved target. Defines .valid if the target is valid"""
-        if isinstance(target, Callable):
+        if callable(target):
             for target, entry in self.routes.items():
                 if entry.builder == target:
                     return SinglePageTarget(router_path=entry)
-        else:
-            resolved = None
-            path = target.split('#')[0].split('?')[0]
-            for cur_router in self.child_routers:
-                # replace {} placeholders with * to match the fnmatch pattern
-                mask = SinglePageRouterPath.create_path_mask(cur_router.base_path.rstrip('/') + '/*')
-                if fnmatch(path, mask) or path == cur_router.base_path:
-                    resolved = cur_router.resolve_target(target)
-                    if resolved.valid:
-                        target = cur_router.base_path
-                        if '*' in mask:
-                            # isolate the real path elements and update target accordingly
-                            target = '/'.join(path.split('/')[:len(cur_router.base_path.split('/'))])
-                        break
-            result = SinglePageTarget(target).parse_url_path(routes=self.routes)
-            if resolved is not None:
-                result.original_path = resolved.original_path
-            return result
-
-    def navigate_to(self, target: Union[Callable, str, SinglePageTarget], server_side=True) -> bool:
-        """Navigate to a target
-
-        :param target: The target to navigate to
-        :param server_side: Optional flag which defines if the call is originated on the server side"""
-        org_target = target
-        if not isinstance(target, SinglePageTarget):
-            target = self.resolve_target(target)
-        router = context.client.single_page_router
-        if not target.valid or router is None:
-            return False
-        router.navigate_to(org_target, server_side=server_side)
-        return True
+            raise ValueError('The target builder function is not registered in the router.')
+        resolved = None
+        path = target.split('#')[0].split('?')[0]
+        for router in self.child_routers:
+            # replace {} placeholders with * to match the fnmatch pattern
+            mask = SinglePageRouterPath.create_path_mask(router.base_path.rstrip('/') + '/*')
+            if fnmatch(path, mask) or path == router.base_path:
+                resolved = router.resolve_target(target)
+                if resolved.valid:
+                    target = router.base_path
+                    if '*' in mask:
+                        # isolate the real path elements and update target accordingly
+                        target = '/'.join(path.split('/')[:len(router.base_path.split('/'))])
+                    break
+        result = SinglePageTarget(target).parse_url_path(routes=self.routes)
+        if resolved is not None:
+            result.original_path = resolved.original_path
+        return result
 
     def handle_navigate(self, url: str) -> Optional[Union[SinglePageTarget, str]]:
         """Handles a navigation event and returns the new URL if the navigation should be allowed
