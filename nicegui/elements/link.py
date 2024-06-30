@@ -2,7 +2,7 @@ from typing import Any, Callable, Union
 
 from ..client import Client
 from ..element import Element
-from ..OutletView import OutletView
+from ..outlet_view import OutletView
 from .mixins.text_element import TextElement
 
 

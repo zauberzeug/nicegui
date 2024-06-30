@@ -1,13 +1,15 @@
-from typing import Any, Callable, Optional
+from typing import Any, Callable, Optional, TYPE_CHECKING
 
-from nicegui.single_page_router_config import SinglePageRouterConfig
 from nicegui.single_page_target import SinglePageTarget
+
+if TYPE_CHECKING:
+    from nicegui.outlet import Outlet
 
 
 class OutletView:
     """Defines a single view / "content page" which is displayed in an outlet"""
 
-    def __init__(self, parent: SinglePageRouterConfig, path: str, title: Optional[str] = None):
+    def __init__(self, parent: 'Outlet', path: str, title: Optional[str] = None):
         """
         :param parent: The parent outlet in which this view is displayed
         :param path: The path of the view, relative to the base path of the outlet

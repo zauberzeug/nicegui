@@ -8,9 +8,6 @@ from nicegui.single_page_target import SinglePageTarget
 
 PATH_RESOLVING_MAX_RECURSION = 100
 
-if TYPE_CHECKING:
-    from nicegui.single_page_router_config import SinglePageRouterConfig
-
 
 class SinglePageRouter:
     """The SinglePageRouter manages the SinglePage navigation and content updates for a SinglePageApp instance.
@@ -112,7 +109,8 @@ class SinglePageRouter:
         :return: The resolved SinglePageTarget object"""
         outlet_target = self.router_config.resolve_target(target)
         assert outlet_target.path is not None
-        if isinstance(outlet_target, SinglePageTarget) and not outlet_target.valid and outlet_target.path.startswith(self.base_path):
+        if isinstance(outlet_target, SinglePageTarget) and not outlet_target.valid and outlet_target.path.startswith(
+                self.base_path):
             rem_path = outlet_target.path[len(self.base_path):]
             if rem_path in self.views:
                 outlet_target.builder = self.views[rem_path].builder
@@ -165,7 +163,7 @@ class SinglePageRouter:
             if target is None:
                 return
         handler_kwargs = SinglePageRouter.get_user_data() | self.user_data | self.router_frame.user_data | \
-            {'previous_url_path': self.router_frame.target_url}
+                         {'previous_url_path': self.router_frame.target_url}
         if target is None:
             # TODO in which cases can the target be None? What should be the behavior?
             raise ValueError('Target is None')
@@ -206,7 +204,7 @@ class SinglePageRouter:
             title = target.title if target.title is not None else core.app.config.title
             ui.page_title(title)
         if target.on_post_update is not None:
-            RouterFrame.run_safe(target.on_post_update, handler_kwargs)
+            RouterFrame.run_safe(target.on_post_update, **handler_kwargs)
 
     def clear(self) -> None:
         """Clear the content of the router frame and removes all references to sub frames"""

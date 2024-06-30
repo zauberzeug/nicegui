@@ -4,12 +4,12 @@ from typing import TYPE_CHECKING, Any, Callable, Dict, Optional, Self
 
 if TYPE_CHECKING:
     from nicegui.single_page_router import SinglePageRouter
-    from nicegui.single_page_router_config import SinglePageRouterPath
+    from nicegui.outlet import OutletPath
 
 
 class SinglePageTarget:
     """A helper class which is used to resolve and URL path, it's query and fragment parameters to find the matching
-    SinglePageRouterPath and extract path and query parameters."""
+    OutletPath and extract path and query parameters."""
 
     def __init__(self,
                  path: Optional[str] = None,
@@ -18,7 +18,7 @@ class SinglePageTarget:
                  builder: Optional[Callable] = None,
                  title: Optional[str] = None,
                  router: Optional['SinglePageRouter'] = None,
-                 router_path: Optional['SinglePageRouterPath'] = None,
+                 router_path: Optional['OutletPath'] = None,
                  on_pre_update: Optional[Callable[[Any], None]] = None,
                  on_post_update: Optional[Callable[[Any], None]] = None
                  ):
@@ -29,7 +29,7 @@ class SinglePageTarget:
         :param query_string: The query string of the URL
         :param title: The title of the URL to be displayed in the browser tab
         :param router: The SinglePageRouter which is used to resolve the URL
-        :param router_path: The SinglePageRouterPath which is matched by the URL
+        :param router_path: The OutletPath which is matched by the URL
         :param on_pre_update: Optional callback which is called before content is updated. It can be used to modify the
             target or execute JavaScript code before the content is updated.
         :param on_post_update: Optional callback which is called after content is updated. It can be used to modify the
@@ -47,7 +47,7 @@ class SinglePageTarget:
         self.builder = builder
         self.valid = builder is not None
         self.router = router
-        self.router_path: Optional["SinglePageRouterPath"] = router_path
+        self.router_path: Optional["OutletPath"] = router_path
         self.on_pre_update = on_pre_update
         self.on_post_update = on_post_update
         if router_path is not None and router_path.builder is not None:
@@ -55,7 +55,7 @@ class SinglePageTarget:
             self.title = router_path.title
             self.valid = True
 
-    def parse_url_path(self, routes: Dict[str, 'SinglePageRouterPath']) -> Self:
+    def parse_url_path(self, routes: Dict[str, 'OutletPath']) -> Self:
         """
         Parses the route using the provided routes dictionary and path.
 
@@ -83,7 +83,7 @@ class SinglePageTarget:
             self.valid = False
         return self
 
-    def parse_path(self, routes) -> Optional['SinglePageRouterPath']:
+    def parse_path(self, routes) -> Optional['OutletPath']:
         """Splits the path into its components, tries to match it with the routes and extracts the path arguments
         into their corresponding variables.
 
