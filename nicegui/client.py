@@ -57,7 +57,8 @@ class Client:
     shared_body_html = ''
     """HTML to be inserted in the <body> of every page template."""
 
-    def __init__(self, page: page, *, shared: bool = False) -> None:
+    def __init__(self, page: page, *, request: Optional[Request]) -> None:
+        self.request: Optional[Request] = request
         self.id = str(uuid.uuid4())
         self.created = time.time()
         self.instances[self.id] = self
@@ -67,7 +68,7 @@ class Client:
         self.is_waiting_for_connection: bool = False
         self.is_waiting_for_disconnect: bool = False
         self.environ: Optional[Dict[str, Any]] = None
-        self.shared = shared
+        self.shared = request is None
         self.on_air = False
         self._disconnect_task: Optional[asyncio.Task] = None
         self._deleted = False

@@ -117,4 +117,21 @@ def events_demo() -> None:
     label = ui.label()
 
 
+@doc.demo('3D Graphing', '''
+    Charts will automatically be 3D enabled if the initial options contain the string "3D".
+    If not, set the `enable_3d` argument to `True`.
+''')
+def echarts_gl_demo() -> None:
+    ui.echart({
+        'xAxis3D': {},
+        'yAxis3D': {},
+        'zAxis3D': {},
+        'grid3D': {},
+        'series': [{
+            'type': 'line3D',
+            'data': [[1, 1, 1], [3, 3, 3]],
+        }],
+    })
+
+
 doc.reference(ui.echart)
