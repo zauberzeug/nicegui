@@ -240,7 +240,7 @@ function download(src, filename, mediaType, prefix) {
   anchor.click();
   document.body.removeChild(anchor);
   if (typeof src !== "string") {
-    URL.revokeObjectURL(url);
+    URL.revokeObjectURL(anchor.href);
   }
 }
 

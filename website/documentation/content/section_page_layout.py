@@ -17,10 +17,12 @@ from . import (
     row_documentation,
     scroll_area_documentation,
     separator_documentation,
+    skeleton_documentation,
     space_documentation,
     splitter_documentation,
     stepper_documentation,
     tabs_documentation,
+    teleport_documentation,
     timeline_documentation,
     tooltip_documentation,
 )
@@ -80,10 +82,12 @@ def clear_containers_demo():
     ui.button('Clear', on_click=container.clear)
 
 
+doc.intro(teleport_documentation)
 doc.intro(expansion_documentation)
 doc.intro(scroll_area_documentation)
 doc.intro(separator_documentation)
 doc.intro(space_documentation)
+doc.intro(skeleton_documentation)
 doc.intro(splitter_documentation)
 doc.intro(tabs_documentation)
 doc.intro(stepper_documentation)
