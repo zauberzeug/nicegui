@@ -289,6 +289,7 @@ function createApp(elements, options) {
       window.clientId = options.query.client_id;
       const url = window.location.protocol === "https:" ? "wss://" : "ws://" + window.location.host;
       window.path_prefix = options.prefix;
+      window.last_message_id = options.query.starting_message_id;
       window.socket = io(url, {
         path: `${options.prefix}/_nicegui_ws/socket.io`,
         query: options.query,
@@ -302,7 +303,14 @@ function createApp(elements, options) {
             tabId = createRandomUUID();
             sessionStorage.setItem("__nicegui_tab_id", tabId);
           }
-          window.socket.emit("handshake", { client_id: window.clientId, tab_id: tabId }, (ok) => {
+          window.retransmitId = createRandomUUID();
+          const args = {
+            client_id: window.clientId,
+            tab_id: tabId,
+            last_message_id: window.last_message_id,
+            retransmit_id: window.retransmitId,
+          };
+          window.socket.emit("handshake", args, (ok) => {
             if (!ok) {
               console.log("reloading because handshake failed for clientId " + window.clientId);
               window.location.reload();
@@ -351,6 +359,19 @@ function createApp(elements, options) {
       let isProcessingSocketMessage = false;
       for (const [event, handler] of Object.entries(messageHandlers)) {
         window.socket.on(event, async (...args) => {
+          if (args.length > 0 && args[0].hasOwnProperty("message_id")) {
+            const data = args[0];
+            if (
+              data.message_id <= window.last_message_id ||
+              ("retransmit_id" in data && data.retransmit_id != window.retransmitId)
+            ) {
+              return;
+            }
+            window.last_message_id = data.message_id;
+            delete data.message_id;
+            delete data.retransmit_id;
+          }
+
           socketMessageQueue.push(() => handler(...args));
           if (!isProcessingSocketMessage) {
             while (socketMessageQueue.length > 0) {

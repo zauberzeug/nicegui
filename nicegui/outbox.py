@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import time
 from collections import deque
 from typing import TYPE_CHECKING, Any, Deque, Dict, Optional, Tuple
 
@@ -24,10 +25,24 @@ class Outbox:
         self.messages: Deque[Message] = deque()
         self._should_stop = False
         self._enqueue_event: Optional[asyncio.Event] = None
+        self._history: Deque[Tuple[int, float, Tuple[MessageType, Any, ClientId]]] = deque()
+        self._message_count: int = 0
+
+        if self.client.shared:
+            self._history_duration = 30
+        else:
+            dt = core.sio.eio.ping_interval + core.sio.eio.ping_timeout + self.client.page.resolve_reconnect_timeout()
+            self._history_duration = max(dt, 30)
+
         if core.app.is_started:
             background_tasks.create(self.loop(), name=f'outbox loop {client.id}')
         else:
             core.app.on_startup(self.loop)
+
+    @property
+    def message_count(self) -> int:
+        """Total number of messages sent."""
+        return self._message_count
 
     def _set_enqueue_event(self) -> None:
         """Set the enqueue event while accounting for lazy initialization."""
@@ -51,6 +66,32 @@ class Outbox:
         self.client.check_existence()
         self.messages.append((target_id, message_type, data))
         self._set_enqueue_event()
+
+    def _append_history(self, message_type: MessageType, data: Any, target: ClientId) -> None:
+        self._message_count += 1
+        timestamp = time.time()
+        while self._history and self._history[0][1] < timestamp - self._history_duration:
+            self._history.popleft()
+        self._history.append((self._message_count, timestamp, (message_type, data, target)))
+
+    def synchronize(self, last_message_id: int, retransmit_id: str) -> bool:
+        """Synchronize the state of a connecting client by resending missed messages, if possible."""
+        if self._history:
+            next_id = last_message_id + 1
+            oldest_id = self._history[0][0]
+            if oldest_id > next_id:
+                return False
+
+            start = next_id - oldest_id
+            for i in range(start, len(self._history)):
+                args = self._history[i][2]
+                args[1]['retransmit_id'] = retransmit_id
+                self.enqueue_message('retransmit', args, '')
+
+        elif last_message_id != self._message_count:
+            return False
+
+        return True
 
     async def loop(self) -> None:
         """Send updates and messages to all clients in an endless loop."""
@@ -96,6 +137,12 @@ class Outbox:
                 await asyncio.sleep(0.1)
 
     async def _emit(self, message_type: MessageType, data: Any, target_id: ClientId) -> None:
+        if message_type != 'retransmit':
+            self._append_history(message_type, data, target_id)
+            data['message_id'] = self._message_count
+        else:
+            message_type, data, target_id = data
+
         await core.sio.emit(message_type, data, room=target_id)
         if core.air is not None and core.air.is_air_target(target_id):
             await core.air.emit(message_type, data, room=target_id)
