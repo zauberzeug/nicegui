@@ -1,8 +1,8 @@
 from nicegui import ui
-from nicegui.testing import Screen
+from nicegui.testing import SeleniumScreen
 
 
-def test_button_group(screen: Screen):
+def test_button_group(screen: SeleniumScreen):
     with ui.button_group():
         ui.button('Button 1', on_click=lambda: ui.label('Button 1 clicked'))
         ui.button('Button 2', on_click=lambda: ui.label('Button 2 clicked'))

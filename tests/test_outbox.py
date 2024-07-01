@@ -1,10 +1,10 @@
 import asyncio
 
 from nicegui import ui
-from nicegui.testing import Screen
+from nicegui.testing import SeleniumScreen
 
 
-def test_removing_outbox_loops(screen: Screen):
+def test_removing_outbox_loops(screen: SeleniumScreen):
     @ui.page('/page', reconnect_timeout=0.1)
     def page():
         ui.button('Click me', on_click=lambda: ui.notify('Hello world!'))

@@ -1,8 +1,8 @@
 from nicegui import ui
-from nicegui.testing import Screen
+from nicegui.testing import SeleniumScreen
 
 
-def test_time(screen: Screen):
+def test_time(screen: SeleniumScreen):
     t = ui.time(value='01:23')
     ui.label().bind_text_from(t, 'value')
 

@@ -52,7 +52,7 @@ Because Selenium queries are quite cumbersome and lengthy, we introduced a `Scre
 This provides a high-level interface to work with the currently displayed state of the web browser.
 The workflow is as follows:
 
-1. Get the `screen` fixture by providing `screen: Screen` as an argument to the function.
+1. Get the `screen` fixture by providing `screen: SeleniumScreen` as an argument to the function.
 2. Write your NiceGUI code inside the function.
 3. Use `screen.open(...)` with the appropriate URL path to start querying the website.
 4. For example, use `screen.should_contain(...)` with some text as parameter to ensure that the text is shown.
@@ -63,7 +63,7 @@ Here is a very simple example:
 from nicegui import ui
 from nicegui.testing import Screen
 
-def test_hello_world(screen: Screen):
+def test_hello_world(screen: SeleniumScreen):
     ui.label('Hello, world')
 
     screen.open('/')

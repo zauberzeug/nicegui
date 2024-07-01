@@ -1,8 +1,8 @@
 from nicegui import ui
-from nicegui.testing import Screen
+from nicegui.testing import SeleniumScreen
 
 
-def test_markdown(screen: Screen):
+def test_markdown(screen: SeleniumScreen):
     m = ui.markdown('This is **Markdown**')
 
     screen.open('/')
@@ -16,7 +16,7 @@ def test_markdown(screen: Screen):
     assert element.get_attribute('innerHTML') == 'New <strong>content</strong>'
 
 
-def test_markdown_with_mermaid(screen: Screen):
+def test_markdown_with_mermaid(screen: SeleniumScreen):
     m = ui.markdown('''
         Mermaid:
 
@@ -45,7 +45,7 @@ def test_markdown_with_mermaid(screen: Screen):
     screen.should_not_contain('Node_A')
 
 
-def test_strip_indentation(screen: Screen):
+def test_strip_indentation(screen: SeleniumScreen):
     ui.markdown('''
         **This is Markdown.**
     ''')
@@ -55,7 +55,7 @@ def test_strip_indentation(screen: Screen):
     screen.should_not_contain('**This is Markdown.**')  # NOTE: '**' are translated to formatting and not visible
 
 
-def test_replace_markdown(screen: Screen):
+def test_replace_markdown(screen: SeleniumScreen):
     with ui.row() as container:
         ui.markdown('A')
 

@@ -1,2 +1,1 @@
-# pylint: disable=wildcard-import,unused-wildcard-import
-from nicegui.testing.conftest import *  # noqa: F403
+from nicegui.testing.fixtures import *  # pylint: disable=wildcard-import,unused-wildcard-import

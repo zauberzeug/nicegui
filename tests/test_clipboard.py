@@ -1,8 +1,8 @@
 from nicegui import ui
-from nicegui.testing import Screen
+from nicegui.testing import SeleniumScreen
 
 
-def test_clipboard(screen: Screen):
+def test_clipboard(screen: SeleniumScreen):
     @ui.page('/')
     def page():
         ui.button('Copy to clipboard', on_click=lambda: ui.clipboard.write('Hello, World!'))

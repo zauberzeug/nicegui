@@ -1,11 +1,11 @@
 import pytest
 
 from nicegui import ui
-from nicegui.testing import Screen
+from nicegui.testing import SeleniumScreen
 
 
 @pytest.mark.parametrize('new_tab', [False, True])
-def test_navigate_to(screen: Screen, new_tab: bool):
+def test_navigate_to(screen: SeleniumScreen, new_tab: bool):
     @ui.page('/test_page')
     def page():
         ui.label('Test page')

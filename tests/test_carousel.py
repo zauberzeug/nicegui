@@ -1,8 +1,8 @@
 from nicegui import ui
-from nicegui.testing import Screen
+from nicegui.testing import SeleniumScreen
 
 
-def test_carousel(screen: Screen):
+def test_carousel(screen: SeleniumScreen):
     with ui.carousel(arrows=True).props('control-color=primary'):
         for name in ['Alice', 'Bob', 'Carol']:
             with ui.carousel_slide():

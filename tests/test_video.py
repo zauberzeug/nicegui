@@ -1,11 +1,11 @@
 from nicegui import ui
-from nicegui.testing import Screen
+from nicegui.testing import SeleniumScreen
 
 VIDEO1 = 'https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4'
 VIDEO2 = 'https://storage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4'
 
 
-def test_replace_video(screen: Screen):
+def test_replace_video(screen: SeleniumScreen):
     with ui.row() as container:
         ui.video(VIDEO1)
 
@@ -22,7 +22,7 @@ def test_replace_video(screen: Screen):
     assert screen.find_by_tag('video').get_attribute('src').endswith('ElephantsDream.mp4')
 
 
-def test_change_source(screen: Screen):
+def test_change_source(screen: SeleniumScreen):
     audio = ui.video(VIDEO1)
     ui.button('Change source', on_click=lambda: audio.set_source(VIDEO2))
 

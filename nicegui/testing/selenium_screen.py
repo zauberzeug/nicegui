@@ -17,11 +17,11 @@ from selenium.webdriver import ActionChains
 from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webelement import WebElement
 
-from nicegui import app, ui
+from nicegui import app, core, ui
 from nicegui.server import Server
 
 
-class Screen:
+class SeleniumScreen:
     PORT = 3392
     IMPLICIT_WAIT = 4
     SCREENSHOT_DIR = Path('screenshots')
@@ -33,6 +33,7 @@ class Screen:
         self.ui_run_kwargs = {'port': self.PORT, 'show': False, 'reload': False}
         self.connected = threading.Event()
         app.on_connect(self.connected.set)
+        self.url = f'http://localhost:{self.PORT}'
 
     def start_server(self) -> None:
         """Start the webserver in a separate thread. This is the equivalent of `ui.run()` in a normal script."""
@@ -57,6 +58,8 @@ class Screen:
         Server.instance.should_exit = True
         if self.server_thread:
             self.server_thread.join()
+        assert core.loop
+        assert core.loop.is_closed()
 
     def open(self, path: str, timeout: float = 3.0) -> None:
         """Try to open the page until the server is ready or we time out.
@@ -69,7 +72,7 @@ class Screen:
         self.connected.clear()
         while True:
             try:
-                self.selenium.get(f'http://localhost:{self.PORT}{path}')
+                self.selenium.get(self.url + path)
                 self.selenium.find_element(By.XPATH, '//body')  # ensure page and JS are loaded
                 self.connected.wait(1)  # Ensure that the client has connected to the API
                 break
@@ -183,14 +186,16 @@ class Screen:
         try:
             query = f'//*[not(self::script) and not(self::style) and text()[contains(., "{text}")]]'
             element = self.selenium.find_element(By.XPATH, query)
-            try:
-                if not element.is_displayed():
-                    self.wait(0.1)  # HACK: repeat check after a short delay to avoid timing issue on fast machines
-                    if not element.is_displayed():
-                        raise AssertionError(f'Found "{text}" but it is hidden')
-            except StaleElementReferenceException as e:
-                raise AssertionError(f'Found "{text}" but it is hidden') from e
-            return element
+            # HACK: repeat check after a short delay to avoid timing issue on fast machines
+            for i in range(5):
+                try:
+                    if element.is_displayed():
+                        return element
+                except StaleElementReferenceException as e:
+                    pass
+                self.wait(0.2)
+            else:
+                raise AssertionError(f'Found "{text}" but it is hidden')
         except NoSuchElementException as e:
             raise AssertionError(f'Could not find "{text}"') from e
 

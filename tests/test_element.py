@@ -2,10 +2,10 @@ import pytest
 from selenium.webdriver.common.by import By
 
 from nicegui import background_tasks, ui
-from nicegui.testing import Screen
+from nicegui.testing import SeleniumScreen
 
 
-def test_classes(screen: Screen):
+def test_classes(screen: SeleniumScreen):
     label = ui.label('Some label')
 
     def assert_classes(classes: str) -> None:
@@ -32,7 +32,7 @@ def test_classes(screen: Screen):
     assert_classes('four')
 
 
-def test_style_parsing():
+def test_style_parsing(nicegui_reset_globals):
     # pylint: disable=protected-access
     assert ui.element._parse_style(None) == {}  # pylint: disable=use-implicit-booleaness-not-comparison
     assert ui.element._parse_style('color: red; background-color: blue') == {'color': 'red', 'background-color': 'blue'}
@@ -41,7 +41,7 @@ def test_style_parsing():
     assert ui.element._parse_style('box-shadow: 0 0 0.5em #1976d2') == {'box-shadow': '0 0 0.5em #1976d2'}
 
 
-def test_props_parsing():
+def test_props_parsing(nicegui_reset_globals):
     # pylint: disable=protected-access
     assert ui.element._parse_props(None) == {}  # pylint: disable=use-implicit-booleaness-not-comparison
     assert ui.element._parse_props('one two=1 three="abc def"') == {'one': True, 'two': '1', 'three': 'abc def'}
@@ -67,7 +67,7 @@ def test_props_parsing():
     assert ui.element._parse_props('filename=foo=bar.txt') == {'filename': 'foo=bar.txt'}
 
 
-def test_style(screen: Screen):
+def test_style(screen: SeleniumScreen):
     label = ui.label('Some label')
 
     def assert_style(style: str) -> None:
@@ -99,7 +99,7 @@ def test_style(screen: Screen):
     assert_style('text-decoration: underline; color: blue;')
 
 
-def test_props(screen: Screen):
+def test_props(screen: SeleniumScreen):
     input_ = ui.input()
 
     def assert_props(*props: str) -> None:
@@ -120,7 +120,7 @@ def test_props(screen: Screen):
     assert_props('standard')
 
 
-def test_move(screen: Screen):
+def test_move(screen: SeleniumScreen):
     with ui.card() as a:
         ui.label('A')
         x = ui.label('X')
@@ -145,7 +145,7 @@ def test_move(screen: Screen):
     assert screen.find('X').location['y'] < screen.find('A').location['y'] < screen.find('B').location['y']
 
 
-def test_xss(screen: Screen):
+def test_xss(screen: SeleniumScreen):
     ui.label('</script><script>alert(1)</script>')
     ui.label('<b>Bold 1</b>, `code`, copy&paste, multi\nline')
     ui.button('Button', on_click=lambda: (
@@ -161,7 +161,7 @@ def test_xss(screen: Screen):
     screen.should_contain('<b>Bold 2</b>, `code`, copy&paste, multi\nline')
 
 
-def test_default_props():
+def test_default_props(nicegui_reset_globals):
     ui.button.default_props('rounded outline')
     button_a = ui.button('Button A')
     button_b = ui.button('Button B')
@@ -196,7 +196,7 @@ def test_default_props():
     assert button_f._props.get('no-wrap') is True
 
 
-def test_default_classes():
+def test_default_classes(nicegui_reset_globals):
     ui.button.default_classes('bg-white text-green')
     button_a = ui.button('Button A')
     button_b = ui.button('Button B')
@@ -231,7 +231,7 @@ def test_default_classes():
     assert 'max-h-80' in button_f._classes
 
 
-def test_default_style():
+def test_default_style(nicegui_reset_globals):
     ui.button.default_style('color: green; font-size: 200%')
     button_a = ui.button('Button A')
     button_b = ui.button('Button B')
@@ -266,7 +266,7 @@ def test_default_style():
     assert button_f._style.get('padding') == '30px'
 
 
-def test_invalid_tags(screen: Screen):
+def test_invalid_tags(screen: SeleniumScreen):
     good_tags = ['div', 'div-1', 'DIV', 'däv', 'div_x', '🙂']
     bad_tags = ['<div>', 'hi hi', 'hi/ho', 'foo$bar']
     for tag in good_tags:
@@ -278,14 +278,14 @@ def test_invalid_tags(screen: Screen):
     screen.open('/')
 
 
-def test_bad_characters(screen: Screen):
+def test_bad_characters(screen: SeleniumScreen):
     ui.label(r'& <test> ` ${foo}')
 
     screen.open('/')
     screen.should_contain(r'& <test> ` ${foo}')
 
 
-def test_update_before_client_connection(screen: Screen):
+def test_update_before_client_connection(screen: SeleniumScreen):
     @ui.page('/')
     def page():
         label = ui.label('Hello world!')

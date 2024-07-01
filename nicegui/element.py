@@ -85,6 +85,7 @@ class Element(Visibility):
         self._style.update(self._default_style)
         self._props: Dict[str, Any] = {}
         self._props.update(self._default_props)
+        self._markers: List[str] = []
         self._event_listeners: Dict[str, EventListener] = {}
         self._text: Optional[str] = None
         self.slots: Dict[str, Slot] = {}
@@ -388,6 +389,17 @@ class Element(Visibility):
             cls._default_props[key] = value
         return cls
 
+    def mark(self, *keys: str) -> Self:
+        """Replace markers of the element.
+
+        Markers are used to identify elements for querying with :func:`ui.find` which is heavily used in testing
+        but can also be used to reduce number of global variables or passing of dependencies.
+
+        :param markers: markers of the element, can be a list of strings or a single string with whitespace-delimited keys; will replace existing markers
+        """
+        self._markers = [key.strip() for key in ' '.join(keys).split() if key]
+        return self
+
     def tooltip(self, text: str) -> Self:
         """Add a tooltip to the element.
 
@@ -542,3 +554,23 @@ class Element(Visibility):
     def is_deleted(self) -> bool:
         """Whether the element has been deleted."""
         return self._deleted
+
+    def __repr__(self) -> str:
+        return f'<{" ".join(self.representation)}>'
+
+    @property
+    def representation(self) -> List[str]:
+        """Representation of the element."""
+        result = []
+        result.append(self.__class__.__name__ if type(self) != Element else self.tag)
+        if self._classes:
+            result.append(f'classes="{", ".join(self._classes)}"')
+        if hasattr(self, 'text'):
+            result.append(f'text="{self.text}"')
+        return result
+
+    def __str__(self) -> str:
+        result = ', '.join(self._markers) if self._markers else ''
+        for e in self.default_slot.children:
+            result += f' {e}\n'
+        return result

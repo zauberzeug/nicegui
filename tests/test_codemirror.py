@@ -1,17 +1,17 @@
 from typing import List
 
 from nicegui import ui
-from nicegui.testing import Screen
+from nicegui.testing import SeleniumScreen
 
 
-def test_codemirror(screen: Screen):
+def test_codemirror(screen: SeleniumScreen):
     ui.codemirror('Line 1\nLine 2\nLine 3')
 
     screen.open('/')
     screen.should_contain('Line 2')
 
 
-def test_supported_values(screen: Screen):
+def test_supported_values(screen: SeleniumScreen):
     values: dict[str, List[str]] = {}
 
     @ui.page('/')

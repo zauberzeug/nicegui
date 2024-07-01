@@ -7,10 +7,10 @@ from fastapi.responses import PlainTextResponse
 from selenium.webdriver.common.by import By
 
 from nicegui import background_tasks, ui
-from nicegui.testing import Screen
+from nicegui.testing import SeleniumScreen
 
 
-def test_page(screen: Screen):
+def test_page(screen: SeleniumScreen):
     @ui.page('/')
     def page():
         ui.label('Hello, world!')
@@ -20,7 +20,7 @@ def test_page(screen: Screen):
     screen.should_contain('Hello, world!')
 
 
-def test_auto_index_page(screen: Screen):
+def test_auto_index_page(screen: SeleniumScreen):
     ui.label('Hello, world!')
 
     screen.open('/')
@@ -28,7 +28,7 @@ def test_auto_index_page(screen: Screen):
     screen.should_contain('Hello, world!')
 
 
-def test_custom_title(screen: Screen):
+def test_custom_title(screen: SeleniumScreen):
     @ui.page('/', title='My Custom Title')
     def page():
         ui.label('Hello, world!')
@@ -38,7 +38,7 @@ def test_custom_title(screen: Screen):
     screen.should_contain('Hello, world!')
 
 
-def test_route_with_custom_path(screen: Screen):
+def test_route_with_custom_path(screen: SeleniumScreen):
     @ui.page('/test_route')
     def page():
         ui.label('page with custom path')
@@ -47,7 +47,7 @@ def test_route_with_custom_path(screen: Screen):
     screen.should_contain('page with custom path')
 
 
-def test_auto_index_page_with_link_to_subpage(screen: Screen):
+def test_auto_index_page_with_link_to_subpage(screen: SeleniumScreen):
     ui.link('link to subpage', '/subpage')
 
     @ui.page('/subpage')
@@ -59,7 +59,7 @@ def test_auto_index_page_with_link_to_subpage(screen: Screen):
     screen.should_contain('the subpage')
 
 
-def test_link_to_page_by_passing_function(screen: Screen):
+def test_link_to_page_by_passing_function(screen: SeleniumScreen):
     @ui.page('/subpage')
     def page():
         ui.label('the subpage')
@@ -71,7 +71,7 @@ def test_link_to_page_by_passing_function(screen: Screen):
     screen.should_contain('the subpage')
 
 
-def test_creating_new_page_after_startup(screen: Screen):
+def test_creating_new_page_after_startup(screen: SeleniumScreen):
     screen.start_server()
 
     @ui.page('/late_page')
@@ -82,7 +82,7 @@ def test_creating_new_page_after_startup(screen: Screen):
     screen.should_contain('page created after startup')
 
 
-def test_shared_and_private_pages(screen: Screen):
+def test_shared_and_private_pages(screen: SeleniumScreen):
     @ui.page('/private_page')
     def private_page():
         ui.label(f'private page with uuid {uuid4()}')
@@ -102,7 +102,7 @@ def test_shared_and_private_pages(screen: Screen):
     assert uuid1 == uuid2
 
 
-def test_wait_for_connected(screen: Screen):
+def test_wait_for_connected(screen: SeleniumScreen):
     label: Optional[ui.label] = None
 
     async def load() -> None:
@@ -127,7 +127,7 @@ def test_wait_for_connected(screen: Screen):
     screen.should_contain('delayed data has been loaded')
 
 
-def test_wait_for_disconnect(screen: Screen):
+def test_wait_for_disconnect(screen: SeleniumScreen):
     events = []
 
     @ui.page('/', reconnect_timeout=0)
@@ -144,7 +144,7 @@ def test_wait_for_disconnect(screen: Screen):
     assert events == ['connected', 'disconnected', 'connected']
 
 
-def test_wait_for_disconnect_without_awaiting_connected(screen: Screen):
+def test_wait_for_disconnect_without_awaiting_connected(screen: SeleniumScreen):
     events = []
 
     @ui.page('/', reconnect_timeout=0)
@@ -159,7 +159,7 @@ def test_wait_for_disconnect_without_awaiting_connected(screen: Screen):
     assert events == ['disconnected']
 
 
-def test_adding_elements_after_connected(screen: Screen):
+def test_adding_elements_after_connected(screen: SeleniumScreen):
     @ui.page('/')
     async def page():
         ui.label('before')
@@ -171,7 +171,7 @@ def test_adding_elements_after_connected(screen: Screen):
     screen.should_contain('after')
 
 
-def test_exception(screen: Screen):
+def test_exception(screen: SeleniumScreen):
     @ui.page('/')
     def page():
         raise RuntimeError('some exception')
@@ -182,7 +182,7 @@ def test_exception(screen: Screen):
     screen.assert_py_logger('ERROR', 'some exception')
 
 
-def test_exception_after_connected(screen: Screen):
+def test_exception_after_connected(screen: SeleniumScreen):
     @ui.page('/')
     async def page():
         await ui.context.client.connected()
@@ -194,7 +194,7 @@ def test_exception_after_connected(screen: Screen):
     screen.assert_py_logger('ERROR', 'some exception')
 
 
-def test_page_with_args(screen: Screen):
+def test_page_with_args(screen: SeleniumScreen):
     @ui.page('/page/{id_}')
     def page(id_: int):
         ui.label(f'Page {id_}')
@@ -203,7 +203,7 @@ def test_page_with_args(screen: Screen):
     screen.should_contain('Page 42')
 
 
-def test_adding_elements_during_onconnect(screen: Screen):
+def test_adding_elements_during_onconnect(screen: SeleniumScreen):
     @ui.page('/')
     def page():
         ui.label('Label 1')
@@ -213,7 +213,7 @@ def test_adding_elements_during_onconnect(screen: Screen):
     screen.should_contain('Label 2')
 
 
-def test_async_connect_handler(screen: Screen):
+def test_async_connect_handler(screen: SeleniumScreen):
     @ui.page('/')
     def page():
         async def run_js():
@@ -225,7 +225,7 @@ def test_async_connect_handler(screen: Screen):
     screen.should_contain('42')
 
 
-def test_dark_mode(screen: Screen):
+def test_dark_mode(screen: SeleniumScreen):
     @ui.page('/auto', dark=None)
     def page():
         ui.label('A').classes('text-blue-400 dark:text-red-400')
@@ -256,7 +256,7 @@ def test_dark_mode(screen: Screen):
     assert screen.find_by_tag('body').value_of_css_property('background-color') == black
 
 
-def test_returning_custom_response(screen: Screen):
+def test_returning_custom_response(screen: SeleniumScreen):
     @ui.page('/')
     def page(plain: bool = False):
         if plain:
@@ -272,7 +272,7 @@ def test_returning_custom_response(screen: Screen):
     screen.should_not_contain('normal NiceGUI page')
 
 
-def test_returning_custom_response_async(screen: Screen):
+def test_returning_custom_response_async(screen: SeleniumScreen):
     @ui.page('/')
     async def page(plain: bool = False):
         await asyncio.sleep(0.01)  # simulates a db request or similar
@@ -289,7 +289,7 @@ def test_returning_custom_response_async(screen: Screen):
     screen.should_not_contain('normal NiceGUI page')
 
 
-def test_warning_about_to_late_responses(screen: Screen):
+def test_warning_about_to_late_responses(screen: SeleniumScreen):
     @ui.page('/')
     async def page():
         await ui.context.client.connected()
@@ -301,7 +301,7 @@ def test_warning_about_to_late_responses(screen: Screen):
     screen.assert_py_logger('ERROR', re.compile('it was returned after the HTML had been delivered to the client'))
 
 
-def test_reconnecting_without_page_reload(screen: Screen):
+def test_reconnecting_without_page_reload(screen: SeleniumScreen):
     @ui.page('/', reconnect_timeout=3.0)
     def page():
         ui.input('Input').props('autofocus')

@@ -1,8 +1,8 @@
 from nicegui import ui
-from nicegui.testing import Screen
+from nicegui.testing import SeleniumScreen
 
 
-def test_tree(screen: Screen):
+def test_tree(screen: SeleniumScreen):
     ui.tree([
         {'id': 'numbers', 'children': [{'id': '1'}, {'id': '2'}]},
         {'id': 'letters', 'children': [{'id': 'A'}, {'id': 'B'}]},
@@ -22,7 +22,7 @@ def test_tree(screen: Screen):
     screen.should_contain('2')
 
 
-def test_expand_and_collapse_nodes(screen: Screen):
+def test_expand_and_collapse_nodes(screen: SeleniumScreen):
     tree = ui.tree([
         {'id': 'numbers', 'children': [{'id': '1'}, {'id': '2'}]},
         {'id': 'letters', 'children': [{'id': 'A'}, {'id': 'B'}]},

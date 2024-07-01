@@ -1,8 +1,8 @@
 from nicegui import ui
-from nicegui.testing import Screen
+from nicegui.testing import SeleniumScreen
 
 
-def test_log(screen: Screen):
+def test_log(screen: SeleniumScreen):
     log = ui.log(max_lines=3)
     log.push('A')
     log.push('B')
@@ -17,7 +17,7 @@ def test_log(screen: Screen):
     assert screen.find_element(log).text == ''
 
 
-def test_log_with_newlines(screen: Screen):
+def test_log_with_newlines(screen: SeleniumScreen):
     log = ui.log(max_lines=3)
     log.push('A')
     log.push('B')
@@ -27,7 +27,7 @@ def test_log_with_newlines(screen: Screen):
     assert screen.find_element(log).text == 'B\nC\nD'
 
 
-def test_replace_log(screen: Screen):
+def test_replace_log(screen: SeleniumScreen):
     with ui.row() as container:
         ui.log().push('A')
 
@@ -44,7 +44,7 @@ def test_replace_log(screen: Screen):
     screen.should_not_contain('A')
 
 
-def test_special_characters(screen: Screen):
+def test_special_characters(screen: SeleniumScreen):
     log = ui.log()
     log.push('50%')
     ui.button('push', on_click=lambda: log.push('100%'))

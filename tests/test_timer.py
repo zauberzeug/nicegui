@@ -3,7 +3,7 @@ import asyncio
 import pytest
 
 from nicegui import ui
-from nicegui.testing import Screen
+from nicegui.testing import SeleniumScreen
 
 
 class Counter:
@@ -13,7 +13,7 @@ class Counter:
         self.value += 1
 
 
-def test_timer(screen: Screen):
+def test_timer(screen: SeleniumScreen):
     counter = Counter()
     t = ui.timer(0.1, counter.increment)
 
@@ -42,7 +42,7 @@ def test_timer(screen: Screen):
     assert counter.value == c, 'timer is not running anymore after canceling it'
 
 
-def test_timer_on_private_page(screen: Screen):
+def test_timer_on_private_page(screen: SeleniumScreen):
     counter = Counter()
 
     @ui.page('/', reconnect_timeout=0)
@@ -65,7 +65,7 @@ def test_timer_on_private_page(screen: Screen):
 
 
 @pytest.mark.parametrize('once', [True, False])
-def test_setting_visibility(screen: Screen, once: bool):
+def test_setting_visibility(screen: SeleniumScreen, once: bool):
     """reproduction of https://github.com/zauberzeug/nicegui/issues/206"""
     @ui.page('/')
     def page():
@@ -77,7 +77,21 @@ def test_setting_visibility(screen: Screen, once: bool):
     screen.should_not_contain('Some Label')
 
 
-def test_timer_on_deleted_container(screen: Screen):
+def test_awaiting_coroutine(screen: SeleniumScreen):
+    user = {'name': 'John Doe'}
+
+    async def update_user():
+        await asyncio.sleep(0.1)
+        user['name'] = 'Jane Doe'
+
+    ui.timer(1, update_user)
+
+    screen.open('/')
+    screen.wait(1)
+    assert user['name'] == 'Jane Doe'
+
+
+def test_timer_on_deleted_container(screen: SeleniumScreen):
     state = {'count': 0}
     with ui.row() as outer_container:
         with ui.row():
@@ -93,7 +107,7 @@ def test_timer_on_deleted_container(screen: Screen):
     assert state['count'] == count, 'timer is not running anymore after deleting the container'
 
 
-def test_different_callbacks(screen: Screen):
+def test_different_callbacks(screen: SeleniumScreen):
     def sync_function():
         ui.label('a synchronous function')
 

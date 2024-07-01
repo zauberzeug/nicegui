@@ -1,10 +1,10 @@
 from selenium.webdriver.common.action_chains import ActionChains
 
 from nicegui import ui
-from nicegui.testing import Screen
+from nicegui.testing import SeleniumScreen
 
 
-def test_joystick(screen: Screen):
+def test_joystick(screen: SeleniumScreen):
     j = ui.joystick(on_move=lambda e: coordinates.set_text(f'move {e.x:.3f}, {e.y:.3f}'),
                     on_end=lambda _: coordinates.set_text('end 0, 0'))
     coordinates = ui.label('start 0, 0')
@@ -30,7 +30,7 @@ def test_joystick(screen: Screen):
     screen.should_contain('end 0, 0')
 
 
-def test_styling_joystick(screen: Screen):
+def test_styling_joystick(screen: SeleniumScreen):
     j = ui.joystick().style('background-color: gray;').classes('shadow-lg')
 
     screen.open('/')

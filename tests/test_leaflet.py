@@ -1,10 +1,10 @@
 import time
 
 from nicegui import ui
-from nicegui.testing import Screen
+from nicegui.testing import SeleniumScreen
 
 
-def test_leaflet(screen: Screen):
+def test_leaflet(screen: SeleniumScreen):
     m = ui.leaflet(center=(51.505, -0.09), zoom=13)
     ui.label().bind_text_from(m, 'center', lambda center: f'Center: {center[0]:.3f}, {center[1]:.3f}')
     ui.label().bind_text_from(m, 'zoom', lambda zoom: f'Zoom: {zoom}')

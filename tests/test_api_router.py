@@ -1,9 +1,9 @@
 
 from nicegui import APIRouter, app, ui
-from nicegui.testing import Screen
+from nicegui.testing import SeleniumScreen
 
 
-def test_prefix(screen: Screen):
+def test_prefix(screen: SeleniumScreen):
     router = APIRouter(prefix='/some-prefix')
 
     @router.page('/')
@@ -17,7 +17,7 @@ def test_prefix(screen: Screen):
     screen.should_contain('Hello, world!')
 
 
-def test_passing_page_parameters(screen: Screen):
+def test_passing_page_parameters(screen: SeleniumScreen):
     router = APIRouter()
 
     @router.page('/', title='My Custom Title')

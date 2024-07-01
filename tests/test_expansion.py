@@ -1,8 +1,8 @@
 from nicegui import ui
-from nicegui.testing import Screen
+from nicegui.testing import SeleniumScreen
 
 
-def test_open_close_expansion(screen: Screen):
+def test_open_close_expansion(screen: SeleniumScreen):
     with ui.expansion('Expansion') as e:
         ui.label('Content')
     ui.button('Open', on_click=e.open)
@@ -19,7 +19,7 @@ def test_open_close_expansion(screen: Screen):
     screen.should_not_contain('Content')
 
 
-def test_caption(screen: Screen):
+def test_caption(screen: SeleniumScreen):
     with ui.expansion('Expansion', caption='Caption'):
         ui.label('Content')
 
@@ -35,7 +35,7 @@ def test_caption(screen: Screen):
     screen.should_contain('Content')
 
 
-def test_group(screen: Screen):
+def test_group(screen: SeleniumScreen):
     with ui.expansion('Expansion A', group='group'):
         ui.label('Content A')
     with ui.expansion('Expansion B', group='group'):
