@@ -128,7 +128,7 @@ def test_changing_limits(screen: SeleniumScreen):
     screen.should_contain_input('1')
 
 
-def test_none_values(screen: Screen):
+def test_none_values(screen: SeleniumScreen):
     n = ui.number('Number', on_change=lambda e: ui.label(f'event: {e.value}'))
     ui.label().bind_text_from(n, 'value', lambda value: f'model: {value}')
 

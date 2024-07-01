@@ -241,9 +241,9 @@ def test_run_method_with_function(screen: SeleniumScreen):
         grid = ui.aggrid({'columnDefs': [{'field': 'name'}], 'rowData': [{'name': 'Alice'}, {'name': 'Bob'}]})
 
         async def print_row(index: int) -> None:
-                ui.label(f'Row {index}: {await grid.run_grid_method(f"(g) => g.getDisplayedRowAtIndex({index}).data")}')
+            ui.label(f'Row {index}: {await grid.run_grid_method(f"(g) => g.getDisplayedRowAtIndex({index}).data")}')
 
-            ui.button('Print Row 0', on_click=lambda: print_row(0))
+        ui.button('Print Row 0', on_click=lambda: print_row(0))
 
     screen.open('/')
     screen.click('Print Row 0')

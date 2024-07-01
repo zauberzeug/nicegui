@@ -80,7 +80,7 @@ def test_error(screen: SeleniumScreen):
 
 
 @pytest.mark.parametrize('security_level', ['loose', 'strict'])
-def test_click_mermaid_node(security_level: str, screen: Screen):
+def test_click_mermaid_node(security_level: str, screen: SeleniumScreen):
     ui.mermaid('''
         flowchart TD;
             A;

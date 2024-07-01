@@ -93,7 +93,7 @@ def test_simultaneous_async_javascript(screen: SeleniumScreen):
     screen.should_contain('B: 2')
 
 
-def test_raise_on_auto_index_page(screen: Screen):
+def test_raise_on_auto_index_page(screen: SeleniumScreen):
     async def await_answer():
         await ui.run_javascript('return 42')
     ui.button('Ask', on_click=await_answer)

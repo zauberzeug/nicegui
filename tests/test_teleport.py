@@ -1,10 +1,10 @@
 from typing import Optional
 
 from nicegui import ui
-from nicegui.testing import Screen
+from nicegui.testing import SeleniumScreen
 
 
-def test_teleport(screen: Screen):
+def test_teleport(screen: SeleniumScreen):
     ui.card().classes('card')
 
     def create_teleport():
@@ -18,7 +18,7 @@ def test_teleport(screen: Screen):
     assert screen.find_by_css('.card > div').text == 'Hello'
 
 
-def test_teleport_with_element(screen: Screen):
+def test_teleport_with_element(screen: SeleniumScreen):
     card = ui.card().classes('card')
 
     def create_teleport():
@@ -32,7 +32,7 @@ def test_teleport_with_element(screen: Screen):
     assert screen.find_by_css('.card > div').text == 'Hello'
 
 
-def test_update(screen: Screen):
+def test_update(screen: SeleniumScreen):
     teleport: Optional[ui.teleport] = None
 
     card = ui.card().classes('card')

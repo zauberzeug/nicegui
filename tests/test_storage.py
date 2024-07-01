@@ -266,7 +266,7 @@ def test_clear_client_storage(screen: SeleniumScreen):
     screen.open('/')
 
 
-def test_deepcopy(screen: Screen):
+def test_deepcopy(screen: SeleniumScreen):
     # https://github.com/zauberzeug/nicegui/issues/3023
     @ui.page('/')
     def page():
