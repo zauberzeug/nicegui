@@ -80,7 +80,7 @@ def test_get_from_static_files_dir(url_path: str, screen: SeleniumScreen):
 
     screen.open('/')
     with httpx.Client() as http_client:
-        r = http_client.get(f'http://localhost:{Screen.PORT}/static/examples/slideshow/slides/slide1.jpg')
+        r = http_client.get(f'http://localhost:{SeleniumScreen.PORT}/static/examples/slideshow/slides/slide1.jpg')
         assert r.status_code == 200
 
 
