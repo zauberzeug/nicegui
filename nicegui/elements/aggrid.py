@@ -13,7 +13,7 @@ except ImportError:
     pass
 
 
-class AgGrid(Element, component='aggrid.js', libraries=['lib/aggrid/ag-grid-community.min.js']):
+class AgGrid(Element, component='aggrid.js', exposed_libraries=['lib/aggrid/ag-grid-community.min.js']):
 
     def __init__(self,
                  options: Dict, *,

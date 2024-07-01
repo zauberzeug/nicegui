@@ -4,7 +4,8 @@
 
 <script>
 export default {
-  mounted() {
+  async mounted() {
+    await import("nipplejs");
     const joystick = nipplejs.create({
       zone: this.$el.children[0],
       position: { left: "50%", top: "50%" },

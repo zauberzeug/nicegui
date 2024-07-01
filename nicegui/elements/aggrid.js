@@ -1,3 +1,4 @@
+import "ag-grid-community";
 import { convertDynamicProperties } from "../../static/utils/dynamic_properties.js";
 
 export default {
