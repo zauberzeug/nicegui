@@ -137,6 +137,12 @@ def table_from_pandas_demo():
     ui.table.from_pandas(df).classes('max-h-40')
 
 
+doc.text('', '''
+    Note:
+    The table will not update automatically as the input DataFrame changes. You need to call the `update_from_pandas(df)` method
+''')
+
+
 @doc.demo('Adding rows', '''
     It's simple to add new rows with the `add_rows(dict)` method.
     With the "virtual-scroll" prop set, the table can be programmatically scrolled with the `scrollTo` JavaScript function.
