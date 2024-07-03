@@ -13,7 +13,7 @@ from selenium.webdriver.chrome.service import Service
 from starlette.routing import Route
 
 import nicegui.storage
-from nicegui import Client, app, binding, core
+from nicegui import Client, app, binding, core, ui
 from nicegui.page import page
 
 from .selenium_screen import SeleniumScreen
@@ -132,9 +132,11 @@ def screen(nicegui_reset_globals,
 async def user(nicegui_reset_globals, request: pytest.FixtureRequest) -> Generator[User, None, None]:
     """Create a new user fixture."""
     prepare_simulation(request)
+    original_navigate_to = ui.navigate.to
     async with core.app.router.lifespan_context(core.app):
         async with httpx.AsyncClient(app=core.app, base_url='http://test') as client:
             yield User(client)
+    ui.navigate.to = original_navigate_to
 
 
 @pytest.fixture
