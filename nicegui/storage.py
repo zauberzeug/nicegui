@@ -95,9 +95,11 @@ def set_storage_secret(storage_secret: Optional[str] = None) -> None:
     elif storage_secret is not None:
         core.app.add_middleware(RequestTrackingMiddleware)
         core.app.add_middleware(SessionMiddleware, secret_key=storage_secret)
+    Storage.secret = storage_secret
 
 
 class Storage:
+    secret: Optional[str] = None
 
     def __init__(self) -> None:
         self.path = Path(os.environ.get('NICEGUI_STORAGE_PATH', '.nicegui')).resolve()
@@ -120,7 +122,9 @@ class Storage:
             if self._is_in_auto_index_context():
                 raise RuntimeError('app.storage.browser can only be used with page builder functions '
                                    '(https://nicegui.io/documentation/page)')
-            raise RuntimeError('app.storage.browser needs a storage_secret passed in ui.run()')
+            if Storage.secret is None:
+                raise RuntimeError('app.storage.browser needs a storage_secret passed in ui.run()')
+            raise RuntimeError('app.storage.browser can only be used within a UI context')
         if request.state.responded:
             return ReadOnlyDict(
                 request.session,
@@ -140,7 +144,9 @@ class Storage:
             if self._is_in_auto_index_context():
                 raise RuntimeError('app.storage.user can only be used with page builder functions '
                                    '(https://nicegui.io/documentation/page)')
-            raise RuntimeError('app.storage.user needs a storage_secret passed in ui.run()')
+            if Storage.secret is None:
+                raise RuntimeError('app.storage.user needs a storage_secret passed in ui.run()')
+            raise RuntimeError('app.storage.user can only be used within a UI context')
         session_id = request.session['id']
         if session_id not in self._users:
             self._users[session_id] = PersistentDict(self.path / f'storage-user-{session_id}.json', encoding='utf-8')
