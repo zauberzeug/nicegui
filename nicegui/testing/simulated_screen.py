@@ -3,7 +3,6 @@ from __future__ import annotations
 
 import asyncio
 import re
-from logging import log
 from typing import List, Optional, Type, TypeVar, Union
 from uuid import uuid4
 
@@ -15,6 +14,7 @@ import nicegui.nicegui as ng
 from nicegui import Client, ElementFilter, background_tasks, context, events, ui
 from nicegui.element import Element
 from nicegui.elements.mixins.value_element import ValueElement
+from nicegui.logging import log
 
 # pylint: disable=protected-access
 
@@ -51,8 +51,7 @@ class User:
             self.current_user.deactivate()
         self.current_user = self
         assert self.client
-        ui.navigate.to = lambda path, target=None: background_tasks.create(
-            self.open(path))
+        ui.navigate.to = lambda target, new_tab=False: background_tasks.create(self.open(target))
         self.client.__enter__()
         return self
 
@@ -60,7 +59,7 @@ class User:
         assert self.client
         self.client.__exit__()
         msg = 'navigate.to unavailable in pytest simulation outside of an active client'
-        ui.navigate.to = lambda path, target=None: log.warning(msg)
+        ui.navigate.to = lambda target, new_tab=False: log.warning(msg)
         self.current_user = None
 
     async def should_see(self, *,
