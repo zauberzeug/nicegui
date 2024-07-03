@@ -140,7 +140,7 @@ async def user(nicegui_reset_globals, request: pytest.FixtureRequest) -> Generat
 
 
 @pytest.fixture
-async def create_user(nicegui_reset_globals, request: pytest.FixtureRequest) -> Generator[Callable[None, User], None, None]:
+async def create_user(nicegui_reset_globals, request: pytest.FixtureRequest) -> Generator[Callable[[], User], None, None]:
     """Create a fixture for building new users."""
     prepare_simulation(request)
     async with core.app.router.lifespan_context(core.app):
