@@ -126,3 +126,25 @@ def test_changing_limits(screen: Screen):
 
     screen.click('Step up')
     screen.should_contain_input('1')
+
+
+def test_none_values(screen: Screen):
+    n = ui.number('Number', on_change=lambda e: ui.label(f'event: {e.value}'))
+    ui.label().bind_text_from(n, 'value', lambda value: f'model: {value}')
+
+    screen.open('/')
+    element = screen.selenium.find_element(By.XPATH, '//*[@aria-label="Number"]')
+    element.send_keys('0')
+    screen.should_contain_input('0')
+    screen.should_contain('model: 0')
+    screen.should_contain('event: 0')
+
+    element.send_keys(Keys.BACKSPACE)
+    screen.should_contain_input('')
+    screen.should_contain('model: None')
+    screen.should_contain('event: None')
+
+    element.send_keys('1')
+    screen.should_contain_input('1')
+    screen.should_contain('model: 1')
+    screen.should_contain('event: 1')

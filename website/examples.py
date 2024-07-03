@@ -66,4 +66,5 @@ examples: List[Example] = [
     Example('Websockets', 'use [websockets library](https://websockets.readthedocs.io/) to start a websocket server'),
     Example('Audio Recorder', 'Record audio, play it back or download it'),
     Example('ZeroMQ', 'Simple ZeroMQ PUSH/PULL server and client'),
+    Example('NGINX HTTPS', 'Use NGINX to serve a NiceGUI app with HTTPS'),
 ]

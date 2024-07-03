@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "nicegui"
-version = "1.4.26-dev"
+version = "1.4.28-dev"
 description = "Create web-based user interfaces with Python. The nice way."
 authors = ["Zauberzeug GmbH <info@zauberzeug.com>"]
 license = "MIT"
@@ -58,7 +58,7 @@ numpy = [
 ]
 selenium = "^4.11.2"
 beautifulsoup4 = "^4.12.2"
-urllib3 = ">=1.26.18,^1.26 || >=2.0.7" # https://github.com/zauberzeug/nicegui/security/dependabot/23
+urllib3 = ">=1.26.18,^1.26 || >=2.2.2" # https://github.com/zauberzeug/nicegui/security/dependabot/34
 pyecharts = "^2.0.4"
 ruff = ">=0.3.5"
 pre-commit = ">=3.5.0"

@@ -75,6 +75,7 @@ __all__ = [
     'scroll_area',
     'select',
     'separator',
+    'skeleton',
     'slider',
     'space',
     'spinner',
@@ -200,6 +201,7 @@ from .elements.scene_view import SceneView as scene_view
 from .elements.scroll_area import ScrollArea as scroll_area
 from .elements.select import Select as select
 from .elements.separator import Separator as separator
+from .elements.skeleton import Skeleton as skeleton
 from .elements.slider import Slider as slider
 from .elements.space import Space as space
 from .elements.spinner import Spinner as spinner
