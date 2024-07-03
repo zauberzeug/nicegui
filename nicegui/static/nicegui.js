@@ -289,7 +289,8 @@ function createApp(elements, options) {
       window.clientId = options.query.client_id;
       const url = window.location.protocol === "https:" ? "wss://" : "ws://" + window.location.host;
       window.path_prefix = options.prefix;
-      window.last_message_id = options.query.starting_message_id;
+      window.lastMessageId = options.query.starting_message_id;
+      window.syncing = true;
       window.socket = io(url, {
         path: `${options.prefix}/_nicegui_ws/socket.io`,
         query: options.query,
@@ -303,16 +304,18 @@ function createApp(elements, options) {
             tabId = createRandomUUID();
             sessionStorage.setItem("__nicegui_tab_id", tabId);
           }
-          window.retransmitId = createRandomUUID();
           const args = {
             client_id: window.clientId,
             tab_id: tabId,
-            last_message_id: window.last_message_id,
-            retransmit_id: window.retransmitId,
+            last_message_id: window.lastMessageId,
+            sync_id: window.socket.id,
           };
-          window.socket.emit("handshake", args, (ok) => {
-            if (!ok) {
+          window.socket.emit("handshake", args, (res) => {
+            if (!res.success && res.reason === "no_client_id") {
               console.log("reloading because handshake failed for clientId " + window.clientId);
+              window.location.reload();
+            } else if (!res.success && res.reason === "sync_failure") {
+              console.log("reloading because client could not be synchronized with the server");
               window.location.reload();
             }
             document.getElementById("popup").ariaHidden = true;
@@ -332,6 +335,7 @@ function createApp(elements, options) {
         },
         disconnect: () => {
           document.getElementById("popup").ariaHidden = false;
+          window.syncing = true;
         },
         update: async (msg) => {
           for (const [id, element] of Object.entries(msg)) {
@@ -354,24 +358,32 @@ function createApp(elements, options) {
         },
         download: (msg) => download(msg.src, msg.filename, msg.media_type, options.prefix),
         notify: (msg) => Quasar.Notify.create(msg),
+        sync: (msg) => {
+          if (msg.sync_id === window.socket.id) {
+            window.syncing = false;
+            for (let i = 0; i < msg.history.length; i++) {
+              let message = msg.history[i][1];
+              if (message.message_id > window.lastMessageId) {
+                window.lastMessageId = message.message_id;
+                delete message.message_id;
+                messageHandlers[msg.history[i][0]](message);
+              }
+            }
+          }
+        },
       };
       const socketMessageQueue = [];
       let isProcessingSocketMessage = false;
       for (const [event, handler] of Object.entries(messageHandlers)) {
         window.socket.on(event, async (...args) => {
-          if (args.length > 0 && args[0].hasOwnProperty("message_id")) {
-            const data = args[0];
-            if (
-              data.message_id <= window.last_message_id ||
-              ("retransmit_id" in data && data.retransmit_id != window.retransmitId)
-            ) {
+          const data = args[0];
+          if (data && data.hasOwnProperty("message_id")) {
+            if (window.syncing || data.message_id <= window.lastMessageId) {
               return;
             }
-            window.last_message_id = data.message_id;
+            window.lastMessageId = data.message_id;
             delete data.message_id;
-            delete data.retransmit_id;
           }
-
           socketMessageQueue.push(() => handler(...args));
           if (!isProcessingSocketMessage) {
             while (socketMessageQueue.length > 0) {
