@@ -30,26 +30,26 @@ def arbitrary_content():
 
 
 @doc.demo('Injecting a graph into a table cell', '''
-          You can inject a graph into a table cell by using the right CSS selector.
+    This demo shows how to inject ECharts graphs into table cells.
 ''')
 def graph_in_table():
     columns = [
-        {'name': 'name', 'label': 'Name', 'field': 'name', 'required': True, 'align': 'left'},
-        {'name': 'age', 'label': 'Age', 'field': 'age', 'sortable': True},
+        {'name': 'name', 'label': 'Product', 'field': 'name', 'align': 'center'},
+        {'name': 'sales', 'label': 'Sales', 'field': 'sales', 'align': 'center'},
     ]
     rows = [
-        {'name': 'Alice', 'age': 18},
-        {'name': 'Bob', 'age': 21},
-        {'name': 'Carol'},
+        {'name': 'A', 'data': [10, 8, 2, 4]},
+        {'name': 'B', 'data': [3, 5, 7, 8]},
+        {'name': 'C', 'data': [2, 1, 3, 7]},
     ]
-    table = ui.table(columns=columns, rows=rows, row_key='name')
-    with ui.teleport(f'#c{table.id} > .q-table__middle > .q-table > tbody > tr:nth-child(3) > td:nth-child(2)'):
-        ui.echart({
-            'xAxis': {'type': 'category'},
-            'yAxis': {'type': 'value'},
-            'series': [{'type': 'line', 'data': [20, 10, 30, 50, 40, 30]}],
-        }, on_point_click=ui.notify)
+    table = ui.table(columns=columns, rows=rows, row_key='name').classes('w-72')
+    for r, row in enumerate(rows):
+        with ui.teleport(f'#c{table.id} tr:nth-child({r+1}) td:nth-child(2)'):
+            ui.echart({
+                'xAxis': {'type': 'category', 'show': False},
+                'yAxis': {'type': 'value', 'show': False},
+                'series': [{'type': 'line', 'data': row['data']}],
+            }).classes('w-44 h-20')
 
-ui.run()
 
 doc.reference(ui.teleport)
