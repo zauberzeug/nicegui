@@ -291,6 +291,7 @@ function createApp(elements, options) {
       window.path_prefix = options.prefix;
       window.lastMessageId = options.query.starting_message_id;
       window.syncing = true;
+      window.socketIds = [];
       window.socket = io(url, {
         path: `${options.prefix}/_nicegui_ws/socket.io`,
         query: options.query,
@@ -304,11 +305,12 @@ function createApp(elements, options) {
             tabId = createRandomUUID();
             sessionStorage.setItem("__nicegui_tab_id", tabId);
           }
+          window.socketIds.push(window.socket.id);
           const args = {
             client_id: window.clientId,
             tab_id: tabId,
             last_message_id: window.lastMessageId,
-            sync_id: window.socket.id,
+            socket_ids: window.socketIds,
           };
           window.socket.emit("handshake", args, (res) => {
             if (!res.success && res.reason === "no_client_id") {
@@ -359,7 +361,7 @@ function createApp(elements, options) {
         download: (msg) => download(msg.src, msg.filename, msg.media_type, options.prefix),
         notify: (msg) => Quasar.Notify.create(msg),
         sync: (msg) => {
-          if (msg.sync_id === window.socket.id) {
+          if (msg.target === window.socket.id) {
             window.syncing = false;
             for (let i = 0; i < msg.history.length; i++) {
               let message = msg.history[i][1];

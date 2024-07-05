@@ -3,7 +3,7 @@ from __future__ import annotations
 import asyncio
 import time
 from collections import deque
-from typing import TYPE_CHECKING, Any, Deque, Dict, Optional, Tuple
+from typing import TYPE_CHECKING, Any, Deque, Dict, List, Optional, Tuple
 
 from . import background_tasks, core
 
@@ -74,7 +74,7 @@ class Outbox:
         while self._history and self._history[0][1] < timestamp - self._history_duration:
             self._history.popleft()
 
-    async def synchronize(self, last_message_id: int, sync_id: str) -> bool:
+    async def synchronize(self, last_message_id: int, socket_ids: List[str]) -> bool:
         """Synchronize the state of a connecting client by resending missed messages, if possible."""
         messages = []
         if self._history is not None:
@@ -86,12 +86,14 @@ class Outbox:
 
                 start = next_id - oldest_id
                 for i in range(start, len(self._history)):
-                    messages.append(self._history[i][2])
+                    msg = self._history[i][2]
+                    if msg[2] == self.client.id or msg[2] in socket_ids:
+                        messages.append(msg)
 
             elif last_message_id != self._message_count:
                 return False
 
-        await self._emit('sync', {'sync_id': sync_id, 'history': messages}, self.client.id)
+        await self._emit('sync', {'target': socket_ids[-1], 'history': messages}, self.client.id)
         return True
 
     async def loop(self) -> None:
