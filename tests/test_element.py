@@ -145,6 +145,44 @@ def test_move(screen: Screen):
     assert screen.find('X').location['y'] < screen.find('A').location['y'] < screen.find('B').location['y']
 
 
+def test_move_slots(screen: Screen):
+    a = ui.expansion(value=True)
+    with a.add_slot('header'):
+        ui.label('A')
+    with a:
+        x = ui.label('X')
+
+    b = ui.expansion(value=True)
+    with b.add_slot('header'):
+        ui.label('B')
+
+    ui.button('Move X to header', on_click=lambda: x.move(target_slot='header'))
+
+    ui.button('Move X to B', on_click=lambda: x.move(b))
+    ui.button('Move X to top', on_click=lambda: x.move(target_index=0))
+
+    screen.open('/')
+
+    def x_is_in_header_of(container: str) -> bool:
+        return screen.find(container).location['y'] == screen.find('X').location['y']
+
+    def x_is_in_default_of(container: str) -> bool:
+        return screen.find(container).location['y'] < screen.find('X').location['y']
+
+    assert x_is_in_default_of('A')
+    screen.click('Move X to header')
+    screen.wait(0.5)
+    assert x_is_in_header_of('A')
+    assert screen.find('A').location['x'] < screen.find('X').location['x']
+    screen.click('Move X to top')
+    screen.wait(0.5)
+    assert x_is_in_header_of('A')
+    assert screen.find('X').location['x'] < screen.find('A').location['x']
+    screen.click('Move X to B')
+    screen.wait(0.5)
+    assert x_is_in_default_of('B')
+
+
 def test_xss(screen: Screen):
     ui.label('</script><script>alert(1)</script>')
     ui.label('<b>Bold 1</b>, `code`, copy&paste, multi\nline')
