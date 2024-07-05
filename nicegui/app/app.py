@@ -1,4 +1,7 @@
 import inspect
+import os
+import platform
+import signal
 import urllib
 from enum import Enum
 from pathlib import Path
@@ -124,12 +127,17 @@ class App(FastAPI):
         """Shut down NiceGUI.
 
         This will programmatically stop the server.
-        Only possible when auto-reload is disabled.
+        When auto-reload is enabled, this will only work on Linux and MacOS.
         """
-        if self.config.reload:
-            raise RuntimeError('calling shutdown() is not supported when auto-reload is enabled')
         if self.native.main_window:
             self.native.main_window.destroy()
+        if self.config.reload:
+            parent_pid = os.getppid()
+            if platform.system() == 'Darwin' or platform.system() == 'Linux':
+                os.kill(parent_pid, signal.SIGINT)
+            else:
+                raise NotImplementedError(
+                    'Shutting down the server with auto-reload enabled is only supported on Linux and MacOS.')
         else:
             Server.instance.should_exit = True
 
