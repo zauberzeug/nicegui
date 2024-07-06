@@ -1,10 +1,10 @@
 import asyncio
 
 from nicegui import ui
-from nicegui.testing import SeleniumScreen
+from nicegui.testing import Screen
 
 
-def test_refreshable(screen: SeleniumScreen) -> None:
+def test_refreshable(screen: Screen) -> None:
     numbers = []
 
     @ui.refreshable
@@ -30,7 +30,7 @@ def test_refreshable(screen: SeleniumScreen) -> None:
     screen.should_contain('[]')
 
 
-def test_async_refreshable(screen: SeleniumScreen) -> None:
+def test_async_refreshable(screen: Screen) -> None:
     numbers = []
 
     @ui.refreshable
@@ -62,7 +62,7 @@ def test_async_refreshable(screen: SeleniumScreen) -> None:
     screen.should_contain('[]')
 
 
-def test_multiple_targets(screen: SeleniumScreen) -> None:
+def test_multiple_targets(screen: Screen) -> None:
     count = 0
 
     class MyClass:
@@ -99,7 +99,7 @@ def test_multiple_targets(screen: SeleniumScreen) -> None:
     screen.should_contain('B = 2 (4)')
 
 
-def test_refresh_with_arguments(screen: SeleniumScreen):
+def test_refresh_with_arguments(screen: Screen):
     count = 0
 
     @ui.refreshable
@@ -136,7 +136,7 @@ def test_refresh_with_arguments(screen: SeleniumScreen):
         'ERROR', "'value' needs to be consistently passed to some_ui() either as positional or as keyword argument")
 
 
-def test_refresh_deleted_element(screen: SeleniumScreen):
+def test_refresh_deleted_element(screen: Screen):
     @ui.refreshable
     def some_ui():
         ui.label('some text')
@@ -156,7 +156,7 @@ def test_refresh_deleted_element(screen: SeleniumScreen):
     screen.click('Refresh')
 
 
-def test_refresh_with_function_reference(screen: SeleniumScreen):
+def test_refresh_with_function_reference(screen: Screen):
     # https://github.com/zauberzeug/nicegui/issues/1283
     class Test:
 
@@ -183,7 +183,7 @@ def test_refresh_with_function_reference(screen: SeleniumScreen):
     screen.should_contain('Refreshing B (1)')
 
 
-def test_refreshable_with_state(screen: SeleniumScreen):
+def test_refreshable_with_state(screen: Screen):
     @ui.refreshable
     def counter(title: str):
         count, set_count = ui.state(0)
@@ -208,7 +208,7 @@ def test_refreshable_with_state(screen: SeleniumScreen):
     screen.should_contain('B: 1')
 
 
-def test_refreshable_with_return_value(screen: SeleniumScreen):
+def test_refreshable_with_return_value(screen: Screen):
     @ui.refreshable
     def number_ui() -> int:
         ui.label('42')

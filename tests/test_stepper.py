@@ -1,8 +1,8 @@
 from nicegui import ui
-from nicegui.testing import SeleniumScreen
+from nicegui.testing import Screen
 
 
-def test_stepper(screen: SeleniumScreen):
+def test_stepper(screen: Screen):
     with ui.stepper() as stepper:
         with ui.step('One'):
             ui.label('First step')

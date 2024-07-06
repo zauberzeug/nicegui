@@ -2,10 +2,10 @@ import pytest
 from selenium.webdriver.common.by import By
 
 from nicegui import background_tasks, ui
-from nicegui.testing import SeleniumScreen
+from nicegui.testing import Screen
 
 
-def test_classes(screen: SeleniumScreen):
+def test_classes(screen: Screen):
     label = ui.label('Some label')
 
     def assert_classes(classes: str) -> None:
@@ -67,7 +67,7 @@ def test_props_parsing(nicegui_reset_globals):
     assert ui.element._parse_props('filename=foo=bar.txt') == {'filename': 'foo=bar.txt'}
 
 
-def test_style(screen: SeleniumScreen):
+def test_style(screen: Screen):
     label = ui.label('Some label')
 
     def assert_style(style: str) -> None:
@@ -99,7 +99,7 @@ def test_style(screen: SeleniumScreen):
     assert_style('text-decoration: underline; color: blue;')
 
 
-def test_props(screen: SeleniumScreen):
+def test_props(screen: Screen):
     input_ = ui.input()
 
     def assert_props(*props: str) -> None:
@@ -120,7 +120,7 @@ def test_props(screen: SeleniumScreen):
     assert_props('standard')
 
 
-def test_move(screen: SeleniumScreen):
+def test_move(screen: Screen):
     with ui.card() as a:
         ui.label('A')
         x = ui.label('X')
@@ -145,7 +145,7 @@ def test_move(screen: SeleniumScreen):
     assert screen.find('X').location['y'] < screen.find('A').location['y'] < screen.find('B').location['y']
 
 
-def test_xss(screen: SeleniumScreen):
+def test_xss(screen: Screen):
     ui.label('</script><script>alert(1)</script>')
     ui.label('<b>Bold 1</b>, `code`, copy&paste, multi\nline')
     ui.button('Button', on_click=lambda: (
@@ -266,7 +266,7 @@ def test_default_style(nicegui_reset_globals):
     assert button_f._style.get('padding') == '30px'
 
 
-def test_invalid_tags(screen: SeleniumScreen):
+def test_invalid_tags(screen: Screen):
     good_tags = ['div', 'div-1', 'DIV', 'däv', 'div_x', '🙂']
     bad_tags = ['<div>', 'hi hi', 'hi/ho', 'foo$bar']
     for tag in good_tags:
@@ -278,14 +278,14 @@ def test_invalid_tags(screen: SeleniumScreen):
     screen.open('/')
 
 
-def test_bad_characters(screen: SeleniumScreen):
+def test_bad_characters(screen: Screen):
     ui.label(r'& <test> ` ${foo}')
 
     screen.open('/')
     screen.should_contain(r'& <test> ` ${foo}')
 
 
-def test_update_before_client_connection(screen: SeleniumScreen):
+def test_update_before_client_connection(screen: Screen):
     @ui.page('/')
     def page():
         label = ui.label('Hello world!')

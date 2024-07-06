@@ -4,10 +4,10 @@ import pytest
 from selenium.webdriver import Keys
 
 from nicegui import ui
-from nicegui.testing import SeleniumScreen
+from nicegui.testing import Screen
 
 
-def test_select(screen: SeleniumScreen):
+def test_select(screen: Screen):
     ui.select(['A', 'B', 'C'], value='A')
 
     screen.open('/')
@@ -23,7 +23,7 @@ def test_select(screen: SeleniumScreen):
     screen.should_not_contain('C')
 
 
-def test_select_with_input(screen: SeleniumScreen):
+def test_select_with_input(screen: Screen):
     ui.select(['A', 'AB', 'XYZ'], with_input=True)
 
     screen.open('/')
@@ -41,7 +41,7 @@ def test_select_with_input(screen: SeleniumScreen):
     screen.should_not_contain('ABC')
 
 
-def test_replace_select(screen: SeleniumScreen):
+def test_replace_select(screen: Screen):
     with ui.row() as container:
         ui.select(['A'], value='A')
 
@@ -58,7 +58,7 @@ def test_replace_select(screen: SeleniumScreen):
     screen.should_not_contain('A')
 
 
-def test_multi_select(screen: SeleniumScreen):
+def test_multi_select(screen: Screen):
     s = ui.select(['Alice', 'Bob', 'Carol'], value='Alice', multiple=True).props('use-chips')
     ui.label().bind_text_from(s, 'value', backward=str)
 
@@ -72,7 +72,7 @@ def test_multi_select(screen: SeleniumScreen):
     screen.should_contain("['Bob']")
 
 
-def test_changing_options(screen: SeleniumScreen):
+def test_changing_options(screen: Screen):
     s = ui.select([10, 20, 30], value=10)
     ui.label().bind_text_from(s, 'value', lambda v: f'value = {v}')
     ui.button('reverse', on_click=lambda: (s.options.reverse(), s.update()))
@@ -85,7 +85,7 @@ def test_changing_options(screen: SeleniumScreen):
     screen.should_contain('value = None')
 
 
-def test_set_options(screen:  SeleniumScreen):
+def test_set_options(screen:  Screen):
     s = ui.select([1, 2, 3], value=1)
     ui.button('Set new options', on_click=lambda: s.set_options([4, 5, 6], value=4))
 
@@ -99,7 +99,7 @@ def test_set_options(screen:  SeleniumScreen):
 @pytest.mark.parametrize('option_dict', [False, True])
 @pytest.mark.parametrize('multiple', [False, True])
 @pytest.mark.parametrize('new_value_mode', ['add', 'add-unique', 'toggle', None])
-def test_add_new_values(screen:  SeleniumScreen, option_dict: bool, multiple: bool, new_value_mode: Optional[str]):
+def test_add_new_values(screen:  Screen, option_dict: bool, multiple: bool, new_value_mode: Optional[str]):
     options = {'a': 'A', 'b': 'B', 'c': 'C'} if option_dict else ['a', 'b', 'c']
     if option_dict and new_value_mode == 'add':
         with pytest.raises(ValueError, match='new_value_mode "add" is not supported for dict options'):
@@ -141,7 +141,7 @@ def test_add_new_values(screen:  SeleniumScreen, option_dict: bool, multiple: bo
                                   "options = ['a', 'b', 'c']")
 
 
-def test_id_generator(screen: SeleniumScreen):
+def test_id_generator(screen: Screen):
     options = {'a': 'A', 'b': 'B', 'c': 'C'}
     select = ui.select(options, value='b', new_value_mode='add', key_generator=lambda _: len(options))
     ui.label().bind_text_from(select, 'options', lambda v: f'options = {v}')
@@ -154,7 +154,7 @@ def test_id_generator(screen: SeleniumScreen):
 
 
 @pytest.mark.parametrize('multiple', [False, True])
-def test_keep_filtered_options(multiple: bool, screen: SeleniumScreen):
+def test_keep_filtered_options(multiple: bool, screen: Screen):
     ui.select(options=['A1', 'A2', 'B1', 'B2'], with_input=True, multiple=multiple)
 
     screen.open('/')
@@ -185,7 +185,7 @@ def test_keep_filtered_options(multiple: bool, screen: SeleniumScreen):
 
 
 @pytest.mark.parametrize('auto_validation', [True, False])
-def test_select_validation(auto_validation: bool, screen: SeleniumScreen):
+def test_select_validation(auto_validation: bool, screen: Screen):
     select = ui.select(['A', 'BC', 'DEF'], value='A', validation={'Too long': lambda v: len(v) < 3})
     if not auto_validation:
         select.without_auto_validation()

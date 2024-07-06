@@ -1,8 +1,8 @@
 from nicegui import ui
-from nicegui.testing import SeleniumScreen
+from nicegui.testing import Screen
 
 
-def test_restructured_text(screen: SeleniumScreen):
+def test_restructured_text(screen: Screen):
     rst = ui.restructured_text('This is **reStructuredText**')
 
     screen.open('/')

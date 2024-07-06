@@ -1,8 +1,8 @@
 from nicegui import ui
-from nicegui.testing import SeleniumScreen
+from nicegui.testing import Screen
 
 
-def test_quasar_colors(screen: SeleniumScreen):
+def test_quasar_colors(screen: Screen):
     b1 = ui.button()
     b2 = ui.button(color=None)
     b3 = ui.button(color='red-5')
@@ -17,7 +17,7 @@ def test_quasar_colors(screen: SeleniumScreen):
     assert screen.find_element(b5).value_of_css_property('background-color') == 'rgba(255, 0, 0, 1)'
 
 
-def test_enable_disable(screen: SeleniumScreen):
+def test_enable_disable(screen: Screen):
     events = []
     b = ui.button('Button', on_click=lambda: events.append(1))
     ui.button('Enable', on_click=b.enable)

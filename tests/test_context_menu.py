@@ -1,8 +1,8 @@
 from nicegui import ui
-from nicegui.testing import SeleniumScreen
+from nicegui.testing import Screen
 
 
-def test_context_menu(screen: SeleniumScreen):
+def test_context_menu(screen: Screen):
     with ui.label('Right-click me'):
         with ui.context_menu():
             ui.menu_item('Item 1', on_click=lambda: ui.notify('You clicked'))

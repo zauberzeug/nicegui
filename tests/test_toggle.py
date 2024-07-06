@@ -1,8 +1,8 @@
 from nicegui import ui
-from nicegui.testing import SeleniumScreen
+from nicegui.testing import Screen
 
 
-def test_adding_toggle_options(screen: SeleniumScreen):
+def test_adding_toggle_options(screen: Screen):
     label = ui.label()
     toggle = ui.toggle(['A', 'B', 'C'], on_change=lambda e: label.set_text(f'Choice: {e.value}'))
 
@@ -23,7 +23,7 @@ def test_adding_toggle_options(screen: SeleniumScreen):
     screen.should_contain('Choice: D')
 
 
-def test_changing_options(screen: SeleniumScreen):
+def test_changing_options(screen: Screen):
     t = ui.toggle([10, 20, 30], value=10)
     ui.label().bind_text_from(t, 'value', lambda v: f'value = {v}')
     ui.button('reverse', on_click=lambda: (t.options.reverse(), t.update()))
@@ -36,7 +36,7 @@ def test_changing_options(screen: SeleniumScreen):
     screen.should_contain('value = None')
 
 
-def test_clearable_toggle(screen: SeleniumScreen):
+def test_clearable_toggle(screen: Screen):
     t = ui.toggle(['A', 'B', 'C'], clearable=True)
     ui.label().bind_text_from(t, 'value', lambda v: f'value = {v}')
 

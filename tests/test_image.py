@@ -1,12 +1,12 @@
 from pathlib import Path
 
 from nicegui import app, ui
-from nicegui.testing import SeleniumScreen
+from nicegui.testing import Screen
 
 example_file = Path(__file__).parent / '../examples/slideshow/slides/slide1.jpg'
 
 
-def test_base64_image(screen: SeleniumScreen):
+def test_base64_image(screen: Screen):
     data = ('data:image/png;base64,'
             'iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAAABmJLR0QA/wD/AP+gvaeTAAAEHElEQVRo'
             'ge2ZXUxbZRjHf6enH3QtBQ7paIFlMO2AMXTGqZE40bCpiRdzF06Nsu3O6G68MH5MnYkk3vhx4cWCJppF'
@@ -35,7 +35,7 @@ def test_base64_image(screen: SeleniumScreen):
     assert 'data:image/png;base64,iVB' in image.get_attribute('src')
 
 
-def test_setting_local_file(screen: SeleniumScreen):
+def test_setting_local_file(screen: Screen):
     ui.image(example_file)
 
     screen.open('/')
@@ -43,7 +43,7 @@ def test_setting_local_file(screen: SeleniumScreen):
     screen.should_load_image(image)
 
 
-def test_binding_local_file(screen: SeleniumScreen):
+def test_binding_local_file(screen: Screen):
     images = {'one': example_file}
     ui.image().bind_source_from(images, 'one')
 
@@ -52,7 +52,7 @@ def test_binding_local_file(screen: SeleniumScreen):
     screen.should_load_image(image)
 
 
-def test_set_source_with_local_file(screen: SeleniumScreen):
+def test_set_source_with_local_file(screen: Screen):
     ui.image().set_source(example_file)
 
     screen.open('/')
@@ -60,7 +60,7 @@ def test_set_source_with_local_file(screen: SeleniumScreen):
     screen.should_load_image(image)
 
 
-def test_removal_of_generated_routes(screen: SeleniumScreen):
+def test_removal_of_generated_routes(screen: Screen):
     img = ui.image(example_file)
     ui.button('Slide 2', on_click=lambda: img.set_source(str(example_file).replace('slide1', 'slide2')))
     ui.button('Slide 3', on_click=lambda: img.set_source(str(example_file).replace('slide1', 'slide3')))

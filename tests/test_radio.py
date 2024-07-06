@@ -1,8 +1,8 @@
 from nicegui import ui
-from nicegui.testing import SeleniumScreen
+from nicegui.testing import Screen
 
 
-def test_changing_options(screen: SeleniumScreen):
+def test_changing_options(screen: Screen):
     r = ui.radio([10, 20, 30], value=10)
     ui.label().bind_text_from(r, 'value', lambda v: f'value = {v}')
     ui.button('reverse', on_click=lambda: (r.options.reverse(), r.update()))

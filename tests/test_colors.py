@@ -1,8 +1,8 @@
 from nicegui import ui
-from nicegui.testing import SeleniumScreen
+from nicegui.testing import Screen
 
 
-def test_replace_colors(screen: SeleniumScreen):
+def test_replace_colors(screen: Screen):
     with ui.row() as container:
         ui.colors(primary='blue')
 

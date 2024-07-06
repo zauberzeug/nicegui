@@ -1,8 +1,8 @@
 from nicegui import ui
-from nicegui.testing import SeleniumScreen
+from nicegui.testing import Screen
 
 
-def test_removable_chip(screen: SeleniumScreen):
+def test_removable_chip(screen: Screen):
     chip = ui.chip('Chip', removable=True)
 
     screen.open('/')
@@ -13,7 +13,7 @@ def test_removable_chip(screen: SeleniumScreen):
     screen.should_not_contain('Chip')
 
 
-def test_selectable_chip(screen: SeleniumScreen):
+def test_selectable_chip(screen: Screen):
     chip = ui.chip('Chip', selectable=True)
     ui.label().bind_text_from(chip, 'selected', lambda s: f'Selected: {s}')
 

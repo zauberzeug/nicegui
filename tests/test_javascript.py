@@ -1,8 +1,8 @@
 from nicegui import ui
-from nicegui.testing import SeleniumScreen
+from nicegui.testing import Screen
 
 
-def test_run_javascript_on_button_press(screen: SeleniumScreen):
+def test_run_javascript_on_button_press(screen: Screen):
     ui.button('change title', on_click=lambda: ui.run_javascript('document.title = "A New Title"'))
 
     screen.open('/')
@@ -12,7 +12,7 @@ def test_run_javascript_on_button_press(screen: SeleniumScreen):
     screen.should_contain('A New Title')
 
 
-def test_run_javascript_on_value_change(screen: SeleniumScreen):
+def test_run_javascript_on_value_change(screen: Screen):
     @ui.page('/')
     async def page():
         ui.radio(['A', 'B'], on_change=lambda e: ui.run_javascript(f'document.title = "Page {e.value}"'))
@@ -30,7 +30,7 @@ def test_run_javascript_on_value_change(screen: SeleniumScreen):
     screen.should_contain('Page B')
 
 
-def test_run_javascript_before_client_connected(screen: SeleniumScreen):
+def test_run_javascript_before_client_connected(screen: Screen):
     @ui.page('/')
     def page():
         ui.label('before js')
@@ -44,7 +44,7 @@ def test_run_javascript_before_client_connected(screen: SeleniumScreen):
     screen.should_contain('New Title')
 
 
-def test_response_from_javascript(screen: SeleniumScreen):
+def test_response_from_javascript(screen: Screen):
     @ui.page('/')
     def page():
         async def compute() -> None:
@@ -58,7 +58,7 @@ def test_response_from_javascript(screen: SeleniumScreen):
     screen.should_contain('42')
 
 
-def test_async_javascript(screen: SeleniumScreen):
+def test_async_javascript(screen: Screen):
     @ui.page('/')
     def page():
         async def run():
@@ -72,7 +72,7 @@ def test_async_javascript(screen: SeleniumScreen):
     screen.should_contain('42')
 
 
-def test_simultaneous_async_javascript(screen: SeleniumScreen):
+def test_simultaneous_async_javascript(screen: Screen):
     @ui.page('/')
     def page():
         async def runA():
@@ -93,7 +93,7 @@ def test_simultaneous_async_javascript(screen: SeleniumScreen):
     screen.should_contain('B: 2')
 
 
-def test_raise_on_auto_index_page(screen: SeleniumScreen):
+def test_raise_on_auto_index_page(screen: Screen):
     async def await_answer():
         await ui.run_javascript('return 42')
     ui.button('Ask', on_click=await_answer)

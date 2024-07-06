@@ -1,10 +1,10 @@
 from selenium.webdriver.common.by import By
 
 from nicegui import ui
-from nicegui.testing import SeleniumScreen
+from nicegui.testing import Screen
 
 
-def test_change_chart_series(screen: SeleniumScreen):
+def test_change_chart_series(screen: Screen):
     chart = ui.highchart({
         'chart': {'type': 'bar'},
         'xAxis': {'categories': ['A', 'B']},
@@ -33,7 +33,7 @@ def test_change_chart_series(screen: SeleniumScreen):
     assert before[1] < after[1]
 
 
-def test_adding_chart_series(screen: SeleniumScreen):
+def test_adding_chart_series(screen: Screen):
     chart = ui.highchart({
         'chart': {'type': 'bar'},
         'xAxis': {'categories': ['A', 'B']},
@@ -51,7 +51,7 @@ def test_adding_chart_series(screen: SeleniumScreen):
     assert len(screen.selenium.find_elements(By.CSS_SELECTOR, '.highcharts-point')) == 3
 
 
-def test_removing_chart_series(screen: SeleniumScreen):
+def test_removing_chart_series(screen: Screen):
     chart = ui.highchart({
         'chart': {'type': 'bar'},
         'xAxis': {'categories': ['A', 'B']},
@@ -72,7 +72,7 @@ def test_removing_chart_series(screen: SeleniumScreen):
     assert len(screen.selenium.find_elements(By.CSS_SELECTOR, '.highcharts-point')) == 3
 
 
-def test_missing_extra(screen: SeleniumScreen):
+def test_missing_extra(screen: Screen):
     # NOTE: This test does not work after test_extra() has been run, because conftest won't reset libraries correctly.
     ui.highchart({'chart': {'type': 'solidgauge'}})
 
@@ -80,21 +80,21 @@ def test_missing_extra(screen: SeleniumScreen):
     assert not screen.selenium.find_elements(By.CSS_SELECTOR, '.highcharts-pane')
 
 
-def test_extra(screen: SeleniumScreen):
+def test_extra(screen: Screen):
     ui.highchart({'chart': {'type': 'solidgauge'}}, extras=['solid-gauge'])
 
     screen.open('/')
     assert screen.selenium.find_elements(By.CSS_SELECTOR, '.highcharts-pane')
 
 
-def test_stock_chart(screen: SeleniumScreen):
+def test_stock_chart(screen: Screen):
     ui.highchart({}, type='stockChart', extras=['stock'])
 
     screen.open('/')
     assert screen.selenium.find_elements(By.CSS_SELECTOR, '.highcharts-range-selector-buttons')
 
 
-def test_replace_chart(screen: SeleniumScreen):
+def test_replace_chart(screen: Screen):
     with ui.row() as container:
         ui.highchart({'series': [{'name': 'A'}]})
 
@@ -111,7 +111,7 @@ def test_replace_chart(screen: SeleniumScreen):
     screen.should_not_contain('A')
 
 
-def test_updating_stock_chart(screen: SeleniumScreen):
+def test_updating_stock_chart(screen: Screen):
     """https://github.com/zauberzeug/nicegui/discussions/948"""
     chart = ui.highchart({'legend': {'enabled': True}, 'series': []}, type='stockChart', extras=['stock'])
     ui.button('update', on_click=lambda: (
@@ -133,7 +133,7 @@ def test_updating_stock_chart(screen: SeleniumScreen):
     screen.should_not_contain('bob')
 
 
-def test_create_dynamically(screen: SeleniumScreen):
+def test_create_dynamically(screen: Screen):
     ui.button('Create', on_click=lambda: ui.highchart({}))
 
     screen.open('/')

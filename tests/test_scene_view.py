@@ -3,10 +3,10 @@ from typing import Optional
 import numpy as np
 
 from nicegui import ui
-from nicegui.testing import SeleniumScreen
+from nicegui.testing import Screen
 
 
-def test_create_dynamically(screen: SeleniumScreen):
+def test_create_dynamically(screen: Screen):
     scene = ui.scene()
     scene_view: Optional[ui.scene_view] = None
 
@@ -22,7 +22,7 @@ def test_create_dynamically(screen: SeleniumScreen):
     assert screen.selenium.execute_script(f'return getElement({scene_view.id}).scene == getElement({scene.id}).scene')
 
 
-def test_object_creation_via_context(screen: SeleniumScreen):
+def test_object_creation_via_context(screen: Screen):
     with ui.scene() as scene:
         scene.box()
 
@@ -33,7 +33,7 @@ def test_object_creation_via_context(screen: SeleniumScreen):
     assert screen.selenium.execute_script(f'return getElement({scene_view.id}).scene == getElement({scene.id}).scene')
 
 
-def test_camera_move(screen: SeleniumScreen):
+def test_camera_move(screen: Screen):
     with ui.scene() as scene:
         scene.box()
 

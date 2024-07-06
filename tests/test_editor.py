@@ -1,9 +1,9 @@
 
 from nicegui import ui
-from nicegui.testing import SeleniumScreen
+from nicegui.testing import Screen
 
 
-def test_editor(screen: SeleniumScreen):
+def test_editor(screen: Screen):
     editor = ui.editor(placeholder='Type something here')
     ui.markdown().bind_content_from(editor, 'value', backward=lambda v: f'HTML code:\n```\n{v}\n```')
 

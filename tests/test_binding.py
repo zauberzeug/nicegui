@@ -3,10 +3,10 @@ from typing import Dict, Optional, Tuple
 from selenium.webdriver.common.keys import Keys
 
 from nicegui import ui
-from nicegui.testing import SeleniumScreen
+from nicegui.testing import Screen
 
 
-def test_ui_select_with_tuple_as_key(screen: SeleniumScreen):
+def test_ui_select_with_tuple_as_key(screen: Screen):
     class Model:
         selection: Optional[Tuple[int, int]] = None
     data = Model()
@@ -27,7 +27,7 @@ def test_ui_select_with_tuple_as_key(screen: SeleniumScreen):
     assert data.selection == (1, 2)
 
 
-def test_ui_select_with_list_of_tuples(screen: SeleniumScreen):
+def test_ui_select_with_list_of_tuples(screen: Screen):
     class Model:
         selection = None
     data = Model()
@@ -45,7 +45,7 @@ def test_ui_select_with_list_of_tuples(screen: SeleniumScreen):
     assert data.selection == (2, 2)
 
 
-def test_ui_select_with_list_of_lists(screen: SeleniumScreen):
+def test_ui_select_with_list_of_lists(screen: Screen):
     class Model:
         selection = None
     data = Model()
@@ -63,7 +63,7 @@ def test_ui_select_with_list_of_lists(screen: SeleniumScreen):
     assert data.selection == [2, 2]
 
 
-def test_binding_to_input(screen: SeleniumScreen):
+def test_binding_to_input(screen: Screen):
     class Model:
         text = 'one'
     data = Model()
@@ -85,7 +85,7 @@ def test_binding_to_input(screen: SeleniumScreen):
     assert data.text == 'five'
 
 
-def test_binding_refresh_before_page_delivery(screen: SeleniumScreen):
+def test_binding_refresh_before_page_delivery(screen: Screen):
     state = {'count': 0}
 
     @ui.page('/')
@@ -97,7 +97,7 @@ def test_binding_refresh_before_page_delivery(screen: SeleniumScreen):
     screen.should_contain('1')
 
 
-def test_missing_target_attribute(screen: SeleniumScreen):
+def test_missing_target_attribute(screen: Screen):
     data: Dict = {}
     ui.label('Hello').bind_text_to(data)
     ui.label().bind_text_from(data, 'text', lambda text: f'{text=}')

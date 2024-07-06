@@ -1,8 +1,8 @@
 from nicegui import ui
-from nicegui.testing import SeleniumScreen
+from nicegui.testing import Screen
 
 
-def test_page_title(screen: SeleniumScreen):
+def test_page_title(screen: Screen):
     ui.page_title('Initial title')
     ui.button('Change title', on_click=lambda: ui.page_title('"New title"'))
 

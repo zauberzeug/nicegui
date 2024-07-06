@@ -4,7 +4,7 @@ import pytest
 from selenium.webdriver.common.action_chains import ActionChains
 
 from nicegui import app, ui
-from nicegui.testing import SeleniumScreen
+from nicegui.testing import Screen
 
 URL_PATH1 = '/test1.jpg'
 URL_PATH2 = '/test2.jpg'
@@ -16,7 +16,7 @@ def provide_image_files():
     app.add_static_file(local_file=Path(__file__).parent / 'media' / 'test2.jpg', url_path=URL_PATH2)
 
 
-def test_set_source_in_tab(screen: SeleniumScreen):
+def test_set_source_in_tab(screen: Screen):
     """https://github.com/zauberzeug/nicegui/issues/488"""
     @ui.page('/')
     async def page():
@@ -42,7 +42,7 @@ def test_set_source_in_tab(screen: SeleniumScreen):
 
 
 @pytest.mark.parametrize('cross', [True, False])
-def test_with_cross(screen: SeleniumScreen, cross: bool):
+def test_with_cross(screen: Screen, cross: bool):
     ui.interactive_image(URL_PATH1, content='<circle cx="100" cy="100" r="15" />', cross=cross)
 
     screen.open('/')
@@ -52,7 +52,7 @@ def test_with_cross(screen: SeleniumScreen, cross: bool):
         assert len(screen.find_all_by_tag('circle')) == 1
 
 
-def test_replace_interactive_image(screen: SeleniumScreen):
+def test_replace_interactive_image(screen: Screen):
     with ui.row() as container:
         ui.interactive_image(URL_PATH1)
 
@@ -70,7 +70,7 @@ def test_replace_interactive_image(screen: SeleniumScreen):
 
 
 @pytest.mark.parametrize('cross', [True, False])
-def test_mousemove_event(screen: SeleniumScreen, cross: bool):
+def test_mousemove_event(screen: Screen, cross: bool):
     counter = {'value': 0}
     ii = ui.interactive_image(URL_PATH1, cross=cross, events=['mousemove'],
                               on_mouse=lambda: counter.update(value=counter['value'] + 1))
@@ -86,7 +86,7 @@ def test_mousemove_event(screen: SeleniumScreen, cross: bool):
     assert counter['value'] > 0
 
 
-def test_loaded_event(screen: SeleniumScreen):
+def test_loaded_event(screen: Screen):
     ii = ui.interactive_image(URL_PATH1)
     ii.on('loaded', lambda: ui.label('loaded'))
     ui.button('Change Source', on_click=lambda: ii.set_source(URL_PATH2))

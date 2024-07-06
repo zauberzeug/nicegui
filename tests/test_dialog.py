@@ -3,10 +3,10 @@ from typing import List
 from selenium.webdriver.common.keys import Keys
 
 from nicegui import ui
-from nicegui.testing import SeleniumScreen
+from nicegui.testing import Screen
 
 
-def test_open_close_dialog(screen: SeleniumScreen):
+def test_open_close_dialog(screen: Screen):
     with ui.dialog() as d, ui.card():
         ui.label('Content')
         ui.button('Close', on_click=d.close)
@@ -22,7 +22,7 @@ def test_open_close_dialog(screen: SeleniumScreen):
     screen.should_not_contain('Content')
 
 
-def test_await_dialog(screen: SeleniumScreen):
+def test_await_dialog(screen: Screen):
     with ui.dialog() as dialog, ui.card():
         ui.label('Are you sure?')
         with ui.row():

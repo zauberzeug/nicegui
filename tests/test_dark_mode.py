@@ -1,8 +1,8 @@
 from nicegui import ui
-from nicegui.testing import SeleniumScreen
+from nicegui.testing import Screen
 
 
-def test_dark_mode(screen: SeleniumScreen):
+def test_dark_mode(screen: Screen):
     ui.label('Hello')
     dark = ui.dark_mode()
     ui.button('Dark', on_click=dark.enable)

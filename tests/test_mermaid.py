@@ -1,10 +1,10 @@
 import pytest
 
 from nicegui import ui
-from nicegui.testing import SeleniumScreen
+from nicegui.testing import Screen
 
 
-def test_mermaid(screen: SeleniumScreen):
+def test_mermaid(screen: Screen):
     m = ui.mermaid('''
         graph TD;
             Node_A --> Node_B;
@@ -21,7 +21,7 @@ graph TD;
     screen.should_not_contain('Node_A')
 
 
-def test_mermaid_with_line_breaks(screen: SeleniumScreen):
+def test_mermaid_with_line_breaks(screen: Screen):
     ui.mermaid('''
         requirementDiagram
 
@@ -41,7 +41,7 @@ def test_mermaid_with_line_breaks(screen: SeleniumScreen):
     screen.should_contain('Verification: Test')
 
 
-def test_replace_mermaid(screen: SeleniumScreen):
+def test_replace_mermaid(screen: Screen):
     with ui.row() as container:
         ui.mermaid('graph LR; Node_A')
 
@@ -59,7 +59,7 @@ def test_replace_mermaid(screen: SeleniumScreen):
     screen.should_not_contain('Node_A')
 
 
-def test_create_dynamically(screen: SeleniumScreen):
+def test_create_dynamically(screen: Screen):
     ui.button('Create', on_click=lambda: ui.mermaid('graph LR; Node'))
 
     screen.open('/')
@@ -67,7 +67,7 @@ def test_create_dynamically(screen: SeleniumScreen):
     screen.should_contain('Node')
 
 
-def test_error(screen: SeleniumScreen):
+def test_error(screen: Screen):
     ui.mermaid('''
     graph LR;
         A --> B;
@@ -80,7 +80,7 @@ def test_error(screen: SeleniumScreen):
 
 
 @pytest.mark.parametrize('security_level', ['loose', 'strict'])
-def test_click_mermaid_node(security_level: str, screen: SeleniumScreen):
+def test_click_mermaid_node(security_level: str, screen: Screen):
     ui.mermaid('''
         flowchart TD;
             A;

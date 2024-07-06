@@ -1,8 +1,8 @@
 from nicegui import ui
-from nicegui.testing import SeleniumScreen
+from nicegui.testing import Screen
 
 
-def test_json_editor_methods(screen: SeleniumScreen):
+def test_json_editor_methods(screen: Screen):
     @ui.page('/')
     def page():
         editor = ui.json_editor({'content': {'json': {'a': 1, 'b': 2}}})

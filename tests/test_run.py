@@ -5,7 +5,7 @@ from typing import Awaitable, Generator, Optional
 import pytest
 
 from nicegui import app, run, ui
-from nicegui.testing import SeleniumScreen
+from nicegui.testing import Screen
 
 
 @pytest.fixture(scope='module', autouse=True)
@@ -28,7 +28,7 @@ def delayed_hello() -> str:
 
 
 @pytest.mark.parametrize('func', [run.cpu_bound, run.io_bound])
-def test_delayed_hello(screen: SeleniumScreen, func: Awaitable):
+def test_delayed_hello(screen: Screen, func: Awaitable):
 
     @ui.page('/')
     async def index():

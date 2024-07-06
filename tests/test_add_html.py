@@ -1,8 +1,8 @@
 from nicegui import ui
-from nicegui.testing import SeleniumScreen
+from nicegui.testing import Screen
 
 
-def test_add_head_html(screen: SeleniumScreen) -> None:
+def test_add_head_html(screen: Screen) -> None:
     ui.add_head_html(r'<style>.my-label {background: rgb(0, 0, 255)}</style>')
     ui.label('Label').classes('my-label')
     ui.button('Green', on_click=lambda: ui.add_head_html(r'<style>.my-label {background: rgb(0, 255, 0)}</style>'))
@@ -15,7 +15,7 @@ def test_add_head_html(screen: SeleniumScreen) -> None:
     assert screen.find('Label').value_of_css_property('background-color') == 'rgba(0, 255, 0, 1)'
 
 
-def test_css(screen: SeleniumScreen):
+def test_css(screen: Screen):
     ui.add_css('''
         .red {
             color: red;
@@ -27,7 +27,7 @@ def test_css(screen: SeleniumScreen):
     assert screen.find('This is red with CSS.').value_of_css_property('color') == 'rgba(255, 0, 0, 1)'
 
 
-def test_scss(screen: SeleniumScreen):
+def test_scss(screen: Screen):
     ui.add_scss('''
         .green {
             background-color: lightgreen;
@@ -43,7 +43,7 @@ def test_scss(screen: SeleniumScreen):
     assert screen.find('This is blue on green with SCSS.').value_of_css_property('color') == 'rgba(0, 0, 255, 1)'
 
 
-def test_sass(screen: SeleniumScreen):
+def test_sass(screen: Screen):
     ui.add_sass('''
         .yellow
             background-color: yellow

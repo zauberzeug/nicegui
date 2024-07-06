@@ -1,8 +1,8 @@
 from nicegui import ui
-from nicegui.testing import SeleniumScreen
+from nicegui.testing import Screen
 
 
-def test_range(screen: SeleniumScreen):
+def test_range(screen: Screen):
     r = ui.range(min=0, max=100, value={'min': 20, 'max': 80})
     ui.label().bind_text_from(r, 'value', backward=lambda v: f'min: {v["min"]}, max: {v["max"]}')
 

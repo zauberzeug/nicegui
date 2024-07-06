@@ -1,8 +1,8 @@
 from nicegui import binding, ui
-from nicegui.testing import SeleniumScreen
+from nicegui.testing import Screen
 
 
-def test_remove_element_by_reference(screen: SeleniumScreen):
+def test_remove_element_by_reference(screen: Screen):
     texts = {'a': 'Label A', 'b': 'Label B', 'c': 'Label C'}
     with ui.row() as row:
         ui.label().bind_text_from(texts, 'a')
@@ -23,7 +23,7 @@ def test_remove_element_by_reference(screen: SeleniumScreen):
     assert len(binding.active_links) == 2
 
 
-def test_remove_element_by_index(screen: SeleniumScreen):
+def test_remove_element_by_index(screen: Screen):
     texts = {'a': 'Label A', 'b': 'Label B', 'c': 'Label C'}
     with ui.row() as row:
         ui.label().bind_text_from(texts, 'a')
@@ -44,7 +44,7 @@ def test_remove_element_by_index(screen: SeleniumScreen):
     assert len(binding.active_links) == 2
 
 
-def test_clear(screen: SeleniumScreen):
+def test_clear(screen: Screen):
     texts = {'a': 'Label A', 'b': 'Label B', 'c': 'Label C'}
     with ui.row() as row:
         a = ui.label().bind_text_from(texts, 'a')
@@ -67,7 +67,7 @@ def test_clear(screen: SeleniumScreen):
     assert len(binding.active_links) == 0
 
 
-def test_remove_parent(screen: SeleniumScreen):
+def test_remove_parent(screen: Screen):
     texts = {'a': 'Label A', 'b': 'Label B', 'c': 'Label C'}
     with ui.element() as container:
         with ui.row() as row:
@@ -94,7 +94,7 @@ def test_remove_parent(screen: SeleniumScreen):
     assert len(binding.active_links) == 0
 
 
-def test_delete_element(screen: SeleniumScreen):
+def test_delete_element(screen: Screen):
     texts = {'a': 'Label A', 'b': 'Label B', 'c': 'Label C'}
     with ui.row() as row:
         ui.label().bind_text_from(texts, 'a')
@@ -115,7 +115,7 @@ def test_delete_element(screen: SeleniumScreen):
     assert len(binding.active_links) == 2
 
 
-def test_on_delete(screen: SeleniumScreen):
+def test_on_delete(screen: Screen):
     deleted_labels = []
 
     class CustomLabel(ui.label):

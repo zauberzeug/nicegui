@@ -1,18 +1,18 @@
-from nicegui.testing import SeleniumScreen
+from nicegui.testing import Screen
 
 from ..main import main_page, sub_page
 
 # pylint: disable=missing-function-docstring
 
 
-def test_markdown_message(screen: SeleniumScreen) -> None:
+def test_markdown_message(screen: Screen) -> None:
     main_page()
 
     screen.open('/')
     screen.should_contain('Try running')
 
 
-def test_button_click(screen: SeleniumScreen) -> None:
+def test_button_click(screen: Screen) -> None:
     main_page()
 
     screen.open('/')
@@ -20,7 +20,7 @@ def test_button_click(screen: SeleniumScreen) -> None:
     screen.should_contain('Button clicked!')
 
 
-def test_sub_page(screen: SeleniumScreen) -> None:
+def test_sub_page(screen: Screen) -> None:
     sub_page()
 
     screen.open('/')

@@ -5,7 +5,7 @@ import pandas as pd
 from selenium.webdriver.common.by import By
 
 from nicegui import ui
-from nicegui.testing import SeleniumScreen
+from nicegui.testing import Screen
 
 
 def columns() -> List:
@@ -23,7 +23,7 @@ def rows() -> List:
     ]
 
 
-def test_table(screen: SeleniumScreen):
+def test_table(screen: Screen):
     ui.table(title='My Team', columns=columns(), rows=rows())
 
     screen.open('/')
@@ -34,7 +34,7 @@ def test_table(screen: SeleniumScreen):
     screen.should_contain('Lionel')
 
 
-def test_pagination_int(screen: SeleniumScreen):
+def test_pagination_int(screen: Screen):
     ui.table(columns=columns(), rows=rows(), pagination=2)
 
     screen.open('/')
@@ -44,7 +44,7 @@ def test_pagination_int(screen: SeleniumScreen):
     screen.should_contain('1-2 of 3')
 
 
-def test_pagination_dict(screen: SeleniumScreen):
+def test_pagination_dict(screen: Screen):
     ui.table(columns=columns(), rows=rows(), pagination={'rowsPerPage': 2})
 
     screen.open('/')
@@ -54,7 +54,7 @@ def test_pagination_dict(screen: SeleniumScreen):
     screen.should_contain('1-2 of 3')
 
 
-def test_filter(screen: SeleniumScreen):
+def test_filter(screen: Screen):
     table = ui.table(columns=columns(), rows=rows())
     ui.input('Search by name').bind_value(table, 'filter')
 
@@ -70,7 +70,7 @@ def test_filter(screen: SeleniumScreen):
     screen.should_contain('Lionel')
 
 
-def test_add_remove(screen: SeleniumScreen):
+def test_add_remove(screen: Screen):
     table = ui.table(columns=columns(), rows=rows())
     ui.button('Add', on_click=lambda: table.add_rows({'id': 3, 'name': 'Carol', 'age': 32}))
     ui.button('Remove', on_click=lambda: table.remove_rows(table.rows[0]))
@@ -84,7 +84,7 @@ def test_add_remove(screen: SeleniumScreen):
     screen.should_not_contain('Alice')
 
 
-def test_slots(screen: SeleniumScreen):
+def test_slots(screen: Screen):
     with ui.table(columns=columns(), rows=rows()) as table:
         with table.add_slot('top-row'):
             with table.row():
@@ -106,7 +106,7 @@ def test_slots(screen: SeleniumScreen):
     screen.should_contain('21')
 
 
-def test_single_selection(screen: SeleniumScreen):
+def test_single_selection(screen: Screen):
     ui.table(columns=columns(), rows=rows(), selection='single')
 
     screen.open('/')
@@ -119,7 +119,7 @@ def test_single_selection(screen: SeleniumScreen):
     screen.should_contain('1 record selected.')
 
 
-def test_dynamic_column_attributes(screen: SeleniumScreen):
+def test_dynamic_column_attributes(screen: Screen):
     ui.table(columns=[{'name': 'age', 'label': 'Age', 'field': 'age', ':format': 'value => value + " years"'}],
              rows=[{'name': 'Alice', 'age': 18}])
 
@@ -127,7 +127,7 @@ def test_dynamic_column_attributes(screen: SeleniumScreen):
     screen.should_contain('18 years')
 
 
-def test_remove_selection(screen: SeleniumScreen):
+def test_remove_selection(screen: Screen):
     t = ui.table(columns=columns(), rows=rows(), selection='single')
     ui.button('Remove first row', on_click=lambda: t.remove_rows(t.rows[0]))
 
@@ -141,7 +141,7 @@ def test_remove_selection(screen: SeleniumScreen):
     screen.should_not_contain('1 record selected.')
 
 
-def test_replace_rows(screen: SeleniumScreen):
+def test_replace_rows(screen: Screen):
     t = ui.table(columns=columns(), rows=rows())
 
     def replace_rows_with_carol():
@@ -171,7 +171,7 @@ def test_replace_rows(screen: SeleniumScreen):
     screen.should_contain('Daniel')
 
 
-def test_create_from_pandas(screen: SeleniumScreen):
+def test_create_from_pandas(screen: Screen):
     df = pd.DataFrame({'name': ['Alice', 'Bob'], 'age': [18, 21], 42: 'answer'})
     ui.table.from_pandas(df)
 
@@ -184,7 +184,7 @@ def test_create_from_pandas(screen: SeleniumScreen):
     screen.should_contain('answer')
 
 
-def test_problematic_datatypes(screen: SeleniumScreen):
+def test_problematic_datatypes(screen: Screen):
     df = pd.DataFrame({
         'Datetime_col': [datetime(2020, 1, 1)],
         'Datetime_col_tz': [datetime(2020, 1, 1, tzinfo=timezone.utc)],

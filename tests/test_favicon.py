@@ -6,20 +6,20 @@ import requests
 from bs4 import BeautifulSoup
 
 from nicegui import favicon, ui
-from nicegui.testing import SeleniumScreen
+from nicegui.testing import Screen
 
 DEFAULT_FAVICON_PATH = Path(__file__).parent.parent / 'nicegui' / 'static' / 'favicon.ico'
 LOGO_FAVICON_PATH = Path(__file__).parent.parent / 'website' / 'static' / 'logo_square.png'
 
 
-def assert_favicon_url_starts_with(screen: SeleniumScreen, content: str):
+def assert_favicon_url_starts_with(screen: Screen, content: str):
     soup = BeautifulSoup(screen.selenium.page_source, 'html.parser')
     icon_link = soup.find('link', rel='icon')
     assert icon_link['href'].startswith(content)
 
 
 def assert_favicon(content: Union[Path, str, bytes], url_path: str = '/favicon.ico'):
-    response = requests.get(f'http://localhost:{SeleniumScreen.PORT}{url_path}', timeout=5)
+    response = requests.get(f'http://localhost:{Screen.PORT}{url_path}', timeout=5)
     assert response.status_code == 200
     response.encoding = 'utf-8'
     if isinstance(content, Path):
@@ -32,7 +32,7 @@ def assert_favicon(content: Union[Path, str, bytes], url_path: str = '/favicon.i
         raise TypeError(f'Unexpected type: {type(content)}')
 
 
-def test_default(screen: SeleniumScreen):
+def test_default(screen: Screen):
     ui.label('Hello, world')
 
     screen.open('/')
@@ -40,7 +40,7 @@ def test_default(screen: SeleniumScreen):
 
 
 @pytest.mark.parametrize('emoji', ['👋', '⚔️'])
-def test_emoji(emoji: str, screen: SeleniumScreen):
+def test_emoji(emoji: str, screen: Screen):
     ui.label('Hello, world')
 
     screen.ui_run_kwargs['favicon'] = emoji
@@ -49,7 +49,7 @@ def test_emoji(emoji: str, screen: SeleniumScreen):
     assert_favicon(favicon._char_to_svg(emoji))
 
 
-def test_data_url(screen: SeleniumScreen):
+def test_data_url(screen: Screen):
     ui.label('Hello, world')
 
     icon = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAHElEQVQI12P4//8/w38GIAXDIBKE0DHxgljNBAAO9TXL0Y4OHwAAAABJRU5ErkJggg=='
@@ -60,7 +60,7 @@ def test_data_url(screen: SeleniumScreen):
     assert_favicon(bytes_)
 
 
-def test_custom_file(screen: SeleniumScreen):
+def test_custom_file(screen: Screen):
     ui.label('Hello, world')
 
     screen.ui_run_kwargs['favicon'] = LOGO_FAVICON_PATH
@@ -69,7 +69,7 @@ def test_custom_file(screen: SeleniumScreen):
     assert_favicon(screen.ui_run_kwargs['favicon'])
 
 
-def test_page_specific_icon(screen: SeleniumScreen):
+def test_page_specific_icon(screen: Screen):
     @ui.page('/subpage', favicon=LOGO_FAVICON_PATH)
     def sub():
         ui.label('Subpage')
@@ -81,7 +81,7 @@ def test_page_specific_icon(screen: SeleniumScreen):
     screen.open('/')
 
 
-def test_page_specific_emoji(screen: SeleniumScreen):
+def test_page_specific_emoji(screen: Screen):
     @ui.page('/subpage', favicon='👋')
     def sub():
         ui.label('Subpage')

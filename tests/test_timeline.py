@@ -1,8 +1,8 @@
 from nicegui import ui
-from nicegui.testing import SeleniumScreen
+from nicegui.testing import Screen
 
 
-def test_timeline(screen: SeleniumScreen):
+def test_timeline(screen: Screen):
     with ui.timeline():
         ui.timeline_entry('Entry 1', title='Title 1', subtitle='Subtitle 1')
         with ui.timeline():

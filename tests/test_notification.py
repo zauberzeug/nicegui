@@ -1,8 +1,8 @@
 from nicegui import ui
-from nicegui.testing import SeleniumScreen
+from nicegui.testing import Screen
 
 
-def test_notification(screen: SeleniumScreen):
+def test_notification(screen: Screen):
     ui.button('Notify', on_click=lambda: ui.notification('Hi!'))
 
     screen.open('/')
@@ -10,7 +10,7 @@ def test_notification(screen: SeleniumScreen):
     screen.should_contain('Hi!')
 
 
-def test_close_button(screen: SeleniumScreen):
+def test_close_button(screen: Screen):
     b = ui.button('Notify', on_click=lambda: ui.notification('Hi!', timeout=None, close_button=True))
 
     screen.open('/')
@@ -25,7 +25,7 @@ def test_close_button(screen: SeleniumScreen):
     assert len(b.client.layout.default_slot.children) == 1
 
 
-def test_dismiss(screen: SeleniumScreen):
+def test_dismiss(screen: Screen):
     n = ui.notification('Hi!', timeout=None)
     b = ui.button('Dismiss', on_click=n.dismiss)
 

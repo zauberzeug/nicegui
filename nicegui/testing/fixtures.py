@@ -17,8 +17,8 @@ from nicegui import Client, app, binding, core, ui
 from nicegui.functions import navigate
 from nicegui.page import page
 
-from .selenium_screen import SeleniumScreen
-from .simulated_screen import User
+from .screen import Screen
+from .user import User
 
 # pylint: disable=redefined-outer-name
 
@@ -93,9 +93,9 @@ def nicegui_reset_globals() -> Generator[None, None, None]:
 @pytest.fixture(scope='session')
 def nicegui_remove_all_screenshots() -> None:
     """Remove all screenshots from the screenshot directory before the test session."""
-    if os.path.exists(SeleniumScreen.SCREENSHOT_DIR):
-        for name in os.listdir(SeleniumScreen.SCREENSHOT_DIR):
-            os.remove(os.path.join(SeleniumScreen.SCREENSHOT_DIR, name))
+    if os.path.exists(Screen.SCREENSHOT_DIR):
+        for name in os.listdir(Screen.SCREENSHOT_DIR):
+            os.remove(os.path.join(Screen.SCREENSHOT_DIR, name))
 
 
 @pytest.fixture()
@@ -103,7 +103,7 @@ def nicegui_driver(nicegui_chrome_options: webdriver.ChromeOptions) -> Generator
     """Create a new Chrome driver instance."""
     s = Service()
     driver_ = webdriver.Chrome(service=s, options=nicegui_chrome_options)
-    driver_.implicitly_wait(SeleniumScreen.IMPLICIT_WAIT)
+    driver_.implicitly_wait(Screen.IMPLICIT_WAIT)
     driver_.set_page_load_timeout(4)
     yield driver_
     driver_.quit()
@@ -115,9 +115,9 @@ def screen(nicegui_reset_globals,
            nicegui_driver: webdriver.Chrome,
            request: pytest.FixtureRequest,
            caplog: pytest.LogCaptureFixture,
-           ) -> Generator[SeleniumScreen, None, None]:
+           ) -> Generator[Screen, None, None]:
     """Create a new SeleniumScreen fixture."""
-    screen_ = SeleniumScreen(nicegui_driver, caplog)
+    screen_ = Screen(nicegui_driver, caplog)
     yield screen_
     logs = screen_.caplog.get_records('call')
     if screen_.is_open:
@@ -130,7 +130,7 @@ def screen(nicegui_reset_globals,
 
 
 @pytest.fixture
-async def user(nicegui_reset_globals, prepare_auto_index_client, request: pytest.FixtureRequest) -> Generator[User, None, None]:
+async def user(nicegui_reset_globals, prepare_simulated_auto_index_client, request: pytest.FixtureRequest) -> Generator[User, None, None]:
     """Create a new user fixture."""
     prepare_simulation(request)
     original_navigate_to = ui.navigate.to
@@ -141,7 +141,7 @@ async def user(nicegui_reset_globals, prepare_auto_index_client, request: pytest
 
 
 @pytest.fixture
-async def create_user(nicegui_reset_globals, prepare_auto_index_client, request: pytest.FixtureRequest) -> Generator[Callable[[], User], None, None]:
+async def create_user(nicegui_reset_globals, prepare_simulated_auto_index_client, request: pytest.FixtureRequest) -> Generator[Callable[[], User], None, None]:
     """Create a fixture for building new users."""
     prepare_simulation(request)
     original_navigate_to = ui.navigate.to
@@ -151,7 +151,7 @@ async def create_user(nicegui_reset_globals, prepare_auto_index_client, request:
 
 
 @pytest.fixture()
-def prepare_auto_index_client(request):
+def prepare_simulated_auto_index_client(request):
     original_test = request.node._obj
     if asyncio.iscoroutinefunction(original_test):
         async def wrapped_test(*args, **kwargs):

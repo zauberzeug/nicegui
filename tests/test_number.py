@@ -3,10 +3,10 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 
 from nicegui import ui
-from nicegui.testing import SeleniumScreen
+from nicegui.testing import Screen
 
 
-def test_number_input(screen: SeleniumScreen):
+def test_number_input(screen: Screen):
     ui.number('Number', value=42)
     ui.button('Button')
 
@@ -18,7 +18,7 @@ def test_number_input(screen: SeleniumScreen):
     screen.should_contain_input('4200')
 
 
-def test_apply_format_on_blur(screen: SeleniumScreen):
+def test_apply_format_on_blur(screen: Screen):
     ui.number('Number', format='%.4f', value=3.14159)
     ui.button('Button')
 
@@ -31,7 +31,7 @@ def test_apply_format_on_blur(screen: SeleniumScreen):
     screen.should_contain_input('3.1417')
 
 
-def test_max_value(screen: SeleniumScreen):
+def test_max_value(screen: Screen):
     ui.number('Number', min=0, max=10, value=5)
     ui.button('Button')
 
@@ -44,7 +44,7 @@ def test_max_value(screen: SeleniumScreen):
     screen.should_contain_input('10')
 
 
-def test_clearable_number(screen: SeleniumScreen):
+def test_clearable_number(screen: Screen):
     number = ui.number(value=42).props('clearable')
     ui.label().bind_text_from(number, 'value', lambda value: f'value: {value}')
 
@@ -57,7 +57,7 @@ def test_clearable_number(screen: SeleniumScreen):
     screen.should_contain('value: None')
 
 
-def test_out_of_limits(screen: SeleniumScreen):
+def test_out_of_limits(screen: Screen):
     number = ui.number('Number', min=0, max=10, value=5)
     ui.label().bind_text_from(number, 'out_of_limits', lambda value: f'out_of_limits: {value}')
 
@@ -72,7 +72,7 @@ def test_out_of_limits(screen: SeleniumScreen):
 
 
 @pytest.mark.parametrize('precision', [None, 1, -1])
-def test_rounding(precision: int, screen: SeleniumScreen):
+def test_rounding(precision: int, screen: Screen):
     number = ui.number('Number', value=12, precision=precision)
     ui.label().bind_text_from(number, 'value', lambda value: f'number=_{value}_')
 
@@ -90,7 +90,7 @@ def test_rounding(precision: int, screen: SeleniumScreen):
         screen.should_contain('number=_10.0_')
 
 
-def test_int_float_conversion_on_error1(screen: SeleniumScreen):
+def test_int_float_conversion_on_error1(screen: Screen):
     ui.number('Number', validation={'Error': lambda value: value == 1}, value=1)
 
     screen.open('/')
@@ -100,7 +100,7 @@ def test_int_float_conversion_on_error1(screen: SeleniumScreen):
     assert element.get_attribute('value') == '12'
 
 
-def test_int_float_conversion_on_error2(screen: SeleniumScreen):
+def test_int_float_conversion_on_error2(screen: Screen):
     ui.number('Number', validation={'Error': lambda value: value == 1.02}, value=1.02)
 
     screen.open('/')
@@ -110,7 +110,7 @@ def test_int_float_conversion_on_error2(screen: SeleniumScreen):
     assert element.get_attribute('value') == '1.0'
 
 
-def test_changing_limits(screen: SeleniumScreen):
+def test_changing_limits(screen: Screen):
     number = ui.number('Number', max=0, value=0)
     ui.button('Raise max', on_click=lambda: setattr(number, 'max', 1))
     ui.button('Step up', on_click=lambda: number.run_method('(e) => e.getNativeElement().stepUp()'))
@@ -128,7 +128,7 @@ def test_changing_limits(screen: SeleniumScreen):
     screen.should_contain_input('1')
 
 
-def test_none_values(screen: SeleniumScreen):
+def test_none_values(screen: Screen):
     n = ui.number('Number', on_change=lambda e: ui.label(f'event: {e.value}'))
     ui.label().bind_text_from(n, 'value', lambda value: f'model: {value}')
 

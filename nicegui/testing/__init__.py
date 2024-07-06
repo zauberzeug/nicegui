@@ -1,7 +1,7 @@
-from .selenium_screen import SeleniumScreen
-from .simulated_screen import User
+from .screen import Screen
+from .user import User
 
 __all__ = [
-    'SeleniumScreen',
+    'Screen',
     'User',
 ]

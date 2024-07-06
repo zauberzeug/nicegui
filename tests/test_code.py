@@ -1,8 +1,8 @@
 from nicegui import ui
-from nicegui.testing import SeleniumScreen
+from nicegui.testing import Screen
 
 
-def test_code(screen: SeleniumScreen):
+def test_code(screen: Screen):
     ui.code('x = 42')
 
     screen.open('/')

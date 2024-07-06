@@ -1,8 +1,8 @@
 from nicegui import ui
-from nicegui.testing import SeleniumScreen
+from nicegui.testing import Screen
 
 
-def test_menu(screen: SeleniumScreen):
+def test_menu(screen: Screen):
     with ui.button('Menu'):
         with ui.menu():
             ui.menu_item('Item 1')

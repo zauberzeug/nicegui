@@ -5,10 +5,10 @@ from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.keys import Keys
 
 from nicegui import ui
-from nicegui.testing import SeleniumScreen
+from nicegui.testing import Screen
 
 
-def test_update_table(screen: SeleniumScreen):
+def test_update_table(screen: Screen):
     grid = ui.aggrid({
         'columnDefs': [{'field': 'name'}, {'field': 'age'}],
         'rowData': [{'name': 'Alice', 'age': 18}],
@@ -27,7 +27,7 @@ def test_update_table(screen: SeleniumScreen):
     screen.should_contain('42')
 
 
-def test_add_row(screen: SeleniumScreen):
+def test_add_row(screen: Screen):
     grid = ui.aggrid({
         'columnDefs': [{'field': 'name'}, {'field': 'age'}],
         'rowData': [],
@@ -49,7 +49,7 @@ def test_add_row(screen: SeleniumScreen):
     screen.should_contain('21')
 
 
-def test_click_cell(screen: SeleniumScreen):
+def test_click_cell(screen: Screen):
     grid = ui.aggrid({
         'columnDefs': [{'field': 'name'}, {'field': 'age'}],
         'rowData': [{'name': 'Alice', 'age': 18}],
@@ -61,7 +61,7 @@ def test_click_cell(screen: SeleniumScreen):
     screen.should_contain('Alice has been clicked!')
 
 
-def test_html_columns(screen: SeleniumScreen):
+def test_html_columns(screen: Screen):
     ui.aggrid({
         'columnDefs': [{'field': 'name'}, {'field': 'age'}],
         'rowData': [{'name': '<span class="text-bold">Alice</span>', 'age': 18}],
@@ -73,7 +73,7 @@ def test_html_columns(screen: SeleniumScreen):
     assert 'text-bold' in screen.find('Alice').get_attribute('class')
 
 
-def test_dynamic_method(screen: SeleniumScreen):
+def test_dynamic_method(screen: Screen):
     ui.aggrid({
         'columnDefs': [{'field': 'name'}, {'field': 'age'}],
         'rowData': [{'name': 'Alice', 'age': '18'}, {'name': 'Bob', 'age': '21'}, {'name': 'Carol', 'age': '42'}],
@@ -89,7 +89,7 @@ def test_dynamic_method(screen: SeleniumScreen):
     assert 48 <= heights[2] <= 50
 
 
-def test_run_grid_method_with_argument(screen: SeleniumScreen):
+def test_run_grid_method_with_argument(screen: Screen):
     grid = ui.aggrid({
         'columnDefs': [{'field': 'name', 'filter': True}],
         'rowData': [{'name': 'Alice'}, {'name': 'Bob'}, {'name': 'Carol'}],
@@ -107,7 +107,7 @@ def test_run_grid_method_with_argument(screen: SeleniumScreen):
     screen.should_not_contain('Carol')
 
 
-def test_run_column_method_with_argument(screen: SeleniumScreen):
+def test_run_column_method_with_argument(screen: Screen):
     grid = ui.aggrid({
         'columnDefs': [{'field': 'name'}, {'field': 'age', 'hide': True}],
         'rowData': [{'name': 'Alice', 'age': '18'}, {'name': 'Bob', 'age': '21'}, {'name': 'Carol', 'age': '42'}],
@@ -121,7 +121,7 @@ def test_run_column_method_with_argument(screen: SeleniumScreen):
     screen.should_contain('18')
 
 
-def test_get_selected_rows(screen: SeleniumScreen):
+def test_get_selected_rows(screen: Screen):
     @ui.page('/')
     def page():
         grid = ui.aggrid({
@@ -149,7 +149,7 @@ def test_get_selected_rows(screen: SeleniumScreen):
     screen.should_contain("{'name': 'Alice'}")
 
 
-def test_replace_aggrid(screen: SeleniumScreen):
+def test_replace_aggrid(screen: Screen):
     with ui.row().classes('w-full') as container:
         ui.aggrid({'columnDefs': [{'field': 'name'}], 'rowData': [{'name': 'Alice'}]})
 
@@ -166,7 +166,7 @@ def test_replace_aggrid(screen: SeleniumScreen):
     screen.should_not_contain('Alice')
 
 
-def test_create_from_pandas(screen: SeleniumScreen):
+def test_create_from_pandas(screen: Screen):
     df = pd.DataFrame({'name': ['Alice', 'Bob'], 'age': [18, 21], 42: 'answer'})
     ui.aggrid.from_pandas(df)
 
@@ -179,7 +179,7 @@ def test_create_from_pandas(screen: SeleniumScreen):
     screen.should_contain('answer')
 
 
-def test_create_dynamically(screen: SeleniumScreen):
+def test_create_dynamically(screen: Screen):
     ui.button('Create', on_click=lambda: ui.aggrid({'columnDefs': [{'field': 'name'}], 'rowData': [{'name': 'Alice'}]}))
 
     screen.open('/')
@@ -187,7 +187,7 @@ def test_create_dynamically(screen: SeleniumScreen):
     screen.should_contain('Alice')
 
 
-def test_api_method_after_creation(screen: SeleniumScreen):
+def test_api_method_after_creation(screen: Screen):
     options = {'columnDefs': [{'field': 'name'}], 'rowData': [{'name': 'Alice'}]}
     ui.button('Create', on_click=lambda: ui.aggrid(options).run_grid_method('selectAll'))
 
@@ -196,7 +196,7 @@ def test_api_method_after_creation(screen: SeleniumScreen):
     assert screen.find_by_class('ag-row-selected')
 
 
-def test_problematic_datatypes(screen: SeleniumScreen):
+def test_problematic_datatypes(screen: Screen):
     df = pd.DataFrame({
         'datetime_col': [datetime(2020, 1, 1)],
         'datetime_col_tz': [datetime(2020, 1, 1, tzinfo=timezone.utc)],
@@ -218,7 +218,7 @@ def test_problematic_datatypes(screen: SeleniumScreen):
     screen.should_contain('2021-01')
 
 
-def test_run_row_method(screen: SeleniumScreen):
+def test_run_row_method(screen: Screen):
     grid = ui.aggrid({
         'columnDefs': [{'field': 'name'}, {'field': 'age'}],
         'rowData': [{'name': 'Alice', 'age': 18}],
@@ -235,7 +235,7 @@ def test_run_row_method(screen: SeleniumScreen):
     screen.should_contain('42')
 
 
-def test_run_method_with_function(screen: SeleniumScreen):
+def test_run_method_with_function(screen: Screen):
     @ui.page('/')
     def page():
         grid = ui.aggrid({'columnDefs': [{'field': 'name'}], 'rowData': [{'name': 'Alice'}, {'name': 'Bob'}]})

@@ -1,10 +1,10 @@
 from selenium.webdriver.common.keys import Keys
 
 from nicegui import ui
-from nicegui.testing import SeleniumScreen
+from nicegui.testing import Screen
 
 
-def test_entering_color(screen: SeleniumScreen):
+def test_entering_color(screen: Screen):
     ui.color_input(label='Color', on_change=lambda e: ui.label(f'content: {e.value}'), preview=True)
 
     screen.open('/')
@@ -15,7 +15,7 @@ def test_entering_color(screen: SeleniumScreen):
     assert button.value_of_css_property('background-color') == 'rgba(0, 17, 0, 1)'
 
 
-def test_picking_color(screen: SeleniumScreen):
+def test_picking_color(screen: Screen):
     ui.color_input(label='Color', on_change=lambda e: output.set_text(e.value))
     output = ui.label()
 

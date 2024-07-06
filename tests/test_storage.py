@@ -7,10 +7,10 @@ import pytest
 
 from nicegui import app, background_tasks, context, ui
 from nicegui import storage as storage_module
-from nicegui.testing import SeleniumScreen
+from nicegui.testing import Screen
 
 
-def test_browser_data_is_stored_in_the_browser(screen: SeleniumScreen):
+def test_browser_data_is_stored_in_the_browser(screen: Screen):
     @ui.page('/')
     def page():
         app.storage.browser['count'] = app.storage.browser.get('count', 0) + 1
@@ -31,7 +31,7 @@ def test_browser_data_is_stored_in_the_browser(screen: SeleniumScreen):
     screen.should_contain('count = 3')  # also works with FastAPI endpoints
 
 
-def test_browser_storage_supports_asyncio(screen: SeleniumScreen):
+def test_browser_storage_supports_asyncio(screen: Screen):
     @ui.page('/')
     async def page():
         app.storage.browser['count'] = app.storage.browser.get('count', 0) + 1
@@ -48,7 +48,7 @@ def test_browser_storage_supports_asyncio(screen: SeleniumScreen):
     screen.should_contain('3')
 
 
-def test_browser_storage_modifications_after_page_load_are_forbidden(screen: SeleniumScreen):
+def test_browser_storage_modifications_after_page_load_are_forbidden(screen: Screen):
     @ui.page('/')
     async def page():
         await ui.context.client.connected()
@@ -62,7 +62,7 @@ def test_browser_storage_modifications_after_page_load_are_forbidden(screen: Sel
     screen.should_contain('response to the browser has already been built')
 
 
-def test_user_storage_modifications(screen: SeleniumScreen):
+def test_user_storage_modifications(screen: Screen):
     @ui.page('/')
     async def page(delayed: bool = False):
         if delayed:
@@ -79,7 +79,7 @@ def test_user_storage_modifications(screen: SeleniumScreen):
     screen.should_contain('3')
 
 
-async def test_access_user_storage_from_fastapi(screen: SeleniumScreen):
+async def test_access_user_storage_from_fastapi(screen: Screen):
     @app.get('/api')
     def api():
         app.storage.user['msg'] = 'yes'
@@ -88,14 +88,14 @@ async def test_access_user_storage_from_fastapi(screen: SeleniumScreen):
     screen.ui_run_kwargs['storage_secret'] = 'just a test'
     screen.open('/')
     async with httpx.AsyncClient() as http_client:
-        response = await http_client.get(f'http://localhost:{SeleniumScreen.PORT}/api')
+        response = await http_client.get(f'http://localhost:{Screen.PORT}/api')
         assert response.status_code == 200
         assert response.text == '"OK"'
         await asyncio.sleep(0.5)  # wait for storage to be written
         assert next(Path('.nicegui').glob('storage-user-*.json')).read_text('utf-8') == '{"msg":"yes"}'
 
 
-def test_access_user_storage_on_interaction(screen: SeleniumScreen):
+def test_access_user_storage_on_interaction(screen: Screen):
     @ui.page('/')
     async def page():
         if 'test_switch' not in app.storage.user:
@@ -109,7 +109,7 @@ def test_access_user_storage_on_interaction(screen: SeleniumScreen):
     assert next(Path('.nicegui').glob('storage-user-*.json')).read_text('utf-8') == '{"test_switch":true}'
 
 
-def test_access_user_storage_from_button_click_handler(screen: SeleniumScreen):
+def test_access_user_storage_from_button_click_handler(screen: Screen):
     @ui.page('/')
     async def page():
         ui.button('test', on_click=app.storage.user.update(inner_function='works'))
@@ -121,7 +121,7 @@ def test_access_user_storage_from_button_click_handler(screen: SeleniumScreen):
     assert next(Path('.nicegui').glob('storage-user-*.json')).read_text('utf-8') == '{"inner_function":"works"}'
 
 
-async def test_access_user_storage_from_background_task(screen: SeleniumScreen):
+async def test_access_user_storage_from_background_task(screen: Screen):
     @ui.page('/')
     def page():
         async def subtask():
@@ -134,7 +134,7 @@ async def test_access_user_storage_from_background_task(screen: SeleniumScreen):
     assert next(Path('.nicegui').glob('storage-user-*.json')).read_text('utf-8') == '{"subtask":"works"}'
 
 
-def test_user_and_general_storage_is_persisted(screen: SeleniumScreen):
+def test_user_and_general_storage_is_persisted(screen: Screen):
     @ui.page('/')
     def page():
         app.storage.user['count'] = app.storage.user.get('count', 0) + 1
@@ -154,7 +154,7 @@ def test_user_and_general_storage_is_persisted(screen: SeleniumScreen):
     screen.should_contain('general: 4')
 
 
-def test_rapid_storage(screen: SeleniumScreen):
+def test_rapid_storage(screen: Screen):
     # https://github.com/zauberzeug/nicegui/issues/1099
     ui.button('test', on_click=lambda: (
         app.storage.general.update(one=1),
@@ -168,7 +168,7 @@ def test_rapid_storage(screen: SeleniumScreen):
     assert Path('.nicegui', 'storage-general.json').read_text('utf-8') == '{"one":1,"two":2,"three":3}'
 
 
-def test_tab_storage_is_local(screen: SeleniumScreen):
+def test_tab_storage_is_local(screen: Screen):
     @ui.page('/')
     async def page():
         await context.client.connected()
@@ -189,7 +189,7 @@ def test_tab_storage_is_local(screen: SeleniumScreen):
     screen.should_contain('3')
 
 
-def test_tab_storage_is_auto_removed(screen: SeleniumScreen):
+def test_tab_storage_is_auto_removed(screen: Screen):
     storage_module.PURGE_INTERVAL = 0.1
     app.storage.max_tab_storage_age = 0.5
 
@@ -209,7 +209,7 @@ def test_tab_storage_is_auto_removed(screen: SeleniumScreen):
     screen.should_contain('1')
 
 
-def test_clear_tab_storage(screen: SeleniumScreen):
+def test_clear_tab_storage(screen: Screen):
     storage_module.PURGE_INTERVAL = 60
 
     @ui.page('/')
@@ -230,7 +230,7 @@ def test_clear_tab_storage(screen: SeleniumScreen):
     assert not tab_storages
 
 
-def test_client_storage(screen: SeleniumScreen):
+def test_client_storage(screen: Screen):
     def increment():
         app.storage.client['counter'] = app.storage.client['counter'] + 1
 
@@ -253,7 +253,7 @@ def test_client_storage(screen: SeleniumScreen):
     screen.should_contain('124')
 
 
-def test_clear_client_storage(screen: SeleniumScreen):
+def test_clear_client_storage(screen: Screen):
     with pytest.raises(RuntimeError):  # no context (auto index)
         app.storage.client.clear()
 
@@ -266,7 +266,7 @@ def test_clear_client_storage(screen: SeleniumScreen):
     screen.open('/')
 
 
-def test_deepcopy(screen: SeleniumScreen):
+def test_deepcopy(screen: Screen):
     # https://github.com/zauberzeug/nicegui/issues/3023
     @ui.page('/')
     def page():

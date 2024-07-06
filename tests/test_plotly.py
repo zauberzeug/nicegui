@@ -2,10 +2,10 @@ import numpy as np
 import plotly.graph_objects as go
 
 from nicegui import ui
-from nicegui.testing import SeleniumScreen
+from nicegui.testing import Screen
 
 
-def test_plotly(screen: SeleniumScreen):
+def test_plotly(screen: Screen):
     fig = go.Figure(go.Scatter(x=[1, 2, 3], y=[1, 2, 3], name='Trace 1'))
     fig.update_layout(title='Test Figure')
     plot = ui.plotly(fig)
@@ -24,7 +24,7 @@ def test_plotly(screen: SeleniumScreen):
     screen.should_contain('Trace 2')
 
 
-def test_replace_plotly(screen: SeleniumScreen):
+def test_replace_plotly(screen: Screen):
     with ui.row() as container:
         ui.plotly(go.Figure(go.Scatter(x=[1], y=[1], text=['A'], mode='text')))
 
@@ -41,7 +41,7 @@ def test_replace_plotly(screen: SeleniumScreen):
     assert screen.find_by_tag('text').text == 'B'
 
 
-def test_create_dynamically(screen: SeleniumScreen):
+def test_create_dynamically(screen: Screen):
     ui.button('Create', on_click=lambda: ui.plotly(go.Figure(go.Scatter(x=[], y=[]))))
 
     screen.open('/')

@@ -3,10 +3,10 @@ from pyecharts.charts import Bar
 from pyecharts.commons import utils
 
 from nicegui import ui
-from nicegui.testing import SeleniumScreen
+from nicegui.testing import Screen
 
 
-def test_create_dynamically(screen: SeleniumScreen):
+def test_create_dynamically(screen: Screen):
     def create():
         ui.echart({
             'xAxis': {'type': 'value'},
@@ -20,7 +20,7 @@ def test_create_dynamically(screen: SeleniumScreen):
     assert screen.find_by_tag('canvas')
 
 
-def test_update(screen: SeleniumScreen):
+def test_update(screen: Screen):
     def update():
         chart.options['xAxis'] = {'type': 'value'}
         chart.options['yAxis'] = {'type': 'category', 'data': ['A', 'B', 'C']}
@@ -35,7 +35,7 @@ def test_update(screen: SeleniumScreen):
     assert screen.find_by_tag('canvas')
 
 
-def test_nested_card(screen: SeleniumScreen):
+def test_nested_card(screen: Screen):
     with ui.card().style('height: 200px; width: 600px'):
         ui.echart({
             'xAxis': {'type': 'value'},
@@ -49,7 +49,7 @@ def test_nested_card(screen: SeleniumScreen):
     assert canvas.rect['width'] == 568
 
 
-def test_nested_expansion(screen: SeleniumScreen):
+def test_nested_expansion(screen: Screen):
     with ui.expansion() as expansion:
         with ui.card().style('height: 200px; width: 600px'):
             ui.echart({
@@ -68,7 +68,7 @@ def test_nested_expansion(screen: SeleniumScreen):
     assert canvas.rect['width'] == 568
 
 
-def test_run_method(screen: SeleniumScreen):
+def test_run_method(screen: Screen):
     @ui.page('/')
     def page():
         echart = ui.echart({
@@ -86,7 +86,7 @@ def test_run_method(screen: SeleniumScreen):
     screen.should_contain('Width: 600px')
 
 
-def test_create_from_pyecharts(screen: SeleniumScreen):
+def test_create_from_pyecharts(screen: Screen):
     X_AXIS_FORMATTER = r'(val, idx) => `x for ${val}`'
     Y_AXIS_FORMATTER = r'(val, idx) => `${val} kg`'
 
@@ -109,7 +109,7 @@ def test_create_from_pyecharts(screen: SeleniumScreen):
     ''') == ['function', X_AXIS_FORMATTER, 'function', Y_AXIS_FORMATTER]
 
 
-def test_chart_events(screen: SeleniumScreen):
+def test_chart_events(screen: Screen):
     ui.echart({
         'xAxis': {'type': 'category'},
         'yAxis': {'type': 'value'},
