@@ -117,12 +117,12 @@ def screen(nicegui_reset_globals,
            caplog: pytest.LogCaptureFixture,
            ) -> Generator[SeleniumScreen, None, None]:
     """Create a new SeleniumScreen fixture."""
-    screen = SeleniumScreen(nicegui_driver, caplog)
-    yield screen
-    if screen.is_open:
-        screen.shot(request.node.name)
-    logs = screen.caplog.get_records('call')
-    screen.stop_server()
+    screen_ = SeleniumScreen(nicegui_driver, caplog)
+    yield screen_
+    logs = screen_.caplog.get_records('call')
+    if screen_.is_open:
+        screen_.shot(request.node.name)
+        screen_.stop_server()
     if DOWNLOAD_DIR.exists():
         shutil.rmtree(DOWNLOAD_DIR)
     if logs:
