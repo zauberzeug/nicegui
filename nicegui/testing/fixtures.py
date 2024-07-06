@@ -14,7 +14,6 @@ from starlette.routing import Route
 
 import nicegui.storage
 from nicegui import Client, app, binding, core, ui
-from nicegui.functions import navigate
 from nicegui.page import page
 
 from .screen import Screen
