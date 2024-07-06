@@ -33,6 +33,7 @@ aiohttp = ">=3.9.2" # https://github.com/zauberzeug/nicegui/security/dependabot/
 libsass = { version = "^0.23.0", optional = true }
 docutils = "^0.19"
 requests = ">=2.32.0" # https://github.com/zauberzeug/nicegui/security/dependabot/33
+certifi = ">=2024.07.04" # https://github.com/zauberzeug/nicegui/security/dependabot/35
 
 [tool.poetry.extras]
 native = ["pywebview"]
