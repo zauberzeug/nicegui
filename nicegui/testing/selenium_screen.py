@@ -53,14 +53,13 @@ class SeleniumScreen:
 
     def stop_server(self) -> None:
         """Stop the webserver."""
-        assert core.loop
         self.close()
         self.caplog.clear()
         Server.instance.should_exit = True
         if self.server_thread:
             self.server_thread.join()
-        if core.loop is not None:
-            assert core.loop.is_closed()
+        assert core.loop
+        assert core.loop.is_closed()
 
     def open(self, path: str, timeout: float = 10.0) -> None:
         """Try to open the page until the server is ready or we time out.
