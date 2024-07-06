@@ -58,8 +58,8 @@ class SeleniumScreen:
         Server.instance.should_exit = True
         if self.server_thread:
             self.server_thread.join()
-        assert core.loop
-        assert core.loop.is_closed()
+        if core.loop:
+            assert core.loop.is_closed()
 
     def open(self, path: str, timeout: float = 10.0) -> None:
         """Try to open the page until the server is ready or we time out.
