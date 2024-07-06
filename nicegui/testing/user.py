@@ -82,35 +82,48 @@ class User:
             msg = f'expected to find an element of type {kind.__name__} with {marker=} and {content=} on the page:\n{self.current_page}'
             raise AssertionError(msg)
 
-    async def type(self, text: str, *, kind: Type[T] = Element, marker: Union[str, list[str], None] = None) -> None:
+    async def should_not_see(self, *,
+                             kind: Type[T] = Element,
+                             marker: Union[str, list[str], None] = None,
+                             content: Union[str, list[str], None] = None,
+                             retries: int = 3,
+                             ) -> None:
+        """Assert that the page does not contain an input with the given value."""
+        assert self.client
+        for _ in range(retries):
+            elements = ElementFilter(kind=kind, marker=marker, content=content)
+            if len(elements) == 0:
+                return
+            await asyncio.sleep(0.1)
+        msg = f'expected not to find an element of type {kind.__name__} with {marker=} and {content=} on the page:\n{self.current_page}'
+        raise AssertionError(msg)
+
+    async def type(self, text: str, *, kind: Type[T] = ValueElement, marker: Union[str, list[str], None] = None) -> None:
         """Type the given text into the input."""
         assert issubclass(kind, ValueElement)
         assert self.client
         with self.client:
             elements = await self.should_see(kind=kind, marker=marker)
-            element_type = kind.__name__
             marker = f' with {marker=}' if marker is not None else ''
             assert len(elements) == 1, \
-                f'expected to find exactly one element of type {element_type}{marker} on the page:\n{self.current_page}'
+                f'expected to find exactly one element of type {kind.__name__}{marker} on the page:\n{self.current_page}'
             element = elements[0]
             element.value = text
-            listener = next(l for l in element._event_listeners.values() if l.type == 'keydown.enter')
-            element._handle_event({'listener_id': listener.id, 'args': {}})
+            await self.trigger('keydown.enter', element=element)
 
     async def click(self, *,
-                    element: Type[T] = Element,
+                    kind: Type[T] = Element,
                     marker: Union[str, list[str], None] = None,
                     content: Union[str, list[str], None] = None,
                     ) -> None:
         """Click the given element."""
         assert self.client
         with self.client:
-            elements = await self.should_see(kind=element, marker=marker, content=content)
-            element_type = element.__name__
+            elements = await self.should_see(kind=kind, marker=marker, content=content)
             marker = f' with {marker=}' if marker is not None else ''
             content = f' with {content=}' if content is not None else ''
             assert len(elements) == 1, \
-                f'expected to find exactly one element of type {element_type}{marker}{content} on the page:\n{self.current_page}'
+                f'expected to find exactly one element of type {kind.__name__}{marker}{content} on the page:\n{self.current_page}'
             element = elements[0]
             assert isinstance(element, ui.element)
             for listener in element._event_listeners.values():
@@ -119,8 +132,30 @@ class User:
                 args = None
                 if isinstance(element, ui.checkbox):
                     args = not element.value
-                events.handle_event(listener.handler, events.GenericEventArguments(
-                    sender=element, client=self.client, args=args))
+                events.handle_event(listener.handler,
+                                    events.GenericEventArguments(sender=element, client=self.client, args=args))
+
+    async def trigger(self, event: str, *,
+                      kind: Type[T] = Element,
+                      marker: Union[str, list[str], None] = None,
+                      element: Optional[T] = None,
+                      ) -> None:
+        """Trigger the given event."""
+        assert self.client
+        with self.client:
+            if element is None:
+                elements = await self.should_see(kind=kind, marker=marker)
+                element_type = kind.__name__
+                marker = f' with {marker=}' if marker is not None else ''
+                assert len(elements) == 1, \
+                    f'expected to find exactly one element of type {element_type}{marker} on the page:\n{self.current_page}'
+                element = elements[0]
+            assert isinstance(element, ui.element)
+            for listener in element._event_listeners.values():
+                if listener.type != event:
+                    continue
+                events.handle_event(listener.handler,
+                                    events.GenericEventArguments(sender=element, client=self.client, args={}))
 
     @property
     def current_page(self) -> Element:

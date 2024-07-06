@@ -132,3 +132,23 @@ async def test_checkbox(user: User) -> None:
     await user.click(content='checkbox')
     await user.should_see(content='disabled')
     await user.should_see(content='Changed: False')
+
+
+async def test_should_not_see(user: User) -> None:
+    @ui.page('/')
+    def page():
+        ui.label('Hello')
+
+    await user.open('/')
+    await user.should_not_see(content='World')
+    await user.should_see(content='Hello')
+
+
+async def test_trigger_event(user: User) -> None:
+    @ui.page('/')
+    def page():
+        ui.input().on('keydown.enter', lambda: ui.notify('Enter pressed'))
+
+    await user.open('/')
+    await user.trigger('keydown.enter', kind=ui.input)
+    await user.should_see(content='Enter pressed')
