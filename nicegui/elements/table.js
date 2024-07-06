@@ -5,7 +5,7 @@ export default {
     <q-table
       ref="qRef"
       v-bind="$attrs"
-      :columns="convertedColumns"
+      v-bind="columnsProp"
     >
       <template v-for="(_, slot) in $slots" v-slot:[slot]="slotProps">
         <slot :name="slot" v-bind="slotProps || {}" />
@@ -13,12 +13,16 @@ export default {
     </q-table>
   `,
   props: {
-    columns: Array,
+    columns: [Array, String],
   },
   computed: {
-    convertedColumns() {
-      this.columns.forEach((column) => convertDynamicProperties(column, false));
-      return this.columns;
+    columnsProp() {
+      if (this.columns === "none") {
+        return {};
+      }
+      let convertedColumns = this.columns;
+      convertedColumns.forEach((column) => convertDynamicProperties(column, false));
+      return { columns: convertedColumns };
     },
   },
 };
