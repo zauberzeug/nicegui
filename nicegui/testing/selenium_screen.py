@@ -61,7 +61,7 @@ class SeleniumScreen:
         assert core.loop
         assert core.loop.is_closed()
 
-    def open(self, path: str, timeout: float = 3.0) -> None:
+    def open(self, path: str, timeout: float = 10.0) -> None:
         """Try to open the page until the server is ready or we time out.
 
         If the server is not yet running, start it.
