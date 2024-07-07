@@ -8,6 +8,7 @@ from nicegui import Client, ui
 def main_page() -> None:
     ui.markdown('Try running `pytest` on this project!')
     ui.button('Click me', on_click=lambda: ui.notify('Button clicked!'))
+    ui.link('go to subpage', '/subpage')
 
 
 @ui.page('/subpage')
