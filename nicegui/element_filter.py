@@ -56,6 +56,7 @@ class ElementFilter(Generic[T], Iterator[T]):
                 element._props.get('text', ''),
                 (element.text if hasattr(element, 'text') else ''),
                 element._props.get('label', ''),
+                element._props.get('icon', ''),
                 (element.content if isinstance(element, ContentElement) else ''),
                 (element.source if isinstance(element, SourceElement) else ''),
                 element._props.get('placeholder', ''),
