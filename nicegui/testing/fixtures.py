@@ -13,7 +13,7 @@ from selenium.webdriver.chrome.service import Service
 from starlette.routing import Route
 
 import nicegui.storage
-from nicegui import Client, app, binding, core, ui
+from nicegui import Client, app, binding, core, run, ui
 from nicegui.page import page
 
 from .screen import Screen
@@ -79,6 +79,7 @@ def nicegui_reset_globals() -> Generator[None, None, None]:
         if isinstance(route, Route) and route.path.endswith('/favicon.ico'):
             app.routes.remove(route)
     importlib.reload(core)
+    importlib.reload(run)
     Client.instances.clear()
     Client.page_routes.clear()
     app.reset()
