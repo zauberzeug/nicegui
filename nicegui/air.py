@@ -166,9 +166,6 @@ class Air:
 
     async def connect(self) -> None:
         """Connect to the NiceGUI On Air server."""
-        # ensure that the connection is closed when the process is terminated
-        signal.signal(signal.SIGINT, lambda signum, frame: disconnect())
-        signal.signal(signal.SIGTERM, lambda signum, frame: disconnect())
         if self.connecting or self.relay.connected:
             return
         self.connecting = True
