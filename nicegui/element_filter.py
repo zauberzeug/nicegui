@@ -112,7 +112,7 @@ class ElementFilter(Generic[T], Iterator[T]):
             self._exclude_content.append(content)
         return self
 
-    def not_within(self, *, kind: Optional[Element] = None, marker: str = None, instance: Union[Element, list[Element], None] = None) -> Self:
+    def not_within(self, *, kind: Optional[Type] = None, marker: Optional[str] = None, instance: Union[Element, list[Element], None] = None) -> Self:
         """Exclude elements which have a parent of a specific type or marker."""
 
         if kind is not None:
