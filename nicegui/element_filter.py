@@ -127,11 +127,14 @@ class ElementFilter(Generic[T], Iterator[T]):
     def classes(self, add: Optional[str] = None, *, remove: Optional[str] = None, replace: Optional[str] = None) -> Self:
         for element in self:
             element.classes(add, remove=remove, replace=replace)
+        return self
 
     def style(self, add: Optional[str] = None, *, remove: Optional[str] = None, replace: Optional[str] = None) -> Self:
         for element in self:
             element.style(add, remove=remove, replace=replace)
+        return self
 
     def props(self, add: Optional[str] = None, *, remove: Optional[str] = None) -> Self:
         for element in self:
             element.props(add, remove=remove)
+        return self
