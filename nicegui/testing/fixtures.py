@@ -121,7 +121,7 @@ def screen(nicegui_reset_globals,
     logs = screen_.caplog.get_records('call')
     if screen_.is_open:
         screen_.shot(request.node.name)
-        screen_.stop_server()
+    screen_.stop_server()
     if DOWNLOAD_DIR.exists():
         shutil.rmtree(DOWNLOAD_DIR)
     if logs:
