@@ -2,6 +2,7 @@ import asyncio
 import gzip
 import json
 import re
+import signal
 from dataclasses import dataclass
 from typing import Any, AsyncIterator, Dict, Optional
 from uuid import uuid4
@@ -166,11 +167,8 @@ class Air:
     async def connect(self) -> None:
         """Connect to the NiceGUI On Air server."""
         # ensure that the connection is closed when the process is terminated
-        try:
-            signal.signal(signal.SIGINT, lambda signum, frame: disconnect())
-            signal.signal(signal.SIGTERM, lambda signum, frame: disconnect())
-        except Exception:
-            pass
+        signal.signal(signal.SIGINT, lambda signum, frame: disconnect())
+        signal.signal(signal.SIGTERM, lambda signum, frame: disconnect())
         if self.connecting or self.relay.connected:
             return
         self.connecting = True
