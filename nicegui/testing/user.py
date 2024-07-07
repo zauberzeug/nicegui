@@ -70,17 +70,17 @@ class User:
                          ) -> ElementFilter:
         """Assert that the page contains an input with the given value."""
         assert self.client
-        with self.client:
-            elements = ElementFilter(kind=kind, marker=marker, content=content)
-            for _ in range(retries):
+        for _ in range(retries):
+            with self.client:
+                elements = ElementFilter(kind=kind, marker=marker, content=content)
                 if len(elements) > 0:
                     return elements
                 for m in context.client.outbox.messages:
                     if content is not None and m[1] == 'notify' and content in m[2]['message']:
                         return elements
                 await asyncio.sleep(0.1)
-            msg = f'expected to find an element of type {kind.__name__} with {marker=} and {content=} on the page:\n{self.current_page}'
-            raise AssertionError(msg)
+        msg = f'expected to find an element of type {kind.__name__} with {marker=} and {content=} on the page:\n{self.current_page}'
+        raise AssertionError(msg)
 
     async def should_not_see(self, *,
                              kind: Type[T] = Element,
@@ -91,19 +91,24 @@ class User:
         """Assert that the page does not contain an input with the given value."""
         assert self.client
         for _ in range(retries):
-            elements = ElementFilter(kind=kind, marker=marker, content=content)
-            if len(elements) == 0:
-                return
-            await asyncio.sleep(0.1)
+            with self.client:
+                elements = ElementFilter(kind=kind, marker=marker, content=content)
+                if len(elements) == 0:
+                    return
+                await asyncio.sleep(0.1)
         msg = f'expected not to find an element of type {kind.__name__} with {marker=} and {content=} on the page:\n{self.current_page}'
         raise AssertionError(msg)
 
-    async def type(self, text: str, *, kind: Type[T] = ValueElement, marker: Union[str, list[str], None] = None) -> None:
+    async def type(self, text: str, *,
+                   kind: Type[T] = ValueElement,
+                   marker: Union[str, list[str], None] = None,
+                   content: Union[str, list[str], None] = None,
+                   ) -> None:
         """Type the given text into the input."""
         assert issubclass(kind, ValueElement)
         assert self.client
         with self.client:
-            elements = await self.should_see(kind=kind, marker=marker)
+            elements = await self.should_see(kind=kind, marker=marker, content=content)
             marker = f' with {marker=}' if marker is not None else ''
             assert len(elements) == 1, \
                 f'expected to find exactly one element of type {kind.__name__}{marker} on the page:\n{self.current_page}'
@@ -116,7 +121,7 @@ class User:
                     marker: Union[str, list[str], None] = None,
                     content: Union[str, list[str], None] = None,
                     ) -> None:
-        """Click the given element."""
+        """Perform a click event."""
         assert self.client
         with self.client:
             elements = await self.should_see(kind=kind, marker=marker, content=content)
