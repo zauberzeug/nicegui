@@ -35,3 +35,11 @@ def test_with_connected(screen: Screen) -> None:
     screen.open('/with_connected')
     screen.should_contain('This is an async connection demo')
     screen.should_contain('Connected!')
+
+
+def test_navigation(screen: Screen) -> None:
+    importlib.reload(main)
+
+    screen.open('/')
+    screen.click('go to subpage')
+    screen.should_contain('This is a subpage')

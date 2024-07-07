@@ -32,3 +32,10 @@ async def test_with_connected(user: User) -> None:
     await user.open('/with_connected')
     await user.should_see(content='This is an async connection demo')
     await user.should_see(content='Connected!')
+
+
+@pytest.mark.module_under_test(main)
+async def test_navigation(user: User) -> None:
+    await user.open('/')
+    await user.click(content='go to subpage')
+    await user.should_see(content='This is a subpage')

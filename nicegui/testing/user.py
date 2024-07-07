@@ -131,6 +131,10 @@ class User:
                 f'expected to find exactly one element of type {kind.__name__}{marker}{content} on the page:\n{self.current_page}'
             element = elements[0]
             assert isinstance(element, ui.element)
+            href = element._props.get('href')
+            if href is not None:
+                await self.open(href)
+                return
             for listener in element._event_listeners.values():
                 if listener.element_id != element.id:
                     continue

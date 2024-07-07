@@ -152,3 +152,17 @@ async def test_trigger_event(user: User) -> None:
     await user.open('/')
     await user.trigger('keydown.enter', kind=ui.input)
     await user.should_see(content='Enter pressed')
+
+
+async def test_click_link(user: User) -> None:
+    @ui.page('/')
+    def page():
+        ui.link('go to other', '/other')
+
+    @ui.page('/other')
+    def other():
+        ui.label('Other page')
+
+    await user.open('/')
+    await user.click(content='go to other')
+    await user.should_see(content='Other page')
