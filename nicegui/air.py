@@ -2,7 +2,6 @@ import asyncio
 import gzip
 import json
 import re
-import signal
 from dataclasses import dataclass
 from typing import Any, AsyncIterator, Dict, Optional
 from uuid import uuid4
