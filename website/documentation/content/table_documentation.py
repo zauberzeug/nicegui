@@ -7,7 +7,7 @@ from . import doc
 def main_demo() -> None:
     columns = [
         {'name': 'name', 'label': 'Name', 'field': 'name', 'required': True, 'align': 'left'},
-        {'name': 'age', 'label': 'Age', 'field': 'age', 'sortable': True},
+        {'name': 'age', 'label': 'Age', 'field': 'age', 'sortable': False},
     ]
     rows = [
         {'name': 'Alice', 'age': 18},
@@ -68,7 +68,7 @@ def show_and_hide_columns():
 
     columns = [
         {'name': 'name', 'label': 'Name', 'field': 'name', 'required': True, 'align': 'left'},
-        {'name': 'age', 'label': 'Age', 'field': 'age', 'sortable': True},
+        {'name': 'age', 'label': 'Age', 'field': 'age'},
     ]
     rows = [
         {'name': 'Alice', 'age': 18},
@@ -80,7 +80,7 @@ def show_and_hide_columns():
     def toggle(column: Dict, visible: bool) -> None:
         column['classes'] = '' if visible else 'hidden'
         column['headerClasses'] = '' if visible else 'hidden'
-        table.update()
+        table.columns = columns
 
     with ui.button(icon='menu'):
         with ui.menu(), ui.column().classes('gap-0 p-2'):
@@ -134,7 +134,7 @@ def table_from_pandas_demo():
     import pandas as pd
 
     df = pd.DataFrame(data={'col1': [1, 2], 'col2': [3, 4]})
-    table = ui.table.from_pandas(df, columns_defaults={'sortable': True}).classes('max-h-40')
+    table = ui.table(df=df).classes('max-h-40')
 
 
 @doc.demo('Adding rows', '''

@@ -71,7 +71,7 @@ class Table(FilterElement, component='table.js'):
 
         A table based on Quasar's `QTable <https://quasar.dev/vue-components/table>`_ component.
 
-        :param columns: list of column objects
+        :param columns: optional list of column objects. If not provided, column names are inferred from the first row.
         :param rows: list of row objects, one of the two possible sources of rows
         :param df: pandas DataFrame, the other possible sources of rows
         :param default_column: default options which apply to all columns (default: {sortable: True})
@@ -146,7 +146,7 @@ class Table(FilterElement, component='table.js'):
 
     @property
     def rows(self) -> List[Dict]:
-        """List of rows provided in addition to potential DataFrame df."""
+        """List of rows, which are added to those from 'df'."""
         return self._rows
 
     @rows.setter
@@ -157,7 +157,7 @@ class Table(FilterElement, component='table.js'):
 
     @property
     def df(self) -> 'pd.DataFrame':
-        """DataFrame as alternative source of rows."""
+        """Pandas DataFrame as alternative source of rows, which are added to those of 'rows'."""
         return self._df
 
     @df.setter
@@ -175,7 +175,7 @@ class Table(FilterElement, component='table.js'):
 
     @property
     def columns(self) -> List[Dict]:
-        """List of columns."""
+        """Optional list of columns objects. If not provided, column names are inferred from the first row."""
         return self._columns
 
     @columns.setter
@@ -186,7 +186,7 @@ class Table(FilterElement, component='table.js'):
 
     @property
     def default_column(self) -> ColumnsConfigOptions:
-        """Default column configuration."""
+        """Optional default column configuration. Default: {'sortable': True}"""
         return self._default_column
 
     @default_column.setter
