@@ -10,18 +10,19 @@ from . import main
 @pytest.mark.module_under_test(main)
 async def test_login_logoff(user: User) -> None:
     await user.open('/')
-    await user.type('user1', content='Username')
-    await user.type('pass1', content='Password')
+    user.focus(content='Username').type('user1')
+    user.focus(content='Password').type('pass1')
+    user.focus(content='Log in').click()
     await user.should_see(content='Hello user1!')
-    await user.click(content='logout')
+    user.focus(content='logout').click()
     await user.should_see(content='Log in')
 
 
 @pytest.mark.module_under_test(main)
 async def test_wrong_password(user: User) -> None:
     await user.open('/')
-    await user.type('user1', content='Username')
-    await user.type('wrong', content='Password')
+    user.focus(content='Username').type('user1')
+    user.focus(content='Password').type('wrong').trigger('keydown.enter')
     await user.should_see(content='Wrong username or password')
 
 
@@ -29,6 +30,6 @@ async def test_wrong_password(user: User) -> None:
 async def test_subpage_access(user: User) -> None:
     await user.open('/subpage')
     await user.should_see(content='Log in')
-    await user.type('user1', content='Username')
-    await user.type('pass1', content='Password')
+    user.focus(content='Username').type('user1')
+    user.focus(content='Password').type('pass1').trigger('keydown.enter')
     await user.should_see(content='This is a sub page.')
