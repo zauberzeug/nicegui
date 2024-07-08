@@ -292,12 +292,13 @@ def test_missing_storage_secret(screen: Screen):
 def test_storage_access_in_on_connect(screen: Screen):
     @ui.page('/')
     def root():
-        app.on_connect(lambda: print(app.storage.user.get('test')))
+        app.storage.user['value'] = 'Test'
+        app.on_connect(lambda: ui.label(app.storage.user.get('value')))
 
     screen.ui_run_kwargs['storage_secret'] = 'secret'
 
     screen.open('/')
-    screen.assert_py_logger('ERROR', 'app.storage.user can only be used within a UI context')
+    screen.should_contain('Test')
 
 
 def test_storage_access_in_binding_function(screen: Screen):
