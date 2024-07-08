@@ -116,6 +116,7 @@ __all__ = [
     'add_style',
     'update',
     'page',
+    'outlet',
     'drawer',
     'footer',
     'header',
@@ -125,6 +126,7 @@ __all__ = [
     'right_drawer',
     'run',
     'run_with',
+    'router_frame'
 ]
 
 from .context import context
@@ -195,6 +197,7 @@ from .elements.query import Query as query
 from .elements.radio import Radio as radio
 from .elements.range import Range as range  # pylint: disable=redefined-builtin
 from .elements.restructured_text import ReStructuredText as restructured_text
+from .elements.router_frame import RouterFrame as router_frame
 from .elements.row import Row as row
 from .elements.scene import Scene as scene
 from .elements.scene_view import SceneView as scene_view
@@ -239,6 +242,7 @@ from .functions.refreshable import refreshable, refreshable_method, state
 from .functions.style import add_css, add_sass, add_scss, add_style
 from .functions.update import update
 from .page import page
+from .outlet import Outlet as outlet
 from .page_layout import Drawer as drawer
 from .page_layout import Footer as footer
 from .page_layout import Header as header
