@@ -162,7 +162,7 @@ class Table(FilterElement, component='table.js'):
 
     @df.setter
     def df(self, value: 'pd.DataFrame') -> None:
-        self._df = value
+        self._df = _clean_pandas_dataframe(value) if value is not None else None
         self._props['rows'] = self._merge_rows_with_dataframe()
         self.update()
 
