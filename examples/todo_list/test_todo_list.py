@@ -28,8 +28,8 @@ async def test_checking_items(user: User) -> None:
 @pytest.mark.module_under_test(main)
 async def test_adding_items(user: User) -> None:
     await user.open('/')
-    await user.type('Buy milk', marker='new-item')
-    await user.type('Buy eggs', marker='new-item')
+    (await user.type('Buy milk', marker='new-item')).trigger('keydown.enter')
+    (await user.type('Buy eggs', marker='new-item')).trigger('keydown.enter')
     await user.should_see(content='Buy milk')
     await user.should_see(content='Buy eggs')
     await user.click(marker='checkbox-buy-milk')

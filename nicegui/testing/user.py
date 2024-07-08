@@ -16,6 +16,8 @@ from nicegui.element import Element
 from nicegui.elements.mixins.value_element import ValueElement
 from nicegui.logging import log
 
+from .user_focus import UserFocus
+
 # pylint: disable=protected-access
 
 
@@ -103,7 +105,7 @@ class User:
                    kind: Type[T] = ValueElement,
                    marker: Union[str, list[str], None] = None,
                    content: Union[str, list[str], None] = None,
-                   ) -> None:
+                   ) -> UserFocus:
         """Type the given text into the input."""
         assert issubclass(kind, ValueElement)
         assert self.client
@@ -111,10 +113,12 @@ class User:
             elements = await self.should_see(kind=kind, marker=marker, content=content)
             marker = f' with {marker=}' if marker is not None else ''
             assert len(elements) == 1, \
-                f'expected to find exactly one element of type {kind.__name__}{marker} on the page:\n{self.current_page}'
-            element = elements[0]
-            element.value = text
-            await self.trigger('keydown.enter', element=element)
+                f'expected to find exactly one element of type {kind.__name__}{marker} and {content=} on the page:\n{self.current_page}'
+            user_focus = UserFocus(self.client, list(elements))
+            for element in elements:
+                assert isinstance(element, ValueElement)
+                element.value = text
+            return user_focus
 
     async def click(self, *,
                     kind: Type[T] = Element,
@@ -148,7 +152,7 @@ class User:
                       kind: Type[T] = Element,
                       marker: Union[str, list[str], None] = None,
                       element: Optional[T] = None,
-                      ) -> None:
+                      ) -> UserFocus:
         """Trigger the given event."""
         assert self.client
         with self.client:
@@ -158,13 +162,11 @@ class User:
                 marker = f' with {marker=}' if marker is not None else ''
                 assert len(elements) == 1, \
                     f'expected to find exactly one element of type {element_type}{marker} on the page:\n{self.current_page}'
-                element = elements[0]
-            assert isinstance(element, ui.element)
-            for listener in element._event_listeners.values():
-                if listener.type != event:
-                    continue
-                events.handle_event(listener.handler,
-                                    events.GenericEventArguments(sender=element, client=self.client, args={}))
+                user_focus = UserFocus(self.client, list(elements))
+            else:
+                user_focus = UserFocus(self.client, [element])
+            await user_focus.trigger(event)
+            return user_focus
 
     @property
     def current_page(self) -> Element:
