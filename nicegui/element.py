@@ -498,7 +498,7 @@ class Element(Visibility):
             slot.children.clear()
         self.update()
 
-    def move(self, target_container: Optional[Element] = None, target_index: int = -1):
+    def move(self, target_container: Optional[Element] = None, target_index: int = -1) -> None:
         """Move the element to another container.
 
         :param target_container: container to move the element to (default: the parent container)
