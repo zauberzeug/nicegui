@@ -153,6 +153,62 @@ def adding_rows():
     ui.button('Add row', on_click=add)
 
 
+@doc.demo('Removing rows', '''
+    You can remove rows using the `remove_rows(*dict)` method.
+    Rows are remove based on the 'row_key' of the row items provided (default: 'id')
+''')
+def removing_rows():
+    rows = [
+        {'code': '001', 'numeric': 1, 'string': 'One'},
+        {'code': '002', 'numeric': 2, 'string': 'Two'},
+        {'code': '003', 'numeric': 3, 'string': 'Three'},
+        {'code': '004', 'numeric': 4, 'string': 'Four'},
+        {'code': '005', 'numeric': 5, 'string': 'Five'}
+    ]
+
+    count = 4
+
+    def remove():
+        nonlocal count
+        if count > 0:
+            table.remove_rows([table.rows[count]])
+            count -= 1
+
+    table = ui.table(rows=rows, row_key='code')
+    ui.button('Remove last row', on_click=remove)
+
+
+@doc.demo('Updating rows', '''
+    There are two possible sources of rows: 'rows' and 'df' (Pandas DataFrame):
+    - You can update rows provided by 'rows' using the `update_rows(List[Dict])` method or by reassigning new rows to the table's 'rows' property
+    With `update_rows(List[Dict])`, you can also control what happens to the selection (see Reference)
+    - You can update rows provided as a DataFrame by reassigning a new dataframe to the table's 'df' property
+''')
+def updating_rows():
+    import pandas as pd
+
+    rows = [
+        {'id': 0, 'name': 'Alice', 'age': 18},
+        {'id': 1, 'name': 'Bob', 'age': 21},
+        {'id': 2, 'name': 'Lionel', 'age': 19},
+    ]
+
+    df = pd.DataFrame({'id': [3, 4], 'name': ['Patrick', 'Liz'], 'age': [24, 40]})
+
+    def increase_age_rows():
+        for row in rows:
+            row['age'] += 1
+        table.update_rows(rows)
+
+    def increase_age_df():
+        df['age'] += 1
+        table.df = df
+
+    table = ui.table(rows=rows, df=df)
+    ui.button('Update "rows" rows', on_click=increase_age_rows)
+    ui.button('Update "df" rows', on_click=increase_age_df)
+
+
 @doc.demo('Custom sorting and formatting', '''
     You can define dynamic column attributes using a `:` prefix.
     This way you can define custom sorting and formatting functions.
