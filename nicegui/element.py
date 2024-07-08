@@ -392,7 +392,7 @@ class Element(Visibility):
     def mark(self, *keys: str) -> Self:
         """Replace markers of the element.
 
-        Markers are used to identify elements for querying with :func:`ui.find` which is heavily used in testing
+        Markers are used to identify elements for querying with `ElementFilter </documentation/element_filter>`_ which is heavily used in testing
         but can also be used to reduce number of global variables or passing of dependencies.
 
         :param markers: markers of the element, can be a list of strings or a single string with whitespace-delimited keys; will replace existing markers

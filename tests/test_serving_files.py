@@ -130,12 +130,10 @@ def test_auto_serving_file_from_video_source(screen: Screen):
 def test_mimetypes_of_static_files(screen: Screen):
     screen.open('/')
 
-    response = requests.get(
-        f'http://localhost:{Screen.PORT}/_nicegui/{__version__}/static/vue.global.js', timeout=5)
+    response = requests.get(f'http://localhost:{Screen.PORT}/_nicegui/{__version__}/static/vue.global.js', timeout=5)
     assert response.status_code == 200
     assert response.headers['Content-Type'].startswith('text/javascript')
 
-    response = requests.get(
-        f'http://localhost:{Screen.PORT}/_nicegui/{__version__}/static/nicegui.css', timeout=5)
+    response = requests.get(f'http://localhost:{Screen.PORT}/_nicegui/{__version__}/static/nicegui.css', timeout=5)
     assert response.status_code == 200
     assert response.headers['Content-Type'].startswith('text/css')

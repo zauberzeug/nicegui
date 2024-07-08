@@ -23,7 +23,7 @@ class ElementFilter(Generic[T], Iterator[T]):
                  ) -> None:
         """ElementFilter
 
-        Sometimes it's handy to search the Python element tree of the current page. 
+        Sometimes it's handy to search the Python element tree of the current page.
         `ElementFilter()` allows powerful filtering by kind of elements, markers and content.
         It also provides a fluent interface to apply more filters like excluding elements or filtering for elements within a specific parent.
         The filter can be used as an iterator to iterate over the found elements and is always applied while iterating and not when being instantiated.
@@ -91,6 +91,7 @@ class ElementFilter(Generic[T], Iterator[T]):
         return list(iter(self))[index]
 
     def within(self, *, kind: Optional[Type] = None, marker: Optional[str] = None, instance: Union[Element, list[Element], None] = None) -> Self:
+        """Filter elements which have a specific match in the parent hierarchy."""
         if kind is not None:
             assert issubclass(kind, Element)
             self._within_types.append(kind)
@@ -125,16 +126,44 @@ class ElementFilter(Generic[T], Iterator[T]):
         return self
 
     def classes(self, add: Optional[str] = None, *, remove: Optional[str] = None, replace: Optional[str] = None) -> Self:
+        """Apply, remove, or replace HTML classes.
+
+        This allows modifying the look of the element or its layout using `Tailwind <https://tailwindcss.com/>`_ or `Quasar <https://quasar.dev/>`_ classes.
+
+        Removing or replacing classes can be helpful if predefined classes are not desired.
+
+        :param add: whitespace-delimited string of classes
+        :param remove: whitespace-delimited string of classes to remove from the element
+        :param replace: whitespace-delimited string of classes to use instead of existing ones
+        """
         for element in self:
             element.classes(add, remove=remove, replace=replace)
         return self
 
     def style(self, add: Optional[str] = None, *, remove: Optional[str] = None, replace: Optional[str] = None) -> Self:
+        """Apply, remove, or replace CSS definitions.
+
+        Removing or replacing styles can be helpful if the predefined style is not desired.
+
+        :param add: semicolon-separated list of styles to add to the element
+        :param remove: semicolon-separated list of styles to remove from the element
+        :param replace: semicolon-separated list of styles to use instead of existing ones
+        """
         for element in self:
             element.style(add, remove=remove, replace=replace)
         return self
 
     def props(self, add: Optional[str] = None, *, remove: Optional[str] = None) -> Self:
+        """Add or remove props.
+
+        This allows modifying the look of the element or its layout using `Quasar <https://quasar.dev/>`_ props.
+        Since props are simply applied as HTML attributes, they can be used with any HTML element.
+
+        Boolean properties are assumed ``True`` if no value is specified.
+
+        :param add: whitespace-delimited list of either boolean values or key=value pair to add
+        :param remove: whitespace-delimited list of property keys to remove
+        """
         for element in self:
             element.props(add, remove=remove)
         return self
