@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Self
 
 from nicegui import Client, ElementFilter, background_tasks, context, events, ui
 
@@ -11,7 +11,7 @@ class UserFocus:
             assert isinstance(element, ui.element)
         self.elements = elements
 
-    def trigger(self, event: str) -> None:
+    def trigger(self, event: str) -> Self:
         """Trigger the given event on the elements focused by the simulated user."""
         with self.client:
             for element in self.elements:
@@ -20,3 +20,12 @@ class UserFocus:
                         continue
                     events.handle_event(listener.handler,
                                         events.GenericEventArguments(sender=element, client=self.client, args={}))
+        return self
+
+    def type(self, text: str) -> Self:
+        """Type the given text into the focused elements."""
+        with self.client:
+            for element in self.elements:
+                assert isinstance(element, ui.input)
+                element.value = text
+        return self

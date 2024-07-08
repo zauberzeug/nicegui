@@ -101,24 +101,19 @@ class User:
         msg = f'expected not to find an element of type {kind.__name__} with {marker=} and {content=} on the page:\n{self.current_page}'
         raise AssertionError(msg)
 
-    async def type(self, text: str, *,
-                   kind: Type[T] = ValueElement,
-                   marker: Union[str, list[str], None] = None,
-                   content: Union[str, list[str], None] = None,
-                   ) -> UserFocus:
-        """Type the given text into the input."""
-        assert issubclass(kind, ValueElement)
+    def focus(self, *,
+              kind: Type[T] = Element,
+              marker: Union[str, list[str], None] = None,
+              content: Union[str, list[str], None] = None,
+              ) -> UserFocus:
+        """Select elements for interaction."""
         assert self.client
         with self.client:
-            elements = await self.should_see(kind=kind, marker=marker, content=content)
-            marker = f' with {marker=}' if marker is not None else ''
-            assert len(elements) == 1, \
-                f'expected to find exactly one element of type {kind.__name__}{marker} and {content=} on the page:\n{self.current_page}'
-            user_focus = UserFocus(self.client, list(elements))
-            for element in elements:
-                assert isinstance(element, ValueElement)
-                element.value = text
-            return user_focus
+            elements = ElementFilter(kind=kind, marker=marker, content=content)
+            if len(elements) == 0:
+                msg = f'expected to find at least one element of type {kind.__name__} with {marker=} and {content=} on the page:\n{self.current_page}'
+                raise AssertionError(msg)
+        return UserFocus(self.client, list(elements))
 
     async def click(self, *,
                     kind: Type[T] = Element,
@@ -147,26 +142,6 @@ class User:
                     args = not element.value
                 events.handle_event(listener.handler,
                                     events.GenericEventArguments(sender=element, client=self.client, args=args))
-
-    async def trigger(self, event: str, *,
-                      kind: Type[T] = Element,
-                      marker: Union[str, list[str], None] = None,
-                      element: Optional[T] = None,
-                      ) -> UserFocus:
-        """Trigger the given event."""
-        assert self.client
-        with self.client:
-            if element is None:
-                elements = await self.should_see(kind=kind, marker=marker)
-                element_type = kind.__name__
-                marker = f' with {marker=}' if marker is not None else ''
-                assert len(elements) == 1, \
-                    f'expected to find exactly one element of type {element_type}{marker} on the page:\n{self.current_page}'
-                user_focus = UserFocus(self.client, list(elements))
-            else:
-                user_focus = UserFocus(self.client, [element])
-            await user_focus.trigger(event)
-            return user_focus
 
     @property
     def current_page(self) -> Element:
