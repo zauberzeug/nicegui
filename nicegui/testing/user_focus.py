@@ -1,6 +1,8 @@
 from typing import TYPE_CHECKING, List, Self
 
-from nicegui import Client, ElementFilter, background_tasks, context, events, ui
+from typing_extensions import Self
+
+from nicegui import background_tasks, events, ui
 
 if TYPE_CHECKING:
     from .user import User
