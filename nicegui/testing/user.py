@@ -113,39 +113,12 @@ class User:
             if len(elements) == 0:
                 msg = f'expected to find at least one element of type {kind.__name__} with {marker=} and {content=} on the page:\n{self.current_page}'
                 raise AssertionError(msg)
-        return UserFocus(self.client, list(elements))
-
-    async def click(self, *,
-                    kind: Type[T] = Element,
-                    marker: Union[str, list[str], None] = None,
-                    content: Union[str, list[str], None] = None,
-                    ) -> None:
-        """Perform a click event."""
-        assert self.client
-        with self.client:
-            elements = await self.should_see(kind=kind, marker=marker, content=content)
-            marker = f' with {marker=}' if marker is not None else ''
-            content = f' with {content=}' if content is not None else ''
-            assert len(elements) == 1, \
-                f'expected to find exactly one element of type {kind.__name__}{marker}{content} on the page:\n{self.current_page}'
-            element = elements[0]
-            assert isinstance(element, ui.element)
-            href = element._props.get('href')
-            if href is not None:
-                await self.open(href)
-                return
-            for listener in element._event_listeners.values():
-                if listener.element_id != element.id:
-                    continue
-                args = None
-                if isinstance(element, ui.checkbox):
-                    args = not element.value
-                events.handle_event(listener.handler,
-                                    events.GenericEventArguments(sender=element, client=self.client, args=args))
+        return UserFocus(self, list(elements))
 
     @property
     def current_page(self) -> Element:
         """Return the current page."""
+        assert self.client
         return self.client.layout
 
 
