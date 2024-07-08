@@ -17,7 +17,7 @@ async def test_markdown_message(user: User) -> None:
 @pytest.mark.module_under_test(main)
 async def test_button_click(user: User) -> None:
     await user.open('/')
-    await user.click(content='Click me')
+    user.focus(content='Click me').click()
     await user.should_see(content='Button clicked!')
 
 
@@ -37,5 +37,5 @@ async def test_with_connected(user: User) -> None:
 @pytest.mark.module_under_test(main)
 async def test_navigation(user: User) -> None:
     await user.open('/')
-    await user.click(content='go to subpage')
+    user.focus(content='go to subpage').click()
     await user.should_see(content='This is a subpage')
