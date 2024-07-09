@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import asyncio
 import re
-from typing import List, Optional, Type, TypeVar, Union
+from typing import List, Optional, Type, TypeVar, Union, overload
 from uuid import uuid4
 
 import httpx
@@ -64,27 +64,55 @@ class User:
         ui.navigate.to = lambda target, new_tab=False: log.warning(msg)
         self.current_user = None
 
+    @overload
+    async def should_see(self, target: Union[str, Type[T]], *, retries: int = 3) -> None:
+        ...
+
+    @overload
     async def should_see(self, *,
                          kind: Type[T] = Element,
                          marker: Union[str, list[str], None] = None,
                          content: Union[str, list[str], None] = None,
                          retries: int = 3,
-                         ) -> ElementFilter:
+                         ) -> None:
+        ...
+
+    async def should_see(self, target: Union[str, Type[T], None] = None, *,
+                         kind: Type[T] = Element,
+                         marker: Union[str, list[str], None] = None,
+                         content: Union[str, list[str], None] = None,
+                         retries: int = 3,
+                         ) -> None:
         """Assert that the page contains an input with the given value."""
         assert self.client
         for _ in range(retries):
             with self.client:
-                elements = ElementFilter(kind=kind, marker=marker, content=content)
+                elements = self._gather_elements(target, kind, marker, content)
                 if len(elements) > 0:
-                    return elements
+                    return
+                if isinstance(target, str):
+                    content = target
                 for m in context.client.outbox.messages:
                     if content is not None and m[1] == 'notify' and content in m[2]['message']:
-                        return elements
+                        return
                 await asyncio.sleep(0.1)
-        msg = f'expected to find an element of type {kind.__name__} with {marker=} and {content=} on the page:\n{self.current_page}'
+        msg = 'expected to find at least one ' + self._build_error_message(target, kind, marker, content)
         raise AssertionError(msg)
 
+    @overload
+    async def should_not_see(self, target: Union[str, Type[T]], *, retries: int = 3) -> None:
+        ...
+
+    @overload
     async def should_not_see(self, *,
+                             kind: Type[T] = Element,
+                             marker: Union[str, list[str], None] = None,
+                             content: Union[str, list[str], None] = None,
+                             retries: int = 3,
+                             ) -> None:
+        ...
+
+    async def should_not_see(self, target: Union[str, Type[T], None] = None, *,
                              kind: Type[T] = Element,
                              marker: Union[str, list[str], None] = None,
                              content: Union[str, list[str], None] = None,
@@ -94,14 +122,26 @@ class User:
         assert self.client
         for _ in range(retries):
             with self.client:
-                elements = ElementFilter(kind=kind, marker=marker, content=content)
+                elements = self._gather_elements(target, kind, marker, content)
                 if len(elements) == 0:
                     return
-                await asyncio.sleep(0.1)
-        msg = f'expected not to find an element of type {kind.__name__} with {marker=} and {content=} on the page:\n{self.current_page}'
+                await asyncio.sleep(0.05)
+        msg = 'expected not to find any ' + self._build_error_message(target, kind, marker, content)
         raise AssertionError(msg)
 
+    @overload
+    def focus(self, target: Union[str, Type[T]]) -> UserFocus:
+        ...
+
+    @overload
     def focus(self, *,
+              kind: Type[T] = Element,
+              marker: Union[str, list[str], None] = None,
+              content: Union[str, list[str], None] = None,
+              ) -> UserFocus:
+        ...
+
+    def focus(self, target: Union[str, Type[T], None] = None, *,
               kind: Type[T] = Element,
               marker: Union[str, list[str], None] = None,
               content: Union[str, list[str], None] = None,
@@ -109,17 +149,43 @@ class User:
         """Select elements for interaction."""
         assert self.client
         with self.client:
-            elements = ElementFilter(kind=kind, marker=marker, content=content)
+            elements = self._gather_elements(target, kind, marker, content)
             if len(elements) == 0:
-                msg = f'expected to find at least one element of type {kind.__name__} with {marker=} and {content=} on the page:\n{self.current_page}'
+                msg = 'expected to find at least one ' + self._build_error_message(target, kind, marker, content)
                 raise AssertionError(msg)
-        return UserFocus(self, list(elements))
+        return UserFocus(self, elements)
 
     @property
     def current_page(self) -> Element:
         """Return the current page."""
         assert self.client
         return self.client.layout
+
+    def _gather_elements(self, target: Union[str, Type[T], None] = None,
+                         kind: Type[T] = Element,
+                         marker: Union[str, list[str], None] = None,
+                         content: Union[str, list[str], None] = None,
+                         ) -> List[T]:
+        if target is None:
+            elements = list(ElementFilter(kind=kind, marker=marker, content=content))
+        elif isinstance(target, str):
+            elements = list(list(ElementFilter(marker=target)) + list(ElementFilter(content=target)))
+        else:
+            elements = list(ElementFilter(kind=target))
+        return elements
+
+    def _build_error_message(self, target: Union[str, Type[T], None] = None,
+                             kind: Type[T] = Element,
+                             marker: Union[str, list[str], None] = None,
+                             content: Union[str, list[str], None] = None,
+                             ) -> str:
+        if isinstance(target, str):
+            msg = f'element with marker={target} or content={target} on the page:\n{self.current_page}'
+        elif target is not None:
+            msg = f'element of type {target.__name__} on the page:\n{self.current_page}'
+        else:
+            msg = f'element of type {kind.__name__} with {marker=} and {content=} on the page:\n{self.current_page}'
+        return msg
 
 
 original_get_slot_stack = ng.Slot.get_stack

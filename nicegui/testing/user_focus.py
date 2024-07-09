@@ -1,16 +1,19 @@
-from typing import TYPE_CHECKING, List, Self
+from typing import TYPE_CHECKING, List, Self, TypeVar
 
 from typing_extensions import Self
 
 from nicegui import background_tasks, events, ui
+from nicegui.element import Element
 
 if TYPE_CHECKING:
     from .user import User
 
+T = TypeVar('T', bound=Element)
+
 
 class UserFocus:
 
-    def __init__(self, user: 'User', elements: List[ui.element]):
+    def __init__(self, user: 'User', elements: List[T]):
         self.user = user
         for element in elements:
             assert isinstance(element, ui.element)
