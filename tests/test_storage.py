@@ -278,3 +278,39 @@ def test_deepcopy(screen: Screen):
     screen.should_contain('Loaded')
     screen.wait(0.5)
     assert Path('.nicegui', 'storage-general.json').read_text('utf-8') == '{"a":{"b":0}}'
+
+
+def test_missing_storage_secret(screen: Screen):
+    @ui.page('/')
+    def page():
+        ui.label(app.storage.user.get('message', 'no message'))
+
+    screen.open('/')
+    screen.assert_py_logger('ERROR', 'app.storage.user needs a storage_secret passed in ui.run()')
+
+
+def test_storage_access_in_on_connect(screen: Screen):
+    @ui.page('/')
+    def root():
+        app.storage.user['value'] = 'Test'
+        app.on_connect(lambda: ui.label(app.storage.user.get('value')))
+
+    screen.ui_run_kwargs['storage_secret'] = 'secret'
+
+    screen.open('/')
+    screen.should_contain('Test')
+
+
+def test_storage_access_in_binding_function(screen: Screen):
+    model = {'name': 'John'}
+
+    @ui.page('/')
+    def index():
+        def f(v):
+            return v + app.storage.user.get('surname', '')
+        ui.label().bind_text_from(model, 'name', backward=f)
+
+    screen.ui_run_kwargs['storage_secret'] = 'secret'
+
+    screen.open('/')
+    screen.assert_py_logger('ERROR', 'app.storage.user can only be used within a UI context')

@@ -13,7 +13,7 @@ from fastapi.responses import Response
 from fastapi.templating import Jinja2Templates
 from typing_extensions import Self
 
-from . import background_tasks, binding, core, helpers, json
+from . import background_tasks, binding, core, helpers, json, storage
 from .awaitable_response import AwaitableResponse
 from .dependencies import generate_resources
 from .element import Element
@@ -248,6 +248,7 @@ class Client:
         if self._disconnect_task:
             self._disconnect_task.cancel()
             self._disconnect_task = None
+        storage.request_contextvar.set(self.request)
         for t in self.connect_handlers:
             self.safe_invoke(t)
         for t in core.app._connect_handlers:  # pylint: disable=protected-access
