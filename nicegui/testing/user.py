@@ -130,22 +130,22 @@ class User:
         raise AssertionError(msg)
 
     @overload
-    def focus(self, target: Union[str, Type[T]]) -> UserFocus:
+    def find(self, target: Union[str, Type[T]]) -> UserFocus:
         ...
 
     @overload
-    def focus(self, *,
-              kind: Type[T] = Element,
-              marker: Union[str, list[str], None] = None,
-              content: Union[str, list[str], None] = None,
-              ) -> UserFocus:
+    def find(self, *,
+             kind: Type[T] = Element,
+             marker: Union[str, list[str], None] = None,
+             content: Union[str, list[str], None] = None,
+             ) -> UserFocus:
         ...
 
-    def focus(self, target: Union[str, Type[T], None] = None, *,
-              kind: Type[T] = Element,
-              marker: Union[str, list[str], None] = None,
-              content: Union[str, list[str], None] = None,
-              ) -> UserFocus:
+    def find(self, target: Union[str, Type[T], None] = None, *,
+             kind: Type[T] = Element,
+             marker: Union[str, list[str], None] = None,
+             content: Union[str, list[str], None] = None,
+             ) -> UserFocus:
         """Select elements for interaction."""
         assert self.client
         with self.client:

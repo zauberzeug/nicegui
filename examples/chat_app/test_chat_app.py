@@ -10,10 +10,10 @@ from . import main
 async def test_basic_startup_appearance(user: User) -> None:
     """Test basic appearance of the chat app."""
     await user.open('/')
-    await user.should_see(content='simple chat app')
-    await user.should_see(content='https://robohash.org/')
-    await user.should_see(content='message')
-    await user.should_see(content='No messages yet')
+    await user.should_see('simple chat app')
+    await user.should_see('https://robohash.org/')
+    await user.should_see('message')
+    await user.should_see('No messages yet')
 
 
 @pytest.mark.module_under_test(main)
@@ -23,14 +23,14 @@ async def test_sending_messages(create_user) -> None:
     userA = create_user()
     userB = create_user()
     await userA.open('/')
-    userA.focus(kind=ui.input).type('Hello from screen A!').trigger('keydown.enter')
-    await userA.should_see(content='Hello from screen A!')
-    await userA.should_see(content='message')
+    userA.find(ui.input).type('Hello from screen A!').trigger('keydown.enter')
+    await userA.should_see('Hello from screen A!')
+    await userA.should_see('message')
     await userB.open('/')
-    await userB.should_see(content='Hello from screen A!')
-    userB.focus(kind=ui.input).type('Hello, from screen B!').trigger('keydown.enter')
-    await userB.should_see(content='message')
+    await userB.should_see('Hello from screen A!')
+    userB.find(ui.input).type('Hello, from screen B!').trigger('keydown.enter')
+    await userB.should_see('message')
 
     userA.activate()
-    await userA.should_see(content='Hello from screen A!')
-    await userA.should_see(content='Hello, from screen B!')
+    await userA.should_see('Hello from screen A!')
+    await userA.should_see('Hello, from screen B!')

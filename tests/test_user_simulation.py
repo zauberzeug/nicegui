@@ -53,7 +53,7 @@ async def test_button_click(user: User) -> None:
         ui.button('click me', on_click=lambda: ui.label('clicked'))
 
     await user.open('/')
-    user.focus('click me').click()
+    user.find('click me').click()
     await user.should_see('clicked')
 
 
@@ -105,7 +105,7 @@ async def test_navigation(user: User) -> None:
 
     await user.open('/')
     await user.should_see('Main page')
-    user.focus('go to').click()
+    user.find('go to').click()
     await asyncio.sleep(1)
     await user.should_see('Other page')
 
@@ -116,7 +116,7 @@ async def test_notification(user: User) -> None:
         ui.button('notify', on_click=lambda: ui.notify('Hello'))
 
     await user.open('/')
-    user.focus('notify').click()
+    user.find('notify').click()
     await user.should_see('Hello')
 
 
@@ -126,10 +126,10 @@ async def test_checkbox(user: User) -> None:
 
     await user.open('/')
     await user.should_see('disabled')
-    user.focus('checkbox').click()
+    user.find('checkbox').click()
     await user.should_see('enabled')
     await user.should_see('Changed: True')
-    user.focus('checkbox').click()
+    user.find('checkbox').click()
     await user.should_see('disabled')
     await user.should_see('Changed: False')
 
@@ -150,7 +150,7 @@ async def test_trigger_event(user: User) -> None:
         ui.input().on('keydown.enter', lambda: ui.notify('Enter pressed'))
 
     await user.open('/')
-    user.focus(ui.input).trigger('keydown.enter')
+    user.find(ui.input).trigger('keydown.enter')
     await user.should_see('Enter pressed')
 
 
@@ -164,7 +164,7 @@ async def test_click_link(user: User) -> None:
         ui.label('Other page')
 
     await user.open('/')
-    user.focus('go to other').click()
+    user.find('go to other').click()
     await user.should_see('Other page')
 
 
