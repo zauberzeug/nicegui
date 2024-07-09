@@ -11,16 +11,22 @@ if TYPE_CHECKING:
 T = TypeVar('T', bound=Element)
 
 
-class UserFocus:
+class UserInteraction:
 
     def __init__(self, user: 'User', elements: List[T]):
+        """Iteraction object of the simulated user.
+
+        This will be returned by the `find` method of the `user` fixture in pytests.
+        It can be used to perform interaction with the found elements."""
         self.user = user
         for element in elements:
             assert isinstance(element, ui.element)
         self.elements = elements
 
     def trigger(self, event: str) -> Self:
-        """Trigger the given event on the elements focused by the simulated user."""
+        """Trigger the given event on the elements selected by the simulated user.
+
+        Examples: keydown.enter, click, ..."""
         assert self.user.client
         with self.user.client:
             for element in self.elements:
@@ -32,7 +38,7 @@ class UserFocus:
         return self
 
     def type(self, text: str) -> Self:
-        """Type the given text into the focused elements."""
+        """Type the given text into the selected elements."""
         assert self.user.client
         with self.user.client:
             for element in self.elements:
@@ -41,7 +47,7 @@ class UserFocus:
         return self
 
     def click(self) -> Self:
-        """Click the focused elements."""
+        """Click the selected elements."""
         assert self.user.client
         with self.user.client:
             for element in self.elements:
@@ -58,3 +64,4 @@ class UserFocus:
                         args = not element.value
                     events.handle_event(listener.handler,
                                         events.GenericEventArguments(sender=element, client=self.user.client, args=args))
+        return self

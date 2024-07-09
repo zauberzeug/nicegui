@@ -16,7 +16,7 @@ from nicegui.element import Element
 from nicegui.elements.mixins.value_element import ValueElement
 from nicegui.logging import log
 
-from .user_focus import UserFocus
+from .user_interaction import UserInteraction
 
 # pylint: disable=protected-access
 
@@ -96,7 +96,7 @@ class User:
                     if content is not None and m[1] == 'notify' and content in m[2]['message']:
                         return
                 await asyncio.sleep(0.1)
-        msg = 'expected to find at least one ' + self._build_error_message(target, kind, marker, content)
+        msg = 'expected to see at least one ' + self._build_error_message(target, kind, marker, content)
         raise AssertionError(msg)
 
     @overload
@@ -126,11 +126,11 @@ class User:
                 if len(elements) == 0:
                     return
                 await asyncio.sleep(0.05)
-        msg = 'expected not to find any ' + self._build_error_message(target, kind, marker, content)
+        msg = 'expected not to see any ' + self._build_error_message(target, kind, marker, content)
         raise AssertionError(msg)
 
     @overload
-    def find(self, target: Union[str, Type[T]]) -> UserFocus:
+    def find(self, target: Union[str, Type[T]]) -> UserInteraction:
         ...
 
     @overload
@@ -138,14 +138,14 @@ class User:
              kind: Type[T] = Element,
              marker: Union[str, list[str], None] = None,
              content: Union[str, list[str], None] = None,
-             ) -> UserFocus:
+             ) -> UserInteraction:
         ...
 
     def find(self, target: Union[str, Type[T], None] = None, *,
              kind: Type[T] = Element,
              marker: Union[str, list[str], None] = None,
              content: Union[str, list[str], None] = None,
-             ) -> UserFocus:
+             ) -> UserInteraction:
         """Select elements for interaction."""
         assert self.client
         with self.client:
@@ -153,7 +153,7 @@ class User:
             if len(elements) == 0:
                 msg = 'expected to find at least one ' + self._build_error_message(target, kind, marker, content)
                 raise AssertionError(msg)
-        return UserFocus(self, elements)
+        return UserInteraction(self, elements)
 
     @property
     def current_page(self) -> Element:
