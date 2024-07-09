@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, List, Self, TypeVar
+from typing import TYPE_CHECKING, List, TypeVar
 
 from typing_extensions import Self
 
