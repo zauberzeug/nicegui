@@ -4,10 +4,10 @@ from typing import Generic, Iterator, List, Optional, Type, TypeVar, Union
 
 from typing_extensions import Self
 
-from nicegui import context
-from nicegui.element import Element
-from nicegui.elements.mixins.content_element import ContentElement
-from nicegui.elements.mixins.source_element import SourceElement
+from . import context
+from .element import Element
+from .elements.mixins.content_element import ContentElement
+from .elements.mixins.source_element import SourceElement
 
 T = TypeVar('T', bound=Element)
 
