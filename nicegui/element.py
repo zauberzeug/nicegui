@@ -498,12 +498,15 @@ class Element(Visibility):
             slot.children.clear()
         self.update()
 
-    def move(self, target_container: Optional[Element] = None, target_index: int = -1, target_slot: Optional[str] = None) -> None:
+    def move(self,
+             target_container: Optional[Element] = None,
+             target_index: int = -1, *,
+             target_slot: Optional[str] = None) -> None:
         """Move the element to another container.
 
         :param target_container: container to move the element to (default: the parent container)
         :param target_index: index within the target slot (default: append to the end)
-        :param target_slot: slot within the target container (default: the parent slot or the default slot of the target container)
+        :param target_slot: slot within the target container (default: default slot)
         """
         assert self.parent_slot is not None
         self.parent_slot.children.remove(self)
@@ -511,23 +514,16 @@ class Element(Visibility):
         target_container = target_container or self.parent_slot.parent
 
         if target_slot is None:
-            if self.parent_slot is not None and target_container == self.parent_slot.parent:
-                parent_slot = self.parent_slot
-            else:
-                parent_slot = target_container.default_slot
+            self.parent_slot = target_container.default_slot
+        elif target_slot in target_container.slots:
+            self.parent_slot = target_container.slots[target_slot]
         else:
-            try:
-                parent_slot = target_container.slots[target_slot] if target_slot else target_container.default_slot
-            except KeyError:
-                raise ValueError(
-                    f'Slot "{target_slot}" does not exitst in the target container. Add it first using `add_slot("{target_slot}")`.')
-        if parent_slot is None:
-            raise ValueError('Target slot could not be determined.')
+            raise ValueError(f'Slot "{target_slot}" does not exist in the target container. '
+                             f'Add it first using `add_slot("{target_slot}")`.')
 
-        target_index = target_index if target_index >= 0 else len(parent_slot.children)
-        parent_slot.children.insert(target_index, self)
+        target_index = target_index if target_index >= 0 else len(self.parent_slot.children)
+        self.parent_slot.children.insert(target_index, self)
 
-        self.parent_slot = parent_slot
         target_container.update()
 
     def remove(self, element: Union[Element, int]) -> None:

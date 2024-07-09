@@ -29,22 +29,13 @@ def move_elements() -> None:
     This demo shows how to move elements between slots within an element.
 ''')
 def move_elements_to_slots() -> None:
-    a = ui.expansion(value=True)
-    with a.add_slot('header'):
-        ui.label('A')
-    with a:
-        x = ui.label('X')
+    with ui.card() as card:
+        name = ui.input('Name', value='Paul')
+        name.add_slot('append')
+        icon = ui.icon('face')
 
-    b = ui.expansion(value=True)
-    with b.add_slot('header'):
-        ui.label('B')
-
-    ui.button('Move X to header', on_click=lambda: x.move(target_slot='header'))
-    ui.button('Move X to default', on_click=lambda: x.move(target_slot='default'))
-
-    ui.button('Move X to A', on_click=lambda: x.move(a))
-    ui.button('Move X to B', on_click=lambda: x.move(b))
-    ui.button('Move X to top', on_click=lambda: x.move(target_index=0))
+    ui.button('Move into input', on_click=lambda: icon.move(name, target_slot='append'))
+    ui.button('Move out of input', on_click=lambda: icon.move(card))
 
 
 @doc.demo('Default props', '''
