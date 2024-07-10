@@ -11,6 +11,8 @@ def tooltips_demo():
 
 @doc.demo('Tooltip method', '''
     Instead of nesting a tooltip element inside another element, you can also use the `tooltip` method.
+    However, it's important to note that when using the method approach, you cannot apply additional
+    properties (props) or styling directly to the tooltip.
 ''')
 def tooltip_method_demo():
     ui.label('Tooltips...').tooltip('...are shown on mouse over')
@@ -41,6 +43,16 @@ def tooltip_with_other_content():
 def tooltip_on_html_and_markdown():
     with ui.element().tooltip('...with a tooltip!'):
         ui.html('This is <u>HTML</u>...')
+
+
+@doc.demo('Tooltip for upload component', '''
+    Components like `ui.upload()` that don't support tooltips can be wrapped in a `ui.element()`.
+    This allows you to add a tooltip and customize it with props.
+''')
+def simple_upload_with_tooltip_demo():
+    with ui.element():
+        ui.tooltip('Click or drag files to upload').props('delay=1000 transition-show="rotate" transition-hide="rotate"')
+        ui.upload(on_upload=lambda e: ui.notify(f'Uploaded {e.name}'))
 
 
 doc.reference(ui.tooltip)
