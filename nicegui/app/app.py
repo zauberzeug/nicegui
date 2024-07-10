@@ -127,17 +127,11 @@ class App(FastAPI):
         """Shut down NiceGUI.
 
         This will programmatically stop the server.
-        When auto-reload is enabled, this will only work on Linux and MacOS.
         """
         if self.native.main_window:
             self.native.main_window.destroy()
         if self.config.reload:
-            parent_pid = os.getppid()
-            if platform.system() == 'Darwin' or platform.system() == 'Linux':
-                os.kill(parent_pid, signal.SIGINT)
-            else:
-                raise NotImplementedError(
-                    'Shutting down the server with auto-reload enabled is only supported on Linux and MacOS.')
+            os.kill(os.getppid(), getattr(signal, 'CTRL_C_EVENT' if platform.system() == 'Windows' else 'SIGINT'))
         else:
             Server.instance.should_exit = True
 
