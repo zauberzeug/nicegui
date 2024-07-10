@@ -48,7 +48,7 @@ def tooltip_on_html_and_markdown():
 
 @doc.demo('Tooltip for the upload element', '''
     Components like `ui.upload` do not support tooltips directly.
-    You can wrap them in a `ui.element()` to add tooltips and props.
+    You can wrap them in a `ui.element` to add tooltips and props.
 ''')
 def simple_upload_with_tooltip_demo():
     with ui.element():
