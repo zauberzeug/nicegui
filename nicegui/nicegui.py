@@ -163,17 +163,16 @@ async def _exception_handler_500(request: Request, exception: Exception) -> Resp
 
 
 @sio.on('handshake')
-async def _on_handshake(sid: str, data: Dict[str, Any]) -> Dict[str, Any]:
+async def _on_handshake(sid: str, data: Dict[str, Any]) -> bool:
     client = Client.instances.get(data['client_id'])
     if not client:
-        return {'success': False, 'reason': 'no_client_id'}
+        return False
     client.environ = sio.get_environ(sid)
     client.tab_id = data['tab_id']
     await sio.enter_room(sid, client.id)
-    if not await client.outbox.synchronize(data['last_message_id'], data['socket_ids']):
-        return {'success': False, 'reason': 'sync_failure'}
+    await client.outbox.synchronize(data['last_message_id'], data['socket_ids'])
     client.handle_handshake()
-    return {'success': True}
+    return True
 
 
 @sio.on('disconnect')

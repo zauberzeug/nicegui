@@ -312,12 +312,9 @@ function createApp(elements, options) {
             last_message_id: window.lastMessageId,
             socket_ids: window.socketIds,
           };
-          window.socket.emit("handshake", args, (res) => {
-            if (!res.success && res.reason === "no_client_id") {
+          window.socket.emit("handshake", args, (ok) => {
+            if (!ok) {
               console.log("reloading because handshake failed for clientId " + window.clientId);
-              window.location.reload();
-            } else if (!res.success && res.reason === "sync_failure") {
-              console.log("reloading because client could not be synchronized with the server");
               window.location.reload();
             }
             document.getElementById("popup").ariaHidden = true;
@@ -362,14 +359,19 @@ function createApp(elements, options) {
         notify: (msg) => Quasar.Notify.create(msg),
         sync: (msg) => {
           if (msg.target === window.socket.id) {
-            window.syncing = false;
-            for (let i = 0; i < msg.history.length; i++) {
-              let message = msg.history[i][1];
-              if (message.message_id > window.lastMessageId) {
-                window.lastMessageId = message.message_id;
-                delete message.message_id;
-                messageHandlers[msg.history[i][0]](message);
+            if (msg.success) {
+              window.syncing = false;
+              for (let i = 0; i < msg.history.length; i++) {
+                let message = msg.history[i][1];
+                if (message.message_id > window.lastMessageId) {
+                  window.lastMessageId = message.message_id;
+                  delete message.message_id;
+                  messageHandlers[msg.history[i][0]](message);
+                }
               }
+            } else {
+              console.log("reloading because client could not be synchronized with the server");
+              window.location.reload();
             }
           }
         },
