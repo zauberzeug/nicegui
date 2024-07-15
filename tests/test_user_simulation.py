@@ -1,4 +1,4 @@
-import asyncio
+from typing import Callable, Dict
 
 import pytest
 from fastapi.responses import PlainTextResponse
@@ -16,7 +16,7 @@ async def test_auto_index_page(user: User) -> None:
     await user.should_see('Main page')
 
 
-async def test_multiple_pages(create_user) -> None:
+async def test_multiple_pages(create_user: Callable[[], User]) -> None:
     @ui.page('/')
     def index():
         ui.label('Main page')
@@ -57,7 +57,7 @@ async def test_button_click(user: User) -> None:
     await user.should_see('clicked')
 
 
-async def test_assertion_raised_when_non_nicegui_page_is_returned(user: User) -> None:
+async def test_assertion_raised_when_no_nicegui_page_is_returned(user: User) -> None:
     @app.get('/plain')
     def index() -> PlainTextResponse:
         return PlainTextResponse('Hello')
@@ -76,8 +76,8 @@ async def test_assertion_raised_when_element_not_found(user: User) -> None:
         await user.should_see('World')
 
 
-@pytest.mark.parametrize('storage_builder', [lambda:app.storage.browser, lambda:app.storage.user])
-async def test_storage(user: User, storage_builder) -> None:
+@pytest.mark.parametrize('storage_builder', [lambda: app.storage.browser, lambda: app.storage.user])
+async def test_storage(user: User, storage_builder: Callable[[], Dict]) -> None:
     @ui.page('/')
     def page():
         storage = storage_builder()
@@ -95,7 +95,7 @@ async def test_navigation(user: User) -> None:
     @ui.page('/')
     def page():
         ui.label('Main page')
-        ui.button('go to', on_click=lambda: ui.navigate.to('/other'))
+        ui.button('go to other', on_click=lambda: ui.navigate.to('/other'))
         ui.button('forward', on_click=ui.navigate.forward)
 
     @ui.page('/other')
@@ -105,8 +105,7 @@ async def test_navigation(user: User) -> None:
 
     await user.open('/')
     await user.should_see('Main page')
-    user.find('go to').click()
-    await asyncio.sleep(1)
+    user.find('go to other').click()
     await user.should_see('Other page')
 
 

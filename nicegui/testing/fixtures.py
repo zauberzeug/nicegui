@@ -3,7 +3,7 @@ import importlib
 import os
 import shutil
 from pathlib import Path
-from typing import Callable, Dict, Generator
+from typing import AsyncGenerator, Callable, Dict, Generator
 
 import httpx
 import icecream
@@ -26,11 +26,9 @@ DOWNLOAD_DIR = Path(__file__).parent / 'download'
 icecream.install()
 
 
-def pytest_configure(config):
-    config.addinivalue_line(
-        'markers',
-        'module_under_test: specify the module under test which then gets automatically reloaded.'
-    )
+def pytest_configure(config: pytest.Config) -> None:
+    config.addinivalue_line('markers',
+                            'module_under_test: specify the module under test which then gets automatically reloaded.')
 
 
 @pytest.fixture
@@ -38,11 +36,7 @@ def nicegui_chrome_options(chrome_options: webdriver.ChromeOptions) -> webdriver
     chrome_options.add_argument('disable-dev-shm-usage')
     chrome_options.add_argument('no-sandbox')
     chrome_options.add_argument('headless')
-    # check if we are running on GitHub Actions
-    if 'GITHUB_ACTIONS' in os.environ:
-        chrome_options.add_argument('disable-gpu')
-    else:
-        chrome_options.add_argument('--use-gl=angle')
+    chrome_options.add_argument('disable-gpu' if 'GITHUB_ACTIONS' in os.environ else '--use-gl=angle')
     chrome_options.add_argument('window-size=600x600')
     chrome_options.add_experimental_option('prefs', {
         'download.default_directory': str(DOWNLOAD_DIR),
@@ -130,39 +124,39 @@ def screen(nicegui_reset_globals,
 
 
 @pytest.fixture
-async def user(nicegui_reset_globals, prepare_simulated_auto_index_client, request: pytest.FixtureRequest) -> Generator[User, None, None]:
+async def user(nicegui_reset_globals, prepare_simulated_auto_index_client, request: pytest.FixtureRequest) -> AsyncGenerator[User, None]:
     """Create a new user fixture."""
     prepare_simulation(request)
     original_navigate_to = ui.navigate.to
     async with core.app.router.lifespan_context(core.app):
         async with httpx.AsyncClient(app=core.app, base_url='http://test') as client:
             yield User(client)
-    ui.navigate.to = original_navigate_to
+    ui.navigate.to = original_navigate_to  # type: ignore
 
 
 @pytest.fixture
-async def create_user(nicegui_reset_globals, prepare_simulated_auto_index_client, request: pytest.FixtureRequest) -> Generator[Callable[[], User], None, None]:
+async def create_user(nicegui_reset_globals, prepare_simulated_auto_index_client, request: pytest.FixtureRequest) -> AsyncGenerator[Callable[[], User], None]:
     """Create a fixture for building new users."""
     prepare_simulation(request)
     original_navigate_to = ui.navigate.to
     async with core.app.router.lifespan_context(core.app):
         yield lambda: User(httpx.AsyncClient(app=core.app, base_url='http://test'))
-    ui.navigate.to = original_navigate_to
+    ui.navigate.to = original_navigate_to  # type: ignore
 
 
 @pytest.fixture()
 def prepare_simulated_auto_index_client(request):
-    original_test = request.node._obj
+    original_test = request.node._obj  # pylint: disable=protected-access
     if asyncio.iscoroutinefunction(original_test):
         async def wrapped_test(*args, **kwargs):
             with Client.auto_index_client:
                 return await original_test(*args, **kwargs)
-        request.node._obj = wrapped_test
+        request.node._obj = wrapped_test  # pylint: disable=protected-access
     else:
         def wrapped_test(*args, **kwargs):
             Client.auto_index_client.__enter__()
             return original_test(*args, **kwargs)
-        request.node._obj = wrapped_test
+        request.node._obj = wrapped_test  # pylint: disable=protected-access
 
 
 def prepare_simulation(request: pytest.FixtureRequest) -> None:

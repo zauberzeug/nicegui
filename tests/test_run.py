@@ -29,7 +29,6 @@ def delayed_hello() -> str:
 
 @pytest.mark.parametrize('func', [run.cpu_bound, run.io_bound])
 def test_delayed_hello(screen: Screen, func: Awaitable):
-
     @ui.page('/')
     async def index():
         ui.label(await func(delayed_hello))

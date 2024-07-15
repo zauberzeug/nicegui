@@ -4,7 +4,7 @@ from typing import Generic, Iterator, List, Optional, Type, TypeVar, Union
 
 from typing_extensions import Self
 
-from . import context
+from .context import context
 from .element import Element
 from .elements.mixins.content_element import ContentElement
 from .elements.mixins.source_element import SourceElement
@@ -33,7 +33,7 @@ class ElementFilter(Generic[T], Iterator[T]):
         :param content: filter for elements which contain ``content`` in one of their content attributes like ``.text``, ``.value``, ``.source``, ...; can be a singe string or a list of strings which all must match
         :param local_scope: if `True`, only elements within the current scope are returned; by default the whole page is searched (this default behavior can be changed with ``ElementFilter.DEFAULT_LOCAL_SCOPE = True``)
         """
-        self._kinds = kind
+        self._kind = kind
         self._markers = marker.split() if isinstance(marker, str) else marker
         self._contents = [content] if isinstance(content, str) else content
         self._within_types: List[Element] = []
@@ -51,6 +51,7 @@ class ElementFilter(Generic[T], Iterator[T]):
         return self._iterate(self._scope)
 
     def _iterate(self, parent: Element, *, visited: Optional[List[Element]] = None) -> Iterator[T]:
+        # pylint: disable=protected-access
         visited = visited or []
         for element in parent:
             element_contents = [
@@ -65,17 +66,24 @@ class ElementFilter(Generic[T], Iterator[T]):
             ]
             content = ' '.join(str(c) for c in element_contents)
 
-            if (self._kinds is None or isinstance(element, self._kinds)) and \
-                (not self._markers or all(m in element._markers for m in self._markers)) and \
-                (not self._contents or all(c in content for c in self._contents)) and \
-                (not self._exclude_kinds or not any(isinstance(element, type) for type in self._exclude_kinds)) and \
-                (not self._exclude_markers or not any(m in element._markers for m in self._exclude_markers)) and \
-                (not self._exclude_content or (hasattr(element, 'text') and not any(text in element.text for text in self._exclude_content))) and \
-                    (not self._within_kinds or any(element in within_element for within_element in self._within_kinds)):
-                if (not self._within_types or any(isinstance(element, type) for type in self._within_types for element in visited)) and \
-                    (not self._within_markers or any(m in element._markers for m in self._within_markers for element in visited)) and \
-                    (not self._not_within_types or not any(isinstance(element, type) for type in self._not_within_types for element in visited)) and \
-                        (not self._not_within_markers or not any(m in element._markers for m in self._not_within_markers for element in visited)):
+            # pylint: disable=too-many-boolean-expressions
+            if (
+                (self._kind is None or isinstance(element, self._kind)) and
+                (not self._markers or all(m in element._markers for m in self._markers)) and
+                (not self._contents or all(c in content for c in self._contents)) and
+                (not self._exclude_kinds or not any(isinstance(element, type) for type in self._exclude_kinds)) and
+                (not self._exclude_markers or not any(m in element._markers for m in self._exclude_markers)) and
+                (not self._exclude_content or (hasattr(element, 'text') and not any(text in element.text for text in self._exclude_content))) and
+                (not self._within_kinds or any(element in within_element for within_element in self._within_kinds))
+            ):
+                if (
+                    (not self._within_types or any(isinstance(element, type) for type in self._within_types for element in visited)) and
+                    (not self._within_markers or any(m in element._markers for m in self._within_markers for element in visited)) and
+                    (not self._not_within_types or not any(isinstance(element, type) for type in self._not_within_types for element in visited)) and
+                    (not self._not_within_markers or not any(m in element._markers
+                                                             for m in self._not_within_markers
+                                                             for element in visited))
+                ):
                     yield element
             if element not in self._not_within_kinds:
                 yield from self._iterate(element, visited=[*visited, element])
@@ -104,7 +112,6 @@ class ElementFilter(Generic[T], Iterator[T]):
 
     def exclude(self, *, kind: Optional[Element] = None, marker: Optional[str] = None, content: Optional[str] = None) -> Self:
         """Exclude elements with specific element type, marker or content."""
-
         if kind is not None:
             assert issubclass(kind, Element)
             self._exclude_kinds.append(kind)
@@ -116,7 +123,6 @@ class ElementFilter(Generic[T], Iterator[T]):
 
     def not_within(self, *, kind: Optional[Type] = None, marker: Optional[str] = None, instance: Union[Element, List[Element], None] = None) -> Self:
         """Exclude elements which have a parent of a specific type or marker."""
-
         if kind is not None:
             assert issubclass(kind, Element)
             self._not_within_types.append(kind)

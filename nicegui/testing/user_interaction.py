@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import TYPE_CHECKING, List, TypeVar
 
 from typing_extensions import Self
@@ -13,11 +15,12 @@ T = TypeVar('T', bound=Element)
 
 class UserInteraction:
 
-    def __init__(self, user: 'User', elements: List[T]):
+    def __init__(self, user: User, elements: List[T]) -> None:
         """Iteraction object of the simulated user.
 
-        This will be returned by the `find` method of the `user` fixture in pytests.
-        It can be used to perform interaction with the found elements."""
+        This will be returned by the ``find`` method of the ``user`` fixture in pytests.
+        It can be used to perform interaction with the found elements.
+        """
         self.user = user
         for element in elements:
             assert isinstance(element, ui.element)
@@ -26,7 +29,8 @@ class UserInteraction:
     def trigger(self, event: str) -> Self:
         """Trigger the given event on the elements selected by the simulated user.
 
-        Examples: keydown.enter, click, ..."""
+        Examples: "keydown.enter", "click", ...
+        """
         assert self.user.client
         with self.user.client:
             for element in self.elements:
@@ -55,7 +59,7 @@ class UserInteraction:
                 href = element._props.get('href')  # pylint: disable=protected-access
                 if href is not None:
                     background_tasks.create(self.user.open(href))
-                    return
+                    return self
                 for listener in element._event_listeners.values():  # pylint: disable=protected-access
                     if listener.element_id != element.id:
                         continue

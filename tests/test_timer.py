@@ -78,17 +78,17 @@ def test_setting_visibility(screen: Screen, once: bool):
 
 
 def test_awaiting_coroutine(screen: Screen):
-    user = {'name': 'John Doe'}
+    user = {'name': 'Alice'}
 
     async def update_user():
         await asyncio.sleep(0.1)
-        user['name'] = 'Jane Doe'
+        user['name'] = 'Bob'
 
-    ui.timer(1, update_user)
+    ui.timer(0.5, update_user)
 
     screen.open('/')
     screen.wait(1)
-    assert user['name'] == 'Jane Doe'
+    assert user['name'] == 'Bob'
 
 
 def test_timer_on_deleted_container(screen: Screen):

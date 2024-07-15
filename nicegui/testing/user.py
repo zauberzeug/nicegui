@@ -46,19 +46,21 @@ class User:
         self.activate()
 
     def activate(self) -> Self:
+        """Activate the user for interaction."""
         if self.current_user:
             self.current_user.deactivate()
         self.current_user = self
         assert self.client
-        ui.navigate.to = lambda target, *_: background_tasks.create(self.open(target))
+        ui.navigate.to = lambda target, *_: background_tasks.create(self.open(target))  # type: ignore
         self.client.__enter__()
         return self
 
     def deactivate(self, *_) -> None:
+        """Deactivate the user."""
         assert self.client
         self.client.__exit__()
         msg = 'navigate.to unavailable in pytest simulation outside of an active client'
-        ui.navigate.to = lambda *_: log.warning(msg)
+        ui.navigate.to = lambda *_: log.warning(msg)  # type: ignore
         self.current_user = None
 
     @overload
@@ -226,5 +228,5 @@ def prune_stack(cls) -> None:
         del cls.stacks[client_id]
 
 
-Slot.get_stack = get_stack
-Slot.prune_stack = prune_stack
+Slot.get_stack = get_stack  # type: ignore
+Slot.prune_stack = prune_stack  # type: ignore
