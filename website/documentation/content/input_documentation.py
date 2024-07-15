@@ -46,7 +46,7 @@ def styling():
     You can validate the input in two ways:
 
     - by passing a callable that returns an error message or `None`, or
-    - by passing a dictionary that maps error messages to callables that return `True` (error) or `False` (no error).
+    - by passing a dictionary that maps error messages to callables that return `True` if the input is valid.
 ''')
 def validation():
     ui.input('Name', validation=lambda value: 'Too short' if len(value) < 5 else None)
