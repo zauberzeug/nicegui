@@ -14,6 +14,7 @@ __all__ = [
     'App',
     'Client',
     'context',
+    'ElementFilter',
     'elements',
     'run',
     'Tailwind',

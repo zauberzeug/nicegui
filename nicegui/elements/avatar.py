@@ -42,5 +42,5 @@ class Avatar(BackgroundColorElement, TextColorElement):
             self._props['font-size'] = font_size
 
     def __str__(self) -> str:
-        icon = self._props['icon'] if 'icon' in self._props else ''
+        icon = self._props.get('icon', '')
         return f'avatar: {icon}' + super().__str__()

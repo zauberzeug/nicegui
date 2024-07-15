@@ -159,6 +159,7 @@ class Client:
         )
 
     def resolve_title(self) -> str:
+        """Return the title of the page."""
         return self.page.resolve_title() if self.title is None else self.title
 
     async def connected(self, timeout: float = 3.0, check_interval: float = 0.1) -> None:

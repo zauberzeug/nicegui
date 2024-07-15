@@ -17,40 +17,41 @@ class ElementFilter(Generic[T], Iterator[T]):
 
     def __init__(self, *,
                  kind: Type[T] = Element,
-                 marker: Union[str, list[str], None] = None,
-                 content: Union[str, list[str], None] = None,
+                 marker: Union[str, List[str], None] = None,
+                 content: Union[str, List[str], None] = None,
                  local_scope: bool = DEFAULT_LOCAL_SCOPE,
                  ) -> None:
         """ElementFilter
 
-        Sometimes it's handy to search the Python element tree of the current page.
-        `ElementFilter()` allows powerful filtering by kind of elements, markers and content.
+        Sometimes it is handy to search the Python element tree of the current page.
+        ``ElementFilter()`` allows powerful filtering by kind of elements, markers and content.
         It also provides a fluent interface to apply more filters like excluding elements or filtering for elements within a specific parent.
         The filter can be used as an iterator to iterate over the found elements and is always applied while iterating and not when being instantiated.
 
-        :param kind: filter by element type; the iterator will be of type `type`
+        :param kind: filter by element type; the iterator will be of type ``kind``
         :param marker: filter by element markers; can be a list of strings or a single string where markers are separated by whitespace
-        :param content: filter for elements which contain sub-string in one of their content attributes like .text, .value, .source,...; can be a singe string or list of strings which all must match
-        :param local_scope: if `True`, only elements within the current scope are returned; by default the whole page is searched (this default behavior can be changed with `ui.get.DEFAULT_LOCAL_SCOPE = True`)
+        :param content: filter for elements which contain ``content`` in one of their content attributes like ``.text``, ``.value``, ``.source``, ...; can be a singe string or a list of strings which all must match
+        :param local_scope: if `True`, only elements within the current scope are returned; by default the whole page is searched (this default behavior can be changed with ``ElementFilter.DEFAULT_LOCAL_SCOPE = True``)
         """
         self._kinds = kind
         self._markers = marker.split() if isinstance(marker, str) else marker
         self._contents = [content] if isinstance(content, str) else content
-        self._within_types: list[Element] = []
-        self._within_markers: list[str] = []
-        self._within_kinds: list[Element] = []
-        self._not_within_types: list[Element] = []
-        self._not_within_markers: list[str] = []
-        self._not_within_kinds: list[Element] = []
-        self._exclude_kinds: list[Element] = []
-        self._exclude_markers: list[str] = []
-        self._exclude_content: list[str] = []
+        self._within_types: List[Element] = []
+        self._within_markers: List[str] = []
+        self._within_kinds: List[Element] = []
+        self._not_within_types: List[Element] = []
+        self._not_within_markers: List[str] = []
+        self._not_within_kinds: List[Element] = []
+        self._exclude_kinds: List[Element] = []
+        self._exclude_markers: List[str] = []
+        self._exclude_content: List[str] = []
         self._scope = context.slot.parent if local_scope else context.client.layout
 
     def __iter__(self) -> Iterator[T]:
-        return self.iterate(self._scope)
+        return self._iterate(self._scope)
 
-    def iterate(self, parent: Element, *, visited: List[Element] = []) -> Iterator[T]:
+    def _iterate(self, parent: Element, *, visited: Optional[List[Element]] = None) -> Iterator[T]:
+        visited = visited or []
         for element in parent:
             element_contents = [
                 element._props.get('text', ''),
@@ -77,7 +78,7 @@ class ElementFilter(Generic[T], Iterator[T]):
                         (not self._not_within_markers or not any(m in element._markers for m in self._not_within_markers for element in visited)):
                     yield element
             if element not in self._not_within_kinds:
-                yield from self.iterate(element, visited=visited + [element])
+                yield from self._iterate(element, visited=[*visited, element])
 
     def __next__(self) -> T:
         if self._iterator is None:
@@ -90,7 +91,7 @@ class ElementFilter(Generic[T], Iterator[T]):
     def __getitem__(self, index) -> T:
         return list(iter(self))[index]
 
-    def within(self, *, kind: Optional[Type] = None, marker: Optional[str] = None, instance: Union[Element, list[Element], None] = None) -> Self:
+    def within(self, *, kind: Optional[Type] = None, marker: Optional[str] = None, instance: Union[Element, List[Element], None] = None) -> Self:
         """Filter elements which have a specific match in the parent hierarchy."""
         if kind is not None:
             assert issubclass(kind, Element)
@@ -113,7 +114,7 @@ class ElementFilter(Generic[T], Iterator[T]):
             self._exclude_content.append(content)
         return self
 
-    def not_within(self, *, kind: Optional[Type] = None, marker: Optional[str] = None, instance: Union[Element, list[Element], None] = None) -> Self:
+    def not_within(self, *, kind: Optional[Type] = None, marker: Optional[str] = None, instance: Union[Element, List[Element], None] = None) -> Self:
         """Exclude elements which have a parent of a specific type or marker."""
 
         if kind is not None:

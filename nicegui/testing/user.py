@@ -1,4 +1,3 @@
-
 from __future__ import annotations
 
 import asyncio
@@ -10,11 +9,10 @@ import httpx
 import socketio
 from typing_extensions import Self
 
-import nicegui.nicegui as ng
-from nicegui import Client, ElementFilter, background_tasks, context, events, ui
+from nicegui import Client, ElementFilter, background_tasks, context, ui
 from nicegui.element import Element
-from nicegui.elements.mixins.value_element import ValueElement
 from nicegui.logging import log
+from nicegui.nicegui import Slot, _on_handshake
 
 from .user_interaction import UserInteraction
 
@@ -42,10 +40,9 @@ class User:
         match = re.search(r"'client_id': '([0-9a-f-]+)'", response.text)
         assert match is not None
         client_id = match.group(1)
-        client = Client.instances[client_id]
+        self.client = Client.instances[client_id]
         self.sio.on('connect')
-        await ng._on_handshake(f'test-{uuid4()}', {'client_id': client.id, 'tab_id': str(uuid4())})
-        self.client = client
+        await _on_handshake(f'test-{uuid4()}', {'client_id': self.client.id, 'tab_id': str(uuid4())})
         self.activate()
 
     def activate(self) -> Self:
@@ -53,7 +50,7 @@ class User:
             self.current_user.deactivate()
         self.current_user = self
         assert self.client
-        ui.navigate.to = lambda target, new_tab=False: background_tasks.create(self.open(target))
+        ui.navigate.to = lambda target, *_: background_tasks.create(self.open(target))
         self.client.__enter__()
         return self
 
@@ -61,15 +58,20 @@ class User:
         assert self.client
         self.client.__exit__()
         msg = 'navigate.to unavailable in pytest simulation outside of an active client'
-        ui.navigate.to = lambda target, new_tab=False: log.warning(msg)
+        ui.navigate.to = lambda *_: log.warning(msg)
         self.current_user = None
 
     @overload
-    async def should_see(self, target: Union[str, Type[T]], *, retries: int = 3) -> None:
+    async def should_see(self,
+                         target: Union[str, Type[T]],
+                         *,
+                         retries: int = 3,
+                         ) -> None:
         ...
 
     @overload
-    async def should_see(self, *,
+    async def should_see(self,
+                         *,
                          kind: Type[T] = Element,
                          marker: Union[str, list[str], None] = None,
                          content: Union[str, list[str], None] = None,
@@ -77,7 +79,9 @@ class User:
                          ) -> None:
         ...
 
-    async def should_see(self, target: Union[str, Type[T], None] = None, *,
+    async def should_see(self,
+                         target: Union[str, Type[T], None] = None,
+                         *,
                          kind: Type[T] = Element,
                          marker: Union[str, list[str], None] = None,
                          content: Union[str, list[str], None] = None,
@@ -87,24 +91,27 @@ class User:
         assert self.client
         for _ in range(retries):
             with self.client:
-                elements = self._gather_elements(target, kind, marker, content)
-                if len(elements) > 0:
+                if self._gather_elements(target, kind, marker, content):
                     return
                 if isinstance(target, str):
                     content = target
-                for m in context.client.outbox.messages:
-                    if content is not None and m[1] == 'notify' and content in m[2]['message']:
+                for _, message_type, message_data in context.client.outbox.messages:
+                    if content is not None and message_type == 'notify' and content in message_data['message']:
                         return
                 await asyncio.sleep(0.1)
-        msg = 'expected to see at least one ' + self._build_error_message(target, kind, marker, content)
-        raise AssertionError(msg)
+        raise AssertionError('expected to see at least one ' + self._build_error_message(target, kind, marker, content))
 
     @overload
-    async def should_not_see(self, target: Union[str, Type[T]], *, retries: int = 3) -> None:
+    async def should_not_see(self,
+                             target: Union[str, Type[T]],
+                             *,
+                             retries: int = 3,
+                             ) -> None:
         ...
 
     @overload
-    async def should_not_see(self, *,
+    async def should_not_see(self,
+                             *,
                              kind: Type[T] = Element,
                              marker: Union[str, list[str], None] = None,
                              content: Union[str, list[str], None] = None,
@@ -112,7 +119,9 @@ class User:
                              ) -> None:
         ...
 
-    async def should_not_see(self, target: Union[str, Type[T], None] = None, *,
+    async def should_not_see(self,
+                             target: Union[str, Type[T], None] = None,
+                             *,
                              kind: Type[T] = Element,
                              marker: Union[str, list[str], None] = None,
                              content: Union[str, list[str], None] = None,
@@ -122,26 +131,29 @@ class User:
         assert self.client
         for _ in range(retries):
             with self.client:
-                elements = self._gather_elements(target, kind, marker, content)
-                if len(elements) == 0:
+                if not self._gather_elements(target, kind, marker, content):
                     return
                 await asyncio.sleep(0.05)
-        msg = 'expected not to see any ' + self._build_error_message(target, kind, marker, content)
-        raise AssertionError(msg)
+        raise AssertionError('expected not to see any ' + self._build_error_message(target, kind, marker, content))
 
     @overload
-    def find(self, target: Union[str, Type[T]]) -> UserInteraction:
+    def find(self,
+             target: Union[str, Type[T]],
+             ) -> UserInteraction:
         ...
 
     @overload
-    def find(self, *,
+    def find(self,
+             *,
              kind: Type[T] = Element,
              marker: Union[str, list[str], None] = None,
              content: Union[str, list[str], None] = None,
              ) -> UserInteraction:
         ...
 
-    def find(self, target: Union[str, Type[T], None] = None, *,
+    def find(self,
+             target: Union[str, Type[T], None] = None,
+             *,
              kind: Type[T] = Element,
              marker: Union[str, list[str], None] = None,
              content: Union[str, list[str], None] = None,
@@ -150,53 +162,53 @@ class User:
         assert self.client
         with self.client:
             elements = self._gather_elements(target, kind, marker, content)
-            if len(elements) == 0:
-                msg = 'expected to find at least one ' + self._build_error_message(target, kind, marker, content)
-                raise AssertionError(msg)
+            if not elements:
+                raise AssertionError('expected to find at least one ' +
+                                     self._build_error_message(target, kind, marker, content))
         return UserInteraction(self, elements)
 
     @property
-    def current_page(self) -> Element:
-        """Return the current page."""
+    def current_layout(self) -> Element:
+        """Return the root layout element of the current page."""
         assert self.client
         return self.client.layout
 
-    def _gather_elements(self, target: Union[str, Type[T], None] = None,
+    def _gather_elements(self,
+                         target: Union[str, Type[T], None] = None,
                          kind: Type[T] = Element,
                          marker: Union[str, list[str], None] = None,
                          content: Union[str, list[str], None] = None,
                          ) -> List[T]:
         if target is None:
-            elements = list(ElementFilter(kind=kind, marker=marker, content=content))
+            return list(ElementFilter(kind=kind, marker=marker, content=content))
         elif isinstance(target, str):
-            elements = list(list(ElementFilter(marker=target)) + list(ElementFilter(content=target)))
+            return list(list(ElementFilter(marker=target)) + list(ElementFilter(content=target)))
         else:
-            elements = list(ElementFilter(kind=target))
-        return elements
+            return list(ElementFilter(kind=target))
 
-    def _build_error_message(self, target: Union[str, Type[T], None] = None,
+    def _build_error_message(self,
+                             target: Union[str, Type[T], None] = None,
                              kind: Type[T] = Element,
                              marker: Union[str, list[str], None] = None,
                              content: Union[str, list[str], None] = None,
                              ) -> str:
         if isinstance(target, str):
-            msg = f'element with marker={target} or content={target} on the page:\n{self.current_page}'
+            return f'element with marker={target} or content={target} on the page:\n{self.current_layout}'
         elif target is not None:
-            msg = f'element of type {target.__name__} on the page:\n{self.current_page}'
+            return f'element of type {target.__name__} on the page:\n{self.current_layout}'
         else:
-            msg = f'element of type {kind.__name__} with {marker=} and {content=} on the page:\n{self.current_page}'
-        return msg
+            return f'element of type {kind.__name__} with {marker=} and {content=} on the page:\n{self.current_layout}'
 
 
-original_get_slot_stack = ng.Slot.get_stack
-original_prune_slot_stack = ng.Slot.prune_stack
+original_get_slot_stack = Slot.get_stack
+original_prune_slot_stack = Slot.prune_stack
 
 
-def get_stack(_=None) -> List[ng.Slot]:
+def get_stack(_=None) -> List[Slot]:
     """Return the slot stack of the current client."""
     if User.current_user is None:
         return original_get_slot_stack()
-    cls = ng.Slot
+    cls = Slot
     client_id = id(User.current_user)
     if client_id not in cls.stacks:
         cls.stacks[client_id] = []
@@ -206,12 +218,13 @@ def get_stack(_=None) -> List[ng.Slot]:
 def prune_stack(cls) -> None:
     """Remove the current slot stack if it is empty."""
     if User.current_user is None:
-        return original_prune_slot_stack()
-    cls = ng.Slot
+        original_prune_slot_stack()
+        return
+    cls = Slot
     client_id = id(User.current_user)
     if not cls.stacks[client_id]:
         del cls.stacks[client_id]
 
 
-ng.Slot.get_stack = get_stack
-ng.Slot.prune_stack = prune_stack
+Slot.get_stack = get_stack
+Slot.prune_stack = prune_stack

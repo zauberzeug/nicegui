@@ -1,7 +1,5 @@
 icecream
-autopep8
+pytest
 pytest-selenium
 pytest-asyncio
-pytest
 webdriver-manager
-selenium

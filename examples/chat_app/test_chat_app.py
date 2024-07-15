@@ -1,3 +1,5 @@
+from typing import Callable
+
 import pytest
 
 from nicegui import ui
@@ -17,20 +19,21 @@ async def test_basic_startup_appearance(user: User) -> None:
 
 
 @pytest.mark.module_under_test(main)
-async def test_sending_messages(create_user) -> None:
+async def test_sending_messages(create_user: Callable[[], User]) -> None:
     """Test sending messages from two different screens."""
-
     userA = create_user()
     userB = create_user()
+
     await userA.open('/')
     userA.find(ui.input).type('Hello from screen A!').trigger('keydown.enter')
     await userA.should_see('Hello from screen A!')
     await userA.should_see('message')
+
     await userB.open('/')
     await userB.should_see('Hello from screen A!')
-    userB.find(ui.input).type('Hello, from screen B!').trigger('keydown.enter')
+    userB.find(ui.input).type('Hello from screen B!').trigger('keydown.enter')
     await userB.should_see('message')
 
     userA.activate()
     await userA.should_see('Hello from screen A!')
-    await userA.should_see('Hello, from screen B!')
+    await userA.should_see('Hello from screen B!')

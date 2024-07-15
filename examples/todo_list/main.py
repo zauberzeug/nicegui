@@ -1,7 +1,4 @@
 #!/usr/bin/env python3
-if True:
-    import icecream
-    icecream.install()
 from dataclasses import dataclass, field
 from typing import Callable, List
 

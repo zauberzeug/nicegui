@@ -1,8 +1,8 @@
 import asyncio
 import functools
 import hashlib
+import os
 import socket
-import sys
 import threading
 import time
 import webbrowser
@@ -12,7 +12,7 @@ from typing import Any, Optional, Tuple, Union
 
 def is_pytest() -> bool:
     """Check if the code is running in pytest."""
-    return 'pytest' in sys.modules
+    return 'PYTEST_CURRENT_TEST' in os.environ
 
 
 def is_coroutine_function(obj: Any) -> bool:
