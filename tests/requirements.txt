@@ -4,4 +4,3 @@ pytest-asyncio
 selenium
 autopep8
 icecream
-beautifulsoup4
