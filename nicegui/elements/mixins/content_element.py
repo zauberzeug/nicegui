@@ -86,6 +86,3 @@ class ContentElement(Element):
             raise ValueError('HTML elements must not contain <script> tags. Use ui.add_body_html() instead.')
         self._props[self.CONTENT_PROP] = content
         self.update()
-
-    def __str__(self) -> str:
-        return f'{self.content} {super().__str__()}'

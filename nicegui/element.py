@@ -557,7 +557,32 @@ class Element(Visibility):
         return self._deleted
 
     def __str__(self) -> str:
-        result = ', '.join(self._markers)
-        for e in self.default_slot.children:
-            result += f' {e}\n'
+        additions = self._additions_str()
+        result = f'{self._element_str()}' + (f' [{", ".join(additions)}]' if additions else '')
+        for child in self.default_slot.children:
+            for line in child.__str__().split('\n'):
+                result += f'\n {line}'
         return result
+
+    def _element_str(self) -> str:
+        return self.__class__.__name__ if type(self) != Element else self.tag  # pylint: disable=unidiomatic-typecheck
+
+    def _additions_str(self) -> List[str]:
+        def shorten(content: Any, length: int = 20) -> str:
+            text = str(content).replace('\n', ' ').replace('\r', ' ')
+            return text[:length].strip() + '...' if len(text) > length else text
+
+        additions = []
+        if self._markers:
+            additions.append(f'markers={", ".join(self._markers)}')
+        if hasattr(self, 'text') and self._text:
+            additions.append(f'text={shorten(self._text)}')
+        if hasattr(self, 'content') and self.content:  # pylint: disable=no-member
+            additions.append(f'content={shorten(self.content)}')  # pylint: disable=no-member
+        additions += [
+            f'{key}={shorten(value)}' for key, value in self._props.items()
+            if not key.startswith('_') and
+            key not in ['loopback', 'color', 'view', 'innerHTML', 'codehilite_css'] and
+            value not in [None, False, '']
+        ]
+        return additions

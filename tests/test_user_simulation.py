@@ -184,3 +184,41 @@ async def test_kind_content_marker_combinations(user: User) -> None:
     await user.should_see(kind=ui.button, marker='three')
     with pytest.raises(AssertionError):
         await user.should_see(marker='three', content='One')
+
+
+async def test_page_to_string_output_used_in_error_messages(user: User) -> None:
+    @ui.page('/')
+    def page():
+        ui.label('Hello').mark('first')
+        with ui.row():
+            with ui.column():
+                ui.button('World').mark('second')
+                ui.icon('thumbs-up').mark('third')
+        ui.avatar('star')
+        ui.input('some input', placeholder='type here', value='typed')
+        ui.markdown('''## Markdown
+                    - A
+                    - B
+                    - C
+                    ''')
+        with ui.card().tight():
+            ui.image('https://via.placeholder.com/150')
+
+    await user.open('/')
+    output = str(user.current_layout)
+    assert output == '''
+q-layout
+ q-page-container
+  q-page
+   div
+    Label [markers=first, text=Hello]
+    Row
+     Column
+      Button [markers=second, label=World]
+      Icon [markers=third, name=thumbs-up]
+    Avatar [icon=star]
+    Input [value=typed, label=some input, placeholder=type here, type=text]
+    Markdown [content=## Markdown...]
+    Card
+     Image [src=https://via.placehol...]
+'''.strip()

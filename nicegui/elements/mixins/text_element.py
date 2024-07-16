@@ -86,6 +86,3 @@ class TextElement(Element):
 
     def _text_to_model_text(self, text: str) -> None:
         self._text = text
-
-    def __str__(self) -> str:
-        return f'{self.text} {super().__str__()}'
