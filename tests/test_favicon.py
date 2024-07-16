@@ -3,7 +3,6 @@ from typing import Union
 
 import pytest
 import requests
-from bs4 import BeautifulSoup
 
 from nicegui import favicon, ui
 from nicegui.testing import Screen
@@ -12,10 +11,8 @@ DEFAULT_FAVICON_PATH = Path(__file__).parent.parent / 'nicegui' / 'static' / 'fa
 LOGO_FAVICON_PATH = Path(__file__).parent.parent / 'website' / 'static' / 'logo_square.png'
 
 
-def assert_favicon_url_starts_with(screen: Screen, content: str):
-    soup = BeautifulSoup(screen.selenium.page_source, 'html.parser')
-    icon_link = soup.find('link', rel='icon')
-    assert icon_link['href'].startswith(content)
+def get_favicon_url(screen: Screen) -> str:
+    return screen.find_by_css('link[rel="shortcut icon"]').get_attribute('href')
 
 
 def assert_favicon(content: Union[Path, str, bytes], url_path: str = '/favicon.ico'):
@@ -44,7 +41,7 @@ def test_emoji(emoji: str, screen: Screen):
 
     screen.ui_run_kwargs['favicon'] = emoji
     screen.open('/')
-    assert_favicon_url_starts_with(screen, 'data:image/svg+xml')
+    assert get_favicon_url(screen).startswith('data:image/svg+xml')
     assert_favicon(favicon._char_to_svg(emoji))
 
 
@@ -54,7 +51,7 @@ def test_data_url(screen: Screen):
     icon = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAHElEQVQI12P4//8/w38GIAXDIBKE0DHxgljNBAAO9TXL0Y4OHwAAAABJRU5ErkJggg=='
     screen.ui_run_kwargs['favicon'] = icon
     screen.open('/')
-    assert_favicon_url_starts_with(screen, 'data:image/png;base64')
+    assert get_favicon_url(screen).startswith('data:image/png;base64')
     _, bytes_ = favicon._data_url_to_bytes(icon)
     assert_favicon(bytes_)
 
@@ -64,7 +61,7 @@ def test_custom_file(screen: Screen):
 
     screen.ui_run_kwargs['favicon'] = LOGO_FAVICON_PATH
     screen.open('/')
-    assert_favicon_url_starts_with(screen, '/favicon.ico')
+    assert get_favicon_url(screen).endswith('/favicon.ico')
     assert_favicon(screen.ui_run_kwargs['favicon'])
 
 
@@ -88,6 +85,6 @@ def test_page_specific_emoji(screen: Screen):
     ui.label('Main')
 
     screen.open('/subpage')
-    assert_favicon_url_starts_with(screen, 'data:image/svg+xml')
+    assert get_favicon_url(screen).startswith('data:image/svg+xml')
     screen.open('/')
     assert_favicon(DEFAULT_FAVICON_PATH)
