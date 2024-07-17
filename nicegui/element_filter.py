@@ -16,7 +16,7 @@ class ElementFilter(Generic[T], Iterator[T]):
     DEFAULT_LOCAL_SCOPE = False
 
     def __init__(self, *,
-                 kind: Type[T] = Element,
+                 kind: Optional[Type[T]] = None,
                  marker: Union[str, List[str], None] = None,
                  content: Union[str, List[str], None] = None,
                  local_scope: bool = DEFAULT_LOCAL_SCOPE,
@@ -33,16 +33,16 @@ class ElementFilter(Generic[T], Iterator[T]):
         :param content: filter for elements which contain ``content`` in one of their content attributes like ``.text``, ``.value``, ``.source``, ...; can be a singe string or a list of strings which all must match
         :param local_scope: if `True`, only elements within the current scope are returned; by default the whole page is searched (this default behavior can be changed with ``ElementFilter.DEFAULT_LOCAL_SCOPE = True``)
         """
-        self._kind = kind
+        self._kind = kind or Element
         self._markers = marker.split() if isinstance(marker, str) else marker
         self._contents = [content] if isinstance(content, str) else content
-        self._within_types: List[Element] = []
+        self._within_types: List[Type[Element]] = []
         self._within_markers: List[str] = []
-        self._within_kinds: List[Element] = []
-        self._not_within_types: List[Element] = []
+        self._within_kinds: List[Type[Element]] = []
+        self._not_within_types: List[Type[Element]] = []
         self._not_within_markers: List[str] = []
-        self._not_within_kinds: List[Element] = []
-        self._exclude_kinds: List[Element] = []
+        self._not_within_kinds: List[Type[Element]] = []
+        self._exclude_kinds: List[Type[Element]] = []
         self._exclude_markers: List[str] = []
         self._exclude_content: List[str] = []
         self._scope = context.slot.parent if local_scope else context.client.layout
@@ -71,15 +71,15 @@ class ElementFilter(Generic[T], Iterator[T]):
                 (self._kind is None or isinstance(element, self._kind)) and
                 (not self._markers or all(m in element._markers for m in self._markers)) and
                 (not self._contents or all(c in content for c in self._contents)) and
-                (not self._exclude_kinds or not any(isinstance(element, type) for type in self._exclude_kinds)) and
+                (not self._exclude_kinds or not any(isinstance(element, type_) for type_ in self._exclude_kinds)) and
                 (not self._exclude_markers or not any(m in element._markers for m in self._exclude_markers)) and
                 (not self._exclude_content or (hasattr(element, 'text') and not any(text in element.text for text in self._exclude_content))) and
-                (not self._within_kinds or any(element in within_element for within_element in self._within_kinds))
+                (not self._within_kinds or any(element in within_kind for within_kind in self._within_kinds))
             ):
                 if (
-                    (not self._within_types or any(isinstance(element, type) for type in self._within_types for element in visited)) and
+                    (not self._within_types or any(isinstance(element, type_) for type_ in self._within_types for element in visited)) and
                     (not self._within_markers or any(m in element._markers for m in self._within_markers for element in visited)) and
-                    (not self._not_within_types or not any(isinstance(element, type) for type in self._not_within_types for element in visited)) and
+                    (not self._not_within_types or not any(isinstance(element, type_) for type_ in self._not_within_types for element in visited)) and
                     (not self._not_within_markers or not any(m in element._markers
                                                              for m in self._not_within_markers
                                                              for element in visited))
