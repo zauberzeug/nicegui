@@ -92,11 +92,9 @@ pre-commit run --all-files
 These checks will also run automatically before every commit.
 The command may fail with
 
-```
-RuntimeError: failed to find interpreter for Builtin discover of python_spec='python3.8'
-```
+> RuntimeError: failed to find interpreter for Builtin discover of python_spec='python3.8'
 
-You'll need to install python3.8 and make sure it's available in your PATH.
+You will need to install Python 3.8 and make sure it is available in your `PATH`.
 
 ### Formatting
 
