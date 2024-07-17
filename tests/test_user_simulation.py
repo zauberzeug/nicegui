@@ -30,12 +30,11 @@ async def test_multiple_pages(create_user: Callable[[], User]) -> None:
 
     await userA.open('/')
     await userA.should_see('Main page')
+    await userA.should_not_see('Other page')
+
     await userB.open('/other')
     await userB.should_see('Other page')
-    userA.activate()
-    await userA.should_see('Main page')
-    userB.activate()
-    await userB.should_see('Other page')
+    await userB.should_not_see('Main page')
 
 
 async def test_source_element(user: User) -> None:
