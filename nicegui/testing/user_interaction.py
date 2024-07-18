@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, List, TypeVar
+from typing import TYPE_CHECKING, Set, TypeVar
 
 from typing_extensions import Self
 
@@ -15,7 +15,7 @@ T = TypeVar('T', bound=Element)
 
 class UserInteraction:
 
-    def __init__(self, user: User, elements: List[T]) -> None:
+    def __init__(self, user: User, elements: Set[T]) -> None:
         """Iteraction object of the simulated user.
 
         This will be returned by the ``find`` method of the ``user`` fixture in pytests.

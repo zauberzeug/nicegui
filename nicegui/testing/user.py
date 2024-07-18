@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import re
-from typing import List, Optional, Type, TypeVar, Union, overload
+from typing import List, Optional, Set, Type, TypeVar, Union, overload
 from uuid import uuid4
 
 import httpx
@@ -74,7 +74,7 @@ class User:
     @overload
     async def should_see(self,
                          *,
-                         kind: Type[T] = Element,
+                         kind: Optional[Type[T]] = None,
                          marker: Union[str, list[str], None] = None,
                          content: Union[str, list[str], None] = None,
                          retries: int = 3,
@@ -84,7 +84,7 @@ class User:
     async def should_see(self,
                          target: Union[str, Type[T], None] = None,
                          *,
-                         kind: Type[T] = Element,
+                         kind: Optional[Type[T]] = None,
                          marker: Union[str, list[str], None] = None,
                          content: Union[str, list[str], None] = None,
                          retries: int = 3,
@@ -109,7 +109,7 @@ class User:
     @overload
     async def should_not_see(self,
                              *,
-                             kind: Type[T] = Element,
+                             kind: Optional[Type[T]] = None,
                              marker: Union[str, list[str], None] = None,
                              content: Union[str, list[str], None] = None,
                              retries: int = 3,
@@ -119,7 +119,7 @@ class User:
     async def should_not_see(self,
                              target: Union[str, Type[T], None] = None,
                              *,
-                             kind: Type[T] = Element,
+                             kind: Optional[Type[T]] = None,
                              marker: Union[str, list[str], None] = None,
                              content: Union[str, list[str], None] = None,
                              retries: int = 3,
@@ -151,7 +151,7 @@ class User:
     def find(self,
              target: Union[str, Type[T], None] = None,
              *,
-             kind: Type[T] = Element,
+             kind: Optional[Type[T]] = None,
              marker: Union[str, list[str], None] = None,
              content: Union[str, list[str], None] = None,
              ) -> UserInteraction:
@@ -172,20 +172,20 @@ class User:
 
     def _gather_elements(self,
                          target: Union[str, Type[T], None] = None,
-                         kind: Type[T] = Element,
+                         kind: Optional[Type[T]] = None,
                          marker: Union[str, list[str], None] = None,
                          content: Union[str, list[str], None] = None,
-                         ) -> List[T]:
+                         ) -> Set[T]:
         if target is None:
-            return list(ElementFilter(kind=kind, marker=marker, content=content))
+            return set(ElementFilter(kind=kind, marker=marker, content=content))
         elif isinstance(target, str):
-            return list(list(ElementFilter(marker=target)) + list(ElementFilter(content=target)))
+            return set(ElementFilter(marker=target)).union(ElementFilter(content=target))
         else:
-            return list(ElementFilter(kind=target))
+            return set(ElementFilter(kind=target))
 
     def _build_error_message(self,
                              target: Union[str, Type[T], None] = None,
-                             kind: Type[T] = Element,
+                             kind: Optional[Type[T]] = None,
                              marker: Union[str, list[str], None] = None,
                              content: Union[str, list[str], None] = None,
                              ) -> str:
@@ -193,8 +193,10 @@ class User:
             return f'element with marker={target} or content={target} on the page:\n{self.current_layout}'
         elif target is not None:
             return f'element of type {target.__name__} on the page:\n{self.current_layout}'
-        else:
+        elif kind is not None:
             return f'element of type {kind.__name__} with {marker=} and {content=} on the page:\n{self.current_layout}'
+        else:
+            return f'element with {marker=} and {content=} on the page:\n{self.current_layout}'
 
 
 original_get_slot_stack = Slot.get_stack
