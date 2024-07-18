@@ -184,9 +184,7 @@ class User:
         if target is None:
             return set(ElementFilter(kind=kind, marker=marker, content=content))
         elif isinstance(target, str):
-            elements: Set[T] = set(ElementFilter(marker=target))
-            elements.update(ElementFilter(content=target))
-            return elements
+            return set(ElementFilter(marker=target)).union(ElementFilter(content=target))
         else:
             return set(ElementFilter(kind=target))
 
