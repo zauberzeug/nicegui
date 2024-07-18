@@ -3,7 +3,7 @@ import importlib
 import os
 import shutil
 from pathlib import Path
-from typing import AsyncGenerator, Callable, Dict, Generator
+from typing import AsyncGenerator, Callable, Dict, Generator, List, Type
 
 import httpx
 import icecream
@@ -74,6 +74,14 @@ def nicegui_reset_globals() -> Generator[None, None, None]:
             app.routes.remove(route)
     importlib.reload(core)
     importlib.reload(run)
+    element_classes: List[Type[ui.element]] = [ui.element]
+    while element_classes:
+        parent = element_classes.pop()
+        for cls in parent.__subclasses__():
+            cls._default_props = {}  # pylint: disable=protected-access
+            cls._default_style = {}  # pylint: disable=protected-access
+            cls._default_classes = []  # pylint: disable=protected-access
+            element_classes.append(cls)
     Client.instances.clear()
     Client.page_routes.clear()
     app.reset()
