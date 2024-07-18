@@ -63,6 +63,7 @@ class ElementFilter(Generic[T], Iterator[T]):
                 (element.source if isinstance(element, SourceElement) else ''),
                 element._props.get('placeholder', ''),
                 (element._props.get('value', '') or ''),  # NOTE the value could be None
+                element._props.get('options', {}).get('message', '')
             ]
             content = ' '.join(str(c) for c in element_contents)
 

@@ -41,6 +41,7 @@ class Notification(Element, component='notification.js'):
                  spinner: bool = False,
                  timeout: Optional[float] = 5.0,
                  on_dismiss: Optional[Callable] = None,
+                 options: Optional[dict] = None,
                  **kwargs: Any,
                  ) -> None:
         """Notification element
@@ -59,28 +60,32 @@ class Notification(Element, component='notification.js'):
         :param spinner: display a spinner in the notification (default: False)
         :param timeout: optional timeout in seconds after which the notification is dismissed (default: 5.0)
         :param on_dismiss: optional callback to be invoked when the notification is dismissed
+        :param options: optional dictionary with all options (overrides all other arguments)
 
         Note: You can pass additional keyword arguments according to `Quasar's Notify API <https://quasar.dev/quasar-plugins/notify#notify-api>`_.
         """
         with context.client.layout:
             super().__init__()
-        self._props['options'] = {
-            'message': str(message),
-            'position': position,
-            'multiLine': multi_line,
-            'spinner': spinner,
-            'closeBtn': close_button,
-            'timeout': (timeout or 0) * 1000,
-            'group': False,
-            'attrs': {'data-id': f'nicegui-dialog-{self.id}'},
-        }
-        if type is not None:
-            self._props['options']['type'] = type
-        if color is not None:
-            self._props['options']['color'] = color
-        if icon is not None:
-            self._props['options']['icon'] = icon
-        self._props['options'].update(kwargs)
+        if options:
+            self._props['options'] = options
+        else:
+            self._props['options'] = {
+                'message': str(message),
+                'position': position,
+                'multiLine': multi_line,
+                'spinner': spinner,
+                'closeBtn': close_button,
+                'timeout': (timeout or 0) * 1000,
+                'group': False,
+                'attrs': {'data-id': f'nicegui-dialog-{self.id}'},
+            }
+            if type is not None:
+                self._props['options']['type'] = type
+            if color is not None:
+                self._props['options']['color'] = color
+            if icon is not None:
+                self._props['options']['icon'] = icon
+            self._props['options'].update(kwargs)
 
         if on_dismiss:
             self.on_dismiss(on_dismiss)

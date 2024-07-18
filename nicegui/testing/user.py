@@ -9,7 +9,7 @@ import httpx
 import socketio
 from typing_extensions import Self
 
-from nicegui import Client, ElementFilter, background_tasks, context, ui
+from nicegui import Client, ElementFilter, background_tasks, ui
 from nicegui.element import Element
 from nicegui.logging import log
 from nicegui.nicegui import Slot, _on_handshake
@@ -95,11 +95,6 @@ class User:
             with self.client:
                 if self._gather_elements(target, kind, marker, content):
                     return
-                if isinstance(target, str):
-                    content = target
-                for _, message_type, message_data in context.client.outbox.messages:
-                    if content is not None and message_type == 'notify' and content in message_data['message']:
-                        return
                 await asyncio.sleep(0.1)
         raise AssertionError('expected to see at least one ' + self._build_error_message(target, kind, marker, content))
 
