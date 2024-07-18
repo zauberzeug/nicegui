@@ -1,5 +1,5 @@
 import asyncio
-from typing import Any, Callable, Literal, Optional, Union
+from typing import Any, Callable, Dict, Literal, Optional, Union
 
 from typing_extensions import Self
 
@@ -41,7 +41,7 @@ class Notification(Element, component='notification.js'):
                  spinner: bool = False,
                  timeout: Optional[float] = 5.0,
                  on_dismiss: Optional[Callable] = None,
-                 options: Optional[dict] = None,
+                 options: Optional[Dict] = None,
                  **kwargs: Any,
                  ) -> None:
         """Notification element
