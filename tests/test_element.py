@@ -134,15 +134,48 @@ def test_move(screen: Screen):
 
     screen.open('/')
     assert screen.find('A').location['y'] < screen.find('X').location['y'] < screen.find('B').location['y']
+
     screen.click('Move X to B')
     screen.wait(0.5)
     assert screen.find('A').location['y'] < screen.find('B').location['y'] < screen.find('X').location['y']
+
     screen.click('Move X to A')
     screen.wait(0.5)
     assert screen.find('A').location['y'] < screen.find('X').location['y'] < screen.find('B').location['y']
+
     screen.click('Move X to top')
     screen.wait(0.5)
     assert screen.find('X').location['y'] < screen.find('A').location['y'] < screen.find('B').location['y']
+
+
+def test_move_slots(screen: Screen):
+    with ui.expansion(value=True) as a:
+        with a.add_slot('header'):
+            ui.label('A')
+        x = ui.label('X')
+
+    with ui.expansion(value=True) as b:
+        with b.add_slot('header'):
+            ui.label('B')
+
+    ui.button('Move X to header', on_click=lambda: x.move(target_slot='header'))
+    ui.button('Move X to B', on_click=lambda: x.move(b))
+    ui.button('Move X to top', on_click=lambda: x.move(target_index=0))
+
+    screen.open('/')
+    assert screen.find('A').location['y'] < screen.find('X').location['y'], 'X is in A.default'
+
+    screen.click('Move X to header')
+    screen.wait(0.5)
+    assert screen.find('A').location['y'] == screen.find('X').location['y'], 'X is in A.header'
+
+    screen.click('Move X to top')
+    screen.wait(0.5)
+    assert screen.find('A').location['y'] < screen.find('X').location['y'], 'X is in A.default'
+
+    screen.click('Move X to B')
+    screen.wait(0.5)
+    assert screen.find('B').location['y'] < screen.find('X').location['y'], 'X is in B.default'
 
 
 def test_xss(screen: Screen):
