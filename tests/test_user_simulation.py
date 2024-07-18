@@ -142,6 +142,21 @@ async def test_should_not_see(user: User) -> None:
     await user.should_see('Hello')
 
 
+async def test_should_not_see_notification(user: User) -> None:
+    @ui.page('/')
+    def page():
+        ui.button('Notify', on_click=lambda: ui.notification('Hello'))
+
+    await user.open('/')
+    await user.should_not_see('Hello')
+    user.find('Notify').click()
+    await user.should_see('Hello')
+    with pytest.raises(AssertionError):
+        await user.should_not_see('Hello')
+    user.find('Hello').trigger('dismiss')
+    await user.should_not_see('Hello')
+
+
 async def test_trigger_event(user: User) -> None:
     @ui.page('/')
     def page():
