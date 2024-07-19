@@ -1,5 +1,4 @@
-from copy import copy
-from typing import Any, Callable, Dict, List, Literal, Optional, TypedDict, Union
+from typing import Any, Callable, Dict, List, Literal, Optional, Union
 
 from typing_extensions import Self
 
@@ -15,93 +14,48 @@ except ImportError:
     pass
 
 
-ColumnsConfigOptions = TypedDict('ColumnsConfigOptions', {
-    'align': str,
-    'sortable': bool,
-    ':sortable': str,
-    ':sort': str,
-    ':rawSort': str,
-    'sortOrder': str,
-    ':format': str,
-    'style': str,
-    ':style': str,
-    'classes': str,
-    ':classes': str,
-    'headerStyle': str,
-    'headerClasses': str
-},
-    total=False)
-
-ColumnsConfig = Dict[str, ColumnsConfigOptions]
-
-
-def _clean_pandas_dataframe(df: 'pd.DataFrame') -> 'pd.DataFrame':
-    def is_special_dtype(dtype):
-        return (pd.api.types.is_datetime64_any_dtype(dtype) or
-                pd.api.types.is_timedelta64_dtype(dtype) or
-                pd.api.types.is_complex_dtype(dtype) or
-                isinstance(dtype, pd.PeriodDtype))
-    special_cols = df.columns[df.dtypes.apply(is_special_dtype)]
-    if not special_cols.empty:
-        df = df.copy()
-        df[special_cols] = df[special_cols].astype(str)
-
-    if isinstance(df.columns, pd.MultiIndex):
-        raise ValueError('MultiIndex columns are not supported. '
-                         'You can convert them to strings using something like '
-                         '`df.columns = ["_".join(col) for col in df.columns.values]`.')
-    return df
-
-
 class Table(FilterElement, component='table.js'):
 
     def __init__(self,
                  columns: Optional[List[Dict]] = None,
                  rows: Optional[List[Dict]] = None,
-                 df: Optional['pd.DataFrame'] = None,
-                 default_column: Optional[ColumnsConfigOptions] = None,
                  row_key: str = 'id',
                  title: Optional[str] = None,
                  selection: Optional[Literal['single', 'multiple']] = None,
                  pagination: Optional[Union[int, dict]] = None,
                  on_select: Optional[Callable[..., Any]] = None,
                  on_pagination_change: Optional[Callable[..., Any]] = None,
+                 *,  # DEPRECATED: all arguments will be keyword-only in the future
+                 df: Optional['pd.DataFrame'] = None,
+                 default_column: Optional[Dict[str, Any]] = None,
                  ) -> None:
         """Table
 
         A table based on Quasar's `QTable <https://quasar.dev/vue-components/table>`_ component.
 
-        :param columns: optional list of column objects. If not provided, column names are inferred from the first row.
-        :param rows: list of row objects, one of the two possible sources of rows
-        :param df: pandas DataFrame, the other possible sources of rows
-        :param default_column: default options which apply to all columns (default: {sortable: True})
+        :param columns: optional list of column dictionaries (inferred from the first row if not provided)
+        :param rows: optional list of row dictionaries (will be added to those from ``df``, default: ``[]``)
+        :param df: optional Pandas DataFrame (rows will be added to those from ``rows``, default: ``None``)
+        :param default_column: default options which apply to all columns (default: ``{sortable: True}``)
         :param row_key: name of the column containing unique data identifying the row (default: "id")
         :param title: title of the table
-        :param selection: selection type ("single" or "multiple"; default: `None`)
-        :param pagination: a dictionary correlating to a pagination object or number of rows per page (`None` hides the pagination, 0 means "infinite"; default: `None`).
+        :param selection: selection type ("single" or "multiple"; default: ``None``)
+        :param pagination: a dictionary correlating to a pagination object or number of rows per page (``None`` hides the pagination, 0 means "infinite"; default: ``None``).
         :param on_select: callback which is invoked when the selection changes
         :param on_pagination_change: callback which is invoked when the pagination changes
 
-        If selection is 'single' or 'multiple', then a `selected` property is accessible containing the selected rows.
+        If selection is "single" or "multiple", then a ``selected`` property is accessible containing the selected rows.
         """
         super().__init__()
 
-        # Columns should be sortable by default
-        if default_column is None:
-            default_column = {'sortable': True}
-
-        # Keep default_column and columns as separate properties
-        self._default_column = default_column
-        self._columns = columns
-        # Merge them before populating the columns prop
-        self._props['columns'] = self._merge_columns_with_default()
-
-        # df and rows are two alternative ways to populate the rows prop
-        if df is None and rows is None:
-            raise ValueError('You need to provide either rows or df')
-        self._df = _clean_pandas_dataframe(df) if df is not None else None
-        self._rows = rows
+        self._df = self._clean_pandas_dataframe(df)
+        self._rows = rows or []
         self._props['rows'] = self._merge_rows_with_dataframe()
+
+        self._default_column = {'sortable': True} if default_column is None else default_column
+        first_row = self._props['rows'][0] if self._props['rows'] else {}
+        self._columns = columns or [{'name': key, 'label': str(key).upper(), 'field': key} for key in first_row]
+        self._props['columns'] = self._merge_columns_with_default()
 
         self._props['row-key'] = row_key
         self._props['title'] = title
@@ -146,7 +100,7 @@ class Table(FilterElement, component='table.js'):
 
     @property
     def rows(self) -> List[Dict]:
-        """List of rows, which are added to those from 'df'."""
+        """List of rows, which are added to those from ``df``."""
         return self._rows
 
     @rows.setter
@@ -156,26 +110,19 @@ class Table(FilterElement, component='table.js'):
         self.update()
 
     @property
-    def df(self) -> 'pd.DataFrame':
-        """Pandas DataFrame as alternative source of rows, which are added to those of 'rows'."""
+    def df(self) -> Optional['pd.DataFrame']:
+        """Optional Pandas DataFrame, which is added to those from ``rows``."""
         return self._df
 
     @df.setter
     def df(self, value: 'pd.DataFrame') -> None:
-        self._df = _clean_pandas_dataframe(value) if value is not None else None
+        self._df = self._clean_pandas_dataframe(value)
         self._props['rows'] = self._merge_rows_with_dataframe()
         self.update()
 
-    def _merge_rows_with_dataframe(self) -> Union[List[Dict], None]:
-        """Return combined rows resulting from rows merged with dataframe."""
-        merged_rows = copy(self._rows) or []
-        if self._df is not None:
-            merged_rows += self._df.to_dict('records')
-        return merged_rows
-
     @property
     def columns(self) -> List[Dict]:
-        """Optional list of columns objects. If not provided, column names are inferred from the first row."""
+        """List of column dictionaries."""
         return self._columns
 
     @columns.setter
@@ -185,24 +132,46 @@ class Table(FilterElement, component='table.js'):
         self.update()
 
     @property
-    def default_column(self) -> ColumnsConfigOptions:
-        """Optional default column configuration. Default: {'sortable': True}"""
+    def default_column(self) -> Dict[str, Any]:
+        """Default column dictionary."""
         return self._default_column
 
     @default_column.setter
-    def default_column(self, value: ColumnsConfigOptions) -> None:
+    def default_column(self, value: Dict[str, Any]) -> None:
         self._default_column = value
         self._props['columns'] = self._merge_columns_with_default()
         self.update()
 
-    def _merge_columns_with_default(self) -> Union[List[Dict], None]:
-        """Return columns after applying them defaults from default_column."""
-        if self._default_column is not None and self._columns is not None:
-            columns = []
-            for column in self._columns:
-                columns.append({**self._default_column, **column})
-            return columns
-        return 'none'
+    def _clean_pandas_dataframe(self, df: Optional['pd.DataFrame']) -> Optional['pd.DataFrame']:
+        if df is None:
+            return None
+
+        def is_special_dtype(dtype):
+            return (pd.api.types.is_datetime64_any_dtype(dtype) or
+                    pd.api.types.is_timedelta64_dtype(dtype) or
+                    pd.api.types.is_complex_dtype(dtype) or
+                    isinstance(dtype, pd.PeriodDtype))
+        special_cols = df.columns[df.dtypes.apply(is_special_dtype)]
+        if not special_cols.empty:
+            df = df.copy()
+            df[special_cols] = df[special_cols].astype(str)
+
+        if isinstance(df.columns, pd.MultiIndex):
+            raise ValueError('MultiIndex columns are not supported. '
+                             'You can convert them to strings using something like '
+                             '`df.columns = ["_".join(col) for col in df.columns.values]`.')
+        return df
+
+    def _merge_rows_with_dataframe(self) -> List[Dict]:
+        assert self._rows is not None or self._df is not None, 'Either rows or df must be set.'
+        return [
+            *(self._rows or []),
+            *(self._df.to_dict('records') if self._df is not None else []),
+        ]
+
+    def _merge_columns_with_default(self) -> List[Dict]:
+        """Merge columns with default column configuration."""
+        return [{**self._default_column, **column} for column in self._columns]
 
     @property
     def row_key(self) -> str:
