@@ -111,7 +111,7 @@ class ElementFilter(Generic[T], Iterator[T]):
             self._within_instances.extend(instance if isinstance(instance, list) else [instance])
         return self
 
-    def exclude(self, *, kind: Optional[Element] = None, marker: Optional[str] = None, content: Optional[str] = None) -> Self:
+    def exclude(self, *, kind: Optional[Type[Element]] = None, marker: Optional[str] = None, content: Optional[str] = None) -> Self:
         """Exclude elements with specific element type, marker or content."""
         if kind is not None:
             assert issubclass(kind, Element)
