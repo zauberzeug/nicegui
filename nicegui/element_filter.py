@@ -16,7 +16,7 @@ class ElementFilter(Generic[T], Iterator[T]):
     DEFAULT_LOCAL_SCOPE = False
 
     def __init__(self, *,
-                 kind: Optional[Type[T]] = None,
+                 kind: Type[T] = Element,
                  marker: Union[str, List[str], None] = None,
                  content: Union[str, List[str], None] = None,
                  local_scope: bool = DEFAULT_LOCAL_SCOPE,
@@ -33,7 +33,7 @@ class ElementFilter(Generic[T], Iterator[T]):
         :param content: filter for elements which contain ``content`` in one of their content attributes like ``.text``, ``.value``, ``.source``, ...; can be a singe string or a list of strings which all must match
         :param local_scope: if `True`, only elements within the current scope are returned; by default the whole page is searched (this default behavior can be changed with ``ElementFilter.DEFAULT_LOCAL_SCOPE = True``)
         """
-        self._kind = kind or Element
+        self._kind = kind
         self._markers = marker.split() if isinstance(marker, str) else marker
         self._contents = [content] if isinstance(content, str) else content
         self._within_kinds: List[Type[Element]] = []
