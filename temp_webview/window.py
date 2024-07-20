@@ -26,7 +26,7 @@ def is_port_open(host: str, port: int) -> bool:
         sock.close()
 
 def _open_window(
-    host: str, port: int, title: str, width: int, height: int, fullscreen: bool, frameless: bool, window_args, settings, start_args,
+    host: str, port: int, title: str, width: int, height: int, fullscreen: bool, frameless: bool,
     method_queue: mp.Queue, response_queue: mp.Queue,
 ) -> None:
     print("hejhejehej")
