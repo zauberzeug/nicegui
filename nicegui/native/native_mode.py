@@ -41,7 +41,7 @@ def bind_drop(window: webview.Window, drop_queue:mp.Queue) -> None:
     window.dom.document.events.dragenter += DOMEventHandler(on_drag, True, True)
     window.dom.document.events.dragstart += DOMEventHandler(on_drag, True, True)
     window.dom.document.events.dragover += DOMEventHandler(on_drag, True, True)
-    window.dom.document.events.drop += DOMEventHandler(lambda e: on_drop(e, , drop_queue), True, True)
+    window.dom.document.events.drop += DOMEventHandler(lambda e: on_drop(e, drop_queue), True, True)
 
 
 def _open_window(
