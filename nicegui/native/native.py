@@ -8,6 +8,7 @@ from ..logging import log
 
 method_queue: Queue = Queue()
 response_queue: Queue = Queue()
+drop_queue: Queue = Queue()
 
 try:
     with warnings.catch_warnings():

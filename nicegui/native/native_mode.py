@@ -135,17 +135,13 @@ def activate(host: str, port: int, title: str, width: int, height: int, fullscre
                   'Please run "pip install pywebview" to use it.')
         sys.exit(1)
 
-    drop_queue = mp.Queue()
-
-    drop_queue.get()
-
     mp.freeze_support()
-    args = host, port, title, width, height, fullscreen, frameless, native.method_queue, native.response_queue, drop_queue
+    args = host, port, title, width, height, fullscreen, frameless, native.method_queue, native.response_queue, native.drop_queue
     process = mp.Process(target=_open_window, args=args, daemon=True)
     process.start()
 
     Thread(target=check_shutdown, daemon=True).start()
-    Thread(target=check_drop, args=(drop_queue,), daemon=True).start()
+    Thread(target=check_drop, args=(native.drop_queue,), daemon=True).start()
 
 
 def find_open_port(start_port: int = 8000, end_port: int = 8999) -> int:
