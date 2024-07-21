@@ -29,25 +29,24 @@ except ModuleNotFoundError:
 def on_drag(e: dict[str, Any]):
     pass
 
-def on_drop(e: dict[str, Any], drop_event:Event, drop_queue: mp.Queue):
+def on_drop(e: dict[str, Any],drop_queue: mp.Queue):
     files = e['dataTransfer']['files']
     if len(files) == 0:
         return
 
     for file in files:
         drop_queue.put(file.get('pywebviewFullPath'))
-    drop_event.set()
 
-def bind_drop(window: webview.Window, drop_event:Event, drop_queue:mp.Queue) -> None:
+def bind_drop(window: webview.Window, drop_queue:mp.Queue) -> None:
     window.dom.document.events.dragenter += DOMEventHandler(on_drag, True, True)
     window.dom.document.events.dragstart += DOMEventHandler(on_drag, True, True)
     window.dom.document.events.dragover += DOMEventHandler(on_drag, True, True)
-    window.dom.document.events.drop += DOMEventHandler(lambda e: on_drop(e, drop_event, drop_queue), True, True)
+    window.dom.document.events.drop += DOMEventHandler(lambda e: on_drop(e, , drop_queue), True, True)
 
 
 def _open_window(
     host: str, port: int, title: str, width: int, height: int, fullscreen: bool, frameless: bool,
-    method_queue: mp.Queue, response_queue: mp.Queue, drop_event: Event, drop_queue: mp.Queue,
+    method_queue: mp.Queue, response_queue: mp.Queue, drop_queue: mp.Queue,
 ) -> None:
     while not helpers.is_port_open(host, port):
         time.sleep(0.1)
@@ -66,7 +65,7 @@ def _open_window(
     closed = Event()
     window.events.closed += closed.set
     _start_window_method_executor(window, method_queue, response_queue, closed)
-    webview.start(func=bind_drop, args=(window, drop_event, drop_queue), storage_path=tempfile.mkdtemp(), **core.app.native.start_args)
+    webview.start(func=bind_drop, args=(window, drop_queue), storage_path=tempfile.mkdtemp(), **core.app.native.start_args)
 
 
 def _start_window_method_executor(window: webview.Window,
@@ -127,28 +126,26 @@ def activate(host: str, port: int, title: str, width: int, height: int, fullscre
             time.sleep(0.1)
         _thread.interrupt_main()
 
-    def check_drop(drop_queue: mp.Queue, drop_event: Event) -> None:
+    def check_drop(drop_queue: mp.Queue) -> None:
         while True:
-            while not drop_event.is_set():
-                time.sleep(0.1)
             got_drop(drop_queue.get())
-            drop_event.clear()
 
     if not optional_features.has('webview'):
         log.error('Native mode is not supported in this configuration.\n'
                   'Please run "pip install pywebview" to use it.')
         sys.exit(1)
 
-    drop_event = mp.Event()
     drop_queue = mp.Queue()
 
+    drop_queue.get()
+
     mp.freeze_support()
-    args = host, port, title, width, height, fullscreen, frameless, native.method_queue, native.response_queue, drop_event, drop_queue
+    args = host, port, title, width, height, fullscreen, frameless, native.method_queue, native.response_queue, drop_queue
     process = mp.Process(target=_open_window, args=args, daemon=True)
     process.start()
 
     Thread(target=check_shutdown, daemon=True).start()
-    Thread(target=check_drop, args=(drop_queue, drop_event), daemon=True).start()
+    Thread(target=check_drop, args=(drop_queue,), daemon=True).start()
 
 
 def find_open_port(start_port: int = 8000, end_port: int = 8999) -> int:
