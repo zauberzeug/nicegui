@@ -497,16 +497,29 @@ class Element(Visibility):
         return self.client.run_javascript(f'return runMethod({self.id}, "{name}", {json.dumps(args)})',
                                           timeout=timeout, check_interval=check_interval)
 
-    def _collect_descendants(self, *, include_self: bool = False) -> List[Element]:
-        elements: List[Element] = [self] if include_self else []
+    def ancestors(self, *, include_self: bool = False) -> Iterator[Element]:
+        """Iterate over the ancestors of the element.
+
+        :param include_self: whether to include the element itself in the iteration
+        """
+        if include_self:
+            yield self
+        if self.parent_slot:
+            yield from self.parent_slot.parent.ancestors(include_self=True)
+
+    def descendants(self, *, include_self: bool = False) -> Iterator[Element]:
+        """Iterate over the descendants of the element.
+
+        :param include_self: whether to include the element itself in the iteration
+        """
+        if include_self:
+            yield self
         for child in self:
-            elements.extend(child._collect_descendants(include_self=True))  # pylint: disable=protected-access
-        return elements
+            yield from child.descendants(include_self=True)
 
     def clear(self) -> None:
         """Remove all child elements."""
-        descendants = self._collect_descendants()
-        self.client.remove_elements(descendants)
+        self.client.remove_elements(self.descendants())
         for slot in self.slots.values():
             slot.children.clear()
         self.update()
@@ -547,8 +560,7 @@ class Element(Visibility):
         if isinstance(element, int):
             children = list(self)
             element = children[element]
-        elements = element._collect_descendants(include_self=True)  # pylint: disable=protected-access
-        self.client.remove_elements(elements)
+        self.client.remove_elements(element.descendants(include_self=True))
         assert element.parent_slot is not None
         element.parent_slot.children.remove(element)
         self.update()
