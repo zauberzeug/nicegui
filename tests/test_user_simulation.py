@@ -106,6 +106,10 @@ async def test_navigation(user: User) -> None:
     await user.should_see('Main page')
     user.find('go to other').click()
     await user.should_see('Other page')
+    user.find('back').click()
+    await user.should_see('Main page')
+    user.find('forward').click()
+    await user.should_see('Other page')
 
 
 async def test_notification(user: User) -> None:

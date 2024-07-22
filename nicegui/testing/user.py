@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import re
-from typing import List, Optional, Set, Type, TypeVar, Union, overload
+from typing import Any, Callable, List, Optional, Set, Type, TypeVar, Union, overload
 from uuid import uuid4
 
 import httpx
@@ -11,7 +11,7 @@ from typing_extensions import Self
 
 from nicegui import Client, ElementFilter, background_tasks, ui
 from nicegui.element import Element
-from nicegui.logging import log
+from nicegui.functions.navigate import Navigate
 from nicegui.nicegui import Slot, _on_handshake
 
 from .user_interaction import UserInteraction
@@ -29,8 +29,10 @@ class User:
         self.http_client = client
         self.sio = socketio.AsyncClient()
         self.client: Optional[Client] = None
+        self.back_history: List[str] = []
+        self.forward_history: List[str] = []
 
-    async def open(self, path: str) -> None:
+    async def open(self, path: str, clear_forward_history=True) -> None:
         """Open the given path."""
         response = await self.http_client.get(path, follow_redirects=True)
         assert response.status_code == 200, f'Expected status code 200, got {response.status_code}'
@@ -43,6 +45,9 @@ class User:
         self.client = Client.instances[client_id]
         self.sio.on('connect')
         await _on_handshake(f'test-{uuid4()}', {'client_id': self.client.id, 'tab_id': str(uuid4())})
+        self.back_history.append(path)
+        if clear_forward_history:
+            self.forward_history.clear()
         self.activate()
 
     def activate(self) -> Self:
@@ -51,7 +56,7 @@ class User:
             self.current_user.deactivate()
         self.current_user = self
         assert self.client
-        ui.navigate.to = lambda target, *_: background_tasks.create(self.open(target))  # type: ignore
+        ui.navigate = UserNavigate(self)
         self.client.__enter__()
         return self
 
@@ -59,8 +64,6 @@ class User:
         """Deactivate the user."""
         assert self.client
         self.client.__exit__()
-        msg = 'navigate.to unavailable in pytest simulation outside of an active client'
-        ui.navigate.to = lambda *_: log.warning(msg)  # type: ignore
         self.current_user = None
 
     @overload
@@ -227,3 +230,28 @@ def prune_stack(cls) -> None:
 
 Slot.get_stack = get_stack  # type: ignore
 Slot.prune_stack = prune_stack  # type: ignore
+
+
+class UserNavigate(Navigate):
+    def __init__(self, user: User) -> None:
+        self.user = user
+
+    def to(self, target: Union[Callable[..., Any], str, Element], new_tab: bool = False) -> None:
+        if isinstance(target, Element):
+            # NOTE navigation to an element does not do anything in the user simulation (the whole content is always visible)
+            return
+        path = Client.page_routes[target] if callable(target) else target
+        background_tasks.create(self.user.open(path))
+
+    def back(self) -> None:
+        current = self.user.back_history.pop()
+        self.user.forward_history.append(current)
+        target = self.user.back_history.pop()
+        background_tasks.create(self.user.open(target, clear_forward_history=False))
+
+    def forward(self) -> None:
+        if not self.user.forward_history:
+            return
+        target = self.user.forward_history[0]
+        del self.user.forward_history[0]
+        background_tasks.create(self.user.open(target, clear_forward_history=False))
