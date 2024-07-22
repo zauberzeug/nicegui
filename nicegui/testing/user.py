@@ -9,12 +9,12 @@ import httpx
 import socketio
 from typing_extensions import Self
 
-from nicegui import Client, ElementFilter, background_tasks, ui
+from nicegui import Client, ElementFilter, ui
 from nicegui.element import Element
-from nicegui.logging import log
 from nicegui.nicegui import Slot, _on_handshake
 
 from .user_interaction import UserInteraction
+from .user_navigate import UserNavigate
 
 # pylint: disable=protected-access
 
@@ -29,8 +29,11 @@ class User:
         self.http_client = client
         self.sio = socketio.AsyncClient()
         self.client: Optional[Client] = None
+        self.back_history: List[str] = []
+        self.forward_history: List[str] = []
+        ui.navigate = self.navigate = UserNavigate(self)
 
-    async def open(self, path: str) -> None:
+    async def open(self, path: str, *, clear_forward_history: bool = True) -> None:
         """Open the given path."""
         response = await self.http_client.get(path, follow_redirects=True)
         assert response.status_code == 200, f'Expected status code 200, got {response.status_code}'
@@ -43,6 +46,9 @@ class User:
         self.client = Client.instances[client_id]
         self.sio.on('connect')
         await _on_handshake(f'test-{uuid4()}', {'client_id': self.client.id, 'tab_id': str(uuid4())})
+        self.back_history.append(path)
+        if clear_forward_history:
+            self.forward_history.clear()
         self.activate()
 
     def activate(self) -> Self:
@@ -51,7 +57,7 @@ class User:
             self.current_user.deactivate()
         self.current_user = self
         assert self.client
-        ui.navigate.to = lambda target, *_: background_tasks.create(self.open(target))  # type: ignore
+        ui.navigate = self.navigate
         self.client.__enter__()
         return self
 
@@ -59,8 +65,6 @@ class User:
         """Deactivate the user."""
         assert self.client
         self.client.__exit__()
-        msg = 'navigate.to unavailable in pytest simulation outside of an active client'
-        ui.navigate.to = lambda *_: log.warning(msg)  # type: ignore
         self.current_user = None
 
     @overload

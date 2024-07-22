@@ -14,6 +14,7 @@ from starlette.routing import Route
 
 import nicegui.storage
 from nicegui import Client, app, binding, core, run, ui
+from nicegui.functions.navigate import Navigate
 from nicegui.page import page
 
 from .screen import Screen
@@ -135,21 +136,19 @@ def screen(nicegui_reset_globals,
 async def user(nicegui_reset_globals, prepare_simulated_auto_index_client, request: pytest.FixtureRequest) -> AsyncGenerator[User, None]:
     """Create a new user fixture."""
     prepare_simulation(request)
-    original_navigate_to = ui.navigate.to
     async with core.app.router.lifespan_context(core.app):
         async with httpx.AsyncClient(app=core.app, base_url='http://test') as client:
             yield User(client)
-    ui.navigate.to = original_navigate_to  # type: ignore
+    ui.navigate = Navigate()
 
 
 @pytest.fixture
 async def create_user(nicegui_reset_globals, prepare_simulated_auto_index_client, request: pytest.FixtureRequest) -> AsyncGenerator[Callable[[], User], None]:
     """Create a fixture for building new users."""
     prepare_simulation(request)
-    original_navigate_to = ui.navigate.to
     async with core.app.router.lifespan_context(core.app):
         yield lambda: User(httpx.AsyncClient(app=core.app, base_url='http://test'))
-    ui.navigate.to = original_navigate_to  # type: ignore
+    ui.navigate = Navigate()
 
 
 @pytest.fixture()
