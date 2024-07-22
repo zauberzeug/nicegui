@@ -31,6 +31,7 @@ class User:
         self.client: Optional[Client] = None
         self.back_history: List[str] = []
         self.forward_history: List[str] = []
+        ui.navigate = self.navigate = UserNavigate(self)
 
     async def open(self, path: str, clear_forward_history=True) -> None:
         """Open the given path."""
@@ -56,7 +57,8 @@ class User:
             self.current_user.deactivate()
         self.current_user = self
         assert self.client
-        ui.navigate = UserNavigate(self)
+        if ui.navigate is not self.navigate:
+            ui.navigate = self.navigate
         self.client.__enter__()
         return self
 
@@ -255,3 +257,6 @@ class UserNavigate(Navigate):
         target = self.user.forward_history[0]
         del self.user.forward_history[0]
         background_tasks.create(self.user.open(target, clear_forward_history=False))
+
+    def reload(self) -> None:
+        background_tasks.create(self.user.open(self.user.back_history.pop(), clear_forward_history=False))

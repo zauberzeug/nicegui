@@ -112,6 +112,20 @@ async def test_navigation(user: User) -> None:
     await user.should_see('Other page')
 
 
+async def test_reload(user: User) -> None:
+    @ui.page('/')
+    def page():
+        ui.input('test input')
+        ui.button('reload', on_click=ui.navigate.reload)
+
+    await user.open('/')
+    await user.should_not_see('Hello')
+    user.find('test input').type('Hello')
+    await user.should_see('Hello')
+    user.find('reload').click()
+    await user.should_not_see('Hello')
+
+
 async def test_notification(user: User) -> None:
     @ui.page('/')
     def page():
