@@ -12,7 +12,7 @@ from .elements.mixins.source_element import SourceElement
 T = TypeVar('T', bound=Element)
 
 
-class ElementFilter(Generic[T], Iterator[T]):
+class ElementFilter(Generic[T]):
     DEFAULT_LOCAL_SCOPE = False
 
     @overload
@@ -102,14 +102,9 @@ class ElementFilter(Generic[T], Iterator[T]):
                                                              for m in self._not_within_markers
                                                              for element in visited))
                 ):
-                    yield element
+                    yield element  # type: ignore
             if element not in self._not_within_instances:
                 yield from self._iterate(element, visited=[*visited, element])
-
-    def __next__(self) -> T:
-        if self._iterator is None:
-            raise StopIteration
-        return next(self._iterator)
 
     def __len__(self) -> int:
         return len(list(iter(self)))
