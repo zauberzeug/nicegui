@@ -191,9 +191,11 @@ class User:
                          content: Union[str, list[str], None] = None,
                          ) -> Set[T]:
         if target is None:
+            if kind is None:
+                return set(ElementFilter(marker=marker, content=content))  # type: ignore
             return set(ElementFilter(kind=kind, marker=marker, content=content))
         elif isinstance(target, str):
-            return set(ElementFilter(marker=target)).union(ElementFilter(content=target))
+            return set(ElementFilter(marker=target)).union(ElementFilter(content=target))  # type: ignore
         else:
             return set(ElementFilter(kind=target))
 
