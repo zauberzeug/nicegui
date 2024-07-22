@@ -398,7 +398,7 @@ class Element(Visibility):
 
         :param markers: list of strings or single string with whitespace-delimited markers; replaces existing markers
         """
-        self._markers = [marker.strip() for marker in ' '.join(markers).split() if marker]
+        self._markers = [word for marker in markers for word in marker.split()]
         return self
 
     def tooltip(self, text: str) -> Self:
