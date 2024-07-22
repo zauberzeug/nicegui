@@ -236,3 +236,19 @@ q-layout
     Card
      Image [src=https://via.placehol...]
 '''.strip()
+
+
+async def test_typing(user: User) -> None:
+    @ui.page('/')
+    def page():
+        ui.label('Hello!')
+        ui.button('World!')
+
+    await user.open('/')
+    # NOTE we have not yet found a way to test the typing suggestions automatically
+    # to test, hover over the variable and verify that your IDE inferres the correct type
+    _ = user.find(kind=ui.label).elements  # Set[ui.label]
+    _ = user.find(ui.label).elements  # Set[ui.label]
+    _ = user.find('World').elements  # Set[ui.element]
+    _ = user.find('Hello').elements  # Set[ui.element]
+    _ = user.find('!').elements  # Set[ui.element]

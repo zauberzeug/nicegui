@@ -135,17 +135,31 @@ class User:
 
     @overload
     def find(self,
-             target: Union[str, Type[T]],
-             ) -> UserInteraction:
+             target: str,
+             ) -> UserInteraction[Element]:
+        ...
+
+    @overload
+    def find(self,
+             target: Type[T],
+             ) -> UserInteraction[T]:
+        ...
+
+    @overload
+    def find(self: User,
+             *,
+             marker: Union[str, list[str], None] = None,
+             content: Union[str, list[str], None] = None,
+             ) -> UserInteraction[Element]:
         ...
 
     @overload
     def find(self,
              *,
-             kind: Type[T] = Element,
+             kind: Type[T],
              marker: Union[str, list[str], None] = None,
              content: Union[str, list[str], None] = None,
-             ) -> UserInteraction:
+             ) -> UserInteraction[T]:
         ...
 
     def find(self,
@@ -154,7 +168,7 @@ class User:
              kind: Optional[Type[T]] = None,
              marker: Union[str, list[str], None] = None,
              content: Union[str, list[str], None] = None,
-             ) -> UserInteraction:
+             ) -> UserInteraction[T]:
         """Select elements for interaction."""
         assert self.client
         with self.client:

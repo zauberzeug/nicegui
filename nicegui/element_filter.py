@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Generic, Iterator, List, Optional, Type, TypeVar, Union
+from typing import Generic, Iterator, List, Optional, Type, TypeVar, Union, overload
 
 from typing_extensions import Self
 
@@ -15,8 +15,25 @@ T = TypeVar('T', bound=Element)
 class ElementFilter(Generic[T], Iterator[T]):
     DEFAULT_LOCAL_SCOPE = False
 
+    @overload
+    def __init__(self: ElementFilter[Element], *,
+                 marker: Union[str, List[str], None] = None,
+                 content: Union[str, List[str], None] = None,
+                 local_scope: bool = DEFAULT_LOCAL_SCOPE,
+                 ) -> None:
+        ...
+
+    @overload
     def __init__(self, *,
-                 kind: Type[T] = Element,
+                 kind: Type[T],
+                 marker: Union[str, List[str], None] = None,
+                 content: Union[str, List[str], None] = None,
+                 local_scope: bool = DEFAULT_LOCAL_SCOPE,
+                 ) -> None:
+        ...
+
+    def __init__(self, *,
+                 kind: Optional[Type[T]] = None,
                  marker: Union[str, List[str], None] = None,
                  content: Union[str, List[str], None] = None,
                  local_scope: bool = DEFAULT_LOCAL_SCOPE,
