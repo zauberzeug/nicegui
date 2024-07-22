@@ -8,8 +8,10 @@ from nicegui.testing import User
 
 pytestmark = pytest.mark.usefixtures('user')
 
+# pylint: disable=missing-function-docstring
 
-def test_find_all():
+
+def test_find_all() -> None:
     ui.button('button A')
     ui.label('label A')
     with ui.row():
@@ -17,7 +19,6 @@ def test_find_all():
         ui.label('label B')
 
     elements: List[ui.element] = list(ElementFilter())
-
     assert len(elements) == 8
     assert elements[0].tag == 'q-page-container'
     assert elements[1].tag == 'q-page'
@@ -41,7 +42,7 @@ def test_find_by_text_element():
     assert result == ['button A', 'label A', 'button B', 'label B']
 
 
-def test_find_by_type():
+def test_find_by_kind():
     ui.button('button A')
     ui.label('label A')
     ui.button('button B')
@@ -106,18 +107,6 @@ def test_find_by_multiple_markers():
     assert result == ['button B', 'button C']
 
 
-def test_find_within_type():
-    ui.button('button A')
-    ui.label('label A')
-    with ui.row():
-        ui.button('button B')
-        ui.label('label B')
-
-    result = [element.text for element in ElementFilter(kind=ui.button).within(kind=ui.row)]
-
-    assert result == ['button B']
-
-
 def test_find_within_marker():
     ui.button('button A')
     ui.label('label A')
@@ -155,7 +144,19 @@ def test_find_within_elements():
     assert result == ['button A', 'label A', 'button B', 'label B']
 
 
-def test_find_with_excluding_type():
+def test_find_within_kind():
+    ui.button('button A')
+    with ui.row():
+        ui.label('label A')
+        ui.button('button B')
+        ui.label('label B')
+
+    result = [element.text for element in ElementFilter(content='B').within(kind=ui.row)]
+
+    assert result == ['button B', 'label B']
+
+
+def test_find_with_excluding_kind():
     ui.button('button A')
     ui.label('label A')
     ui.button('button B')
@@ -188,7 +189,7 @@ def test_find_with_excluding_text():
     assert result == ['button B']
 
 
-def test_find_not_within_type():
+def test_find_not_within_kind():
     ui.button('button A')
     ui.label('label A')
     with ui.row():
@@ -266,3 +267,15 @@ async def test_setting_props(user: User):
     await user.open('/')
     for button in user.find('button').elements:
         assert button._props['flat']  # pylint: disable=protected-access
+
+
+async def test_typing(user: User):
+    ui.button('button A')
+    ui.label('label A')
+
+    await user.open('/')
+    # NOTE we have not yet found a way to test the typing suggestions automatically
+    # to test, hover over the variable and verify that your IDE infers the correct type
+    _ = ElementFilter(kind=ui.button)  # ElementFilter[ui.button]
+    _ = ElementFilter(kind=ui.label)  # ElementFilter[ui.label]
+    _ = ElementFilter()  # ElementFilter[Element]

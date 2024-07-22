@@ -398,7 +398,7 @@ class Element(Visibility):
 
         :param markers: list of strings or single string with whitespace-delimited markers; replaces existing markers
         """
-        self._markers = [marker.strip() for marker in ' '.join(markers).split() if marker]
+        self._markers = [word for marker in markers for word in marker.split()]
         return self
 
     def tooltip(self, text: str) -> Self:
@@ -570,17 +570,8 @@ class Element(Visibility):
         return self._deleted
 
     def __str__(self) -> str:
-        additions = self._additions_str()
-        result = f'{self._element_str()}' + (f' [{", ".join(additions)}]' if additions else '')
-        for child in self.default_slot.children:
-            for line in child.__str__().split('\n'):
-                result += f'\n {line}'
-        return result
+        result = self.tag if type(self) is Element else self.__class__.__name__  # pylint: disable=unidiomatic-typecheck
 
-    def _element_str(self) -> str:
-        return self.__class__.__name__ if type(self) != Element else self.tag  # pylint: disable=unidiomatic-typecheck
-
-    def _additions_str(self) -> List[str]:
         def shorten(content: Any, length: int = 20) -> str:
             text = str(content).replace('\n', ' ').replace('\r', ' ')
             return text[:length].strip() + '...' if len(text) > length else text
@@ -588,14 +579,21 @@ class Element(Visibility):
         additions = []
         if self._markers:
             additions.append(f'markers={", ".join(self._markers)}')
-        if hasattr(self, 'text') and self._text:
+        if self._text:
             additions.append(f'text={shorten(self._text)}')
         if hasattr(self, 'content') and self.content:  # pylint: disable=no-member
             additions.append(f'content={shorten(self.content)}')  # pylint: disable=no-member
+        IGNORED_PROPS = {'loopback', 'color', 'view', 'innerHTML', 'codehilite_css'}
         additions += [
-            f'{key}={shorten(value)}' for key, value in self._props.items()
-            if not key.startswith('_') and
-            key not in ['loopback', 'color', 'view', 'innerHTML', 'codehilite_css'] and
-            value not in [None, False, '']
+            f'{key}={shorten(value)}'
+            for key, value in self._props.items()
+            if not key.startswith('_') and key not in IGNORED_PROPS and value
         ]
-        return additions
+        if additions:
+            result += f' [{", ".join(additions)}]'
+
+        for child in self.default_slot.children:
+            for line in str(child).split('\n'):
+                result += f'\n {line}'
+
+        return result

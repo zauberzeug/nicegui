@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Set, TypeVar
+from typing import TYPE_CHECKING, Generic, Set, TypeVar
 
 from typing_extensions import Self
 
@@ -13,7 +13,7 @@ if TYPE_CHECKING:
 T = TypeVar('T', bound=Element)
 
 
-class UserInteraction:
+class UserInteraction(Generic[T]):
 
     def __init__(self, user: User, elements: Set[T]) -> None:
         """Iteraction object of the simulated user.
