@@ -275,7 +275,7 @@ async def test_typing(user: User):
 
     await user.open('/')
     # NOTE we have not yet found a way to test the typing suggestions automatically
-    # to test, hover over the variable and verify that your IDE inferres the correct type
+    # to test, hover over the variable and verify that your IDE infers the correct type
     _ = ElementFilter(kind=ui.button)  # ElementFilter[ui.button]
     _ = ElementFilter(kind=ui.label)  # ElementFilter[ui.label]
     _ = ElementFilter()  # ElementFilter[Element]

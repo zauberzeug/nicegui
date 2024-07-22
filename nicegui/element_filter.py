@@ -53,15 +53,19 @@ class ElementFilter(Generic[T]):
         self._kind = kind
         self._markers = marker.split() if isinstance(marker, str) else marker
         self._contents = [content] if isinstance(content, str) else content
+
         self._within_kinds: List[Type[Element]] = []
-        self._within_markers: List[str] = []
         self._within_instances: List[Element] = []
+        self._within_markers: List[str] = []
+
         self._not_within_kinds: List[Type[Element]] = []
-        self._not_within_markers: List[str] = []
         self._not_within_instances: List[Element] = []
+        self._not_within_markers: List[str] = []
+
         self._exclude_kinds: List[Type[Element]] = []
         self._exclude_markers: List[str] = []
         self._exclude_content: List[str] = []
+
         self._scope = context.slot.parent if local_scope else context.client.layout
 
     def __iter__(self) -> Iterator[T]:
@@ -89,9 +93,9 @@ class ElementFilter(Generic[T]):
                 (self._kind is None or isinstance(element, self._kind)) and
                 (not self._markers or all(m in element._markers for m in self._markers)) and
                 (not self._contents or all(c in content for c in self._contents)) and
-                (not self._exclude_kinds or not any(isinstance(element, kinds) for kinds in self._exclude_kinds)) and
+                (not self._exclude_kinds or not isinstance(element, tuple(self._exclude_kinds))) and
                 (not self._exclude_markers or not any(m in element._markers for m in self._exclude_markers)) and
-                (not self._exclude_content or (hasattr(element, 'text') and not any(text in element.text for text in self._exclude_content))) and
+                (not self._exclude_content or not any(text in getattr(element, 'text', '') for text in self._exclude_content)) and
                 (not self._within_instances or any(element in instance for instance in self._within_instances))
             ):
                 if (
