@@ -256,6 +256,15 @@ q-layout
 '''.strip()
 
 
+async def test_combined_filter_parameters(user: User) -> None:
+    ui.input(placeholder='x', value='y')
+
+    await user.open('/')
+    await user.should_see('x')
+    await user.should_see('y')
+    await user.should_not_see('x y')
+
+
 async def test_typing(user: User) -> None:
     @ui.page('/')
     def page():
