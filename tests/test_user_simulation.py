@@ -254,3 +254,12 @@ q-layout
     Card
      Image [src=https://via.placehol...]
 '''.strip()
+
+
+async def test_combined_filter_parameters(user: User) -> None:
+    ui.input(placeholder='x', value='y')
+
+    await user.open('/')
+    await user.should_see('x')
+    await user.should_see('y')
+    await user.should_not_see('x y')

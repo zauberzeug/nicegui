@@ -65,7 +65,7 @@ class ElementFilter(Generic[T], Iterator[T]):
                 (element._props.get('value', '') or ''),  # NOTE the value could be None
                 element._props.get('options', {}).get('message', ''),
             ]
-            content = ' '.join(str(c) for c in element_contents)
+            content = '@|@'.join(str(c) for c in element_contents)
 
             # pylint: disable=too-many-boolean-expressions
             if (
