@@ -107,7 +107,7 @@ After that you can make sure your code satisfies the coding style by running the
 pre-commit run --all-files
 ```
 
-> [!NOTE]
+> [!TIP]
 > The command may fail with
 >
 > > RuntimeError: failed to find interpreter for Builtin discover of python_spec='python3.8'
@@ -123,16 +123,12 @@ These checks will also run automatically before every commit:
 
 > [!NOTE]
 >
-> ### Single vs Double Quotes
->
-> Regarding single or double quotes: [PEP 8](https://peps.python.org/pep-0008/) doesn't give any recommendation, so we simply chose single quotes and sticked with it.
+> **Regarding single or double quotes:** > [PEP 8](https://peps.python.org/pep-0008/) doesn't give any recommendation, so we simply chose single quotes and sticked with it.
 > On qwerty keyboards it's a bit easier to type, is visually less cluttered, and it works well for strings containing double quotes from the English language.
 
 > [!NOTE]
 >
-> ### F-Strings
->
-> We use f-strings where ever possible because they are generally more readable - once you get used to them.
+> **We use f-strings** where ever possible because they are generally more readable - once you get used to them.
 > There are only a few places in the code base where performance really matters and f-strings might not be the best choice.
 > These places should be marked with a `# NOTE: ...` comment when diverging from f-string usage.
 
