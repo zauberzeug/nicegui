@@ -83,33 +83,38 @@ class ElementFilter(Generic[T]):
             if any(marker in element._markers for marker in self._exclude_markers):
                 continue
 
-            element_contents = [content for content in (
-                element._props.get('text'),
-                element._props.get('label'),
-                element._props.get('icon'),
-                element._props.get('placeholder'),
-                element._props.get('value'),
-                element._props.get('options', {}).get('message'),
-                element.text if isinstance(element, TextElement) else None,
-                element.content if isinstance(element, ContentElement) else None,
-                element.source if isinstance(element, SourceElement) else None,
-            ) if content]
-            if any(needle not in haystack for needle, haystack in product(element_contents, self._exclude_content)):
-                continue
-            if any(needle in haystack for needle, haystack in product(element_contents, self._exclude_content)):
-                continue
-            print(element_contents, self._exclude_content)
+            if self._contents or self._exclude_content:
+                element_contents = [content for content in (
+                    element._props.get('text'),
+                    element._props.get('label'),
+                    element._props.get('icon'),
+                    element._props.get('placeholder'),
+                    element._props.get('value'),
+                    element._props.get('options', {}).get('message'),
+                    element.text if isinstance(element, TextElement) else None,
+                    element.content if isinstance(element, ContentElement) else None,
+                    element.source if isinstance(element, SourceElement) else None,
+                ) if content]
+                if self._contents and not element_contents:
+                    continue
+                if any(needle not in str(haystack) for needle, haystack in product(self._contents, element_contents)):
+                    continue
+                if any(needle in str(haystack) for needle, haystack in product(self._exclude_content, element_contents)):
+                    continue
 
             ancestors = set(element.ancestors())
             if self._within_instances and ancestors.isdisjoint(self._within_instances):
+                continue
+            if self._not_within_instances and not ancestors.isdisjoint(self._not_within_instances):
                 continue
             if self._within_kinds and not any(isinstance(ancestor, tuple(self._within_kinds)) for ancestor in ancestors):
                 continue
             if self._not_within_kinds and any(isinstance(ancestor, tuple(self._not_within_kinds)) for ancestor in ancestors):
                 continue
-            if self._within_markers and any(marker not in ancestor._markers for marker in self._within_markers for ancestor in ancestors):
+            ancestor_markers = {marker for ancestor in ancestors for marker in ancestor._markers}
+            if self._within_markers and ancestor_markers.isdisjoint(self._within_markers):
                 continue
-            if self._not_within_markers and any(marker in ancestor._markers for marker in self._not_within_markers for ancestor in ancestors):
+            if self._not_within_markers and not ancestor_markers.isdisjoint(self._not_within_markers):
                 continue
 
             yield element  # type: ignore
