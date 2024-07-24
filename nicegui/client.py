@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import inspect
+import itertools
 import time
 import uuid
 from contextlib import contextmanager
@@ -306,9 +307,10 @@ class Client:
 
     def remove_elements(self, elements: Iterable[Element]) -> None:
         """Remove the given elements from the client."""
-        binding.remove(elements)
-        element_ids = [element.id for element in elements]
-        for element in elements:
+        elements1, elements2, elements3 = itertools.tee(elements, 3)  # NOTE: to iterate over elements multiple times
+        binding.remove(elements1)
+        element_ids = [element.id for element in elements2]
+        for element in elements3:
             element._handle_delete()  # pylint: disable=protected-access
             element._deleted = True  # pylint: disable=protected-access
             self.outbox.enqueue_delete(element)
