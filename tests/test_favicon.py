@@ -18,7 +18,6 @@ def get_favicon_url(screen: Screen) -> str:
 def assert_favicon(content: Union[Path, str, bytes], url_path: str = '/favicon.ico'):
     response = requests.get(f'http://localhost:{Screen.PORT}{url_path}', timeout=5)
     assert response.status_code == 200
-    response.encoding = 'utf-8'
     if isinstance(content, Path):
         assert content.read_bytes() == response.content
     elif isinstance(content, str):
