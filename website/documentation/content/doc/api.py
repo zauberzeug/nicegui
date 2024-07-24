@@ -95,8 +95,9 @@ def demo(*args, **kwargs) -> Callable[[Callable], Callable]:
 
     def decorator(function: Callable) -> Callable:
         if not page.parts and element:
-            ui_name = _find_attribute(nicegui_ui, element.__name__)
-            app_name = _find_attribute(nicegui_app, element.__name__)
+            name = getattr(element, '__name__', None) or element.__class__.__name__
+            ui_name = _find_attribute(nicegui_ui, name)
+            app_name = _find_attribute(nicegui_app, name)
             if ui_name:
                 page.title = f'ui.*{ui_name}*'
             if app_name:
