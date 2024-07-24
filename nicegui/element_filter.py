@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from itertools import product
 from typing import Generic, Iterator, List, Optional, Type, TypeVar, Union, overload
 
 from typing_extensions import Self
@@ -97,9 +96,9 @@ class ElementFilter(Generic[T]):
                 ) if content]
                 if self._contents and not element_contents:
                     continue
-                if any(needle not in str(haystack) for needle, haystack in product(self._contents, element_contents)):
+                if any(all(needle not in str(haystack) for haystack in element_contents) for needle in self._contents):
                     continue
-                if any(needle in str(haystack) for needle, haystack in product(self._exclude_content, element_contents)):
+                if any(needle in str(haystack) for haystack in element_contents for needle in self._exclude_content):
                     continue
 
             ancestors = set(element.ancestors())
