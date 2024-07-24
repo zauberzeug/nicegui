@@ -226,6 +226,21 @@ class Table(FilterElement, component='table.js'):
             self.selected.clear()
         self.update()
 
+    @property
+    async def filtered_sorted_rows(self) -> List[Dict]:
+        """Asyncronously returns the filtered and sorted rows of the table. Result must be awaited."""
+        return await self.get_computed_prop('filteredSortedRows')
+
+    @property
+    async def computed_rows(self) -> List[Dict]:
+        """Asyncronously returns the computed rows of the table. Result must be awaited."""
+        return await self.get_computed_prop('computedRows')
+
+    @property
+    async def computed_rows_number(self) -> int:
+        """Asyncronously returns the number of computed rows of the table. Result must be awaited."""
+        return await self.get_computed_prop('computedRowsNumber')
+
     class row(Element):
 
         def __init__(self) -> None:
