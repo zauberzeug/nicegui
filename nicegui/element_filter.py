@@ -115,12 +115,6 @@ class ElementFilter(Generic[T]):
 
             yield element  # type: ignore
 
-    def __len__(self) -> int:
-        return len(list(iter(self)))
-
-    def __getitem__(self, index) -> T:
-        return list(iter(self))[index]
-
     def within(self, *, kind: Optional[Type] = None, marker: Optional[str] = None, instance: Union[Element, List[Element], None] = None) -> Self:
         """Filter elements which have a specific match in the parent hierarchy."""
         if kind is not None:

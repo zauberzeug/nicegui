@@ -240,10 +240,10 @@ def test_multiple_markers():
     ui.button('AB').mark('a b')
     ui.button('A').mark('a')
 
-    assert len(ElementFilter(marker='a b')) == 1
-    assert len(ElementFilter(marker='b a')) == 1
-    assert len(ElementFilter(marker='b')) == 1
-    assert len(ElementFilter(marker='a')) == 2
+    assert len(list(ElementFilter(marker='a b'))) == 1
+    assert len(list(ElementFilter(marker='b a'))) == 1
+    assert len(list(ElementFilter(marker='b'))) == 1
+    assert len(list(ElementFilter(marker='a'))) == 2
 
 
 def test_multiple_parent_markers():
@@ -253,14 +253,14 @@ def test_multiple_parent_markers():
         ui.label('Label')
     ui.label('Label')
 
-    assert len(ElementFilter(kind=ui.label).within(marker='a b')) == 1
-    assert len(ElementFilter(kind=ui.label).within(marker='b a')) == 1
-    assert len(ElementFilter(kind=ui.label).within(marker='b')) == 1
-    assert len(ElementFilter(kind=ui.label).within(marker='a')) == 2
-    assert len(ElementFilter(kind=ui.label).not_within(marker='a b')) == 2
-    assert len(ElementFilter(kind=ui.label).not_within(marker='b a')) == 2
-    assert len(ElementFilter(kind=ui.label).not_within(marker='b')) == 2
-    assert len(ElementFilter(kind=ui.label).not_within(marker='a')) == 1
+    assert len(list(ElementFilter(kind=ui.label).within(marker='a b'))) == 1
+    assert len(list(ElementFilter(kind=ui.label).within(marker='b a'))) == 1
+    assert len(list(ElementFilter(kind=ui.label).within(marker='b'))) == 1
+    assert len(list(ElementFilter(kind=ui.label).within(marker='a'))) == 2
+    assert len(list(ElementFilter(kind=ui.label).not_within(marker='a b'))) == 2
+    assert len(list(ElementFilter(kind=ui.label).not_within(marker='b a'))) == 2
+    assert len(list(ElementFilter(kind=ui.label).not_within(marker='b'))) == 2
+    assert len(list(ElementFilter(kind=ui.label).not_within(marker='a'))) == 1
 
 
 async def test_setting_classes(user: User):
