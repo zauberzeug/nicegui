@@ -239,6 +239,39 @@ def handle_pagination_changes() -> None:
     )
 
 
+@doc.demo('Computed props', '''
+    You can access the computed props of a table within async callback functions.
+''')
+def computed_props():
+    async def show_filtered_sorted_rows():
+        ui.notify(await table.filtered_sorted_rows)
+
+    async def show_computed_rows():
+        ui.notify(await table.computed_rows)
+
+    table = ui.table(
+        columns=[
+            {'name': 'Name', 'label': 'Name', 'field': 'Name', 'align': 'left', 'sortable': True},
+            {'name': 'Age', 'label': 'Age', 'field': 'Age', 'align': 'left', 'sortable': True}
+        ],
+        rows=[
+            {'Name': 'Noah', 'Age': 33},
+            {'Name': 'Emma', 'Age': 21},
+            {'Name': 'Rose', 'Age': 88},
+            {'Name': 'James', 'Age': 59},
+            {'Name': 'Olivia', 'Age': 62},
+            {'Name': 'Liam', 'Age': 18},
+        ],
+        row_key='Name',
+        pagination=3
+    )
+    with table.add_slot('top'):
+        with ui.column():
+            ui.input('Search by name/age').bind_value(table, 'filter')
+            ui.button('Show filtered/sorted rows').on('click', show_filtered_sorted_rows)
+            ui.button('Show computed rows').on('click', show_computed_rows)
+
+
 @doc.demo('Computed fields', '''
     You can use functions to compute the value of a column.
     The function receives the row as an argument.
