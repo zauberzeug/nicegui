@@ -2,21 +2,17 @@ from __future__ import annotations
 
 import _thread
 import multiprocessing as mp
-import queue
 import socket
 import sys
-import tempfile
 import time
-import warnings
-from threading import Event, Thread
-from typing import Any, Callable, Dict, List, Tuple
+from threading import Thread
 
-from .. import core, helpers, optional_features
+from temp_webview.window import open_window, register
+
+from .. import core, optional_features
 from ..logging import log
 from ..server import Server
 from . import native
-
-from temp_webview.window import _open_window
 
 
 def activate(host: str, port: int, title: str, width: int, height: int, fullscreen: bool, frameless: bool) -> None:
@@ -29,18 +25,21 @@ def activate(host: str, port: int, title: str, width: int, height: int, fullscre
             time.sleep(0.1)
         _thread.interrupt_main()
 
+    webview_registered = register()
+    if webview_registered:
+        optional_features.register('webview')
+
     if not optional_features.has('webview'):
         log.error('Native mode is not supported in this configuration.\n'
-                  'Please run "pip install pywebview" to use it.')
+                    'Please run "pip install pywebview" to use it.')
         sys.exit(1)
 
     mp.freeze_support()
-    args = host, port, title, width, height, fullscreen, frameless, native.method_queue, native.response_queue
-    process = mp.Process(target=_open_window, args=args, daemon=True)
+    args = host, port, title, width, height, fullscreen, frameless, native.method_queue, native.response_queue, core.app.native.window_args, core.app.native.settings, core.app.native.start_args,
+    process = mp.Process(target=open_window, args=args, daemon=True)
     process.start()
 
     Thread(target=check_shutdown, daemon=True).start()
-
 
 def find_open_port(start_port: int = 8000, end_port: int = 8999) -> int:
     """Reliably find an open port in a given range.
