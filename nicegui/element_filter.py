@@ -94,8 +94,6 @@ class ElementFilter(Generic[T]):
                     element.content if isinstance(element, ContentElement) else None,
                     element.source if isinstance(element, SourceElement) else None,
                 ) if content]
-                if self._contents and not element_contents:
-                    continue
                 if any(all(needle not in str(haystack) for haystack in element_contents) for needle in self._contents):
                     continue
                 if any(needle in str(haystack) for haystack in element_contents for needle in self._exclude_content):
@@ -110,10 +108,9 @@ class ElementFilter(Generic[T]):
                 continue
             if self._not_within_kinds and any(isinstance(ancestor, tuple(self._not_within_kinds)) for ancestor in ancestors):
                 continue
-            ancestor_markers = {marker for ancestor in ancestors for marker in ancestor._markers}
-            if self._within_markers and ancestor_markers.isdisjoint(self._within_markers):
+            if self._within_markers and not any(all(marker in ancestor._markers for marker in self._within_markers) for ancestor in ancestors):
                 continue
-            if self._not_within_markers and not ancestor_markers.isdisjoint(self._not_within_markers):
+            if self._not_within_markers and any(all(marker in ancestor._markers for marker in self._not_within_markers) for ancestor in ancestors):
                 continue
 
             yield element  # type: ignore
@@ -130,7 +127,7 @@ class ElementFilter(Generic[T]):
             assert issubclass(kind, Element)
             self._within_kinds.append(kind)
         if marker is not None:
-            self._within_markers.append(marker)
+            self._within_markers.extend(marker.split())
         if instance is not None:
             self._within_instances.extend(instance if isinstance(instance, list) else [instance])
         return self
@@ -152,7 +149,7 @@ class ElementFilter(Generic[T]):
             assert issubclass(kind, Element)
             self._not_within_kinds.append(kind)
         if marker is not None:
-            self._not_within_markers.append(marker)
+            self._not_within_markers.extend(marker.split())
         if instance is not None:
             self._not_within_instances.extend(instance if isinstance(instance, list) else [instance])
         return self
