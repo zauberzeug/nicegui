@@ -1,4 +1,4 @@
-from typing import Callable, Dict
+from typing import Callable, Dict, Type
 
 import pytest
 from fastapi.responses import PlainTextResponse
@@ -136,18 +136,38 @@ async def test_notification(user: User) -> None:
     await user.should_see('Hello')
 
 
-async def test_checkbox(user: User) -> None:
-    checkbox = ui.checkbox('my checkbox', on_change=lambda e: ui.notify(f'Changed: {e.value}'))
-    ui.label().bind_text_from(checkbox, 'value', lambda v: 'enabled' if v else 'disabled')
+@pytest.mark.parametrize('kind', [ui.checkbox, ui.switch])
+async def test_checkbox_and_switch(user: User, kind: Type) -> None:
+    element = kind('my element', on_change=lambda e: ui.notify(f'Changed: {e.value}'))
+    ui.label().bind_text_from(element, 'value', lambda v: 'enabled' if v else 'disabled')
 
     await user.open('/')
     await user.should_see('disabled')
-    user.find('checkbox').click()
+
+    user.find('element').click()
     await user.should_see('enabled')
     await user.should_see('Changed: True')
-    user.find('checkbox').click()
+
+    user.find('element').click()
     await user.should_see('disabled')
     await user.should_see('Changed: False')
+
+
+@pytest.mark.parametrize('kind', [ui.input, ui.editor, ui.codemirror])
+async def test_input(user: User, kind: Type) -> None:
+    element = kind(on_change=lambda e: ui.notify(f'Changed: {e.value}'))
+    ui.label().bind_text_from(element, 'value', lambda v: f'Value: {v}')
+
+    await user.open('/')
+    await user.should_see('Value: ')
+
+    user.find(kind).type('Hello')
+    await user.should_see('Value: Hello')
+    await user.should_see('Changed: Hello')
+
+    user.find(kind).type(' World')
+    await user.should_see('Value: Hello World')
+    await user.should_see('Changed: Hello World')
 
 
 async def test_should_not_see(user: User) -> None:

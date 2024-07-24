@@ -37,8 +37,8 @@ class UserInteraction(Generic[T]):
                 for listener in element._event_listeners.values():  # pylint: disable=protected-access
                     if listener.type != event:
                         continue
-                    events.handle_event(listener.handler,
-                                        events.GenericEventArguments(sender=element, client=self.user.client, args={}))
+                    event_arguments = events.GenericEventArguments(sender=element, client=self.user.client, args={})
+                    events.handle_event(listener.handler, event_arguments)
         return self
 
     def type(self, text: str) -> Self:
@@ -46,8 +46,8 @@ class UserInteraction(Generic[T]):
         assert self.user.client
         with self.user.client:
             for element in self.elements:
-                assert isinstance(element, ui.input)
-                element.value = text
+                assert isinstance(element, (ui.input, ui.editor, ui.codemirror))
+                element.value = (element.value or '') + text
         return self
 
     def click(self) -> Self:
@@ -55,17 +55,16 @@ class UserInteraction(Generic[T]):
         assert self.user.client
         with self.user.client:
             for element in self.elements:
-                assert isinstance(element, ui.element)
-                href = element._props.get('href')  # pylint: disable=protected-access
-                if href is not None:
+                if isinstance(element, ui.link):
+                    href = element._props.get('href', '#')  # pylint: disable=protected-access
                     background_tasks.create(self.user.open(href))
                     return self
                 for listener in element._event_listeners.values():  # pylint: disable=protected-access
                     if listener.element_id != element.id:
                         continue
                     args = None
-                    if isinstance(element, ui.checkbox):
+                    if isinstance(element, (ui.checkbox, ui.switch)):
                         args = not element.value
-                    events.handle_event(listener.handler,
-                                        events.GenericEventArguments(sender=element, client=self.user.client, args=args))
+                    event_arguments = events.GenericEventArguments(sender=element, client=self.user.client, args=args)
+                    events.handle_event(listener.handler, event_arguments)
         return self
