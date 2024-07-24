@@ -8,6 +8,7 @@ from .context import context
 from .element import Element
 from .elements.mixins.content_element import ContentElement
 from .elements.mixins.source_element import SourceElement
+from .elements.mixins.text_element import TextElement
 
 T = TypeVar('T', bound=Element)
 
@@ -51,8 +52,8 @@ class ElementFilter(Generic[T]):
         :param local_scope: if `True`, only elements within the current scope are returned; by default the whole page is searched (this default behavior can be changed with ``ElementFilter.DEFAULT_LOCAL_SCOPE = True``)
         """
         self._kind = kind
-        self._markers = marker.split() if isinstance(marker, str) else marker
-        self._contents = [content] if isinstance(content, str) else content
+        self._markers = marker.split() if isinstance(marker, str) else marker or []
+        self._contents = [content] if isinstance(content, str) else content or []
 
         self._within_kinds: List[Type[Element]] = []
         self._within_instances: List[Element] = []
@@ -69,52 +70,50 @@ class ElementFilter(Generic[T]):
         self._scope = context.slot.parent if local_scope else context.client.layout
 
     def __iter__(self) -> Iterator[T]:
-        return self._iterate(self._scope)
-
-    def _iterate(self, parent: Element, *, visited: Optional[List[Element]] = None) -> Iterator[T]:
         # pylint: disable=protected-access
-        visited = visited or []
-        for element in parent:
-            element_contents = [
-                element._props.get('text', ''),
-                (element.text if hasattr(element, 'text') else ''),
-                element._props.get('label', ''),
-                element._props.get('icon', ''),
-                (element.content if isinstance(element, ContentElement) else ''),
-                (element.source if isinstance(element, SourceElement) else ''),
-                element._props.get('placeholder', ''),
-                (element._props.get('value', '') or ''),  # NOTE the value could be None
-                element._props.get('options', {}).get('message', ''),
-            ]
-            content = '@|@'.join(str(c) for c in element_contents)
+        for element in self._scope.descendants():
+            if self._kind and not isinstance(element, self._kind):
+                continue
+            if self._exclude_kinds and isinstance(element, tuple(self._exclude_kinds)):
+                continue
 
-            # pylint: disable=too-many-boolean-expressions
-            if (
-                (self._kind is None or isinstance(element, self._kind)) and
-                (not self._markers or all(m in element._markers for m in self._markers)) and
-                (not self._contents or all(c in content for c in self._contents)) and
-                (not self._exclude_kinds or not isinstance(element, tuple(self._exclude_kinds))) and
-                (not self._exclude_markers or not any(m in element._markers for m in self._exclude_markers)) and
-                (not self._exclude_content or not any(text in getattr(element, 'text', '') for text in self._exclude_content)) and
-                (not self._within_instances or any(element in instance for instance in self._within_instances))
-            ):
-                if (
-                    (not self._within_kinds or any(isinstance(element, kind) for kind in self._within_kinds for element in visited)) and
-                    (not self._within_markers or any(m in element._markers for m in self._within_markers for element in visited)) and
-                    (not self._not_within_kinds or not any(isinstance(element, kinds) for kinds in self._not_within_kinds for element in visited)) and
-                    (not self._not_within_markers or not any(m in element._markers
-                                                             for m in self._not_within_markers
-                                                             for element in visited))
-                ):
-                    yield element  # type: ignore
-            if element not in self._not_within_instances:
-                yield from self._iterate(element, visited=[*visited, element])
+            if any(marker not in element._markers for marker in self._markers):
+                continue
+            if any(marker in element._markers for marker in self._exclude_markers):
+                continue
 
-    def __len__(self) -> int:
-        return len(list(iter(self)))
+            if self._contents or self._exclude_content:
+                element_contents = [content for content in (
+                    element._props.get('text'),
+                    element._props.get('label'),
+                    element._props.get('icon'),
+                    element._props.get('placeholder'),
+                    element._props.get('value'),
+                    element._props.get('options', {}).get('message'),
+                    element.text if isinstance(element, TextElement) else None,
+                    element.content if isinstance(element, ContentElement) else None,
+                    element.source if isinstance(element, SourceElement) else None,
+                ) if content]
+                if any(all(needle not in str(haystack) for haystack in element_contents) for needle in self._contents):
+                    continue
+                if any(needle in str(haystack) for haystack in element_contents for needle in self._exclude_content):
+                    continue
 
-    def __getitem__(self, index) -> T:
-        return list(iter(self))[index]
+            ancestors = set(element.ancestors())
+            if self._within_instances and ancestors.isdisjoint(self._within_instances):
+                continue
+            if self._not_within_instances and not ancestors.isdisjoint(self._not_within_instances):
+                continue
+            if self._within_kinds and not any(isinstance(ancestor, tuple(self._within_kinds)) for ancestor in ancestors):
+                continue
+            if self._not_within_kinds and any(isinstance(ancestor, tuple(self._not_within_kinds)) for ancestor in ancestors):
+                continue
+            if self._within_markers and not any(all(marker in ancestor._markers for marker in self._within_markers) for ancestor in ancestors):
+                continue
+            if self._not_within_markers and any(all(marker in ancestor._markers for marker in self._not_within_markers) for ancestor in ancestors):
+                continue
+
+            yield element  # type: ignore
 
     def within(self, *, kind: Optional[Type] = None, marker: Optional[str] = None, instance: Union[Element, List[Element], None] = None) -> Self:
         """Filter elements which have a specific match in the parent hierarchy."""
@@ -122,7 +121,7 @@ class ElementFilter(Generic[T]):
             assert issubclass(kind, Element)
             self._within_kinds.append(kind)
         if marker is not None:
-            self._within_markers.append(marker)
+            self._within_markers.extend(marker.split())
         if instance is not None:
             self._within_instances.extend(instance if isinstance(instance, list) else [instance])
         return self
@@ -144,7 +143,7 @@ class ElementFilter(Generic[T]):
             assert issubclass(kind, Element)
             self._not_within_kinds.append(kind)
         if marker is not None:
-            self._not_within_markers.append(marker)
+            self._not_within_markers.extend(marker.split())
         if instance is not None:
             self._not_within_instances.extend(instance if isinstance(instance, list) else [instance])
         return self

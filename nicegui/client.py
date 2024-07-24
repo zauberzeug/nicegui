@@ -306,14 +306,13 @@ class Client:
 
     def remove_elements(self, elements: Iterable[Element]) -> None:
         """Remove the given elements from the client."""
-        binding.remove(elements)
-        element_ids = [element.id for element in elements]
-        for element in elements:
+        element_list = list(elements)  # NOTE: we need to iterate over the elements multiple times
+        binding.remove(element_list)
+        for element in element_list:
             element._handle_delete()  # pylint: disable=protected-access
             element._deleted = True  # pylint: disable=protected-access
             self.outbox.enqueue_delete(element)
-        for element_id in element_ids:
-            del self.elements[element_id]
+            del self.elements[element.id]
 
     def remove_all_elements(self) -> None:
         """Remove all elements from the client."""

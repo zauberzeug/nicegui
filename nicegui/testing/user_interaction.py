@@ -16,7 +16,7 @@ T = TypeVar('T', bound=Element)
 class UserInteraction(Generic[T]):
 
     def __init__(self, user: User, elements: Set[T]) -> None:
-        """Iteraction object of the simulated user.
+        """Interaction object of the simulated user.
 
         This will be returned by the ``find`` method of the ``user`` fixture in pytests.
         It can be used to perform interaction with the found elements.
