@@ -28,12 +28,14 @@ icecream.install()
 
 
 def pytest_configure(config: pytest.Config) -> None:
+    """Add the "module_under_test" marker to the pytest configuration."""
     config.addinivalue_line('markers',
                             'module_under_test: specify the module under test which then gets automatically reloaded.')
 
 
 @pytest.fixture
 def nicegui_chrome_options(chrome_options: webdriver.ChromeOptions) -> webdriver.ChromeOptions:
+    """Configure the Chrome options for the NiceGUI tests."""
     chrome_options.add_argument('disable-dev-shm-usage')
     chrome_options.add_argument('no-sandbox')
     chrome_options.add_argument('headless')
@@ -113,8 +115,8 @@ def nicegui_driver(nicegui_chrome_options: webdriver.ChromeOptions) -> Generator
 
 
 @pytest.fixture
-def screen(nicegui_reset_globals,
-           nicegui_remove_all_screenshots,
+def screen(nicegui_reset_globals,  # pylint: disable=unused-argument
+           nicegui_remove_all_screenshots,  # pylint: disable=unused-argument
            nicegui_driver: webdriver.Chrome,
            request: pytest.FixtureRequest,
            caplog: pytest.LogCaptureFixture,
@@ -133,7 +135,10 @@ def screen(nicegui_reset_globals,
 
 
 @pytest.fixture
-async def user(nicegui_reset_globals, prepare_simulated_auto_index_client, request: pytest.FixtureRequest) -> AsyncGenerator[User, None]:
+async def user(nicegui_reset_globals,  # pylint: disable=unused-argument
+               prepare_simulated_auto_index_client,  # pylint: disable=unused-argument
+               request: pytest.FixtureRequest,
+               ) -> AsyncGenerator[User, None]:
     """Create a new user fixture."""
     prepare_simulation(request)
     async with core.app.router.lifespan_context(core.app):
@@ -143,7 +148,10 @@ async def user(nicegui_reset_globals, prepare_simulated_auto_index_client, reque
 
 
 @pytest.fixture
-async def create_user(nicegui_reset_globals, prepare_simulated_auto_index_client, request: pytest.FixtureRequest) -> AsyncGenerator[Callable[[], User], None]:
+async def create_user(nicegui_reset_globals,  # pylint: disable=unused-argument
+                      prepare_simulated_auto_index_client,  # pylint: disable=unused-argument
+                      request: pytest.FixtureRequest,
+                      ) -> AsyncGenerator[Callable[[], User], None]:
     """Create a fixture for building new users."""
     prepare_simulation(request)
     async with core.app.router.lifespan_context(core.app):
@@ -153,6 +161,7 @@ async def create_user(nicegui_reset_globals, prepare_simulated_auto_index_client
 
 @pytest.fixture()
 def prepare_simulated_auto_index_client(request):
+    """Prepare the simulated auto index client."""
     original_test = request.node._obj  # pylint: disable=protected-access
     if asyncio.iscoroutinefunction(original_test):
         async def wrapped_test(*args, **kwargs):
@@ -161,7 +170,7 @@ def prepare_simulated_auto_index_client(request):
         request.node._obj = wrapped_test  # pylint: disable=protected-access
     else:
         def wrapped_test(*args, **kwargs):
-            Client.auto_index_client.__enter__()
+            Client.auto_index_client.__enter__()  # pylint: disable=unnecessary-dunder-call
             return original_test(*args, **kwargs)
         request.node._obj = wrapped_test  # pylint: disable=protected-access
 

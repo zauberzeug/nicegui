@@ -58,7 +58,7 @@ class User:
         self.current_user = self
         assert self.client
         ui.navigate = self.navigate
-        self.client.__enter__()
+        self.client.__enter__()  # pylint: disable=unnecessary-dunder-call
         return self
 
     def deactivate(self, *_) -> None:
