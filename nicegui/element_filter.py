@@ -115,7 +115,11 @@ class ElementFilter(Generic[T]):
 
             yield element  # type: ignore
 
-    def within(self, *, kind: Optional[Type] = None, marker: Optional[str] = None, instance: Union[Element, List[Element], None] = None) -> Self:
+    def within(self, *,
+               kind: Optional[Type[Element]] = None,
+               marker: Optional[str] = None,
+               instance: Union[Element, List[Element], None] = None,
+               ) -> Self:
         """Filter elements which have a specific match in the parent hierarchy."""
         if kind is not None:
             assert issubclass(kind, Element)
@@ -126,7 +130,11 @@ class ElementFilter(Generic[T]):
             self._within_instances.extend(instance if isinstance(instance, list) else [instance])
         return self
 
-    def exclude(self, *, kind: Optional[Type[Element]] = None, marker: Optional[str] = None, content: Optional[str] = None) -> Self:
+    def exclude(self, *,
+                kind: Optional[Type[Element]] = None,
+                marker: Optional[str] = None,
+                content: Optional[str] = None,
+                ) -> Self:
         """Exclude elements with specific element type, marker or content."""
         if kind is not None:
             assert issubclass(kind, Element)
@@ -137,7 +145,11 @@ class ElementFilter(Generic[T]):
             self._exclude_content.append(content)
         return self
 
-    def not_within(self, *, kind: Optional[Type] = None, marker: Optional[str] = None, instance: Union[Element, List[Element], None] = None) -> Self:
+    def not_within(self, *,
+                   kind: Optional[Type[Element]] = None,
+                   marker: Optional[str] = None,
+                   instance: Union[Element, List[Element], None] = None,
+                   ) -> Self:
         """Exclude elements which have a parent of a specific type or marker."""
         if kind is not None:
             assert issubclass(kind, Element)
