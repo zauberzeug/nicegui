@@ -2,7 +2,6 @@ from nicegui import app, ui
 
 from . import (
     clipboard_documentation,
-    element_filter_documentation,
     doc,
     generic_events_documentation,
     keyboard_documentation,
@@ -165,5 +164,3 @@ def shutdown_demo():
 
 
 doc.intro(storage_documentation)
-
-doc.intro(element_filter_documentation)
