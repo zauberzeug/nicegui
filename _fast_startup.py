@@ -10,7 +10,7 @@ def runme():
 
 
 if __name__ == "__main__":
-    app.on_startup(runme)
+    #app.on_startup(runme)
     ui.textarea("Hello!")
     ui.run(
         reload=False,
