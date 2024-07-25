@@ -133,7 +133,7 @@ def _start_window_method_executor(
 def activate(host: str, port: int, title: str, width: int, height: int, fullscreen: bool, frameless: bool) -> None:
     """Activate native mode."""
 
-    def check_shutdown(drop_queue: mp.Queue) -> None:
+    def check_shutdown() -> None:
         while process.is_alive():
             time.sleep(0.1)
         Server.instance.should_exit = True
@@ -161,7 +161,7 @@ def activate(host: str, port: int, title: str, width: int, height: int, fullscre
     process = mp.Process(target=_open_window, args=args, daemon=True)
     process.start()
 
-    Thread(target=check_shutdown, args=(native.drop_queue,), daemon=True).start()
+    Thread(target=check_shutdown, daemon=True).start()
 
 
 def find_open_port(start_port: int = 8000, end_port: int = 8999) -> int:
