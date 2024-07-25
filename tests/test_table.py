@@ -213,27 +213,20 @@ def test_table_computed_props(screen: Screen):
 
     @ui.page('/')
     async def page():
-
         table = ui.table(
             columns=columns(),
             rows=all_rows,
-            row_key="id",
-            selection="multiple",
-            pagination={
-                "rowsPerPage": 1,
-                "sortBy": "age",
-                "descending": True,
-            })
-        table_filter = ui.input().bind_value(table, 'filter')
-        table_filter.value = 'e'
+            row_key='id',
+            selection='multiple',
+            pagination={'rowsPerPage': 1, 'sortBy': 'age', 'descending': True})
+        table.filter = 'e'
 
         await ui.context.client.connected()
-        assert filtered_sorted_rows[:1] == await table.computed_rows
-        assert len(filtered_sorted_rows) == await table.computed_rows_number
         assert filtered_sorted_rows == await table.filtered_sorted_rows
+        assert filtered_sorted_rows[:1] == await table.computed_rows
+        assert len(filtered_sorted_rows) == await table.computed_number_of_rows
 
     screen.open('/')
-    screen.wait(0.5)
     screen.should_contain('Lionel')
     screen.should_not_contain('Alice')
     screen.should_not_contain('Bob')

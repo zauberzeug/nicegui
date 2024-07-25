@@ -484,7 +484,7 @@ class Element(Visibility):
         return self.client.run_javascript(f'return runMethod({self.id}, "{name}", {json.dumps(args)})',
                                           timeout=timeout, check_interval=check_interval)
 
-    def get_computed_prop(self, prop_name: str, timeout: float = 1, check_interval: float = 0.01) -> AwaitableResponse:
+    def get_computed_prop(self, prop_name: str, timeout: float = 1) -> AwaitableResponse:
         """Return a computed property.
 
         This function should be awaited so that the computed property is properly returned.
@@ -494,8 +494,7 @@ class Element(Visibility):
         """
         if not core.loop:
             return NullResponse()
-        return self.client.run_javascript(f'return getComputedProp({self.id}, "{prop_name}")',
-                                          timeout=timeout, check_interval=check_interval)
+        return self.client.run_javascript(f'return getComputedProp({self.id}, "{prop_name}")', timeout=timeout)
 
     def _collect_descendants(self, *, include_self: bool = False) -> List[Element]:
         elements: List[Element] = [self] if include_self else []

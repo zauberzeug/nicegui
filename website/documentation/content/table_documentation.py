@@ -251,25 +251,23 @@ def computed_props():
 
     table = ui.table(
         columns=[
-            {'name': 'Name', 'label': 'Name', 'field': 'Name', 'align': 'left', 'sortable': True},
-            {'name': 'Age', 'label': 'Age', 'field': 'Age', 'align': 'left', 'sortable': True}
+            {'name': 'name', 'label': 'Name', 'field': 'name', 'align': 'left', 'sortable': True},
+            {'name': 'age', 'label': 'Age', 'field': 'age', 'align': 'left', 'sortable': True}
         ],
         rows=[
-            {'Name': 'Noah', 'Age': 33},
-            {'Name': 'Emma', 'Age': 21},
-            {'Name': 'Rose', 'Age': 88},
-            {'Name': 'James', 'Age': 59},
-            {'Name': 'Olivia', 'Age': 62},
-            {'Name': 'Liam', 'Age': 18},
+            {'name': 'Noah', 'age': 33},
+            {'name': 'Emma', 'age': 21},
+            {'name': 'Rose', 'age': 88},
+            {'name': 'James', 'age': 59},
+            {'name': 'Olivia', 'age': 62},
+            {'name': 'Liam', 'age': 18},
         ],
-        row_key='Name',
-        pagination=3
+        row_key='name',
+        pagination=3,
     )
-    with table.add_slot('top'):
-        with ui.column():
-            ui.input('Search by name/age').bind_value(table, 'filter')
-            ui.button('Show filtered/sorted rows').on('click', show_filtered_sorted_rows)
-            ui.button('Show computed rows').on('click', show_computed_rows)
+    ui.input('Search by name/age').bind_value(table, 'filter')
+    ui.button('Show filtered/sorted rows', on_click=show_filtered_sorted_rows)
+    ui.button('Show computed rows', on_click=show_computed_rows)
 
 
 @doc.demo('Computed fields', '''

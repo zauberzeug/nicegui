@@ -228,17 +228,17 @@ class Table(FilterElement, component='table.js'):
 
     @property
     async def filtered_sorted_rows(self) -> List[Dict]:
-        """Asyncronously returns the filtered and sorted rows of the table. Result must be awaited."""
+        """Asynchronously return the filtered and sorted rows of the table."""
         return await self.get_computed_prop('filteredSortedRows')
 
     @property
     async def computed_rows(self) -> List[Dict]:
-        """Asyncronously returns the computed rows of the table. Result must be awaited."""
+        """Asynchronously return the computed rows of the table."""
         return await self.get_computed_prop('computedRows')
 
     @property
-    async def computed_rows_number(self) -> int:
-        """Asyncronously returns the number of computed rows of the table. Result must be awaited."""
+    async def computed_number_of_rows(self) -> int:
+        """Asynchronously return the number of computed rows of the table."""
         return await self.get_computed_prop('computedRowsNumber')
 
     class row(Element):
