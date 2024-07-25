@@ -30,6 +30,11 @@ def test_apply_format_on_blur(screen: Screen):
     screen.click('Button')
     screen.should_contain_input('3.1417')
 
+    element.click()
+    element.send_keys(Keys.BACKSPACE * 10 + '2')
+    screen.click('Button')
+    screen.should_contain_input('2.0000')
+
 
 def test_max_value(screen: Screen):
     ui.number('Number', min=0, max=10, value=5)
