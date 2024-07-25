@@ -46,6 +46,25 @@ class ElementFilter(Generic[T]):
         It also provides a fluent interface to apply more filters like excluding elements or filtering for elements within a specific parent.
         The filter can be used as an iterator to iterate over the found elements and is always applied while iterating and not when being instantiated.
 
+        And element is yielded if it matches all of the following conditions:
+
+        - The element is of the specified kind (if specified).
+        - The element is not of any of the excluded kinds.
+        - The element has all of the specified markers.
+        - The element has none of the excluded markers.
+        - The element contains all of the specified content.
+        - The element contains none of the excluded content.
+
+        - The ancestors of the element include all of the specified instances defined via ``within``.
+        - The ancestors of the element do not include any of the specified instances defined via ``not_within``.
+        - The ancestors of the element include at least one of the specified kinds defined via ``within``.
+        - The ancestors of the element do not include any of the specified kinds defined via ``not_within``.
+        - The ancestors of the element include at least one element with all of the specified markers defined via ``within``.
+        - The ancestors of the element do not include any element with all of the specified markers defined via ``not_within``.
+
+        Element "content" includes its text, label, icon, placeholder, value, message, content, source.
+        Partial matches like "Hello" in "Hello World!" are sufficient for content filtering.
+
         :param kind: filter by element type; the iterator will be of type ``kind``
         :param marker: filter by element markers; can be a list of strings or a single string where markers are separated by whitespace
         :param content: filter for elements which contain ``content`` in one of their content attributes like ``.text``, ``.value``, ``.source``, ...; can be a singe string or a list of strings which all must match
