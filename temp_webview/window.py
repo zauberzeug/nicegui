@@ -6,10 +6,11 @@ import queue
 import socket
 import tempfile
 import time
-import webview
 import warnings
 from threading import Event, Thread
 from typing import TYPE_CHECKING, Any, Callable, Dict, List, Tuple
+
+import webview
 
 log: logging.Logger = logging.getLogger('nicegui')
 
