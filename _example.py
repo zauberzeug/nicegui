@@ -5,7 +5,7 @@ from nicegui.events import GenericEventArguments
 def say_hi(e: GenericEventArguments):
     print(e)
     ui.notify(e.args)
-    print("HI")
+
 
 with ui.row().classes("flex-nowrap w-full flex-1 bg-blue-400"):
     with ui.column().classes("w-full h-screen"):
@@ -30,6 +30,6 @@ ui.add_css("""
 """)
 
 ui.run(
-        native=True,
-        reload=False,
-    )
+    native=True,
+    reload=False,
+)
