@@ -17,7 +17,7 @@ ORJSON_OPTS = orjson.OPT_SERIALIZE_NUMPY | orjson.OPT_NON_STR_KEYS
 def dumps(obj: Any,
           sort_keys: bool = False,
           separators: Optional[Tuple[str, str]] = None, *,
-          indent: bool = True) -> str:
+          indent: bool = False) -> str:
     """Serializes a Python object to a JSON-encoded string.
 
     By default, this function supports serializing NumPy arrays, which Python's json module does not.
