@@ -484,7 +484,7 @@ class Element(Visibility):
         return self.client.run_javascript(f'return runMethod({self.id}, "{name}", {json.dumps(args)})',
                                           timeout=timeout, check_interval=check_interval)
 
-    def get_computed_prop(self, prop_name: str, timeout: float = 1) -> AwaitableResponse:
+    def get_computed_prop(self, prop_name: str, *, timeout: float = 1) -> AwaitableResponse:
         """Return a computed property.
 
         This function should be awaited so that the computed property is properly returned.
