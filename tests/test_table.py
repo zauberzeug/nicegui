@@ -222,9 +222,9 @@ def test_table_computed_props(screen: Screen):
         table.filter = 'e'
 
         await ui.context.client.connected()
-        assert filtered_sorted_rows == await table.filtered_sorted_rows
-        assert filtered_sorted_rows[:1] == await table.computed_rows
-        assert len(filtered_sorted_rows) == await table.computed_number_of_rows
+        assert filtered_sorted_rows == await table.get_filtered_sorted_rows()
+        assert filtered_sorted_rows[:1] == await table.get_computed_rows()
+        assert len(filtered_sorted_rows) == await table.get_computed_rows_number()
 
     screen.open('/')
     screen.should_contain('Lionel')

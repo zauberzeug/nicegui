@@ -226,18 +226,15 @@ class Table(FilterElement, component='table.js'):
             self.selected.clear()
         self.update()
 
-    @property
-    async def filtered_sorted_rows(self) -> List[Dict]:
+    async def get_filtered_sorted_rows(self) -> List[Dict]:
         """Asynchronously return the filtered and sorted rows of the table."""
         return await self.get_computed_prop('filteredSortedRows')
 
-    @property
-    async def computed_rows(self) -> List[Dict]:
+    async def get_computed_rows(self) -> List[Dict]:
         """Asynchronously return the computed rows of the table."""
         return await self.get_computed_prop('computedRows')
 
-    @property
-    async def computed_number_of_rows(self) -> int:
+    async def get_computed_rows_number(self) -> int:
         """Asynchronously return the number of computed rows of the table."""
         return await self.get_computed_prop('computedRowsNumber')
 

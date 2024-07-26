@@ -244,10 +244,10 @@ def handle_pagination_changes() -> None:
 ''')
 def computed_props():
     async def show_filtered_sorted_rows():
-        ui.notify(await table.filtered_sorted_rows)
+        ui.notify(await table.get_filtered_sorted_rows())
 
     async def show_computed_rows():
-        ui.notify(await table.computed_rows)
+        ui.notify(await table.get_computed_rows())
 
     table = ui.table(
         columns=[
