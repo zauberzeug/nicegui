@@ -31,15 +31,17 @@ def activate(host: str, port: int, title: str, width: int, height: int, fullscre
 
     if not optional_features.has('webview'):
         log.error('Native mode is not supported in this configuration.\n'
-                    'Please run "pip install pywebview" to use it.')
+                  'Please run "pip install pywebview" to use it.')
         sys.exit(1)
 
     mp.freeze_support()
-    args = host, port, title, width, height, fullscreen, frameless, native.method_queue, native.response_queue, core.app.native.window_args, core.app.native.settings, core.app.native.start_args,
+    args = (host, port, title, width, height, fullscreen, frameless, native.method_queue, native.response_queue,
+            core.app.native.window_args, core.app.native.settings, core.app.native.start_args)
     process = mp.Process(target=open_window, args=args, daemon=True)
     process.start()
 
     Thread(target=check_shutdown, daemon=True).start()
+
 
 def find_open_port(start_port: int = 8000, end_port: int = 8999) -> int:
     """Reliably find an open port in a given range.

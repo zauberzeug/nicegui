@@ -8,12 +8,11 @@ import tempfile
 import time
 import warnings
 from threading import Event, Thread
-from typing import TYPE_CHECKING, Any, Callable, Dict, List, Tuple
+from typing import Any, Callable, Dict, List, Tuple
 
 import webview
 
 log: logging.Logger = logging.getLogger('nicegui')
-
 
 
 def register() -> bool:
@@ -21,11 +20,12 @@ def register() -> bool:
         with warnings.catch_warnings():
             # webview depends on bottle which uses the deprecated CGI function (https://github.com/bottlepy/bottle/issues/1403)
             warnings.filterwarnings('ignore', category=DeprecationWarning)
-            import webview
+            import webview  # noqa
         return True
-        #optional_features.register('webview')
+        # optional_features.register('webview')
     except ModuleNotFoundError:
         return False
+
 
 def open_window(
     host: str, port: int, title: str, width: int, height: int, fullscreen: bool, frameless: bool,
@@ -94,6 +94,7 @@ def _start_window_method_executor(window: webview.Window,
                 log.exception(f'error in window.{method_name}')
 
     Thread(target=window_method_executor).start()
+
 
 def is_port_open(host: str, port: int) -> bool:
     """Check if the port is open by checking if a TCP connection can be established."""
