@@ -49,7 +49,7 @@ class ReadOnlyDict(MutableMapping):
 
 class PersistentDict(observables.ObservableDict):
 
-    def __init__(self, filepath: Path, encoding: Optional[str] = None, *, indent: bool = True) -> None:
+    def __init__(self, filepath: Path, encoding: Optional[str] = None, *, indent: bool = False) -> None:
         self.filepath = filepath
         self.encoding = encoding
         self.indent = indent
