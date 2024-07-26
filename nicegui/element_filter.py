@@ -57,7 +57,7 @@ class ElementFilter(Generic[T]):
 
         - The ancestors of the element include all of the specified instances defined via ``within``.
         - The ancestors of the element do not include any of the specified instances defined via ``not_within``.
-        - The ancestors of the element include at least one of the specified kinds defined via ``within``.
+        - The ancestors of the element include all of the specified kinds defined via ``within``.
         - The ancestors of the element do not include any of the specified kinds defined via ``not_within``.
         - The ancestors of the element include at least one element with all of the specified markers defined via ``within``.
         - The ancestors of the element do not include any element with all of the specified markers defined via ``not_within``.
@@ -123,7 +123,7 @@ class ElementFilter(Generic[T]):
                 continue
             if self._not_within_instances and not ancestors.isdisjoint(self._not_within_instances):
                 continue
-            if self._within_kinds and not any(isinstance(ancestor, tuple(self._within_kinds)) for ancestor in ancestors):
+            if self._within_kinds and not all(any(isinstance(ancestor, kind) for ancestor in ancestors) for kind in self._within_kinds):
                 continue
             if self._not_within_kinds and any(isinstance(ancestor, tuple(self._not_within_kinds)) for ancestor in ancestors):
                 continue

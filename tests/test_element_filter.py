@@ -150,10 +150,14 @@ def test_find_within_kind():
         ui.label('label A')
         ui.button('button B')
         ui.label('label B')
+    with ui.column():
+        ui.label('label C')
+        with ui.card():
+            ui.button('button C')
 
-    result = [element.text for element in ElementFilter(content='B').within(kind=ui.row)]
-
-    assert result == ['button B', 'label B']
+    assert len(list(ElementFilter(content='B').within(kind=ui.row))) == 2
+    assert len(list(ElementFilter(content='C').within(kind=ui.column))) == 2
+    assert len(list(ElementFilter(content='C').within(kind=ui.column).within(kind=ui.card))) == 1
 
 
 def test_find_with_excluding_kind():
