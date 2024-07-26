@@ -61,7 +61,7 @@ examples: List[Example] = [
     Example('Editable table', 'editable table allowing to add, edit, delete rows'),
     Example('Editable AG Grid', 'editable AG Grid allowing to add, edit, delete rows'),
     Example('FullCalendar', 'show an interactive calendar using the [FullCalendar library](https://fullcalendar.io/)'),
-    Example('Pytest', 'test a NiceGUI app with pytest'),
+    Example('Pytests', 'test a NiceGUI app with pytest'),
     Example('Pyserial', 'communicate with a serial device'),
     Example('Webserial', 'communicate with a serial device using the WebSerial API'),
     Example('Websockets', 'use [websockets library](https://websockets.readthedocs.io/) to start a websocket server'),
