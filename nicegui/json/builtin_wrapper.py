@@ -11,7 +11,10 @@ except ImportError:
     has_numpy = False
 
 
-def dumps(obj: Any, sort_keys: bool = False, separators: Optional[Tuple[str, str]] = None):
+def dumps(obj: Any,
+          sort_keys: bool = False,
+          separators: Optional[Tuple[str, str]] = None, *,
+          indent: bool = False) -> str:
     """Serializes a Python object to a JSON-encoded string.
 
     This implementation uses Python's default json module, but extends it in order to support NumPy arrays.
@@ -22,7 +25,7 @@ def dumps(obj: Any, sort_keys: bool = False, separators: Optional[Tuple[str, str
         obj,
         sort_keys=sort_keys,
         separators=separators,
-        indent=None,
+        indent=2 if indent else None,
         allow_nan=False,
         ensure_ascii=False,
         cls=NumpyJsonEncoder)
