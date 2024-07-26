@@ -62,6 +62,19 @@ function runMethod(target, method_name, args) {
   }
 }
 
+function getComputedProp(target, prop_name) {
+  if (typeof target === "object" && prop_name in target) {
+    return target[prop_name];
+  }
+  const element = getElement(target);
+  if (element === null || element === undefined) return;
+  if (prop_name in element) {
+    return element[prop_name];
+  } else if (prop_name in (element.$refs.qRef || [])) {
+    return element.$refs.qRef[prop_name];
+  }
+}
+
 function emitEvent(event_name, ...args) {
   getElement(0).$emit(event_name, ...args);
 }
