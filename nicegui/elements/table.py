@@ -2,7 +2,7 @@ from typing import Any, Callable, Dict, List, Literal, Optional, Union
 
 from typing_extensions import Self
 
-from .. import optional_features
+from .. import helpers, optional_features
 from ..element import Element
 from ..events import GenericEventArguments, TableSelectionEventArguments, ValueChangeEventArguments, handle_event
 from .mixins.filter_element import FilterElement
@@ -97,6 +97,19 @@ class Table(FilterElement, component='table.js'):
         """Add a callback to be invoked when the pagination changes."""
         self._pagination_change_handlers.append(callback)
         return self
+
+    @classmethod
+    def from_pandas(cls,
+                    df: 'pd.DataFrame',
+                    row_key: str = 'id',
+                    title: Optional[str] = None,
+                    selection: Optional[Literal['single', 'multiple']] = None,
+                    pagination: Optional[Union[int, dict]] = None,
+                    on_select: Optional[Callable[..., Any]] = None,
+                    ) -> Self:  # DEPRECATED
+        """Create a Table from a Pandas DataFrame."""
+        helpers.warn_once('ui.table.from_pandas is deprecated. Use ui.table with the df argument instead.')
+        return cls(df=df, row_key=row_key, title=title, selection=selection, pagination=pagination, on_select=on_select)
 
     @property
     def rows(self) -> List[Dict]:
