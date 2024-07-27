@@ -115,12 +115,12 @@ def nicegui_driver(nicegui_chrome_options: webdriver.ChromeOptions) -> Generator
 
 
 @pytest.fixture
-def screen(nicegui_reset_globals,  # pylint: disable=unused-argument
-           nicegui_remove_all_screenshots,  # pylint: disable=unused-argument
-           nicegui_driver: webdriver.Chrome,
-           request: pytest.FixtureRequest,
-           caplog: pytest.LogCaptureFixture,
-           ) -> Generator[Screen, None, None]:
+def nicegui_screen(nicegui_reset_globals,  # pylint: disable=unused-argument
+                   nicegui_remove_all_screenshots,  # pylint: disable=unused-argument
+                   nicegui_driver: webdriver.Chrome,
+                   request: pytest.FixtureRequest,
+                   caplog: pytest.LogCaptureFixture,
+                   ) -> Generator[Screen, None, None]:
     """Create a new SeleniumScreen fixture."""
     screen_ = Screen(nicegui_driver, caplog)
     yield screen_
@@ -135,10 +135,10 @@ def screen(nicegui_reset_globals,  # pylint: disable=unused-argument
 
 
 @pytest.fixture
-async def user(nicegui_reset_globals,  # pylint: disable=unused-argument
-               prepare_simulated_auto_index_client,  # pylint: disable=unused-argument
-               request: pytest.FixtureRequest,
-               ) -> AsyncGenerator[User, None]:
+async def nicegui_user(nicegui_reset_globals,  # pylint: disable=unused-argument
+                       prepare_simulated_auto_index_client,  # pylint: disable=unused-argument
+                       request: pytest.FixtureRequest,
+                       ) -> AsyncGenerator[User, None]:
     """Create a new user fixture."""
     prepare_simulation(request)
     async with core.app.router.lifespan_context(core.app):
