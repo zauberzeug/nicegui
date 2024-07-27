@@ -59,8 +59,8 @@ class ElementFilter(Generic[T]):
         - The ancestors of the element do not include any of the specified instances defined via ``not_within``.
         - The ancestors of the element include all of the specified kinds defined via ``within``.
         - The ancestors of the element do not include any of the specified kinds defined via ``not_within``.
-        - The ancestors of the element include at least one element with all of the specified markers defined via ``within``.
-        - The ancestors of the element do not include any element with all of the specified markers defined via ``not_within``.
+        - The ancestors of the element include all of the specified markers defined via ``within``.
+        - The ancestors of the element do not include any of the specified markers defined via ``not_within``.
 
         Element "content" includes its text, label, icon, placeholder, value, message, content, source.
         Partial matches like "Hello" in "Hello World!" are sufficient for content filtering.
