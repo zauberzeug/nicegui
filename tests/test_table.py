@@ -204,3 +204,29 @@ def test_problematic_datatypes(screen: Screen):
     screen.should_contain('5 days')
     screen.should_contain('(1+2j)')
     screen.should_contain('2021-01')
+
+
+def test_table_computed_props(screen: Screen):
+    all_rows = rows()
+    filtered_rows = [row for row in all_rows if 'e' in row['name']]
+    filtered_sorted_rows = sorted(filtered_rows, key=lambda row: row['age'], reverse=True)
+
+    @ui.page('/')
+    async def page():
+        table = ui.table(
+            columns=columns(),
+            rows=all_rows,
+            row_key='id',
+            selection='multiple',
+            pagination={'rowsPerPage': 1, 'sortBy': 'age', 'descending': True})
+        table.filter = 'e'
+
+        await ui.context.client.connected()
+        assert filtered_sorted_rows == await table.get_filtered_sorted_rows()
+        assert filtered_sorted_rows[:1] == await table.get_computed_rows()
+        assert len(filtered_sorted_rows) == await table.get_computed_rows_number()
+
+    screen.open('/')
+    screen.should_contain('Lionel')
+    screen.should_not_contain('Alice')
+    screen.should_not_contain('Bob')
