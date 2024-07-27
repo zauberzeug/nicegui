@@ -152,3 +152,10 @@ def short_term_memory():
         ui.button('Update content',
                   on_click=lambda: cache.update(count=cache['count'] + 1))
         ui.button('Reload page', on_click=ui.navigate.reload)
+
+
+doc.text('Indentation', '''
+    By default, the general and user storage data is stored in JSON format without indentation.
+    You can change this to an indentation of 2 spaces by setting
+    `app.storage.general.indent = True` or `app.storage.user.indent = True`.
+''')

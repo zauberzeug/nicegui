@@ -116,6 +116,7 @@ class Number(ValidationElement, DisableableElement):
         if self.precision is not None:
             value = float(round(value, self.precision))
         self.set_value(float(self.format % value) if self.format else value)
+        self.update()
 
     def _event_args_to_value(self, e: GenericEventArguments) -> Any:
         if not e.args:

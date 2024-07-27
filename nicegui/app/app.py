@@ -1,4 +1,7 @@
 import inspect
+import os
+import platform
+import signal
 import urllib
 from enum import Enum
 from pathlib import Path
@@ -124,12 +127,11 @@ class App(FastAPI):
         """Shut down NiceGUI.
 
         This will programmatically stop the server.
-        Only possible when auto-reload is disabled.
         """
-        if self.config.reload:
-            raise RuntimeError('calling shutdown() is not supported when auto-reload is enabled')
         if self.native.main_window:
             self.native.main_window.destroy()
+        if self.config.reload:
+            os.kill(os.getppid(), getattr(signal, 'CTRL_C_EVENT' if platform.system() == 'Windows' else 'SIGINT'))
         else:
             Server.instance.should_exit = True
 
