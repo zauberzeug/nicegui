@@ -25,7 +25,7 @@ class Outbox:
         self.messages: Deque[Message] = deque()
         self._should_stop = False
         self._enqueue_event: Optional[asyncio.Event] = None
-        self._history: Optional[Deque[Tuple[int, float, Tuple[MessageType, Any, ClientId]]]] = None
+        self._history: Optional[Deque[Tuple[int, float, Message]]] = None
         self._message_count: int = 0
 
         if self.client.shared:
@@ -67,11 +67,11 @@ class Outbox:
         self.messages.append((target_id, message_type, data))
         self._set_enqueue_event()
 
-    def _append_history(self, message_type: MessageType, data: Any, target: ClientId) -> None:
-        self._message_count += 1
-        timestamp = time.time()
-        self._history.append((self._message_count, timestamp, (message_type, data, target)))  # type: ignore[union-attr]
-        while self._history and self._history[0][1] < timestamp - self._history_duration:
+    def _append_history(self, message: Message) -> None:
+        now = time.time()
+        assert self._history is not None
+        self._history.append((self._message_count, now, message))
+        while self._history and self._history[0][1] < now - self._history_duration:
             self._history.popleft()
 
     async def synchronize(self, last_message_id: int, socket_ids: List[str]) -> None:
@@ -86,7 +86,7 @@ class Outbox:
                     start = next_id - oldest_id
                     for i in range(start, len(self._history)):
                         msg = self._history[i][2]
-                        if msg[2] == self.client.id or msg[2] in socket_ids:
+                        if msg[0] == self.client.id or msg[0] in socket_ids:
                             messages.append(msg)
                 else:
                     success = False
@@ -143,8 +143,9 @@ class Outbox:
                 await asyncio.sleep(0.1)
 
     async def _emit(self, message_type: MessageType, data: Any, target_id: ClientId) -> None:
+        self._message_count += 1
         if self._history is not None and message_type != 'sync':
-            self._append_history(message_type, data, target_id)
+            self._append_history((target_id, message_type, data))
             data['message_id'] = self._message_count
 
         await core.sio.emit(message_type, data, room=target_id)

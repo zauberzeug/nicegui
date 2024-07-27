@@ -358,21 +358,18 @@ function createApp(elements, options) {
         download: (msg) => download(msg.src, msg.filename, msg.media_type, options.prefix),
         notify: (msg) => Quasar.Notify.create(msg),
         sync: (msg) => {
-          if (msg.target === window.socket.id) {
-            if (msg.success) {
-              window.syncing = false;
-              for (let i = 0; i < msg.history.length; i++) {
-                let message = msg.history[i][1];
-                if (message.message_id > window.lastMessageId) {
-                  window.lastMessageId = message.message_id;
-                  delete message.message_id;
-                  messageHandlers[msg.history[i][0]](message);
-                }
-              }
-            } else {
-              console.log("reloading because client could not be synchronized with the server");
-              window.location.reload();
-            }
+          if (msg.target !== window.socket.id) return;
+          if (!msg.success) {
+            console.log("Could synchronize with the server. Reloading...");
+            window.location.reload();
+            return;
+          }
+          window.syncing = false;
+          for (let [messageType, data] of msg.history) {
+            if (data.message_id <= window.lastMessageId) continue;
+            window.lastMessageId = data.message_id;
+            delete data.message_id;
+            messageHandlers[messageType](data);
           }
         },
       };
