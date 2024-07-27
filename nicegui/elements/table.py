@@ -54,7 +54,7 @@ class Table(FilterElement, component='table.js'):
 
         self._default_column = default_column or {}
         first_row = self._props['rows'][0] if self._props['rows'] else {}
-        self._columns = columns or [{'name': key, 'label': str(key).upper(), 'field': key} for key in first_row]
+        self._columns = columns or [{'name': key, 'label': str(key), 'field': key} for key in first_row]
         self._props['columns'] = self._merge_columns_with_default()
 
         self._props['row-key'] = row_key

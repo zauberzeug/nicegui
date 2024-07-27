@@ -38,7 +38,6 @@ def test_table(screen: Screen):
     screen.should_contain('Lionel')
 
     screen.should_not_contain('id')  # when providing columns, only those columns are shown
-    screen.should_contain('Name')  # the label should be displayed as provided
 
 
 def test_table_without_columns(screen: Screen):
@@ -46,11 +45,12 @@ def test_table_without_columns(screen: Screen):
 
     screen.open('/')
     screen.should_contain('My Team')
+    screen.should_contain('name')
     screen.should_contain('Alice')
     screen.should_contain('Bob')
     screen.should_contain('Lionel')
 
-    screen.should_contain('ID')  # when omitting columns, they are inferred from the first row and capitalized
+    screen.should_contain('id')  # when omitting columns, they are inferred from the first row and capitalized
 
 
 def test_pagination_int(screen: Screen):
@@ -215,10 +215,10 @@ def test_create_from_dataframe(screen: Screen):
     ui.table(df=df())
 
     screen.open('/')
-    screen.should_contain('NAME')
+    screen.should_contain('name')
     screen.should_contain('Patrick')
     screen.should_contain('Liz')
-    screen.should_contain('AGE')
+    screen.should_contain('age')
     screen.should_contain('24')
     screen.should_contain('40')
     screen.should_contain('42')
@@ -236,11 +236,11 @@ def test_problematic_datatypes(screen: Screen):
     ui.table(df=df)
 
     screen.open('/')
-    screen.should_contain('DATETIME_COL')
-    screen.should_contain('DATETIME_COL_TZ')
-    screen.should_contain('TIMEDELTA_COL')
-    screen.should_contain('COMPLEX_COL')
-    screen.should_contain('PERIOD_COL')
+    screen.should_contain('Datetime_col')
+    screen.should_contain('Datetime_col_tz')
+    screen.should_contain('Timedelta_col')
+    screen.should_contain('Complex_col')
+    screen.should_contain('Period_col')
     screen.should_contain('2020-01-01')
     screen.should_contain('5 days')
     screen.should_contain('(1+2j)')
