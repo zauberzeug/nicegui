@@ -34,65 +34,37 @@ def test_find_all() -> None:
     assert elements[7].text == 'label B'  # type: ignore
 
 
-def test_find_by_text_element():
-    ui.button('button A')
-    ui.label('label A')
+def test_find_kind():
     ui.icon('home')
-    ui.button('button B')
-    ui.label('label B')
-
-    assert texts(ElementFilter(kind=TextElement)) == ['button A', 'label A', 'button B', 'label B']
-
-
-def test_find_by_kind():
     ui.button('button A')
     ui.label('label A')
     ui.button('button B')
     ui.label('label B')
 
     assert texts(ElementFilter(kind=ui.button)) == ['button A', 'button B']
+    assert texts(ElementFilter(kind=TextElement)) == ['button A', 'label A', 'button B', 'label B']
 
 
-def test_find_by_containing_text():
+def test_find_content():
     ui.button('button A')
     ui.label('label A')
     ui.button('button B')
     ui.label('label B')
 
     assert texts(ElementFilter(content='A')) == ['button A', 'label A']
+    assert texts(ElementFilter(content=['A', 'butt'])) == ['button A']
 
 
-def test_find_by_containing_texts():
-    ui.button('button A')
-    ui.label('label A')
-    ui.button('button B')
-    ui.label('label B')
-
-    assert texts(ElementFilter(content=['A', 'tt'])) == ['button A']
-
-
-def test_find_by_marker():
+def test_find_marker():
     ui.button('button A')
     ui.button('button B').mark('important')
+    ui.button('button C').mark('important ', 'foo')
+    ui.button('button D').mark(' important bar')
 
-    assert texts(ElementFilter(marker='important')) == ['button B']
-
-
-def test_find_by_specific_marker():
-    ui.button('button A').mark('test')
-    ui.button('button B').mark('important ', 'test')
-    ui.button('button C').mark(' important test')
-
-    assert texts(ElementFilter(marker='test')) == ['button A', 'button B', 'button C']
-    assert texts(ElementFilter(marker='important')) == ['button B', 'button C']
-
-
-def test_find_by_multiple_markers():
-    ui.button('button A').mark('test')
-    ui.button('button B').mark('important ', 'test')
-    ui.button('button C').mark(' important test')
-
-    assert texts(ElementFilter(marker='test important')) == ['button B', 'button C']
+    assert texts(ElementFilter(marker='important')) == ['button B', 'button C', 'button D']
+    assert texts(ElementFilter(marker='foo')) == ['button C']
+    assert texts(ElementFilter(marker='bar important')) == ['button D']
+    assert texts(ElementFilter(marker='important bar')) == ['button D']
 
 
 def test_find_within_marker():
@@ -101,29 +73,50 @@ def test_find_within_marker():
     with ui.row().mark('horizontal'):
         ui.button('button B')
         ui.label('label B')
+        with ui.column().mark('vertical'):
+            ui.button('button C')
+            ui.label('label C')
 
-    assert texts(ElementFilter().within(marker='horizontal')) == ['button B', 'label B']
+    assert texts(ElementFilter(kind=ui.button).within(marker='horizontal')) == ['button B', 'button C']
+    assert texts(ElementFilter(kind=ui.button).within(marker='horizontal vertical')) == ['button C']
+    assert texts(ElementFilter(kind=ui.button).not_within(marker='horizontal')) == ['button A']
+    assert texts(ElementFilter(kind=ui.button).not_within(marker='horizontal vertical')) == ['button A']
 
 
-def test_find_within_element():
+def test_find_within_marker2():
+    with ui.row().mark('a b'):
+        ui.label('Label 1')
+    with ui.row().mark('a'):
+        ui.label('Label 2')
+    ui.label('Label 3')
+
+    assert texts(ElementFilter(kind=ui.label).within(marker='a b')) == ['Label 1']
+    assert texts(ElementFilter(kind=ui.label).within(marker='b a')) == ['Label 1']
+    assert texts(ElementFilter(kind=ui.label).within(marker='b')) == ['Label 1']
+    assert texts(ElementFilter(kind=ui.label).within(marker='a')) == ['Label 1', 'Label 2']
+    assert texts(ElementFilter(kind=ui.label).not_within(marker='a b')) == ['Label 3']
+    assert texts(ElementFilter(kind=ui.label).not_within(marker='b a')) == ['Label 3']
+    assert texts(ElementFilter(kind=ui.label).not_within(marker='b')) == ['Label 2', 'Label 3']
+    assert texts(ElementFilter(kind=ui.label).not_within(marker='a')) == ['Label 3']
+
+
+def test_find_within_instance():
     ui.button('button A')
     ui.label('label A')
-    with ui.row() as r:
+    with ui.row() as row:
         ui.button('button B')
         ui.label('label B')
+        with ui.column() as column1:
+            ui.button('button C')
+            ui.label('label C')
+        with ui.column() as column2:
+            ui.button('button D')
+            ui.label('label D')
 
-    assert texts(ElementFilter().within(instance=r)) == ['button B', 'label B']
-
-
-def test_find_within_elements():
-    with ui.row() as row1:
-        ui.button('button A')
-        ui.label('label A')
-    with ui.row() as row2:
-        ui.button('button B')
-        ui.label('label B')
-
-    assert texts(ElementFilter().within(instance=[row1, row2])) == ['button A', 'label A', 'button B', 'label B']
+    assert texts(ElementFilter(kind=ui.button).within(instance=row)) == ['button B', 'button C', 'button D']
+    assert texts(ElementFilter(kind=ui.button).within(instance=[row, column1])) == ['button C']
+    assert texts(ElementFilter(kind=ui.button).within(instance=[column1, column2])) == []
+    assert texts(ElementFilter(kind=ui.button).not_within(instance=row)) == ['button A']
 
 
 def test_find_within_kind():
@@ -140,9 +133,10 @@ def test_find_within_kind():
     assert texts(ElementFilter(content='B').within(kind=ui.row)) == ['button B', 'label B']
     assert texts(ElementFilter(content='C').within(kind=ui.column)) == ['label C', 'button C']
     assert texts(ElementFilter(content='C').within(kind=ui.column).within(kind=ui.card)) == ['button C']
+    assert texts(ElementFilter(kind=ui.button).not_within(kind=ui.row)) == ['button A', 'button C']
 
 
-def test_find_with_excluding_kind():
+def test_find_exclude_kind():
     ui.button('button A')
     ui.label('label A')
     ui.button('button B')
@@ -151,7 +145,7 @@ def test_find_with_excluding_kind():
     assert texts(ElementFilter(content='A').exclude(kind=ui.label)) == ['button A']
 
 
-def test_find_with_excluding_marker():
+def test_find_exclude_marker():
     ui.button('button A').mark('normal')
     ui.label('label A').mark('important')
     ui.button('button B')
@@ -160,43 +154,13 @@ def test_find_with_excluding_marker():
     assert texts(ElementFilter(kind=TextElement).exclude(marker='normal')) == ['label A', 'button B']
 
 
-def test_find_with_excluding_text():
+def test_find_exclude_content():
     ui.button('button A')
     ui.label('label A')
     ui.button('button B')
     ui.label('label B')
 
     assert texts(ElementFilter(kind=ui.button).exclude(content='A')) == ['button B']
-
-
-def test_find_not_within_kind():
-    ui.button('button A')
-    ui.label('label A')
-    with ui.row():
-        ui.button('button B')
-        ui.label('label B')
-
-    assert texts(ElementFilter(kind=ui.button).not_within(kind=ui.row)) == ['button A']
-
-
-def test_find_not_within_marker():
-    ui.button('button A')
-    ui.label('label A')
-    with ui.row().mark('horizontal'):
-        ui.button('button B')
-        ui.label('label B')
-
-    assert texts(ElementFilter(kind=ui.button).not_within(marker='horizontal')) == ['button A']
-
-
-def test_find_not_within_element():
-    ui.button('button A')
-    ui.label('label A')
-    with ui.row() as r:
-        ui.button('button B')
-        ui.label('label B')
-
-    assert texts(ElementFilter(kind=ui.button).not_within(instance=r)) == ['button A']
 
 
 def test_find_in_local_scope():
@@ -206,33 +170,6 @@ def test_find_in_local_scope():
         ui.button('button B')
         ui.label('label B')
         assert texts(ElementFilter(local_scope=True)) == ['button B', 'label B']
-
-
-def test_multiple_markers():
-    ui.button('AB').mark('a b')
-    ui.button('A').mark('a')
-
-    assert texts(ElementFilter(marker='a b')) == ['AB']
-    assert texts(ElementFilter(marker='b a')) == ['AB']
-    assert texts(ElementFilter(marker='b')) == ['AB']
-    assert texts(ElementFilter(marker='a')) == ['AB', 'A']
-
-
-def test_multiple_parent_markers():
-    with ui.row().mark('a b'):
-        ui.label('Label 1')
-    with ui.row().mark('a'):
-        ui.label('Label 2')
-    ui.label('Label 3')
-
-    assert texts(ElementFilter(kind=ui.label).within(marker='a b')) == ['Label 1']
-    assert texts(ElementFilter(kind=ui.label).within(marker='b a')) == ['Label 1']
-    assert texts(ElementFilter(kind=ui.label).within(marker='b')) == ['Label 1']
-    assert texts(ElementFilter(kind=ui.label).within(marker='a')) == ['Label 1', 'Label 2']
-    assert texts(ElementFilter(kind=ui.label).not_within(marker='a b')) == ['Label 2', 'Label 3']
-    assert texts(ElementFilter(kind=ui.label).not_within(marker='b a')) == ['Label 2', 'Label 3']
-    assert texts(ElementFilter(kind=ui.label).not_within(marker='b')) == ['Label 2', 'Label 3']
-    assert texts(ElementFilter(kind=ui.label).not_within(marker='a')) == ['Label 3']
 
 
 async def test_setting_classes(user: User):

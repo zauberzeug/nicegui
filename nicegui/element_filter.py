@@ -49,18 +49,18 @@ class ElementFilter(Generic[T]):
         And element is yielded if it matches all of the following conditions:
 
         - The element is of the specified kind (if specified).
-        - The element is not of any of the excluded kinds.
+        - The element is none of the excluded kinds.
         - The element has all of the specified markers.
         - The element has none of the excluded markers.
         - The element contains all of the specified content.
         - The element contains none of the excluded content.
 
-        - The ancestors of the element include all of the specified instances defined via ``within``.
-        - The ancestors of the element do not include any of the specified instances defined via ``not_within``.
-        - The ancestors of the element include all of the specified kinds defined via ``within``.
-        - The ancestors of the element do not include any of the specified kinds defined via ``not_within``.
-        - The ancestors of the element include all of the specified markers defined via ``within``.
-        - The ancestors of the element do not include any of the specified markers defined via ``not_within``.
+        - Its ancestors include all of the specified instances defined via ``within``.
+        - Its ancestors include none of the specified instances defined via ``not_within``.
+        - Its ancestors include all of the specified kinds defined via ``within``.
+        - Its ancestors include none of the specified kinds defined via ``not_within``.
+        - Its ancestors include all of the specified markers defined via ``within``.
+        - Its ancestors include none of the specified markers defined via ``not_within``.
 
         Element "content" includes its text, label, icon, placeholder, value, message, content, source.
         Partial matches like "Hello" in "Hello World!" are sufficient for content filtering.
@@ -119,7 +119,7 @@ class ElementFilter(Generic[T]):
                     continue
 
             ancestors = set(element.ancestors())
-            if self._within_instances and ancestors.isdisjoint(self._within_instances):
+            if self._within_instances and not ancestors.issuperset(self._within_instances):
                 continue
             if self._not_within_instances and not ancestors.isdisjoint(self._not_within_instances):
                 continue
@@ -127,9 +127,10 @@ class ElementFilter(Generic[T]):
                 continue
             if self._not_within_kinds and any(isinstance(ancestor, tuple(self._not_within_kinds)) for ancestor in ancestors):
                 continue
-            if self._within_markers and not any(all(marker in ancestor._markers for marker in self._within_markers) for ancestor in ancestors):
+            ancestor_markers = {marker for ancestor in ancestors for marker in ancestor._markers}
+            if self._within_markers and not ancestor_markers.issuperset(self._within_markers):
                 continue
-            if self._not_within_markers and any(all(marker in ancestor._markers for marker in self._not_within_markers) for ancestor in ancestors):
+            if self._not_within_markers and not ancestor_markers.isdisjoint(self._not_within_markers):
                 continue
 
             yield element  # type: ignore
