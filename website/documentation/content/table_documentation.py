@@ -7,7 +7,7 @@ from . import doc
 def main_demo() -> None:
     columns = [
         {'name': 'name', 'label': 'Name', 'field': 'name', 'required': True, 'align': 'left'},
-        {'name': 'age', 'label': 'Age', 'field': 'age', 'sortable': False},
+        {'name': 'age', 'label': 'Age', 'field': 'age', 'sortable': True},
     ]
     rows = [
         {'name': 'Alice', 'age': 18},
@@ -24,7 +24,7 @@ def main_demo() -> None:
 def table_with_expandable_rows():
     columns = [
         {'name': 'name', 'label': 'Name', 'field': 'name'},
-        {'name': 'age', 'label': 'Age', 'field': 'age'},
+        {'name': 'age', 'label': 'Age', 'field': 'age', 'sortable': True},
     ]
     rows = [
         {'name': 'Alice', 'age': 18},

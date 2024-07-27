@@ -36,7 +36,7 @@ class Table(FilterElement, component='table.js'):
         :param columns: optional list of column dictionaries (inferred from the first row if not provided)
         :param rows: optional list of row dictionaries (will be added to those from ``df``, default: ``[]``)
         :param df: optional Pandas DataFrame (rows will be added to those from ``rows``, default: ``None``)
-        :param default_column: default options which apply to all columns (default: ``{sortable: True}``)
+        :param default_column: default options which apply to all columns (default: ``{}``)
         :param row_key: name of the column containing unique data identifying the row (default: "id")
         :param title: title of the table
         :param selection: selection type ("single" or "multiple"; default: ``None``)
@@ -52,7 +52,7 @@ class Table(FilterElement, component='table.js'):
         self._rows = rows or []
         self._props['rows'] = self._merge_rows_with_dataframe()
 
-        self._default_column = {'sortable': True} if default_column is None else default_column
+        self._default_column = default_column or {}
         first_row = self._props['rows'][0] if self._props['rows'] else {}
         self._columns = columns or [{'name': key, 'label': str(key).upper(), 'field': key} for key in first_row]
         self._props['columns'] = self._merge_columns_with_default()

@@ -11,7 +11,7 @@ from nicegui.testing import Screen
 def columns() -> List:
     return [
         {'name': 'name', 'label': 'Name', 'field': 'name', 'required': True},
-        {'name': 'age', 'label': 'Age', 'field': 'age', 'sortable': False},
+        {'name': 'age', 'label': 'Age', 'field': 'age'},
     ]
 
 
@@ -37,7 +37,6 @@ def test_table(screen: Screen):
     screen.should_contain('Lionel')
 
     screen.should_not_contain('id')  # when providing columns, only those columns are shown
-    assert len(screen.find_all_by_class('sortable')) == 1, r'default_column {sortable: True} is overwritten'
     screen.should_contain('Name')  # the label should be displayed as provided
 
 
@@ -51,7 +50,6 @@ def test_table_without_columns(screen: Screen):
     screen.should_contain('Lionel')
 
     screen.should_contain('ID')  # when omitting columns, they are inferred from the first row and capitalized
-    assert len(screen.find_all_by_class('sortable')) == len(rows()[0]), 'columns are sortable by default'
 
 
 def test_pagination_int(screen: Screen):
@@ -195,7 +193,7 @@ def test_update_columns(screen: Screen):
     t = ui.table(columns=columns(), rows=rows())
 
     def replace_columns():
-        t.columns = [{'name': 'name', 'label': 'Nombre', 'field': 'name', 'sortable': False}]
+        t.columns = [{'name': 'name', 'label': 'Nombre', 'field': 'name', 'sortable': True}]
 
     ui.button('Replace columns', on_click=replace_columns)
 
@@ -203,13 +201,13 @@ def test_update_columns(screen: Screen):
     screen.should_contain('Alice')
     screen.should_contain('Bob')
     screen.should_contain('Lionel')
-    assert len(screen.find_all_by_class('sortable')) == 1
+    assert len(screen.find_all_by_class('sortable')) == 0
 
     screen.click('Replace columns')
     screen.should_contain('Nombre')
     screen.should_not_contain('Name')
     screen.should_not_contain('Age')
-    assert len(screen.find_all_by_class('sortable')) == 0
+    assert len(screen.find_all_by_class('sortable')) == 1
 
 
 def test_create_from_dataframe(screen: Screen):
@@ -250,8 +248,8 @@ def test_create_from_dataframe_with_problematic_datatypes(screen: Screen):
 
 def test_create_from_dataframe_with_custom_columns(screen: Screen):
     ui.table(df=df(), columns=[
-        {'name': 'first_name', 'label': 'First name', 'field': 'name', 'sortable': False, 'headerClasses': 'my-class'},
-        {'name': 'age', 'label': 'Double the age', 'field': 'age', ':format': '(val, _row) => 2*val'}
+        {'name': 'first_name', 'label': 'First name', 'field': 'name', 'headerClasses': 'my-class'},
+        {'name': 'age', 'label': 'Double the age', 'field': 'age', 'sortable': True, ':format': '(val, _row) => 2*val'}
     ])
 
     screen.open('/')
@@ -316,6 +314,14 @@ def test_both_rows_and_dataframe(screen: Screen):
     screen.should_contain('Carol')
     screen.should_contain('Mike')
     screen.should_not_contain('Alice')
+
+
+def test_default_column(screen: Screen):
+    ui.table(columns=columns(), rows=rows(), default_column={'sortable': True})
+
+    screen.open('/')
+    screen.should_contain('Alice')
+    assert len(screen.find_all_by_class('sortable')) == 2
 
 
 def test_table_computed_props(screen: Screen):
