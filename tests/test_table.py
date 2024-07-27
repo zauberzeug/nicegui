@@ -11,7 +11,7 @@ from nicegui.testing import Screen
 def columns() -> List:
     return [
         {'name': 'name', 'label': 'Name', 'field': 'name', 'required': True},
-        {'name': 'age', 'label': 'Age', 'field': 'age'},
+        {'name': 'age', 'label': 'Age', 'field': 'age', 'sortable': True},
     ]
 
 
@@ -32,6 +32,7 @@ def test_table(screen: Screen):
 
     screen.open('/')
     screen.should_contain('My Team')
+    screen.should_contain('Name')
     screen.should_contain('Alice')
     screen.should_contain('Bob')
     screen.should_contain('Lionel')
@@ -193,7 +194,7 @@ def test_update_columns(screen: Screen):
     t = ui.table(columns=columns(), rows=rows())
 
     def replace_columns():
-        t.columns = [{'name': 'name', 'label': 'Nombre', 'field': 'name', 'sortable': True}]
+        t.columns = [{'name': 'name', 'label': 'Nombre', 'field': 'name'}]
 
     ui.button('Replace columns', on_click=replace_columns)
 
@@ -201,13 +202,13 @@ def test_update_columns(screen: Screen):
     screen.should_contain('Alice')
     screen.should_contain('Bob')
     screen.should_contain('Lionel')
-    assert len(screen.find_all_by_class('sortable')) == 0
+    assert len(screen.find_all_by_class('sortable')) == 1
 
     screen.click('Replace columns')
     screen.should_contain('Nombre')
     screen.should_not_contain('Name')
     screen.should_not_contain('Age')
-    assert len(screen.find_all_by_class('sortable')) == 1
+    assert len(screen.find_all_by_class('sortable')) == 0
 
 
 def test_create_from_dataframe(screen: Screen):
@@ -224,7 +225,7 @@ def test_create_from_dataframe(screen: Screen):
     screen.should_contain('answer')
 
 
-def test_create_from_dataframe_with_problematic_datatypes(screen: Screen):
+def test_problematic_datatypes(screen: Screen):
     df = pd.DataFrame({
         'Datetime_col': [datetime(2020, 1, 1)],
         'Datetime_col_tz': [datetime(2020, 1, 1, tzinfo=timezone.utc)],
