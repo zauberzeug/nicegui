@@ -378,7 +378,8 @@ function createApp(elements, options) {
             return;
           }
           window.syncing = false;
-          for (let [messageType, data] of msg.history) {
+          console.log(msg.history);
+          for (let [_, messageType, data] of msg.history) {
             if (data.message_id <= window.lastMessageId) continue;
             window.lastMessageId = data.message_id;
             delete data.message_id;
