@@ -2,8 +2,8 @@ from typing import Any, Callable, Optional, Union
 
 from typing_extensions import Self
 
+from .. import helpers
 from ..element import Element
-from ..logging import log
 from .context_menu import ContextMenu
 from .item import Item
 from .mixins.value_element import ValueElement
@@ -41,8 +41,8 @@ class Menu(ValueElement):
         if 'touch-position' in self._props:
             # https://github.com/zauberzeug/nicegui/issues/1738
             del self._props['touch-position']
-            log.warning('The prop "touch-position" is not supported by `ui.menu`.\n'
-                        'Use "ui.context_menu()" instead.')
+            helpers.warn_once('The prop "touch-position" is not supported by `ui.menu`.\n'
+                              'Use "ui.context_menu()" instead.')
         return self
 
 

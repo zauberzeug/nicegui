@@ -61,7 +61,6 @@ class Client:
         self.on_air = False
         self._disconnect_task: Optional[asyncio.Task] = None
         self._deleted = False
-        self._has_warned_about_deleted_client = False
         self.tab_id: Optional[str] = None
 
         self.outbox = Outbox(self)
@@ -196,17 +195,17 @@ class Client:
         :return: AwaitableResponse that can be awaited to get the result of the JavaScript code
         """
         if respond is True:
-            log.warning('The "respond" argument of run_javascript() has been removed. '
-                        'Now the method always returns an AwaitableResponse that can be awaited. '
-                        'Please remove the "respond=True" argument.')
+            helpers.warn_once('The "respond" argument of run_javascript() has been removed. '
+                              'Now the method always returns an AwaitableResponse that can be awaited. '
+                              'Please remove the "respond=True" argument.')
         if respond is False:
             raise ValueError('The "respond" argument of run_javascript() has been removed. '
                              'Now the method always returns an AwaitableResponse that can be awaited. '
                              'Please remove the "respond=False" argument and call the method without awaiting.')
         if check_interval != 0.01:
-            log.warning('The "check_interval" argument of run_javascript() and similar methods has been removed. '
-                        'Now the method automatically returns when receiving a response without checking regularly in an interval. '
-                        'Please remove the "check_interval" argument.')
+            helpers.warn_once('The "check_interval" argument of run_javascript() and similar methods has been removed. '
+                              'Now the method automatically returns when receiving a response without checking regularly in an interval. '
+                              'Please remove the "check_interval" argument.')
 
         request_id = str(uuid.uuid4())
         target_id = self._temporary_socket_id or self.id
@@ -328,11 +327,11 @@ class Client:
 
     def check_existence(self) -> None:
         """Check if the client still exists and print a warning if it doesn't."""
-        if self._deleted and not self._has_warned_about_deleted_client:
-            self._has_warned_about_deleted_client = True
-            log.warning('Client has been deleted but is still being used. This is most likely a bug in your application code. '
-                        'See https://github.com/zauberzeug/nicegui/issues/3028 for more information.',
-                        stack_info=True)
+        if self._deleted:
+            helpers.warn_once('Client has been deleted but is still being used. '
+                              'This is most likely a bug in your application code. '
+                              'See https://github.com/zauberzeug/nicegui/issues/3028 for more information.',
+                              stack_info=True)
 
     @contextmanager
     def individual_target(self, socket_id: str) -> Iterator[None]:
