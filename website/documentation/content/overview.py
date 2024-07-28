@@ -33,20 +33,23 @@ doc.text('How to use this guide', '''
 ''')
 
 doc.text('Basic concepts', '''
-    NiceGUI provides UI _components_ (or _elements_) such as buttons, sliders, text, images, charts, and more.
+    NiceGUI provides UI _elements_ such as buttons, sliders, text, images, charts, and more.
     Your app assembles these components into _pages_.
     When the user interacts with an item on a page, NiceGUI triggers an _event_ (or _action_).
-    You define code to _handle_ each event, such as what to do when a user clicks a button named "Go".
+    You define code to _handle_ each event, such as what to do when a user clicks a button, modifies a value or operates a slider.
+    Elements can also be bound to a _model_ (data object), which automatically updates the user interface when the value changes.
 
-    Components are arranged on a page using _layouts_.
-    Layouts provide things like grids, tabs, carousels, expansions, menus, and other tools to arrange your components.
-    Many components are linked to a _model_ (data object) in your code, which automatically updates the user interface when the value changes.
+    Elements are arranged on a page using a "declarative UI" or "code-based UI".
+    That means that you also write structures like grids, cards, tabs, carousels, expansions, menus, and other layout elements directly in code.
+    This concept has been made popular with Flutter and SwiftUI.
+    For readability, NiceGUI utilizes Pythons `with ...` statement.
+    This context mangers provides a nice way to indent the code to resemble the layout of the UI.
 
     Styling and appearance can be controlled in several ways.
-    NiceGUI accepts optional arguments for certain styling, such as icons on buttons.
-    Other styling can be set with functions such as `.styles`, `.classes`, or `.props` that you'll learn about later.
-    Global styles like colors and fonts can be set with dedicated properties.
-    Or if you prefer, almost anything can be styled with CSS.
+    Most elements accepts optional arguments for common styling and behavior changes, such as icons on buttons or color of a text.
+    Because NiceGUI is a web framework, you can change almost any appearance of an element with CSS.
+    But elements also provide `.classes` and `.props` methods to apply Tailwind CSS and Quasar properties
+    which are more high level and simpler to use day-to-day after you get the hang of it.
 ''')
 
 doc.text('Actions, Events and Tasks', '''
