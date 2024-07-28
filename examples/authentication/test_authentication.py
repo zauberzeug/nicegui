@@ -8,7 +8,8 @@ from . import main
 
 
 @pytest.mark.module_under_test(main)
-async def test_login_logoff(user: User) -> None:
+async def test_login_logoff(nicegui_user: User) -> None:
+    user = nicegui_user
     await user.open('/')
     user.find('Username').type('user1')
     user.find('Password').type('pass1')
@@ -19,7 +20,8 @@ async def test_login_logoff(user: User) -> None:
 
 
 @pytest.mark.module_under_test(main)
-async def test_wrong_password(user: User) -> None:
+async def test_wrong_password(nicegui_user: User) -> None:
+    user = nicegui_user
     await user.open('/')
     user.find('Username').type('user1')
     user.find('Password').type('wrong').trigger('keydown.enter')
@@ -27,7 +29,8 @@ async def test_wrong_password(user: User) -> None:
 
 
 @pytest.mark.module_under_test(main)
-async def test_subpage_access(user: User) -> None:
+async def test_subpage_access(nicegui_user: User) -> None:
+    user = nicegui_user
     await user.open('/subpage')
     await user.should_see('Log in')
     user.find('Username').type('user1')

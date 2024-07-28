@@ -9,8 +9,9 @@ from . import main
 
 
 @pytest.mark.module_under_test(main)
-async def test_basic_startup_appearance(user: User) -> None:
+async def test_basic_startup_appearance(nicegui_user: User) -> None:
     """Test basic appearance of the chat app."""
+    user = nicegui_user
     await user.open('/')
     await user.should_see('simple chat app')
     await user.should_see('https://robohash.org/')
