@@ -110,6 +110,7 @@ def test_find_within_marker_combination():
     with ui.card().mark('b'):
         ui.label('Label 4')
 
+    assert texts(ElementFilter(kind=ui.label).within(marker='a b')) == ['Label 2']
     assert texts(ElementFilter(kind=ui.label).within(marker='a').within(marker='b')) == ['Label 2']
 
 
