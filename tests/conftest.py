@@ -1,4 +1,3 @@
-# pylint: disable=wildcard-import,unused-wildcard-import
 from typing import AsyncGenerator, Generator
 
 import pytest
