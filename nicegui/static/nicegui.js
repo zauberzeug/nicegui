@@ -373,7 +373,7 @@ function createApp(elements, options) {
         sync: (msg) => {
           if (msg.target !== window.socket.id) return;
           if (!msg.success) {
-            console.log("Could synchronize with the server. Reloading...");
+            console.log("Could not synchronize with the server. Reloading...");
             window.location.reload();
             return;
           }
