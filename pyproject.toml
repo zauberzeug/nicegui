@@ -129,6 +129,3 @@ ignore = [
 exclude = [
     "website/documentation/content/*",
 ]
-
-[tool.poetry.plugins.pytest11]
-nicegui = "nicegui.testing.fixtures"
