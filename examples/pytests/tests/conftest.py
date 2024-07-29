@@ -1,15 +1,5 @@
-from typing import AsyncGenerator, Generator
-
-import pytest
-
-from nicegui.testing import Screen, User
-
-
-@pytest.fixture
-def screen(nicegui_screen: Screen) -> Generator[Screen, None, None]:
-    yield nicegui_screen
-
-
-@pytest.fixture
-async def user(nicegui_user: User) -> AsyncGenerator[User, None]:
-    yield nicegui_user
+'''
+NOTE: This is uncommented because pytest doesn't allow for conftest.py files in subdirectories.
+      If you want to use this example as a template, you have to uncomment the next line
+'''
+# pytest_plugins = ['nicegui.testing.fixtures']
