@@ -1,8 +1,8 @@
 from . import (
     doc,
+    screen_documentation,
     test_setup_documentation,
     user_documentation,
-    screen_documentation,
 )
 
 doc.title('*Testing*')

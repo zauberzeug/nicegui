@@ -1,20 +1,7 @@
-from nicegui.elements.markdown import remove_indentation
 from nicegui import ui
 
 from ..windows import bash_window, python_window
 from . import doc
-
-
-def show_docstring(func) -> None:
-    """Show the docstring of a function or class."""
-    docstring = func.__doc__
-    if isinstance(func, type) and not doc:
-        docstring = func.__init__.__doc__  # type: ignore
-    title, description = docstring.split('\n', 1)
-    title = title.rstrip('.')
-    description = remove_indentation(description)
-    doc.text(title, description)
-
 
 doc.title('Project Structure')
 

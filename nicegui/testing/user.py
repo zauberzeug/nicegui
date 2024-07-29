@@ -97,12 +97,13 @@ class User:
                          content: Union[str, list[str], None] = None,
                          retries: int = 3,
                          ) -> None:
-        """Assert that the page contains an input with the given value.
+        """Assert that the page contains an element fulfilling certain filter rules.
 
         Note that there is no scrolling in the user simulation -- the entire page is always *visible*.
         Due to asynchronous execution, sometimes the expected elements only appear after a short delay.
 
-        By default `should_see` makes three attempts to find the element before failing. This can be adjusted with the `retries` parameter.
+        By default `should_see` makes three attempts to find the element before failing.
+        This can be adjusted with the `retries` parameter.
         """
         assert self.client
         for _ in range(retries):

@@ -5,12 +5,12 @@ from . import (
     section_action_events,
     section_audiovisual_elements,
     section_binding_properties,
+    section_configuration_deployment,
     section_controls,
     section_data_elements,
     section_page_layout,
     section_pages_routing,
     section_styling_appearance,
-    section_configuration_deployment,
     section_text_elements,
     section_testing,
 )

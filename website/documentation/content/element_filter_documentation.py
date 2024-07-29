@@ -10,6 +10,7 @@ def main_demo() -> None:
     with ui.card():
         ui.button('button A')
         ui.label('label A')
+
     with ui.card().mark('important'):
         ui.button('button B')
         ui.label('label B')
@@ -38,7 +39,7 @@ def text_element() -> None:
 
 
 @doc.demo('Markers', '''
-    Markers are a simple way to tag elements with a string which can be queried by an ElementFilter.
+    Markers are a simple way to tag elements with a string which can be queried by an `ElementFilter`.
 ''')
 def marker_demo() -> None:
     from nicegui import ElementFilter
