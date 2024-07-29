@@ -112,6 +112,34 @@ def demo(*args, **kwargs) -> Callable[[Callable], Callable]:
     return decorator
 
 
+def pytest(*args, **kwargs) -> Callable[[Callable], Callable]:
+    """Add a pytest demo section to the current documentation page."""
+    if len(args) == 2:
+        title_, description = args
+        is_markdown = True
+    else:
+        obj = args[0]
+        doc = obj.__doc__
+        if isinstance(obj, type) and not doc:
+            doc = obj.__init__.__doc__  # type: ignore
+        title_, description = doc.split('\n', 1)
+        title_ = title_.rstrip('.')
+        is_markdown = False
+
+    description = remove_indentation(description)
+    page = _get_current_page()
+
+    def decorator(function: Callable) -> Callable:
+        page.parts.append(DocumentationPart(
+            title=title_,
+            description=description,
+            description_format='md' if is_markdown else 'rst',
+            demo=Demo(function=function, lazy=kwargs.get('lazy', True), tab=kwargs.get('tab'), raw=True),
+        ))
+        return function
+    return decorator
+
+
 def ui(function: Callable) -> Callable:
     """Add arbitrary UI to the current documentation page."""
     _get_current_page().parts.append(DocumentationPart(ui=function))

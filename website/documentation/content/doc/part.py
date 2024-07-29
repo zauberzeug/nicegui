@@ -12,6 +12,7 @@ class Demo:
     function: Callable
     lazy: bool = True
     tab: Optional[Union[str, Callable]] = None
+    raw: bool = False
 
 
 @dataclass(**KWONLY_SLOTS)

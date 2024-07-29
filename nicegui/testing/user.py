@@ -52,7 +52,9 @@ class User:
         self.activate()
 
     def activate(self) -> Self:
-        """Activate the user for interaction."""
+        """Activate the user for interaction.
+
+        This can be used if you have multiple users and want to switch between them."""
         if self.current_user:
             self.current_user.deactivate()
         self.current_user = self
@@ -62,7 +64,9 @@ class User:
         return self
 
     def deactivate(self, *_) -> None:
-        """Deactivate the user."""
+        """Deactivate the user.
+
+        This can be used if you have multiple users and want to switch between them."""
         assert self.client
         self.client.__exit__()
         self.current_user = None
@@ -93,7 +97,13 @@ class User:
                          content: Union[str, list[str], None] = None,
                          retries: int = 3,
                          ) -> None:
-        """Assert that the page contains an input with the given value."""
+        """Assert that the page contains an input with the given value.
+
+        Note that there is no scrolling in the user simulation -- the entire page is always *visible*.
+        Due to asynchronous execution, sometimes the expected elements only appear after a short delay.
+
+        By default `should_see` makes three attempts to find the element before failing. This can be adjusted with the `retries` parameter.
+        """
         assert self.client
         for _ in range(retries):
             with self.client:
