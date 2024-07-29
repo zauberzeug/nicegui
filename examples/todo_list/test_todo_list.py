@@ -8,8 +8,7 @@ from . import main
 
 
 @pytest.mark.module_under_test(main)
-async def test_checking_items(nicegui_user: User) -> None:
-    user = nicegui_user
+async def test_checking_items(user: User) -> None:
     await user.open('/')
     await user.should_see('Completed: 1')
     await user.should_see('Remaining: 3')
@@ -25,8 +24,7 @@ async def test_checking_items(nicegui_user: User) -> None:
 
 
 @pytest.mark.module_under_test(main)
-async def test_adding_items(nicegui_user: User) -> None:
-    user = nicegui_user
+async def test_adding_items(user: User) -> None:
     await user.open('/')
     user.find('new-item') \
         .type('Buy milk').trigger('keydown.enter') \
