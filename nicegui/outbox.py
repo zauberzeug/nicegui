@@ -143,10 +143,11 @@ class Outbox:
                 await asyncio.sleep(0.1)
 
     async def _emit(self, message_type: MessageType, data: Any, target_id: ClientId) -> None:
-        self._message_count += 1
-        if self._history is not None and message_type != 'sync':
-            self._append_history((target_id, message_type, data))
-            data['message_id'] = self._message_count
+        if message_type != 'sync':
+            self._message_count += 1
+            if self._history is not None:
+                self._append_history((target_id, message_type, data))
+                data['message_id'] = self._message_count
 
         await core.sio.emit(message_type, data, room=target_id)
         if core.air is not None and core.air.is_air_target(target_id):
