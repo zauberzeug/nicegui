@@ -98,8 +98,8 @@ class Outbox:
 
     async def loop(self) -> None:
         """Send updates and messages to all clients in an endless loop."""
-        if core.app.config.message_buffer_max:
-            self._history = Deque(maxlen=core.app.config.message_buffer_max)
+        if core.app.config.message_history_length:
+            self._history = Deque(maxlen=core.app.config.message_history_length)
 
         self._enqueue_event = asyncio.Event()
         self._enqueue_event.set()
