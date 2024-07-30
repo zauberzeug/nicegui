@@ -145,13 +145,15 @@ class Outbox:
     async def _emit(self, message_type: MessageType, data: Any, target_id: ClientId) -> None:
         if message_type != 'sync':
             self._message_count += 1
+            message = {'message_id': self._message_count, 'payload': data}
             if self._history is not None:
-                self._append_history((target_id, message_type, data))
-                data['message_id'] = self._message_count
+                self._append_history((target_id, message_type, message))
+        else:
+            message = data
 
-        await core.sio.emit(message_type, data, room=target_id)
+        await core.sio.emit(message_type, message, room=target_id)
         if core.air is not None and core.air.is_air_target(target_id):
-            await core.air.emit(message_type, data, room=target_id)
+            await core.air.emit(message_type, message, room=target_id)
 
     def stop(self) -> None:
         """Stop the outbox loop."""

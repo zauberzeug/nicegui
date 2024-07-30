@@ -382,8 +382,7 @@ function createApp(elements, options) {
           for (let [_, messageType, data] of msg.history) {
             if (data.message_id <= window.lastMessageId) continue;
             window.lastMessageId = data.message_id;
-            delete data.message_id;
-            messageHandlers[messageType](data);
+            messageHandlers[messageType](data.payload);
           }
         },
       };
@@ -391,13 +390,13 @@ function createApp(elements, options) {
       let isProcessingSocketMessage = false;
       for (const [event, handler] of Object.entries(messageHandlers)) {
         window.socket.on(event, async (...args) => {
-          const data = args[0];
+          let data = args[0];
           if (data && data.hasOwnProperty("message_id")) {
             if (window.syncing || data.message_id <= window.lastMessageId) {
               return;
             }
             window.lastMessageId = data.message_id;
-            delete data.message_id;
+            args[0] = data.payload;
           }
           socketMessageQueue.push(() => handler(...args));
           if (!isProcessingSocketMessage) {
