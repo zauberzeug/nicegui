@@ -1,27 +1,8 @@
 #!/usr/bin/env python3
-from nicegui import Client, ui
+from pytests.startup import startup
 
-# pylint: disable=missing-function-docstring
+from nicegui import app, ui
 
+app.on_startup(startup)
 
-@ui.page('/')
-def main_page() -> None:
-    ui.markdown('Try running `pytest` on this project!')
-    ui.button('Click me', on_click=lambda: ui.notify('Button clicked!'))
-    ui.link('go to subpage', '/subpage')
-
-
-@ui.page('/subpage')
-def sub_page() -> None:
-    ui.markdown('This is a subpage')
-
-
-@ui.page('/with_connected')
-async def with_connected(client: Client) -> None:
-    ui.markdown('This is an async connection demo')
-    await client.connected()
-    ui.markdown('Connected!')
-
-
-if __name__ in {'__main__', '__mp_main__'}:
-    ui.run()
+ui.run()
