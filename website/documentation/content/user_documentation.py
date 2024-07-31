@@ -27,6 +27,11 @@ def user_fixture():
             await user.should_see('Log in')
             ```''')
 
+    ui.markdown('''
+            **NOTE:** The `user` fixture is quite new and still misses some features.
+            Please let us know in separate feature requests [over on GitHub](https://github.com/zauberzeug/nicegui/discussions/new?category=ideas-feature-requests).
+            ''').classes('bold-links arrow-links')
+
 
 @doc.part('Async execution')
 def async_execution():
@@ -57,16 +62,15 @@ def async_execution():
 
 doc.text('Querying', '''
     The querying capabilities of the `User` are build upon the [ElementFilter](/documentation/element_filter).
-    So in a similar fashion the `.should_see(...)` method and `.find(...)`method provide parameters to filter for
-    content, [markers](/documentation/element_filter#markers), types, etc.
+    The `user.should_see(...)` method and `user.find(...)`method provide parameters to filter for content, [markers](/documentation/element_filter#markers), types, etc.
     If you do not provide a named property, the string will be matched against the text content and markers.
 ''')
 
 
 @doc.ui
 def modular_project():
-    with ui.row(wrap=False).classes('gap-4'):
-        with python_window(classes='w-[400px] h-48', title='some ui code'):
+    with ui.row(wrap=False).classes('gap-4 items-stretch'):
+        with python_window(classes='w-[400px]', title='some ui code'):
             ui.markdown('''
                 ```python
                 with ui.row():
@@ -77,7 +81,7 @@ def modular_project():
                     ui.input(placeholder='Type here')
                 ```''')
 
-        with python_window(classes='w-[600px] h-48', title='user assertions'):
+        with python_window(classes='w-[600px]', title='user assertions'):
             ui.markdown('''
                 ```python
                 await user.should_see('greeting')
@@ -85,8 +89,8 @@ def modular_project():
                 await user.should_see('Hello Universe!')
                 await user.should_see('Type here')
                 await user.should_see('Hello')
-                await user.should_see('Hello', marker='greeting')
-                await user.should_see('Hello', marker='greeting', kind=ui.label)
+                await user.should_see(marker='greeting')
+                await user.should_see(kind=ui.icon)
                 ```
                 ''')
 
