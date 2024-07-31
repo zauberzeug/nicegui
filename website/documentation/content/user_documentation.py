@@ -14,7 +14,7 @@ def user_fixture():
         We aimed for a nice API to write acceptance tests which read like a story and are easy to understand.
         Due to the fast execution, the classical [test pyramid](https://martinfowler.com/bliki/TestPyramid.html)
         where UI tests are considered slow and expensive does not apply anymore.
-        ''')
+        ''').classes('bold-links arrow-links')
 
     with python_window(classes='w-[600px]', title='example'):
         ui.markdown('''
@@ -26,6 +26,33 @@ def user_fixture():
             user.find('logout').click()
             await user.should_see('Log in')
             ```''')
+
+
+@doc.part('Async execution')
+def async_execution():
+    ui.markdown('''
+        The user simulation runs in the same async context as your app to make querying and interaction as easy as possible.
+        But that also means that your tests must be `async`.
+        We suggest you activate the [pytest-asyncio auto-mode](https://pytest-asyncio.readthedocs.io/en/latest/concepts.html#auto-mode)
+        by either creating a `pytest.ini` file in your project root or add the activation directly to your `pyproject.toml`.
+    ''').classes('bold-links arrow-links')
+
+    with ui.row(wrap=False).classes('gap-4 items-center'):
+        with python_window(classes='w-[300px] h-42', title='pytest.ini'):
+            ui.markdown('''
+                ```ini
+                [pytest]
+                asyncio_mode = auto
+                ```
+                ''')
+        ui.label('or').classes('text-2xl')
+        with python_window(classes='w-[300px] h-42', title='pyproject.toml'):
+            ui.markdown('''
+                ```toml
+                [tool.pytest.ini_options]
+                asyncio_mode = "auto"
+                ```
+                ''')
 
 
 doc.text('Querying', '''

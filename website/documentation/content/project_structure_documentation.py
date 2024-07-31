@@ -3,55 +3,37 @@ from nicegui import ui
 from ..windows import bash_window, python_window
 from . import doc
 
-doc.title('Project Structure')
+
+@doc.part('Project Structure')
+def setup():
+    ui.markdown('''
+        The NiceGUI package provides a [pytest plugin](https://docs.pytest.org/en/stable/how-to/writing_plugins.html)
+        which can be activated via `pytest_plugins = ['nicegui.testing.plugin']`.
+        This makes specialized [fixtures](https://docs.pytest.org/en/stable/explanation/fixtures.html) available for testing your NiceGUI user interface.
+        With the [`screen` fixture](/documentation/screen) you can run the tests through a browser (slow) and with the
+        [`user` fixture](/documentation/user) fully simulated in Python (fast).
+
+        There are a multitude of ways to structure your project and tests.
+        Here we only present two approaches which we found useful.
+        One for [small apps and experiments](/documentation/project_structure#simple) and a [modular one for larger projects](/documentation/project_structure#modular).
+        You can find more information in the [pytest documentation](https://docs.pytest.org/en/stable/contents.html).
+    ''').classes('bold-links arrow-links')
 
 
-doc.text('Setup', '''
-    The NiceGUI package comes with [pytest plugin](https://docs.pytest.org/en/stable/how-to/writing_plugins.html)
-    which automatically provides [fixtures](https://docs.pytest.org/en/stable/explanation/fixtures.html) for testing your user interface.
-    You can run the tests through a browser (slow) or fully simulated in Python (fast).
-
-    Because the tests heavily rely on the `async` and `await` keywords, you should activate the `asyncio`
-    [auto-mode](https://pytest-asyncio.readthedocs.io/en/latest/concepts.html#auto-mode).
-    Either create a `pytest.ini` file in your project root or add it directly to your `pyproject.toml`.
-    Depending on your project structure you also need a `conftest.py`, and an empty `__init__.py` to make your code a package.
-''')
-
-
-@doc.ui
-def user_fixture():
-    with ui.row(wrap=False).classes('gap-4 items-center'):
-        with python_window(classes='w-[300px] h-42', title='pytest.ini'):
-            ui.markdown('''
-                ```ini
-                [pytest]
-                asyncio_mode = auto
-                ```
-                ''')
-
-        ui.label('or').classes('text-2xl')
-
-        with python_window(classes='w-[300px] h-42', title='pyproject.toml'):
-            ui.markdown('''
-                ```toml
-                [tool.pytest.ini_options]
-                asyncio_mode = "auto"
-                ```
-                ''')
-
-
-doc.text('Simple Project Structure', '''
+doc.text('Simple', '''
     For small apps and experiments you can put the tests in a separate file as we do in the examples
     [chat-app](https://github.com/zauberzeug/nicegui/tree/main/examples/chat_app) and [authentication](https://github.com/zauberzeug/nicegui/tree/main/examples/authentication).
-    To properly re-init your `main.py` in the tests, you place an empty `__init__.py` file next to your code to make it a package and use the `module_under_test` marker.
-    Also make sure you properly guard the `ui.run()` call in your `main.py` to prevent it from running during the tests:
+    To properly re-init your `main.py` in the tests, you place an empty `__init__.py` file next to your code to make it a package
+    and use the `module_under_test` marker to automatically reload your main file for each test.
+    Also don't forget the `pytest.ini` file to enable the [`asyncio_mode = auto`](/documentation/user#async_execution) option for the user fixture and
+    make sure you properly guard the `ui.run()` call in your `main.py` to prevent the server from starting during the tests:
 ''')
 
 
 @doc.ui
 def simple_project_code():
-    with ui.row(wrap=False).classes('gap-4'):
-        with python_window(classes='w-[400px] h-64'):
+    with ui.row(wrap=False).classes('gap-4 items-stretch'):
+        with python_window(classes='w-[400px]'):
             ui.markdown('''
                 ```python
                 from nicegui import ui
@@ -66,13 +48,15 @@ def simple_project_code():
                 ```
                 ''')
 
-        with python_window(classes='w-[400px] h-64', title='test_app.py'):
+        with python_window(classes='w-[400px]', title='test_app.py'):
             ui.markdown('''
                 ```python
                 import pytest
                 from nicegui import ui
                 from nicegui.testing import User
                 from . import main
+
+                pytest_plugins = ['nicegui.testing.plugin']
 
                 @pytest.mark.module_under_test(main)
                 async def test_click(user: User) -> None:
@@ -100,19 +84,20 @@ def simple_project_bash():
         ''')
 
 
-doc.text('Modular Project Structure', '''
-    A more modular approach is to create a separate package for your code with an empty `__init__.py`
-    and a `tests` folder for your tests.
-    In your package a `startup.py` file can be used to register pages and do initialization.
+doc.text('Modular', '''
+    A more modular approach is to create a package for your code with an empty `__init__.py`
+    and a separate `tests` folder for your tests.
+    In your package a `startup.py` file can be used to register pages and do all necessary app initialization.
     The `main.py` at root level then only imports the startup routine and calls `ui.run()`.
     An empty `conftest.py` file in the root directory makes the package with it's `startup` routine available to the tests.
+    Also don't forget the `pytest.ini` file to enable the [`asyncio_mode = auto`](/documentation/user#async_execution) option for the user fixture.
 ''')
 
 
 @doc.ui
 def modular_project():
-    with ui.row(wrap=False).classes('gap-4'):
-        with python_window(classes='w-[400px] h-60'):
+    with ui.row(wrap=False).classes('gap-4 items-stretch'):
+        with python_window(classes='w-[400px]'):
             ui.markdown('''
                 ```python
                 from nicegui import ui, app
@@ -124,7 +109,7 @@ def modular_project():
                 ```
                 ''')
 
-        with python_window(classes='w-[400px] h-60', title='somedemo/startup.py'):
+        with python_window(classes='w-[400px]', title='somedemo/startup.py'):
             ui.markdown('''
                 ```python
                 from nicegui import ui
@@ -139,13 +124,15 @@ def modular_project():
                 ```
                 ''')
 
-    with ui.row(wrap=False).classes('gap-4'):
-        with python_window(classes='w-[400px] h-68', title='tests/test_app.py'):
+    with ui.row(wrap=False).classes('gap-4 items-stretch'):
+        with python_window(classes='w-[400px]', title='tests/test_app.py'):
             ui.markdown('''
                 ```python
                 from nicegui import ui
                 from nicegui.testing import User
                 from somedemo.startup import startup
+
+                pytest_plugins = ['nicegui.testing.plugin']
 
                 async def test_click(user: User) -> None:
                     startup()
@@ -156,7 +143,7 @@ def modular_project():
                 ```
                 ''')
 
-        with bash_window(classes='w-[400px] h-42'):
+        with bash_window(classes='w-[400px]'):
             ui.markdown('''
                 ```bash
                 $ tree
@@ -174,15 +161,16 @@ def modular_project():
 
 
 doc.text('', '''
-    You can also create your own fixture in your `conftest.py` which calls the `startup` routine.
+    You can also define your own fixtures in the `conftest.py` which calls the `startup` routine.
     Pytest has some magic to automatically find and use this specialized fixture in your tests.
     This way you can keep your tests clean and simple.
+    See the [pytests example](https://github.com/zauberzeug/nicegui/tree/main/examples/pytests) for a full demonstration of this setup.
 ''')
 
 
 @doc.ui
 def custom_user_fixture():
-    with ui.row(wrap=False).classes('gap-4'):
+    with ui.row(wrap=False).classes('gap-4 items-stretch'):
         with python_window(classes='w-[400px]', title='tests/test_app.py'):
             ui.markdown('''
                 ```python
@@ -203,6 +191,8 @@ def custom_user_fixture():
                 import pytest
                 from nicegui.testing import User
                 from somedemo.startup import startup
+
+                pytest_plugins = ['nicegui.testing.plugin']
 
                 @pytest.fixture
                 def user(user: User) -> User:

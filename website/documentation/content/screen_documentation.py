@@ -13,7 +13,7 @@ def screen_fixture():
     This is only necessary if you have browser specific behavior to test.
     NiceGUI itself is thoroughly tested with this fixture to ensure each component works as expected.
     So only use it if you have to.
-''')
+''').classes('bold-links arrow-links')
 
     with python_window(classes='w-[600px]', title='example'):
         ui.markdown('''
