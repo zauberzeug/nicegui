@@ -1,4 +1,4 @@
-from nicegui.testing import User
+from nicegui.testing import User, UserInteraction
 from . import doc
 from nicegui import ui
 from ..windows import python_window
@@ -101,4 +101,5 @@ doc.text('Comparison with the screen fixture', '''
     See our [pytests example](https://github.com/zauberzeug/nicegui/tree/main/examples/pytests) which implements the same tests with both fixtures.
 ''')
 
-doc.reference(User)
+doc.reference(User, title='User Reference')
+doc.reference(UserInteraction, title='UserInteraction Reference')
