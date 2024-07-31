@@ -49,7 +49,7 @@ def render_page(documentation: DocumentationPage, *, with_menu: bool = True) -> 
             if part.ui:
                 part.ui()
             if part.demo:
-                demo(part.demo.function, lazy=part.demo.lazy, tab=part.demo.tab, raw=part.demo.raw)
+                demo(part.demo.function, lazy=part.demo.lazy, tab=part.demo.tab)
             if part.reference:
                 generate_class_doc(part.reference, part.title)
             if part.link:

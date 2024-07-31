@@ -1,4 +1,4 @@
-from .api import demo, extra_column, get_page, intro, redirects, reference, registry, text, title, ui, pytest
+from .api import demo, extra_column, get_page, intro, redirects, reference, registry, text, title, ui, part
 
 __all__ = [
     'demo',
@@ -11,5 +11,5 @@ __all__ = [
     'ui',
     'get_page',
     'extra_column',
-    'pytest',
+    'part',
 ]

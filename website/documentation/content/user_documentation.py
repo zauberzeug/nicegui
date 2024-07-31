@@ -4,23 +4,28 @@ from nicegui import ui
 from ..windows import python_window
 
 
-@doc.pytest('User Fixture', '''
-    We recommend you utilize the `user` fixture instead of the [`screen` fixture](/documentation/screen) wherever possible because execution is as fast as unit tests and it does not need Selenium as a dependency.
-    The `user` fixture cuts away the browser and replaces it by a light weight simulation which entirely runs in Python.
-
-    You can assert for specific elements or content, click buttons, type into inputs and trigger events.
-    We aimed for a nice API to write acceptance tests which read like a story and are easy to understand.
-    Due to the fast execution, the classical [test pyramid](https://martinfowler.com/bliki/TestPyramid.html)
-    where UI tests are considered slow and expensive does not apply anymore.
-    ''', preview=False)
+@doc.part('User Fixture')
 def user_fixture():
-    async def test_login_logoff(user: User) -> None:
-        await user.open('/')
-        user.find('Username').type('user1')
-        user.find('Password').type('pass1').trigger('keydown.enter')
-        await user.should_see('Hello user1!')
-        user.find('logout').click()
-        await user.should_see('Log in')
+    ui.markdown('''
+        We recommend you utilize the `user` fixture instead of the [`screen` fixture](/documentation/screen) wherever possible because execution is as fast as unit tests and it does not need Selenium as a dependency.
+        The `user` fixture cuts away the browser and replaces it by a light weight simulation which entirely runs in Python.
+
+        You can assert for specific elements or content, click buttons, type into inputs and trigger events.
+        We aimed for a nice API to write acceptance tests which read like a story and are easy to understand.
+        Due to the fast execution, the classical [test pyramid](https://martinfowler.com/bliki/TestPyramid.html)
+        where UI tests are considered slow and expensive does not apply anymore.
+        ''')
+
+    with python_window(classes='w-[600px]', title='example'):
+        ui.markdown('''
+            ```python
+            await user.open('/')
+            user.find('Username').type('user1')
+            user.find('Password').type('pass1').trigger('keydown.enter')
+            await user.should_see('Hello user1!')
+            user.find('logout').click()
+            await user.should_see('Log in')
+            ```''')
 
 
 doc.text('Querying', '''

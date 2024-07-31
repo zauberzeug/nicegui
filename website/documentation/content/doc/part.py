@@ -12,7 +12,6 @@ class Demo:
     function: Callable
     lazy: bool = True
     tab: Optional[Union[str, Callable]] = None
-    raw: bool = False
 
 
 @dataclass(**KWONLY_SLOTS)
@@ -24,6 +23,7 @@ class DocumentationPart:
     ui: Optional[Callable] = None
     demo: Optional[Demo] = None
     reference: Optional[type] = None
+    search_text: Optional[str] = None
 
     @property
     def link_target(self) -> Optional[str]:

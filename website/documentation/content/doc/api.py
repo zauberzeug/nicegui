@@ -10,6 +10,7 @@ from typing import Any, Callable, Dict, Optional, Union, overload
 
 from nicegui import app as nicegui_app
 from nicegui import ui as nicegui_ui
+import nicegui
 from nicegui.elements.markdown import remove_indentation
 
 from .page import DocumentationPage
@@ -112,30 +113,21 @@ def demo(*args, **kwargs) -> Callable[[Callable], Callable]:
     return decorator
 
 
-def pytest(*args, **kwargs) -> Callable[[Callable], Callable]:
-    """Add a pytest demo section to the current documentation page."""
-    if len(args) == 2:
-        title_, description = args
-        is_markdown = True
-    else:
-        obj = args[0]
-        doc = obj.__doc__
-        if isinstance(obj, type) and not doc:
-            doc = obj.__init__.__doc__  # type: ignore
-        title_, description = doc.split('\n', 1)
-        title_ = title_.rstrip('.')
-        is_markdown = False
-
-    description = remove_indentation(description)
+def part(title_: str) -> Callable:
+    """Add a custom part to the current documentation page."""
     page = _get_current_page()
 
     def decorator(function: Callable) -> Callable:
-        page.parts.append(DocumentationPart(
-            title=title_,
-            description=description,
-            description_format='md' if is_markdown else 'rst',
-            demo=Demo(function=function, lazy=kwargs.get('lazy', True), tab=kwargs.get('tab'), raw=True),
-        ))
+        task_id = nicegui.slot.get_task_id()
+        orig = nicegui.slot.Slot.stacks[task_id]
+        # NOTE we create an empty context so the function is not rendered as elements but available to ElementFilter
+        del nicegui.slot.Slot.stacks[task_id]
+        with nicegui.ui.element(_client=nicegui.Client(nicegui.page.page(''), request=None)):
+            function()
+            elements = nicegui.ElementFilter(kind=nicegui.ui.markdown, local_scope=True)
+            description = ''.join(e.content for e in elements if '```' not in e.content)
+        nicegui.slot.Slot.stacks[task_id] = orig
+        page.parts.append(DocumentationPart(title=title_, search_text=description, ui=function))
         return function
     return decorator
 
