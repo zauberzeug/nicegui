@@ -78,6 +78,7 @@ build-backend = "poetry.core.masonry.api"
 [tool.pytest.ini_options]
 addopts = "--driver Chrome"
 asyncio_mode = "auto"
+testpaths = ["tests"]
 
 [tool.mypy]
 python_version = "3.8"
