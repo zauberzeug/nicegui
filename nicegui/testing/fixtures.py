@@ -122,6 +122,7 @@ def screen(nicegui_reset_globals,  # pylint: disable=unused-argument
            caplog: pytest.LogCaptureFixture,
            ) -> Generator[Screen, None, None]:
     """Create a new SeleniumScreen fixture."""
+    prepare_simulation(request)
     screen_ = Screen(nicegui_driver, caplog)
     yield screen_
     logs = screen_.caplog.get_records('call')
