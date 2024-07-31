@@ -384,13 +384,14 @@ function createApp(elements, options) {
             window.lastMessageId = data.message_id;
             messageHandlers[messageType](data.payload);
           }
+          window.socketIds = window.socketIds.slice(-1);
         },
       };
       const socketMessageQueue = [];
       let isProcessingSocketMessage = false;
       for (const [event, handler] of Object.entries(messageHandlers)) {
         window.socket.on(event, async (...args) => {
-          let data = args[0];
+          const data = args[0];
           if (data && data.hasOwnProperty("message_id")) {
             if (window.syncing || data.message_id <= window.lastMessageId) {
               return;
