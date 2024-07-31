@@ -6,6 +6,8 @@ from . import main
 
 # pylint: disable=missing-function-docstring
 
+pytest_plugins = ['nicegui.testing.fixtures']
+
 
 @pytest.mark.module_under_test(main)
 async def test_login_logoff(user: User) -> None:
