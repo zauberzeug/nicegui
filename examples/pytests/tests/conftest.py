@@ -5,7 +5,7 @@ from pytests.startup import startup
 
 from nicegui.testing import Screen, User
 
-pytest_plugins = ['nicegui.testing.fixtures']
+pytest_plugins = ['nicegui.testing.plugin']
 
 
 @pytest.fixture
