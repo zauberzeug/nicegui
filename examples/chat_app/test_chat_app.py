@@ -7,6 +7,8 @@ from nicegui.testing import User
 
 from . import main
 
+pytest_plugins = ['nicegui.testing.plugin']
+
 
 @pytest.mark.module_under_test(main)
 async def test_basic_startup_appearance(user: User) -> None:
