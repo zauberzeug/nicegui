@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-from pytests.startup import startup
+from app.startup import startup
 
 from nicegui import app, ui
 

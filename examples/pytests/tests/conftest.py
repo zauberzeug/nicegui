@@ -1,7 +1,7 @@
 from typing import Generator
 
 import pytest
-from pytests.startup import startup
+from app.startup import startup
 
 from nicegui.testing import Screen, User
 
