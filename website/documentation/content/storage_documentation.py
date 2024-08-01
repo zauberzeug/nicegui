@@ -97,7 +97,7 @@ def page_visits():
 
 
 @doc.demo('Storing UI state', '''
-    Storage can also be used in combination with [`bindings`](/documentation/bindings).
+    Storage can also be used in combination with [`bindings`](/documentation/section_binding_properties).
     Here we are storing the value of a textarea between visits.
     The note is also shared between all tabs of the same user.
 ''')
