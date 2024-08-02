@@ -112,6 +112,41 @@ async def test_navigation(user: User) -> None:
     await user.should_see('Other page')
 
 
+async def test_multi_user_navigation(create_user: Callable[[], User]) -> None:
+    @ui.page('/')
+    def page():
+        ui.label('Main page')
+        ui.button('go to other', on_click=lambda: ui.navigate.to('/other'))
+        ui.button('forward', on_click=ui.navigate.forward)
+
+    @ui.page('/other')
+    def other():
+        ui.label('Other page')
+        ui.button('back', on_click=ui.navigate.back)
+
+    userA = create_user()
+    userB = create_user()
+
+    await userA.open('/')
+    await userA.should_see('Main page')
+
+    await userB.open('/')
+    await userB.should_see('Main page')
+
+    userA.activate()
+    userA.find('go to other').click()
+    await userA.should_see('Other page')
+    await userB.should_see('Main page')
+
+    userA.find('back').click()
+    await userA.should_see('Main page')
+    await userB.should_see('Main page')
+
+    userA.find('forward').click()
+    await userA.should_see('Other page')
+    await userB.should_see('Main page')
+
+
 async def test_reload(user: User) -> None:
     @ui.page('/')
     def page():
