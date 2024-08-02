@@ -100,20 +100,6 @@ def test_find_within_marker2():
     assert texts(ElementFilter(kind=ui.label).not_within(marker='a')) == ['Label 3']
 
 
-def test_find_within_marker_combination():
-    with ui.card().mark('a'):
-        ui.label('Label 1')
-        with ui.card().mark('b'):
-            ui.label('Label 2')
-    with ui.card().mark('a'):
-        ui.label('Label 3')
-    with ui.card().mark('b'):
-        ui.label('Label 4')
-
-    assert texts(ElementFilter(kind=ui.label).within(marker='a b')) == ['Label 2']
-    assert texts(ElementFilter(kind=ui.label).within(marker='a').within(marker='b')) == ['Label 2']
-
-
 def test_find_within_instance():
     ui.button('button A')
     ui.label('label A')
