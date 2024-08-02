@@ -302,6 +302,9 @@ function createApp(elements, options) {
       window.clientId = options.query.client_id;
       const url = window.location.protocol === "https:" ? "wss://" : "ws://" + window.location.host;
       window.path_prefix = options.prefix;
+      window.lastMessageId = options.query.starting_message_id;
+      window.syncing = true;
+      window.socketIds = [];
       window.socket = io(url, {
         path: `${options.prefix}/_nicegui_ws/socket.io`,
         query: options.query,
@@ -315,7 +318,14 @@ function createApp(elements, options) {
             tabId = createRandomUUID();
             sessionStorage.setItem("__nicegui_tab_id", tabId);
           }
-          window.socket.emit("handshake", { client_id: window.clientId, tab_id: tabId }, (ok) => {
+          window.socketIds.push(window.socket.id);
+          const args = {
+            client_id: window.clientId,
+            tab_id: tabId,
+            last_message_id: window.lastMessageId,
+            socket_ids: window.socketIds,
+          };
+          window.socket.emit("handshake", args, (ok) => {
             if (!ok) {
               console.log("reloading because handshake failed for clientId " + window.clientId);
               window.location.reload();
@@ -337,6 +347,7 @@ function createApp(elements, options) {
         },
         disconnect: () => {
           document.getElementById("popup").ariaHidden = false;
+          window.syncing = true;
         },
         update: async (msg) => {
           for (const [id, element] of Object.entries(msg)) {
@@ -359,11 +370,35 @@ function createApp(elements, options) {
         },
         download: (msg) => download(msg.src, msg.filename, msg.media_type, options.prefix),
         notify: (msg) => Quasar.Notify.create(msg),
+        sync: (msg) => {
+          if (msg.target !== window.socket.id) return;
+          if (!msg.success) {
+            console.log("Could not synchronize with the server. Reloading...");
+            window.location.reload();
+            return;
+          }
+          window.syncing = false;
+          console.log(msg.history);
+          for (let [_, messageType, data] of msg.history) {
+            if (data.message_id <= window.lastMessageId) continue;
+            window.lastMessageId = data.message_id;
+            messageHandlers[messageType](data.payload);
+          }
+          window.socketIds = window.socketIds.slice(-1);
+        },
       };
       const socketMessageQueue = [];
       let isProcessingSocketMessage = false;
       for (const [event, handler] of Object.entries(messageHandlers)) {
         window.socket.on(event, async (...args) => {
+          const data = args[0];
+          if (data && data.hasOwnProperty("message_id")) {
+            if (window.syncing || data.message_id <= window.lastMessageId) {
+              return;
+            }
+            window.lastMessageId = data.message_id;
+            args[0] = data.payload;
+          }
           socketMessageQueue.push(() => handler(...args));
           if (!isProcessingSocketMessage) {
             while (socketMessageQueue.length > 0) {
