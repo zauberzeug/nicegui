@@ -7,11 +7,10 @@ from uuid import uuid4
 
 import httpx
 import socketio
-from typing_extensions import Self
 
 from nicegui import Client, ElementFilter, ui
 from nicegui.element import Element
-from nicegui.nicegui import Slot, _on_handshake
+from nicegui.nicegui import _on_handshake
 
 from .user_interaction import UserInteraction
 from .user_navigate import UserNavigate
@@ -31,7 +30,12 @@ class User:
         self.client: Optional[Client] = None
         self.back_history: List[str] = []
         self.forward_history: List[str] = []
-        ui.navigate = self.navigate = UserNavigate(self)
+        self.navigate = UserNavigate(self)
+
+    def __getattribute__(self, name: str) -> asyncio.Any:
+        if name != 'navigate':  # NOTE: avoid infinite recursion
+            ui.navigate = self.navigate
+        return super().__getattribute__(name)
 
     async def open(self, path: str, *, clear_forward_history: bool = True) -> None:
         """Open the given path."""
@@ -49,29 +53,6 @@ class User:
         self.back_history.append(path)
         if clear_forward_history:
             self.forward_history.clear()
-        self.activate()
-
-    def activate(self) -> Self:
-        """Activate the user for interaction.
-
-        This can be used if you have multiple users and want to switch between them.
-        """
-        if self.current_user:
-            self.current_user.deactivate()
-        self.current_user = self
-        assert self.client
-        ui.navigate = self.navigate
-        self.client.__enter__()  # pylint: disable=unnecessary-dunder-call
-        return self
-
-    def deactivate(self, *_) -> None:
-        """Deactivate the user.
-
-        This can be used if you have multiple users and want to switch between them.
-        """
-        assert self.client
-        self.client.__exit__()
-        self.current_user = None
 
     @overload
     async def should_see(self,
@@ -230,33 +211,3 @@ class User:
             return f'element of type {kind.__name__} with {marker=} and {content=} on the page:\n{self.current_layout}'
         else:
             return f'element with {marker=} and {content=} on the page:\n{self.current_layout}'
-
-
-original_get_slot_stack = Slot.get_stack
-original_prune_slot_stack = Slot.prune_stack
-
-
-def get_stack(_=None) -> List[Slot]:
-    """Return the slot stack of the current client."""
-    if User.current_user is None:
-        return original_get_slot_stack()
-    cls = Slot
-    client_id = id(User.current_user)
-    if client_id not in cls.stacks:
-        cls.stacks[client_id] = []
-    return cls.stacks[client_id]
-
-
-def prune_stack(cls) -> None:
-    """Remove the current slot stack if it is empty."""
-    if User.current_user is None:
-        original_prune_slot_stack()
-        return
-    cls = Slot
-    client_id = id(User.current_user)
-    if not cls.stacks[client_id]:
-        del cls.stacks[client_id]
-
-
-Slot.get_stack = get_stack  # type: ignore
-Slot.prune_stack = prune_stack  # type: ignore

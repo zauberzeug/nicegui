@@ -36,6 +36,5 @@ async def test_sending_messages(create_user: Callable[[], User]) -> None:
     userB.find(ui.input).type('Hello from screen B!').trigger('keydown.enter')
     await userB.should_see('message')
 
-    userA.activate()
     await userA.should_see('Hello from screen A!')
     await userA.should_see('Hello from screen B!')

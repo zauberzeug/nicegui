@@ -133,7 +133,6 @@ async def test_multi_user_navigation(create_user: Callable[[], User]) -> None:
     await userB.open('/')
     await userB.should_see('Main page')
 
-    userA.activate()
     userA.find('go to other').click()
     await userA.should_see('Other page')
     await userB.should_see('Main page')
