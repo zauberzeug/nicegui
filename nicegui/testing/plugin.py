@@ -122,6 +122,7 @@ def screen(nicegui_reset_globals,  # pylint: disable=unused-argument
            caplog: pytest.LogCaptureFixture,
            ) -> Generator[Screen, None, None]:
     """Create a new SeleniumScreen fixture."""
+    prepare_simulation(request)
     screen_ = Screen(nicegui_driver, caplog)
     yield screen_
     logs = screen_.caplog.get_records('call')
@@ -176,7 +177,10 @@ def prepare_simulated_auto_index_client(request):
 
 
 def prepare_simulation(request: pytest.FixtureRequest) -> None:
-    """Prepare a simulation to be started -- by using the "module_under_test" marker you can specify the main entry point of the app."""
+    """Prepare a simulation to be started.
+
+    By using the "module_under_test" marker you can specify the main entry point of the app.
+    """
     marker = request.node.get_closest_marker('module_under_test')
     if marker is not None:
         with Client.auto_index_client:
