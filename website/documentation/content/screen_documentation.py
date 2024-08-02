@@ -32,4 +32,22 @@ def screen_fixture():
         ''')
 
 
+@doc.part('Web driver')
+def async_execution():
+    ui.markdown('''
+        The `screen` fixture uses the Selenium under the hood.
+        Currently it's only tested with the Chrome driver.
+        To automatically use it for the tests we suggest you add the option `--driver Chrome` to your `pytest.ini`:
+    ''').classes('bold-links arrow-links')
+
+    with python_window(classes='w-[600px] h-42', title='pytest.ini'):
+        ui.markdown('''
+            ```ini
+            [pytest]
+            asyncio_mode = auto
+            addopts = "--driver Chrome"
+            ```
+        ''')
+
+
 doc.reference(Screen)
