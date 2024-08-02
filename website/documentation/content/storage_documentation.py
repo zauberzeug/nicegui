@@ -41,7 +41,7 @@ doc.title('Storage')
 
     The user storage and browser storage are only available within `page builder functions </documentation/page>`_
     because they are accessing the underlying `Request` object from FastAPI.
-    Additionally these two types require the `storage_secret` parameter in`ui.run()` to encrypt the browser session cookie.
+    Additionally these two types require the `storage_secret` parameter in`ui.run()` to sign the browser session cookie.
 
     | Storage type                | `tab`  | `client` | `user` | `general` | `browser` |
     |-----------------------------|--------|----------|--------|-----------|-----------|
@@ -97,7 +97,7 @@ def page_visits():
 
 
 @doc.demo('Storing UI state', '''
-    Storage can also be used in combination with [`bindings`](/documentation/bindings).
+    Storage can also be used in combination with [`bindings`](/documentation/section_binding_properties).
     Here we are storing the value of a textarea between visits.
     The note is also shared between all tabs of the same user.
 ''')
