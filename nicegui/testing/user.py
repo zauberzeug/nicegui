@@ -54,7 +54,8 @@ class User:
     def activate(self) -> Self:
         """Activate the user for interaction.
 
-        This can be used if you have multiple users and want to switch between them."""
+        This can be used if you have multiple users and want to switch between them.
+        """
         if self.current_user:
             self.current_user.deactivate()
         self.current_user = self
@@ -66,7 +67,8 @@ class User:
     def deactivate(self, *_) -> None:
         """Deactivate the user.
 
-        This can be used if you have multiple users and want to switch between them."""
+        This can be used if you have multiple users and want to switch between them.
+        """
         assert self.client
         self.client.__exit__()
         self.current_user = None

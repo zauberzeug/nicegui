@@ -8,9 +8,9 @@ from pathlib import Path
 from types import ModuleType
 from typing import Any, Callable, Dict, Optional, Union, overload
 
+import nicegui
 from nicegui import app as nicegui_app
 from nicegui import ui as nicegui_ui
-import nicegui
 from nicegui.elements.markdown import remove_indentation
 
 from .page import DocumentationPage

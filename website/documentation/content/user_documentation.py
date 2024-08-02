@@ -1,20 +1,22 @@
-from nicegui.testing import User, UserInteraction
-from . import doc
 from nicegui import ui
+from nicegui.testing import User, UserInteraction
+
 from ..windows import python_window
+from . import doc
 
 
 @doc.part('User Fixture')
 def user_fixture():
     ui.markdown('''
-        We recommend you utilize the `user` fixture instead of the [`screen` fixture](/documentation/screen) wherever possible because execution is as fast as unit tests and it does not need Selenium as a dependency.
-        The `user` fixture cuts away the browser and replaces it by a light weight simulation which entirely runs in Python.
+        We recommend utilizing the `user` fixture instead of the [`screen` fixture](/documentation/screen) wherever possible
+        because execution is as fast as unit tests and it does not need Selenium as a dependency.
+        The `user` fixture cuts away the browser and replaces it by a lightweight simulation entirely in Python.
 
-        You can assert for specific elements or content, click buttons, type into inputs and trigger events.
+        You can assert to "see" specific elements or content, click buttons, type into inputs and trigger events.
         We aimed for a nice API to write acceptance tests which read like a story and are easy to understand.
-        Due to the fast execution, the classical [test pyramid](https://martinfowler.com/bliki/TestPyramid.html)
-        where UI tests are considered slow and expensive does not apply anymore.
-        ''').classes('bold-links arrow-links')
+        Due to the fast execution, the classical [test pyramid](https://martinfowler.com/bliki/TestPyramid.html),
+        where UI tests are considered slow and expensive, does not apply anymore.
+    ''').classes('bold-links arrow-links')
 
     with python_window(classes='w-[600px]', title='example'):
         ui.markdown('''
@@ -25,21 +27,25 @@ def user_fixture():
             await user.should_see('Hello user1!')
             user.find('logout').click()
             await user.should_see('Log in')
-            ```''')
+            ```
+        ''')
 
     ui.markdown('''
-            **NOTE:** The `user` fixture is quite new and still misses some features.
-            Please let us know in separate feature requests [over on GitHub](https://github.com/zauberzeug/nicegui/discussions/new?category=ideas-feature-requests).
-            ''').classes('bold-links arrow-links')
+        **NOTE:** The `user` fixture is quite new and still misses some features.
+        Please let us know in separate feature requests
+        [over on GitHub](https://github.com/zauberzeug/nicegui/discussions/new?category=ideas-feature-requests).
+    ''').classes('bold-links arrow-links')
 
 
 @doc.part('Async execution')
 def async_execution():
     ui.markdown('''
-        The user simulation runs in the same async context as your app to make querying and interaction as easy as possible.
+        The user simulation runs in the same async context as your app
+        to make querying and interaction as easy as possible.
         But that also means that your tests must be `async`.
-        We suggest you activate the [pytest-asyncio auto-mode](https://pytest-asyncio.readthedocs.io/en/latest/concepts.html#auto-mode)
-        by either creating a `pytest.ini` file in your project root or add the activation directly to your `pyproject.toml`.
+        We suggest to activate the [pytest-asyncio auto-mode](https://pytest-asyncio.readthedocs.io/en/latest/concepts.html#auto-mode)
+        by either creating a `pytest.ini` file in your project root
+        or adding the activation directly to your `pyproject.toml`.
     ''').classes('bold-links arrow-links')
 
     with ui.row(wrap=False).classes('gap-4 items-center'):
@@ -49,7 +55,7 @@ def async_execution():
                 [pytest]
                 asyncio_mode = auto
                 ```
-                ''')
+            ''')
         ui.label('or').classes('text-2xl')
         with python_window(classes='w-[300px] h-42', title='pyproject.toml'):
             ui.markdown('''
@@ -57,20 +63,21 @@ def async_execution():
                 [tool.pytest.ini_options]
                 asyncio_mode = "auto"
                 ```
-                ''')
+            ''')
 
 
 doc.text('Querying', '''
-    The querying capabilities of the `User` are build upon the [ElementFilter](/documentation/element_filter).
-    The `user.should_see(...)` method and `user.find(...)`method provide parameters to filter for content, [markers](/documentation/element_filter#markers), types, etc.
-    If you do not provide a named property, the string will be matched against the text content and markers.
+    The querying capabilities of the `User` are built upon the [ElementFilter](/documentation/element_filter).
+    The `user.should_see(...)` method and `user.find(...)` method
+    provide parameters to filter for content, [markers](/documentation/element_filter#markers), types, etc.
+    If you do not provide a named property, the string will match against the text content and markers.
 ''')
 
 
 @doc.ui
 def modular_project():
     with ui.row(wrap=False).classes('gap-4 items-stretch'):
-        with python_window(classes='w-[400px]', title='some ui code'):
+        with python_window(classes='w-[400px]', title='some UI code'):
             ui.markdown('''
                 ```python
                 with ui.row():
@@ -79,7 +86,8 @@ def modular_project():
                 with ui.row():
                     ui.label('Hello Universe!')
                     ui.input(placeholder='Type here')
-                ```''')
+                ```
+            ''')
 
         with python_window(classes='w-[600px]', title='user assertions'):
             ui.markdown('''
@@ -92,13 +100,14 @@ def modular_project():
                 await user.should_see(marker='greeting')
                 await user.should_see(kind=ui.icon)
                 ```
-                ''')
+            ''')
 
 
 doc.text('Comparison with the screen fixture', '''
     By cutting out the browser, test execution becomes much faster than the [`screen` fixture](/documentation/screen).
-    Of course some features like screenshots or browser specific behavior are not available.
-    See our [pytests example](https://github.com/zauberzeug/nicegui/tree/main/examples/pytests) which implements the same tests with both fixtures.
+    Of course, some features like screenshots or browser-specific behavior are not available.
+    See our [pytests example](https://github.com/zauberzeug/nicegui/tree/main/examples/pytests)
+    which implements the same tests with both fixtures.
 ''')
 
 doc.reference(User, title='User Reference')
