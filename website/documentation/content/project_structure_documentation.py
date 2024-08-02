@@ -3,23 +3,19 @@ from nicegui import ui
 from ..windows import bash_window, python_window
 from . import doc
 
+doc.text('Project Structure', '''
+    The NiceGUI package provides a [pytest plugin](https://docs.pytest.org/en/stable/how-to/writing_plugins.html)
+    which can be activated via `pytest_plugins = ['nicegui.testing.plugin']`.
+    This makes specialized [fixtures](https://docs.pytest.org/en/stable/explanation/fixtures.html) available for testing your NiceGUI user interface.
+    With the [`screen` fixture](/documentation/screen) you can run the tests through a headless browser (slow)
+    and with the [`user` fixture](/documentation/user) fully simulated in Python (fast).
 
-@doc.part('Project Structure')
-def setup():
-    ui.markdown('''
-        The NiceGUI package provides a [pytest plugin](https://docs.pytest.org/en/stable/how-to/writing_plugins.html)
-        which can be activated via `pytest_plugins = ['nicegui.testing.plugin']`.
-        This makes specialized [fixtures](https://docs.pytest.org/en/stable/explanation/fixtures.html) available for testing your NiceGUI user interface.
-        With the [`screen` fixture](/documentation/screen) you can run the tests through a headless browser (slow)
-        and with the [`user` fixture](/documentation/user) fully simulated in Python (fast).
-
-        There are a multitude of ways to structure your project and tests.
-        Here we only present two approaches which we found useful,
-        one for [small apps and experiments](/documentation/project_structure#simple)
-        and a [modular one for larger projects](/documentation/project_structure#modular).
-        You can find more information in the [pytest documentation](https://docs.pytest.org/en/stable/contents.html).
-    ''').classes('bold-links arrow-links')
-
+    There are a multitude of ways to structure your project and tests.
+    Here we only present two approaches which we found useful,
+    one for [small apps and experiments](/documentation/project_structure#simple)
+    and a [modular one for larger projects](/documentation/project_structure#modular).
+    You can find more information in the [pytest documentation](https://docs.pytest.org/en/stable/contents.html).
+''')
 
 doc.text('Simple', '''
     For small apps and experiments you can put the tests in a separate file,

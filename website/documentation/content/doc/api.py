@@ -114,19 +114,18 @@ def demo(*args, **kwargs) -> Callable[[Callable], Callable]:
 
 
 def part(title_: str) -> Callable:
-    """Add a custom part to the current documentation page."""
+    """Add a custom part with arbitrary UI and descriptive markdown elements to the current documentation page.
+
+    The content of any contained markdown elements will be used for search indexing.
+    """
     page = _get_current_page()
 
     def decorator(function: Callable) -> Callable:
-        task_id = nicegui.slot.get_task_id()
-        orig = nicegui.slot.Slot.stacks[task_id]
-        # NOTE we create an empty context so the function is not rendered as elements but available to ElementFilter
-        del nicegui.slot.Slot.stacks[task_id]
-        with nicegui.ui.element(_client=nicegui.Client(nicegui.page.page(''), request=None)):
+        with nicegui_ui.element() as container:
             function()
             elements = nicegui.ElementFilter(kind=nicegui.ui.markdown, local_scope=True)
             description = ''.join(e.content for e in elements if '```' not in e.content)
-        nicegui.slot.Slot.stacks[task_id] = orig
+        container.delete()
         page.parts.append(DocumentationPart(title=title_, search_text=description, ui=function))
         return function
     return decorator
