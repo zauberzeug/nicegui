@@ -78,6 +78,7 @@ build-backend = "poetry.core.masonry.api"
 [tool.pytest.ini_options]
 addopts = "--driver Chrome"
 asyncio_mode = "auto"
+testpaths = ["tests"]
 
 [tool.mypy]
 python_version = "3.8"
@@ -129,6 +130,3 @@ ignore = [
 exclude = [
     "website/documentation/content/*",
 ]
-
-[tool.poetry.plugins.pytest11]
-pytest-nicegui = "nicegui.testing.fixtures"
