@@ -11,6 +11,7 @@ from . import (
     section_page_layout,
     section_pages_routing,
     section_styling_appearance,
+    section_testing,
     section_text_elements,
 )
 
@@ -87,6 +88,19 @@ doc.text('Customization', '''
     Out of the box, NiceGUI provides everything you need to make modern, stylish, responsive user interfaces.
 ''')
 
+doc.text('Testing', '''
+    NiceGUI provides a comprehensive testing framework based on [pytest](https://docs.pytest.org/)
+    which allows you to automate the testing of your user interface.
+    You can utilize the `screen` fixture which starts a real (headless) browser to interact with your application.
+    This is great if you have browser-specific behavior to test.
+
+    But most of the time, NiceGUI's newly introduced `user` fixture is more suited:
+    It only simulates the user interaction on a Python level and, hence, is blazing fast.
+    That way the classical [test pyramid](https://martinfowler.com/bliki/TestPyramid.html),
+    where UI tests are considered slow and expensive, does not apply anymore.
+    This can have a huge impact on your development speed, quality and confidence.
+''')
+
 tiles = [
     (section_text_elements, '''
         Elements like `ui.label`, `ui.markdown`, `ui.restructured_text` and `ui.html` can be used to display text and other content.
@@ -118,6 +132,9 @@ tiles = [
     (section_configuration_deployment, '''
         Whether you want to run your app locally or on a server, native or in a browser, we got you covered.
     '''),
+    (section_testing, '''
+        Write automated UI tests which run in a headless browser (slow) or fully simulated in Python (fast).
+     '''),
 ]
 
 

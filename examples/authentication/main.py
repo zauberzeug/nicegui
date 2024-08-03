@@ -38,10 +38,13 @@ app.add_middleware(AuthMiddleware)
 
 @ui.page('/')
 def main_page() -> None:
+    def logout() -> None:
+        app.storage.user.clear()
+        ui.navigate.to('/login')
+
     with ui.column().classes('absolute-center items-center'):
         ui.label(f'Hello {app.storage.user["username"]}!').classes('text-2xl')
-        ui.button(on_click=lambda: (app.storage.user.clear(), ui.navigate.to('/login')), icon='logout') \
-            .props('outline round')
+        ui.button(on_click=logout, icon='logout').props('outline round')
 
 
 @ui.page('/subpage')
@@ -67,4 +70,5 @@ def login() -> Optional[RedirectResponse]:
     return None
 
 
-ui.run(storage_secret='THIS_NEEDS_TO_BE_CHANGED')
+if __name__ in {'__main__', '__mp_main__'}:
+    ui.run(storage_secret='THIS_NEEDS_TO_BE_CHANGED')

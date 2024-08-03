@@ -8,6 +8,7 @@ from pathlib import Path
 from types import ModuleType
 from typing import Any, Callable, Dict, Optional, Union, overload
 
+import nicegui
 from nicegui import app as nicegui_app
 from nicegui import ui as nicegui_ui
 from nicegui.elements.markdown import remove_indentation
@@ -95,8 +96,9 @@ def demo(*args, **kwargs) -> Callable[[Callable], Callable]:
 
     def decorator(function: Callable) -> Callable:
         if not page.parts and element:
-            ui_name = _find_attribute(nicegui_ui, element.__name__)
-            app_name = _find_attribute(nicegui_app, element.__name__)
+            name = getattr(element, '__name__', None) or element.__class__.__name__
+            ui_name = _find_attribute(nicegui_ui, name)
+            app_name = _find_attribute(nicegui_app, name)
             if ui_name:
                 page.title = f'ui.*{ui_name}*'
             if app_name:
@@ -107,6 +109,24 @@ def demo(*args, **kwargs) -> Callable[[Callable], Callable]:
             description_format='md' if is_markdown else 'rst',
             demo=Demo(function=function, lazy=kwargs.get('lazy', True), tab=kwargs.get('tab')),
         ))
+        return function
+    return decorator
+
+
+def part(title_: str) -> Callable:
+    """Add a custom part with arbitrary UI and descriptive markdown elements to the current documentation page.
+
+    The content of any contained markdown elements will be used for search indexing.
+    """
+    page = _get_current_page()
+
+    def decorator(function: Callable) -> Callable:
+        with nicegui_ui.element() as container:
+            function()
+            elements = nicegui.ElementFilter(kind=nicegui.ui.markdown, local_scope=True)
+            description = ''.join(e.content for e in elements if '```' not in e.content)
+        container.delete()
+        page.parts.append(DocumentationPart(title=title_, search_text=description, ui=function))
         return function
     return decorator
 

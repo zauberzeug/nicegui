@@ -141,7 +141,7 @@ class Client:
                 'imports': json.dumps(imports),
                 'js_imports': '\n'.join(js_imports),
                 'quasar_config': json.dumps(core.app.config.quasar_config),
-                'title': self.page.resolve_title() if self.title is None else self.title,
+                'title': self.resolve_title(),
                 'viewport': self.page.resolve_viewport(),
                 'favicon_url': get_favicon_url(self.page, prefix),
                 'dark': str(self.page.resolve_dark()),
@@ -156,6 +156,10 @@ class Client:
             status_code=status_code,
             headers={'Cache-Control': 'no-store', 'X-NiceGUI-Content': 'page'},
         )
+
+    def resolve_title(self) -> str:
+        """Return the title of the page."""
+        return self.page.resolve_title() if self.title is None else self.title
 
     async def connected(self, timeout: float = 3.0, check_interval: float = 0.1) -> None:
         """Block execution until the client is connected."""
@@ -301,14 +305,13 @@ class Client:
 
     def remove_elements(self, elements: Iterable[Element]) -> None:
         """Remove the given elements from the client."""
-        binding.remove(elements)
-        element_ids = [element.id for element in elements]
-        for element in elements:
+        element_list = list(elements)  # NOTE: we need to iterate over the elements multiple times
+        binding.remove(element_list)
+        for element in element_list:
             element._handle_delete()  # pylint: disable=protected-access
             element._deleted = True  # pylint: disable=protected-access
             self.outbox.enqueue_delete(element)
-        for element_id in element_ids:
-            del self.elements[element_id]
+            del self.elements[element.id]
 
     def remove_all_elements(self) -> None:
         """Remove all elements from the client."""
