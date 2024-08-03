@@ -2,7 +2,6 @@
   "autopep8.args": ["--max-line-length=120"],
   "editor.defaultFormatter": "esbenp.prettier-vscode",
   "editor.formatOnSave": true,
-  "isort.args": ["--line-length", "120"],
   "prettier.printWidth": 120,
   "pylint.args": [
     "--disable=C0103", // Invalid name (e.g., variable/function/class naming conventions)
@@ -11,6 +10,7 @@
     "--disable=C0301", // Line too long (exceeds character limit)
     "--disable=C0302", // Too many lines in module
     "--disable=R0801", // Similar lines in files
+    "--disable=R0901", // Too many ancestors
     "--disable=R0902", // Too many instance attributes
     "--disable=R0903", // Too few public methods
     "--disable=R0904", // Too many public methods
@@ -31,7 +31,7 @@
   "[python]": {
     "editor.defaultFormatter": "ms-python.autopep8",
     "editor.codeActionsOnSave": {
-      "source.organizeImports": "explicit"
+      "source.fixAll.ruff": "always"
     }
   }
 }

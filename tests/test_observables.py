@@ -1,4 +1,5 @@
 import asyncio
+import copy
 import sys
 
 from nicegui import ui
@@ -10,17 +11,17 @@ count = 0
 
 
 def reset_counter():
-    global count
+    global count  # noqa: PLW0603
     count = 0
 
 
 def increment_counter():
-    global count
+    global count  # noqa: PLW0603
     count += 1
 
 
 async def increment_counter_slowly(_):
-    global count
+    global count  # noqa: PLW0603
     await asyncio.sleep(0.1)
     count += 1
 
@@ -153,3 +154,15 @@ def test_setting_change_handler():
     data.on_change(increment_counter)
     data.append(2)
     assert count == 1
+
+
+def test_copy():
+    a = ObservableList([[1, 2, 3], [4, 5, 6]])
+    b = copy.copy(a)
+    c = copy.deepcopy(a)
+    a.append([7, 8, 9])
+    a[0][0] = 0
+
+    assert a == [[0, 2, 3], [4, 5, 6], [7, 8, 9]]
+    assert b == [[0, 2, 3], [4, 5, 6]]
+    assert c == [[1, 2, 3], [4, 5, 6]]

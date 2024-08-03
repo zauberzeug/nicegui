@@ -6,7 +6,7 @@
   <description>This is an example of NiceGUI in a ROS2 node that uses a joystick to send geometry_msgs/Twist messages.</description>
   <maintainer email="nicegui@zauberzeug.com">Zauberzeug GmbH</maintainer>
   <license>MIT License</license>
-  
+
   <depend>rclpy</depend>
   <depend>geometry_msgs</depend>
 

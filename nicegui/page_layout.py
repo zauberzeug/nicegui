@@ -1,6 +1,6 @@
 from typing import Literal, Optional
 
-from . import context
+from .context import context
 from .element import Element
 from .elements.mixins.value_element import ValueElement
 from .functions.html import add_body_html
@@ -45,7 +45,7 @@ class Header(ValueElement):
         :param add_scroll_padding: whether to automatically prevent link targets from being hidden behind the header (default: `True`)
         """
         _check_current_slot(self)
-        with context.get_client().layout:
+        with context.client.layout:
             super().__init__(tag='q-header', value=value, on_value_change=None)
         self._classes.append('nicegui-header')
         self._props['bordered'] = bordered
@@ -109,7 +109,7 @@ class Drawer(Element):
         :param bottom_corner: whether the drawer expands into the bottom corner (default: `False`)
         """
         _check_current_slot(self)
-        with context.get_client().layout:
+        with context.client.layout:
             super().__init__('q-drawer')
         if value is None:
             self._props['show-if-above'] = True
@@ -228,7 +228,7 @@ class Footer(ValueElement):
         :param wrap: whether the footer should wrap its content (default: `True`)
         """
         _check_current_slot(self)
-        with context.get_client().layout:
+        with context.client.layout:
             super().__init__(tag='q-footer', value=value, on_value_change=None)
         self.classes('nicegui-footer')
         self._props['bordered'] = bordered
@@ -271,7 +271,7 @@ class PageSticky(Element):
 
 
 def _check_current_slot(element: Element) -> None:
-    parent = context.get_slot().parent
+    parent = context.slot.parent
     if parent != parent.client.content:
         log.warning(f'Found top level layout element "{element.__class__.__name__}" inside element "{parent.__class__.__name__}". '
                     'Top level layout elements should not be nested but must be direct children of the page content. '

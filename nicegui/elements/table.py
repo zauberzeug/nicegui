@@ -114,7 +114,7 @@ class Table(FilterElement, component='table.js'):
             return (pd.api.types.is_datetime64_any_dtype(dtype) or
                     pd.api.types.is_timedelta64_dtype(dtype) or
                     pd.api.types.is_complex_dtype(dtype) or
-                    pd.api.types.is_period_dtype(dtype))
+                    isinstance(dtype, pd.PeriodDtype))
         special_cols = df.columns[df.dtypes.apply(is_special_dtype)]
         if not special_cols.empty:
             df = df.copy()
@@ -225,6 +225,18 @@ class Table(FilterElement, component='table.js'):
         if clear_selection:
             self.selected.clear()
         self.update()
+
+    async def get_filtered_sorted_rows(self, *, timeout: float = 1) -> List[Dict]:
+        """Asynchronously return the filtered and sorted rows of the table."""
+        return await self.get_computed_prop('filteredSortedRows', timeout=timeout)
+
+    async def get_computed_rows(self, *, timeout: float = 1) -> List[Dict]:
+        """Asynchronously return the computed rows of the table."""
+        return await self.get_computed_prop('computedRows', timeout=timeout)
+
+    async def get_computed_rows_number(self, *, timeout: float = 1) -> int:
+        """Asynchronously return the number of computed rows of the table."""
+        return await self.get_computed_prop('computedRowsNumber', timeout=timeout)
 
     class row(Element):
 

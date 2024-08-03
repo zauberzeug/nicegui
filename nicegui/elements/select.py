@@ -58,6 +58,8 @@ class Select(ValidationElement, ChoiceElement, DisableableElement, component='se
                 value = []
             elif not isinstance(value, list):
                 value = [value]
+            else:
+                value = value[:]  # NOTE: avoid modifying the original list which could be the list of options (#3014)
         super().__init__(options=options, value=value, on_change=on_change, validation=validation)
         if label is not None:
             self._props['label'] = label
@@ -79,7 +81,6 @@ class Select(ValidationElement, ChoiceElement, DisableableElement, component='se
         self._props['clearable'] = clearable
 
     def _event_args_to_value(self, e: GenericEventArguments) -> Any:
-        # pylint: disable=no-else-return
         if self.multiple:
             if e.args is None:
                 return []
@@ -89,10 +90,10 @@ class Select(ValidationElement, ChoiceElement, DisableableElement, component='se
                     if isinstance(arg, str):
                         self._handle_new_value(arg)
                 return [arg for arg in args if arg in self._values]
-        else:
+        else:  # noqa: PLR5501
             if e.args is None:
                 return None
-            else:
+            else:  # noqa: PLR5501
                 if isinstance(e.args, str):
                     new_value = self._handle_new_value(e.args)
                     return new_value if new_value in self._values else None

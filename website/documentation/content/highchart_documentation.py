@@ -45,7 +45,7 @@ def extra_dependencies() -> None:
 @doc.demo('Chart with draggable points', '''
     This chart allows dragging the series points.
     You can register callbacks for the following events:
-    
+
     - `on_point_click`: called when a point is clicked
     - `on_point_drag_start`: called when a point drag starts
     - `on_point_drag`: called when a point is dragged

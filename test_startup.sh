@@ -60,5 +60,9 @@ do
     elif test -f $path/main.py; then
         check $path/main.py || error=1
     fi
+    if pytest -q --collect-only $path >/dev/null 2>&1; then
+        echo "running tests for $path"
+        pytest $path || error=1
+    fi
 done
 test $error -eq 0

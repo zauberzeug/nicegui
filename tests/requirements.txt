@@ -1,7 +1,3 @@
-pytest
-pytest-selenium
-pytest-asyncio
-selenium
-autopep8
 icecream
-beautifulsoup4
+pytest-asyncio
+pytest-selenium

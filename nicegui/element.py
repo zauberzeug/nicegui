@@ -5,12 +5,13 @@ import inspect
 import re
 from copy import copy, deepcopy
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Callable, Dict, Iterator, List, Optional, Sequence, Union, overload
+from typing import TYPE_CHECKING, Any, Callable, ClassVar, Dict, Iterator, List, Optional, Sequence, Union, overload
 
 from typing_extensions import Self
 
-from . import context, core, events, helpers, json, storage
+from . import core, events, helpers, json, storage
 from .awaitable_response import AwaitableResponse, NullResponse
+from .context import context
 from .dependencies import Component, Library, register_library, register_resource, register_vue_component
 from .elements.mixins.visibility import Visibility
 from .event_listener import EventListener
@@ -41,7 +42,7 @@ PROPS_PATTERN = re.compile(r'''
             '       # Match the closing quote
         )
         |           # Or
-        ([\w\-.%:\/]+)  # Capture group 4: Value without quotes
+        ([\w\-.,%:\/=]+)  # Capture group 4: Value without quotes
     )
 )?                  # End of optional non-capturing group for value
 (?:$|\s)            # Match end of string or whitespace
@@ -55,12 +56,12 @@ TAG_PATTERN = re.compile(fr'^({TAG_START_CHAR})({TAG_CHAR})*$')
 
 class Element(Visibility):
     component: Optional[Component] = None
-    libraries: List[Library] = []
-    extra_libraries: List[Library] = []
-    exposed_libraries: List[Library] = []
-    _default_props: Dict[str, Any] = {}
-    _default_classes: List[str] = []
-    _default_style: Dict[str, str] = {}
+    libraries: ClassVar[List[Library]] = []
+    extra_libraries: ClassVar[List[Library]] = []
+    exposed_libraries: ClassVar[List[Library]] = []
+    _default_props: ClassVar[Dict[str, Any]] = {}
+    _default_classes: ClassVar[List[str]] = []
+    _default_style: ClassVar[Dict[str, str]] = {}
 
     def __init__(self, tag: Optional[str] = None, *, _client: Optional[Client] = None) -> None:
         """Generic Element
@@ -72,7 +73,7 @@ class Element(Visibility):
         :param _client: client for this element (for internal use only)
         """
         super().__init__()
-        self.client = _client or context.get_client()
+        self.client = _client or context.client
         self.id = self.client.next_element_id
         self.client.next_element_id += 1
         self.tag = tag if tag else self.component.tag if self.component else 'div'
@@ -84,6 +85,7 @@ class Element(Visibility):
         self._style.update(self._default_style)
         self._props: Dict[str, Any] = {}
         self._props.update(self._default_props)
+        self._markers: List[str] = []
         self._event_listeners: Dict[str, EventListener] = {}
         self._text: Optional[str] = None
         self.slots: Dict[str, Slot] = {}
@@ -92,7 +94,7 @@ class Element(Visibility):
 
         self.client.elements[self.id] = self
         self.parent_slot: Optional[Slot] = None
-        slot_stack = context.get_slot_stack()
+        slot_stack = context.slot_stack
         if slot_stack:
             self.parent_slot = slot_stack[-1]
             self.parent_slot.children.append(self)
@@ -105,9 +107,9 @@ class Element(Visibility):
 
     def __init_subclass__(cls, *,
                           component: Union[str, Path, None] = None,
-                          libraries: List[Union[str, Path]] = [],
-                          exposed_libraries: List[Union[str, Path]] = [],
-                          extra_libraries: List[Union[str, Path]] = [],
+                          libraries: List[Union[str, Path]] = [],  # noqa: B006
+                          exposed_libraries: List[Union[str, Path]] = [],  # noqa: B006
+                          extra_libraries: List[Union[str, Path]] = [],  # noqa: B006
                           ) -> None:
         super().__init_subclass__()
         base = Path(inspect.getfile(cls)).parent
@@ -273,7 +275,7 @@ class Element(Visibility):
     def _parse_style(text: Optional[str]) -> Dict[str, str]:
         result = {}
         for word in (text or '').split(';'):
-            word = word.strip()
+            word = word.strip()  # noqa: PLW2901
             if word:
                 key, value = word.split(':', 1)
                 result[key.strip()] = value.strip()
@@ -387,6 +389,18 @@ class Element(Visibility):
             cls._default_props[key] = value
         return cls
 
+    def mark(self, *markers: str) -> Self:
+        """Replace markers of the element.
+
+        Markers are used to identify elements for querying with `ElementFilter </documentation/element_filter>`_
+        which is heavily used in testing
+        but can also be used to reduce the number of global variables or passing around dependencies.
+
+        :param markers: list of strings or single string with whitespace-delimited markers; replaces existing markers
+        """
+        self._markers = [word for marker in markers for word in marker.split()]
+        return self
+
     def tooltip(self, text: str) -> Self:
         """Add a tooltip to the element.
 
@@ -483,33 +497,71 @@ class Element(Visibility):
         return self.client.run_javascript(f'return runMethod({self.id}, "{name}", {json.dumps(args)})',
                                           timeout=timeout, check_interval=check_interval)
 
-    def _collect_descendants(self, *, include_self: bool = False) -> List[Element]:
-        elements: List[Element] = [self] if include_self else []
+    def get_computed_prop(self, prop_name: str, *, timeout: float = 1) -> AwaitableResponse:
+        """Return a computed property.
+
+        This function should be awaited so that the computed property is properly returned.
+
+        :param prop_name: name of the computed prop
+        :param timeout: maximum time to wait for a response (default: 1 second)
+        """
+        if not core.loop:
+            return NullResponse()
+        return self.client.run_javascript(f'return getComputedProp({self.id}, "{prop_name}")', timeout=timeout)
+
+    def ancestors(self, *, include_self: bool = False) -> Iterator[Element]:
+        """Iterate over the ancestors of the element.
+
+        :param include_self: whether to include the element itself in the iteration
+        """
+        if include_self:
+            yield self
+        if self.parent_slot:
+            yield from self.parent_slot.parent.ancestors(include_self=True)
+
+    def descendants(self, *, include_self: bool = False) -> Iterator[Element]:
+        """Iterate over the descendants of the element.
+
+        :param include_self: whether to include the element itself in the iteration
+        """
+        if include_self:
+            yield self
         for child in self:
-            elements.extend(child._collect_descendants(include_self=True))  # pylint: disable=protected-access
-        return elements
+            yield from child.descendants(include_self=True)
 
     def clear(self) -> None:
         """Remove all child elements."""
-        descendants = self._collect_descendants()
-        self.client.remove_elements(descendants)
+        self.client.remove_elements(self.descendants())
         for slot in self.slots.values():
             slot.children.clear()
         self.update()
 
-    def move(self, target_container: Optional[Element] = None, target_index: int = -1):
+    def move(self,
+             target_container: Optional[Element] = None,
+             target_index: int = -1, *,
+             target_slot: Optional[str] = None) -> None:
         """Move the element to another container.
 
         :param target_container: container to move the element to (default: the parent container)
         :param target_index: index within the target slot (default: append to the end)
+        :param target_slot: slot within the target container (default: default slot)
         """
         assert self.parent_slot is not None
         self.parent_slot.children.remove(self)
         self.parent_slot.parent.update()
         target_container = target_container or self.parent_slot.parent
-        target_index = target_index if target_index >= 0 else len(target_container.default_slot.children)
-        target_container.default_slot.children.insert(target_index, self)
-        self.parent_slot = target_container.default_slot
+
+        if target_slot is None:
+            self.parent_slot = target_container.default_slot
+        elif target_slot in target_container.slots:
+            self.parent_slot = target_container.slots[target_slot]
+        else:
+            raise ValueError(f'Slot "{target_slot}" does not exist in the target container. '
+                             f'Add it first using `add_slot("{target_slot}")`.')
+
+        target_index = target_index if target_index >= 0 else len(self.parent_slot.children)
+        self.parent_slot.children.insert(target_index, self)
+
         target_container.update()
 
     def remove(self, element: Union[Element, int]) -> None:
@@ -520,8 +572,7 @@ class Element(Visibility):
         if isinstance(element, int):
             children = list(self)
             element = children[element]
-        elements = element._collect_descendants(include_self=True)  # pylint: disable=protected-access
-        self.client.remove_elements(elements)
+        self.client.remove_elements(element.descendants(include_self=True))
         assert element.parent_slot is not None
         element.parent_slot.children.remove(element)
         self.update()
@@ -541,3 +592,32 @@ class Element(Visibility):
     def is_deleted(self) -> bool:
         """Whether the element has been deleted."""
         return self._deleted
+
+    def __str__(self) -> str:
+        result = self.tag if type(self) is Element else self.__class__.__name__  # pylint: disable=unidiomatic-typecheck
+
+        def shorten(content: Any, length: int = 20) -> str:
+            text = str(content).replace('\n', ' ').replace('\r', ' ')
+            return text[:length].strip() + '...' if len(text) > length else text
+
+        additions = []
+        if self._markers:
+            additions.append(f'markers={", ".join(self._markers)}')
+        if self._text:
+            additions.append(f'text={shorten(self._text)}')
+        if hasattr(self, 'content') and self.content:  # pylint: disable=no-member
+            additions.append(f'content={shorten(self.content)}')  # pylint: disable=no-member
+        IGNORED_PROPS = {'loopback', 'color', 'view', 'innerHTML', 'codehilite_css'}
+        additions += [
+            f'{key}={shorten(value)}'
+            for key, value in self._props.items()
+            if not key.startswith('_') and key not in IGNORED_PROPS and value
+        ]
+        if additions:
+            result += f' [{", ".join(additions)}]'
+
+        for child in self.default_slot.children:
+            for line in str(child).split('\n'):
+                result += f'\n {line}'
+
+        return result

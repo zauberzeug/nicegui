@@ -127,7 +127,7 @@ def table_with_drop_down_selection():
 
 
 @doc.demo('Table from Pandas DataFrame', '''
-    You can create a table from a Pandas DataFrame using the `from_pandas` method. 
+    You can create a table from a Pandas DataFrame using the `from_pandas` method.
     This method takes a Pandas DataFrame as input and returns a table.
 ''')
 def table_from_pandas_demo():
@@ -139,21 +139,18 @@ def table_from_pandas_demo():
 
 @doc.demo('Adding rows', '''
     It's simple to add new rows with the `add_rows(dict)` method.
+    With the "virtual-scroll" prop set, the table can be programmatically scrolled with the `scrollTo` JavaScript function.
 ''')
 def adding_rows():
-    import os
-    import random
+    from datetime import datetime
 
     def add():
-        item = os.urandom(10 // 2).hex()
-        table.add_rows({'id': item, 'count': random.randint(0, 100)})
+        table.add_rows({'date': datetime.now().strftime('%c')})
+        table.run_method('scrollTo', len(table.rows)-1)
 
-    ui.button('add', on_click=add)
-    columns = [
-        {'name': 'id', 'label': 'ID', 'field': 'id'},
-        {'name': 'count', 'label': 'Count', 'field': 'count'},
-    ]
-    table = ui.table(columns=columns, rows=[], row_key='id').classes('w-full')
+    columns = [{'name': 'date', 'label': 'Date', 'field': 'date'}]
+    table = ui.table(columns=columns, rows=[]).classes('h-52').props('virtual-scroll')
+    ui.button('Add row', on_click=add)
 
 
 @doc.demo('Custom sorting and formatting', '''
@@ -242,6 +239,37 @@ def handle_pagination_changes() -> None:
     )
 
 
+@doc.demo('Computed props', '''
+    You can access the computed props of a table within async callback functions.
+''')
+def computed_props():
+    async def show_filtered_sorted_rows():
+        ui.notify(await table.get_filtered_sorted_rows())
+
+    async def show_computed_rows():
+        ui.notify(await table.get_computed_rows())
+
+    table = ui.table(
+        columns=[
+            {'name': 'name', 'label': 'Name', 'field': 'name', 'align': 'left', 'sortable': True},
+            {'name': 'age', 'label': 'Age', 'field': 'age', 'align': 'left', 'sortable': True}
+        ],
+        rows=[
+            {'name': 'Noah', 'age': 33},
+            {'name': 'Emma', 'age': 21},
+            {'name': 'Rose', 'age': 88},
+            {'name': 'James', 'age': 59},
+            {'name': 'Olivia', 'age': 62},
+            {'name': 'Liam', 'age': 18},
+        ],
+        row_key='name',
+        pagination=3,
+    )
+    ui.input('Search by name/age').bind_value(table, 'filter')
+    ui.button('Show filtered/sorted rows', on_click=show_filtered_sorted_rows)
+    ui.button('Show computed rows', on_click=show_computed_rows)
+
+
 @doc.demo('Computed fields', '''
     You can use functions to compute the value of a column.
     The function receives the row as an argument.
@@ -264,7 +292,7 @@ def computed_fields():
     You can use scoped slots to conditionally format the content of a cell.
     See the [Quasar documentation](https://quasar.dev/vue-components/table#example--body-cell-slot)
     for more information about body-cell slots.
-    
+
     In this demo we use a `q-badge` to display the age in red if the person is under 21 years old.
     We use the `body-cell-age` slot to insert the `q-badge` into the `age` column.
     The ":color" attribute of the `q-badge` is set to "red" if the age is under 21, otherwise it is set to "green".

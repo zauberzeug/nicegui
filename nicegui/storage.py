@@ -15,8 +15,10 @@ from starlette.middleware.sessions import SessionMiddleware
 from starlette.requests import Request
 from starlette.responses import Response
 
-from . import background_tasks, context, core, json, observables
+from . import background_tasks, core, json, observables
+from .context import context
 from .logging import log
+from .observables import ObservableDict
 
 request_contextvar: contextvars.ContextVar[Optional[Request]] = contextvars.ContextVar('request_var', default=None)
 
@@ -47,9 +49,10 @@ class ReadOnlyDict(MutableMapping):
 
 class PersistentDict(observables.ObservableDict):
 
-    def __init__(self, filepath: Path, encoding: Optional[str] = None) -> None:
+    def __init__(self, filepath: Path, encoding: Optional[str] = None, *, indent: bool = False) -> None:
         self.filepath = filepath
         self.encoding = encoding
+        self.indent = indent
         try:
             data = json.loads(filepath.read_text(encoding)) if filepath.exists() else {}
         except Exception:
@@ -66,7 +69,7 @@ class PersistentDict(observables.ObservableDict):
 
         async def backup() -> None:
             async with aiofiles.open(self.filepath, 'w', encoding=self.encoding) as f:
-                await f.write(json.dumps(self))
+                await f.write(json.dumps(self, indent=self.indent))
         if core.loop:
             background_tasks.create_lazy(backup(), name=self.filepath.stem)
         else:
@@ -93,9 +96,11 @@ def set_storage_secret(storage_secret: Optional[str] = None) -> None:
     elif storage_secret is not None:
         core.app.add_middleware(RequestTrackingMiddleware)
         core.app.add_middleware(SessionMiddleware, secret_key=storage_secret)
+    Storage.secret = storage_secret
 
 
 class Storage:
+    secret: Optional[str] = None
 
     def __init__(self) -> None:
         self.path = Path(os.environ.get('NICEGUI_STORAGE_PATH', '.nicegui')).resolve()
@@ -118,7 +123,9 @@ class Storage:
             if self._is_in_auto_index_context():
                 raise RuntimeError('app.storage.browser can only be used with page builder functions '
                                    '(https://nicegui.io/documentation/page)')
-            raise RuntimeError('app.storage.browser needs a storage_secret passed in ui.run()')
+            if Storage.secret is None:
+                raise RuntimeError('app.storage.browser needs a storage_secret passed in ui.run()')
+            raise RuntimeError('app.storage.browser can only be used within a UI context')
         if request.state.responded:
             return ReadOnlyDict(
                 request.session,
@@ -138,7 +145,9 @@ class Storage:
             if self._is_in_auto_index_context():
                 raise RuntimeError('app.storage.user can only be used with page builder functions '
                                    '(https://nicegui.io/documentation/page)')
-            raise RuntimeError('app.storage.user needs a storage_secret passed in ui.run()')
+            if Storage.secret is None:
+                raise RuntimeError('app.storage.user needs a storage_secret passed in ui.run()')
+            raise RuntimeError('app.storage.user can only be used within a UI context')
         session_id = request.session['id']
         if session_id not in self._users:
             self._users[session_id] = PersistentDict(self.path / f'storage-user-{session_id}.json', encoding='utf-8')
@@ -147,7 +156,7 @@ class Storage:
     @staticmethod
     def _is_in_auto_index_context() -> bool:
         try:
-            return context.get_client().is_auto_index_client
+            return context.client.is_auto_index_client
         except RuntimeError:
             return False  # no client
 
@@ -157,12 +166,24 @@ class Storage:
         return self._general
 
     @property
+    def client(self) -> ObservableDict:
+        """A volatile storage that is only kept during the current connection to the client.
+
+        Like `app.storage.tab` data is unique per browser tab but is even more volatile as it is already discarded
+        when the connection to the client is lost through a page reload or a navigation.
+        """
+        if self._is_in_auto_index_context():
+            raise RuntimeError('app.storage.client can only be used with page builder functions '
+                               '(https://nicegui.io/documentation/page)')
+        return context.client.storage
+
+    @property
     def tab(self) -> observables.ObservableDict:
         """A volatile storage that is only kept during the current tab session."""
         if self._is_in_auto_index_context():
             raise RuntimeError('app.storage.tab can only be used with page builder functions '
                                '(https://nicegui.io/documentation/page)')
-        client = context.get_client()
+        client = context.client
         if not client.has_socket_connection:
             raise RuntimeError('app.storage.tab can only be used with a client connection; '
                                'see https://nicegui.io/documentation/page#wait_for_client_connection to await it')
@@ -183,6 +204,12 @@ class Storage:
         """Clears all storage."""
         self._general.clear()
         self._users.clear()
+        try:
+            client = context.client
+        except RuntimeError:
+            pass  # no client, could be a pytest
+        else:
+            client.storage.clear()
         self._tabs.clear()
         for filepath in self.path.glob('storage-*.json'):
             filepath.unlink()

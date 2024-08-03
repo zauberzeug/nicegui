@@ -24,7 +24,7 @@ class Leaflet(Element, component='leaflet.js'):
                  center: Tuple[float, float] = (0.0, 0.0),
                  zoom: int = 13,
                  *,
-                 options: Dict = {},
+                 options: Dict = {},  # noqa: B006
                  draw_control: Union[bool, Dict] = False,
                  ) -> None:
         """Leaflet map
@@ -47,7 +47,7 @@ class Leaflet(Element, component='leaflet.js'):
         self.zoom = zoom
         self._props['center'] = center
         self._props['zoom'] = zoom
-        self._props['options'] = options
+        self._props['options'] = {**options}
         self._props['draw_control'] = draw_control
 
         self.on('init', self._handle_init)
@@ -82,10 +82,12 @@ class Leaflet(Element, component='leaflet.js'):
         await self.client.connected()
         await event.wait()
 
-    def _handle_moveend(self, e: GenericEventArguments) -> None:
+    async def _handle_moveend(self, e: GenericEventArguments) -> None:
+        await asyncio.sleep(0.02)  # NOTE: wait for zoom to be updated as well
         self.center = e.args['center']
 
-    def _handle_zoomend(self, e: GenericEventArguments) -> None:
+    async def _handle_zoomend(self, e: GenericEventArguments) -> None:
+        await asyncio.sleep(0.02)  # NOTE: wait for center to be updated as well
         self.zoom = e.args['zoom']
 
     def run_method(self, name: str, *args: Any, timeout: float = 1, check_interval: float = 0.01) -> AwaitableResponse:

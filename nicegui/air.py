@@ -71,7 +71,7 @@ class Air:
         @self.relay.on('range-request')
         async def _handle_range_request(data: Dict[str, Any]) -> Dict[str, Any]:
             headers: Dict[str, Any] = data['headers']
-            url = list(u for u in core.app.urls if self.remote_url != u)[0] + data['path']
+            url = next(iter(u for u in core.app.urls if self.remote_url != u)) + data['path']
             data['params']['nicegui_chunk_size'] = 1024
             request = self.client.build_request(
                 data['method'],
@@ -122,6 +122,7 @@ class Air:
                 return False
             client = Client.instances[client_id]
             client.environ = data['environ']
+            client.tab_id = data['tab_id']
             client.on_air = True
             client.handle_handshake()
             return True

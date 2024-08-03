@@ -19,6 +19,25 @@ function parseElements(raw_elements) {
   );
 }
 
+function replaceUndefinedAttributes(elements, id) {
+  const element = elements[id];
+  if (element === undefined) {
+    return;
+  }
+  element.class ??= [];
+  element.style ??= {};
+  element.props ??= {};
+  element.text ??= null;
+  element.events ??= [];
+  element.component ??= null;
+  element.libraries ??= [];
+  element.slots = {
+    default: { ids: element.children || [] },
+    ...(element.slots ?? {}),
+  };
+  Object.values(element.slots).forEach((slot) => slot.ids.forEach((id) => replaceUndefinedAttributes(elements, id)));
+}
+
 function getElement(id) {
   const _id = id instanceof HTMLElement ? id.id : id;
   return mounted_app.$refs["r" + _id];
@@ -40,6 +59,19 @@ function runMethod(target, method_name, args) {
     return element.$refs.qRef[method_name](...args);
   } else {
     return eval(method_name)(element, ...args);
+  }
+}
+
+function getComputedProp(target, prop_name) {
+  if (typeof target === "object" && prop_name in target) {
+    return target[prop_name];
+  }
+  const element = getElement(target);
+  if (element === null || element === undefined) return;
+  if (prop_name in element) {
+    return element[prop_name];
+  } else if (prop_name in (element.$refs.qRef || [])) {
+    return element.$refs.qRef[prop_name];
   }
 }
 
@@ -110,15 +142,6 @@ function renderRecursively(elements, id) {
   if (element === undefined) {
     return;
   }
-
-  element.class ??= [];
-  element.style ??= {};
-  element.props ??= {};
-  element.text ??= null;
-  element.slots ??= {};
-  element.events ??= [];
-  element.component ??= null;
-  element.libraries ??= [];
 
   // @todo: Try avoid this with better handling of initial page load.
   if (element.component) loaded_components.add(element.component.name);
@@ -230,7 +253,7 @@ function download(src, filename, mediaType, prefix) {
   anchor.click();
   document.body.removeChild(anchor);
   if (typeof src !== "string") {
-    URL.revokeObjectURL(url);
+    URL.revokeObjectURL(anchor.href);
   }
 }
 
@@ -252,7 +275,19 @@ async function loadDependencies(element, prefix, version) {
   }
 }
 
+function createRandomUUID() {
+  try {
+    return crypto.randomUUID();
+  } catch (e) {
+    // https://stackoverflow.com/a/2117523/3419103
+    return "10000000-1000-4000-8000-100000000000".replace(/[018]/g, (c) =>
+      (+c ^ (crypto.getRandomValues(new Uint8Array(1))[0] & (15 >> (+c / 4)))).toString(16)
+    );
+  }
+}
+
 function createApp(elements, options) {
+  replaceUndefinedAttributes(elements, 0);
   return (app = Vue.createApp({
     data() {
       return {
@@ -277,7 +312,7 @@ function createApp(elements, options) {
         connect: () => {
           let tabId = sessionStorage.getItem("__nicegui_tab_id");
           if (!tabId) {
-            tabId = crypto.randomUUID();
+            tabId = createRandomUUID();
             sessionStorage.setItem("__nicegui_tab_id", tabId);
           }
           window.socket.emit("handshake", { client_id: window.clientId, tab_id: tabId }, (ok) => {
@@ -285,7 +320,7 @@ function createApp(elements, options) {
               console.log("reloading because handshake failed for clientId " + window.clientId);
               window.location.reload();
             }
-            document.getElementById("popup").style.opacity = 0;
+            document.getElementById("popup").ariaHidden = true;
           });
         },
         connect_error: (err) => {
@@ -295,13 +330,13 @@ function createApp(elements, options) {
           }
         },
         try_reconnect: async () => {
-          document.getElementById("popup").style.opacity = 1;
+          document.getElementById("popup").ariaHidden = false;
           await fetch(window.location.href, { headers: { "NiceGUI-Check": "try_reconnect" } });
           console.log("reloading because reconnect was requested");
           window.location.reload();
         },
         disconnect: () => {
-          document.getElementById("popup").style.opacity = 1;
+          document.getElementById("popup").ariaHidden = false;
         },
         update: async (msg) => {
           for (const [id, element] of Object.entries(msg)) {
@@ -313,6 +348,7 @@ function createApp(elements, options) {
               await loadDependencies(element, options.prefix, options.version);
             }
             this.elements[id] = element;
+            replaceUndefinedAttributes(this.elements, id);
           }
         },
         run_javascript: (msg) => runJavascript(msg["code"], msg["request_id"]),
@@ -322,7 +358,6 @@ function createApp(elements, options) {
           window.open(url, target);
         },
         download: (msg) => download(msg.src, msg.filename, msg.media_type, options.prefix),
-        notify: (msg) => Quasar.Notify.create(msg),
       };
       const socketMessageQueue = [];
       let isProcessingSocketMessage = false;

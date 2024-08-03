@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "nicegui"
-version = "1.4.20-dev"
+version = "1.4.30-dev"
 description = "Create web-based user interfaces with Python. The nice way."
 authors = ["Zauberzeug GmbH <info@zauberzeug.com>"]
 license = "MIT"
@@ -18,12 +18,12 @@ fastapi = ">=0.109.1,<0.110.0" # https://github.com/zauberzeug/nicegui/security/
 python-socketio = {extras = ["asyncio-client"], version = ">=5.10.0"} # version min: see https://github.com/zauberzeug/nicegui/issues/1809
 vbuild = ">=0.8.2"
 watchfiles = ">=0.18.1"
-jinja2 = "^3.1.3" # https://github.com/zauberzeug/nicegui/security/dependabot/24
+jinja2 = "^3.1.4" # https://github.com/zauberzeug/nicegui/security/dependabot/32
 python-multipart = ">=0.0.7"
 orjson = {version = ">=3.9.15", markers = "platform_machine != 'i386' and platform_machine != 'i686'"} # https://github.com/zauberzeug/nicegui/security/dependabot/29, orjson does not support 32bit
 itsdangerous = "^2.1.2"
 aiofiles = ">=23.1.0"
-pywebview = { version = "^4.4.0", optional = true }
+pywebview = { version = "^5.0.1", optional = true }
 plotly = { version = "^5.13.0", optional = true }
 matplotlib = { version = "^3.5.0", optional = true }
 httpx = ">=0.24.0"
@@ -32,6 +32,9 @@ ifaddr = ">=0.2.0"
 aiohttp = ">=3.9.2" # https://github.com/zauberzeug/nicegui/security/dependabot/25 and 26
 libsass = { version = "^0.23.0", optional = true }
 docutils = "^0.19"
+requests = ">=2.32.0" # https://github.com/zauberzeug/nicegui/security/dependabot/33
+urllib3 = ">=1.26.18,!=2.0.0,!=2.0.1,!=2.0.2,!=2.0.3,!=2.0.4,!=2.0.5,!=2.0.6,!=2.0.7,!=2.1.0,!=2.2.0,!=2.2.1" # https://github.com/zauberzeug/nicegui/security/dependabot/34
+certifi = ">=2024.07.04" # https://github.com/zauberzeug/nicegui/security/dependabot/35
 
 [tool.poetry.extras]
 native = ["pywebview"]
@@ -44,11 +47,11 @@ sass = ["libsass"]
 icecream = "^2.1.0"
 autopep8 = "^1.5.7"
 debugpy = "^1.3.0"
-pytest-selenium = "^4.0.0"
-pytest-asyncio = ">=0.19.0"
-pytest = ">=6.2.5,<8"
+pytest-selenium = "^4.1.0"
+pytest-asyncio = ">=0.23.0"
+pytest-watcher = "^0.4.2"
+pytest = "^8.2.2"
 itsdangerous = "^2.1.2" # required by SessionMiddleware (see https://fastapi.tiangolo.com/?h=itsdangerous#optional-dependencies)
-isort = "^5.11.4"
 pandas = "^2.0.0"
 secure = ">=0.3.0"
 webdriver-manager = "^3.8.6"
@@ -57,9 +60,13 @@ numpy = [
     {version = "^1.26.0", python = ">=3.9,<3.13"}
 ]
 selenium = "^4.11.2"
-beautifulsoup4 = "^4.12.2"
-urllib3 = ">=1.26.18,^1.26 || >=2.0.7" # https://github.com/zauberzeug/nicegui/security/dependabot/23
 pyecharts = "^2.0.4"
+ruff = ">=0.3.5"
+pre-commit = ">=3.5.0"
+isort = "^5.11"
+
+[tool.poetry.scripts]
+nicegui-pack = "nicegui.scripts.pack:main"
 
 [build-system]
 requires = [
@@ -71,6 +78,55 @@ build-backend = "poetry.core.masonry.api"
 [tool.pytest.ini_options]
 addopts = "--driver Chrome"
 asyncio_mode = "auto"
+testpaths = ["tests"]
 
 [tool.mypy]
+python_version = "3.8"
+
+[[tool.mypy.overrides]]
+module = [
+    "icecream",
+    "markdown2",
+    "matplotlib.*",
+    "nicegui_highcharts",
+    "plotly.*",
+    "pyecharts.*",
+    "sass",
+    "socketio.*",
+    "vbuild",
+    "webview.*", # can be removed with next pywebview release
+]
 ignore_missing_imports = true
+
+[tool.ruff]
+indent-width = 4
+line-length = 120
+
+[tool.ruff.lint]
+# See complete list: https://docs.astral.sh/ruff/rules/
+select = [
+    "I",  # isort
+    "E",  # pycodestyle
+    "W",  # pycodestyle
+    "B",  # bugbear
+    "F",  # pyflakes
+    "UP", # pyupgrade
+    "RUF", # ruff
+    "PL", # pylint
+]
+fixable = [
+    "I",  # isort
+]
+ignore = [
+    "E501", # line too long
+    "UP006", # use pipe for union type annotation
+    "UP007", # use pipe for union type annotation
+    "PLR0911", # too many return statements
+    "PLR0912", # too many branches
+    "PLR0913", # too many arguments
+    "PLR0915", # too many statements
+    "PLR2004", # magic value comparison
+]
+exclude = [
+    "website/documentation/content/*",
+]

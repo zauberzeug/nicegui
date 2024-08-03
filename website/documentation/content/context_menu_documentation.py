@@ -10,7 +10,7 @@ def main_demo() -> None:
             ui.menu_item('Flip horizontally')
             ui.menu_item('Flip vertically')
             ui.separator()
-            ui.menu_item('Reset')
+            ui.menu_item('Reset', auto_close=False)
 
 
 doc.reference(ui.context_menu)

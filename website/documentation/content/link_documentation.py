@@ -48,7 +48,7 @@ def link_to_other_page():
 
 @doc.demo('Link from images and other elements', '''
     By nesting elements inside a link you can make the whole element clickable.
-    This works with all elements but is most useful for non-interactive elements like 
+    This works with all elements but is most useful for non-interactive elements like
     [ui.image](/documentation/image), [ui.avatar](/documentation/image) etc.
 ''')
 def link_from_elements():

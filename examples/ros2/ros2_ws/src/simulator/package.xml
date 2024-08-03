@@ -6,7 +6,7 @@
   <description>A very simple simulator which receives geometry_msgs/Twist messages and publishes geometry_msgs/Pose messages on the "pose" topic.</description>
   <maintainer email="nicegui@zauberzeug.com">Zauberzeug GmbH</maintainer>
   <license>MIT License</license>
-  
+
   <depend>rclpy</depend>
   <depend>geometry_msgs</depend>
 

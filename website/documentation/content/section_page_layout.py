@@ -1,11 +1,31 @@
 from nicegui import ui
 
-from . import (card_documentation, carousel_documentation, column_documentation, context_menu_documentation,
-               dialog_documentation, doc, expansion_documentation, grid_documentation, list_documentation,
-               menu_documentation, notification_documentation, notify_documentation, pagination_documentation,
-               row_documentation, scroll_area_documentation, separator_documentation, space_documentation,
-               splitter_documentation, stepper_documentation, tabs_documentation, timeline_documentation,
-               tooltip_documentation)
+from . import (
+    card_documentation,
+    carousel_documentation,
+    column_documentation,
+    context_menu_documentation,
+    dialog_documentation,
+    doc,
+    expansion_documentation,
+    grid_documentation,
+    list_documentation,
+    menu_documentation,
+    notification_documentation,
+    notify_documentation,
+    pagination_documentation,
+    row_documentation,
+    scroll_area_documentation,
+    separator_documentation,
+    skeleton_documentation,
+    space_documentation,
+    splitter_documentation,
+    stepper_documentation,
+    tabs_documentation,
+    teleport_documentation,
+    timeline_documentation,
+    tooltip_documentation,
+)
 
 doc.title('Page *Layout*')
 
@@ -44,7 +64,7 @@ doc.intro(list_documentation)
     ```
 
     Alternatively, you can remove individual elements by calling
-    
+
     - `container.remove(element: Element)`,
     - `container.remove(index: int)`, or
     - `element.delete()`.
@@ -62,10 +82,12 @@ def clear_containers_demo():
     ui.button('Clear', on_click=container.clear)
 
 
+doc.intro(teleport_documentation)
 doc.intro(expansion_documentation)
 doc.intro(scroll_area_documentation)
 doc.intro(separator_documentation)
 doc.intro(space_documentation)
+doc.intro(skeleton_documentation)
 doc.intro(splitter_documentation)
 doc.intro(tabs_documentation)
 doc.intro(stepper_documentation)

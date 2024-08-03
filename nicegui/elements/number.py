@@ -72,7 +72,7 @@ class Number(ValidationElement, DisableableElement):
 
     @min.setter
     def min(self, value: float) -> None:
-        if self._props['min'] == value:
+        if self._props.get('min') == value:
             return
         self._props['min'] = value
         self.sanitize()
@@ -85,7 +85,7 @@ class Number(ValidationElement, DisableableElement):
 
     @max.setter
     def max(self, value: float) -> None:
-        if self._props['max'] == value:
+        if self._props.get('max') == value:
             return
         self._props['max'] = value
         self.sanitize()
@@ -116,6 +116,7 @@ class Number(ValidationElement, DisableableElement):
         if self.precision is not None:
             value = float(round(value, self.precision))
         self.set_value(float(self.format % value) if self.format else value)
+        self.update()
 
     def _event_args_to_value(self, e: GenericEventArguments) -> Any:
         if not e.args:
@@ -133,6 +134,3 @@ class Number(ValidationElement, DisableableElement):
         if value == '':
             return 0
         return self.format % float(value)
-
-    def _value_to_event_value(self, value: Any) -> Any:
-        return float(value) if value else 0

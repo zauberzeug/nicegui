@@ -30,14 +30,14 @@ def map_style() -> None:
         options={
             'maxZoom': 17,
             'attribution':
-                'Map data: &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, <a href="http://viewfinderpanoramas.org">SRTM</a> | '
+                'Map data: &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, <a href="https://viewfinderpanoramas.org/">SRTM</a> | '
                 'Map style: &copy; <a href="https://opentopomap.org">OpenTopoMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>)'
         },
     )
 
 
 @doc.demo('Add Markers on Click', '''
-    You can add markers to the map with `marker`. 
+    You can add markers to the map with `marker`.
     The `center` argument is a tuple of latitude and longitude.
     This demo adds markers by clicking on the map.
     Note that the "map-click" event refers to the click event of the map object,
@@ -139,7 +139,7 @@ def run_layer_methods() -> None:
     ui.button('Hide', on_click=lambda: marker.run_method('setOpacity', 0.3))
     ui.button('Show', on_click=lambda: marker.run_method('setOpacity', 1.0))
 
-    icon = 'L.icon({iconUrl: "http://leafletjs.com/examples/custom-icons/leaf-green.png"})'
+    icon = 'L.icon({iconUrl: "https://leafletjs.com/examples/custom-icons/leaf-green.png"})'
     ui.button('Change icon', on_click=lambda: marker.run_method(':setIcon', icon))
 
 

@@ -4,17 +4,20 @@ import threading
 import time
 from contextlib import contextmanager
 from pathlib import Path
-from typing import Generator, List, Optional, Union
+from typing import Callable, Generator, List, Optional, Union, overload
 
 import pytest
 from selenium import webdriver
-from selenium.common.exceptions import (ElementNotInteractableException, NoSuchElementException,
-                                        StaleElementReferenceException)
+from selenium.common.exceptions import (
+    ElementNotInteractableException,
+    NoSuchElementException,
+    StaleElementReferenceException,
+)
 from selenium.webdriver import ActionChains
 from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webelement import WebElement
 
-from nicegui import app, ui
+from nicegui import app, core, ui
 from nicegui.server import Server
 
 
@@ -30,6 +33,7 @@ class Screen:
         self.ui_run_kwargs = {'port': self.PORT, 'show': False, 'reload': False}
         self.connected = threading.Event()
         app.on_connect(self.connected.set)
+        self.url = f'http://localhost:{self.PORT}'
 
     def start_server(self) -> None:
         """Start the webserver in a separate thread. This is the equivalent of `ui.run()` in a normal script."""
@@ -41,7 +45,7 @@ class Screen:
         """Check if the browser is open."""
         # https://stackoverflow.com/a/66150779/3419103
         try:
-            self.selenium.current_url  # pylint: disable=pointless-statement
+            self.selenium.current_url  # pylint: disable=pointless-statement # noqa: B018
             return True
         except Exception as e:
             print(e)
@@ -54,6 +58,8 @@ class Screen:
         Server.instance.should_exit = True
         if self.server_thread:
             self.server_thread.join()
+        if core.loop:
+            assert core.loop.is_closed()
 
     def open(self, path: str, timeout: float = 3.0) -> None:
         """Try to open the page until the server is ready or we time out.
@@ -66,7 +72,7 @@ class Screen:
         self.connected.clear()
         while True:
             try:
-                self.selenium.get(f'http://localhost:{self.PORT}{path}')
+                self.selenium.get(self.url + path)
                 self.selenium.find_element(By.XPATH, '//body')  # ensure page and JS are loaded
                 self.connected.wait(1)  # Ensure that the client has connected to the API
                 break
@@ -99,17 +105,35 @@ class Screen:
             return
         self.find(text)
 
-    def wait_for(self, text: str) -> None:
+    @overload
+    def wait_for(self, target: str) -> None:
         """Wait until the page contains the given text."""
-        self.should_contain(text)
+
+    @overload
+    def wait_for(self, target: Callable[..., bool]) -> None:
+        """Wait until the given condition is met."""
+
+    def wait_for(self, target: Union[str, Callable[..., bool]]) -> None:
+        """Wait until the page contains the given text or the given condition is met."""
+        if isinstance(target, str):
+            self.should_contain(target)
+        if callable(target):
+            deadline = time.time() + self.IMPLICIT_WAIT
+            while time.time() < deadline:
+                if target():
+                    return
+                self.wait(0.1)
+            raise AssertionError('Condition not met')
 
     def should_not_contain(self, text: str, wait: float = 0.5) -> None:
         """Assert that the page does not contain the given text."""
         assert self.selenium.title != text
-        self.selenium.implicitly_wait(wait)
-        with pytest.raises(AssertionError):
-            self.find(text)
-        self.selenium.implicitly_wait(self.IMPLICIT_WAIT)
+        try:
+            self.selenium.implicitly_wait(wait)
+            with pytest.raises(AssertionError):
+                self.find(text)
+        finally:
+            self.selenium.implicitly_wait(self.IMPLICIT_WAIT)
 
     def should_contain_input(self, text: str) -> None:
         """Assert that the page contains an input with the given value."""
@@ -153,7 +177,7 @@ class Screen:
 
     def type(self, text: str) -> None:
         """Type the given text into the currently focused element."""
-        self.selenium.execute_script("window.focus();")
+        self.selenium.execute_script('window.focus();')
         self.wait(0.2)
         self.selenium.switch_to.active_element.send_keys(text)
 
@@ -162,14 +186,15 @@ class Screen:
         try:
             query = f'//*[not(self::script) and not(self::style) and text()[contains(., "{text}")]]'
             element = self.selenium.find_element(By.XPATH, query)
-            try:
-                if not element.is_displayed():
-                    self.wait(0.1)  # HACK: repeat check after a short delay to avoid timing issue on fast machines
-                    if not element.is_displayed():
-                        raise AssertionError(f'Found "{text}" but it is hidden')
-            except StaleElementReferenceException as e:
-                raise AssertionError(f'Found "{text}" but it is hidden') from e
-            return element
+            # HACK: repeat check after a short delay to avoid timing issue on fast machines
+            for _ in range(5):
+                try:
+                    if element.is_displayed():
+                        return element
+                except StaleElementReferenceException:
+                    pass
+                self.wait(0.2)
+            raise AssertionError(f'Found "{text}" but it is hidden')
         except NoSuchElementException as e:
             raise AssertionError(f'Could not find "{text}"') from e
 
@@ -197,6 +222,10 @@ class Screen:
     def find_all_by_tag(self, name: str) -> List[WebElement]:
         """Find all elements with the given HTML tag."""
         return self.selenium.find_elements(By.TAG_NAME, name)
+
+    def find_by_css(self, selector: str) -> WebElement:
+        """Find the element with the given CSS selector."""
+        return self.selenium.find_element(By.CSS_SELECTOR, selector)
 
     def render_js_logs(self) -> str:
         """Render the browser console logs as a string."""

@@ -1,6 +1,6 @@
 import asyncio
 from dataclasses import dataclass
-from typing import Any, Callable, Dict, List, Optional, Union
+from typing import Any, Callable, Dict, List, Literal, Optional, Tuple, Union
 
 from typing_extensions import Self
 
@@ -8,13 +8,20 @@ from .. import binding
 from ..awaitable_response import AwaitableResponse, NullResponse
 from ..dataclasses import KWONLY_SLOTS
 from ..element import Element
-from ..events import (GenericEventArguments, SceneClickEventArguments, SceneClickHit, SceneDragEventArguments,
-                      handle_event)
+from ..events import (
+    GenericEventArguments,
+    SceneClickEventArguments,
+    SceneClickHit,
+    SceneDragEventArguments,
+    handle_event,
+)
 from .scene_object3d import Object3D
 
 
 @dataclass(**KWONLY_SLOTS)
 class SceneCamera:
+    type: Literal['perspective', 'orthographic']
+    params: Dict[str, float]
     x: float = 0
     y: float = -3
     z: float = 5
@@ -65,11 +72,13 @@ class Scene(Element,
     def __init__(self,
                  width: int = 400,
                  height: int = 300,
-                 grid: bool = True,
+                 grid: Union[bool, Tuple[int, int]] = True,
+                 camera: Optional[SceneCamera] = None,
                  on_click: Optional[Callable[..., Any]] = None,
                  on_drag_start: Optional[Callable[..., Any]] = None,
                  on_drag_end: Optional[Callable[..., Any]] = None,
                  drag_constraints: str = '',
+                 background_color: str = '#eee',
                  ) -> None:
         """3D Scene
 
@@ -80,19 +89,24 @@ class Scene(Element,
 
         :param width: width of the canvas
         :param height: height of the canvas
-        :param grid: whether to display a grid
+        :param grid: whether to display a grid (boolean or tuple of ``size`` and ``divisions`` for `Three.js' GridHelper <https://threejs.org/docs/#api/en/helpers/GridHelper>`_, default: 100x100)
+        :param camera: camera definition, either instance of ``ui.scene.perspective_camera`` (default) or ``ui.scene.orthographic_camera``
         :param on_click: callback to execute when a 3D object is clicked
         :param on_drag_start: callback to execute when a 3D object is dragged
         :param on_drag_end: callback to execute when a 3D object is dropped
         :param drag_constraints: comma-separated JavaScript expression for constraining positions of dragged objects (e.g. ``'x = 0, z = y / 2'``)
+        :param background_color: background color of the scene (default: "#eee")
         """
         super().__init__()
         self._props['width'] = width
         self._props['height'] = height
         self._props['grid'] = grid
+        self._props['background_color'] = background_color
+        self.camera = camera or self.perspective_camera()
+        self._props['camera_type'] = self.camera.type
+        self._props['camera_params'] = self.camera.params
         self.objects: Dict[str, Object3D] = {}
         self.stack: List[Union[Object3D, SceneObject]] = [SceneObject()]
-        self.camera: SceneCamera = SceneCamera()
         self._click_handlers = [on_click] if on_click else []
         self._drag_start_handlers = [on_drag_start] if on_drag_start else []
         self._drag_end_handlers = [on_drag_end] if on_drag_end else []
@@ -118,6 +132,29 @@ class Scene(Element,
         self._drag_end_handlers.append(callback)
         return self
 
+    @staticmethod
+    def perspective_camera(*, fov: float = 75, near: float = 0.1, far: float = 1000) -> SceneCamera:
+        """Create a perspective camera.
+
+        :param fov: vertical field of view in degrees
+        :param near: near clipping plane
+        :param far: far clipping plane
+        """
+        return SceneCamera(type='perspective', params={'fov': fov, 'near': near, 'far': far})
+
+    @staticmethod
+    def orthographic_camera(*, size: float = 10, near: float = 0.1, far: float = 1000) -> SceneCamera:
+        """Create a orthographic camera.
+
+        The size defines the vertical size of the view volume, i.e. the distance between the top and bottom clipping planes.
+        The left and right clipping planes are set such that the aspect ratio matches the viewport.
+
+        :param size: vertical size of the view volume
+        :param near: near clipping plane
+        :param far: far clipping plane
+        """
+        return SceneCamera(type='orthographic', params={'size': size, 'near': near, 'far': far})
+
     def __enter__(self) -> Self:
         Object3D.current_scene = self
         super().__enter__()
@@ -133,8 +170,7 @@ class Scene(Element,
         self.is_initialized = True
         with self.client.individual_target(e.args['socket_id']):
             self.move_camera(duration=0)
-            for obj in self.objects.values():
-                obj.send()
+            self.run_method('init_objects', [obj.data for obj in self.objects.values()])
 
     async def initialized(self) -> None:
         """Wait until the scene is initialized."""

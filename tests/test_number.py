@@ -7,14 +7,15 @@ from nicegui.testing import Screen
 
 
 def test_number_input(screen: Screen):
-    ui.number('Number')
+    ui.number('Number', value=42)
     ui.button('Button')
 
     screen.open('/')
-    element = screen.selenium.find_element(By.XPATH, '//*[@aria-label="Number"]')
-    element.send_keys('42')
-    screen.click('Button')
     screen.should_contain_input('42')
+    element = screen.selenium.find_element(By.XPATH, '//*[@aria-label="Number"]')
+    element.send_keys('00')
+    screen.click('Button')
+    screen.should_contain_input('4200')
 
 
 def test_apply_format_on_blur(screen: Screen):
@@ -28,6 +29,11 @@ def test_apply_format_on_blur(screen: Screen):
     element.send_keys('789')
     screen.click('Button')
     screen.should_contain_input('3.1417')
+
+    element.click()
+    element.send_keys(Keys.BACKSPACE * 10 + '2')
+    screen.click('Button')
+    screen.should_contain_input('2.0000')
 
 
 def test_max_value(screen: Screen):
@@ -125,3 +131,25 @@ def test_changing_limits(screen: Screen):
 
     screen.click('Step up')
     screen.should_contain_input('1')
+
+
+def test_none_values(screen: Screen):
+    n = ui.number('Number', on_change=lambda e: ui.label(f'event: {e.value}'))
+    ui.label().bind_text_from(n, 'value', lambda value: f'model: {value}')
+
+    screen.open('/')
+    element = screen.selenium.find_element(By.XPATH, '//*[@aria-label="Number"]')
+    element.send_keys('0')
+    screen.should_contain_input('0')
+    screen.should_contain('model: 0')
+    screen.should_contain('event: 0')
+
+    element.send_keys(Keys.BACKSPACE)
+    screen.should_contain_input('')
+    screen.should_contain('model: None')
+    screen.should_contain('event: None')
+
+    element.send_keys('1')
+    screen.should_contain_input('1')
+    screen.should_contain('model: 1')
+    screen.should_contain('event: 1')

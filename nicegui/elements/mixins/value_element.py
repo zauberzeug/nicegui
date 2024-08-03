@@ -1,4 +1,4 @@
-from typing import Any, Callable, Optional, cast
+from typing import Any, Callable, List, Optional, cast
 
 from typing_extensions import Self
 
@@ -13,7 +13,7 @@ class ValueElement(Element):
 
     LOOPBACK: Optional[bool] = True
     """Whether to set the new value directly on the client or after getting an update from the server.
-    
+
     - ``True``: The value is updated by sending a change event to the server which responds with an update.
     - ``False``: The value is updated by setting the VALUE_PROP directly on the client.
     - ``None``: The value is updated automatically by the Vue element.
@@ -33,7 +33,7 @@ class ValueElement(Element):
         self.set_value(value)
         self._props[self.VALUE_PROP] = self._value_to_model_value(value)
         self._props['loopback'] = self.LOOPBACK
-        self._change_handlers: list[Callable[..., Any]] = [on_value_change] if on_value_change else []
+        self._change_handlers: List[Callable[..., Any]] = [on_value_change] if on_value_change else []
 
         def handle_change(e: GenericEventArguments) -> None:
             self._send_update_on_value_change = self.LOOPBACK is True

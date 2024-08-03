@@ -17,6 +17,7 @@ import shutil
 import tarfile
 from argparse import ArgumentParser
 from pathlib import Path
+from typing import Dict, List
 
 import requests
 
@@ -55,16 +56,18 @@ def download_buffered(url: str) -> Path:
 DEPENDENCIES = (root_path / 'DEPENDENCIES.md').open('w')
 DEPENDENCIES.write('# Included Web Dependencies\n\n')
 KNOWN_LICENSES = {
+    'UNKNOWN': 'UNKNOWN',
     'MIT': 'https://opensource.org/licenses/MIT',
     'ISC': 'https://opensource.org/licenses/ISC',
     'Apache-2.0': 'https://opensource.org/licenses/Apache-2.0',
     'BSD-2-Clause': 'https://opensource.org/licenses/BSD-2-Clause',
+    'BSD-3-Clause': 'https://opensource.org/licenses/BSD-3-Clause',
 }
 
 # Create a hidden folder to work in.
 tmp = cleanup(root_path / '.npm')
 
-dependencies: dict[str, dict] = json.loads((root_path / 'npm.json').read_text())
+dependencies: Dict[str, dict] = json.loads((root_path / 'npm.json').read_text())
 for key, dependency in dependencies.items():
     if names is not None and key not in names:
         continue
@@ -77,7 +80,11 @@ for key, dependency in dependencies.items():
     npm_data = json.loads(download_buffered(f'https://registry.npmjs.org/{package_name}').read_text())
     npm_version = dependency.get('version') or dependency.get('version', npm_data['dist-tags']['latest'])
     npm_tarball = npm_data['versions'][npm_version]['dist']['tarball']
-    license_ = npm_data['versions'][npm_version]['license']
+    license_ = 'UNKNOWN'
+    if 'license' in npm_data['versions'][npm_version]:
+        license_ = npm_data['versions'][npm_version]['license']
+    elif package_name == 'echarts-gl':
+        license_ = 'BSD-3-Clause'
     print(f'{key}: {npm_version} - {npm_tarball} ({license_})')
     DEPENDENCIES.write(f'- {key}: {npm_version} ([{license_}]({KNOWN_LICENSES.get(license_, license_)}))\n')
 
@@ -100,7 +107,7 @@ for key, dependency in dependencies.items():
     tgz_download = download_buffered(npm_tarball)
     shutil.copyfile(tgz_download, tgz_file)
     with tarfile.open(tgz_file) as archive:
-        to_be_extracted: list[tarfile.TarInfo] = []
+        to_be_extracted: List[tarfile.TarInfo] = []
         for tarinfo in archive.getmembers():
             for keep in dependency['keep']:
                 if re.match(f'^{keep}$', tarinfo.name):

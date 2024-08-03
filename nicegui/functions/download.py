@@ -1,7 +1,8 @@
 from pathlib import Path
 from typing import Optional, Union
 
-from .. import context, core, helpers
+from .. import core, helpers
+from ..context import context
 
 
 def download(src: Union[str, Path, bytes], filename: Optional[str] = None, media_type: str = '') -> None:
@@ -18,4 +19,4 @@ def download(src: Union[str, Path, bytes], filename: Optional[str] = None, media
             src = core.app.add_static_file(local_file=src, single_use=True)
         else:
             src = str(src)
-    context.get_client().download(src, filename, media_type)
+    context.client.download(src, filename, media_type)

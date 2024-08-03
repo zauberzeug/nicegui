@@ -2,9 +2,9 @@ from typing import Any, Callable, Dict, Iterator, List, Literal, Optional, Set
 
 from typing_extensions import Self
 
+from .. import helpers
 from ..element import Element
 from ..events import GenericEventArguments, ValueChangeEventArguments, handle_event
-from ..logging import log
 
 
 class Tree(Element):
@@ -124,6 +124,6 @@ class Tree(Element):
         if 'default-expand-all' in self._props:
             # https://github.com/zauberzeug/nicegui/issues/1385
             del self._props['default-expand-all']
-            log.warning('The prop "default-expand-all" is not supported by `ui.tree`.\n'
-                        'Use ".expand()" instead.')
+            helpers.warn_once('The prop "default-expand-all" is not supported by `ui.tree`.\n'
+                              'Use ".expand()" instead.')
         return self

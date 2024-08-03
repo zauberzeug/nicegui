@@ -78,17 +78,17 @@ def test_setting_visibility(screen: Screen, once: bool):
 
 
 def test_awaiting_coroutine(screen: Screen):
-    user = {'name': 'John Doe'}
+    user = {'name': 'Alice'}
 
     async def update_user():
         await asyncio.sleep(0.1)
-        user['name'] = 'Jane Doe'
+        user['name'] = 'Bob'
 
-    ui.timer(1, update_user)
+    ui.timer(0.5, update_user)
 
     screen.open('/')
     screen.wait(1)
-    assert user['name'] == 'Jane Doe'
+    assert user['name'] == 'Bob'
 
 
 def test_timer_on_deleted_container(screen: Screen):
@@ -105,3 +105,27 @@ def test_timer_on_deleted_container(screen: Screen):
     count = state['count']
     screen.wait(0.5)
     assert state['count'] == count, 'timer is not running anymore after deleting the container'
+
+
+def test_different_callbacks(screen: Screen):
+    def sync_function():
+        ui.label('a synchronous function')
+
+    async def async_function():
+        await asyncio.sleep(0.1)
+        ui.label('an asynchronous function')
+
+    async def async_lambda(msg: str):
+        await asyncio.sleep(0.1)
+        ui.label(f'an asynchronous lambda: {msg}')
+
+    ui.timer(0.1, sync_function, once=True)
+    ui.timer(0.1, async_function, once=True)
+    ui.timer(0.1, lambda: ui.label('a synchronous lambda'), once=True)
+    ui.timer(0.1, lambda: async_lambda('Hi!'), once=True)
+
+    screen.open('/')
+    screen.should_contain('a synchronous function')
+    screen.should_contain('an asynchronous function')
+    screen.should_contain('a synchronous lambda')
+    screen.should_contain('an asynchronous lambda: Hi!')

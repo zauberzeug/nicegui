@@ -25,9 +25,9 @@ We're always looking for bug fixes, performance improvements, and new features.
 
 The simplest way to setup a fully functioning development environment is to start our Dev Container in VS Code:
 
-1. Ensure you have VS Code, Docker and the Remote-Containers extension installed.
+1. Ensure you have VS Code, Docker and the Dev Containers extension installed.
 2. Open the project root directory in VS Code.
-3. Press `F1`, type `Remote-Containers: Open Folder in Container`, and hit enter (or use the bottom-left corner icon in VS Code to reopen in container).
+3. Press `F1`, type `Dev Containers: Open Folder in Container`, and hit enter (or use the bottom-left corner icon in VS Code to reopen in container).
 4. Wait until image has been build.
 5. Happy coding.
 
@@ -91,20 +91,46 @@ There are cases where one or the other arrangement of, e.g., function arguments 
 Then we like the flexibility to either put all arguments on separate lines or only put the lengthy event handler
 on a second line and leave the other arguments as they are.
 
-### Imports
+### Linting
 
-We use `isort` to automatically sort imports.
+We use [pre-commit](https://github.com/pre-commit/pre-commit) to make sure the coding style is enforced.
+You first need to install pre-commit and the corresponding git commit hooks by running the following commands:
 
-### Single vs Double Quotes
+```bash
+python3 -m pip install pre-commit
+pre-commit install
+```
 
-Regarding single or double quotes: [PEP 8](https://peps.python.org/pep-0008/) doesn't give any recommendation, so we simply chose single quotes and sticked with it.
-On qwerty keyboards it's a bit easier to type, is visually less cluttered, and it works well for strings containing double quotes from the English language.
+After that you can make sure your code satisfies the coding style by running the following command:
 
-### F-Strings
+```bash
+pre-commit run --all-files
+```
 
-We use f-strings where ever possible because they are generally more readable - once you get used to them.
-There are only a few places in the code base where performance really matters and f-strings might not be the best choice.
-These places should be marked with a `# NOTE: ...` comment when diverging from f-string usage.
+> [!TIP]
+> The command may fail with
+>
+> > RuntimeError: failed to find interpreter for Builtin discover of python_spec='python3.8'
+>
+> You will need to install Python 3.8 and make sure it is available in your `PATH`.
+
+These checks will also run automatically before every commit:
+
+- Run `ruff check . --fix` to check the code and sort imports.
+- Remove trailing whitespace.
+- Fix end of files.
+- Enforce single quotes.
+
+> [!NOTE]
+>
+> **Regarding single or double quotes:** > [PEP 8](https://peps.python.org/pep-0008/) doesn't give any recommendation, so we simply chose single quotes and sticked with it.
+> On qwerty keyboards it's a bit easier to type, is visually less cluttered, and it works well for strings containing double quotes from the English language.
+
+> [!NOTE]
+>
+> **We use f-strings** where ever possible because they are generally more readable - once you get used to them.
+> There are only a few places in the code base where performance really matters and f-strings might not be the best choice.
+> These places should be marked with a `# NOTE: ...` comment when diverging from f-string usage.
 
 ## Running tests
 
@@ -146,7 +172,7 @@ Please help us grow the number of insightful demos by following these easy steps
 1. Clone the NiceGUI repository and launch `main.py` in the root directory.
 2. Run `python3 -m pip install -e .` in the repository as explained above.
 3. In the newly opened browser window you can navigate to the documentation page where you want to change something.
-4. Open the code in your editor (for example [website/more_documentation/table_documentation.py](https://github.com/zauberzeug/nicegui/blob/main/website/more_documentation/table_documentation.py)).
+4. Open the code in your editor (for example [website/documentation/content/table_documentation.py](https://github.com/zauberzeug/nicegui/blob/main/website/documentation/content/table_documentation.py)).
 5. In the `more()` function insert an inner function containing your demo code.
 6. Add the `@text_demo` decorator to explain the demo.
 7. Make sure the result looks as expected in the rendered documentation.

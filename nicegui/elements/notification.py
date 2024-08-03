@@ -1,8 +1,11 @@
-from typing import Any, Literal, Optional, Union
+import asyncio
+from typing import Any, Callable, Dict, Literal, Optional, Union
 
-from .. import context
+from typing_extensions import Self
+
+from ..context import context
 from ..element import Element
-from .timer import Timer
+from ..events import UiEventArguments, handle_event
 
 NotificationPosition = Literal[
     'top-left',
@@ -37,6 +40,8 @@ class Notification(Element, component='notification.js'):
                  icon: Optional[str] = None,
                  spinner: bool = False,
                  timeout: Optional[float] = 5.0,
+                 on_dismiss: Optional[Callable] = None,
+                 options: Optional[Dict] = None,
                  **kwargs: Any,
                  ) -> None:
         """Notification element
@@ -54,39 +59,45 @@ class Notification(Element, component='notification.js'):
         :param icon: optional name of an icon to be displayed in the notification (default: `None`)
         :param spinner: display a spinner in the notification (default: False)
         :param timeout: optional timeout in seconds after which the notification is dismissed (default: 5.0)
+        :param on_dismiss: optional callback to be invoked when the notification is dismissed
+        :param options: optional dictionary with all options (overrides all other arguments)
 
         Note: You can pass additional keyword arguments according to `Quasar's Notify API <https://quasar.dev/quasar-plugins/notify#notify-api>`_.
         """
-        with context.get_client().layout:
+        with context.client.layout:
             super().__init__()
-        self._props['options'] = {
-            'message': str(message),
-            'position': position,
-            'multiLine': multi_line,
-            'spinner': spinner,
-            'closeBtn': close_button,
-            'timeout': (timeout or 0) * 1000,
-            'group': False,
-            'attrs': {'data-id': f'nicegui-dialog-{self.id}'},
-        }
-        if type is not None:
-            self._props['options']['type'] = type
-        if color is not None:
-            self._props['options']['color'] = color
-        if icon is not None:
-            self._props['options']['icon'] = icon
-        self._props['options'].update(kwargs)
-        with self:
-            def delete():
+        if options:
+            self._props['options'] = options
+        else:
+            self._props['options'] = {
+                'message': str(message),
+                'position': position,
+                'multiLine': multi_line,
+                'spinner': spinner,
+                'closeBtn': close_button,
+                'timeout': (timeout or 0) * 1000,
+                'group': False,
+                'attrs': {'data-id': f'nicegui-dialog-{self.id}'},
+            }
+            if type is not None:
+                self._props['options']['type'] = type
+            if color is not None:
+                self._props['options']['color'] = color
+            if icon is not None:
+                self._props['options']['icon'] = icon
+            self._props['options'].update(kwargs)
+
+        if on_dismiss:
+            self.on_dismiss(on_dismiss)
+
+        async def handle_dismiss() -> None:
+            if self.client.is_auto_index_client:
+                self.dismiss()
+                await asyncio.sleep(1.0)  # NOTE: sent dismiss message to all browsers before deleting the element
+            if not self._deleted:
                 self.clear()
                 self.delete()
-
-            async def try_delete():
-                query = f'''!!document.querySelector("[data-id='nicegui-dialog-{self.id}']")'''
-                if not await self.client.run_javascript(query):
-                    delete()
-
-            Timer(1.0, try_delete)
+        self.on('dismiss', handle_dismiss)
 
     @property
     def message(self) -> str:
@@ -176,6 +187,11 @@ class Notification(Element, component='notification.js'):
     def close_button(self, value: Union[bool, str]) -> None:
         self._props['options']['closeBtn'] = value
         self.update()
+
+    def on_dismiss(self, callback: Callable[..., Any]) -> Self:
+        """Add a callback to be invoked when the notification is dismissed."""
+        self.on('dismiss', lambda _: handle_event(callback, UiEventArguments(sender=self, client=self.client)), [])
+        return self
 
     def dismiss(self) -> None:
         """Dismiss the notification."""

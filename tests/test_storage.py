@@ -1,11 +1,12 @@
 import asyncio
+import copy
 from pathlib import Path
 
 import httpx
+import pytest
 
-from nicegui import Client, app, background_tasks, context
+from nicegui import app, background_tasks, context, core, ui
 from nicegui import storage as storage_module
-from nicegui import ui
 from nicegui.testing import Screen
 
 
@@ -49,8 +50,8 @@ def test_browser_storage_supports_asyncio(screen: Screen):
 
 def test_browser_storage_modifications_after_page_load_are_forbidden(screen: Screen):
     @ui.page('/')
-    async def page(client: Client):
-        await client.connected()
+    async def page():
+        await ui.context.client.connected()
         try:
             app.storage.browser['test'] = 'data'
         except TypeError as e:
@@ -63,9 +64,9 @@ def test_browser_storage_modifications_after_page_load_are_forbidden(screen: Scr
 
 def test_user_storage_modifications(screen: Screen):
     @ui.page('/')
-    async def page(client: Client, delayed: bool = False):
+    async def page(delayed: bool = False):
         if delayed:
-            await client.connected()
+            await ui.context.client.connected()
         app.storage.user['count'] = app.storage.user.get('count', 0) + 1
         ui.label().bind_text_from(app.storage.user, 'count')
 
@@ -170,7 +171,7 @@ def test_rapid_storage(screen: Screen):
 def test_tab_storage_is_local(screen: Screen):
     @ui.page('/')
     async def page():
-        await context.get_client().connected()
+        await context.client.connected()
         app.storage.tab['count'] = app.storage.tab.get('count', 0) + 1
         ui.label().bind_text_from(app.storage.tab, 'count')
 
@@ -194,7 +195,7 @@ def test_tab_storage_is_auto_removed(screen: Screen):
 
     @ui.page('/')
     async def page():
-        await context.get_client().connected()
+        await context.client.connected()
         app.storage.tab['count'] = app.storage.tab.get('count', 0) + 1
         ui.label().bind_text_from(app.storage.tab, 'count')
 
@@ -213,7 +214,7 @@ def test_clear_tab_storage(screen: Screen):
 
     @ui.page('/')
     async def page():
-        await context.get_client().connected()
+        await context.client.connected()
         app.storage.tab['test'] = '123'
         ui.button('clear', on_click=app.storage.clear)
 
@@ -222,8 +223,95 @@ def test_clear_tab_storage(screen: Screen):
 
     tab_storages = app.storage._tabs  # pylint: disable=protected-access
     assert len(tab_storages) == 1
-    assert list(tab_storages.values())[0] == {'test': '123'}
+    assert next(iter(tab_storages.values())) == {'test': '123'}
 
     screen.click('clear')
     screen.wait(0.5)
     assert not tab_storages
+
+
+def test_client_storage(screen: Screen):
+    def increment():
+        app.storage.client['counter'] = app.storage.client['counter'] + 1
+
+    @ui.page('/')
+    def page():
+        app.storage.client['counter'] = 123
+        ui.button('Increment').on_click(increment)
+        ui.label().bind_text(app.storage.client, 'counter')
+
+    screen.open('/')
+    screen.should_contain('123')
+    screen.click('Increment')
+    screen.wait_for('124')
+
+    screen.switch_to(1)
+    screen.open('/')
+    screen.should_contain('123')
+
+    screen.switch_to(0)
+    screen.should_contain('124')
+
+
+def test_clear_client_storage(screen: Screen):
+    with pytest.raises(RuntimeError):  # no context (auto index)
+        app.storage.client.clear()
+
+    @ui.page('/')
+    def page():
+        app.storage.client['counter'] = 123
+        app.storage.client.clear()
+        assert app.storage.client == {}
+
+    screen.open('/')
+
+
+def test_deepcopy(screen: Screen):
+    # https://github.com/zauberzeug/nicegui/issues/3023
+    @ui.page('/')
+    def page():
+        app.storage.general['a'] = {'b': 0}
+        copy.deepcopy(app.storage.general['a'])
+        ui.label('Loaded')
+
+    screen.open('/')
+    screen.should_contain('Loaded')
+    screen.wait(0.5)
+    assert Path('.nicegui', 'storage-general.json').read_text('utf-8') == '{"a":{"b":0}}'
+
+
+def test_missing_storage_secret(screen: Screen):
+    @ui.page('/')
+    def page():
+        ui.label(app.storage.user.get('message', 'no message'))
+
+    core.app.user_middleware.clear()  # remove the session middlewares added by prepare_simulation by default
+    screen.open('/')
+    screen.assert_py_logger('ERROR', 'app.storage.user needs a storage_secret passed in ui.run()')
+
+
+def test_storage_access_in_on_connect(screen: Screen):
+    @ui.page('/')
+    def root():
+        app.storage.user['value'] = 'Test'
+        app.on_connect(lambda: ui.label(app.storage.user.get('value')))
+
+    screen.ui_run_kwargs['storage_secret'] = 'secret'
+
+    screen.open('/')
+    screen.should_contain('Test')
+
+
+def test_storage_access_in_binding_function(screen: Screen):
+    model = {'name': 'John'}
+
+    @ui.page('/')
+    def index():
+        def f(v):
+            return v + app.storage.user.get('surname', '')
+        ui.label().bind_text_from(model, 'name', backward=f)
+
+    screen.ui_run_kwargs['storage_secret'] = 'secret'
+
+    screen.open('/')
+    screen.assert_py_logger('ERROR', 'app.storage.user can only be used within a UI context')

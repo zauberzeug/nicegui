@@ -14,12 +14,15 @@ __all__ = [
     'chart',
     'chat_message',
     'checkbox',
+    'chip',
     'clipboard',
     'code',
+    'codemirror',
     'color_input',
     'color_picker',
     'colors',
     'column',
+    'context',
     'context_menu',
     'dark_mode',
     'date',
@@ -50,6 +53,7 @@ __all__ = [
     'list',
     'log',
     'markdown',
+    'matplotlib',
     'menu',
     'menu_item',
     'mermaid',
@@ -67,9 +71,11 @@ __all__ = [
     'restructured_text',
     'row',
     'scene',
+    'scene_view',
     'scroll_area',
     'select',
     'separator',
+    'skeleton',
     'slider',
     'space',
     'spinner',
@@ -83,6 +89,7 @@ __all__ = [
     'tab_panel',
     'tab_panels',
     'tabs',
+    'teleport',
     'textarea',
     'time',
     'timer',
@@ -120,6 +127,7 @@ __all__ = [
     'run_with',
 ]
 
+from .context import context
 from .element import Element as element
 from .elements.aggrid import AgGrid as aggrid
 from .elements.audio import Audio as audio
@@ -136,7 +144,9 @@ from .elements.carousel import CarouselSlide as carousel_slide
 from .elements.chart import chart
 from .elements.chat_message import ChatMessage as chat_message
 from .elements.checkbox import Checkbox as checkbox
+from .elements.chip import Chip as chip
 from .elements.code import Code as code
+from .elements.codemirror import CodeMirror as codemirror
 from .elements.color_input import ColorInput as color_input
 from .elements.color_picker import ColorPicker as color_picker
 from .elements.colors import Colors as colors
@@ -155,6 +165,9 @@ from .elements.icon import Icon as icon
 from .elements.image import Image as image
 from .elements.input import Input as input  # pylint: disable=redefined-builtin
 from .elements.interactive_image import InteractiveImage as interactive_image
+from .elements.item import Item as item
+from .elements.item import ItemLabel as item_label
+from .elements.item import ItemSection as item_section
 from .elements.joystick import Joystick as joystick
 from .elements.json_editor import JsonEditor as json_editor
 from .elements.keyboard import Keyboard as keyboard
@@ -164,9 +177,6 @@ from .elements.leaflet import Leaflet as leaflet
 from .elements.line_plot import LinePlot as line_plot
 from .elements.link import Link as link
 from .elements.link import LinkTarget as link_target
-from .elements.list import Item as item
-from .elements.list import ItemLabel as item_label
-from .elements.list import ItemSection as item_section
 from .elements.list import List as list  # pylint: disable=redefined-builtin
 from .elements.log import Log as log
 from .elements.markdown import Markdown as markdown
@@ -179,6 +189,7 @@ from .elements.pagination import Pagination as pagination
 from .elements.plotly import Plotly as plotly
 from .elements.progress import CircularProgress as circular_progress
 from .elements.progress import LinearProgress as linear_progress
+from .elements.pyplot import Matplotlib as matplotlib
 from .elements.pyplot import Pyplot as pyplot
 from .elements.query import Query as query
 from .elements.radio import Radio as radio
@@ -186,9 +197,11 @@ from .elements.range import Range as range  # pylint: disable=redefined-builtin
 from .elements.restructured_text import ReStructuredText as restructured_text
 from .elements.row import Row as row
 from .elements.scene import Scene as scene
+from .elements.scene_view import SceneView as scene_view
 from .elements.scroll_area import ScrollArea as scroll_area
 from .elements.select import Select as select
 from .elements.separator import Separator as separator
+from .elements.skeleton import Skeleton as skeleton
 from .elements.slider import Slider as slider
 from .elements.space import Space as space
 from .elements.spinner import Spinner as spinner
@@ -202,6 +215,7 @@ from .elements.tabs import Tab as tab
 from .elements.tabs import TabPanel as tab_panel
 from .elements.tabs import TabPanels as tab_panels
 from .elements.tabs import Tabs as tabs
+from .elements.teleport import Teleport as teleport
 from .elements.textarea import Textarea as textarea
 from .elements.time import Time as time
 from .elements.timeline import Timeline as timeline
@@ -216,7 +230,7 @@ from .functions import clipboard
 from .functions.download import download
 from .functions.html import add_body_html, add_head_html
 from .functions.javascript import run_javascript
-from .functions.navigate import Navigate as navigate
+from .functions.navigate import navigate
 from .functions.notify import notify
 from .functions.on import on
 from .functions.open import open  # pylint: disable=redefined-builtin

@@ -29,7 +29,7 @@ def card_without_shadow() -> None:
 
     - To get the original QCard behavior, use the `tight` method (second card).
         It removes the padding and the table border collapses with the card border.
-    
+
     - To preserve the padding _and_ the table border, move the table into another container like a `ui.row` (third card).
 
     See https://github.com/zauberzeug/nicegui/issues/726 for more information.

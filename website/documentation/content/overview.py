@@ -1,8 +1,19 @@
 from nicegui import ui
 
-from . import (doc, section_action_events, section_audiovisual_elements, section_binding_properties,
-               section_configuration_deployment, section_controls, section_data_elements, section_page_layout,
-               section_pages_routing, section_styling_appearance, section_text_elements)
+from . import (
+    doc,
+    section_action_events,
+    section_audiovisual_elements,
+    section_binding_properties,
+    section_configuration_deployment,
+    section_controls,
+    section_data_elements,
+    section_page_layout,
+    section_pages_routing,
+    section_styling_appearance,
+    section_testing,
+    section_text_elements,
+)
 
 doc.title('*NiceGUI* Documentation', 'Reference, Demos and more')
 
@@ -11,8 +22,8 @@ doc.text('Overview', '''
     It has a very gentle learning curve while still offering the option for advanced customizations.
     NiceGUI follows a backend-first philosophy:
     It handles all the web development details.
-    You can focus on writing Python code. 
-    This makes it ideal for a wide range of projects including short 
+    You can focus on writing Python code.
+    This makes it ideal for a wide range of projects including short
     scripts, dashboards, robotics projects, IoT solutions, smart home automation, and machine learning.
 ''')
 
@@ -23,20 +34,23 @@ doc.text('How to use this guide', '''
 ''')
 
 doc.text('Basic concepts', '''
-    NiceGUI provides UI _components_ (or _elements_) such as buttons, sliders, text, images, charts, and more.
+    NiceGUI provides UI _elements_ such as buttons, sliders, text, images, charts, and more.
     Your app assembles these components into _pages_.
     When the user interacts with an item on a page, NiceGUI triggers an _event_ (or _action_).
-    You define code to _handle_ each event, such as what to do when a user clicks a button named "Go".
+    You define code to _handle_ each event, such as what to do when a user clicks a button, modifies a value or operates a slider.
+    Elements can also be bound to a _model_ (data object), which automatically updates the user interface when the model value changes.
 
-    Components are arranged on a page using _layouts_.
-    Layouts provide things like grids, tabs, carousels, expansions, menus, and other tools to arrange your components.
-    Many components are linked to a _model_ (data object) in your code, which automatically updates the user interface when the value changes.
+    Elements are arranged on a page using a "declarative UI" or "code-based UI".
+    That means that you also write structures like grids, cards, tabs, carousels, expansions, menus, and other layout elements directly in code.
+    This concept has been made popular with Flutter and SwiftUI.
+    For readability, NiceGUI utilizes Python's `with ...` statement.
+    This context manager provides a nice way to indent the code to resemble the layout of the UI.
 
     Styling and appearance can be controlled in several ways.
-    NiceGUI accepts optional arguments for certain styling, such as icons on buttons.
-    Other styling can be set with functions such as `.styles`, `.classes`, or `.props` that you'll learn about later.
-    Global styles like colors and fonts can be set with dedicated properties.
-    Or if you prefer, almost anything can be styled with CSS.
+    Most elements accept optional arguments for common styling and behavior changes, such as button icons or text color.
+    Because NiceGUI is a web framework, you can change almost any appearance of an element with CSS.
+    But elements also provide `.classes` and `.props` methods to apply Tailwind CSS and Quasar properties
+    which are more high-level and simpler to use day-to-day after you get the hang of it.
 ''')
 
 doc.text('Actions, Events and Tasks', '''
@@ -61,7 +75,7 @@ doc.text('Running NiceGUI Apps', '''
     Or you can run NiceGUI on a server that handles many clients - the website you're reading right now is served from NiceGUI.
 
     After creating your app pages with components, you call `ui.run()` to start the NiceGUI server.
-    Optional parameters to `ui.run` set things like the network address and port the server binds to, 
+    Optional parameters to `ui.run` set things like the network address and port the server binds to,
     whether the app runs in native mode, initial window size, and many other options.
     The section _Configuration and Deployment_ covers the options to the `ui.run()` function and the FastAPI framework it is based on.
 ''')
@@ -72,6 +86,19 @@ doc.text('Customization', '''
     You can also extend the available components by subclassing existing NiceGUI components or importing new ones from Quasar.
     All of this is optional.
     Out of the box, NiceGUI provides everything you need to make modern, stylish, responsive user interfaces.
+''')
+
+doc.text('Testing', '''
+    NiceGUI provides a comprehensive testing framework based on [pytest](https://docs.pytest.org/)
+    which allows you to automate the testing of your user interface.
+    You can utilize the `screen` fixture which starts a real (headless) browser to interact with your application.
+    This is great if you have browser-specific behavior to test.
+
+    But most of the time, NiceGUI's newly introduced `user` fixture is more suited:
+    It only simulates the user interaction on a Python level and, hence, is blazing fast.
+    That way the classical [test pyramid](https://martinfowler.com/bliki/TestPyramid.html),
+    where UI tests are considered slow and expensive, does not apply anymore.
+    This can have a huge impact on your development speed, quality and confidence.
 ''')
 
 tiles = [
@@ -105,6 +132,9 @@ tiles = [
     (section_configuration_deployment, '''
         Whether you want to run your app locally or on a server, native or in a browser, we got you covered.
     '''),
+    (section_testing, '''
+        Write automated UI tests which run in a headless browser (slow) or fully simulated in Python (fast).
+     '''),
 ]
 
 

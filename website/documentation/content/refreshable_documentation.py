@@ -91,4 +91,91 @@ def reactive_state():
         counter('B')
 
 
+@doc.demo('Global scope', '''
+    When defining a refreshable function in the global scope,
+    every refreshable UI that is created by calling this function will share the same state.
+    In this demo, `time()` will show the current date and time.
+    When opening the page in a new tab, _both_ tabs will be updated simultaneously when clicking the "Refresh" button.
+
+    See the "local scope" demos below for a way to create independent refreshable UIs instead.
+''')
+def global_scope():
+    from datetime import datetime
+
+    @ui.refreshable
+    def time():
+        ui.label(f'Time: {datetime.now()}')
+
+    @ui.page('/global_refreshable')
+    def demo():
+        time()
+        ui.button('Refresh', on_click=time.refresh)
+
+    ui.link('Open demo', demo)
+
+
+@doc.demo('Local scope (variant A)', '''
+    When defining a refreshable function in a local scope,
+    refreshable UI that is created by calling this function will refresh independently.
+    In contrast to the "global scope" demo,
+    the time will be updated only in the tab where the "Refresh" button was clicked.
+''')
+def local_scope_a():
+    from datetime import datetime
+
+    @ui.page('/local_refreshable_a')
+    def demo():
+        @ui.refreshable
+        def time():
+            ui.label(f'Time: {datetime.now()}')
+
+        time()
+        ui.button('Refresh', on_click=time.refresh)
+
+    ui.link('Open demo', demo)
+
+
+@doc.demo('Local scope (variant B)', '''
+    In order to define refreshable UIs with local state outside of page functions,
+    you can, e.g., define a class with a refreshable method.
+    This way, you can create multiple instances of the class with independent state,
+    because the `ui.refreshable` decorator acts on the class instance rather than the class itself.
+''')
+def local_scope_b():
+    from datetime import datetime
+
+    class Clock:
+        @ui.refreshable
+        def time(self):
+            ui.label(f'Time: {datetime.now()}')
+
+    @ui.page('/local_refreshable_b')
+    def demo():
+        clock = Clock()
+        clock.time()
+        ui.button('Refresh', on_click=clock.time.refresh)
+
+    ui.link('Open demo', demo)
+
+
+@doc.demo('Local scope (variant C)', '''
+    As an alternative to the class definition shown above, you can also define the UI function in global scope,
+    but apply the `ui.refreshable` decorator inside the page function.
+    This way the refreshable UI will refresh independently.
+''')
+def local_scope_c():
+    from datetime import datetime
+
+    def time():
+        ui.label(f'Time: {datetime.now()}')
+
+    @ui.page('/local_refreshable_c')
+    def demo():
+        refreshable_time = ui.refreshable(time)
+        refreshable_time()
+        ui.button('Refresh', on_click=refreshable_time.refresh)
+
+    ui.link('Open demo', demo)
+
+
 doc.reference(ui.refreshable)
