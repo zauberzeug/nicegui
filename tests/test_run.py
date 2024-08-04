@@ -55,3 +55,22 @@ async def test_run_unpickable_exception_in_cpu_bound_callback(user: User):
             ui.label(await run.cpu_bound(raise_exception))
 
     await user.open('/')
+
+
+class ExceptionWithSuperParameter(Exception):
+    def __init__(self):
+        super().__init__('some parameter which does not appear in the custom exceptions init')
+
+
+def raise_exception():
+    raise ExceptionWithSuperParameter()
+
+
+async def test_run_cpu_bound_function_which_raises_problematic_exception(user: User):
+
+    @ui.page('/')
+    async def index():
+        with pytest.raises(run.SubprocessException, match='some parameter which does not appear in the custom exceptions init'):
+            ui.label(await run.cpu_bound(raise_exception))
+
+    await user.open('/')
