@@ -32,10 +32,26 @@ def delayed_hello() -> str:
 
 @pytest.mark.parametrize('func', [run.cpu_bound, run.io_bound])
 async def test_delayed_hello(user: User, func: Awaitable):
-
     @ui.page('/')
     async def index():
         ui.label(await func(delayed_hello))
 
     await user.open('/')
     await user.should_see('hello')
+
+
+async def test_run_unpickable_exception_in_cpu_bound_callback(user: User):
+
+    class UnpicklableException(Exception):
+        def __reduce__(self):
+            raise NotImplementedError('This object cannot be pickled')
+
+    def raise_exception():
+        raise UnpicklableException('test')
+
+    @ui.page('/')
+    async def index():
+        with pytest.raises(AttributeError, match='Can\'t pickle local object'):
+            ui.label(await run.cpu_bound(raise_exception))
+
+    await user.open('/')
