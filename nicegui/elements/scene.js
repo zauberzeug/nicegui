@@ -216,9 +216,7 @@ export default {
 
   methods: {
     create(type, id, parent_id, ...args) {
-      if (!this.is_initialized) {
-        return;
-      }
+      if (!this.is_initialized) return;
       let mesh;
       if (type == "group") {
         mesh = new THREE.Group();
