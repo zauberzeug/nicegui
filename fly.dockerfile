@@ -15,7 +15,8 @@ RUN pip install \
     prometheus_client \
     pyecharts \
     pytest \
-    requests
+    requests \
+    selenium
 
 RUN curl -sSL https://install.python-poetry.org | python3 - && \
     cd /usr/local/bin && \
