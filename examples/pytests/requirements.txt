@@ -1,4 +1,3 @@
 nicegui
-icecream
 pytest-asyncio
 pytest-selenium
