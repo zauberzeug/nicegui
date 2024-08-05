@@ -41,8 +41,12 @@ class ValidationElement(ValueElement):
             return self.error is None
 
         for message, check in self.validation.items():
-            if not check(self.value):
-                self.error = message
+            try:
+                if not check(self.value):
+                    self.error = message
+                    return False
+            except (ValueError, AssertionError) as error:
+                self.error = str(error)
                 return False
 
         self.error = None
