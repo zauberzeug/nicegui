@@ -1,6 +1,6 @@
 import asyncio
 import time
-from typing import Awaitable, Generator, Optional
+from typing import Awaitable, Generator
 
 import pytest
 
@@ -11,17 +11,15 @@ from nicegui.testing import User
 @pytest.fixture(scope='module', autouse=True)
 def check_blocking_ui() -> Generator[None, None, None]:
     """This fixture ensures that we see a warning if the UI is blocked for too long.
-    The warning would then automatically fail the test."""
-    loop: Optional[asyncio.AbstractEventLoop] = None
 
+    The warning would then automatically fail the test.
+    """
     def configure() -> None:
         loop = asyncio.get_running_loop()
         loop.set_debug(True)
         loop.slow_callback_duration = 0.02
     app.on_startup(configure)
     yield
-    if loop:
-        loop.set_debug(False)
 
 
 def delayed_hello() -> str:
@@ -41,36 +39,34 @@ async def test_delayed_hello(user: User, func: Awaitable):
 
 
 async def test_run_unpickable_exception_in_cpu_bound_callback(user: User):
-
     class UnpicklableException(Exception):
         def __reduce__(self):
-            raise NotImplementedError('This object cannot be pickled')
+            raise NotImplementedError('This local object cannot be pickled')
 
-    def raise_exception():
+    def raise_unpicklable_exception():
         raise UnpicklableException('test')
 
     @ui.page('/')
     async def index():
-        with pytest.raises(AttributeError, match='Can\'t pickle local object'):
-            ui.label(await run.cpu_bound(raise_exception))
+        with pytest.raises(AttributeError, match="Can't pickle local object"):
+            ui.label(await run.cpu_bound(raise_unpicklable_exception))
 
     await user.open('/')
 
 
 class ExceptionWithSuperParameter(Exception):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__('some parameter which does not appear in the custom exceptions init')
 
 
-def raise_exception():
+def raise_exception_with_super_parameter():
     raise ExceptionWithSuperParameter()
 
 
 async def test_run_cpu_bound_function_which_raises_problematic_exception(user: User):
-
     @ui.page('/')
     async def index():
         with pytest.raises(run.SubprocessException, match='some parameter which does not appear in the custom exceptions init'):
-            ui.label(await run.cpu_bound(raise_exception))
+            ui.label(await run.cpu_bound(raise_exception_with_super_parameter))
 
     await user.open('/')

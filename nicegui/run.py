@@ -19,7 +19,7 @@ R = TypeVar('R')
 class SubprocessException(Exception):
     """A picklable exception to represent exceptions raised in subprocesses."""
 
-    def __init__(self, original_type, original_message, original_traceback):
+    def __init__(self, original_type, original_message, original_traceback) -> None:
         self.original_type = original_type
         self.original_message = original_message
         self.original_traceback = original_traceback
@@ -36,15 +36,12 @@ class SubprocessException(Exception):
 
 
 def safe_callback(callback: Callable, *args, **kwargs) -> Any:
+    """Run a callback; catch and wrap any exceptions that might occur."""
     try:
         return callback(*args, **kwargs)
     except Exception as e:
-        # NOTE: we do not want to pass the original exception because it might be unpickleable
-        raise SubprocessException(
-            type(e).__name__,
-            str(e),
-            traceback.format_exc()
-        ) from None
+        # NOTE: we do not want to pass the original exception because it might be unpicklable
+        raise SubprocessException(type(e).__name__, str(e), traceback.format_exc()) from None
 
 
 async def _run(executor: Any, callback: Callable[P, R], *args: P.args, **kwargs: P.kwargs) -> R:
