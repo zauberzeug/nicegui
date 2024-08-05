@@ -100,34 +100,34 @@ def create() -> None:
         section_heading('Features', 'Code *nicely*')
         with ui.row().classes('w-full text-lg leading-tight grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-8'):
             features('swap_horiz', 'Interaction', [
-                'buttons, switches, sliders, inputs, ...',
-                'notifications, dialogs and menus',
-                'interactive images with SVG overlays',
-                'web pages and native window apps',
+                '[buttons, switches, sliders, inputs, ...](/documentation/section_controls)',
+                '[notifications, dialogs and menus](/documentation/section_page_layout)',
+                '[interactive images](/documentation/interactive_image) with SVG overlays',
+                'web pages and [native window apps](/documentation/section_configuration_deployment#native_mode)',
             ])
             features('space_dashboard', 'Layout', [
-                'navigation bars, tabs, panels, ...',
+                '[navigation bars, tabs, panels, ...](/documentation/section_page_layout)',
                 'grouping with rows, columns, grids and cards',
-                'HTML and Markdown elements',
+                '[HTML](/documentation/html) and [Markdown](/documentation/markdown) elements',
                 'flex layout by default',
             ])
             features('insights', 'Visualization', [
-                'charts, diagrams, tables, audio/video',
-                '3D scenes',
-                'straight-forward data binding',
-                'built-in timer for data refresh',
+                '[charts, diagrams, tables](/documentation/section_data_elements), [audio/video](/documentation/section_audiovisual_elements)',
+                '[3D scenes](/documentation/scene)',
+                'straight-forward [data binding](/documentation/section_binding_properties)',
+                'built-in [timer for data refresh](/documentation/timer)',
             ])
             features('brush', 'Styling', [
-                'customizable color themes',
+                'customizable [color themes](/documentation/section_styling_appearance#color_theming)',
                 'custom CSS and classes',
                 'modern look with material design',
                 '[Tailwind CSS](https://tailwindcss.com/) auto-completion',
             ])
             features('source', 'Coding', [
-                'routing for multiple pages',
+                'routing for multiple [pages](/documentation/page)',
                 'auto-reload on code change',
-                'persistent user sessions',
-                'built-in testing framework',
+                'persistent [user sessions](/documentation/storage)',
+                'super nice [testing framework](/documentation/section_testing)',
             ])
             features('anchor', 'Foundation', [
                 'generic [Vue](https://vuejs.org/) to Python bridge',
