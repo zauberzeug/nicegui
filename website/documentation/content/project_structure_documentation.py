@@ -19,9 +19,10 @@ doc.text('Project Structure', '''
 
 doc.text('Simple', '''
     For small apps and experiments you can put the tests in a separate file,
-    as we do in the examples [chat-app](https://github.com/zauberzeug/nicegui/tree/main/examples/chat_app)
-    [todo list](https://github.com/zauberzeug/nicegui/tree/main/examples/todo_list/) and
-    [authentication](https://github.com/zauberzeug/nicegui/tree/main/examples/authentication).
+    as we do in the examples
+    [Chat App](https://github.com/zauberzeug/nicegui/tree/main/examples/chat_app)
+    [Todo List](https://github.com/zauberzeug/nicegui/tree/main/examples/todo_list/) and
+    [Authentication](https://github.com/zauberzeug/nicegui/tree/main/examples/authentication).
     To properly re-initialize your `main.py` in the tests,
     you place an empty `__init__.py` file next to your code to make it a package
     and use the `module_under_test` marker to automatically reload your main file for each test.
