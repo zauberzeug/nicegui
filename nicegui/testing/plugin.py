@@ -6,7 +6,6 @@ from pathlib import Path
 from typing import AsyncGenerator, Callable, Dict, Generator, List, Type
 
 import httpx
-import icecream
 import pytest
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
@@ -23,8 +22,6 @@ from .user import User
 # pylint: disable=redefined-outer-name
 
 DOWNLOAD_DIR = Path(__file__).parent / 'download'
-
-icecream.install()
 
 
 def pytest_configure(config: pytest.Config) -> None:

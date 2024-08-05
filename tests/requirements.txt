@@ -1,3 +1,2 @@
-icecream
 pytest-asyncio
 pytest-selenium
