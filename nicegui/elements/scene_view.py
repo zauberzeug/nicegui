@@ -43,7 +43,6 @@ class SceneView(Element,
         self._props['camera_type'] = self.camera.type
         self._props['camera_params'] = self.camera.params
         self._click_handlers = [on_click] if on_click else []
-        self.is_initialized = False
         self.on('init', self._handle_init)
         self.on('click3d', self._handle_click)
 
@@ -53,7 +52,6 @@ class SceneView(Element,
         return self
 
     def _handle_init(self, e: GenericEventArguments) -> None:
-        self.is_initialized = True
         with self.client.individual_target(e.args['socket_id']):
             self.move_camera(duration=0)
 
@@ -65,8 +63,6 @@ class SceneView(Element,
         await event.wait()
 
     def run_method(self, name: str, *args: Any, timeout: float = 1, check_interval: float = 0.01) -> AwaitableResponse:
-        if not self.is_initialized:
-            return NullResponse()
         return super().run_method(name, *args, timeout=timeout, check_interval=check_interval)
 
     def _handle_click(self, e: GenericEventArguments) -> None:
