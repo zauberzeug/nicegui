@@ -19,7 +19,13 @@ LABEL maintainer="Zauberzeug GmbH <info@zauberzeug.com>"
 
 RUN python -m pip install --upgrade pip
 
-RUN python -m pip install nicegui[plotly,matplotlib]==$VERSION itsdangerous isort docutils requests
+RUN python -m pip install \
+    nicegui[plotly,matplotlib]==$VERSION \
+    docutils \
+    isort \
+    itsdangerous \
+    pytest \
+    requests
 
 WORKDIR /app
 
