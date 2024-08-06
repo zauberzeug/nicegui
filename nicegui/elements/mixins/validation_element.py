@@ -12,6 +12,7 @@ class ValidationElement(ValueElement):
         self._auto_validation = True
         self._error: Optional[str] = None
         super().__init__(**kwargs)
+        self._props['error'] = False  # NOTE: reserve bottom space for error message
 
     @property
     def error(self) -> Optional[str]:
