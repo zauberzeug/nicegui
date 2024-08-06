@@ -386,10 +386,9 @@ function createApp(elements, options) {
 
 // HACK: remove Quasar's rules for divs in QCard (#2265, #2301)
 for (let sheet of document.styleSheets) {
-  if (!/\/quasar(?:\.prod)?\.css$/.test(sheet.href)) continue;
-  for (let i = sheet.cssRules.length - 1; i >= 0; i--) {
-    if (/\.q-card > div/.test(sheet.cssRules[i].selectorText)) {
-      sheet.deleteRule(i);
+  if (/\/quasar(?:\.prod)?\.css$/.test(sheet.href)) {
+    for (let rule of sheet.cssRules) {
+      if (/\.q-card > div/.test(rule.selectorText)) rule.selectorText = ".nicegui-card-tight" + rule.selectorText;
     }
   }
 }
