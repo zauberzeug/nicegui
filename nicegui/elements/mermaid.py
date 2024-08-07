@@ -5,7 +5,7 @@ from .mixins.content_element import ContentElement
 
 class Mermaid(ContentElement,
               component='mermaid.js',
-              exposed_libraries=[
+              dependencies=[
                   'lib/mermaid/*.js',
                   'lib/mermaid/mermaid.esm.min.mjs',
               ]):

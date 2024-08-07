@@ -107,9 +107,10 @@ class Element(Visibility):
 
     def __init_subclass__(cls, *,
                           component: Union[str, Path, None] = None,
-                          libraries: List[Union[str, Path]] = [],  # noqa: B006
-                          exposed_libraries: List[Union[str, Path]] = [],  # noqa: B006
-                          extra_libraries: List[Union[str, Path]] = [],  # noqa: B006
+                          dependencies: List[Union[str, Path]] = [],  # noqa: B006
+                          libraries: List[Union[str, Path]] = [],  # noqa: B006  # DEPRECATED
+                          exposed_libraries: List[Union[str, Path]] = [],  # noqa: B006  # DEPRECATED
+                          extra_libraries: List[Union[str, Path]] = [],  # noqa: B006  # DEPRECATED
                           ) -> None:
         super().__init_subclass__()
         base = Path(inspect.getfile(cls)).parent
@@ -119,6 +120,16 @@ class Element(Visibility):
             if not path.is_absolute():
                 path = base / path
             return sorted(path.parent.glob(path.name), key=lambda p: p.stem)
+
+        if libraries:
+            helpers.warn_once('The `libraries` parameter is deprecated. Use `dependencies` instead.',
+                              stack_info=True)
+        if exposed_libraries:
+            helpers.warn_once('The `exposed_libraries` parameter is deprecated. Use `dependencies` instead.',
+                              stack_info=True)
+        if extra_libraries:
+            helpers.warn_once('The `extra_libraries` parameter is deprecated. Use `dependencies` instead.',
+                              stack_info=True)
 
         cls.component = copy(cls.component)
         cls.libraries = copy(cls.libraries)
@@ -133,7 +144,7 @@ class Element(Visibility):
         for library in extra_libraries:
             for path in glob_absolute_paths(library):
                 cls.extra_libraries.append(register_library(path))
-        for library in exposed_libraries:
+        for library in exposed_libraries + dependencies:
             for path in glob_absolute_paths(library):
                 cls.exposed_libraries.append(register_library(path, expose=True))
 

@@ -40,7 +40,7 @@ class SceneObject:
 
 class Scene(Element,
             component='scene.js',
-            exposed_libraries=[
+            dependencies=[
                 'lib/three/three.module.js',
                 'lib/three/modules/BufferGeometryUtils.js',
                 'lib/three/modules/CSS2DRenderer.js',

@@ -17,7 +17,7 @@ except ImportError:
     pass
 
 
-class EChart(Element, component='echart.js', exposed_libraries=['lib/echarts/echarts.min.js', 'lib/echarts-gl/echarts-gl.min.js']):
+class EChart(Element, component='echart.js', dependencies=['lib/echarts/echarts.min.js', 'lib/echarts-gl/echarts-gl.min.js']):
 
     def __init__(self, options: Dict, on_point_click: Optional[Callable] = None, *, enable_3d: bool = False) -> None:
         """Apache EChart
