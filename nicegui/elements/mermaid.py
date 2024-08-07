@@ -5,8 +5,10 @@ from .mixins.content_element import ContentElement
 
 class Mermaid(ContentElement,
               component='mermaid.js',
-              exposed_libraries=['lib/mermaid/mermaid.esm.min.mjs'],
-              extra_libraries=['lib/mermaid/*.js']):
+              dependencies=[
+                  'lib/mermaid/*.js',
+                  'lib/mermaid/mermaid.esm.min.mjs',
+              ]):
     CONTENT_PROP = 'content'
 
     def __init__(self, content: str, config: Optional[Dict] = None) -> None:

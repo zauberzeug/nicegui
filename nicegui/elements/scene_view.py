@@ -11,8 +11,10 @@ from .scene import Scene, SceneCamera
 
 class SceneView(Element,
                 component='scene_view.js',
-                libraries=['lib/tween/tween.umd.js'],
-                exposed_libraries=['lib/three/three.module.js']):
+                dependencies=[
+                    'lib/tween/tween.umd.js',
+                    'lib/three/three.module.js',
+                ]):
 
     def __init__(self,
                  scene: Scene,
