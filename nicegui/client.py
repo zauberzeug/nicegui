@@ -13,7 +13,7 @@ from fastapi.responses import Response
 from fastapi.templating import Jinja2Templates
 from typing_extensions import Self
 
-from . import background_tasks, binding, core, helpers, json
+from . import background_tasks, binding, core, helpers, json, storage
 from .awaitable_response import AwaitableResponse
 from .dependencies import generate_resources
 from .element import Element
@@ -61,7 +61,6 @@ class Client:
         self.on_air = False
         self._disconnect_task: Optional[asyncio.Task] = None
         self._deleted = False
-        self._has_warned_about_deleted_client = False
         self.tab_id: Optional[str] = None
 
         self.outbox = Outbox(self)
@@ -142,7 +141,7 @@ class Client:
                 'imports': json.dumps(imports),
                 'js_imports': '\n'.join(js_imports),
                 'quasar_config': json.dumps(core.app.config.quasar_config),
-                'title': self.page.resolve_title() if self.title is None else self.title,
+                'title': self.resolve_title(),
                 'viewport': self.page.resolve_viewport(),
                 'favicon_url': get_favicon_url(self.page, prefix),
                 'dark': str(self.page.resolve_dark()),
@@ -157,6 +156,10 @@ class Client:
             status_code=status_code,
             headers={'Cache-Control': 'no-store', 'X-NiceGUI-Content': 'page'},
         )
+
+    def resolve_title(self) -> str:
+        """Return the title of the page."""
+        return self.page.resolve_title() if self.title is None else self.title
 
     async def connected(self, timeout: float = 3.0, check_interval: float = 0.1) -> None:
         """Block execution until the client is connected."""
@@ -196,17 +199,17 @@ class Client:
         :return: AwaitableResponse that can be awaited to get the result of the JavaScript code
         """
         if respond is True:
-            log.warning('The "respond" argument of run_javascript() has been removed. '
-                        'Now the method always returns an AwaitableResponse that can be awaited. '
-                        'Please remove the "respond=True" argument.')
+            helpers.warn_once('The "respond" argument of run_javascript() has been removed. '
+                              'Now the method always returns an AwaitableResponse that can be awaited. '
+                              'Please remove the "respond=True" argument.')
         if respond is False:
             raise ValueError('The "respond" argument of run_javascript() has been removed. '
                              'Now the method always returns an AwaitableResponse that can be awaited. '
                              'Please remove the "respond=False" argument and call the method without awaiting.')
         if check_interval != 0.01:
-            log.warning('The "check_interval" argument of run_javascript() and similar methods has been removed. '
-                        'Now the method automatically returns when receiving a response without checking regularly in an interval. '
-                        'Please remove the "check_interval" argument.')
+            helpers.warn_once('The "check_interval" argument of run_javascript() and similar methods has been removed. '
+                              'Now the method automatically returns when receiving a response without checking regularly in an interval. '
+                              'Please remove the "check_interval" argument.')
 
         request_id = str(uuid.uuid4())
         target_id = self._temporary_socket_id or self.id
@@ -245,6 +248,7 @@ class Client:
         if self._disconnect_task:
             self._disconnect_task.cancel()
             self._disconnect_task = None
+        storage.request_contextvar.set(self.request)
         for t in self.connect_handlers:
             self.safe_invoke(t)
         for t in core.app._connect_handlers:  # pylint: disable=protected-access
@@ -301,14 +305,13 @@ class Client:
 
     def remove_elements(self, elements: Iterable[Element]) -> None:
         """Remove the given elements from the client."""
-        binding.remove(elements)
-        element_ids = [element.id for element in elements]
-        for element in elements:
+        element_list = list(elements)  # NOTE: we need to iterate over the elements multiple times
+        binding.remove(element_list)
+        for element in element_list:
             element._handle_delete()  # pylint: disable=protected-access
             element._deleted = True  # pylint: disable=protected-access
             self.outbox.enqueue_delete(element)
-        for element_id in element_ids:
-            del self.elements[element_id]
+            del self.elements[element.id]
 
     def remove_all_elements(self) -> None:
         """Remove all elements from the client."""
@@ -327,11 +330,11 @@ class Client:
 
     def check_existence(self) -> None:
         """Check if the client still exists and print a warning if it doesn't."""
-        if self._deleted and not self._has_warned_about_deleted_client:
-            self._has_warned_about_deleted_client = True
-            log.warning('Client has been deleted but is still being used. This is most likely a bug in your application code. '
-                        'See https://github.com/zauberzeug/nicegui/issues/3028 for more information.',
-                        stack_info=True)
+        if self._deleted:
+            helpers.warn_once('Client has been deleted but is still being used. '
+                              'This is most likely a bug in your application code. '
+                              'See https://github.com/zauberzeug/nicegui/issues/3028 for more information.',
+                              stack_info=True)
 
     @contextmanager
     def individual_target(self, socket_id: str) -> Iterator[None]:

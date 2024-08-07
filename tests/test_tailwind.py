@@ -28,7 +28,7 @@ def test_tailwind_apply(screen: Screen):
     assert screen.find('B').get_attribute('class') == 'bg-red-500 text-white'
 
 
-def test_empty_values():
+def test_empty_values(nicegui_reset_globals):
     label = ui.label('A')
     label.tailwind.border_width('')
     assert 'border' in label._classes

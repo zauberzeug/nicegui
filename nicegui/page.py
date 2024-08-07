@@ -94,8 +94,12 @@ class page:
         parameters_of_decorated_func = list(inspect.signature(func).parameters.keys())
 
         def check_for_late_return_value(task: asyncio.Task) -> None:
-            if task.result() is not None:
-                log.error(f'ignoring {task.result()}; it was returned after the HTML had been delivered to the client')
+            try:
+                if task.result() is not None:
+                    log.error(f'ignoring {task.result()}; '
+                              'it was returned after the HTML had been delivered to the client')
+            except asyncio.CancelledError:
+                pass
 
         @wraps(func)
         async def decorated(*dec_args, **dec_kwargs) -> Response:

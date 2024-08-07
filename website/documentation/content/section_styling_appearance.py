@@ -1,7 +1,14 @@
 from nicegui import events, ui
 
 from ..windows import browser_window, python_window
-from . import add_style_documentation, colors_documentation, dark_mode_documentation, doc, query_documentation
+from . import (
+    add_style_documentation,
+    colors_documentation,
+    dark_mode_documentation,
+    doc,
+    element_filter_documentation,
+    query_documentation,
+)
 
 doc.title('Styling & Appearance')
 
@@ -145,6 +152,7 @@ def tailwind_layers():
         ui.label('world').classes('blue-box')
 
 
+doc.intro(element_filter_documentation)
 doc.intro(query_documentation)
 doc.intro(colors_documentation)
 
