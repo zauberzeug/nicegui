@@ -25,7 +25,8 @@ RUN python -m pip install \
     isort \
     itsdangerous \
     pytest \
-    requests
+    requests \
+    selenium
 
 WORKDIR /app
 
