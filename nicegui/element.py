@@ -85,6 +85,7 @@ class Element(Visibility):
         self._style.update(self._default_style)
         self._props: Dict[str, Any] = {}
         self._props.update(self._default_props)
+        self._markers: List[str] = []
         self._event_listeners: Dict[str, EventListener] = {}
         self._text: Optional[str] = None
         self.slots: Dict[str, Slot] = {}
@@ -388,6 +389,18 @@ class Element(Visibility):
             cls._default_props[key] = value
         return cls
 
+    def mark(self, *markers: str) -> Self:
+        """Replace markers of the element.
+
+        Markers are used to identify elements for querying with `ElementFilter </documentation/element_filter>`_
+        which is heavily used in testing
+        but can also be used to reduce the number of global variables or passing around dependencies.
+
+        :param markers: list of strings or single string with whitespace-delimited markers; replaces existing markers
+        """
+        self._markers = [word for marker in markers for word in marker.split()]
+        return self
+
     def tooltip(self, text: str) -> Self:
         """Add a tooltip to the element.
 
@@ -496,16 +509,29 @@ class Element(Visibility):
             return NullResponse()
         return self.client.run_javascript(f'return getComputedProp({self.id}, "{prop_name}")', timeout=timeout)
 
-    def _collect_descendants(self, *, include_self: bool = False) -> List[Element]:
-        elements: List[Element] = [self] if include_self else []
+    def ancestors(self, *, include_self: bool = False) -> Iterator[Element]:
+        """Iterate over the ancestors of the element.
+
+        :param include_self: whether to include the element itself in the iteration
+        """
+        if include_self:
+            yield self
+        if self.parent_slot:
+            yield from self.parent_slot.parent.ancestors(include_self=True)
+
+    def descendants(self, *, include_self: bool = False) -> Iterator[Element]:
+        """Iterate over the descendants of the element.
+
+        :param include_self: whether to include the element itself in the iteration
+        """
+        if include_self:
+            yield self
         for child in self:
-            elements.extend(child._collect_descendants(include_self=True))  # pylint: disable=protected-access
-        return elements
+            yield from child.descendants(include_self=True)
 
     def clear(self) -> None:
         """Remove all child elements."""
-        descendants = self._collect_descendants()
-        self.client.remove_elements(descendants)
+        self.client.remove_elements(self.descendants())
         for slot in self.slots.values():
             slot.children.clear()
         self.update()
@@ -546,8 +572,7 @@ class Element(Visibility):
         if isinstance(element, int):
             children = list(self)
             element = children[element]
-        elements = element._collect_descendants(include_self=True)  # pylint: disable=protected-access
-        self.client.remove_elements(elements)
+        self.client.remove_elements(element.descendants(include_self=True))
         assert element.parent_slot is not None
         element.parent_slot.children.remove(element)
         self.update()
@@ -567,3 +592,32 @@ class Element(Visibility):
     def is_deleted(self) -> bool:
         """Whether the element has been deleted."""
         return self._deleted
+
+    def __str__(self) -> str:
+        result = self.tag if type(self) is Element else self.__class__.__name__  # pylint: disable=unidiomatic-typecheck
+
+        def shorten(content: Any, length: int = 20) -> str:
+            text = str(content).replace('\n', ' ').replace('\r', ' ')
+            return text[:length].strip() + '...' if len(text) > length else text
+
+        additions = []
+        if self._markers:
+            additions.append(f'markers={", ".join(self._markers)}')
+        if self._text:
+            additions.append(f'text={shorten(self._text)}')
+        if hasattr(self, 'content') and self.content:  # pylint: disable=no-member
+            additions.append(f'content={shorten(self.content)}')  # pylint: disable=no-member
+        IGNORED_PROPS = {'loopback', 'color', 'view', 'innerHTML', 'codehilite_css'}
+        additions += [
+            f'{key}={shorten(value)}'
+            for key, value in self._props.items()
+            if not key.startswith('_') and key not in IGNORED_PROPS and value
+        ]
+        if additions:
+            result += f' [{", ".join(additions)}]'
+
+        for child in self.default_slot.children:
+            for line in str(child).split('\n'):
+                result += f'\n {line}'
+
+        return result

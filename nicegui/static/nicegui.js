@@ -358,7 +358,6 @@ function createApp(elements, options) {
           window.open(url, target);
         },
         download: (msg) => download(msg.src, msg.filename, msg.media_type, options.prefix),
-        notify: (msg) => Quasar.Notify.create(msg),
       };
       const socketMessageQueue = [];
       let isProcessingSocketMessage = false;

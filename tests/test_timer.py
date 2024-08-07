@@ -77,6 +77,20 @@ def test_setting_visibility(screen: Screen, once: bool):
     screen.should_not_contain('Some Label')
 
 
+def test_awaiting_coroutine(screen: Screen):
+    user = {'name': 'Alice'}
+
+    async def update_user():
+        await asyncio.sleep(0.1)
+        user['name'] = 'Bob'
+
+    ui.timer(0.5, update_user)
+
+    screen.open('/')
+    screen.wait(1)
+    assert user['name'] == 'Bob'
+
+
 def test_timer_on_deleted_container(screen: Screen):
     state = {'count': 0}
     with ui.row() as outer_container:
