@@ -14,6 +14,7 @@ from starlette.routing import Route
 import nicegui.storage
 from nicegui import Client, app, binding, core, run, ui
 from nicegui.functions.navigate import Navigate
+from nicegui.functions.notify import notify
 from nicegui.page import page
 
 from .screen import Screen
@@ -143,6 +144,7 @@ async def user(nicegui_reset_globals,  # pylint: disable=unused-argument
         async with httpx.AsyncClient(app=core.app, base_url='http://test') as client:
             yield User(client)
     ui.navigate = Navigate()
+    ui.notify = notify
 
 
 @pytest.fixture
@@ -155,6 +157,7 @@ async def create_user(nicegui_reset_globals,  # pylint: disable=unused-argument
     async with core.app.router.lifespan_context(core.app):
         yield lambda: User(httpx.AsyncClient(app=core.app, base_url='http://test'))
     ui.navigate = Navigate()
+    ui.notify = notify
 
 
 @pytest.fixture()
