@@ -137,6 +137,24 @@ def orthographic_camera() -> None:
         scene.box()
 
 
+@doc.demo('Get current camera pose', '''
+    Using the `get_camera` method you can get a dictionary of current camera parameters like position, rotation, field of view and more.
+    This demo shows how to continuously move a sphere towards the camera.
+    Try moving the camera around to see the sphere following it.
+''')
+def camera_pose() -> None:
+    with ui.scene().classes('w-full h-64') as scene:
+        ball = scene.sphere()
+
+    async def move():
+        camera = await scene.get_camera()
+        if camera is not None:
+            ball.move(x=0.95 * ball.x + 0.05 * camera['position']['x'],
+                      y=0.95 * ball.y + 0.05 * camera['position']['y'],
+                      z=1.0)
+    ui.timer(0.1, move)
+
+
 @doc.demo('Custom Background', '''
     You can set a custom background color using the `background_color` parameter of `ui.scene`.
 ''')
