@@ -263,6 +263,14 @@ class Scene(Element,
                         self.camera.look_at_x, self.camera.look_at_y, self.camera.look_at_z,
                         self.camera.up_x, self.camera.up_y, self.camera.up_z, duration)
 
+    async def get_camera(self) -> Dict[str, Any]:
+        """Get the current camera parameters.
+
+        In contrast to the `camera` property,
+        the result of this method includes the current camera pose caused by the user navigating the scene in the browser.
+        """
+        return await self.run_method('get_camera')
+
     def _handle_delete(self) -> None:
         binding.remove(list(self.objects.values()))
         super()._handle_delete()
