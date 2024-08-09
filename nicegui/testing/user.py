@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import re
-from typing import List, Optional, Set, Type, TypeVar, Union, overload
+from typing import Any, List, Optional, Set, Type, TypeVar, Union, overload
 from uuid import uuid4
 
 import httpx
@@ -14,6 +14,7 @@ from nicegui.nicegui import _on_handshake
 
 from .user_interaction import UserInteraction
 from .user_navigate import UserNavigate
+from .user_notify import UserNotify
 
 # pylint: disable=protected-access
 
@@ -31,10 +32,12 @@ class User:
         self.back_history: List[str] = []
         self.forward_history: List[str] = []
         self.navigate = UserNavigate(self)
+        self.notify = UserNotify()
 
-    def __getattribute__(self, name: str) -> asyncio.Any:
-        if name != 'navigate':  # NOTE: avoid infinite recursion
+    def __getattribute__(self, name: str) -> Any:
+        if name not in {'notify', 'navigate'}:  # NOTE: avoid infinite recursion
             ui.navigate = self.navigate
+            ui.notify = self.notify
         return super().__getattribute__(name)
 
     async def open(self, path: str, *, clear_forward_history: bool = True) -> None:
@@ -91,7 +94,7 @@ class User:
         assert self.client
         for _ in range(retries):
             with self.client:
-                if self._gather_elements(target, kind, marker, content):
+                if self.notify.contains(target) or self._gather_elements(target, kind, marker, content):
                     return
                 await asyncio.sleep(0.1)
         raise AssertionError('expected to see at least one ' + self._build_error_message(target, kind, marker, content))
@@ -126,7 +129,7 @@ class User:
         assert self.client
         for _ in range(retries):
             with self.client:
-                if not self._gather_elements(target, kind, marker, content):
+                if not self.notify.contains(target) and not self._gather_elements(target, kind, marker, content):
                     return
                 await asyncio.sleep(0.05)
         raise AssertionError('expected not to see any ' + self._build_error_message(target, kind, marker, content))
