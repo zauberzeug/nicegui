@@ -425,6 +425,23 @@ export default {
         })
         .start();
     },
+    get_camera() {
+      return {
+        position: this.camera.position,
+        up: this.camera.up,
+        rotation: this.camera.rotation,
+        quaternion: this.camera.quaternion,
+        type: this.camera.type,
+        fov: this.camera.fov,
+        aspect: this.camera.aspect,
+        near: this.camera.near,
+        far: this.camera.far,
+        left: this.camera.left,
+        right: this.camera.right,
+        top: this.camera.top,
+        bottom: this.camera.bottom,
+      };
+    },
     resize() {
       const { clientWidth, clientHeight } = this.$el;
       this.renderer.setSize(clientWidth, clientHeight);
