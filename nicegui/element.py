@@ -83,6 +83,7 @@ class Element(Visibility):
         self._classes.extend(self._default_classes)
         self._style: Dict[str, str] = {}
         self._style.update(self._default_style)
+        self._style.update({"anchor-name": f"--c{self.id}"})
         self._props: Dict[str, Any] = {}
         self._props.update(self._default_props)
         self._markers: List[str] = []
@@ -621,3 +622,16 @@ class Element(Visibility):
                 result += f'\n {line}'
 
         return result
+
+    @property
+    def at(self):
+        from nicegui.anchor import At
+
+        # Ensure anchoring-friendly position styles
+        self.style("position: absolute")
+        self.style("margin: 10px")
+        parent = self.parent_slot.parent
+        if not "position" in parent._style:
+            parent.style("position: relative")
+
+        return At(self)
