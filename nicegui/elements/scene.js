@@ -389,6 +389,12 @@ export default {
       if (!this.objects.has(object_id)) return;
       this.objects.get(object_id).geometry = texture_geometry(coords);
     },
+    set_points(object_id, position, color) {
+      const geometry = new THREE.BufferGeometry();
+      geometry.setAttribute("position", new THREE.Float32BufferAttribute(position.flat(), 3));
+      geometry.setAttribute("color", new THREE.Float32BufferAttribute(color.flat(), 3));
+      this.objects.get(object_id).geometry = geometry;
+    },
     move_camera(x, y, z, look_at_x, look_at_y, look_at_z, up_x, up_y, up_z, duration) {
       if (this.camera_tween) this.camera_tween.stop();
       this.camera_tween = new TWEEN.Tween([
