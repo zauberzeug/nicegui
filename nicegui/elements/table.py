@@ -2,7 +2,7 @@ from typing import Any, Callable, Dict, List, Literal, Optional, Union
 
 from typing_extensions import Self
 
-from .. import optional_features
+from .. import helpers, optional_features
 from ..element import Element
 from ..events import GenericEventArguments, TableSelectionEventArguments, ValueChangeEventArguments, handle_event
 from .mixins.filter_element import FilterElement
@@ -17,34 +17,46 @@ except ImportError:
 class Table(FilterElement, component='table.js'):
 
     def __init__(self,
-                 columns: List[Dict],
-                 rows: List[Dict],
+                 columns: Optional[List[Dict]] = None,
+                 rows: Optional[List[Dict]] = None,
                  row_key: str = 'id',
                  title: Optional[str] = None,
                  selection: Optional[Literal['single', 'multiple']] = None,
                  pagination: Optional[Union[int, dict]] = None,
                  on_select: Optional[Callable[..., Any]] = None,
                  on_pagination_change: Optional[Callable[..., Any]] = None,
+                 *,  # DEPRECATED: all arguments will be keyword-only in the future
+                 df: Optional['pd.DataFrame'] = None,
+                 default_column: Optional[Dict[str, Any]] = None,
                  ) -> None:
         """Table
 
         A table based on Quasar's `QTable <https://quasar.dev/vue-components/table>`_ component.
 
-        :param columns: list of column objects
-        :param rows: list of row objects
+        :param columns: optional list of column dictionaries (inferred from the first row if not provided)
+        :param rows: optional list of row dictionaries (will be added to those from ``df``, default: ``[]``)
+        :param df: optional Pandas DataFrame (rows will be added to those from ``rows``, default: ``None``)
+        :param default_column: default options which apply to all columns (default: ``{}``)
         :param row_key: name of the column containing unique data identifying the row (default: "id")
         :param title: title of the table
-        :param selection: selection type ("single" or "multiple"; default: `None`)
-        :param pagination: a dictionary correlating to a pagination object or number of rows per page (`None` hides the pagination, 0 means "infinite"; default: `None`).
+        :param selection: selection type ("single" or "multiple"; default: ``None``)
+        :param pagination: a dictionary correlating to a pagination object or number of rows per page (``None`` hides the pagination, 0 means "infinite"; default: ``None``).
         :param on_select: callback which is invoked when the selection changes
         :param on_pagination_change: callback which is invoked when the pagination changes
 
-        If selection is 'single' or 'multiple', then a `selected` property is accessible containing the selected rows.
+        If selection is "single" or "multiple", then a ``selected`` property is accessible containing the selected rows.
         """
         super().__init__()
 
-        self._props['columns'] = columns
-        self._props['rows'] = rows
+        self._df = self._clean_pandas_dataframe(df)
+        self._rows = rows or []
+        self._props['rows'] = self._merge_rows_with_dataframe()
+
+        self._default_column = default_column or {}
+        first_row = self._props['rows'][0] if self._props['rows'] else {}
+        self._columns = columns or [{'name': key, 'label': str(key), 'field': key} for key in first_row]
+        self._props['columns'] = self._merge_columns_with_default()
+
         self._props['row-key'] = row_key
         self._props['title'] = title
         self._props['hide-pagination'] = pagination is None
@@ -93,23 +105,60 @@ class Table(FilterElement, component='table.js'):
                     title: Optional[str] = None,
                     selection: Optional[Literal['single', 'multiple']] = None,
                     pagination: Optional[Union[int, dict]] = None,
-                    on_select: Optional[Callable[..., Any]] = None) -> Self:
-        """Create a table from a Pandas DataFrame.
+                    on_select: Optional[Callable[..., Any]] = None,
+                    ) -> Self:  # DEPRECATED
+        """Create a Table from a Pandas DataFrame."""
+        helpers.warn_once('ui.table.from_pandas is deprecated. Use ui.table with the df argument instead.')
+        return cls(df=df, row_key=row_key, title=title, selection=selection, pagination=pagination, on_select=on_select)
 
-        Note:
-        If the DataFrame contains non-serializable columns of type `datetime64[ns]`, `timedelta64[ns]`, `complex128` or `period[M]`,
-        they will be converted to strings.
-        To use a different conversion, convert the DataFrame manually before passing it to this method.
-        See `issue 1698 <https://github.com/zauberzeug/nicegui/issues/1698>`_ for more information.
+    @property
+    def rows(self) -> List[Dict]:
+        """List of rows, which are added to those from ``df``."""
+        return self._rows
 
-        :param df: Pandas DataFrame
-        :param row_key: name of the column containing unique data identifying the row (default: "id")
-        :param title: title of the table
-        :param selection: selection type ("single" or "multiple"; default: `None`)
-        :param pagination: a dictionary correlating to a pagination object or number of rows per page (`None` hides the pagination, 0 means "infinite"; default: `None`).
-        :param on_select: callback which is invoked when the selection changes
-        :return: table element
-        """
+    @rows.setter
+    def rows(self, value: List[Dict]) -> None:
+        self._rows = value
+        self._props['rows'] = self._merge_rows_with_dataframe()
+        self.update()
+
+    @property
+    def df(self) -> Optional['pd.DataFrame']:
+        """Optional Pandas DataFrame, which is added to those from ``rows``."""
+        return self._df
+
+    @df.setter
+    def df(self, value: 'pd.DataFrame') -> None:
+        self._df = self._clean_pandas_dataframe(value)
+        self._props['rows'] = self._merge_rows_with_dataframe()
+        self.update()
+
+    @property
+    def columns(self) -> List[Dict]:
+        """List of column dictionaries."""
+        return self._columns
+
+    @columns.setter
+    def columns(self, value: List[Dict]) -> None:
+        self._columns = value
+        self._props['columns'] = self._merge_columns_with_default()
+        self.update()
+
+    @property
+    def default_column(self) -> Dict[str, Any]:
+        """Default column dictionary."""
+        return self._default_column
+
+    @default_column.setter
+    def default_column(self, value: Dict[str, Any]) -> None:
+        self._default_column = value
+        self._props['columns'] = self._merge_columns_with_default()
+        self.update()
+
+    def _clean_pandas_dataframe(self, df: Optional['pd.DataFrame']) -> Optional['pd.DataFrame']:
+        if df is None:
+            return None
+
         def is_special_dtype(dtype):
             return (pd.api.types.is_datetime64_any_dtype(dtype) or
                     pd.api.types.is_timedelta64_dtype(dtype) or
@@ -124,35 +173,18 @@ class Table(FilterElement, component='table.js'):
             raise ValueError('MultiIndex columns are not supported. '
                              'You can convert them to strings using something like '
                              '`df.columns = ["_".join(col) for col in df.columns.values]`.')
+        return df
 
-        return cls(
-            columns=[{'name': col, 'label': col, 'field': col} for col in df.columns],
-            rows=df.to_dict('records'),
-            row_key=row_key,
-            title=title,
-            selection=selection,
-            pagination=pagination,
-            on_select=on_select)
+    def _merge_rows_with_dataframe(self) -> List[Dict]:
+        assert self._rows is not None or self._df is not None, 'Either rows or df must be set.'
+        return [
+            *(self._rows or []),
+            *(self._df.to_dict('records') if self._df is not None else []),
+        ]
 
-    @property
-    def rows(self) -> List[Dict]:
-        """List of rows."""
-        return self._props['rows']
-
-    @rows.setter
-    def rows(self, value: List[Dict]) -> None:
-        self._props['rows'][:] = value
-        self.update()
-
-    @property
-    def columns(self) -> List[Dict]:
-        """List of columns."""
-        return self._props['columns']
-
-    @columns.setter
-    def columns(self, value: List[Dict]) -> None:
-        self._props['columns'][:] = value
-        self.update()
+    def _merge_columns_with_default(self) -> List[Dict]:
+        """Merge columns with default column configuration."""
+        return [{**self._default_column, **column} for column in self._columns]
 
     @property
     def row_key(self) -> str:
@@ -205,13 +237,13 @@ class Table(FilterElement, component='table.js'):
 
     def add_rows(self, *rows: Dict) -> None:
         """Add rows to the table."""
-        self.rows.extend(rows)
-        self.update()
+        self.rows += rows
 
     def remove_rows(self, *rows: Dict) -> None:
         """Remove rows from the table."""
         keys = [row[self.row_key] for row in rows]
-        self.rows[:] = [row for row in self.rows if row[self.row_key] not in keys]
+        self._rows = [row for row in self.rows if row[self.row_key] not in keys]
+        self._props['rows'] = self._merge_rows_with_dataframe()
         self.selected[:] = [row for row in self.selected if row[self.row_key] not in keys]
         self.update()
 
@@ -221,7 +253,8 @@ class Table(FilterElement, component='table.js'):
         :param rows: list of rows to update
         :param clear_selection: whether to clear the selection (default: True)
         """
-        self.rows[:] = rows
+        self._rows = rows
+        self._props['rows'] = self._merge_rows_with_dataframe()
         if clear_selection:
             self.selected.clear()
         self.update()

@@ -23,6 +23,10 @@ def rows() -> List:
     ]
 
 
+def df() -> pd.DataFrame:
+    return pd.DataFrame({'name': ['Patrick', 'Liz'], 'age': [24, 40], 42: 'answer'})
+
+
 def test_table(screen: Screen):
     ui.table(title='My Team', columns=columns(), rows=rows())
 
@@ -32,6 +36,21 @@ def test_table(screen: Screen):
     screen.should_contain('Alice')
     screen.should_contain('Bob')
     screen.should_contain('Lionel')
+
+    screen.should_not_contain('id')  # when providing columns, only those columns are shown
+
+
+def test_table_without_columns(screen: Screen):
+    ui.table(title='My Team', rows=rows())
+
+    screen.open('/')
+    screen.should_contain('My Team')
+    screen.should_contain('name')
+    screen.should_contain('Alice')
+    screen.should_contain('Bob')
+    screen.should_contain('Lionel')
+
+    screen.should_contain('id')  # when omitting columns, they are inferred from the first row and capitalized
 
 
 def test_pagination_int(screen: Screen):
@@ -171,15 +190,37 @@ def test_replace_rows(screen: Screen):
     screen.should_contain('Daniel')
 
 
-def test_create_from_pandas(screen: Screen):
-    df = pd.DataFrame({'name': ['Alice', 'Bob'], 'age': [18, 21], 42: 'answer'})
-    ui.table.from_pandas(df)
+def test_update_columns(screen: Screen):
+    t = ui.table(columns=columns(), rows=rows())
+
+    def replace_columns():
+        t.columns = [{'name': 'name', 'label': 'Nombre', 'field': 'name'}]
+
+    ui.button('Replace columns', on_click=replace_columns)
 
     screen.open('/')
     screen.should_contain('Alice')
     screen.should_contain('Bob')
-    screen.should_contain('18')
-    screen.should_contain('21')
+    screen.should_contain('Lionel')
+    assert len(screen.find_all_by_class('sortable')) == 1
+
+    screen.click('Replace columns')
+    screen.should_contain('Nombre')
+    screen.should_not_contain('Name')
+    screen.should_not_contain('Age')
+    assert len(screen.find_all_by_class('sortable')) == 0
+
+
+def test_create_from_dataframe(screen: Screen):
+    ui.table(df=df())
+
+    screen.open('/')
+    screen.should_contain('name')
+    screen.should_contain('Patrick')
+    screen.should_contain('Liz')
+    screen.should_contain('age')
+    screen.should_contain('24')
+    screen.should_contain('40')
     screen.should_contain('42')
     screen.should_contain('answer')
 
@@ -192,7 +233,7 @@ def test_problematic_datatypes(screen: Screen):
         'Complex_col': [1 + 2j],
         'Period_col': pd.Series([pd.Period('2021-01')]),
     })
-    ui.table.from_pandas(df)
+    ui.table(df=df)
 
     screen.open('/')
     screen.should_contain('Datetime_col')
@@ -204,6 +245,84 @@ def test_problematic_datatypes(screen: Screen):
     screen.should_contain('5 days')
     screen.should_contain('(1+2j)')
     screen.should_contain('2021-01')
+
+
+def test_create_from_dataframe_with_custom_columns(screen: Screen):
+    ui.table(df=df(), columns=[
+        {'name': 'first_name', 'label': 'First name', 'field': 'name', 'headerClasses': 'my-class'},
+        {'name': 'age', 'label': 'Double the age', 'field': 'age', 'sortable': True, ':format': '(val, _row) => 2*val'}
+    ])
+
+    screen.open('/')
+    screen.should_contain('First name')
+    screen.should_contain('48')
+    assert len(screen.find_all_by_css('th.my-class')) == 1
+    assert len(screen.find_all_by_class('sortable')) == 1
+
+
+def test_update_dataframe(screen: Screen):
+    table = ui.table(df=df())
+
+    def update_df() -> None:
+        table.df = pd.DataFrame({'name': ['Alice', 'Lionel'], 'age': [18, 22], 42: 'answer'})
+
+    ui.button('Replace df', on_click=update_df)
+
+    screen.open('/')
+    screen.should_contain('Patrick')
+    screen.should_contain('Liz')
+    screen.should_contain('24')
+    screen.should_contain('40')
+
+    screen.click('Replace df')
+    screen.should_contain('Alice')
+    screen.should_contain('Lionel')
+    screen.should_not_contain('Patrick')
+    screen.should_contain('18')
+    screen.should_contain('22')
+    screen.should_not_contain('24')
+
+
+def test_both_rows_and_dataframe(screen: Screen):
+    table = ui.table(df=df(), rows=rows(), columns=columns())
+
+    def update_df() -> None:
+        table.df = pd.DataFrame({'name': ['Mike', 'Pamela'], 'age': [70, 26], 42: 'answer'})
+    ui.button('Update df', on_click=update_df)
+
+    def update_rows():
+        table.rows = [{'id': 3, 'name': 'Carol', 'age': 32}]
+    ui.button('Update rows', on_click=update_rows)
+
+    screen.open('/')
+    screen.should_contain('Alice')
+    screen.should_contain('Bob')
+    screen.should_contain('Lionel')
+    screen.should_contain('Patrick')
+    screen.should_contain('Liz')
+    screen.should_contain('24')
+    screen.should_contain('40')
+    screen.should_contain('18')
+    screen.should_contain('19')
+    screen.should_contain('21')
+
+    screen.click('Update df')
+    screen.should_contain('Mike')
+    screen.should_contain('Alice')
+    screen.should_not_contain('Patrick')
+
+    screen.click('Update rows')
+    screen.should_contain('Carol')
+    screen.should_contain('Mike')
+    screen.should_not_contain('Alice')
+
+
+def test_default_column(screen: Screen):
+    ui.table(columns=columns(), rows=rows(), default_column={'sortable': True})
+
+    screen.open('/')
+    screen.should_contain('Alice')
+    assert len(screen.find_all_by_class('sortable')) == 2
 
 
 def test_table_computed_props(screen: Screen):

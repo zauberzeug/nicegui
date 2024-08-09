@@ -80,7 +80,7 @@ def show_and_hide_columns():
     def toggle(column: Dict, visible: bool) -> None:
         column['classes'] = '' if visible else 'hidden'
         column['headerClasses'] = '' if visible else 'hidden'
-        table.update()
+        table.columns = columns
 
     with ui.button(icon='menu'):
         with ui.menu(), ui.column().classes('gap-0 p-2'):
@@ -134,7 +134,7 @@ def table_from_pandas_demo():
     import pandas as pd
 
     df = pd.DataFrame(data={'col1': [1, 2], 'col2': [3, 4]})
-    ui.table.from_pandas(df).classes('max-h-40')
+    table = ui.table(df=df).classes('max-h-40')
 
 
 @doc.demo('Adding rows', '''
@@ -151,6 +151,53 @@ def adding_rows():
     columns = [{'name': 'date', 'label': 'Date', 'field': 'date'}]
     table = ui.table(columns=columns, rows=[]).classes('h-52').props('virtual-scroll')
     ui.button('Add row', on_click=add)
+
+
+@doc.demo('Removing rows', '''
+    You can remove rows using the `remove_rows(*dict)` method.
+    Rows are removed based on the 'row_key' of the row items provided (default: "id")
+''')
+def removing_rows():
+    table = ui.table(rows=[
+        {'code': '001', 'numeric': 1, 'string': 'One'},
+        {'code': '002', 'numeric': 2, 'string': 'Two'},
+        {'code': '003', 'numeric': 3, 'string': 'Three'},
+        {'code': '004', 'numeric': 4, 'string': 'Four'},
+        {'code': '005', 'numeric': 5, 'string': 'Five'}
+    ], row_key='code')
+    ui.button('Remove last row', on_click=lambda: table.remove_rows(table.rows[-1]))
+
+
+@doc.demo('Updating rows', '''
+    There are two possible sources of rows: `rows` and `df` (Pandas DataFrame):
+
+    - You can update `rows` using the `update_rows()` method or by reassigning new rows to `rows` property.
+        With `update_rows()` you can also specify whether to clear the row selection.
+
+    - You can update rows provided as a DataFrame by reassigning a new dataframe to the `df` property.
+''')
+def updating_rows():
+    import pandas as pd
+
+    rows = [
+        {'id': 0, 'name': 'Alice', 'age': 18},
+        {'id': 1, 'name': 'Bob', 'age': 21},
+        {'id': 2, 'name': 'Lionel', 'age': 19},
+    ]
+    df = pd.DataFrame({'id': [3, 4], 'name': ['Patrick', 'Liz'], 'age': [24, 40]})
+
+    def increase_age_rows():
+        for row in rows:
+            row['age'] += 1
+        table.rows = rows
+
+    def increase_age_df():
+        df['age'] += 1
+        table.df = df
+
+    table = ui.table(rows=rows, df=df)
+    ui.button('Update rows', on_click=increase_age_rows)
+    ui.button('Update df', on_click=increase_age_df)
 
 
 @doc.demo('Custom sorting and formatting', '''
