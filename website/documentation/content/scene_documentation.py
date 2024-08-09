@@ -60,6 +60,35 @@ def click_events() -> None:
         scene.box().move(x=1, z=1).with_name('box')
 
 
+@doc.demo('Context menu for 3D objects', '''
+    This demo shows how to create a context menu for 3D objects.
+    By setting the `click_events` argument to `['contextmenu']`, the `handle_click` function will be called on right-click.
+    It clears the context menu and adds items based on the object that was clicked.
+''')
+def context_menu_for_3d_objects():
+    from nicegui import events
+
+    def handle_click(e: events.SceneClickEventArguments) -> None:
+        context_menu.clear()
+        name = next((hit.object_name for hit in e.hits if hit.object_name), None)
+        with context_menu:
+            if name == 'sphere':
+                ui.item('SPHERE').classes('font-bold')
+                ui.menu_item('inspect')
+                ui.menu_item('open')
+            if name == 'box':
+                ui.item('BOX').classes('font-bold')
+                ui.menu_item('rotate')
+                ui.menu_item('move')
+
+    with ui.element():
+        context_menu = ui.context_menu()
+        with ui.scene(width=285, height=220, on_click=handle_click,
+                      click_events=['contextmenu']) as scene:
+            scene.sphere().move(x=-1, z=1).with_name('sphere')
+            scene.box().move(x=1, z=1).with_name('box')
+
+
 @doc.demo('Draggable objects', '''
     You can make objects draggable using the `.draggable` method.
     There is an optional `on_drag_start` and `on_drag_end` argument to `ui.scene` to handle drag events.
