@@ -46,11 +46,21 @@ def styling():
     You can validate the input in two ways:
 
     - by passing a callable that returns an error message or `None`, or
-    - by passing a dictionary that maps error messages to callables that return `True` if the input is valid.
+    - by passing a dictionary that maps error messages to callables that return `True` if the input is valid, or raise
+    ValueError or AssertionError to take control on the message to display.
 ''')
 def validation():
     ui.input('Name', validation=lambda value: 'Too short' if len(value) < 5 else None)
-    ui.input('Name', validation={'Too short': lambda value: len(value) >= 5})
+
+    def runtime_message(s: str):
+        if len(s) > 10:
+            raise ValueError('Too long')
+        return True
+
+    ui.input('Name', validation={
+        'Too short': lambda value: len(value) >= 5,
+        'Error message delegated to function': runtime_message
+    })
 
 
 doc.reference(ui.input)
