@@ -3,6 +3,7 @@ import contextvars
 import os
 import time
 import uuid
+from redis import Redis, RedisCluster
 from collections.abc import MutableMapping
 from datetime import timedelta
 from pathlib import Path
@@ -45,6 +46,46 @@ class ReadOnlyDict(MutableMapping):
 
     def __len__(self) -> int:
         return len(self._data)
+
+
+class RedisDict(MutableMapping):
+    def __init__(self, redis_client: Optional[Union[Redis, RedisCluster]] = None, prefix: str = 'storage:', ttl: Optional[int] = None) -> None:
+        if redis_client is None:
+            raise ValueError("A Redis or RedisCluster client must be provided.")
+        self.redis_client = redis_client
+        self.prefix = prefix
+        self.ttl = ttl  # Time To Live in seconds, optional
+
+    def _key(self, item: str) -> str:
+        return f"{self.prefix}{item}"
+
+    def __getitem__(self, item: str) -> Any:
+        value = self.redis_client.get(self._key(item))
+        if value is None:
+            raise KeyError(item)
+        return json.loads(value)
+
+    def __setitem__(self, key: str, value: Any) -> None:
+        full_key = self._key(key)
+        self.redis_client.set(full_key, json.dumps(value))
+        if self.ttl is not None:
+            self.redis_client.expire(full_key, self.ttl)  # Set TTL for the key
+
+    def __delitem__(self, key: str) -> None:
+        if not self.redis_client.delete(self._key(key)):
+            raise KeyError(key)
+
+    def __iter__(self) -> Iterator:
+        keys = self.redis_client.keys(f"{self.prefix}*")
+        return (key.decode().split(':', 1)[1] for key in keys)
+
+    def __len__(self) -> int:
+        return len(self.redis_client.keys(f"{self.prefix}*"))
+
+    def clear(self) -> None:
+        keys = self.redis_client.keys(f"{self.prefix}*")
+        if keys:
+            self.redis_client.delete(*keys)
 
 
 class PersistentDict(observables.ObservableDict):
@@ -99,8 +140,16 @@ def set_storage_secret(storage_secret: Optional[str] = None) -> None:
     Storage.secret = storage_secret
 
 
+def set_storage_redis_client(redis_client: Union[Redis, RedisCluster], ttl: Optional[int] = None) -> None:
+    """Set redis_client."""
+    Storage.redis_client = redis_client
+    Storage.redis_ttl = ttl
+
+
 class Storage:
     secret: Optional[str] = None
+    redis_client: Optional[Union[Redis, RedisCluster]] = None
+    redis_ttl: Optional[int] = None
 
     def __init__(self) -> None:
         self.path = Path(os.environ.get('NICEGUI_STORAGE_PATH', '.nicegui')).resolve()
@@ -149,8 +198,13 @@ class Storage:
                 raise RuntimeError('app.storage.user needs a storage_secret passed in ui.run()')
             raise RuntimeError('app.storage.user can only be used within a UI context')
         session_id = request.session['id']
+
         if session_id not in self._users:
-            self._users[session_id] = PersistentDict(self.path / f'storage-user-{session_id}.json', encoding='utf-8')
+            if Storage.redis_client:
+                self._users[session_id] = RedisDict(Storage.redis_client, prefix=f'nicegui:storage:{session_id}:', ttl=Storage.redis_ttl)
+            else:
+                self._users[session_id] = PersistentDict(self.path / f'storage-user-{session_id}.json', encoding='utf-8')
+
         return self._users[session_id]
 
     @staticmethod

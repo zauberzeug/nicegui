@@ -1,8 +1,9 @@
 from __future__ import annotations
 
 import multiprocessing
+from redis import Redis, RedisCluster
 import socket
-from typing import List, Optional
+from typing import List, Optional, Union
 
 import uvicorn
 
@@ -14,6 +15,8 @@ class CustomServerConfig(uvicorn.Config):
     storage_secret: Optional[str] = None
     method_queue: Optional[multiprocessing.Queue] = None
     response_queue: Optional[multiprocessing.Queue] = None
+    redis_client: Optional[Union[Redis, RedisCluster]] = None
+    redis_session_ttl: Optional[int] = None
 
 
 class Server(uvicorn.Server):
@@ -33,4 +36,5 @@ class Server(uvicorn.Server):
             native.response_queue = self.config.response_queue
 
         storage.set_storage_secret(self.config.storage_secret)
+        storage.set_storage_redis_client(self.config.redis_client, ttl=self.config.redis_session_ttl)
         super().run(sockets=sockets)
