@@ -35,6 +35,7 @@ docutils = "^0.19"
 requests = ">=2.32.0" # https://github.com/zauberzeug/nicegui/security/dependabot/33
 urllib3 = ">=1.26.18,!=2.0.0,!=2.0.1,!=2.0.2,!=2.0.3,!=2.0.4,!=2.0.5,!=2.0.6,!=2.0.7,!=2.1.0,!=2.2.0,!=2.2.1" # https://github.com/zauberzeug/nicegui/security/dependabot/34
 certifi = ">=2024.07.04" # https://github.com/zauberzeug/nicegui/security/dependabot/35
+redis = ">=5.0.3"
 
 [tool.poetry.extras]
 native = ["pywebview"]
