@@ -75,6 +75,7 @@ class Scene(Element,
                  grid: Union[bool, Tuple[int, int]] = True,
                  camera: Optional[SceneCamera] = None,
                  on_click: Optional[Callable[..., Any]] = None,
+                 click_events: List[str] = ['click', 'dblclick'],  # noqa: B006
                  on_drag_start: Optional[Callable[..., Any]] = None,
                  on_drag_end: Optional[Callable[..., Any]] = None,
                  drag_constraints: str = '',
@@ -91,7 +92,8 @@ class Scene(Element,
         :param height: height of the canvas
         :param grid: whether to display a grid (boolean or tuple of ``size`` and ``divisions`` for `Three.js' GridHelper <https://threejs.org/docs/#api/en/helpers/GridHelper>`_, default: 100x100)
         :param camera: camera definition, either instance of ``ui.scene.perspective_camera`` (default) or ``ui.scene.orthographic_camera``
-        :param on_click: callback to execute when a 3D object is clicked
+        :param on_click: callback to execute when a 3D object is clicked (use ``click_events`` to specify which events to subscribe to)
+        :param click_events: list of JavaScript click events to subscribe to (default: ``['click', 'dblclick']``)
         :param on_drag_start: callback to execute when a 3D object is dragged
         :param on_drag_end: callback to execute when a 3D object is dropped
         :param drag_constraints: comma-separated JavaScript expression for constraining positions of dragged objects (e.g. ``'x = 0, z = y / 2'``)
@@ -108,6 +110,7 @@ class Scene(Element,
         self.objects: Dict[str, Object3D] = {}
         self.stack: List[Union[Object3D, SceneObject]] = [SceneObject()]
         self._click_handlers = [on_click] if on_click else []
+        self._props['click_events'] = click_events
         self._drag_start_handlers = [on_drag_start] if on_drag_start else []
         self._drag_end_handlers = [on_drag_end] if on_drag_end else []
         self.is_initialized = False

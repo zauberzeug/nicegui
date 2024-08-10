@@ -60,6 +60,35 @@ def click_events() -> None:
         scene.box().move(x=1, z=1).with_name('box')
 
 
+@doc.demo('Context menu for 3D objects', '''
+    This demo shows how to create a context menu for 3D objects.
+    By setting the `click_events` argument to `['contextmenu']`, the `handle_click` function will be called on right-click.
+    It clears the context menu and adds items based on the object that was clicked.
+''')
+def context_menu_for_3d_objects():
+    from nicegui import events
+
+    def handle_click(e: events.SceneClickEventArguments) -> None:
+        context_menu.clear()
+        name = next((hit.object_name for hit in e.hits if hit.object_name), None)
+        with context_menu:
+            if name == 'sphere':
+                ui.item('SPHERE').classes('font-bold')
+                ui.menu_item('inspect')
+                ui.menu_item('open')
+            if name == 'box':
+                ui.item('BOX').classes('font-bold')
+                ui.menu_item('rotate')
+                ui.menu_item('move')
+
+    with ui.element():
+        context_menu = ui.context_menu()
+        with ui.scene(width=285, height=220, on_click=handle_click,
+                      click_events=['contextmenu']) as scene:
+            scene.sphere().move(x=-1, z=1).with_name('sphere')
+            scene.box().move(x=1, z=1).with_name('box')
+
+
 @doc.demo('Draggable objects', '''
     You can make objects draggable using the `.draggable` method.
     There is an optional `on_drag_start` and `on_drag_end` argument to `ui.scene` to handle drag events.
@@ -86,6 +115,28 @@ def draggable_objects() -> None:
     ui.switch('draggable sphere',
               value=sphere.draggable_,
               on_change=lambda e: sphere.draggable(e.value))
+
+
+@doc.demo('Subscribe to the drag event', '''
+    By default, a draggable object is only updated when the drag ends to avoid performance issues.
+    But you can explicitly subscribe to the "drag" event to get immediate updates.
+    In this demo we update the position and size of a box based on the positions of two draggable spheres.
+''')
+def immediate_updates() -> None:
+    from nicegui import events
+
+    with ui.scene(drag_constraints='z=0') as scene:
+        box = scene.box(1, 1, 0.2).move(0, 0).material('Orange')
+        sphere1 = scene.sphere(0.2).move(0.5, -0.5).material('SteelBlue').draggable()
+        sphere2 = scene.sphere(0.2).move(-0.5, 0.5).material('SteelBlue').draggable()
+
+    def handle_drag(e: events.GenericEventArguments) -> None:
+        x1 = sphere1.x if e.args['object_id'] == sphere2.id else e.args['x']
+        y1 = sphere1.y if e.args['object_id'] == sphere2.id else e.args['y']
+        x2 = sphere2.x if e.args['object_id'] == sphere1.id else e.args['x']
+        y2 = sphere2.y if e.args['object_id'] == sphere1.id else e.args['y']
+        box.move((x1 + x2) / 2, (y1 + y2) / 2).scale(x2 - x1, y2 - y1, 1)
+    scene.on('drag', handle_drag)
 
 
 @doc.demo('Rendering point clouds', '''

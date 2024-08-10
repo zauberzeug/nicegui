@@ -149,7 +149,6 @@ export default {
     };
     const handleDrag = (event) => {
       this.drag_constraints.split(",").forEach((constraint) => applyConstraint(constraint, event.object.position));
-      if (event.type === "drag") return;
       this.$emit(event.type, {
         type: event.type,
         object_id: event.object.object_id,
@@ -158,7 +157,8 @@ export default {
         y: event.object.position.y,
         z: event.object.position.z,
       });
-      this.controls.enabled = event.type == "dragend";
+      if (event.type === "dragstart") this.controls.enabled = false;
+      if (event.type === "dragend") this.controls.enabled = true;
     };
     this.drag_controls.addEventListener("dragstart", handleDrag);
     this.drag_controls.addEventListener("drag", handleDrag);
@@ -195,8 +195,7 @@ export default {
         shift_key: mouseEvent.shiftKey,
       });
     };
-    this.$el.onclick = click_handler;
-    this.$el.ondblclick = click_handler;
+    this.click_events.forEach((event) => this.$el.addEventListener(event, click_handler));
 
     this.texture_loader = new THREE.TextureLoader();
     this.stl_loader = new STLLoader();
@@ -492,6 +491,7 @@ export default {
     grid: Object,
     camera_type: String,
     camera_params: Object,
+    click_events: Array,
     drag_constraints: String,
     background_color: String,
   },
