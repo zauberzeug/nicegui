@@ -41,7 +41,7 @@ class Tree(Element):
         self._props['node-key'] = node_key
         self._props['label-key'] = label_key
         self._props['children-key'] = children_key
-        self._props['selected'] = []
+        self._props['selected'] = None
         self._props['expanded'] = []
         self._props['ticked'] = []
         if tick_strategy is not None:
@@ -76,6 +76,22 @@ class Tree(Element):
     def on_select(self, callback: Callable[..., Any]) -> Self:
         """Add a callback to be invoked when the selection changes."""
         self._select_handlers.append(callback)
+        return self
+
+    def select(self, node_key: Optional[str] = None) -> Self:
+        """Select the given node.
+
+        :param node_key: node key string to select (default: do nothing)
+        """
+        if node_key:
+            self._props['selected'] = node_key
+            self.update()
+        return self
+
+    def deselect(self) -> Self:
+        """Remove node selection if any selected."""
+        self._props['selected'] = None
+        self.update()
         return self
 
     def on_expand(self, callback: Callable[..., Any]) -> Self:

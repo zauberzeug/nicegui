@@ -62,3 +62,20 @@ def test_expand_and_collapse_nodes(screen: Screen):
     screen.should_not_contain('2')
     screen.should_contain('A')
     screen.should_contain('B')
+
+
+def test_select_deselect_node(screen: Screen):
+    tree = ui.tree([
+        {'id': 'numbers', 'children': [{'id': '1'}, {'id': '2'}]},
+        {'id': 'letters', 'children': [{'id': 'A'}, {'id': 'B'}]},
+    ], label_key='id')
+
+    ui.button('Select number', on_click=lambda: tree.select('2'))
+    ui.button('Deselect number', on_click=lambda: tree.deselect())
+
+    screen.open('/')
+    screen.click('Select number')
+    assert tree._props['selected'] == '2'
+
+    screen.click('Deselect number')
+    assert tree._props['selected'] is None
