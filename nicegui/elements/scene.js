@@ -195,8 +195,7 @@ export default {
         shift_key: mouseEvent.shiftKey,
       });
     };
-    this.$el.onclick = click_handler;
-    this.$el.ondblclick = click_handler;
+    this.click_events.forEach((event) => this.$el.addEventListener(event, click_handler));
 
     this.texture_loader = new THREE.TextureLoader();
     this.stl_loader = new STLLoader();
@@ -475,6 +474,7 @@ export default {
     grid: Object,
     camera_type: String,
     camera_params: Object,
+    click_events: Array,
     drag_constraints: String,
     background_color: String,
   },
