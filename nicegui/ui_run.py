@@ -163,6 +163,7 @@ def run(*,
         log_level=uvicorn_logging_level,
         **kwargs,
     )
+    print("Using in-house NICEGUI")
     config.storage_secret = storage_secret
     config.redis_client = redis_client
     config.redis_session_ttl = redis_session_ttl
