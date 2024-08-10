@@ -88,6 +88,28 @@ def draggable_objects() -> None:
               on_change=lambda e: sphere.draggable(e.value))
 
 
+@doc.demo('Subscribe to the drag event', '''
+    By default, a draggable object is only updated when the drag ends to avoid performance issues.
+    But you can explicitly subscribe to the "drag" event to get immediate updates.
+    In this demo we update the position and size of a box based on the positions of two draggable spheres.
+''')
+def immediate_updates() -> None:
+    from nicegui import events
+
+    with ui.scene(drag_constraints='z=0') as scene:
+        box = scene.box(1, 1, 0.2).move(0, 0).material('Orange')
+        sphere1 = scene.sphere(0.2).move(0.5, -0.5).material('SteelBlue').draggable()
+        sphere2 = scene.sphere(0.2).move(-0.5, 0.5).material('SteelBlue').draggable()
+
+    def handle_drag(e: events.GenericEventArguments) -> None:
+        x1 = sphere1.x if e.args['object_id'] == sphere2.id else e.args['x']
+        y1 = sphere1.y if e.args['object_id'] == sphere2.id else e.args['y']
+        x2 = sphere2.x if e.args['object_id'] == sphere1.id else e.args['x']
+        y2 = sphere2.y if e.args['object_id'] == sphere1.id else e.args['y']
+        box.move((x1 + x2) / 2, (y1 + y2) / 2).scale(x2 - x1, y2 - y1, 1)
+    scene.on('drag', handle_drag)
+
+
 @doc.demo('Rendering point clouds', '''
     You can render point clouds using the `point_cloud` method.
     The `points` argument is a list of point coordinates, and the `colors` argument is a list of RGB colors (0..1).
