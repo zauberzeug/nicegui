@@ -79,3 +79,39 @@ def test_select_deselect_node(screen: Screen):
 
     screen.click('Deselect number')
     assert tree._props['selected'] is None
+
+
+def test_tick_untick_node_or_nodes(screen: Screen):
+    tree = ui.tree([
+        {'id': 'numbers', 'children': [{'id': '1'}, {'id': '2'}]},
+        {'id': 'letters', 'children': [{'id': 'A'}, {'id': 'B'}]},
+    ], label_key='id', tick_strategy='leaf')
+
+    ui.button('Tick some', on_click=lambda: tree.tick(['1', '2', 'B']))
+    ui.button('Untick some', on_click=lambda: tree.untick(['1', 'B']))
+    ui.button('Tick all', on_click=tree.tick)
+    ui.button('Untick all', on_click=tree.untick)
+
+    screen.open('/')
+    tree.expand()
+    screen.wait(0.5)
+
+    screen.click('Tick some')
+    screen.wait(0.5)
+    assert len(tree._props['ticked']) == len(['1', '2', 'B'])
+    assert all(a == b for a, b in zip(sorted(tree._props['ticked']), sorted(['1', '2', 'B'])))
+
+    screen.click('Untick some')
+    screen.wait(0.5)
+    assert len(tree._props['ticked']) == len(['2'])
+    assert all(a == b for a, b in zip(tree._props['ticked'], ['2']))
+
+    screen.click('Tick all')
+    screen.wait(0.5)
+    assert len(tree._props['ticked']) == len(['numbers', '1', '2', 'letters', 'A', 'B'])
+    assert all(a == b for a, b in zip(sorted(tree._props['ticked']),
+               sorted(['numbers', '1', '2', 'letters', 'A', 'B'])))
+
+    screen.click('Untick all')
+    screen.wait(0.5)
+    assert len(tree._props['ticked']) == 0

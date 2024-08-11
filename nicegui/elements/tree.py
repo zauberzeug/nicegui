@@ -104,6 +104,25 @@ class Tree(Element):
         self._tick_handlers.append(callback)
         return self
 
+    def tick(self, node_keys: Optional[List[str]] = None) -> Self:
+        """Tick the given nodes.
+
+        :param node_keys: list of node keys to tick (default: all nodes)
+        """
+        self._props['ticked'][:] = self._find_node_keys(node_keys).union(self._props['ticked'])
+        self.update()
+        return self
+
+    def untick(self, node_keys: Optional[List[str]] = None) -> Self:
+        """Remove tick from the given nodes.
+
+        :param node_keys: list of node keys to untick (default: all nodes)
+        """
+        self._props['ticked'][:] = set(self._props['ticked']).difference(
+            self._find_node_keys(node_keys).intersection(self._props['ticked']))
+        self.update()
+        return self
+
     def expand(self, node_keys: Optional[List[str]] = None) -> Self:
         """Expand the given nodes.
 
