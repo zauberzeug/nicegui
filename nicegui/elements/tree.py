@@ -116,7 +116,7 @@ class Tree(Element):
     def untick(self, node_keys: Optional[List[str]] = None) -> Self:
         """Remove tick from the given nodes.
 
-        :param node_keys: list of node keys to untick (default: all nodes)
+        :param node_keys: list of node keys to untick (default: none of the nodes)
         """
         self._props['ticked'][:] = set(self._props['ticked']).difference(
             self._find_node_keys(node_keys).intersection(self._props['ticked']))
