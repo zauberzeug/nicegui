@@ -62,4 +62,24 @@ def tree_with_checkboxes():
     ], label_key='id', tick_strategy='leaf', on_tick=lambda e: ui.notify(e.value))
 
 
+@doc.demo('Select/deselect or tick/untick programmatically', '''
+    Node label in tree can be selected or deselected with the `select()` and `deselect()` methods.
+    If enabled with "tick-strategy" prop then nodes can be ticked or unticked with the `tick()` and `untick()` methods.
+''')
+def select_or_tick_programmatically():
+    with ui.row():
+        t = ui.tree([
+            {'id': 'numbers', 'children': [{'id': '1'}, {'id': '2'}]},
+            {'id': 'letters', 'children': [{'id': 'A'}, {'id': 'B'}]},
+        ], label_key='id', tick_strategy='leaf').expand()
+        with ui.column():
+            ui.button('Tick 1, 2 & B', on_click=lambda: t.tick(['1', '2', 'B']))
+            ui.button('Untick 2 & B', on_click=lambda: t.untick(['2', 'B']))
+            ui.button('Tick all', on_click=t.tick)
+            ui.button('Untick all', on_click=t.untick)
+    with ui.row():
+        ui.button('Select A', on_click=lambda: t.select('A'))
+        ui.button('Deselect A', on_click=t.deselect)
+
+
 doc.reference(ui.tree)
