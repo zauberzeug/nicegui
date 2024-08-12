@@ -69,7 +69,7 @@ def select_programmatically():
     t = ui.tree([
         {'id': 'numbers', 'children': [{'id': '1'}, {'id': '2'}]},
         {'id': 'letters', 'children': [{'id': 'A'}, {'id': 'B'}]},
-    ], label_key='id', tick_strategy='leaf').expand()
+    ], label_key='id').expand()
 
     with ui.row():
         ui.button('Select A', on_click=lambda: t.select('A'))
