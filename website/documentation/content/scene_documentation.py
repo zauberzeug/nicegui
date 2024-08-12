@@ -91,26 +91,24 @@ def draggable_objects() -> None:
 @doc.demo('Rendering point clouds', '''
     You can render point clouds using the `point_cloud` method.
     The `points` argument is a list of point coordinates, and the `colors` argument is a list of RGB colors (0..1).
-    You can update a point cloud using the `.set_points` method.
+    You can update the cloud using its `set_points()` method.
 ''')
 def point_clouds() -> None:
     import numpy as np
-    import time
 
-    def generate_points(t):
+    def generate_data(frequency: float = 1.0):
         x, y = np.meshgrid(np.linspace(-3, 3), np.linspace(-3, 3))
-        z = np.sin(x + t) * np.cos(y + t) + 1
-        return np.dstack([x, y, z]).reshape(-1, 3)
-
-    def update_points():
-        points = generate_points(time.time())
-        point_cloud.set_points(points, points)
+        z = np.sin(x * frequency) * np.cos(y * frequency) + 1
+        points = np.dstack([x, y, z]).reshape(-1, 3)
+        colors = points / [6, 6, 2] + [0.5, 0.5, 0]
+        return points, colors
 
     with ui.scene().classes('w-full h-64') as scene:
-        points = generate_points(0)
-        point_cloud = scene.point_cloud(points=points, colors=points, point_size=0.1)
+        points, colors = generate_data()
+        point_cloud = scene.point_cloud(points, colors, point_size=0.1)
 
-    ui.button("Update", on_click=update_points)
+    ui.slider(min=0.1, max=3, step=0.1, value=1) \
+        .on_value_change(lambda e: point_cloud.set_points(*generate_data(e.value)))
 
 
 @doc.demo('Wait for Initialization', '''
