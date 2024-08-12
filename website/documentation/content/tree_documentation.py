@@ -94,4 +94,16 @@ def tick_programmatically():
         ui.button('Untick all', on_click=t.untick)
 
 
+@doc.demo('Filter nodes', '''
+    You can filter nodes by setting the `filter` property.
+    The tree will only show nodes that match the filter.
+''')
+def filter_nodes():
+    t = ui.tree([
+        {'id': 'fruits', 'children': [{'id': 'Apple'}, {'id': 'Banana'}]},
+        {'id': 'vegetables', 'children': [{'id': 'Potato'}, {'id': 'Tomato'}]},
+    ], label_key='id').expand()
+    ui.input('filter').bind_value_to(t, 'filter')
+
+
 doc.reference(ui.tree)
