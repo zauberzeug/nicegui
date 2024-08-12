@@ -2,9 +2,10 @@ import * as THREE from "three";
 import { CSS2DRenderer, CSS2DObject } from "CSS2DRenderer";
 import { CSS3DRenderer, CSS3DObject } from "CSS3DRenderer";
 import { DragControls } from "DragControls";
+import { GLTFLoader } from "GLTFLoader";
 import { OrbitControls } from "OrbitControls";
 import { STLLoader } from "STLLoader";
-import { GLTFLoader } from "GLTFLoader";
+import "tween";
 
 function texture_geometry(coords) {
   const geometry = new THREE.BufferGeometry();

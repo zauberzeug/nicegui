@@ -1,9 +1,13 @@
+import "echarts";
 import { convertDynamicProperties } from "../../static/utils/dynamic_properties.js";
 
 export default {
   template: "<div></div>",
   async mounted() {
     await this.$nextTick(); // wait for Tailwind classes to be applied
+    if (this.enable_3d) {
+      await import("echarts-gl");
+    }
 
     this.chart = echarts.init(this.$el);
     this.chart.on("click", (e) => this.$emit("pointClick", e));
@@ -81,5 +85,6 @@ export default {
   },
   props: {
     options: Object,
+    enable_3d: Boolean,
   },
 };
