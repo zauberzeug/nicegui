@@ -41,7 +41,7 @@ class Tree(Element):
         self._props['node-key'] = node_key
         self._props['label-key'] = label_key
         self._props['children-key'] = children_key
-        self._props['selected'] = []
+        self._props['selected'] = None
         self._props['expanded'] = []
         self._props['ticked'] = []
         if tick_strategy is not None:
@@ -78,6 +78,20 @@ class Tree(Element):
         self._select_handlers.append(callback)
         return self
 
+    def select(self, node_key: Optional[str]) -> Self:
+        """Select the given node.
+
+        :param node_key: node key to select
+        """
+        if self._props['selected'] != node_key:
+            self._props['selected'] = node_key
+            self.update()
+        return self
+
+    def deselect(self) -> Self:
+        """Remove node selection."""
+        return self.select(None)
+
     def on_expand(self, callback: Callable[..., Any]) -> Self:
         """Add a callback to be invoked when the expansion changes."""
         self._expand_handlers.append(callback)
@@ -86,6 +100,24 @@ class Tree(Element):
     def on_tick(self, callback: Callable[..., Any]) -> Self:
         """Add a callback to be invoked when a node is ticked or unticked."""
         self._tick_handlers.append(callback)
+        return self
+
+    def tick(self, node_keys: Optional[List[str]] = None) -> Self:
+        """Tick the given nodes.
+
+        :param node_keys: list of node keys to tick or ``None`` to tick all nodes (default: ``None``)
+        """
+        self._props['ticked'][:] = self._find_node_keys(node_keys).union(self._props['ticked'])
+        self.update()
+        return self
+
+    def untick(self, node_keys: Optional[List[str]] = None) -> Self:
+        """Remove tick from the given nodes.
+
+        :param node_keys: list of node keys to untick or ``None`` to untick all nodes (default: ``None``)
+        """
+        self._props['ticked'][:] = set(self._props['ticked']).difference(self._find_node_keys(node_keys))
+        self.update()
         return self
 
     def expand(self, node_keys: Optional[List[str]] = None) -> Self:
