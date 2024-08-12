@@ -78,21 +78,19 @@ class Tree(Element):
         self._select_handlers.append(callback)
         return self
 
-    def select(self, node_key: Optional[str] = None) -> Self:
+    def select(self, node_key: Optional[str]) -> Self:
         """Select the given node.
 
-        :param node_key: node key string to select (default: do nothing)
+        :param node_key: node key to select
         """
-        if node_key:
+        if self._props['selected'] != node_key:
             self._props['selected'] = node_key
             self.update()
         return self
 
     def deselect(self) -> Self:
-        """Remove node selection if any selected."""
-        self._props['selected'] = None
-        self.update()
-        return self
+        """Remove node selection."""
+        return self.select(None)
 
     def on_expand(self, callback: Callable[..., Any]) -> Self:
         """Add a callback to be invoked when the expansion changes."""
@@ -107,7 +105,7 @@ class Tree(Element):
     def tick(self, node_keys: Optional[List[str]] = None) -> Self:
         """Tick the given nodes.
 
-        :param node_keys: list of node keys to tick (default: all nodes)
+        :param node_keys: list of node keys to tick or ``None`` to tick all nodes (default: ``None``)
         """
         self._props['ticked'][:] = self._find_node_keys(node_keys).union(self._props['ticked'])
         self.update()
@@ -116,10 +114,9 @@ class Tree(Element):
     def untick(self, node_keys: Optional[List[str]] = None) -> Self:
         """Remove tick from the given nodes.
 
-        :param node_keys: list of node keys to untick (default: none of the nodes)
+        :param node_keys: list of node keys to untick or ``None`` to untick all nodes (default: ``None``)
         """
-        self._props['ticked'][:] = set(self._props['ticked']).difference(
-            self._find_node_keys(node_keys).intersection(self._props['ticked']))
+        self._props['ticked'][:] = set(self._props['ticked']).difference(self._find_node_keys(node_keys))
         self.update()
         return self
 

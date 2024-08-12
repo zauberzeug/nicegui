@@ -35,7 +35,17 @@ def tree_with_custom_header_and_body():
     ''')
 
 
-@doc.demo('Expand and collapse programmatically', '''
+@doc.demo('Tree with checkboxes', '''
+    The tree can be used with checkboxes by setting the "tick-strategy" prop.
+''')
+def tree_with_checkboxes():
+    ui.tree([
+        {'id': 'A', 'children': [{'id': 'A1'}, {'id': 'A2'}]},
+        {'id': 'B', 'children': [{'id': 'B1'}, {'id': 'B2'}]},
+    ], label_key='id', tick_strategy='leaf', on_tick=lambda e: ui.notify(e.value))
+
+
+@doc.demo('Expand/collapse programmatically', '''
     The whole tree or individual nodes can be toggled programmatically using the `expand()` and `collapse()` methods.
     This even works if a node is disabled (e.g. not clickable by the user).
 ''')
@@ -52,34 +62,36 @@ def expand_programmatically():
         ui.button('- A', on_click=lambda: t.collapse(['A']))
 
 
-@doc.demo('Tree with checkboxes', '''
-    The tree can be used with checkboxes by setting the "tick-strategy" prop.
+@doc.demo('Select/deselect programmatically', '''
+    You can select or deselect nodes with the `select()` and `deselect()` methods.
 ''')
-def tree_with_checkboxes():
-    ui.tree([
-        {'id': 'A', 'children': [{'id': 'A1'}, {'id': 'A2'}]},
-        {'id': 'B', 'children': [{'id': 'B1'}, {'id': 'B2'}]},
-    ], label_key='id', tick_strategy='leaf', on_tick=lambda e: ui.notify(e.value))
+def select_programmatically():
+    t = ui.tree([
+        {'id': 'numbers', 'children': [{'id': '1'}, {'id': '2'}]},
+        {'id': 'letters', 'children': [{'id': 'A'}, {'id': 'B'}]},
+    ], label_key='id', tick_strategy='leaf').expand()
 
-
-@doc.demo('Select/deselect or tick/untick programmatically', '''
-    Node label in tree can be selected or deselected with the `select()` and `deselect()` methods.
-    If enabled with "tick-strategy" prop then nodes can be ticked or unticked with the `tick()` and `untick()` methods.
-''')
-def select_or_tick_programmatically():
-    with ui.row():
-        t = ui.tree([
-            {'id': 'numbers', 'children': [{'id': '1'}, {'id': '2'}]},
-            {'id': 'letters', 'children': [{'id': 'A'}, {'id': 'B'}]},
-        ], label_key='id', tick_strategy='leaf').expand()
-        with ui.column():
-            ui.button('Tick 1, 2 & B', on_click=lambda: t.tick(['1', '2', 'B']))
-            ui.button('Untick 2 & B', on_click=lambda: t.untick(['2', 'B']))
-            ui.button('Tick all', on_click=t.tick)
-            ui.button('Untick all', on_click=t.untick)
     with ui.row():
         ui.button('Select A', on_click=lambda: t.select('A'))
         ui.button('Deselect A', on_click=t.deselect)
+
+
+@doc.demo('Tick/untick programmatically', '''
+    After setting a `tick_strategy`, you can tick or untick nodes with the `tick()` and `untick()` methods.
+    You can either specify a list of node keys or `None` to tick or untick all nodes.
+''')
+def tick_programmatically():
+    t = ui.tree([
+        {'id': 'numbers', 'children': [{'id': '1'}, {'id': '2'}]},
+        {'id': 'letters', 'children': [{'id': 'A'}, {'id': 'B'}]},
+    ], label_key='id', tick_strategy='leaf').expand()
+
+    with ui.row():
+        ui.button('Tick 1, 2 and B', on_click=lambda: t.tick(['1', '2', 'B']))
+        ui.button('Untick 2 and B', on_click=lambda: t.untick(['2', 'B']))
+    with ui.row():
+        ui.button('Tick all', on_click=t.tick)
+        ui.button('Untick all', on_click=t.untick)
 
 
 doc.reference(ui.tree)

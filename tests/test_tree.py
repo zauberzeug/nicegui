@@ -70,15 +70,16 @@ def test_select_deselect_node(screen: Screen):
         {'id': 'letters', 'children': [{'id': 'A'}, {'id': 'B'}]},
     ], label_key='id')
 
-    ui.button('Select number', on_click=lambda: tree.select('2'))
-    ui.button('Deselect number', on_click=lambda: tree.deselect())
+    ui.button('Select', on_click=lambda: tree.select('2'))
+    ui.button('Deselect', on_click=tree.deselect)
+    ui.label().bind_text_from(tree._props, 'selected', lambda x: f'Selected: {x}')
 
     screen.open('/')
-    screen.click('Select number')
-    assert tree._props['selected'] == '2'
+    screen.click('Select')
+    screen.should_contain('Selected: 2')
 
-    screen.click('Deselect number')
-    assert tree._props['selected'] is None
+    screen.click('Deselect')
+    screen.should_contain('Selected: None')
 
 
 def test_tick_untick_node_or_nodes(screen: Screen):
@@ -91,27 +92,19 @@ def test_tick_untick_node_or_nodes(screen: Screen):
     ui.button('Untick some', on_click=lambda: tree.untick(['1', 'B']))
     ui.button('Tick all', on_click=tree.tick)
     ui.button('Untick all', on_click=tree.untick)
+    ui.label().bind_text_from(tree._props, 'ticked', lambda x: f'Ticked: {sorted(x)}')
 
     screen.open('/')
-    tree.expand()
-    screen.wait(0.5)
+    screen.should_contain('Ticked: []')
 
     screen.click('Tick some')
-    screen.wait(0.5)
-    assert len(tree._props['ticked']) == len(['1', '2', 'B'])
-    assert all(a == b for a, b in zip(sorted(tree._props['ticked']), sorted(['1', '2', 'B'])))
+    screen.should_contain("Ticked: ['1', '2', 'B']")
 
     screen.click('Untick some')
-    screen.wait(0.5)
-    assert len(tree._props['ticked']) == len(['2'])
-    assert all(a == b for a, b in zip(tree._props['ticked'], ['2']))
+    screen.should_contain("Ticked: ['2']")
 
     screen.click('Tick all')
-    screen.wait(0.5)
-    assert len(tree._props['ticked']) == len(['numbers', '1', '2', 'letters', 'A', 'B'])
-    assert all(a == b for a, b in zip(sorted(tree._props['ticked']),
-               sorted(['numbers', '1', '2', 'letters', 'A', 'B'])))
+    screen.should_contain("Ticked: ['1', '2', 'A', 'B', 'letters', 'numbers']")
 
     screen.click('Untick all')
-    screen.wait(0.5)
-    assert len(tree._props['ticked']) == 0
+    screen.should_contain('Ticked: []')
