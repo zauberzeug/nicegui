@@ -329,3 +329,9 @@ class PointCloud(Object3D):
         :param point_size: size of the points (default: 1.0)
         """
         super().__init__('point_cloud', points, colors, point_size)
+
+    def set_points(self, points: List[List[float]], colors: List[List[float]]) -> None:
+        """Change the points and colors of the point cloud."""
+        self.args[0] = points
+        self.args[1] = colors
+        self.scene.run_method('set_points', self.id, points, colors)
