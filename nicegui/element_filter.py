@@ -9,6 +9,8 @@ from .element import Element
 from .elements.mixins.content_element import ContentElement
 from .elements.mixins.source_element import SourceElement
 from .elements.mixins.text_element import TextElement
+from .elements.notification import Notification
+from .elements.select import Select
 
 T = TypeVar('T', bound=Element)
 
@@ -108,11 +110,17 @@ class ElementFilter(Generic[T]):
                     element._props.get('icon'),
                     element._props.get('placeholder'),
                     element._props.get('value'),
-                    element._props.get('options', {}).get('message'),
+                    element._props.get('options', {}).get('message') if isinstance(element, Notification) else '',
                     element.text if isinstance(element, TextElement) else None,
                     element.content if isinstance(element, ContentElement) else None,
                     element.source if isinstance(element, SourceElement) else None,
                 ) if content]
+                if isinstance(element, Select):
+                    options = {o['value']: o['label'] for o in element._props.get('options', [])}
+                    if element.shows_popup:
+                        element_contents.extend(options.values())
+                    else:
+                        element_contents.append(options.get(element.value, ''))
                 if any(all(needle not in str(haystack) for haystack in element_contents) for needle in self._contents):
                     continue
                 if any(needle in str(haystack) for haystack in element_contents for needle in self._exclude_content):

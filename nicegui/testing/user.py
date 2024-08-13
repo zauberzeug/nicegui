@@ -177,7 +177,7 @@ class User:
             if not elements:
                 raise AssertionError('expected to find at least one ' +
                                      self._build_error_message(target, kind, marker, content))
-        return UserInteraction(self, elements)
+        return UserInteraction(self, elements, target)
 
     @property
     def current_layout(self) -> Element:

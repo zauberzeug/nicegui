@@ -333,3 +333,20 @@ async def test_typing(user: User) -> None:
     _ = user.find('World').elements  # Set[ui.element]
     _ = user.find('Hello').elements  # Set[ui.element]
     _ = user.find('!').elements  # Set[ui.element]
+
+
+async def test_select(user: User) -> None:
+    ui.select(options=['A', 'B', 'C'], on_change=lambda e: ui.notify(f'Value: {e.value}'))
+
+    await user.open('/')
+    await user.should_not_see('A')
+    await user.should_not_see('B')
+    await user.should_not_see('C')
+    user.find(ui.select).click()
+    await user.should_see('B')
+    await user.should_see('C')
+    user.find('A').click()
+    await user.should_see('Value: A')
+    await user.should_see('A')
+    await user.should_not_see('B')
+    await user.should_not_see('C')
