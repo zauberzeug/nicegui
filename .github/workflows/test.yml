@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 40
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: set up Python
         uses: actions/setup-python@v5
         with:
