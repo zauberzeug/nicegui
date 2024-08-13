@@ -1,4 +1,4 @@
-FROM python:3.11.3-slim
+FROM python:3.11-slim
 
 LABEL maintainer="Zauberzeug GmbH <nicegui@zauberzeug.com>"
 
