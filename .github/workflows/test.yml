@@ -31,7 +31,7 @@ jobs:
       - name: test startup
         run: ./test_startup.sh
       - name: setup chromedriver
-        uses: nanasess/setup-chromedriver@v2.2.0
+        uses: nanasess/setup-chromedriver@v2.2.2
       - name: pytest
         run: pytest
       - name: upload screenshots
