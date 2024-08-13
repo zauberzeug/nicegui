@@ -13,13 +13,11 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python }}
       - name: set up Poetry
-        uses: abatilo/actions-poetry@v2.0.0
-        with:
-          poetry-version: "1.6.1"
+        uses: abatilo/actions-poetry@v3
       - name: install dependencies
         run: |
           set -x
