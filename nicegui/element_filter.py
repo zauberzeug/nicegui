@@ -110,17 +110,17 @@ class ElementFilter(Generic[T]):
                     element._props.get('icon'),
                     element._props.get('placeholder'),
                     element._props.get('value'),
-                    element._props.get('options', {}).get('message') if isinstance(element, Notification) else '',
                     element.text if isinstance(element, TextElement) else None,
                     element.content if isinstance(element, ContentElement) else None,
                     element.source if isinstance(element, SourceElement) else None,
                 ) if content]
+                if isinstance(element, Notification):
+                    element_contents.append(element.message)
                 if isinstance(element, Select):
-                    options = {o['value']: o['label'] for o in element._props.get('options', [])}
-                    if element.shows_popup:
+                    options = {option['value']: option['label'] for option in element._props.get('options', [])}
+                    element_contents.append(options.get(element.value, ''))
+                    if element.is_showing_popup:
                         element_contents.extend(options.values())
-                    else:
-                        element_contents.append(options.get(element.value, ''))
                 if any(all(needle not in str(haystack) for haystack in element_contents) for needle in self._contents):
                     continue
                 if any(needle in str(haystack) for haystack in element_contents for needle in self._exclude_content):

@@ -79,10 +79,15 @@ class Select(ValidationElement, ChoiceElement, DisableableElement, component='se
             self._props['input-debounce'] = 0
         self._props['multiple'] = multiple
         self._props['clearable'] = clearable
-        self.shows_popup = False
-        """Wether the options popup is currently shown."""
-        self.on('popup-show', lambda e: setattr(e.sender, 'shows_popup', True))
-        self.on('popup-hide', lambda e: setattr(e.sender, 'shows_popup', False))
+
+        self._is_showing_popup = False
+        self.on('popup-show', lambda e: setattr(e.sender, '_is_showing_popup', True))
+        self.on('popup-hide', lambda e: setattr(e.sender, '_is_showing_popup', False))
+
+    @property
+    def is_showing_popup(self) -> bool:
+        """Whether the options popup is currently shown."""
+        return self._is_showing_popup
 
     def _event_args_to_value(self, e: GenericEventArguments) -> Any:
         if self.multiple:

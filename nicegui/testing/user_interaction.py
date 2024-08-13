@@ -61,14 +61,10 @@ class UserInteraction(Generic[T]):
                     background_tasks.create(self.user.open(href))
                     return self
                 if isinstance(element, ui.select):
-                    if element.shows_popup:
-                        if isinstance(self.target, str):
-                            element.set_value(self.target)
-                            element.shows_popup = False
-                        else:
-                            raise ValueError('Target must be a string when clicking on options of a select element')
-                    else:
-                        element.shows_popup = True
+                    if element.is_showing_popup:
+                        assert isinstance(self.target, str), 'Target must be string when clicking on ui.select options'
+                        element.set_value(self.target)
+                    element._is_showing_popup = not element.is_showing_popup  # pylint: disable=protected-access
                     return self
                 for listener in element._event_listeners.values():  # pylint: disable=protected-access
                     if listener.element_id != element.id:
