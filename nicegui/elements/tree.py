@@ -3,11 +3,11 @@ from typing import Any, Callable, Dict, Iterator, List, Literal, Optional, Set
 from typing_extensions import Self
 
 from .. import helpers
-from ..element import Element
 from ..events import GenericEventArguments, ValueChangeEventArguments, handle_event
+from .mixins.filter_element import FilterElement
 
 
-class Tree(Element):
+class Tree(FilterElement):
 
     def __init__(self,
                  nodes: List[Dict], *,
@@ -36,7 +36,7 @@ class Tree(Element):
         :param on_tick: callback which is invoked when a node is ticked or unticked
         :param tick_strategy: whether and how to use checkboxes ("leaf", "leaf-filtered" or "strict"; default: ``None``)
         """
-        super().__init__('q-tree')
+        super().__init__(tag='q-tree', filter=None)
         self._props['nodes'] = nodes
         self._props['node-key'] = node_key
         self._props['label-key'] = label_key
