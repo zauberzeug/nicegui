@@ -9,6 +9,7 @@ doc.text('Project Structure', '''
     This makes specialized [fixtures](https://docs.pytest.org/en/stable/explanation/fixtures.html) available for testing your NiceGUI user interface.
     With the [`screen` fixture](/documentation/screen) you can run the tests through a headless browser (slow)
     and with the [`user` fixture](/documentation/user) fully simulated in Python (fast).
+    If you only want one kind of test fixtures you can also use the plugin `nicegui.testing.user_plugin` or `nicegui.testing.screen_plugin`.
 
     There are a multitude of ways to structure your project and tests.
     Here we only present two approaches which we found useful,
@@ -59,7 +60,7 @@ def simple_project_code():
                 from nicegui.testing import User
                 from . import main
 
-                pytest_plugins = ['nicegui.testing.plugin']
+                pytest_plugins = ['nicegui.testing.user_plugin']
 
                 @pytest.mark.module_under_test(main)
                 async def test_click(user: User) -> None:
@@ -136,7 +137,7 @@ def modular_project():
                 from nicegui.testing import User
                 from app.startup import startup
 
-                pytest_plugins = ['nicegui.testing.plugin']
+                pytest_plugins = ['nicegui.testing.user_plugin']
 
                 async def test_click(user: User) -> None:
                     startup()
@@ -197,7 +198,7 @@ def custom_user_fixture():
                 from nicegui.testing import User
                 from app.startup import startup
 
-                pytest_plugins = ['nicegui.testing.plugin']
+                pytest_plugins = ['nicegui.testing.user_plugin']
 
                 @pytest.fixture
                 def user(user: User) -> User:

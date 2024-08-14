@@ -9,7 +9,8 @@ from . import doc
 def user_fixture():
     ui.markdown('''
         We recommend utilizing the `user` fixture instead of the [`screen` fixture](/documentation/screen) wherever possible
-        because execution is as fast as unit tests and it does not need Selenium as a dependency.
+        because execution is as fast as unit tests and it does not need Selenium as a dependency
+        when loaded via `pytest_plugins = ['nicegui.testing.user_plugin']` (see [project structure](/documentation/project_structure)).
         The `user` fixture cuts away the browser and replaces it by a lightweight simulation entirely in Python.
 
         You can assert to "see" specific elements or content, click buttons, type into inputs and trigger events.
