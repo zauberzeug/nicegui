@@ -6,7 +6,7 @@ from . import main
 
 # pylint: disable=missing-function-docstring
 
-pytest_plugins = ['nicegui.testing.plugin']
+pytest_plugins = ['nicegui.testing.user_plugin']
 
 
 @pytest.mark.module_under_test(main)
