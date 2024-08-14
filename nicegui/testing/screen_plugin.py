@@ -7,11 +7,14 @@ import pytest
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 
-from .general_fixtures import nicegui_reset_globals, prepare_simulation, pytest_configure  # noqa: F401
+from .general_fixtures import (  # noqa: F401  # pylint: disable=unused-import
+    nicegui_reset_globals,
+    prepare_simulation,
+    pytest_configure,
+)
 from .screen import Screen
 
 # pylint: disable=redefined-outer-name
-
 
 DOWNLOAD_DIR = Path(__file__).parent / 'download'
 

@@ -8,7 +8,11 @@ from nicegui import Client, core, ui
 from nicegui.functions.navigate import Navigate
 from nicegui.functions.notify import notify
 
-from .general_fixtures import nicegui_reset_globals, prepare_simulation, pytest_configure  # noqa: F401
+from .general_fixtures import (  # noqa: F401  # pylint: disable=unused-import
+    nicegui_reset_globals,
+    prepare_simulation,
+    pytest_configure,
+)
 from .user import User
 
 # pylint: disable=redefined-outer-name
