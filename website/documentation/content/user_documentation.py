@@ -104,10 +104,11 @@ def querying():
 
 
 doc.text('Multiple Users', '''
-    Sometimes it's not enough to just interact with the UI as a single user.
-    Besides the `user` fixture, we also provide the `create_user` fixture which is a factory function to create multiple users.
+    Sometimes it is not enough to just interact with the UI as a single user.
+    Besides the `user` fixture, we also provide the `create_user` fixture which is a factory function to create users.
     The `User` instances are independent from each other and can interact with the UI in parallel.
-    See our [Chat App example](https://github.com/zauberzeug/nicegui/blob/main/examples/chat_app/test_chat_app.py) for a full demonstration.
+    See our [Chat App example](https://github.com/zauberzeug/nicegui/blob/main/examples/chat_app/test_chat_app.py)
+    for a full demonstration.
 ''')
 
 
