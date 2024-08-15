@@ -16,6 +16,8 @@ def run_javascript(code: str, *,
     If the function is awaited, the result of the JavaScript code is returned.
     Otherwise, the JavaScript code is executed without waiting for a response.
 
+    Note that requesting data from the client is only supported for page functions, not for the shared auto-index page.
+
     :param code: JavaScript code to run
     :param timeout: timeout in seconds (default: `1.0`)
 
