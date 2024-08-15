@@ -5,7 +5,6 @@ from typing import Any, Callable, Dict, List, Literal, Optional, Tuple, Union
 from typing_extensions import Self
 
 from .. import binding
-from ..awaitable_response import AwaitableResponse
 from ..dataclasses import KWONLY_SLOTS
 from ..element import Element
 from ..events import (
@@ -176,9 +175,6 @@ class Scene(Element,
         self.on('init', event.set, [])
         await self.client.connected()
         await event.wait()
-
-    def run_method(self, name: str, *args: Any, timeout: float = 1, check_interval: float = 0.01) -> AwaitableResponse:
-        return super().run_method(name, *args, timeout=timeout, check_interval=check_interval)
 
     def _handle_click(self, e: GenericEventArguments) -> None:
         arguments = SceneClickEventArguments(
