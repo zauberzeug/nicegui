@@ -7,7 +7,7 @@ from nicegui.testing import User
 
 from . import main
 
-pytest_plugins = ['nicegui.testing.plugin']
+pytest_plugins = ['nicegui.testing.user_plugin']
 
 
 @pytest.mark.module_under_test(main)
