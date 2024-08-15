@@ -77,7 +77,7 @@ doc.text('Querying', '''
 
 
 @doc.ui
-def modular_project():
+def querying():
     with ui.row(wrap=False).classes('gap-4 items-stretch'):
         with python_window(classes='w-[400px]', title='some UI code'):
             ui.markdown('''
@@ -103,6 +103,35 @@ def modular_project():
                 await user.should_see(kind=ui.icon)
                 ```
             ''')
+
+
+doc.text('Multiple Users', '''
+    Sometimes it is not enough to just interact with the UI as a single user.
+    Besides the `user` fixture, we also provide the `create_user` fixture which is a factory function to create users.
+    The `User` instances are independent from each other and can interact with the UI in parallel.
+    See our [Chat App example](https://github.com/zauberzeug/nicegui/blob/main/examples/chat_app/test_chat_app.py)
+    for a full demonstration.
+''')
+
+
+@doc.ui
+def multiple_users():
+    with python_window(classes='w-[600px]', title='example'):
+        ui.markdown('''
+            ```python
+            async def test_chat(create_user: Callable[[], User]) -> None:
+                userA = create_user()
+                await userA.open('/')
+                userB = create_user()
+                await userB.open('/')
+
+                userA.find(ui.input).type('from A').trigger('keydown.enter')
+                await userB.should_see('from A')
+                userB.find(ui.input).type('from B').trigger('keydown.enter')
+                await userA.should_see('from A')
+                await userA.should_see('from B')
+            ```
+        ''')
 
 
 doc.text('Comparison with the screen fixture', '''
