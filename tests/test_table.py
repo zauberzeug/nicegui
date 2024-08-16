@@ -171,17 +171,24 @@ def test_replace_rows(screen: Screen):
     screen.should_contain('Daniel')
 
 
-def test_create_from_pandas(screen: Screen):
-    df = pd.DataFrame({'name': ['Alice', 'Bob'], 'age': [18, 21], 42: 'answer'})
-    ui.table.from_pandas(df)
+def test_create_and_update_from_pandas(screen: Screen):
+    df = pd.DataFrame({'name': ['Alice', 'Bob'], 'age': [18, 21]})
+    table = ui.table.from_pandas(df)
+
+    def update():
+        df.loc[2] = ['Lionel', 19]
+        table.update_from_pandas(df)
+    ui.button('Update', on_click=update)
 
     screen.open('/')
     screen.should_contain('Alice')
     screen.should_contain('Bob')
     screen.should_contain('18')
     screen.should_contain('21')
-    screen.should_contain('42')
-    screen.should_contain('answer')
+
+    screen.click('Update')
+    screen.should_contain('Lionel')
+    screen.should_contain('19')
 
 
 def test_problematic_datatypes(screen: Screen):

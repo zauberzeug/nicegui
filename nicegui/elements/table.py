@@ -1,4 +1,4 @@
-from typing import Any, Callable, Dict, List, Literal, Optional, Union
+from typing import Any, Callable, Dict, List, Literal, Optional, Tuple, Union
 
 from typing_extensions import Self
 
@@ -116,6 +116,34 @@ class Table(FilterElement, component='table.js'):
         :param on_select: callback which is invoked when the selection changes
         :return: table element
         """
+        rows, columns = cls._df_to_rows_and_columns(df)
+        return cls(
+            rows=rows,
+            columns=columns,
+            row_key=row_key,
+            title=title,
+            selection=selection,
+            pagination=pagination,
+            on_select=on_select,
+        )
+
+    def update_from_pandas(self, df: 'pd.DataFrame', *, clear_selection: bool = True) -> None:
+        """Update the table from a Pandas DataFrame.
+
+        See `from_pandas()` for more information about the conversion of non-serializable columns.
+
+        :param df: Pandas DataFrame
+        :param clear_selection: whether to clear the selection (default: True)
+        """
+        rows, columns = self._df_to_rows_and_columns(df)
+        self.rows[:] = rows
+        self.columns[:] = columns
+        if clear_selection:
+            self.selected.clear()
+        self.update()
+
+    @staticmethod
+    def _df_to_rows_and_columns(df: 'pd.DataFrame') -> Tuple[List[Dict], List[Dict]]:
         def is_special_dtype(dtype):
             return (pd.api.types.is_datetime64_any_dtype(dtype) or
                     pd.api.types.is_timedelta64_dtype(dtype) or
@@ -131,14 +159,7 @@ class Table(FilterElement, component='table.js'):
                              'You can convert them to strings using something like '
                              '`df.columns = ["_".join(col) for col in df.columns.values]`.')
 
-        return cls(
-            columns=[{'name': col, 'label': col, 'field': col} for col in df.columns],
-            rows=df.to_dict('records'),
-            row_key=row_key,
-            title=title,
-            selection=selection,
-            pagination=pagination,
-            on_select=on_select)
+        return df.to_dict('records'), [{'name': col, 'label': col, 'field': col} for col in df.columns]
 
     @property
     def rows(self) -> List[Dict]:
