@@ -138,14 +138,14 @@ def table_from_pandas_demo():
 
 
 @doc.demo('Adding rows', '''
-    It's simple to add new rows with the `add_rows(dict)` method.
+    It's simple to add new rows with the `add_row(dict)` and `add_rows(list[dict])` methods.
     With the "virtual-scroll" prop set, the table can be programmatically scrolled with the `scrollTo` JavaScript function.
 ''')
 def adding_rows():
     from datetime import datetime
 
     def add():
-        table.add_rows({'date': datetime.now().strftime('%c')})
+        table.add_row({'date': datetime.now().strftime('%c')})
         table.run_method('scrollTo', len(table.rows)-1)
 
     columns = [{'name': 'date', 'label': 'Date', 'field': 'date'}]

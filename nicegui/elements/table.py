@@ -5,6 +5,7 @@ from typing_extensions import Self
 from .. import optional_features
 from ..element import Element
 from ..events import GenericEventArguments, TableSelectionEventArguments, ValueChangeEventArguments, handle_event
+from ..helpers import warn_once
 from .mixins.filter_element import FilterElement
 
 try:
@@ -203,17 +204,33 @@ class Table(FilterElement, component='table.js'):
         """Toggle fullscreen mode."""
         self.is_fullscreen = not self.is_fullscreen
 
-    def add_rows(self, *rows: Dict) -> None:
+    def add_rows(self, rows: List[Dict], *args: Any) -> None:
         """Add rows to the table."""
+        if isinstance(rows, dict):  # DEPRECATED
+            warn_once('Calling add_rows() with variable-length arguments is deprecated. '
+                      'Pass a list instead or use add_row() for a single row.')
+            rows = [rows, *args]
         self.rows.extend(rows)
         self.update()
 
-    def remove_rows(self, *rows: Dict) -> None:
+    def add_row(self, row: Dict) -> None:
+        """Add a single row to the table."""
+        self.add_rows([row])
+
+    def remove_rows(self, rows: List[Dict], *args: Any) -> None:
         """Remove rows from the table."""
+        if isinstance(rows, dict):  # DEPRECATED
+            warn_once('Calling remove_rows() with variable-length arguments is deprecated. '
+                      'Pass a list instead or use remove_row() for a single row.')
+            rows = [rows, *args]
         keys = [row[self.row_key] for row in rows]
         self.rows[:] = [row for row in self.rows if row[self.row_key] not in keys]
         self.selected[:] = [row for row in self.selected if row[self.row_key] not in keys]
         self.update()
+
+    def remove_row(self, row: Dict) -> None:
+        """Remove a single row from the table."""
+        self.remove_rows([row])
 
     def update_rows(self, rows: List[Dict], *, clear_selection: bool = True) -> None:
         """Update rows in the table.

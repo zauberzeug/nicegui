@@ -72,8 +72,8 @@ def test_filter(screen: Screen):
 
 def test_add_remove(screen: Screen):
     table = ui.table(columns=columns(), rows=rows())
-    ui.button('Add', on_click=lambda: table.add_rows({'id': 3, 'name': 'Carol', 'age': 32}))
-    ui.button('Remove', on_click=lambda: table.remove_rows(table.rows[0]))
+    ui.button('Add', on_click=lambda: table.add_row({'id': 3, 'name': 'Carol', 'age': 32}))
+    ui.button('Remove', on_click=lambda: table.remove_row(table.rows[0]))
 
     screen.open('/')
     screen.click('Add')
@@ -129,7 +129,7 @@ def test_dynamic_column_attributes(screen: Screen):
 
 def test_remove_selection(screen: Screen):
     t = ui.table(columns=columns(), rows=rows(), selection='single')
-    ui.button('Remove first row', on_click=lambda: t.remove_rows(t.rows[0]))
+    ui.button('Remove first row', on_click=lambda: t.remove_row(t.rows[0]))
 
     screen.open('/')
     screen.find('Alice').find_element(By.XPATH, 'preceding-sibling::td').click()
