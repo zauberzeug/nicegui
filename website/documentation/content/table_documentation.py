@@ -29,6 +29,22 @@ def omitting_columns():
     ])
 
 
+@doc.demo('Default column parameters', '''
+    You can define default column parameters that apply to all columns.
+    In this example, all columns are left-aligned by default.
+    Every column dictionary without a "name" key is treated as default column parameters.
+''')
+def default_column_parameters():
+    ui.table(rows=[
+        {'name': 'Alice', 'age': 18},
+        {'name': 'Bob', 'age': 21},
+    ], columns=[
+        {'name': 'name', 'label': 'Name', 'field': 'name'},
+        {'name': 'age', 'label': 'Age', 'field': 'age'},
+        {'align': 'left'},
+    ])
+
+
 @doc.demo('Table with expandable rows', '''
     Scoped slots can be used to insert buttons that toggle the expand state of a table row.
     See the [Quasar documentation](https://quasar.dev/vue-components/table#expanding-rows) for more information.

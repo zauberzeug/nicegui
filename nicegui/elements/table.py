@@ -49,7 +49,7 @@ class Table(FilterElement, component='table.js'):
             first_row = rows[0] if rows else {}
             columns = [{'name': key, 'label': str(key).upper(), 'field': key, 'sortable': True} for key in first_row]
 
-        self._props['columns'] = columns
+        self._props['columns'] = self._normalize_columns(columns)
         self._props['rows'] = rows
         self._props['row-key'] = row_key
         self._props['title'] = title
@@ -91,6 +91,11 @@ class Table(FilterElement, component='table.js'):
         """Add a callback to be invoked when the pagination changes."""
         self._pagination_change_handlers.append(callback)
         return self
+
+    @staticmethod
+    def _normalize_columns(columns: List[Dict]) -> List[Dict]:
+        default_column_parameters = dict(item for column in columns if 'name' not in column for item in column.items())
+        return [{**default_column_parameters, **column} for column in columns if 'name' in column]
 
     @classmethod
     def from_pandas(cls,
@@ -178,7 +183,7 @@ class Table(FilterElement, component='table.js'):
 
     @columns.setter
     def columns(self, value: List[Dict]) -> None:
-        self._props['columns'][:] = value
+        self._props['columns'][:] = self._normalize_columns(value)
         self.update()
 
     @property

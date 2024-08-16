@@ -252,3 +252,26 @@ def test_infer_columns(screen: Screen):
     screen.should_contain('Bob')
     screen.should_contain('18')
     screen.should_contain('21')
+
+
+def test_default_column_parameters(screen: Screen):
+    ui.table(rows=[
+        {'name': 'Alice', 'age': 18, 'city': 'London'},
+        {'name': 'Bob', 'age': 21, 'city': 'Paris'},
+    ], columns=[
+        {'name': 'name', 'label': 'Name', 'field': 'name'},
+        {'name': 'age', 'label': 'Age', 'field': 'age'},
+        {'name': 'city', 'label': 'City', 'field': 'city', 'sortable': False},
+        {'sortable': True},
+    ])
+
+    screen.open('/')
+    screen.should_contain('Name')
+    screen.should_contain('Age')
+    screen.should_contain('Alice')
+    screen.should_contain('Bob')
+    screen.should_contain('18')
+    screen.should_contain('21')
+    screen.should_contain('London')
+    screen.should_contain('Paris')
+    assert len(screen.find_all_by_class('sortable')) == 2
