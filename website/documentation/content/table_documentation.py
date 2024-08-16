@@ -17,6 +17,18 @@ def main_demo() -> None:
     ui.table(columns=columns, rows=rows, row_key='name')
 
 
+@doc.demo('Omitting columns', '''
+    If you omit the `columns` parameter, the table will automatically generate columns from the first row.
+    Labels are uppercased and sorting is enabled.
+''')
+def omitting_columns():
+    ui.table(rows=[
+        {'make': 'Toyota', 'model': 'Celica', 'price': 35000},
+        {'make': 'Ford', 'model': 'Mondeo', 'price': 32000},
+        {'make': 'Porsche', 'model': 'Boxster', 'price': 72000},
+    ])
+
+
 @doc.demo('Table with expandable rows', '''
     Scoped slots can be used to insert buttons that toggle the expand state of a table row.
     See the [Quasar documentation](https://quasar.dev/vue-components/table#expanding-rows) for more information.

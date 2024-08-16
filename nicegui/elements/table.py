@@ -18,8 +18,9 @@ except ImportError:
 class Table(FilterElement, component='table.js'):
 
     def __init__(self,
-                 columns: List[Dict],
+                 *,
                  rows: List[Dict],
+                 columns: Optional[List[Dict]] = None,
                  row_key: str = 'id',
                  title: Optional[str] = None,
                  selection: Optional[Literal['single', 'multiple']] = None,
@@ -31,8 +32,8 @@ class Table(FilterElement, component='table.js'):
 
         A table based on Quasar's `QTable <https://quasar.dev/vue-components/table>`_ component.
 
-        :param columns: list of column objects
         :param rows: list of row objects
+        :param columns: list of column objects (defaults to the columns of the first row)
         :param row_key: name of the column containing unique data identifying the row (default: "id")
         :param title: title of the table
         :param selection: selection type ("single" or "multiple"; default: `None`)
@@ -43,6 +44,10 @@ class Table(FilterElement, component='table.js'):
         If selection is 'single' or 'multiple', then a `selected` property is accessible containing the selected rows.
         """
         super().__init__()
+
+        if columns is None:
+            first_row = rows[0] if rows else {}
+            columns = [{'name': key, 'label': str(key).upper(), 'field': key, 'sortable': True} for key in first_row]
 
         self._props['columns'] = columns
         self._props['rows'] = rows

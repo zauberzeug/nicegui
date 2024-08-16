@@ -230,3 +230,18 @@ def test_table_computed_props(screen: Screen):
     screen.should_contain('Lionel')
     screen.should_not_contain('Alice')
     screen.should_not_contain('Bob')
+
+
+def test_infer_columns(screen: Screen):
+    ui.table(rows=[
+        {'name': 'Alice', 'age': 18},
+        {'name': 'Bob', 'age': 21},
+    ])
+
+    screen.open('/')
+    screen.should_contain('NAME')
+    screen.should_contain('AGE')
+    screen.should_contain('Alice')
+    screen.should_contain('Bob')
+    screen.should_contain('18')
+    screen.should_contain('21')
