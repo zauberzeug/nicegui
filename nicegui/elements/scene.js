@@ -62,6 +62,7 @@ export default {
     this.objects = new Map();
     this.objects.set("scene", this.scene);
     this.draggable_objects = [];
+    this.is_initialized = false;
 
     window["scene_" + this.$el.id] = this.scene; // NOTE: for selenium tests only
 
@@ -214,6 +215,7 @@ export default {
 
   methods: {
     create(type, id, parent_id, ...args) {
+      if (!this.is_initialized) return;
       let mesh;
       if (type == "group") {
         mesh = new THREE.Group();
@@ -459,6 +461,7 @@ export default {
       this.camera.updateProjectionMatrix();
     },
     init_objects(data) {
+      this.is_initialized = true;
       for (const [
         type,
         id,

@@ -5,7 +5,6 @@ from typing import Any, Callable, Dict, List, Literal, Optional, Tuple, Union
 from typing_extensions import Self
 
 from .. import binding
-from ..awaitable_response import AwaitableResponse, NullResponse
 from ..dataclasses import KWONLY_SLOTS
 from ..element import Element
 from ..events import (
@@ -113,7 +112,6 @@ class Scene(Element,
         self._props['click_events'] = click_events
         self._drag_start_handlers = [on_drag_start] if on_drag_start else []
         self._drag_end_handlers = [on_drag_end] if on_drag_end else []
-        self.is_initialized = False
         self.on('init', self._handle_init)
         self.on('click3d', self._handle_click)
         self.on('dragstart', self._handle_drag)
@@ -170,7 +168,6 @@ class Scene(Element,
         return attribute
 
     def _handle_init(self, e: GenericEventArguments) -> None:
-        self.is_initialized = True
         with self.client.individual_target(e.args['socket_id']):
             self.move_camera(duration=0)
             self.run_method('init_objects', [obj.data for obj in self.objects.values()])
@@ -181,11 +178,6 @@ class Scene(Element,
         self.on('init', event.set, [])
         await self.client.connected()
         await event.wait()
-
-    def run_method(self, name: str, *args: Any, timeout: float = 1, check_interval: float = 0.01) -> AwaitableResponse:
-        if not self.is_initialized:
-            return NullResponse()
-        return super().run_method(name, *args, timeout=timeout, check_interval=check_interval)
 
     def _handle_click(self, e: GenericEventArguments) -> None:
         arguments = SceneClickEventArguments(
