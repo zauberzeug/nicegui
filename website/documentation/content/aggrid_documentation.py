@@ -224,18 +224,23 @@ def aggrid_run_row_method():
 @doc.demo('Filter return values', '''
     You can filter the return values of method calls by passing string that defines a JavaScript function.
     This demo runs the grid method "getDisplayedRowAtIndex" and returns the "data" property of the result.
+
+    Note that requesting data from the client is only supported for page functions, not for the shared auto-index page.
 ''')
 def aggrid_filter_return_values():
-    grid = ui.aggrid({
-        'columnDefs': [{'field': 'name'}],
-        'rowData': [{'name': 'Alice'}, {'name': 'Bob'}],
-    })
+    # @ui.page('/')
+    def page():
+        grid = ui.aggrid({
+            'columnDefs': [{'field': 'name'}],
+            'rowData': [{'name': 'Alice'}, {'name': 'Bob'}],
+        })
 
-    async def get_first_name() -> None:
-        row = await grid.run_grid_method('(g) => g.getDisplayedRowAtIndex(0).data')
-        ui.notify(row['name'])
+        async def get_first_name() -> None:
+            row = await grid.run_grid_method('g => g.getDisplayedRowAtIndex(0).data')
+            ui.notify(row['name'])
 
-    ui.button('Get First Name', on_click=get_first_name)
+        ui.button('Get First Name', on_click=get_first_name)
+    page()  # HIDE
 
 
 doc.reference(ui.aggrid)

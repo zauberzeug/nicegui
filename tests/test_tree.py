@@ -62,3 +62,66 @@ def test_expand_and_collapse_nodes(screen: Screen):
     screen.should_not_contain('2')
     screen.should_contain('A')
     screen.should_contain('B')
+
+
+def test_select_deselect_node(screen: Screen):
+    tree = ui.tree([
+        {'id': 'numbers', 'children': [{'id': '1'}, {'id': '2'}]},
+        {'id': 'letters', 'children': [{'id': 'A'}, {'id': 'B'}]},
+    ], label_key='id')
+
+    ui.button('Select', on_click=lambda: tree.select('2'))
+    ui.button('Deselect', on_click=tree.deselect)
+    ui.label().bind_text_from(tree._props, 'selected', lambda x: f'Selected: {x}')
+
+    screen.open('/')
+    screen.click('Select')
+    screen.should_contain('Selected: 2')
+
+    screen.click('Deselect')
+    screen.should_contain('Selected: None')
+
+
+def test_tick_untick_node_or_nodes(screen: Screen):
+    tree = ui.tree([
+        {'id': 'numbers', 'children': [{'id': '1'}, {'id': '2'}]},
+        {'id': 'letters', 'children': [{'id': 'A'}, {'id': 'B'}]},
+    ], label_key='id', tick_strategy='leaf')
+
+    ui.button('Tick some', on_click=lambda: tree.tick(['1', '2', 'B']))
+    ui.button('Untick some', on_click=lambda: tree.untick(['1', 'B']))
+    ui.button('Tick all', on_click=tree.tick)
+    ui.button('Untick all', on_click=tree.untick)
+    ui.label().bind_text_from(tree._props, 'ticked', lambda x: f'Ticked: {sorted(x)}')
+
+    screen.open('/')
+    screen.should_contain('Ticked: []')
+
+    screen.click('Tick some')
+    screen.should_contain("Ticked: ['1', '2', 'B']")
+
+    screen.click('Untick some')
+    screen.should_contain("Ticked: ['2']")
+
+    screen.click('Tick all')
+    screen.should_contain("Ticked: ['1', '2', 'A', 'B', 'letters', 'numbers']")
+
+    screen.click('Untick all')
+    screen.should_contain('Ticked: []')
+
+
+def test_filter(screen: Screen):
+    t = ui.tree([
+        {'id': 'fruits', 'children': [{'id': 'Apple'}, {'id': 'Banana'}, {'id': 'Cherry'}]},
+    ], label_key='id', tick_strategy='leaf-filtered').expand()
+    ui.button('Filter', on_click=lambda: t.set_filter('a'))
+
+    screen.open('/')
+    screen.should_contain('Apple')
+    screen.should_contain('Banana')
+    screen.should_contain('Cherry')
+
+    screen.click('Filter')
+    screen.should_contain('Apple')
+    screen.should_contain('Banana')
+    screen.should_not_contain('Cherry')

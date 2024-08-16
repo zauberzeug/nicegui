@@ -1,6 +1,6 @@
 from typing import Any, Literal, Optional, Union
 
-from ..elements.notification import Notification
+from ..context import context
 
 ARG_MAP = {
     'close_button': 'closeBtn',
@@ -49,4 +49,5 @@ def notify(message: Any, *,
     options = {ARG_MAP.get(key, key): value for key, value in locals().items() if key != 'kwargs' and value is not None}
     options['message'] = str(message)
     options.update(kwargs)
-    Notification(options=options)
+    client = context.client
+    client.outbox.enqueue_message('notify', options, client.id)

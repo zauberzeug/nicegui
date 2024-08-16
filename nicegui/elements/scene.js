@@ -63,6 +63,7 @@ export default {
     this.objects = new Map();
     this.objects.set("scene", this.scene);
     this.draggable_objects = [];
+    this.is_initialized = false;
 
     window["scene_" + this.$el.id] = this.scene; // NOTE: for selenium tests only
 
@@ -150,7 +151,6 @@ export default {
     };
     const handleDrag = (event) => {
       this.drag_constraints.split(",").forEach((constraint) => applyConstraint(constraint, event.object.position));
-      if (event.type === "drag") return;
       this.$emit(event.type, {
         type: event.type,
         object_id: event.object.object_id,
@@ -159,7 +159,8 @@ export default {
         y: event.object.position.y,
         z: event.object.position.z,
       });
-      this.controls.enabled = event.type == "dragend";
+      if (event.type === "dragstart") this.controls.enabled = false;
+      if (event.type === "dragend") this.controls.enabled = true;
     };
     this.drag_controls.addEventListener("dragstart", handleDrag);
     this.drag_controls.addEventListener("drag", handleDrag);
@@ -196,8 +197,7 @@ export default {
         shift_key: mouseEvent.shiftKey,
       });
     };
-    this.$el.onclick = click_handler;
-    this.$el.ondblclick = click_handler;
+    this.click_events.forEach((event) => this.$el.addEventListener(event, click_handler));
 
     this.texture_loader = new THREE.TextureLoader();
     this.stl_loader = new STLLoader();
@@ -216,6 +216,7 @@ export default {
 
   methods: {
     create(type, id, parent_id, ...args) {
+      if (!this.is_initialized) return;
       let mesh;
       if (type == "group") {
         mesh = new THREE.Group();
@@ -390,6 +391,11 @@ export default {
       if (!this.objects.has(object_id)) return;
       this.objects.get(object_id).geometry = texture_geometry(coords);
     },
+    set_points(object_id, position, color) {
+      const geometry = this.objects.get(object_id).geometry;
+      geometry.setAttribute("position", new THREE.Float32BufferAttribute(position.flat(), 3));
+      geometry.setAttribute("color", new THREE.Float32BufferAttribute(color.flat(), 3));
+    },
     move_camera(x, y, z, look_at_x, look_at_y, look_at_z, up_x, up_y, up_z, duration) {
       if (this.camera_tween) this.camera_tween.stop();
       this.camera_tween = new TWEEN.Tween([
@@ -426,6 +432,23 @@ export default {
         })
         .start();
     },
+    get_camera() {
+      return {
+        position: this.camera.position,
+        up: this.camera.up,
+        rotation: this.camera.rotation,
+        quaternion: this.camera.quaternion,
+        type: this.camera.type,
+        fov: this.camera.fov,
+        aspect: this.camera.aspect,
+        near: this.camera.near,
+        far: this.camera.far,
+        left: this.camera.left,
+        right: this.camera.right,
+        top: this.camera.top,
+        bottom: this.camera.bottom,
+      };
+    },
     resize() {
       const { clientWidth, clientHeight } = this.$el;
       this.renderer.setSize(clientWidth, clientHeight);
@@ -439,6 +462,7 @@ export default {
       this.camera.updateProjectionMatrix();
     },
     init_objects(data) {
+      this.is_initialized = true;
       for (const [
         type,
         id,
@@ -476,6 +500,7 @@ export default {
     grid: Object,
     camera_type: String,
     camera_params: Object,
+    click_events: Array,
     drag_constraints: String,
     background_color: String,
   },
