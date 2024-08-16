@@ -51,4 +51,4 @@ def handle_click(event: events.GenericEventArguments):
 
 fullcalendar(options, on_click=handle_click)
 
-ui.run()
+ui.run(port='8085')
