@@ -106,6 +106,7 @@ class Scene(Element,
         self.camera = camera or self.perspective_camera()
         self._props['camera_type'] = self.camera.type
         self._props['camera_params'] = self.camera.params
+        self._props['camera_up'] = [self.camera.up_x, self.camera.up_y, self.camera.up_z]
         self.objects: Dict[str, Object3D] = {}
         self.stack: List[Union[Object3D, SceneObject]] = [SceneObject()]
         self._click_handlers = [on_click] if on_click else []
