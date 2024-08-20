@@ -6,7 +6,8 @@ from . import doc
 @doc.demo(ui.scene)
 def main_demo() -> None:
     with ui.scene().classes('w-full h-64') as scene:
-        scene.sphere().material('#4488ff')
+        scene.coordinate_system("origin")
+        scene.sphere().material('#4488ff').move(2, 2)
         scene.cylinder(1, 0.5, 2, 20).material('#ff8800', opacity=0.5).move(-2, 1)
         scene.extrusion([[0, 0], [0, 1], [1, 0.5]], 0.1).material('#ff8888').move(2, -1)
 
