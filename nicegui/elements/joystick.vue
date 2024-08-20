@@ -1,5 +1,5 @@
 <template>
-  <div class="nicegui-joystick"><div></div></div>
+  <div><div></div></div>
 </template>
 
 <script>
