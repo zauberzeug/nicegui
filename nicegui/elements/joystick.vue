@@ -1,5 +1,5 @@
 <template>
-  <div><div></div></div>
+  <div class="nicegui-joystick"><div></div></div>
 </template>
 
 <script>
@@ -23,9 +23,8 @@ export default {
 
 <style scoped>
 :scope > div {
-  background-color: AliceBlue;
-  width: 10em;
-  height: 10em;
+  width: 100%;
+  height: 100%;
   position: relative;
 }
 </style>
