@@ -263,8 +263,13 @@ export default {
       } else if (type == "point_cloud") {
         const geometry = new THREE.BufferGeometry();
         geometry.setAttribute("position", new THREE.Float32BufferAttribute(args[0].flat(), 3));
-        geometry.setAttribute("color", new THREE.Float32BufferAttribute(args[1].flat(), 3));
-        const material = new THREE.PointsMaterial({ size: args[2], vertexColors: true });
+        const material = new THREE.PointsMaterial({ size: args[2] });
+        if (typeof args[1] == "string") {
+          material.color.set(args[1]);
+        } else {
+          geometry.setAttribute("color", new THREE.Float32BufferAttribute(args[1].flat(), 3));
+          material.vertexColors = true;
+        }
         mesh = new THREE.Points(geometry, material);
       } else if (type == "gltf") {
         const url = args[0];
@@ -392,8 +397,18 @@ export default {
     },
     set_points(object_id, position, color) {
       const geometry = this.objects.get(object_id).geometry;
+      const material = this.objects.get(object_id).material;
       geometry.setAttribute("position", new THREE.Float32BufferAttribute(position.flat(), 3));
-      geometry.setAttribute("color", new THREE.Float32BufferAttribute(color.flat(), 3));
+      if (typeof color == "string") {
+        geometry.deleteAttribute("color");
+        material.color.set(color);
+        material.vertexColors = false;
+      } else {
+        material.color.set("#ffffff");
+        geometry.setAttribute("color", new THREE.Float32BufferAttribute(color.flat(), 3));
+        material.vertexColors = true;
+      }
+      material.needsUpdate = true;
     },
     move_camera(x, y, z, look_at_x, look_at_y, look_at_z, up_x, up_y, up_z, duration) {
       if (this.camera_tween) this.camera_tween.stop();
