@@ -1,4 +1,5 @@
-from typing import Any, Callable, Dict, List, Literal, Optional, Union
+import importlib.util
+from typing import TYPE_CHECKING, Any, Callable, Dict, List, Literal, Optional, Union
 
 from typing_extensions import Self
 
@@ -7,11 +8,10 @@ from ..element import Element
 from ..events import GenericEventArguments, TableSelectionEventArguments, ValueChangeEventArguments, handle_event
 from .mixins.filter_element import FilterElement
 
-try:
-    import pandas as pd
+if importlib.util.find_spec('pandas'):
     optional_features.register('pandas')
-except ImportError:
-    pass
+    if TYPE_CHECKING:
+        import pandas as pd
 
 
 class Table(FilterElement, component='table.js'):
@@ -110,6 +110,8 @@ class Table(FilterElement, component='table.js'):
         :param on_select: callback which is invoked when the selection changes
         :return: table element
         """
+        import pandas as pd  # pylint: disable=import-outside-toplevel
+
         def is_special_dtype(dtype):
             return (pd.api.types.is_datetime64_any_dtype(dtype) or
                     pd.api.types.is_timedelta64_dtype(dtype) or
