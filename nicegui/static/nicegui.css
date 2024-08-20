@@ -250,6 +250,11 @@ h6.q-timeline__title {
   width: 100%;
   height: 100%;
 }
+.nicegui-joystick {
+  width: 10em;
+  height: 10em;
+  background-color: AliceBlue;
+}
 
 /* CodeMirror */
 .nicegui-codemirror .cm-editor.cm-focused {
