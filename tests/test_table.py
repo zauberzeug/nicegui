@@ -274,3 +274,47 @@ def test_default_column_parameters(screen: Screen):
     screen.should_contain('London')
     screen.should_contain('Paris')
     assert len(screen.find_all_by_class('sortable')) == 2
+
+
+def test_columns_from_df(screen: Screen):
+    persons = ui.table.from_pandas(pd.DataFrame({'name': ['Alice', 'Bob'], 'age': [18, 21]}))
+    cars = ui.table.from_pandas(pd.DataFrame({'make': ['Ford', 'Toyota'], 'model': ['Focus', 'Corolla']}),
+                                columns=[{'name': 'make', 'label': 'make', 'field': 'make'}])
+
+    ui.button('Update persons without columns',
+              on_click=lambda: persons.update_from_pandas(pd.DataFrame({'name': ['Dan'], 'age': [5], 'sex': ['male']})))
+
+    ui.button('Update persons with columns',
+              on_click=lambda: persons.update_from_pandas(pd.DataFrame({'name': ['Stephen'], 'age': [33]}),
+                                                          columns=[{'name': 'name', 'label': 'Name', 'field': 'name'}]))
+
+    ui.button('Update cars without columns',
+              on_click=lambda: cars.update_from_pandas(pd.DataFrame({'make': ['Honda'], 'model': ['Civic']})))
+
+    ui.button('Update cars with columns',
+              on_click=lambda: cars.update_from_pandas(pd.DataFrame({'make': ['Hyundai'], 'model': ['i30']}),
+                                                       columns=[{'name': 'make', 'label': 'make', 'field': 'make'},
+                                                                {'name': 'model', 'label': 'model', 'field': 'model'}]))
+
+    screen.open('/')
+    screen.should_contain('name')
+    screen.should_contain('age')
+    screen.should_contain('make')
+    screen.should_not_contain('model')
+
+    screen.click('Update persons without columns')  # infer columns (like during instantiation)
+    screen.should_contain('Dan')
+    screen.should_contain('5')
+    screen.should_contain('male')
+
+    screen.click('Update persons with columns')  # updated columns via parameter
+    screen.should_contain('Stephen')
+    screen.should_not_contain('32')
+
+    screen.click('Update cars without columns')  # don't change columns
+    screen.should_contain('Honda')
+    screen.should_not_contain('Civic')
+
+    screen.click('Update cars with columns')  # updated columns via parameter
+    screen.should_contain('Hyundai')
+    screen.should_contain('i30')

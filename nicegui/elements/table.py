@@ -52,6 +52,7 @@ class Table(FilterElement, component='table.js'):
             columns = [{'name': key, 'label': str(key).upper(), 'field': key, 'sortable': True} for key in first_row]
 
         self._column_defaults = column_defaults
+        self._use_columns_from_df = False
         self._props['columns'] = self._normalize_columns(columns)
         self._props['rows'] = rows
         self._props['row-key'] = row_key
@@ -127,7 +128,7 @@ class Table(FilterElement, component='table.js'):
         :return: table element
         """
         rows, columns_from_df = cls._df_to_rows_and_columns(df)
-        return cls(
+        table = cls(
             rows=rows,
             columns=columns or columns_from_df,
             column_defaults=column_defaults,
@@ -137,6 +138,8 @@ class Table(FilterElement, component='table.js'):
             pagination=pagination,
             on_select=on_select,
         )
+        table._use_columns_from_df = columns is None
+        return table
 
     def update_from_pandas(self,
                            df: 'pd.DataFrame', *,
@@ -147,6 +150,9 @@ class Table(FilterElement, component='table.js'):
 
         See `from_pandas()` for more information about the conversion of non-serializable columns.
 
+        If `columns` is not provided and the columns had been inferred from a DataFrame,
+        the columns will be updated to match the new DataFrame.
+
         :param df: Pandas DataFrame
         :param clear_selection: whether to clear the selection (default: True)
         :param columns: list of column objects (defaults to the columns of the dataframe)
@@ -154,8 +160,10 @@ class Table(FilterElement, component='table.js'):
         """
         rows, columns_from_df = self._df_to_rows_and_columns(df)
         self.rows[:] = rows
-        self.columns[:] = columns or columns_from_df
-        self._column_defaults = column_defaults
+        if column_defaults is not None:
+            self._column_defaults = column_defaults
+        if columns or self._use_columns_from_df:
+            self.columns[:] = self._normalize_columns(columns or columns_from_df)
         if clear_selection:
             self.selected.clear()
         self.update()
