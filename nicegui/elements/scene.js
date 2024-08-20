@@ -145,6 +145,7 @@ export default {
     }
     this.controls = new OrbitControls(this.camera, this.renderer.domElement);
     this.drag_controls = new DragControls(this.draggable_objects, this.camera, this.renderer.domElement);
+    this.drag_controls.transformGroup = true;
     const applyConstraint = (constraint, position) => {
       if (!constraint) return;
       const [variable, expression] = constraint.split("=").map((s) => s.trim());
