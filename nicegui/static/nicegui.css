@@ -296,3 +296,7 @@ h6.q-timeline__title {
   position: absolute;
   left: 1.5em;
 }
+.nicegui-joystick {
+  width: 10em;
+  height: 10em;
+}
