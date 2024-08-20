@@ -262,8 +262,7 @@ def test_default_column_parameters(screen: Screen):
         {'name': 'name', 'label': 'Name', 'field': 'name'},
         {'name': 'age', 'label': 'Age', 'field': 'age'},
         {'name': 'city', 'label': 'City', 'field': 'city', 'sortable': False},
-        {'sortable': True},
-    ])
+    ], column_defaults={'sortable': True})
 
     screen.open('/')
     screen.should_contain('Name')

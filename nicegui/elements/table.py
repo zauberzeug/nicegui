@@ -21,6 +21,7 @@ class Table(FilterElement, component='table.js'):
                  *,
                  rows: List[Dict],
                  columns: Optional[List[Dict]] = None,
+                 column_defaults: Optional[Dict] = None,
                  row_key: str = 'id',
                  title: Optional[str] = None,
                  selection: Optional[Literal['single', 'multiple']] = None,
@@ -34,6 +35,7 @@ class Table(FilterElement, component='table.js'):
 
         :param rows: list of row objects
         :param columns: list of column objects (defaults to the columns of the first row)
+        :param column_defaults: optional default column properties
         :param row_key: name of the column containing unique data identifying the row (default: "id")
         :param title: title of the table
         :param selection: selection type ("single" or "multiple"; default: `None`)
@@ -49,6 +51,7 @@ class Table(FilterElement, component='table.js'):
             first_row = rows[0] if rows else {}
             columns = [{'name': key, 'label': str(key).upper(), 'field': key, 'sortable': True} for key in first_row]
 
+        self._column_defaults = column_defaults
         self._props['columns'] = self._normalize_columns(columns)
         self._props['rows'] = rows
         self._props['row-key'] = row_key
@@ -92,14 +95,14 @@ class Table(FilterElement, component='table.js'):
         self._pagination_change_handlers.append(callback)
         return self
 
-    @staticmethod
-    def _normalize_columns(columns: List[Dict]) -> List[Dict]:
-        default_column_parameters = dict(item for column in columns if 'name' not in column for item in column.items())
-        return [{**default_column_parameters, **column} for column in columns if 'name' in column]
+    def _normalize_columns(self, columns: List[Dict]) -> List[Dict]:
+        return [{**self._column_defaults, **column} for column in columns] if self._column_defaults else columns
 
     @classmethod
     def from_pandas(cls,
-                    df: 'pd.DataFrame',
+                    df: 'pd.DataFrame', *,
+                    columns: Optional[List[Dict]] = None,
+                    column_defaults: Optional[Dict] = None,
                     row_key: str = 'id',
                     title: Optional[str] = None,
                     selection: Optional[Literal['single', 'multiple']] = None,
@@ -114,6 +117,8 @@ class Table(FilterElement, component='table.js'):
         See `issue 1698 <https://github.com/zauberzeug/nicegui/issues/1698>`_ for more information.
 
         :param df: Pandas DataFrame
+        :param columns: list of column objects (defaults to the columns of the dataframe)
+        :param column_defaults: optional default column properties
         :param row_key: name of the column containing unique data identifying the row (default: "id")
         :param title: title of the table
         :param selection: selection type ("single" or "multiple"; default: `None`)
@@ -121,10 +126,11 @@ class Table(FilterElement, component='table.js'):
         :param on_select: callback which is invoked when the selection changes
         :return: table element
         """
-        rows, columns = cls._df_to_rows_and_columns(df)
+        rows, columns_from_df = cls._df_to_rows_and_columns(df)
         return cls(
             rows=rows,
-            columns=columns,
+            columns=columns or columns_from_df,
+            column_defaults=column_defaults,
             row_key=row_key,
             title=title,
             selection=selection,
@@ -132,17 +138,24 @@ class Table(FilterElement, component='table.js'):
             on_select=on_select,
         )
 
-    def update_from_pandas(self, df: 'pd.DataFrame', *, clear_selection: bool = True) -> None:
+    def update_from_pandas(self,
+                           df: 'pd.DataFrame', *,
+                           clear_selection: bool = True,
+                           columns: Optional[List[Dict]] = None,
+                           column_defaults: Optional[Dict] = None) -> None:
         """Update the table from a Pandas DataFrame.
 
         See `from_pandas()` for more information about the conversion of non-serializable columns.
 
         :param df: Pandas DataFrame
         :param clear_selection: whether to clear the selection (default: True)
+        :param columns: list of column objects (defaults to the columns of the dataframe)
+        :param column_defaults: optional default column properties
         """
-        rows, columns = self._df_to_rows_and_columns(df)
+        rows, columns_from_df = self._df_to_rows_and_columns(df)
         self.rows[:] = rows
-        self.columns[:] = columns
+        self.columns[:] = columns or columns_from_df
+        self._column_defaults = column_defaults
         if clear_selection:
             self.selected.clear()
         self.update()
@@ -185,6 +198,16 @@ class Table(FilterElement, component='table.js'):
     def columns(self, value: List[Dict]) -> None:
         self._props['columns'][:] = self._normalize_columns(value)
         self.update()
+
+    @property
+    def column_defaults(self) -> Optional[Dict]:
+        """Default column properties."""
+        return self._column_defaults
+
+    @column_defaults.setter
+    def column_defaults(self, value: Optional[Dict]) -> None:
+        self._column_defaults = value
+        self.columns = self.columns  # re-normalize columns
 
     @property
     def row_key(self) -> str:

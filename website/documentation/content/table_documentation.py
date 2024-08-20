@@ -31,8 +31,7 @@ def omitting_columns():
 
 @doc.demo('Default column parameters', '''
     You can define default column parameters that apply to all columns.
-    In this example, all columns are left-aligned by default.
-    Every column dictionary without a "name" key is treated as default column parameters.
+    In this example, all columns are left-aligned by default and have a blue uppercase header.
 ''')
 def default_column_parameters():
     ui.table(rows=[
@@ -41,8 +40,10 @@ def default_column_parameters():
     ], columns=[
         {'name': 'name', 'label': 'Name', 'field': 'name'},
         {'name': 'age', 'label': 'Age', 'field': 'age'},
-        {'align': 'left'},
-    ])
+    ], column_defaults={
+        'align': 'left',
+        'headerClasses': 'uppercase text-primary',
+    })
 
 
 @doc.demo('Table with expandable rows', '''
