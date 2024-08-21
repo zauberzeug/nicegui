@@ -17,6 +17,35 @@ def main_demo() -> None:
     ui.table(columns=columns, rows=rows, row_key='name')
 
 
+@doc.demo('Omitting columns', '''
+    If you omit the `columns` parameter, the table will automatically generate columns from the first row.
+    Labels are uppercased and sorting is enabled.
+''')
+def omitting_columns():
+    ui.table(rows=[
+        {'make': 'Toyota', 'model': 'Celica', 'price': 35000},
+        {'make': 'Ford', 'model': 'Mondeo', 'price': 32000},
+        {'make': 'Porsche', 'model': 'Boxster', 'price': 72000},
+    ])
+
+
+@doc.demo('Default column parameters', '''
+    You can define default column parameters that apply to all columns.
+    In this example, all columns are left-aligned by default and have a blue uppercase header.
+''')
+def default_column_parameters():
+    ui.table(rows=[
+        {'name': 'Alice', 'age': 18},
+        {'name': 'Bob', 'age': 21},
+    ], columns=[
+        {'name': 'name', 'label': 'Name', 'field': 'name'},
+        {'name': 'age', 'label': 'Age', 'field': 'age'},
+    ], column_defaults={
+        'align': 'left',
+        'headerClasses': 'uppercase text-primary',
+    })
+
+
 @doc.demo('Table with expandable rows', '''
     Scoped slots can be used to insert buttons that toggle the expand state of a table row.
     See the [Quasar documentation](https://quasar.dev/vue-components/table#expanding-rows) for more information.
@@ -138,14 +167,14 @@ def table_from_pandas_demo():
 
 
 @doc.demo('Adding rows', '''
-    It's simple to add new rows with the `add_rows(dict)` method.
+    It's simple to add new rows with the `add_row(dict)` and `add_rows(list[dict])` methods.
     With the "virtual-scroll" prop set, the table can be programmatically scrolled with the `scrollTo` JavaScript function.
 ''')
 def adding_rows():
     from datetime import datetime
 
     def add():
-        table.add_rows({'date': datetime.now().strftime('%c')})
+        table.add_row({'date': datetime.now().strftime('%c')})
         table.run_method('scrollTo', len(table.rows)-1)
 
     columns = [{'name': 'date', 'label': 'Date', 'field': 'date'}]
