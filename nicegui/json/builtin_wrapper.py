@@ -5,7 +5,7 @@ from typing import Any, Optional, Tuple
 
 from fastapi import Response
 
-HAS_NUMPY = importlib.util.find_spec('pandas') is not None
+HAS_NUMPY = importlib.util.find_spec('numpy') is not None
 
 
 def dumps(obj: Any,
