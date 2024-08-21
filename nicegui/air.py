@@ -1,12 +1,13 @@
+from __future__ import annotations
+
 import asyncio
 import gzip
 import json
 import re
 from dataclasses import dataclass
-from typing import Any, AsyncIterator, Dict, Optional
+from typing import TYPE_CHECKING, Any, AsyncIterator, Dict, Optional
 from uuid import uuid4
 
-import httpx
 import socketio
 import socketio.exceptions
 
@@ -15,6 +16,9 @@ from .client import Client
 from .dataclasses import KWONLY_SLOTS
 from .elements.timer import Timer as timer
 from .logging import log
+
+if TYPE_CHECKING:
+    import httpx
 
 RELAY_HOST = 'https://on-air.nicegui.io/'
 
@@ -28,6 +32,8 @@ class Stream:
 class Air:
 
     def __init__(self, token: str) -> None:
+        import httpx  # pylint: disable=import-outside-toplevel
+
         self.token = token
         self.relay = socketio.AsyncClient()
         self.client = httpx.AsyncClient(app=core.app)
