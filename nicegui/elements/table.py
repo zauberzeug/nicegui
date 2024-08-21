@@ -93,7 +93,8 @@ class Table(FilterElement, component='table.js'):
                     title: Optional[str] = None,
                     selection: Optional[Literal['single', 'multiple']] = None,
                     pagination: Optional[Union[int, dict]] = None,
-                    on_select: Optional[Callable[..., Any]] = None) -> Self:
+                    on_select: Optional[Callable[..., Any]] = None,
+                    columns_props: Optional[Dict[str, Union[dict, Any]]] = None) -> Self:
         """Create a table from a Pandas DataFrame.
 
         Note:
@@ -108,6 +109,7 @@ class Table(FilterElement, component='table.js'):
         :param selection: selection type ("single" or "multiple"; default: `None`)
         :param pagination: a dictionary correlating to a pagination object or number of rows per page (`None` hides the pagination, 0 means "infinite"; default: `None`).
         :param on_select: callback which is invoked when the selection changes
+        :param column_props: a dictionary containig additional properties for the columns (e.g., `{"align":"left"}` aligns all columns to the left; `{"colName": {"align":"right"}` aligns one column to the right; `{"align":"left", "colName": {"align":"right"}` aligns all columns to the left except the specified column)
         :return: table element
         """
         import pandas as pd  # pylint: disable=import-outside-toplevel
@@ -127,8 +129,25 @@ class Table(FilterElement, component='table.js'):
                              'You can convert them to strings using something like '
                              '`df.columns = ["_".join(col) for col in df.columns.values]`.')
 
+        global_props = {}
+        specific_props = {}
+        
+        if columns_props:
+            global_props = {k: v for k, v in columns_props.items() if not isinstance(v, dict)}
+            specific_props = {k: v for k, v in columns_props.items() if isinstance(v, dict)}
+        
+        columns = [
+            {
+                "name": col,
+                "label": col,
+                "field": col,
+                **global_props,
+                **specific_props.get(col, {}),
+            }
+            for col in df.columns
+        ]
         return cls(
-            columns=[{'name': col, 'label': col, 'field': col} for col in df.columns],
+            columns=columns,
             rows=df.to_dict('records'),
             row_key=row_key,
             title=title,
