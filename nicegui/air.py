@@ -1,12 +1,13 @@
+from __future__ import annotations
+
 import asyncio
 import gzip
 import json
 import re
 from dataclasses import dataclass
-from typing import Any, AsyncIterator, Dict, Optional
+from typing import TYPE_CHECKING, Any, AsyncIterator, Dict, Optional
 from uuid import uuid4
 
-import httpx
 import socketio
 import socketio.exceptions
 
@@ -15,6 +16,9 @@ from .client import Client
 from .dataclasses import KWONLY_SLOTS
 from .elements.timer import Timer as timer
 from .logging import log
+
+if TYPE_CHECKING:
+    import httpx
 
 RELAY_HOST = 'https://on-air.nicegui.io/'
 
@@ -28,6 +32,8 @@ class Stream:
 class Air:
 
     def __init__(self, token: str) -> None:
+        import httpx  # pylint: disable=import-outside-toplevel
+
         self.token = token
         self.relay = socketio.AsyncClient()
         self.client = httpx.AsyncClient(app=core.app)
@@ -140,10 +146,11 @@ class Air:
             if client_id not in Client.instances:
                 return
             client = Client.instances[client_id]
-            if data['msg']['args'] and data['msg']['args'][0].startswith('{"socket_id":'):
-                args = json.loads(data['msg']['args'][0])
-                args['socket_id'] = client_id  # HACK: translate socket_id of ui.scene's init event
-                data['msg']['args'][0] = json.dumps(args)
+            args = data['msg']['args']
+            if args and isinstance(args[0], str) and args[0].startswith('{"socket_id":'):
+                arg0 = json.loads(args[0])
+                arg0['socket_id'] = client_id  # HACK: translate socket_id of ui.scene's init event
+                args[0] = json.dumps(arg0)
             client.handle_event(data['msg'])
 
         @self.relay.on('javascript_response')
