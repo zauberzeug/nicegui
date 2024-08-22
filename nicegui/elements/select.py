@@ -81,8 +81,8 @@ class Select(ValidationElement, ChoiceElement, DisableableElement, component='se
         self._props['clearable'] = clearable
 
         self._is_showing_popup = False
-        self.on('popup-show', lambda e: setattr(e.sender, '_is_showing_popup', True), args=[])
-        self.on('popup-hide', lambda e: setattr(e.sender, '_is_showing_popup', False), args=[])
+        self.on('popup-show', lambda e: setattr(e.sender, '_is_showing_popup', True))
+        self.on('popup-hide', lambda e: setattr(e.sender, '_is_showing_popup', False))
 
     @property
     def is_showing_popup(self) -> bool:
