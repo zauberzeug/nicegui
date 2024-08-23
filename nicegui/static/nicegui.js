@@ -174,13 +174,13 @@ function renderRecursively(elements, id) {
       handler = eval(event.js_handler);
     } else {
       handler = (...args) => {
-        const data = {
-          id: id,
-          client_id: window.clientId,
-          listener_id: event.listener_id,
-          args: stringifyEventArgs(args, event.args),
-        };
-        const emitter = () => window.socket?.emit("event", data);
+        const emitter = () =>
+          window.socket?.emit("event", {
+            id: id,
+            client_id: window.clientId,
+            listener_id: event.listener_id,
+            args: stringifyEventArgs(args, event.args),
+          });
         const delayed_emitter = () => {
           if (window.did_handshake) emitter();
           else setTimeout(emitter, 10);
