@@ -101,6 +101,7 @@ export default {
         ...this.draw_control,
       });
       this.map.addControl(drawControl);
+      this.map.on("draw:created", (e) => drawnItems.addLayer(e.layer));
     }
     const connectInterval = setInterval(async () => {
       if (window.socket.id === undefined) return;
