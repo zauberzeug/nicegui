@@ -1,4 +1,5 @@
 import { loadResource } from "../../static/utils/resources.js";
+import { cleanObject } from "../../static/utils/json.js";
 
 export default {
   template: "<div></div>",
@@ -86,9 +87,16 @@ export default {
       for (const key in L.Draw.Event) {
         const type = L.Draw.Event[key];
         this.map.on(type, (e) => {
+          const cleanedObject = cleanObject(e, [
+            "_map",
+            "_events",
+            "_eventParents",
+            "_handlers",
+            "_mapToAdd",
+            "_initHooksCalled",
+          ]);
           this.$emit(type, {
-            ...e,
-            layer: e.layer ? { ...e.layer, editing: undefined, _events: undefined } : undefined,
+            ...cleanedObject,
             target: undefined,
             sourceTarget: undefined,
           });
