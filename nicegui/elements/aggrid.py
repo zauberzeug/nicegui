@@ -1,4 +1,5 @@
-from typing import Dict, List, Optional, cast
+import importlib.util
+from typing import TYPE_CHECKING, Dict, List, Optional, cast
 
 from typing_extensions import Self
 
@@ -6,11 +7,10 @@ from .. import optional_features
 from ..awaitable_response import AwaitableResponse
 from ..element import Element
 
-try:
-    import pandas as pd
+if importlib.util.find_spec('pandas'):
     optional_features.register('pandas')
-except ImportError:
-    pass
+    if TYPE_CHECKING:
+        import pandas as pd
 
 
 class AgGrid(Element, component='aggrid.js', dependencies=['lib/aggrid/ag-grid-community.min.js']):
@@ -59,6 +59,8 @@ class AgGrid(Element, component='aggrid.js', dependencies=['lib/aggrid/ag-grid-c
         :param options: dictionary of additional AG Grid options
         :return: AG Grid element
         """
+        import pandas as pd  # pylint: disable=import-outside-toplevel
+
         def is_special_dtype(dtype):
             return (pd.api.types.is_datetime64_any_dtype(dtype) or
                     pd.api.types.is_timedelta64_dtype(dtype) or

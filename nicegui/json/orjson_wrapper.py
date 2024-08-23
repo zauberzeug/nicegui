@@ -1,3 +1,4 @@
+import importlib.util
 from decimal import Decimal
 from typing import Any, Optional, Tuple
 
@@ -5,11 +6,7 @@ from typing import Any, Optional, Tuple
 import orjson
 from fastapi import Response
 
-try:
-    import numpy as np
-    has_numpy = True
-except ImportError:
-    has_numpy = False
+HAS_NUMPY = importlib.util.find_spec('numpy') is not None
 
 ORJSON_OPTS = orjson.OPT_SERIALIZE_NUMPY | orjson.OPT_NON_STR_KEYS
 
@@ -53,8 +50,10 @@ def loads(value: str) -> Any:
 
 def _orjson_converter(obj):
     """Custom serializer/converter, e.g. for NumPy object arrays."""
-    if has_numpy and isinstance(obj, np.ndarray) and obj.dtype == np.object_:
-        return obj.tolist()
+    if HAS_NUMPY:
+        import numpy as np  # pylint: disable=import-outside-toplevel
+        if isinstance(obj, np.ndarray) and obj.dtype == np.object_:
+            return obj.tolist()
     if isinstance(obj, Decimal):
         return float(obj)
     raise TypeError(f'Object of type {obj.__class__.__name__} is not JSON serializable')

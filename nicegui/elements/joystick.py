@@ -26,6 +26,7 @@ class Joystick(Element, component='joystick.vue', dependencies=['lib/nipplejs/ni
         """
         super().__init__()
         self._props['options'] = options
+        self._classes.append('nicegui-joystick')
         self.active = False
 
         self._start_handlers = [on_start] if on_start else []
