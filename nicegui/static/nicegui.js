@@ -181,7 +181,11 @@ function renderRecursively(elements, id) {
           args: stringifyEventArgs(args, event.args),
         };
         const emitter = () => window.socket?.emit("event", data);
-        throttle(emitter, event.throttle, event.leading_events, event.trailing_events, event.listener_id);
+        const delayed_emitter = () => {
+          if (window.did_handshake) emitter();
+          else setTimeout(emitter, 10);
+        };
+        throttle(delayed_emitter, event.throttle, event.leading_events, event.trailing_events, event.listener_id);
         if (element.props["loopback"] === False && event.type == "update:modelValue") {
           element.props["model-value"] = args;
         }
@@ -308,6 +312,7 @@ function createApp(elements, options) {
         extraHeaders: options.extraHeaders,
         transports: options.transports,
       });
+      window.did_handshake = false;
       const messageHandlers = {
         connect: () => {
           let tabId = sessionStorage.getItem("__nicegui_tab_id");
@@ -322,6 +327,7 @@ function createApp(elements, options) {
             }
             document.getElementById("popup").ariaHidden = true;
           });
+          window.did_handshake = true;
         },
         connect_error: (err) => {
           if (err.message == "timeout") {
