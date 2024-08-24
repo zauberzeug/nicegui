@@ -26,6 +26,7 @@ class Leaflet(Element, component='leaflet.js'):
                  *,
                  options: Dict = {},  # noqa: B006
                  draw_control: Union[bool, Dict] = False,
+                 hide_drawn_items: bool = False,
                  ) -> None:
         """Leaflet map
 
@@ -35,6 +36,7 @@ class Leaflet(Element, component='leaflet.js'):
         :param zoom: initial zoom level of the map (default: 13)
         :param draw_control: whether to show the draw toolbar (default: False)
         :param options: additional options passed to the Leaflet map (default: {})
+        :param hide_drawn_items: whether to hide drawn items on the map (default: False)
         """
         super().__init__()
         self.add_resource(Path(__file__).parent / 'lib' / 'leaflet')
@@ -49,6 +51,7 @@ class Leaflet(Element, component='leaflet.js'):
         self._props['zoom'] = zoom
         self._props['options'] = {**options}
         self._props['draw_control'] = draw_control
+        self._props['hide_drawn_items'] = hide_drawn_items
 
         self.on('init', self._handle_init)
         self.on('map-moveend', self._handle_moveend)

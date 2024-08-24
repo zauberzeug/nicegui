@@ -9,6 +9,7 @@ export default {
     options: Object,
     draw_control: Object,
     resource_path: String,
+    hide_drawn_items: Boolean,
   },
   async mounted() {
     await this.$nextTick(); // NOTE: wait for window.path_prefix to be set
@@ -110,7 +111,9 @@ export default {
         ...this.draw_control,
       });
       this.map.addControl(drawControl);
-      this.map.on("draw:created", (e) => drawnItems.addLayer(e.layer));
+      if (!this.hide_drawn_items) {
+        this.map.on("draw:created", (e) => drawnItems.addLayer(e.layer));
+      }
     }
     const connectInterval = setInterval(async () => {
       if (window.socket.id === undefined) return;
