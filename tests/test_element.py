@@ -2,6 +2,7 @@ import pytest
 from selenium.webdriver.common.by import By
 
 from nicegui import background_tasks, ui
+from nicegui.props import Props
 from nicegui.testing import Screen
 
 
@@ -43,28 +44,28 @@ def test_style_parsing(nicegui_reset_globals):
 
 def test_props_parsing(nicegui_reset_globals):
     # pylint: disable=protected-access
-    assert ui.element._parse_props(None) == {}  # pylint: disable=use-implicit-booleaness-not-comparison
-    assert ui.element._parse_props('one two=1 three="abc def"') == {'one': True, 'two': '1', 'three': 'abc def'}
-    assert ui.element._parse_props('loading percentage=12.5') == {'loading': True, 'percentage': '12.5'}
-    assert ui.element._parse_props('size=50%') == {'size': '50%'}
-    assert ui.element._parse_props('href=http://192.168.42.100/') == {'href': 'http://192.168.42.100/'}
-    assert ui.element._parse_props('hint="Your \\"given\\" name"') == {'hint': 'Your "given" name'}
-    assert ui.element._parse_props('input-style="{ color: #ff0000 }"') == {'input-style': '{ color: #ff0000 }'}
-    assert ui.element._parse_props('accept=.jpeg,.jpg,.png') == {'accept': '.jpeg,.jpg,.png'}
+    assert Props.parse(None) == {}  # pylint: disable=use-implicit-booleaness-not-comparison
+    assert Props.parse('one two=1 three="abc def"') == {'one': True, 'two': '1', 'three': 'abc def'}
+    assert Props.parse('loading percentage=12.5') == {'loading': True, 'percentage': '12.5'}
+    assert Props.parse('size=50%') == {'size': '50%'}
+    assert Props.parse('href=http://192.168.42.100/') == {'href': 'http://192.168.42.100/'}
+    assert Props.parse('hint="Your \\"given\\" name"') == {'hint': 'Your "given" name'}
+    assert Props.parse('input-style="{ color: #ff0000 }"') == {'input-style': '{ color: #ff0000 }'}
+    assert Props.parse('accept=.jpeg,.jpg,.png') == {'accept': '.jpeg,.jpg,.png'}
 
-    assert ui.element._parse_props('empty=""') == {'empty': ''}
-    assert ui.element._parse_props("empty=''") == {'empty': ''}
+    assert Props.parse('empty=""') == {'empty': ''}
+    assert Props.parse("empty=''") == {'empty': ''}
 
-    assert ui.element._parse_props("""hint='Your \\"given\\" name'""") == {'hint': 'Your "given" name'}
-    assert ui.element._parse_props("one two=1 three='abc def'") == {'one': True, 'two': '1', 'three': 'abc def'}
-    assert ui.element._parse_props('''three='abc def' four="hhh jjj"''') == {'three': 'abc def', 'four': 'hhh jjj', }
-    assert ui.element._parse_props('''foo="quote'quote"''') == {'foo': "quote'quote"}
-    assert ui.element._parse_props("""foo='quote"quote'""") == {'foo': 'quote"quote'}
-    assert ui.element._parse_props("""foo="single '" bar='double "'""") == {'foo': "single '", 'bar': 'double "'}
-    assert ui.element._parse_props("""foo="single '" bar='double \\"'""") == {'foo': "single '", 'bar': 'double "'}
-    assert ui.element._parse_props("input-style='{ color: #ff0000 }'") == {'input-style': '{ color: #ff0000 }'}
-    assert ui.element._parse_props("""input-style='{ myquote: "quote" }'""") == {'input-style': '{ myquote: "quote" }'}
-    assert ui.element._parse_props('filename=foo=bar.txt') == {'filename': 'foo=bar.txt'}
+    assert Props.parse("""hint='Your \\"given\\" name'""") == {'hint': 'Your "given" name'}
+    assert Props.parse("one two=1 three='abc def'") == {'one': True, 'two': '1', 'three': 'abc def'}
+    assert Props.parse('''three='abc def' four="hhh jjj"''') == {'three': 'abc def', 'four': 'hhh jjj', }
+    assert Props.parse('''foo="quote'quote"''') == {'foo': "quote'quote"}
+    assert Props.parse("""foo='quote"quote'""") == {'foo': 'quote"quote'}
+    assert Props.parse("""foo="single '" bar='double "'""") == {'foo': "single '", 'bar': 'double "'}
+    assert Props.parse("""foo="single '" bar='double \\"'""") == {'foo': "single '", 'bar': 'double "'}
+    assert Props.parse("input-style='{ color: #ff0000 }'") == {'input-style': '{ color: #ff0000 }'}
+    assert Props.parse("""input-style='{ myquote: "quote" }'""") == {'input-style': '{ myquote: "quote" }'}
+    assert Props.parse('filename=foo=bar.txt') == {'filename': 'foo=bar.txt'}
 
 
 def test_style(screen: Screen):

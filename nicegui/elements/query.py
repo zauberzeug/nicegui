@@ -4,6 +4,7 @@ from typing_extensions import Self
 
 from ..context import context
 from ..element import Element
+from ..props import Props
 
 
 class QueryElement(Element, component='query.js'):
@@ -41,12 +42,12 @@ class QueryElement(Element, component='query.js'):
         return self
 
     def props(self, add: Optional[str] = None, *, remove: Optional[str] = None) -> Self:
-        old_props = self._parse_props(remove)
+        old_props = Props.parse(remove)
         for key in old_props:
             self._props['props'].pop(key, None)
         if old_props:
             self.run_method('remove_props', list(old_props))
-        new_props = self._parse_props(add)
+        new_props = Props.parse(add)
         self._props['props'].update(new_props)
         if self._props['props']:
             self.run_method('add_props', self._props['props'])
