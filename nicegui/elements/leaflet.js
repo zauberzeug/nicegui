@@ -86,7 +86,8 @@ export default {
     if (this.draw_control) {
       for (const key in L.Draw.Event) {
         const type = L.Draw.Event[key];
-        this.map.on(type, (e) => {
+        this.map.on(type, async (e) => {
+          await this.$nextTick(); // NOTE: allow drawn layers to be added
           const cleanedObject = cleanObject(e, [
             "_map",
             "_events",
