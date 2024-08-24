@@ -99,11 +99,9 @@ def draw_on_map() -> None:
     from nicegui import events
 
     def handle_draw(e: events.GenericEventArguments):
-        if e.args['layerType'] == 'marker':
-            m.marker(latlng=(e.args['layer']['_latlng']['lat'],
-                             e.args['layer']['_latlng']['lng']))
-        if e.args['layerType'] == 'polygon':
-            m.generic_layer(name='polygon', args=[e.args['layer']['_latlngs']])
+        layer_type = e.args['layerType']
+        coords = e.args['layer'].get('_latlng') or e.args['layer'].get('_latlngs')
+        ui.notify(f'Drawn a {layer_type} at {coords}')
 
     draw_control = {
         'draw': {
