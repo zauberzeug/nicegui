@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import ast
 import inspect
 import re
 from copy import copy, deepcopy
@@ -15,38 +14,13 @@ from .context import context
 from .dependencies import Component, Library, register_library, register_resource, register_vue_component
 from .elements.mixins.visibility import Visibility
 from .event_listener import EventListener
+from .props import Props
 from .slot import Slot
 from .tailwind import Tailwind
 from .version import __version__
 
 if TYPE_CHECKING:
     from .client import Client
-
-PROPS_PATTERN = re.compile(r'''
-# Match a key-value pair optionally followed by whitespace or end of string
-([:\w\-]+)          # Capture group 1: Key
-(?:                 # Optional non-capturing group for value
-    =               # Match the equal sign
-    (?:             # Non-capturing group for value options
-        (           # Capture group 2: Value enclosed in double quotes
-            "       # Match  double quote
-            [^"\\]* # Match any character except quotes or backslashes zero or more times
-            (?:\\.[^"\\]*)*  # Match any escaped character followed by any character except quotes or backslashes zero or more times
-            "       # Match the closing quote
-        )
-        |
-        (           # Capture group 3: Value enclosed in single quotes
-            '       # Match a single quote
-            [^'\\]* # Match any character except quotes or backslashes zero or more times
-            (?:\\.[^'\\]*)*  # Match any escaped character followed by any character except quotes or backslashes zero or more times
-            '       # Match the closing quote
-        )
-        |           # Or
-        ([\w\-.,%:\/=]+)  # Capture group 4: Value without quotes
-    )
-)?                  # End of optional non-capturing group for value
-(?:$|\s)            # Match end of string or whitespace
-''', re.VERBOSE)
 
 # https://www.w3.org/TR/xml/#sec-common-syn
 TAG_START_CHAR = r':|[A-Z]|_|[a-z]|[\u00C0-\u00D6]|[\u00D8-\u00F6]|[\u00F8-\u02FF]|[\u0370-\u037D]|[\u037F-\u1FFF]|[\u200C-\u200D]|[\u2070-\u218F]|[\u2C00-\u2FEF]|[\u3001-\uD7FF]|[\uF900-\uFDCF]|[\uFDF0-\uFFFD]|[\U00010000-\U000EFFFF]'
@@ -83,7 +57,7 @@ class Element(Visibility):
         self._classes.extend(self._default_classes)
         self._style: Dict[str, str] = {}
         self._style.update(self._default_style)
-        self._props: Dict[str, Any] = {}
+        self._props: Props[Self] = Props(element=self)
         self._props.update(self._default_props)
         self._markers: List[str] = []
         self._event_listeners: Dict[str, EventListener] = {}
@@ -326,45 +300,10 @@ class Element(Visibility):
         cls._default_style.update(cls._parse_style(replace))
         return cls
 
-    @staticmethod
-    def _parse_props(text: Optional[str]) -> Dict[str, Any]:
-        dictionary = {}
-        for match in PROPS_PATTERN.finditer(text or ''):
-            key = match.group(1)
-            value = match.group(2) or match.group(3) or match.group(4)
-            if value is None:
-                dictionary[key] = True
-            else:
-                if (value.startswith("'") and value.endswith("'")) or (value.startswith('"') and value.endswith('"')):
-                    value = ast.literal_eval(value)
-                dictionary[key] = value
-        return dictionary
-
-    def props(self,
-              add: Optional[str] = None, *,
-              remove: Optional[str] = None) -> Self:
-        """Add or remove props.
-
-        This allows modifying the look of the element or its layout using `Quasar <https://quasar.dev/>`_ props.
-        Since props are simply applied as HTML attributes, they can be used with any HTML element.
-
-        Boolean properties are assumed ``True`` if no value is specified.
-
-        :param add: whitespace-delimited list of either boolean values or key=value pair to add
-        :param remove: whitespace-delimited list of property keys to remove
-        """
-        needs_update = False
-        for key in self._parse_props(remove):
-            if key in self._props:
-                needs_update = True
-                del self._props[key]
-        for key, value in self._parse_props(add).items():
-            if self._props.get(key) != value:
-                needs_update = True
-                self._props[key] = value
-        if needs_update:
-            self.update()
-        return self
+    @property
+    def props(self) -> Props[Self]:
+        """The props of the element."""
+        return self._props
 
     @classmethod
     def default_props(cls,
@@ -382,10 +321,10 @@ class Element(Visibility):
         :param add: whitespace-delimited list of either boolean values or key=value pair to add
         :param remove: whitespace-delimited list of property keys to remove
         """
-        for key in cls._parse_props(remove):
+        for key in Props.parse(remove):
             if key in cls._default_props:
                 del cls._default_props[key]
-        for key, value in cls._parse_props(add).items():
+        for key, value in Props.parse(add).items():
             cls._default_props[key] = value
         return cls
 
