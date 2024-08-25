@@ -2,9 +2,11 @@ from typing import Optional
 
 from typing_extensions import Self
 
+from ..classes import Classes
 from ..context import context
 from ..element import Element
 from ..props import Props
+from ..style import Style
 
 
 class QueryElement(Element, component='query.js'):
@@ -18,7 +20,7 @@ class QueryElement(Element, component='query.js'):
 
     def classes(self, add: Optional[str] = None, *, remove: Optional[str] = None, replace: Optional[str] = None) \
             -> Self:
-        classes = self._update_classes_list(self._props['classes'], add, remove, replace)
+        classes = Classes.update_list(self._props['classes'], add, remove, replace)
         new_classes = [c for c in classes if c not in self._props['classes']]
         old_classes = [c for c in self._props['classes'] if c not in classes]
         if new_classes:
@@ -30,13 +32,13 @@ class QueryElement(Element, component='query.js'):
 
     def style(self, add: Optional[str] = None, *, remove: Optional[str] = None, replace: Optional[str] = None) \
             -> Self:
-        old_style = Element._parse_style(remove)
+        old_style = Style.parse(remove)
         for key in old_style:
             self._props['style'].pop(key, None)
         if old_style:
             self.run_method('remove_style', list(old_style))
-        self._props['style'].update(Element._parse_style(add))
-        self._props['style'].update(Element._parse_style(replace))
+        self._props['style'].update(Style.parse(add))
+        self._props['style'].update(Style.parse(replace))
         if self._props['style']:
             self.run_method('add_style', self._props['style'])
         return self

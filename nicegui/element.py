@@ -2,20 +2,35 @@ from __future__ import annotations
 
 import inspect
 import re
-from copy import copy, deepcopy
+from copy import copy
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Callable, ClassVar, Dict, Iterator, List, Optional, Sequence, Union, overload
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Callable,
+    ClassVar,
+    Dict,
+    Iterator,
+    List,
+    Optional,
+    Sequence,
+    Union,
+    cast,
+    overload,
+)
 
 from typing_extensions import Self
 
 from . import core, events, helpers, json, storage
 from .awaitable_response import AwaitableResponse, NullResponse
+from .classes import Classes
 from .context import context
 from .dependencies import Component, Library, register_library, register_resource, register_vue_component
 from .elements.mixins.visibility import Visibility
 from .event_listener import EventListener
 from .props import Props
 from .slot import Slot
+from .style import Style
 from .tailwind import Tailwind
 from .version import __version__
 
@@ -53,12 +68,9 @@ class Element(Visibility):
         self.tag = tag if tag else self.component.tag if self.component else 'div'
         if not TAG_PATTERN.match(self.tag):
             raise ValueError(f'Invalid HTML tag: {self.tag}')
-        self._classes: List[str] = []
-        self._classes.extend(self._default_classes)
-        self._style: Dict[str, str] = {}
-        self._style.update(self._default_style)
-        self._props: Props[Self] = Props(element=self)
-        self._props.update(self._default_props)
+        self._classes: Classes[Self] = Classes(self._default_classes, element=cast(Self, self))
+        self._style: Style[Self] = Style(self._default_style, element=cast(Self, self))
+        self._props: Props[Self] = Props(self._default_props, element=cast(Self, self))
         self._markers: List[str] = []
         self._event_listeners: Dict[str, EventListener] = {}
         self._text: Optional[str] = None
@@ -194,36 +206,10 @@ class Element(Visibility):
             },
         }
 
-    @staticmethod
-    def _update_classes_list(classes: List[str],
-                             add: Optional[str] = None,
-                             remove: Optional[str] = None,
-                             replace: Optional[str] = None) -> List[str]:
-        class_list = classes if replace is None else []
-        class_list = [c for c in class_list if c not in (remove or '').split()]
-        class_list += (add or '').split()
-        class_list += (replace or '').split()
-        return list(dict.fromkeys(class_list))  # NOTE: remove duplicates while preserving order
-
-    def classes(self,
-                add: Optional[str] = None, *,
-                remove: Optional[str] = None,
-                replace: Optional[str] = None) -> Self:
-        """Apply, remove, or replace HTML classes.
-
-        This allows modifying the look of the element or its layout using `Tailwind <https://tailwindcss.com/>`_ or `Quasar <https://quasar.dev/>`_ classes.
-
-        Removing or replacing classes can be helpful if predefined classes are not desired.
-
-        :param add: whitespace-delimited string of classes
-        :param remove: whitespace-delimited string of classes to remove from the element
-        :param replace: whitespace-delimited string of classes to use instead of existing ones
-        """
-        new_classes = self._update_classes_list(self._classes, add, remove, replace)
-        if self._classes != new_classes:
-            self._classes = new_classes
-            self.update()
-        return self
+    @property
+    def classes(self) -> Classes[Self]:
+        """The classes of the element."""
+        return self._classes
 
     @classmethod
     def default_classes(cls,
@@ -242,40 +228,13 @@ class Element(Visibility):
         :param remove: whitespace-delimited string of classes to remove from the element
         :param replace: whitespace-delimited string of classes to use instead of existing ones
         """
-        cls._default_classes = cls._update_classes_list(cls._default_classes, add, remove, replace)
+        cls._default_classes = Classes.update_list(cls._default_classes, add, remove, replace)
         return cls
 
-    @staticmethod
-    def _parse_style(text: Optional[str]) -> Dict[str, str]:
-        result = {}
-        for word in (text or '').split(';'):
-            word = word.strip()  # noqa: PLW2901
-            if word:
-                key, value = word.split(':', 1)
-                result[key.strip()] = value.strip()
-        return result
-
-    def style(self,
-              add: Optional[str] = None, *,
-              remove: Optional[str] = None,
-              replace: Optional[str] = None) -> Self:
-        """Apply, remove, or replace CSS definitions.
-
-        Removing or replacing styles can be helpful if the predefined style is not desired.
-
-        :param add: semicolon-separated list of styles to add to the element
-        :param remove: semicolon-separated list of styles to remove from the element
-        :param replace: semicolon-separated list of styles to use instead of existing ones
-        """
-        style_dict = deepcopy(self._style) if replace is None else {}
-        for key in self._parse_style(remove):
-            style_dict.pop(key, None)
-        style_dict.update(self._parse_style(add))
-        style_dict.update(self._parse_style(replace))
-        if self._style != style_dict:
-            self._style = style_dict
-            self.update()
-        return self
+    @property
+    def style(self) -> Style[Self]:
+        """The style of the element."""
+        return self._style
 
     @classmethod
     def default_style(cls,
@@ -294,10 +253,10 @@ class Element(Visibility):
         """
         if replace is not None:
             cls._default_style.clear()
-        for key in cls._parse_style(remove):
+        for key in Style.parse(remove):
             cls._default_style.pop(key, None)
-        cls._default_style.update(cls._parse_style(add))
-        cls._default_style.update(cls._parse_style(replace))
+        cls._default_style.update(Style.parse(add))
+        cls._default_style.update(Style.parse(replace))
         return cls
 
     @property

@@ -3,6 +3,7 @@ from selenium.webdriver.common.by import By
 
 from nicegui import background_tasks, ui
 from nicegui.props import Props
+from nicegui.style import Style
 from nicegui.testing import Screen
 
 
@@ -35,11 +36,11 @@ def test_classes(screen: Screen):
 
 def test_style_parsing(nicegui_reset_globals):
     # pylint: disable=protected-access
-    assert ui.element._parse_style(None) == {}  # pylint: disable=use-implicit-booleaness-not-comparison
-    assert ui.element._parse_style('color: red; background-color: blue') == {'color': 'red', 'background-color': 'blue'}
-    assert ui.element._parse_style('width:12em;height:34.5em') == {'width': '12em', 'height': '34.5em'}
-    assert ui.element._parse_style('transform: translate(120.0px, 50%)') == {'transform': 'translate(120.0px, 50%)'}
-    assert ui.element._parse_style('box-shadow: 0 0 0.5em #1976d2') == {'box-shadow': '0 0 0.5em #1976d2'}
+    assert Style.parse(None) == {}  # pylint: disable=use-implicit-booleaness-not-comparison
+    assert Style.parse('color: red; background-color: blue') == {'color': 'red', 'background-color': 'blue'}
+    assert Style.parse('width:12em;height:34.5em') == {'width': '12em', 'height': '34.5em'}
+    assert Style.parse('transform: translate(120.0px, 50%)') == {'transform': 'translate(120.0px, 50%)'}
+    assert Style.parse('box-shadow: 0 0 0.5em #1976d2') == {'box-shadow': '0 0 0.5em #1976d2'}
 
 
 def test_props_parsing(nicegui_reset_globals):
