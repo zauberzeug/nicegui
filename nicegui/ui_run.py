@@ -31,6 +31,7 @@ def run(*,
         language: Language = 'en-US',
         binding_refresh_interval: float = 0.1,
         reconnect_timeout: float = 3.0,
+        fastapi_docs: bool = False,
         show: bool = True,
         on_air: Optional[Union[str, Literal[True]]] = None,
         native: bool = False,
@@ -63,6 +64,7 @@ def run(*,
     :param language: language for Quasar elements (default: `'en-US'`)
     :param binding_refresh_interval: time between binding updates (default: `0.1` seconds, bigger is more CPU friendly)
     :param reconnect_timeout: maximum time the server waits for the browser to reconnect (default: 3.0 seconds)
+    :param fastapi_docs: whether to enable FastAPI's automatic documentation with Swagger UI, ReDoc, and OpenAPI JSON (default: `False`)
     :param show: automatically open the UI in a browser tab (default: `True`)
     :param on_air: tech preview: `allows temporary remote access <https://nicegui.io/documentation/section_configuration_deployment#nicegui_on_air>`_ if set to `True` (default: disabled)
     :param native: open the UI in a native window of size 800x600 (default: `False`, deactivates `show`, automatically finds an open port)
@@ -103,6 +105,16 @@ def run(*,
             route.include_in_schema = endpoint_documentation in {'internal', 'all'}
         if route.path == '/' or route.path in Client.page_routes.values():
             route.include_in_schema = endpoint_documentation in {'page', 'all'}
+
+    if not fastapi_docs:
+        docs = ['/docs', '/docs/oauth2-redirect', '/redoc', '/openapi.json']
+        core.app.routes[:] = [route for route in core.app.routes
+                              if hasattr(route, 'path') and route.path not in docs]
+        # Update the app's state
+        core.app.docs_url = None
+        core.app.redoc_url = None
+        core.app.openapi_url = None
+        core.app.openapi_schema = None
 
     if on_air:
         core.air = Air('' if on_air is True else on_air)
