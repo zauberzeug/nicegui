@@ -4,11 +4,10 @@ import sys
 from pathlib import Path
 from typing import Any, List, Literal, Optional, Tuple, Union
 
+import __main__
 from starlette.routing import Route
 from uvicorn.main import STARTUP_FAILURE
 from uvicorn.supervisors import ChangeReload, Multiprocess
-
-import __main__
 
 from . import core, helpers
 from . import native as native_module
@@ -106,15 +105,14 @@ def run(*,
         if route.path == '/' or route.path in Client.page_routes.values():
             route.include_in_schema = endpoint_documentation in {'page', 'all'}
 
-    if not fastapi_docs:
-        docs = ['/docs', '/docs/oauth2-redirect', '/redoc', '/openapi.json']
-        core.app.routes[:] = [route for route in core.app.routes
-                              if hasattr(route, 'path') and route.path not in docs]
-        # Update the app's state
-        core.app.docs_url = None
-        core.app.redoc_url = None
-        core.app.openapi_url = None
-        core.app.openapi_schema = None
+    if fastapi_docs:
+        if not core.app.docs_url:
+            core.app.docs_url = '/docs'
+        if not core.app.redoc_url:
+            core.app.redoc_url = '/redoc'
+        if not core.app.openapi_url:
+            core.app.openapi_url = '/openapi.json'
+        core.app.setup()
 
     if on_air:
         core.air = Air('' if on_air is True else on_air)
