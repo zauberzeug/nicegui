@@ -65,7 +65,7 @@ class Props(dict, Generic[T]):
                 needs_update = True
                 self[key] = value
         if needs_update:
-            self.update()
+            self.element.update()
         return self.element
 
     @staticmethod
