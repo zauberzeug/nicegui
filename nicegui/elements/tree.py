@@ -2,7 +2,6 @@ from typing import Any, Callable, Dict, Iterator, List, Literal, Optional, Set
 
 from typing_extensions import Self
 
-from .. import helpers
 from ..events import GenericEventArguments, ValueChangeEventArguments, handle_event
 from .mixins.filter_element import FilterElement
 
@@ -49,6 +48,11 @@ class Tree(FilterElement):
         self._select_handlers = [on_select] if on_select else []
         self._expand_handlers = [on_expand] if on_expand else []
         self._tick_handlers = [on_tick] if on_tick else []
+
+        # https://github.com/zauberzeug/nicegui/issues/1385
+        self._props.add_warning('default-expand-all',
+                                'The prop "default-expand-all" is not supported by `ui.tree`. '
+                                'Use ".expand()" instead.')
 
         def update_prop(name: str, value: Any) -> None:
             if self._props[name] != value:
@@ -150,12 +154,3 @@ class Tree(FilterElement):
                 yield node
                 yield from iterate_nodes(node.get(CHILDREN_KEY, []))
         return {node[NODE_KEY] for node in iterate_nodes(self._props['nodes'])}
-
-    def props(self, add: Optional[str] = None, *, remove: Optional[str] = None) -> Self:
-        super().props(add, remove=remove)
-        if 'default-expand-all' in self._props:
-            # https://github.com/zauberzeug/nicegui/issues/1385
-            del self._props['default-expand-all']
-            helpers.warn_once('The prop "default-expand-all" is not supported by `ui.tree`.\n'
-                              'Use ".expand()" instead.')
-        return self

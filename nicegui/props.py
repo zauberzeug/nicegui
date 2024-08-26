@@ -2,6 +2,8 @@ import ast
 import re
 from typing import TYPE_CHECKING, Any, Dict, Generic, Optional, TypeVar
 
+from . import helpers
+
 if TYPE_CHECKING:
     from .element import Element
 
@@ -39,6 +41,11 @@ class Props(dict, Generic[T]):
     def __init__(self, *args, element: T, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self.element = element
+        self._warnings: Dict[str, str] = {}
+
+    def add_warning(self, prop: str, message: str) -> None:
+        """Add a warning message for a prop."""
+        self._warnings[prop] = message
 
     def __call__(self,
                  add: Optional[str] = None, *,
@@ -64,6 +71,10 @@ class Props(dict, Generic[T]):
                 self[key] = value
         if needs_update:
             self.element.update()
+        for name, message in self._warnings.items():
+            if name in self:
+                del self[name]
+                helpers.warn_once(message)
         return self.element
 
     @staticmethod
