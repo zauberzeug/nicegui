@@ -1,6 +1,7 @@
 from typing import Literal, Optional
 
-from nicegui.element import Element
+from ..element import Element
+from .mixins.icon_element import IconElement
 
 
 class Timeline(Element):
@@ -26,7 +27,7 @@ class Timeline(Element):
             self._props['color'] = color
 
 
-class TimelineEntry(Element):
+class TimelineEntry(IconElement):
 
     def __init__(self,
                  body: Optional[str] = None,
@@ -54,7 +55,7 @@ class TimelineEntry(Element):
         :param subtitle: Subtitle text.
         :param color: Color or the timeline.
         """
-        super().__init__('q-timeline-entry')
+        super().__init__(tag='q-timeline-entry', icon=icon)
         if body is not None:
             self._props['body'] = body
         self._props['side'] = side
@@ -63,8 +64,6 @@ class TimelineEntry(Element):
             self._props['tag'] = tag
         if color is not None:
             self._props['color'] = color
-        if icon is not None:
-            self._props['icon'] = icon
         if avatar is not None:
             self._props['avatar'] = avatar
         if title is not None:
