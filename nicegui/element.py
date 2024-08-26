@@ -122,14 +122,14 @@ class Element(Visibility):
             return sorted(path.parent.glob(path.name), key=lambda p: p.stem)
 
         if libraries:
-            helpers.warn_once('The `libraries` parameter is deprecated. Use `dependencies` instead.',
-                              stack_info=True)
+            helpers.warn_once(f'The `libraries` parameter for subclassing "{cls.__name__}" is deprecated. '
+                              'Use `dependencies` instead.')
         if exposed_libraries:
-            helpers.warn_once('The `exposed_libraries` parameter is deprecated. Use `dependencies` instead.',
-                              stack_info=True)
+            helpers.warn_once(f'The `exposed_libraries` parameter for subclassing "{cls.__name__}" is deprecated. '
+                              'Use `dependencies` instead.')
         if extra_libraries:
-            helpers.warn_once('The `extra_libraries` parameter is deprecated. Use `dependencies` instead.',
-                              stack_info=True)
+            helpers.warn_once(f'The `extra_libraries` parameter for subclassing "{cls.__name__}" is deprecated. '
+                              'Use `dependencies` instead.')
 
         cls.component = copy(cls.component)
         cls.libraries = copy(cls.libraries)
