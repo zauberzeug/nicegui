@@ -1,3 +1,5 @@
+from typing import Dict, Optional
+
 import pytest
 from selenium.webdriver.common.by import By
 
@@ -34,37 +36,41 @@ def test_classes(screen: Screen):
     assert_classes('four')
 
 
-def test_style_parsing():
-    assert Style.parse(None) == {}  # pylint: disable=use-implicit-booleaness-not-comparison
-    assert Style.parse('color: red; background-color: blue') == {'color': 'red', 'background-color': 'blue'}
-    assert Style.parse('width:12em;height:34.5em') == {'width': '12em', 'height': '34.5em'}
-    assert Style.parse('transform: translate(120.0px, 50%)') == {'transform': 'translate(120.0px, 50%)'}
-    assert Style.parse('box-shadow: 0 0 0.5em #1976d2') == {'box-shadow': '0 0 0.5em #1976d2'}
+@pytest.mark.parametrize('value,expected', [
+    (None, {}),
+    ('color: red; background-color: blue', {'color': 'red', 'background-color': 'blue'}),
+    ('width:12em;height:34.5em', {'width': '12em', 'height': '34.5em'}),
+    ('transform: translate(120.0px, 50%)', {'transform': 'translate(120.0px, 50%)'}),
+    ('box-shadow: 0 0 0.5em #1976d2', {'box-shadow': '0 0 0.5em #1976d2'}),
+])
+def test_style_parsing(value: Optional[str], expected: Dict[str, str]):
+    assert Style.parse(value) == expected
 
 
-def test_props_parsing():
-    assert Props.parse(None) == {}  # pylint: disable=use-implicit-booleaness-not-comparison
-    assert Props.parse('one two=1 three="abc def"') == {'one': True, 'two': '1', 'three': 'abc def'}
-    assert Props.parse('loading percentage=12.5') == {'loading': True, 'percentage': '12.5'}
-    assert Props.parse('size=50%') == {'size': '50%'}
-    assert Props.parse('href=http://192.168.42.100/') == {'href': 'http://192.168.42.100/'}
-    assert Props.parse('hint="Your \\"given\\" name"') == {'hint': 'Your "given" name'}
-    assert Props.parse('input-style="{ color: #ff0000 }"') == {'input-style': '{ color: #ff0000 }'}
-    assert Props.parse('accept=.jpeg,.jpg,.png') == {'accept': '.jpeg,.jpg,.png'}
-
-    assert Props.parse('empty=""') == {'empty': ''}
-    assert Props.parse("empty=''") == {'empty': ''}
-
-    assert Props.parse("""hint='Your \\"given\\" name'""") == {'hint': 'Your "given" name'}
-    assert Props.parse("one two=1 three='abc def'") == {'one': True, 'two': '1', 'three': 'abc def'}
-    assert Props.parse('''three='abc def' four="hhh jjj"''') == {'three': 'abc def', 'four': 'hhh jjj', }
-    assert Props.parse('''foo="quote'quote"''') == {'foo': "quote'quote"}
-    assert Props.parse("""foo='quote"quote'""") == {'foo': 'quote"quote'}
-    assert Props.parse("""foo="single '" bar='double "'""") == {'foo': "single '", 'bar': 'double "'}
-    assert Props.parse("""foo="single '" bar='double \\"'""") == {'foo': "single '", 'bar': 'double "'}
-    assert Props.parse("input-style='{ color: #ff0000 }'") == {'input-style': '{ color: #ff0000 }'}
-    assert Props.parse("""input-style='{ myquote: "quote" }'""") == {'input-style': '{ myquote: "quote" }'}
-    assert Props.parse('filename=foo=bar.txt') == {'filename': 'foo=bar.txt'}
+@pytest.mark.parametrize('value,expected', [
+    (None, {}),
+    ('one two=1 three="abc def"', {'one': True, 'two': '1', 'three': 'abc def'}),
+    ('loading percentage=12.5', {'loading': True, 'percentage': '12.5'}),
+    ('size=50%', {'size': '50%'}),
+    ('href=http://192.168.42.100/', {'href': 'http://192.168.42.100/'}),
+    ('hint="Your \\"given\\" name"', {'hint': 'Your "given" name'}),
+    ('input-style="{ color: #ff0000 }"', {'input-style': '{ color: #ff0000 }'}),
+    ('accept=.jpeg,.jpg,.png', {'accept': '.jpeg,.jpg,.png'}),
+    ('empty=""', {'empty': ''}),
+    ("empty=''", {'empty': ''}),
+    ("""hint='Your \\"given\\" name'""", {'hint': 'Your "given" name'}),
+    ("one two=1 three='abc def'", {'one': True, 'two': '1', 'three': 'abc def'}),
+    ('''three='abc def' four="hhh jjj"''', {'three': 'abc def', 'four': 'hhh jjj', }),
+    ('''foo="quote'quote"''', {'foo': "quote'quote"}),
+    ("""foo='quote"quote'""", {'foo': 'quote"quote'}),
+    ("""foo="single '" bar='double "'""", {'foo': "single '", 'bar': 'double "'}),
+    ("""foo="single '" bar='double \\"'""", {'foo': "single '", 'bar': 'double "'}),
+    ("input-style='{ color: #ff0000 }'", {'input-style': '{ color: #ff0000 }'}),
+    ("""input-style='{ myquote: "quote" }'""", {'input-style': '{ myquote: "quote" }'}),
+    ('filename=foo=bar.txt', {'filename': 'foo=bar.txt'}),
+])
+def test_props_parsing(value: Optional[str], expected: Dict[str, str]):
+    assert Props.parse(value) == expected
 
 
 def test_style(screen: Screen):
