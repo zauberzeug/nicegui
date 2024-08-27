@@ -34,8 +34,7 @@ def test_classes(screen: Screen):
     assert_classes('four')
 
 
-def test_style_parsing(nicegui_reset_globals):
-    # pylint: disable=protected-access
+def test_style_parsing():
     assert Style.parse(None) == {}  # pylint: disable=use-implicit-booleaness-not-comparison
     assert Style.parse('color: red; background-color: blue') == {'color': 'red', 'background-color': 'blue'}
     assert Style.parse('width:12em;height:34.5em') == {'width': '12em', 'height': '34.5em'}
@@ -43,8 +42,7 @@ def test_style_parsing(nicegui_reset_globals):
     assert Style.parse('box-shadow: 0 0 0.5em #1976d2') == {'box-shadow': '0 0 0.5em #1976d2'}
 
 
-def test_props_parsing(nicegui_reset_globals):
-    # pylint: disable=protected-access
+def test_props_parsing():
     assert Props.parse(None) == {}  # pylint: disable=use-implicit-booleaness-not-comparison
     assert Props.parse('one two=1 three="abc def"') == {'one': True, 'two': '1', 'three': 'abc def'}
     assert Props.parse('loading percentage=12.5') == {'loading': True, 'percentage': '12.5'}
