@@ -18,7 +18,8 @@ def convert(frame: np.ndarray) -> bytes:
     """Converts a frame from OpenCV to a JPEG image.
 
     This is a free function (not in a class or inner-function),
-    to allow run.cpu_bound to pickle it and send it to a separate process."""
+    to allow run.cpu_bound to pickle it and send it to a separate process.
+    """
     _, imencode_image = cv2.imencode('.jpg', frame)
     return imencode_image.tobytes()
 
@@ -28,7 +29,7 @@ def setup() -> None:
     video_capture = cv2.VideoCapture(0)
 
     @app.get('/video/frame')
-    # Thanks to FastAPI's `app.get`` it is easy to create a web route which always provides the latest image from OpenCV.
+    # Thanks to FastAPI's `app.get` it is easy to create a web route which always provides the latest image from OpenCV.
     async def grab_video_frame() -> Response:
         if not video_capture.isOpened():
             return placeholder
@@ -44,7 +45,7 @@ def setup() -> None:
     # For non-flickering image updates and automatic bandwidth adaptation an interactive image is much better than `ui.image()`.
     video_image = ui.interactive_image().classes('w-full h-full')
     # A timer constantly updates the source of the image.
-    # Because data from same paths are cached by the browser,
+    # Because data from same paths is cached by the browser,
     # we must force an update by adding the current timestamp to the source.
     ui.timer(interval=0.1, callback=lambda: video_image.set_source(f'/video/frame?{time.time()}'))
 
@@ -72,8 +73,8 @@ def setup() -> None:
     signal.signal(signal.SIGINT, handle_sigint)
 
 
-# all the setup is only done when the server starts -- this avoids the webcam being accessed
-# by the auto-reload main process (see https://github.com/zauberzeug/nicegui/discussions/2321)
+# All the setup is only done when the server starts. This avoids the webcam being accessed
+# by the auto-reload main process (see https://github.com/zauberzeug/nicegui/discussions/2321).
 app.on_startup(setup)
 
 ui.run()
