@@ -178,7 +178,7 @@ class AgGrid(Element, component='aggrid.js', libraries=['lib/aggrid/ag-grid-comm
         *,
         timeout: float = 1,
         check_interval: float = 0.01,
-        access_method: Literal['all_unsorted', 'filtered_unsorted', 'filtered_sorted', 'leaf'] = 'all_unsorted'
+        method: Literal['all_unsorted', 'filtered_unsorted', 'filtered_sorted', 'leaf'] = 'all_unsorted'
     ) -> List[Dict]:
         """Get the data from the client including any edits made by the client.
 
@@ -191,23 +191,19 @@ class AgGrid(Element, component='aggrid.js', libraries=['lib/aggrid/ag-grid-comm
 
         :param timeout: timeout in seconds (default: 1 second)
         :param check_interval: interval in seconds to check for the result (default: 0.01 seconds)
-        :param access_method: method to access the data. Possible values are:
-                - ``'all_unsorted'``: all rows, unsorted
-                - ``'filtered_unsorted'``: filtered rows, unsorted
-                - ``'filtered_sorted'``: filtered rows, sorted
-                - ``'leaf'``: all leaf rows (excludes row groups)
+        :param method: method to access the data, "all_unsorted" (default), "filtered_unsorted", "filtered_sorted", "leaf"
 
         :return: list of row data
         """
-        api_method = {
+        API_METHODS = {
             'all_unsorted': 'forEachNode',
             'filtered_unsorted': 'forEachNodeAfterFilter',
             'filtered_sorted': 'forEachNodeAfterFilterAndSort',
             'leaf': 'forEachLeafNode',
-        }[access_method]
+        }
         result = await self.client.run_javascript(f'''
             const rowData = [];
-            getElement({self.id}).gridOptions.api.{api_method}(node => rowData.push(node.data));
+            getElement({self.id}).gridOptions.api.{API_METHODS[method]}(node => rowData.push(node.data));
             return rowData;
         ''', timeout=timeout, check_interval=check_interval)
         return cast(List[Dict], result)
