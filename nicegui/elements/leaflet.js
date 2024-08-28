@@ -107,8 +107,11 @@ export default {
       const drawnItems = new L.FeatureGroup();
       this.map.addLayer(drawnItems);
       const drawControl = new L.Control.Draw({
-        edit: { featureGroup: drawnItems },
-        ...this.draw_control,
+        draw: this.draw_control.draw,
+        edit: {
+          ...this.draw_control.edit,
+          featureGroup: drawnItems,
+        },
       });
       this.map.addControl(drawControl);
       if (!this.hide_drawn_items) {
