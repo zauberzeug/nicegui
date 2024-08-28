@@ -100,6 +100,7 @@ __all__ = [
     'tree',
     'upload',
     'video',
+    'zeitline',
     'download',
     'add_body_html',
     'add_head_html',
@@ -226,6 +227,7 @@ from .elements.tooltip import Tooltip as tooltip
 from .elements.tree import Tree as tree
 from .elements.upload import Upload as upload
 from .elements.video import Video as video
+from .elements.zeitline import Zeitline as zeitline
 from .functions import clipboard
 from .functions.download import download
 from .functions.html import add_body_html, add_head_html
