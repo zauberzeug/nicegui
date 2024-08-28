@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta, timezone
+from typing import List
 
 import pandas as pd
 from selenium.webdriver.common.action_chains import ActionChains
@@ -248,3 +249,38 @@ def test_run_method_with_function(screen: Screen):
     screen.open('/')
     screen.click('Print Row 0')
     screen.should_contain("Row 0: {'name': 'Alice'}")
+
+
+def test_get_client_data(screen: Screen):
+    data: List = []
+
+    @ui.page('/')
+    def page():
+        grid = ui.aggrid({
+            'columnDefs': [
+                {'field': 'name'},
+                {'field': 'age', 'sort': 'desc'},
+            ],
+            'rowData': [
+                {'name': 'Alice', 'age': 18},
+                {'name': 'Bob', 'age': 21},
+                {'name': 'Carol', 'age': 42},
+            ],
+        })
+
+        async def get_data():
+            data[:] = await grid.get_client_data()
+        ui.button('Get Data', on_click=get_data)
+
+        async def get_sorted_data():
+            data[:] = await grid.get_client_data(method='filtered_sorted')
+        ui.button('Get Sorted Data', on_click=get_sorted_data)
+
+    screen.open('/')
+    screen.click('Get Data')
+    screen.wait(0.5)
+    assert data == [{'name': 'Alice', 'age': 18}, {'name': 'Bob', 'age': 21}, {'name': 'Carol', 'age': 42}]
+
+    screen.click('Get Sorted Data')
+    screen.wait(0.5)
+    assert data == [{'name': 'Carol', 'age': 42}, {'name': 'Bob', 'age': 21}, {'name': 'Alice', 'age': 18}]
