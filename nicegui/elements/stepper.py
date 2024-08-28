@@ -5,6 +5,7 @@ from typing import Any, Callable, Optional, Union, cast
 from ..context import context
 from ..element import Element
 from .mixins.disableable_element import DisableableElement
+from .mixins.icon_element import IconElement
 from .mixins.value_element import ValueElement
 
 
@@ -51,7 +52,7 @@ class Stepper(ValueElement):
         self.run_method('previous')
 
 
-class Step(DisableableElement):
+class Step(IconElement, DisableableElement):
 
     def __init__(self, name: str, title: Optional[str] = None, icon: Optional[str] = None) -> None:
         """Step
@@ -63,12 +64,10 @@ class Step(DisableableElement):
         :param title: title of the step (default: `None`, meaning the same as `name`)
         :param icon: icon of the step (default: `None`)
         """
-        super().__init__(tag='q-step')
+        super().__init__(tag='q-step', icon=icon)
         self._props['name'] = name
         self._props['title'] = title if title is not None else name
         self._classes.append('nicegui-step')
-        if icon:
-            self._props['icon'] = icon
         self.stepper = cast(ValueElement, context.slot.parent)
         if self.stepper.value is None:
             self.stepper.value = name
