@@ -2320,13 +2320,13 @@ yaml = ["pyyaml"]
 
 [[package]]
 name = "pytest-watcher"
-version = "0.4.2"
+version = "0.4.3"
 description = "Automatically rerun your tests on file modifications"
 optional = false
 python-versions = "<4.0.0,>=3.7.0"
 files = [
-    {file = "pytest_watcher-0.4.2-py3-none-any.whl", hash = "sha256:a43949ba67dd8d7e1fd0de5eea44a999081f0aec9f93b4e744264b4c6a3d9bbe"},
-    {file = "pytest_watcher-0.4.2.tar.gz", hash = "sha256:7b292f025ca19617cd7567c228c6187b5087f2da9e4d2cf6e144e5764a0471b0"},
+    {file = "pytest_watcher-0.4.3-py3-none-any.whl", hash = "sha256:d59b1e1396f33a65ea4949b713d6884637755d641646960056a90b267c3460f9"},
+    {file = "pytest_watcher-0.4.3.tar.gz", hash = "sha256:0cb0e4661648c8c0ff2b2d25efa5a8e421784b9e4c60fcecbf9b7c30b2d731b3"},
 ]
 
 [package.dependencies]
