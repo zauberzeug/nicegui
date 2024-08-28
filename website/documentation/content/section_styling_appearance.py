@@ -74,7 +74,9 @@ def styling_demo():
                         ui.markdown("`')`")
                     with ui.row().classes('items-center gap-0 w-full px-2'):
                         def handle_props(e: events.ValueChangeEventArguments):
-                            element._props = {'label': 'Button', 'color': 'primary'}
+                            element.props.clear()
+                            element.props['label'] = 'Button'
+                            element.props['color'] = 'primary'
                             try:
                                 element.props(e.value)
                             except ValueError:

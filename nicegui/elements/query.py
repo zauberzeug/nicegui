@@ -31,7 +31,7 @@ class Query:
         :param selector: the CSS selector (e.g. "body", "#my-id", ".my-class", "div > p")
         """
         for element in context.client.elements.values():
-            if isinstance(element, QueryElement) and element._props['selector'] == selector:  # pylint: disable=protected-access
+            if isinstance(element, QueryElement) and element.props['selector'] == selector:
                 self.element = element
                 break
         else:

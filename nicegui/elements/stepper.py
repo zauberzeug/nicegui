@@ -33,11 +33,11 @@ class Stepper(ValueElement):
         self._classes.append('nicegui-stepper')
 
     def _value_to_model_value(self, value: Any) -> Any:
-        return value._props['name'] if isinstance(value, Step) else value  # pylint: disable=protected-access
+        return value.props['name'] if isinstance(value, Step) else value
 
     def _handle_value_change(self, value: Any) -> None:
         super()._handle_value_change(value)
-        names = [step._props['name'] for step in self]  # pylint: disable=protected-access
+        names = [step.props['name'] for step in self]
         for i, step in enumerate(self):
             done = i < names.index(value) if value in names else False
             step.props(f':done={done}')

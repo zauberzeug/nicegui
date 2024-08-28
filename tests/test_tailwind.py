@@ -31,4 +31,4 @@ def test_tailwind_apply(screen: Screen):
 def test_empty_values(nicegui_reset_globals):
     label = ui.label('A')
     label.tailwind.border_width('')
-    assert 'border' in label._classes
+    assert 'border' in label.classes

@@ -204,105 +204,105 @@ def test_default_props(nicegui_reset_globals):
     ui.button.default_props('rounded outline')
     button_a = ui.button('Button A')
     button_b = ui.button('Button B')
-    assert button_a._props.get('rounded') is True, 'default props are set'
-    assert button_a._props.get('outline') is True
-    assert button_b._props.get('rounded') is True
-    assert button_b._props.get('outline') is True
+    assert button_a.props.get('rounded') is True, 'default props are set'
+    assert button_a.props.get('outline') is True
+    assert button_b.props.get('rounded') is True
+    assert button_b.props.get('outline') is True
 
     ui.button.default_props(remove='outline')
     button_c = ui.button('Button C')
-    assert button_c._props.get('outline') is None, '"outline" prop was removed'
-    assert button_c._props.get('rounded') is True, 'other props are still there'
+    assert button_c.props.get('outline') is None, '"outline" prop was removed'
+    assert button_c.props.get('rounded') is True, 'other props are still there'
 
     ui.input.default_props('filled')
     input_a = ui.input()
-    assert input_a._props.get('filled') is True
-    assert input_a._props.get('rounded') is None, 'default props of ui.button do not affect ui.input'
+    assert input_a.props.get('filled') is True
+    assert input_a.props.get('rounded') is None, 'default props of ui.button do not affect ui.input'
 
     class MyButton(ui.button):
         pass
     MyButton.default_props('flat')
     button_d = MyButton()
     button_e = ui.button()
-    assert button_d._props.get('flat') is True
-    assert button_d._props.get('rounded') is True, 'default props are inherited'
-    assert button_e._props.get('flat') is None, 'default props of MyButton do not affect ui.button'
-    assert button_e._props.get('rounded') is True
+    assert button_d.props.get('flat') is True
+    assert button_d.props.get('rounded') is True, 'default props are inherited'
+    assert button_e.props.get('flat') is None, 'default props of MyButton do not affect ui.button'
+    assert button_e.props.get('rounded') is True
 
     ui.button.default_props('no-caps').default_props('no-wrap')
     button_f = ui.button()
-    assert button_f._props.get('no-caps') is True
-    assert button_f._props.get('no-wrap') is True
+    assert button_f.props.get('no-caps') is True
+    assert button_f.props.get('no-wrap') is True
 
 
 def test_default_classes(nicegui_reset_globals):
     ui.button.default_classes('bg-white text-green')
     button_a = ui.button('Button A')
     button_b = ui.button('Button B')
-    assert 'bg-white' in button_a._classes, 'default classes are set'
-    assert 'text-green' in button_a._classes
-    assert 'bg-white' in button_b._classes
-    assert 'text-green' in button_b._classes
+    assert 'bg-white' in button_a.classes, 'default classes are set'
+    assert 'text-green' in button_a.classes
+    assert 'bg-white' in button_b.classes
+    assert 'text-green' in button_b.classes
 
     ui.button.default_classes(remove='text-green')
     button_c = ui.button('Button C')
-    assert 'text-green' not in button_c._classes, '"text-green" class was removed'
-    assert 'bg-white' in button_c._classes, 'other classes are still there'
+    assert 'text-green' not in button_c.classes, '"text-green" class was removed'
+    assert 'bg-white' in button_c.classes, 'other classes are still there'
 
     ui.input.default_classes('text-black')
     input_a = ui.input()
-    assert 'text-black' in input_a._classes
-    assert 'bg-white' not in input_a._classes, 'default classes of ui.button do not affect ui.input'
+    assert 'text-black' in input_a.classes
+    assert 'bg-white' not in input_a.classes, 'default classes of ui.button do not affect ui.input'
 
     class MyButton(ui.button):
         pass
     MyButton.default_classes('w-full')
     button_d = MyButton()
     button_e = ui.button()
-    assert 'w-full' in button_d._classes
-    assert 'bg-white' in button_d._classes, 'default classes are inherited'
-    assert 'w-full' not in button_e._classes, 'default classes of MyButton do not affect ui.button'
-    assert 'bg-white' in button_e._classes
+    assert 'w-full' in button_d.classes
+    assert 'bg-white' in button_d.classes, 'default classes are inherited'
+    assert 'w-full' not in button_e.classes, 'default classes of MyButton do not affect ui.button'
+    assert 'bg-white' in button_e.classes
 
     ui.button.default_classes('h-40').default_classes('max-h-80')
     button_f = ui.button()
-    assert 'h-40' in button_f._classes
-    assert 'max-h-80' in button_f._classes
+    assert 'h-40' in button_f.classes
+    assert 'max-h-80' in button_f.classes
 
 
 def test_default_style(nicegui_reset_globals):
     ui.button.default_style('color: green; font-size: 200%')
     button_a = ui.button('Button A')
     button_b = ui.button('Button B')
-    assert button_a._style.get('color') == 'green', 'default style is set'
-    assert button_a._style.get('font-size') == '200%'
-    assert button_b._style.get('color') == 'green'
-    assert button_b._style.get('font-size') == '200%'
+    assert button_a.style.get('color') == 'green', 'default style is set'
+    assert button_a.style.get('font-size') == '200%'
+    assert button_b.style.get('color') == 'green'
+    assert button_b.style.get('font-size') == '200%'
 
     ui.button.default_style(remove='color: green')
     button_c = ui.button('Button C')
-    assert button_c._style.get('color') is None, '"color" style was removed'
-    assert button_c._style.get('font-size') == '200%', 'other style are still there'
+    assert button_c.style.get('color') is None, '"color" style was removed'
+    assert button_c.style.get('font-size') == '200%', 'other style are still there'
 
     ui.input.default_style('font-weight: 300')
     input_a = ui.input()
-    assert input_a._style.get('font-weight') == '300'
-    assert input_a._style.get('font-size') is None, 'default style of ui.button does not affect ui.input'
+    assert input_a.style.get('font-weight') == '300'
+    assert input_a.style.get('font-size') is None, 'default style of ui.button does not affect ui.input'
 
     class MyButton(ui.button):
         pass
     MyButton.default_style('font-family: courier')
     button_d = MyButton()
     button_e = ui.button()
-    assert button_d._style.get('font-family') == 'courier'
-    assert button_d._style.get('font-size') == '200%', 'default style is inherited'
-    assert button_e._style.get('font-family') is None, 'default style of MyButton does not affect ui.button'
-    assert button_e._style.get('font-size') == '200%'
+    assert button_d.style.get('font-family') == 'courier'
+    assert button_d.style.get('font-size') == '200%', 'default style is inherited'
+    assert button_e.style.get('font-family') is None, 'default style of MyButton does not affect ui.button'
+    assert button_e.style.get('font-size') == '200%'
 
     ui.button.default_style('border: 2px').default_style('padding: 30px')
     button_f = ui.button()
-    assert button_f._style.get('border') == '2px'
-    assert button_f._style.get('padding') == '30px'
+    assert button_f.style.get('border') == '2px'
+    assert button_f.style.get('padding') == '30px'
 
 
 def test_invalid_tags(screen: Screen):

@@ -100,7 +100,7 @@ class Visibility:
         :param visible: Whether the element should be visible.
         """
         element: Element = cast('Element', self)
-        classes = element._classes  # pylint: disable=protected-access, no-member
+        classes = element.classes  # pylint: disable=no-member
         if visible and 'hidden' in classes:
             classes.remove('hidden')
             element.update()  # pylint: disable=no-member
