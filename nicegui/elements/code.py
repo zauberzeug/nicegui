@@ -34,6 +34,10 @@ class Code(ContentElement):
         self.markdown.on('scroll', self._handle_scroll)
         timer(0.1, self._update_copy_button)
 
+        self.client.on_connect(lambda: self.client.run_javascript(f'''
+            if (!navigator.clipboard) getElement({self.copy_button.id}).$el.style.display = 'none';
+        '''))
+
     async def show_checkmark(self) -> None:
         """Show a checkmark icon for 3 seconds."""
         self.copy_button.props('icon=check')
