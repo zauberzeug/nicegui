@@ -1,3 +1,4 @@
+import csv
 from io import BytesIO
 from typing import Callable, Dict, Type
 
@@ -6,7 +7,7 @@ from fastapi import UploadFile
 from fastapi.datastructures import Headers
 from fastapi.responses import PlainTextResponse
 
-from nicegui import app, ui
+from nicegui import app, events, ui
 from nicegui.testing import User
 
 # pylint: disable=missing-function-docstring
@@ -356,20 +357,16 @@ async def test_select(user: User) -> None:
 
 
 async def test_upload_table(user: User) -> None:
-    def receive_file(e):
-        content = e.content.read().decode('utf-8').strip().split('\n')
-        headers = content[0].split(',')
-        rows = [dict(zip(headers, row.split(','))) for row in content[1:]]
-        columns = [{'name': h, 'label': h.capitalize(), 'field': h} for h in headers]
-        ui.table(columns=columns, rows=rows)
-
+    def receive_file(e: events.UploadEventArguments) -> None:
+        reader = csv.DictReader(e.content.read().decode('utf-8').splitlines())
+        ui.table(columns=[{'name': h, 'label': h.capitalize(), 'field': h} for h in reader.fieldnames or []],
+                 rows=list(reader))
     ui.upload(on_upload=receive_file)
 
     await user.open('/')
     upload = user.find(ui.upload).elements.pop()
-    csv_content = b'name,age\nAlice,30\nBob,28'
     headers = Headers(raw=[(b'content-type', b'text/csv')])
-    upload.handle_uploads([UploadFile(BytesIO(csv_content), filename='data.csv', headers=headers)])
+    upload.handle_uploads([UploadFile(BytesIO(b'name,age\nAlice,30\nBob,28'), headers=headers)])
 
     table = user.find(ui.table).elements.pop()
     assert table.columns == [

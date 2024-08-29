@@ -67,8 +67,11 @@ class Upload(DisableableElement, component='upload.js'):
         if on_rejected:
             self.on_rejected(on_rejected)
 
-    def handle_uploads(self, uploads: List[UploadFile]):
-        """Handle the uploaded files."""
+    def handle_uploads(self, uploads: List[UploadFile]) -> None:
+        """Handle the uploaded files.
+
+        This method is primarily intended for internal use and for simulating file uploads in tests.
+        """
         for upload in uploads:
             for upload_handler in self._upload_handlers:
                 handle_event(upload_handler, UploadEventArguments(

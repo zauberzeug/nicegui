@@ -78,7 +78,7 @@ doc.text('Querying', '''
 
 @doc.ui
 def querying():
-    with ui.row(wrap=False).classes('gap-4 items-stretch'):
+    with ui.row().classes('gap-4 items-stretch'):
         with python_window(classes='w-[400px]', title='some UI code'):
             ui.markdown('''
                 ```python
@@ -105,25 +105,30 @@ def querying():
             ''')
 
 
-doc.text('Complex Elements', '''
+doc.text('Complex elements', '''
     There are some elements with complex visualization and interaction behaviors (`ui.upload`, `ui.table`, ...).
     Not every aspect of these elements can be tested with `should_see` and `UserInteraction`.
-    Still, you can grab them with `user.find(...)` and do the testing on the Elements themselves.
+    Still, you can grab them with `user.find(...)` and do the testing on the elements themselves.
 ''')
 
 
 @doc.ui
 def upload_table():
-    with ui.row(wrap=False).classes('gap-4 items-stretch'):
+    with ui.row().classes('gap-4 items-stretch'):
         with python_window(classes='w-[500px]', title='some UI code'):
             ui.markdown('''
                 ```python
-                def receive_file(e):
-                    content = e.content.read().decode('utf-8').strip().split('\\n')
-                    headers = content[0].split(',')
-                    rows = [dict(zip(headers, row.split(','))) for row in content[1:]]
-                    columns = [{'name': h, 'label': h.capitalize(), 'field': h} for h in headers]
-                    ui.table(columns=columns, rows=rows)
+                def receive_file(e: events.UploadEventArguments):
+                    content = e.content.read().decode('utf-8')
+                    reader = csv.DictReader(content.splitlines())
+                    ui.table(
+                        columns=[{
+                            'name': h,
+                            'label': h.capitalize(),
+                            'field': h,
+                        } for h in reader.fieldnames or []],
+                        rows=list(reader),
+                    )
 
                 ui.upload(on_upload=receive_file)
                 ```
@@ -133,9 +138,11 @@ def upload_table():
             ui.markdown('''
                 ```python
                 upload = user.find(ui.upload).elements.pop()
-                content = BytesIO(b'name,age\\nAlice,30\\nBob,28')
-                headers = Headers(raw=[(b'content-type', b'text/csv')])
-                upload.handle_uploads([UploadFile(content, filename='data.csv', headers=headers)])
+                upload.handle_uploads([UploadFile(
+                    BytesIO(b'name,age\\nAlice,30\\nBob,28'),
+                    filename='data.csv',
+                    headers=Headers(raw=[(b'content-type', b'text/csv')]),
+                )])
                 table = user.find(ui.table).elements.pop()
                 assert table.columns == [
                     {'name': 'name', 'label': 'Name', 'field': 'name'},
