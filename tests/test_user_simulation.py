@@ -1,9 +1,12 @@
-from typing import Callable, Dict, Type
+from io import BytesIO
+from typing import Callable, Dict, Optional, Type
 
 import pytest
+from fastapi import UploadFile
+from fastapi.datastructures import Headers
 from fastapi.responses import PlainTextResponse
 
-from nicegui import app, ui
+from nicegui import app, events, ui
 from nicegui.testing import User
 
 # pylint: disable=missing-function-docstring
@@ -350,3 +353,22 @@ async def test_select(user: User) -> None:
     await user.should_see('A')
     await user.should_not_see('B')
     await user.should_not_see('C')
+
+
+async def test_upload(user: User) -> None:
+    event: Optional[events.UploadEventArguments] = None
+
+    def receive_file(e: events.UploadEventArguments) -> None:
+        nonlocal event
+        event = e
+
+    ui.upload(on_upload=receive_file)
+
+    await user.open('/')
+    upload = user.find(ui.upload).elements.pop()
+    upload.handle_uploads([UploadFile(BytesIO(b'file content'), filename='file.txt',
+                                      headers=Headers(raw=[(b'content-type', b'text/plain')]))])
+    assert event
+    assert event.content.readlines() == [b'file content']
+    assert event.name == 'file.txt'
+    assert event.type == 'text/plain'
