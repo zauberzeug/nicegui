@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import List
 
 import numpy as np
 from selenium.common.exceptions import JavascriptException
@@ -45,14 +45,14 @@ def test_no_object_duplication_on_index_client(screen: Screen):
 
 
 def test_no_object_duplication_with_page_builder(screen: Screen):
-    scene: Optional[ui.scene] = None
+    scene_ids: List[int] = []
 
     @ui.page('/')
     def page():
-        nonlocal scene
         with ui.scene() as scene:
             sphere = scene.sphere().move(0, -4, 0)
             ui.timer(0.1, lambda: sphere.move(0, sphere.y + 0.5, 0))
+        scene_ids.append(scene.id)
 
     screen.open('/')
     screen.wait(0.4)
@@ -60,10 +60,10 @@ def test_no_object_duplication_with_page_builder(screen: Screen):
     screen.open('/')
     screen.switch_to(0)
     screen.wait(0.2)
-    assert scene
-    assert screen.selenium.execute_script(f'return scene_c{scene.id}.children.length') == 5
+    assert screen.selenium.execute_script(f'return scene_c{scene_ids[0]}.children.length') == 5
     screen.switch_to(1)
-    assert screen.selenium.execute_script(f'return scene_c{scene.id}.children.length') == 5
+    screen.wait(0.2)
+    assert screen.selenium.execute_script(f'return scene_c{scene_ids[1]}.children.length') == 5
 
 
 def test_deleting_group(screen: Screen):
