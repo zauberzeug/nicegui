@@ -23,6 +23,7 @@ DOWNLOAD_DIR = Path(__file__).parent / 'download'
 def nicegui_chrome_options(chrome_options: webdriver.ChromeOptions) -> webdriver.ChromeOptions:
     """Configure the Chrome options for the NiceGUI tests."""
     chrome_options.add_argument('disable-dev-shm-usage')
+    chrome_options.add_argument('disable-search-engine-choice-screen')
     chrome_options.add_argument('no-sandbox')
     chrome_options.add_argument('headless')
     chrome_options.add_argument('disable-gpu' if 'GITHUB_ACTIONS' in os.environ else '--use-gl=angle')
