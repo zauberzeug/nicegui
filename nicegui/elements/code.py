@@ -17,6 +17,8 @@ class Code(ContentElement):
 
         This element displays a code block with syntax highlighting.
 
+        In secure environments (HTTPS or localhost), a copy button is displayed to copy the code to the clipboard.
+
         :param content: code to display
         :param language: language of the code (default: "python")
         """
