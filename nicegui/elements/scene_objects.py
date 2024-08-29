@@ -337,31 +337,16 @@ class PointCloud(Object3D):
         self.scene.run_method('set_points', self.id, points, colors)
 
 
-class CoordinateSystem(Group):
-    def __init__(self, name: str = "", axis_length: float = 1.0, show_labels: bool = True):
-        """AxisTripos
+class AxesHelper(Object3D):
 
-        This element is Group pre-populated with colored x, y and z axes.
-        It can be used to display the pose of a coordinate system
+    def __init__(self,
+                 length=1.0
+                 ) -> None:
+        """Box
 
-        :param name: name of the coordinate system
-        :param axis_length: length of the axis arrow (default 1.0)
-        :param show_labels: whether to show the xyz and name labels or not
+        This element is based on Three.js' `AxesHelper <https://threejs.org/docs/#api/en/helpers/AxesHelper>`_ object.
+        It is used to visualize the XYZ axes. The X axis is red. The Y axis is green. The Z axis is blue. 
+
+        :param length: length of the the axes (default: 1.0)
         """
-
-        super().__init__()
-
-        with self:
-            line_radius = 0.02 * axis_length
-            line_length = 0.8 * axis_length
-            tip_radius = 0.1 * axis_length
-            tip_length = axis_length - line_length
-
-            for label, color, rx, ry, rz in (("x", "#ff0000", 0, 0, -math.pi/2), ("y", "#00ff00", 0, 0, 0), ("z", "#0000ff", math.pi/2, 0, 0)):
-                Cylinder(line_radius, line_radius, line_length).move(y=line_length/2).material(color).rotate(rx, ry, rz)
-                Cylinder(0, tip_radius, tip_length).move(y=line_length +
-                                                         tip_length/2).material(color).rotate(rx, ry, rz)
-                if show_labels:
-                    Text(label, style=f"color:{color}").move(y=1.05 * axis_length).rotate(rx, ry, rz)
-
-            Text(name, style="color:darkgray")
+        super().__init__('axes_helper', length)

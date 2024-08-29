@@ -51,6 +51,7 @@ class Scene(Element,
                 'lib/three/modules/BufferGeometryUtils.js',
             ]):
     # pylint: disable=import-outside-toplevel
+    from .scene_objects import AxesHelper as axes_helper
     from .scene_objects import Box as box
     from .scene_objects import Curve as curve
     from .scene_objects import Cylinder as cylinder
@@ -67,7 +68,6 @@ class Scene(Element,
     from .scene_objects import Text as text
     from .scene_objects import Text3d as text3d
     from .scene_objects import Texture as texture
-    from .scene_objects import CoordinateSystem as coordinate_system
 
     def __init__(self,
                  width: int = 400,
