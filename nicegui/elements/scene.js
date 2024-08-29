@@ -85,7 +85,7 @@ export default {
     }
     this.look_at = new THREE.Vector3(0, 0, 0);
     this.camera.lookAt(this.look_at);
-    this.camera.up = new THREE.Vector3(this.camera_up[0], this.camera_up[1], this.camera_up[2]);
+    this.camera.up = new THREE.Vector3(0, 0, 1);
     this.camera.position.set(0, -3, 5);
 
     this.scene.add(new THREE.AmbientLight(0xffffff, 0.7 * Math.PI));
