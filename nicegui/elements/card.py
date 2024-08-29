@@ -20,7 +20,7 @@ class Card(Element):
         the original QCard has no padding by default and hides outer borders and shadows of nested elements.
         If you want the original behavior, use the `tight` method.
 
-        :param align_items: alignment of the items in the card (default: `None`)
+        :param align_items: alignment of the items in the card ("start", "end", "center", "baseline", or "stretch"; default: `None`)
         """
         super().__init__('q-card')
         self._classes.append('nicegui-card')

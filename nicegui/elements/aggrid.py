@@ -1,5 +1,5 @@
 import importlib.util
-from typing import TYPE_CHECKING, Dict, List, Optional, cast
+from typing import TYPE_CHECKING, Dict, List, Literal, Optional, cast
 
 from typing_extensions import Self
 
@@ -173,7 +173,13 @@ class AgGrid(Element, component='aggrid.js', dependencies=['lib/aggrid/ag-grid-c
         rows = await self.get_selected_rows()
         return rows[0] if rows else None
 
-    async def get_client_data(self, *, timeout: float = 1, check_interval: float = 0.01) -> List[Dict]:
+    async def get_client_data(
+        self,
+        *,
+        timeout: float = 1,
+        check_interval: float = 0.01,
+        method: Literal['all_unsorted', 'filtered_unsorted', 'filtered_sorted', 'leaf'] = 'all_unsorted'
+    ) -> List[Dict]:
         """Get the data from the client including any edits made by the client.
 
         This method is especially useful when the grid is configured with ``'editable': True``.
@@ -184,12 +190,20 @@ class AgGrid(Element, component='aggrid.js', dependencies=['lib/aggrid/ag-grid-c
         This does not happen when the cell loses focus, unless ``stopEditingWhenCellsLoseFocus: True`` is set.
 
         :param timeout: timeout in seconds (default: 1 second)
+        :param check_interval: interval in seconds to check for the result (default: 0.01 seconds)
+        :param method: method to access the data, "all_unsorted" (default), "filtered_unsorted", "filtered_sorted", "leaf"
 
         :return: list of row data
         """
+        API_METHODS = {
+            'all_unsorted': 'forEachNode',
+            'filtered_unsorted': 'forEachNodeAfterFilter',
+            'filtered_sorted': 'forEachNodeAfterFilterAndSort',
+            'leaf': 'forEachLeafNode',
+        }
         result = await self.client.run_javascript(f'''
             const rowData = [];
-            getElement({self.id}).gridOptions.api.forEachNode(node => rowData.push(node.data));
+            getElement({self.id}).gridOptions.api.{API_METHODS[method]}(node => rowData.push(node.data));
             return rowData;
         ''', timeout=timeout, check_interval=check_interval)
         return cast(List[Dict], result)
