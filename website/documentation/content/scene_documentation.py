@@ -1,5 +1,4 @@
 from nicegui import ui
-from typing import Optional
 
 from . import doc
 
@@ -148,25 +147,19 @@ def immediate_updates() -> None:
 def point_clouds() -> None:
     import numpy as np
 
-    def generate_data(frequency: float = 1.0, override_color: Optional[str] = None):
+    def generate_data(frequency: float = 1.0):
         x, y = np.meshgrid(np.linspace(-3, 3), np.linspace(-3, 3))
         z = np.sin(x * frequency) * np.cos(y * frequency) + 1
         points = np.dstack([x, y, z]).reshape(-1, 3)
-        colors = override_color if override_color is not None else points / [6, 6, 2] + [0.5, 0.5, 0]
+        colors = points / [6, 6, 2] + [0.5, 0.5, 0]
         return points, colors
 
     with ui.scene().classes('w-full h-64') as scene:
         points, colors = generate_data()
         point_cloud = scene.point_cloud(points, colors, point_size=0.1)
 
-    def update():
-        point_cloud.set_points(*generate_data(frequency.value, picker.value if override_color.value else None))
-
-    frequency = ui.slider(min=0.1, max=3, step=0.1, value=1) \
-        .on_value_change(update)
-    override_color = ui.switch("Override color").on_value_change(update)
-    picker = ui.color_input(label='Color', value='#000000',
-                            on_change=update).bind_enabled_from(override_color, "value")
+    ui.slider(min=0.1, max=3, step=0.1, value=1) \
+        .on_value_change(lambda e: point_cloud.set_points(*generate_data(e.value)))
 
 
 @doc.demo('Wait for Initialization', '''

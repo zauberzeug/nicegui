@@ -49,6 +49,20 @@ function texture_material(texture) {
   });
 }
 
+function set_point_cloud_data(position, color, geometry, material) {
+  geometry.setAttribute("position", new THREE.Float32BufferAttribute(position.flat(), 3));
+
+  if (color === null) {
+    geometry.deleteAttribute("color");
+    material.vertexColors = false;
+  } else {
+    material.color.set("#ffffff");
+    geometry.setAttribute("color", new THREE.Float32BufferAttribute(color.flat(), 3));
+    material.vertexColors = true;
+  }
+  material.needsUpdate = true;
+}
+
 export default {
   template: `
     <div style="position:relative">
@@ -262,14 +276,8 @@ export default {
         mesh.add(light.target);
       } else if (type == "point_cloud") {
         const geometry = new THREE.BufferGeometry();
-        geometry.setAttribute("position", new THREE.Float32BufferAttribute(args[0].flat(), 3));
         const material = new THREE.PointsMaterial({ size: args[2] });
-        if (typeof args[1] == "string") {
-          material.color.set(args[1]);
-        } else {
-          geometry.setAttribute("color", new THREE.Float32BufferAttribute(args[1].flat(), 3));
-          material.vertexColors = true;
-        }
+        set_point_cloud_data(args[0], args[1], geometry, material);
         mesh = new THREE.Points(geometry, material);
       } else if (type == "gltf") {
         const url = args[0];
@@ -396,19 +404,10 @@ export default {
       this.objects.get(object_id).geometry = texture_geometry(coords);
     },
     set_points(object_id, position, color) {
+      if (!this.objects.has(object_id)) return;
       const geometry = this.objects.get(object_id).geometry;
       const material = this.objects.get(object_id).material;
-      geometry.setAttribute("position", new THREE.Float32BufferAttribute(position.flat(), 3));
-      if (typeof color == "string") {
-        geometry.deleteAttribute("color");
-        material.color.set(color);
-        material.vertexColors = false;
-      } else {
-        material.color.set("#ffffff");
-        geometry.setAttribute("color", new THREE.Float32BufferAttribute(color.flat(), 3));
-        material.vertexColors = true;
-      }
-      material.needsUpdate = true;
+      set_point_cloud_data(position, color, geometry, material);
     },
     move_camera(x, y, z, look_at_x, look_at_y, look_at_z, up_x, up_y, up_z, duration) {
       if (this.camera_tween) this.camera_tween.stop();
