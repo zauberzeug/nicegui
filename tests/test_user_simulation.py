@@ -1,9 +1,13 @@
+import csv
+from io import BytesIO
 from typing import Callable, Dict, Type
 
 import pytest
+from fastapi import UploadFile
+from fastapi.datastructures import Headers
 from fastapi.responses import PlainTextResponse
 
-from nicegui import app, ui
+from nicegui import app, events, ui
 from nicegui.testing import User
 
 # pylint: disable=missing-function-docstring
@@ -350,3 +354,26 @@ async def test_select(user: User) -> None:
     await user.should_see('A')
     await user.should_not_see('B')
     await user.should_not_see('C')
+
+
+async def test_upload_table(user: User) -> None:
+    def receive_file(e: events.UploadEventArguments) -> None:
+        reader = csv.DictReader(e.content.read().decode('utf-8').splitlines())
+        ui.table(columns=[{'name': h, 'label': h.capitalize(), 'field': h} for h in reader.fieldnames or []],
+                 rows=list(reader))
+    ui.upload(on_upload=receive_file)
+
+    await user.open('/')
+    upload = user.find(ui.upload).elements.pop()
+    headers = Headers(raw=[(b'content-type', b'text/csv')])
+    upload.handle_uploads([UploadFile(BytesIO(b'name,age\nAlice,30\nBob,28'), headers=headers)])
+
+    table = user.find(ui.table).elements.pop()
+    assert table.columns == [
+        {'name': 'name', 'label': 'Name', 'field': 'name'},
+        {'name': 'age', 'label': 'Age', 'field': 'age'},
+    ]
+    assert table.rows == [
+        {'name': 'Alice', 'age': '30'},
+        {'name': 'Bob', 'age': '28'},
+    ]
