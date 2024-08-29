@@ -397,6 +397,7 @@ export default {
     },
     move_camera(x, y, z, look_at_x, look_at_y, look_at_z, up_x, up_y, up_z, duration) {
       if (this.camera_tween) this.camera_tween.stop();
+      const camera_up_changed = up_x !== null || up_y !== null || up_z !== null;
       this.camera_tween = new TWEEN.Tween([
         this.camera.position.x,
         this.camera.position.y,
@@ -428,6 +429,12 @@ export default {
           this.look_at.set(p[6], p[7], p[8]);
           this.camera.lookAt(p[6], p[7], p[8]);
           this.controls.target.set(p[6], p[7], p[8]);
+        })
+        .onComplete(() => {
+          if (camera_up_changed) {
+            this.controls.dispose();
+            this.controls = new OrbitControls(this.camera, this.renderer.domElement);
+          }
         })
         .start();
     },
