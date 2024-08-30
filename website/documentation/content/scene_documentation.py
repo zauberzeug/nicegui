@@ -125,7 +125,7 @@ def draggable_objects() -> None:
 def immediate_updates() -> None:
     from nicegui import events
 
-    with ui.scene(drag_constraints='z=0') as scene:
+    with ui.scene(width=285, drag_constraints='z=0') as scene:
         box = scene.box(1, 1, 0.2).move(0, 0).material('Orange')
         sphere1 = scene.sphere(0.2).move(0.5, -0.5).material('SteelBlue').draggable()
         sphere2 = scene.sphere(0.2).move(-0.5, 0.5).material('SteelBlue').draggable()
