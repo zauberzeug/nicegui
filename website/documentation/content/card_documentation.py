@@ -31,15 +31,14 @@ def card_without_shadow() -> None:
     This also hides outer borders and shadows of nested elements, like in an original QCard.
 ''')
 def custom_context_menu() -> None:
-    columns = [{'name': 'age', 'label': 'Age', 'field': 'age'}]
     rows = [{'age': '16'}, {'age': '18'}, {'age': '21'}]
 
     with ui.row():
         with ui.card():
-            ui.table(columns, rows).props('flat bordered')
+            ui.table(rows=rows).props('flat bordered')
 
         with ui.card().tight():
-            ui.table(columns, rows).props('flat bordered')
+            ui.table(rows=rows).props('flat bordered')
 
 
 doc.reference(ui.card)
