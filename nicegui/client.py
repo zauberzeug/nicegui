@@ -311,7 +311,8 @@ class Client:
             element._handle_delete()  # pylint: disable=protected-access
             element._deleted = True  # pylint: disable=protected-access
             self.outbox.enqueue_delete(element)
-            del self.elements[element.id]
+            if element.id in self.elements:
+                del self.elements[element.id]
 
     def remove_all_elements(self) -> None:
         """Remove all elements from the client."""
