@@ -52,7 +52,7 @@ function texture_material(texture) {
 
 export default {
   template: `
-    <div style="position:relative">
+    <div style="position:relative" data-initializing>
       <canvas style="position:relative"></canvas>
       <div style="position:absolute;pointer-events:none;top:0"></div>
       <div style="position:absolute;pointer-events:none;top:0"></div>
@@ -124,6 +124,7 @@ export default {
 
     this.$nextTick(() => this.resize());
     window.addEventListener("resize", this.resize, false);
+    window.addEventListener("DOMContentLoaded", this.resize, false);
 
     const gridSize = this.grid[0] || 100;
     const gridDivisions = this.grid[1] || 100;
@@ -168,7 +169,7 @@ export default {
 
     const render = () => {
       requestAnimationFrame(() => setTimeout(() => render(), 1000 / 20));
-      TWEEN.update();
+      this.camera_tween?.update();
       this.renderer.render(this.scene, this.camera);
       this.text_renderer.render(this.scene, this.camera);
       this.text3d_renderer.render(this.scene, this.camera);
@@ -212,6 +213,7 @@ export default {
 
   beforeDestroy() {
     window.removeEventListener("resize", this.resize);
+    window.removeEventListener("DOMContentLoaded", this.resize);
   },
 
   methods: {
@@ -462,6 +464,8 @@ export default {
       this.camera.updateProjectionMatrix();
     },
     init_objects(data) {
+      this.resize();
+      this.$el.removeAttribute("data-initializing");
       this.is_initialized = true;
       for (const [
         type,

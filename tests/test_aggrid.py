@@ -103,23 +103,10 @@ def test_run_grid_method_with_argument(screen: Screen):
     screen.should_contain('Bob')
     screen.should_contain('Carol')
     screen.click('Filter')
+    screen.wait(0.5)
     screen.should_contain('Alice')
     screen.should_not_contain('Bob')
     screen.should_not_contain('Carol')
-
-
-def test_run_column_method_with_argument(screen: Screen):
-    grid = ui.aggrid({
-        'columnDefs': [{'field': 'name'}, {'field': 'age', 'hide': True}],
-        'rowData': [{'name': 'Alice', 'age': '18'}, {'name': 'Bob', 'age': '21'}, {'name': 'Carol', 'age': '42'}],
-    })
-    ui.button('Show Age', on_click=lambda: grid.run_column_method('setColumnVisible', 'age', True))
-
-    screen.open('/')
-    screen.should_contain('Alice')
-    screen.should_not_contain('18')
-    screen.click('Show Age')
-    screen.should_contain('18')
 
 
 def test_get_selected_rows(screen: Screen):

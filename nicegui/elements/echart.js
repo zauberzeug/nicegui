@@ -4,7 +4,7 @@ import { convertDynamicProperties } from "../../static/utils/dynamic_properties.
 export default {
   template: "<div></div>",
   async mounted() {
-    await this.$nextTick(); // wait for Tailwind classes to be applied
+    await new Promise((resolve) => setTimeout(resolve, 0)); // wait for Tailwind classes to be applied
     if (this.enable_3d) {
       await import("echarts-gl");
     }
@@ -72,6 +72,10 @@ export default {
   },
   methods: {
     update_chart() {
+      if (!this.chart) {
+        setTimeout(this.update_chart, 10);
+        return;
+      }
       convertDynamicProperties(this.options, true);
       this.chart.setOption(this.options, { notMerge: this.chart.options?.series.length != this.options.series.length });
     },

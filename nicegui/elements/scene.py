@@ -117,6 +117,7 @@ class Scene(Element,
         self.on('dragstart', self._handle_drag)
         self.on('dragend', self._handle_drag)
         self._props['drag_constraints'] = drag_constraints
+        self._classes.append('nicegui-scene')
 
     def on_click(self, callback: Callable[..., Any]) -> Self:
         """Add a callback to be invoked when a 3D object is clicked."""

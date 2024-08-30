@@ -7,7 +7,7 @@ from ..element import Element
 from ..events import GenericEventArguments, JsonEditorChangeEventArguments, JsonEditorSelectEventArguments, handle_event
 
 
-class JsonEditor(Element, component='json_editor.js', dependencies=['lib/vanilla-jsoneditor/index.js']):
+class JsonEditor(Element, component='json_editor.js', dependencies=['lib/vanilla-jsoneditor/standalone.js']):
 
     def __init__(self,
                  properties: Dict, *,

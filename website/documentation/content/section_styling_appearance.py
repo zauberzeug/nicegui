@@ -55,7 +55,7 @@ def styling_demo():
     def live_demo_ui():
         with ui.column().classes('w-full items-stretch gap-8 no-wrap min-[1500px]:flex-row'):
             with python_window(classes='w-full max-w-[44rem]'):
-                with ui.column().classes('w-full gap-4'):
+                with ui.column().classes('w-full gap-2'):
                     ui.markdown(f'''
                         ```py
                         from nicegui import ui
@@ -63,16 +63,16 @@ def styling_demo():
                         element = {select_element.options[select_element.value]}('element')
                         ```
                     ''').classes('mb-[-0.25em]')
-                    with ui.row().classes('items-center gap-0 w-full px-2'):
+                    with ui.row().classes('items-center gap-0 w-full'):
                         def handle_classes(e: events.ValueChangeEventArguments):
                             try:
                                 element.classes(replace=e.value)
                             except ValueError:
                                 pass
                         ui.markdown("`element.classes('`")
-                        ui.input(on_change=handle_classes).classes('mt-[-0.5em] text-mono grow').props('dense')
+                        ui.input(on_change=handle_classes).classes('text-mono grow').props('dense hide-bottom-space')
                         ui.markdown("`')`")
-                    with ui.row().classes('items-center gap-0 w-full px-2'):
+                    with ui.row().classes('items-center gap-0 w-full'):
                         def handle_props(e: events.ValueChangeEventArguments):
                             element.props.clear()
                             element.props['label'] = 'Button'
@@ -83,16 +83,16 @@ def styling_demo():
                                 pass
                             element.update()
                         ui.markdown("`element.props('`")
-                        ui.input(on_change=handle_props).classes('mt-[-0.5em] text-mono grow').props('dense')
+                        ui.input(on_change=handle_props).classes('text-mono grow').props('dense hide-bottom-space')
                         ui.markdown("`')`")
-                    with ui.row().classes('items-center gap-0 w-full px-2'):
+                    with ui.row().classes('items-center gap-0 w-full'):
                         def handle_style(e: events.ValueChangeEventArguments):
                             try:
                                 element.style(replace=e.value)
                             except ValueError:
                                 pass
                         ui.markdown("`element.style('`")
-                        ui.input(on_change=handle_style).classes('mt-[-0.5em] text-mono grow').props('dense')
+                        ui.input(on_change=handle_style).classes('text-mono grow').props('dense hide-bottom-space')
                         ui.markdown("`')`")
                     ui.markdown('''
                         ```py

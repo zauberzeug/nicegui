@@ -8,6 +8,7 @@ class Mermaid(ContentElement,
               dependencies=[
                   'lib/mermaid/*.js',
                   'lib/mermaid/mermaid.esm.min.mjs',
+                  'lib/mermaid/chunks/mermaid.esm.min/*.mjs',
               ]):
     CONTENT_PROP = 'content'
 
