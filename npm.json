@@ -132,7 +132,7 @@
   },
   "vanilla-jsoneditor": {
     "destination": "nicegui/elements/lib",
-    "keep": ["package/index\\.js", "package/index\\.js\\.map"],
+    "keep": ["package/standalone\\.js", "package/standalone\\.js\\.map"],
     "rename": {
       "package/": ""
     }

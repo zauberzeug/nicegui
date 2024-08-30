@@ -1,4 +1,4 @@
-import { JSONEditor } from "index";
+import { JSONEditor } from "standalone";
 
 export default {
   template: "<div></div>",
