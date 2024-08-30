@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, List
 
-from . import helpers
 from .slot import Slot
 
 if TYPE_CHECKING:
@@ -10,21 +9,6 @@ if TYPE_CHECKING:
 
 
 class Context:
-
-    def get_slot_stack(self) -> List[Slot]:
-        """Return the slot stack of the current asyncio task. (DEPRECATED, use context.slot_stack instead)"""
-        helpers.warn_once('context.get_slot_stack() is deprecated, use context.slot_stack instead')
-        return self.slot_stack
-
-    def get_slot(self) -> Slot:
-        """Return the current slot. (DEPRECATED, use context.slot instead)"""
-        helpers.warn_once('context.get_slot() is deprecated, use context.slot instead')
-        return self.slot
-
-    def get_client(self) -> Client:
-        """Return the current client. (DEPRECATED, use context.client instead)"""
-        helpers.warn_once('context.get_client() is deprecated, use context.client instead')
-        return self.client
 
     @property
     def slot_stack(self) -> List[Slot]:

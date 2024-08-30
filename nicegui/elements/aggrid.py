@@ -92,11 +92,7 @@ class AgGrid(Element, component='aggrid.js', dependencies=['lib/aggrid/ag-grid-c
         super().update()
         self.run_method('update_grid')
 
-    def call_api_method(self, name: str, *args, timeout: float = 1, check_interval: float = 0.01) -> AwaitableResponse:
-        """DEPRECATED: Use `run_grid_method` instead."""
-        return self.run_grid_method(name, *args, timeout=timeout, check_interval=check_interval)
-
-    def run_grid_method(self, name: str, *args, timeout: float = 1, check_interval: float = 0.01) -> AwaitableResponse:
+    def run_grid_method(self, name: str, *args, timeout: float = 1) -> AwaitableResponse:
         """Run an AG Grid API method.
 
         See `AG Grid API <https://www.ag-grid.com/javascript-data-grid/grid-api/>`_ for a list of methods.
@@ -110,14 +106,9 @@ class AgGrid(Element, component='aggrid.js', dependencies=['lib/aggrid/ag-grid-c
 
         :return: AwaitableResponse that can be awaited to get the result of the method call
         """
-        return self.run_method('run_grid_method', name, *args, timeout=timeout, check_interval=check_interval)
+        return self.run_method('run_grid_method', name, *args, timeout=timeout)
 
-    def call_column_method(self, name: str, *args, timeout: float = 1, check_interval: float = 0.01) -> AwaitableResponse:
-        """DEPRECATED: Use `run_column_method` instead."""
-        return self.run_column_method(name, *args, timeout=timeout, check_interval=check_interval)
-
-    def run_column_method(self, name: str, *args,
-                          timeout: float = 1, check_interval: float = 0.01) -> AwaitableResponse:
+    def run_column_method(self, name: str, *args, timeout: float = 1) -> AwaitableResponse:
         """Run an AG Grid Column API method.
 
         See `AG Grid Column API <https://www.ag-grid.com/javascript-data-grid/column-api/>`_ for a list of methods.
@@ -131,10 +122,9 @@ class AgGrid(Element, component='aggrid.js', dependencies=['lib/aggrid/ag-grid-c
 
         :return: AwaitableResponse that can be awaited to get the result of the method call
         """
-        return self.run_method('run_column_method', name, *args, timeout=timeout, check_interval=check_interval)
+        return self.run_method('run_column_method', name, *args, timeout=timeout)
 
-    def run_row_method(self, row_id: str, name: str, *args,
-                       timeout: float = 1, check_interval: float = 0.01) -> AwaitableResponse:
+    def run_row_method(self, row_id: str, name: str, *args, timeout: float = 1) -> AwaitableResponse:
         """Run an AG Grid API method on a specific row.
 
         See `AG Grid Row Reference <https://www.ag-grid.com/javascript-data-grid/row-object/>`_ for a list of methods.
@@ -149,7 +139,7 @@ class AgGrid(Element, component='aggrid.js', dependencies=['lib/aggrid/ag-grid-c
 
         :return: AwaitableResponse that can be awaited to get the result of the method call
         """
-        return self.run_method('run_row_method', row_id, name, *args, timeout=timeout, check_interval=check_interval)
+        return self.run_method('run_row_method', row_id, name, *args, timeout=timeout)
 
     async def get_selected_rows(self) -> List[Dict]:
         """Get the currently selected rows.
@@ -177,7 +167,6 @@ class AgGrid(Element, component='aggrid.js', dependencies=['lib/aggrid/ag-grid-c
         self,
         *,
         timeout: float = 1,
-        check_interval: float = 0.01,
         method: Literal['all_unsorted', 'filtered_unsorted', 'filtered_sorted', 'leaf'] = 'all_unsorted'
     ) -> List[Dict]:
         """Get the data from the client including any edits made by the client.
@@ -190,7 +179,6 @@ class AgGrid(Element, component='aggrid.js', dependencies=['lib/aggrid/ag-grid-c
         This does not happen when the cell loses focus, unless ``stopEditingWhenCellsLoseFocus: True`` is set.
 
         :param timeout: timeout in seconds (default: 1 second)
-        :param check_interval: interval in seconds to check for the result (default: 0.01 seconds)
         :param method: method to access the data, "all_unsorted" (default), "filtered_unsorted", "filtered_sorted", "leaf"
 
         :return: list of row data
@@ -205,7 +193,7 @@ class AgGrid(Element, component='aggrid.js', dependencies=['lib/aggrid/ag-grid-c
             const rowData = [];
             getElement({self.id}).gridOptions.api.{API_METHODS[method]}(node => rowData.push(node.data));
             return rowData;
-        ''', timeout=timeout, check_interval=check_interval)
+        ''', timeout=timeout)
         return cast(List[Dict], result)
 
     async def load_client_data(self) -> None:

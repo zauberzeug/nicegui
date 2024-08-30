@@ -56,8 +56,7 @@ class JsonEditor(Element, component='json_editor.js', dependencies=['lib/vanilla
         super().update()
         self.run_method('update_editor')
 
-    def run_editor_method(self, name: str, *args, timeout: float = 1,
-                          check_interval: float = 0.01) -> AwaitableResponse:
+    def run_editor_method(self, name: str, *args, timeout: float = 1) -> AwaitableResponse:
         """Run a method of the JSONEditor instance.
 
         See the `JSONEditor README <https://github.com/josdejong/svelte-jsoneditor/>`_ for a list of methods.
@@ -71,4 +70,4 @@ class JsonEditor(Element, component='json_editor.js', dependencies=['lib/vanilla
 
         :return: AwaitableResponse that can be awaited to get the result of the method call
         """
-        return self.run_method('run_editor_method', name, *args, timeout=timeout, check_interval=check_interval)
+        return self.run_method('run_editor_method', name, *args, timeout=timeout)
