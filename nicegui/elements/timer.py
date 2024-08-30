@@ -125,3 +125,5 @@ class Timer(Element, component='timer.js'):
 
     def _cleanup(self) -> None:
         self.callback = None
+        assert self.parent_slot
+        self.parent_slot.parent.remove(self)
