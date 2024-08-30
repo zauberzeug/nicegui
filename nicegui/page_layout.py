@@ -52,9 +52,9 @@ class Header(ValueElement):
         self._props['elevated'] = elevated
         if wrap:
             self._classes.append('wrap')
-        code = list(self.client.layout._props['view'])
+        code = list(self.client.layout.props['view'])
         code[1] = 'H' if fixed else 'h'
-        self.client.layout._props['view'] = ''.join(code)
+        self.client.layout.props['view'] = ''.join(code)
 
         self.move(target_index=0)
 
@@ -119,11 +119,11 @@ class Drawer(Element):
         self._props['bordered'] = bordered
         self._props['elevated'] = elevated
         self._classes.append('nicegui-drawer')
-        code = list(self.client.layout._props['view'])
+        code = list(self.client.layout.props['view'])
         code[0 if side == 'left' else 2] = side[0].lower() if top_corner else 'h'
         code[4 if side == 'left' else 6] = side[0].upper() if fixed else side[0].lower()
         code[8 if side == 'left' else 10] = side[0].lower() if bottom_corner else 'f'
-        self.client.layout._props['view'] = ''.join(code)
+        self.client.layout.props['view'] = ''.join(code)
 
         page_container_index = self.client.layout.default_slot.children.index(self.client.page_container)
         self.move(target_index=page_container_index if side == 'left' else page_container_index + 1)
@@ -235,9 +235,9 @@ class Footer(ValueElement):
         self._props['elevated'] = elevated
         if wrap:
             self._classes.append('wrap')
-        code = list(self.client.layout._props['view'])
+        code = list(self.client.layout.props['view'])
         code[9] = 'F' if fixed else 'f'
-        self.client.layout._props['view'] = ''.join(code)
+        self.client.layout.props['view'] = ''.join(code)
 
         self.move(target_index=-1)
 
