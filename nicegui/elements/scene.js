@@ -124,6 +124,7 @@ export default {
 
     this.$nextTick(() => this.resize());
     window.addEventListener("resize", this.resize, false);
+    window.addEventListener("DOMContentLoaded", this.resize, false);
 
     const gridSize = this.grid[0] || 100;
     const gridDivisions = this.grid[1] || 100;

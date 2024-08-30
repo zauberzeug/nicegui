@@ -53,6 +53,7 @@ export default {
 
     this.$nextTick(() => this.resize());
     window.addEventListener("resize", this.resize, false);
+    window.addEventListener("DOMContentLoaded", this.resize, false);
 
     const render = () => {
       requestAnimationFrame(() => setTimeout(() => render(), 1000 / 20));

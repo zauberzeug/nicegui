@@ -399,9 +399,3 @@ for (let sheet of document.styleSheets) {
     }
   }
 }
-
-// HACK: prevent some elements from overflowing their containers
-// Ex.: `ui.scene().classes('border-2 border-red-500 w-64')`
-document.addEventListener("DOMContentLoaded", function () {
-  window.dispatchEvent(new Event("resize"));
-});
