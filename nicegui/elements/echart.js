@@ -72,6 +72,10 @@ export default {
   },
   methods: {
     update_chart() {
+      if (!this.chart) {
+        setTimeout(this.update_chart, 10);
+        return;
+      }
       convertDynamicProperties(this.options, true);
       this.chart.setOption(this.options, { notMerge: this.chart.options?.series.length != this.options.series.length });
     },
