@@ -52,7 +52,7 @@ function texture_material(texture) {
 
 export default {
   template: `
-    <div style="position:relative">
+    <div style="position:relative" data-initializing>
       <canvas style="position:relative"></canvas>
       <div style="position:absolute;pointer-events:none;top:0"></div>
       <div style="position:absolute;pointer-events:none;top:0"></div>
@@ -213,6 +213,7 @@ export default {
 
   beforeDestroy() {
     window.removeEventListener("resize", this.resize);
+    window.removeEventListener("DOMContentLoaded", this.resize);
   },
 
   methods: {
@@ -463,6 +464,8 @@ export default {
       this.camera.updateProjectionMatrix();
     },
     init_objects(data) {
+      this.resize();
+      this.$el.removeAttribute("data-initializing");
       this.is_initialized = true;
       for (const [
         type,
