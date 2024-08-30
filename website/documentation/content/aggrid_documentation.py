@@ -26,7 +26,7 @@ def main_demo() -> None:
 
     ui.button('Update', on_click=update)
     ui.button('Select all', on_click=lambda: grid.run_grid_method('selectAll'))
-    ui.button('Show parent', on_click=lambda: grid.run_column_method('setColumnVisible', 'parent', True))
+    ui.button('Show parent', on_click=lambda: grid.run_grid_method('setColumnsVisible', ['parent'], True))
 
 
 @doc.demo('Select AG Grid Rows', '''

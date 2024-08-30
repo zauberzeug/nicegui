@@ -42,21 +42,18 @@ export default {
         checkboxRenderer: CheckboxRenderer,
       };
 
-      this.grid = new agGrid.Grid(this.$el, this.gridOptions);
-      this.gridOptions.api.addGlobalListener(this.handle_event);
+      this.api = agGrid.createGrid(this.$el, this.gridOptions);
+      this.api.addGlobalListener(this.handle_event);
     },
     run_grid_method(name, ...args) {
-      return runMethod(this.gridOptions.api, name, args);
-    },
-    run_column_method(name, ...args) {
-      return runMethod(this.gridOptions.columnApi, name, args);
+      return runMethod(this.api, name, args);
     },
     run_row_method(row_id, name, ...args) {
-      return runMethod(this.gridOptions.api.getRowNode(row_id), name, args);
+      return runMethod(this.api.getRowNode(row_id), name, args);
     },
     handle_event(type, args) {
       if ((type === "gridReady" || type === "gridSizeChanged") && this.auto_size_columns) {
-        this.gridOptions.api.sizeColumnsToFit();
+        this.api.sizeColumnsToFit();
       }
       this.$emit(type, {
         value: args.value,

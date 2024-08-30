@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING, Dict, List, Literal, Optional, cast
 
 from typing_extensions import Self
 
-from .. import optional_features
+from .. import helpers, optional_features
 from ..awaitable_response import AwaitableResponse
 from ..element import Element
 
@@ -25,7 +25,7 @@ class AgGrid(Element, component='aggrid.js', dependencies=['lib/aggrid/ag-grid-c
 
         An element to create a grid using `AG Grid <https://www.ag-grid.com/>`_.
 
-        The methods `run_grid_method` and `run_column_method` can be used to interact with the AG Grid instance on the client.
+        The methods `run_grid_method` and `run_row_method` can be used to interact with the AG Grid instance on the client.
 
         :param options: dictionary of AG Grid options
         :param html_columns: list of columns that should be rendered as HTML (default: `[]`)
@@ -108,21 +108,15 @@ class AgGrid(Element, component='aggrid.js', dependencies=['lib/aggrid/ag-grid-c
         """
         return self.run_method('run_grid_method', name, *args, timeout=timeout)
 
-    def run_column_method(self, name: str, *args, timeout: float = 1) -> AwaitableResponse:
-        """Run an AG Grid Column API method.
+    def run_column_method(self, name: str, *args, timeout: float = 1) -> AwaitableResponse:  # DEPRECATED
+        """This method is deprecated. Use `run_grid_method` instead.
 
-        See `AG Grid Column API <https://www.ag-grid.com/javascript-data-grid/column-api/>`_ for a list of methods.
-
-        If the function is awaited, the result of the method call is returned.
-        Otherwise, the method is executed without waiting for a response.
-
-        :param name: name of the method
-        :param args: arguments to pass to the method
-        :param timeout: timeout in seconds (default: 1 second)
-
-        :return: AwaitableResponse that can be awaited to get the result of the method call
+        See https://www.ag-grid.com/javascript-data-grid/column-api/ for more information
         """
-        return self.run_method('run_column_method', name, *args, timeout=timeout)
+        helpers.warn_once('The method `run_column_method` is deprecated. '
+                          'It will be removed in NiceGUI 3.0. '
+                          'Use `run_grid_method` instead.')
+        return self.run_method('run_grid_method', name, *args, timeout=timeout)
 
     def run_row_method(self, row_id: str, name: str, *args, timeout: float = 1) -> AwaitableResponse:
         """Run an AG Grid API method on a specific row.
@@ -191,7 +185,7 @@ class AgGrid(Element, component='aggrid.js', dependencies=['lib/aggrid/ag-grid-c
         }
         result = await self.client.run_javascript(f'''
             const rowData = [];
-            getElement({self.id}).gridOptions.api.{API_METHODS[method]}(node => rowData.push(node.data));
+            getElement({self.id}).api.{API_METHODS[method]}(node => rowData.push(node.data));
             return rowData;
         ''', timeout=timeout)
         return cast(List[Dict], result)
