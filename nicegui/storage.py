@@ -104,7 +104,6 @@ class Storage:
 
     def __init__(self) -> None:
         self.path = Path(os.environ.get('NICEGUI_STORAGE_PATH', '.nicegui')).resolve()
-        self.migrate_to_utf8()  # DEPRECATED: remove this in 2.0 release
         self.max_tab_storage_age = timedelta(days=30).total_seconds()
         self._general = PersistentDict(self.path / 'storage-general.json', encoding='utf-8')
         self._users: Dict[str, PersistentDict] = {}
@@ -213,18 +212,3 @@ class Storage:
         self._tabs.clear()
         for filepath in self.path.glob('storage-*.json'):
             filepath.unlink()
-
-    def migrate_to_utf8(self) -> None:
-        """Migrates storage files from system's default encoding to UTF-8.
-
-        To distinguish between the old and new encoding, the new files are named with dashes instead of underscores.
-        """
-        for filepath in self.path.glob('storage_*.json'):
-            new_filepath = filepath.with_name(filepath.name.replace('_', '-'))
-            try:
-                data = json.loads(filepath.read_text())
-            except Exception:
-                log.warning(f'Could not load storage file {filepath}')
-                data = {}
-            filepath.rename(new_filepath)
-            new_filepath.write_text(json.dumps(data), encoding='utf-8')

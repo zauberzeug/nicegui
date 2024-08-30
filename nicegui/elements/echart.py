@@ -99,8 +99,7 @@ class EChart(Element, component='echart.js', dependencies=['lib/echarts/echarts.
         super().update()
         self.run_method('update_chart')
 
-    def run_chart_method(self, name: str, *args, timeout: float = 1,
-                         check_interval: float = 0.01) -> AwaitableResponse:
+    def run_chart_method(self, name: str, *args, timeout: float = 1) -> AwaitableResponse:
         """Run a method of the JSONEditor instance.
 
         See the `ECharts documentation <https://echarts.apache.org/en/api.html#echartsInstance>`_ for a list of methods.
@@ -114,4 +113,4 @@ class EChart(Element, component='echart.js', dependencies=['lib/echarts/echarts.
 
         :return: AwaitableResponse that can be awaited to get the result of the method call
         """
-        return self.run_method('run_chart_method', name, *args, timeout=timeout, check_interval=check_interval)
+        return self.run_method('run_chart_method', name, *args, timeout=timeout)

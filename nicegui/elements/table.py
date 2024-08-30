@@ -272,6 +272,7 @@ class Table(FilterElement, component='table.js'):
         """Add rows to the table."""
         if isinstance(rows, dict):  # DEPRECATED
             warn_once('Calling add_rows() with variable-length arguments is deprecated. '
+                      'This option will be removed in NiceGUI 3.0. '
                       'Pass a list instead or use add_row() for a single row.')
             rows = [rows, *args]
         self.rows.extend(rows)
@@ -285,6 +286,7 @@ class Table(FilterElement, component='table.js'):
         """Remove rows from the table."""
         if isinstance(rows, dict):  # DEPRECATED
             warn_once('Calling remove_rows() with variable-length arguments is deprecated. '
+                      'This option will be removed in NiceGUI 3.0. '
                       'Pass a list instead or use remove_row() for a single row.')
             rows = [rows, *args]
         keys = [row[self.row_key] for row in rows]

@@ -181,11 +181,7 @@ class Client:
             await asyncio.sleep(check_interval)
         self.is_waiting_for_disconnect = False
 
-    def run_javascript(self, code: str, *,
-                       respond: Optional[bool] = None,  # DEPRECATED
-                       timeout: float = 1.0,
-                       check_interval: float = 0.01,  # DEPRECATED
-                       ) -> AwaitableResponse:
+    def run_javascript(self, code: str, *, timeout: float = 1.0) -> AwaitableResponse:
         """Execute JavaScript on the client.
 
         The client connection must be established before this method is called.
@@ -199,19 +195,6 @@ class Client:
 
         :return: AwaitableResponse that can be awaited to get the result of the JavaScript code
         """
-        if respond is True:
-            helpers.warn_once('The "respond" argument of run_javascript() has been removed. '
-                              'Now the method always returns an AwaitableResponse that can be awaited. '
-                              'Please remove the "respond=True" argument.')
-        if respond is False:
-            raise ValueError('The "respond" argument of run_javascript() has been removed. '
-                             'Now the method always returns an AwaitableResponse that can be awaited. '
-                             'Please remove the "respond=False" argument and call the method without awaiting.')
-        if check_interval != 0.01:
-            helpers.warn_once('The "check_interval" argument of run_javascript() and similar methods has been removed. '
-                              'Now the method automatically returns when receiving a response without checking regularly in an interval. '
-                              'Please remove the "check_interval" argument.')
-
         request_id = str(uuid.uuid4())
         target_id = self._temporary_socket_id or self.id
 

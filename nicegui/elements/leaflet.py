@@ -93,10 +93,10 @@ class Leaflet(Element, component='leaflet.js'):
         await asyncio.sleep(0.02)  # NOTE: wait for center to be updated as well
         self.zoom = e.args['zoom']
 
-    def run_method(self, name: str, *args: Any, timeout: float = 1, check_interval: float = 0.01) -> AwaitableResponse:
+    def run_method(self, name: str, *args: Any, timeout: float = 1) -> AwaitableResponse:
         if not self.is_initialized:
             return NullResponse()
-        return super().run_method(name, *args, timeout=timeout, check_interval=check_interval)
+        return super().run_method(name, *args, timeout=timeout)
 
     def set_center(self, center: Tuple[float, float]) -> None:
         """Set the center location of the map."""
@@ -122,7 +122,7 @@ class Leaflet(Element, component='leaflet.js'):
         self.layers.clear()
         self.run_method('clear_layers')
 
-    def run_map_method(self, name: str, *args, timeout: float = 1, check_interval: float = 0.01) -> AwaitableResponse:
+    def run_map_method(self, name: str, *args, timeout: float = 1) -> AwaitableResponse:
         """Run a method of the Leaflet map instance.
 
         Refer to the `Leaflet documentation <https://leafletjs.com/reference.html#map-methods-for-modifying-map-state>`_ for a list of methods.
@@ -136,9 +136,9 @@ class Leaflet(Element, component='leaflet.js'):
 
         :return: AwaitableResponse that can be awaited to get the result of the method call
         """
-        return self.run_method('run_map_method', name, *args, timeout=timeout, check_interval=check_interval)
+        return self.run_method('run_map_method', name, *args, timeout=timeout)
 
-    def run_layer_method(self, layer_id: str, name: str, *args, timeout: float = 1, check_interval: float = 0.01) -> AwaitableResponse:
+    def run_layer_method(self, layer_id: str, name: str, *args, timeout: float = 1) -> AwaitableResponse:
         """Run a method of a Leaflet layer.
 
         If the function is awaited, the result of the method call is returned.
@@ -151,7 +151,7 @@ class Leaflet(Element, component='leaflet.js'):
 
         :return: AwaitableResponse that can be awaited to get the result of the method call
         """
-        return self.run_method('run_layer_method', layer_id, name, *args, timeout=timeout, check_interval=check_interval)
+        return self.run_method('run_layer_method', layer_id, name, *args, timeout=timeout)
 
     def _handle_delete(self) -> None:
         binding.remove(self.layers)
