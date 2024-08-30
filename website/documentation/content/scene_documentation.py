@@ -167,10 +167,13 @@ def point_clouds() -> None:
     This demo animates a camera movement after the scene has been fully loaded.
 ''')
 async def wait_for_init() -> None:
-    with ui.scene(width=285, height=220) as scene:
-        scene.sphere()
-        await scene.initialized()
-        scene.move_camera(x=1, y=-1, z=1.5, duration=2)
+    # @ui.page('/')
+    # async def page():
+    with ui.column():  # HIDE
+        with ui.scene(width=285, height=220) as scene:
+            scene.sphere()
+            await scene.initialized()
+            scene.move_camera(x=1, y=-1, z=1.5, duration=2)
 
 
 @doc.demo(ui.scene_view)
