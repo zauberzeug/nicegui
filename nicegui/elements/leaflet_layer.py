@@ -29,7 +29,7 @@ class Layer:
     def to_dict(self) -> dict:
         """Return a dictionary representation of the layer."""
 
-    def run_method(self, name: str, *args: Any, timeout: float = 1, check_interval: float = 0.01) -> AwaitableResponse:
+    def run_method(self, name: str, *args: Any, timeout: float = 1) -> AwaitableResponse:
         """Run a method of the Leaflet layer.
 
         If the function is awaited, the result of the method call is returned.
@@ -41,4 +41,4 @@ class Layer:
 
         :return: AwaitableResponse that can be awaited to get the result of the method call
         """
-        return self.leaflet.run_method('run_layer_method', self.id, name, *args, timeout=timeout, check_interval=check_interval)
+        return self.leaflet.run_method('run_layer_method', self.id, name, *args, timeout=timeout)
