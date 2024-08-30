@@ -79,7 +79,7 @@ class AgGrid(Element, component='aggrid.js', dependencies=['lib/aggrid/ag-grid-c
         return cls({
             'columnDefs': [{'field': str(col)} for col in df.columns],
             'rowData': df.to_dict('records'),
-            'suppressDotNotation': True,
+            'suppressFieldDotNotation': True,
             **options,
         }, theme=theme, auto_size_columns=auto_size_columns)
 
