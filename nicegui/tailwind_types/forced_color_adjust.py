@@ -1,6 +1,6 @@
 from typing import Literal
 
-Appearance = Literal[
-    'none',
+ForcedColorAdjust = Literal[
     'auto',
+    'none',
 ]

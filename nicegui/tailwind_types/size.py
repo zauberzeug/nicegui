@@ -1,6 +1,6 @@
 from typing import Literal
 
-Width = Literal[
+Size = Literal[
     '0',
     'px',
     '0.5',
@@ -64,10 +64,6 @@ Width = Literal[
     '10/12',
     '11/12',
     'full',
-    'screen',
-    'svw',
-    'lvw',
-    'dvw',
     'min',
     'max',
     'fit',

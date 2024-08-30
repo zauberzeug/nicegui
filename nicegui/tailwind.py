@@ -71,6 +71,7 @@ if TYPE_CHECKING:
     from .tailwind_types.font_style import FontStyle
     from .tailwind_types.font_variant_numeric import FontVariantNumeric
     from .tailwind_types.font_weight import FontWeight
+    from .tailwind_types.forced_color_adjust import ForcedColorAdjust
     from .tailwind_types.gap import Gap
     from .tailwind_types.gradient_color_stops import GradientColorStops
     from .tailwind_types.grayscale import Grayscale
@@ -133,6 +134,7 @@ if TYPE_CHECKING:
     from .tailwind_types.scroll_snap_stop import ScrollSnapStop
     from .tailwind_types.scroll_snap_type import ScrollSnapType
     from .tailwind_types.sepia import Sepia
+    from .tailwind_types.size import Size
     from .tailwind_types.skew import Skew
     from .tailwind_types.space_between import SpaceBetween
     from .tailwind_types.stroke import Stroke
@@ -148,6 +150,7 @@ if TYPE_CHECKING:
     from .tailwind_types.text_overflow import TextOverflow
     from .tailwind_types.text_transform import TextTransform
     from .tailwind_types.text_underline_offset import TextUnderlineOffset
+    from .tailwind_types.text_wrap import TextWrap
     from .tailwind_types.top_right_bottom_left import TopRightBottomLeft
     from .tailwind_types.touch_action import TouchAction
     from .tailwind_types.transform_origin import TransformOrigin
@@ -468,6 +471,11 @@ class Tailwind:
         self.element.classes('max-h-' + value)
         return self
 
+    def size(self, value: Size) -> Tailwind:
+        """Utilities for setting the width and height of an element at the same time."""
+        self.element.classes('size-' + value)
+        return self
+
     def font_family(self, value: FontFamily) -> Tailwind:
         """Utilities for controlling the font family of an element."""
         self.element.classes('font-' + value)
@@ -571,6 +579,11 @@ class Tailwind:
     def text_overflow(self, value: TextOverflow) -> Tailwind:
         """Utilities for controlling text overflow in an element."""
         self.element.classes('' + value)
+        return self
+
+    def text_wrap(self, value: TextWrap) -> Tailwind:
+        """Utilities for controlling how text wraps within an element."""
+        self.element.classes('text-' + value)
         return self
 
     def text_indent(self, value: TextIndent) -> Tailwind:
@@ -915,7 +928,7 @@ class Tailwind:
 
     def appearance(self, value: Appearance) -> Tailwind:
         """Utilities for suppressing native form control styling."""
-        self.element.classes('appearance' + value)
+        self.element.classes('appearance-' + value)
         return self
 
     def cursor(self, value: Cursor) -> Tailwind:
@@ -1001,4 +1014,9 @@ class Tailwind:
     def screen_readers(self, value: ScreenReaders) -> Tailwind:
         """Utilities for improving accessibility with screen readers."""
         self.element.classes('' + value)
+        return self
+
+    def forced_color_adjust(self, value: ForcedColorAdjust) -> Tailwind:
+        """Utilities for opting in and out of forced colors."""
+        self.element.classes('forced-color-adjust-' + value)
         return self
