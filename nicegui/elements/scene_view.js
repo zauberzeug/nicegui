@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import "tween";
 
 export default {
   template: `
@@ -55,7 +56,7 @@ export default {
 
     const render = () => {
       requestAnimationFrame(() => setTimeout(() => render(), 1000 / 20));
-      TWEEN.update();
+      this.camera_tween?.update();
       this.renderer.render(this.scene, this.camera);
     };
     render();

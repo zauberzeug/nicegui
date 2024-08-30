@@ -168,7 +168,7 @@ export default {
 
     const render = () => {
       requestAnimationFrame(() => setTimeout(() => render(), 1000 / 20));
-      TWEEN.update();
+      this.camera_tween?.update();
       this.renderer.render(this.scene, this.camera);
       this.text_renderer.render(this.scene, this.camera);
       this.text3d_renderer.render(this.scene, this.camera);
