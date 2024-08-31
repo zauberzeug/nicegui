@@ -127,7 +127,7 @@ for key, dependency in dependencies.items():
                 content = newfile.read_text()
                 MSG = '../utils/BufferGeometryUtils.js'
                 if MSG not in content:
-                    raise ValueError(f'Expected to find "{MSG}" in {download_path}')
+                    raise ValueError(f'Expected to find "{MSG}" in {filename}')
                 content = content.replace(MSG, 'BufferGeometryUtils')
                 newfile.write_text(content)
 

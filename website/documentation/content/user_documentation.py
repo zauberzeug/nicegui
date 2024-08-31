@@ -78,7 +78,7 @@ doc.text('Querying', '''
 
 @doc.ui
 def querying():
-    with ui.row(wrap=False).classes('gap-4 items-stretch'):
+    with ui.row().classes('gap-4 items-stretch'):
         with python_window(classes='w-[400px]', title='some UI code'):
             ui.markdown('''
                 ```python
@@ -101,6 +101,57 @@ def querying():
                 await user.should_see('Hello')
                 await user.should_see(marker='greeting')
                 await user.should_see(kind=ui.icon)
+                ```
+            ''')
+
+
+doc.text('Complex elements', '''
+    There are some elements with complex visualization and interaction behaviors (`ui.upload`, `ui.table`, ...).
+    Not every aspect of these elements can be tested with `should_see` and `UserInteraction`.
+    Still, you can grab them with `user.find(...)` and do the testing on the elements themselves.
+''')
+
+
+@doc.ui
+def upload_table():
+    with ui.row().classes('gap-4 items-stretch'):
+        with python_window(classes='w-[500px]', title='some UI code'):
+            ui.markdown('''
+                ```python
+                def receive_file(e: events.UploadEventArguments):
+                    content = e.content.read().decode('utf-8')
+                    reader = csv.DictReader(content.splitlines())
+                    ui.table(
+                        columns=[{
+                            'name': h,
+                            'label': h.capitalize(),
+                            'field': h,
+                        } for h in reader.fieldnames or []],
+                        rows=list(reader),
+                    )
+
+                ui.upload(on_upload=receive_file)
+                ```
+            ''')
+
+        with python_window(classes='w-[500px]', title='user assertions'):
+            ui.markdown('''
+                ```python
+                upload = user.find(ui.upload).elements.pop()
+                upload.handle_uploads([UploadFile(
+                    BytesIO(b'name,age\\nAlice,30\\nBob,28'),
+                    filename='data.csv',
+                    headers=Headers(raw=[(b'content-type', b'text/csv')]),
+                )])
+                table = user.find(ui.table).elements.pop()
+                assert table.columns == [
+                    {'name': 'name', 'label': 'Name', 'field': 'name'},
+                    {'name': 'age', 'label': 'Age', 'field': 'age'},
+                ]
+                assert table.rows == [
+                    {'name': 'Alice', 'age': '30'},
+                    {'name': 'Bob', 'age': '28'},
+                ]
                 ```
             ''')
 

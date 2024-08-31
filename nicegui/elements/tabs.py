@@ -25,7 +25,7 @@ class Tabs(ValueElement):
         super().__init__(tag='q-tabs', value=value, on_value_change=on_change)
 
     def _value_to_model_value(self, value: Any) -> Any:
-        return value._props['name'] if isinstance(value, (Tab, TabPanel)) else value  # pylint: disable=protected-access
+        return value.props['name'] if isinstance(value, (Tab, TabPanel)) else value
 
 
 class Tab(IconElement, DisableableElement):
@@ -77,7 +77,7 @@ class TabPanels(ValueElement):
         self._props['keep-alive'] = keep_alive
 
     def _value_to_model_value(self, value: Any) -> Any:
-        return value._props['name'] if isinstance(value, (Tab, TabPanel)) else value  # pylint: disable=protected-access
+        return value.props['name'] if isinstance(value, (Tab, TabPanel)) else value
 
 
 class TabPanel(DisableableElement):
@@ -91,5 +91,5 @@ class TabPanel(DisableableElement):
         :param name: `ui.tab` or the name of a tab element
         """
         super().__init__(tag='q-tab-panel')
-        self._props['name'] = name._props['name'] if isinstance(name, Tab) else name
+        self._props['name'] = name.props['name'] if isinstance(name, Tab) else name
         self._classes.append('nicegui-tab-panel')

@@ -72,7 +72,7 @@ def test_select_deselect_node(screen: Screen):
 
     ui.button('Select', on_click=lambda: tree.select('2'))
     ui.button('Deselect', on_click=tree.deselect)
-    ui.label().bind_text_from(tree._props, 'selected', lambda x: f'Selected: {x}')
+    ui.label().bind_text_from(tree.props, 'selected', lambda x: f'Selected: {x}')
 
     screen.open('/')
     screen.click('Select')
@@ -92,7 +92,7 @@ def test_tick_untick_node_or_nodes(screen: Screen):
     ui.button('Untick some', on_click=lambda: tree.untick(['1', 'B']))
     ui.button('Tick all', on_click=tree.tick)
     ui.button('Untick all', on_click=tree.untick)
-    ui.label().bind_text_from(tree._props, 'ticked', lambda x: f'Ticked: {sorted(x)}')
+    ui.label().bind_text_from(tree.props, 'ticked', lambda x: f'Ticked: {sorted(x)}')
 
     screen.open('/')
     screen.should_contain('Ticked: []')

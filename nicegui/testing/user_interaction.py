@@ -57,7 +57,7 @@ class UserInteraction(Generic[T]):
         with self.user.client:
             for element in self.elements:
                 if isinstance(element, ui.link):
-                    href = element._props.get('href', '#')  # pylint: disable=protected-access
+                    href = element.props.get('href', '#')
                     background_tasks.create(self.user.open(href))
                     return self
                 if isinstance(element, ui.select):

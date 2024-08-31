@@ -26,7 +26,7 @@ def test_find_all() -> None:
     assert len(elements) == 8
     assert elements[0].tag == 'q-page-container'
     assert elements[1].tag == 'q-page'
-    assert elements[2]._classes == ['nicegui-content']  # pylint: disable=protected-access
+    assert elements[2].classes == ['nicegui-content']
     assert elements[3].text == 'button A'  # type: ignore
     assert elements[4].text == 'label A'  # type: ignore
     assert elements[5].__class__ == ui.row
@@ -180,7 +180,7 @@ async def test_setting_classes(user: User):
 
     await user.open('/')
     for label in user.find('label').elements:
-        assert label._classes == ['text-2xl']  # pylint: disable=protected-access
+        assert label.classes == ['text-2xl']
 
 
 async def test_setting_style(user: User):
@@ -191,7 +191,7 @@ async def test_setting_style(user: User):
 
     await user.open('/')
     for label in user.find('label').elements:
-        assert label._style['color'] == 'red'  # pylint: disable=protected-access
+        assert label.style['color'] == 'red'
 
 
 async def test_setting_props(user: User):
@@ -202,7 +202,7 @@ async def test_setting_props(user: User):
 
     await user.open('/')
     for button in user.find('button').elements:
-        assert button._props['flat']  # pylint: disable=protected-access
+        assert button.props['flat']
 
 
 async def test_typing(user: User):
