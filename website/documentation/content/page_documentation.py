@@ -48,7 +48,6 @@ def wait_for_connected_demo():
         await ui.context.client.connected()
         await asyncio.sleep(2)
         ui.label('This text is displayed 2 seconds after the page has been fully loaded.')
-        ui.label(f'The IP address {ui.context.client.ip} was obtained from the websocket.')
 
     ui.link('wait for connection', wait_for_connection)
 

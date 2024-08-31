@@ -32,7 +32,7 @@ class State(Enum):
 class App(FastAPI):
 
     def __init__(self, **kwargs) -> None:
-        super().__init__(**kwargs)
+        super().__init__(**kwargs, docs_url=None, redoc_url=None, openapi_url=None)
         self.native = NativeConfig()
         self.storage = Storage()
         self.urls = ObservableSet()

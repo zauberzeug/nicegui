@@ -390,3 +390,12 @@ function createApp(elements, options) {
     config: options.quasarConfig,
   }));
 }
+
+// HACK: remove Quasar's rules for divs in QCard (#2265, #2301)
+for (let sheet of document.styleSheets) {
+  if (/\/quasar(?:\.prod)?\.css$/.test(sheet.href)) {
+    for (let rule of sheet.cssRules) {
+      if (/\.q-card > div/.test(rule.selectorText)) rule.selectorText = ".nicegui-card-tight" + rule.selectorText;
+    }
+  }
+}

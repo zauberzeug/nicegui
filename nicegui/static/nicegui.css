@@ -255,6 +255,10 @@ h6.q-timeline__title {
   height: 10em;
   background-color: AliceBlue;
 }
+.nicegui-scene[data-initializing],
+.nicegui-scene-view[data-initializing] {
+  visibility: hidden;
+}
 
 /* CodeMirror */
 .nicegui-codemirror .cm-editor.cm-focused {
