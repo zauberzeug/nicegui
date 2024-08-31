@@ -4,6 +4,7 @@ export default {
   `,
   props: {
     conf: Object,
+    resource_path: String,
   },
   watch: {
     conf(newConf) {
@@ -19,10 +20,14 @@ export default {
     return {
       linePromise: new Promise((resolve) => {
         this.resolveLine = resolve;
-      }),
+      })
+    }
   },
   async mounted() {
-    this.line = new Zeitline.Timeline(this.conf);
+    await this.$nextTick(); // NOTE: wait for window.path_prefix to be set
+    this.ZL = await import(window.path_prefix + `${this.resource_path}/zeitline.bundle.min.js`);
+    const ZL = this.ZL;
+    this.line = new ZL.Timeline(this.conf);
     this.line.render();
     this.resolveLine(this.line);
   },
