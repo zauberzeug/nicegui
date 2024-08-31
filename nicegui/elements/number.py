@@ -43,7 +43,7 @@ class Number(ValidationElement, DisableableElement):
         :param suffix: a suffix to append to the displayed value
         :param format: a string like "%.2f" to format the displayed value
         :param on_change: callback to execute when the value changes
-        :param validation: dictionary of validation rules or a callable that returns an optional error message
+        :param validation: dictionary of validation rules or a callable that returns an optional error message (default: None for no validation)
         """
         self.format = format
         super().__init__(tag='q-input', value=value, on_value_change=on_change, validation=validation)
