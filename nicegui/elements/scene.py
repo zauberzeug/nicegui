@@ -39,16 +39,16 @@ class SceneObject:
 
 class Scene(Element,
             component='scene.js',
-            libraries=['lib/tween/tween.umd.js'],
-            exposed_libraries=[
+            dependencies=[
                 'lib/three/three.module.js',
+                'lib/three/modules/BufferGeometryUtils.js',
                 'lib/three/modules/CSS2DRenderer.js',
                 'lib/three/modules/CSS3DRenderer.js',
                 'lib/three/modules/DragControls.js',
+                'lib/three/modules/GLTFLoader.js',
                 'lib/three/modules/OrbitControls.js',
                 'lib/three/modules/STLLoader.js',
-                'lib/three/modules/GLTFLoader.js',
-                'lib/three/modules/BufferGeometryUtils.js',
+                'lib/tween/tween.umd.js',
             ]):
     # pylint: disable=import-outside-toplevel
     from .scene_objects import Box as box
@@ -117,6 +117,7 @@ class Scene(Element,
         self.on('dragstart', self._handle_drag)
         self.on('dragend', self._handle_drag)
         self._props['drag_constraints'] = drag_constraints
+        self._classes.append('nicegui-scene')
 
     def on_click(self, callback: Callable[..., Any]) -> Self:
         """Add a callback to be invoked when a 3D object is clicked."""
