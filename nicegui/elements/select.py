@@ -49,7 +49,7 @@ class Select(ValidationElement, ChoiceElement, DisableableElement, component='se
         :param new_value_mode: handle new values from user input (default: None, i.e. no new values)
         :param multiple: whether to allow multiple selections
         :param clearable: whether to add a button to clear the selection
-        :param validation: dictionary of validation rules or a callable that returns an optional error message
+        :param validation: dictionary of validation rules or a callable that returns an optional error message (default: None for no validation)
         :param key_generator: a callback or iterator to generate a dictionary key for new values
         """
         self.multiple = multiple
