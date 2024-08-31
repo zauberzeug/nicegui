@@ -93,9 +93,10 @@ class Element(Visibility):
 
     def __init_subclass__(cls, *,
                           component: Union[str, Path, None] = None,
-                          libraries: List[Union[str, Path]] = [],  # noqa: B006
-                          exposed_libraries: List[Union[str, Path]] = [],  # noqa: B006
-                          extra_libraries: List[Union[str, Path]] = [],  # noqa: B006
+                          dependencies: List[Union[str, Path]] = [],  # noqa: B006
+                          libraries: List[Union[str, Path]] = [],  # noqa: B006  # DEPRECATED
+                          exposed_libraries: List[Union[str, Path]] = [],  # noqa: B006  # DEPRECATED
+                          extra_libraries: List[Union[str, Path]] = [],  # noqa: B006  # DEPRECATED
                           ) -> None:
         super().__init_subclass__()
         base = Path(inspect.getfile(cls)).parent
@@ -105,6 +106,19 @@ class Element(Visibility):
             if not path.is_absolute():
                 path = base / path
             return sorted(path.parent.glob(path.name), key=lambda p: p.stem)
+
+        if libraries:
+            helpers.warn_once(f'The `libraries` parameter for subclassing "{cls.__name__}" is deprecated. '
+                              'It will be removed in NiceGUI 3.0. '
+                              'Use `dependencies` instead.')
+        if exposed_libraries:
+            helpers.warn_once(f'The `exposed_libraries` parameter for subclassing "{cls.__name__}" is deprecated. '
+                              'It will be removed in NiceGUI 3.0. '
+                              'Use `dependencies` instead.')
+        if extra_libraries:
+            helpers.warn_once(f'The `extra_libraries` parameter for subclassing "{cls.__name__}" is deprecated. '
+                              'It will be removed in NiceGUI 3.0. '
+                              'Use `dependencies` instead.')
 
         cls.component = copy(cls.component)
         cls.libraries = copy(cls.libraries)
@@ -119,7 +133,7 @@ class Element(Visibility):
         for library in extra_libraries:
             for path in glob_absolute_paths(library):
                 cls.extra_libraries.append(register_library(path))
-        for library in exposed_libraries:
+        for library in exposed_libraries + dependencies:
             for path in glob_absolute_paths(library):
                 cls.exposed_libraries.append(register_library(path, expose=True))
 
@@ -380,7 +394,7 @@ class Element(Visibility):
             return
         self.client.outbox.enqueue_update(self)
 
-    def run_method(self, name: str, *args: Any, timeout: float = 1, check_interval: float = 0.01) -> AwaitableResponse:
+    def run_method(self, name: str, *args: Any, timeout: float = 1) -> AwaitableResponse:
         """Run a method on the client side.
 
         If the function is awaited, the result of the method call is returned.
@@ -392,8 +406,7 @@ class Element(Visibility):
         """
         if not core.loop:
             return NullResponse()
-        return self.client.run_javascript(f'return runMethod({self.id}, "{name}", {json.dumps(args)})',
-                                          timeout=timeout, check_interval=check_interval)
+        return self.client.run_javascript(f'return runMethod({self.id}, "{name}", {json.dumps(args)})', timeout=timeout)
 
     def get_computed_prop(self, prop_name: str, *, timeout: float = 1) -> AwaitableResponse:
         """Return a computed property.

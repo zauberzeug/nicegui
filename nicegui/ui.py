@@ -11,7 +11,6 @@ __all__ = [
     'card_section',
     'carousel',
     'carousel_slide',
-    'chart',
     'chat_message',
     'checkbox',
     'chip',
@@ -105,7 +104,6 @@ __all__ = [
     'add_head_html',
     'run_javascript',
     'notify',
-    'open',
     'page_title',
     'refreshable',
     'refreshable_method',
@@ -113,7 +111,6 @@ __all__ = [
     'add_css',
     'add_sass',
     'add_scss',
-    'add_style',
     'update',
     'page',
     'drawer',
@@ -141,7 +138,6 @@ from .elements.card import CardActions as card_actions
 from .elements.card import CardSection as card_section
 from .elements.carousel import Carousel as carousel
 from .elements.carousel import CarouselSlide as carousel_slide
-from .elements.chart import chart
 from .elements.chat_message import ChatMessage as chat_message
 from .elements.checkbox import Checkbox as checkbox
 from .elements.chip import Chip as chip
@@ -233,10 +229,9 @@ from .functions.javascript import run_javascript
 from .functions.navigate import navigate
 from .functions.notify import notify
 from .functions.on import on
-from .functions.open import open  # pylint: disable=redefined-builtin
 from .functions.page_title import page_title
 from .functions.refreshable import refreshable, refreshable_method, state
-from .functions.style import add_css, add_sass, add_scss, add_style
+from .functions.style import add_css, add_sass, add_scss
 from .functions.update import update
 from .page import page
 from .page_layout import Drawer as drawer

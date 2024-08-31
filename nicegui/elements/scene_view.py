@@ -10,8 +10,10 @@ from .scene import Scene, SceneCamera
 
 class SceneView(Element,
                 component='scene_view.js',
-                libraries=['lib/tween/tween.umd.js'],
-                exposed_libraries=['lib/three/three.module.js']):
+                dependencies=[
+                    'lib/tween/tween.umd.js',
+                    'lib/three/three.module.js',
+                ]):
 
     def __init__(self,
                  scene: Scene,
@@ -44,6 +46,7 @@ class SceneView(Element,
         self._click_handlers = [on_click] if on_click else []
         self.on('init', self._handle_init)
         self.on('click3d', self._handle_click)
+        self._classes.append('nicegui-scene-view')
 
     def on_click(self, callback: Callable[..., Any]) -> Self:
         """Add a callback to be invoked when a 3D object is clicked."""
@@ -53,6 +56,7 @@ class SceneView(Element,
     def _handle_init(self, e: GenericEventArguments) -> None:
         with self.client.individual_target(e.args['socket_id']):
             self.move_camera(duration=0)
+            self.run_method('init')
 
     async def initialized(self) -> None:
         """Wait until the scene is initialized."""

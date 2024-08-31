@@ -131,6 +131,11 @@ for key, dependency in dependencies.items():
                 content = content.replace(MSG, 'BufferGeometryUtils')
                 newfile.write_text(content)
 
+            if 'mermaid.esm.min.mjs' in filename:
+                content = newfile.read_text()
+                content = re.sub(r'"\./chunks/mermaid.esm.min/(.*?)\.mjs"', r'"\1"', content)
+                newfile.write_text(content)
+
     # Delete destination folder if empty.
     if not any(destination.iterdir()):
         destination.rmdir()

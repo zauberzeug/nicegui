@@ -1,9 +1,10 @@
 import asyncio
+import gc
 
 import pytest
 
 from nicegui import ui
-from nicegui.testing import Screen
+from nicegui.testing import Screen, User
 
 
 class Counter:
@@ -129,3 +130,18 @@ def test_different_callbacks(screen: Screen):
     screen.should_contain('an asynchronous function')
     screen.should_contain('a synchronous lambda')
     screen.should_contain('an asynchronous lambda: Hi!')
+
+
+async def test_cleanup(user: User):
+    def update():
+        ui.timer(0.01, update, once=True)
+    ui.timer(0, update, once=True)
+
+    def count():
+        return sum(1 for obj in gc.get_objects() if isinstance(obj, ui.timer))
+
+    await user.open('/')
+    assert count() > 0, 'there are timer objects in memory'
+    await asyncio.sleep(0.1)
+    gc.collect()
+    assert count() == 1, 'only current timer object is in memory'
