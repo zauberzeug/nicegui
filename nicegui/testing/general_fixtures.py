@@ -52,6 +52,7 @@ def nicegui_reset_globals() -> Generator[None, None, None]:
     app.get('/')(Client.auto_index_client.build_response)
     binding.reset()
     yield
+    app.reset()
 
 
 def prepare_simulation(request: pytest.FixtureRequest) -> None:
