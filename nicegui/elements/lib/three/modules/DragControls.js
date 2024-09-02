@@ -336,6 +336,11 @@ function onPointerDown( event ) {
 
 			_selected = findGroup( _intersections[ 0 ].object );
 
+            // Use the object itself if no group was found
+            if ( !_selected ) {
+                _selected = _intersections[ 0 ].object;
+            }
+
 		} else {
 
 			_selected = _intersections[ 0 ].object;
