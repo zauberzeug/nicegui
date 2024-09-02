@@ -334,12 +334,7 @@ function onPointerDown( event ) {
 
 			// look for the outermost group in the object's upper hierarchy
 
-			_selected = findGroup( _intersections[ 0 ].object );
-
-            // Use the object itself if no group was found
-            if ( !_selected ) {
-                _selected = _intersections[ 0 ].object;
-            }
+			_selected = findGroup( _intersections[ 0 ].object ) || _intersections[ 0 ].object;
 
 		} else {
 
