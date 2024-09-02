@@ -212,3 +212,5 @@ class Storage:
         self._tabs.clear()
         for filepath in self.path.glob('storage-*.json'):
             filepath.unlink()
+        if self.path.exists():
+            self.path.rmdir()
