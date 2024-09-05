@@ -186,7 +186,7 @@ class Air:
             while True:
                 try:
                     if self.relay.connected:
-                        await asyncio.wait_for(self.relay.disconnect, timeout=5)
+                        await asyncio.wait_for(self.disconnect(), timeout=5)
                     self.log.debug('Connecting...')
                     await self.relay.connect(
                         f'{RELAY_HOST}?device_token={self.token}',
