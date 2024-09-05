@@ -178,8 +178,8 @@ class Air:
             self.log.debug('Already connecting.')
             return
         if self.relay.connected:
-            self.log.debug('Already connected.')
             return
+        self.log.debug('Going to connect...')
         self.connecting = True
         backoff_time = 1
         try:
