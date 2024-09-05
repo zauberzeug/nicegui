@@ -125,6 +125,6 @@ class Timer(Element, component='timer.js'):
 
     def _cleanup(self) -> None:
         self.callback = None
-        if not self.client._deleted:  # pylint: disable=protected-access
+        if not self._deleted:
             assert self.parent_slot
             self.parent_slot.parent.remove(self)
