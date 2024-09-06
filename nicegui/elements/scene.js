@@ -340,11 +340,16 @@ export default {
       this.objects.get(object_id).name = name;
     },
     material(object_id, color, opacity, side) {
+      if (color == "per_point") return;
       if (!this.objects.has(object_id)) return;
       const material = this.objects.get(object_id).material;
       if (!material) return;
       material.color.set(color);
       material.opacity = opacity;
+      if (material.vertexColors) {
+        material.vertexColors = false;
+        material.needsUpdate = true;
+      }
       if (side == "front") material.side = THREE.FrontSide;
       else if (side == "back") material.side = THREE.BackSide;
       else material.side = THREE.DoubleSide;
