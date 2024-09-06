@@ -377,3 +377,18 @@ async def test_upload_table(user: User) -> None:
         {'name': 'Alice', 'age': '30'},
         {'name': 'Bob', 'age': '28'},
     ]
+
+
+async def test_ui_download(user: User) -> None:
+    @ui.page('/')
+    def page():
+        ui.button('Download', on_click=lambda: ui.download(b'Hello', filename='hello.txt'))
+
+    client = await user.open('/')
+    user.find('Download').click()
+    messages = list(client.outbox.messages)
+    assert len(messages) == 1
+    target_id, message_type, data = messages[0]
+    assert message_type == 'download'
+    assert data['src'] == b'Hello'
+    assert data['filename'] == 'hello.txt'

@@ -40,7 +40,7 @@ class User:
             ui.notify = self.notify
         return super().__getattribute__(name)
 
-    async def open(self, path: str, *, clear_forward_history: bool = True) -> None:
+    async def open(self, path: str, *, clear_forward_history: bool = True) -> Client:
         """Open the given path."""
         response = await self.http_client.get(path, follow_redirects=True)
         assert response.status_code == 200, f'Expected status code 200, got {response.status_code}'
@@ -56,6 +56,7 @@ class User:
         self.back_history.append(path)
         if clear_forward_history:
             self.forward_history.clear()
+        return self.client
 
     @overload
     async def should_see(self,

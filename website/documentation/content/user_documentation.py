@@ -156,6 +156,41 @@ def upload_table():
             ''')
 
 
+doc.text('Outbox Messages', '''
+    NiceGUI sends commands to the browser in the form of messages.
+    These messages are stored in the `outbox` attribute of the `Client` instance and can be inspected.
+''')
+
+
+@doc.ui
+def check_outbox():
+    with ui.row().classes('gap-4 items-stretch'):
+        with python_window(classes='w-[500px]', title='some UI code'):
+            ui.markdown('''
+                ```python
+
+                @ui.page('/')
+                def page():
+                    def download():
+                        ui.download(b'Hello', filename='hello.txt')
+
+                    ui.button('Download', on_click=download)
+                ```
+            ''')
+
+        with python_window(classes='w-[500px]', title='user assertions'):
+            ui.markdown('''
+                ```python
+                client = await user.open('/')
+                user.find('Download').click()
+                _, message_type, data = list(client.outbox.messages)[0]
+                assert message_type == 'download'
+                assert data['src'] == b'Hello'
+                assert data['filename'] == 'hello.txt'
+                ```
+            ''')
+
+
 doc.text('Multiple Users', '''
     Sometimes it is not enough to just interact with the UI as a single user.
     Besides the `user` fixture, we also provide the `create_user` fixture which is a factory function to create users.
