@@ -25,7 +25,7 @@ class UserDownload:
     async def _get(self,  src: Union[str, Path, bytes]) -> None:
         if isinstance(src, bytes):
             await asyncio.sleep(0)
-            response = httpx.Response(200, content=src)
+            response = httpx.Response(httpx.codes.OK, content=src)
         else:
             response = await self.user.http_client.get(str(src))
         self.http_responses.append(response)
