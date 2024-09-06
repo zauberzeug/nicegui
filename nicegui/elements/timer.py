@@ -128,3 +128,6 @@ class Timer(Element, component='timer.js'):
         if not self._deleted:
             assert self.parent_slot
             self.parent_slot.parent.remove(self)
+
+    def set_visibility(self, visible: bool) -> None:
+        raise NotImplementedError('Use `activate()`, `deactivate()` or `cancel()`. See #3670 for more information.')
