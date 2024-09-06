@@ -1,6 +1,6 @@
 import csv
 from io import BytesIO
-from typing import Callable, Dict, Type
+from typing import Callable, Dict, Type, Union
 
 import pytest
 from fastapi import UploadFile
@@ -379,22 +379,8 @@ async def test_upload_table(user: User) -> None:
     ]
 
 
-async def test_download_bytes(user: User) -> None:
-    @ui.page('/')
-    def page():
-        ui.button('Download', on_click=lambda: ui.download(b'Hello', filename='hello.txt'))
-
-    client = await user.open('/')
-    user.find('Download').click()
-    messages = list(client.outbox.messages)
-    assert len(messages) == 1
-    target_id, message_type, data = messages[0]
-    assert message_type == 'download'
-    assert data['src'] == b'Hello'
-    assert data['filename'] == 'hello.txt'
-
-
-async def test_download_file(user: User) -> None:
+@pytest.mark.parametrize('data', ['/data', b'Hello'])
+async def test_download_file(user: User, data: Union[str, bytes]) -> None:
 
     @app.get('/data')
     def get_data() -> PlainTextResponse:
@@ -402,12 +388,12 @@ async def test_download_file(user: User) -> None:
 
     @ui.page('/')
     def page():
-        ui.button('Download', on_click=lambda: ui.download('/data'))
+        ui.button('Download', on_click=lambda: ui.download(data))
 
     await user.open('/')
-    assert len(user.http_responses) == 1
+    assert len(user.download.http_responses) == 0
     user.find('Download').click()
-    response = await user.new_http_response()
-    assert len(user.http_responses) == 2
+    response = await user.download.new()
+    assert len(user.download.http_responses) == 1
     assert response.status_code == 200
     assert response.text == 'Hello'
