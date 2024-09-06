@@ -51,6 +51,7 @@ class Scene(Element,
                 'lib/tween/tween.umd.js',
             ]):
     # pylint: disable=import-outside-toplevel
+    from .scene_objects import AxesHelper as axes_helper
     from .scene_objects import Box as box
     from .scene_objects import Curve as curve
     from .scene_objects import Cylinder as cylinder

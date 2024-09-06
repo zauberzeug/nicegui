@@ -279,6 +279,9 @@ export default {
           undefined,
           (error) => console.error(error)
         );
+      } else if (type == "axes_helper") {
+        mesh = new THREE.AxesHelper(args[0]);
+        mesh.material.transparent = true;
       } else {
         let geometry;
         const wireframe = args.pop();
