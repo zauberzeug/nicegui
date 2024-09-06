@@ -330,12 +330,12 @@ class PointCloud(Object3D):
         """
         super().__init__('point_cloud', points, colors, point_size)
         if colors is not None:
-            self.color = "per_point"
+            self.color = None
 
     def set_points(self, points: List[List[float]], colors: Optional[List[List[float]]] = None) -> None:
         """Change the points and colors of the point cloud."""
         self.args[0] = points
         self.args[1] = colors
         if colors is not None:
-            self.color = "per_point"
+            self.color = None
         self.scene.run_method('set_points', self.id, points, colors)

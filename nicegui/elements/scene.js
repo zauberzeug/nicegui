@@ -276,7 +276,7 @@ export default {
         mesh.add(light.target);
       } else if (type == "point_cloud") {
         const geometry = new THREE.BufferGeometry();
-        const material = new THREE.PointsMaterial({ size: args[2] });
+        const material = new THREE.PointsMaterial({ size: args[2], transparent: true });
         set_point_cloud_data(args[0], args[1], geometry, material);
         mesh = new THREE.Points(geometry, material);
       } else if (type == "gltf") {
@@ -340,16 +340,17 @@ export default {
       this.objects.get(object_id).name = name;
     },
     material(object_id, color, opacity, side) {
-      if (color == "per_point") return;
       if (!this.objects.has(object_id)) return;
       const material = this.objects.get(object_id).material;
       if (!material) return;
-      material.color.set(color);
-      material.opacity = opacity;
-      if (material.vertexColors) {
-        material.vertexColors = false;
-        material.needsUpdate = true;
+      if (color !== null) {
+        material.color.set(color);
+        if (material.vertexColors) {
+          material.vertexColors = false;
+          material.needsUpdate = true;
+        }
       }
+      material.opacity = opacity;
       if (side == "front") material.side = THREE.FrontSide;
       else if (side == "back") material.side = THREE.BackSide;
       else material.side = THREE.DoubleSide;
