@@ -379,7 +379,7 @@ async def test_upload_table(user: User) -> None:
     ]
 
 
-async def test_ui_download(user: User) -> None:
+async def test_download_bytes(user: User) -> None:
     @ui.page('/')
     def page():
         ui.button('Download', on_click=lambda: ui.download(b'Hello', filename='hello.txt'))
@@ -392,3 +392,22 @@ async def test_ui_download(user: User) -> None:
     assert message_type == 'download'
     assert data['src'] == b'Hello'
     assert data['filename'] == 'hello.txt'
+
+
+async def test_download_file(user: User) -> None:
+
+    @app.get('/data')
+    def get_data() -> PlainTextResponse:
+        return PlainTextResponse('Hello')
+
+    @ui.page('/')
+    def page():
+        ui.button('Download', on_click=lambda: ui.download('/data'))
+
+    await user.open('/')
+    assert len(user.http_responses) == 1
+    user.find('Download').click()
+    response = await user.new_http_response()
+    assert len(user.http_responses) == 2
+    assert response.status_code == 200
+    assert response.text == 'Hello'

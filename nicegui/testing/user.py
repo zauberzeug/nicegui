@@ -33,6 +33,7 @@ class User:
         self.forward_history: List[str] = []
         self.navigate = UserNavigate(self)
         self.notify = UserNotify()
+        self.http_responses: List[httpx.Response] = []
 
     def __getattribute__(self, name: str) -> Any:
         if name not in {'notify', 'navigate'}:  # NOTE: avoid infinite recursion
@@ -43,6 +44,7 @@ class User:
     async def open(self, path: str, *, clear_forward_history: bool = True) -> Client:
         """Open the given path."""
         response = await self.http_client.get(path, follow_redirects=True)
+        self.http_responses.append(response)
         assert response.status_code == 200, f'Expected status code 200, got {response.status_code}'
         if response.headers.get('X-Nicegui-Content') != 'page':
             raise ValueError(f'Expected a page response, got {response.text}')
@@ -51,6 +53,7 @@ class User:
         assert match is not None
         client_id = match.group(1)
         self.client = Client.instances[client_id]
+        self.client.outbox._emit = self._on_emit  # type: ignore # NOTE: monkey-patch the outbox
         self.sio.on('connect')
         await _on_handshake(f'test-{uuid4()}', {'client_id': self.client.id, 'tab_id': str(uuid4())})
         self.back_history.append(path)
@@ -186,6 +189,18 @@ class User:
         assert self.client
         return self.client.layout
 
+    async def new_http_response(self) -> httpx.Response:
+        """Wait for a new http response to happen.
+
+        For example when a download is triggered by the user.
+
+        :returns: the response"""
+        assert self.client
+        downloads = len(self.http_responses)
+        while len(self.http_responses) < downloads + 1:
+            await asyncio.sleep(0.1)
+        return self.http_responses[-1]
+
     def _gather_elements(self,
                          target: Union[str, Type[T], None] = None,
                          kind: Optional[Type[T]] = None,
@@ -215,3 +230,8 @@ class User:
             return f'element of type {kind.__name__} with {marker=} and {content=} on the page:\n{self.current_layout}'
         else:
             return f'element with {marker=} and {content=} on the page:\n{self.current_layout}'
+
+    async def _on_emit(self, message_type: str, data: Any, target_id: str) -> None:
+        if message_type == 'download':
+            if isinstance(data['src'], str):
+                self.http_responses.append(await self.http_client.get(data['src']))
