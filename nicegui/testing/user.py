@@ -12,6 +12,7 @@ from nicegui import Client, ElementFilter, ui
 from nicegui.element import Element
 from nicegui.nicegui import _on_handshake
 
+from .user_download import UserDownload
 from .user_interaction import UserInteraction
 from .user_navigate import UserNavigate
 from .user_notify import UserNotify
@@ -33,14 +34,16 @@ class User:
         self.forward_history: List[str] = []
         self.navigate = UserNavigate(self)
         self.notify = UserNotify()
+        self.download = UserDownload(self)
 
     def __getattribute__(self, name: str) -> Any:
-        if name not in {'notify', 'navigate'}:  # NOTE: avoid infinite recursion
+        if name not in {'notify', 'navigate', 'download'}:  # NOTE: avoid infinite recursion
             ui.navigate = self.navigate
             ui.notify = self.notify
+            ui.download = self.download
         return super().__getattribute__(name)
 
-    async def open(self, path: str, *, clear_forward_history: bool = True) -> None:
+    async def open(self, path: str, *, clear_forward_history: bool = True) -> Client:
         """Open the given path."""
         response = await self.http_client.get(path, follow_redirects=True)
         assert response.status_code == 200, f'Expected status code 200, got {response.status_code}'
@@ -56,6 +59,7 @@ class User:
         self.back_history.append(path)
         if clear_forward_history:
             self.forward_history.clear()
+        return self.client
 
     @overload
     async def should_see(self,

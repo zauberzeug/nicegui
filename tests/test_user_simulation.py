@@ -1,6 +1,6 @@
 import csv
 from io import BytesIO
-from typing import Callable, Dict, Type
+from typing import Callable, Dict, Type, Union
 
 import pytest
 from fastapi import UploadFile
@@ -377,3 +377,22 @@ async def test_upload_table(user: User) -> None:
         {'name': 'Alice', 'age': '30'},
         {'name': 'Bob', 'age': '28'},
     ]
+
+
+@pytest.mark.parametrize('data', ['/data', b'Hello'])
+async def test_download_file(user: User, data: Union[str, bytes]) -> None:
+    @app.get('/data')
+    def get_data() -> PlainTextResponse:
+        return PlainTextResponse('Hello')
+
+    @ui.page('/')
+    def page():
+        ui.button('Download', on_click=lambda: ui.download(data))
+
+    await user.open('/')
+    assert len(user.download.http_responses) == 0
+    user.find('Download').click()
+    response = await user.download.next()
+    assert len(user.download.http_responses) == 1
+    assert response.status_code == 200
+    assert response.text == 'Hello'
