@@ -156,9 +156,9 @@ def upload_table():
             ''')
 
 
-doc.text('Outbox Messages', '''
-    NiceGUI sends commands to the browser in the form of messages.
-    These messages are stored in the `outbox` attribute of the `Client` instance and can be inspected.
+doc.text('Test Downloads', '''
+    You can verify that a download was triggered by checking `user.downloads.http_responses`.
+    By awaiting `user.downloads.next()` you can get the next download response.
 ''')
 
 
@@ -181,12 +181,11 @@ def check_outbox():
         with python_window(classes='w-[500px]', title='user assertions'):
             ui.markdown('''
                 ```python
-                client = await user.open('/')
+                await user.open('/')
+                assert len(user.download.http_responses) == 0
                 user.find('Download').click()
-                _, message_type, data = list(client.outbox.messages)[0]
-                assert message_type == 'download'
-                assert data['src'] == b'Hello'
-                assert data['filename'] == 'hello.txt'
+                response = await user.download.new()
+                assert response.text == 'Hello'
                 ```
             ''')
 
