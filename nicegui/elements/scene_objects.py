@@ -340,12 +340,15 @@ class PointCloud(Object3D):
 class AxesHelper(Object3D):
 
     def __init__(self,
-                 length=1.0
+                 length: float = 1.0,
                  ) -> None:
-        """Box
+        """Axes Helper
 
         This element is based on Three.js' `AxesHelper <https://threejs.org/docs/#api/en/helpers/AxesHelper>`_ object.
-        It is used to visualize the XYZ axes. The X axis is red. The Y axis is green. The Z axis is blue. 
+        It is used to visualize the XYZ axes:
+        The X axis is red.
+        The Y axis is green.
+        The Z axis is blue.
 
         :param length: length of the the axes (default: 1.0)
         """
