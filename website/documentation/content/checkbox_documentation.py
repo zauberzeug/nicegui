@@ -9,7 +9,7 @@ def main_demo() -> None:
     ui.label('Check!').bind_visibility_from(checkbox, 'value')
 
 
-@doc.demo('User Interaction', '''
+@doc.demo('Handle User Interaction', '''
     The `on_change` function passed via parameter will be called when the checkbox is clicked
     *and* when the value changes via `set_value` call.
     To execute a function only when the user interacts with the checkbox, you can use the generic `on` method.
