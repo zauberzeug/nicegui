@@ -381,7 +381,6 @@ async def test_upload_table(user: User) -> None:
 
 @pytest.mark.parametrize('data', ['/data', b'Hello'])
 async def test_download_file(user: User, data: Union[str, bytes]) -> None:
-
     @app.get('/data')
     def get_data() -> PlainTextResponse:
         return PlainTextResponse('Hello')
@@ -393,7 +392,7 @@ async def test_download_file(user: User, data: Union[str, bytes]) -> None:
     await user.open('/')
     assert len(user.download.http_responses) == 0
     user.find('Download').click()
-    response = await user.download.new()
+    response = await user.download.next()
     assert len(user.download.http_responses) == 1
     assert response.status_code == 200
     assert response.text == 'Hello'

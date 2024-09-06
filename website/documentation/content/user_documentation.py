@@ -168,7 +168,6 @@ def check_outbox():
         with python_window(classes='w-[500px]', title='some UI code'):
             ui.markdown('''
                 ```python
-
                 @ui.page('/')
                 def page():
                     def download():
@@ -184,7 +183,7 @@ def check_outbox():
                 await user.open('/')
                 assert len(user.download.http_responses) == 0
                 user.find('Download').click()
-                response = await user.download.new()
+                response = await user.download.next()
                 assert response.text == 'Hello'
                 ```
             ''')

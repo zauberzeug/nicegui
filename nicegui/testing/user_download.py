@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import time
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, List, Optional, Union
 
@@ -29,16 +30,17 @@ class UserDownload:
             response = await self.user.http_client.get(str(src))
         self.http_responses.append(response)
 
-    async def new(self) -> httpx.Response:
+    async def next(self, *, timeout: float = 1.0) -> httpx.Response:
         """Wait for a new download to happen.
 
-        :returns: the http response"""
+        :param timeout: the maximum time to wait (default: 1.0)
+        :returns: the HTTP response
+        """
         assert self.user.client
         downloads = len(self.http_responses)
-        max_attempts = 10
+        deadline = time.time() + timeout
         while len(self.http_responses) < downloads + 1:
             await asyncio.sleep(0.1)
-            max_attempts -= 1
-            if max_attempts == 0:
+            if time.time() > deadline:
                 raise TimeoutError('Download did not happen')
         return self.http_responses[-1]
