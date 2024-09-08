@@ -95,7 +95,7 @@ class User:
         By default `should_see` makes three attempts to find the element before failing.
         This can be adjusted with the `retries` parameter.
         """
-        assert self.client
+        self._assert_client()
         for _ in range(retries):
             with self.client:
                 if self.notify.contains(target) or self._gather_elements(target, kind, marker, content):
@@ -130,7 +130,7 @@ class User:
                              retries: int = 3,
                              ) -> None:
         """Assert that the page does not contain an input with the given value."""
-        assert self.client
+        self._assert_client()
         for _ in range(retries):
             with self.client:
                 if not self.notify.contains(target) and not self._gather_elements(target, kind, marker, content):
@@ -175,7 +175,7 @@ class User:
              content: Union[str, List[str], None] = None,
              ) -> UserInteraction[T]:
         """Select elements for interaction."""
-        assert self.client
+        self._assert_client()
         with self.client:
             elements = self._gather_elements(target, kind, marker, content)
             if not elements:
@@ -186,8 +186,14 @@ class User:
     @property
     def current_layout(self) -> Element:
         """Return the root layout element of the current page."""
-        assert self.client
+        self._assert_client()
         return self.client.layout
+
+    def _assert_client(self) -> None:
+        if self.client is not None:
+            return
+
+        raise ValueError("This user has not opened a page yet. Did you forgot to call .open()?")
 
     def _gather_elements(self,
                          target: Union[str, Type[T], None] = None,
