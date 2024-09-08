@@ -60,6 +60,8 @@ class Navigate:
             path = f'#c{target.id}'
         elif callable(target):
             path = Client.page_routes[target]
+        else:
+            raise TypeError(f"Expected a str path, an Element, or a page builder, but got {target}")
         context.client.open(path, new_tab)
 
 
