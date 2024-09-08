@@ -1,7 +1,7 @@
 export default {
   mounted() {
     for (let name in this.$props) {
-      document.body.style.setProperty("--q-" + name, this.$props[name]);
+      document.body.style.setProperty("--q-" + name.replace("_", "-"), this.$props[name]);
     }
   },
   props: {
@@ -9,6 +9,7 @@ export default {
     secondary: String,
     accent: String,
     dark: String,
+    dark_page: String,
     positive: String,
     negative: String,
     info: String,
