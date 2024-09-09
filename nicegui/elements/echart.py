@@ -100,7 +100,7 @@ class EChart(Element, component='echart.js', dependencies=['lib/echarts/echarts.
         self.run_method('update_chart')
 
     def run_chart_method(self, name: str, *args, timeout: float = 1) -> AwaitableResponse:
-        """Run a method of the JSONEditor instance.
+        """Run a method of the EChart instance.
 
         See the `ECharts documentation <https://echarts.apache.org/en/api.html#echartsInstance>`_ for a list of methods.
 
