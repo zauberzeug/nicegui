@@ -1,4 +1,5 @@
 from ..element import Element
+from .mixins.color_elements import QUASAR_COLORS
 
 
 class Colors(Element, component='colors.js'):
@@ -12,7 +13,8 @@ class Colors(Element, component='colors.js'):
                  positive: str = '#21ba45',
                  negative: str = '#c10015',
                  info: str = '#31ccec',
-                 warning: str = '#f2c037') -> None:
+                 warning: str = '#f2c037',
+                 **custom_colors) -> None:
         """Color Theming
 
         Sets the main colors (primary, secondary, accent, ...) used by `Quasar <https://quasar.dev/style/theme-builder>`_.
@@ -37,4 +39,6 @@ class Colors(Element, component='colors.js'):
         self._props['negative'] = negative
         self._props['info'] = info
         self._props['warning'] = warning
+        self._props['customColors'] = custom_colors
+        QUASAR_COLORS.update({name.replace('_', '-') for name in custom_colors.keys()})
         self.update()
