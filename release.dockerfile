@@ -1,4 +1,4 @@
-FROM python:3.11.3-slim as builder
+FROM python:3.11-slim as builder
 
 RUN apt-get update && \
     DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC \
@@ -11,7 +11,7 @@ RUN python -m pip install --upgrade pip
 
 RUN python -m pip install --upgrade libsass
 
-FROM python:3.11.3-slim as release
+FROM python:3.11-slim as release
 COPY --from=builder /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
 ARG VERSION
 

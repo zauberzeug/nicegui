@@ -17,6 +17,8 @@ class Code(ContentElement):
 
         This element displays a code block with syntax highlighting.
 
+        In secure environments (HTTPS or localhost), a copy button is displayed to copy the code to the clipboard.
+
         :param content: code to display
         :param language: language of the code (default: "python")
         """
@@ -33,6 +35,10 @@ class Code(ContentElement):
         self._last_scroll: float = 0.0
         self.markdown.on('scroll', self._handle_scroll)
         timer(0.1, self._update_copy_button)
+
+        self.client.on_connect(lambda: self.client.run_javascript(f'''
+            if (!navigator.clipboard) getElement({self.copy_button.id}).$el.style.display = 'none';
+        '''))
 
     async def show_checkmark(self) -> None:
         """Show a checkmark icon for 3 seconds."""

@@ -1,4 +1,4 @@
-from nicegui import ui
+from nicegui import ui, ElementFilter
 
 from . import doc
 
@@ -26,7 +26,7 @@ def main_demo() -> None:
 
     ui.button('Update', on_click=update)
     ui.button('Select all', on_click=lambda: grid.run_grid_method('selectAll'))
-    ui.button('Show parent', on_click=lambda: grid.run_column_method('setColumnVisible', 'parent', True))
+    ui.button('Show parent', on_click=lambda: grid.run_grid_method('setColumnsVisible', ['parent'], True))
 
 
 @doc.demo('Select AG Grid Rows', '''
@@ -224,18 +224,39 @@ def aggrid_run_row_method():
 @doc.demo('Filter return values', '''
     You can filter the return values of method calls by passing string that defines a JavaScript function.
     This demo runs the grid method "getDisplayedRowAtIndex" and returns the "data" property of the result.
+
+    Note that requesting data from the client is only supported for page functions, not for the shared auto-index page.
 ''')
 def aggrid_filter_return_values():
-    grid = ui.aggrid({
-        'columnDefs': [{'field': 'name'}],
-        'rowData': [{'name': 'Alice'}, {'name': 'Bob'}],
-    })
+    # @ui.page('/')
+    def page():
+        grid = ui.aggrid({
+            'columnDefs': [{'field': 'name'}],
+            'rowData': [{'name': 'Alice'}, {'name': 'Bob'}],
+        })
 
-    async def get_first_name() -> None:
-        row = await grid.run_grid_method('(g) => g.getDisplayedRowAtIndex(0).data')
-        ui.notify(row['name'])
+        async def get_first_name() -> None:
+            row = await grid.run_grid_method('g => g.getDisplayedRowAtIndex(0).data')
+            ui.notify(row['name'])
 
-    ui.button('Get First Name', on_click=get_first_name)
+        ui.button('Get First Name', on_click=get_first_name)
+    page()  # HIDE
+
+
+@doc.demo('Handle theme change', '''
+    You can change the theme of the AG Grid by adding or removing classes.
+    This demo shows how to change the theme using a switch.
+''')
+def aggrid_handle_theme_change():
+    from nicegui import events
+
+    grid = ui.aggrid({})
+
+    def handle_theme_change(e: events.ValueChangeEventArguments):
+        grid.classes(add='ag-theme-balham-dark' if e.value else 'ag-theme-balham',
+                     remove='ag-theme-balham ag-theme-balham-dark')
+
+    ui.switch('Dark', on_change=handle_theme_change)
 
 
 doc.reference(ui.aggrid)

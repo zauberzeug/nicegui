@@ -9,7 +9,9 @@ from . import doc
 def user_fixture():
     ui.markdown('''
         We recommend utilizing the `user` fixture instead of the [`screen` fixture](/documentation/screen) wherever possible
-        because execution is as fast as unit tests and it does not need Selenium as a dependency.
+        because execution is as fast as unit tests and it does not need Selenium as a dependency
+        when loaded via `pytest_plugins = ['nicegui.testing.user_plugin']`
+        (see [project structure](/documentation/project_structure)).
         The `user` fixture cuts away the browser and replaces it by a lightweight simulation entirely in Python.
 
         You can assert to "see" specific elements or content, click buttons, type into inputs and trigger events.
@@ -75,8 +77,8 @@ doc.text('Querying', '''
 
 
 @doc.ui
-def modular_project():
-    with ui.row(wrap=False).classes('gap-4 items-stretch'):
+def querying():
+    with ui.row().classes('gap-4 items-stretch'):
         with python_window(classes='w-[400px]', title='some UI code'):
             ui.markdown('''
                 ```python
@@ -101,6 +103,119 @@ def modular_project():
                 await user.should_see(kind=ui.icon)
                 ```
             ''')
+
+
+doc.text('Complex elements', '''
+    There are some elements with complex visualization and interaction behaviors (`ui.upload`, `ui.table`, ...).
+    Not every aspect of these elements can be tested with `should_see` and `UserInteraction`.
+    Still, you can grab them with `user.find(...)` and do the testing on the elements themselves.
+''')
+
+
+@doc.ui
+def upload_table():
+    with ui.row().classes('gap-4 items-stretch'):
+        with python_window(classes='w-[500px]', title='some UI code'):
+            ui.markdown('''
+                ```python
+                def receive_file(e: events.UploadEventArguments):
+                    content = e.content.read().decode('utf-8')
+                    reader = csv.DictReader(content.splitlines())
+                    ui.table(
+                        columns=[{
+                            'name': h,
+                            'label': h.capitalize(),
+                            'field': h,
+                        } for h in reader.fieldnames or []],
+                        rows=list(reader),
+                    )
+
+                ui.upload(on_upload=receive_file)
+                ```
+            ''')
+
+        with python_window(classes='w-[500px]', title='user assertions'):
+            ui.markdown('''
+                ```python
+                upload = user.find(ui.upload).elements.pop()
+                upload.handle_uploads([UploadFile(
+                    BytesIO(b'name,age\\nAlice,30\\nBob,28'),
+                    filename='data.csv',
+                    headers=Headers(raw=[(b'content-type', b'text/csv')]),
+                )])
+                table = user.find(ui.table).elements.pop()
+                assert table.columns == [
+                    {'name': 'name', 'label': 'Name', 'field': 'name'},
+                    {'name': 'age', 'label': 'Age', 'field': 'age'},
+                ]
+                assert table.rows == [
+                    {'name': 'Alice', 'age': '30'},
+                    {'name': 'Bob', 'age': '28'},
+                ]
+                ```
+            ''')
+
+
+doc.text('Test Downloads', '''
+    You can verify that a download was triggered by checking `user.downloads.http_responses`.
+    By awaiting `user.downloads.next()` you can get the next download response.
+''')
+
+
+@doc.ui
+def check_outbox():
+    with ui.row().classes('gap-4 items-stretch'):
+        with python_window(classes='w-[500px]', title='some UI code'):
+            ui.markdown('''
+                ```python
+                @ui.page('/')
+                def page():
+                    def download():
+                        ui.download(b'Hello', filename='hello.txt')
+
+                    ui.button('Download', on_click=download)
+                ```
+            ''')
+
+        with python_window(classes='w-[500px]', title='user assertions'):
+            ui.markdown('''
+                ```python
+                await user.open('/')
+                assert len(user.download.http_responses) == 0
+                user.find('Download').click()
+                response = await user.download.next()
+                assert response.text == 'Hello'
+                ```
+            ''')
+
+
+doc.text('Multiple Users', '''
+    Sometimes it is not enough to just interact with the UI as a single user.
+    Besides the `user` fixture, we also provide the `create_user` fixture which is a factory function to create users.
+    The `User` instances are independent from each other and can interact with the UI in parallel.
+    See our [Chat App example](https://github.com/zauberzeug/nicegui/blob/main/examples/chat_app/test_chat_app.py)
+    for a full demonstration.
+''')
+
+
+@doc.ui
+def multiple_users():
+    with python_window(classes='w-[600px]', title='example'):
+        ui.markdown('''
+            ```python
+            async def test_chat(create_user: Callable[[], User]) -> None:
+                userA = create_user()
+                await userA.open('/')
+                userB = create_user()
+                await userB.open('/')
+
+                userA.find(ui.input).type('from A').trigger('keydown.enter')
+                await userB.should_see('from A')
+                userB.find(ui.input).type('from B').trigger('keydown.enter')
+                await userA.should_see('from A')
+                await userA.should_see('from B')
+            ```
+        ''')
 
 
 doc.text('Comparison with the screen fixture', '''

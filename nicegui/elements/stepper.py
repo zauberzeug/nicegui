@@ -5,6 +5,7 @@ from typing import Any, Callable, Optional, Union, cast
 from ..context import context
 from ..element import Element
 from .mixins.disableable_element import DisableableElement
+from .mixins.icon_element import IconElement
 from .mixins.value_element import ValueElement
 
 
@@ -33,11 +34,11 @@ class Stepper(ValueElement):
         self._classes.append('nicegui-stepper')
 
     def _value_to_model_value(self, value: Any) -> Any:
-        return value._props['name'] if isinstance(value, Step) else value  # pylint: disable=protected-access
+        return value.props['name'] if isinstance(value, Step) else value
 
     def _handle_value_change(self, value: Any) -> None:
         super()._handle_value_change(value)
-        names = [step._props['name'] for step in self]  # pylint: disable=protected-access
+        names = [step.props['name'] for step in self]
         for i, step in enumerate(self):
             done = i < names.index(value) if value in names else False
             step.props(f':done={done}')
@@ -51,7 +52,7 @@ class Stepper(ValueElement):
         self.run_method('previous')
 
 
-class Step(DisableableElement):
+class Step(IconElement, DisableableElement):
 
     def __init__(self, name: str, title: Optional[str] = None, icon: Optional[str] = None) -> None:
         """Step
@@ -63,12 +64,10 @@ class Step(DisableableElement):
         :param title: title of the step (default: `None`, meaning the same as `name`)
         :param icon: icon of the step (default: `None`)
         """
-        super().__init__(tag='q-step')
+        super().__init__(tag='q-step', icon=icon)
         self._props['name'] = name
         self._props['title'] = title if title is not None else name
         self._classes.append('nicegui-step')
-        if icon:
-            self._props['icon'] = icon
         self.stepper = cast(ValueElement, context.slot.parent)
         if self.stepper.value is None:
             self.stepper.value = name

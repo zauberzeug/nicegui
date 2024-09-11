@@ -90,8 +90,9 @@ class Client:
 
     @property
     def ip(self) -> Optional[str]:
-        """Return the IP address of the client, or None if the client is not connected."""
-        return self.environ['asgi.scope']['client'][0] if self.environ else None  # pylint: disable=unsubscriptable-object
+        """Return the IP address of the client, or None if it is an
+        `auto-index page <https://nicegui.io/documentation/section_pages_routing#auto-index_page>`_."""
+        return self.request.client.host if self.request is not None and self.request.client is not None else None
 
     @property
     def has_socket_connection(self) -> bool:
@@ -180,11 +181,7 @@ class Client:
             await asyncio.sleep(check_interval)
         self.is_waiting_for_disconnect = False
 
-    def run_javascript(self, code: str, *,
-                       respond: Optional[bool] = None,  # DEPRECATED
-                       timeout: float = 1.0,
-                       check_interval: float = 0.01,  # DEPRECATED
-                       ) -> AwaitableResponse:
+    def run_javascript(self, code: str, *, timeout: float = 1.0) -> AwaitableResponse:
         """Execute JavaScript on the client.
 
         The client connection must be established before this method is called.
@@ -198,19 +195,6 @@ class Client:
 
         :return: AwaitableResponse that can be awaited to get the result of the JavaScript code
         """
-        if respond is True:
-            helpers.warn_once('The "respond" argument of run_javascript() has been removed. '
-                              'Now the method always returns an AwaitableResponse that can be awaited. '
-                              'Please remove the "respond=True" argument.')
-        if respond is False:
-            raise ValueError('The "respond" argument of run_javascript() has been removed. '
-                             'Now the method always returns an AwaitableResponse that can be awaited. '
-                             'Please remove the "respond=False" argument and call the method without awaiting.')
-        if check_interval != 0.01:
-            helpers.warn_once('The "check_interval" argument of run_javascript() and similar methods has been removed. '
-                              'Now the method automatically returns when receiving a response without checking regularly in an interval. '
-                              'Please remove the "check_interval" argument.')
-
         request_id = str(uuid.uuid4())
         target_id = self._temporary_socket_id or self.id
 
@@ -274,7 +258,7 @@ class Client:
         """Forward an event to the corresponding element."""
         with self:
             sender = self.elements.get(msg['id'])
-            if sender is not None:
+            if sender is not None and not sender.is_ignoring_events:
                 msg['args'] = [None if arg is None else json.loads(arg) for arg in msg.get('args', [])]
                 if len(msg['args']) == 1:
                     msg['args'] = msg['args'][0]
@@ -282,7 +266,7 @@ class Client:
 
     def handle_javascript_response(self, msg: Dict) -> None:
         """Store the result of a JavaScript command."""
-        JavaScriptRequest.resolve(msg['request_id'], msg['result'])
+        JavaScriptRequest.resolve(msg['request_id'], msg.get('result'))
 
     def safe_invoke(self, func: Union[Callable[..., Any], Awaitable]) -> None:
         """Invoke the potentially async function in the client context and catch any exceptions."""
@@ -311,7 +295,7 @@ class Client:
             element._handle_delete()  # pylint: disable=protected-access
             element._deleted = True  # pylint: disable=protected-access
             self.outbox.enqueue_delete(element)
-            del self.elements[element.id]
+            self.elements.pop(element.id, None)
 
     def remove_all_elements(self) -> None:
         """Remove all elements from the client."""

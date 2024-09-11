@@ -94,29 +94,63 @@ def disable_pan_zoom() -> None:
     You can enable a toolbar to draw on the map.
     The `draw_control` can be used to configure the toolbar.
     This demo adds markers and polygons by clicking on the map.
+    By setting "edit" and "remove" to `True` (the default), you can enable editing and deleting drawn shapes.
 ''')
 def draw_on_map() -> None:
     from nicegui import events
 
     def handle_draw(e: events.GenericEventArguments):
-        if e.args['layerType'] == 'marker':
-            m.marker(latlng=(e.args['layer']['_latlng']['lat'],
-                             e.args['layer']['_latlng']['lng']))
-        if e.args['layerType'] == 'polygon':
-            m.generic_layer(name='polygon', args=[e.args['layer']['_latlngs']])
+        layer_type = e.args['layerType']
+        coords = e.args['layer'].get('_latlng') or e.args['layer'].get('_latlngs')
+        ui.notify(f'Drawn a {layer_type} at {coords}')
 
     draw_control = {
         'draw': {
             'polygon': True,
             'marker': True,
+            'circle': True,
+            'rectangle': True,
+            'polyline': True,
+            'circlemarker': True,
+        },
+        'edit': {
+            'edit': True,
+            'remove': True,
+        },
+    }
+    m = ui.leaflet(center=(51.505, -0.09), draw_control=draw_control)
+    m.classes('h-96')
+    m.on('draw:created', handle_draw)
+    m.on('draw:edited', lambda: ui.notify('Edit completed'))
+    m.on('draw:deleted', lambda: ui.notify('Delete completed'))
+
+
+@doc.demo('Draw with Custom Options', '''
+    You can draw shapes with custom options like stroke color and weight.
+    To hide the default rendering of drawn items, set `hide_drawn_items` to `True`.
+''')
+def draw_custom_options():
+    from nicegui import events
+
+    def handle_draw(e: events.GenericEventArguments):
+        options = {'color': 'red', 'weight': 1}
+        m.generic_layer(name='polygon', args=[e.args['layer']['_latlngs'], options])
+
+    draw_control = {
+        'draw': {
+            'polygon': True,
+            'marker': False,
             'circle': False,
             'rectangle': False,
             'polyline': False,
             'circlemarker': False,
         },
-        'edit': False,
+        'edit': {
+            'edit': False,
+            'remove': False,
+        },
     }
-    m = ui.leaflet(center=(51.505, -0.09), zoom=13, draw_control=draw_control)
+    m = ui.leaflet(center=(51.5, 0), draw_control=draw_control, hide_drawn_items=True)
     m.on('draw:created', handle_draw)
 
 

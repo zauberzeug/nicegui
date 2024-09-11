@@ -196,3 +196,6 @@ class Notification(Element, component='notification.js'):
     def dismiss(self) -> None:
         """Dismiss the notification."""
         self.run_method('dismiss')
+
+    def set_visibility(self, visible: bool) -> None:
+        raise NotImplementedError('Use `dismiss()` to remove the notification. See #3670 for more information.')

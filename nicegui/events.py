@@ -403,8 +403,6 @@ def handle_event(handler: Optional[Callable[..., Any]], arguments: EventArgument
 
         parent_slot: Union[Slot, nullcontext]
         if isinstance(arguments, UiEventArguments):
-            if arguments.sender.is_ignoring_events:
-                return
             parent_slot = arguments.sender.parent_slot or arguments.sender.client.layout.default_slot
         else:
             parent_slot = nullcontext()

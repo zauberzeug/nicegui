@@ -12,7 +12,7 @@ except ImportError:
     pass
 
 
-class Plotly(Element, component='plotly.vue', libraries=['lib/plotly/plotly.min.js']):
+class Plotly(Element, component='plotly.vue', dependencies=['lib/plotly/plotly.min.js']):
 
     def __init__(self, figure: Union[Dict, go.Figure]) -> None:
         """Plotly Element

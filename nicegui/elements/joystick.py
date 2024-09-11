@@ -6,7 +6,7 @@ from ..element import Element
 from ..events import GenericEventArguments, JoystickEventArguments, handle_event
 
 
-class Joystick(Element, component='joystick.vue', libraries=['lib/nipplejs/nipplejs.js']):
+class Joystick(Element, component='joystick.vue', dependencies=['lib/nipplejs/nipplejs.js']):
 
     def __init__(self, *,
                  on_start: Optional[Callable[..., Any]] = None,
@@ -26,6 +26,7 @@ class Joystick(Element, component='joystick.vue', libraries=['lib/nipplejs/nippl
         """
         super().__init__()
         self._props['options'] = options
+        self._classes.append('nicegui-joystick')
         self.active = False
 
         self._start_handlers = [on_start] if on_start else []

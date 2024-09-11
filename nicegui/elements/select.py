@@ -49,7 +49,7 @@ class Select(ValidationElement, ChoiceElement, DisableableElement, component='se
         :param new_value_mode: handle new values from user input (default: None, i.e. no new values)
         :param multiple: whether to allow multiple selections
         :param clearable: whether to add a button to clear the selection
-        :param validation: dictionary of validation rules or a callable that returns an optional error message
+        :param validation: dictionary of validation rules or a callable that returns an optional error message (default: None for no validation)
         :param key_generator: a callback or iterator to generate a dictionary key for new values
         """
         self.multiple = multiple
@@ -79,6 +79,15 @@ class Select(ValidationElement, ChoiceElement, DisableableElement, component='se
             self._props['input-debounce'] = 0
         self._props['multiple'] = multiple
         self._props['clearable'] = clearable
+
+        self._is_showing_popup = False
+        self.on('popup-show', lambda e: setattr(e.sender, '_is_showing_popup', True))
+        self.on('popup-hide', lambda e: setattr(e.sender, '_is_showing_popup', False))
+
+    @property
+    def is_showing_popup(self) -> bool:
+        """Whether the options popup is currently shown."""
+        return self._is_showing_popup
 
     def _event_args_to_value(self, e: GenericEventArguments) -> Any:
         if self.multiple:

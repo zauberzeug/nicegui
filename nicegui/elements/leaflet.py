@@ -26,6 +26,7 @@ class Leaflet(Element, component='leaflet.js'):
                  *,
                  options: Dict = {},  # noqa: B006
                  draw_control: Union[bool, Dict] = False,
+                 hide_drawn_items: bool = False,
                  ) -> None:
         """Leaflet map
 
@@ -35,6 +36,7 @@ class Leaflet(Element, component='leaflet.js'):
         :param zoom: initial zoom level of the map (default: 13)
         :param draw_control: whether to show the draw toolbar (default: False)
         :param options: additional options passed to the Leaflet map (default: {})
+        :param hide_drawn_items: whether to hide drawn items on the map (default: False)
         """
         super().__init__()
         self.add_resource(Path(__file__).parent / 'lib' / 'leaflet')
@@ -49,6 +51,7 @@ class Leaflet(Element, component='leaflet.js'):
         self._props['zoom'] = zoom
         self._props['options'] = {**options}
         self._props['draw_control'] = draw_control
+        self._props['hide_drawn_items'] = hide_drawn_items
 
         self.on('init', self._handle_init)
         self.on('map-moveend', self._handle_moveend)
@@ -90,10 +93,10 @@ class Leaflet(Element, component='leaflet.js'):
         await asyncio.sleep(0.02)  # NOTE: wait for center to be updated as well
         self.zoom = e.args['zoom']
 
-    def run_method(self, name: str, *args: Any, timeout: float = 1, check_interval: float = 0.01) -> AwaitableResponse:
+    def run_method(self, name: str, *args: Any, timeout: float = 1) -> AwaitableResponse:
         if not self.is_initialized:
             return NullResponse()
-        return super().run_method(name, *args, timeout=timeout, check_interval=check_interval)
+        return super().run_method(name, *args, timeout=timeout)
 
     def set_center(self, center: Tuple[float, float]) -> None:
         """Set the center location of the map."""
@@ -119,7 +122,7 @@ class Leaflet(Element, component='leaflet.js'):
         self.layers.clear()
         self.run_method('clear_layers')
 
-    def run_map_method(self, name: str, *args, timeout: float = 1, check_interval: float = 0.01) -> AwaitableResponse:
+    def run_map_method(self, name: str, *args, timeout: float = 1) -> AwaitableResponse:
         """Run a method of the Leaflet map instance.
 
         Refer to the `Leaflet documentation <https://leafletjs.com/reference.html#map-methods-for-modifying-map-state>`_ for a list of methods.
@@ -133,9 +136,9 @@ class Leaflet(Element, component='leaflet.js'):
 
         :return: AwaitableResponse that can be awaited to get the result of the method call
         """
-        return self.run_method('run_map_method', name, *args, timeout=timeout, check_interval=check_interval)
+        return self.run_method('run_map_method', name, *args, timeout=timeout)
 
-    def run_layer_method(self, layer_id: str, name: str, *args, timeout: float = 1, check_interval: float = 0.01) -> AwaitableResponse:
+    def run_layer_method(self, layer_id: str, name: str, *args, timeout: float = 1) -> AwaitableResponse:
         """Run a method of a Leaflet layer.
 
         If the function is awaited, the result of the method call is returned.
@@ -148,7 +151,7 @@ class Leaflet(Element, component='leaflet.js'):
 
         :return: AwaitableResponse that can be awaited to get the result of the method call
         """
-        return self.run_method('run_layer_method', layer_id, name, *args, timeout=timeout, check_interval=check_interval)
+        return self.run_method('run_layer_method', layer_id, name, *args, timeout=timeout)
 
     def _handle_delete(self) -> None:
         binding.remove(self.layers)
