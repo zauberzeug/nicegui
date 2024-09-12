@@ -1,4 +1,4 @@
-from typing import List
+from typing import Dict, List
 
 from nicegui import ui
 from nicegui.testing import Screen
@@ -12,7 +12,7 @@ def test_codemirror(screen: Screen):
 
 
 def test_supported_values(screen: Screen):
-    values: dict[str, List[str]] = {}
+    values: Dict[str, List[str]] = {}
 
     @ui.page('/')
     def page():

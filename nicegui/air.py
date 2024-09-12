@@ -1,12 +1,14 @@
+from __future__ import annotations
+
 import asyncio
 import gzip
 import json
+import logging
 import re
 from dataclasses import dataclass
-from typing import Any, AsyncIterator, Dict, Optional
+from typing import TYPE_CHECKING, Any, AsyncIterator, Dict, Optional
 from uuid import uuid4
 
-import httpx
 import socketio
 import socketio.exceptions
 
@@ -15,6 +17,9 @@ from .client import Client
 from .dataclasses import KWONLY_SLOTS
 from .elements.timer import Timer as timer
 from .logging import log
+
+if TYPE_CHECKING:
+    import httpx
 
 RELAY_HOST = 'https://on-air.nicegui.io/'
 
@@ -28,6 +33,9 @@ class Stream:
 class Air:
 
     def __init__(self, token: str) -> None:
+        import httpx  # pylint: disable=import-outside-toplevel
+
+        self.log = logging.getLogger('nicegui.air')
         self.token = token
         self.relay = socketio.AsyncClient()
         self.client = httpx.AsyncClient(app=core.app)
@@ -140,10 +148,11 @@ class Air:
             if client_id not in Client.instances:
                 return
             client = Client.instances[client_id]
-            if data['msg']['args'] and data['msg']['args'][0].startswith('{"socket_id":'):
-                args = json.loads(data['msg']['args'][0])
-                args['socket_id'] = client_id  # HACK: translate socket_id of ui.scene's init event
-                data['msg']['args'][0] = json.dumps(args)
+            args = data['msg']['args']
+            if args and isinstance(args[0], str) and args[0].startswith('{"socket_id":'):
+                arg0 = json.loads(args[0])
+                arg0['socket_id'] = client_id  # HACK: translate socket_id of ui.scene's init event
+                args[0] = json.dumps(arg0)
             client.handle_event(data['msg'])
 
         @self.relay.on('javascript_response')
@@ -165,28 +174,35 @@ class Air:
 
     async def connect(self) -> None:
         """Connect to the NiceGUI On Air server."""
-        if self.connecting or self.relay.connected:
+        if self.connecting:
+            self.log.debug('Already connecting.')
             return
+        if self.relay.connected:
+            return
+        self.log.debug('Going to connect...')
         self.connecting = True
         backoff_time = 1
         try:
             while True:
                 try:
                     if self.relay.connected:
-                        await self.relay.disconnect()
+                        await asyncio.wait_for(self.disconnect(), timeout=5)
+                    self.log.debug('Connecting...')
                     await self.relay.connect(
                         f'{RELAY_HOST}?device_token={self.token}',
                         socketio_path='/on_air/socket.io',
                         transports=['websocket', 'polling'],  # favor websocket over polling
                     )
+                    self.log.debug('Connected.')
                     break
                 except socketio.exceptions.ConnectionError:
-                    pass
+                    self.log.debug('Connection error.', stack_info=True)
                 except ValueError:  # NOTE this sometimes happens when the internal socketio client is not yet ready
-                    pass
+                    self.log.debug('ValueError while connecting.', stack_info=True)
                 except Exception:
                     log.exception('Could not connect to NiceGUI On Air server.')
 
+                self.log.debug(f'Retrying in {backoff_time} seconds...')
                 await asyncio.sleep(backoff_time)
                 backoff_time = min(backoff_time * 2, 32)
         finally:
@@ -194,11 +210,13 @@ class Air:
 
     async def disconnect(self) -> None:
         """Disconnect from the NiceGUI On Air server."""
+        self.log.debug('Disconnecting...')
         if self.relay.connected:
             await self.relay.disconnect()
         for stream in self.streams.values():
             await stream.response.aclose()
         self.streams.clear()
+        self.log.debug('Disconnected.')
 
     async def emit(self, message_type: str, data: Dict[str, Any], room: str) -> None:
         """Emit a message to the NiceGUI On Air server."""

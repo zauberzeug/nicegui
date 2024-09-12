@@ -27,7 +27,7 @@ class Textarea(Input, component='input.js'):
         :param placeholder: text to show if no value is entered
         :param value: the initial value of the field
         :param on_change: callback to execute when the value changes
-        :param validation: dictionary of validation rules or a callable that returns an optional error message
+        :param validation: dictionary of validation rules or a callable that returns an optional error message (default: None for no validation)
         """
         super().__init__(label, placeholder=placeholder, value=value, on_change=on_change, validation=validation)
         self._props['type'] = 'textarea'

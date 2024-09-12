@@ -246,6 +246,19 @@ h6.q-timeline__title {
 .nicegui-code .codehilite {
   padding: 0 0.5rem;
 }
+.nicegui-pyplot > svg {
+  width: 100%;
+  height: 100%;
+}
+.nicegui-joystick {
+  width: 10em;
+  height: 10em;
+  background-color: AliceBlue;
+}
+.nicegui-scene[data-initializing],
+.nicegui-scene-view[data-initializing] {
+  visibility: hidden;
+}
 
 /* CodeMirror */
 .nicegui-codemirror .cm-editor.cm-focused {

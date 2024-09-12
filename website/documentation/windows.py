@@ -21,7 +21,8 @@ def _dots() -> None:
 def _window(type_: WindowType, *, title: str = '', tab: Union[str, Callable] = '', classes: str = '') -> ui.column:
     bar_color = ('#00000010', '#ffffff10')
     color = WINDOW_BG_COLORS[type_]
-    with ui.card().classes(f'no-wrap bg-[{color[0]}] dark:bg-[{color[1]}] rounded-xl p-0 gap-0 {classes}') \
+    with ui.card() \
+            .classes(f'no-wrap bg-[{color[0]}] dark:bg-[{color[1]}] rounded-xl overflow-hidden p-0 gap-0 {classes}') \
             .style('box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1)'):
         with ui.row().classes(f'w-full h-8 p-2 bg-[{bar_color[0]}] dark:bg-[{bar_color[1]}]'):
             _dots()

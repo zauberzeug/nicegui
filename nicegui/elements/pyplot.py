@@ -47,6 +47,7 @@ class Pyplot(Element):
             raise ImportError('Matplotlib is not installed. Please run "pip install matplotlib".')
 
         super().__init__('div')
+        self._classes.append('nicegui-pyplot')
         self.close = close
         self.fig = plt.figure(**kwargs)
         self._convert_to_html()

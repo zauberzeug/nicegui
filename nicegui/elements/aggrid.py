@@ -1,19 +1,19 @@
-from typing import Dict, List, Optional, cast
+import importlib.util
+from typing import TYPE_CHECKING, Dict, List, Literal, Optional, cast
 
 from typing_extensions import Self
 
-from .. import optional_features
+from .. import helpers, optional_features
 from ..awaitable_response import AwaitableResponse
 from ..element import Element
 
-try:
-    import pandas as pd
+if importlib.util.find_spec('pandas'):
     optional_features.register('pandas')
-except ImportError:
-    pass
+    if TYPE_CHECKING:
+        import pandas as pd
 
 
-class AgGrid(Element, component='aggrid.js', libraries=['lib/aggrid/ag-grid-community.min.js']):
+class AgGrid(Element, component='aggrid.js', dependencies=['lib/aggrid/ag-grid-community.min.js']):
 
     def __init__(self,
                  options: Dict, *,
@@ -25,7 +25,7 @@ class AgGrid(Element, component='aggrid.js', libraries=['lib/aggrid/ag-grid-comm
 
         An element to create a grid using `AG Grid <https://www.ag-grid.com/>`_.
 
-        The methods `run_grid_method` and `run_column_method` can be used to interact with the AG Grid instance on the client.
+        The methods `run_grid_method` and `run_row_method` can be used to interact with the AG Grid instance on the client.
 
         :param options: dictionary of AG Grid options
         :param html_columns: list of columns that should be rendered as HTML (default: `[]`)
@@ -59,6 +59,8 @@ class AgGrid(Element, component='aggrid.js', libraries=['lib/aggrid/ag-grid-comm
         :param options: dictionary of additional AG Grid options
         :return: AG Grid element
         """
+        import pandas as pd  # pylint: disable=import-outside-toplevel
+
         def is_special_dtype(dtype):
             return (pd.api.types.is_datetime64_any_dtype(dtype) or
                     pd.api.types.is_timedelta64_dtype(dtype) or
@@ -77,7 +79,7 @@ class AgGrid(Element, component='aggrid.js', libraries=['lib/aggrid/ag-grid-comm
         return cls({
             'columnDefs': [{'field': str(col)} for col in df.columns],
             'rowData': df.to_dict('records'),
-            'suppressDotNotation': True,
+            'suppressFieldDotNotation': True,
             **options,
         }, theme=theme, auto_size_columns=auto_size_columns)
 
@@ -90,11 +92,7 @@ class AgGrid(Element, component='aggrid.js', libraries=['lib/aggrid/ag-grid-comm
         super().update()
         self.run_method('update_grid')
 
-    def call_api_method(self, name: str, *args, timeout: float = 1, check_interval: float = 0.01) -> AwaitableResponse:
-        """DEPRECATED: Use `run_grid_method` instead."""
-        return self.run_grid_method(name, *args, timeout=timeout, check_interval=check_interval)
-
-    def run_grid_method(self, name: str, *args, timeout: float = 1, check_interval: float = 0.01) -> AwaitableResponse:
+    def run_grid_method(self, name: str, *args, timeout: float = 1) -> AwaitableResponse:
         """Run an AG Grid API method.
 
         See `AG Grid API <https://www.ag-grid.com/javascript-data-grid/grid-api/>`_ for a list of methods.
@@ -108,31 +106,19 @@ class AgGrid(Element, component='aggrid.js', libraries=['lib/aggrid/ag-grid-comm
 
         :return: AwaitableResponse that can be awaited to get the result of the method call
         """
-        return self.run_method('run_grid_method', name, *args, timeout=timeout, check_interval=check_interval)
+        return self.run_method('run_grid_method', name, *args, timeout=timeout)
 
-    def call_column_method(self, name: str, *args, timeout: float = 1, check_interval: float = 0.01) -> AwaitableResponse:
-        """DEPRECATED: Use `run_column_method` instead."""
-        return self.run_column_method(name, *args, timeout=timeout, check_interval=check_interval)
+    def run_column_method(self, name: str, *args, timeout: float = 1) -> AwaitableResponse:  # DEPRECATED
+        """This method is deprecated. Use `run_grid_method` instead.
 
-    def run_column_method(self, name: str, *args,
-                          timeout: float = 1, check_interval: float = 0.01) -> AwaitableResponse:
-        """Run an AG Grid Column API method.
-
-        See `AG Grid Column API <https://www.ag-grid.com/javascript-data-grid/column-api/>`_ for a list of methods.
-
-        If the function is awaited, the result of the method call is returned.
-        Otherwise, the method is executed without waiting for a response.
-
-        :param name: name of the method
-        :param args: arguments to pass to the method
-        :param timeout: timeout in seconds (default: 1 second)
-
-        :return: AwaitableResponse that can be awaited to get the result of the method call
+        See https://www.ag-grid.com/javascript-data-grid/column-api/ for more information
         """
-        return self.run_method('run_column_method', name, *args, timeout=timeout, check_interval=check_interval)
+        helpers.warn_once('The method `run_column_method` is deprecated. '
+                          'It will be removed in NiceGUI 3.0. '
+                          'Use `run_grid_method` instead.')
+        return self.run_method('run_grid_method', name, *args, timeout=timeout)
 
-    def run_row_method(self, row_id: str, name: str, *args,
-                       timeout: float = 1, check_interval: float = 0.01) -> AwaitableResponse:
+    def run_row_method(self, row_id: str, name: str, *args, timeout: float = 1) -> AwaitableResponse:
         """Run an AG Grid API method on a specific row.
 
         See `AG Grid Row Reference <https://www.ag-grid.com/javascript-data-grid/row-object/>`_ for a list of methods.
@@ -147,7 +133,7 @@ class AgGrid(Element, component='aggrid.js', libraries=['lib/aggrid/ag-grid-comm
 
         :return: AwaitableResponse that can be awaited to get the result of the method call
         """
-        return self.run_method('run_row_method', row_id, name, *args, timeout=timeout, check_interval=check_interval)
+        return self.run_method('run_row_method', row_id, name, *args, timeout=timeout)
 
     async def get_selected_rows(self) -> List[Dict]:
         """Get the currently selected rows.
@@ -171,7 +157,12 @@ class AgGrid(Element, component='aggrid.js', libraries=['lib/aggrid/ag-grid-comm
         rows = await self.get_selected_rows()
         return rows[0] if rows else None
 
-    async def get_client_data(self, *, timeout: float = 1, check_interval: float = 0.01) -> List[Dict]:
+    async def get_client_data(
+        self,
+        *,
+        timeout: float = 1,
+        method: Literal['all_unsorted', 'filtered_unsorted', 'filtered_sorted', 'leaf'] = 'all_unsorted'
+    ) -> List[Dict]:
         """Get the data from the client including any edits made by the client.
 
         This method is especially useful when the grid is configured with ``'editable': True``.
@@ -182,14 +173,21 @@ class AgGrid(Element, component='aggrid.js', libraries=['lib/aggrid/ag-grid-comm
         This does not happen when the cell loses focus, unless ``stopEditingWhenCellsLoseFocus: True`` is set.
 
         :param timeout: timeout in seconds (default: 1 second)
+        :param method: method to access the data, "all_unsorted" (default), "filtered_unsorted", "filtered_sorted", "leaf"
 
         :return: list of row data
         """
+        API_METHODS = {
+            'all_unsorted': 'forEachNode',
+            'filtered_unsorted': 'forEachNodeAfterFilter',
+            'filtered_sorted': 'forEachNodeAfterFilterAndSort',
+            'leaf': 'forEachLeafNode',
+        }
         result = await self.client.run_javascript(f'''
             const rowData = [];
-            getElement({self.id}).gridOptions.api.forEachNode(node => rowData.push(node.data));
+            getElement({self.id}).api.{API_METHODS[method]}(node => rowData.push(node.data));
             return rowData;
-        ''', timeout=timeout, check_interval=check_interval)
+        ''', timeout=timeout)
         return cast(List[Dict], result)
 
     async def load_client_data(self) -> None:

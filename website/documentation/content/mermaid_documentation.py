@@ -11,7 +11,7 @@ def main_demo() -> None:
         A --> C;
     ''')
     # END OF DEMO
-    list(ui.context.client.elements.values())[-1]._props['config'] = {'securityLevel': 'loose'}  # HACK: for click_demo
+    list(ui.context.client.elements.values())[-1].props['config'] = {'securityLevel': 'loose'}  # HACK: for click_demo
 
 
 @doc.demo('Handle click events', '''
@@ -38,7 +38,7 @@ def error_demo() -> None:
         A -> C;
     ''').on('error', lambda e: print(e.args['message']))
     # END OF DEMO
-    list(ui.context.client.elements.values())[-1]._props['config'] = {'securityLevel': 'loose'}  # HACK: for click_demo
+    list(ui.context.client.elements.values())[-1].props['config'] = {'securityLevel': 'loose'}  # HACK: for click_demo
 
 
 doc.reference(ui.mermaid)

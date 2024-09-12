@@ -62,7 +62,7 @@ static_files = StaticFiles(
 )
 app.mount(f'/_nicegui/{__version__}/static', static_files, name='static')
 
-Client.auto_index_client = Client(page('/'), shared=True).__enter__()  # pylint: disable=unnecessary-dunder-call
+Client.auto_index_client = Client(page('/'), request=None).__enter__()  # pylint: disable=unnecessary-dunder-call
 
 
 @app.get('/')
@@ -149,7 +149,7 @@ async def _shutdown() -> None:
 @app.exception_handler(404)
 async def _exception_handler_404(request: Request, exception: Exception) -> Response:
     log.warning(f'{request.url} not found')
-    with Client(page('')) as client:
+    with Client(page(''), request=request) as client:
         error_content(404, exception)
     return client.build_response(request, 404)
 
@@ -157,7 +157,7 @@ async def _exception_handler_404(request: Request, exception: Exception) -> Resp
 @app.exception_handler(Exception)
 async def _exception_handler_500(request: Request, exception: Exception) -> Response:
     log.exception(exception)
-    with Client(page('')) as client:
+    with Client(page(''), request=request) as client:
         error_content(500, exception)
     return client.build_response(request, 500)
 
@@ -167,9 +167,12 @@ async def _on_handshake(sid: str, data: Dict[str, str]) -> bool:
     client = Client.instances.get(data['client_id'])
     if not client:
         return False
-    client.environ = sio.get_environ(sid)
     client.tab_id = data['tab_id']
-    await sio.enter_room(sid, client.id)
+    if sid[:5].startswith('test-'):
+        client.environ = {'asgi.scope': {'description': 'test client', 'type': 'test'}}
+    else:
+        client.environ = sio.get_environ(sid)
+        await sio.enter_room(sid, client.id)
     client.handle_handshake()
     return True
 
