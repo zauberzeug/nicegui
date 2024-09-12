@@ -204,3 +204,17 @@ def test_problematic_datatypes(screen: Screen):
     screen.should_contain('5 days')
     screen.should_contain('(1+2j)')
     screen.should_contain('2021-01')
+
+
+def test_cell_slot(screen: Screen):
+    t = ui.table(columns=columns(), rows=rows(), pagination=2)
+
+    @t.cell_slot("name")
+    def _(row_index: int, name: str):
+        rows = t.rows
+
+        with ui.column():
+            ui.input(value=rows[row_index][name])
+
+
+    screen.open('/')
