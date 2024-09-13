@@ -1807,13 +1807,13 @@ type = ["mypy (>=1.8)"]
 
 [[package]]
 name = "plotly"
-version = "5.24.0"
+version = "5.24.1"
 description = "An open-source, interactive data visualization library for Python"
 optional = true
 python-versions = ">=3.8"
 files = [
-    {file = "plotly-5.24.0-py3-none-any.whl", hash = "sha256:0e54efe52c8cef899f7daa41be9ed97dfb6be622613a2a8f56a86a0634b2b67e"},
-    {file = "plotly-5.24.0.tar.gz", hash = "sha256:eae9f4f54448682442c92c1e97148e3ad0c52f0cf86306e1b76daba24add554a"},
+    {file = "plotly-5.24.1-py3-none-any.whl", hash = "sha256:f67073a1e637eb0dc3e46324d9d51e2fe76e9727c892dde64ddf1e1b51f29089"},
+    {file = "plotly-5.24.1.tar.gz", hash = "sha256:dbc8ac8339d248a4bcc36e08a5659bacfe1b079390b8953533f4eb22169b4bae"},
 ]
 
 [package.dependencies]
