@@ -49,18 +49,13 @@ function texture_material(texture) {
   });
 }
 
-function set_point_cloud_data(position, color, geometry, material) {
+function set_point_cloud_data(position, color, geometry) {
   geometry.setAttribute("position", new THREE.Float32BufferAttribute(position.flat(), 3));
-
   if (color === null) {
     geometry.deleteAttribute("color");
-    material.vertexColors = false;
   } else {
-    material.color.set("#ffffff");
     geometry.setAttribute("color", new THREE.Float32BufferAttribute(color.flat(), 3));
-    material.vertexColors = true;
   }
-  material.needsUpdate = true;
 }
 
 export default {
@@ -277,7 +272,7 @@ export default {
       } else if (type == "point_cloud") {
         const geometry = new THREE.BufferGeometry();
         const material = new THREE.PointsMaterial({ size: args[2], transparent: true });
-        set_point_cloud_data(args[0], args[1], geometry, material);
+        set_point_cloud_data(args[0], args[1], geometry);
         mesh = new THREE.Points(geometry, material);
       } else if (type == "gltf") {
         const url = args[0];
@@ -343,13 +338,10 @@ export default {
       if (!this.objects.has(object_id)) return;
       const material = this.objects.get(object_id).material;
       if (!material) return;
-      if (color !== null) {
-        material.color.set(color);
-        if (material.vertexColors) {
-          material.vertexColors = false;
-          material.needsUpdate = true;
-        }
-      }
+      const vertexColors = color === null;
+      material.color.set(vertexColors ? "#ffffff" : color);
+      material.needsUpdate = material.vertexColors != vertexColors;
+      material.vertexColors = vertexColors;
       material.opacity = opacity;
       if (side == "front") material.side = THREE.FrontSide;
       else if (side == "back") material.side = THREE.BackSide;
