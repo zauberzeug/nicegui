@@ -91,7 +91,6 @@ class ElementFilter(Generic[T]):
         self._scope = context.slot.parent if local_scope else context.client.layout
 
     def __iter__(self) -> Iterator[T]:
-        # pylint: disable=protected-access
         for element in self._scope.descendants():
             if self._kind and not isinstance(element, self._kind):
                 continue
@@ -105,11 +104,11 @@ class ElementFilter(Generic[T]):
 
             if self._contents or self._exclude_content:
                 element_contents = [content for content in (
-                    element._props.get('text'),
-                    element._props.get('label'),
-                    element._props.get('icon'),
-                    element._props.get('placeholder'),
-                    element._props.get('value'),
+                    element.props.get('text'),
+                    element.props.get('label'),
+                    element.props.get('icon'),
+                    element.props.get('placeholder'),
+                    element.props.get('value'),
                     element.text if isinstance(element, TextElement) else None,
                     element.content if isinstance(element, ContentElement) else None,
                     element.source if isinstance(element, SourceElement) else None,
@@ -117,7 +116,7 @@ class ElementFilter(Generic[T]):
                 if isinstance(element, Notification):
                     element_contents.append(element.message)
                 if isinstance(element, Select):
-                    options = {option['value']: option['label'] for option in element._props.get('options', [])}
+                    options = {option['value']: option['label'] for option in element.props.get('options', [])}
                     element_contents.append(options.get(element.value, ''))
                     if element.is_showing_popup:
                         element_contents.extend(options.values())

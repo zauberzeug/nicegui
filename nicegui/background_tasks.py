@@ -19,7 +19,7 @@ def create(coroutine: Awaitable, *, name: str = 'unnamed task') -> asyncio.Task:
     See https://docs.python.org/3/library/asyncio-task.html#asyncio.create_task.
     """
     assert core.loop is not None
-    assert asyncio.iscoroutine(coroutine)
+    coroutine = coroutine if asyncio.iscoroutine(coroutine) else asyncio.wait_for(coroutine, None)
     task: asyncio.Task = core.loop.create_task(coroutine, name=name)
     task.add_done_callback(_handle_task_result)
     running_tasks.add(task)

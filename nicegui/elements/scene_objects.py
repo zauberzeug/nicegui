@@ -339,3 +339,21 @@ class PointCloud(Object3D):
         self.scene.run_method('set_points', self.id, points, colors)
         if colors is not None:
             self.material(color=None)
+
+
+class AxesHelper(Object3D):
+
+    def __init__(self,
+                 length: float = 1.0,
+                 ) -> None:
+        """Axes Helper
+
+        This element is based on Three.js' `AxesHelper <https://threejs.org/docs/#api/en/helpers/AxesHelper>`_ object.
+        It is used to visualize the XYZ axes:
+        The X axis is red.
+        The Y axis is green.
+        The Z axis is blue.
+
+        :param length: length of the the axes (default: 1.0)
+        """
+        super().__init__('axes_helper', length)

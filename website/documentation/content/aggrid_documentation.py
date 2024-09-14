@@ -1,4 +1,4 @@
-from nicegui import ui
+from nicegui import ui, ElementFilter
 
 from . import doc
 
@@ -26,7 +26,7 @@ def main_demo() -> None:
 
     ui.button('Update', on_click=update)
     ui.button('Select all', on_click=lambda: grid.run_grid_method('selectAll'))
-    ui.button('Show parent', on_click=lambda: grid.run_column_method('setColumnVisible', 'parent', True))
+    ui.button('Show parent', on_click=lambda: grid.run_grid_method('setColumnsVisible', ['parent'], True))
 
 
 @doc.demo('Select AG Grid Rows', '''
@@ -241,6 +241,22 @@ def aggrid_filter_return_values():
 
         ui.button('Get First Name', on_click=get_first_name)
     page()  # HIDE
+
+
+@doc.demo('Handle theme change', '''
+    You can change the theme of the AG Grid by adding or removing classes.
+    This demo shows how to change the theme using a switch.
+''')
+def aggrid_handle_theme_change():
+    from nicegui import events
+
+    grid = ui.aggrid({})
+
+    def handle_theme_change(e: events.ValueChangeEventArguments):
+        grid.classes(add='ag-theme-balham-dark' if e.value else 'ag-theme-balham',
+                     remove='ag-theme-balham ag-theme-balham-dark')
+
+    ui.switch('Dark', on_change=handle_theme_change)
 
 
 doc.reference(ui.aggrid)

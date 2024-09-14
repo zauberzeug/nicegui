@@ -174,14 +174,18 @@ function renderRecursively(elements, id) {
       handler = eval(event.js_handler);
     } else {
       handler = (...args) => {
-        const data = {
-          id: id,
-          client_id: window.clientId,
-          listener_id: event.listener_id,
-          args: stringifyEventArgs(args, event.args),
+        const emitter = () =>
+          window.socket?.emit("event", {
+            id: id,
+            client_id: window.clientId,
+            listener_id: event.listener_id,
+            args: stringifyEventArgs(args, event.args),
+          });
+        const delayed_emitter = () => {
+          if (window.did_handshake) emitter();
+          else setTimeout(emitter, 10);
         };
-        const emitter = () => window.socket?.emit("event", data);
-        throttle(emitter, event.throttle, event.leading_events, event.trailing_events, event.listener_id);
+        throttle(delayed_emitter, event.throttle, event.leading_events, event.trailing_events, event.listener_id);
         if (element.props["loopback"] === False && event.type == "update:modelValue") {
           element.props["model-value"] = args;
         }
@@ -308,6 +312,7 @@ function createApp(elements, options) {
         extraHeaders: options.extraHeaders,
         transports: options.transports,
       });
+      window.did_handshake = false;
       const messageHandlers = {
         connect: () => {
           let tabId = sessionStorage.getItem("__nicegui_tab_id");
@@ -322,6 +327,7 @@ function createApp(elements, options) {
             }
             document.getElementById("popup").ariaHidden = true;
           });
+          window.did_handshake = true;
         },
         connect_error: (err) => {
           if (err.message == "timeout") {
@@ -383,4 +389,13 @@ function createApp(elements, options) {
   }).use(Quasar, {
     config: options.quasarConfig,
   }));
+}
+
+// HACK: remove Quasar's rules for divs in QCard (#2265, #2301)
+for (let sheet of document.styleSheets) {
+  if (/\/quasar(?:\.prod)?\.css$/.test(sheet.href)) {
+    for (let rule of sheet.cssRules) {
+      if (/\.q-card > div/.test(rule.selectorText)) rule.selectorText = ".nicegui-card-tight" + rule.selectorText;
+    }
+  }
 }

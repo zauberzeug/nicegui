@@ -4,6 +4,7 @@ from typing import Any, Callable, Optional, Union
 
 from ..context import context
 from .mixins.disableable_element import DisableableElement
+from .mixins.icon_element import IconElement
 from .mixins.value_element import ValueElement
 
 
@@ -24,10 +25,10 @@ class Tabs(ValueElement):
         super().__init__(tag='q-tabs', value=value, on_value_change=on_change)
 
     def _value_to_model_value(self, value: Any) -> Any:
-        return value._props['name'] if isinstance(value, (Tab, TabPanel)) else value  # pylint: disable=protected-access
+        return value.props['name'] if isinstance(value, (Tab, TabPanel)) else value
 
 
-class Tab(DisableableElement):
+class Tab(IconElement, DisableableElement):
 
     def __init__(self, name: str, label: Optional[str] = None, icon: Optional[str] = None) -> None:
         """Tab
@@ -39,11 +40,9 @@ class Tab(DisableableElement):
         :param label: label of the tab (default: `None`, meaning the same as `name`)
         :param icon: icon of the tab (default: `None`)
         """
-        super().__init__(tag='q-tab')
+        super().__init__(tag='q-tab', icon=icon)
         self._props['name'] = name
         self._props['label'] = label if label is not None else name
-        if icon:
-            self._props['icon'] = icon
         self.tabs = context.slot.parent
 
 
@@ -78,7 +77,7 @@ class TabPanels(ValueElement):
         self._props['keep-alive'] = keep_alive
 
     def _value_to_model_value(self, value: Any) -> Any:
-        return value._props['name'] if isinstance(value, (Tab, TabPanel)) else value  # pylint: disable=protected-access
+        return value.props['name'] if isinstance(value, (Tab, TabPanel)) else value
 
 
 class TabPanel(DisableableElement):
@@ -92,5 +91,5 @@ class TabPanel(DisableableElement):
         :param name: `ui.tab` or the name of a tab element
         """
         super().__init__(tag='q-tab-panel')
-        self._props['name'] = name._props['name'] if isinstance(name, Tab) else name
+        self._props['name'] = name.props['name'] if isinstance(name, Tab) else name
         self._classes.append('nicegui-tab-panel')

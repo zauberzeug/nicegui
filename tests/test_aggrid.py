@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta, timezone
+from typing import List
 
 import pandas as pd
 from selenium.webdriver.common.action_chains import ActionChains
@@ -102,23 +103,10 @@ def test_run_grid_method_with_argument(screen: Screen):
     screen.should_contain('Bob')
     screen.should_contain('Carol')
     screen.click('Filter')
+    screen.wait(0.5)
     screen.should_contain('Alice')
     screen.should_not_contain('Bob')
     screen.should_not_contain('Carol')
-
-
-def test_run_column_method_with_argument(screen: Screen):
-    grid = ui.aggrid({
-        'columnDefs': [{'field': 'name'}, {'field': 'age', 'hide': True}],
-        'rowData': [{'name': 'Alice', 'age': '18'}, {'name': 'Bob', 'age': '21'}, {'name': 'Carol', 'age': '42'}],
-    })
-    ui.button('Show Age', on_click=lambda: grid.run_column_method('setColumnVisible', 'age', True))
-
-    screen.open('/')
-    screen.should_contain('Alice')
-    screen.should_not_contain('18')
-    screen.click('Show Age')
-    screen.should_contain('18')
 
 
 def test_get_selected_rows(screen: Screen):
@@ -248,3 +236,38 @@ def test_run_method_with_function(screen: Screen):
     screen.open('/')
     screen.click('Print Row 0')
     screen.should_contain("Row 0: {'name': 'Alice'}")
+
+
+def test_get_client_data(screen: Screen):
+    data: List = []
+
+    @ui.page('/')
+    def page():
+        grid = ui.aggrid({
+            'columnDefs': [
+                {'field': 'name'},
+                {'field': 'age', 'sort': 'desc'},
+            ],
+            'rowData': [
+                {'name': 'Alice', 'age': 18},
+                {'name': 'Bob', 'age': 21},
+                {'name': 'Carol', 'age': 42},
+            ],
+        })
+
+        async def get_data():
+            data[:] = await grid.get_client_data()
+        ui.button('Get Data', on_click=get_data)
+
+        async def get_sorted_data():
+            data[:] = await grid.get_client_data(method='filtered_sorted')
+        ui.button('Get Sorted Data', on_click=get_sorted_data)
+
+    screen.open('/')
+    screen.click('Get Data')
+    screen.wait(0.5)
+    assert data == [{'name': 'Alice', 'age': 18}, {'name': 'Bob', 'age': 21}, {'name': 'Carol', 'age': 42}]
+
+    screen.click('Get Sorted Data')
+    screen.wait(0.5)
+    assert data == [{'name': 'Carol', 'age': 42}, {'name': 'Bob', 'age': 21}, {'name': 'Alice', 'age': 18}]

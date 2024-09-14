@@ -5,7 +5,7 @@
 <script>
 export default {
   async mounted() {
-    await this.$nextTick();
+    await import("plotly");
     this.update();
   },
   updated() {
@@ -91,5 +91,11 @@ export default {
 }
 .js-plotly-plot .plotly .modebar-btn svg {
   position: static;
+}
+/*
+  fix overflow when adding borders to the plotly plot
+*/
+.js-plotly-plot {
+  box-sizing: content-box;
 }
 </style>

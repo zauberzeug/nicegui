@@ -129,7 +129,7 @@ jobs:
       - name: Update Citation.cff
         env:
           ZENODO_TOKEN: ${{ secrets.ZENODO_TOKEN }}
-        run: python .github/workflows/update_citation.py
+        run: python .github/workflows/update_citation.py $(echo ${GITHUB_REF/refs\/tags\//})
 
       - name: Update version in pyproject.toml
         run: python .github/workflows/update_pyproject.py $(echo ${GITHUB_REF/refs\/tags\//})

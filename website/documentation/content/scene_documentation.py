@@ -6,7 +6,8 @@ from . import doc
 @doc.demo(ui.scene)
 def main_demo() -> None:
     with ui.scene().classes('w-full h-64') as scene:
-        scene.sphere().material('#4488ff')
+        scene.axes_helper()
+        scene.sphere().material('#4488ff').move(2, 2)
         scene.cylinder(1, 0.5, 2, 20).material('#ff8800', opacity=0.5).move(-2, 1)
         scene.extrusion([[0, 0], [0, 1], [1, 0.5]], 0.1).material('#ff8888').move(2, -1)
 
@@ -125,7 +126,7 @@ def draggable_objects() -> None:
 def immediate_updates() -> None:
     from nicegui import events
 
-    with ui.scene(drag_constraints='z=0') as scene:
+    with ui.scene(width=285, drag_constraints='z=0') as scene:
         box = scene.box(1, 1, 0.2).move(0, 0).material('Orange')
         sphere1 = scene.sphere(0.2).move(0.5, -0.5).material('SteelBlue').draggable()
         sphere2 = scene.sphere(0.2).move(-0.5, 0.5).material('SteelBlue').draggable()
@@ -167,10 +168,13 @@ def point_clouds() -> None:
     This demo animates a camera movement after the scene has been fully loaded.
 ''')
 async def wait_for_init() -> None:
-    with ui.scene(width=285, height=220) as scene:
-        scene.sphere()
-        await scene.initialized()
-        scene.move_camera(x=1, y=-1, z=1.5, duration=2)
+    # @ui.page('/')
+    # async def page():
+    with ui.column():  # HIDE
+        with ui.scene(width=285, height=220) as scene:
+            scene.sphere()
+            await scene.initialized()
+            scene.move_camera(x=1, y=-1, z=1.5, duration=2)
 
 
 @doc.demo(ui.scene_view)
@@ -230,6 +234,38 @@ def custom_background() -> None:
 def custom_grid() -> None:
     with ui.scene(grid=(3, 2)).classes('w-full h-64') as scene:
         scene.sphere()
+
+
+@doc.demo('Custom Composed 3D Objects', '''
+    This demo creates a custom class for visualizing a coordinate system with colored X, Y and Z axes.
+    This can be a nice alternative to the default `axes_helper` object.
+''')
+def custom_composed_objects() -> None:
+    import math
+
+    class CoordinateSystem(ui.scene.group):
+
+        def __init__(self, name: str, *, length: float = 1.0) -> None:
+            super().__init__()
+
+            with self:
+                for label, color, rx, ry, rz in [
+                    ('x', '#ff0000', 0, 0, -math.pi / 2),
+                    ('y', '#00ff00', 0, 0, 0),
+                    ('z', '#0000ff', math.pi / 2, 0, 0),
+                ]:
+                    with ui.scene.group().rotate(rx, ry, rz):
+                        ui.scene.cylinder(0.02 * length, 0.02 * length, 0.8 * length) \
+                            .move(y=0.4 * length).material(color)
+                        ui.scene.cylinder(0, 0.1 * length, 0.2 * length) \
+                            .move(y=0.9 * length).material(color)
+                        ui.scene.text(label, style=f'color: {color}') \
+                            .move(y=1.1 * length)
+                ui.scene.text(name, style='color: #808080')
+
+    with ui.scene().classes('w-full h-64'):
+        CoordinateSystem('origin')
+        CoordinateSystem('custom frame').move(-2, -2, 1).rotate(0.1, 0.2, 0.3)
 
 
 doc.reference(ui.scene)

@@ -16,12 +16,11 @@ class Card(Element):
         It provides a container with a dropped shadow.
 
         Note:
-        There are subtle differences between the Quasar component and this element.
-        In contrast to this element, the original QCard has no padding by default and hides outer borders of nested elements.
+        In contrast to this element,
+        the original QCard has no padding by default and hides outer borders and shadows of nested elements.
         If you want the original behavior, use the `tight` method.
-        If you want the padding and borders for nested children, move the children into another container.
 
-        :param align_items: alignment of the items in the card (default: `None`)
+        :param align_items: alignment of the items in the card ("start", "end", "center", "baseline", or "stretch"; default: `None`)
         """
         super().__init__('q-card')
         self._classes.append('nicegui-card')
