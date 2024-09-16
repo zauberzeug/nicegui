@@ -41,7 +41,6 @@ class ChoiceElement(ValueElement):
         :param value: The new value. If not given, the current value is kept.
         """
         self.options = options
-        self.update()
         if value is not ...:
             self.value = value
-            self.update()
+        self.update()
