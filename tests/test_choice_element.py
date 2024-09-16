@@ -1,4 +1,4 @@
-from nicegui import ui
+from nicegui import events, ui
 from nicegui.testing import Screen
 
 
@@ -70,5 +70,18 @@ def test_radio_set_options_value(screen: Screen):
     screen.open('/')
     r.set_options(['D', 'E', 'F'], value='E')
     assert r.value == 'E'
+
+# - When using `set_options` with the value argument set and the `on_change` callback active on the element,
+# `on_change` should never pass `None` through, even if the old value is not within the new list of element options
+
+def test_radio_set_options_value_callback(screen: Screen):
+
+    def check_change_is_not_none(e: events.ValueChangeEventArguments):
+        assert e.value is not None
+
+    r = ui.radio(['A', 'B', 'C'], on_change=check_change_is_not_none)
+
+    screen.open('/')
+    r.set_options(['D', 'E', 'F'], value='F')
 
 ###
