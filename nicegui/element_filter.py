@@ -73,7 +73,7 @@ class ElementFilter(Generic[T]):
         :param local_scope: if `True`, only elements within the current scope are returned; by default the whole page is searched (this default behavior can be changed with ``ElementFilter.DEFAULT_LOCAL_SCOPE = True``)
         """
         self._kind = kind
-        self._markers = marker.split() if isinstance(marker, str) else marker or []
+        self._markers = marker.split() if isinstance(marker, str) else [word for single_marker in marker for word in single_marker.split()] or []
         self._contents = [content] if isinstance(content, str) else content or []
 
         self._within_kinds: List[Type[Element]] = []
@@ -144,7 +144,7 @@ class ElementFilter(Generic[T]):
 
     def within(self, *,
                kind: Optional[Type[Element]] = None,
-               marker: Optional[str] = None,
+               marker: Union[str, List[str], None] = None,
                instance: Union[Element, List[Element], None] = None,
                ) -> Self:
         """Filter elements which have a specific match in the parent hierarchy."""
@@ -152,14 +152,15 @@ class ElementFilter(Generic[T]):
             assert issubclass(kind, Element)
             self._within_kinds.append(kind)
         if marker is not None:
-            self._within_markers.extend(marker.split())
+            markers = marker.split() if isinstance(marker, str) else [word for single_marker in marker for word in single_marker.split()] or []
+            self._within_markers.extend(markers)
         if instance is not None:
             self._within_instances.extend(instance if isinstance(instance, list) else [instance])
         return self
 
     def exclude(self, *,
                 kind: Optional[Type[Element]] = None,
-                marker: Optional[str] = None,
+                marker: Union[str, List[str], None] = None,
                 content: Optional[str] = None,
                 ) -> Self:
         """Exclude elements with specific element type, marker or content."""
@@ -167,14 +168,15 @@ class ElementFilter(Generic[T]):
             assert issubclass(kind, Element)
             self._exclude_kinds.append(kind)
         if marker is not None:
-            self._exclude_markers.append(marker)
+            markers = marker.split() if isinstance(marker, str) else [word for single_marker in marker for word in single_marker.split()] or []
+            self._exclude_markers.extend(markers)
         if content is not None:
             self._exclude_content.append(content)
         return self
 
     def not_within(self, *,
                    kind: Optional[Type[Element]] = None,
-                   marker: Optional[str] = None,
+                   marker: Union[str, List[str], None] = None,
                    instance: Union[Element, List[Element], None] = None,
                    ) -> Self:
         """Exclude elements which have a parent of a specific type or marker."""
@@ -182,7 +184,8 @@ class ElementFilter(Generic[T]):
             assert issubclass(kind, Element)
             self._not_within_kinds.append(kind)
         if marker is not None:
-            self._not_within_markers.extend(marker.split())
+            markers = marker.split() if isinstance(marker, str) else [word for single_marker in marker for word in single_marker.split()] or []
+            self._not_within_markers.extend(markers)
         if instance is not None:
             self._not_within_instances.extend(instance if isinstance(instance, list) else [instance])
         return self
