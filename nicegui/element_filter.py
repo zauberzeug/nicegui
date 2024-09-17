@@ -72,7 +72,7 @@ class ElementFilter(Generic[T]):
         :param content: filter for elements which contain ``content`` in one of their content attributes like ``.text``, ``.value``, ``.source``, ...; can be a singe string or a list of strings which all must match
         :param local_scope: if `True`, only elements within the current scope are returned; by default the whole page is searched (this default behavior can be changed with ``ElementFilter.DEFAULT_LOCAL_SCOPE = True``)
         """
-        self._kind = kind if isinstance(kind, list) else [kind]
+        self._kind = kind if isinstance(kind, list) else ([kind] if kind else [])
         self._markers = marker.split() if isinstance(marker, str) else [word for single_marker in (marker or []) for word in single_marker.split()]
         self._contents = [content] if isinstance(content, str) else content or []
 
