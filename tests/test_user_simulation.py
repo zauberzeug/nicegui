@@ -207,6 +207,11 @@ async def test_input(user: User, kind: Type) -> None:
     await user.should_see('Value: Hello World')
     await user.should_see('Changed: Hello World')
 
+    user.find(kind).clear()
+    user.find(kind).type('Test')
+    await user.should_see('Value: Test')
+    await user.should_see('Changed: Test')
+
 
 async def test_should_not_see(user: User) -> None:
     @ui.page('/')
