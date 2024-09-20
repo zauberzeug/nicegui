@@ -13,13 +13,14 @@ if importlib.util.find_spec('pandas'):
         import pandas as pd
 
 
-class AgGrid(Element, component='aggrid.js', dependencies=['lib/aggrid/ag-grid-community.min.js']):
+class AgGrid(Element, component='aggrid.js', dependencies=['lib/aggrid/ag-grid-community.min.js', 'lib/aggrid/ag-grid-enterprise.min.js']):
 
     def __init__(self,
                  options: Dict, *,
                  html_columns: List[int] = [],  # noqa: B006
                  theme: str = 'balham',
                  auto_size_columns: bool = True,
+                 license_key: str = None,
                  ) -> None:
         """AG Grid
 
@@ -36,6 +37,7 @@ class AgGrid(Element, component='aggrid.js', dependencies=['lib/aggrid/ag-grid-c
         self._props['options'] = options
         self._props['html_columns'] = html_columns[:]
         self._props['auto_size_columns'] = auto_size_columns
+        self._props['license_key'] = license_key
         self._classes.append('nicegui-aggrid')
         self._classes.append(f'ag-theme-{theme}')
 
@@ -107,6 +109,22 @@ class AgGrid(Element, component='aggrid.js', dependencies=['lib/aggrid/ag-grid-c
         :return: AwaitableResponse that can be awaited to get the result of the method call
         """
         return self.run_method('run_grid_method', name, *args, timeout=timeout)
+
+    def run_grid_method_with_convert(self, name: str, *args, timeout: float = 1) -> AwaitableResponse:
+        """Run an AG Grid API method. Will convert dynamic properties (prefixed with ":") if, for example setting a callback.
+
+        See `AG Grid API <https://www.ag-grid.com/javascript-data-grid/grid-api/>`_ for a list of methods.
+
+        If the function is awaited, the result of the method call is returned.
+        Otherwise, the method is executed without waiting for a response.
+
+        :param name: name of the method
+        :param args: arguments to pass to the method
+        :param timeout: timeout in seconds (default: 1 second)
+
+        :return: AwaitableResponse that can be awaited to get the result of the method call
+        """
+        return self.run_method('run_grid_method_with_convert', name, *args, timeout=timeout)
 
     def run_column_method(self, name: str, *args, timeout: float = 1) -> AwaitableResponse:  # DEPRECATED
         """This method is deprecated. Use `run_grid_method` instead.

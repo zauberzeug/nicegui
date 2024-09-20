@@ -1,4 +1,5 @@
 import "ag-grid-community";
+import "ag-grid-enterprise";
 import { convertDynamicProperties } from "../../static/utils/dynamic_properties.js";
 
 export default {
@@ -42,8 +43,16 @@ export default {
         checkboxRenderer: CheckboxRenderer,
       };
 
+      if (this.license_key) {
+        agGrid.LicenseManager.setLicenseKey(this.license_key);
+      }
+
       this.api = agGrid.createGrid(this.$el, this.gridOptions);
       this.api.addGlobalListener(this.handle_event);
+    },
+    run_grid_method_with_convert(name, ...args) {
+      convertDynamicProperties(args, true);
+      return runMethod(this.api, name, args);
     },
     run_grid_method(name, ...args) {
       return runMethod(this.api, name, args);
@@ -93,5 +102,6 @@ export default {
     options: Object,
     html_columns: Array,
     auto_size_columns: Boolean,
+    license_key: String,
   },
 };
