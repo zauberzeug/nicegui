@@ -396,3 +396,12 @@ async def test_download_file(user: User, data: Union[str, bytes]) -> None:
     assert len(user.download.http_responses) == 1
     assert response.status_code == 200
     assert response.text == 'Hello'
+
+
+async def test_validation(user: User) -> None:
+    ui.input('Number', validation={'Not a number': lambda value: value.isnumeric()})
+
+    await user.open('/')
+    await user.should_not_see('Not a number')
+    user.find(ui.input).type('some invalid entry')
+    await user.should_see('Not a number')
