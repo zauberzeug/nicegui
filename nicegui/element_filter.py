@@ -109,6 +109,7 @@ class ElementFilter(Generic[T]):
                     element.props.get('icon'),
                     element.props.get('placeholder'),
                     element.props.get('value'),
+                    element.props.get('error-message'),
                     element.text if isinstance(element, TextElement) else None,
                     element.content if isinstance(element, ContentElement) else None,
                     element.source if isinstance(element, SourceElement) else None,
