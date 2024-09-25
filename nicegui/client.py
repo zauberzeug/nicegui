@@ -15,7 +15,7 @@ from typing_extensions import Self
 
 from nicegui.context import context
 
-from . import background_tasks, binding, core, helpers, json
+from . import background_tasks, binding, core, helpers, json, storage
 from .awaitable_response import AwaitableResponse
 from .dependencies import generate_resources
 from .element import Element
@@ -72,7 +72,6 @@ class Client:
         self.on_air = False
         self._disconnect_task: Optional[asyncio.Task] = None
         self._deleted = False
-        self._has_warned_about_deleted_client = False
         self.tab_id: Optional[str] = None
 
         self.outbox = Outbox(self)
@@ -89,7 +88,6 @@ class Client:
 
         self.page = page
         self.storage = ObservableDict()
-        self.single_page_router: Optional[SinglePageRouter] = None
 
         self.connect_handlers: List[Union[Callable[..., Any], Awaitable]] = []
         self.disconnect_handlers: List[Union[Callable[..., Any], Awaitable]] = []
@@ -103,8 +101,9 @@ class Client:
 
     @property
     def ip(self) -> Optional[str]:
-        """Return the IP address of the client, or None if the client is not connected."""
-        return self.environ['asgi.scope']['client'][0] if self.environ else None  # pylint: disable=unsubscriptable-object
+        """Return the IP address of the client, or None if it is an
+        `auto-index page <https://nicegui.io/documentation/section_pages_routing#auto-index_page>`_."""
+        return self.request.client.host if self.request is not None and self.request.client is not None else None
 
     @property
     def has_socket_connection(self) -> bool:
@@ -154,7 +153,7 @@ class Client:
                 'imports': json.dumps(imports),
                 'js_imports': '\n'.join(js_imports),
                 'quasar_config': json.dumps(core.app.config.quasar_config),
-                'title': self.page.resolve_title() if self.title is None else self.title,
+                'title': self.resolve_title(),
                 'viewport': self.page.resolve_viewport(),
                 'favicon_url': get_favicon_url(self.page, prefix),
                 'dark': str(self.page.resolve_dark()),
@@ -169,6 +168,10 @@ class Client:
             status_code=status_code,
             headers={'Cache-Control': 'no-store', 'X-NiceGUI-Content': 'page'},
         )
+
+    def resolve_title(self) -> str:
+        """Return the title of the page."""
+        return self.page.resolve_title() if self.title is None else self.title
 
     async def connected(self, timeout: float = 3.0, check_interval: float = 0.1) -> None:
         """Block execution until the client is connected."""
@@ -189,11 +192,7 @@ class Client:
             await asyncio.sleep(check_interval)
         self.is_waiting_for_disconnect = False
 
-    def run_javascript(self, code: str, *,
-                       respond: Optional[bool] = None,  # DEPRECATED
-                       timeout: float = 1.0,
-                       check_interval: float = 0.01,  # DEPRECATED
-                       ) -> AwaitableResponse:
+    def run_javascript(self, code: str, *, timeout: float = 1.0) -> AwaitableResponse:
         """Execute JavaScript on the client.
 
         The client connection must be established before this method is called.
@@ -207,19 +206,6 @@ class Client:
 
         :return: AwaitableResponse that can be awaited to get the result of the JavaScript code
         """
-        if respond is True:
-            log.warning('The "respond" argument of run_javascript() has been removed. '
-                        'Now the method always returns an AwaitableResponse that can be awaited. '
-                        'Please remove the "respond=True" argument.')
-        if respond is False:
-            raise ValueError('The "respond" argument of run_javascript() has been removed. '
-                             'Now the method always returns an AwaitableResponse that can be awaited. '
-                             'Please remove the "respond=False" argument and call the method without awaiting.')
-        if check_interval != 0.01:
-            log.warning('The "check_interval" argument of run_javascript() and similar methods has been removed. '
-                        'Now the method automatically returns when receiving a response without checking regularly in an interval. '
-                        'Please remove the "check_interval" argument.')
-
         request_id = str(uuid.uuid4())
         target_id = self._temporary_socket_id or self.id
 
@@ -263,6 +249,7 @@ class Client:
         if self._disconnect_task:
             self._disconnect_task.cancel()
             self._disconnect_task = None
+        storage.request_contextvar.set(self.request)
         for t in self.connect_handlers:
             self.safe_invoke(t)
         for t in core.app._connect_handlers:  # pylint: disable=protected-access
@@ -288,7 +275,7 @@ class Client:
         """Forward an event to the corresponding element."""
         with self:
             sender = self.elements.get(msg['id'])
-            if sender is not None:
+            if sender is not None and not sender.is_ignoring_events:
                 msg['args'] = [None if arg is None else json.loads(arg) for arg in msg.get('args', [])]
                 if len(msg['args']) == 1:
                     msg['args'] = msg['args'][0]
@@ -296,7 +283,7 @@ class Client:
 
     def handle_javascript_response(self, msg: Dict) -> None:
         """Store the result of a JavaScript command."""
-        JavaScriptRequest.resolve(msg['request_id'], msg['result'])
+        JavaScriptRequest.resolve(msg['request_id'], msg.get('result'))
 
     def safe_invoke(self, func: Union[Callable[..., Any], Awaitable]) -> None:
         """Invoke the potentially async function in the client context and catch any exceptions."""
@@ -319,14 +306,13 @@ class Client:
 
     def remove_elements(self, elements: Iterable[Element]) -> None:
         """Remove the given elements from the client."""
-        binding.remove(elements)
-        element_ids = [element.id for element in elements]
-        for element in elements:
+        element_list = list(elements)  # NOTE: we need to iterate over the elements multiple times
+        binding.remove(element_list)
+        for element in element_list:
             element._handle_delete()  # pylint: disable=protected-access
             element._deleted = True  # pylint: disable=protected-access
             self.outbox.enqueue_delete(element)
-        for element_id in element_ids:
-            del self.elements[element_id]
+            self.elements.pop(element.id, None)
 
     def remove_all_elements(self) -> None:
         """Remove all elements from the client."""
@@ -345,11 +331,11 @@ class Client:
 
     def check_existence(self) -> None:
         """Check if the client still exists and print a warning if it doesn't."""
-        if self._deleted and not self._has_warned_about_deleted_client:
-            self._has_warned_about_deleted_client = True
-            log.warning('Client has been deleted but is still being used. This is most likely a bug in your application code. '
-                        'See https://github.com/zauberzeug/nicegui/issues/3028 for more information.',
-                        stack_info=True)
+        if self._deleted:
+            helpers.warn_once('Client has been deleted but is still being used. '
+                              'This is most likely a bug in your application code. '
+                              'See https://github.com/zauberzeug/nicegui/issues/3028 for more information.',
+                              stack_info=True)
 
     @contextmanager
     def individual_target(self, socket_id: str) -> Iterator[None]:

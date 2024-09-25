@@ -1,8 +1,9 @@
 import * as THREE from "three";
+import "tween";
 
 export default {
   template: `
-    <div style="position:relative">
+    <div style="position:relative" data-initializing>
       <canvas style="position:relative"></canvas>
     </div>`,
 
@@ -52,10 +53,11 @@ export default {
 
     this.$nextTick(() => this.resize());
     window.addEventListener("resize", this.resize, false);
+    window.addEventListener("DOMContentLoaded", this.resize, false);
 
     const render = () => {
       requestAnimationFrame(() => setTimeout(() => render(), 1000 / 20));
-      TWEEN.update();
+      this.camera_tween?.update();
       this.renderer.render(this.scene, this.camera);
     };
     render();
@@ -94,9 +96,14 @@ export default {
 
   beforeDestroy() {
     window.removeEventListener("resize", this.resize);
+    window.removeEventListener("DOMContentLoaded", this.resize);
   },
 
   methods: {
+    init() {
+      this.resize();
+      this.$el.removeAttribute("data-initializing");
+    },
     move_camera(x, y, z, look_at_x, look_at_y, look_at_z, up_x, up_y, up_z, duration) {
       if (this.camera_tween) this.camera_tween.stop();
       this.camera_tween = new TWEEN.Tween([

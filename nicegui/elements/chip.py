@@ -5,12 +5,13 @@ from typing_extensions import Self
 from ..events import ClickEventArguments, handle_event
 from .mixins.color_elements import BackgroundColorElement, TextColorElement
 from .mixins.disableable_element import DisableableElement
+from .mixins.icon_element import IconElement
 from .mixins.selectable_element import SelectableElement
 from .mixins.text_element import TextElement
 from .mixins.value_element import ValueElement
 
 
-class Chip(ValueElement, TextElement, BackgroundColorElement, TextColorElement, DisableableElement, SelectableElement):
+class Chip(IconElement, ValueElement, TextElement, BackgroundColorElement, TextColorElement, DisableableElement, SelectableElement):
     TEXT_COLOR_PROP = 'text-color'
 
     def __init__(self,
@@ -43,10 +44,8 @@ class Chip(ValueElement, TextElement, BackgroundColorElement, TextColorElement, 
         :param on_value_change: callback which is invoked when the chip is removed or unremoved
         """
         super().__init__(tag='q-chip', value=True, on_value_change=on_value_change,
-                         text=text, text_color=text_color, background_color=color,
+                         icon=icon, text=text, text_color=text_color, background_color=color,
                          selectable=selectable, selected=selected, on_selection_change=on_selection_change)
-        if icon:
-            self._props['icon'] = icon
 
         self._props['removable'] = removable
 

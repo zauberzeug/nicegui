@@ -167,9 +167,12 @@ async def _on_handshake(sid: str, data: Dict[str, str]) -> bool:
     client = Client.instances.get(data['client_id'])
     if not client:
         return False
-    client.environ = sio.get_environ(sid)
     client.tab_id = data['tab_id']
-    await sio.enter_room(sid, client.id)
+    if sid[:5].startswith('test-'):
+        client.environ = {'asgi.scope': {'description': 'test client', 'type': 'test'}}
+    else:
+        client.environ = sio.get_environ(sid)
+        await sio.enter_room(sid, client.id)
     client.handle_handshake()
     return True
 

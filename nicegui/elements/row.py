@@ -14,7 +14,7 @@ class Row(Element):
         Provides a container which arranges its child in a row.
 
         :param wrap: whether to wrap the content (default: `True`)
-        :param align_items: alignment of the items in the row (default: `None`)
+        :param align_items: alignment of the items in the row ("start", "end", "center", "baseline", or "stretch"; default: `None`)
         """
         super().__init__('div')
         self._classes.append('nicegui-row')

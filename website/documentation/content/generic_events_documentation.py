@@ -83,7 +83,8 @@ def event_attributes() -> None:
         {'name': 'Alice', 'age': 42},
         {'name': 'Bob', 'age': 23},
     ]
-    ui.table(columns, rows, 'name').on('rowClick', ui.notify, [[], ['name'], None])
+    ui.table(columns=columns, rows=rows, row_key='name') \
+        .on('rowClick', ui.notify, [[], ['name'], None])
 
 
 @doc.demo('Modifiers', '''

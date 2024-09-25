@@ -1,9 +1,10 @@
 from typing import Optional
 
 from .mixins.color_elements import BackgroundColorElement, TextColorElement
+from .mixins.icon_element import IconElement
 
 
-class Avatar(BackgroundColorElement, TextColorElement):
+class Avatar(IconElement, BackgroundColorElement, TextColorElement):
     TEXT_COLOR_PROP = 'text-color'
 
     def __init__(self,
@@ -28,10 +29,8 @@ class Avatar(BackgroundColorElement, TextColorElement):
         :param square: removes border-radius so borders are squared (default: False)
         :param rounded: applies a small standard border-radius for a squared shape of the component (default: False)
         """
-        super().__init__(tag='q-avatar', background_color=color, text_color=text_color)
+        super().__init__(tag='q-avatar', background_color=color, text_color=text_color, icon=icon)
 
-        if icon is not None:
-            self._props['icon'] = icon
         self._props['square'] = square
         self._props['rounded'] = rounded
 

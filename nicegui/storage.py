@@ -49,9 +49,10 @@ class ReadOnlyDict(MutableMapping):
 
 class PersistentDict(observables.ObservableDict):
 
-    def __init__(self, filepath: Path, encoding: Optional[str] = None) -> None:
+    def __init__(self, filepath: Path, encoding: Optional[str] = None, *, indent: bool = False) -> None:
         self.filepath = filepath
         self.encoding = encoding
+        self.indent = indent
         try:
             data = json.loads(filepath.read_text(encoding)) if filepath.exists() else {}
         except Exception:
@@ -68,7 +69,7 @@ class PersistentDict(observables.ObservableDict):
 
         async def backup() -> None:
             async with aiofiles.open(self.filepath, 'w', encoding=self.encoding) as f:
-                await f.write(json.dumps(self))
+                await f.write(json.dumps(self, indent=self.indent))
         if core.loop:
             background_tasks.create_lazy(backup(), name=self.filepath.stem)
         else:
@@ -95,13 +96,14 @@ def set_storage_secret(storage_secret: Optional[str] = None) -> None:
     elif storage_secret is not None:
         core.app.add_middleware(RequestTrackingMiddleware)
         core.app.add_middleware(SessionMiddleware, secret_key=storage_secret)
+    Storage.secret = storage_secret
 
 
 class Storage:
+    secret: Optional[str] = None
 
     def __init__(self) -> None:
         self.path = Path(os.environ.get('NICEGUI_STORAGE_PATH', '.nicegui')).resolve()
-        self.migrate_to_utf8()  # DEPRECATED: remove this in 2.0 release
         self.max_tab_storage_age = timedelta(days=30).total_seconds()
         self._general = PersistentDict(self.path / 'storage-general.json', encoding='utf-8')
         self._users: Dict[str, PersistentDict] = {}
@@ -120,7 +122,9 @@ class Storage:
             if self._is_in_auto_index_context():
                 raise RuntimeError('app.storage.browser can only be used with page builder functions '
                                    '(https://nicegui.io/documentation/page)')
-            raise RuntimeError('app.storage.browser needs a storage_secret passed in ui.run()')
+            if Storage.secret is None:
+                raise RuntimeError('app.storage.browser needs a storage_secret passed in ui.run()')
+            raise RuntimeError('app.storage.browser can only be used within a UI context')
         if request.state.responded:
             return ReadOnlyDict(
                 request.session,
@@ -140,7 +144,9 @@ class Storage:
             if self._is_in_auto_index_context():
                 raise RuntimeError('app.storage.user can only be used with page builder functions '
                                    '(https://nicegui.io/documentation/page)')
-            raise RuntimeError('app.storage.user needs a storage_secret passed in ui.run()')
+            if Storage.secret is None:
+                raise RuntimeError('app.storage.user needs a storage_secret passed in ui.run()')
+            raise RuntimeError('app.storage.user can only be used within a UI context')
         session_id = request.session['id']
         if session_id not in self._users:
             self._users[session_id] = PersistentDict(self.path / f'storage-user-{session_id}.json', encoding='utf-8')
@@ -206,18 +212,5 @@ class Storage:
         self._tabs.clear()
         for filepath in self.path.glob('storage-*.json'):
             filepath.unlink()
-
-    def migrate_to_utf8(self) -> None:
-        """Migrates storage files from system's default encoding to UTF-8.
-
-        To distinguish between the old and new encoding, the new files are named with dashes instead of underscores.
-        """
-        for filepath in self.path.glob('storage_*.json'):
-            new_filepath = filepath.with_name(filepath.name.replace('_', '-'))
-            try:
-                data = json.loads(filepath.read_text())
-            except Exception:
-                log.warning(f'Could not load storage file {filepath}')
-                data = {}
-            filepath.rename(new_filepath)
-            new_filepath.write_text(json.dumps(data), encoding='utf-8')
+        if self.path.exists():
+            self.path.rmdir()
