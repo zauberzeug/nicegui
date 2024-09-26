@@ -46,7 +46,8 @@ class UserInteraction(Generic[T]):
     def type(self, text: str) -> Self:
         """Type the given text into the selected elements.
 
-        Note: All elements must have a ``value`` attribute."""
+        Note: All elements must have a ``value`` attribute.
+        """
         assert self.user.client
         with self.user.client:
             for element in self.elements:
@@ -82,10 +83,11 @@ class UserInteraction(Generic[T]):
     def clear(self) -> Self:
         """Clear the selected elements.
 
-        Note: All elements must have a ``value`` attribute)."""
+        Note: All elements must have a ``value`` attribute).
+        """
         assert self.user.client
         with self.user.client:
             for element in self.elements:
-                assert isinstance(element, (ValueElement))
+                assert isinstance(element, ValueElement)
                 element.value = ''
         return self
