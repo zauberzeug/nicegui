@@ -61,7 +61,7 @@ class Navigate:
         elif callable(target):
             path = Client.page_routes[target]
         else:
-            raise TypeError(f"Expected a str path, an Element, or a page builder, but got {target}")
+            raise TypeError(f'Invalid target type: {type(target)}')
         context.client.open(path, new_tab)
 
 
