@@ -13,21 +13,16 @@ def main_demo() -> None:
 
 
 @doc.demo('Custom colors', '''
-    You can add custom color definitions for branding. In this case, `ui.colors` must be called before the
-    custom color is ever used.
+    You can add custom color definitions for branding.
+    In this case, `ui.colors` must be called before the custom color is ever used.
 ''')
 def custom_color_demo() -> None:
-    import random
+    from random import randint
 
-    def random_color():
-        return f'#{random.randint(0, 0xffffff):06x}'
-
-    ui.colors(my_custom_color=random_color())
-    ui.button(
-        'Random color',
-        color='my-custom-color',
-        on_click=lambda: ui.colors(my_custom_color=random_color())
-    )
+    ui.colors(brand='#424242')
+    ui.label('This is your custom brand color').classes('text-brand')
+    ui.button('Randomize', color='brand',
+              on_click=lambda: ui.colors(brand=f'#{randint(0, 0xffffff):06x}'))
 
 
 doc.reference(ui.colors)

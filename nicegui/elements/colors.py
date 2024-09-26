@@ -28,6 +28,7 @@ class Colors(Element, component='colors.js'):
         :param negative: Negative color (default: "#c10015")
         :param info: Info color (default: "#31ccec")
         :param warning: Warning color (default: "#f2c037")
+        :param custom_colors: Custom color definitions for branding (needs ``ui.colors`` to be called before custom color is ever used)
         """
         super().__init__()
         self._props['primary'] = primary
@@ -40,5 +41,5 @@ class Colors(Element, component='colors.js'):
         self._props['info'] = info
         self._props['warning'] = warning
         self._props['customColors'] = custom_colors
-        QUASAR_COLORS.update({name.replace('_', '-') for name in custom_colors.keys()})
+        QUASAR_COLORS.update({name.replace('_', '-') for name in custom_colors})
         self.update()
