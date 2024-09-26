@@ -89,5 +89,5 @@ class UserInteraction(Generic[T]):
         with self.user.client:
             for element in self.elements:
                 assert isinstance(element, ValueElement)
-                element.value = ''
+                element.value = None
         return self
