@@ -55,10 +55,31 @@ def test_find_content():
     assert texts(ElementFilter(content=['A', 'butt'])) == ['button A']
 
 
-def test_find_content_radio():
-    radio = ui.radio(options={'key': 'option value'})
+def test_find_radio():
+    radio_list = ui.radio(['radio 1', 'radio 2'])
+    radio_dict = ui.radio({'radio 1': 'Radio A', 'radio 2': 'Radio B'})
 
-    assert next(element for element in ElementFilter(content=['option'])) is radio
+    assert next(iter(ElementFilter(content=['radio 1']))) is radio_list
+    assert next(iter(ElementFilter(content=['Radio A']))) is radio_dict
+
+
+def test_find_toggle():
+    toggle_list = ui.toggle(['toggle 1', 'toggle 2'])
+    toggle_dict = ui.toggle({'toggle 1': 'Toggle A', 'toggle 2': 'Toggle B'})
+
+    assert next(iter(ElementFilter(content=['toggle 1']))) is toggle_list
+    assert next(iter(ElementFilter(content=['Toggle A']))) is toggle_dict
+
+
+def test_find_select():
+    select_list = ui.select(['select 1', 'select 2'])
+    select_dict = ui.select({'select 1': 'Select A', 'select 2': 'Select B'})
+
+    select_list._is_showing_popup = True  # pylint: disable=protected-access
+    select_dict._is_showing_popup = True  # pylint: disable=protected-access
+
+    assert next(iter(ElementFilter(content=['select 1']))) is select_list
+    assert next(iter(ElementFilter(content=['Select A']))) is select_dict
 
 
 def test_find_marker():
