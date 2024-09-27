@@ -10,6 +10,7 @@ from .elements.mixins.content_element import ContentElement
 from .elements.mixins.source_element import SourceElement
 from .elements.mixins.text_element import TextElement
 from .elements.notification import Notification
+from .elements.radio import Radio
 from .elements.select import Select
 
 T = TypeVar('T', bound=Element)
@@ -116,10 +117,10 @@ class ElementFilter(Generic[T]):
                 ) if content]
                 if isinstance(element, Notification):
                     element_contents.append(element.message)
-                if isinstance(element, Select):
+                if isinstance(element, (Select, Radio)):
                     options = {option['value']: option['label'] for option in element.props.get('options', [])}
                     element_contents.append(options.get(element.value, ''))
-                    if element.is_showing_popup:
+                    if isinstance(element, Radio) or element.is_showing_popup:
                         element_contents.extend(options.values())
                 if any(all(needle not in str(haystack) for haystack in element_contents) for needle in self._contents):
                     continue

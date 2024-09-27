@@ -55,6 +55,12 @@ def test_find_content():
     assert texts(ElementFilter(content=['A', 'butt'])) == ['button A']
 
 
+def test_find_content_radio():
+    radio = ui.radio(options={'key': 'option value'})
+
+    assert next(element for element in ElementFilter(content=['option'])) is radio
+
+
 def test_find_marker():
     ui.button('button A')
     ui.button('button B').mark('important')
