@@ -3,8 +3,18 @@ updates:
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
-      interval: "daily"
+      interval: "weekly"
+
   - package-ecosystem: "pip"
     directory: "/"
     schedule:
-      interval: "daily"
+      interval: "weekly"
+    ignore:
+      - dependency-name: "ruff"
+        update-types: ["patch"]
+    groups:
+      fastapi:
+        patterns:
+          - "fastapi"
+        schedule:
+          interval: "daily"
