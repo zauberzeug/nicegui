@@ -1,7 +1,7 @@
 from typing import Optional
 
 from nicegui import ui
-from nicegui.testing import Screen
+from nicegui.testing import Screen, User
 
 
 def test_teleport(screen: Screen):
@@ -56,3 +56,29 @@ def test_update(screen: Screen):
     screen.should_contain('Hello')
     screen.click('rebuild card')
     assert screen.find_by_css('.card > div').text == 'Hello'
+
+
+async def test_teleport_to_cell(user: User):
+    colors = ['red', 'green', 'blue']
+    columns = [
+        {'name': 'product', 'label': 'Product', 'field': 'product', 'align': 'center'},
+        {'name': 'color', 'label': 'Color', 'field': 'color', 'align': 'center'},
+    ]
+    rows = [
+        {'product': 'A', 'color': 'red'},
+        {'product': 'B', 'color': 'green'},
+        {'product': 'C', 'color': 'blue'},
+    ]
+    table = ui.table(columns=columns, rows=rows, row_key='product').classes('w-72')
+    table.add_slot('body-cell-color', r'''<q-td key="color" :props="props"></q-td>''')
+    for r, row in enumerate(rows):
+        with ui.teleport(f'#c{table.id} tr:nth-child({r+1}) td:nth-child(2)'):
+            ui.select(colors).bind_value(row, 'color').mark(f'row{r+1}')
+
+    await user.open('/')
+    user.find(kind=ui.select, marker='row1').elements.pop().set_value('green')
+    assert rows == [
+        {'product': 'A', 'color': 'green'},
+        {'product': 'B', 'color': 'green'},
+        {'product': 'C', 'color': 'blue'},
+    ]
