@@ -4,7 +4,7 @@ from typing_extensions import Self
 
 from ...binding import BindableProperty, bind, bind_from, bind_to
 from ...element import Element
-from ...events import GenericEventArguments, ValueChangeEventArguments, handle_event
+from ...events import GenericEventArguments, Handler, ValueChangeEventArguments, handle_event
 
 
 class ValueElement(Element):
@@ -24,7 +24,7 @@ class ValueElement(Element):
 
     def __init__(self, *,
                  value: Any,
-                 on_value_change: Optional[Callable[..., Any]],
+                 on_value_change: Optional[Handler[ValueChangeEventArguments]] = None,
                  throttle: float = 0,
                  **kwargs: Any,
                  ) -> None:
@@ -33,7 +33,7 @@ class ValueElement(Element):
         self.set_value(value)
         self._props[self.VALUE_PROP] = self._value_to_model_value(value)
         self._props['loopback'] = self.LOOPBACK
-        self._change_handlers: List[Callable[..., Any]] = [on_value_change] if on_value_change else []
+        self._change_handlers: List[Handler[ValueChangeEventArguments]] = [on_value_change] if on_value_change else []
 
         def handle_change(e: GenericEventArguments) -> None:
             self._send_update_on_value_change = self.LOOPBACK is True
@@ -41,7 +41,7 @@ class ValueElement(Element):
             self._send_update_on_value_change = True
         self.on(f'update:{self.VALUE_PROP}', handle_change, [None], throttle=throttle)
 
-    def on_value_change(self, callback: Callable[..., Any]) -> Self:
+    def on_value_change(self, callback: Handler[ValueChangeEventArguments]) -> Self:
         """Add a callback to be invoked when the value changes."""
         self._change_handlers.append(callback)
         return self

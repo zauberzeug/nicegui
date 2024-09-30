@@ -3,7 +3,21 @@ from __future__ import annotations
 from contextlib import nullcontext
 from dataclasses import dataclass
 from inspect import Parameter, signature
-from typing import TYPE_CHECKING, Any, Awaitable, BinaryIO, Callable, Dict, Iterator, List, Literal, Optional, Union
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Awaitable,
+    BinaryIO,
+    Callable,
+    Dict,
+    Iterator,
+    List,
+    Literal,
+    Optional,
+    TypeVar,
+    Union,
+    cast,
+)
 
 from . import background_tasks, core
 from .awaitable_response import AwaitableResponse
@@ -382,7 +396,11 @@ class JsonEditorChangeEventArguments(UiEventArguments):
     errors: Dict
 
 
-def handle_event(handler: Optional[Callable[..., Any]], arguments: EventArguments) -> None:
+EventT = TypeVar('EventT', bound=EventArguments)
+Handler = Union[Callable[[EventT], Any], Callable[[], Any]]
+
+
+def handle_event(handler: Optional[Handler[EventT]], arguments: EventT) -> None:
     """Call the given event handler.
 
     The handler is called within the context of the parent slot of the sender.
@@ -408,7 +426,10 @@ def handle_event(handler: Optional[Callable[..., Any]], arguments: EventArgument
             parent_slot = nullcontext()
 
         with parent_slot:
-            result = handler(arguments) if expects_arguments else handler()
+            if expects_arguments:
+                result = cast(Callable[[EventT], Any], handler)(arguments)
+            else:
+                result = cast(Callable[[], Any], handler)()
         if isinstance(result, Awaitable) and not isinstance(result, AwaitableResponse):
             # NOTE: await an awaitable result even if the handler is not a coroutine (like a lambda statement)
             async def wait_for_result():

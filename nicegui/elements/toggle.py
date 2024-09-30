@@ -1,6 +1,6 @@
-from typing import Any, Callable, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Union
 
-from ..events import GenericEventArguments
+from ..events import GenericEventArguments, Handler, ValueChangeEventArguments
 from .choice_element import ChoiceElement
 from .mixins.disableable_element import DisableableElement
 
@@ -10,7 +10,7 @@ class Toggle(ChoiceElement, DisableableElement):
     def __init__(self,
                  options: Union[List, Dict], *,
                  value: Any = None,
-                 on_change: Optional[Callable[..., Any]] = None,
+                 on_change: Optional[Handler[ValueChangeEventArguments]] = None,
                  clearable: bool = False,
                  ) -> None:
         """Toggle

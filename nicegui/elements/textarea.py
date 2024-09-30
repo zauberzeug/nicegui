@@ -1,5 +1,6 @@
-from typing import Any, Callable, Dict, Optional, Union
+from typing import Callable, Dict, Optional, Union
 
+from ..events import Handler, ValueChangeEventArguments
 from .input import Input
 
 
@@ -9,7 +10,7 @@ class Textarea(Input, component='input.js'):
                  label: Optional[str] = None, *,
                  placeholder: Optional[str] = None,
                  value: str = '',
-                 on_change: Optional[Callable[..., Any]] = None,
+                 on_change: Optional[Handler[ValueChangeEventArguments]] = None,
                  validation: Optional[Union[Callable[..., Optional[str]], Dict[str, Callable[..., bool]]]] = None,
                  ) -> None:
         """Textarea

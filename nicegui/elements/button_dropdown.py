@@ -1,6 +1,6 @@
-from typing import Any, Callable, Optional
+from typing import Optional
 
-from ..events import ClickEventArguments, handle_event
+from ..events import ClickEventArguments, Handler, ValueChangeEventArguments, handle_event
 from .mixins.color_elements import BackgroundColorElement
 from .mixins.disableable_element import DisableableElement
 from .mixins.icon_element import IconElement
@@ -13,8 +13,8 @@ class DropdownButton(IconElement, TextElement, DisableableElement, BackgroundCol
     def __init__(self,
                  text: str = '', *,
                  value: bool = False,
-                 on_value_change: Optional[Callable[..., Any]] = None,
-                 on_click: Optional[Callable[..., Any]] = None,
+                 on_value_change: Optional[Handler[ValueChangeEventArguments]] = None,
+                 on_click: Optional[Handler[ClickEventArguments]] = None,
                  color: Optional[str] = 'primary',
                  icon: Optional[str] = None,
                  auto_close: Optional[bool] = False,

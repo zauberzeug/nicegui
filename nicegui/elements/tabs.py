@@ -1,8 +1,9 @@
 from __future__ import annotations
 
-from typing import Any, Callable, Optional, Union
+from typing import Any, Optional, Union
 
 from ..context import context
+from ..events import Handler, ValueChangeEventArguments
 from .mixins.disableable_element import DisableableElement
 from .mixins.icon_element import IconElement
 from .mixins.value_element import ValueElement
@@ -12,7 +13,7 @@ class Tabs(ValueElement):
 
     def __init__(self, *,
                  value: Union[Tab, TabPanel, None] = None,
-                 on_change: Optional[Callable[..., Any]] = None,
+                 on_change: Optional[Handler[ValueChangeEventArguments]] = None,
                  ) -> None:
         """Tabs
 
@@ -51,7 +52,7 @@ class TabPanels(ValueElement):
     def __init__(self,
                  tabs: Optional[Tabs] = None, *,
                  value: Union[Tab, TabPanel, str, None] = None,
-                 on_change: Optional[Callable[..., Any]] = None,
+                 on_change: Optional[Handler[ValueChangeEventArguments]] = None,
                  animated: bool = True,
                  keep_alive: bool = True,
                  ) -> None:

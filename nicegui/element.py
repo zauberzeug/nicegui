@@ -4,20 +4,7 @@ import inspect
 import re
 from copy import copy
 from pathlib import Path
-from typing import (
-    TYPE_CHECKING,
-    Any,
-    Callable,
-    ClassVar,
-    Dict,
-    Iterator,
-    List,
-    Optional,
-    Sequence,
-    Union,
-    cast,
-    overload,
-)
+from typing import TYPE_CHECKING, Any, ClassVar, Dict, Iterator, List, Optional, Sequence, Union, cast, overload
 
 from typing_extensions import Self
 
@@ -334,7 +321,7 @@ class Element(Visibility):
     @overload
     def on(self,
            type: str,  # pylint: disable=redefined-builtin
-           handler: Optional[Callable[..., Any]] = None,
+           handler: Optional[events.Handler[events.GenericEventArguments]] = None,
            args: Union[None, Sequence[str], Sequence[Optional[Sequence[str]]]] = None,
            *,
            throttle: float = 0.0,
@@ -345,7 +332,7 @@ class Element(Visibility):
 
     def on(self,
            type: str,  # pylint: disable=redefined-builtin
-           handler: Optional[Callable[..., Any]] = None,
+           handler: Optional[events.Handler[events.GenericEventArguments]] = None,
            args: Union[None, Sequence[str], Sequence[Optional[Sequence[str]]]] = None,
            *,
            throttle: float = 0.0,

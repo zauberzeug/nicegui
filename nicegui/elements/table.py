@@ -1,11 +1,17 @@
 import importlib.util
-from typing import TYPE_CHECKING, Any, Callable, Dict, List, Literal, Optional, Tuple, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Literal, Optional, Tuple, Union
 
 from typing_extensions import Self
 
 from .. import optional_features
 from ..element import Element
-from ..events import GenericEventArguments, TableSelectionEventArguments, ValueChangeEventArguments, handle_event
+from ..events import (
+    GenericEventArguments,
+    Handler,
+    TableSelectionEventArguments,
+    ValueChangeEventArguments,
+    handle_event,
+)
 from ..helpers import warn_once
 from .mixins.filter_element import FilterElement
 
@@ -26,8 +32,8 @@ class Table(FilterElement, component='table.js'):
                  title: Optional[str] = None,
                  selection: Optional[Literal['single', 'multiple']] = None,
                  pagination: Optional[Union[int, dict]] = None,
-                 on_select: Optional[Callable[..., Any]] = None,
-                 on_pagination_change: Optional[Callable[..., Any]] = None,
+                 on_select: Optional[Handler[TableSelectionEventArguments]] = None,
+                 on_pagination_change: Optional[Handler[ValueChangeEventArguments]] = None,
                  ) -> None:
         """Table
 
@@ -86,12 +92,12 @@ class Table(FilterElement, component='table.js'):
                 handle_event(handler, arguments)
         self.on('update:pagination', handle_pagination_change)
 
-    def on_select(self, callback: Callable[..., Any]) -> Self:
+    def on_select(self, callback: Handler[TableSelectionEventArguments]) -> Self:
         """Add a callback to be invoked when the selection changes."""
         self._selection_handlers.append(callback)
         return self
 
-    def on_pagination_change(self, callback: Callable[..., Any]) -> Self:
+    def on_pagination_change(self, callback: Handler[ValueChangeEventArguments]) -> Self:
         """Add a callback to be invoked when the pagination changes."""
         self._pagination_change_handlers.append(callback)
         return self
@@ -108,7 +114,7 @@ class Table(FilterElement, component='table.js'):
                     title: Optional[str] = None,
                     selection: Optional[Literal['single', 'multiple']] = None,
                     pagination: Optional[Union[int, dict]] = None,
-                    on_select: Optional[Callable[..., Any]] = None) -> Self:
+                    on_select: Optional[Handler[TableSelectionEventArguments]] = None) -> Self:
         """Create a table from a Pandas DataFrame.
 
         Note:
