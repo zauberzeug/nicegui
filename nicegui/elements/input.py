@@ -1,7 +1,6 @@
 from typing import Any, Callable, Dict, List, Optional, Union
 
-from nicegui.events import Handler, ValueChangeEventArguments
-
+from ..events import Handler, ValueChangeEventArguments
 from .icon import Icon
 from .mixins.disableable_element import DisableableElement
 from .mixins.validation_element import ValidationElement

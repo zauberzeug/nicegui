@@ -1,8 +1,6 @@
 from typing import Any, Dict, List, Optional, Union
 
-from nicegui.events import Handler, ValueChangeEventArguments
-
-from ..events import GenericEventArguments
+from ..events import GenericEventArguments, Handler, ValueChangeEventArguments
 from .choice_element import ChoiceElement
 from .mixins.disableable_element import DisableableElement
 

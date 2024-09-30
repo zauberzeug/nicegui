@@ -3,9 +3,7 @@ from typing import Optional
 
 from typing_extensions import Self
 
-from nicegui.events import Handler
-
-from ..events import ClickEventArguments, handle_event
+from ..events import ClickEventArguments, Handler, handle_event
 from .mixins.color_elements import BackgroundColorElement
 from .mixins.disableable_element import DisableableElement
 from .mixins.icon_element import IconElement

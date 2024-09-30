@@ -2,9 +2,7 @@ from collections.abc import Generator, Iterable
 from copy import deepcopy
 from typing import Any, Callable, Dict, Iterator, List, Literal, Optional, Union
 
-from nicegui.events import Handler, ValueChangeEventArguments
-
-from ..events import GenericEventArguments
+from ..events import GenericEventArguments, Handler, ValueChangeEventArguments
 from .choice_element import ChoiceElement
 from .mixins.disableable_element import DisableableElement
 from .mixins.validation_element import ValidationElement

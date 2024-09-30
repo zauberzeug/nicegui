@@ -4,9 +4,7 @@ from fastapi import Request
 from starlette.datastructures import UploadFile
 from typing_extensions import Self
 
-from nicegui.events import Handler
-
-from ..events import MultiUploadEventArguments, UiEventArguments, UploadEventArguments, handle_event
+from ..events import Handler, MultiUploadEventArguments, UiEventArguments, UploadEventArguments, handle_event
 from ..nicegui import app
 from .mixins.disableable_element import DisableableElement
 

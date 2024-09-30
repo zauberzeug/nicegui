@@ -3,11 +3,9 @@ from typing import Any, Dict, Literal, Optional, Union
 
 from typing_extensions import Self
 
-from nicegui.events import Handler
-
 from ..context import context
 from ..element import Element
-from ..events import UiEventArguments, handle_event
+from ..events import Handler, UiEventArguments, handle_event
 
 NotificationPosition = Literal[
     'top-left',

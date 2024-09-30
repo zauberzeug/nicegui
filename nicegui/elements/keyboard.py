@@ -2,12 +2,11 @@ from typing import List, Literal, Optional
 
 from typing_extensions import Self
 
-from nicegui.events import Handler
-
 from ..binding import BindableProperty
 from ..element import Element
 from ..events import (
     GenericEventArguments,
+    Handler,
     KeyboardAction,
     KeyboardKey,
     KeyboardModifiers,

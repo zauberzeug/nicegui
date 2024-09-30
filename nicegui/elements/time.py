@@ -1,7 +1,6 @@
 from typing import Optional
 
-from nicegui.events import Handler, ValueChangeEventArguments
-
+from ..events import Handler, ValueChangeEventArguments
 from .mixins.disableable_element import DisableableElement
 from .mixins.value_element import ValueElement
 

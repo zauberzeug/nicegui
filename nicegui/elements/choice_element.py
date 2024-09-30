@@ -1,8 +1,6 @@
 from typing import Any, Dict, List, Optional, Union
 
-from nicegui.events import Handler
-
-from ..events import ValueChangeEventArguments
+from ..events import Handler, ValueChangeEventArguments
 from .mixins.value_element import ValueElement
 
 

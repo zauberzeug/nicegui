@@ -2,10 +2,8 @@ from typing import Optional
 
 from typing_extensions import Self
 
-from nicegui.events import Handler
-
 from ..element import Element
-from ..events import ColorPickEventArguments, GenericEventArguments, handle_event
+from ..events import ColorPickEventArguments, GenericEventArguments, Handler, handle_event
 from .menu import Menu
 
 

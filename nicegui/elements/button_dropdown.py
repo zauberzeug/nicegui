@@ -1,8 +1,6 @@
 from typing import Optional
 
-from nicegui.events import Handler
-
-from ..events import ClickEventArguments, ValueChangeEventArguments, handle_event
+from ..events import ClickEventArguments, Handler, ValueChangeEventArguments, handle_event
 from .mixins.color_elements import BackgroundColorElement
 from .mixins.disableable_element import DisableableElement
 from .mixins.icon_element import IconElement

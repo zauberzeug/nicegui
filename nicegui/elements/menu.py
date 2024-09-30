@@ -1,9 +1,7 @@
 from typing import Optional, Union
 
-from nicegui.events import Handler
-
 from ..element import Element
-from ..events import ClickEventArguments
+from ..events import ClickEventArguments, Handler
 from .context_menu import ContextMenu
 from .item import Item
 from .mixins.value_element import ValueElement

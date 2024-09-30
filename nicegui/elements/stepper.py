@@ -2,11 +2,9 @@ from __future__ import annotations
 
 from typing import Any, Optional, Union, cast
 
-from nicegui.events import Handler
-
 from ..context import context
 from ..element import Element
-from ..events import ValueChangeEventArguments
+from ..events import Handler, ValueChangeEventArguments
 from .mixins.disableable_element import DisableableElement
 from .mixins.icon_element import IconElement
 from .mixins.value_element import ValueElement

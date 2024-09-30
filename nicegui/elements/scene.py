@@ -4,13 +4,12 @@ from typing import Any, Callable, Dict, List, Literal, Optional, Tuple, Union
 
 from typing_extensions import Self
 
-from nicegui.events import Handler
-
 from .. import binding
 from ..dataclasses import KWONLY_SLOTS
 from ..element import Element
 from ..events import (
     GenericEventArguments,
+    Handler,
     SceneClickEventArguments,
     SceneClickHit,
     SceneDragEventArguments,

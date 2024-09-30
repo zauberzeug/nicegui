@@ -1,7 +1,6 @@
 from typing import Callable, Dict, Optional, Union
 
-from nicegui.events import Handler, ValueChangeEventArguments
-
+from ..events import Handler, ValueChangeEventArguments
 from .input import Input
 
 

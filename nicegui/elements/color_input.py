@@ -1,7 +1,6 @@
 from typing import Any, Optional
 
-from nicegui.events import Handler, ValueChangeEventArguments
-
+from ..events import Handler, ValueChangeEventArguments
 from .button import Button as button
 from .color_picker import ColorPicker as color_picker
 from .mixins.disableable_element import DisableableElement

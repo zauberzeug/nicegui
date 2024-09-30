@@ -2,12 +2,10 @@ from typing import Callable, Dict, Optional
 
 from typing_extensions import Self
 
-from nicegui.events import Handler
-
 from .. import optional_features
 from ..awaitable_response import AwaitableResponse
 from ..element import Element
-from ..events import EChartPointClickEventArguments, GenericEventArguments, handle_event
+from ..events import EChartPointClickEventArguments, GenericEventArguments, Handler, handle_event
 
 try:
     from pyecharts.charts.base import default, json

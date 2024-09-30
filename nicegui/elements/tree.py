@@ -2,9 +2,7 @@ from typing import Any, Dict, Iterator, List, Literal, Optional, Set
 
 from typing_extensions import Self
 
-from nicegui.events import Handler
-
-from ..events import GenericEventArguments, ValueChangeEventArguments, handle_event
+from ..events import GenericEventArguments, Handler, ValueChangeEventArguments, handle_event
 from .mixins.filter_element import FilterElement
 
 
