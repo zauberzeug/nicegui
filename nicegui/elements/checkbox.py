@@ -1,7 +1,8 @@
 from typing import Optional
 
+from nicegui.events import Handler
+
 from ..events import ValueChangeEventArguments
-from .handler import Handler
 from .mixins.disableable_element import DisableableElement
 from .mixins.text_element import TextElement
 from .mixins.value_element import ValueElement
@@ -9,7 +10,7 @@ from .mixins.value_element import ValueElement
 
 class Checkbox(TextElement, ValueElement, DisableableElement):
 
-    def __init__(self, text: str = '', *, value: bool = False, on_change: Optional[Handler[ValueChangeEventArguments]]) -> None:
+    def __init__(self, text: str = '', *, value: bool = False, on_change: Optional[Handler[ValueChangeEventArguments]] = None) -> None:
         """Checkbox
 
         This element is based on Quasar's `QCheckbox <https://quasar.dev/vue-components/checkbox>`_ component.

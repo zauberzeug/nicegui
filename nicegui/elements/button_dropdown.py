@@ -1,7 +1,8 @@
 from typing import Optional
 
+from nicegui.events import Handler
+
 from ..events import ClickEventArguments, ValueChangeEventArguments, handle_event
-from .handler import Handler
 from .mixins.color_elements import BackgroundColorElement
 from .mixins.disableable_element import DisableableElement
 from .mixins.icon_element import IconElement
@@ -14,8 +15,8 @@ class DropdownButton(IconElement, TextElement, DisableableElement, BackgroundCol
     def __init__(self,
                  text: str = '', *,
                  value: bool = False,
-                 on_value_change: Optional[Handler[ValueChangeEventArguments]],
-                 on_click: Optional[Handler[ClickEventArguments]],
+                 on_value_change: Optional[Handler[ValueChangeEventArguments]] = None,
+                 on_click: Optional[Handler[ClickEventArguments]] = None,
                  color: Optional[str] = 'primary',
                  icon: Optional[str] = None,
                  auto_close: Optional[bool] = False,

@@ -3,7 +3,22 @@ from __future__ import annotations
 from contextlib import nullcontext
 from dataclasses import dataclass
 from inspect import Parameter, signature
-from typing import TYPE_CHECKING, Any, Awaitable, BinaryIO, Callable, Dict, Iterator, List, Literal, Optional, Union
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Awaitable,
+    BinaryIO,
+    Callable,
+    Dict,
+    Iterator,
+    List,
+    Literal,
+    Optional,
+    TypeVar,
+    Union,
+)
+
+from typing_extensions import TypeAlias
 
 from . import background_tasks, core
 from .awaitable_response import AwaitableResponse
@@ -382,7 +397,11 @@ class JsonEditorChangeEventArguments(UiEventArguments):
     errors: Dict
 
 
-def handle_event(handler: Optional[Callable[..., Any]], arguments: EventArguments) -> None:
+EventT = TypeVar('EventT', bound=EventArguments)
+Handler: TypeAlias = Union[Callable[[EventT], Any], Callable[[], Any]]
+
+
+def handle_event(handler: Optional[Handler[EventT]], arguments: EventT) -> None:
     """Call the given event handler.
 
     The handler is called within the context of the parent slot of the sender.

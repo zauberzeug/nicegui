@@ -1,7 +1,8 @@
 from typing import Optional
 
+from nicegui.events import Handler
+
 from ..events import ValueChangeEventArguments
-from .handler import Handler
 from .mixins.disableable_element import DisableableElement
 from .mixins.icon_element import IconElement
 from .mixins.text_element import TextElement
@@ -16,7 +17,7 @@ class Expansion(IconElement, TextElement, ValueElement, DisableableElement):
                  icon: Optional[str] = None,
                  group: Optional[str] = None,
                  value: bool = False,
-                 on_value_change: Optional[Handler[ValueChangeEventArguments]]
+                 on_value_change: Optional[Handler[ValueChangeEventArguments]] = None
                  ) -> None:
         """Expansion Element
 

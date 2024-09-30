@@ -4,8 +4,7 @@ from typing_extensions import Self
 
 from ...binding import BindableProperty, bind, bind_from, bind_to
 from ...element import Element
-from ...events import GenericEventArguments, ValueChangeEventArguments, handle_event
-from ..handler import Handler
+from ...events import GenericEventArguments, Handler, ValueChangeEventArguments, handle_event
 
 
 class ValueElement(Element):
@@ -25,7 +24,7 @@ class ValueElement(Element):
 
     def __init__(self, *,
                  value: Any,
-                 on_value_change: Optional[Handler[ValueChangeEventArguments]],
+                 on_value_change: Optional[Handler[ValueChangeEventArguments]] = None,
                  throttle: float = 0,
                  **kwargs: Any,
                  ) -> None:

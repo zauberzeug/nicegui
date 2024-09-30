@@ -3,11 +3,12 @@ from typing import TYPE_CHECKING, Any, Dict, List, Literal, Optional, Tuple, Uni
 
 from typing_extensions import Self
 
+from nicegui.events import Handler
+
 from .. import optional_features
 from ..element import Element
 from ..events import GenericEventArguments, TableSelectionEventArguments, ValueChangeEventArguments, handle_event
 from ..helpers import warn_once
-from .handler import Handler
 from .mixins.filter_element import FilterElement
 
 if importlib.util.find_spec('pandas'):

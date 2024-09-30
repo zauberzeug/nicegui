@@ -2,9 +2,10 @@ from typing import Literal, Optional
 
 from typing_extensions import Self
 
+from nicegui.events import Handler
+
 from ..element import Element
 from ..events import GenericEventArguments, ScrollEventArguments, handle_event
-from .handler import Handler
 
 
 class ScrollArea(Element):

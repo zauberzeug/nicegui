@@ -1,7 +1,8 @@
 from typing import Any, Dict, List, Optional, Union
 
+from nicegui.events import Handler
+
 from ..events import ValueChangeEventArguments
-from .handler import Handler
 from .mixins.value_element import ValueElement
 
 
@@ -11,7 +12,7 @@ class ChoiceElement(ValueElement):
                  tag: Optional[str] = None,
                  options: Union[List, Dict],
                  value: Any,
-                 on_change: Optional[Handler[ValueChangeEventArguments]],
+                 on_change: Optional[Handler[ValueChangeEventArguments]] = None,
                  ) -> None:
         self.options = options
         self._values: List[str] = []

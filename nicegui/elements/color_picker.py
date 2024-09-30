@@ -2,16 +2,17 @@ from typing import Optional
 
 from typing_extensions import Self
 
+from nicegui.events import Handler
+
 from ..element import Element
 from ..events import ColorPickEventArguments, GenericEventArguments, handle_event
-from .handler import Handler
 from .menu import Menu
 
 
 class ColorPicker(Menu):
 
     def __init__(self, *,
-                 on_pick: Optional[Handler[ColorPickEventArguments]],
+                 on_pick: Optional[Handler[ColorPickEventArguments]] = None,
                  value: bool = False,
                  ) -> None:
         """Color Picker

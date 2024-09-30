@@ -4,8 +4,7 @@ from typing_extensions import Self
 
 from ...binding import BindableProperty, bind, bind_from, bind_to
 from ...element import Element
-from ...events import ValueChangeEventArguments, handle_event
-from ..handler import Handler
+from ...events import Handler, ValueChangeEventArguments, handle_event
 
 
 class SelectableElement(Element):
@@ -15,7 +14,7 @@ class SelectableElement(Element):
     def __init__(self, *,
                  selectable: bool,
                  selected: bool,
-                 on_selection_change: Optional[Handler[ValueChangeEventArguments]],
+                 on_selection_change: Optional[Handler[ValueChangeEventArguments]] = None,
                  **kwargs: Any) -> None:
         super().__init__(**kwargs)
         if not selectable:

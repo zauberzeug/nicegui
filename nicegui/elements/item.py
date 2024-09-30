@@ -2,15 +2,16 @@ from typing import Optional
 
 from typing_extensions import Self
 
+from nicegui.events import Handler
+
 from ..events import ClickEventArguments, handle_event
-from .handler import Handler
 from .mixins.disableable_element import DisableableElement
 from .mixins.text_element import TextElement
 
 
 class Item(DisableableElement):
 
-    def __init__(self, text: str = '', *, on_click: Optional[Handler[ClickEventArguments]]) -> None:
+    def __init__(self, text: str = '', *, on_click: Optional[Handler[ClickEventArguments]] = None) -> None:
         """List Item
 
         Creates a clickable list item based on Quasar's

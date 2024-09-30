@@ -3,9 +3,10 @@ from typing import Optional
 
 from typing_extensions import Self
 
+from nicegui.events import Handler
+
 from ..element import Element
 from ..events import ClickEventArguments, GenericEventArguments, SceneClickEventArguments, SceneClickHit, handle_event
-from .handler import Handler
 from .scene import Scene, SceneCamera
 
 

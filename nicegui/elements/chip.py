@@ -2,8 +2,9 @@ from typing import Optional
 
 from typing_extensions import Self
 
+from nicegui.events import Handler
+
 from ..events import ClickEventArguments, ValueChangeEventArguments, handle_event
-from .handler import Handler
 from .mixins.color_elements import BackgroundColorElement, TextColorElement
 from .mixins.disableable_element import DisableableElement
 from .mixins.icon_element import IconElement
@@ -21,12 +22,12 @@ class Chip(IconElement, ValueElement, TextElement, BackgroundColorElement, TextC
                  icon: Optional[str] = None,
                  color: Optional[str] = 'primary',
                  text_color: Optional[str] = None,
-                 on_click: Optional[Handler[ClickEventArguments]],
+                 on_click: Optional[Handler[ClickEventArguments]] = None,
                  selectable: bool = False,
                  selected: bool = False,
                  on_selection_change: Optional[Handler[ValueChangeEventArguments]] = None,
                  removable: bool = False,
-                 on_value_change: Optional[Handler[ValueChangeEventArguments]],
+                 on_value_change: Optional[Handler[ValueChangeEventArguments]] = None,
                  ) -> None:
         """Chip
 

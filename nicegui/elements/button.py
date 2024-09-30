@@ -3,8 +3,9 @@ from typing import Optional
 
 from typing_extensions import Self
 
+from nicegui.events import Handler
+
 from ..events import ClickEventArguments, handle_event
-from .handler import Handler
 from .mixins.color_elements import BackgroundColorElement
 from .mixins.disableable_element import DisableableElement
 from .mixins.icon_element import IconElement
@@ -15,7 +16,7 @@ class Button(IconElement, TextElement, DisableableElement, BackgroundColorElemen
 
     def __init__(self,
                  text: str = '', *,
-                 on_click: Optional[Handler[ClickEventArguments]],
+                 on_click: Optional[Handler[ClickEventArguments]] = None,
                  color: Optional[str] = 'primary',
                  icon: Optional[str] = None,
                  ) -> None:

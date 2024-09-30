@@ -1,7 +1,6 @@
 from typing import Dict, Optional
 
-from nicegui.elements.handler import Handler
-from nicegui.events import ValueChangeEventArguments
+from nicegui.events import Handler, ValueChangeEventArguments
 
 from .mixins.disableable_element import DisableableElement
 from .mixins.value_element import ValueElement
@@ -14,7 +13,7 @@ class Range(ValueElement, DisableableElement):
                  max: float,  # pylint: disable=redefined-builtin
                  step: float = 1.0,
                  value: Optional[Dict[str, int]] = None,
-                 on_change: Optional[Handler[ValueChangeEventArguments]],
+                 on_change: Optional[Handler[ValueChangeEventArguments]] = None,
                  ) -> None:
         """Range
 

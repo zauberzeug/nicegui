@@ -6,9 +6,10 @@ from typing import List, Optional, Tuple, Union, cast
 
 from typing_extensions import Self
 
+from nicegui.events import Handler
+
 from .. import optional_features
 from ..events import GenericEventArguments, MouseEventArguments, handle_event
-from .handler import Handler
 from .image import pil_to_base64
 from .mixins.content_element import ContentElement
 from .mixins.source_element import SourceElement

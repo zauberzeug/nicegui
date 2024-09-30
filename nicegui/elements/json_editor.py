@@ -2,10 +2,11 @@ from typing import Dict, Optional
 
 from typing_extensions import Self
 
+from nicegui.events import Handler
+
 from ..awaitable_response import AwaitableResponse
 from ..element import Element
 from ..events import GenericEventArguments, JsonEditorChangeEventArguments, JsonEditorSelectEventArguments, handle_event
-from .handler import Handler
 
 
 class JsonEditor(Element, component='json_editor.js', dependencies=['lib/vanilla-jsoneditor/standalone.js']):

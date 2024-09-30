@@ -4,9 +4,10 @@ from fastapi import Request
 from starlette.datastructures import UploadFile
 from typing_extensions import Self
 
+from nicegui.events import Handler
+
 from ..events import MultiUploadEventArguments, UiEventArguments, UploadEventArguments, handle_event
 from ..nicegui import app
-from .handler import Handler
 from .mixins.disableable_element import DisableableElement
 
 
@@ -18,8 +19,8 @@ class Upload(DisableableElement, component='upload.js'):
                  max_total_size: Optional[int] = None,
                  max_files: Optional[int] = None,
                  on_upload: Optional[Handler[UploadEventArguments]] = None,
-                 on_multi_upload: Optional[Handler[MultiUploadEventArguments]],
-                 on_rejected: Optional[Handler[UiEventArguments]],
+                 on_multi_upload: Optional[Handler[MultiUploadEventArguments]] = None,
+                 on_rejected: Optional[Handler[UiEventArguments]] = None,
                  label: str = '',
                  auto_upload: bool = False,
                  ) -> None:

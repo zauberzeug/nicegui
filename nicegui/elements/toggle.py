@@ -1,7 +1,6 @@
 from typing import Any, Dict, List, Optional, Union
 
-from nicegui.elements.handler import Handler
-from nicegui.events import ValueChangeEventArguments
+from nicegui.events import Handler, ValueChangeEventArguments
 
 from ..events import GenericEventArguments
 from .choice_element import ChoiceElement
@@ -13,7 +12,7 @@ class Toggle(ChoiceElement, DisableableElement):
     def __init__(self,
                  options: Union[List, Dict], *,
                  value: Any = None,
-                 on_change: Optional[Handler[ValueChangeEventArguments]],
+                 on_change: Optional[Handler[ValueChangeEventArguments]] = None,
                  clearable: bool = False,
                  ) -> None:
         """Toggle

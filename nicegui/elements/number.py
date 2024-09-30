@@ -1,7 +1,6 @@
 from typing import Any, Callable, Dict, Optional, Union
 
-from nicegui.elements.handler import Handler
-from nicegui.events import ValueChangeEventArguments
+from nicegui.events import Handler, ValueChangeEventArguments
 
 from ..events import GenericEventArguments
 from .mixins.disableable_element import DisableableElement
@@ -22,7 +21,7 @@ class Number(ValidationElement, DisableableElement):
                  prefix: Optional[str] = None,
                  suffix: Optional[str] = None,
                  format: Optional[str] = None,  # pylint: disable=redefined-builtin
-                 on_change: Optional[Handler[ValueChangeEventArguments]],
+                 on_change: Optional[Handler[ValueChangeEventArguments]] = None,
                  validation: Optional[Union[Callable[..., Optional[str]], Dict[str, Callable[..., bool]]]] = None,
                  ) -> None:
         """Number Input

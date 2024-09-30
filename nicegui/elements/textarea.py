@@ -1,7 +1,6 @@
 from typing import Callable, Dict, Optional, Union
 
-from nicegui.elements.handler import Handler
-from nicegui.events import ValueChangeEventArguments
+from nicegui.events import Handler, ValueChangeEventArguments
 
 from .input import Input
 
@@ -12,7 +11,7 @@ class Textarea(Input, component='input.js'):
                  label: Optional[str] = None, *,
                  placeholder: Optional[str] = None,
                  value: str = '',
-                 on_change: Optional[Handler[ValueChangeEventArguments]],
+                 on_change: Optional[Handler[ValueChangeEventArguments]] = None,
                  validation: Optional[Union[Callable[..., Optional[str]], Dict[str, Callable[..., bool]]]] = None,
                  ) -> None:
         """Textarea

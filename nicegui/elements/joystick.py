@@ -2,9 +2,10 @@ from typing import Any, Optional
 
 from typing_extensions import Self
 
+from nicegui.events import Handler
+
 from ..element import Element
 from ..events import GenericEventArguments, JoystickEventArguments, handle_event
-from .handler import Handler
 
 
 class Joystick(Element, component='joystick.vue', dependencies=['lib/nipplejs/nipplejs.js']):

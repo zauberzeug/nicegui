@@ -1,9 +1,8 @@
 from typing import Optional
 
-from nicegui.elements.handler import Handler
 from nicegui.elements.mixins.disableable_element import DisableableElement
 from nicegui.elements.mixins.value_element import ValueElement
-from nicegui.events import ValueChangeEventArguments
+from nicegui.events import Handler, ValueChangeEventArguments
 
 
 class Pagination(ValueElement, DisableableElement):
@@ -12,7 +11,7 @@ class Pagination(ValueElement, DisableableElement):
                  min: int, max: int, *,  # pylint: disable=redefined-builtin
                  direction_links: bool = False,
                  value: Optional[int] = ...,  # type: ignore
-                 on_change: Optional[Handler[ValueChangeEventArguments]]) -> None:
+                 on_change: Optional[Handler[ValueChangeEventArguments]] = None) -> None:
         """Pagination
 
         A pagination element wrapping Quasar's `QPagination <https://quasar.dev/vue-components/pagination>`_ component.
