@@ -37,7 +37,7 @@ class Carousel(ValueElement):
 
     def _handle_value_change(self, value: Any) -> None:
         super()._handle_value_change(value)
-        names = [slide.props['name'] for slide in self]
+        names = [slide.props['name'] for slide in self.default_slot]
         for i, slide in enumerate(self):
             done = i < names.index(value) if value in names else False
             slide.props(f':done={done}')
