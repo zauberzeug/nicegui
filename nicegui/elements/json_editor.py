@@ -13,8 +13,8 @@ class JsonEditor(Element, component='json_editor.js', dependencies=['lib/vanilla
 
     def __init__(self,
                  properties: Dict, *,
-                 on_select: Optional[Handler[JsonEditorChangeEventArguments]] = None,
-                 on_change: Optional[Handler[JsonEditorSelectEventArguments]] = None,
+                 on_select: Optional[Handler[JsonEditorSelectEventArguments]] = None,
+                 on_change: Optional[Handler[JsonEditorChangeEventArguments]] = None,
                  ) -> None:
         """JSONEditor
 
