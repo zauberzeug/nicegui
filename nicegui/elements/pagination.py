@@ -1,9 +1,8 @@
 from typing import Optional
 
-from nicegui.elements.mixins.disableable_element import DisableableElement
-from nicegui.elements.mixins.value_element import ValueElement
-
 from ..events import Handler, ValueChangeEventArguments
+from .mixins.disableable_element import DisableableElement
+from .mixins.value_element import ValueElement
 
 
 class Pagination(ValueElement, DisableableElement):
