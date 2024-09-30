@@ -1,9 +1,10 @@
 from pathlib import Path
-from typing import Any, Callable, List, Literal, Optional, get_args
+from typing import Callable, List, Literal, Optional, get_args
 
+from nicegui.elements.handler import Handler
 from nicegui.elements.mixins.disableable_element import DisableableElement
 from nicegui.elements.mixins.value_element import ValueElement
-from nicegui.events import GenericEventArguments
+from nicegui.events import GenericEventArguments, ValueChangeEventArguments
 
 SUPPORTED_LANGUAGES = Literal[
     'Angular Template',
@@ -253,7 +254,7 @@ class CodeMirror(ValueElement, DisableableElement, component='codemirror.js'):
         self,
         value: str = '',
         *,
-        on_change: Optional[Callable[..., Any]] = None,
+        on_change: Optional[Handler[ValueChangeEventArguments]],
         language: Optional[SUPPORTED_LANGUAGES] = None,
         theme: SUPPORTED_THEMES = 'basicLight',
         indent: str = ' ' * 4,

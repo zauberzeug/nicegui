@@ -1,5 +1,7 @@
-from typing import Any, Callable, Optional
+from typing import Optional
 
+from ..events import ValueChangeEventArguments
+from .handler import Handler
 from .mixins.disableable_element import DisableableElement
 from .mixins.icon_element import IconElement
 from .mixins.text_element import TextElement
@@ -14,7 +16,7 @@ class Expansion(IconElement, TextElement, ValueElement, DisableableElement):
                  icon: Optional[str] = None,
                  group: Optional[str] = None,
                  value: bool = False,
-                 on_value_change: Optional[Callable[..., Any]] = None
+                 on_value_change: Optional[Handler[ValueChangeEventArguments]]
                  ) -> None:
         """Expansion Element
 

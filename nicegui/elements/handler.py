@@ -1,4 +1,6 @@
-from typing import Any, Callable, Optional, TypeAlias, TypeVar, Union
+from typing import Any, Callable, TypeVar, Union
+
+from typing_extensions import TypeAlias
 
 EventT = TypeVar('EventT')
-Handler: TypeAlias = Optional[Union[Callable[[EventT], Any], Callable[[], Any]]]
+Handler: TypeAlias = Union[Callable[[EventT], Any], Callable[[], Any]]

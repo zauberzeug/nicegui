@@ -1,4 +1,7 @@
-from typing import Any, Callable, Optional
+from typing import Optional
+
+from nicegui.elements.handler import Handler
+from nicegui.events import ValueChangeEventArguments
 
 from .mixins.disableable_element import DisableableElement
 from .mixins.value_element import ValueElement
@@ -9,7 +12,7 @@ class Time(ValueElement, DisableableElement):
     def __init__(self,
                  value: Optional[str] = None, *,
                  mask: str = 'HH:mm',
-                 on_change: Optional[Callable[..., Any]] = None,
+                 on_change: Optional[Handler[ValueChangeEventArguments]],
                  ) -> None:
         """Time Input
 

@@ -1,9 +1,11 @@
 from __future__ import annotations
 
-from typing import Any, Callable, Optional, Union, cast
+from typing import Any, Optional, Union, cast
 
 from ..context import context
 from ..element import Element
+from ..events import ValueChangeEventArguments
+from .handler import Handler
 from .mixins.disableable_element import DisableableElement
 from .mixins.icon_element import IconElement
 from .mixins.value_element import ValueElement
@@ -13,7 +15,7 @@ class Stepper(ValueElement):
 
     def __init__(self, *,
                  value: Union[str, Step, None] = None,
-                 on_value_change: Optional[Callable[..., Any]] = None,
+                 on_value_change: Optional[Handler[ValueChangeEventArguments]],
                  keep_alive: bool = True,
                  ) -> None:
         """Stepper

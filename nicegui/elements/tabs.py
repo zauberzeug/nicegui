@@ -1,6 +1,9 @@
 from __future__ import annotations
 
-from typing import Any, Callable, Optional, Union
+from typing import Any, Optional, Union
+
+from nicegui.elements.handler import Handler
+from nicegui.events import ValueChangeEventArguments
 
 from ..context import context
 from .mixins.disableable_element import DisableableElement
@@ -12,7 +15,7 @@ class Tabs(ValueElement):
 
     def __init__(self, *,
                  value: Union[Tab, TabPanel, None] = None,
-                 on_change: Optional[Callable[..., Any]] = None,
+                 on_change: Optional[Handler[ValueChangeEventArguments]],
                  ) -> None:
         """Tabs
 
@@ -51,7 +54,7 @@ class TabPanels(ValueElement):
     def __init__(self,
                  tabs: Optional[Tabs] = None, *,
                  value: Union[Tab, TabPanel, str, None] = None,
-                 on_change: Optional[Callable[..., Any]] = None,
+                 on_change: Optional[Handler[ValueChangeEventArguments]],
                  animated: bool = True,
                  keep_alive: bool = True,
                  ) -> None:

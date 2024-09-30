@@ -1,4 +1,7 @@
-from typing import Any, Callable, Optional
+from typing import Optional
+
+from nicegui.elements.handler import Handler
+from nicegui.events import ValueChangeEventArguments
 
 from .label import Label
 from .mixins.color_elements import TextColorElement
@@ -19,7 +22,7 @@ class Knob(ValueElement, DisableableElement, TextColorElement):
                  track_color: Optional[str] = None,
                  size: Optional[str] = None,
                  show_value: bool = False,
-                 on_change: Optional[Callable[..., Any]] = None,
+                 on_change: Optional[Handler[ValueChangeEventArguments]],
                  ) -> None:
         """Knob
 

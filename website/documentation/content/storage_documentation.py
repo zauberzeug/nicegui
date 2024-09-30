@@ -32,7 +32,7 @@ doc.title('Storage')
         Stored server-side, each dictionary is associated with a unique identifier held in a browser session cookie.
         Unique to each user, this storage is accessible across all their browser tabs.
         `app.storage.browser['id']` is used to identify the user.
-        This storage is only available within [page builder functions](/documentation/page) 
+        This storage is only available within [page builder functions](/documentation/page)
         and requires the `storage_secret` parameter in`ui.run()` to sign the browser session cookie.
     - `app.storage.general`:
         Also stored server-side, this dictionary provides a shared storage space accessible to all users.
@@ -40,11 +40,11 @@ doc.title('Storage')
         Unlike the previous types, this dictionary is stored directly as the browser session cookie, shared among all browser tabs for the same user.
         However, `app.storage.user` is generally preferred due to its advantages in reducing data payload, enhancing security, and offering larger storage capacity.
         By default, NiceGUI holds a unique identifier for the browser session in `app.storage.browser['id']`.
-        This storage is only available within [page builder functions](/documentation/page) 
+        This storage is only available within [page builder functions](/documentation/page)
         and requires the `storage_secret` parameter in`ui.run()` to sign the browser session cookie.
 
     The following table will help you to choose storage.
- 
+
     | Storage type                | `tab`  | `client` | `user` | `general` | `browser` |
     |-----------------------------|--------|----------|--------|-----------|-----------|
     | Location                    | Server | Server   | Server | Server    | Browser   |

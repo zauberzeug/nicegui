@@ -1,6 +1,7 @@
 from nicegui import events, ui
 from nicegui.testing import Screen
 
+
 def test_radio_click(screen: Screen):
     r = ui.radio(['A', 'B', 'C'])
 
@@ -10,12 +11,14 @@ def test_radio_click(screen: Screen):
     screen.click('B')
     assert r.value == 'B'
 
+
 def test_radio_click_already_selected(screen: Screen):
     r = ui.radio(['A', 'B', 'C'], value='B')
 
     screen.open('/')
     screen.click('B')
     assert r.value == 'B'
+
 
 def test_radio_set_value(screen: Screen):
     r = ui.radio(['A', 'B', 'C'])
@@ -24,12 +27,14 @@ def test_radio_set_value(screen: Screen):
     r.set_value('B')
     assert r.value == 'B'
 
+
 def test_radio_set_options(screen: Screen):
     r = ui.radio(['A', 'B', 'C'])
 
     screen.open('/')
     r.set_options(['D', 'E', 'F'])
     assert r.options == ['D', 'E', 'F']
+
 
 def test_radio_set_options_value_still_valid(screen: Screen):
     r = ui.radio(['A', 'B', 'C'], value='C')
@@ -38,6 +43,7 @@ def test_radio_set_options_value_still_valid(screen: Screen):
     r.set_options(['C', 'D', 'E'])
     assert r.value == 'C'
 
+
 def test_radio_set_options_value_none(screen: Screen):
     r = ui.radio(['A', 'B', 'C'], value='C')
 
@@ -45,12 +51,14 @@ def test_radio_set_options_value_none(screen: Screen):
     r.set_options(['D', 'E', 'F'])
     assert r.value is None
 
+
 def test_radio_set_options_value(screen: Screen):
     r = ui.radio(['A', 'B', 'C'])
 
     screen.open('/')
     r.set_options(['D', 'E', 'F'], value='E')
     assert r.value == 'E'
+
 
 def test_radio_set_options_value_callback(screen: Screen):
     """Fix for https://github.com/zauberzeug/nicegui/issues/3733.

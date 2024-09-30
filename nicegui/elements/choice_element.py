@@ -1,5 +1,7 @@
-from typing import Any, Callable, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Union
 
+from ..events import ValueChangeEventArguments
+from .handler import Handler
 from .mixins.value_element import ValueElement
 
 
@@ -9,7 +11,7 @@ class ChoiceElement(ValueElement):
                  tag: Optional[str] = None,
                  options: Union[List, Dict],
                  value: Any,
-                 on_change: Optional[Callable[..., Any]] = None,
+                 on_change: Optional[Handler[ValueChangeEventArguments]],
                  ) -> None:
         self.options = options
         self._values: List[str] = []

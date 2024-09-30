@@ -1,4 +1,7 @@
-from typing import Any, Callable, Optional
+from typing import Optional
+
+from nicegui.elements.handler import Handler
+from nicegui.events import ValueChangeEventArguments
 
 from .mixins.disableable_element import DisableableElement
 from .mixins.value_element import ValueElement
@@ -11,7 +14,7 @@ class Slider(ValueElement, DisableableElement):
                  max: float,  # pylint: disable=redefined-builtin
                  step: float = 1.0,
                  value: Optional[float] = None,
-                 on_change: Optional[Callable[..., Any]] = None,
+                 on_change: Optional[Handler[ValueChangeEventArguments]],
                  ) -> None:
         """Slider
 

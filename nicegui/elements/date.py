@@ -1,4 +1,7 @@
-from typing import Any, Callable, Dict, List, Optional, Union
+from typing import Dict, List, Optional, Union
+
+from nicegui.elements.handler import Handler
+from nicegui.events import ValueChangeEventArguments
 
 from .mixins.disableable_element import DisableableElement
 from .mixins.value_element import ValueElement
@@ -12,7 +15,7 @@ class Date(ValueElement, DisableableElement):
                  ] = None,
                  *,
                  mask: str = 'YYYY-MM-DD',
-                 on_change: Optional[Callable[..., Any]] = None) -> None:
+                 on_change: Optional[Handler[ValueChangeEventArguments]]) -> None:
         """Date Input
 
         This element is based on Quasar's `QDate <https://quasar.dev/vue-components/date>`_ component.

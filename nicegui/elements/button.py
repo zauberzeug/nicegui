@@ -1,9 +1,10 @@
 import asyncio
-from typing import Any, Callable, Optional
+from typing import Optional
 
 from typing_extensions import Self
 
 from ..events import ClickEventArguments, handle_event
+from .handler import Handler
 from .mixins.color_elements import BackgroundColorElement
 from .mixins.disableable_element import DisableableElement
 from .mixins.icon_element import IconElement
@@ -14,7 +15,7 @@ class Button(IconElement, TextElement, DisableableElement, BackgroundColorElemen
 
     def __init__(self,
                  text: str = '', *,
-                 on_click: Optional[Callable[..., Any]] = None,
+                 on_click: Optional[Handler[ClickEventArguments]],
                  color: Optional[str] = 'primary',
                  icon: Optional[str] = None,
                  ) -> None:
@@ -37,7 +38,7 @@ class Button(IconElement, TextElement, DisableableElement, BackgroundColorElemen
         if on_click:
             self.on_click(on_click)
 
-    def on_click(self, callback: Callable[..., Any]) -> Self:
+    def on_click(self, callback: Handler[ClickEventArguments]) -> Self:
         """Add a callback to be invoked when the button is clicked."""
         self.on('click', lambda _: handle_event(callback, ClickEventArguments(sender=self, client=self.client)), [])
         return self

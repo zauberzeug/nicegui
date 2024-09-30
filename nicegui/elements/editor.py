@@ -1,4 +1,7 @@
-from typing import Any, Callable, Optional
+from typing import Any, Optional
+
+from nicegui.elements.handler import Handler
+from nicegui.events import ValueChangeEventArguments
 
 from .mixins.disableable_element import DisableableElement
 from .mixins.value_element import ValueElement
@@ -12,7 +15,7 @@ class Editor(ValueElement, DisableableElement, component='editor.js'):
                  *,
                  placeholder: Optional[str] = None,
                  value: str = '',
-                 on_change: Optional[Callable[..., Any]] = None,
+                 on_change: Optional[Handler[ValueChangeEventArguments]],
                  ) -> None:
         """Editor
 

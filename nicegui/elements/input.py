@@ -1,5 +1,8 @@
 from typing import Any, Callable, Dict, List, Optional, Union
 
+from nicegui.elements.handler import Handler
+from nicegui.events import ValueChangeEventArguments
+
 from .icon import Icon
 from .mixins.disableable_element import DisableableElement
 from .mixins.validation_element import ValidationElement
@@ -15,7 +18,7 @@ class Input(ValidationElement, DisableableElement, component='input.js'):
                  value: str = '',
                  password: bool = False,
                  password_toggle_button: bool = False,
-                 on_change: Optional[Callable[..., Any]] = None,
+                 on_change: Optional[Handler[ValueChangeEventArguments]],
                  autocomplete: Optional[List[str]] = None,
                  validation: Optional[Union[Callable[..., Optional[str]], Dict[str, Callable[..., bool]]]] = None,
                  ) -> None:

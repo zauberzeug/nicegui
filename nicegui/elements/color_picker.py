@@ -1,16 +1,17 @@
-from typing import Any, Callable, Optional
+from typing import Optional
 
 from typing_extensions import Self
 
 from ..element import Element
 from ..events import ColorPickEventArguments, GenericEventArguments, handle_event
+from .handler import Handler
 from .menu import Menu
 
 
 class ColorPicker(Menu):
 
     def __init__(self, *,
-                 on_pick: Optional[Callable[..., Any]] = None,
+                 on_pick: Optional[Handler[ColorPickEventArguments]],
                  value: bool = False,
                  ) -> None:
         """Color Picker
@@ -36,7 +37,7 @@ class ColorPicker(Menu):
         """
         self.q_color.props(f'model-value="{color}"')
 
-    def on_pick(self, callback: Callable[..., Any]) -> Self:
+    def on_pick(self, callback: Handler[ColorPickEventArguments]) -> Self:
         """Add a callback to be invoked when a color is picked."""
         self._pick_handlers.append(callback)
         return self

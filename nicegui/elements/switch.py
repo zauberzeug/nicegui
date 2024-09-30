@@ -1,4 +1,7 @@
-from typing import Any, Callable, Optional
+from typing import Optional
+
+from nicegui.elements.handler import Handler
+from nicegui.events import ValueChangeEventArguments
 
 from .mixins.disableable_element import DisableableElement
 from .mixins.text_element import TextElement
@@ -7,7 +10,7 @@ from .mixins.value_element import ValueElement
 
 class Switch(TextElement, ValueElement, DisableableElement):
 
-    def __init__(self, text: str = '', *, value: bool = False, on_change: Optional[Callable[..., Any]] = None) -> None:
+    def __init__(self, text: str = '', *, value: bool = False, on_change: Optional[Handler[ValueChangeEventArguments]]) -> None:
         """Switch
 
         This element is based on Quasar's `QToggle <https://quasar.dev/vue-components/toggle>`_ component.

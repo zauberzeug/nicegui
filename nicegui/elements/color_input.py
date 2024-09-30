@@ -1,4 +1,7 @@
-from typing import Any, Callable, Optional
+from typing import Any, Optional
+
+from nicegui.elements.handler import Handler
+from nicegui.events import ValueChangeEventArguments
 
 from .button import Button as button
 from .color_picker import ColorPicker as color_picker
@@ -13,7 +16,7 @@ class ColorInput(ValueElement, DisableableElement):
                  label: Optional[str] = None, *,
                  placeholder: Optional[str] = None,
                  value: str = '',
-                 on_change: Optional[Callable[..., Any]] = None,
+                 on_change: Optional[Handler[ValueChangeEventArguments]],
                  preview: bool = False,
                  ) -> None:
         """Color Input
