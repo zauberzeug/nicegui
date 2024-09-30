@@ -16,9 +16,8 @@ from typing import (
     Optional,
     TypeVar,
     Union,
+    cast,
 )
-
-from typing_extensions import TypeAlias
 
 from . import background_tasks, core
 from .awaitable_response import AwaitableResponse
@@ -398,7 +397,7 @@ class JsonEditorChangeEventArguments(UiEventArguments):
 
 
 EventT = TypeVar('EventT', bound=EventArguments)
-Handler: TypeAlias = Union[Callable[[EventT], Any], Callable[[], Any]]
+Handler = Union[Callable[[EventT], Any], Callable[[], Any]]
 
 
 def handle_event(handler: Optional[Handler[EventT]], arguments: EventT) -> None:
@@ -427,7 +426,10 @@ def handle_event(handler: Optional[Handler[EventT]], arguments: EventT) -> None:
             parent_slot = nullcontext()
 
         with parent_slot:
-            result = handler(arguments) if expects_arguments else handler()
+            if expects_arguments:
+                result = cast(Callable[[EventT], Any], handler)(arguments)
+            else:
+                result = cast(Callable[[], Any], handler)()
         if isinstance(result, Awaitable) and not isinstance(result, AwaitableResponse):
             # NOTE: await an awaitable result even if the handler is not a coroutine (like a lambda statement)
             async def wait_for_result():
