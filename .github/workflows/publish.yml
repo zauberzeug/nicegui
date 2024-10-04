@@ -132,17 +132,6 @@ jobs:
           git commit -m "Update pyproject.toml"
           git push origin HEAD:main
 
-      - name: Upload to Zenodo
-        id: release
-        uses: megasanjay/upload-to-zenodo@v2.0.1
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          zenodo_token: ${{ secrets.ZENODO_TOKEN }}
-          zenodo_deposition_id: 13623775
-          zenodo_publish: true
-          commit_message: "Update CITATION.cff"
-          citation_cff: true
-
   verify:
     needs: docker
     runs-on: ubuntu-latest
