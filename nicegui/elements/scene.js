@@ -411,8 +411,7 @@ export default {
     set_points(object_id, position, color) {
       if (!this.objects.has(object_id)) return;
       const geometry = this.objects.get(object_id).geometry;
-      const material = this.objects.get(object_id).material;
-      set_point_cloud_data(position, color, geometry, material);
+      set_point_cloud_data(position, color, geometry);
     },
     move_camera(x, y, z, look_at_x, look_at_y, look_at_z, up_x, up_y, up_z, duration) {
       if (this.camera_tween) this.camera_tween.stop();
