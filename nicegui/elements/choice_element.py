@@ -16,7 +16,7 @@ class ChoiceElement(ValueElement):
         self._values: List[str] = []
         self._labels: List[str] = []
         self._update_values_and_labels()
-        if not isinstance(value, list) and value not in self._values:
+        if not isinstance(value, list) and value is not None and value not in self._values:
             raise ValueError(f'Invalid value: {value}')
         super().__init__(tag=tag, value=value, on_value_change=on_change)
         self._update_options()
