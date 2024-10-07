@@ -8,13 +8,7 @@ updates:
   - package-ecosystem: "pip"
     directory: "/"
     schedule:
-      interval: "weekly"
+      interval: "daily"
     ignore:
-      - dependency-name: "ruff"
-        update-types: ["patch"]
-    groups:
-      fastapi:
-        patterns:
-          - "fastapi"
-        schedule:
-          interval: "daily"
+      - dependency-name: "*"
+        update-types: ["version-update:semver-patch"]
