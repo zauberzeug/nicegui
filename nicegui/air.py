@@ -136,8 +136,8 @@ class Air:
             return True
 
         @self.relay.on('client_disconnect')
-        def _handle_disconnect(data: Dict[str, Any]) -> None:
-            self.log.info('disconnected.')
+        def _handle_client_disconnect(data: Dict[str, Any]) -> None:
+            self.log.debug('client disconnected.')
             client_id = data['client_id']
             if client_id not in Client.instances:
                 return
@@ -145,7 +145,15 @@ class Air:
 
         @self.relay.on('connect')
         async def _handle_connect() -> None:
-            self.log.info('connected.')
+            self.log.debug('connected.')
+
+        @self.relay.on('disconnect')
+        async def _handle_disconnect() -> None:
+            self.log.debug('disconnected.')
+
+        @self.relay.on('connect_error')
+        async def _handle_connect_error(data) -> None:
+            self.log.debug(f'Connection error: {data}')
 
         @self.relay.on('event')
         def _handle_event(data: Dict[str, Any]) -> None:
@@ -191,7 +199,7 @@ class Air:
                 socketio_path='/on_air/socket.io',
                 transports=['websocket', 'polling'],  # favor websocket over polling
             )
-            self.log.debug('Connected.')
+            assert self.relay.connected
             return
         except socketio.exceptions.ConnectionError:
             self.log.debug('Connection error.', stack_info=True)
