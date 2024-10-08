@@ -5,7 +5,7 @@ from .mixins.disableable_element import DisableableElement
 from .mixins.value_element import ValueElement
 
 
-class Editor(ValueElement, DisableableElement, component='editor.js'):
+class Editor(ValueElement, DisableableElement, component='editor.js', default_classes='nicegui-editor'):
     VALUE_PROP: str = 'value'
     LOOPBACK = False
 
@@ -24,7 +24,6 @@ class Editor(ValueElement, DisableableElement, component='editor.js'):
         :param on_change: callback to be invoked when the value changes
         """
         super().__init__(value=value, on_value_change=on_change)
-        self._classes.append('nicegui-editor')
         if placeholder is not None:
             self._props['placeholder'] = placeholder
 
