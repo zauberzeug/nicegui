@@ -12,8 +12,8 @@ export default {
       />
       <svg ref="svg" style="position:absolute;top:0;left:0;pointer-events:none" :viewBox="viewBox">
         <g v-if="cross" :style="{ display: showCross ? 'block' : 'none' }">
-          <line :x1="x" y1="0" :x2="x" y2="100%" :stroke="cross === true ? 'black' : cross" />
-          <line x1="0" :y1="y" x2="100%" :y2="y" :stroke="cross === true ? 'black' : cross" />
+          <line v-if="cross_vertical" :x1="x" y1="0" :x2="x" y2="100%" :stroke="cross === true ? 'black' : cross" />
+          <line v-if="cross_horizontal" x1="0" :y1="y" x2="100%" :y2="y" :stroke="cross === true ? 'black' : cross" />
         </g>
         <g v-html="content"></g>
       </svg>
@@ -139,6 +139,8 @@ export default {
     size: Object,
     events: Array,
     cross: Boolean,
+    cross_vertical: Boolean,
+    cross_horizontal: Boolean,
     t: String,
   },
 };
