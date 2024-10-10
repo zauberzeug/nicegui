@@ -50,7 +50,8 @@ class Scene(Element,
                 'lib/three/modules/OrbitControls.js',
                 'lib/three/modules/STLLoader.js',
                 'lib/tween/tween.umd.js',
-            ]):
+            ],
+            default_classes='nicegui-scene'):
     # pylint: disable=import-outside-toplevel
     from .scene_objects import AxesHelper as axes_helper
     from .scene_objects import Box as box
@@ -119,7 +120,6 @@ class Scene(Element,
         self.on('dragstart', self._handle_drag)
         self.on('dragend', self._handle_drag)
         self._props['drag_constraints'] = drag_constraints
-        self._classes.append('nicegui-scene')
 
     def on_click(self, callback: Handler[SceneClickEventArguments]) -> Self:
         """Add a callback to be invoked when a 3D object is clicked."""

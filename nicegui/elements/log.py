@@ -4,7 +4,7 @@ from ..element import Element
 from .label import Label
 
 
-class Log(Element):
+class Log(Element, default_classes='nicegui-log'):
 
     def __init__(self, max_lines: Optional[int] = None) -> None:
         """Log View
@@ -15,7 +15,6 @@ class Log(Element):
         """
         super().__init__()
         self.max_lines = max_lines
-        self._classes.append('nicegui-log')
 
     def push(self, line: Any) -> None:
         """Add a new line to the log.

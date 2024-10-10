@@ -5,7 +5,7 @@ from typing_extensions import Self
 from ..element import Element
 
 
-class Card(Element):
+class Card(Element, default_classes='nicegui-card'):
 
     def __init__(self, *,
                  align_items: Optional[Literal['start', 'end', 'center', 'baseline', 'stretch']] = None,
@@ -23,7 +23,6 @@ class Card(Element):
         :param align_items: alignment of the items in the card ("start", "end", "center", "baseline", or "stretch"; default: `None`)
         """
         super().__init__('q-card')
-        self._classes.append('nicegui-card')
         if align_items:
             self._classes.append(f'items-{align_items}')
 

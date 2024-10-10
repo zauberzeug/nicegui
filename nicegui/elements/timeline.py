@@ -27,7 +27,7 @@ class Timeline(Element):
             self._props['color'] = color
 
 
-class TimelineEntry(IconElement):
+class TimelineEntry(IconElement, default_classes='nicegui-timeline-entry'):
 
     def __init__(self,
                  body: Optional[str] = None,
@@ -70,4 +70,3 @@ class TimelineEntry(IconElement):
             self._props['title'] = title
         if subtitle is not None:
             self._props['subtitle'] = subtitle
-        self._classes.append('nicegui-timeline-entry')

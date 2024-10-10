@@ -19,7 +19,7 @@ PageStickyPositions = Literal[
 ]
 
 
-class Header(ValueElement):
+class Header(ValueElement, default_classes='nicegui-header'):
 
     def __init__(self, *,
                  value: bool = True,
@@ -48,7 +48,6 @@ class Header(ValueElement):
         _check_current_slot(self)
         with context.client.layout:
             super().__init__(tag='q-header', value=value, on_value_change=None)
-        self._classes.append('nicegui-header')
         self._props['bordered'] = bordered
         self._props['elevated'] = elevated
         if wrap:
@@ -84,7 +83,7 @@ class Header(ValueElement):
         self.value = False
 
 
-class Drawer(Element):
+class Drawer(Element, default_classes='nicegui-drawer'):
 
     def __init__(self,
                  side: DrawerSides, *,
@@ -121,7 +120,6 @@ class Drawer(Element):
         self._props['side'] = side
         self._props['bordered'] = bordered
         self._props['elevated'] = elevated
-        self._classes.append('nicegui-drawer')
         code = list(self.client.layout.props['view'])
         code[0 if side == 'left' else 2] = side[0].lower() if top_corner else 'h'
         code[4 if side == 'left' else 6] = side[0].upper() if fixed else side[0].lower()
@@ -212,7 +210,7 @@ class RightDrawer(Drawer):
                          bottom_corner=bottom_corner)
 
 
-class Footer(ValueElement):
+class Footer(ValueElement, default_classes='nicegui-footer'):
 
     def __init__(self, *,
                  value: bool = True,
@@ -239,7 +237,6 @@ class Footer(ValueElement):
         _check_current_slot(self)
         with context.client.layout:
             super().__init__(tag='q-footer', value=value, on_value_change=None)
-        self.classes('nicegui-footer')
         self._props['bordered'] = bordered
         self._props['elevated'] = elevated
         if wrap:

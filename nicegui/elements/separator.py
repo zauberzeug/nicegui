@@ -1,7 +1,7 @@
 from ..element import Element
 
 
-class Separator(Element):
+class Separator(Element, default_classes='nicegui-separator'):
 
     def __init__(self) -> None:
         """Separator
@@ -11,4 +11,3 @@ class Separator(Element):
         It serves as a separator for cards, menus and other component containers and is similar to HTML's <hr> tag.
         """
         super().__init__('q-separator')
-        self._classes.append('nicegui-separator')

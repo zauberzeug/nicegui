@@ -5,7 +5,7 @@ from ..element import Element
 from .mixins.text_element import TextElement
 
 
-class Link(TextElement, component='link.js'):
+class Link(TextElement, component='link.js', default_classes='nicegui-link'):
 
     def __init__(self,
                  text: str = '',
@@ -31,7 +31,6 @@ class Link(TextElement, component='link.js'):
         elif callable(target):
             self._props['href'] = Client.page_routes[target]
         self._props['target'] = '_blank' if new_tab else '_self'
-        self._classes.append('nicegui-link')
 
 
 class LinkTarget(Element):

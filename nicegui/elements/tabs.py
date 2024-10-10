@@ -81,7 +81,7 @@ class TabPanels(ValueElement):
         return value.props['name'] if isinstance(value, (Tab, TabPanel)) else value
 
 
-class TabPanel(DisableableElement):
+class TabPanel(DisableableElement, default_classes='nicegui-tab-panel'):
 
     def __init__(self, name: Union[Tab, str]) -> None:
         """Tab Panel
@@ -93,4 +93,3 @@ class TabPanel(DisableableElement):
         """
         super().__init__(tag='q-tab-panel')
         self._props['name'] = name.props['name'] if isinstance(name, Tab) else name
-        self._classes.append('nicegui-tab-panel')

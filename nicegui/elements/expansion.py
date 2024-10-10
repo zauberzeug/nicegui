@@ -7,7 +7,7 @@ from .mixins.text_element import TextElement
 from .mixins.value_element import ValueElement
 
 
-class Expansion(IconElement, TextElement, ValueElement, DisableableElement):
+class Expansion(IconElement, TextElement, ValueElement, DisableableElement, default_classes='nicegui-expansion'):
 
     def __init__(self,
                  text: str = '', *,
@@ -33,7 +33,6 @@ class Expansion(IconElement, TextElement, ValueElement, DisableableElement):
             self._props['caption'] = caption
         if group is not None:
             self._props['group'] = group
-        self._classes.append('nicegui-expansion')
 
     def open(self) -> None:
         """Open the expansion."""

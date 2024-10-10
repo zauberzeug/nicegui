@@ -13,7 +13,10 @@ if importlib.util.find_spec('pandas'):
         import pandas as pd
 
 
-class AgGrid(Element, component='aggrid.js', dependencies=['lib/aggrid/ag-grid-community.min.js']):
+class AgGrid(Element,
+             component='aggrid.js',
+             dependencies=['lib/aggrid/ag-grid-community.min.js'],
+             default_classes='nicegui-aggrid'):
 
     def __init__(self,
                  options: Dict, *,
@@ -36,7 +39,6 @@ class AgGrid(Element, component='aggrid.js', dependencies=['lib/aggrid/ag-grid-c
         self._props['options'] = options
         self._props['html_columns'] = html_columns[:]
         self._props['auto_size_columns'] = auto_size_columns
-        self._classes.append('nicegui-aggrid')
         self._classes.append(f'ag-theme-{theme}')
 
     @classmethod

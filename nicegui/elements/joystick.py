@@ -6,14 +6,17 @@ from ..element import Element
 from ..events import GenericEventArguments, Handler, JoystickEventArguments, handle_event
 
 
-class Joystick(Element, component='joystick.vue', dependencies=['lib/nipplejs/nipplejs.js']):
+class Joystick(Element,
+               component='joystick.vue',
+               dependencies=['lib/nipplejs/nipplejs.js'],
+               default_classes='nicegui-joystick'):
 
     def __init__(self, *,
                  on_start: Optional[Handler[JoystickEventArguments]] = None,
                  on_move: Optional[Handler[JoystickEventArguments]] = None,
                  on_end: Optional[Handler[JoystickEventArguments]] = None,
                  throttle: float = 0.05,
-                 ** options: Any) -> None:
+                 **options: Any) -> None:
         """Joystick
 
         Create a joystick based on `nipple.js <https://yoannmoi.net/nipplejs/>`_.
@@ -26,7 +29,6 @@ class Joystick(Element, component='joystick.vue', dependencies=['lib/nipplejs/ni
         """
         super().__init__()
         self._props['options'] = options
-        self._classes.append('nicegui-joystick')
         self.active = False
 
         self._start_handlers = [on_start] if on_start else []

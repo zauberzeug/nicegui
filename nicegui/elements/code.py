@@ -10,7 +10,7 @@ from .mixins.content_element import ContentElement
 from .timer import Timer as timer
 
 
-class Code(ContentElement):
+class Code(ContentElement, default_classes='nicegui-code'):
 
     def __init__(self, content: str = '', *, language: Optional[str] = 'python') -> None:
         """Code
@@ -23,7 +23,6 @@ class Code(ContentElement):
         :param language: language of the code (default: "python")
         """
         super().__init__(content=remove_indentation(content))
-        self._classes.append('nicegui-code')
 
         with self:
             self.markdown = markdown().classes('overflow-auto') \
