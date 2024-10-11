@@ -9,7 +9,6 @@ from typing import Any, Awaitable, Callable, List, Optional, Union
 
 from fastapi import FastAPI, HTTPException, Request, Response
 from fastapi.responses import FileResponse
-from fastapi.staticfiles import StaticFiles
 
 from .. import background_tasks, helpers
 from ..client import Client
@@ -20,6 +19,7 @@ from ..server import Server
 from ..storage import Storage
 from .app_config import AppConfig
 from .range_response import get_range_response
+from ..staticfiles import CacheControlledStaticFiles
 
 
 class State(Enum):
@@ -157,7 +157,7 @@ class App(FastAPI):
         if url_path == '/':
             raise ValueError('''Path cannot be "/", because it would hide NiceGUI's internal "/_nicegui" route.''')
 
-        handler = StaticFiles(directory=local_directory, follow_symlink=follow_symlink)
+        handler = CacheControlledStaticFiles(directory=local_directory, follow_symlink=follow_symlink)
 
         @self.get(url_path + '/{path:path}')
         async def static_file(request: Request, path: str = '') -> Response:
