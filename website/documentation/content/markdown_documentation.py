@@ -60,7 +60,7 @@ def markdown_tables():
     This requires markdown2 version >=2.5 as well as latex2mathml to be installed.
 ''')
 def markdown_latex():
-    ui.markdown('''
+    ui.markdown(r'''
         Euler's identity:
 
         $$e^{i\pi} = -1$$
