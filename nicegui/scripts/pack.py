@@ -42,8 +42,8 @@ def main() -> None:
         f'{Path(nicegui.__file__).parent}{os.pathsep}nicegui',
     ], help='Include additional data.')
     parser.add_argument('--icon', type=str, help='Path to an icon file.')
-    parser.add_argument('--osx-bundle-identifier', type=str, help='OSX bundle identifier.')
-    parser.add_argument('--dry-run', action='store_true', help='Dry run', default=False)
+    parser.add_argument('--osx-bundle-identifier', type=str, help='Mac OS .app bundle identifier.')
+    parser.add_argument('--dry-run', action='store_true', help='Dry run.', default=False)
     parser.add_argument('main', default='main.py', help='Main file which calls `ui.run()`.')
     args = parser.parse_args()
 
