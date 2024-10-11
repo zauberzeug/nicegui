@@ -16,10 +16,10 @@ from ..logging import log
 from ..native import NativeConfig
 from ..observables import ObservableSet
 from ..server import Server
+from ..staticfiles import CacheControlledStaticFiles
 from ..storage import Storage
 from .app_config import AppConfig
 from .range_response import get_range_response
-from ..staticfiles import CacheControlledStaticFiles
 
 
 class State(Enum):

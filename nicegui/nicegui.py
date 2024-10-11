@@ -20,8 +20,8 @@ from .logging import log
 from .middlewares import RedirectWithPrefixMiddleware
 from .page import page
 from .slot import Slot
-from .version import __version__
 from .staticfiles import CacheControlledStaticFiles
+from .version import __version__
 
 
 @asynccontextmanager
