@@ -12,8 +12,7 @@ class Navigate:
     These functions allow you to navigate within the browser history and to external URLs.
     """
 
-    @staticmethod
-    def back() -> None:
+    def back(self) -> None:
         """ui.navigate.back
 
         Navigates back in the browser history.
@@ -21,8 +20,7 @@ class Navigate:
         """
         run_javascript('history.back()')
 
-    @staticmethod
-    def forward() -> None:
+    def forward(self) -> None:
         """ui.navigate.forward
 
         Navigates forward in the browser history.
@@ -30,8 +28,7 @@ class Navigate:
         """
         run_javascript('history.forward()')
 
-    @staticmethod
-    def reload() -> None:
+    def reload(self) -> None:
         """ui.navigate.reload
 
         Reload the current page.
@@ -39,8 +36,7 @@ class Navigate:
         """
         run_javascript('history.go(0)')
 
-    @staticmethod
-    def to(target: Union[Callable[..., Any], str, Element], new_tab: bool = False) -> None:
+    def to(self, target: Union[Callable[..., Any], str, Element], new_tab: bool = False) -> None:
         """ui.navigate.to (formerly ui.open)
 
         Can be used to programmatically open a different page or URL.
@@ -64,4 +60,9 @@ class Navigate:
             path = f'#c{target.id}'
         elif callable(target):
             path = Client.page_routes[target]
+        else:
+            raise TypeError(f'Invalid target type: {type(target)}')
         context.client.open(path, new_tab)
+
+
+navigate = Navigate()

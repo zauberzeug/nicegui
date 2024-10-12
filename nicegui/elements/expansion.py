@@ -1,11 +1,13 @@
-from typing import Any, Callable, Optional
+from typing import Optional
 
+from ..events import Handler, ValueChangeEventArguments
 from .mixins.disableable_element import DisableableElement
+from .mixins.icon_element import IconElement
 from .mixins.text_element import TextElement
 from .mixins.value_element import ValueElement
 
 
-class Expansion(TextElement, ValueElement, DisableableElement):
+class Expansion(IconElement, TextElement, ValueElement, DisableableElement):
 
     def __init__(self,
                  text: str = '', *,
@@ -13,7 +15,7 @@ class Expansion(TextElement, ValueElement, DisableableElement):
                  icon: Optional[str] = None,
                  group: Optional[str] = None,
                  value: bool = False,
-                 on_value_change: Optional[Callable[..., Any]] = None
+                 on_value_change: Optional[Handler[ValueChangeEventArguments]] = None
                  ) -> None:
         """Expansion Element
 
@@ -26,12 +28,11 @@ class Expansion(TextElement, ValueElement, DisableableElement):
         :param value: whether the expansion should be opened on creation (default: `False`)
         :param on_value_change: callback to execute when value changes
         """
-        super().__init__(tag='q-expansion-item', text=text, value=value, on_value_change=on_value_change)
+        super().__init__(tag='q-expansion-item', icon=icon, text=text, value=value, on_value_change=on_value_change)
         if caption is not None:
             self._props['caption'] = caption
         if group is not None:
             self._props['group'] = group
-        self._props['icon'] = icon
         self._classes.append('nicegui-expansion')
 
     def open(self) -> None:

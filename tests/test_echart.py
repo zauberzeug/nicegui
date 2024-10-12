@@ -75,7 +75,7 @@ def test_run_method(screen: Screen):
             'xAxis': {'type': 'value'},
             'yAxis': {'type': 'category', 'data': ['A', 'B', 'C']},
             'series': [{'type': 'line', 'data': [0.1, 0.2, 0.3]}],
-        }).classes('w-[600px]')
+        }).style('width: 600px')
 
         async def get_width():
             ui.label(f'Width: {await echart.run_chart_method("getWidth")}px')

@@ -14,7 +14,8 @@ class Example:
     def __post_init__(self) -> None:
         """Post-initialization hook."""
         name = self.title.lower().replace(' ', '_')
-        content = [p for p in (PATH / name).glob('*') if p.name != '__pycache__' and not p.name.startswith('.')]
+        content = [p for p in (PATH / name).glob('*')
+                   if not any(p.name.startswith(ignore) for ignore in ['__pycache__', '.', 'test_'])]
         filename = 'main.py' if len(content) == 1 else ''
         self.url = f'https://github.com/zauberzeug/nicegui/tree/main/examples/{name}/{filename}'
 
@@ -60,11 +61,13 @@ examples: List[Example] = [
     Example('Editable table', 'editable table allowing to add, edit, delete rows'),
     Example('Editable AG Grid', 'editable AG Grid allowing to add, edit, delete rows'),
     Example('FullCalendar', 'show an interactive calendar using the [FullCalendar library](https://fullcalendar.io/)'),
-    Example('Pytest', 'test a NiceGUI app with pytest'),
+    Example('Pytests', 'test a NiceGUI app with pytest'),
     Example('Pyserial', 'communicate with a serial device'),
     Example('Webserial', 'communicate with a serial device using the WebSerial API'),
     Example('Websockets', 'use [websockets library](https://websockets.readthedocs.io/) to start a websocket server'),
     Example('Audio Recorder', 'Record audio, play it back or download it'),
     Example('ZeroMQ', 'Simple ZeroMQ PUSH/PULL server and client'),
     Example('NGINX HTTPS', 'Use NGINX to serve a NiceGUI app with HTTPS'),
+    Example('Node Module Integration', 'Use NPM to add dependencies to a NiceGUI app'),
+    Example('Signature Pad', 'A custom element based on [signature_pad](https://www.npmjs.com/package/signature_pad'),
 ]

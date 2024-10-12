@@ -127,8 +127,21 @@ for key, dependency in dependencies.items():
                 content = newfile.read_text()
                 MSG = '../utils/BufferGeometryUtils.js'
                 if MSG not in content:
-                    raise ValueError(f'Expected to find "{MSG}" in {download_path}')
+                    raise ValueError(f'Expected to find "{MSG}" in {filename}')
                 content = content.replace(MSG, 'BufferGeometryUtils')
+                newfile.write_text(content)
+
+            if 'DragControls.js' in filename:
+                content = newfile.read_text()
+                MSG = '_selected = findGroup( _intersections[ 0 ].object )'
+                if MSG not in content:
+                    raise ValueError(f'Expected to find "{MSG}" in {filename}')
+                content = content.replace(MSG, MSG + ' || _intersections[ 0 ].object')
+                newfile.write_text(content)
+
+            if 'mermaid.esm.min.mjs' in filename:
+                content = newfile.read_text()
+                content = re.sub(r'"\./chunks/mermaid.esm.min/(.*?)\.mjs"', r'"\1"', content)
                 newfile.write_text(content)
 
     # Delete destination folder if empty.

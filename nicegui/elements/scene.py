@@ -5,11 +5,11 @@ from typing import Any, Callable, Dict, List, Literal, Optional, Tuple, Union
 from typing_extensions import Self
 
 from .. import binding
-from ..awaitable_response import AwaitableResponse, NullResponse
 from ..dataclasses import KWONLY_SLOTS
 from ..element import Element
 from ..events import (
     GenericEventArguments,
+    Handler,
     SceneClickEventArguments,
     SceneClickHit,
     SceneDragEventArguments,
@@ -40,18 +40,19 @@ class SceneObject:
 
 class Scene(Element,
             component='scene.js',
-            libraries=['lib/tween/tween.umd.js'],
-            exposed_libraries=[
+            dependencies=[
                 'lib/three/three.module.js',
+                'lib/three/modules/BufferGeometryUtils.js',
                 'lib/three/modules/CSS2DRenderer.js',
                 'lib/three/modules/CSS3DRenderer.js',
                 'lib/three/modules/DragControls.js',
+                'lib/three/modules/GLTFLoader.js',
                 'lib/three/modules/OrbitControls.js',
                 'lib/three/modules/STLLoader.js',
-                'lib/three/modules/GLTFLoader.js',
-                'lib/three/modules/BufferGeometryUtils.js',
+                'lib/tween/tween.umd.js',
             ]):
     # pylint: disable=import-outside-toplevel
+    from .scene_objects import AxesHelper as axes_helper
     from .scene_objects import Box as box
     from .scene_objects import Curve as curve
     from .scene_objects import Cylinder as cylinder
@@ -74,9 +75,10 @@ class Scene(Element,
                  height: int = 300,
                  grid: Union[bool, Tuple[int, int]] = True,
                  camera: Optional[SceneCamera] = None,
-                 on_click: Optional[Callable[..., Any]] = None,
-                 on_drag_start: Optional[Callable[..., Any]] = None,
-                 on_drag_end: Optional[Callable[..., Any]] = None,
+                 on_click: Optional[Handler[SceneClickEventArguments]] = None,
+                 click_events: List[str] = ['click', 'dblclick'],  # noqa: B006
+                 on_drag_start: Optional[Handler[SceneDragEventArguments]] = None,
+                 on_drag_end: Optional[Handler[SceneDragEventArguments]] = None,
                  drag_constraints: str = '',
                  background_color: str = '#eee',
                  ) -> None:
@@ -91,7 +93,8 @@ class Scene(Element,
         :param height: height of the canvas
         :param grid: whether to display a grid (boolean or tuple of ``size`` and ``divisions`` for `Three.js' GridHelper <https://threejs.org/docs/#api/en/helpers/GridHelper>`_, default: 100x100)
         :param camera: camera definition, either instance of ``ui.scene.perspective_camera`` (default) or ``ui.scene.orthographic_camera``
-        :param on_click: callback to execute when a 3D object is clicked
+        :param on_click: callback to execute when a 3D object is clicked (use ``click_events`` to specify which events to subscribe to)
+        :param click_events: list of JavaScript click events to subscribe to (default: ``['click', 'dblclick']``)
         :param on_drag_start: callback to execute when a 3D object is dragged
         :param on_drag_end: callback to execute when a 3D object is dropped
         :param drag_constraints: comma-separated JavaScript expression for constraining positions of dragged objects (e.g. ``'x = 0, z = y / 2'``)
@@ -108,26 +111,27 @@ class Scene(Element,
         self.objects: Dict[str, Object3D] = {}
         self.stack: List[Union[Object3D, SceneObject]] = [SceneObject()]
         self._click_handlers = [on_click] if on_click else []
+        self._props['click_events'] = click_events
         self._drag_start_handlers = [on_drag_start] if on_drag_start else []
         self._drag_end_handlers = [on_drag_end] if on_drag_end else []
-        self.is_initialized = False
         self.on('init', self._handle_init)
         self.on('click3d', self._handle_click)
         self.on('dragstart', self._handle_drag)
         self.on('dragend', self._handle_drag)
         self._props['drag_constraints'] = drag_constraints
+        self._classes.append('nicegui-scene')
 
-    def on_click(self, callback: Callable[..., Any]) -> Self:
+    def on_click(self, callback: Handler[SceneClickEventArguments]) -> Self:
         """Add a callback to be invoked when a 3D object is clicked."""
         self._click_handlers.append(callback)
         return self
 
-    def on_drag_start(self, callback: Callable[..., Any]) -> Self:
+    def on_drag_start(self, callback: Handler[SceneDragEventArguments]) -> Self:
         """Add a callback to be invoked when a 3D object is dragged."""
         self._drag_start_handlers.append(callback)
         return self
 
-    def on_drag_end(self, callback: Callable[..., Any]) -> Self:
+    def on_drag_end(self, callback: Handler[SceneDragEventArguments]) -> Self:
         """Add a callback to be invoked when a 3D object is dropped."""
         self._drag_end_handlers.append(callback)
         return self
@@ -167,7 +171,6 @@ class Scene(Element,
         return attribute
 
     def _handle_init(self, e: GenericEventArguments) -> None:
-        self.is_initialized = True
         with self.client.individual_target(e.args['socket_id']):
             self.move_camera(duration=0)
             self.run_method('init_objects', [obj.data for obj in self.objects.values()])
@@ -178,11 +181,6 @@ class Scene(Element,
         self.on('init', event.set, [])
         await self.client.connected()
         await event.wait()
-
-    def run_method(self, name: str, *args: Any, timeout: float = 1, check_interval: float = 0.01) -> AwaitableResponse:
-        if not self.is_initialized:
-            return NullResponse()
-        return super().run_method(name, *args, timeout=timeout, check_interval=check_interval)
 
     def _handle_click(self, e: GenericEventArguments) -> None:
         arguments = SceneClickEventArguments(
@@ -262,6 +260,14 @@ class Scene(Element,
                         self.camera.x, self.camera.y, self.camera.z,
                         self.camera.look_at_x, self.camera.look_at_y, self.camera.look_at_z,
                         self.camera.up_x, self.camera.up_y, self.camera.up_z, duration)
+
+    async def get_camera(self) -> Dict[str, Any]:
+        """Get the current camera parameters.
+
+        In contrast to the `camera` property,
+        the result of this method includes the current camera pose caused by the user navigating the scene in the browser.
+        """
+        return await self.run_method('get_camera')
 
     def _handle_delete(self) -> None:
         binding.remove(list(self.objects.values()))

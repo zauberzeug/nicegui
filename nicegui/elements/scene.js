@@ -2,9 +2,10 @@ import * as THREE from "three";
 import { CSS2DRenderer, CSS2DObject } from "CSS2DRenderer";
 import { CSS3DRenderer, CSS3DObject } from "CSS3DRenderer";
 import { DragControls } from "DragControls";
+import { GLTFLoader } from "GLTFLoader";
 import { OrbitControls } from "OrbitControls";
 import { STLLoader } from "STLLoader";
-import { GLTFLoader } from "GLTFLoader";
+import "tween";
 
 function texture_geometry(coords) {
   const geometry = new THREE.BufferGeometry();
@@ -49,9 +50,18 @@ function texture_material(texture) {
   });
 }
 
+function set_point_cloud_data(position, color, geometry) {
+  geometry.setAttribute("position", new THREE.Float32BufferAttribute(position.flat(), 3));
+  if (color === null) {
+    geometry.deleteAttribute("color");
+  } else {
+    geometry.setAttribute("color", new THREE.Float32BufferAttribute(color.flat(), 3));
+  }
+}
+
 export default {
   template: `
-    <div style="position:relative">
+    <div style="position:relative" data-initializing>
       <canvas style="position:relative"></canvas>
       <div style="position:absolute;pointer-events:none;top:0"></div>
       <div style="position:absolute;pointer-events:none;top:0"></div>
@@ -62,6 +72,7 @@ export default {
     this.objects = new Map();
     this.objects.set("scene", this.scene);
     this.draggable_objects = [];
+    this.is_initialized = false;
 
     window["scene_" + this.$el.id] = this.scene; // NOTE: for selenium tests only
 
@@ -122,6 +133,7 @@ export default {
 
     this.$nextTick(() => this.resize());
     window.addEventListener("resize", this.resize, false);
+    window.addEventListener("DOMContentLoaded", this.resize, false);
 
     const gridSize = this.grid[0] || 100;
     const gridDivisions = this.grid[1] || 100;
@@ -142,6 +154,7 @@ export default {
     }
     this.controls = new OrbitControls(this.camera, this.renderer.domElement);
     this.drag_controls = new DragControls(this.draggable_objects, this.camera, this.renderer.domElement);
+    this.drag_controls.transformGroup = true;
     const applyConstraint = (constraint, position) => {
       if (!constraint) return;
       const [variable, expression] = constraint.split("=").map((s) => s.trim());
@@ -149,7 +162,6 @@ export default {
     };
     const handleDrag = (event) => {
       this.drag_constraints.split(",").forEach((constraint) => applyConstraint(constraint, event.object.position));
-      if (event.type === "drag") return;
       this.$emit(event.type, {
         type: event.type,
         object_id: event.object.object_id,
@@ -158,7 +170,8 @@ export default {
         y: event.object.position.y,
         z: event.object.position.z,
       });
-      this.controls.enabled = event.type == "dragend";
+      if (event.type === "dragstart") this.controls.enabled = false;
+      if (event.type === "dragend") this.controls.enabled = true;
     };
     this.drag_controls.addEventListener("dragstart", handleDrag);
     this.drag_controls.addEventListener("drag", handleDrag);
@@ -166,7 +179,7 @@ export default {
 
     const render = () => {
       requestAnimationFrame(() => setTimeout(() => render(), 1000 / 20));
-      TWEEN.update();
+      this.camera_tween?.update();
       this.renderer.render(this.scene, this.camera);
       this.text_renderer.render(this.scene, this.camera);
       this.text3d_renderer.render(this.scene, this.camera);
@@ -195,8 +208,7 @@ export default {
         shift_key: mouseEvent.shiftKey,
       });
     };
-    this.$el.onclick = click_handler;
-    this.$el.ondblclick = click_handler;
+    this.click_events.forEach((event) => this.$el.addEventListener(event, click_handler));
 
     this.texture_loader = new THREE.TextureLoader();
     this.stl_loader = new STLLoader();
@@ -211,10 +223,12 @@ export default {
 
   beforeDestroy() {
     window.removeEventListener("resize", this.resize);
+    window.removeEventListener("DOMContentLoaded", this.resize);
   },
 
   methods: {
     create(type, id, parent_id, ...args) {
+      if (!this.is_initialized) return;
       let mesh;
       if (type == "group") {
         mesh = new THREE.Group();
@@ -261,9 +275,8 @@ export default {
         mesh.add(light.target);
       } else if (type == "point_cloud") {
         const geometry = new THREE.BufferGeometry();
-        geometry.setAttribute("position", new THREE.Float32BufferAttribute(args[0].flat(), 3));
-        geometry.setAttribute("color", new THREE.Float32BufferAttribute(args[1].flat(), 3));
-        const material = new THREE.PointsMaterial({ size: args[2], vertexColors: true });
+        const material = new THREE.PointsMaterial({ size: args[2], transparent: true });
+        set_point_cloud_data(args[0], args[1], geometry);
         mesh = new THREE.Points(geometry, material);
       } else if (type == "gltf") {
         const url = args[0];
@@ -274,6 +287,9 @@ export default {
           undefined,
           (error) => console.error(error)
         );
+      } else if (type == "axes_helper") {
+        mesh = new THREE.AxesHelper(args[0]);
+        mesh.material.transparent = true;
       } else {
         let geometry;
         const wireframe = args.pop();
@@ -329,7 +345,10 @@ export default {
       if (!this.objects.has(object_id)) return;
       const material = this.objects.get(object_id).material;
       if (!material) return;
-      material.color.set(color);
+      const vertexColors = color === null;
+      material.color.set(vertexColors ? "#ffffff" : color);
+      material.needsUpdate = material.vertexColors != vertexColors;
+      material.vertexColors = vertexColors;
       material.opacity = opacity;
       if (side == "front") material.side = THREE.FrontSide;
       else if (side == "back") material.side = THREE.BackSide;
@@ -389,8 +408,14 @@ export default {
       if (!this.objects.has(object_id)) return;
       this.objects.get(object_id).geometry = texture_geometry(coords);
     },
+    set_points(object_id, position, color) {
+      if (!this.objects.has(object_id)) return;
+      const geometry = this.objects.get(object_id).geometry;
+      set_point_cloud_data(position, color, geometry);
+    },
     move_camera(x, y, z, look_at_x, look_at_y, look_at_z, up_x, up_y, up_z, duration) {
       if (this.camera_tween) this.camera_tween.stop();
+      const camera_up_changed = up_x !== null || up_y !== null || up_z !== null;
       this.camera_tween = new TWEEN.Tween([
         this.camera.position.x,
         this.camera.position.y,
@@ -423,7 +448,30 @@ export default {
           this.camera.lookAt(p[6], p[7], p[8]);
           this.controls.target.set(p[6], p[7], p[8]);
         })
+        .onComplete(() => {
+          if (camera_up_changed) {
+            this.controls.dispose();
+            this.controls = new OrbitControls(this.camera, this.renderer.domElement);
+          }
+        })
         .start();
+    },
+    get_camera() {
+      return {
+        position: this.camera.position,
+        up: this.camera.up,
+        rotation: this.camera.rotation,
+        quaternion: this.camera.quaternion,
+        type: this.camera.type,
+        fov: this.camera.fov,
+        aspect: this.camera.aspect,
+        near: this.camera.near,
+        far: this.camera.far,
+        left: this.camera.left,
+        right: this.camera.right,
+        top: this.camera.top,
+        bottom: this.camera.bottom,
+      };
     },
     resize() {
       const { clientWidth, clientHeight } = this.$el;
@@ -438,6 +486,9 @@ export default {
       this.camera.updateProjectionMatrix();
     },
     init_objects(data) {
+      this.resize();
+      this.$el.removeAttribute("data-initializing");
+      this.is_initialized = true;
       for (const [
         type,
         id,
@@ -475,6 +526,7 @@ export default {
     grid: Object,
     camera_type: String,
     camera_params: Object,
+    click_events: Array,
     drag_constraints: String,
     background_color: String,
   },

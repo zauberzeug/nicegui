@@ -1,6 +1,6 @@
 from typing import Any, Callable, Dict, Optional, Union
 
-from ..events import GenericEventArguments
+from ..events import GenericEventArguments, Handler, ValueChangeEventArguments
 from .mixins.disableable_element import DisableableElement
 from .mixins.validation_element import ValidationElement
 
@@ -19,7 +19,7 @@ class Number(ValidationElement, DisableableElement):
                  prefix: Optional[str] = None,
                  suffix: Optional[str] = None,
                  format: Optional[str] = None,  # pylint: disable=redefined-builtin
-                 on_change: Optional[Callable[..., Any]] = None,
+                 on_change: Optional[Handler[ValueChangeEventArguments]] = None,
                  validation: Optional[Union[Callable[..., Optional[str]], Dict[str, Callable[..., bool]]]] = None,
                  ) -> None:
         """Number Input
@@ -43,7 +43,7 @@ class Number(ValidationElement, DisableableElement):
         :param suffix: a suffix to append to the displayed value
         :param format: a string like "%.2f" to format the displayed value
         :param on_change: callback to execute when the value changes
-        :param validation: dictionary of validation rules or a callable that returns an optional error message
+        :param validation: dictionary of validation rules or a callable that returns an optional error message (default: None for no validation)
         """
         self.format = format
         super().__init__(tag='q-input', value=value, on_value_change=on_change, validation=validation)

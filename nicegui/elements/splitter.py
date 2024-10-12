@@ -1,5 +1,6 @@
-from typing import Any, Callable, Optional, Tuple
+from typing import Optional, Tuple
 
+from ..events import Handler, ValueChangeEventArguments
 from .mixins.disableable_element import DisableableElement
 from .mixins.value_element import ValueElement
 
@@ -11,7 +12,7 @@ class Splitter(ValueElement, DisableableElement):
                  reverse: Optional[bool] = False,
                  limits: Optional[Tuple[float, float]] = (0, 100),
                  value: Optional[float] = 50,
-                 on_change: Optional[Callable[..., Any]] = None,
+                 on_change: Optional[Handler[ValueChangeEventArguments]] = None,
                  ) -> None:
         """Splitter
 

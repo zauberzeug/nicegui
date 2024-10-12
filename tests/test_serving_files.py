@@ -61,6 +61,7 @@ def test_get_from_static_files_dir(url_path: str, screen: Screen):
     with httpx.Client() as http_client:
         r = http_client.get(f'http://localhost:{Screen.PORT}/static/examples/slideshow/slides/slide1.jpg')
         assert r.status_code == 200
+        assert 'max-age=' in r.headers['Cache-Control']
 
 
 def test_404_for_non_existing_static_file(screen: Screen):
@@ -90,6 +91,7 @@ def test_auto_serving_file_from_image_source(screen: Screen):
     screen.open('/')
     img = screen.find_by_tag('img')
     assert '/_nicegui/auto/static/' in img.get_attribute('src')
+    screen.wait(0.5)
     assert screen.selenium.execute_script("""
     return arguments[0].complete &&
         typeof arguments[0].naturalWidth != "undefined" &&

@@ -11,6 +11,7 @@ class FullCalendar(Element, component='fullcalendar.js'):
         """FullCalendar
 
         An element that integrates the FullCalendar library (https://fullcalendar.io/) to create an interactive calendar display.
+        For an example of the FullCalendar library with plugins see https://github.com/dorel14/NiceGui-FullCalendar_more_Options
 
         :param options: dictionary of FullCalendar properties for customization, such as "initialView", "slotMinTime", "slotMaxTime", "allDaySlot", "timeZone", "height", and "events".
         :param on_click: callback that is called when a calendar event is clicked.

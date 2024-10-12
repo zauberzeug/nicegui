@@ -1,52 +1,28 @@
 from __future__ import annotations
 
-import ast
 import inspect
 import re
-from copy import copy, deepcopy
+from copy import copy
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Callable, ClassVar, Dict, Iterator, List, Optional, Sequence, Union, overload
+from typing import TYPE_CHECKING, Any, ClassVar, Dict, Iterator, List, Optional, Sequence, Union, cast, overload
 
 from typing_extensions import Self
 
 from . import core, events, helpers, json, storage
 from .awaitable_response import AwaitableResponse, NullResponse
+from .classes import Classes
 from .context import context
 from .dependencies import Component, Library, register_library, register_resource, register_vue_component
 from .elements.mixins.visibility import Visibility
 from .event_listener import EventListener
+from .props import Props
 from .slot import Slot
+from .style import Style
 from .tailwind import Tailwind
 from .version import __version__
 
 if TYPE_CHECKING:
     from .client import Client
-
-PROPS_PATTERN = re.compile(r'''
-# Match a key-value pair optionally followed by whitespace or end of string
-([:\w\-]+)          # Capture group 1: Key
-(?:                 # Optional non-capturing group for value
-    =               # Match the equal sign
-    (?:             # Non-capturing group for value options
-        (           # Capture group 2: Value enclosed in double quotes
-            "       # Match  double quote
-            [^"\\]* # Match any character except quotes or backslashes zero or more times
-            (?:\\.[^"\\]*)*  # Match any escaped character followed by any character except quotes or backslashes zero or more times
-            "       # Match the closing quote
-        )
-        |
-        (           # Capture group 3: Value enclosed in single quotes
-            '       # Match a single quote
-            [^'\\]* # Match any character except quotes or backslashes zero or more times
-            (?:\\.[^'\\]*)*  # Match any escaped character followed by any character except quotes or backslashes zero or more times
-            '       # Match the closing quote
-        )
-        |           # Or
-        ([\w\-.,%:\/=]+)  # Capture group 4: Value without quotes
-    )
-)?                  # End of optional non-capturing group for value
-(?:$|\s)            # Match end of string or whitespace
-''', re.VERBOSE)
 
 # https://www.w3.org/TR/xml/#sec-common-syn
 TAG_START_CHAR = r':|[A-Z]|_|[a-z]|[\u00C0-\u00D6]|[\u00D8-\u00F6]|[\u00F8-\u02FF]|[\u0370-\u037D]|[\u037F-\u1FFF]|[\u200C-\u200D]|[\u2070-\u218F]|[\u2C00-\u2FEF]|[\u3001-\uD7FF]|[\uF900-\uFDCF]|[\uFDF0-\uFFFD]|[\U00010000-\U000EFFFF]'
@@ -79,12 +55,10 @@ class Element(Visibility):
         self.tag = tag if tag else self.component.tag if self.component else 'div'
         if not TAG_PATTERN.match(self.tag):
             raise ValueError(f'Invalid HTML tag: {self.tag}')
-        self._classes: List[str] = []
-        self._classes.extend(self._default_classes)
-        self._style: Dict[str, str] = {}
-        self._style.update(self._default_style)
-        self._props: Dict[str, Any] = {}
-        self._props.update(self._default_props)
+        self._classes: Classes[Self] = Classes(self._default_classes, element=cast(Self, self))
+        self._style: Style[Self] = Style(self._default_style, element=cast(Self, self))
+        self._props: Props[Self] = Props(self._default_props, element=cast(Self, self))
+        self._markers: List[str] = []
         self._event_listeners: Dict[str, EventListener] = {}
         self._text: Optional[str] = None
         self.slots: Dict[str, Slot] = {}
@@ -106,9 +80,10 @@ class Element(Visibility):
 
     def __init_subclass__(cls, *,
                           component: Union[str, Path, None] = None,
-                          libraries: List[Union[str, Path]] = [],  # noqa: B006
-                          exposed_libraries: List[Union[str, Path]] = [],  # noqa: B006
-                          extra_libraries: List[Union[str, Path]] = [],  # noqa: B006
+                          dependencies: List[Union[str, Path]] = [],  # noqa: B006
+                          libraries: List[Union[str, Path]] = [],  # noqa: B006  # DEPRECATED
+                          exposed_libraries: List[Union[str, Path]] = [],  # noqa: B006  # DEPRECATED
+                          extra_libraries: List[Union[str, Path]] = [],  # noqa: B006  # DEPRECATED
                           ) -> None:
         super().__init_subclass__()
         base = Path(inspect.getfile(cls)).parent
@@ -118,6 +93,19 @@ class Element(Visibility):
             if not path.is_absolute():
                 path = base / path
             return sorted(path.parent.glob(path.name), key=lambda p: p.stem)
+
+        if libraries:
+            helpers.warn_once(f'The `libraries` parameter for subclassing "{cls.__name__}" is deprecated. '
+                              'It will be removed in NiceGUI 3.0. '
+                              'Use `dependencies` instead.')
+        if exposed_libraries:
+            helpers.warn_once(f'The `exposed_libraries` parameter for subclassing "{cls.__name__}" is deprecated. '
+                              'It will be removed in NiceGUI 3.0. '
+                              'Use `dependencies` instead.')
+        if extra_libraries:
+            helpers.warn_once(f'The `extra_libraries` parameter for subclassing "{cls.__name__}" is deprecated. '
+                              'It will be removed in NiceGUI 3.0. '
+                              'Use `dependencies` instead.')
 
         cls.component = copy(cls.component)
         cls.libraries = copy(cls.libraries)
@@ -132,7 +120,7 @@ class Element(Visibility):
         for library in extra_libraries:
             for path in glob_absolute_paths(library):
                 cls.extra_libraries.append(register_library(path))
-        for library in exposed_libraries:
+        for library in exposed_libraries + dependencies:
             for path in glob_absolute_paths(library):
                 cls.exposed_libraries.append(register_library(path, expose=True))
 
@@ -219,36 +207,10 @@ class Element(Visibility):
             },
         }
 
-    @staticmethod
-    def _update_classes_list(classes: List[str],
-                             add: Optional[str] = None,
-                             remove: Optional[str] = None,
-                             replace: Optional[str] = None) -> List[str]:
-        class_list = classes if replace is None else []
-        class_list = [c for c in class_list if c not in (remove or '').split()]
-        class_list += (add or '').split()
-        class_list += (replace or '').split()
-        return list(dict.fromkeys(class_list))  # NOTE: remove duplicates while preserving order
-
-    def classes(self,
-                add: Optional[str] = None, *,
-                remove: Optional[str] = None,
-                replace: Optional[str] = None) -> Self:
-        """Apply, remove, or replace HTML classes.
-
-        This allows modifying the look of the element or its layout using `Tailwind <https://tailwindcss.com/>`_ or `Quasar <https://quasar.dev/>`_ classes.
-
-        Removing or replacing classes can be helpful if predefined classes are not desired.
-
-        :param add: whitespace-delimited string of classes
-        :param remove: whitespace-delimited string of classes to remove from the element
-        :param replace: whitespace-delimited string of classes to use instead of existing ones
-        """
-        new_classes = self._update_classes_list(self._classes, add, remove, replace)
-        if self._classes != new_classes:
-            self._classes = new_classes
-            self.update()
-        return self
+    @property
+    def classes(self) -> Classes[Self]:
+        """The classes of the element."""
+        return self._classes
 
     @classmethod
     def default_classes(cls,
@@ -267,40 +229,13 @@ class Element(Visibility):
         :param remove: whitespace-delimited string of classes to remove from the element
         :param replace: whitespace-delimited string of classes to use instead of existing ones
         """
-        cls._default_classes = cls._update_classes_list(cls._default_classes, add, remove, replace)
+        cls._default_classes = Classes.update_list(cls._default_classes, add, remove, replace)
         return cls
 
-    @staticmethod
-    def _parse_style(text: Optional[str]) -> Dict[str, str]:
-        result = {}
-        for word in (text or '').split(';'):
-            word = word.strip()  # noqa: PLW2901
-            if word:
-                key, value = word.split(':', 1)
-                result[key.strip()] = value.strip()
-        return result
-
-    def style(self,
-              add: Optional[str] = None, *,
-              remove: Optional[str] = None,
-              replace: Optional[str] = None) -> Self:
-        """Apply, remove, or replace CSS definitions.
-
-        Removing or replacing styles can be helpful if the predefined style is not desired.
-
-        :param add: semicolon-separated list of styles to add to the element
-        :param remove: semicolon-separated list of styles to remove from the element
-        :param replace: semicolon-separated list of styles to use instead of existing ones
-        """
-        style_dict = deepcopy(self._style) if replace is None else {}
-        for key in self._parse_style(remove):
-            style_dict.pop(key, None)
-        style_dict.update(self._parse_style(add))
-        style_dict.update(self._parse_style(replace))
-        if self._style != style_dict:
-            self._style = style_dict
-            self.update()
-        return self
+    @property
+    def style(self) -> Style[Self]:
+        """The style of the element."""
+        return self._style
 
     @classmethod
     def default_style(cls,
@@ -319,51 +254,16 @@ class Element(Visibility):
         """
         if replace is not None:
             cls._default_style.clear()
-        for key in cls._parse_style(remove):
+        for key in Style.parse(remove):
             cls._default_style.pop(key, None)
-        cls._default_style.update(cls._parse_style(add))
-        cls._default_style.update(cls._parse_style(replace))
+        cls._default_style.update(Style.parse(add))
+        cls._default_style.update(Style.parse(replace))
         return cls
 
-    @staticmethod
-    def _parse_props(text: Optional[str]) -> Dict[str, Any]:
-        dictionary = {}
-        for match in PROPS_PATTERN.finditer(text or ''):
-            key = match.group(1)
-            value = match.group(2) or match.group(3) or match.group(4)
-            if value is None:
-                dictionary[key] = True
-            else:
-                if (value.startswith("'") and value.endswith("'")) or (value.startswith('"') and value.endswith('"')):
-                    value = ast.literal_eval(value)
-                dictionary[key] = value
-        return dictionary
-
-    def props(self,
-              add: Optional[str] = None, *,
-              remove: Optional[str] = None) -> Self:
-        """Add or remove props.
-
-        This allows modifying the look of the element or its layout using `Quasar <https://quasar.dev/>`_ props.
-        Since props are simply applied as HTML attributes, they can be used with any HTML element.
-
-        Boolean properties are assumed ``True`` if no value is specified.
-
-        :param add: whitespace-delimited list of either boolean values or key=value pair to add
-        :param remove: whitespace-delimited list of property keys to remove
-        """
-        needs_update = False
-        for key in self._parse_props(remove):
-            if key in self._props:
-                needs_update = True
-                del self._props[key]
-        for key, value in self._parse_props(add).items():
-            if self._props.get(key) != value:
-                needs_update = True
-                self._props[key] = value
-        if needs_update:
-            self.update()
-        return self
+    @property
+    def props(self) -> Props[Self]:
+        """The props of the element."""
+        return self._props
 
     @classmethod
     def default_props(cls,
@@ -381,12 +281,24 @@ class Element(Visibility):
         :param add: whitespace-delimited list of either boolean values or key=value pair to add
         :param remove: whitespace-delimited list of property keys to remove
         """
-        for key in cls._parse_props(remove):
+        for key in Props.parse(remove):
             if key in cls._default_props:
                 del cls._default_props[key]
-        for key, value in cls._parse_props(add).items():
+        for key, value in Props.parse(add).items():
             cls._default_props[key] = value
         return cls
+
+    def mark(self, *markers: str) -> Self:
+        """Replace markers of the element.
+
+        Markers are used to identify elements for querying with `ElementFilter </documentation/element_filter>`_
+        which is heavily used in testing
+        but can also be used to reduce the number of global variables or passing around dependencies.
+
+        :param markers: list of strings or single string with whitespace-delimited markers; replaces existing markers
+        """
+        self._markers = [word for marker in markers for word in marker.split()]
+        return self
 
     def tooltip(self, text: str) -> Self:
         """Add a tooltip to the element.
@@ -409,7 +321,7 @@ class Element(Visibility):
     @overload
     def on(self,
            type: str,  # pylint: disable=redefined-builtin
-           handler: Optional[Callable[..., Any]] = None,
+           handler: Optional[events.Handler[events.GenericEventArguments]] = None,
            args: Union[None, Sequence[str], Sequence[Optional[Sequence[str]]]] = None,
            *,
            throttle: float = 0.0,
@@ -420,7 +332,7 @@ class Element(Visibility):
 
     def on(self,
            type: str,  # pylint: disable=redefined-builtin
-           handler: Optional[Callable[..., Any]] = None,
+           handler: Optional[events.Handler[events.GenericEventArguments]] = None,
            args: Union[None, Sequence[str], Sequence[Optional[Sequence[str]]]] = None,
            *,
            throttle: float = 0.0,
@@ -469,7 +381,7 @@ class Element(Visibility):
             return
         self.client.outbox.enqueue_update(self)
 
-    def run_method(self, name: str, *args: Any, timeout: float = 1, check_interval: float = 0.01) -> AwaitableResponse:
+    def run_method(self, name: str, *args: Any, timeout: float = 1) -> AwaitableResponse:
         """Run a method on the client side.
 
         If the function is awaited, the result of the method call is returned.
@@ -481,8 +393,7 @@ class Element(Visibility):
         """
         if not core.loop:
             return NullResponse()
-        return self.client.run_javascript(f'return runMethod({self.id}, "{name}", {json.dumps(args)})',
-                                          timeout=timeout, check_interval=check_interval)
+        return self.client.run_javascript(f'return runMethod({self.id}, "{name}", {json.dumps(args)})', timeout=timeout)
 
     def get_computed_prop(self, prop_name: str, *, timeout: float = 1) -> AwaitableResponse:
         """Return a computed property.
@@ -496,16 +407,29 @@ class Element(Visibility):
             return NullResponse()
         return self.client.run_javascript(f'return getComputedProp({self.id}, "{prop_name}")', timeout=timeout)
 
-    def _collect_descendants(self, *, include_self: bool = False) -> List[Element]:
-        elements: List[Element] = [self] if include_self else []
+    def ancestors(self, *, include_self: bool = False) -> Iterator[Element]:
+        """Iterate over the ancestors of the element.
+
+        :param include_self: whether to include the element itself in the iteration
+        """
+        if include_self:
+            yield self
+        if self.parent_slot:
+            yield from self.parent_slot.parent.ancestors(include_self=True)
+
+    def descendants(self, *, include_self: bool = False) -> Iterator[Element]:
+        """Iterate over the descendants of the element.
+
+        :param include_self: whether to include the element itself in the iteration
+        """
+        if include_self:
+            yield self
         for child in self:
-            elements.extend(child._collect_descendants(include_self=True))  # pylint: disable=protected-access
-        return elements
+            yield from child.descendants(include_self=True)
 
     def clear(self) -> None:
         """Remove all child elements."""
-        descendants = self._collect_descendants()
-        self.client.remove_elements(descendants)
+        self.client.remove_elements(self.descendants())
         for slot in self.slots.values():
             slot.children.clear()
         self.update()
@@ -546,8 +470,7 @@ class Element(Visibility):
         if isinstance(element, int):
             children = list(self)
             element = children[element]
-        elements = element._collect_descendants(include_self=True)  # pylint: disable=protected-access
-        self.client.remove_elements(elements)
+        self.client.remove_elements(element.descendants(include_self=True))
         assert element.parent_slot is not None
         element.parent_slot.children.remove(element)
         self.update()
@@ -567,3 +490,32 @@ class Element(Visibility):
     def is_deleted(self) -> bool:
         """Whether the element has been deleted."""
         return self._deleted
+
+    def __str__(self) -> str:
+        result = self.tag if type(self) is Element else self.__class__.__name__  # pylint: disable=unidiomatic-typecheck
+
+        def shorten(content: Any, length: int = 20) -> str:
+            text = str(content).replace('\n', ' ').replace('\r', ' ')
+            return text[:length].strip() + '...' if len(text) > length else text
+
+        additions = []
+        if self._markers:
+            additions.append(f'markers={", ".join(self._markers)}')
+        if self._text:
+            additions.append(f'text={shorten(self._text)}')
+        if hasattr(self, 'content') and self.content:  # pylint: disable=no-member
+            additions.append(f'content={shorten(self.content)}')  # pylint: disable=no-member
+        IGNORED_PROPS = {'loopback', 'color', 'view', 'innerHTML', 'codehilite_css_url'}
+        additions += [
+            f'{key}={shorten(value)}'
+            for key, value in self._props.items()
+            if not key.startswith('_') and key not in IGNORED_PROPS and value
+        ]
+        if additions:
+            result += f' [{", ".join(additions)}]'
+
+        for child in self.default_slot.children:
+            for line in str(child).split('\n'):
+                result += f'\n {line}'
+
+        return result

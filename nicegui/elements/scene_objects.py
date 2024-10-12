@@ -317,7 +317,7 @@ class PointCloud(Object3D):
 
     def __init__(self,
                  points: List[List[float]],
-                 colors: List[List[float]],
+                 colors: Optional[List[List[float]]] = None,
                  point_size: float = 1.0,
                  ) -> None:
         """Point Cloud
@@ -325,7 +325,35 @@ class PointCloud(Object3D):
         This element is based on Three.js' `Points <https://threejs.org/docs/index.html#api/en/objects/Points>`_ object.
 
         :param points: list of points
-        :param colors: list of colors (one per point)
+        :param colors: optional list of colors (one per point)
         :param point_size: size of the points (default: 1.0)
         """
         super().__init__('point_cloud', points, colors, point_size)
+        if colors is not None:
+            self.material(color=None)
+
+    def set_points(self, points: List[List[float]], colors: Optional[List[List[float]]] = None) -> None:
+        """Change the points and colors of the point cloud."""
+        self.args[0] = points
+        self.args[1] = colors
+        self.scene.run_method('set_points', self.id, points, colors)
+        if colors is not None:
+            self.material(color=None)
+
+
+class AxesHelper(Object3D):
+
+    def __init__(self,
+                 length: float = 1.0,
+                 ) -> None:
+        """Axes Helper
+
+        This element is based on Three.js' `AxesHelper <https://threejs.org/docs/#api/en/helpers/AxesHelper>`_ object.
+        It is used to visualize the XYZ axes:
+        The X axis is red.
+        The Y axis is green.
+        The Z axis is blue.
+
+        :param length: length of the the axes (default: 1.0)
+        """
+        super().__init__('axes_helper', length)

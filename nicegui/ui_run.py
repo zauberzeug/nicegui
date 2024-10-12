@@ -32,6 +32,7 @@ def run(*,
         binding_refresh_interval: float = 0.1,
         reconnect_timeout: float = 3.0,
         message_history_length: int = 1000,
+        fastapi_docs: bool = False,
         show: bool = True,
         on_air: Optional[Union[str, Literal[True]]] = None,
         native: bool = False,
@@ -65,6 +66,7 @@ def run(*,
     :param binding_refresh_interval: time between binding updates (default: `0.1` seconds, bigger is more CPU friendly)
     :param reconnect_timeout: maximum time the server waits for the browser to reconnect (default: 3.0 seconds)
     :param message_history_length: maximum number of messages that will be stored and resent after a connection interruption (default: 1000, use 0 to disable)
+    :param fastapi_docs: whether to enable FastAPI's automatic documentation with Swagger UI, ReDoc, and OpenAPI JSON (default: `False`)
     :param show: automatically open the UI in a browser tab (default: `True`)
     :param on_air: tech preview: `allows temporary remote access <https://nicegui.io/documentation/section_configuration_deployment#nicegui_on_air>`_ if set to `True` (default: disabled)
     :param native: open the UI in a native window of size 800x600 (default: `False`, deactivates `show`, automatically finds an open port)
@@ -106,6 +108,15 @@ def run(*,
             route.include_in_schema = endpoint_documentation in {'internal', 'all'}
         if route.path == '/' or route.path in Client.page_routes.values():
             route.include_in_schema = endpoint_documentation in {'page', 'all'}
+
+    if fastapi_docs:
+        if not core.app.docs_url:
+            core.app.docs_url = '/docs'
+        if not core.app.redoc_url:
+            core.app.redoc_url = '/redoc'
+        if not core.app.openapi_url:
+            core.app.openapi_url = '/openapi.json'
+        core.app.setup()
 
     if on_air:
         core.air = Air('' if on_air is True else on_air)

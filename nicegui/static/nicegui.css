@@ -250,6 +250,15 @@ h6.q-timeline__title {
   width: 100%;
   height: 100%;
 }
+.nicegui-joystick {
+  width: 10em;
+  height: 10em;
+  background-color: AliceBlue;
+}
+.nicegui-scene[data-initializing],
+.nicegui-scene-view[data-initializing] {
+  visibility: hidden;
+}
 
 /* CodeMirror */
 .nicegui-codemirror .cm-editor.cm-focused {
@@ -271,7 +280,7 @@ h6.q-timeline__title {
   gap: 1em;
   transition-duration: 500ms;
   pointer-events: none;
-  z-index: 1000;
+  z-index: 10000;
 }
 .body--dark #popup {
   background-color: black;

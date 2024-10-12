@@ -1,5 +1,6 @@
-from typing import Any, Callable, Optional
+from typing import Any, Optional
 
+from ..events import Handler, ValueChangeEventArguments
 from .button import Button as button
 from .color_picker import ColorPicker as color_picker
 from .mixins.disableable_element import DisableableElement
@@ -13,7 +14,7 @@ class ColorInput(ValueElement, DisableableElement):
                  label: Optional[str] = None, *,
                  placeholder: Optional[str] = None,
                  value: str = '',
-                 on_change: Optional[Callable[..., Any]] = None,
+                 on_change: Optional[Handler[ValueChangeEventArguments]] = None,
                  preview: bool = False,
                  ) -> None:
         """Color Input
