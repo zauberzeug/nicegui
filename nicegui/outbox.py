@@ -15,6 +15,7 @@ ClientId = str
 ElementId = int
 MessageType = str
 Message = Tuple[ClientId, MessageType, Any]
+HistoryEntry = Tuple[int, float, Message]
 
 
 class Outbox:
@@ -25,8 +26,8 @@ class Outbox:
         self.messages: Deque[Message] = deque()
         self._should_stop = False
         self._enqueue_event: Optional[asyncio.Event] = None
-        self._history: Optional[Deque[Tuple[int, float, Message]]] = None
-        self._message_count: int = 0
+        self._history: Optional[Deque[HistoryEntry]] = None
+        self._next_message_id: int = 0
 
         if self.client.shared:
             self._history_duration = 30
@@ -40,9 +41,9 @@ class Outbox:
             core.app.on_startup(self.loop)
 
     @property
-    def message_count(self) -> int:
-        """Total number of messages sent."""
-        return self._message_count
+    def next_message_id(self) -> int:
+        """Next message ID (equals the total number of messages already sent)."""
+        return self._next_message_id
 
     def _set_enqueue_event(self) -> None:
         """Set the enqueue event while accounting for lazy initialization."""
@@ -70,7 +71,7 @@ class Outbox:
     def _append_history(self, message: Message) -> None:
         now = time.time()
         assert self._history is not None
-        self._history.append((self._message_count, now, message))
+        self._history.append((self._next_message_id, now, message))
         while self._history and self._history[0][1] < now - self._history_duration:
             self._history.popleft()
 
@@ -91,7 +92,7 @@ class Outbox:
                 else:
                     success = False
 
-            elif last_message_id != self._message_count:
+            elif last_message_id != self._next_message_id:
                 success = False
 
         await self._emit('sync', {'success': success, 'target': socket_ids[-1], 'history': messages}, self.client.id)
@@ -144,16 +145,14 @@ class Outbox:
 
     async def _emit(self, message_type: MessageType, data: Any, target_id: ClientId) -> None:
         if message_type != 'sync':
-            self._message_count += 1
-            message = {'message_id': self._message_count, 'payload': data}
+            self._next_message_id += 1
+            data = {'message_id': self._next_message_id, 'payload': data}
             if self._history is not None:
-                self._append_history((target_id, message_type, message))
-        else:
-            message = data
+                self._append_history((target_id, message_type, data))
 
-        await core.sio.emit(message_type, message, room=target_id)
+        await core.sio.emit(message_type, data, room=target_id)
         if core.air is not None and core.air.is_air_target(target_id):
-            await core.air.emit(message_type, message, room=target_id)
+            await core.air.emit(message_type, data, room=target_id)
 
     def stop(self) -> None:
         """Stop the outbox loop."""

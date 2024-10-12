@@ -372,7 +372,7 @@ function createApp(elements, options) {
             replaceUndefinedAttributes(this.elements, id);
           }
         },
-        run_javascript: (msg) => runJavascript(msg["code"], msg["request_id"]),
+        run_javascript: (msg) => runJavascript(msg.code, msg.request_id),
         open: (msg) => {
           const url = msg.path.startsWith("/") ? options.prefix + msg.path : msg.path;
           const target = msg.new_tab ? "_blank" : "_self";
@@ -388,7 +388,6 @@ function createApp(elements, options) {
             return;
           }
           window.syncing = false;
-          console.log(msg.history);
           for (let [_, messageType, data] of msg.history) {
             if (data.message_id <= window.lastMessageId) continue;
             window.lastMessageId = data.message_id;

@@ -126,7 +126,7 @@ class Client:
         socket_io_js_query_params = {
             **core.app.config.socket_io_js_query_params,
             'client_id': self.id,
-            'starting_message_id': self.outbox.message_count,
+            'starting_message_id': self.outbox.next_message_id,
         }
         vue_html, vue_styles, vue_scripts, imports, js_imports = generate_resources(prefix, self.elements.values())
         return templates.TemplateResponse(
