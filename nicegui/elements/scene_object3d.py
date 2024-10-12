@@ -196,10 +196,14 @@ class Object3D:
             self._draggable()
         return self
 
+    @property
+    def children(self) -> List[Object3D]:
+        """List of children of the object."""
+        return [object for object in self.scene.objects.values() if object.parent == self]
+
     def delete(self) -> None:
         """Delete the object."""
-        children = [object for object in self.scene.objects.values() if object.parent == self]
-        for child in children:
+        for child in self.children:
             child.delete()
         del self.scene.objects[self.id]
         self._delete()
