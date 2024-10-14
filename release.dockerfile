@@ -26,6 +26,7 @@ RUN python -m pip install \
     itsdangerous \
     pytest \
     requests \
+    latex2mathml \
     selenium
 
 WORKDIR /app

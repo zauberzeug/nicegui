@@ -29,6 +29,8 @@ COPY pyproject.toml poetry.lock*  ./
 
 RUN poetry install --no-root --extras "plotly matplotlib highcharts sass"
 
+RUN pip install latex2mathml
+
 ADD . .
 
 # ensure unique version to not serve cached and hence potentially wrong static files
