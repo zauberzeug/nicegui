@@ -30,8 +30,6 @@ class InteractiveImage(SourceElement, ContentElement, component='interactive_ima
                  on_mouse: Optional[Handler[MouseEventArguments]] = None,
                  events: List[str] = ['click'],  # noqa: B006
                  cross: Union[bool, str] = False,
-                 cross_vertical: bool = True,
-                 cross_horizontal: bool = True,
                  ) -> None:
         """Interactive Image
 
@@ -57,14 +55,10 @@ class InteractiveImage(SourceElement, ContentElement, component='interactive_ima
         :param on_mouse: callback for mouse events (contains image coordinates `image_x` and `image_y` in pixels)
         :param events: list of JavaScript events to subscribe to (default: `['click']`)
         :param cross: whether to show crosshairs or a color string (default: `False`)
-        :param cross_vertical: whether to draw the cross vertical line (default: `True`)
-        :param cross_horizontal: whether to draw the cross horizontal line (default: `True`)
         """
         super().__init__(source=source, content=content)
         self._props['events'] = events[:]
         self._props['cross'] = cross
-        self._props['cross_vertical'] = cross_vertical
-        self._props['cross_horizontal'] = cross_horizontal
         self._props['size'] = size
 
         if on_mouse:
