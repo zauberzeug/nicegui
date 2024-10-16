@@ -245,7 +245,7 @@ SUPPORTED_THEMES = Literal[
 ]
 
 
-class CodeMirror(ValueElement, DisableableElement, component='codemirror.js'):
+class CodeMirror(ValueElement, DisableableElement, component='codemirror.js', default_classes='nicegui-codemirror'):
     VALUE_PROP = 'value'
     LOOPBACK = None
 
@@ -282,8 +282,6 @@ class CodeMirror(ValueElement, DisableableElement, component='codemirror.js'):
         """
         super().__init__(value=value, on_value_change=on_change)
         self.add_resource(Path(__file__).parent / 'lib' / 'codemirror')
-
-        self._classes.append('nicegui-codemirror')
 
         self._props['language'] = language
         self._props['theme'] = theme

@@ -20,7 +20,8 @@ class SceneView(Element,
                 dependencies=[
                     'lib/tween/tween.umd.js',
                     'lib/three/three.module.js',
-                ]):
+                ],
+                default_classes='nicegui-scene-view'):
 
     def __init__(self,
                  scene: Scene,
@@ -53,7 +54,6 @@ class SceneView(Element,
         self._click_handlers = [on_click] if on_click else []
         self.on('init', self._handle_init)
         self.on('click3d', self._handle_click)
-        self._classes.append('nicegui-scene-view')
 
     def on_click(self, callback: Handler[ClickEventArguments]) -> Self:
         """Add a callback to be invoked when a 3D object is clicked."""

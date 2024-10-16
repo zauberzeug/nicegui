@@ -17,7 +17,10 @@ except ImportError:
     pass
 
 
-class EChart(Element, component='echart.js', dependencies=['lib/echarts/echarts.min.js', 'lib/echarts-gl/echarts-gl.min.js']):
+class EChart(Element,
+             component='echart.js',
+             dependencies=['lib/echarts/echarts.min.js', 'lib/echarts-gl/echarts-gl.min.js'],
+             default_classes='nicegui-echart'):
 
     def __init__(self, options: Dict, on_point_click: Optional[Handler[EChartPointClickEventArguments]] = None, *, enable_3d: bool = False) -> None:
         """Apache EChart
@@ -33,7 +36,6 @@ class EChart(Element, component='echart.js', dependencies=['lib/echarts/echarts.
         super().__init__()
         self._props['options'] = options
         self._props['enable_3d'] = enable_3d or any('3D' in key for key in options)
-        self._classes.append('nicegui-echart')
 
         if on_point_click:
             self.on_point_click(on_point_click)
