@@ -1,6 +1,7 @@
-from typing import Any, Callable, Optional, Union
+from typing import Optional, Union
 
 from ..element import Element
+from ..events import ClickEventArguments, Handler
 from .context_menu import ContextMenu
 from .item import Item
 from .mixins.value_element import ValueElement
@@ -43,7 +44,7 @@ class MenuItem(Item):
 
     def __init__(self,
                  text: str = '',
-                 on_click: Optional[Callable[..., Any]] = None, *,
+                 on_click: Optional[Handler[ClickEventArguments]] = None, *,
                  auto_close: bool = True,
                  ) -> None:
         """Menu Item

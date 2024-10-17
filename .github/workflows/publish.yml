@@ -121,16 +121,6 @@ jobs:
         with:
           python-version: 3.11
 
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install requests PyYAML
-
-      - name: Update Citation.cff
-        env:
-          ZENODO_TOKEN: ${{ secrets.ZENODO_TOKEN }}
-        run: python .github/workflows/update_citation.py $(echo ${GITHUB_REF/refs\/tags\//})
-
       - name: Update version in pyproject.toml
         run: python .github/workflows/update_pyproject.py $(echo ${GITHUB_REF/refs\/tags\//})
 
@@ -139,7 +129,7 @@ jobs:
           git config --global user.name "github-actions[bot]"
           git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add CITATION.cff pyproject.toml
-          git commit -m "Update citation.cff and pyproject.toml"
+          git commit -m "Update pyproject.toml"
           git push origin HEAD:main
 
   verify:

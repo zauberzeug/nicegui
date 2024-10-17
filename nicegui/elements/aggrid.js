@@ -46,9 +46,11 @@ export default {
       this.api.addGlobalListener(this.handle_event);
     },
     run_grid_method(name, ...args) {
+      convertDynamicProperties(args, true);
       return runMethod(this.api, name, args);
     },
     run_row_method(row_id, name, ...args) {
+      convertDynamicProperties(args, true);
       return runMethod(this.api.getRowNode(row_id), name, args);
     },
     handle_event(type, args) {

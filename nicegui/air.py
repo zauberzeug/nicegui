@@ -136,11 +136,24 @@ class Air:
             return True
 
         @self.relay.on('client_disconnect')
-        def _handle_disconnect(data: Dict[str, Any]) -> None:
+        def _handle_client_disconnect(data: Dict[str, Any]) -> None:
+            self.log.debug('client disconnected.')
             client_id = data['client_id']
             if client_id not in Client.instances:
                 return
             Client.instances[client_id].handle_disconnect()
+
+        @self.relay.on('connect')
+        async def _handle_connect() -> None:
+            self.log.debug('connected.')
+
+        @self.relay.on('disconnect')
+        async def _handle_disconnect() -> None:
+            self.log.debug('disconnected.')
+
+        @self.relay.on('connect_error')
+        async def _handle_connect_error(data) -> None:
+            self.log.debug(f'Connection error: {data}')
 
         @self.relay.on('event')
         def _handle_event(data: Dict[str, Any]) -> None:
@@ -168,10 +181,6 @@ class Air:
             print('Sorry, you have reached the time limit of this NiceGUI On Air preview.', flush=True)
             await self.connect()
 
-        @self.relay.on('reconnect')
-        async def _handle_reconnect(_: Dict[str, Any]) -> None:
-            await self.connect()
-
     async def connect(self) -> None:
         """Connect to the NiceGUI On Air server."""
         if self.connecting:
@@ -181,30 +190,23 @@ class Air:
             return
         self.log.debug('Going to connect...')
         self.connecting = True
-        backoff_time = 1
         try:
-            while True:
-                try:
-                    if self.relay.connected:
-                        await asyncio.wait_for(self.disconnect(), timeout=5)
-                    self.log.debug('Connecting...')
-                    await self.relay.connect(
-                        f'{RELAY_HOST}?device_token={self.token}',
-                        socketio_path='/on_air/socket.io',
-                        transports=['websocket', 'polling'],  # favor websocket over polling
-                    )
-                    self.log.debug('Connected.')
-                    break
-                except socketio.exceptions.ConnectionError:
-                    self.log.debug('Connection error.', stack_info=True)
-                except ValueError:  # NOTE this sometimes happens when the internal socketio client is not yet ready
-                    self.log.debug('ValueError while connecting.', stack_info=True)
-                except Exception:
-                    log.exception('Could not connect to NiceGUI On Air server.')
-
-                self.log.debug(f'Retrying in {backoff_time} seconds...')
-                await asyncio.sleep(backoff_time)
-                backoff_time = min(backoff_time * 2, 32)
+            if self.relay.connected:
+                await asyncio.wait_for(self.disconnect(), timeout=5)
+            self.log.debug('Connecting...')
+            await self.relay.connect(
+                f'{RELAY_HOST}?device_token={self.token}',
+                socketio_path='/on_air/socket.io',
+                transports=['websocket', 'polling'],  # favor websocket over polling
+            )
+            assert self.relay.connected
+            return
+        except socketio.exceptions.ConnectionError:
+            self.log.debug('Connection error.', stack_info=True)
+        except ValueError:  # NOTE this sometimes happens when the internal socketio client is not yet ready
+            self.log.debug('ValueError while connecting.', stack_info=True)
+        except Exception:
+            log.exception('Could not connect to NiceGUI On Air server.')
         finally:
             self.connecting = False
 

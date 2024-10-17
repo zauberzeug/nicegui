@@ -3,7 +3,7 @@ from typing import Optional, Union
 from ..element import Element
 
 
-class Grid(Element):
+class Grid(Element, default_classes='nicegui-grid'):
 
     def __init__(self,
                  *,
@@ -18,7 +18,6 @@ class Grid(Element):
         :param columns: number of columns in the grid or a string with the grid-template-columns CSS property (e.g. 'auto 1fr')
         """
         super().__init__('div')
-        self._classes.append('nicegui-grid')
 
         if isinstance(rows, int):
             self._style['grid-template-rows'] = f'repeat({rows}, minmax(0, 1fr))'

@@ -13,6 +13,12 @@ export default {
   },
   methods: {
     update() {
+      // wait for plotly to be loaded
+      if (typeof Plotly === "undefined") {
+        setTimeout(this.update, 10);
+        return;
+      }
+
       // default responsive to true
       const options = this.options;
       if (options.config === undefined) options.config = { responsive: true };

@@ -1,8 +1,8 @@
-from typing import Any, Callable, Dict, Iterator, List, Literal, Optional, Set
+from typing import Any, Dict, Iterator, List, Literal, Optional, Set
 
 from typing_extensions import Self
 
-from ..events import GenericEventArguments, ValueChangeEventArguments, handle_event
+from ..events import GenericEventArguments, Handler, ValueChangeEventArguments, handle_event
 from .mixins.filter_element import FilterElement
 
 
@@ -13,9 +13,9 @@ class Tree(FilterElement):
                  node_key: str = 'id',
                  label_key: str = 'label',
                  children_key: str = 'children',
-                 on_select: Optional[Callable[..., Any]] = None,
-                 on_expand: Optional[Callable[..., Any]] = None,
-                 on_tick: Optional[Callable[..., Any]] = None,
+                 on_select: Optional[Handler[ValueChangeEventArguments]] = None,
+                 on_expand: Optional[Handler[ValueChangeEventArguments]] = None,
+                 on_tick: Optional[Handler[ValueChangeEventArguments]] = None,
                  tick_strategy: Optional[Literal['leaf', 'leaf-filtered', 'strict']] = None,
                  ) -> None:
         """Tree
@@ -77,7 +77,7 @@ class Tree(FilterElement):
                 handle_event(handler, ValueChangeEventArguments(sender=self, client=self.client, value=e.args))
         self.on('update:ticked', handle_ticked)
 
-    def on_select(self, callback: Callable[..., Any]) -> Self:
+    def on_select(self, callback: Handler[ValueChangeEventArguments]) -> Self:
         """Add a callback to be invoked when the selection changes."""
         self._select_handlers.append(callback)
         return self
@@ -96,12 +96,12 @@ class Tree(FilterElement):
         """Remove node selection."""
         return self.select(None)
 
-    def on_expand(self, callback: Callable[..., Any]) -> Self:
+    def on_expand(self, callback: Handler[ValueChangeEventArguments]) -> Self:
         """Add a callback to be invoked when the expansion changes."""
         self._expand_handlers.append(callback)
         return self
 
-    def on_tick(self, callback: Callable[..., Any]) -> Self:
+    def on_tick(self, callback: Handler[ValueChangeEventArguments]) -> Self:
         """Add a callback to be invoked when a node is ticked or unticked."""
         self._tick_handlers.append(callback)
         return self

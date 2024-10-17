@@ -158,7 +158,11 @@ function renderRecursively(elements, id) {
   Object.entries(props).forEach(([key, value]) => {
     if (key.startsWith(":")) {
       try {
-        props[key.substring(1)] = eval(value);
+        try {
+          props[key.substring(1)] = new Function(`return (${value})`)();
+        } catch (e) {
+          props[key.substring(1)] = eval(value);
+        }
         delete props[key];
       } catch (e) {
         console.error(`Error while converting ${key} attribute to function:`, e);

@@ -280,7 +280,7 @@ h6.q-timeline__title {
   gap: 1em;
   transition-duration: 500ms;
   pointer-events: none;
-  z-index: 1000;
+  z-index: 10000;
 }
 .body--dark #popup {
   background-color: black;

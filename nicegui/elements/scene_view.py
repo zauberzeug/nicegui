@@ -1,10 +1,17 @@
 import asyncio
-from typing import Any, Callable, Optional
+from typing import Optional
 
 from typing_extensions import Self
 
 from ..element import Element
-from ..events import GenericEventArguments, SceneClickEventArguments, SceneClickHit, handle_event
+from ..events import (
+    ClickEventArguments,
+    GenericEventArguments,
+    Handler,
+    SceneClickEventArguments,
+    SceneClickHit,
+    handle_event,
+)
 from .scene import Scene, SceneCamera
 
 
@@ -13,14 +20,15 @@ class SceneView(Element,
                 dependencies=[
                     'lib/tween/tween.umd.js',
                     'lib/three/three.module.js',
-                ]):
+                ],
+                default_classes='nicegui-scene-view'):
 
     def __init__(self,
                  scene: Scene,
                  width: int = 400,
                  height: int = 300,
                  camera: Optional[SceneCamera] = None,
-                 on_click: Optional[Callable[..., Any]] = None,
+                 on_click: Optional[Handler[ClickEventArguments]] = None,
                  ) -> None:
         """Scene View
 
@@ -46,9 +54,8 @@ class SceneView(Element,
         self._click_handlers = [on_click] if on_click else []
         self.on('init', self._handle_init)
         self.on('click3d', self._handle_click)
-        self._classes.append('nicegui-scene-view')
 
-    def on_click(self, callback: Callable[..., Any]) -> Self:
+    def on_click(self, callback: Handler[ClickEventArguments]) -> Self:
         """Add a callback to be invoked when a 3D object is clicked."""
         self._click_handlers.append(callback)
         return self
