@@ -3,7 +3,7 @@ name: Run Tests
 on: [push]
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref_type }}-${{ github.event.pull_request.number || github.ref_name }}-${{ github.sha }}
+  group: ${{ github.workflow }}-${{ github.sha }}
   cancel-in-progress: true
 
 jobs:
