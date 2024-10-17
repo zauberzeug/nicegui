@@ -33,11 +33,11 @@ jobs:
           # try fix issue with importlib_resources
           poetry run pip install importlib-resources
       - name: test startup
-        run: ./test_startup.sh
+        run: poetry run./test_startup.sh
       - name: setup chromedriver
         uses: nanasess/setup-chromedriver@v2.2.2
       - name: pytest
-        run: pytest
+        run: poetry runpytest
       - name: upload screenshots
         uses: actions/upload-artifact@v4
         env:
