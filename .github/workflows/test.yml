@@ -26,13 +26,12 @@ jobs:
       - name: install dependencies
         run: |
           set -x
-          poetry config virtualenvs.create false
           poetry install --all-extras
           # install packages to run the examples
-          pip install opencv-python opencv-contrib-python-headless httpx isort replicate langchain openai simpy tortoise-orm
-          pip install -r tests/requirements.txt
+          poetry run pip install opencv-python opencv-contrib-python-headless httpx isort replicate langchain openai simpy tortoise-orm
+          poetry run pip install -r tests/requirements.txt
           # try fix issue with importlib_resources
-          pip install importlib-resources
+          poetry run pip install importlib-resources
       - name: test startup
         run: ./test_startup.sh
       - name: setup chromedriver
