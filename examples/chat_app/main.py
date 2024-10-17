@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import List, Tuple
 from uuid import uuid4
 
@@ -21,7 +21,7 @@ def chat_messages(own_id: str) -> None:
 @ui.page('/')
 async def main():
     def send() -> None:
-        stamp = datetime.utcnow().strftime('%X')
+        stamp = datetime.now(timezone.utc).strftime('%X')
         messages.append((user_id, avatar, text.value, stamp))
         text.value = ''
         chat_messages.refresh()
