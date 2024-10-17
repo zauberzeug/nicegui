@@ -34,6 +34,7 @@ jobs:
           platforms: linux/amd64,linux/arm64
           push: false
           tags: latest
+          build-args: VERSION=${{ steps.prep.outputs.version }}
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
       # Temp fix
