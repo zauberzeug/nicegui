@@ -124,7 +124,7 @@ class Air:
             print('Error:', data['message'], flush=True)
 
         @self.relay.on('handshake')
-        def _handle_handshake(data: Dict[str, Any]) -> bool:
+        async def _handle_handshake(data: Dict[str, Any]) -> bool:
             client_id = data['client_id']
             if client_id not in Client.instances:
                 return False
@@ -132,6 +132,7 @@ class Air:
             client.environ = data['environ']
             client.tab_id = data['tab_id']
             client.on_air = True
+            await client.outbox.synchronize(data['last_message_id'], data['socket_ids'])
             client.handle_handshake()
             return True
 
