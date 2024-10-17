@@ -2,6 +2,10 @@ name: Run Tests
 
 on: [push]
 
+concurrency:
+  group: test-${{ github.sha }}
+  cancel-in-progress: true
+
 jobs:
   test:
     strategy:
