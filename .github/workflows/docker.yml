@@ -14,6 +14,7 @@ jobs:
           VERSION=latest
           SHORTREF=${GITHUB_SHA::8}
           echo "docker_image=${DOCKER_IMAGE}" >> $GITHUB_OUTPUT
+          echo "version=2.4.0" >> $GITHUB_OUTPUT
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
       - name: Set up Docker Buildx
