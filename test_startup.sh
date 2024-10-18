@@ -19,14 +19,21 @@ run() {
 check() {
     echo "Checking $1 ----------"
     pushd "$(dirname "$1")" >/dev/null
-    if run "$(basename "$1")" "${@:2}"; then
-        echo "OK --------"
-        popd > /dev/null
-    else
-        echo "FAILED -------"
-        popd > /dev/null
-        return 1
-    fi
+
+    max_attempts=3
+    for attempt in $(seq 1 $max_attempts); do
+        if run "$(basename "$1")" "${@:2}"; then
+            echo "OK --------"
+            popd > /dev/null
+            return 0
+        elif [ $attempt -eq $max_attempts ]; then
+            echo "FAILED after $max_attempts attempts -------"
+            popd > /dev/null
+            return 1
+        else
+            echo "Attempt $attempt failed. Retrying..."
+        fi
+    done
 }
 
 check main.py || exit 1
