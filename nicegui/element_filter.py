@@ -30,7 +30,7 @@ class ElementFilter(Generic[T]):
 
     @overload
     def __init__(self, *,
-                 kind: Type[T],
+                 kind: Union[Type[T], List[Type[T]], None] = None,
                  marker: Union[str, List[str], None] = None,
                  content: Union[str, List[str], None] = None,
                  local_scope: bool = DEFAULT_LOCAL_SCOPE,
@@ -38,7 +38,7 @@ class ElementFilter(Generic[T]):
         ...
 
     def __init__(self, *,
-                 kind: Optional[Type[T]] = None,
+                 kind: Union[Type[T], List[Type[T]], None] = None,
                  marker: Union[str, List[str], None] = None,
                  content: Union[str, List[str], None] = None,
                  local_scope: bool = DEFAULT_LOCAL_SCOPE,
@@ -74,8 +74,8 @@ class ElementFilter(Generic[T]):
         :param content: filter for elements which contain ``content`` in one of their content attributes like ``.text``, ``.value``, ``.source``, ...; can be a singe string or a list of strings which all must match
         :param local_scope: if `True`, only elements within the current scope are returned; by default the whole page is searched (this default behavior can be changed with ``ElementFilter.DEFAULT_LOCAL_SCOPE = True``)
         """
-        self._kind = kind
-        self._markers = marker.split() if isinstance(marker, str) else marker or []
+        self._kind = kind if isinstance(kind, list) else ([kind] if kind else [])
+        self._markers = marker.split() if isinstance(marker, str) else [word for single_marker in (marker or []) for word in single_marker.split()]
         self._contents = [content] if isinstance(content, str) else content or []
 
         self._within_kinds: List[Type[Element]] = []
@@ -94,7 +94,7 @@ class ElementFilter(Generic[T]):
 
     def __iter__(self) -> Iterator[T]:
         for element in self._scope.descendants():
-            if self._kind and not isinstance(element, self._kind):
+            if self._kind and not isinstance(element, tuple(self._kind)):
                 continue
             if self._exclude_kinds and isinstance(element, tuple(self._exclude_kinds)):
                 continue
@@ -146,46 +146,64 @@ class ElementFilter(Generic[T]):
             yield element  # type: ignore
 
     def within(self, *,
-               kind: Optional[Type[Element]] = None,
-               marker: Optional[str] = None,
+               kind: Union[Element, List[Element], None] = None,
+               marker: Union[str, List[str], None] = None,
                instance: Union[Element, List[Element], None] = None,
                ) -> Self:
         """Filter elements which have a specific match in the parent hierarchy."""
         if kind is not None:
-            assert issubclass(kind, Element)
-            self._within_kinds.append(kind)
+            if isinstance(kind, list):
+                for every_kind in kind:
+                    assert issubclass(every_kind, Element)
+                self._within_kinds.extend(kind)
+            else:    
+                assert issubclass(kind, Element)
+                self._within_kinds.append(kind)
         if marker is not None:
-            self._within_markers.extend(marker.split())
+            markers = marker.split() if isinstance(marker, str) else [word for single_marker in marker for word in single_marker.split()]
+            self._within_markers.extend(markers)
         if instance is not None:
             self._within_instances.extend(instance if isinstance(instance, list) else [instance])
         return self
 
     def exclude(self, *,
-                kind: Optional[Type[Element]] = None,
-                marker: Optional[str] = None,
-                content: Optional[str] = None,
+                kind: Union[Element, List[Element], None] = None,
+                marker: Union[str, List[str], None] = None,
+                content: Union[str, List[str], None] = None,
                 ) -> Self:
         """Exclude elements with specific element type, marker or content."""
         if kind is not None:
-            assert issubclass(kind, Element)
-            self._exclude_kinds.append(kind)
+            if isinstance(kind, list):
+                for every_kind in kind:
+                    assert issubclass(every_kind, Element)
+                self._exclude_kinds.extend(kind)
+            else:    
+                assert issubclass(kind, Element)
+                self._exclude_kinds.append(kind)
         if marker is not None:
-            self._exclude_markers.append(marker)
+            markers = marker.split() if isinstance(marker, str) else [word for single_marker in marker for word in single_marker.split()]
+            self._exclude_markers.extend(markers)
         if content is not None:
-            self._exclude_content.append(content)
+            self._exclude_content.extend([content] if isinstance(content, str) else content)
         return self
 
     def not_within(self, *,
-                   kind: Optional[Type[Element]] = None,
-                   marker: Optional[str] = None,
+                   kind: Union[Element, List[Element], None] = None,
+                   marker: Union[str, List[str], None] = None,
                    instance: Union[Element, List[Element], None] = None,
                    ) -> Self:
         """Exclude elements which have a parent of a specific type or marker."""
         if kind is not None:
-            assert issubclass(kind, Element)
-            self._not_within_kinds.append(kind)
+            if isinstance(kind, list):
+                for every_kind in kind:
+                    assert issubclass(every_kind, Element)
+                self._not_within_kinds.extend(kind)
+            else:    
+                assert issubclass(kind, Element)
+                self._not_within_kinds.append(kind)
         if marker is not None:
-            self._not_within_markers.extend(marker.split())
+            markers = marker.split() if isinstance(marker, str) else [word for single_marker in marker for word in single_marker.split()]
+            self._not_within_markers.extend(markers)
         if instance is not None:
             self._not_within_instances.extend(instance if isinstance(instance, list) else [instance])
         return self
