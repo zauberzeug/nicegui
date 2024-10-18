@@ -1,28 +1,29 @@
 #!/usr/bin/env bash
 
+set -euo pipefail
+
 run() {
     pwd
-    output=$({ timeout 10 ./$1 $2; } 2>&1)
+    output=$({ timeout 10 ./"$1" "${@:2}"; } 2>&1)
     exitcode=$?
-    test $exitcode -eq 124 && exitcode=0 # exitcode 124 is comming from "timeout command above"
-    echo $output | grep -e "NiceGUI ready to go" -e "Uvicorn running on http://127.0.0.1:8000" > /dev/null || exitcode=1
-    echo $output | grep "Traceback" > /dev/null && exitcode=1
-    echo $output | grep "Error" > /dev/null && exitcode=1
-    if test $exitcode -ne 0; then
-        echo "wrong exit code $exitcode. Output was:"
-        echo $output
+    [[ $exitcode -eq 124 ]] && exitcode=0 # exitcode 124 is coming from "timeout command above"
+    echo "$output" | grep -qE "NiceGUI ready to go|Uvicorn running on http://127.0.0.1:8000" || exitcode=1
+    echo "$output" | grep -qE "Traceback|Error" && exitcode=1
+    if [[ $exitcode -ne 0 ]]; then
+        echo "Wrong exit code $exitcode. Output was:"
+        echo "$output"
         return 1
     fi
 }
 
 check() {
-    echo checking $1 ----------
-    pushd $(dirname "$1") >/dev/null
-    if run $(basename "$1") $2; then
-        echo "ok --------"
+    echo "Checking $1 ----------"
+    pushd "$(dirname "$1")" >/dev/null
+    if run "$(basename "$1")" "${@:2}"; then
+        echo "OK --------"
         popd > /dev/null
     else
-        echo "failed -------"
+        echo "FAILED -------"
         popd > /dev/null
         return 1
     fi
