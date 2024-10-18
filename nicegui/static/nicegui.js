@@ -294,6 +294,15 @@ function createRandomUUID() {
   }
 }
 
+const TAB_ID =
+  !sessionStorage.__nicegui_tab_id || sessionStorage.__nicegui_tab_closed === "false"
+    ? (sessionStorage.__nicegui_tab_id = createRandomUUID())
+    : sessionStorage.__nicegui_tab_id;
+sessionStorage.__nicegui_tab_closed = "false";
+window.onbeforeunload = function () {
+  sessionStorage.__nicegui_tab_closed = "true";
+};
+
 function createApp(elements, options) {
   replaceUndefinedAttributes(elements, 0);
   return (app = Vue.createApp({
@@ -319,12 +328,7 @@ function createApp(elements, options) {
       window.did_handshake = false;
       const messageHandlers = {
         connect: () => {
-          let tabId = sessionStorage.getItem("__nicegui_tab_id");
-          if (!tabId) {
-            tabId = createRandomUUID();
-            sessionStorage.setItem("__nicegui_tab_id", tabId);
-          }
-          window.socket.emit("handshake", { client_id: window.clientId, tab_id: tabId }, (ok) => {
+          window.socket.emit("handshake", { client_id: window.clientId, tab_id: TAB_ID }, (ok) => {
             if (!ok) {
               console.log("reloading because handshake failed for clientId " + window.clientId);
               window.location.reload();
