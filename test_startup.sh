@@ -32,13 +32,8 @@ error=0
 check main.py || error=1
 for path in examples/*
 do
-    # skip if python is 3.11 and if path is examples/sqlite_database
-    if test $(python3 --version | cut -d' ' -f2 | cut -d'.' -f1,2) = "3.11" && test $path = "examples/sqlite_database"; then
-        continue # until https://github.com/omnilib/aiosqlite/issues/241 is fixed
-    fi
-
-    # skip if python is 3.12 and if path is examples/sqlite_database
-    if test $(python3 --version | cut -d' ' -f2 | cut -d'.' -f1,2) = "3.12" && test $path = "examples/sqlite_database"; then
+    # Skip examples/sqlite_database for Python 3.11 and 3.12
+    if [[ $(python3 --version | cut -d' ' -f2 | cut -d'.' -f1,2) =~ ^3.1[12]$ ]] && [[ $path == "examples/sqlite_database" ]]; then
         continue # until https://github.com/omnilib/aiosqlite/issues/241 is fixed
     fi
 
