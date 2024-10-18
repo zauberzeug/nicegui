@@ -28,8 +28,7 @@ check() {
     fi
 }
 
-error=0
-check main.py || error=1
+check main.py || exit 1
 for path in examples/*
 do
     # Skip examples/sqlite_database for Python 3.11 and 3.12
@@ -44,20 +43,21 @@ do
 
     # install all requirements except nicegui
     if test -f $path/requirements.txt; then
-        sed '/^nicegui/d' $path/requirements.txt > $path/requirements.tmp.txt || error=1 # remove nicegui from requirements.txt
-        python3 -m pip install -r $path/requirements.tmp.txt || error=1
-        rm $path/requirements.tmp.txt || error=1
+        sed '/^nicegui/d' $path/requirements.txt > $path/requirements.tmp.txt || exit 1 # remove nicegui from requirements.txt
+        python3 -m pip install -r $path/requirements.tmp.txt || exit 1
+        rm $path/requirements.tmp.txt || exit 1
     fi
 
     # run start.sh or main.py
     if test -f $path/start.sh; then
-        check $path/start.sh dev || error=1
+        check $path/start.sh dev || exit 1
     elif test -f $path/main.py; then
-        check $path/main.py || error=1
+        check $path/main.py || exit 1
     fi
     if pytest -q --collect-only $path >/dev/null 2>&1; then
         echo "running tests for $path"
-        pytest $path || error=1
+        pytest $path || exit 1
     fi
 done
-test $error -eq 0
+
+exit 0
