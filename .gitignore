@@ -10,3 +10,4 @@ venv
 .nicegui/
 *.sqlite*
 .DS_Store
+.env
