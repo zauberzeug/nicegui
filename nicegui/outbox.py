@@ -1,9 +1,10 @@
 from __future__ import annotations
 
 import asyncio
+import itertools
 import time
 from collections import deque
-from typing import TYPE_CHECKING, Any, Deque, Dict, List, Optional, Tuple
+from typing import TYPE_CHECKING, Any, Deque, Dict, Optional, Tuple
 
 from . import background_tasks, core
 
@@ -11,11 +12,13 @@ if TYPE_CHECKING:
     from .client import Client
     from .element import Element
 
-ClientId = str
 ElementId = int
+ClientId = str
+MessageId = int
 MessageType = str
-Message = Tuple[ClientId, MessageType, Any]
-HistoryEntry = Tuple[int, float, Message]
+MessageTime = float
+Payload = Any
+Message = Tuple[ClientId, MessageId, MessageTime, MessageType, Payload]
 
 
 class Outbox:
@@ -26,14 +29,8 @@ class Outbox:
         self.messages: Deque[Message] = deque()
         self._should_stop = False
         self._enqueue_event: Optional[asyncio.Event] = None
-        self._history: Optional[Deque[HistoryEntry]] = None
-        self._next_message_id: int = 0
-
-        if self.client.shared:
-            self._history_duration = 30
-        else:
-            connection_timeout = core.sio.eio.ping_interval + core.sio.eio.ping_timeout
-            self._history_duration = connection_timeout + self.client.page.resolve_reconnect_timeout()
+        self.next_message_id: int = 0
+        self._message_index: int = 0
 
         if core.app.is_started:
             background_tasks.create(self.loop(), name=f'outbox loop {client.id}')
@@ -41,9 +38,12 @@ class Outbox:
             core.app.on_startup(self.loop)
 
     @property
-    def next_message_id(self) -> int:
-        """Next message ID (equals the total number of messages already sent)."""
-        return self._next_message_id
+    def history_duration(self) -> float:
+        """Duration of the message history in seconds."""
+        if self.client.shared:
+            return 0
+        else:
+            return core.sio.eio.ping_interval + core.sio.eio.ping_timeout + self.client.page.resolve_reconnect_timeout()
 
     def _set_enqueue_event(self) -> None:
         """Set the enqueue event while accounting for lazy initialization."""
@@ -62,46 +62,15 @@ class Outbox:
         self.updates[element.id] = None
         self._set_enqueue_event()
 
-    def enqueue_message(self, message_type: MessageType, data: Any, target_id: ClientId) -> None:
+    def enqueue_message(self, message_type: MessageType, data: Payload, target_id: ClientId) -> None:
         """Enqueue a message for the given client."""
         self.client.check_existence()
-        self.messages.append((target_id, message_type, data))
+        self.messages.append((target_id, self.next_message_id, time.time(), message_type, data))
+        self.next_message_id += 1
         self._set_enqueue_event()
-
-    def _append_history(self, message: Message) -> None:
-        now = time.time()
-        assert self._history is not None
-        self._history.append((self._next_message_id, now, message))
-        while self._history and self._history[0][1] < now - self._history_duration:
-            self._history.popleft()
-
-    async def synchronize(self, last_message_id: int, socket_ids: List[str]) -> None:
-        """Synchronize the state of a connecting client by resending missed messages, if possible."""
-        messages = []
-        success = True
-        if self._history is not None:
-            if self._history:
-                next_id = last_message_id + 1
-                oldest_id = self._history[0][0]
-                if oldest_id <= next_id:
-                    start = next_id - oldest_id
-                    for i in range(start, len(self._history)):
-                        msg = self._history[i][2]
-                        if msg[0] == self.client.id or msg[0] in socket_ids:
-                            messages.append(msg)
-                else:
-                    success = False
-
-            elif last_message_id != self._next_message_id:
-                success = False
-
-        await self._emit('sync', {'success': success, 'target': socket_ids[-1], 'history': messages}, self.client.id)
 
     async def loop(self) -> None:
         """Send updates and messages to all clients in an endless loop."""
-        if core.app.config.message_history_length:
-            self._history = Deque(maxlen=core.app.config.message_history_length)
-
         self._enqueue_event = asyncio.Event()
         self._enqueue_event.set()
 
@@ -125,13 +94,15 @@ class Outbox:
                         element_id: None if element is None else element._to_dict()  # pylint: disable=protected-access
                         for element_id, element in self.updates.items()
                     }
-                    coros.append(self._emit('update', data, self.client.id))
+                    self.messages.append((self.client.id, self.next_message_id, time.time(), 'update', data))
+                    self.next_message_id += 1
                     self.updates.clear()
 
-                if self.messages:
-                    for target_id, message_type, data in self.messages:
-                        coros.append(self._emit(message_type, data, target_id))
-                    self.messages.clear()
+                if len(self.messages) > self._message_index:
+                    for message in itertools.islice(self.messages, self._message_index, None):
+                        coros.append(self._emit(message))
+                    self._prune_messages()
+                    self._message_index = len(self.messages)
 
                 for coro in coros:
                     try:
@@ -143,16 +114,26 @@ class Outbox:
                 core.app.handle_exception(e)
                 await asyncio.sleep(0.1)
 
-    async def _emit(self, message_type: MessageType, data: Any, target_id: ClientId) -> None:
-        if message_type != 'sync':
-            self._next_message_id += 1
-            data = {'message_id': self._next_message_id, 'payload': data}
-            if self._history is not None:
-                self._append_history((target_id, message_type, data))
+    async def _emit(self, message: Message) -> None:
+        client_id, message_id, _, message_type, data = message
+        data['_id'] = message_id
+        await core.sio.emit(message_type, data, room=client_id)
+        if core.air is not None and core.air.is_air_target(client_id):
+            await core.air.emit(message_type, data, room=client_id)
 
-        await core.sio.emit(message_type, data, room=target_id)
-        if core.air is not None and core.air.is_air_target(target_id):
-            await core.air.emit(message_type, data, room=target_id)
+    def _prune_messages(self) -> None:
+        if self.client.shared:
+            self.messages.clear()
+        else:
+            while self.messages and self.messages[0][2] < time.time() - self.history_duration:
+                self.messages.popleft()
+
+    def seek(self, message_id: MessageId) -> None:
+        """Seek to the given message ID and discard all messages before it."""
+        while self.messages and self.messages[0][1] < message_id:
+            self.messages.popleft()
+        self._message_index = 0
+        self._set_enqueue_event()
 
     def stop(self) -> None:
         """Stop the outbox loop."""
