@@ -40,11 +40,13 @@ class Tree(FilterElement):
         self._props['node-key'] = node_key
         self._props['label-key'] = label_key
         self._props['children-key'] = children_key
-        self._props['selected'] = None
-        self._props['expanded'] = []
-        self._props['ticked'] = []
-        if tick_strategy is not None:
-            self._props['tick-strategy'] = tick_strategy
+        if on_select:
+            self._props['selected'] = None
+        if on_expand:
+            self._props['expanded'] = []
+        if on_tick or tick_strategy:
+            self._props['ticked'] = []
+            self._props['tick-strategy'] = tick_strategy or 'leaf'
         self._select_handlers = [on_select] if on_select else []
         self._expand_handlers = [on_expand] if on_expand else []
         self._tick_handlers = [on_tick] if on_tick else []
@@ -79,6 +81,7 @@ class Tree(FilterElement):
 
     def on_select(self, callback: Handler[ValueChangeEventArguments]) -> Self:
         """Add a callback to be invoked when the selection changes."""
+        self._props.setdefault('selected', None)
         self._select_handlers.append(callback)
         return self
 
@@ -87,6 +90,7 @@ class Tree(FilterElement):
 
         :param node_key: node key to select
         """
+        self._props.setdefault('selected', None)
         if self._props['selected'] != node_key:
             self._props['selected'] = node_key
             self.update()
@@ -98,11 +102,14 @@ class Tree(FilterElement):
 
     def on_expand(self, callback: Handler[ValueChangeEventArguments]) -> Self:
         """Add a callback to be invoked when the expansion changes."""
+        self._props.setdefault('expanded', [])
         self._expand_handlers.append(callback)
         return self
 
     def on_tick(self, callback: Handler[ValueChangeEventArguments]) -> Self:
         """Add a callback to be invoked when a node is ticked or unticked."""
+        self._props.setdefault('ticked', [])
+        self._props.setdefault('tick-strategy', 'leaf')
         self._tick_handlers.append(callback)
         return self
 
@@ -111,6 +118,7 @@ class Tree(FilterElement):
 
         :param node_keys: list of node keys to tick or ``None`` to tick all nodes (default: ``None``)
         """
+        self._props.setdefault('ticked', [])
         self._props['ticked'][:] = self._find_node_keys(node_keys).union(self._props['ticked'])
         self.update()
         return self
@@ -120,6 +128,7 @@ class Tree(FilterElement):
 
         :param node_keys: list of node keys to untick or ``None`` to untick all nodes (default: ``None``)
         """
+        self._props.setdefault('ticked', [])
         self._props['ticked'][:] = set(self._props['ticked']).difference(self._find_node_keys(node_keys))
         self.update()
         return self
@@ -129,6 +138,7 @@ class Tree(FilterElement):
 
         :param node_keys: list of node keys to expand (default: all nodes)
         """
+        self._props.setdefault('expanded', [])
         self._props['expanded'][:] = self._find_node_keys(node_keys).union(self._props['expanded'])
         self.update()
         return self
@@ -138,6 +148,7 @@ class Tree(FilterElement):
 
         :param node_keys: list of node keys to collapse (default: all nodes)
         """
+        self._props.setdefault('expanded', [])
         self._props['expanded'][:] = set(self._props['expanded']).difference(self._find_node_keys(node_keys))
         self.update()
         return self
