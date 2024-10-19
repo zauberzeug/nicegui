@@ -32,6 +32,7 @@ class AppConfig:
     language: Language = field(init=False)
     binding_refresh_interval: float = field(init=False)
     reconnect_timeout: float = field(init=False)
+    message_history_length: int = field(init=False)
     tailwind: bool = field(init=False)
     prod_js: bool = field(init=False)
     show_welcome_message: bool = field(init=False)
@@ -47,6 +48,7 @@ class AppConfig:
                        language: Language,
                        binding_refresh_interval: float,
                        reconnect_timeout: float,
+                       message_history_length: int,
                        tailwind: bool,
                        prod_js: bool,
                        show_welcome_message: bool,
@@ -60,6 +62,7 @@ class AppConfig:
         self.language = language
         self.binding_refresh_interval = binding_refresh_interval
         self.reconnect_timeout = reconnect_timeout
+        self.message_history_length = message_history_length
         self.tailwind = tailwind
         self.prod_js = prod_js
         self.show_welcome_message = show_welcome_message
