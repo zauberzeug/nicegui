@@ -294,6 +294,7 @@ function createRandomUUID() {
   }
 }
 
+const OLD_TAB_ID = sessionStorage.__nicegui_tab_closed === "false" ? sessionStorage.__nicegui_tab_id : null;
 const TAB_ID =
   !sessionStorage.__nicegui_tab_id || sessionStorage.__nicegui_tab_closed === "false"
     ? (sessionStorage.__nicegui_tab_id = createRandomUUID())
@@ -328,7 +329,12 @@ function createApp(elements, options) {
       window.did_handshake = false;
       const messageHandlers = {
         connect: () => {
-          window.socket.emit("handshake", { client_id: window.clientId, tab_id: TAB_ID }, (ok) => {
+          const args = {
+            client_id: window.clientId,
+            tab_id: TAB_ID,
+            old_tab_id: OLD_TAB_ID,
+          };
+          window.socket.emit("handshake", args, (ok) => {
             if (!ok) {
               console.log("reloading because handshake failed for clientId " + window.clientId);
               window.location.reload();
