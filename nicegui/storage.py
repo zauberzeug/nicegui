@@ -191,6 +191,11 @@ class Storage:
             self._tabs[client.tab_id] = observables.ObservableDict()
         return self._tabs[client.tab_id]
 
+    def copy_tab(self, old_tab_id: str, tab_id: str) -> None:
+        """Copy the tab storage to a new tab. (For internal use only.)"""
+        if old_tab_id in self._tabs:
+            self._tabs[tab_id] = observables.ObservableDict(self._tabs[old_tab_id].copy())
+
     async def prune_tab_storage(self) -> None:
         """Regularly prune tab storage that is older than the configured `max_tab_storage_age`."""
         while True:
