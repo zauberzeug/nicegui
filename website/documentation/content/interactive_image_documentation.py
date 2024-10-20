@@ -65,9 +65,18 @@ def loaded_event():
 @doc.demo('Crosshairs', '''
     You can show crosshairs by passing `cross=True`.
     You can also change the color of the crosshairs by passing a color string.
+
+    Alternatively, you can use the `add_slot` method to add a custom "cross" slot with your own SVG template.
+    The `props.x` and `props.y` variables will be available in the template, representing the crosshair position.
 ''')
 def crosshairs():
     ui.interactive_image('https://picsum.photos/id/565/640/360', cross='red')
+
+    ui.interactive_image('https://picsum.photos/id/565/640/360').add_slot('cross', '''
+        <circle :cx="props.x" :cy="props.y" r="30" stroke="red" fill="none" />
+        <line :x1="props.x - 30" :y1="props.y" :x2="props.x + 30" :y2="props.y" stroke="red" />
+        <line :x1="props.x" :y1="props.y - 30" :x2="props.x" :y2="props.y + 30" stroke="red" />
+    ''')
 
 
 @doc.demo('SVG events', '''

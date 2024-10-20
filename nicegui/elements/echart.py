@@ -1,11 +1,11 @@
-from typing import Any, Callable, Dict, Optional
+from typing import Callable, Dict, Optional
 
 from typing_extensions import Self
 
 from .. import optional_features
 from ..awaitable_response import AwaitableResponse
 from ..element import Element
-from ..events import EChartPointClickEventArguments, GenericEventArguments, handle_event
+from ..events import EChartPointClickEventArguments, GenericEventArguments, Handler, handle_event
 
 try:
     from pyecharts.charts.base import default, json
@@ -17,9 +17,12 @@ except ImportError:
     pass
 
 
-class EChart(Element, component='echart.js', dependencies=['lib/echarts/echarts.min.js', 'lib/echarts-gl/echarts-gl.min.js']):
+class EChart(Element,
+             component='echart.js',
+             dependencies=['lib/echarts/echarts.min.js', 'lib/echarts-gl/echarts-gl.min.js'],
+             default_classes='nicegui-echart'):
 
-    def __init__(self, options: Dict, on_point_click: Optional[Callable] = None, *, enable_3d: bool = False) -> None:
+    def __init__(self, options: Dict, on_point_click: Optional[Handler[EChartPointClickEventArguments]] = None, *, enable_3d: bool = False) -> None:
         """Apache EChart
 
         An element to create a chart using `ECharts <https://echarts.apache.org/>`_.
@@ -33,12 +36,11 @@ class EChart(Element, component='echart.js', dependencies=['lib/echarts/echarts.
         super().__init__()
         self._props['options'] = options
         self._props['enable_3d'] = enable_3d or any('3D' in key for key in options)
-        self._classes.append('nicegui-echart')
 
         if on_point_click:
             self.on_point_click(on_point_click)
 
-    def on_point_click(self, callback: Callable[..., Any]) -> Self:
+    def on_point_click(self, callback: Handler[EChartPointClickEventArguments]) -> Self:
         """Add a callback to be invoked when a point is clicked."""
         def handle_point_click(e: GenericEventArguments) -> None:
             handle_event(callback, EChartPointClickEventArguments(

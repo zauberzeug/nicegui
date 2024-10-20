@@ -1,5 +1,6 @@
-from typing import Any, Callable, Optional
+from typing import Optional
 
+from ..events import Handler, ValueChangeEventArguments
 from .mixins.disableable_element import DisableableElement
 from .mixins.value_element import ValueElement
 
@@ -9,7 +10,7 @@ class Time(ValueElement, DisableableElement):
     def __init__(self,
                  value: Optional[str] = None, *,
                  mask: str = 'HH:mm',
-                 on_change: Optional[Callable[..., Any]] = None,
+                 on_change: Optional[Handler[ValueChangeEventArguments]] = None,
                  ) -> None:
         """Time Input
 

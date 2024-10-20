@@ -1,5 +1,6 @@
-from typing import Any, Callable, Optional
+from typing import Optional
 
+from ..events import Handler, ValueChangeEventArguments
 from .label import Label
 from .mixins.color_elements import TextColorElement
 from .mixins.disableable_element import DisableableElement
@@ -19,7 +20,7 @@ class Knob(ValueElement, DisableableElement, TextColorElement):
                  track_color: Optional[str] = None,
                  size: Optional[str] = None,
                  show_value: bool = False,
-                 on_change: Optional[Callable[..., Any]] = None,
+                 on_change: Optional[Handler[ValueChangeEventArguments]] = None,
                  ) -> None:
         """Knob
 

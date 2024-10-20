@@ -1,8 +1,8 @@
-from typing import Any, Callable, Optional
+from typing import Optional
 
 from typing_extensions import Self
 
-from ..events import ClickEventArguments, handle_event
+from ..events import ClickEventArguments, Handler, ValueChangeEventArguments, handle_event
 from .mixins.color_elements import BackgroundColorElement, TextColorElement
 from .mixins.disableable_element import DisableableElement
 from .mixins.icon_element import IconElement
@@ -20,12 +20,12 @@ class Chip(IconElement, ValueElement, TextElement, BackgroundColorElement, TextC
                  icon: Optional[str] = None,
                  color: Optional[str] = 'primary',
                  text_color: Optional[str] = None,
-                 on_click: Optional[Callable[..., Any]] = None,
+                 on_click: Optional[Handler[ClickEventArguments]] = None,
                  selectable: bool = False,
                  selected: bool = False,
-                 on_selection_change: Optional[Callable[..., Any]] = None,
+                 on_selection_change: Optional[Handler[ValueChangeEventArguments]] = None,
                  removable: bool = False,
-                 on_value_change: Optional[Callable[..., Any]] = None,
+                 on_value_change: Optional[Handler[ValueChangeEventArguments]] = None,
                  ) -> None:
         """Chip
 
@@ -52,7 +52,7 @@ class Chip(IconElement, ValueElement, TextElement, BackgroundColorElement, TextC
         if on_click:
             self.on_click(on_click)
 
-    def on_click(self, callback: Callable[..., Any]) -> Self:
+    def on_click(self, callback: Handler[ClickEventArguments]) -> Self:
         """Add a callback to be invoked when the chip is clicked."""
         self._props['clickable'] = True
         self.update()

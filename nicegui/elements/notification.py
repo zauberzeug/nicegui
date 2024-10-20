@@ -1,11 +1,11 @@
 import asyncio
-from typing import Any, Callable, Dict, Literal, Optional, Union
+from typing import Any, Dict, Literal, Optional, Union
 
 from typing_extensions import Self
 
 from ..context import context
 from ..element import Element
-from ..events import UiEventArguments, handle_event
+from ..events import Handler, UiEventArguments, handle_event
 
 NotificationPosition = Literal[
     'top-left',
@@ -40,7 +40,7 @@ class Notification(Element, component='notification.js'):
                  icon: Optional[str] = None,
                  spinner: bool = False,
                  timeout: Optional[float] = 5.0,
-                 on_dismiss: Optional[Callable] = None,
+                 on_dismiss: Optional[Handler[UiEventArguments]] = None,
                  options: Optional[Dict] = None,
                  **kwargs: Any,
                  ) -> None:
@@ -188,7 +188,7 @@ class Notification(Element, component='notification.js'):
         self._props['options']['closeBtn'] = value
         self.update()
 
-    def on_dismiss(self, callback: Callable[..., Any]) -> Self:
+    def on_dismiss(self, callback: Handler[UiEventArguments]) -> Self:
         """Add a callback to be invoked when the notification is dismissed."""
         self.on('dismiss', lambda _: handle_event(callback, UiEventArguments(sender=self, client=self.client)), [])
         return self

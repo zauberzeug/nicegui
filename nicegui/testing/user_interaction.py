@@ -6,6 +6,7 @@ from typing_extensions import Self
 
 from nicegui import background_tasks, events, ui
 from nicegui.element import Element
+from nicegui.elements.mixins.value_element import ValueElement
 
 if TYPE_CHECKING:
     from .user import User
@@ -43,7 +44,10 @@ class UserInteraction(Generic[T]):
         return self
 
     def type(self, text: str) -> Self:
-        """Type the given text into the selected elements."""
+        """Type the given text into the selected elements.
+
+        Note: All elements must have a ``value`` attribute.
+        """
         assert self.user.client
         with self.user.client:
             for element in self.elements:
@@ -74,4 +78,16 @@ class UserInteraction(Generic[T]):
                         args = not element.value
                     event_arguments = events.GenericEventArguments(sender=element, client=self.user.client, args=args)
                     events.handle_event(listener.handler, event_arguments)
+        return self
+
+    def clear(self) -> Self:
+        """Clear the selected elements.
+
+        Note: All elements must have a ``value`` attribute).
+        """
+        assert self.user.client
+        with self.user.client:
+            for element in self.elements:
+                assert isinstance(element, ValueElement)
+                element.value = None
         return self

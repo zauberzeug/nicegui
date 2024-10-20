@@ -1,8 +1,9 @@
 from __future__ import annotations
 
-from typing import Any, Callable, Optional, Union
+from typing import Any, Optional, Union
 
 from ..context import context
+from ..events import Handler, ValueChangeEventArguments
 from .mixins.disableable_element import DisableableElement
 from .mixins.icon_element import IconElement
 from .mixins.value_element import ValueElement
@@ -12,7 +13,7 @@ class Tabs(ValueElement):
 
     def __init__(self, *,
                  value: Union[Tab, TabPanel, None] = None,
-                 on_change: Optional[Callable[..., Any]] = None,
+                 on_change: Optional[Handler[ValueChangeEventArguments]] = None,
                  ) -> None:
         """Tabs
 
@@ -51,7 +52,7 @@ class TabPanels(ValueElement):
     def __init__(self,
                  tabs: Optional[Tabs] = None, *,
                  value: Union[Tab, TabPanel, str, None] = None,
-                 on_change: Optional[Callable[..., Any]] = None,
+                 on_change: Optional[Handler[ValueChangeEventArguments]] = None,
                  animated: bool = True,
                  keep_alive: bool = True,
                  ) -> None:
@@ -80,7 +81,7 @@ class TabPanels(ValueElement):
         return value.props['name'] if isinstance(value, (Tab, TabPanel)) else value
 
 
-class TabPanel(DisableableElement):
+class TabPanel(DisableableElement, default_classes='nicegui-tab-panel'):
 
     def __init__(self, name: Union[Tab, str]) -> None:
         """Tab Panel
@@ -92,4 +93,3 @@ class TabPanel(DisableableElement):
         """
         super().__init__(tag='q-tab-panel')
         self._props['name'] = name.props['name'] if isinstance(name, Tab) else name
-        self._classes.append('nicegui-tab-panel')

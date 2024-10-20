@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "nicegui"
-version = "2.1.0-dev"
+version = "2.4.0-dev"
 description = "Create web-based user interfaces with Python. The nice way."
 authors = ["Zauberzeug GmbH <info@zauberzeug.com>"]
 license = "MIT"
@@ -78,6 +78,7 @@ build-backend = "poetry.core.masonry.api"
 addopts = "--driver Chrome"
 asyncio_mode = "auto"
 testpaths = ["tests"]
+asyncio_default_fixture_loop_scope = "function"
 
 [tool.mypy]
 python_version = "3.8"

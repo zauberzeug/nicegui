@@ -1,4 +1,5 @@
 import importlib
+from copy import copy
 from typing import Generator, List, Type
 
 import pytest
@@ -36,14 +37,13 @@ def nicegui_reset_globals() -> Generator[None, None, None]:
             app.routes.remove(route)
     importlib.reload(core)
     importlib.reload(run)
-    element_classes: List[Type[ui.element]] = [ui.element]
-    while element_classes:
-        parent = element_classes.pop()
-        for cls in parent.__subclasses__():
-            cls._default_props = {}  # pylint: disable=protected-access
-            cls._default_style = {}  # pylint: disable=protected-access
-            cls._default_classes = []  # pylint: disable=protected-access
-            element_classes.append(cls)
+
+    # capture initial defaults
+    element_types: List[Type[ui.element]] = [ui.element, *find_all_subclasses(ui.element)]
+    default_classes = {t: copy(t._default_classes) for t in element_types}  # pylint: disable=protected-access
+    default_styles = {t: copy(t._default_style) for t in element_types}  # pylint: disable=protected-access
+    default_props = {t: copy(t._default_props) for t in element_types}  # pylint: disable=protected-access
+
     Client.instances.clear()
     Client.page_routes.clear()
     app.reset()
@@ -51,8 +51,25 @@ def nicegui_reset_globals() -> Generator[None, None, None]:
     # NOTE we need to re-add the auto index route because we removed all routes above
     app.get('/')(Client.auto_index_client.build_response)
     binding.reset()
+
     yield
+
     app.reset()
+
+    # restore initial defaults
+    for t in element_types:
+        t._default_classes = default_classes[t]  # pylint: disable=protected-access
+        t._default_style = default_styles[t]  # pylint: disable=protected-access
+        t._default_props = default_props[t]  # pylint: disable=protected-access
+
+
+def find_all_subclasses(cls: Type) -> List[Type]:
+    """Find all subclasses of a class."""
+    subclasses = []
+    for subclass in cls.__subclasses__():
+        subclasses.append(subclass)
+        subclasses.extend(find_all_subclasses(subclass))
+    return subclasses
 
 
 def prepare_simulation(request: pytest.FixtureRequest) -> None:
