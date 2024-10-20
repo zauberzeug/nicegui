@@ -1,7 +1,9 @@
 import inspect
-from typing import Optional, Any, Callable
+from types import coroutine
+from typing import Optional, Any, Callable, Awaitable
 
 from nicegui import ui, background_tasks
+import asyncio
 
 
 class RouterFrame(ui.element, component='router_frame.js'):
@@ -77,33 +79,23 @@ class RouterFrame(ui.element, component='router_frame.js'):
                        builder: Callable,
                        builder_kwargs: dict,
                        title: Optional[str],
-                       target_fragment: Optional[str],
-                       sync: bool = False):
+                       target_fragment: Optional[str]):
         """Update the content of the router frame
 
         :param builder: The builder function which builds the content of the page
         :param builder_kwargs: The keyword arguments to pass to the builder function
         :param title: The title of the page
-        :param target_fragment: The fragment to navigate to after the content has been loaded
-        :param sync: Optional flag to define if the content should be updated synchronously. Default is False."""
-
-        def exec_builder():
-            """Execute the builder function with the given keyword arguments"""
-            self.run_safe(builder, **builder_kwargs)
+        :param target_fragment: The fragment to navigate to after the content has been loaded"""
 
         async def build() -> None:
             with self:
-                exec_builder()
+                result = self.run_safe(builder, **builder_kwargs)
+                if result:
+                    await result
                 if target_fragment is not None:
                     await ui.run_javascript(f'window.location.href = "#{target_fragment}";')
 
-        if sync:
-            with self:
-                exec_builder()
-                if target_fragment is not None:
-                    ui.run_javascript(f'window.location.href = "#{target_fragment}";')
-        else:
-            background_tasks.create(build())
+        background_tasks.create(build())
 
     def clear(self) -> None:
         """Clear the content of the router frame and removes all references to sub frames"""
@@ -145,6 +137,5 @@ class RouterFrame(ui.element, component='router_frame.js'):
                 if not isinstance(kwargs[func_param_name], func_param_info.annotation):
                     raise ValueError(f'Invalid type for parameter {func_param_name}, '
                                      f'expected {func_param_info.annotation}')
-
         filtered = {k: v for k, v in kwargs.items() if k in args} if not has_kwargs else kwargs
         return builder(**filtered)
