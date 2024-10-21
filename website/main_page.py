@@ -159,6 +159,27 @@ def create() -> None:
             for example in examples:
                 example_link(example)
 
+    with ui.column().classes('dark-box p-8 lg:p-16 my-16 bg-transparent border-y-2'):
+        with ui.column().classes('mx-auto items-center gap-y-8 gap-x-32 lg:flex-row'):
+            with ui.column().classes('max-lg:items-center max-lg:text-center'):
+                ui.markdown('NiceGUI is supported by') \
+                    .classes('text-2xl md:text-3xl font-medium')
+                for sponsor in [
+                    'daviborges666',
+                ]:
+                    with ui.link(target=f'https://github.com/{sponsor}').classes('row items-center gap-2'):
+                        ui.image(f'https://github.com/{sponsor}.png').classes('w-12 h-12 border')
+                        ui.label(f'@{sponsor}')
+                ui.markdown('''
+                    as well as many other [sponsors](https://github.com/sponsors/zauberzeug)
+                    and [contributors](https://github.com/zauberzeug/nicegui/graphs/contributors).
+                ''').classes('bold-links arrow-links')
+            with ui.link(target='https://github.com/sponsors/zauberzeug').style('color: black !important') \
+                    .classes('rounded-full mx-auto px-12 py-2 border-2 border-[#3e6a94] font-medium text-lg md:text-xl'):
+                with ui.row().classes('items-center gap-4'):
+                    ui.icon('sym_o_favorite', color='#3e6a94')
+                    ui.label('Become a sponsor').classes('text-[#3e6a94]')
+
     with ui.row().classes('dark-box min-h-screen mt-16'):
         link_target('why')
         with ui.column().classes('''
