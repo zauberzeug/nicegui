@@ -213,6 +213,20 @@ def test_problematic_datatypes(screen: Screen):
     screen.should_contain('2021-01')
 
 
+
+def test_cell_slot(screen: Screen):
+    t = ui.table(columns=columns(), rows=rows(), pagination=2)
+
+    @t.cell_slot("name")
+    def _(row_index: int, name: str):
+        rows = t.rows
+
+        with ui.column():
+            ui.input(value=rows[row_index][name])
+
+
+    screen.open('/')
+
 def test_table_computed_props(screen: Screen):
     all_rows = rows()
     filtered_rows = [row for row in all_rows if 'e' in row['name']]
@@ -318,3 +332,4 @@ def test_columns_from_df(screen: Screen):
     screen.click('Update cars with columns')  # updated columns via parameter
     screen.should_contain('Hyundai')
     screen.should_contain('i30')
+
