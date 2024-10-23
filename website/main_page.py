@@ -164,12 +164,16 @@ def create() -> None:
             with ui.column().classes('max-lg:items-center max-lg:text-center'):
                 ui.markdown('NiceGUI is supported by') \
                     .classes('text-2xl md:text-3xl font-medium')
-                for sponsor in [
-                    'daviborges666',
-                ]:
-                    with ui.link(target=f'https://github.com/{sponsor}').classes('row items-center gap-2'):
-                        ui.image(f'https://github.com/{sponsor}.png').classes('w-12 h-12 border')
-                        ui.label(f'@{sponsor}')
+                with ui.row(align_items='center'):
+                    ui.markdown('''
+                        our top sponsor
+                    ''')
+                    for sponsor in [
+                        'daviborges666',
+                    ]:
+                        with ui.link(target=f'https://github.com/{sponsor}').classes('row items-center gap-2'):
+                            ui.image(f'https://github.com/{sponsor}.png').classes('w-12 h-12 border')
+                            ui.label(f'@{sponsor}')
                 ui.markdown('''
                     as well as many other [sponsors](https://github.com/sponsors/zauberzeug)
                     and [contributors](https://github.com/zauberzeug/nicegui/graphs/contributors).
