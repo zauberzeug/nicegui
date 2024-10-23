@@ -23,13 +23,12 @@ def user_fixture():
     with python_window(classes='w-[600px]', title='example'):
         ui.markdown('''
             ```python
-            async def test_login(user: User) -> None:
-                await user.open('/')
-                user.find('Username').type('user1')
-                user.find('Password').type('pass1').trigger('keydown.enter')
-                await user.should_see('Hello user1!')
-                user.find('logout').click()
-                await user.should_see('Log in')
+            await user.open('/')
+            user.find('Username').type('user1')
+            user.find('Password').type('pass1').trigger('keydown.enter')
+            await user.should_see('Hello user1!')
+            user.find('logout').click()
+            await user.should_see('Log in')
             ```
         ''')
 
