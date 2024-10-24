@@ -1,9 +1,14 @@
+import json
+from pathlib import Path
+
 from nicegui import ui
 
 from . import documentation, example_card, svg
 from .examples import examples
 from .header import add_head_html, add_header
 from .style import example_link, features, heading, link_target, section_heading, subtitle, title
+
+SPONSORS = json.loads((Path(__file__).parent / 'sponsors.json').read_text())
 
 
 def create() -> None:
@@ -165,18 +170,17 @@ def create() -> None:
                 ui.markdown('NiceGUI is supported by') \
                     .classes('text-2xl md:text-3xl font-medium')
                 with ui.row(align_items='center'):
-                    ui.markdown('''
-                        our top sponsor
+                    assert SPONSORS['total'] > 0
+                    ui.markdown(f'''
+                        our top {'sponsor' if SPONSORS['total'] == 1 else 'sponsors'}
                     ''')
-                    for sponsor in [
-                        'daviborges666',
-                    ]:
+                    for sponsor in SPONSORS['website']:
                         with ui.link(target=f'https://github.com/{sponsor}').classes('row items-center gap-2'):
                             ui.image(f'https://github.com/{sponsor}.png').classes('w-12 h-12 border')
                             ui.label(f'@{sponsor}')
-                ui.markdown('''
-                    as well as many other [sponsors](https://github.com/sponsors/zauberzeug)
-                    and [contributors](https://github.com/zauberzeug/nicegui/graphs/contributors).
+                ui.markdown(f'''
+                    as well as {SPONSORS['total'] - len(SPONSORS['website'])} other [sponsors](https://github.com/sponsors/zauberzeug)
+                    and {SPONSORS['contributors']} [contributors](https://github.com/zauberzeug/nicegui/graphs/contributors).
                 ''').classes('bold-links arrow-links')
             with ui.link(target='https://github.com/sponsors/zauberzeug').style('color: black !important') \
                     .classes('rounded-full mx-auto px-12 py-2 border-2 border-[#3e6a94] font-medium text-lg md:text-xl'):
