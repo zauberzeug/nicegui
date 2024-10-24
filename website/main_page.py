@@ -174,12 +174,12 @@ def create() -> None:
                     ui.markdown(f'''
                         our top {'sponsor' if SPONSORS['total'] == 1 else 'sponsors'}
                     ''')
-                    for sponsor in SPONSORS['website']:
+                    for sponsor in SPONSORS['top']:
                         with ui.link(target=f'https://github.com/{sponsor}').classes('row items-center gap-2'):
                             ui.image(f'https://github.com/{sponsor}.png').classes('w-12 h-12 border')
                             ui.label(f'@{sponsor}')
                 ui.markdown(f'''
-                    as well as {SPONSORS['total'] - len(SPONSORS['website'])} other [sponsors](https://github.com/sponsors/zauberzeug)
+                    as well as {SPONSORS['total'] - len(SPONSORS['top'])} other [sponsors](https://github.com/sponsors/zauberzeug)
                     and {SPONSORS['contributors']} [contributors](https://github.com/zauberzeug/nicegui/graphs/contributors).
                 ''').classes('bold-links arrow-links')
             with ui.link(target='https://github.com/sponsors/zauberzeug').style('color: black !important') \

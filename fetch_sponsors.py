@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import json
 import os
+import re
 from pathlib import Path
 
 import requests
@@ -70,6 +71,7 @@ for sponsor in data['data']['organization']['sponsorshipsAsMaintainer']['nodes']
         'tier_is_one_time': tier['isOneTime'],
         'created_at': sponsor['createdAt'],
     })
+sponsors.sort(key=lambda s: s['created_at'])
 
 contributors = []
 page = 1
@@ -93,8 +95,24 @@ print(f'Found {len(sponsors)} sponsors')
 print(f'Total contributors for NiceGUI: {len(contributors)}')
 
 Path('website/sponsors.json').write_text(json.dumps({
-    'website': [s['login'] for s in sponsors if s['tier_amount'] >= 100 and not s['tier_is_one_time']],
-    'readme': [s['login'] for s in sponsors if s['tier_amount'] >= 25 and not s['tier_is_one_time']],
+    'top': [s['login'] for s in sponsors if s['tier_amount'] >= 100 and not s['tier_is_one_time']],
     'total': len(sponsors),
     'contributors': len(contributors),
 }, indent=2) + '\n')
+
+sponsor_html = '<p align="center">\n'
+for sponsor in sponsors:
+    if sponsor['tier_amount'] >= 25 and not sponsor['tier_is_one_time']:
+        sponsor_html += f'  <a href="{sponsor["url"]}"><img src="{sponsor["url"]}.png" width="50px" alt="{sponsor["name"]}" /></a>\n'
+sponsor_html += '</p>'
+readme_path = Path('README.md')
+readme_content = readme_path.read_text()
+updated_content = re.sub(
+    r'<!-- SPONSORS -->.*?<!-- SPONSORS -->',
+    f'<!-- SPONSORS -->\n{sponsor_html}\n<!-- SPONSORS -->',
+    readme_content,
+    flags=re.DOTALL,
+)
+readme_path.write_text(updated_content)
+
+print('README.md and sponsors.json updated successfully.')
