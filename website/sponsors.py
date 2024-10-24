@@ -1,0 +1,1 @@
+NUM_SPONSORS = 18
