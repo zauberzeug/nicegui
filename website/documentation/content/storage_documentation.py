@@ -17,7 +17,7 @@ doc.title('Storage')
     It features five built-in storage types:
 
     - `app.storage.tab`:
-        Stored server-side in memory, this dictionary is unique to each tab session and can hold arbitrary objects.
+        Stored server-side in memory, this dictionary is unique to each non-duplicated tab session and can hold arbitrary objects.
         Data will be lost when restarting the server until <https://github.com/zauberzeug/nicegui/discussions/2841> is implemented.
         This storage is only available within [page builder functions](/documentation/page)
         and requires an established connection, obtainable via [`await client.connected()`](/documentation/page#wait_for_client_connection).

@@ -111,6 +111,7 @@ If you would like to support this project and have your avatar or company logo a
 
 <p align="center">
    <a href="https://github.com/lechler-gmbh"><img src="https://github.com/lechler-gmbh.png" width="50px" alt="Lechler GmbH" /></a>
+   <a href="https://github.com/daviborges666"><img src="https://github.com/daviborges666.png" width="50px"alt="daviborges666" /></a>
 </p>
 
 Consider this low-barrier form of contribution yourself.

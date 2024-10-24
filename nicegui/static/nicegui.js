@@ -294,6 +294,16 @@ function createRandomUUID() {
   }
 }
 
+const OLD_TAB_ID = sessionStorage.__nicegui_tab_closed === "false" ? sessionStorage.__nicegui_tab_id : null;
+const TAB_ID =
+  !sessionStorage.__nicegui_tab_id || sessionStorage.__nicegui_tab_closed === "false"
+    ? (sessionStorage.__nicegui_tab_id = createRandomUUID())
+    : sessionStorage.__nicegui_tab_id;
+sessionStorage.__nicegui_tab_closed = "false";
+window.onbeforeunload = function () {
+  sessionStorage.__nicegui_tab_closed = "true";
+};
+
 function createApp(elements, options) {
   replaceUndefinedAttributes(elements, 0);
   return (app = Vue.createApp({
@@ -320,14 +330,10 @@ function createApp(elements, options) {
       window.did_handshake = false;
       const messageHandlers = {
         connect: () => {
-          let tabId = sessionStorage.getItem("__nicegui_tab_id");
-          if (!tabId) {
-            tabId = createRandomUUID();
-            sessionStorage.setItem("__nicegui_tab_id", tabId);
-          }
           const args = {
             client_id: window.clientId,
-            tab_id: tabId,
+            tab_id: TAB_ID,
+            old_tab_id: OLD_TAB_ID,
             next_message_id: window.nextMessageId,
           };
           window.socket.emit("handshake", args, (ok) => {

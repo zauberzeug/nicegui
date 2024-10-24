@@ -14,7 +14,7 @@ from .mixins.content_element import ContentElement
 CODEHILITE_CSS_URL = f'/_nicegui/{__version__}/codehilite.css'
 
 
-class Markdown(ContentElement, component='markdown.js'):
+class Markdown(ContentElement, component='markdown.js', default_classes='nicegui-markdown'):
 
     def __init__(self,
                  content: str = '', *,
@@ -29,7 +29,6 @@ class Markdown(ContentElement, component='markdown.js'):
         """
         self.extras = extras[:]
         super().__init__(content=content)
-        self._classes.append('nicegui-markdown')
         if 'mermaid' in extras:
             self._props['use_mermaid'] = True
             self.libraries.append(Mermaid.exposed_libraries[0])

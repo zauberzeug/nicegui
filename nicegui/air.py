@@ -130,6 +130,8 @@ class Air:
                 return False
             client = Client.instances[client_id]
             client.environ = data['environ']
+            if data.get('old_tab_id'):
+                core.app.storage.copy_tab(data['old_tab_id'], data['tab_id'])
             client.tab_id = data['tab_id']
             client.on_air = True
             client.outbox.seek(data['next_message_id'])

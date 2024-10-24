@@ -6,7 +6,7 @@ from ..element import Element
 from ..events import GenericEventArguments, Handler, ScrollEventArguments, handle_event
 
 
-class ScrollArea(Element):
+class ScrollArea(Element, default_classes='nicegui-scroll-area'):
 
     def __init__(self, *, on_scroll: Optional[Handler[ScrollEventArguments]] = None) -> None:
         """Scroll Area
@@ -17,7 +17,6 @@ class ScrollArea(Element):
         :param on_scroll: function to be called when the scroll position changes
         """
         super().__init__('q-scroll-area')
-        self._classes.append('nicegui-scroll-area')
 
         if on_scroll:
             self.on_scroll(on_scroll)
