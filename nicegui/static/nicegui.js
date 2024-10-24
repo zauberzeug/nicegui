@@ -320,6 +320,7 @@ function createApp(elements, options) {
       window.clientId = options.query.client_id;
       const url = window.location.protocol === "https:" ? "wss://" : "ws://" + window.location.host;
       window.path_prefix = options.prefix;
+      window.nextMessageId = options.query.next_message_id;
       window.socket = io(url, {
         path: `${options.prefix}/_nicegui_ws/socket.io`,
         query: options.query,
@@ -333,6 +334,7 @@ function createApp(elements, options) {
             client_id: window.clientId,
             tab_id: TAB_ID,
             old_tab_id: OLD_TAB_ID,
+            next_message_id: window.nextMessageId,
           };
           window.socket.emit("handshake", args, (ok) => {
             if (!ok) {
@@ -371,7 +373,7 @@ function createApp(elements, options) {
             replaceUndefinedAttributes(this.elements, id);
           }
         },
-        run_javascript: (msg) => runJavascript(msg["code"], msg["request_id"]),
+        run_javascript: (msg) => runJavascript(msg.code, msg.request_id),
         open: (msg) => {
           const url = msg.path.startsWith("/") ? options.prefix + msg.path : msg.path;
           const target = msg.new_tab ? "_blank" : "_self";
@@ -384,6 +386,12 @@ function createApp(elements, options) {
       let isProcessingSocketMessage = false;
       for (const [event, handler] of Object.entries(messageHandlers)) {
         window.socket.on(event, async (...args) => {
+          if (args.length > 0 && args[0]._id !== undefined) {
+            const message_id = args[0]._id;
+            if (message_id < window.nextMessageId) return;
+            window.nextMessageId = message_id + 1;
+            delete args[0]._id;
+          }
           socketMessageQueue.push(() => handler(...args));
           if (!isProcessingSocketMessage) {
             while (socketMessageQueue.length > 0) {
