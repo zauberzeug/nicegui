@@ -127,6 +127,8 @@ class Outbox:
         else:
             while self.messages and self.messages[0][2] < time.time() - self.history_duration:
                 self.messages.popleft()
+            while len(self.messages) > core.app.config.message_history_length:
+                self.messages.pop()
 
     def seek(self, message_id: MessageId) -> None:
         """Seek to the given message ID and discard all messages before it."""
@@ -134,6 +136,8 @@ class Outbox:
             self.messages.popleft()
         self._message_index = 0
         self._set_enqueue_event()
+        if not self.messages and message_id != self.next_message_id:
+            self.client.run_javascript('window.location.reload()')
 
     def stop(self) -> None:
         """Stop the outbox loop."""
