@@ -452,6 +452,8 @@ export default {
           if (camera_up_changed) {
             this.controls.dispose();
             this.controls = new OrbitControls(this.camera, this.renderer.domElement);
+            this.controls.target.copy(this.look_at);
+            this.camera.lookAt(this.look_at);
           }
         })
         .start();
