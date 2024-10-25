@@ -167,6 +167,7 @@ def create() -> None:
     with ui.column().classes('dark-box p-8 lg:p-16 my-16 bg-transparent border-y-2'):
         with ui.column().classes('mx-auto items-center gap-y-8 gap-x-32 lg:flex-row'):
             with ui.column().classes('max-lg:items-center max-lg:text-center'):
+                link_target('sponsors')
                 ui.markdown('NiceGUI is supported by') \
                     .classes('text-2xl md:text-3xl font-medium')
                 with ui.row(align_items='center'):
