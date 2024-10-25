@@ -86,8 +86,8 @@ jobs:
           push: true
           tags: ${{ steps.prep.outputs.tags }}
           build-args: VERSION=${{ steps.prep.outputs.version }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-from: type=registry,ref=${{ steps.prep.outputs.docker_image }}:buildcache
+          cache-to: type=registry,ref=${{ steps.prep.outputs.docker_image }}:buildcache,mode=max
 
       # Uploading the README.md is not a core feature of docker/build-push-action yet
       - name: Update README
