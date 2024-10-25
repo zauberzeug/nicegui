@@ -26,8 +26,8 @@ doc.intro(html_documentation)
     There is an `html` module that allows you to insert other HTML elements like `<span>`, `<div>`, `<p>`, etc.
     It is equivalent to using the `ui.element` method with the `tag` argument.
 
-    Like any other element, you can add classes, style, props, tooltips and events.
-    One convenience is that the kwargs are automatically added to the element's `props` dictionary.
+    Like with any other element, you can add classes, style, props, tooltips and events.
+    One convenience is that the keyword arguments are automatically added to the element's `props` dictionary.
 ''')
 def other_html_elements():
     from nicegui import html, ui
