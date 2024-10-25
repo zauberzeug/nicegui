@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import Union
 
 from .. import optional_features
+from ..logging import log
 from .mixins.source_element import SourceElement
 
 try:
@@ -37,6 +38,9 @@ class Image(SourceElement, component='image.js'):
 
     def force_reload(self) -> None:
         """Force the image to reload from the source."""
+        if self._props['src'].startswith('data:'):
+            log.warning('ui.image: force_reload() only works with network sources (not base64)')
+            return
         self._props['t'] = time.time()
         self.update()
 

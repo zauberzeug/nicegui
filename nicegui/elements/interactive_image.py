@@ -96,8 +96,8 @@ class InteractiveImage(SourceElement, ContentElement, component='interactive_ima
 
     def force_reload(self) -> None:
         """Force the image to reload from the source."""
-        if self.source.startswith('data:'):
-            log.warning('interactive_image: force_reload() only works with network sources (not base64)')
+        if self._props['src'].startswith('data:'):
+            log.warning('ui.interactive_image: force_reload() only works with network sources (not base64)')
             return
         self._props['t'] = time.time()
         self.update()
