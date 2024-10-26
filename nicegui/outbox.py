@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import asyncio
-import itertools
 import time
 from collections import deque
 from typing import TYPE_CHECKING, Any, Deque, Dict, Optional, Tuple
@@ -13,12 +12,15 @@ if TYPE_CHECKING:
     from .element import Element
 
 ElementId = int
+
 ClientId = str
-MessageId = int
 MessageType = str
-MessageTime = float
 Payload = Any
-Message = Tuple[ClientId, MessageId, MessageTime, MessageType, Payload]
+Message = Tuple[ClientId, MessageType, Payload]
+
+MessageId = int
+MessageTime = float
+HistoryEntry = Tuple[MessageId, MessageTime, Message]
 
 
 class Outbox:
@@ -27,10 +29,10 @@ class Outbox:
         self.client = client
         self.updates: Dict[ElementId, Optional[Element]] = {}
         self.messages: Deque[Message] = deque()
+        self.message_history: Deque[HistoryEntry] = deque()
         self._should_stop = False
         self._enqueue_event: Optional[asyncio.Event] = None
         self.next_message_id: int = 0
-        self._message_index: int = 0
 
         if core.app.is_started:
             background_tasks.create(self.loop(), name=f'outbox loop {client.id}')
@@ -65,7 +67,7 @@ class Outbox:
     def enqueue_message(self, message_type: MessageType, data: Payload, target_id: ClientId) -> None:
         """Enqueue a message for the given client."""
         self.client.check_existence()
-        self.messages.append((target_id, self.next_message_id, time.time(), message_type, data))
+        self.messages.append((target_id, message_type, data))
         self.next_message_id += 1
         self._set_enqueue_event()
 
@@ -94,15 +96,13 @@ class Outbox:
                         element_id: None if element is None else element._to_dict()  # pylint: disable=protected-access
                         for element_id, element in self.updates.items()
                     }
-                    self.messages.append((self.client.id, self.next_message_id, time.time(), 'update', data))
-                    self.next_message_id += 1
+                    coros.append(self._emit((self.client.id, 'update', data)))
                     self.updates.clear()
 
-                if len(self.messages) > self._message_index:
-                    for message in itertools.islice(self.messages, self._message_index, None):
+                if self.messages:
+                    for message in self.messages:
                         coros.append(self._emit(message))
-                    self._prune_messages()
-                    self._message_index = len(self.messages)
+                    self.messages.clear()
 
                 for coro in coros:
                     try:
@@ -115,28 +115,32 @@ class Outbox:
                 await asyncio.sleep(0.1)
 
     async def _emit(self, message: Message) -> None:
-        client_id, message_id, _, message_type, data = message
-        data['_id'] = message_id
+        client_id, message_type, data = message
+        data['_id'] = self.next_message_id
+        self.next_message_id += 1
+
         await core.sio.emit(message_type, data, room=client_id)
         if core.air is not None and core.air.is_air_target(client_id):
             await core.air.emit(message_type, data, room=client_id)
 
-    def _prune_messages(self) -> None:
-        if self.client.shared:
-            self.messages.clear()
-        else:
-            while self.messages and self.messages[0][2] < time.time() - self.history_duration:
-                self.messages.popleft()
-            while len(self.messages) > core.app.config.message_history_length:
-                self.messages.pop()
+        if not self.client.shared:
+            self.message_history.append((self.next_message_id, time.time(), message))
+            while self.message_history and self.message_history[0][1] < time.time() - self.history_duration:
+                self.message_history.popleft()
+            while len(self.message_history) > core.app.config.message_history_length:
+                self.message_history.popleft()
 
-    def seek(self, message_id: MessageId) -> None:
-        """Seek to the given message ID and discard all messages before it."""
-        while self.messages and self.messages[0][1] < message_id:
-            self.messages.popleft()
-        self._message_index = 0
-        self._set_enqueue_event()
-        if not self.messages and message_id != self.next_message_id:
+    def try_rewind(self, target_message_id: MessageId) -> None:
+        """Rewind to the given message ID and discard all messages before it."""
+        while self.message_history:
+            message_id, _, message = self.message_history.pop()
+            self.messages.appendleft(message)
+            if message_id == target_message_id:
+                self.message_history.clear()
+                self._set_enqueue_event()
+                self.next_message_id = message_id
+                return
+        if self.message_history:
             self.client.run_javascript('window.location.reload()')
 
     def stop(self) -> None:
