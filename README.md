@@ -109,9 +109,14 @@ because of their great performance and ease of use.
 Maintenance of this project is made possible by all the [contributors](https://github.com/zauberzeug/nicegui/graphs/contributors) and [sponsors](https://github.com/sponsors/zauberzeug).
 If you would like to support this project and have your avatar or company logo appear below, please [sponsor us](https://github.com/sponsors/zauberzeug). 💖
 
+<!-- SPONSORS -->
 <p align="center">
-   <a href="https://github.com/lechler-gmbh"><img src="https://github.com/lechler-gmbh.png" width="50px" alt="Lechler GmbH" /></a>
+  <a href="https://github.com/lechler-gmbh"><img src="https://github.com/lechler-gmbh.png" width="50px" alt="Lechler GmbH" /></a>
+  <a href="https://github.com/Zhifeng2019"><img src="https://github.com/Zhifeng2019.png" width="50px" alt="Zhifeng" /></a>
+  <a href="https://github.com/sereneturtlefox"><img src="https://github.com/sereneturtlefox.png" width="50px" alt="None" /></a>
+  <a href="https://github.com/daviborges666"><img src="https://github.com/daviborges666.png" width="50px" alt="Davi Borges" /></a>
 </p>
+<!-- SPONSORS -->
 
 Consider this low-barrier form of contribution yourself.
 Your [support](https://github.com/sponsors/zauberzeug) is much appreciated.
