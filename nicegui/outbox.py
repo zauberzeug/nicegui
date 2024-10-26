@@ -30,22 +30,15 @@ class Outbox:
         self.updates: Dict[ElementId, Optional[Element]] = {}
         self.messages: Deque[Message] = deque()
         self.message_history: Deque[HistoryEntry] = deque()
+        self.next_message_id: int = 0
+
         self._should_stop = False
         self._enqueue_event: Optional[asyncio.Event] = None
-        self.next_message_id: int = 0
 
         if core.app.is_started:
             background_tasks.create(self.loop(), name=f'outbox loop {client.id}')
         else:
             core.app.on_startup(self.loop)
-
-    @property
-    def history_duration(self) -> float:
-        """Duration of the message history in seconds."""
-        if self.client.shared:
-            return 0
-        else:
-            return core.sio.eio.ping_interval + core.sio.eio.ping_timeout + self.client.page.resolve_reconnect_timeout()
 
     def _set_enqueue_event(self) -> None:
         """Set the enqueue event while accounting for lazy initialization."""
@@ -68,7 +61,6 @@ class Outbox:
         """Enqueue a message for the given client."""
         self.client.check_existence()
         self.messages.append((target_id, message_type, data))
-        self.next_message_id += 1
         self._set_enqueue_event()
 
     async def loop(self) -> None:
@@ -117,7 +109,6 @@ class Outbox:
     async def _emit(self, message: Message) -> None:
         client_id, message_type, data = message
         data['_id'] = self.next_message_id
-        self.next_message_id += 1
 
         await core.sio.emit(message_type, data, room=client_id)
         if core.air is not None and core.air.is_air_target(client_id):
@@ -125,23 +116,31 @@ class Outbox:
 
         if not self.client.shared:
             self.message_history.append((self.next_message_id, time.time(), message))
-            while self.message_history and self.message_history[0][1] < time.time() - self.history_duration:
+            max_age = core.sio.eio.ping_interval + core.sio.eio.ping_timeout + self.client.page.resolve_reconnect_timeout()
+            while self.message_history and self.message_history[0][1] < time.time() - max_age:
                 self.message_history.popleft()
             while len(self.message_history) > core.app.config.message_history_length:
                 self.message_history.popleft()
 
+        self.next_message_id += 1
+
     def try_rewind(self, target_message_id: MessageId) -> None:
         """Rewind to the given message ID and discard all messages before it."""
+        # nothing to do, the next message ID is already the target message ID
+        if self.next_message_id == target_message_id:
+            return
+
+        # rewind to the target message ID
         while self.message_history:
-            message_id, _, message = self.message_history.pop()
+            self.next_message_id, _, message = self.message_history.pop()
             self.messages.appendleft(message)
-            if message_id == target_message_id:
+            if self.next_message_id == target_message_id:
                 self.message_history.clear()
                 self._set_enqueue_event()
-                self.next_message_id = message_id
                 return
-        if self.message_history:
-            self.client.run_javascript('window.location.reload()')
+
+        # target message ID not found, reload the page
+        self.client.run_javascript('window.location.reload()')
 
     def stop(self) -> None:
         """Stop the outbox loop."""
