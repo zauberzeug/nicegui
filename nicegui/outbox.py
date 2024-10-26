@@ -140,7 +140,8 @@ class Outbox:
                 return
 
         # target message ID not found, reload the page
-        self.client.run_javascript('window.location.reload()')
+        if not self.client.shared:
+            self.client.run_javascript('window.location.reload()')
 
     def stop(self) -> None:
         """Stop the outbox loop."""
