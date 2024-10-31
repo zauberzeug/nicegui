@@ -22,7 +22,7 @@ class EChart(Element,
              dependencies=['lib/echarts/echarts.min.js', 'lib/echarts-gl/echarts-gl.min.js'],
              default_classes='nicegui-echart'):
 
-    def __init__(self, options: Dict, on_point_click: Optional[Handler[EChartPointClickEventArguments]] = None, *, enable_3d: bool = False) -> None:
+    def __init__(self, options: Dict, on_point_click: Optional[Handler[EChartPointClickEventArguments]] = None, *, enable_3d: bool = False, enable_svg: bool = False) -> None:
         """Apache EChart
 
         An element to create a chart using `ECharts <https://echarts.apache.org/>`_.
@@ -32,10 +32,12 @@ class EChart(Element,
         :param options: dictionary of EChart options
         :param on_click_point: callback that is invoked when a point is clicked
         :param enable_3d: enforce importing the echarts-gl library
+        :param enable_svg: enable svg rendering for this chart
         """
         super().__init__()
         self._props['options'] = options
         self._props['enable_3d'] = enable_3d or any('3D' in key for key in options)
+        self._props['enable_svg'] = enable_svg
 
         if on_point_click:
             self.on_point_click(on_point_click)
