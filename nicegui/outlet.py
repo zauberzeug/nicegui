@@ -143,7 +143,8 @@ class Outlet:
         @ui.page(self.base_path, **self.page_kwargs)
         @ui.page(f'{self.base_path}' + '{_:path}', **self.page_kwargs)  # all other pages
         async def root_page():
-            await ui.context.client.connected()  # to ensure storage.tab and storage.client availability
+            await ui.context.client.connected(30.0)  # to ensure storage.tab and storage.client availability
+            # TODO Timeout should be configurable
             request = context.client.request
             initial_url = request.url.path
             query = request.url.query
