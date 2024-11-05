@@ -11,7 +11,7 @@ from ..events import GenericEventArguments
 from .leaflet_layer import Layer
 
 
-class Leaflet(Element, component='leaflet.js'):
+class Leaflet(Element, component='leaflet.js', default_classes='nicegui-leaflet'):
     # pylint: disable=import-outside-toplevel
     from .leaflet_layers import GenericLayer as generic_layer
     from .leaflet_layers import Marker as marker
@@ -40,7 +40,6 @@ class Leaflet(Element, component='leaflet.js'):
         """
         super().__init__()
         self.add_resource(Path(__file__).parent / 'lib' / 'leaflet')
-        self._classes.append('nicegui-leaflet')
 
         self.layers: List[Layer] = []
         self.is_initialized = False

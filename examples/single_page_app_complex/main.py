@@ -21,7 +21,7 @@ def other_app_router():
 
 
 @other_app_router.view('/')
-def other_app_index():
+async def other_app_index():
     ui.label('Welcome to the index page of the other application')
 
 
@@ -43,7 +43,7 @@ def main_router(url_path: str):
 
 
 @main_router.view('/')
-def main_index(menu_drawer: LeftDrawer):  # main app index page
+async def main_index(menu_drawer: LeftDrawer):  # main app index page
     menu_drawer.clear()  # clear drawer
     menu_drawer.hide()  # hide drawer
     ui.label('Welcome to NiceCLOUD!').classes('text-3xl')
@@ -65,7 +65,7 @@ def main_index(menu_drawer: LeftDrawer):  # main app index page
 
 
 @main_router.view('/about')
-def about_page(menu_drawer: LeftDrawer):
+async def about_page(menu_drawer: LeftDrawer):
     menu_drawer.clear()
     menu_drawer.hide()
     ui.label('About NiceCLOUD').classes('text-3xl')
@@ -107,7 +107,7 @@ def update_title(service: ServiceDefinition = None,
 
 
 @services_router.view('/')  # service index page
-def show_index(service: ServiceDefinition):
+async def show_index(service: ServiceDefinition):
     update_title(service, None)
     with ui.row() as row:
         ui.label(service.emoji).classes('text-h4 vertical-middle')
@@ -126,7 +126,7 @@ def sub_service_router(service: ServiceDefinition, sub_service_name: str):
 
 
 @sub_service_router.view('/')  # sub service index page
-def sub_service_index(service: ServiceDefinition, sub_service: SubServiceDefinition):
+async def sub_service_index(service: ServiceDefinition, sub_service: SubServiceDefinition):
     update_title(service, sub_service)
     ui.label(sub_service.emoji).classes('text-h1')
     ui.html('<br>')

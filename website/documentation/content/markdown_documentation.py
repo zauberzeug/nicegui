@@ -55,6 +55,18 @@ def markdown_tables():
     ''', extras=['tables'])
 
 
+@doc.demo('LaTeX formulas', '''
+    By activating the "latex" extra, you can use LaTeX formulas.
+    This requires markdown2 version >=2.5 as well as latex2mathml to be installed.
+''')
+def markdown_latex():
+    ui.markdown(r'''
+        Euler's identity:
+
+        $$e^{i\pi} = -1$$
+    ''', extras=['latex'])
+
+
 @doc.demo('Change Markdown content', '''
     You can change the content of a Markdown element by setting its `content` property or calling `set_content`.
 ''')

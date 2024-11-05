@@ -87,6 +87,7 @@ class Client:
         self._body_html = ''
 
         self.page = page
+        self.single_page_router: Optional[SinglePageRouter] = None
         self.storage = ObservableDict()
 
         self.connect_handlers: List[Union[Callable[..., Any], Awaitable]] = []
@@ -226,8 +227,7 @@ class Client:
         path = target if isinstance(target, str) else self.page_routes[target]
         for outlet in self.top_level_outlets.values():
             outlet_target = outlet.resolve_target(path)
-            if outlet_target.valid:
-                assert context.client.single_page_router
+            if outlet_target.valid and context.client.single_page_router is not None:
                 context.client.single_page_router.navigate_to(path)
                 return
         self.outbox.enqueue_message('open', {'path': path, 'new_tab': new_tab}, self.id)

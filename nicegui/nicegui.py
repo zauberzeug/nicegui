@@ -9,7 +9,6 @@ import socketio
 from fastapi import HTTPException, Request
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import FileResponse, Response
-from fastapi.staticfiles import StaticFiles
 
 from . import air, background_tasks, binding, core, favicon, helpers, json, run, welcome
 from .app import App
@@ -21,6 +20,7 @@ from .logging import log
 from .middlewares import RedirectWithPrefixMiddleware
 from .page import page
 from .slot import Slot
+from .staticfiles import CacheControlledStaticFiles
 from .version import __version__
 
 
@@ -56,7 +56,7 @@ mimetypes.add_type('text/css', '.css')
 
 app.add_middleware(GZipMiddleware)
 app.add_middleware(RedirectWithPrefixMiddleware)
-static_files = StaticFiles(
+static_files = CacheControlledStaticFiles(
     directory=(Path(__file__).parent / 'static').resolve(),
     follow_symlink=True,
 )
@@ -167,6 +167,8 @@ async def _on_handshake(sid: str, data: Dict[str, str]) -> bool:
     client = Client.instances.get(data['client_id'])
     if not client:
         return False
+    if data.get('old_tab_id'):
+        app.storage.copy_tab(data['old_tab_id'], data['tab_id'])
     client.tab_id = data['tab_id']
     if sid[:5].startswith('test-'):
         client.environ = {'asgi.scope': {'description': 'test client', 'type': 'test'}}

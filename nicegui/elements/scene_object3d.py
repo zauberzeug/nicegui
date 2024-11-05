@@ -22,7 +22,7 @@ class Object3D:
         self.scene.objects[self.id] = self
         self.parent: Union[Object3D, SceneObject] = self.scene.stack[-1]
         self.args: List = list(args)
-        self.color: str = '#ffffff'
+        self.color: Optional[str] = '#ffffff'
         self.opacity: float = 1.0
         self.side_: str = 'front'
         self.visible_: bool = True
@@ -90,7 +90,11 @@ class Object3D:
     def _delete(self) -> None:
         self.scene.run_method('delete', self.id)
 
-    def material(self, color: str = '#ffffff', opacity: float = 1.0, side: Literal['front', 'back', 'both'] = 'front') -> Self:
+    def material(self,
+                 color: Optional[str] = '#ffffff',
+                 opacity: float = 1.0,
+                 side: Literal['front', 'back', 'both'] = 'front',
+                 ) -> Self:
         """Set the color and opacity of the object.
 
         :param color: CSS color string (default: '#ffffff')
@@ -192,10 +196,14 @@ class Object3D:
             self._draggable()
         return self
 
+    @property
+    def children(self) -> List[Object3D]:
+        """List of children of the object."""
+        return [object for object in self.scene.objects.values() if object.parent == self]
+
     def delete(self) -> None:
         """Delete the object."""
-        children = [object for object in self.scene.objects.values() if object.parent == self]
-        for child in children:
+        for child in self.children:
             child.delete()
         del self.scene.objects[self.id]
         self._delete()

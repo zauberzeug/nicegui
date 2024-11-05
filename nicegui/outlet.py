@@ -87,9 +87,9 @@ class Outlet:
             raise ValueError('The outlet builder function is not defined. Use the @outlet decorator to define it or'
                              ' pass it as an argument to the SinglePageRouter constructor.')
         frame = RouterFrame.run_safe(self.outlet_builder, **kwargs)
-        # if not isinstance(frame, Generator):
-        #     raise ValueError('The outlet builder must be a generator function and contain a yield statement'
-        #                      ' to separate the layout from the content area.')
+        if not isinstance(frame, Generator):
+            raise ValueError('The outlet builder must be a generator function and contain a yield statement'
+                             ' to separate the layout from the content area.')
         properties = {}
 
         def add_properties(result):
@@ -113,8 +113,10 @@ class Outlet:
     def __call__(self, func: Callable[..., Any]) -> Self:
         """Decorator for the layout builder / "outlet" function"""
 
-        def outlet_view(**kwargs):
-            self.build_page(**kwargs)
+        async def outlet_view(**kwargs):
+            result = self.build_page(**kwargs)
+            if inspect.isawaitable(result):
+                await result
 
         self.outlet_builder = func
         if self.parent_config is None:
@@ -150,7 +152,7 @@ class Outlet:
             query = request.url.query
             if query:
                 initial_url += '?' + query
-            self.build_page(initial_url=initial_url)
+            await self.build_page(initial_url=initial_url)
 
         return self
 
@@ -216,7 +218,7 @@ class Outlet:
             return self.parent_config.handle_navigate(url)
         return url
 
-    def build_page(self, initial_url: Optional[str] = None, **kwargs) -> None:
+    async def build_page(self, initial_url: Optional[str] = None, **kwargs) -> None:
         """Builds the page with the given initial URL
 
         :param initial_url: The initial URL to initialize the router's content with
@@ -276,7 +278,7 @@ class Outlet:
         if self.on_instance_created is not None:
             self.on_instance_created(content)
         if initial_url is not None:
-            content.navigate_to(initial_url, server_side=True, sync=True, history=False)
+            content.navigate_to(initial_url, server_side=True, history=False)
         return content
 
     def view(self,

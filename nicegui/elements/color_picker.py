@@ -1,22 +1,22 @@
-from typing import Any, Callable, Optional
+from typing import Optional
 
 from typing_extensions import Self
 
 from ..element import Element
-from ..events import ColorPickEventArguments, GenericEventArguments, handle_event
+from ..events import ColorPickEventArguments, GenericEventArguments, Handler, handle_event
 from .menu import Menu
 
 
 class ColorPicker(Menu):
 
     def __init__(self, *,
-                 on_pick: Optional[Callable[..., Any]] = None,
+                 on_pick: Optional[Handler[ColorPickEventArguments]] = None,
                  value: bool = False,
                  ) -> None:
         """Color Picker
 
         This element is based on Quasar's `QMenu <https://quasar.dev/vue-components/menu>`_ and
-        `QColor <https://quasar.dev/vue-components/color>`_ components.
+        `QColor <https://quasar.dev/vue-components/color-picker>`_ components.
 
         :param on_pick: callback to execute when a color is picked
         :param value: whether the menu is already opened (default: `False`)
@@ -36,7 +36,7 @@ class ColorPicker(Menu):
         """
         self.q_color.props(f'model-value="{color}"')
 
-    def on_pick(self, callback: Callable[..., Any]) -> Self:
+    def on_pick(self, callback: Handler[ColorPickEventArguments]) -> Self:
         """Add a callback to be invoked when a color is picked."""
         self._pick_handlers.append(callback)
         return self

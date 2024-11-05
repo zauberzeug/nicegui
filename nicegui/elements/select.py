@@ -2,7 +2,7 @@ from collections.abc import Generator, Iterable
 from copy import deepcopy
 from typing import Any, Callable, Dict, Iterator, List, Literal, Optional, Union
 
-from ..events import GenericEventArguments
+from ..events import GenericEventArguments, Handler, ValueChangeEventArguments
 from .choice_element import ChoiceElement
 from .mixins.disableable_element import DisableableElement
 from .mixins.validation_element import ValidationElement
@@ -14,7 +14,7 @@ class Select(ValidationElement, ChoiceElement, DisableableElement, component='se
                  options: Union[List, Dict], *,
                  label: Optional[str] = None,
                  value: Any = None,
-                 on_change: Optional[Callable[..., Any]] = None,
+                 on_change: Optional[Handler[ValueChangeEventArguments]] = None,
                  with_input: bool = False,
                  new_value_mode: Optional[Literal['add', 'add-unique', 'toggle']] = None,
                  multiple: bool = False,

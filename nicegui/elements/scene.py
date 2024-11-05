@@ -9,6 +9,7 @@ from ..dataclasses import KWONLY_SLOTS
 from ..element import Element
 from ..events import (
     GenericEventArguments,
+    Handler,
     SceneClickEventArguments,
     SceneClickHit,
     SceneDragEventArguments,
@@ -49,7 +50,8 @@ class Scene(Element,
                 'lib/three/modules/OrbitControls.js',
                 'lib/three/modules/STLLoader.js',
                 'lib/tween/tween.umd.js',
-            ]):
+            ],
+            default_classes='nicegui-scene'):
     # pylint: disable=import-outside-toplevel
     from .scene_objects import AxesHelper as axes_helper
     from .scene_objects import Box as box
@@ -74,10 +76,10 @@ class Scene(Element,
                  height: int = 300,
                  grid: Union[bool, Tuple[int, int]] = True,
                  camera: Optional[SceneCamera] = None,
-                 on_click: Optional[Callable[..., Any]] = None,
+                 on_click: Optional[Handler[SceneClickEventArguments]] = None,
                  click_events: List[str] = ['click', 'dblclick'],  # noqa: B006
-                 on_drag_start: Optional[Callable[..., Any]] = None,
-                 on_drag_end: Optional[Callable[..., Any]] = None,
+                 on_drag_start: Optional[Handler[SceneDragEventArguments]] = None,
+                 on_drag_end: Optional[Handler[SceneDragEventArguments]] = None,
                  drag_constraints: str = '',
                  background_color: str = '#eee',
                  ) -> None:
@@ -118,19 +120,18 @@ class Scene(Element,
         self.on('dragstart', self._handle_drag)
         self.on('dragend', self._handle_drag)
         self._props['drag_constraints'] = drag_constraints
-        self._classes.append('nicegui-scene')
 
-    def on_click(self, callback: Callable[..., Any]) -> Self:
+    def on_click(self, callback: Handler[SceneClickEventArguments]) -> Self:
         """Add a callback to be invoked when a 3D object is clicked."""
         self._click_handlers.append(callback)
         return self
 
-    def on_drag_start(self, callback: Callable[..., Any]) -> Self:
+    def on_drag_start(self, callback: Handler[SceneDragEventArguments]) -> Self:
         """Add a callback to be invoked when a 3D object is dragged."""
         self._drag_start_handlers.append(callback)
         return self
 
-    def on_drag_end(self, callback: Callable[..., Any]) -> Self:
+    def on_drag_end(self, callback: Handler[SceneDragEventArguments]) -> Self:
         """Add a callback to be invoked when a 3D object is dropped."""
         self._drag_end_handlers.append(callback)
         return self
