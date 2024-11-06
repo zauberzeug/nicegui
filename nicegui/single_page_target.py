@@ -1,6 +1,6 @@
 import inspect
 import urllib.parse
-from typing import TYPE_CHECKING, Any, Callable, Dict, Optional, Self
+from typing import TYPE_CHECKING, Any, Callable, Dict, Optional, Self, get_origin, get_args
 
 if TYPE_CHECKING:
     from nicegui.single_page_router import SinglePageRouter
@@ -106,6 +106,8 @@ class SinglePageTarget:
                 return entry
         return None
 
+    from typing import get_origin, get_args
+
     def convert_arguments(self):
         """Converts the path and query arguments to the expected types of the builder function"""
         if not self.builder:
@@ -116,8 +118,45 @@ class SinglePageTarget:
                 if func_param_name in params:
                     if func_param_info.annotation is inspect.Parameter.empty:
                         continue
-                    try:
-                        params[func_param_name] = func_param_info.annotation(
-                            params[func_param_name])  # Convert parameter to the expected type
-                    except ValueError as e:
-                        raise ValueError(f'Could not convert parameter {func_param_name}: {e}')
+                    value = params[func_param_name]
+                    expected_type = func_param_info.annotation
+
+                    # Handle cases where expected_type is a generic type like list[str]
+                    origin_type = get_origin(expected_type)
+                    type_args = get_args(expected_type)
+
+                    if isinstance(value, list):
+                        if origin_type == list:
+                            # Convert each element in the list to the specified type
+                            element_type = type_args[0] if type_args else any
+                            try:
+                                params[func_param_name] = [
+                                    element_type(item) for item in value
+                                ]
+                            except ValueError as e:
+                                raise ValueError(
+                                    f'Could not convert elements of parameter {func_param_name} to {element_type}: {e}'
+                                )
+                        else:
+                            # Expected type is not a list; take the first element
+                            value = value[0]
+                            try:
+                                params[func_param_name] = expected_type(value)
+                            except ValueError as e:
+                                raise ValueError(f'Could not convert parameter {func_param_name}: {e}')
+                    else:
+                        if origin_type == list:
+                            # Value is not a list but expected a list; wrap value in a list
+                            element_type = type_args[0] if type_args else any
+                            try:
+                                params[func_param_name] = [element_type(value)]
+                            except ValueError as e:
+                                raise ValueError(
+                                    f'Could not convert parameter {func_param_name} to list[{element_type}]: {e}'
+                                )
+                        else:
+                            # Regular conversion
+                            try:
+                                params[func_param_name] = expected_type(value)
+                            except ValueError as e:
+                                raise ValueError(f'Could not convert parameter {func_param_name}: {e}')
