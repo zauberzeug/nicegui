@@ -115,6 +115,7 @@ If you would like to support this project and have your avatar or company logo a
   <a href="https://github.com/Zhifeng2019"><img src="https://github.com/Zhifeng2019.png" width="50px" alt="Zhifeng" /></a>
   <a href="https://github.com/sereneturtlefox"><img src="https://github.com/sereneturtlefox.png" width="50px" alt="None" /></a>
   <a href="https://github.com/daviborges666"><img src="https://github.com/daviborges666.png" width="50px" alt="Davi Borges" /></a>
+  <a href="https://github.com/whoulden"><img src="https://github.com/whoulden.png" width="50px" alt="Wayne Houlden" /></a>
 </p>
 <!-- SPONSORS -->
 
