@@ -41,7 +41,7 @@ doc.title('Storage')
         However, `app.storage.user` is generally preferred due to its advantages in reducing data payload, enhancing security, and offering larger storage capacity.
         By default, NiceGUI holds a unique identifier for the browser session in `app.storage.browser['id']`.
         This storage is only available within [page builder functions](/documentation/page)
-        and requires the `storage_secret` parameter in`ui.run()` to sign the browser session cookie.
+        and requires the `storage_secret` parameter in `ui.run()` to sign the browser session cookie.
 
     The following table will help you to choose storage.
 
