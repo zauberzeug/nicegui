@@ -14,8 +14,7 @@ class Example:
     def __post_init__(self) -> None:
         """Post-initialization hook."""
         name = self.title.lower().replace(' ', '_')
-        content = [p for p in (PATH / name).glob('*')
-                   if not any(p.name.startswith(ignore) for ignore in ['__pycache__', '.', 'test_'])]
+        content = [p for p in (PATH / name).glob('*') if not p.name.startswith(('__pycache__', '.', 'test_'))]
         filename = 'main.py' if len(content) == 1 else ''
         self.url = f'https://github.com/zauberzeug/nicegui/tree/main/examples/{name}/{filename}'
 
