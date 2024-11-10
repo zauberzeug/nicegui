@@ -2,6 +2,8 @@ from datetime import datetime, timedelta, timezone
 from typing import List
 
 import pandas as pd
+import polars as pl
+
 from selenium.webdriver.common.by import By
 
 from nicegui import ui
@@ -190,6 +192,25 @@ def test_create_and_update_from_pandas(screen: Screen):
     screen.should_contain('Lionel')
     screen.should_contain('19')
 
+def test_create_and_update_from_polars(screen: Screen):
+    df = pl.DataFrame({'name': ['Alice', 'Bob'], 'age': [18, 21]})
+    table = ui.table.from_polars(df)
+
+    def update():
+        df = pl.DataFrame({'name': ['Lionel'], 'age': [19]})
+        df = df.vstack(df)
+        table.update_from_polars(df)
+    ui.button('Update', on_click=update)
+        
+    screen.open('/')
+    screen.should_contain('Alice')
+    screen.should_contain('Bob')
+    screen.should_contain('18')
+    screen.should_contain('21')
+
+    screen.click('Update')
+    screen.should_contain('Lionel')
+    screen.should_contain('19')
 
 def test_problematic_datatypes(screen: Screen):
     df = pd.DataFrame({
@@ -211,6 +232,18 @@ def test_problematic_datatypes(screen: Screen):
     screen.should_contain('5 days')
     screen.should_contain('(1+2j)')
     screen.should_contain('2021-01')
+
+def test_problematic_datatypes_for_polars(screen: Screen):
+    df = pl.DataFrame({
+        'Datetime_col': [datetime(2020, 1, 1).date()],
+        'Datetime_col_tz': [datetime(2020, 1, 1, tzinfo=timezone.utc)],
+    })
+    ui.table.from_polars(df)
+
+    screen.open('/')
+    screen.should_contain('Datetime_col')
+    screen.should_contain('Datetime_col_tz')
+    screen.should_contain('2020-01-01')
 
 
 def test_table_computed_props(screen: Screen):
@@ -293,6 +326,49 @@ def test_columns_from_df(screen: Screen):
 
     ui.button('Update cars with columns',
               on_click=lambda: cars.update_from_pandas(pd.DataFrame({'make': ['Hyundai'], 'model': ['i30']}),
+                                                       columns=[{'name': 'make', 'label': 'make', 'field': 'make'},
+                                                                {'name': 'model', 'label': 'model', 'field': 'model'}]))
+
+    screen.open('/')
+    screen.should_contain('name')
+    screen.should_contain('age')
+    screen.should_contain('make')
+    screen.should_not_contain('model')
+
+    screen.click('Update persons without columns')  # infer columns (like during instantiation)
+    screen.should_contain('Dan')
+    screen.should_contain('5')
+    screen.should_contain('male')
+
+    screen.click('Update persons with columns')  # updated columns via parameter
+    screen.should_contain('Stephen')
+    screen.should_not_contain('32')
+
+    screen.click('Update cars without columns')  # don't change columns
+    screen.should_contain('Honda')
+    screen.should_not_contain('Civic')
+
+    screen.click('Update cars with columns')  # updated columns via parameter
+    screen.should_contain('Hyundai')
+    screen.should_contain('i30')
+
+def test_columns_from_polars_df(screen: Screen):
+    persons = ui.table.from_polars(pl.DataFrame({'name': ['Alice', 'Bob'], 'age': [18, 21]}))
+    cars = ui.table.from_polars(pl.DataFrame({'make': ['Ford', 'Toyota'], 'model': ['Focus', 'Corolla']}),
+                                columns=[{'name': 'make', 'label': 'make', 'field': 'make'}])
+
+    ui.button('Update persons without columns',
+              on_click=lambda: persons.update_from_polars(pl.DataFrame({'name': ['Dan'], 'age': [5], 'sex': ['male']})))
+
+    ui.button('Update persons with columns',
+              on_click=lambda: persons.update_from_polars(pl.DataFrame({'name': ['Stephen'], 'age': [33]}),
+                                                          columns=[{'name': 'name', 'label': 'Name', 'field': 'name'}]))
+
+    ui.button('Update cars without columns',
+              on_click=lambda: cars.update_from_polars(pl.DataFrame({'make': ['Honda'], 'model': ['Civic']})))
+
+    ui.button('Update cars with columns',
+              on_click=lambda: cars.update_from_polars(pl.DataFrame({'make': ['Hyundai'], 'model': ['i30']}),
                                                        columns=[{'name': 'make', 'label': 'make', 'field': 'make'},
                                                                 {'name': 'model', 'label': 'model', 'field': 'model'}]))
 
