@@ -6,6 +6,7 @@ FEATURE = Literal[
     'highcharts',
     'matplotlib',
     'pandas',
+    'polars',
     'pillow',
     'plotly',
     'pyecharts',
