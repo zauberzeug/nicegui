@@ -2,6 +2,7 @@ from datetime import datetime, timedelta, timezone
 from typing import List
 
 import pandas as pd
+import polars as pl
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.keys import Keys
 
@@ -166,6 +167,22 @@ def test_create_from_pandas(screen: Screen):
     screen.should_contain('42')
     screen.should_contain('answer')
 
+def test_create_from_polars(screen: Screen):
+    df = pl.DataFrame({
+        'name': ['Alice', 'Bob'],
+        'age': [18, 21],
+        '42': 'answer',
+    })
+    ui.aggrid.from_polars(df)
+
+    screen.open('/')
+    screen.should_contain('Alice')
+    screen.should_contain('Bob')
+    screen.should_contain('18')
+    screen.should_contain('21')
+    screen.should_contain('42')
+    screen.should_contain('answer')
+
 
 def test_create_dynamically(screen: Screen):
     ui.button('Create', on_click=lambda: ui.aggrid({'columnDefs': [{'field': 'name'}], 'rowData': [{'name': 'Alice'}]}))
@@ -204,6 +221,18 @@ def test_problematic_datatypes(screen: Screen):
     screen.should_contain('5 days')
     screen.should_contain('(1+2j)')
     screen.should_contain('2021-01')
+
+def test_problematic_datatypes_for_polars(screen: Screen):
+    df = pl.DataFrame({
+        'Datetime_col': [datetime(2020, 1, 1).date()],
+        'Datetime_col_tz': [datetime(2020, 1, 1, tzinfo=timezone.utc)],
+    })
+    ui.aggrid.from_polars(df)
+
+    screen.open('/')
+    screen.should_contain('Datetime_col')
+    screen.should_contain('Datetime_col_tz')
+    screen.should_contain('2020-01-01')
 
 
 def test_run_row_method(screen: Screen):
