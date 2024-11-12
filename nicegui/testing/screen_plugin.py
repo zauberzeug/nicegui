@@ -83,24 +83,3 @@ def screen(nicegui_reset_globals,  # noqa: F811, pylint: disable=unused-argument
         shutil.rmtree(DOWNLOAD_DIR)
     if logs:
         pytest.fail('There were unexpected logs. See "Captured log call" below.', pytrace=False)
-
-
-@pytest.fixture
-def screen2(nicegui_reset_globals,  # noqa: F811, pylint: disable=unused-argument
-           nicegui_remove_all_screenshots,  # pylint: disable=unused-argument
-           nicegui_driver: webdriver.Chrome,
-           request: pytest.FixtureRequest,
-           caplog: pytest.LogCaptureFixture,
-           ) -> Generator[Screen, None, None]:
-    """Create a new SeleniumScreen fixture. Used to have two parallel screens"""
-    prepare_simulation(request)
-    screen_ = Screen(nicegui_driver, caplog)
-    yield screen_
-    logs = screen_.caplog.get_records('call')
-    if screen_.is_open:
-        screen_.shot(request.node.name)
-    screen_.stop_server()
-    if DOWNLOAD_DIR.exists():
-        shutil.rmtree(DOWNLOAD_DIR)
-    if logs:
-        pytest.fail('There were unexpected logs. See "Captured log call" below.', pytrace=False)

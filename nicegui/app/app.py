@@ -5,7 +5,7 @@ import signal
 import urllib
 from enum import Enum
 from pathlib import Path
-from typing import Any, Awaitable, Callable, List, Optional, Union, Iterator
+from typing import Any, Awaitable, Callable, Iterator, List, Optional, Union
 
 from fastapi import FastAPI, HTTPException, Request, Response
 from fastapi.responses import FileResponse
@@ -261,10 +261,10 @@ class App(FastAPI):
 
     @staticmethod
     def clients(path: str) -> Iterator[Client]:
-        """Iterate over all connected clients and return only those instances that match a path.
+        """Iterate over all connected clients with a matching path.
 
-        When using `@ui.page("/path")` each client gets a private view of this page. Updates must be
-        sent to each client individually, which this iterator simplifies.
+        When using `@ui.page("/path")` each client gets a private view of this page.
+        Updates must be sent to each client individually, which this iterator simplifies.
 
         :param path: string to filter clients by
         """
