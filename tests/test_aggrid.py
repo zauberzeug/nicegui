@@ -3,6 +3,7 @@ from typing import List
 
 import pandas as pd
 import polars as pl
+import pytest
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.keys import Keys
 
@@ -155,25 +156,13 @@ def test_replace_aggrid(screen: Screen):
     screen.should_not_contain('Alice')
 
 
-def test_create_from_pandas(screen: Screen):
-    df = pd.DataFrame({'name': ['Alice', 'Bob'], 'age': [18, 21], 42: 'answer'})
+@pytest.mark.parametrize('df_type', ['pandas', 'polars'])
+def test_create_from_dataframe(screen: Screen, df_type: str):
+    if df_type == 'pandas':
+        df = pd.DataFrame({'name': ['Alice', 'Bob'], 'age': [18, 21], 42: 'answer'})
+    else:
+        df = pl.DataFrame({'name': ['Alice', 'Bob'], 'age': [18, 21], 42: 'answer'})
     ui.aggrid.from_pandas(df)
-
-    screen.open('/')
-    screen.should_contain('Alice')
-    screen.should_contain('Bob')
-    screen.should_contain('18')
-    screen.should_contain('21')
-    screen.should_contain('42')
-    screen.should_contain('answer')
-
-def test_create_from_polars(screen: Screen):
-    df = pl.DataFrame({
-        'name': ['Alice', 'Bob'],
-        'age': [18, 21],
-        '42': 'answer',
-    })
-    ui.aggrid.from_polars(df)
 
     screen.open('/')
     screen.should_contain('Alice')
@@ -201,38 +190,36 @@ def test_api_method_after_creation(screen: Screen):
     assert screen.find_by_class('ag-row-selected')
 
 
-def test_problematic_datatypes(screen: Screen):
-    df = pd.DataFrame({
-        'datetime_col': [datetime(2020, 1, 1)],
-        'datetime_col_tz': [datetime(2020, 1, 1, tzinfo=timezone.utc)],
-        'timedelta_col': [timedelta(days=5)],
-        'complex_col': [1 + 2j],
-        'period_col': pd.Series([pd.Period('2021-01')]),
-    })
-    ui.aggrid.from_pandas(df)
+@pytest.mark.parametrize('df_type', ['pandas', 'polars'])
+def test_problematic_datatypes(screen: Screen, df_type: str):
+    if df_type == 'pandas':
+        df = pd.DataFrame({
+            'datetime_col': [datetime(2020, 1, 1)],
+            'datetime_col_tz': [datetime(2020, 1, 2, tzinfo=timezone.utc)],
+            'timedelta_col': [timedelta(days=5)],
+            'complex_col': [1 + 2j],
+            'period_col': pd.Series([pd.Period('2021-01')]),
+        })
+        ui.aggrid.from_pandas(df)
+    else:
+        df = pl.DataFrame({
+            'datetime_col': [datetime(2020, 1, 1)],
+            'datetime_col_tz': [datetime(2020, 1, 2, tzinfo=timezone.utc)],
+        })
+        ui.aggrid.from_polars(df)
 
     screen.open('/')
     screen.should_contain('Datetime_col')
-    screen.should_contain('Datetime_col_tz')
-    screen.should_contain('Timedelta_col')
-    screen.should_contain('Complex_col')
-    screen.should_contain('Period_col')
     screen.should_contain('2020-01-01')
-    screen.should_contain('5 days')
-    screen.should_contain('(1+2j)')
-    screen.should_contain('2021-01')
-
-def test_problematic_datatypes_for_polars(screen: Screen):
-    df = pl.DataFrame({
-        'Datetime_col': [datetime(2020, 1, 1).date()],
-        'Datetime_col_tz': [datetime(2020, 1, 1, tzinfo=timezone.utc)],
-    })
-    ui.aggrid.from_polars(df)
-
-    screen.open('/')
-    screen.should_contain('Datetime_col')
     screen.should_contain('Datetime_col_tz')
-    screen.should_contain('2020-01-01')
+    screen.should_contain('2020-01-02')
+    if df_type == 'pandas':
+        screen.should_contain('Timedelta_col')
+        screen.should_contain('5 days')
+        screen.should_contain('Complex_col')
+        screen.should_contain('(1+2j)')
+        screen.should_contain('Period_col')
+        screen.should_contain('2021-01')
 
 
 def test_run_row_method(screen: Screen):

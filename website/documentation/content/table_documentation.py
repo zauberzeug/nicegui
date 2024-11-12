@@ -167,8 +167,8 @@ def table_from_pandas_demo():
 
 
 @doc.demo('Table from Polars DataFrame', '''
-    You can create a table from a Pandas DataFrame using the `from_polars` method.
-    This method takes a Pandas DataFrame as input and returns a table.
+    You can create a table from a Polars DataFrame using the `from_polars` method.
+    This method takes a Polars DataFrame as input and returns a table.
 ''')
 def table_from_polars_demo():
     import polars as pl

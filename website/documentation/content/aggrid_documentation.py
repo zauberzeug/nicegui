@@ -126,6 +126,7 @@ def aggrid_from_pandas():
     df = pd.DataFrame(data={'col1': [1, 2], 'col2': [3, 4]})
     ui.aggrid.from_pandas(df).classes('max-h-40')
 
+
 @doc.demo('Create Grid from Polars DataFrame', '''
     You can create an AG Grid from a Polars DataFrame using the `from_polars` method.
     This method takes a Polars DataFrame as input and returns an AG Grid.
@@ -133,11 +134,9 @@ def aggrid_from_pandas():
 def aggrid_from_polars():
     import polars as pl
 
-    df = pl.DataFrame({
-        'col1': [1, 2],
-        'col2': [3, 4],
-    })
+    df = pl.DataFrame(data={'col1': [1, 2], 'col2': [3, 4]})
     ui.aggrid.from_polars(df).classes('max-h-40')
+
 
 @doc.demo('Render columns as HTML', '''
     You can render columns as HTML by passing a list of column indices to the `html_columns` argument.

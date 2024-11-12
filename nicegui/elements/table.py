@@ -19,6 +19,10 @@ if importlib.util.find_spec('pandas'):
     optional_features.register('pandas')
     if TYPE_CHECKING:
         import pandas as pd
+
+if importlib.util.find_spec('polars'):
+    optional_features.register('polars')
+    if TYPE_CHECKING:
         import polars as pl
 
 
@@ -107,46 +111,6 @@ class Table(FilterElement, component='table.js'):
         return [{**self._column_defaults, **column} for column in columns] if self._column_defaults else columns
 
     @classmethod
-    def from_polars(cls,
-                    df: 'pl.DataFrame', *,
-                    columns: Optional[List[Dict]] = None,
-                    column_defaults: Optional[Dict] = None,
-                    row_key: str = 'id',
-                    title: Optional[str] = None,
-                    selection: Optional[Literal['single', 'multiple']] = None,
-                    pagination: Optional[Union[int, dict]] = None,
-                    on_select: Optional[Handler[TableSelectionEventArguments]] = None) -> Self:
-        """Create a table from a Polars DataFrame.
-
-        Note:
-        If the DataFrame contains Non Utf-8 DataTypes, they will be converted to strings.
-        To use a different conversion, convert the DataFrame manually before passing it to this method.
-
-        :param df: Polars DataFrame
-        :param columns: list of column objects (defaults to the columns of the dataframe)
-        :param column_defaults: optional default column properties
-        :param row_key: name of the column containing unique data identifying the row (default: "id")
-        :param title: title of the table
-        :param selection: selection type ("single" or "multiple"; default: `None`)
-        :param pagination: a dictionary correlating to a pagination object or number of rows per page (`None` hides the pagination, 0 means "infinite"; default: `None`).
-        :param on_select: callback which is invoked when the selection changes
-        :return: table element
-        """
-        rows, columns_from_df = cls._polars_df_to_rows_and_columns(df)
-        table = cls(
-            rows=rows,
-            columns=columns or columns_from_df,
-            column_defaults=column_defaults,
-            row_key=row_key,
-            title=title,
-            selection=selection,
-            pagination=pagination,
-            on_select=on_select,
-        )
-        table._use_columns_from_df = columns is None
-        return table
-
-    @classmethod
     def from_pandas(cls,
                     df: 'pd.DataFrame', *,
                     columns: Optional[List[Dict]] = None,
@@ -188,21 +152,46 @@ class Table(FilterElement, component='table.js'):
         table._use_columns_from_df = columns is None
         return table
 
-    def update_from_polars(self,
-                           df: 'pl.DataFrame', *,
-                           clear_selection: bool = True,
-                           columns: Optional[List[Dict]] = None,
-                           column_defaults: Optional[Dict] = None) -> None:
-        """Update the table from a Polars DataFrame.
+    @classmethod
+    def from_polars(cls,
+                    df: 'pl.DataFrame', *,
+                    columns: Optional[List[Dict]] = None,
+                    column_defaults: Optional[Dict] = None,
+                    row_key: str = 'id',
+                    title: Optional[str] = None,
+                    selection: Optional[Literal['single', 'multiple']] = None,
+                    pagination: Optional[Union[int, dict]] = None,
+                    on_select: Optional[Handler[TableSelectionEventArguments]] = None) -> Self:
+        """Create a table from a Polars DataFrame.
+
+        Note:
+        If the DataFrame contains non-UTF-8 datatypes, they will be converted to strings.
+        To use a different conversion, convert the DataFrame manually before passing it to this method.
 
         :param df: Polars DataFrame
-        :param clear_selection: whether to clear the selection (default: True)
         :param columns: list of column objects (defaults to the columns of the dataframe)
         :param column_defaults: optional default column properties
+        :param row_key: name of the column containing unique data identifying the row (default: "id")
+        :param title: title of the table
+        :param selection: selection type ("single" or "multiple"; default: `None`)
+        :param pagination: a dictionary correlating to a pagination object or number of rows per page (`None` hides the pagination, 0 means "infinite"; default: `None`).
+        :param on_select: callback which is invoked when the selection changes
+        :return: table element
         """
-        rows, columns_from_df = self._polars_df_to_rows_and_columns(df)
-        self._update_table(rows, columns_from_df, clear_selection, columns, column_defaults)
-    
+        rows, columns_from_df = cls._polars_df_to_rows_and_columns(df)
+        table = cls(
+            rows=rows,
+            columns=columns or columns_from_df,
+            column_defaults=column_defaults,
+            row_key=row_key,
+            title=title,
+            selection=selection,
+            pagination=pagination,
+            on_select=on_select,
+        )
+        table._use_columns_from_df = columns is None
+        return table
+
     def update_from_pandas(self,
                            df: 'pd.DataFrame', *,
                            clear_selection: bool = True,
@@ -222,7 +211,22 @@ class Table(FilterElement, component='table.js'):
         """
         rows, columns_from_df = self._pandas_df_to_rows_and_columns(df)
         self._update_table(rows, columns_from_df, clear_selection, columns, column_defaults)
-    
+
+    def update_from_polars(self,
+                           df: 'pl.DataFrame', *,
+                           clear_selection: bool = True,
+                           columns: Optional[List[Dict]] = None,
+                           column_defaults: Optional[Dict] = None) -> None:
+        """Update the table from a Polars DataFrame.
+
+        :param df: Polars DataFrame
+        :param clear_selection: whether to clear the selection (default: True)
+        :param columns: list of column objects (defaults to the columns of the dataframe)
+        :param column_defaults: optional default column properties
+        """
+        rows, columns_from_df = self._polars_df_to_rows_and_columns(df)
+        self._update_table(rows, columns_from_df, clear_selection, columns, column_defaults)
+
     def _update_table(self,
                       rows: List[Dict],
                       columns_from_df: List[Dict],
@@ -238,16 +242,6 @@ class Table(FilterElement, component='table.js'):
         if clear_selection:
             self.selected.clear()
         self.update()
-
-    @staticmethod
-    def _polars_df_to_rows_and_columns(df: 'pl.DataFrame') -> Tuple[List[Dict], List[Dict]]:
-        import polars as pl  # pylint: disable=import-outside-toplevel
-    
-        df = df.with_columns(pl.exclude(pl.String).cast(str))
-        df = df.fill_null('')  # fill null values with empty strings
-
-        return df.to_dicts(), [{'name': col, 'label': col, 'field': col} for col in df.columns]
-
 
     @staticmethod
     def _pandas_df_to_rows_and_columns(df: 'pd.DataFrame') -> Tuple[List[Dict], List[Dict]]:
@@ -269,6 +263,15 @@ class Table(FilterElement, component='table.js'):
                              '`df.columns = ["_".join(col) for col in df.columns.values]`.')
 
         return df.to_dict('records'), [{'name': col, 'label': col, 'field': col} for col in df.columns]
+
+    @staticmethod
+    def _polars_df_to_rows_and_columns(df: 'pl.DataFrame') -> Tuple[List[Dict], List[Dict]]:
+        import polars as pl  # pylint: disable=import-outside-toplevel
+
+        df = df.with_columns(pl.exclude(pl.String).cast(str))
+        df = df.fill_null('')  # fill null values with empty strings
+
+        return df.to_dicts(), [{'name': col, 'label': col, 'field': col} for col in df.columns]
 
     @property
     def rows(self) -> List[Dict]:
