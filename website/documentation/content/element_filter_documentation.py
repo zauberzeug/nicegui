@@ -38,34 +38,6 @@ def text_element() -> None:
     ui.label(', '.join(b.text for b in ElementFilter(kind=TextElement, local_scope=True)))
 
 
-@doc.demo('Local updates', '''
-    The content on a page is private to the client and has its own local element context.
-    If you have a global background process, like a websocket-based chat handler or a notification system, and you want
-    to send updates to pages instead of the global context, you need to filter for each client connected to that page.
-
-    Here, you can use the `app.client(path='/some-path')` iterator to return all applicable clients and use their
-    context to apply updates.
-''')
-def local_updates():
-    import time
-    import asyncio
-    from nicegui import app, ElementFilter
-
-    @ui.page('/time')
-    def page():
-        ui.label().mark('clock')
-
-    async def run_clock():
-        while True:
-            for client in app.clients('/time'):
-                with client.content:
-                    for element in ElementFilter(marker='clock'):
-                        element.text = time.strftime('%H:%M:%S')
-            await asyncio.sleep(1)
-
-    app.on_startup(run_clock)
-
-
 @doc.demo('Markers', '''
     Markers are a simple way to tag elements with a string which can be queried by an `ElementFilter`.
 ''')
