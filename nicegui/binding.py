@@ -1,8 +1,8 @@
 import asyncio
+import dataclasses
 import time
 from collections import defaultdict
-from collections.abc import Mapping
-from typing import Any, Callable, DefaultDict, Dict, Iterable, List, Optional, Set, Tuple, Union
+from typing import Any, Callable, DefaultDict, Dict, Iterable, List, Mapping, Optional, Set, Tuple, Type, TypeVar, Union
 
 from . import core
 from .logging import log
@@ -12,6 +12,8 @@ MAX_PROPAGATION_TIME = 0.01
 bindings: DefaultDict[Tuple[int, str], List] = defaultdict(list)
 bindable_properties: Dict[Tuple[int, str], Any] = {}
 active_links: List[Tuple[Any, str, Any, str, Callable[[Any], Any]]] = []
+
+T = TypeVar('T')
 
 
 def _has_attribute(obj: Union[object, Mapping], name: str) -> Any:
@@ -187,3 +189,43 @@ def reset() -> None:
     bindings.clear()
     bindable_properties.clear()
     active_links.clear()
+
+
+def dataclass_bindable_field(**kwargs) -> dataclasses.Field:
+    """Create `dataclasses.Field` and mark it as a bindable property.
+
+    This function is a wrapper around `dataclasses.field <https://docs.python.org/3/library/dataclasses.html#dataclasses.field>`.
+    Original functionality is preserved, except `metadata` argument is added (or extended).
+    This function should be used in conjunction with `bindable_dataclass` decorator.
+
+    :param kwargs: keyword arguments to pass to `dataclasses.field`
+
+    :return: A `dataclasses.Field` instance.
+    """
+    original_metadata = kwargs.get('metadata', {})
+    if not isinstance(original_metadata, Mapping):
+        raise TypeError('metadata must be a mapping')
+    metadata = dict(original_metadata)
+    metadata.setdefault('nicegui', {}).update(bindable=True)
+    kwargs.update(metadata=metadata)
+    return dataclasses.field(**kwargs)
+
+
+def bindable_dataclass(dcls: Type[T]) -> Type[T]:
+    """Transform dataclass to make its fields bindable properties.
+
+    Transformation only concerns attributes defined with `dataclass_bindable_field`.
+    This function intended to be used as a decorator.
+
+    :param dcls: The `dataclasses.dataclass` type to transform.
+
+    :return: The same dataclass type (transformed).
+    """
+    if not dataclasses.is_dataclass(dcls):
+        raise ValueError('Only dataclasses are supported')
+    for field in dataclasses.fields(dcls):
+        if 'nicegui' in field.metadata and field.metadata['nicegui'].get('bindable', False):
+            p = BindableProperty()
+            p.__set_name__(dcls, field.name)
+            setattr(dcls, field.name, p)
+    return dcls

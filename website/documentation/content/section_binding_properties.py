@@ -111,3 +111,26 @@ def bindable_properties():
     ui.slider(min=1, max=3).bind_value(demo, 'number')
     ui.toggle({1: 'A', 2: 'B', 3: 'C'}).bind_value(demo, 'number')
     ui.number(min=1, max=3).bind_value(demo, 'number')
+
+
+@doc.demo('Bindable dataclass fields', '''
+    Here we define `Demo` as a standard library `dataclasses.dataclass` type and make its field a `BindableProperty`.
+
+    To define a bindable field a `dataclass_bindable_field()` is used explicitly.
+    It accepts same arguments as `dataclasses.field()` and provides just the same functionality.
+
+    Then we use `bindable_dataclass` decorator to activate optimized bindings.
+''')
+def bindable_dataclass():
+    from dataclasses import dataclass
+    from nicegui import binding
+
+    @binding.bindable_dataclass
+    @dataclass
+    class Demo:
+        number: int = binding.dataclass_bindable_field(default=1)
+
+    demo = Demo()
+    ui.slider(min=1, max=3).bind_value(demo, 'number')
+    ui.toggle({1: 'A', 2: 'B', 3: 'C'}).bind_value(demo, 'number')
+    ui.number(min=1, max=3).bind_value(demo, 'number')

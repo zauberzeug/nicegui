@@ -1,8 +1,9 @@
+import dataclasses
 from typing import Dict, Optional, Tuple
 
 from selenium.webdriver.common.keys import Keys
 
-from nicegui import ui
+from nicegui import binding, ui
 from nicegui.testing import Screen
 
 
@@ -105,3 +106,24 @@ def test_missing_target_attribute(screen: Screen):
 
     screen.open('/')
     screen.should_contain("text='Hello'")
+
+
+def test_bindable_dataclass(screen: Screen):
+    @binding.bindable_dataclass
+    @dataclasses.dataclass
+    class TestClass:
+        not_bindable: str = 'not_bindable_text'
+        bindable: str = binding.dataclass_bindable_field(default='bindable_text')  # noqa: RUF009
+
+    instance = TestClass()
+
+    ui.label().bind_text_from(instance, 'not_bindable')
+    ui.label().bind_text_from(instance, 'bindable')
+
+    screen.open('/')
+    screen.should_contain('not_bindable_text')
+    screen.should_contain('bindable_text')
+
+    assert len(binding.bindings) == 2
+    assert len(binding.active_links) == 1
+    assert binding.active_links[0][1] == 'not_bindable'
