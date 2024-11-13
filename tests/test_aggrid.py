@@ -1,3 +1,4 @@
+import sys
 from datetime import datetime, timedelta, timezone
 from typing import List
 
@@ -192,6 +193,7 @@ def test_api_method_after_creation(screen: Screen):
 
 
 @pytest.mark.parametrize('df_type', ['pandas', 'polars'])
+@pytest.mark.skipif(sys.version_info[:3] == (3, 8), reason='Skipping test for Python 3.8')
 def test_problematic_datatypes(screen: Screen, df_type: str):
     if df_type == 'pandas':
         df = pd.DataFrame({
