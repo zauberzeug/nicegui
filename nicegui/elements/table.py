@@ -266,11 +266,6 @@ class Table(FilterElement, component='table.js'):
 
     @staticmethod
     def _polars_df_to_rows_and_columns(df: 'pl.DataFrame') -> Tuple[List[Dict], List[Dict]]:
-        import polars as pl  # pylint: disable=import-outside-toplevel
-
-        df = df.with_columns(pl.exclude(pl.String).cast(str))
-        df = df.fill_null('')  # fill null values with empty strings
-
         return df.to_dicts(), [{'name': col, 'label': col, 'field': col} for col in df.columns]
 
     @property

@@ -107,11 +107,6 @@ class AgGrid(Element,
         :param options: dictionary of additional AG Grid options
         :return: AG Grid element
         """
-        import polars as pl  # pylint: disable=import-outside-toplevel
-
-        df = df.with_columns(pl.exclude(pl.String).cast(str))
-        df = df.fill_null('')  # fill null values with empty strings
-
         return cls({
             'columnDefs': [{'field': str(col)} for col in df.columns],
             'rowData': df.to_dicts(),
