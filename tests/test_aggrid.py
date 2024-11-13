@@ -160,9 +160,10 @@ def test_replace_aggrid(screen: Screen):
 def test_create_from_dataframe(screen: Screen, df_type: str):
     if df_type == 'pandas':
         df = pd.DataFrame({'name': ['Alice', 'Bob'], 'age': [18, 21], 42: 'answer'})
+        ui.aggrid.from_pandas(df)
     else:
-        df = pl.DataFrame({'name': ['Alice', 'Bob'], 'age': [18, 21], 42: 'answer'})
-    ui.aggrid.from_pandas(df)
+        df = pl.DataFrame({'name': ['Alice', 'Bob'], 'age': [18, 21], '42': 'answer'})
+        ui.aggrid.from_polars(df)
 
     screen.open('/')
     screen.should_contain('Alice')
