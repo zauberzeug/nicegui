@@ -53,7 +53,8 @@ def wait_for_connected_demo():
 
 
 @doc.demo('Multicasting', '''
-    If you want to send updates to pages with a specific path, you can use the `app.clients` iterator.
+    The content on a page is private to the client (the browser tab) and has its own local element context.
+    If you want to send updates to _all_ clients of a specific page, you can use the `app.clients` iterator.
     This is useful for modifying UI elements from a background process or from other pages.
 ''')
 def multicasting():
@@ -69,6 +70,7 @@ def multicasting():
                 ui.notify(message)
 
     ui.button('Send message', on_click=lambda: send('Hi!'))
+    ui.link('Open receiver', '/multicast_receiver', new_tab=True)
 
 
 @doc.demo('Modularize with APIRouter', '''
