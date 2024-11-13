@@ -93,6 +93,7 @@ module = [
     "matplotlib.*",
     "nicegui_highcharts",
     "plotly.*",
+    "polars.*",
     "pyecharts.*",
     "sass",
     "socketio.*",
