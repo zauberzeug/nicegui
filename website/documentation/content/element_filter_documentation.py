@@ -38,27 +38,6 @@ def text_element() -> None:
     ui.label(', '.join(b.text for b in ElementFilter(kind=TextElement, local_scope=True)))
 
 
-@doc.demo('Multicasting', '''
-    You can use the `app.clients` iterator to apply the element filter to all clients of a specific page.
-''')
-def multicasting():
-    from nicegui import app
-    import time
-
-    @ui.page('/log')
-    def page():
-        ui.log()
-
-    def log_time():
-        for client in app.clients('/log'):
-            with client:
-                for log in ElementFilter(kind=ui.log):
-                    log.push(f'{time.strftime("%H:%M:%S")}')
-
-    ui.button('Log current time', on_click=log_time)
-    ui.link('Open log', '/log', new_tab=True)
-
-
 @doc.demo('Markers', '''
     Markers are a simple way to tag elements with a string which can be queried by an `ElementFilter`.
 ''')
@@ -79,6 +58,27 @@ def marker_demo() -> None:
     ElementFilter(marker='red', local_scope=True).classes('bg-red-200')
     ElementFilter(marker='strong', local_scope=True).classes('text-bold')
     ElementFilter(marker='red strong', local_scope=True).classes('bg-red-600 text-white')
+
+
+@doc.demo('Find elements on other pages', '''
+    You can use the `app.clients` iterator to apply the element filter to all clients of a specific page.
+''')
+def multicasting():
+    from nicegui import app
+    import time
+
+    @ui.page('/log')
+    def page():
+        ui.log()
+
+    def log_time():
+        for client in app.clients('/log'):
+            with client:
+                for log in ElementFilter(kind=ui.log):
+                    log.push(f'{time.strftime("%H:%M:%S")}')
+
+    ui.button('Log current time', on_click=log_time)
+    ui.link('Open log', '/log', new_tab=True)
 
 
 doc.reference(ElementFilter)
