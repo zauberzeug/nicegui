@@ -1,5 +1,6 @@
 from typing import Optional
 
+from .. import background_tasks, core, helpers
 from ..events import Handler, ValueChangeEventArguments
 from .mixins.value_element import ValueElement
 
@@ -19,6 +20,14 @@ class DarkMode(ValueElement, component='dark_mode.js'):
         :param on_change: Callback that is invoked when the value changes.
         """
         super().__init__(value=value, on_value_change=on_change)
+        background_tasks.create(self._check_for_issue_3753())
+
+    async def _check_for_issue_3753(self) -> None:
+        if self.client.page.resolve_dark() is None and core.app.config.tailwind:
+            helpers.warn_once(
+                '`ui.dark_mode` is not supported on pages with `dark=None` while running with `tailwind=True` (the default). '
+                'See https://github.com/zauberzeug/nicegui/issues/3753 for more information.'
+            )
 
     def enable(self) -> None:
         """Enable dark mode."""
