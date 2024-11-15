@@ -1,3 +1,4 @@
+# pylint: disable=C0116
 import inspect
 import warnings
 from multiprocessing import Queue
