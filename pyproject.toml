@@ -70,6 +70,11 @@ polars = [
     {version = "^1.8.0", python = "~3.8"},
     {version = "^1.12.0", python = ">=3.9,<3.14"}
 ]
+mypy = "^1.13.0"
+pylint = [
+    {version = "^3.1.0", python = "~3.8"},
+    {version = ">=3.3.1", python = ">=3.9,<3.13"}
+]
 
 [tool.poetry.scripts]
 nicegui-pack = "nicegui.scripts.pack:main"
@@ -89,6 +94,8 @@ asyncio_default_fixture_loop_scope = "function"
 
 [tool.mypy]
 python_version = "3.8"
+install_types = true
+check_untyped_defs = true
 
 [[tool.mypy.overrides]]
 module = [
@@ -136,4 +143,28 @@ ignore = [
 ]
 exclude = [
     "website/documentation/content/*",
+]
+
+[tool.pylint]
+disable = [
+    "C0103", # Invalid name (e.g., variable/function/class naming conventions)
+    "C0114", # Missing module docstring
+    "C0115", # Missing class docstring
+    "C0301", # Line too long (exceeds character limit)
+    "C0302", # Too many lines in module
+    "R0801", # Similar lines in files
+    "R0901", # Too many ancestors
+    "R0902", # Too many instance attributes
+    "R0903", # Too few public methods
+    "R0904", # Too many public methods
+    "R0911", # Too many return statements
+    "R0912", # Too many branches
+    "R0913", # Too many arguments
+    "R0914", # Too many local variables
+    "R0915", # Too many statements
+    "R1705", # Unnecessary "else" after "return"
+    "W0102", # Dangerous default value as argument
+    "W0718", # Catching too general exception
+    "W1203", # Use % formatting in logging functions
+    "W1514" # Using open without explicitly specifying an encoding
 ]
