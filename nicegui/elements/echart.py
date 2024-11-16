@@ -42,7 +42,7 @@ class EChart(Element,
         super().__init__()
         self._props['options'] = options
         self._props['enable_3d'] = enable_3d or any('3D' in key for key in options)
-        self._props['enable_svg'] = enable_svg
+        self._props['renderer'] = renderer
 
         if on_point_click:
             self.on_point_click(on_point_click)
