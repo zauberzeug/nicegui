@@ -22,7 +22,12 @@ class EChart(Element,
              dependencies=['lib/echarts/echarts.min.js', 'lib/echarts-gl/echarts-gl.min.js'],
              default_classes='nicegui-echart'):
 
-    def __init__(self, options: Dict, on_point_click: Optional[Handler[EChartPointClickEventArguments]] = None, *, enable_3d: bool = False, enable_svg: bool = False) -> None:
+    def __init__(self,
+                 options: Dict,
+                 on_point_click: Optional[Handler[EChartPointClickEventArguments]] = None, *,
+                 enable_3d: bool = False,
+                 renderer: Literal['canvas', 'svg'] = 'canvas',
+                 ) -> None:
         """Apache EChart
 
         An element to create a chart using `ECharts <https://echarts.apache.org/>`_.
