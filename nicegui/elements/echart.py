@@ -37,7 +37,7 @@ class EChart(Element,
         :param options: dictionary of EChart options
         :param on_click_point: callback that is invoked when a point is clicked
         :param enable_3d: enforce importing the echarts-gl library
-        :param enable_svg: enable svg rendering for this chart
+        :param renderer: renderer to use ("canvas" or "svg")
         """
         super().__init__()
         self._props['options'] = options
