@@ -9,12 +9,7 @@ export default {
       await import("echarts-gl");
     }
 
-    if (this.enable_svg) {
-      this.chart = echarts.init(this.$el, null, {renderer: 'svg'});
-    } else {
-      this.chart = echarts.init(this.$el);
-    }
-    
+    this.chart = echarts.init(this.$el, null, { renderer: this.renderer });
     this.chart.on("click", (e) => this.$emit("pointClick", e));
     for (const event of [
       "click",
