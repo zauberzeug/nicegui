@@ -90,6 +90,6 @@ export default {
   props: {
     options: Object,
     enable_3d: Boolean,
-    enable_svg: Boolean
+    renderer: String,
   },
 };
