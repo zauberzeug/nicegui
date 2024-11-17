@@ -36,6 +36,17 @@ class UserInteraction(Generic[T]):
         assert self.user.client
         with self.user.client:
             for element in self.elements:
+                if isinstance(element, ui.input) and event == 'keydown.tab':
+                    autocomplete_list = element.props.get('_autocomplete')
+                    typed_string = element.value
+
+                    for elem in autocomplete_list:
+                        if typed_string in elem:
+                            element.value = elem
+                            break
+
+                    return self
+
                 for listener in element._event_listeners.values():  # pylint: disable=protected-access
                     if listener.type != event:
                         continue
