@@ -1,4 +1,4 @@
-from typing import Callable, Dict, Optional
+from typing import Callable, Dict, Literal, Optional
 
 from typing_extensions import Self
 
