@@ -37,12 +37,9 @@ class UserInteraction(Generic[T]):
         with self.user.client:
             for element in self.elements:
                 if isinstance(element, ui.input) and event == 'keydown.tab':
-                    autocomplete_list = element.props.get('_autocomplete')
-                    typed_string = element.value
-
-                    for elem in autocomplete_list:
-                        if typed_string in elem:
-                            element.value = elem
+                    for option in element.props.get('_autocomplete'):
+                        if option.startswith(element.value):
+                            element.value = option
                             break
 
                     return self
