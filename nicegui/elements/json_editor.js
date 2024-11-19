@@ -42,8 +42,14 @@ export default {
     },
     add_validation(schema) {
       if (this.editor) {
-        const validator = createAjvValidator({ schema: schema, schemaDefinitions: {}, ajvOptions: {} });
-        this.editor.updateProps({ ...this.props, validator: validator });
+        try {
+          const validator = createAjvValidator({ schema: schema, schemaDefinitions: {}, ajvOptions: {} });
+          this.editor.updateProps({ ...this.props, validator: validator });
+          return true;
+        } catch (err) {
+          console.log("Failed to create JSONSchema Validator");
+          return false;
+        }
       }
     },
   },
