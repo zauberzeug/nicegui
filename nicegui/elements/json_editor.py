@@ -19,6 +19,7 @@ class JsonEditor(Element, component='json_editor.js', dependencies=['lib/vanilla
                  properties: Dict, *,
                  on_select: Optional[Handler[JsonEditorSelectEventArguments]] = None,
                  on_change: Optional[Handler[JsonEditorChangeEventArguments]] = None,
+                 add_validation: Optional[dict] = None,
                  ) -> None:
         """JSONEditor
 
@@ -38,6 +39,9 @@ class JsonEditor(Element, component='json_editor.js', dependencies=['lib/vanilla
 
         if on_change:
             self.on_change(on_change)
+
+        if add_validation:
+            self.add_validation(add_validation)
 
     def on_change(self, callback: Handler[JsonEditorChangeEventArguments]) -> Self:
         """Add a callback to be invoked when the content changes."""
