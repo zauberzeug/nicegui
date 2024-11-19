@@ -1,4 +1,4 @@
-import { JSONEditor } from "standalone";
+import { JSONEditor, createAjvValidator } from "standalone";
 
 export default {
   template: "<div></div>",
@@ -38,6 +38,12 @@ export default {
           args = args.map((arg) => new Function(`return (${arg})`)());
         }
         return runMethod(this.editor, name, args);
+      }
+    },
+    add_validation(schema) {
+      if (this.editor) {
+        const validator = createAjvValidator({ schema: schema, schemaDefinitions: {}, ajvOptions: {} });
+        this.editor.updateProps({ ...this.props, validator: validator });
       }
     },
   },

@@ -77,3 +77,12 @@ class JsonEditor(Element, component='json_editor.js', dependencies=['lib/vanilla
         :return: AwaitableResponse that can be awaited to get the result of the method call
         """
         return self.run_method('run_editor_method', name, *args, timeout=timeout)
+
+    def add_validation(self, schema: dict, timeout: float = 1) -> AwaitableResponse:
+        """Add JSONSchema validation to the JSONEditor Instance.
+
+        :param schema: JSONSchema dict
+        :param timeout: timeout in seconds (default: 1 second)
+
+        :return: Awaitable Response"""
+        return self.run_method('add_validation', schema, timeout=timeout)
