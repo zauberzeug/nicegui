@@ -22,11 +22,11 @@ from nicegui.server import Server
 
 
 class Screen:
-    DEFAULT_PORT = 3392
+    PORT = 3392
     IMPLICIT_WAIT = 4
     SCREENSHOT_DIR = Path('screenshots')
 
-    def __init__(self, selenium: webdriver.Chrome, caplog: pytest.LogCaptureFixture, port: int = DEFAULT_PORT) -> None:
+    def __init__(self, selenium: webdriver.Chrome, caplog: pytest.LogCaptureFixture, port: int = PORT) -> None:
         self.selenium = selenium
         self.caplog = caplog
         self.port = port
@@ -36,9 +36,8 @@ class Screen:
         app.on_connect(self.connected.set)
         self.url = f'http://localhost:{self.port}'
 
-    def start_server(self, **kwargs) -> None:
+    def start_server(self) -> None:
         """Start the webserver in a separate thread. This is the equivalent of `ui.run()` in a normal script."""
-        self.ui_run_kwargs.update(kwargs)
         self.server_thread = threading.Thread(target=ui.run, kwargs=self.ui_run_kwargs)
         self.server_thread.start()
 

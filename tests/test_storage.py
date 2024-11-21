@@ -88,7 +88,7 @@ async def test_access_user_storage_from_fastapi(screen: Screen):
     screen.ui_run_kwargs['storage_secret'] = 'just a test'
     screen.open('/')
     async with httpx.AsyncClient() as http_client:
-        response = await http_client.get(f'http://localhost:{Screen.DEFAULT_PORT}/api')
+        response = await http_client.get(f'http://localhost:{Screen.PORT}/api')
         assert response.status_code == 200
         assert response.text == '"OK"'
         await asyncio.sleep(0.5)  # wait for storage to be written

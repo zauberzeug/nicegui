@@ -29,7 +29,7 @@ def provide_media_files():
 def assert_video_file_streaming(path: str) -> None:
     with httpx.Client() as http_client:
         r = http_client.get(
-            path if 'http' in path else f'http://localhost:{Screen.DEFAULT_PORT}{path}',
+            path if 'http' in path else f'http://localhost:{Screen.PORT}{path}',
             headers={'Range': 'bytes=0-1000'},
         )
         assert r.status_code == 206
@@ -59,7 +59,7 @@ def test_get_from_static_files_dir(url_path: str, screen: Screen):
 
     screen.open('/')
     with httpx.Client() as http_client:
-        r = http_client.get(f'http://localhost:{Screen.DEFAULT_PORT}/static/examples/slideshow/slides/slide1.jpg')
+        r = http_client.get(f'http://localhost:{Screen.PORT}/static/examples/slideshow/slides/slide1.jpg')
         assert r.status_code == 200
         assert 'max-age=' in r.headers['Cache-Control']
 
@@ -69,7 +69,7 @@ def test_404_for_non_existing_static_file(screen: Screen):
 
     screen.open('/')
     with httpx.Client() as http_client:
-        r = http_client.get(f'http://localhost:{Screen.DEFAULT_PORT}/static/does_not_exist.jpg')
+        r = http_client.get(f'http://localhost:{Screen.PORT}/static/does_not_exist.jpg')
         screen.assert_py_logger('WARNING', re.compile('.*does_not_exist.jpg not found'))
         assert r.status_code == 404
         assert 'static/_nicegui' not in r.text, 'should use root_path, see https://github.com/zauberzeug/nicegui/issues/2570'
@@ -80,7 +80,7 @@ def test_adding_single_static_file(screen: Screen):
 
     screen.open('/')
     with httpx.Client() as http_client:
-        r = http_client.get(f'http://localhost:{Screen.DEFAULT_PORT}{url_path}')
+        r = http_client.get(f'http://localhost:{Screen.PORT}{url_path}')
         assert r.status_code == 200
         assert 'max-age=' in r.headers['Cache-Control']
 
@@ -111,12 +111,10 @@ def test_auto_serving_file_from_video_source(screen: Screen):
 def test_mimetypes_of_static_files(screen: Screen):
     screen.open('/')
 
-    response = requests.get(
-        f'http://localhost:{Screen.DEFAULT_PORT}/_nicegui/{__version__}/static/vue.global.js', timeout=5)
+    response = requests.get(f'http://localhost:{Screen.PORT}/_nicegui/{__version__}/static/vue.global.js', timeout=5)
     assert response.status_code == 200
     assert response.headers['Content-Type'].startswith('text/javascript')
 
-    response = requests.get(
-        f'http://localhost:{Screen.DEFAULT_PORT}/_nicegui/{__version__}/static/nicegui.css', timeout=5)
+    response = requests.get(f'http://localhost:{Screen.PORT}/_nicegui/{__version__}/static/nicegui.css', timeout=5)
     assert response.status_code == 200
     assert response.headers['Content-Type'].startswith('text/css')
