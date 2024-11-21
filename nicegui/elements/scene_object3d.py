@@ -207,13 +207,13 @@ class Object3D:
             return
         if isinstance(parent.parent, Object3D):
             self._move_into_parent(parent.parent)
-        M1 = [
+        M1: List[List[float]] = [
             [self.R[0][0], self.R[0][1], self.R[0][2], self.x],
             [self.R[1][0], self.R[1][1], self.R[1][2], self.y],
             [self.R[2][0], self.R[2][1], self.R[2][2], self.z],
             [0, 0, 0, 1],
         ]
-        M2_inv = [
+        M2_inv: List[List[float]] = [
             [parent.R[0][0], parent.R[1][0], parent.R[2][0],
              - parent.R[0][0] * parent.x
              - parent.R[1][0] * parent.y
@@ -228,7 +228,7 @@ class Object3D:
              - parent.R[2][2] * parent.z],
             [0, 0, 0, 1],
         ]
-        M = [
+        M: List[List[float]] = [
             [
                 M2_inv[0][0] * M1[0][0] + M2_inv[0][1] * M1[1][0] + M2_inv[0][2] * M1[2][0] + M2_inv[0][3] * M1[3][0],
                 M2_inv[0][0] * M1[0][1] + M2_inv[0][1] * M1[1][1] + M2_inv[0][2] * M1[2][1] + M2_inv[0][3] * M1[3][1],
@@ -271,19 +271,19 @@ class Object3D:
     def _move_out_of_parent(self, parent: Union[Object3D, SceneObject]) -> None:
         if not isinstance(parent, Object3D):
             return
-        M1 = [
+        M1: List[List[float]] = [
             [self.R[0][0], self.R[0][1], self.R[0][2], self.x],
             [self.R[1][0], self.R[1][1], self.R[1][2], self.y],
             [self.R[2][0], self.R[2][1], self.R[2][2], self.z],
             [0, 0, 0, 1],
         ]
-        M2 = [
+        M2: List[List[float]] = [
             [parent.R[0][0], parent.R[0][1], parent.R[0][2], parent.x],
             [parent.R[1][0], parent.R[1][1], parent.R[1][2], parent.y],
             [parent.R[2][0], parent.R[2][1], parent.R[2][2], parent.z],
             [0, 0, 0, 1],
         ]
-        M = [
+        M: List[List[float]] = [
             [
                 M2[0][0] * M1[0][0] + M2[0][1] * M1[1][0] + M2[0][2] * M1[2][0] + M2[0][3] * M1[3][0],
                 M2[0][0] * M1[0][1] + M2[0][1] * M1[1][1] + M2[0][2] * M1[2][1] + M2[0][3] * M1[3][1],
