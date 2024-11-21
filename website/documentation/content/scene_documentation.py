@@ -268,10 +268,10 @@ def custom_composed_objects() -> None:
         CoordinateSystem('custom frame').move(-2, -2, 1).rotate(0.1, 0.2, 0.3)
 
 
-@doc.demo('Ungrouping objects', '''
-    To remove an object from its parent group objects, you can use the `ungroup` method.
+@doc.demo('Attaching/detaching objects', '''
+    To add or remove objects from groups you can use the `attach` and `detach` methods.
 ''')
-def ungroup() -> None:
+def attach_detach() -> None:
     import math
     import time
 
@@ -282,7 +282,8 @@ def ungroup() -> None:
             c = scene.sphere().move(2)
 
     ui.timer(0.1, lambda: group.move(y=math.sin(time.time())))
-    ui.button('Ungroup', on_click=a.ungroup)
+    ui.button('Detach', on_click=a.detach)
+    ui.button('Attach', on_click=lambda: a.attach(group))
 
 
 doc.reference(ui.scene)

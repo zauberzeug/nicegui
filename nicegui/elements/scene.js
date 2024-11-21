@@ -413,7 +413,13 @@ export default {
       const geometry = this.objects.get(object_id).geometry;
       set_point_cloud_data(position, color, geometry);
     },
-    ungroup(object_id) {
+    attach(object_id, parent_id) {
+      if (!this.objects.has(object_id)) return;
+      const object = this.objects.get(object_id);
+      const parent = this.objects.get(parent_id);
+      parent.add(object);
+    },
+    detach(object_id) {
       if (!this.objects.has(object_id)) return;
       const object = this.objects.get(object_id);
       object.removeFromParent();

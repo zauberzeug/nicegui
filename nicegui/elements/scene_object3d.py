@@ -196,10 +196,15 @@ class Object3D:
             self._draggable()
         return self
 
-    def ungroup(self) -> None:
+    def attach(self, parent: Object3D) -> None:
+        """Attach the object to a parent object."""
+        self.parent = parent
+        self.scene.run_method('attach', self.id, parent.id)
+
+    def detach(self) -> None:
         """Remove the object from its parent group object."""
         self.parent = self.scene.stack[0]
-        self.scene.run_method('ungroup', self.id)
+        self.scene.run_method('detach', self.id)
 
     @property
     def children(self) -> List[Object3D]:
