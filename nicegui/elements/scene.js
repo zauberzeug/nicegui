@@ -413,6 +413,12 @@ export default {
       const geometry = this.objects.get(object_id).geometry;
       set_point_cloud_data(position, color, geometry);
     },
+    ungroup(object_id) {
+      if (!this.objects.has(object_id)) return;
+      const object = this.objects.get(object_id);
+      object.removeFromParent();
+      this.scene.add(object);
+    },
     move_camera(x, y, z, look_at_x, look_at_y, look_at_z, up_x, up_y, up_z, duration) {
       if (this.camera_tween) this.camera_tween.stop();
       const camera_up_changed = up_x !== null || up_y !== null || up_z !== null;

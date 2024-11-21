@@ -196,6 +196,11 @@ class Object3D:
             self._draggable()
         return self
 
+    def ungroup(self) -> None:
+        """Remove the object from its parent group object."""
+        self.parent = self.scene.stack[0]
+        self.scene.run_method('ungroup', self.id)
+
     @property
     def children(self) -> List[Object3D]:
         """List of children of the object."""

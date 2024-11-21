@@ -268,4 +268,21 @@ def custom_composed_objects() -> None:
         CoordinateSystem('custom frame').move(-2, -2, 1).rotate(0.1, 0.2, 0.3)
 
 
+@doc.demo('Ungrouping objects', '''
+    To remove an object from its parent group objects, you can use the `ungroup` method.
+''')
+def ungroup() -> None:
+    import math
+    import time
+
+    with ui.scene().classes('w-full h-64') as scene:
+        with scene.group() as group:
+            a = scene.sphere().move(-2)
+            b = scene.sphere().move(0)
+            c = scene.sphere().move(2)
+
+    ui.timer(0.1, lambda: group.move(y=math.sin(time.time())))
+    ui.button('Ungroup', on_click=a.ungroup)
+
+
 doc.reference(ui.scene)
