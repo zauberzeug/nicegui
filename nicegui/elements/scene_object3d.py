@@ -199,12 +199,125 @@ class Object3D:
     def attach(self, parent: Object3D) -> None:
         """Attach the object to a parent object."""
         self.parent = parent
+        self._move_into_parent(parent)
         self.scene.run_method('attach', self.id, parent.id)
+
+    def _move_into_parent(self, parent: Union[Object3D, SceneObject]) -> None:
+        if not isinstance(parent, Object3D):
+            return
+        if isinstance(parent.parent, Object3D):
+            self._move_into_parent(parent.parent)
+        M1 = [
+            [self.R[0][0], self.R[0][1], self.R[0][2], self.x],
+            [self.R[1][0], self.R[1][1], self.R[1][2], self.y],
+            [self.R[2][0], self.R[2][1], self.R[2][2], self.z],
+            [0, 0, 0, 1],
+        ]
+        M2_inv = [
+            [parent.R[0][0], parent.R[1][0], parent.R[2][0],
+             - parent.R[0][0] * parent.x
+             - parent.R[1][0] * parent.y
+             - parent.R[2][0] * parent.z],
+            [parent.R[0][1], parent.R[1][1], parent.R[2][1],
+             - parent.R[0][1] * parent.x
+             - parent.R[1][1] * parent.y
+             - parent.R[2][1] * parent.z],
+            [parent.R[0][2], parent.R[1][2], parent.R[2][2],
+             - parent.R[0][2] * parent.x
+             - parent.R[1][2] * parent.y
+             - parent.R[2][2] * parent.z],
+            [0, 0, 0, 1],
+        ]
+        M = [
+            [
+                M2_inv[0][0] * M1[0][0] + M2_inv[0][1] * M1[1][0] + M2_inv[0][2] * M1[2][0] + M2_inv[0][3] * M1[3][0],
+                M2_inv[0][0] * M1[0][1] + M2_inv[0][1] * M1[1][1] + M2_inv[0][2] * M1[2][1] + M2_inv[0][3] * M1[3][1],
+                M2_inv[0][0] * M1[0][2] + M2_inv[0][1] * M1[1][2] + M2_inv[0][2] * M1[2][2] + M2_inv[0][3] * M1[3][2],
+                M2_inv[0][0] * M1[0][3] + M2_inv[0][1] * M1[1][3] + M2_inv[0][2] * M1[2][3] + M2_inv[0][3] * M1[3][3],
+            ],
+            [
+                M2_inv[1][0] * M1[0][0] + M2_inv[1][1] * M1[1][0] + M2_inv[1][2] * M1[2][0] + M2_inv[1][3] * M1[3][0],
+                M2_inv[1][0] * M1[0][1] + M2_inv[1][1] * M1[1][1] + M2_inv[1][2] * M1[2][1] + M2_inv[1][3] * M1[3][1],
+                M2_inv[1][0] * M1[0][2] + M2_inv[1][1] * M1[1][2] + M2_inv[1][2] * M1[2][2] + M2_inv[1][3] * M1[3][2],
+                M2_inv[1][0] * M1[0][3] + M2_inv[1][1] * M1[1][3] + M2_inv[1][2] * M1[2][3] + M2_inv[1][3] * M1[3][3],
+            ],
+            [
+                M2_inv[2][0] * M1[0][0] + M2_inv[2][1] * M1[1][0] + M2_inv[2][2] * M1[2][0] + M2_inv[2][3] * M1[3][0],
+                M2_inv[2][0] * M1[0][1] + M2_inv[2][1] * M1[1][1] + M2_inv[2][2] * M1[2][1] + M2_inv[2][3] * M1[3][1],
+                M2_inv[2][0] * M1[0][2] + M2_inv[2][1] * M1[1][2] + M2_inv[2][2] * M1[2][2] + M2_inv[2][3] * M1[3][2],
+                M2_inv[2][0] * M1[0][3] + M2_inv[2][1] * M1[1][3] + M2_inv[2][2] * M1[2][3] + M2_inv[2][3] * M1[3][3],
+            ],
+            [
+                0, 0, 0, 1,
+            ],
+        ]
+        self.x = M[0][3]
+        self.y = M[1][3]
+        self.z = M[2][3]
+        self.R = [
+            [M[0][0], M[0][1], M[0][2]],
+            [M[1][0], M[1][1], M[1][2]],
+            [M[2][0], M[2][1], M[2][2]],
+        ]
+        self._move()
+        self._rotate()
 
     def detach(self) -> None:
         """Remove the object from its parent group object."""
+        self._move_out_of_parent(self.parent)
         self.parent = self.scene.stack[0]
         self.scene.run_method('detach', self.id)
+
+    def _move_out_of_parent(self, parent: Union[Object3D, SceneObject]) -> None:
+        if not isinstance(parent, Object3D):
+            return
+        M1 = [
+            [self.R[0][0], self.R[0][1], self.R[0][2], self.x],
+            [self.R[1][0], self.R[1][1], self.R[1][2], self.y],
+            [self.R[2][0], self.R[2][1], self.R[2][2], self.z],
+            [0, 0, 0, 1],
+        ]
+        M2 = [
+            [parent.R[0][0], parent.R[0][1], parent.R[0][2], parent.x],
+            [parent.R[1][0], parent.R[1][1], parent.R[1][2], parent.y],
+            [parent.R[2][0], parent.R[2][1], parent.R[2][2], parent.z],
+            [0, 0, 0, 1],
+        ]
+        M = [
+            [
+                M2[0][0] * M1[0][0] + M2[0][1] * M1[1][0] + M2[0][2] * M1[2][0] + M2[0][3] * M1[3][0],
+                M2[0][0] * M1[0][1] + M2[0][1] * M1[1][1] + M2[0][2] * M1[2][1] + M2[0][3] * M1[3][1],
+                M2[0][0] * M1[0][2] + M2[0][1] * M1[1][2] + M2[0][2] * M1[2][2] + M2[0][3] * M1[3][2],
+                M2[0][0] * M1[0][3] + M2[0][1] * M1[1][3] + M2[0][2] * M1[2][3] + M2[0][3] * M1[3][3],
+            ],
+            [
+                M2[1][0] * M1[0][0] + M2[1][1] * M1[1][0] + M2[1][2] * M1[2][0] + M2[1][3] * M1[3][0],
+                M2[1][0] * M1[0][1] + M2[1][1] * M1[1][1] + M2[1][2] * M1[2][1] + M2[1][3] * M1[3][1],
+                M2[1][0] * M1[0][2] + M2[1][1] * M1[1][2] + M2[1][2] * M1[2][2] + M2[1][3] * M1[3][2],
+                M2[1][0] * M1[0][3] + M2[1][1] * M1[1][3] + M2[1][2] * M1[2][3] + M2[1][3] * M1[3][3],
+            ],
+            [
+                M2[2][0] * M1[0][0] + M2[2][1] * M1[1][0] + M2[2][2] * M1[2][0] + M2[2][3] * M1[3][0],
+                M2[2][0] * M1[0][1] + M2[2][1] * M1[1][1] + M2[2][2] * M1[2][1] + M2[2][3] * M1[3][1],
+                M2[2][0] * M1[0][2] + M2[2][1] * M1[1][2] + M2[2][2] * M1[2][2] + M2[2][3] * M1[3][2],
+                M2[2][0] * M1[0][3] + M2[2][1] * M1[1][3] + M2[2][2] * M1[2][3] + M2[2][3] * M1[3][3],
+            ],
+            [
+                0, 0, 0, 1,
+            ],
+        ]
+        self.x = M[0][3]
+        self.y = M[1][3]
+        self.z = M[2][3]
+        self.R = [
+            [M[0][0], M[0][1], M[0][2]],
+            [M[1][0], M[1][1], M[1][2]],
+            [M[2][0], M[2][1], M[2][2]],
+        ]
+        if isinstance(parent.parent, Object3D):
+            self._move_out_of_parent(parent.parent)
+        self._move()
+        self._rotate()
 
     @property
     def children(self) -> List[Object3D]:
