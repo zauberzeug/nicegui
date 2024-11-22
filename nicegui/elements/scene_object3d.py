@@ -197,10 +197,18 @@ class Object3D:
         return self
 
     def attach(self, parent: Object3D) -> None:
-        """Attach the object to a parent object."""
+        """Attach the object to a parent object.
+
+        The position and rotation of the object are preserved so that the object does not move in space.
+
+        But note that scaling is not preserved.
+        If either the parent or the object itself is scaled, the object shape and position can change.
+        """
+        if self.parent == parent:
+            return
         self.parent = parent
         self._move_into_parent(parent)
-        self.scene.run_method('attach', self.id, parent.id)
+        self.scene.run_method('attach', self.id, parent.id, self.x, self.y, self.z, self.R)
 
     def _move_into_parent(self, parent: Union[Object3D, SceneObject]) -> None:
         if not isinstance(parent, Object3D):
@@ -259,14 +267,20 @@ class Object3D:
             [M[1][0], M[1][1], M[1][2]],
             [M[2][0], M[2][1], M[2][2]],
         ]
-        self._move()
-        self._rotate()
 
     def detach(self) -> None:
-        """Remove the object from its parent group object."""
+        """Remove the object from its parent group object.
+
+        The position and rotation of the object are preserved so that the object does not move in space.
+
+        But note that scaling is not preserved.
+        If either the parent or the object itself is scaled, the object shape and position can change.
+        """
+        if self.parent == self.scene.stack[0]:
+            return
         self._move_out_of_parent(self.parent)
         self.parent = self.scene.stack[0]
-        self.scene.run_method('detach', self.id)
+        self.scene.run_method('detach', self.id, self.x, self.y, self.z, self.R)
 
     def _move_out_of_parent(self, parent: Union[Object3D, SceneObject]) -> None:
         if not isinstance(parent, Object3D):
@@ -316,8 +330,6 @@ class Object3D:
         ]
         if isinstance(parent.parent, Object3D):
             self._move_out_of_parent(parent.parent)
-        self._move()
-        self._rotate()
 
     @property
     def children(self) -> List[Object3D]:
