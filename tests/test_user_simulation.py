@@ -410,3 +410,12 @@ async def test_validation(user: User) -> None:
     await user.should_not_see('Not a number')
     user.find(ui.input).type('some invalid entry')
     await user.should_see('Not a number')
+
+
+async def test_trigger_autocomplete(user: User) -> None:
+    ui.input(label='fruit', autocomplete=['apple', 'banana', 'cherry'])
+
+    await user.open('/')
+    await user.should_not_see('apple')
+    user.find('fruit').type('a').trigger('keydown.tab')
+    await user.should_see('apple')
