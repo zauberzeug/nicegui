@@ -1,9 +1,9 @@
-from typing import Any, Callable, Dict, List, Optional, Union
+from typing import Any, List, Optional, Union
 
 from ..events import Handler, ValueChangeEventArguments
 from .icon import Icon
 from .mixins.disableable_element import DisableableElement
-from .mixins.validation_element import ValidationElement
+from .mixins.validation_element import ValidationDict, ValidationElement, ValidationFunction
 
 
 class Input(ValidationElement, DisableableElement, component='input.js'):
@@ -18,7 +18,7 @@ class Input(ValidationElement, DisableableElement, component='input.js'):
                  password_toggle_button: bool = False,
                  on_change: Optional[Handler[ValueChangeEventArguments]] = None,
                  autocomplete: Optional[List[str]] = None,
-                 validation: Optional[Union[Callable[..., Optional[str]], Dict[str, Callable[..., bool]]]] = None,
+                 validation: Optional[Union[ValidationFunction, ValidationDict]] = None,
                  ) -> None:
         """Text Input
 
