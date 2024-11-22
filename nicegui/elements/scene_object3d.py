@@ -204,8 +204,7 @@ class Object3D:
         But note that scaling is not preserved.
         If either the parent or the object itself is scaled, the object shape and position can change.
         """
-        if self.parent == parent:
-            return
+        self.detach()
         self.parent = parent
         self._move_into_parent(parent)
         self.scene.run_method('attach', self.id, parent.id, self.x, self.y, self.z, self.R)
@@ -276,8 +275,6 @@ class Object3D:
         But note that scaling is not preserved.
         If either the parent or the object itself is scaled, the object shape and position can change.
         """
-        if self.parent == self.scene.stack[0]:
-            return
         self._move_out_of_parent(self.parent)
         self.parent = self.scene.stack[0]
         self.scene.run_method('detach', self.id, self.x, self.y, self.z, self.R)
