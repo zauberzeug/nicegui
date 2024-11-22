@@ -2,8 +2,7 @@ from typing import Any, Awaitable, Callable, Dict, Optional, Union
 
 from typing_extensions import Self
 
-from ... import background_tasks
-from ...helpers import is_coroutine_function
+from ... import background_tasks, helpers
 from .value_element import ValueElement
 
 ValidationFunction = Callable[[Any], Union[Optional[str], Awaitable[Optional[str]]]]
@@ -55,16 +54,20 @@ class ValidationElement(ValueElement):
     def validate(self, *, return_result: bool = True) -> bool:
         """Validate the current value and set the error message if necessary.
 
-        :return: True if the value is valid, False otherwise
+        For async validation functions, `return_result` must be set to ``False`` and the return value will be ``True``,
+        independently of the validation result which is evaluated in the background.
+
+        :param return_result: whether to return the result of the validation (default: True)
+        :return: whether the validation was successful (always ``True`` for async validation functions)
         """
-        if is_coroutine_function(self._validation):
+        if helpers.is_coroutine_function(self._validation):
             async def await_error():
                 assert callable(self._validation)
                 result = self._validation(self.value)
                 assert isinstance(result, Awaitable)
                 self.error = await result
             if return_result:
-                raise NotImplementedError('The validate method cannot return results for async validation functions')
+                raise NotImplementedError('The validate method cannot return results for async validation functions.')
             background_tasks.create(await_error())
             return True
 
