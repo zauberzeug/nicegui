@@ -116,6 +116,7 @@ If you would like to support this project and have your avatar or company logo a
   <a href="https://github.com/sereneturtlefox"><img src="https://github.com/sereneturtlefox.png" width="50px" alt="None" /></a>
   <a href="https://github.com/daviborges666"><img src="https://github.com/daviborges666.png" width="50px" alt="Davi Borges" /></a>
   <a href="https://github.com/whoulden"><img src="https://github.com/whoulden.png" width="50px" alt="Wayne Houlden" /></a>
+  <a href="https://github.com/digiquip"><img src="https://github.com/digiquip.png" width="50px" alt="DigiQuip AS" /></a>
 </p>
 <!-- SPONSORS -->
 
