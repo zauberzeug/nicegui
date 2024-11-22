@@ -54,10 +54,10 @@ class ValidationElement(ValueElement):
     def validate(self, *, return_result: bool = True) -> bool:
         """Validate the current value and set the error message if necessary.
 
-        For async validation functions, `return_result` must be set to ``False`` and the return value will be ``True``,
+        For async validation functions, ``return_result`` must be set to ``False`` and the return value will be ``True``,
         independently of the validation result which is evaluated in the background.
 
-        :param return_result: whether to return the result of the validation (default: True)
+        :param return_result: whether to return the result of the validation (default: ``True``)
         :return: whether the validation was successful (always ``True`` for async validation functions)
         """
         if helpers.is_coroutine_function(self._validation):
