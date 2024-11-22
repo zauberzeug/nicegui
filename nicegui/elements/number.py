@@ -1,8 +1,8 @@
-from typing import Any, Callable, Dict, Optional, Union
+from typing import Any, Optional, Union
 
 from ..events import GenericEventArguments, Handler, ValueChangeEventArguments
 from .mixins.disableable_element import DisableableElement
-from .mixins.validation_element import ValidationElement
+from .mixins.validation_element import ValidationDict, ValidationElement, ValidationFunction
 
 
 class Number(ValidationElement, DisableableElement):
@@ -20,7 +20,7 @@ class Number(ValidationElement, DisableableElement):
                  suffix: Optional[str] = None,
                  format: Optional[str] = None,  # pylint: disable=redefined-builtin
                  on_change: Optional[Handler[ValueChangeEventArguments]] = None,
-                 validation: Optional[Union[Callable[..., Optional[str]], Dict[str, Callable[..., bool]]]] = None,
+                 validation: Optional[Union[ValidationFunction, ValidationDict]] = None,
                  ) -> None:
         """Number Input
 

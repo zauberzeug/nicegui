@@ -6,13 +6,13 @@ from ... import background_tasks
 from ...helpers import is_coroutine_function
 from .value_element import ValueElement
 
+ValidationFunction = Callable[[Any], Union[Optional[str], Awaitable[Optional[str]]]]
+ValidationDict = Dict[str, Callable[[Any], bool]]
+
 
 class ValidationElement(ValueElement):
 
-    def __init__(self, validation: Optional[Union[
-            Callable[..., Union[Optional[str], Awaitable[Optional[str]]]],
-            Dict[str, Callable[..., bool]],
-    ]], **kwargs: Any) -> None:
+    def __init__(self, validation: Optional[Union[ValidationFunction, ValidationDict]], **kwargs: Any) -> None:
         self._validation = validation
         self._auto_validation = True
         self._error: Optional[str] = None
@@ -20,18 +20,12 @@ class ValidationElement(ValueElement):
         self._props['error'] = None if validation is None else False  # NOTE: reserve bottom space for error message
 
     @property
-    def validation(self) -> Optional[Union[
-        Callable[..., Union[Optional[str], Awaitable[Optional[str]]]],
-        Dict[str, Callable[..., bool]],
-    ]]:
+    def validation(self) -> Optional[Union[ValidationFunction, ValidationDict]]:
         """The validation function or dictionary of validation functions."""
         return self._validation
 
     @validation.setter
-    def validation(self, validation: Optional[Union[
-        Callable[..., Union[Optional[str], Awaitable[Optional[str]]]],
-        Dict[str, Callable[..., bool]],
-    ]]) -> None:
+    def validation(self, validation: Optional[Union[ValidationFunction, ValidationDict]]) -> None:
         """Sets the validation function or dictionary of validation functions.
 
         :param validation: validation function or dictionary of validation functions (``None`` to disable validation)
