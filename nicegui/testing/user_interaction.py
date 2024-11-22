@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Generic, Set, Type, TypeVar, Union
+from typing import TYPE_CHECKING, Generic, List, Set, Type, TypeVar, Union
 
 from typing_extensions import Self
 
@@ -37,12 +37,11 @@ class UserInteraction(Generic[T]):
         with self.user.client:
             for element in self.elements:
                 if isinstance(element, ui.input) and event == 'keydown.tab':
-                    for option in element.props.get('_autocomplete'):
+                    autocomplete: List[str] = element.props['_autocomplete']
+                    for option in autocomplete:
                         if option.startswith(element.value):
                             element.value = option
                             break
-
-                    return self
 
                 for listener in element._event_listeners.values():  # pylint: disable=protected-access
                     if listener.type != event:

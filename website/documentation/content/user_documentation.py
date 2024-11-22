@@ -39,34 +39,6 @@ def user_fixture():
     ''').classes('bold-links arrow-links')
 
 
-doc.text('Trigger Events', '''
-    The `UserInteraction` object returned by `user.find(...)` provides methods to trigger events on the found elements.
-    This applies for not only for click or pushing "Enter" events, but also for other keyboard actions.
-    For example, it is not sufficient to just type text into an input field for the autocomplete to work.
-    Instead, you need to trigger a `keydown` event with the `keydown.tab` key.
-''')
-
-
-@doc.ui
-def trigger_events():
-    with python_window(classes='w-[500px]', title='trigger autocomplete'):
-        ui.markdown('''
-            ```python
-            options = ['AutoComplete', 'NiceGUI', 'Awesome']
-            ui.input(
-                label='Text',
-                placeholder='start typing',
-                autocomplete=options
-            )
-
-            await user.open('/')
-            await user.should_not_see('AutoComplete')
-            user.find('Text').type('Auto').trigger('keydown.tab')
-            await user.should_see('AutoComplete')
-            ```
-        ''')
-
-
 @doc.part('Async execution')
 def async_execution():
     ui.markdown('''
@@ -180,6 +152,32 @@ def upload_table():
                     {'name': 'Alice', 'age': '30'},
                     {'name': 'Bob', 'age': '28'},
                 ]
+                ```
+            ''')
+
+
+doc.text('Autocomplete', '''
+    The `UserInteraction` object returned by `user.find(...)` provides methods to trigger events on the found elements.
+    This demo shows how to trigger a "keydown.tab" event to autocomplete an input field.
+''')
+
+
+@doc.ui
+def trigger_events():
+    with ui.row().classes('gap-4 items-stretch'):
+        with python_window(classes='w-[500px]', title='some UI code'):
+            ui.markdown('''
+                ```python
+                fruits = ['apple', 'banana', 'cherry']
+                ui.input(label='fruit', autocomplete=fruits)
+                ```
+            ''')
+        with python_window(classes='w-[500px]', title='user assertions'):
+            ui.markdown('''
+                ```python
+                await user.open('/')
+                user.find('fruit').type('a').trigger('keydown.tab')
+                await user.should_see('apple')
                 ```
             ''')
 
