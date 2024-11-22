@@ -268,4 +268,25 @@ def custom_composed_objects() -> None:
         CoordinateSystem('custom frame').move(-2, -2, 1).rotate(0.1, 0.2, 0.3)
 
 
+@doc.demo('Attaching/detaching objects', '''
+    To add or remove objects from groups you can use the `attach` and `detach` methods.
+    The position and rotation of the object are preserved so that the object does not move in space.
+    But note that scaling is not preserved.
+    If either the parent or the object itself is scaled, the object shape and position can change.
+''')
+def attach_detach() -> None:
+    import math
+    import time
+
+    with ui.scene().classes('w-full h-64') as scene:
+        with scene.group() as group:
+            a = scene.box().move(-2)
+            b = scene.box().move(0)
+            c = scene.box().move(2)
+
+    ui.timer(0.1, lambda: group.move(y=math.sin(time.time())).rotate(0, 0, time.time()))
+    ui.button('Detach', on_click=a.detach)
+    ui.button('Attach', on_click=lambda: a.attach(group))
+
+
 doc.reference(ui.scene)

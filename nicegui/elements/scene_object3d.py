@@ -196,6 +196,138 @@ class Object3D:
             self._draggable()
         return self
 
+    def attach(self, parent: Object3D) -> None:
+        """Attach the object to a parent object.
+
+        The position and rotation of the object are preserved so that the object does not move in space.
+
+        But note that scaling is not preserved.
+        If either the parent or the object itself is scaled, the object shape and position can change.
+        """
+        self.detach()
+        self.parent = parent
+        self._move_into_parent(parent)
+        self.scene.run_method('attach', self.id, parent.id, self.x, self.y, self.z, self.R)
+
+    def _move_into_parent(self, parent: Union[Object3D, SceneObject]) -> None:
+        if not isinstance(parent, Object3D):
+            return
+        if isinstance(parent.parent, Object3D):
+            self._move_into_parent(parent.parent)
+        M1: List[List[float]] = [
+            [self.R[0][0], self.R[0][1], self.R[0][2], self.x],
+            [self.R[1][0], self.R[1][1], self.R[1][2], self.y],
+            [self.R[2][0], self.R[2][1], self.R[2][2], self.z],
+            [0, 0, 0, 1],
+        ]
+        M2_inv: List[List[float]] = [
+            [parent.R[0][0], parent.R[1][0], parent.R[2][0],
+             - parent.R[0][0] * parent.x
+             - parent.R[1][0] * parent.y
+             - parent.R[2][0] * parent.z],
+            [parent.R[0][1], parent.R[1][1], parent.R[2][1],
+             - parent.R[0][1] * parent.x
+             - parent.R[1][1] * parent.y
+             - parent.R[2][1] * parent.z],
+            [parent.R[0][2], parent.R[1][2], parent.R[2][2],
+             - parent.R[0][2] * parent.x
+             - parent.R[1][2] * parent.y
+             - parent.R[2][2] * parent.z],
+            [0, 0, 0, 1],
+        ]
+        M: List[List[float]] = [
+            [
+                M2_inv[0][0] * M1[0][0] + M2_inv[0][1] * M1[1][0] + M2_inv[0][2] * M1[2][0],
+                M2_inv[0][0] * M1[0][1] + M2_inv[0][1] * M1[1][1] + M2_inv[0][2] * M1[2][1],
+                M2_inv[0][0] * M1[0][2] + M2_inv[0][1] * M1[1][2] + M2_inv[0][2] * M1[2][2],
+                M2_inv[0][0] * M1[0][3] + M2_inv[0][1] * M1[1][3] + M2_inv[0][2] * M1[2][3] + M2_inv[0][3],
+            ],
+            [
+                M2_inv[1][0] * M1[0][0] + M2_inv[1][1] * M1[1][0] + M2_inv[1][2] * M1[2][0],
+                M2_inv[1][0] * M1[0][1] + M2_inv[1][1] * M1[1][1] + M2_inv[1][2] * M1[2][1],
+                M2_inv[1][0] * M1[0][2] + M2_inv[1][1] * M1[1][2] + M2_inv[1][2] * M1[2][2],
+                M2_inv[1][0] * M1[0][3] + M2_inv[1][1] * M1[1][3] + M2_inv[1][2] * M1[2][3] + M2_inv[1][3],
+            ],
+            [
+                M2_inv[2][0] * M1[0][0] + M2_inv[2][1] * M1[1][0] + M2_inv[2][2] * M1[2][0],
+                M2_inv[2][0] * M1[0][1] + M2_inv[2][1] * M1[1][1] + M2_inv[2][2] * M1[2][1],
+                M2_inv[2][0] * M1[0][2] + M2_inv[2][1] * M1[1][2] + M2_inv[2][2] * M1[2][2],
+                M2_inv[2][0] * M1[0][3] + M2_inv[2][1] * M1[1][3] + M2_inv[2][2] * M1[2][3] + M2_inv[2][3],
+            ],
+            [
+                0, 0, 0, 1,
+            ],
+        ]
+        self.x = M[0][3]
+        self.y = M[1][3]
+        self.z = M[2][3]
+        self.R = [
+            [M[0][0], M[0][1], M[0][2]],
+            [M[1][0], M[1][1], M[1][2]],
+            [M[2][0], M[2][1], M[2][2]],
+        ]
+
+    def detach(self) -> None:
+        """Remove the object from its parent group object.
+
+        The position and rotation of the object are preserved so that the object does not move in space.
+
+        But note that scaling is not preserved.
+        If either the parent or the object itself is scaled, the object shape and position can change.
+        """
+        self._move_out_of_parent(self.parent)
+        self.parent = self.scene.stack[0]
+        self.scene.run_method('detach', self.id, self.x, self.y, self.z, self.R)
+
+    def _move_out_of_parent(self, parent: Union[Object3D, SceneObject]) -> None:
+        if not isinstance(parent, Object3D):
+            return
+        M1: List[List[float]] = [
+            [self.R[0][0], self.R[0][1], self.R[0][2], self.x],
+            [self.R[1][0], self.R[1][1], self.R[1][2], self.y],
+            [self.R[2][0], self.R[2][1], self.R[2][2], self.z],
+            [0, 0, 0, 1],
+        ]
+        M2: List[List[float]] = [
+            [parent.R[0][0], parent.R[0][1], parent.R[0][2], parent.x],
+            [parent.R[1][0], parent.R[1][1], parent.R[1][2], parent.y],
+            [parent.R[2][0], parent.R[2][1], parent.R[2][2], parent.z],
+            [0, 0, 0, 1],
+        ]
+        M: List[List[float]] = [
+            [
+                M2[0][0] * M1[0][0] + M2[0][1] * M1[1][0] + M2[0][2] * M1[2][0],
+                M2[0][0] * M1[0][1] + M2[0][1] * M1[1][1] + M2[0][2] * M1[2][1],
+                M2[0][0] * M1[0][2] + M2[0][1] * M1[1][2] + M2[0][2] * M1[2][2],
+                M2[0][0] * M1[0][3] + M2[0][1] * M1[1][3] + M2[0][2] * M1[2][3] + M2[0][3],
+            ],
+            [
+                M2[1][0] * M1[0][0] + M2[1][1] * M1[1][0] + M2[1][2] * M1[2][0],
+                M2[1][0] * M1[0][1] + M2[1][1] * M1[1][1] + M2[1][2] * M1[2][1],
+                M2[1][0] * M1[0][2] + M2[1][1] * M1[1][2] + M2[1][2] * M1[2][2],
+                M2[1][0] * M1[0][3] + M2[1][1] * M1[1][3] + M2[1][2] * M1[2][3] + M2[1][3],
+            ],
+            [
+                M2[2][0] * M1[0][0] + M2[2][1] * M1[1][0] + M2[2][2] * M1[2][0],
+                M2[2][0] * M1[0][1] + M2[2][1] * M1[1][1] + M2[2][2] * M1[2][1],
+                M2[2][0] * M1[0][2] + M2[2][1] * M1[1][2] + M2[2][2] * M1[2][2],
+                M2[2][0] * M1[0][3] + M2[2][1] * M1[1][3] + M2[2][2] * M1[2][3] + M2[2][3],
+            ],
+            [
+                0, 0, 0, 1,
+            ],
+        ]
+        self.x = M[0][3]
+        self.y = M[1][3]
+        self.z = M[2][3]
+        self.R = [
+            [M[0][0], M[0][1], M[0][2]],
+            [M[1][0], M[1][1], M[1][2]],
+            [M[2][0], M[2][1], M[2][2]],
+        ]
+        if isinstance(parent.parent, Object3D):
+            self._move_out_of_parent(parent.parent)
+
     @property
     def children(self) -> List[Object3D]:
         """List of children of the object."""
