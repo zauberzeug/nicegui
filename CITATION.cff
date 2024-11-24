@@ -11,7 +11,7 @@ title: 'NiceGUI: Web-based user interfaces with Python. The nice way.'
 version: 2.7.0
 date-released: '2024-11-22'
 url: https://github.com/zauberzeug/nicegui
-doi: 10.5281/zenodo.13889918
+doi: 10.5281/zenodo.14206251
 identifiers:
   - description: DOI for this application's record on Zenodo
     type: doi
