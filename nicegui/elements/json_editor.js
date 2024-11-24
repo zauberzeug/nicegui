@@ -47,7 +47,8 @@ export default {
           this.editor.updateProps({ ...this.props, validator: validator });
           return true;
         } catch (err) {
-          console.log("Failed to create JSONSchema Validator", err);
+          console.log("Failed to create JSONSchema Validator");
+          console.error(err);
           return false;
         }
       }
