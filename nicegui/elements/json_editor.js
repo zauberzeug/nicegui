@@ -9,6 +9,8 @@ export default {
     this.properties.onSelect = (selection) => {
       this.$emit("select", { selection: selection });
     };
+
+    this.checkValidation();
     this.editor = new JSONEditor({
       target: this.$el,
       props: this.properties,
@@ -21,8 +23,15 @@ export default {
     this.destroyEditor();
   },
   methods: {
+    checkValidation() {
+      if (this.schema !== undefined) {
+        const validator = createAjvValidator({ schema: this.schema, schemaDefinitions: {}, ajvOptions: {} });
+        this.properties.validator = validator;
+      }
+    },
     update_editor() {
       if (this.editor) {
+        this.checkValidation();
         this.editor.updateProps(this.properties);
       }
     },
@@ -40,21 +49,9 @@ export default {
         return runMethod(this.editor, name, args);
       }
     },
-    add_validation(schema) {
-      if (this.editor) {
-        try {
-          const validator = createAjvValidator({ schema: schema, schemaDefinitions: {}, ajvOptions: {} });
-          this.editor.updateProps({ ...this.props, validator: validator });
-          return true;
-        } catch (err) {
-          console.log("Failed to create JSONSchema Validator");
-          console.error(err);
-          return false;
-        }
-      }
-    },
   },
   props: {
     properties: Object,
+    schema: Object,
   },
 };

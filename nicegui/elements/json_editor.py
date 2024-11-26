@@ -19,7 +19,7 @@ class JsonEditor(Element, component='json_editor.js', dependencies=['lib/vanilla
                  properties: Dict, *,
                  on_select: Optional[Handler[JsonEditorSelectEventArguments]] = None,
                  on_change: Optional[Handler[JsonEditorChangeEventArguments]] = None,
-                 add_validation: Optional[dict] = None,
+                 schema: Optional[Dict] = None,
                  ) -> None:
         """JSONEditor
 
@@ -30,18 +30,19 @@ class JsonEditor(Element, component='json_editor.js', dependencies=['lib/vanilla
         :param properties: dictionary of JSONEditor properties
         :param on_select: callback which is invoked when some of the content has been selected
         :param on_change: callback which is invoked when the content has changed
+        :param schema: JSONSchema to be added as validation on JSONEditor
         """
         super().__init__()
         self._props['properties'] = properties
+
+        if schema:
+            self._props["schema"] = schema
 
         if on_select:
             self.on_select(on_select)
 
         if on_change:
             self.on_change(on_change)
-
-        if add_validation:
-            self.add_validation(add_validation)
 
     def on_change(self, callback: Handler[JsonEditorChangeEventArguments]) -> Self:
         """Add a callback to be invoked when the content changes."""
@@ -81,12 +82,3 @@ class JsonEditor(Element, component='json_editor.js', dependencies=['lib/vanilla
         :return: AwaitableResponse that can be awaited to get the result of the method call
         """
         return self.run_method('run_editor_method', name, *args, timeout=timeout)
-
-    def add_validation(self, schema: dict, timeout: float = 1) -> AwaitableResponse:
-        """Add JSONSchema validation to the JSONEditor Instance.
-
-        :param schema: JSONSchema dict
-        :param timeout: timeout in seconds (default: 1 second)
-
-        :return: Awaitable Response"""
-        return self.run_method('add_validation', schema, timeout=timeout)
