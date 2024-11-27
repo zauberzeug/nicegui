@@ -2,7 +2,9 @@ import asyncio
 import dataclasses
 import time
 from collections import defaultdict
-from typing import Any, Callable, DefaultDict, Dict, Iterable, List, Mapping, Optional, Set, Tuple, Type, TypeVar, Union
+from typing import Any, Callable, DefaultDict, Dict, Iterable, List, Mapping, Optional, Set, Tuple, Union
+
+from typing_extensions import dataclass_transform
 
 from . import core
 from .logging import log
@@ -12,8 +14,6 @@ MAX_PROPAGATION_TIME = 0.01
 bindings: DefaultDict[Tuple[int, str], List] = defaultdict(list)
 bindable_properties: Dict[Tuple[int, str], Any] = {}
 active_links: List[Tuple[Any, str, Any, str, Callable[[Any], Any]]] = []
-
-T = TypeVar('T')
 
 
 def _has_attribute(obj: Union[object, Mapping], name: str) -> Any:
@@ -191,41 +191,34 @@ def reset() -> None:
     active_links.clear()
 
 
-def dataclass_bindable_field(**kwargs) -> dataclasses.Field:
-    """Create `dataclasses.Field` and mark it as a bindable property.
+@dataclass_transform(bindable_fields=None)
+def bindable_dataclass(cls=None, /, *,
+                       bindable_fields: Optional[Iterable[str]] = None,
+                       **kwargs) -> Union[type, Callable[[type], type]]:
+    """This function is a decorator that transforms a class into dataclass, also making its fields bindable.
 
-    This function is a wrapper around `dataclasses.field <https://docs.python.org/3/library/dataclasses.html#dataclasses.field>`.
-    Original functionality is preserved, except `metadata` argument is added (or extended).
-    This function should be used in conjunction with `bindable_dataclass` decorator.
+    If `bindable_fields` argument is provided, then only listed fields are made bindable.
+    Other than that this function works same as `dataclasses.dataclass`.
 
-    :param kwargs: keyword arguments to pass to `dataclasses.field`
+    :param cls: A class to transform.
+    :param bindable_fields: An optional list of field names to make bindable. By default, all fields made bindable.
+    :param kwargs: Optional keyword arguments to forward to `dataclasses.dataclass` function.
 
-    :return: A `dataclasses.Field` instance.
+    :return: Resulting dataclass type.
     """
-    original_metadata = kwargs.get('metadata', {})
-    if not isinstance(original_metadata, Mapping):
-        raise TypeError('metadata must be a mapping')
-    metadata = dict(original_metadata)
-    metadata.setdefault('nicegui', {}).update(bindable=True)
-    kwargs.update(metadata=metadata)
-    return dataclasses.field(**kwargs)
+    if cls is None:
+        def wrap(cls_):
+            return bindable_dataclass(cls_, bindable_fields=bindable_fields, **kwargs)
+        return wrap
 
-
-def bindable_dataclass(dcls: Type[T]) -> Type[T]:
-    """Transform dataclass to make its fields bindable properties.
-
-    Transformation only concerns attributes defined with `dataclass_bindable_field`.
-    This function intended to be used as a decorator.
-
-    :param dcls: The `dataclasses.dataclass` type to transform.
-
-    :return: The same dataclass type (transformed).
-    """
-    if not dataclasses.is_dataclass(dcls):
-        raise ValueError('Only dataclasses are supported')
-    for field in dataclasses.fields(dcls):
-        if 'nicegui' in field.metadata and field.metadata['nicegui'].get('bindable', False):
-            p = BindableProperty()
-            p.__set_name__(dcls, field.name)
-            setattr(dcls, field.name, p)
+    dcls = dataclasses.dataclass(**kwargs)(cls)
+    field_names = set(field.name for field in dataclasses.fields(dcls))
+    if bindable_fields is None:
+        bindable_fields = field_names
+    for field_name in bindable_fields:
+        if field_name not in field_names:
+            raise ValueError(f'"{field_name}" is not a dataclass field')
+        p = BindableProperty()
+        p.__set_name__(dcls, field_name)
+        setattr(dcls, field_name, p)
     return dcls

@@ -1,4 +1,3 @@
-import dataclasses
 from typing import Dict, Optional, Tuple
 
 from selenium.webdriver.common.keys import Keys
@@ -109,11 +108,10 @@ def test_missing_target_attribute(screen: Screen):
 
 
 def test_bindable_dataclass(screen: Screen):
-    @binding.bindable_dataclass
-    @dataclasses.dataclass
+    @binding.bindable_dataclass(bindable_fields=['bindable'])
     class TestClass:
         not_bindable: str = 'not_bindable_text'
-        bindable: str = binding.dataclass_bindable_field(default='bindable_text')  # noqa: RUF009
+        bindable: str = 'bindable_text'
 
     instance = TestClass()
 
