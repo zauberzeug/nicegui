@@ -25,8 +25,7 @@ export default {
   methods: {
     checkValidation() {
       if (this.schema !== undefined) {
-        const validator = createAjvValidator({ schema: this.schema, schemaDefinitions: {}, ajvOptions: {} });
-        this.properties.validator = validator;
+        this.properties.validator = createAjvValidator({ schema: this.schema, schemaDefinitions: {}, ajvOptions: {} });
       }
     },
     update_editor() {
