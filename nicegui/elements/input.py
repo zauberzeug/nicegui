@@ -8,7 +8,6 @@ from .mixins.validation_element import ValidationDict, ValidationElement, Valida
 
 class Input(ValidationElement, DisableableElement, component='input.js'):
     VALUE_PROP: str = 'value'
-    LOOPBACK = False
 
     def __init__(self,
                  label: Optional[str] = None, *,
