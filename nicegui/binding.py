@@ -194,31 +194,32 @@ def reset() -> None:
 @dataclass_transform(bindable_fields=None)
 def bindable_dataclass(cls=None, /, *,
                        bindable_fields: Optional[Iterable[str]] = None,
-                       **kwargs) -> Union[type, Callable[[type], type]]:
-    """This function is a decorator that transforms a class into dataclass, also making its fields bindable.
+                       **kwargs: Any) -> Union[type, Callable[[type], type]]:
+    """A decorator that transforms a class into a dataclass with bindable fields.
 
-    If `bindable_fields` argument is provided, then only listed fields are made bindable.
-    Other than that this function works same as `dataclasses.dataclass`.
+    This decorator extends the functionality of ``dataclasses.dataclass`` by making specified fields bindable.
+    If ``bindable_fields`` is provided, only the listed fields are made bindable.
+    Otherwise, all fields are made bindable by default.
 
-    :param cls: A class to transform.
-    :param bindable_fields: An optional list of field names to make bindable. By default, all fields made bindable.
-    :param kwargs: Optional keyword arguments to forward to `dataclasses.dataclass` function.
+    :param cls: class to be transformed into a dataclass
+    :param bindable_fields: optional list of field names to make bindable (defaults to all fields)
+    :param kwargs: optional keyword arguments to be forwarded to ``dataclasses.dataclass``
 
-    :return: Resulting dataclass type.
+    :return: resulting dataclass type
     """
     if cls is None:
         def wrap(cls_):
             return bindable_dataclass(cls_, bindable_fields=bindable_fields, **kwargs)
         return wrap
 
-    dcls = dataclasses.dataclass(**kwargs)(cls)
-    field_names = set(field.name for field in dataclasses.fields(dcls))
+    dataclass = dataclasses.dataclass(**kwargs)(cls)
+    field_names = set(field.name for field in dataclasses.fields(dataclass))
     if bindable_fields is None:
         bindable_fields = field_names
     for field_name in bindable_fields:
         if field_name not in field_names:
             raise ValueError(f'"{field_name}" is not a dataclass field')
-        p = BindableProperty()
-        p.__set_name__(dcls, field_name)
-        setattr(dcls, field_name, p)
-    return dcls
+        bindable_property = BindableProperty()
+        bindable_property.__set_name__(dataclass, field_name)
+        setattr(dataclass, field_name, bindable_property)
+    return dataclass
