@@ -11,7 +11,7 @@ __all__ = [
     'create_intro',
     'overview',  # ensure documentation tree is built
     'python_window',
-    'registry',
     'redirects',
+    'registry',
     'render_page',
 ]
