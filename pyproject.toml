@@ -63,8 +63,11 @@ numpy = [
 ]
 selenium = "^4.11.2"
 pyecharts = "^2.0.4"
-ruff = ">=0.3.5"
-pre-commit = ">=3.5.0"
+ruff = ">=0.8.1"
+pre-commit = [
+    {version = "<4.0.0", python = "<3.9"},
+    {version = ">=4.0.0", python = ">=3.9,<3.14"}
+]
 isort = "^5.11"
 polars = [
     {version = "^1.8.0", python = "~3.8"},
@@ -113,6 +116,7 @@ module = [
 ignore_missing_imports = true
 
 [tool.ruff]
+target-version = "py38"
 indent-width = 4
 line-length = 120
 
@@ -130,6 +134,7 @@ select = [
 ]
 fixable = [
     "I",  # isort
+    "RUF022", # `__all__` is not sorted
 ]
 ignore = [
     "E501", # line too long
