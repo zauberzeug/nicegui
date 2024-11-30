@@ -32,6 +32,14 @@ def run(*,
         binding_refresh_interval: float = 0.1,
         reconnect_timeout: float = 3.0,
         fastapi_docs: bool = False,
+
+        fastapi_docs_title: str = None,
+        fastapi_docs_description: Optional[str] = None,
+        fastapi_docs_version: str = '0.1.0',
+        fastapi_docs_terms_of_service: Optional[str] = None,
+        fastapi_docs_contact: Optional[dict] = None,
+        fastapi_docs_license_info: Optional[dict] = None,
+
         show: bool = True,
         on_air: Optional[Union[str, Literal[True]]] = None,
         native: bool = False,
@@ -65,6 +73,12 @@ def run(*,
     :param binding_refresh_interval: time between binding updates (default: `0.1` seconds, bigger is more CPU friendly)
     :param reconnect_timeout: maximum time the server waits for the browser to reconnect (default: 3.0 seconds)
     :param fastapi_docs: whether to enable FastAPI's automatic documentation with Swagger UI, ReDoc, and OpenAPI JSON (default: `False`)
+    :param fastapi_docs_title: swagger UI title whether fastapi_docs not False (default: bind to `title`)
+    :param fastapi_docs_description: swagger UI description whether fastapi_docs not False, you can using Markdown to write (default: `None`)
+    :param fastapi_docs_version: swagger UI version whether fastapi_docs not False (default: `'0.1.0'`)
+    :param fastapi_docs_terms_of_service: swagger UI terms of service whether fastapi_docs not False (default: `None`)
+    :param fastapi_docs_contact: swagger UI contact whether fastapi_docs not False (default: `None`)
+    :param fastapi_docs_license_info: swagger UI license_info whether fastapi_docs not False (default: `None`)
     :param show: automatically open the UI in a browser tab (default: `True`)
     :param on_air: tech preview: `allows temporary remote access <https://nicegui.io/documentation/section_configuration_deployment#nicegui_on_air>`_ if set to `True` (default: disabled)
     :param native: open the UI in a native window of size 800x600 (default: `False`, deactivates `show`, automatically finds an open port)
@@ -113,6 +127,12 @@ def run(*,
             core.app.redoc_url = '/redoc'
         if not core.app.openapi_url:
             core.app.openapi_url = '/openapi.json'
+        core.app.title = fastapi_docs_title if fastapi_docs_title else title
+        core.app.description = fastapi_docs_description
+        core.app.version = fastapi_docs_version
+        core.app.terms_of_service = fastapi_docs_terms_of_service
+        core.app.contact = fastapi_docs_contact
+        core.app.license_info = fastapi_docs_license_info
         core.app.setup()
 
     if on_air:
