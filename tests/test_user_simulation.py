@@ -302,20 +302,20 @@ async def test_page_to_string_output_used_in_error_messages(user: User) -> None:
     await user.open('/')
     output = str(user.current_layout)
     assert output == '''
-q-layout
- q-page-container
-  q-page
-   div
-    Label [markers=first, text=Hello]
-    Row
-     Column
-      Button [markers=second, label=World]
-      Icon [markers=third, name=thumbs-up]
-    Avatar [icon=star]
-    Input [value=typed, label=some input, placeholder=type here, type=text]
-    Markdown [content=## Markdown...]
-    Card
-     Image [src=https://via.placehol...]
+q-layout [visible=True]
+ q-page-container [visible=True]
+  q-page [visible=True]
+   div [visible=True]
+    Label [markers=first, text=Hello, visible=True]
+    Row [visible=True]
+     Column [visible=True]
+      Button [markers=second, label=World, visible=True]
+      Icon [markers=third, name=thumbs-up, visible=True]
+    Avatar [icon=star, visible=True]
+    Input [value=typed, label=some input, placeholder=type here, type=text, visible=True]
+    Markdown [content=## Markdown..., visible=True]
+    Card [visible=True]
+     Image [src=https://via.placehol..., visible=True]
 '''.strip()
 
 
@@ -419,3 +419,36 @@ async def test_trigger_autocomplete(user: User) -> None:
     await user.should_not_see('apple')
     user.find('fruit').type('a').trigger('keydown.tab')
     await user.should_see('apple')
+
+async def test_should_see_on_invisible_element(user: User) -> None:
+    lable = ui.label('Hello')
+    lable.visible = False
+
+    await user.open('/')
+    with pytest.raises(AssertionError):
+        await user.should_see('Hello')
+    lable.visible = True
+    await user.should_see('Hello')
+
+
+async def test_should_not_see_on_invisible_element(user: User) -> None:
+    lable = ui.label('Hello')
+    lable.visible = True
+
+    await user.open('/')
+    with pytest.raises(AssertionError):
+        await user.should_not_see('Hello')
+    lable.visible = False
+    await user.should_not_see('Hello')
+
+
+async def test_find_on_invisible_element(user: User) -> None:
+    button = ui.button('click me', on_click=lambda: ui.label('clicked'))
+    button.visible = False
+
+    await user.open('/')
+    with pytest.raises(AssertionError):
+        user.find('click me').click()
+    button.visible = True
+    user.find('click me').click()
+    await user.should_see('clicked')
