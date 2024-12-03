@@ -53,7 +53,7 @@ jobs:
       - name: test startup
         run: poetry run ./test_startup.sh
       - name: setup chromedriver
-        uses: nanasess/setup-chromedriver@v2.2.2
+        uses: nanasess/setup-chromedriver@v2.3.0
       - name: pytest
         run: poetry run pytest
 
