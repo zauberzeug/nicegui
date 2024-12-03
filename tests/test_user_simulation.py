@@ -207,6 +207,11 @@ async def test_input(user: User, kind: Type) -> None:
     await user.should_see('Value: Hello World')
     await user.should_see('Changed: Hello World')
 
+    user.find(kind).clear()
+    user.find(kind).type('Test')
+    await user.should_see('Value: Test')
+    await user.should_see('Changed: Test')
+
 
 async def test_should_not_see(user: User) -> None:
     @ui.page('/')
@@ -396,3 +401,21 @@ async def test_download_file(user: User, data: Union[str, bytes]) -> None:
     assert len(user.download.http_responses) == 1
     assert response.status_code == 200
     assert response.text == 'Hello'
+
+
+async def test_validation(user: User) -> None:
+    ui.input('Number', validation={'Not a number': lambda value: value.isnumeric()})
+
+    await user.open('/')
+    await user.should_not_see('Not a number')
+    user.find(ui.input).type('some invalid entry')
+    await user.should_see('Not a number')
+
+
+async def test_trigger_autocomplete(user: User) -> None:
+    ui.input(label='fruit', autocomplete=['apple', 'banana', 'cherry'])
+
+    await user.open('/')
+    await user.should_not_see('apple')
+    user.find('fruit').type('a').trigger('keydown.tab')
+    await user.should_see('apple')

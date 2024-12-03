@@ -36,6 +36,12 @@ class User:
         self.notify = UserNotify()
         self.download = UserDownload(self)
 
+    @property
+    def _client(self) -> Client:
+        if self.client is None:
+            raise ValueError('This user has not opened a page yet. Did you forgot to call .open()?')
+        return self.client
+
     def __getattribute__(self, name: str) -> Any:
         if name not in {'notify', 'navigate', 'download'}:  # NOTE: avoid infinite recursion
             ui.navigate = self.navigate
@@ -95,9 +101,8 @@ class User:
         By default `should_see` makes three attempts to find the element before failing.
         This can be adjusted with the `retries` parameter.
         """
-        assert self.client
         for _ in range(retries):
-            with self.client:
+            with self._client:
                 if self.notify.contains(target) or self._gather_elements(target, kind, marker, content):
                     return
                 await asyncio.sleep(0.1)
@@ -130,9 +135,8 @@ class User:
                              retries: int = 3,
                              ) -> None:
         """Assert that the page does not contain an input with the given value."""
-        assert self.client
         for _ in range(retries):
-            with self.client:
+            with self._client:
                 if not self.notify.contains(target) and not self._gather_elements(target, kind, marker, content):
                     return
                 await asyncio.sleep(0.05)
@@ -175,8 +179,7 @@ class User:
              content: Union[str, List[str], None] = None,
              ) -> UserInteraction[T]:
         """Select elements for interaction."""
-        assert self.client
-        with self.client:
+        with self._client:
             elements = self._gather_elements(target, kind, marker, content)
             if not elements:
                 raise AssertionError('expected to find at least one ' +
@@ -186,8 +189,7 @@ class User:
     @property
     def current_layout(self) -> Element:
         """Return the root layout element of the current page."""
-        assert self.client
-        return self.client.layout
+        return self._client.layout
 
     def _gather_elements(self,
                          target: Union[str, Type[T], None] = None,

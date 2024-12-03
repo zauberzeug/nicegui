@@ -1,9 +1,9 @@
 from pathlib import Path
-from typing import Any, Callable, List, Literal, Optional, get_args
+from typing import Callable, List, Literal, Optional, get_args
 
 from nicegui.elements.mixins.disableable_element import DisableableElement
 from nicegui.elements.mixins.value_element import ValueElement
-from nicegui.events import GenericEventArguments
+from nicegui.events import GenericEventArguments, Handler, ValueChangeEventArguments
 
 SUPPORTED_LANGUAGES = Literal[
     'Angular Template',
@@ -245,7 +245,7 @@ SUPPORTED_THEMES = Literal[
 ]
 
 
-class CodeMirror(ValueElement, DisableableElement, component='codemirror.js'):
+class CodeMirror(ValueElement, DisableableElement, component='codemirror.js', default_classes='nicegui-codemirror'):
     VALUE_PROP = 'value'
     LOOPBACK = None
 
@@ -253,7 +253,7 @@ class CodeMirror(ValueElement, DisableableElement, component='codemirror.js'):
         self,
         value: str = '',
         *,
-        on_change: Optional[Callable[..., Any]] = None,
+        on_change: Optional[Handler[ValueChangeEventArguments]] = None,
         language: Optional[SUPPORTED_LANGUAGES] = None,
         theme: SUPPORTED_THEMES = 'basicLight',
         indent: str = ' ' * 4,
@@ -282,8 +282,6 @@ class CodeMirror(ValueElement, DisableableElement, component='codemirror.js'):
         """
         super().__init__(value=value, on_value_change=on_change)
         self.add_resource(Path(__file__).parent / 'lib' / 'codemirror')
-
-        self._classes.append('nicegui-codemirror')
 
         self._props['language'] = language
         self._props['theme'] = theme

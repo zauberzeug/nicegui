@@ -1,0 +1,22 @@
+name: Release on Zenodo
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  upload-to-zenodo:
+    runs-on: ubuntu-latest
+    name: A job to update metadata and push a release to Zenodo
+
+    steps:
+      - name: Upload to Zenodo
+        id: release
+        uses: megasanjay/upload-to-zenodo@v2.0.1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          zenodo_token: ${{ secrets.ZENODO_TOKEN }}
+          zenodo_deposition_id: 13623775
+          zenodo_publish: true
+          commit_message: "Update CITATION.cff"
+          citation_cff: true

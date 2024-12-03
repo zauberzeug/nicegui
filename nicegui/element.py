@@ -4,20 +4,7 @@ import inspect
 import re
 from copy import copy
 from pathlib import Path
-from typing import (
-    TYPE_CHECKING,
-    Any,
-    Callable,
-    ClassVar,
-    Dict,
-    Iterator,
-    List,
-    Optional,
-    Sequence,
-    Union,
-    cast,
-    overload,
-)
+from typing import TYPE_CHECKING, Any, ClassVar, Dict, Iterator, List, Optional, Sequence, Union, cast, overload
 
 from typing_extensions import Self
 
@@ -97,6 +84,9 @@ class Element(Visibility):
                           libraries: List[Union[str, Path]] = [],  # noqa: B006  # DEPRECATED
                           exposed_libraries: List[Union[str, Path]] = [],  # noqa: B006  # DEPRECATED
                           extra_libraries: List[Union[str, Path]] = [],  # noqa: B006  # DEPRECATED
+                          default_classes: Optional[str] = None,
+                          default_style: Optional[str] = None,
+                          default_props: Optional[str] = None,
                           ) -> None:
         super().__init_subclass__()
         base = Path(inspect.getfile(cls)).parent
@@ -140,6 +130,9 @@ class Element(Visibility):
         cls._default_props = copy(cls._default_props)
         cls._default_classes = copy(cls._default_classes)
         cls._default_style = copy(cls._default_style)
+        cls.default_classes(default_classes)
+        cls.default_style(default_style)
+        cls.default_props(default_props)
 
     def add_resource(self, path: Union[str, Path]) -> None:
         """Add a resource to the element.
@@ -229,8 +222,9 @@ class Element(Visibility):
     def default_classes(cls,
                         add: Optional[str] = None, *,
                         remove: Optional[str] = None,
+                        toggle: Optional[str] = None,
                         replace: Optional[str] = None) -> type[Self]:
-        """Apply, remove, or replace default HTML classes.
+        """Apply, remove, toggle, or replace default HTML classes.
 
         This allows modifying the look of the element or its layout using `Tailwind <https://tailwindcss.com/>`_ or `Quasar <https://quasar.dev/>`_ classes.
 
@@ -240,9 +234,10 @@ class Element(Visibility):
 
         :param add: whitespace-delimited string of classes
         :param remove: whitespace-delimited string of classes to remove from the element
+        :param toggle: whitespace-delimited string of classes to toggle
         :param replace: whitespace-delimited string of classes to use instead of existing ones
         """
-        cls._default_classes = Classes.update_list(cls._default_classes, add, remove, replace)
+        cls._default_classes = Classes.update_list(cls._default_classes, add, remove, toggle, replace)
         return cls
 
     @property
@@ -334,7 +329,7 @@ class Element(Visibility):
     @overload
     def on(self,
            type: str,  # pylint: disable=redefined-builtin
-           handler: Optional[Callable[..., Any]] = None,
+           handler: Optional[events.Handler[events.GenericEventArguments]] = None,
            args: Union[None, Sequence[str], Sequence[Optional[Sequence[str]]]] = None,
            *,
            throttle: float = 0.0,
@@ -345,7 +340,7 @@ class Element(Visibility):
 
     def on(self,
            type: str,  # pylint: disable=redefined-builtin
-           handler: Optional[Callable[..., Any]] = None,
+           handler: Optional[events.Handler[events.GenericEventArguments]] = None,
            args: Union[None, Sequence[str], Sequence[Optional[Sequence[str]]]] = None,
            *,
            throttle: float = 0.0,
@@ -518,7 +513,7 @@ class Element(Visibility):
             additions.append(f'text={shorten(self._text)}')
         if hasattr(self, 'content') and self.content:  # pylint: disable=no-member
             additions.append(f'content={shorten(self.content)}')  # pylint: disable=no-member
-        IGNORED_PROPS = {'loopback', 'color', 'view', 'innerHTML', 'codehilite_css'}
+        IGNORED_PROPS = {'loopback', 'color', 'view', 'innerHTML', 'codehilite_css_url'}
         additions += [
             f'{key}={shorten(value)}'
             for key, value in self._props.items()

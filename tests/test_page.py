@@ -6,7 +6,7 @@ from uuid import uuid4
 from fastapi.responses import PlainTextResponse
 from selenium.webdriver.common.by import By
 
-from nicegui import background_tasks, ui
+from nicegui import app, background_tasks, ui
 from nicegui.testing import Screen
 
 
@@ -322,3 +322,22 @@ def test_ip(screen: Screen):
 
     screen.open('/')
     screen.should_contain('127.0.0.1')
+
+
+def test_multicast(screen: Screen):
+    def update():
+        for client in app.clients('/'):
+            with client:
+                ui.label('added')
+
+    @ui.page('/')
+    def page():
+        ui.button('add label', on_click=update)
+
+    screen.open('/')
+    screen.switch_to(1)
+    screen.open('/')
+    screen.click('add label')
+    screen.should_contain('added')
+    screen.switch_to(0)
+    screen.should_contain('added')

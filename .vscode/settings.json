@@ -3,28 +3,6 @@
   "editor.defaultFormatter": "esbenp.prettier-vscode",
   "editor.formatOnSave": true,
   "prettier.printWidth": 120,
-  "pylint.args": [
-    "--disable=C0103", // Invalid name (e.g., variable/function/class naming conventions)
-    "--disable=C0114", // Missing module docstring
-    "--disable=C0115", // Missing class docstring
-    "--disable=C0301", // Line too long (exceeds character limit)
-    "--disable=C0302", // Too many lines in module
-    "--disable=R0801", // Similar lines in files
-    "--disable=R0901", // Too many ancestors
-    "--disable=R0902", // Too many instance attributes
-    "--disable=R0903", // Too few public methods
-    "--disable=R0904", // Too many public methods
-    "--disable=R0911", // Too many return statements
-    "--disable=R0912", // Too many branches
-    "--disable=R0913", // Too many arguments
-    "--disable=R0914", // Too many local variables
-    "--disable=R0915", // Too many statements
-    "--disable=R1705", // Unnecessary "else" after "return"
-    "--disable=W0102", // Dangerous default value as argument
-    "--disable=W0718", // Catching too general exception
-    "--disable=W1203", // Use % formatting in logging functions
-    "--disable=W1514" // Using open without explicitly specifying an encoding
-  ],
   "python.testing.pytestArgs": ["."],
   "python.testing.pytestEnabled": true,
   "python.testing.unittestEnabled": false,

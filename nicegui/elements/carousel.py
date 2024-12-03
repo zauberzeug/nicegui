@@ -1,8 +1,9 @@
 from __future__ import annotations
 
-from typing import Any, Callable, Optional, Union, cast
+from typing import Any, Optional, Union, cast
 
 from ..context import context
+from ..events import Handler, ValueChangeEventArguments
 from .mixins.disableable_element import DisableableElement
 from .mixins.value_element import ValueElement
 
@@ -11,7 +12,7 @@ class Carousel(ValueElement):
 
     def __init__(self, *,
                  value: Union[str, CarouselSlide, None] = None,
-                 on_value_change: Optional[Callable[..., Any]] = None,
+                 on_value_change: Optional[Handler[ValueChangeEventArguments]] = None,
                  animated: bool = False,
                  arrows: bool = False,
                  navigation: bool = False,
@@ -37,7 +38,7 @@ class Carousel(ValueElement):
 
     def _handle_value_change(self, value: Any) -> None:
         super()._handle_value_change(value)
-        names = [slide.props['name'] for slide in self]
+        names = [slide.props['name'] for slide in self.default_slot]
         for i, slide in enumerate(self):
             done = i < names.index(value) if value in names else False
             slide.props(f':done={done}')
@@ -51,7 +52,7 @@ class Carousel(ValueElement):
         self.run_method('previous')
 
 
-class CarouselSlide(DisableableElement):
+class CarouselSlide(DisableableElement, default_classes='nicegui-carousel-slide'):
 
     def __init__(self, name: Optional[str] = None) -> None:
         """Carousel Slide
@@ -65,6 +66,5 @@ class CarouselSlide(DisableableElement):
         self.carousel = cast(ValueElement, context.slot.parent)
         name = name or f'slide_{len(self.carousel.default_slot.children)}'
         self._props['name'] = name
-        self._classes.append('nicegui-carousel-slide')
         if self.carousel.value is None:
             self.carousel.value = name

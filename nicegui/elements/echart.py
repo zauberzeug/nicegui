@@ -1,11 +1,11 @@
-from typing import Any, Callable, Dict, Optional
+from typing import Callable, Dict, Literal, Optional
 
 from typing_extensions import Self
 
 from .. import optional_features
 from ..awaitable_response import AwaitableResponse
 from ..element import Element
-from ..events import EChartPointClickEventArguments, GenericEventArguments, handle_event
+from ..events import EChartPointClickEventArguments, GenericEventArguments, Handler, handle_event
 
 try:
     from pyecharts.charts.base import default, json
@@ -17,9 +17,17 @@ except ImportError:
     pass
 
 
-class EChart(Element, component='echart.js', dependencies=['lib/echarts/echarts.min.js', 'lib/echarts-gl/echarts-gl.min.js']):
+class EChart(Element,
+             component='echart.js',
+             dependencies=['lib/echarts/echarts.min.js', 'lib/echarts-gl/echarts-gl.min.js'],
+             default_classes='nicegui-echart'):
 
-    def __init__(self, options: Dict, on_point_click: Optional[Callable] = None, *, enable_3d: bool = False) -> None:
+    def __init__(self,
+                 options: Dict,
+                 on_point_click: Optional[Handler[EChartPointClickEventArguments]] = None, *,
+                 enable_3d: bool = False,
+                 renderer: Literal['canvas', 'svg'] = 'canvas',
+                 ) -> None:
         """Apache EChart
 
         An element to create a chart using `ECharts <https://echarts.apache.org/>`_.
@@ -29,16 +37,17 @@ class EChart(Element, component='echart.js', dependencies=['lib/echarts/echarts.
         :param options: dictionary of EChart options
         :param on_click_point: callback that is invoked when a point is clicked
         :param enable_3d: enforce importing the echarts-gl library
+        :param renderer: renderer to use ("canvas" or "svg")
         """
         super().__init__()
         self._props['options'] = options
         self._props['enable_3d'] = enable_3d or any('3D' in key for key in options)
-        self._classes.append('nicegui-echart')
+        self._props['renderer'] = renderer
 
         if on_point_click:
             self.on_point_click(on_point_click)
 
-    def on_point_click(self, callback: Callable[..., Any]) -> Self:
+    def on_point_click(self, callback: Handler[EChartPointClickEventArguments]) -> Self:
         """Add a callback to be invoked when a point is clicked."""
         def handle_point_click(e: GenericEventArguments) -> None:
             handle_event(callback, EChartPointClickEventArguments(
@@ -100,7 +109,7 @@ class EChart(Element, component='echart.js', dependencies=['lib/echarts/echarts.
         self.run_method('update_chart')
 
     def run_chart_method(self, name: str, *args, timeout: float = 1) -> AwaitableResponse:
-        """Run a method of the JSONEditor instance.
+        """Run a method of the EChart instance.
 
         See the `ECharts documentation <https://echarts.apache.org/en/api.html#echartsInstance>`_ for a list of methods.
 

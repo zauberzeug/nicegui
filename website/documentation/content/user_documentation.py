@@ -10,9 +10,9 @@ def user_fixture():
     ui.markdown('''
         We recommend utilizing the `user` fixture instead of the [`screen` fixture](/documentation/screen) wherever possible
         because execution is as fast as unit tests and it does not need Selenium as a dependency
-        when loaded via `pytest_plugins = ['nicegui.testing.user_plugin']`
-        (see [project structure](/documentation/project_structure)).
+        when loaded via `pytest_plugins = ['nicegui.testing.user_plugin']`.
         The `user` fixture cuts away the browser and replaces it by a lightweight simulation entirely in Python.
+        See [project structure](/documentation/project_structure) for a description of the setup.
 
         You can assert to "see" specific elements or content, click buttons, type into inputs and trigger events.
         We aimed for a nice API to write acceptance tests which read like a story and are easy to understand.
@@ -152,6 +152,32 @@ def upload_table():
                     {'name': 'Alice', 'age': '30'},
                     {'name': 'Bob', 'age': '28'},
                 ]
+                ```
+            ''')
+
+
+doc.text('Autocomplete', '''
+    The `UserInteraction` object returned by `user.find(...)` provides methods to trigger events on the found elements.
+    This demo shows how to trigger a "keydown.tab" event to autocomplete an input field.
+''')
+
+
+@doc.ui
+def trigger_events():
+    with ui.row().classes('gap-4 items-stretch'):
+        with python_window(classes='w-[500px]', title='some UI code'):
+            ui.markdown('''
+                ```python
+                fruits = ['apple', 'banana', 'cherry']
+                ui.input(label='fruit', autocomplete=fruits)
+                ```
+            ''')
+        with python_window(classes='w-[500px]', title='user assertions'):
+            ui.markdown('''
+                ```python
+                await user.open('/')
+                user.find('fruit').type('a').trigger('keydown.tab')
+                await user.should_see('apple')
                 ```
             ''')
 

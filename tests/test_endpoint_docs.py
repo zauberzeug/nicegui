@@ -3,7 +3,7 @@ from typing import Set
 import pytest
 import requests
 
-from nicegui import __version__
+from nicegui import __version__, ui
 from nicegui.testing import Screen
 
 
@@ -29,8 +29,11 @@ def test_endpoint_documentation_page_only(screen: Screen):
 
 def test_endpoint_documentation_internal_only(screen: Screen):
     screen.ui_run_kwargs['endpoint_documentation'] = 'internal'
+    ui.markdown('Hey!')
+
     screen.open('/')
     assert get_openapi_paths() == {
+        f'/_nicegui/{__version__}/codehilite.css',
         f'/_nicegui/{__version__}/libraries/{{key}}',
         f'/_nicegui/{__version__}/components/{{key}}',
         f'/_nicegui/{__version__}/resources/{{key}}/{{path}}',
@@ -39,9 +42,12 @@ def test_endpoint_documentation_internal_only(screen: Screen):
 
 def test_endpoint_documentation_all(screen: Screen):
     screen.ui_run_kwargs['endpoint_documentation'] = 'all'
+    ui.markdown('Hey!')
+
     screen.open('/')
     assert get_openapi_paths() == {
         '/',
+        f'/_nicegui/{__version__}/codehilite.css',
         f'/_nicegui/{__version__}/libraries/{{key}}',
         f'/_nicegui/{__version__}/components/{{key}}',
         f'/_nicegui/{__version__}/resources/{{key}}/{{path}}',

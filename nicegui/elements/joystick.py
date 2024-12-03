@@ -1,19 +1,22 @@
-from typing import Any, Callable, Optional
+from typing import Any, Optional
 
 from typing_extensions import Self
 
 from ..element import Element
-from ..events import GenericEventArguments, JoystickEventArguments, handle_event
+from ..events import GenericEventArguments, Handler, JoystickEventArguments, handle_event
 
 
-class Joystick(Element, component='joystick.vue', dependencies=['lib/nipplejs/nipplejs.js']):
+class Joystick(Element,
+               component='joystick.vue',
+               dependencies=['lib/nipplejs/nipplejs.js'],
+               default_classes='nicegui-joystick'):
 
     def __init__(self, *,
-                 on_start: Optional[Callable[..., Any]] = None,
-                 on_move: Optional[Callable[..., Any]] = None,
-                 on_end: Optional[Callable[..., Any]] = None,
+                 on_start: Optional[Handler[JoystickEventArguments]] = None,
+                 on_move: Optional[Handler[JoystickEventArguments]] = None,
+                 on_end: Optional[Handler[JoystickEventArguments]] = None,
                  throttle: float = 0.05,
-                 ** options: Any) -> None:
+                 **options: Any) -> None:
         """Joystick
 
         Create a joystick based on `nipple.js <https://yoannmoi.net/nipplejs/>`_.
@@ -26,7 +29,6 @@ class Joystick(Element, component='joystick.vue', dependencies=['lib/nipplejs/ni
         """
         super().__init__()
         self._props['options'] = options
-        self._classes.append('nicegui-joystick')
         self.active = False
 
         self._start_handlers = [on_start] if on_start else []
@@ -61,17 +63,17 @@ class Joystick(Element, component='joystick.vue', dependencies=['lib/nipplejs/ni
         self.on('move', handle_move, ['data'], throttle=throttle)
         self.on('end', handle_end, [])
 
-    def on_start(self, callback: Callable[..., Any]) -> Self:
+    def on_start(self, callback: Handler[JoystickEventArguments]) -> Self:
         """Add a callback to be invoked when the user touches the joystick."""
         self._start_handlers.append(callback)
         return self
 
-    def on_move(self, callback: Callable[..., Any]) -> Self:
+    def on_move(self, callback: Handler[JoystickEventArguments]) -> Self:
         """Add a callback to be invoked when the user moves the joystick."""
         self._move_handlers.append(callback)
         return self
 
-    def on_end(self, callback: Callable[..., Any]) -> Self:
+    def on_end(self, callback: Handler[JoystickEventArguments]) -> Self:
         """Add a callback to be invoked when the user releases the joystick."""
         self._end_handlers.append(callback)
         return self
