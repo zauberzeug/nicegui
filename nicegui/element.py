@@ -519,6 +519,8 @@ class Element(Visibility):
             for key, value in self._props.items()
             if not key.startswith('_') and key not in IGNORED_PROPS and value
         ]
+        if not self.visible:
+            additions.append(f'visible={self.visible}')
         if additions:
             result += f' [{", ".join(additions)}]'
 

@@ -191,20 +191,23 @@ class User:
         """Return the root layout element of the current page."""
         return self._client.layout
 
-    def _gather_elements(self,
-                         target: Union[str, Type[T], None] = None,
-                         kind: Optional[Type[T]] = None,
-                         marker: Union[str, List[str], None] = None,
-                         content: Union[str, List[str], None] = None,
-                         ) -> Set[T]:
+    def _gather_elements(
+        self,
+        target: Union[str, Type[T], None] = None,
+        kind: Optional[Type[T]] = None,
+        marker: Union[str, List[str], None] = None,
+        content: Union[str, List[str], None] = None,
+    ) -> Set[T]:
         if target is None:
             if kind is None:
-                return set(ElementFilter(marker=marker, content=content))  # type: ignore
-            return set(ElementFilter(kind=kind, marker=marker, content=content))
+                elements = set(ElementFilter(marker=marker, content=content))
+            else:
+                elements = set(ElementFilter(kind=kind, marker=marker, content=content))
         elif isinstance(target, str):
-            return set(ElementFilter(marker=target)).union(ElementFilter(content=target))  # type: ignore
+            elements = set(ElementFilter(marker=target)).union(ElementFilter(content=target))
         else:
-            return set(ElementFilter(kind=target))
+            elements = set(ElementFilter(kind=target))
+        return {e for e in elements if e.visible}  # type: ignore
 
     def _build_error_message(self,
                              target: Union[str, Type[T], None] = None,

@@ -419,3 +419,52 @@ async def test_trigger_autocomplete(user: User) -> None:
     await user.should_not_see('apple')
     user.find('fruit').type('a').trigger('keydown.tab')
     await user.should_see('apple')
+
+async def test_should_see_on_invisible_element(user: User) -> None:
+    lable = ui.label('Hello')
+    lable.visible = False
+
+    await user.open('/')
+    with pytest.raises(AssertionError):
+        await user.should_see('Hello')
+    lable.visible = True
+    await user.should_see('Hello')
+
+
+async def test_should_not_see_on_invisible_element(user: User) -> None:
+    lable = ui.label('Hello')
+    lable.visible = True
+
+    await user.open('/')
+    with pytest.raises(AssertionError):
+        await user.should_not_see('Hello')
+    lable.visible = False
+    await user.should_not_see('Hello')
+
+
+async def test_find_on_invisible_element(user: User) -> None:
+    button = ui.button('click me', on_click=lambda: ui.label('clicked'))
+    button.visible = False
+
+    await user.open('/')
+    with pytest.raises(AssertionError):
+        user.find('click me').click()
+    button.visible = True
+    user.find('click me').click()
+    await user.should_see('clicked')
+
+async def test_page_to_sting_output_with_hidden_elements(user: User) -> None:
+    ui.label("Hello")
+    hidden_label = ui.label("Hidden Label")
+    hidden_label.visible = False
+
+    await user.open('/')
+    output = str(user.current_layout)
+    assert output == '''
+q-layout
+ q-page-container
+  q-page
+   div
+    Label [text=Hello]
+    Label [text=Hidden Label, visible=False]
+'''.strip()
