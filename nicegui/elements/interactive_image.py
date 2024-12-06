@@ -8,6 +8,7 @@ from typing_extensions import Self
 
 from .. import optional_features
 from ..events import GenericEventArguments, Handler, MouseEventArguments, handle_event
+from ..logging import log
 from .image import pil_to_base64
 from .mixins.content_element import ContentElement
 from .mixins.source_element import SourceElement
@@ -95,5 +96,8 @@ class InteractiveImage(SourceElement, ContentElement, component='interactive_ima
 
     def force_reload(self) -> None:
         """Force the image to reload from the source."""
+        if self._props['src'].startswith('data:'):
+            log.warning('ui.interactive_image: force_reload() only works with network sources (not base64)')
+            return
         self._props['t'] = time.time()
         self.update()

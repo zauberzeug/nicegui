@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+fly scale count app=1  --region yul -y # Montreal, Quebec (Canada)
+
 fly scale count app=1  --region iad -y # Washington DC, Virginia (US)
 fly scale count app=1  --region sjc -y # San Jose, California (US)
 fly scale count app=1  --region lax -y # Los Angeles, California (US)

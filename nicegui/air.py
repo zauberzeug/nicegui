@@ -38,7 +38,7 @@ class Air:
         self.log = logging.getLogger('nicegui.air')
         self.token = token
         self.relay = socketio.AsyncClient()
-        self.client = httpx.AsyncClient(app=core.app)
+        self.client = httpx.AsyncClient(transport=httpx.ASGITransport(app=core.app))
         self.streaming_client = httpx.AsyncClient()
         self.connecting = False
         self.streams: Dict[str, Stream] = {}

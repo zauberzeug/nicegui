@@ -41,6 +41,10 @@ jobs:
   docker:
     needs: pypi
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        build: [{ platform: linux/amd64, cache: buildcache-amd64 }, { platform: linux/arm64, cache: buildcache-arm64 }]
     steps:
       - uses: actions/checkout@v4
       - name: Prepare
@@ -77,32 +81,23 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
-      - name: Cache Docker layers
-        uses: actions/cache@v4
-        with:
-          path: /tmp/.buildx-cache
-          key: ${{ runner.os }}-buildx-${{ github.sha }}
-          restore-keys: |
-            ${{ runner.os }}-buildx-
       - name: Build and push
         uses: docker/build-push-action@v6
         with:
           context: .
           file: ./release.dockerfile
-          platforms: linux/amd64,linux/arm64
+          platforms: ${{ matrix.build.platform }}
           push: true
           tags: ${{ steps.prep.outputs.tags }}
           build-args: VERSION=${{ steps.prep.outputs.version }}
-          cache-from: type=local,src=/tmp/.buildx-cache
-          cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
-      # Temp fix
-      # https://github.com/docker/build-push-action/issues/252
-      # https://github.com/moby/buildkit/issues/1896
-      - name: Move cache
-        run: |
-          rm -rf /tmp/.buildx-cache
-          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
+          cache-from: type=registry,ref=${{ steps.prep.outputs.docker_image }}:${{ matrix.build.cache }}
+          cache-to: type=registry,ref=${{ steps.prep.outputs.docker_image }}:${{ matrix.build.cache }},mode=max
 
+  readme:
+    runs-on: ubuntu-latest
+    needs: docker
+    steps:
+      - uses: actions/checkout@v4
       # Uploading the README.md is not a core feature of docker/build-push-action yet
       - name: Update README
         uses: christian-korneck/update-container-description-action@v1
@@ -114,7 +109,7 @@ jobs:
           provider: dockerhub
           short_description: "Web Based User Interface for Python with Buttons, Dialogs, Markdown, 3D Scenes and Plots"
 
-  update_metadata:
+  update_version_and_sponsors:
     needs: docker
     runs-on: ubuntu-latest
     steps:
@@ -126,12 +121,14 @@ jobs:
           python-version: "3.11"
       - name: Update version in pyproject.toml
         run: python .github/workflows/update_pyproject.py ${GITHUB_REF#refs/tags/}
+      - name: Update sponsors in README and on website
+        run: python .github/workflows/fetch_sponsors.py
       - name: Commit and push changes
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add CITATION.cff pyproject.toml
-          git commit -m "Update pyproject.toml"
+          git add pyproject.toml README.md website/sponsors.json
+          git commit -m "Update version and sponsors"
           git push origin HEAD:main
 
   verify:

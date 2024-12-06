@@ -5,7 +5,7 @@ from typing import Any, Callable, Dict, Iterator, List, Literal, Optional, Union
 from ..events import GenericEventArguments, Handler, ValueChangeEventArguments
 from .choice_element import ChoiceElement
 from .mixins.disableable_element import DisableableElement
-from .mixins.validation_element import ValidationElement
+from .mixins.validation_element import ValidationDict, ValidationElement, ValidationFunction
 
 
 class Select(ValidationElement, ChoiceElement, DisableableElement, component='select.js'):
@@ -19,7 +19,7 @@ class Select(ValidationElement, ChoiceElement, DisableableElement, component='se
                  new_value_mode: Optional[Literal['add', 'add-unique', 'toggle']] = None,
                  multiple: bool = False,
                  clearable: bool = False,
-                 validation: Optional[Union[Callable[..., Optional[str]], Dict[str, Callable[..., bool]]]] = None,
+                 validation: Optional[Union[ValidationFunction, ValidationDict]] = None,
                  key_generator: Optional[Union[Callable[[Any], Any], Iterator[Any]]] = None,
                  ) -> None:
         """Dropdown Selection

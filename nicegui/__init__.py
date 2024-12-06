@@ -1,4 +1,4 @@
-from . import elements, run, ui
+from . import elements, html, run, ui
 from .api_router import APIRouter
 from .app.app import App
 from .client import Client
@@ -10,14 +10,15 @@ from .version import __version__
 
 __all__ = [
     'APIRouter',
-    'app',
     'App',
     'Client',
-    'context',
     'ElementFilter',
-    'elements',
-    'run',
     'Tailwind',
-    'ui',
     '__version__',
+    'app',
+    'context',
+    'elements',
+    'html',
+    'run',
+    'ui',
 ]
