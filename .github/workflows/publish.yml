@@ -130,6 +130,8 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
+      - name: Install httpx
+        run: pip install httpx
       - name: Update version in pyproject.toml
         run: python .github/workflows/update_pyproject.py ${GITHUB_REF#refs/tags/}
       - name: Update sponsors in README and on website
