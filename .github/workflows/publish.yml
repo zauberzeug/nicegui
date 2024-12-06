@@ -41,10 +41,6 @@ jobs:
   docker:
     needs: pypi
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        build: [{ platform: linux/amd64, cache: buildcache-amd64 }, { platform: linux/arm64, cache: buildcache-arm64 }]
     steps:
       - uses: actions/checkout@v4
       - name: Prepare
@@ -86,18 +82,33 @@ jobs:
         with:
           context: .
           file: ./release.dockerfile
-          platforms: ${{ matrix.build.platform }}
+          platforms: linux/amd64, linux/arm64
           push: true
           tags: ${{ steps.prep.outputs.tags }}
           build-args: VERSION=${{ steps.prep.outputs.version }}
-          cache-from: type=registry,ref=${{ steps.prep.outputs.docker_image }}:${{ matrix.build.cache }}
-          cache-to: type=registry,ref=${{ steps.prep.outputs.docker_image }}:${{ matrix.build.cache }},mode=max
-
-  readme:
-    runs-on: ubuntu-latest
-    needs: docker
-    steps:
-      - uses: actions/checkout@v4
+          cache-from: |
+            type=registry,ref=${{ steps.prep.outputs.docker_image }}:buildcache-amd64
+            type=registry,ref=${{ steps.prep.outputs.docker_image }}:buildcache-arm64
+      - name: Cache linux/amd64 to registry
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./release.dockerfile
+          platforms: linux/amd64
+          build-args: VERSION=${{ steps.prep.outputs.version }}
+          push: false
+          cache-from: type=registry,ref=${{ steps.prep.outputs.docker_image }}:buildcache-amd64
+          cache-to: type=registry,ref=${{ steps.prep.outputs.docker_image }}:buildcache-amd64,mode=max
+      - name: Cache linux/arm64 to registry
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./release.dockerfile
+          platforms: linux/arm64
+          build-args: VERSION=${{ steps.prep.outputs.version }}
+          push: false
+          cache-from: type=registry,ref=${{ steps.prep.outputs.docker_image }}:buildcache-arm64
+          cache-to: type=registry,ref=${{ steps.prep.outputs.docker_image }}:buildcache-arm64,mode=max
       # Uploading the README.md is not a core feature of docker/build-push-action yet
       - name: Update README
         uses: christian-korneck/update-container-description-action@v1
