@@ -73,6 +73,7 @@ __all__ = [
     'notify',
     'number',
     'on',
+    'outlet',
     'page',
     'page_sticky',
     'page_title',
@@ -86,6 +87,7 @@ __all__ = [
     'refreshable_method',
     'restructured_text',
     'right_drawer',
+    'router_frame',
     'row',
     'run',
     'run_javascript',
@@ -192,6 +194,7 @@ from .elements.radio import Radio as radio
 from .elements.range import Range as range  # pylint: disable=redefined-builtin
 from .elements.restructured_text import ReStructuredText as restructured_text
 from .elements.row import Row as row
+from .elements.router_frame import RouterFrame as router_frame
 from .elements.scene import Scene as scene
 from .elements.scene_view import SceneView as scene_view
 from .elements.scroll_area import ScrollArea as scroll_area
@@ -233,6 +236,7 @@ from .functions.page_title import page_title
 from .functions.refreshable import refreshable, refreshable_method, state
 from .functions.style import add_css, add_sass, add_scss
 from .functions.update import update
+from .outlet import Outlet as outlet
 from .page import page
 from .page_layout import Drawer as drawer
 from .page_layout import Footer as footer
