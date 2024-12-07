@@ -9,7 +9,7 @@ export default {
       await import("echarts-gl");
     }
 
-    this.chart = echarts.init(this.$el);
+    this.chart = echarts.init(this.$el, null, { renderer: this.renderer });
     this.chart.on("click", (e) => this.$emit("pointClick", e));
     for (const event of [
       "click",
@@ -90,5 +90,6 @@ export default {
   props: {
     options: Object,
     enable_3d: Boolean,
+    renderer: String,
   },
 };

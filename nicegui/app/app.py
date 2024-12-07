@@ -5,7 +5,7 @@ import signal
 import urllib
 from enum import Enum
 from pathlib import Path
-from typing import Any, Awaitable, Callable, List, Optional, Union
+from typing import Any, Awaitable, Callable, Iterator, List, Optional, Union
 
 from fastapi import FastAPI, HTTPException, Request, Response
 from fastapi.responses import FileResponse
@@ -139,7 +139,8 @@ class App(FastAPI):
                          url_path: str,
                          local_directory: Union[str, Path],
                          *,
-                         follow_symlink: bool = False) -> None:
+                         follow_symlink: bool = False,
+                         max_cache_age: int = 3600) -> None:
         """Add a directory of static files.
 
         `add_static_files()` makes a local directory available at the specified endpoint, e.g. `'/static'`.
@@ -153,11 +154,15 @@ class App(FastAPI):
         :param url_path: string that starts with a slash "/" and identifies the path at which the files should be served
         :param local_directory: local folder with files to serve as static content
         :param follow_symlink: whether to follow symlinks (default: False)
+        :param max_cache_age: value for max-age set in Cache-Control header
         """
         if url_path == '/':
             raise ValueError('''Path cannot be "/", because it would hide NiceGUI's internal "/_nicegui" route.''')
+        if max_cache_age < 0:
+            raise ValueError('''Value of max_cache_age must be a positive integer or 0.''')
 
-        handler = CacheControlledStaticFiles(directory=local_directory, follow_symlink=follow_symlink)
+        handler = CacheControlledStaticFiles(
+            directory=local_directory, follow_symlink=follow_symlink, max_cache_age=max_cache_age)
 
         @self.get(url_path + '/{path:path}')
         async def static_file(request: Request, path: str = '') -> Response:
@@ -167,7 +172,7 @@ class App(FastAPI):
                         local_file: Union[str, Path],
                         url_path: Optional[str] = None,
                         single_use: bool = False,
-                        ) -> str:
+                        max_cache_age: int = 3600) -> str:
         """Add a single static file.
 
         Allows a local file to be accessed online with enabled caching.
@@ -179,8 +184,12 @@ class App(FastAPI):
         :param local_file: local file to serve as static content
         :param url_path: string that starts with a slash "/" and identifies the path at which the file should be served (default: None -> auto-generated URL path)
         :param single_use: whether to remove the route after the file has been downloaded once (default: False)
+        :param max_cache_age: value for max-age set in Cache-Control header
         :return: encoded URL which can be used to access the file
         """
+        if max_cache_age < 0:
+            raise ValueError('''Value of max_cache_age must be a positive integer or 0.''')
+
         file = Path(local_file).resolve()
         if not file.is_file():
             raise ValueError(f'File not found: {file}')
@@ -190,7 +199,7 @@ class App(FastAPI):
         def read_item() -> FileResponse:
             if single_use:
                 self.remove_route(path)
-            return FileResponse(file, headers={'Cache-Control': 'public, max-age=3600'})
+            return FileResponse(file, headers={'Cache-Control': f'public, max-age={max_cache_age}'})
 
         return urllib.parse.quote(path)
 
@@ -258,3 +267,16 @@ class App(FastAPI):
         self._connect_handlers.clear()
         self._disconnect_handlers.clear()
         self._exception_handlers[:] = [log.exception]
+
+    @staticmethod
+    def clients(path: str) -> Iterator[Client]:
+        """Iterate over all connected clients with a matching path.
+
+        When using `@ui.page("/path")` each client gets a private view of this page.
+        Updates must be sent to each client individually, which this iterator simplifies.
+
+        :param path: string to filter clients by
+        """
+        for client in Client.instances.values():
+            if client.page.path == path:
+                yield client

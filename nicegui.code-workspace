@@ -5,6 +5,7 @@
     }
   ],
   "settings": {
+    "python.analysis.supportRestructuredText": true,
     "ruff.enable": true,
     "files.associations": {
       "*.html": "jinja-html"

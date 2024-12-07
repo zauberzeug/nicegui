@@ -1,3 +1,4 @@
+# pylint: disable=C0116
 import inspect
 import warnings
 from multiprocessing import Queue
@@ -52,7 +53,7 @@ try:
         async def get_cookies(self) -> Any:  # pylint: disable=invalid-overridden-method
             return await self._request()
 
-        async def get_current_url(self) -> str:  # pylint: disable=invalid-overridden-method
+        async def get_current_url(self) -> str:  # type: ignore # pylint: disable=invalid-overridden-method
             return await self._request()
 
         def destroy(self) -> None:
@@ -85,13 +86,20 @@ try:
         def move(self, x: int, y: int) -> None:
             self._send(x, y)
 
-        async def evaluate_js(self, script: str) -> str:  # pylint: disable=arguments-differ,invalid-overridden-method
+        async def evaluate_js(  # type: ignore # pylint: disable=arguments-differ,invalid-overridden-method
+            self,
+            script: str,
+        ) -> str:
             return await self._request(script)
 
-        async def create_confirmation_dialog(self, title: str, message: str) -> bool:  # pylint: disable=invalid-overridden-method
+        async def create_confirmation_dialog(  # type: ignore # pylint: disable=invalid-overridden-method
+            self,
+            title: str,
+            message: str,
+        ) -> bool:
             return await self._request(title, message)
 
-        async def create_file_dialog(  # pylint: disable=invalid-overridden-method
+        async def create_file_dialog(  # type: ignore # pylint: disable=invalid-overridden-method
             self,
             dialog_type: int = webview.OPEN_DIALOG,
             directory: str = '',
@@ -107,7 +115,7 @@ try:
                 file_types=file_types,
             )
 
-        def expose(self, function: Callable) -> None:  # pylint: disable=arguments-differ
+        def expose(self, function: Callable) -> None:  # type: ignore # pylint: disable=arguments-differ
             raise NotImplementedError(f'exposing "{function}" is not supported')
 
         def _send(self, *args: Any, **kwargs: Any) -> None:

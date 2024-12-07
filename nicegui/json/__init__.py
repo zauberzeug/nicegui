@@ -15,7 +15,7 @@ except ImportError:
 
 
 __all__ = [
+    'NiceGUIJSONResponse',
     'dumps',
     'loads',
-    'NiceGUIJSONResponse'
 ]

@@ -42,7 +42,7 @@ async def user(nicegui_reset_globals,  # noqa: F811, pylint: disable=unused-argu
     """Create a new user fixture."""
     prepare_simulation(request)
     async with core.app.router.lifespan_context(core.app):
-        async with httpx.AsyncClient(app=core.app, base_url='http://test') as client:
+        async with httpx.AsyncClient(transport=httpx.ASGITransport(core.app), base_url='http://test') as client:
             yield User(client)
     ui.navigate = Navigate()
     ui.notify = notify
@@ -56,6 +56,6 @@ async def create_user(nicegui_reset_globals,  # noqa: F811, pylint: disable=unus
     """Create a fixture for building new users."""
     prepare_simulation(request)
     async with core.app.router.lifespan_context(core.app):
-        yield lambda: User(httpx.AsyncClient(app=core.app, base_url='http://test'))
+        yield lambda: User(httpx.AsyncClient(transport=httpx.ASGITransport(core.app), base_url='http://test'))
     ui.navigate = Navigate()
     ui.notify = notify

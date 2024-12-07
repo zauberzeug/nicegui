@@ -7,10 +7,28 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  code-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: set up Poetry
+        uses: abatilo/actions-poetry@v3
+      - name: set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.8"
+          cache: "poetry"
+      - name: install dependencies
+        run: poetry install --all-extras --with dev
+      - name: pre-commit, mypy & pylint
+        run: |
+          poetry run pre-commit run --all-files
+          poetry run mypy ./nicegui --non-interactive
+          poetry run pylint ./nicegui
   test:
     strategy:
       matrix:
-        python: ["3.8", "3.9", "3.10", "3.11", "3.12"]
+        python: ["3.8", "3.9", "3.10", "3.11", "3.12", "3.13"]
       fail-fast: false
     runs-on: ubuntu-latest
     timeout-minutes: 40
@@ -35,13 +53,14 @@ jobs:
       - name: test startup
         run: poetry run ./test_startup.sh
       - name: setup chromedriver
-        uses: nanasess/setup-chromedriver@v2.2.2
+        uses: nanasess/setup-chromedriver@v2.3.0
       - name: pytest
         run: poetry run pytest
 
   slack:
     needs:
       - test
+      - code-check
     if: always() # also execute when test fail
     runs-on: ubuntu-latest
     steps:

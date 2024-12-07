@@ -40,9 +40,14 @@ class page:
         This means it is private to the user and not shared with others
         (as it is done `when placing elements outside of a page decorator <https://nicegui.io/documentation/section_pages_routing#auto-index_page>`_).
 
-        Note:
-        The name of the decorated function is unused and can be anything.
-        The page route is determined by the `path` argument and registered globally.
+        Notes:
+
+        - The name of the decorated function is unused and can be anything.
+        - The page route is determined by the `path` argument and registered globally.
+        - The decorator does only work for free functions and static methods.
+          Instance methods or initializers would require a `self` argument, which the router cannot associate.
+          See `our modularization example <https://github.com/zauberzeug/nicegui/tree/main/examples/modularization/>`_
+          for strategies to structure your code.
 
         :param path: route of the new page (path must start with '/')
         :param title: optional page title

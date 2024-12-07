@@ -12,6 +12,11 @@ if importlib.util.find_spec('pandas'):
     if TYPE_CHECKING:
         import pandas as pd
 
+if importlib.util.find_spec('polars'):
+    optional_features.register('polars')
+    if TYPE_CHECKING:
+        import polars as pl
+
 
 class AgGrid(Element,
              component='aggrid.js',
@@ -81,6 +86,30 @@ class AgGrid(Element,
         return cls({
             'columnDefs': [{'field': str(col)} for col in df.columns],
             'rowData': df.to_dict('records'),
+            'suppressFieldDotNotation': True,
+            **options,
+        }, theme=theme, auto_size_columns=auto_size_columns)
+
+    @classmethod
+    def from_polars(cls,
+                    df: 'pl.DataFrame', *,
+                    theme: str = 'balham',
+                    auto_size_columns: bool = True,
+                    options: Dict = {}) -> Self:  # noqa: B006
+        """Create an AG Grid from a Polars DataFrame.
+
+        If the DataFrame contains non-UTF-8 datatypes, they will be converted to strings.
+        To use a different conversion, convert the DataFrame manually before passing it to this method.
+
+        :param df: Polars DataFrame
+        :param theme: AG Grid theme (default: 'balham')
+        :param auto_size_columns: whether to automatically resize columns to fit the grid width (default: `True`)
+        :param options: dictionary of additional AG Grid options
+        :return: AG Grid element
+        """
+        return cls({
+            'columnDefs': [{'field': str(col)} for col in df.columns],
+            'rowData': df.to_dicts(),
             'suppressFieldDotNotation': True,
             **options,
         }, theme=theme, auto_size_columns=auto_size_columns)
