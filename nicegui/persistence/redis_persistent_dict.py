@@ -11,25 +11,15 @@ class RedisDict(observables.ObservableDict):
         self.pubsub = self.redis_client.pubsub()
         self.key_prefix = key_prefix
         self.encoding = encoding
-
-        # Initialize with empty data first
-        super().__init__({}, on_change=self.backup)
+        super().__init__({}, on_change=self.publish)
 
     async def initialize(self) -> None:
         """Load initial data from Redis and start listening for changes."""
         try:
-            data = await self._load_data()
-            self.update(data)
+            data = await self.redis_client.get(self.key_prefix + 'data')
+            self.update(json.loads(data) if data else {})
         except Exception:
             log.warning(f'Could not load data from Redis with prefix {self.key_prefix}')
-
-        await self._listen_for_changes()
-
-    async def _load_data(self) -> dict:
-        data = await self.redis_client.get(self.key_prefix + 'data')
-        return json.loads(data) if data else {}
-
-    async def _listen_for_changes(self) -> None:
         await self.pubsub.subscribe(self.key_prefix + 'changes')
         async for message in self.pubsub.listen():
             if message['type'] == 'message':
@@ -37,8 +27,8 @@ class RedisDict(observables.ObservableDict):
                 if new_data != self:
                     self.update(new_data)
 
-    def backup(self) -> None:
-        """Back up the data to Redis and notify other instances."""
+    def publish(self) -> None:
+        """Publish the data to Redis and notify other instances."""
         async def backup() -> None:
             pipeline = self.redis_client.pipeline()
             pipeline.set(self.key_prefix + 'data', json.dumps(self))
