@@ -3,77 +3,26 @@ import contextvars
 import os
 import time
 import uuid
-from collections.abc import MutableMapping
 from datetime import timedelta
 from pathlib import Path
-from typing import Any, Dict, Iterator, Optional, Union
+from typing import Dict, Optional, Union
 
-import aiofiles
 from starlette.middleware import Middleware
 from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
 from starlette.middleware.sessions import SessionMiddleware
 from starlette.requests import Request
 from starlette.responses import Response
 
-from . import background_tasks, core, json, observables
-from .context import context
-from .logging import log
-from .observables import ObservableDict
+from .. import core, observables
+from ..context import context
+from ..observables import ObservableDict
+from .persistent_dict import PersistentDict
+from .read_only_dict import ReadOnlyDict
+from .redis_persistent_dict import RedisDict
 
 request_contextvar: contextvars.ContextVar[Optional[Request]] = contextvars.ContextVar('request_var', default=None)
 
 PURGE_INTERVAL = timedelta(minutes=5).total_seconds()
-
-
-class ReadOnlyDict(MutableMapping):
-
-    def __init__(self, data: Dict[Any, Any], write_error_message: str = 'Read-only dict') -> None:
-        self._data: Dict[Any, Any] = data
-        self._write_error_message: str = write_error_message
-
-    def __getitem__(self, item: Any) -> Any:
-        return self._data[item]
-
-    def __setitem__(self, key: Any, value: Any) -> None:
-        raise TypeError(self._write_error_message)
-
-    def __delitem__(self, key: Any) -> None:
-        raise TypeError(self._write_error_message)
-
-    def __iter__(self) -> Iterator:
-        return iter(self._data)
-
-    def __len__(self) -> int:
-        return len(self._data)
-
-
-class PersistentDict(observables.ObservableDict):
-
-    def __init__(self, filepath: Path, encoding: Optional[str] = None, *, indent: bool = False) -> None:
-        self.filepath = filepath
-        self.encoding = encoding
-        self.indent = indent
-        try:
-            data = json.loads(filepath.read_text(encoding)) if filepath.exists() else {}
-        except Exception:
-            log.warning(f'Could not load storage file {filepath}')
-            data = {}
-        super().__init__(data, on_change=self.backup)
-
-    def backup(self) -> None:
-        """Back up the data to the given file path."""
-        if not self.filepath.exists():
-            if not self:
-                return
-            self.filepath.parent.mkdir(exist_ok=True)
-
-        async def backup() -> None:
-            async with aiofiles.open(self.filepath, 'w', encoding=self.encoding) as f:
-                await f.write(json.dumps(self, indent=self.indent))
-        if core.loop:
-            background_tasks.create_lazy(backup(), name=self.filepath.stem)
-        else:
-            core.app.on_startup(backup())
 
 
 class RequestTrackingMiddleware(BaseHTTPMiddleware):
@@ -105,7 +54,7 @@ class Storage:
     def __init__(self) -> None:
         self.path = Path(os.environ.get('NICEGUI_STORAGE_PATH', '.nicegui')).resolve()
         self.max_tab_storage_age = timedelta(days=30).total_seconds()
-        self._general = PersistentDict(self.path / 'storage-general.json', encoding='utf-8')
+        self._general = RedisDict()  # PersistentDict(self.path / 'storage-general.json', encoding='utf-8')
         self._users: Dict[str, PersistentDict] = {}
         self._tabs: Dict[str, observables.ObservableDict] = {}
 

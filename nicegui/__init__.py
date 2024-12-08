@@ -5,6 +5,7 @@ from .client import Client
 from .context import context
 from .element_filter import ElementFilter
 from .nicegui import app
+from .persistence import storage
 from .tailwind import Tailwind
 from .version import __version__
 
@@ -20,5 +21,6 @@ __all__ = [
     'elements',
     'html',
     'run',
+    'storage',
     'ui',
 ]

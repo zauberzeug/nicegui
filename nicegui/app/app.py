@@ -15,9 +15,9 @@ from ..client import Client
 from ..logging import log
 from ..native import NativeConfig
 from ..observables import ObservableSet
+from ..persistence.storage import Storage
 from ..server import Server
 from ..staticfiles import CacheControlledStaticFiles
-from ..storage import Storage
 from .app_config import AppConfig
 from .range_response import get_range_response
 
@@ -39,7 +39,7 @@ class App(FastAPI):
         self._state: State = State.STOPPED
         self.config = AppConfig()
 
-        self._startup_handlers: List[Union[Callable[..., Any], Awaitable]] = []
+        self._startup_handlers: List[Union[Callable[..., Any], Awaitable]] = [self.storage.general.initialize,]
         self._shutdown_handlers: List[Union[Callable[..., Any], Awaitable]] = []
         self._connect_handlers: List[Union[Callable[..., Any], Awaitable]] = []
         self._disconnect_handlers: List[Union[Callable[..., Any], Awaitable]] = []

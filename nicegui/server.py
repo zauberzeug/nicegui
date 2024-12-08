@@ -6,8 +6,9 @@ from typing import List, Optional
 
 import uvicorn
 
-from . import core, storage
+from . import core
 from .native import native
+from .persistence import storage
 
 
 class CustomServerConfig(uvicorn.Config):
