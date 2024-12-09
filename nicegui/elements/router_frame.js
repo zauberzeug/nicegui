@@ -44,7 +44,7 @@ export default {
 
         this.clickEventListener = function (e) {
             // Check if the clicked element is a link
-             // Use closest to find the nearest parent <a> tag
+            // Use closest to find the nearest parent <a> tag
             let link = e.target.closest('a');
 
             // If there's no <a> tag, or the <a> tag has no href attribute, do nothing
@@ -64,8 +64,7 @@ export default {
             }
         };
         this.popstateEventListener = function (event) {
-            let state = event.state;
-            let href = window.location.pathname;
+            let href = window.location.pathname + window.location.search;
             event.preventDefault();
             if (window.location.hash) {
                 return;
