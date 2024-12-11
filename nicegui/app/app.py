@@ -18,6 +18,7 @@ from ..observables import ObservableSet
 from ..server import Server
 from ..staticfiles import CacheControlledStaticFiles
 from ..storage import Storage
+from ..timer import Timer
 from .app_config import AppConfig
 from .range_response import get_range_response
 
@@ -78,6 +79,12 @@ class App(FastAPI):
         for t in self._shutdown_handlers:
             Client.auto_index_client.safe_invoke(t)
         self._state = State.STOPPED
+
+    def timer(self, interval: float, handler: Callable) -> Timer:
+        """Create a timer that repeats the given handler at the given interval."""
+        timer = Timer(interval, handler)
+        timer.start()
+        return timer
 
     def on_connect(self, handler: Union[Callable, Awaitable]) -> None:
         """Called every time a new client connects to NiceGUI.
