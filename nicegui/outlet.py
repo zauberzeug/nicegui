@@ -16,44 +16,46 @@ PAGE_TEMPLATE_METHOD_NAME = "page_template"
 
 
 class Outlet:
-    """An outlet allows the creation of single page applications which do not reload the page when navigating between
-    different views. The outlet is a container for multiple views and can contain further, nested outlets.
-
-    To define a new outlet, use the @ui.outlet decorator on a function which defines the layout of the outlet.
-    The layout function must be a generator function and contain a yield statement to separate the layout from the
-    actual content area. The yield can also be used to pass properties to the content are by return a dictionary
-    with the properties. Each property can be received as function argument in all nested views and outlets.
-
-    Once the outlet is defined, multiple views can be added to the outlet using the @<outlet_function>.view decorator on
-    a function."""
-
     def __init__(self,
                  path: str,
-                 outlet_builder: Optional[Callable] = None,
-                 browser_history: bool = True,
                  parent: Optional['Outlet'] = None,
                  on_instance_created: Optional[Callable[['SinglePageRouter'], None]] = None,
                  on_navigate: Optional[Callable[[str], Optional[Union[SinglePageTarget, str]]]] = None,
                  router_class: Optional[Callable[..., SinglePageRouter]] = None,
                  **kwargs) -> None:
-        """
-        :param path: the base path of the single page router.
-        :param outlet_builder: A layout definition function which defines the layout of the page. The layout builder
-            must be a generator function and contain a yield statement to separate the layout from the content area.
-        :param layout_builder: A layout builder function which defines the layout of the page. The layout builder
-            must be a generator function and contain a yield statement to separate the layout from the content area.
-        :param browser_history: Optional flag to enable or disable the browser history management. Default is True.
-        :param on_instance_created: Optional callback which is called when a new instance is created. Each browser tab
-        or window is a new instance. This can be used to initialize the state of the application.
-        :param on_navigate: Optional callback which is called when a navigation event is triggered. Can be used to
+        """Outlets: Building Single-Page Applications
+
+        In NiceGUI, outlets facilitate the creation of single-page applications by enabling seamless transitions between
+        views without full page reloads. The outlet decorator allows defining the layout of the page once at the top level
+        and then adding multiple views that are rendered inside the layout.
+
+        The decorated function has to be a generator function containing a `yield` statement separating the layout from
+        the content area. The actual content is added at the point where the yield statement is reached.
+
+        The views of the single page application are defined using the `outlet.view` decorator which works quite
+        similar to the `ui.page` decorator but instead of specifying the path directly, it uses a relative path starting
+        from the outlet's base path. `ui.page` parameters like `title`, query parameters or path parameters can be used
+        as well.
+
+        Notes:
+
+        - The `yield` statement can be used to return a dictionary of keyword arguments that are passed to each
+          of its views. Such keyword arguments can be references to shared UI elements such as the sidebar or header but
+          also any other data that should be shared between the views.
+        - As each page instance gets its own outlet instance, the state of the application can be stored in the outlet
+          and passed via the keyword arguments to the views.
+        - Outlets can be nested to create complex single page applications with multiple levels of navigation.
+        - Linking and navigating via `ui.navigate` or `ui.link` works for outlet views as for classic pages.
+
+        :param path: route of the new page (path must start with '/')
+        :param on_instance_created: Called when a new instance is created. Each browser tab creates is a new instance.
+            This can be used to initialize the state of the application.
+        :param on_navigate: Called when a navigation event is triggered. Can be used to
             prevent or modify the navigation. Return the new URL if the navigation should be allowed, modify the URL
             or return None to prevent the navigation.
-        :param router_class: Optional class which is used to create the router instance. The class must be a subclass
-            of SinglePageRouter. If not provided, the default SinglePageRouter is used.
-
-            If the class defines a method with the name 'page_template', this method is used as the outlet builder.
+        :param router_class: Class which is used to create the router instance. By default, SinglePageRouter is used.
         :param parent: The parent outlet of this outlet.
-        :param kwargs: Additional arguments
+        :param kwargs: additional keyword arguments passed to FastAPI's @app.get method
         """
         super().__init__()
         self.routes: Dict[str, 'OutletPath'] = {}
@@ -62,7 +64,7 @@ class Outlet:
         self.excluded_paths: Set[str] = set()
         self.on_instance_created: Optional[Callable] = on_instance_created
         self.on_navigate: Optional[Callable[[str], Optional[Union[SinglePageTarget, str]]]] = on_navigate
-        self.use_browser_history = browser_history
+        self.use_browser_history = True
         self.page_template = None
         self._setup_configured = False
         self.parent_config = parent
@@ -74,12 +76,6 @@ class Outlet:
         self.outlet_builder: Optional[Callable] = None
         if parent is None:
             Client.top_level_outlets[path] = self
-        if router_class is not None:
-            # check if class defines outlet builder function
-            if hasattr(router_class, PAGE_TEMPLATE_METHOD_NAME):
-                outlet_builder = getattr(router_class, PAGE_TEMPLATE_METHOD_NAME)
-        if outlet_builder is not None:
-            self(outlet_builder)
 
     def build_page_template(self, **kwargs):
         """Setups the content area for the single page router"""
@@ -137,16 +133,11 @@ class Outlet:
                 self.excluded_paths.add(route)
             if overwrite:
                 continue
-            if self.base_path.startswith(route.rstrip('/') + '/'):  # '/sub_router' after '/' - forbidden
-                raise ValueError(f'Another router with path "{route.rstrip("/")}/*" is already registered which '
-                                 f'includes this router\'s base path "{self.base_path}". You can declare the nested '
-                                 f'router first to prioritize it and avoid this issue.')
 
         @ui.page(self.base_path, **self.page_kwargs)
         @ui.page(f'{self.base_path}' + '{_:path}', **self.page_kwargs)  # all other pages
         async def root_page():
             await ui.context.client.connected(30.0)  # to ensure storage.tab and storage.client availability
-            # TODO Timeout should be configurable
             request = context.client.request
             initial_url = request.url.path
             query = request.url.query
