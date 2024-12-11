@@ -1,18 +1,18 @@
 import asyncio
 import time
-from typing import Awaitable, Callable, ClassVar
+from typing import Awaitable, Callable, ClassVar, Optional, Set
 
 from . import background_tasks, core, logging
 from .awaitable_response import AwaitableResponse
 
 
 class Timer:
-    tasks: ClassVar[set[asyncio.Task]] = set()
+    tasks: ClassVar[Set[asyncio.Task]] = set()
 
     def __init__(self, interval: float, handler: Callable) -> None:
         self.handler = handler
         self.interval = interval
-        self._task: asyncio.Task | None = None
+        self._task: Optional[asyncio.Task] = None
 
     def start(self) -> None:
         """Start the timer."""
