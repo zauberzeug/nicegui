@@ -17,6 +17,7 @@ class Timer:
                  callback: Callable[..., Any], *,
                  active: bool = True,
                  once: bool = False,
+                 immediate: bool = True,
                  ) -> None:
         """Timer
 
@@ -28,12 +29,14 @@ class Timer:
         :param callback: function or coroutine to execute when interval elapses
         :param active: whether the callback should be executed or not (can be changed during runtime)
         :param once: whether the callback is only executed once after a delay specified by `interval` (default: `False`)
+        :param immediate: whether the callback should be executed immediately (default: `True`, ignored if `once` is `True`)
         """
         super().__init__()
         self.interval = interval
         self.callback = callback
         self.active = active
         self._is_canceled = False
+        self._immediate = immediate
 
         coroutine = self._run_once if once else self._run_in_loop
         if core.app.is_started:
@@ -70,6 +73,8 @@ class Timer:
 
     async def _run_in_loop(self) -> None:
         try:
+            if not self._immediate:
+                await asyncio.sleep(self.interval)
             if not await self._can_start():
                 return
             with self._get_context():
