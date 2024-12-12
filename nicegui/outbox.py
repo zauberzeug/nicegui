@@ -143,6 +143,11 @@ class Outbox:
         if not self.client.shared:
             self.client.run_javascript('window.location.reload()')
 
+    def prune_history(self, next_message_id: MessageId) -> None:
+        """Prune the message history up to the given message ID."""
+        while self.message_history and self.message_history[0][0] < next_message_id:
+            self.message_history.popleft()
+
     def stop(self) -> None:
         """Stop the outbox loop."""
         self._should_stop = True

@@ -179,6 +179,14 @@ class Air:
             client = Client.instances[client_id]
             client.handle_javascript_response(data['msg'])
 
+        @self.relay.on('ack')
+        def _handle_ack(data: Dict[str, Any]) -> None:
+            client_id = data['client_id']
+            if client_id not in Client.instances:
+                return
+            client = Client.instances[client_id]
+            client.outbox.prune_history(data['next_message_id'])
+
         @self.relay.on('out_of_time')
         async def _handle_out_of_time() -> None:
             print('Sorry, you have reached the time limit of this NiceGUI On Air preview.', flush=True)

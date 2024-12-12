@@ -265,6 +265,15 @@ function download(src, filename, mediaType, prefix) {
   }
 }
 
+function ack() {
+  if (window.ackedMessageId >= window.nextMessageId) return;
+  window.socket.emit("ack", {
+    client_id: window.clientId,
+    next_message_id: window.nextMessageId,
+  });
+  window.ackedMessageId = window.nextMessageId;
+}
+
 async function loadDependencies(element, prefix, version) {
   if (element.component) {
     const { name, key, tag } = element.component;
@@ -306,6 +315,7 @@ window.onbeforeunload = function () {
 
 function createApp(elements, options) {
   replaceUndefinedAttributes(elements, 0);
+  setInterval(() => ack(), 3000);
   return (app = Vue.createApp({
     data() {
       return {
@@ -321,6 +331,7 @@ function createApp(elements, options) {
       const url = window.location.protocol === "https:" ? "wss://" : "ws://" + window.location.host;
       window.path_prefix = options.prefix;
       window.nextMessageId = options.query.next_message_id;
+      window.ackedMessageId = -1;
       window.socket = io(url, {
         path: `${options.prefix}/_nicegui_ws/socket.io`,
         query: options.query,

@@ -205,3 +205,11 @@ def _on_javascript_response(_: str, msg: Dict) -> None:
     if not client:
         return
     client.handle_javascript_response(msg)
+
+
+@sio.on('ack')
+def _on_ack(_: str, msg: Dict) -> None:
+    client = Client.instances.get(msg['client_id'])
+    if not client:
+        return
+    client.outbox.prune_history(msg['next_message_id'])
