@@ -1,7 +1,7 @@
 import asyncio
 import time
 from contextlib import nullcontext
-from typing import Any, Awaitable, Callable, ContextManager
+from typing import Any, Awaitable, Callable, ContextManager, Optional
 
 from . import background_tasks, core
 from .awaitable_response import AwaitableResponse
@@ -33,7 +33,7 @@ class Timer:
         """
         super().__init__()
         self.interval = interval
-        self.callback = callback
+        self.callback: Optional[Callable[..., Any]] = callback
         self.active = active
         self._is_canceled = False
         self._immediate = immediate
