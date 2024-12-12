@@ -1,91 +1,111 @@
 import asyncio
 import time
-from typing import Awaitable, Callable, ClassVar, Optional, Set
+from contextlib import nullcontext
+from typing import Any, Awaitable, Callable, ContextManager
 
-from . import background_tasks, core, logging
+from . import background_tasks, core
 from .awaitable_response import AwaitableResponse
+from .binding import BindableProperty
 
 
 class Timer:
-    tasks: ClassVar[Set[asyncio.Task]] = set()
+    active = BindableProperty()
+    interval = BindableProperty()
 
-    def __init__(self, interval: float, handler: Callable) -> None:
-        self.handler = handler
+    def __init__(self,
+                 interval: float,
+                 callback: Callable[..., Any], *,
+                 active: bool = True,
+                 once: bool = False,
+                 ) -> None:
+        """Timer
+
+        One major drive behind the creation of NiceGUI was the necessity to have a simple approach to update the interface in regular intervals,
+        for example to show a graph with incoming measurements.
+        A timer will execute a callback repeatedly with a given interval.
+
+        :param interval: the interval in which the timer is called (can be changed during runtime)
+        :param callback: function or coroutine to execute when interval elapses
+        :param active: whether the callback should be executed or not (can be changed during runtime)
+        :param once: whether the callback is only executed once after a delay specified by `interval` (default: `False`)
+        """
+        super().__init__()
         self.interval = interval
-        self._task: Optional[asyncio.Task] = None
+        self.callback = callback
+        self.active = active
+        self._is_canceled = False
 
-    def start(self) -> None:
-        """Start the timer."""
-        if self.running:
-            return
-        if core.app.is_started or core.app.is_starting:
-            self._task = background_tasks.create(self._repeat())
-            self.tasks.add(self._task)
-        elif self.start not in core.app._startup_handlers:  # pylint: disable=protected-access
-            print('add to startup handlers')
-            core.app.on_startup(self.start)
+        coroutine = self._run_once if once else self._run_in_loop
+        if core.app.is_started:
+            background_tasks.create(coroutine(), name=str(callback))
+        else:
+            core.app.on_startup(coroutine)
 
-    async def _repeat(self) -> None:
-        await asyncio.sleep(self.interval)  # TODO: sleep immediately?
-        while True:
-            start = time.time()
-            try:
-                if core.app.is_stopping:
-                    logging.log.info('%s must be stopped', self.handler)
-                    break
-                await self._invoke_callback()
-                dt = time.time() - start
-            except (asyncio.CancelledError, GeneratorExit):
+    def _get_context(self) -> ContextManager:
+        return nullcontext()
+
+    def activate(self) -> None:
+        """Activate the timer."""
+        assert not self._is_canceled, 'Cannot activate a canceled timer'
+        self.active = True
+
+    def deactivate(self) -> None:
+        """Deactivate the timer."""
+        self.active = False
+
+    def cancel(self) -> None:
+        """Cancel the timer."""
+        self._is_canceled = True
+
+    async def _run_once(self) -> None:
+        try:
+            if not await self._can_start():
                 return
-            except Exception:
-                dt = time.time() - start
-                logging.log.exception('error in "%s"', self.handler.__qualname__)
-                if self.interval == 0 and dt < 0.1:
-                    delay = 0.1 - dt
-                    logging.log.warning(
-                        f'"{self.handler.__qualname__}" would be called to frequently ' +
-                        f'because it only took {dt*1000:.0f} ms; ' +
-                        f'delaying this step for {delay*1000:.0f} ms')
-                    await asyncio.sleep(delay)
-            try:
-                await asyncio.sleep(self.interval - dt)
-            except (asyncio.CancelledError, GeneratorExit):
+            with self._get_context():
+                await asyncio.sleep(self.interval)
+                if self.active and not self._should_stop():
+                    await self._invoke_callback()
+        finally:
+            self._cleanup()
+
+    async def _run_in_loop(self) -> None:
+        try:
+            if not await self._can_start():
                 return
+            with self._get_context():
+                while not self._should_stop():
+                    try:
+                        start = time.time()
+                        if self.active:
+                            await self._invoke_callback()
+                        dt = time.time() - start
+                        await asyncio.sleep(self.interval - dt)
+                    except asyncio.CancelledError:
+                        break
+                    except Exception as e:
+                        core.app.handle_exception(e)
+                        await asyncio.sleep(self.interval)
+        finally:
+            self._cleanup()
 
     async def _invoke_callback(self) -> None:
         try:
-            assert self.handler is not None
-            result = self.handler()
+            assert self.callback is not None
+            result = self.callback()
             if isinstance(result, Awaitable) and not isinstance(result, AwaitableResponse):
                 await result
         except Exception as e:
             core.app.handle_exception(e)
 
-    def stop(self) -> None:
-        """Stop the timer."""
-        if not self._task:
-            return
+    async def _can_start(self) -> bool:
+        return True
 
-        if not self._task.done():
-            self._task.cancel()
+    def _should_stop(self) -> bool:
+        return (
+            self._is_canceled or
+            core.app.is_stopping or
+            core.app.is_stopped
+        )
 
-        self.tasks.remove(self._task)
-        self._task = None
-
-    @property
-    def running(self) -> bool:
-        """Whether the timer is running."""
-        return self._task is not None and not self._task.done()
-
-    @running.setter
-    def running(self, value: bool) -> None:
-        if value:
-            self.start()
-        else:
-            self.stop()
-
-    @staticmethod
-    def stop_all() -> None:
-        """Stop all timers."""
-        for timer in Timer.tasks:
-            timer.cancel()
+    def _cleanup(self) -> None:
+        self.callback = None
