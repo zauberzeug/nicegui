@@ -175,7 +175,8 @@ async def _on_handshake(sid: str, data: Dict[str, Any]) -> bool:
     else:
         client.environ = sio.get_environ(sid)
         await sio.enter_room(sid, client.id)
-        client.outbox.try_rewind(data['next_message_id'])
+        if data['next_message_id']:
+            client.outbox.try_rewind(data['next_message_id'])
     client.handle_handshake()
     return True
 
