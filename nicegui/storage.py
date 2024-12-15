@@ -53,7 +53,8 @@ class Storage:
 
     def __init__(self) -> None:
         self.path = Path(os.environ.get('NICEGUI_STORAGE_PATH', '.nicegui')).resolve()
-        self.max_tab_storage_age = timedelta(days=30).total_seconds()
+        self.max_tab_storage_age: float = timedelta(days=30).total_seconds()
+        """Maximum age in seconds before tab storage is automatically purged. Defaults to 30 days."""
         self._general = RedisPersistentDict()  # PersistentDict(self.path / 'storage-general.json', encoding='utf-8')
         self._users: Dict[str, FilePersistentDict] = {}
         self._tabs: Dict[str, observables.ObservableDict] = {}

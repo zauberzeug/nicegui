@@ -132,6 +132,22 @@ def tab_storage():
         ui.button('Reload page', on_click=ui.navigate.reload)
 
 
+@doc.demo('Maximum age of tab storage', '''
+    By default, the tab storage is kept for 30 days.
+    You can change this by setting `app.storage.max_tab_storage_age`.
+''')
+def max_tab_storage_age():
+    from nicegui import app
+    from datetime import timedelta
+    # app.storage.max_tab_storage_age = timedelta(minutes=1).total_seconds()
+    ui.label(f'Tab storage age: {timedelta(minutes=1).total_seconds()} seconds')  # HIDE
+
+    @ui.page('/')
+    def index():
+        # ui.label(f'Tab storage age: {app.storage.tab.age} seconds')
+        pass  # HIDE
+
+
 @doc.demo('Short-term memory', '''
     The goal of `app.storage.client` is to store data only for the duration of the current page visit.
     In difference to data stored in `app.storage.tab`
