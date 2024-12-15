@@ -53,9 +53,13 @@ class Storage:
 
     def __init__(self) -> None:
         self.path = Path(os.environ.get('NICEGUI_STORAGE_PATH', '.nicegui')).resolve()
+        """Path to use for local persistence. Defaults to '.nicegui'."""
         self.max_tab_storage_age: float = timedelta(days=30).total_seconds()
         """Maximum age in seconds before tab storage is automatically purged. Defaults to 30 days."""
-        self._general = RedisPersistentDict()  # PersistentDict(self.path / 'storage-general.json', encoding='utf-8')
+        self.redis_url = os.environ.get('NICEGUI_REDIS_URL', None)
+        """URL to use for shared persistent storage via Redis. Defaults to None, which means local file storage is used."""
+        self._general = RedisPersistentDict(self.redis_url) if self.redis_url \
+            else FilePersistentDict(self.path / 'storage-general.json', encoding='utf-8')
         self._users: Dict[str, FilePersistentDict] = {}
         self._tabs: Dict[str, observables.ObservableDict] = {}
 

@@ -3,11 +3,13 @@ from typing import Optional
 
 import aiofiles
 
-from nicegui import background_tasks, core, json, observables
+from nicegui import background_tasks, core, json
 from nicegui.logging import log
 
+from .persistent_dict import PersistentDict
 
-class FilePersistentDict(observables.ObservableDict):
+
+class FilePersistentDict(PersistentDict):
 
     def __init__(self, filepath: Path, encoding: Optional[str] = None, *, indent: bool = False) -> None:
         self.filepath = filepath

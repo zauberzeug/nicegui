@@ -1,12 +1,14 @@
 import redis.asyncio as redis
 
-from nicegui import background_tasks, core, json, observables
+from nicegui import background_tasks, core, json
 from nicegui.logging import log
 
+from .persistent_dict import PersistentDict
 
-class RedisPersistentDict(observables.ObservableDict):
 
-    def __init__(self, redis_url: str = 'redis://localhost:6379', key_prefix: str = 'nicegui:', encoding: str = 'utf-8') -> None:
+class RedisPersistentDict(PersistentDict):
+
+    def __init__(self, redis_url: str, key_prefix: str = 'nicegui:', encoding: str = 'utf-8') -> None:
         self.redis_client = redis.from_url(redis_url)
         self.pubsub = self.redis_client.pubsub()
         self.key_prefix = key_prefix
