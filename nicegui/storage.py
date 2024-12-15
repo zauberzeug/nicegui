@@ -13,12 +13,12 @@ from starlette.middleware.sessions import SessionMiddleware
 from starlette.requests import Request
 from starlette.responses import Response
 
+from nicegui import background_tasks
+
 from . import core, observables
 from .context import context
 from .observables import ObservableDict
-from .persistence.file_persistent_dict import FilePersistentDict
-from .persistence.read_only_dict import ReadOnlyDict
-from .persistence.redis_persistent_dict import RedisPersistentDict
+from .persistence import FilePersistentDict, PersistentDict, ReadOnlyDict, RedisPersistentDict
 
 request_contextvar: contextvars.ContextVar[Optional[Request]] = contextvars.ContextVar('request_var', default=None)
 
@@ -50,18 +50,25 @@ def set_storage_secret(storage_secret: Optional[str] = None) -> None:
 
 class Storage:
     secret: Optional[str] = None
+    """Secret key for session storage."""
+    path = Path(os.environ.get('NICEGUI_STORAGE_PATH', '.nicegui')).resolve()
+    """Path to use for local persistence. Defaults to '.nicegui'."""
+    redis_url = os.environ.get('NICEGUI_REDIS_URL', None)
+    """URL to use for shared persistent storage via Redis. Defaults to None, which means local file storage is used."""
 
     def __init__(self) -> None:
-        self.path = Path(os.environ.get('NICEGUI_STORAGE_PATH', '.nicegui')).resolve()
-        """Path to use for local persistence. Defaults to '.nicegui'."""
         self.max_tab_storage_age: float = timedelta(days=30).total_seconds()
         """Maximum age in seconds before tab storage is automatically purged. Defaults to 30 days."""
-        self.redis_url = os.environ.get('NICEGUI_REDIS_URL', None)
-        """URL to use for shared persistent storage via Redis. Defaults to None, which means local file storage is used."""
-        self._general = RedisPersistentDict(self.redis_url) if self.redis_url \
-            else FilePersistentDict(self.path / 'storage-general.json', encoding='utf-8')
-        self._users: Dict[str, FilePersistentDict] = {}
+        self._general = Storage.create_persistent_dict('general')
+        self._users: Dict[str, PersistentDict] = {}
         self._tabs: Dict[str, observables.ObservableDict] = {}
+
+    @staticmethod
+    def create_persistent_dict(id: str) -> PersistentDict:
+        if Storage.redis_url:
+            return RedisPersistentDict(Storage.redis_url, f'user-{id}')
+        else:
+            return FilePersistentDict(Storage.path / f'storage-user-{id}.json', encoding='utf-8')
 
     @property
     def browser(self) -> Union[ReadOnlyDict, Dict]:
@@ -87,10 +94,10 @@ class Storage:
         return request.session
 
     @property
-    def user(self) -> FilePersistentDict:
+    def user(self) -> PersistentDict:
         """Individual user storage that is persisted on the server (where NiceGUI is executed).
 
-        The data is stored in a file on the server.
+        The data is stored on the server.
         It is shared between all browser tabs by identifying the user via session cookie ID.
         """
         request: Optional[Request] = request_contextvar.get()
@@ -103,8 +110,8 @@ class Storage:
             raise RuntimeError('app.storage.user can only be used within a UI context')
         session_id = request.session['id']
         if session_id not in self._users:
-            self._users[session_id] = FilePersistentDict(
-                self.path / f'storage-user-{session_id}.json', encoding='utf-8')
+            self._users[session_id] = Storage.create_persistent_dict(session_id)
+            background_tasks.create(self._users[session_id].initialize(), name=f'user-{session_id}')
         return self._users[session_id]
 
     @staticmethod
@@ -115,7 +122,7 @@ class Storage:
             return False  # no client
 
     @property
-    def general(self) -> FilePersistentDict:
+    def general(self) -> PersistentDict:
         """General storage shared between all users that is persisted on the server (where NiceGUI is executed)."""
         return self._general
 
@@ -174,3 +181,9 @@ class Storage:
             filepath.unlink()
         if self.path.exists():
             self.path.rmdir()
+
+    async def on_shutdown(self) -> None:
+        """Close all persistent storage."""
+        for user in self._users.values():
+            await user.close()
+        await self._general.close()

@@ -40,7 +40,7 @@ class App(FastAPI):
         self.config = AppConfig()
 
         self._startup_handlers: List[Union[Callable[..., Any], Awaitable]] = [self.storage.general.initialize,]
-        self._shutdown_handlers: List[Union[Callable[..., Any], Awaitable]] = [self.storage.general.close]
+        self._shutdown_handlers: List[Union[Callable[..., Any], Awaitable]] = [self.storage.on_shutdown]
         self._connect_handlers: List[Union[Callable[..., Any], Awaitable]] = []
         self._disconnect_handlers: List[Union[Callable[..., Any], Awaitable]] = []
         self._exception_handlers: List[Callable[..., Any]] = [log.exception]

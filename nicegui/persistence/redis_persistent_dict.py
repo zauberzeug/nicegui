@@ -8,21 +8,21 @@ from .persistent_dict import PersistentDict
 
 class RedisPersistentDict(PersistentDict):
 
-    def __init__(self, redis_url: str, key_prefix: str = 'nicegui:', encoding: str = 'utf-8') -> None:
+    def __init__(self, redis_url: str, id: str, key_prefix: str = 'nicegui:') -> None:  # pylint: disable=redefined-builtin
         self.redis_client = redis.from_url(redis_url)
         self.pubsub = self.redis_client.pubsub()
-        self.key_prefix = key_prefix
-        self.encoding = encoding
+        self.key = key_prefix + id
         super().__init__({}, on_change=self.publish)
 
     async def initialize(self) -> None:
         """Load initial data from Redis and start listening for changes."""
         try:
-            data = await self.redis_client.get(self.key_prefix + 'data')
+            data = await self.redis_client.get(self.key)
+            print(f'loading data: {data} for {self.key}')
             self.update(json.loads(data) if data else {})
         except Exception:
-            log.warning(f'Could not load data from Redis with prefix {self.key_prefix}')
-        await self.pubsub.subscribe(self.key_prefix + 'changes')
+            log.warning(f'Could not load data from Redis with key {self.key}')
+        await self.pubsub.subscribe(self.key + 'changes')
         async for message in self.pubsub.listen():
             if message['type'] == 'message':
                 new_data = json.loads(message['data'])
@@ -32,12 +32,13 @@ class RedisPersistentDict(PersistentDict):
     def publish(self) -> None:
         """Publish the data to Redis and notify other instances."""
         async def backup() -> None:
+            print(f'backup {self.key} with {json.dumps(self)}')
             pipeline = self.redis_client.pipeline()
-            pipeline.set(self.key_prefix + 'data', json.dumps(self))
-            pipeline.publish(self.key_prefix + 'changes', json.dumps(self))
+            pipeline.set(self.key, json.dumps(self))
+            pipeline.publish(self.key + 'changes', json.dumps(self))
             await pipeline.execute()
         if core.loop:
-            background_tasks.create_lazy(backup(), name=f'redis-{self.key_prefix}')
+            background_tasks.create_lazy(backup(), name=f'redis-{self.key}')
         else:
             core.app.on_startup(backup())
 
