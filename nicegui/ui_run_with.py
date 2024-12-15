@@ -4,11 +4,10 @@ from typing import Literal, Optional, Union
 
 from fastapi import FastAPI
 
-from . import core
+from . import core, storage
 from .air import Air
 from .language import Language
 from .nicegui import _shutdown, _startup
-from .persistence import storage
 
 
 def run_with(

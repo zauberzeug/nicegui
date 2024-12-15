@@ -4,7 +4,7 @@ from nicegui import background_tasks, core, json, observables
 from nicegui.logging import log
 
 
-class RedisDict(observables.ObservableDict):
+class RedisPersistentDict(observables.ObservableDict):
 
     def __init__(self, redis_url: str = 'redis://localhost:6379', key_prefix: str = 'nicegui:', encoding: str = 'utf-8') -> None:
         self.redis_client = redis.from_url(redis_url)

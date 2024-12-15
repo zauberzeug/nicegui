@@ -15,9 +15,9 @@ from ..client import Client
 from ..logging import log
 from ..native import NativeConfig
 from ..observables import ObservableSet
-from ..persistence.storage import Storage
 from ..server import Server
 from ..staticfiles import CacheControlledStaticFiles
+from ..storage import Storage
 from .app_config import AppConfig
 from .range_response import get_range_response
 

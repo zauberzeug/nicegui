@@ -13,12 +13,12 @@ from starlette.middleware.sessions import SessionMiddleware
 from starlette.requests import Request
 from starlette.responses import Response
 
-from .. import core, observables
-from ..context import context
-from ..observables import ObservableDict
-from .persistent_dict import PersistentDict
-from .read_only_dict import ReadOnlyDict
-from .redis_persistent_dict import RedisDict
+from . import core, observables
+from .context import context
+from .observables import ObservableDict
+from .persistence.file_persistent_dict import FilePersistentDict
+from .persistence.read_only_dict import ReadOnlyDict
+from .persistence.redis_persistent_dict import RedisPersistentDict
 
 request_contextvar: contextvars.ContextVar[Optional[Request]] = contextvars.ContextVar('request_var', default=None)
 
@@ -54,8 +54,8 @@ class Storage:
     def __init__(self) -> None:
         self.path = Path(os.environ.get('NICEGUI_STORAGE_PATH', '.nicegui')).resolve()
         self.max_tab_storage_age = timedelta(days=30).total_seconds()
-        self._general = RedisDict()  # PersistentDict(self.path / 'storage-general.json', encoding='utf-8')
-        self._users: Dict[str, PersistentDict] = {}
+        self._general = RedisPersistentDict()  # PersistentDict(self.path / 'storage-general.json', encoding='utf-8')
+        self._users: Dict[str, FilePersistentDict] = {}
         self._tabs: Dict[str, observables.ObservableDict] = {}
 
     @property
@@ -82,7 +82,7 @@ class Storage:
         return request.session
 
     @property
-    def user(self) -> PersistentDict:
+    def user(self) -> FilePersistentDict:
         """Individual user storage that is persisted on the server (where NiceGUI is executed).
 
         The data is stored in a file on the server.
@@ -98,7 +98,8 @@ class Storage:
             raise RuntimeError('app.storage.user can only be used within a UI context')
         session_id = request.session['id']
         if session_id not in self._users:
-            self._users[session_id] = PersistentDict(self.path / f'storage-user-{session_id}.json', encoding='utf-8')
+            self._users[session_id] = FilePersistentDict(
+                self.path / f'storage-user-{session_id}.json', encoding='utf-8')
         return self._users[session_id]
 
     @staticmethod
@@ -109,7 +110,7 @@ class Storage:
             return False  # no client
 
     @property
-    def general(self) -> PersistentDict:
+    def general(self) -> FilePersistentDict:
         """General storage shared between all users that is persisted on the server (where NiceGUI is executed)."""
         return self._general
 

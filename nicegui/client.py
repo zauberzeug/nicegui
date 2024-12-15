@@ -13,7 +13,7 @@ from fastapi.responses import Response
 from fastapi.templating import Jinja2Templates
 from typing_extensions import Self
 
-from . import background_tasks, binding, core, helpers, json
+from . import background_tasks, binding, core, helpers, json, storage
 from .awaitable_response import AwaitableResponse
 from .dependencies import generate_resources
 from .element import Element
@@ -22,7 +22,6 @@ from .javascript_request import JavaScriptRequest
 from .logging import log
 from .observables import ObservableDict
 from .outbox import Outbox
-from .persistence import storage
 from .version import __version__
 
 if TYPE_CHECKING:

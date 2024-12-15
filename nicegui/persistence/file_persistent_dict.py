@@ -7,7 +7,7 @@ from nicegui import background_tasks, core, json, observables
 from nicegui.logging import log
 
 
-class PersistentDict(observables.ObservableDict):
+class FilePersistentDict(observables.ObservableDict):
 
     def __init__(self, filepath: Path, encoding: Optional[str] = None, *, indent: bool = False) -> None:
         self.filepath = filepath

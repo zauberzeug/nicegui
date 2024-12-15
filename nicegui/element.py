@@ -8,14 +8,13 @@ from typing import TYPE_CHECKING, Any, ClassVar, Dict, Iterator, List, Optional,
 
 from typing_extensions import Self
 
-from . import core, events, helpers, json
+from . import core, events, helpers, json, storage
 from .awaitable_response import AwaitableResponse, NullResponse
 from .classes import Classes
 from .context import context
 from .dependencies import Component, Library, register_library, register_resource, register_vue_component
 from .elements.mixins.visibility import Visibility
 from .event_listener import EventListener
-from .persistence import storage
 from .props import Props
 from .slot import Slot
 from .style import Style
