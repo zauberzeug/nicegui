@@ -19,7 +19,11 @@ class FilePersistentDict(PersistentDict):
 
     async def initialize(self) -> None:
         try:
-            data = json.loads(self.filepath.read_text(self.encoding)) if self.filepath.exists() else {}
+            if self.filepath.exists():
+                async with aiofiles.open(self.filepath, encoding=self.encoding) as f:
+                    data = json.loads(await f.read())
+            else:
+                data = {}
             self.update(data)
         except Exception:
             log.warning(f'Could not load storage file {self.filepath}')
