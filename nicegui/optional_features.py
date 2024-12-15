@@ -12,6 +12,7 @@ FEATURE = Literal[
     'pyecharts',
     'webview',
     'sass',
+    'redis',
 ]
 
 

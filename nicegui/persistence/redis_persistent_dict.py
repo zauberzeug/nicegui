@@ -1,7 +1,14 @@
-import redis.asyncio as redis
-
 from nicegui import background_tasks, core, json
 from nicegui.logging import log
+
+from .. import optional_features
+
+try:
+    import redis.asyncio as redis
+    optional_features.register('redis')
+except ImportError:
+    pass
+
 
 from .persistent_dict import PersistentDict
 
@@ -9,6 +16,8 @@ from .persistent_dict import PersistentDict
 class RedisPersistentDict(PersistentDict):
 
     def __init__(self, redis_url: str, id: str, key_prefix: str = 'nicegui:') -> None:  # pylint: disable=redefined-builtin
+        if not optional_features.has('redis'):
+            raise ImportError('Redis is not installed. Please run "pip install nicegui[redis]".')
         self.redis_client = redis.from_url(redis_url)
         self.pubsub = self.redis_client.pubsub()
         self.key = key_prefix + id
