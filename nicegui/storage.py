@@ -54,6 +54,8 @@ class Storage:
     """Path to use for local persistence. Defaults to '.nicegui'."""
     redis_url = os.environ.get('NICEGUI_REDIS_URL', None)
     """URL to use for shared persistent storage via Redis. Defaults to None, which means local file storage is used."""
+    redis_key_prefix = os.environ.get('NICEGUI_REDIS_KEY_PREFIX', 'nicegui:')
+    """Prefix for Redis keys. Defaults to 'nicegui:'."""
 
     def __init__(self) -> None:
         self.max_tab_storage_age: float = timedelta(days=30).total_seconds()
@@ -65,7 +67,7 @@ class Storage:
     @staticmethod
     def create_persistent_dict(id: str) -> PersistentDict:  # pylint: disable=redefined-builtin
         if Storage.redis_url:
-            return RedisPersistentDict(Storage.redis_url, id)
+            return RedisPersistentDict(Storage.redis_url, id, Storage.redis_key_prefix)
         else:
             return FilePersistentDict(Storage.path / f'storage-{id}.json', encoding='utf-8')
 
