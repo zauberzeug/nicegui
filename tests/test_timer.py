@@ -150,8 +150,11 @@ async def test_cleanup(user: User):
 def test_app_timer(screen: Screen):
     counter = Counter()
     timer = app.timer(0.1, counter.increment)
-    ui.button('Activate', on_click=timer.activate)
-    ui.button('Deactivate', on_click=timer.deactivate)
+
+    @ui.page('/')
+    def page():
+        ui.button('Activate', on_click=timer.activate)
+        ui.button('Deactivate', on_click=timer.deactivate)
 
     screen.open('/')
     screen.wait(0.5)
@@ -165,3 +168,7 @@ def test_app_timer(screen: Screen):
     screen.click('Activate')
     screen.wait(0.5)
     assert counter.value > value, 'timer is running again after activating it'
+    value = counter.value
+
+    screen.open('/')
+    assert counter.value > value, 'timer is also incrementing when opening another page'
