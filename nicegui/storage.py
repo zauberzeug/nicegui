@@ -30,6 +30,7 @@ class RequestTrackingMiddleware(BaseHTTPMiddleware):
         if 'id' not in request.session:
             request.session['id'] = str(uuid.uuid4())
         request.state.responded = False
+        await core.app.storage._create_user_storage(request.session['id'])  # pylint: disable=protected-access
         response = await call_next(request)
         request.state.responded = True
         return response

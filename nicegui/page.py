@@ -109,7 +109,6 @@ class page:
         @wraps(func)
         async def decorated(*dec_args, **dec_kwargs) -> Response:
             request = dec_kwargs['request']
-            await core.app.storage._create_user_storage(request.session['id'])  # pylint: disable=protected-access
             # NOTE cleaning up the keyword args so the signature is consistent with "func" again
             dec_kwargs = {k: v for k, v in dec_kwargs.items() if k in parameters_of_decorated_func}
             with Client(self, request=request) as client:
