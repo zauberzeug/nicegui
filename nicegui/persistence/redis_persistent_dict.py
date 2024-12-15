@@ -21,7 +21,7 @@ class RedisPersistentDict(PersistentDict):
         self.redis_client = redis.from_url(redis_url)
         self.pubsub = self.redis_client.pubsub()
         self.key = key_prefix + id
-        super().__init__({}, on_change=self.publish)
+        super().__init__(data={}, on_change=self.publish)
 
     async def initialize(self) -> None:
         """Load initial data from Redis and start listening for changes."""
