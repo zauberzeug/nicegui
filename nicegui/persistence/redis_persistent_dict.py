@@ -32,11 +32,15 @@ class RedisPersistentDict(PersistentDict):
         except Exception:
             log.warning(f'Could not load data from Redis with key {self.key}')
         await self.pubsub.subscribe(self.key + 'changes')
-        async for message in self.pubsub.listen():
-            if message['type'] == 'message':
-                new_data = json.loads(message['data'])
-                if new_data != self:
-                    self.update(new_data)
+
+        async def listen():
+            async for message in self.pubsub.listen():
+                if message['type'] == 'message':
+                    new_data = json.loads(message['data'])
+                    if new_data != self:
+                        self.update(new_data)
+
+        background_tasks.create(listen(), name=f'redis-listen-{self.key}')
 
     def publish(self) -> None:
         """Publish the data to Redis and notify other instances."""

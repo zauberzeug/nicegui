@@ -13,8 +13,6 @@ from starlette.middleware.sessions import SessionMiddleware
 from starlette.requests import Request
 from starlette.responses import Response
 
-from nicegui import background_tasks
-
 from . import core, observables
 from .context import context
 from .observables import ObservableDict
@@ -109,10 +107,13 @@ class Storage:
                 raise RuntimeError('app.storage.user needs a storage_secret passed in ui.run()')
             raise RuntimeError('app.storage.user can only be used within a UI context')
         session_id = request.session['id']
+        assert session_id in self._users, f'user storage for {session_id} should be created before accessing it'
+        return self._users[session_id]
+
+    async def _create_user_storage(self, session_id: str) -> None:
         if session_id not in self._users:
             self._users[session_id] = Storage.create_persistent_dict(session_id)
-            background_tasks.create(self._users[session_id].initialize(), name=f'user-{session_id}')
-        return self._users[session_id]
+            await self._users[session_id].initialize()
 
     @staticmethod
     def _is_in_auto_index_context() -> bool:
