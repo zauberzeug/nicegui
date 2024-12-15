@@ -60,7 +60,7 @@ class Storage:
         """Maximum age in seconds before tab storage is automatically purged. Defaults to 30 days."""
         self._general = Storage.create_persistent_dict('general')
         self._users: Dict[str, PersistentDict] = {}
-        self._tabs: Dict[str, observables.ObservableDict] = {}
+        self._tabs: Dict[str, PersistentDict] = {}
 
     @staticmethod
     def create_persistent_dict(id: str) -> PersistentDict:  # pylint: disable=redefined-builtin
@@ -151,20 +151,28 @@ class Storage:
             raise RuntimeError('app.storage.tab can only be used with a client connection; '
                                'see https://nicegui.io/documentation/page#wait_for_client_connection to await it')
         assert client.tab_id is not None
-        if client.tab_id not in self._tabs:
-            self._tabs[client.tab_id] = observables.ObservableDict()
+        assert client.tab_id in self._tabs, f'tab storage for {client.tab_id} should be created before accessing it'
         return self._tabs[client.tab_id]
+
+    async def create_tab_storage(self, tab_id: str) -> None:
+        """Create tab storage for the given tab ID."""
+        if tab_id not in self._tabs:
+            self._tabs[tab_id] = Storage.create_persistent_dict(f'tab-{tab_id}')
+            await self._tabs[tab_id].initialize()
 
     def copy_tab(self, old_tab_id: str, tab_id: str) -> None:
         """Copy the tab storage to a new tab. (For internal use only.)"""
         if old_tab_id in self._tabs:
-            self._tabs[tab_id] = observables.ObservableDict(self._tabs[old_tab_id].copy())
+            self._tabs[tab_id] = Storage.create_persistent_dict(f'tab-{tab_id}')
+            self._tabs[tab_id].update(self._tabs[old_tab_id])
 
     async def prune_tab_storage(self) -> None:
         """Regularly prune tab storage that is older than the configured `max_tab_storage_age`."""
         while True:
             for tab_id, tab in list(self._tabs.items()):
                 if time.time() > tab.last_modified + self.max_tab_storage_age:
+                    tab.clear()
+                    await tab.close()
                     del self._tabs[tab_id]
             await asyncio.sleep(PURGE_INTERVAL)
 

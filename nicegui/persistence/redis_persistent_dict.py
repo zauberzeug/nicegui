@@ -58,3 +58,7 @@ class RedisPersistentDict(PersistentDict):
         await self.pubsub.unsubscribe()
         await self.pubsub.close()
         await self.redis_client.close()
+
+    def clear(self) -> None:
+        super().clear()
+        self.redis_client.delete(self.key)

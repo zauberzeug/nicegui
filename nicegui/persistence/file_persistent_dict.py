@@ -42,3 +42,7 @@ class FilePersistentDict(PersistentDict):
             background_tasks.create_lazy(backup(), name=self.filepath.stem)
         else:
             core.app.on_startup(backup())
+
+    def clear(self) -> None:
+        super().clear()
+        self.filepath.unlink(missing_ok=True)

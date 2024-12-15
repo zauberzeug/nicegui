@@ -170,6 +170,7 @@ class Client:
             if time.time() > deadline:
                 raise TimeoutError(f'No connection after {timeout} seconds')
             await asyncio.sleep(check_interval)
+        await core.app.storage.create_tab_storage(self.tab_id)
         self.is_waiting_for_connection = False
 
     async def disconnected(self, check_interval: float = 0.1) -> None:
