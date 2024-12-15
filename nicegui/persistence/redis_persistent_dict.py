@@ -27,7 +27,6 @@ class RedisPersistentDict(PersistentDict):
         """Load initial data from Redis and start listening for changes."""
         try:
             data = await self.redis_client.get(self.key)
-            print(f'loading data: {data} for {self.key}')
             self.update(json.loads(data) if data else {})
         except Exception:
             log.warning(f'Could not load data from Redis with key {self.key}')

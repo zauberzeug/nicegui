@@ -15,12 +15,14 @@ class FilePersistentDict(PersistentDict):
         self.filepath = filepath
         self.encoding = encoding
         self.indent = indent
+        super().__init__(data={}, on_change=self.backup)
+
+    async def initialize(self) -> None:
         try:
-            data = json.loads(filepath.read_text(encoding)) if filepath.exists() else {}
+            data = json.loads(self.filepath.read_text(self.encoding)) if self.filepath.exists() else {}
+            self.update(data)
         except Exception:
-            log.warning(f'Could not load storage file {filepath}')
-            data = {}
-        super().__init__(data, on_change=self.backup)
+            log.warning(f'Could not load storage file {self.filepath}')
 
     def backup(self) -> None:
         """Back up the data to the given file path."""
