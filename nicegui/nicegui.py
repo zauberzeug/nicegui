@@ -176,6 +176,7 @@ async def _on_handshake(sid: str, data: Dict[str, str]) -> bool:
         client.environ = sio.get_environ(sid)
         await sio.enter_room(sid, client.id)
     client.handle_handshake()
+    await core.app.storage.create_tab_storage(client.tab_id)
     return True
 
 
