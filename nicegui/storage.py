@@ -63,11 +63,11 @@ class Storage:
         self._tabs: Dict[str, observables.ObservableDict] = {}
 
     @staticmethod
-    def create_persistent_dict(id: str) -> PersistentDict:
+    def create_persistent_dict(id: str) -> PersistentDict:  # pylint: disable=redefined-builtin
         if Storage.redis_url:
-            return RedisPersistentDict(Storage.redis_url, f'user-{id}')
+            return RedisPersistentDict(Storage.redis_url, id)
         else:
-            return FilePersistentDict(Storage.path / f'storage-user-{id}.json', encoding='utf-8')
+            return FilePersistentDict(Storage.path / f'storage-{id}.json', encoding='utf-8')
 
     @property
     def browser(self) -> Union[ReadOnlyDict, Dict]:
@@ -113,7 +113,7 @@ class Storage:
 
     async def _create_user_storage(self, session_id: str) -> None:
         if session_id not in self._users:
-            self._users[session_id] = Storage.create_persistent_dict(session_id)
+            self._users[session_id] = Storage.create_persistent_dict(f'user-{session_id}')
             await self._users[session_id].initialize()
 
     @staticmethod
