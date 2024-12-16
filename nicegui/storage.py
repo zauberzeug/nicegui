@@ -60,12 +60,12 @@ class Storage:
     def __init__(self) -> None:
         self.max_tab_storage_age: float = timedelta(days=30).total_seconds()
         """Maximum age in seconds before tab storage is automatically purged. Defaults to 30 days."""
-        self._general = Storage.create_persistent_dict('general')
+        self._general = Storage._create_persistent_dict('general')
         self._users: Dict[str, PersistentDict] = {}
         self._tabs: Dict[str, PersistentDict] = {}
 
     @staticmethod
-    def create_persistent_dict(id: str) -> PersistentDict:  # pylint: disable=redefined-builtin
+    def _create_persistent_dict(id: str) -> PersistentDict:  # pylint: disable=redefined-builtin
         if Storage.redis_url:
             return RedisPersistentDict(Storage.redis_url, id, Storage.redis_key_prefix)
         else:
@@ -115,7 +115,7 @@ class Storage:
 
     async def _create_user_storage(self, session_id: str) -> None:
         if session_id not in self._users:
-            self._users[session_id] = Storage.create_persistent_dict(f'user-{session_id}')
+            self._users[session_id] = Storage._create_persistent_dict(f'user-{session_id}')
             await self._users[session_id].initialize()
 
     @staticmethod
@@ -159,13 +159,13 @@ class Storage:
     async def create_tab_storage(self, tab_id: str) -> None:
         """Create tab storage for the given tab ID."""
         if tab_id not in self._tabs:
-            self._tabs[tab_id] = Storage.create_persistent_dict(f'tab-{tab_id}')
+            self._tabs[tab_id] = Storage._create_persistent_dict(f'tab-{tab_id}')
             await self._tabs[tab_id].initialize()
 
     def copy_tab(self, old_tab_id: str, tab_id: str) -> None:
         """Copy the tab storage to a new tab. (For internal use only.)"""
         if old_tab_id in self._tabs:
-            self._tabs[tab_id] = Storage.create_persistent_dict(f'tab-{tab_id}')
+            self._tabs[tab_id] = Storage._create_persistent_dict(f'tab-{tab_id}')
             self._tabs[tab_id].update(self._tabs[old_tab_id])
 
     async def prune_tab_storage(self) -> None:
