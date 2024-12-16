@@ -66,7 +66,11 @@ class Table(FilterElement, component='table.js'):
         self._use_columns_from_df = False
         self._props['columns'] = self._normalize_columns(columns)
         self._props['rows'] = rows
-        self._props['row-key'] = row_key
+        # if row_key is a list of columns, use the Javascript arrow function syntax, prepending row. to each key
+        if isinstance(row_key, list):
+            self._props[':row-key'] = f"row => {'+'.join([f'row.{col}' for col in row_key])}"
+        else:
+            self._props['row-key'] = row_key
         self._props['title'] = title
         self._props['hide-pagination'] = pagination is None
         self._props['pagination'] = pagination if isinstance(pagination, dict) else {'rowsPerPage': pagination or 0}
@@ -82,7 +86,11 @@ class Table(FilterElement, component='table.js'):
                     self.selected.clear()
                 self.selected.extend(e.args['rows'])
             else:
-                self.selected = [row for row in self.selected if row[row_key] not in e.args['keys']]
+                # if row_key is a list of columns, calculate the row_key for each row in the selected list
+                if isinstance(row_key, list):
+                    self.selected = [row for row in self.selected if ''.join([row[col] for col in row_key]) not in e.args['keys']]
+                else:
+                    self.selected = [row for row in self.selected if row[row_key] not in e.args['keys']]
             self.update()
             arguments = TableSelectionEventArguments(sender=self, client=self.client, selection=self.selected)
             for handler in self._selection_handlers:
