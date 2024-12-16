@@ -309,11 +309,14 @@ class Table(FilterElement, component='table.js'):
     @property
     def row_key(self) -> str:
         """Name of the column containing unique data identifying the row."""
-        return self._props['row-key']
+        return self._row_key
 
     @row_key.setter
     def row_key(self, value: str) -> None:
-        self._props['row-key'] = self._row_key = value
+        if isinstance(value, list):
+            self._props[':row-key'] = self._row_key = f"row => {'+'.join([f'row.{col}' for col in value])}"
+        else:
+            self._props['row-key'] = self._row_key = value
         self.update()
 
     @property
