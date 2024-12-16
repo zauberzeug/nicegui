@@ -67,10 +67,7 @@ class Table(FilterElement, component='table.js'):
         self._props['columns'] = self._normalize_columns(columns)
         self._props['rows'] = rows
         # if row_key is a list of columns, use the Javascript arrow function syntax, prepending row. to each key
-        if isinstance(row_key, list):
-            self._props[':row-key'] = self._row_key = f"row => {'+'.join([f'row.{col}' for col in row_key])}"
-        else:
-            self._props['row-key'] = self._row_key = row_key
+        self.row_key = row_key  # should call the property setter
         self._props['title'] = title
         self._props['hide-pagination'] = pagination is None
         self._props['pagination'] = pagination if isinstance(pagination, dict) else {'rowsPerPage': pagination or 0}
@@ -314,7 +311,8 @@ class Table(FilterElement, component='table.js'):
     @row_key.setter
     def row_key(self, value: str) -> None:
         if isinstance(value, list):
-            self._props[':row-key'] = self._row_key = f"row => {'+'.join([f'row.{col}' for col in value])}"
+            self._row_key = value
+            self._props[':row-key'] = f"row => {'+'.join([f'row.{col}' for col in value])}"
         else:
             self._props['row-key'] = self._row_key = value
         self.update()
