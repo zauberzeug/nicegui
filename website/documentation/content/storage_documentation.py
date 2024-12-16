@@ -45,18 +45,18 @@ doc.title('Storage')
 
     The following table will help you to choose storage.
 
-    | Storage type                | `tab`  | `client` | `user` | `general` | `browser` |
-    |-----------------------------|--------|----------|--------|-----------|-----------|
-    | Location                    | Server | Server   | Server | Server    | Browser   |
-    | Across tabs                 | No     | No       | Yes    | Yes       | Yes       |
-    | Across browsers             | No     | No       | No     | Yes       | No        |
-    | Across server restarts      | No     | No       | No     | Yes       | No        |
-    | Across page reloads         | Yes    | No       | Yes    | Yes       | Yes       |
-    | Needs page builder function | Yes    | Yes      | Yes    | No        | Yes       |
-    | Needs client connection     | Yes    | No       | No     | No        | No        |
-    | Write only before response  | No     | No       | No     | No        | Yes       |
-    | Needs serializable data     | No     | No       | Yes    | Yes       | Yes       |
-    | Needs `storage_secret`      | No     | No       | Yes    | No        | Yes       |
+    | Storage type                | `client` | `tab`  | `browser` | `user` | `general` |
+    |-----------------------------|----------|--------|-----------|--------|-----------|
+    | Location                    | Server   | Server | Browser   | Server | Server    |
+    | Across tabs                 | No       | No     | Yes       | Yes    | Yes       |
+    | Across browsers             | No       | No     | No        | No     | Yes       |
+    | Across server restarts      | No       | No     | No        | No     | Yes       |
+    | Across page reloads         | No       | Yes    | Yes       | Yes    | Yes       |
+    | Needs page builder function | Yes      | Yes    | Yes       | Yes    | No        |
+    | Needs client connection     | No       | Yes    | No        | No     | No        |
+    | Write only before response  | No       | No     | Yes       | No     | No        |
+    | Needs serializable data     | No       | No     | Yes       | Yes    | Yes       |
+    | Needs `storage_secret`      | No       | No     | Yes       | Yes    | No        |
 ''')
 def storage_demo():
     from nicegui import app
