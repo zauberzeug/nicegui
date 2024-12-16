@@ -171,4 +171,5 @@ def test_app_timer(screen: Screen):
     value = counter.value
 
     screen.open('/')
+    screen.wait(0.5)
     assert counter.value > value, 'timer is also incrementing when opening another page'
