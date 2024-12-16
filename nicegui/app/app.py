@@ -39,11 +39,14 @@ class App(FastAPI):
         self._state: State = State.STOPPED
         self.config = AppConfig()
 
-        self._startup_handlers: List[Union[Callable[..., Any], Awaitable]] = [self.storage.general.initialize,]
-        self._shutdown_handlers: List[Union[Callable[..., Any], Awaitable]] = [self.storage.on_shutdown]
+        self._startup_handlers: List[Union[Callable[..., Any], Awaitable]] = []
+        self._shutdown_handlers: List[Union[Callable[..., Any], Awaitable]] = []
         self._connect_handlers: List[Union[Callable[..., Any], Awaitable]] = []
         self._disconnect_handlers: List[Union[Callable[..., Any], Awaitable]] = []
         self._exception_handlers: List[Callable[..., Any]] = [log.exception]
+
+        self.on_startup(self.storage.general.initialize)
+        self.on_shutdown(self.storage.on_shutdown)
 
     @property
     def is_starting(self) -> bool:

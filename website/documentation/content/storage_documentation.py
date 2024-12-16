@@ -184,6 +184,8 @@ doc.text('Redis storage', '''
     You can use Redis for storage as an alternative to the default file storage.
     This is useful if you have multiple NiceGUI instances and want to share data across them.
 
-    To activate this feature install the `redis` package to be installed (`pip install nicegui[redis]`) and provide the `NICEGUI_REDIS_URL` environment variable to point to your Redis server.
-    Our [Redis storage example](https://github.com/zauberzeug/nicegui/tree/main/examples/redis_storage) shows how you can setup it up with a reverse proxy or load balancer.
+    To activate this feature install the `redis` package (`pip install nicegui[redis]`)
+    and provide the `NICEGUI_REDIS_URL` environment variable to point to your Redis server.
+    Our [Redis storage example](https://github.com/zauberzeug/nicegui/tree/main/examples/redis_storage) shows
+    how you can setup it up with a reverse proxy or load balancer.
 ''')
