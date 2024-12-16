@@ -50,7 +50,7 @@ doc.title('Storage')
     | Location                    | Server   | Server | Browser   | Server | Server    |
     | Across tabs                 | No       | No     | Yes       | Yes    | Yes       |
     | Across browsers             | No       | No     | No        | No     | Yes       |
-    | Across server restarts      | No       | No     | No        | No     | Yes       |
+    | Across server restarts      | No       | Yes    | No        | Yes    | Yes       |
     | Across page reloads         | No       | Yes    | Yes       | Yes    | Yes       |
     | Needs page builder function | Yes      | Yes    | Yes       | Yes    | No        |
     | Needs client connection     | No       | Yes    | No        | No     | No        |
