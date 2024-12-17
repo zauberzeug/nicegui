@@ -7,8 +7,6 @@ from typing import Any, Callable, DefaultDict, Dict, Iterable, List, Optional, S
 from . import core
 from .logging import log
 
-import pdb
-
 MAX_PROPAGATION_TIME = 0.01
 
 bindings: DefaultDict[Tuple[int, str], List] = defaultdict(list)
