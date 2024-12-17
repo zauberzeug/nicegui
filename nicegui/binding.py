@@ -7,6 +7,8 @@ from typing import Any, Callable, DefaultDict, Dict, Iterable, List, Optional, S
 from . import core
 from .logging import log
 
+import pdb
+
 MAX_PROPAGATION_TIME = 0.01
 
 bindings: DefaultDict[Tuple[int, str], List] = defaultdict(list)
@@ -89,6 +91,7 @@ def bind_to(self_obj: Any, self_name: str, other_obj: Any, other_name: str, forw
     :param other_name: The name of the property to bind to.
     :param forward: A function to apply to the value before applying it.
     """
+    _set_attribute(self_obj, self_name, _get_attribute(self_obj, self_name))
     bindings[(id(self_obj), self_name)].append((self_obj, other_obj, other_name, forward))
     if (id(self_obj), self_name) not in bindable_properties:
         active_links.append((self_obj, self_name, other_obj, other_name, forward))
@@ -107,6 +110,7 @@ def bind_from(self_obj: Any, self_name: str, other_obj: Any, other_name: str, ba
     :param other_name: The name of the property to bind from.
     :param backward: A function to apply to the value before applying it.
     """
+    _set_attribute(other_obj, other_name, _get_attribute(other_obj, other_name))
     bindings[(id(other_obj), other_name)].append((other_obj, self_obj, self_name, backward))
     if (id(other_obj), other_name) not in bindable_properties:
         active_links.append((other_obj, other_name, self_obj, self_name, backward))
