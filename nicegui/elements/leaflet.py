@@ -77,11 +77,14 @@ class Leaflet(Element, component='leaflet.js', default_classes='nicegui-leaflet'
             for layer in self.layers:
                 self.run_method('add_layer', layer.to_dict(), layer.id)
 
-    async def initialized(self) -> None:
-        """Wait until the map is initialized."""
+    async def initialized(self, timeout: float = 3.0) -> None:
+        """Wait until the map is initialized.
+
+        :param timeout: timeout in seconds (default: 3 seconds)
+        """
         event = asyncio.Event()
         self.on('init', event.set, [])
-        await self.client.connected()
+        await self.client.connected(timeout=timeout)
         await event.wait()
 
     async def _handle_moveend(self, e: GenericEventArguments) -> None:
