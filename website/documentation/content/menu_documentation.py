@@ -46,4 +46,5 @@ def submenus():
                     ui.menu_item('Sub-option 3')
 
 
-doc.reference(ui.menu)
+doc.reference(ui.menu, title='Reference for ui.menu')
+doc.reference(ui.menu_item, title='Reference for ui.menu_item')
