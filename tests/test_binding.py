@@ -1,8 +1,11 @@
+import gc
+import weakref
 from typing import Dict, Optional, Tuple
 
 from selenium.webdriver.common.keys import Keys
 
 from nicegui import ui
+from nicegui.binding import bindable_properties, BindableProperty, remove
 from nicegui.testing import Screen
 
 
@@ -105,3 +108,71 @@ def test_missing_target_attribute(screen: Screen):
 
     screen.open('/')
     screen.should_contain("text='Hello'")
+
+
+class TestBindablePropertyAutomaticCleanup:
+    @staticmethod
+    def make_label_bound_to_model(value: str) -> Tuple[ui.label, int, weakref.ref]:
+        class Model:
+            value = BindableProperty()
+
+            def __init__(self, value: str) -> None:
+                self.value = value
+
+        model = Model(value)
+        label = ui.label(model.value).bind_text(model, 'value')
+
+        return label, id(model), weakref.ref(model)
+
+    @staticmethod
+    def remove_bindings(*elements: ui.element) -> None:
+        remove(elements)  # usually the client calls this function on its elements when the user disconnects
+        gc.collect()  # should not really be necessary, but better safe than sorry
+
+    def test_model_automatic_cleanup(self, screen: Screen):
+        label, model_id, model_ref = self.make_label_bound_to_model('some value')
+
+        screen.open('/')
+        screen.should_contain('some value')
+
+        def model_is_alive() -> bool:
+            return model_ref() is not None
+
+        def model_has_bindings() -> bool:
+            return any(obj_id == model_id for obj_id, _ in bindable_properties)
+
+        assert model_is_alive()
+        assert model_has_bindings()
+
+        self.remove_bindings(label)
+
+        assert not model_is_alive()
+        assert not model_has_bindings()
+
+    def test_only_dead_model_unregistered(self, screen: Screen):
+        label_1, first_id, first_ref = self.make_label_bound_to_model('first')
+        _, second_id, second_ref = self.make_label_bound_to_model('second')
+
+        screen.open('/')
+        screen.should_contain('first')
+        screen.should_contain('second')
+
+        def is_alive(ref: weakref.ref) -> bool:
+            return ref() is not None
+
+        def has_bindings(owner: int) -> bool:
+            return any(obj_id == owner for obj_id, _ in bindable_properties)
+
+        assert is_alive(first_ref)
+        assert has_bindings(first_id)
+
+        assert is_alive(second_ref)
+        assert has_bindings(second_id)
+
+        self.remove_bindings(label_1)
+
+        assert not is_alive(first_ref)
+        assert not has_bindings(first_id)
+
+        assert is_alive(second_ref)
+        assert has_bindings(second_id)
