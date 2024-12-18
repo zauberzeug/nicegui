@@ -65,7 +65,6 @@ export default {
       "zoomanim",
     ]) {
       this.map.on(type, async (e) => {
-        await this.$nextTick(); // NOTE: allow zoom and center to both be updated
         this.$emit(`map-${type}`, {
           ...e,
           originalEvent: undefined,
