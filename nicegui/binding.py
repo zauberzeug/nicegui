@@ -1,5 +1,6 @@
 import asyncio
 import time
+import weakref
 from collections import defaultdict
 from collections.abc import Mapping
 from typing import Any, Callable, DefaultDict, Dict, Iterable, List, Optional, Set, Tuple, Union
@@ -10,7 +11,7 @@ from .logging import log
 MAX_PROPAGATION_TIME = 0.01
 
 bindings: DefaultDict[Tuple[int, str], List] = defaultdict(list)
-bindable_properties: Dict[Tuple[int, str], Any] = {}
+bindable_properties: Dict[Tuple[int, str], weakref.finalize] = {}
 active_links: List[Tuple[Any, str, Any, str, Callable[[Any], Any]]] = []
 
 
@@ -149,10 +150,18 @@ class BindableProperty:
         if has_attr and not value_changed:
             return
         setattr(owner, '___' + self.name, value)
-        bindable_properties[(id(owner), self.name)] = owner
+        self._register(owner)
         _propagate(owner, self.name)
         if value_changed and self._change_handler is not None:
             self._change_handler(owner, value)
+
+    def _register(self, owner: Any) -> None:
+        registry_key = (id(owner), str(self.name))
+
+        def try_unregister() -> None:
+            bindable_properties.pop(registry_key, None)
+
+        bindable_properties.setdefault(registry_key, weakref.finalize(owner, try_unregister))
 
 
 def remove(objects: Iterable[Any]) -> None:
@@ -174,9 +183,11 @@ def remove(objects: Iterable[Any]) -> None:
         ]
         if not binding_list:
             del bindings[key]
-    for (obj_id, name), obj in list(bindable_properties.items()):
-        if id(obj) in object_ids:
-            del bindable_properties[(obj_id, name)]
+    for registry_key, finalizer in list(bindable_properties.items()):
+        obj_id, _ = registry_key
+        if obj_id in object_ids:
+            del bindable_properties[registry_key]
+            finalizer.detach()
 
 
 def reset() -> None:
