@@ -43,6 +43,10 @@ function getElement(id) {
   return mounted_app.$refs["r" + _id];
 }
 
+function getHtmlElement(id) {
+  return document.getElementById(`c${id}`);
+}
+
 function runMethod(target, method_name, args) {
   if (typeof target === "object") {
     if (method_name in target) {
