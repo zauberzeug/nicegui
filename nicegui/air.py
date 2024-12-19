@@ -134,8 +134,7 @@ class Air:
                 core.app.storage.copy_tab(data['old_tab_id'], data['tab_id'])
             client.tab_id = data['tab_id']
             client.on_air = True
-            client.outbox.try_rewind(data['next_message_id'])
-            client.handle_handshake()
+            client.handle_handshake(data.get('next_message_id'))
             return True
 
         @self.relay.on('client_disconnect')

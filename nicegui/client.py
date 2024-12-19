@@ -231,8 +231,10 @@ class Client:
         """Add a callback to be invoked when the client disconnects."""
         self.disconnect_handlers.append(handler)
 
-    def handle_handshake(self) -> None:
+    def handle_handshake(self, next_message_id: Optional[int]) -> None:
         """Cancel pending disconnect task and invoke connect handlers."""
+        if next_message_id is not None:
+            self.outbox.try_rewind(next_message_id)
         if self._disconnect_task:
             self._disconnect_task.cancel()
             self._disconnect_task = None
