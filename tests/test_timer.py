@@ -3,7 +3,7 @@ import gc
 
 import pytest
 
-from nicegui import ui
+from nicegui import app, ui
 from nicegui.testing import Screen, User
 
 
@@ -145,3 +145,31 @@ async def test_cleanup(user: User):
     await asyncio.sleep(0.1)
     gc.collect()
     assert count() == 1, 'only current timer object is in memory'
+
+
+def test_app_timer(screen: Screen):
+    counter = Counter()
+    timer = app.timer(0.1, counter.increment)
+
+    @ui.page('/')
+    def page():
+        ui.button('Activate', on_click=timer.activate)
+        ui.button('Deactivate', on_click=timer.deactivate)
+
+    screen.open('/')
+    screen.wait(0.5)
+    assert counter.value > 0, 'timer is running after starting the server'
+
+    screen.click('Deactivate')
+    value = counter.value
+    screen.wait(0.5)
+    assert counter.value == value, 'timer is not running anymore after deactivating it'
+
+    screen.click('Activate')
+    screen.wait(0.5)
+    assert counter.value > value, 'timer is running again after activating it'
+    value = counter.value
+
+    screen.open('/')
+    screen.wait(0.5)
+    assert counter.value > value, 'timer is also incrementing when opening another page'

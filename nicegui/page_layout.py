@@ -62,7 +62,7 @@ class Header(ValueElement, default_classes='nicegui-header'):
             add_body_html(f'''
                 <script>
                     window.onload = () => {{
-                        const header = getElement({self.id}).$el;
+                        const header = getHtmlElement({self.id});
                         new ResizeObserver(() => {{
                             document.documentElement.style.scrollPaddingTop = `${{header.offsetHeight}}px`;
                         }}).observe(header);
