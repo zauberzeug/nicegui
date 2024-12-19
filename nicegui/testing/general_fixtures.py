@@ -91,6 +91,7 @@ def prepare_simulation(request: pytest.FixtureRequest) -> None:
         language='en-US',
         binding_refresh_interval=0.1,
         reconnect_timeout=3.0,
+        message_history_length=1000,
         tailwind=True,
         prod_js=True,
         show_welcome_message=False,

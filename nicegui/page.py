@@ -56,7 +56,7 @@ class page:
         :param dark: whether to use Quasar's dark mode (defaults to `dark` argument of `run` command)
         :param language: language of the page (defaults to `language` argument of `run` command)
         :param response_timeout: maximum time for the decorated function to build the page (default: 3.0 seconds)
-        :param reconnect_timeout: maximum time the server waits for the browser to reconnect (default: 0.0 seconds)
+        :param reconnect_timeout: maximum time the server waits for the browser to reconnect (defaults to `reconnect_timeout` argument of `run` command))
         :param api_router: APIRouter instance to use, can be left `None` to use the default
         :param kwargs: additional keyword arguments passed to FastAPI's @app.get method
         """
@@ -93,6 +93,10 @@ class page:
     def resolve_language(self) -> Optional[str]:
         """Return the language of the page."""
         return self.language if self.language is not ... else core.app.config.language
+
+    def resolve_reconnect_timeout(self) -> float:
+        """Return the reconnect_timeout of the page."""
+        return self.reconnect_timeout if self.reconnect_timeout is not None else core.app.config.reconnect_timeout
 
     def __call__(self, func: Callable[..., Any]) -> Callable[..., Any]:
         core.app.remove_route(self.path)  # NOTE make sure only the latest route definition is used

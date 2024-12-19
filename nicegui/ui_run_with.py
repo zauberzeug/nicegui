@@ -19,6 +19,7 @@ def run_with(
     language: Language = 'en-US',
     binding_refresh_interval: float = 0.1,
     reconnect_timeout: float = 3.0,
+    message_history_length: int = 1000,
     mount_path: str = '/',
     on_air: Optional[Union[str, Literal[True]]] = None,
     tailwind: bool = True,
@@ -36,6 +37,7 @@ def run_with(
     :param language: language for Quasar elements (default: `'en-US'`)
     :param binding_refresh_interval: time between binding updates (default: `0.1` seconds, bigger is more CPU friendly)
     :param reconnect_timeout: maximum time the server waits for the browser to reconnect (default: 3.0 seconds)
+    :param message_history_length: maximum number of messages that will be stored and resent after a connection interruption (default: 1000, use 0 to disable)
     :param mount_path: mount NiceGUI at this path (default: `'/'`)
     :param on_air: tech preview: `allows temporary remote access <https://nicegui.io/documentation/section_configuration_deployment#nicegui_on_air>`_ if set to `True` (default: disabled)
     :param tailwind: whether to use Tailwind CSS (experimental, default: `True`)
@@ -52,6 +54,7 @@ def run_with(
         language=language,
         binding_refresh_interval=binding_refresh_interval,
         reconnect_timeout=reconnect_timeout,
+        message_history_length=message_history_length,
         tailwind=tailwind,
         prod_js=prod_js,
         show_welcome_message=show_welcome_message,
