@@ -10,7 +10,7 @@ from ..style import create_anchor_name, subheading
 def generate_class_doc(class_obj: type, part_title: str) -> None:
     """Generate documentation for a class including all its methods and properties."""
     doc = class_obj.__doc__ or class_obj.__init__.__doc__
-    if ':param' in doc:
+    if doc and ':param' in doc:
         subheading('Initializer', anchor_name=create_anchor_name(part_title.replace('Reference', 'Initializer')))
         description = remove_indentation(doc.split('\n', 1)[-1])
         lines = [line.replace(':param ', ':') for line in description.splitlines() if ':param' in line]
