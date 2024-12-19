@@ -185,7 +185,7 @@ class Air:
             if client_id not in Client.instances:
                 return
             client = Client.instances[client_id]
-            client.outbox.prune_history(data['next_message_id'])
+            client.outbox.prune_history(data['msg']['next_message_id'])
 
         @self.relay.on('out_of_time')
         async def _handle_out_of_time() -> None:
