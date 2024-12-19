@@ -182,15 +182,18 @@ def run_layer_methods() -> None:
     This is necessary when you want to run methods like fitting the bounds of the map right after the map is created.
 ''')
 async def wait_for_init() -> None:
-    m = ui.leaflet(zoom=5)
-    central_park = m.generic_layer(name='polygon', args=[[
-        (40.767809, -73.981249),
-        (40.800273, -73.958291),
-        (40.797011, -73.949683),
-        (40.764704, -73.973741),
-    ]])
-    await m.initialized()
-    bounds = await central_park.run_method('getBounds')
-    m.run_map_method('fitBounds', [[bounds['_southWest'], bounds['_northEast']]])
+    # @ui.page('/')
+    async def page():
+        m = ui.leaflet(zoom=5)
+        central_park = m.generic_layer(name='polygon', args=[[
+            (40.767809, -73.981249),
+            (40.800273, -73.958291),
+            (40.797011, -73.949683),
+            (40.764704, -73.973741),
+        ]])
+        await m.initialized()
+        bounds = await central_park.run_method('getBounds')
+        m.run_map_method('fitBounds', [[bounds['_southWest'], bounds['_northEast']]])
+    ui.timer(0, page, once=True)  # HIDE
 
 doc.reference(ui.leaflet)

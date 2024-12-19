@@ -2,12 +2,20 @@ import inspect
 from typing import Callable, Optional
 
 from nicegui import binding, ui
+from nicegui.elements.markdown import remove_indentation
 
 from ..style import create_anchor_name, subheading
 
 
 def generate_class_doc(class_obj: type, part_title: str) -> None:
     """Generate documentation for a class including all its methods and properties."""
+    doc = class_obj.__doc__ or class_obj.__init__.__doc__
+    if ':param' in doc:
+        subheading('Initializer', anchor_name=create_anchor_name(part_title.replace('Reference', 'Initializer')))
+        description = remove_indentation(doc.split('\n', 1)[-1])
+        lines = [line.replace(':param ', ':') for line in description.splitlines() if ':param' in line]
+        ui.restructured_text('\n'.join(lines)).classes('bold-links arrow-links rst-param-tables')
+
     mro = [base for base in class_obj.__mro__ if base.__module__.startswith('nicegui.')]
     ancestors = mro[1:]
     attributes = {}

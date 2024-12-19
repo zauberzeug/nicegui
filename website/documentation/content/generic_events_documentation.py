@@ -21,8 +21,8 @@ doc.title('Generic Events')
 
     Here you can find more information about the events that are supported:
 
-    - https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement#events for HTML elements
-    - https://quasar.dev/vue-components for Quasar-based elements (see the "Events" tab on the individual component page)
+    - <https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement#events> for HTML elements
+    - <https://quasar.dev/vue-components> for Quasar-based elements (see the "Events" tab on the individual component page)
 ''')
 def generic_events_demo() -> None:
     with ui.row():

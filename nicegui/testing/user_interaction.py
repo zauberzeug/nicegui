@@ -6,6 +6,7 @@ from typing_extensions import Self
 
 from nicegui import background_tasks, events, ui
 from nicegui.element import Element
+from nicegui.elements.mixins.disableable_element import DisableableElement
 from nicegui.elements.mixins.value_element import ValueElement
 
 if TYPE_CHECKING:
@@ -58,6 +59,8 @@ class UserInteraction(Generic[T]):
         assert self.user.client
         with self.user.client:
             for element in self.elements:
+                if isinstance(element, DisableableElement) and not element.enabled:
+                    continue
                 assert isinstance(element, (ui.input, ui.editor, ui.codemirror))
                 element.value = (element.value or '') + text
         return self

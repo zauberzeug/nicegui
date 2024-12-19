@@ -134,7 +134,7 @@ class Air:
                 core.app.storage.copy_tab(data['old_tab_id'], data['tab_id'])
             client.tab_id = data['tab_id']
             client.on_air = True
-            client.handle_handshake()
+            client.handle_handshake(data.get('next_message_id'))
             return True
 
         @self.relay.on('client_disconnect')
@@ -177,6 +177,14 @@ class Air:
                 return
             client = Client.instances[client_id]
             client.handle_javascript_response(data['msg'])
+
+        @self.relay.on('ack')
+        def _handle_ack(data: Dict[str, Any]) -> None:
+            client_id = data['client_id']
+            if client_id not in Client.instances:
+                return
+            client = Client.instances[client_id]
+            client.outbox.prune_history(data['msg']['next_message_id'])
 
         @self.relay.on('out_of_time')
         async def _handle_out_of_time() -> None:
