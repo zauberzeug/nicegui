@@ -1,4 +1,4 @@
-from typing import Any, Callable, Generator, Optional, Self, Union, Dict, Set, List
+from typing import Any, Callable, Generator, Optional, Self, Union, Dict, Set, List, AsyncGenerator
 
 import inspect
 import re
@@ -77,34 +77,47 @@ class Outlet:
         if parent is None:
             Client.top_level_outlets[path] = self
 
-    def build_page_template(self, **kwargs):
-        """Setups the content area for the single page router"""
-        if self.outlet_builder is None:
-            raise ValueError('The outlet builder function is not defined. Use the @outlet decorator to define it or'
-                             ' pass it as an argument to the SinglePageRouter constructor.')
-        frame = RouterFrame.run_safe(self.outlet_builder, **kwargs)
-        if not isinstance(frame, Generator):
-            raise ValueError('The outlet builder must be a generator function and contain a yield statement'
-                             ' to separate the layout from the content area.')
+    async def build_page_template(self, **kwargs):
+        """Set up the content area for the single page router."""
         properties = {}
 
         def add_properties(result):
             if isinstance(result, dict):
                 properties.update(result)
 
+        if self.outlet_builder is None:
+            raise ValueError(
+                'The outlet builder function is not defined. Use the @outlet decorator to define it or '
+                'pass it as an argument to the SinglePageRouter constructor.'
+            )
+        frame = RouterFrame.run_safe(self.outlet_builder, **kwargs)
+        is_async = inspect.isasyncgen(frame)
+
         router_frame = SinglePageRouter.current_router()
-        if isinstance(frame, Generator):
-            add_properties(next(frame))  # insert ui elements before yield
-        if router_frame is not None:
-            router_frame.update_user_data(properties)
-        yield properties
-        try:
-            if isinstance(frame, Generator):
-                add_properties(next(frame))  # if provided insert ui elements after yield
-            if router_frame is not None:
-                router_frame.update_user_data(properties)
-        except StopIteration:
-            pass
+        if is_async:
+            # Handle asynchronous generator function
+            try:
+                add_properties(await frame.__anext__())  # Insert UI elements before yield
+                if router_frame is not None:
+                    router_frame.update_user_data(properties)
+                yield properties
+                add_properties(await frame.__anext__())  # Insert UI elements after yield
+                if router_frame is not None:
+                    router_frame.update_user_data(properties)
+            except StopAsyncIteration:
+                pass
+        else:
+            # Handle synchronous generator function
+            try:
+                add_properties(next(frame))  # Insert UI elements before yield
+                if router_frame is not None:
+                    router_frame.update_user_data(properties)
+                yield properties
+                add_properties(next(frame))  # Insert UI elements after yield
+                if router_frame is not None:
+                    router_frame.update_user_data(properties)
+            except StopIteration:
+                pass
 
     def __call__(self, func: Callable[..., Any]) -> Self:
         """Decorator for the layout builder / "outlet" function"""
@@ -215,22 +228,25 @@ class Outlet:
         :param initial_url: The initial URL to initialize the router's content with
         :param kwargs: Additional keyword arguments passed to the page template generator function"""
         kwargs['url_path'] = initial_url
+
+        # Determine if build_page_template is asynchronous
         template = RouterFrame.run_safe(self.build_page_template, **kwargs)
-        if not isinstance(template, Generator):
-            raise ValueError('The page template method must yield a value to separate the layout from the content '
-                             'area.')
+        # Initialize properties dictionary
         new_user_data = {}
-        new_properties = next(template)
-        if isinstance(new_properties, dict):
-            new_user_data.update(new_properties)
-        content_area = self.create_router_instance(initial_url, user_data=new_user_data)
+        content_area = None
+        def add_properties(result):
+            if isinstance(result, dict):
+                new_user_data.update(result)
         try:
-            new_properties = next(template)
-            if isinstance(new_properties, dict):
-                new_user_data.update(new_properties)
-        except StopIteration:
+            new_properties = await template.__anext__()  # Insert UI elements before yield
+            add_properties(new_properties)
+            content_area = self.create_router_instance(initial_url, user_data=new_user_data)
+            new_properties = await template.__anext__()  # Insert UI elements after yield
+            add_properties(new_properties)
+        except StopAsyncIteration:
             pass
-        content_area.update_user_data(new_user_data)
+        if content_area:
+            content_area.update_user_data(new_user_data)
 
     def create_router_instance(self,
                                initial_url: Optional[str] = None,

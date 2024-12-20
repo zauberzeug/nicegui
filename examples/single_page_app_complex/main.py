@@ -4,7 +4,6 @@
 from nicegui import ui
 from nicegui.page_layout import LeftDrawer
 from nicegui.single_page_router import SinglePageRouter
-from nicegui.single_page_target import SinglePageTarget
 
 from examples.single_page_app_complex.cms_config import SubServiceDefinition, ServiceDefinition, services
 
@@ -12,7 +11,7 @@ from examples.single_page_app_complex.cms_config import SubServiceDefinition, Se
 # --- Other app ---
 
 @ui.outlet('/other_app')  # Needs to be defined before the main outlet / to avoid conflicts
-def other_app_router():
+async def other_app_router():
     ui.label('Other app header').classes('text-h2')
     ui.html('<hr>')
     yield
@@ -28,7 +27,7 @@ async def other_app_index():
 # --- Main app ---
 
 @ui.outlet('/')  # main app outlet
-def main_router(url_path: str):
+async def main_router(url_path: str):
     with ui.header():
         with ui.link('', '/').style('text-decoration: none; color: inherit;') as lnk:
             ui.html('<span style="color:white">Nice</span>'
@@ -77,7 +76,7 @@ async def about_page(menu_drawer: LeftDrawer):
 
 
 @main_router.outlet('/services/{service_name}')  # service outlet
-def services_router(service_name: str, menu_drawer: LeftDrawer):
+async def services_router(service_name: str, menu_drawer: LeftDrawer):
     service: ServiceDefinition = services[service_name]
     menu_drawer.clear()
     with menu_drawer:
@@ -118,7 +117,7 @@ async def show_index(service: ServiceDefinition):
 
 
 @services_router.outlet('/{sub_service_name}')  # sub service outlet
-def sub_service_router(service: ServiceDefinition, sub_service_name: str):
+async def sub_service_router(service: ServiceDefinition, sub_service_name: str):
     sub_service: SubServiceDefinition = service.sub_services[sub_service_name]
     ui.label(f'{service.title} > {sub_service.title}').classes('text-h4')
     ui.html('<br>')

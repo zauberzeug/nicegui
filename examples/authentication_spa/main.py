@@ -29,7 +29,7 @@ def main_layout():
 
 
 @main_layout.view('/login', title='Login Page')
-async def main_app_index():
+def login_view():
     def handle_login():
         username = username_input.value
         password = password_input.value
@@ -54,11 +54,11 @@ async def main_app_index():
 
 def logout():  # logs the user out and redirects to the login page
     app.storage.user.clear()
-    ui.navigate.to(INDEX_URL)
+    ui.navigate.to(login_view)
 
 
 @main_layout.view(SECRET_AREA_URL, title='🔒 Secret Area')
-async def secret_area_index():
+def secret_area_view():
     username = app.storage.user['username']
     ui.label(f'Hello {html.escape(username)}. Welcome to the secret area!').classes('text-3xl')
     ui.button('Logout').on_click(logout).classes('w-48 mt-12')

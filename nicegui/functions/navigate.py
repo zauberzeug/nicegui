@@ -3,6 +3,7 @@ from typing import Any, Callable, Union
 from ..client import Client
 from ..context import context
 from ..element import Element
+from ..outlet_view import OutletView
 from .javascript import run_javascript
 
 
@@ -58,6 +59,8 @@ class Navigate:
             path = target
         elif isinstance(target, Element):
             path = f'#c{target.id}'
+        elif isinstance(target, OutletView):
+            path = target.url
         elif callable(target):
             path = Client.page_routes[target]
         else:
