@@ -21,7 +21,7 @@ def on_startup():
 def on_shutdown() -> None:
     """Clean up the message queues by closing them and waiting for threads to finish."""
     global method_queue, response_queue  # pylint: disable=global-statement # noqa: PLW0603
-    if not method_queue:
+    if not method_queue or not response_queue:
         return
     method_queue.close()
     method_queue.join_thread()
