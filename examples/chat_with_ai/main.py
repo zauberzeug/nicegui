@@ -9,7 +9,7 @@ OPENAI_API_KEY = 'not-set'  # TODO: set your OpenAI API key here
 
 @ui.page('/')
 def main():
-    llm = ChatOpenAI(model_name='gpt-3.5-turbo', streaming=True, openai_api_key=OPENAI_API_KEY)
+    llm = ChatOpenAI(model_name='gpt-4o-mini', streaming=True, openai_api_key=OPENAI_API_KEY)
 
     async def send() -> None:
         question = text.value
