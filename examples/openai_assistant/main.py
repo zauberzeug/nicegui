@@ -6,8 +6,7 @@ from openai.types.beta.threads import MessageDeltaEvent, TextDeltaBlock
 
 from nicegui import ui
 
-AsyncOpenAI.api_key = 'provide your key here'
-client = AsyncOpenAI()
+client = AsyncOpenAI(api_key='provide your OpenAI API key here')
 
 
 @ui.page('/')
