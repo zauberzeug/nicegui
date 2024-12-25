@@ -5,10 +5,10 @@ from nicegui.testing import Screen
 def test_clipboard(screen: Screen):
     @ui.page('/')
     def page():
-        ui.button('Copy to clipboard', on_click=lambda: ui.clipboard.write('Hello, World!'))
+        ui.button('Copy to clipboard', on_click=lambda: ui.clipboard.write_text('Hello, World!'))
 
         async def read_clipboard():
-            ui.notify('Clipboard: ' + await ui.clipboard.read())
+            ui.notify('Clipboard: ' + await ui.clipboard.read_text())
         ui.button('Read from clipboard', on_click=read_clipboard)
 
     screen.open('/')

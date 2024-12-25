@@ -4,7 +4,7 @@ from . import doc
 
 
 @doc.demo('Read and write to the clipboard', '''
-    The following demo shows how to use `ui.clipboard.read()` and `ui.clipboard.write()` to interact with the clipboard.
+    The following demo shows how to use `ui.clipboard.read_text()`, `ui.clipboard.write_text()` and `ui.clipboard.read_image()` to interact with the clipboard.
 
     Because auto-index page can be accessed by multiple browser tabs simultaneously, reading the clipboard is not supported on this page.
     This is only possible within page-builder functions decorated with `ui.page`, as shown in this demo.
@@ -15,11 +15,21 @@ def main_demo() -> None:
     # @ui.page('/')
     # async def index():
     with ui.column():  # HIDE
-        ui.button('Write', on_click=lambda: ui.clipboard.write('Hi!'))
+        ui.button('Write Text', on_click=lambda: ui.clipboard.write_text('Hi!'))
 
-        async def read() -> None:
-            ui.notify(await ui.clipboard.read())
-        ui.button('Read', on_click=read)
+        async def read_text() -> None:
+            ui.notify(await ui.clipboard.read_text())
+        ui.button('Read Text', on_click=read_text)
+
+        image = ui.image()
+
+        async def read_image() -> None:
+            img = ui.clipboard.read_image()
+            if not img:
+                ui.notify("you must copy an image to clipboard first.")
+            else:
+                image.set_source(img)
+        ui.button('Read Image', on_click=read_image)
 
 
 @doc.demo('Client-side clipboard', '''
@@ -27,10 +37,10 @@ def main_demo() -> None:
     This might be supported by more browsers because the clipboard access is directly triggered by a user action.
 ''')
 def client_side_clipboard() -> None:
-    ui.button('Write').on('click', js_handler='''
+    ui.button('Write Text').on('click', js_handler='''
         () => navigator.clipboard.writeText("Ho!")
     ''')
-    ui.button('Read').on('click', js_handler='''
+    ui.button('Read Text').on('click', js_handler='''
         async () => emitEvent("clipboard", await navigator.clipboard.readText())
     ''')
     ui.on('clipboard', lambda e: ui.notify(e.args))
