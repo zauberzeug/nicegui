@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "nicegui"
-version = "2.7.0-dev"
+version = "2.9.0-dev"
 description = "Create web-based user interfaces with Python. The nice way."
 authors = ["Zauberzeug GmbH <info@zauberzeug.com>"]
 license = "MIT"
@@ -19,7 +19,7 @@ python-socketio = {extras = ["asyncio-client"], version = ">=5.10.0"} # version 
 vbuild = ">=0.8.2"
 watchfiles = ">=0.18.1"
 jinja2 = "^3.1.4" # https://github.com/zauberzeug/nicegui/security/dependabot/32
-python-multipart = ">=0.0.7"
+python-multipart = ">=0.0.18"
 orjson = {version = ">=3.9.15", markers = "platform_machine != 'i386' and platform_machine != 'i686'"} # https://github.com/zauberzeug/nicegui/security/dependabot/29, orjson does not support 32bit
 itsdangerous = "^2.1.2"
 aiofiles = ">=23.1.0"

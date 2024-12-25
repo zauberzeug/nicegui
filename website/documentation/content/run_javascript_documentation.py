@@ -15,7 +15,7 @@ def main_demo() -> None:
             ui.notify(f'Browser time: {time}')
 
         def access_elements():
-            ui.run_javascript(f'getElement({label.id}).innerText += " Hello!"')
+            ui.run_javascript(f'getHtmlElement({label.id}).innerText += " Hello!"')
 
         ui.button('fire and forget', on_click=alert)
         ui.button('receive result', on_click=get_date)

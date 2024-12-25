@@ -36,7 +36,7 @@ class Code(ContentElement, default_classes='nicegui-code'):
         timer(0.1, self._update_copy_button)
 
         self.client.on_connect(lambda: self.client.run_javascript(f'''
-            if (!navigator.clipboard) getElement({self.copy_button.id}).$el.style.display = 'none';
+            if (!navigator.clipboard) getHtmlElement({self.copy_button.id}).style.display = 'none';
         '''))
 
     async def show_checkmark(self) -> None:
