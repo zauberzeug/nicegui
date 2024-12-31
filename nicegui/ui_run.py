@@ -4,6 +4,7 @@ import sys
 from pathlib import Path
 from typing import Any, List, Literal, Optional, Tuple, TypedDict, Union
 
+from fastapi.middleware.gzip import GZipMiddleware
 from starlette.routing import Route
 from uvicorn.main import STARTUP_FAILURE
 from uvicorn.supervisors import ChangeReload, Multiprocess
@@ -16,6 +17,7 @@ from .air import Air
 from .client import Client
 from .language import Language
 from .logging import log
+from .middlewares import RedirectWithPrefixMiddleware
 from .server import CustomServerConfig, Server
 
 APP_IMPORT_STRING = 'nicegui:app'
@@ -122,6 +124,8 @@ def run(*,
         show_welcome_message=show_welcome_message,
     )
     core.app.config.endpoint_documentation = endpoint_documentation
+    core.app.add_middleware(GZipMiddleware)
+    core.app.add_middleware(RedirectWithPrefixMiddleware)
 
     for route in core.app.routes:
         if not isinstance(route, Route):

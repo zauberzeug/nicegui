@@ -7,7 +7,6 @@ from typing import Any, Dict
 
 import socketio
 from fastapi import HTTPException, Request
-from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import FileResponse, Response
 
 from . import air, background_tasks, binding, core, favicon, helpers, json, run, welcome
@@ -17,7 +16,6 @@ from .dependencies import js_components, libraries, resources
 from .error import error_content
 from .json import NiceGUIJSONResponse
 from .logging import log
-from .middlewares import RedirectWithPrefixMiddleware
 from .page import page
 from .slot import Slot
 from .staticfiles import CacheControlledStaticFiles
@@ -54,8 +52,6 @@ app.mount('/_nicegui_ws/', sio_app)
 mimetypes.add_type('text/javascript', '.js')
 mimetypes.add_type('text/css', '.css')
 
-app.add_middleware(GZipMiddleware)
-app.add_middleware(RedirectWithPrefixMiddleware)
 static_files = CacheControlledStaticFiles(
     directory=(Path(__file__).parent / 'static').resolve(),
     follow_symlink=True,
