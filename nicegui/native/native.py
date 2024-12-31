@@ -140,6 +140,7 @@ try:
 
         def _send(self, *args: Any, **kwargs: Any) -> None:
             name = inspect.currentframe().f_back.f_code.co_name  # type: ignore
+            assert method_queue is not None
             method_queue.put((name, args, kwargs))
 
         async def _request(self, *args: Any, **kwargs: Any) -> Any:
