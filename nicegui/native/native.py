@@ -146,6 +146,8 @@ try:
         async def _request(self, *args: Any, **kwargs: Any) -> Any:
             def wrapper(*args: Any, **kwargs: Any) -> Any:
                 try:
+                    assert method_queue is not None
+                    assert response_queue is not None
                     method_queue.put((name, args, kwargs))
                     return response_queue.get()  # wait for the method to be called and writing its result to the queue
                 except Exception:
