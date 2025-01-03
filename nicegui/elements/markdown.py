@@ -1,7 +1,6 @@
 import os
 from functools import lru_cache
 from typing import List
-
 import markdown2
 from fastapi.responses import PlainTextResponse
 from pygments.formatters import HtmlFormatter  # pylint: disable=no-name-in-module
@@ -18,14 +17,14 @@ class Markdown(ContentElement, component='markdown.js', default_classes='nicegui
 
     def __init__(self,
                  content: str = '', *,
-                 extras: List[str] = ['fenced-code-blocks', 'tables'],  # noqa: B006
+                 extras: List[str] = ['fenced-code-blocks', 'tables', 'mermaid'],  # noqa: B006
                  ) -> None:
         """Markdown Element
 
         Renders Markdown onto the page.
 
         :param content: the Markdown content to be displayed
-        :param extras: list of `markdown2 extensions <https://github.com/trentm/python-markdown2/wiki/Extras#implemented-extras>`_ (default: `['fenced-code-blocks', 'tables']`)
+        :param extras: list of `markdown2 extensions <https://github.com/trentm/python-markdown2/wiki/Extras#implemented-extras>`_ (default: `['fenced-code-blocks', 'tables', 'mermaid']`)
         """
         self.extras = extras[:]
         super().__init__(content=content)

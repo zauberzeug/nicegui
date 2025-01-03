@@ -67,6 +67,49 @@ def markdown_latex():
     ''', extras=['latex'])
 
 
+@doc.demo('Markdown with Mermaid diagrams', '''
+    You can create diagrams using Mermaid syntax.
+    Mermaid support is enabled by default.
+    See the [Mermaid documentation](https://mermaid.js.org/) for all available diagram types.
+''')
+def markdown_mermaid():
+    ui.markdown('''
+        ```mermaid
+        graph TD
+            A[Start] --> B{Is it working?}
+            B -- Yes --> C[Great!]
+            B -- No --> D[Debug]
+            D --> B
+        ```
+
+        **NiceGUI communication**
+
+        ```mermaid
+        sequenceDiagram
+            participant Client as Browser/Client
+            participant Server as NiceGUI Server
+            participant Backend as Python Backend
+            
+            Client->>Server: HTTP: Initial page request
+            Server-->>Client: HTML + JavaScript
+            
+            Note over Client,Server: WebSocket Connection
+            Client->>Server: WS: Connect
+            Server-->>Client: WS: Connection established
+            
+            Note over Client,Backend: Real-time Updates
+            Client->>Server: WS: UI Event (e.g., button click)
+            Server->>Backend: Execute Python callback
+            Backend->>Server: Update UI state
+            Server-->>Client: WS: UI updates
+            
+            Note over Client,Server: Auto-refresh
+            Server->>Client: WS: Push updates (if page changes)
+            Client->>Client: Update UI automatically
+        ```
+    ''')
+
+
 @doc.demo('Change Markdown content', '''
     You can change the content of a Markdown element by setting its `content` property or calling `set_content`.
 ''')
