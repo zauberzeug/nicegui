@@ -19,6 +19,7 @@ class JsonEditor(Element, component='json_editor.js', dependencies=['lib/vanilla
                  properties: Dict, *,
                  on_select: Optional[Handler[JsonEditorSelectEventArguments]] = None,
                  on_change: Optional[Handler[JsonEditorChangeEventArguments]] = None,
+                 schema: Optional[Dict] = None,
                  ) -> None:
         """JSONEditor
 
@@ -29,9 +30,13 @@ class JsonEditor(Element, component='json_editor.js', dependencies=['lib/vanilla
         :param properties: dictionary of JSONEditor properties
         :param on_select: callback which is invoked when some of the content has been selected
         :param on_change: callback which is invoked when the content has changed
+        :param schema: optional `JSON schema <https://json-schema.org/>`_ for validating the data being edited
         """
         super().__init__()
         self._props['properties'] = properties
+
+        if schema:
+            self._props['schema'] = schema
 
         if on_select:
             self.on_select(on_select)

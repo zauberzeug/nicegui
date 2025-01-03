@@ -35,6 +35,12 @@ def test_classes(screen: Screen):
     label.classes(replace='four')
     assert_classes('four')
 
+    label.classes(toggle='bg-red-500')
+    assert_classes('four bg-red-500')
+
+    label.classes(toggle='bg-red-500')
+    assert_classes('four')
+
 
 @pytest.mark.parametrize('value,expected', [
     (None, {}),

@@ -170,19 +170,25 @@ def create() -> None:
                 link_target('sponsors')
                 ui.markdown('NiceGUI is supported by') \
                     .classes('text-2xl md:text-3xl font-medium')
-                with ui.row(align_items='center'):
-                    assert SPONSORS['total'] > 0
+                if SPONSORS['top']:
+                    with ui.row(align_items='center'):
+                        assert SPONSORS['total'] > 0
+                        ui.markdown(f'''
+                            our top {'sponsor' if len(SPONSORS['top']) == 1 else 'sponsors'}
+                        ''')
+                        for sponsor in SPONSORS['top']:
+                            with ui.link(target=f'https://github.com/{sponsor}').classes('row items-center gap-2'):
+                                ui.image(f'https://github.com/{sponsor}.png').classes('w-12 h-12 border')
+                                ui.label(f'@{sponsor}')
                     ui.markdown(f'''
-                        our top {'sponsor' if SPONSORS['total'] == 1 else 'sponsors'}
-                    ''')
-                    for sponsor in SPONSORS['top']:
-                        with ui.link(target=f'https://github.com/{sponsor}').classes('row items-center gap-2'):
-                            ui.image(f'https://github.com/{sponsor}.png').classes('w-12 h-12 border')
-                            ui.label(f'@{sponsor}')
-                ui.markdown(f'''
-                    as well as {SPONSORS['total'] - len(SPONSORS['top'])} other [sponsors](https://github.com/sponsors/zauberzeug)
-                    and {SPONSORS['contributors']} [contributors](https://github.com/zauberzeug/nicegui/graphs/contributors).
-                ''').classes('bold-links arrow-links')
+                        as well as {SPONSORS['total'] - len(SPONSORS['top'])} other [sponsors](https://github.com/sponsors/zauberzeug)
+                        and {SPONSORS['contributors']} [contributors](https://github.com/zauberzeug/nicegui/graphs/contributors).
+                    ''').classes('bold-links arrow-links')
+                else:
+                    ui.markdown(f'''
+                        {SPONSORS['total']} [sponsors](https://github.com/sponsors/zauberzeug)
+                        and {SPONSORS['contributors']} [contributors](https://github.com/zauberzeug/nicegui/graphs/contributors).
+                    ''').classes('bold-links arrow-links')
             with ui.link(target='https://github.com/sponsors/zauberzeug').style('color: black !important') \
                     .classes('rounded-full mx-auto px-12 py-2 border-2 border-[#3e6a94] font-medium text-lg md:text-xl'):
                 with ui.row().classes('items-center gap-4'):

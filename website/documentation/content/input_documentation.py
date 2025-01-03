@@ -47,6 +47,13 @@ def styling():
 
     - by passing a callable that returns an error message or `None`, or
     - by passing a dictionary that maps error messages to callables that return `True` if the input is valid.
+
+    The callable validation function can also be an async coroutine.
+    In this case, the validation is performed asynchronously in the background.
+
+    You can use the `validate` method of the input element to trigger the validation manually.
+    It returns `True` if the input is valid, and an error message otherwise.
+    For async validation functions, the return value must be explicitly disabled by setting `return_result=False`.
 ''')
 def validation():
     ui.input('Name', validation=lambda value: 'Too short' if len(value) < 5 else None)

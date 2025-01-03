@@ -166,6 +166,17 @@ def table_from_pandas_demo():
     ui.table.from_pandas(df).classes('max-h-40')
 
 
+@doc.demo('Table from Polars DataFrame', '''
+    You can create a table from a Polars DataFrame using the `from_polars` method.
+    This method takes a Polars DataFrame as input and returns a table.
+''')
+def table_from_polars_demo():
+    import polars as pl
+
+    df = pl.DataFrame(data={'col1': [1, 2], 'col2': [3, 4]})
+    ui.table.from_polars(df).classes('max-h-40')
+
+
 @doc.demo('Adding rows', '''
     It's simple to add new rows with the `add_row(dict)` and `add_rows(list[dict])` methods.
     With the "virtual-scroll" prop set, the table can be programmatically scrolled with the `scrollTo` JavaScript function.

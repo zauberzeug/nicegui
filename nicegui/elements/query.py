@@ -37,9 +37,13 @@ class Query:
         else:
             self.element = QueryElement(selector)
 
-    def classes(self, add: Optional[str] = None, *, remove: Optional[str] = None, replace: Optional[str] = None) \
-            -> Self:
-        """Apply, remove, or replace HTML classes.
+    def classes(self,
+                add: Optional[str] = None, *,
+                remove: Optional[str] = None,
+                toggle: Optional[str] = None,
+                replace: Optional[str] = None,
+                ) -> Self:
+        """Apply, remove, toggle, or replace HTML classes.
 
         This allows modifying the look of the element or its layout using `Tailwind <https://tailwindcss.com/>`_ or `Quasar <https://quasar.dev/>`_ classes.
 
@@ -47,9 +51,10 @@ class Query:
 
         :param add: whitespace-delimited string of classes
         :param remove: whitespace-delimited string of classes to remove from the element
+        :param toggle: whitespace-delimited string of classes to toggle
         :param replace: whitespace-delimited string of classes to use instead of existing ones
         """
-        classes = Classes.update_list(self.element.props['classes'], add, remove, replace)
+        classes = Classes.update_list(self.element.props['classes'], add, remove, toggle, replace)
         new_classes = [c for c in classes if c not in self.element.props['classes']]
         old_classes = [c for c in self.element.props['classes'] if c not in classes]
         if new_classes:

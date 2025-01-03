@@ -413,6 +413,22 @@ export default {
       const geometry = this.objects.get(object_id).geometry;
       set_point_cloud_data(position, color, geometry);
     },
+    attach(object_id, parent_id, x, y, z, R) {
+      if (!this.objects.has(object_id)) return;
+      const object = this.objects.get(object_id);
+      const parent = this.objects.get(parent_id);
+      parent.add(object);
+      this.move(object_id, x, y, z);
+      this.rotate(object_id, R);
+    },
+    detach(object_id, x, y, z, R) {
+      if (!this.objects.has(object_id)) return;
+      const object = this.objects.get(object_id);
+      object.removeFromParent();
+      this.scene.add(object);
+      this.move(object_id, x, y, z);
+      this.rotate(object_id, R);
+    },
     move_camera(x, y, z, look_at_x, look_at_y, look_at_z, up_x, up_y, up_z, duration) {
       if (this.camera_tween) this.camera_tween.stop();
       const camera_up_changed = up_x !== null || up_y !== null || up_z !== null;

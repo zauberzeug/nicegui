@@ -222,8 +222,9 @@ class Element(Visibility):
     def default_classes(cls,
                         add: Optional[str] = None, *,
                         remove: Optional[str] = None,
+                        toggle: Optional[str] = None,
                         replace: Optional[str] = None) -> type[Self]:
-        """Apply, remove, or replace default HTML classes.
+        """Apply, remove, toggle, or replace default HTML classes.
 
         This allows modifying the look of the element or its layout using `Tailwind <https://tailwindcss.com/>`_ or `Quasar <https://quasar.dev/>`_ classes.
 
@@ -233,9 +234,10 @@ class Element(Visibility):
 
         :param add: whitespace-delimited string of classes
         :param remove: whitespace-delimited string of classes to remove from the element
+        :param toggle: whitespace-delimited string of classes to toggle
         :param replace: whitespace-delimited string of classes to use instead of existing ones
         """
-        cls._default_classes = Classes.update_list(cls._default_classes, add, remove, replace)
+        cls._default_classes = Classes.update_list(cls._default_classes, add, remove, toggle, replace)
         return cls
 
     @property
@@ -517,6 +519,8 @@ class Element(Visibility):
             for key, value in self._props.items()
             if not key.startswith('_') and key not in IGNORED_PROPS and value
         ]
+        if not self.visible:
+            additions.append(f'visible={self.visible}')
         if additions:
             result += f' [{", ".join(additions)}]'
 

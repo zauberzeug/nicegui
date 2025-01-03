@@ -82,13 +82,33 @@ jobs:
         with:
           context: .
           file: ./release.dockerfile
-          platforms: linux/amd64,linux/arm64
+          platforms: linux/amd64, linux/arm64
           push: true
           tags: ${{ steps.prep.outputs.tags }}
           build-args: VERSION=${{ steps.prep.outputs.version }}
-          cache-from: type=registry,ref=${{ steps.prep.outputs.docker_image }}:buildcache
-          cache-to: type=registry,ref=${{ steps.prep.outputs.docker_image }}:buildcache,mode=max
-
+          cache-from: |
+            type=registry,ref=${{ steps.prep.outputs.docker_image }}:buildcache-amd64
+            type=registry,ref=${{ steps.prep.outputs.docker_image }}:buildcache-arm64
+      - name: Cache linux/amd64 to registry
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./release.dockerfile
+          platforms: linux/amd64
+          build-args: VERSION=${{ steps.prep.outputs.version }}
+          push: false
+          cache-from: type=registry,ref=${{ steps.prep.outputs.docker_image }}:buildcache-amd64
+          cache-to: type=registry,ref=${{ steps.prep.outputs.docker_image }}:buildcache-amd64,mode=max
+      - name: Cache linux/arm64 to registry
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./release.dockerfile
+          platforms: linux/arm64
+          build-args: VERSION=${{ steps.prep.outputs.version }}
+          push: false
+          cache-from: type=registry,ref=${{ steps.prep.outputs.docker_image }}:buildcache-arm64
+          cache-to: type=registry,ref=${{ steps.prep.outputs.docker_image }}:buildcache-arm64,mode=max
       # Uploading the README.md is not a core feature of docker/build-push-action yet
       - name: Update README
         uses: christian-korneck/update-container-description-action@v1
@@ -100,7 +120,7 @@ jobs:
           provider: dockerhub
           short_description: "Web Based User Interface for Python with Buttons, Dialogs, Markdown, 3D Scenes and Plots"
 
-  update_metadata:
+  update_version_and_sponsors:
     needs: docker
     runs-on: ubuntu-latest
     steps:
@@ -110,14 +130,20 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
+      - name: Install httpx
+        run: pip install httpx
       - name: Update version in pyproject.toml
         run: python .github/workflows/update_pyproject.py ${GITHUB_REF#refs/tags/}
+      - name: Update sponsors in README and on website
+        run: python .github/workflows/fetch_sponsors.py
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
       - name: Commit and push changes
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add CITATION.cff pyproject.toml
-          git commit -m "Update pyproject.toml"
+          git add pyproject.toml README.md website/sponsors.json
+          git commit -m "Update version and sponsors"
           git push origin HEAD:main
 
   verify:

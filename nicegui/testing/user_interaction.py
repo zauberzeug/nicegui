@@ -1,11 +1,12 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Generic, Set, Type, TypeVar, Union
+from typing import TYPE_CHECKING, Generic, List, Set, Type, TypeVar, Union
 
 from typing_extensions import Self
 
 from nicegui import background_tasks, events, ui
 from nicegui.element import Element
+from nicegui.elements.mixins.disableable_element import DisableableElement
 from nicegui.elements.mixins.value_element import ValueElement
 
 if TYPE_CHECKING:
@@ -36,6 +37,13 @@ class UserInteraction(Generic[T]):
         assert self.user.client
         with self.user.client:
             for element in self.elements:
+                if isinstance(element, ui.input) and event == 'keydown.tab':
+                    autocomplete: List[str] = element.props['_autocomplete']
+                    for option in autocomplete:
+                        if option.startswith(element.value):
+                            element.value = option
+                            break
+
                 for listener in element._event_listeners.values():  # pylint: disable=protected-access
                     if listener.type != event:
                         continue
@@ -51,6 +59,8 @@ class UserInteraction(Generic[T]):
         assert self.user.client
         with self.user.client:
             for element in self.elements:
+                if isinstance(element, DisableableElement) and not element.enabled:
+                    continue
                 assert isinstance(element, (ui.input, ui.editor, ui.codemirror))
                 element.value = (element.value or '') + text
         return self
