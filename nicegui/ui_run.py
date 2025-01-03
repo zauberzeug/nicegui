@@ -2,7 +2,7 @@ import multiprocessing
 import os
 import sys
 from pathlib import Path
-from typing import Any, List, Literal, Optional, Tuple, Union
+from typing import Any, List, Literal, Optional, Tuple, Union, TypedDict
 from redis import Redis, RedisCluster
 
 from starlette.routing import Route
