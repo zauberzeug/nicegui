@@ -160,7 +160,6 @@ def map_of_nicegui():
     subheading('Map of NiceGUI', anchor_name='map-of-nicegui')
     ui.add_css('''
         .map-of-nicegui code {
-            color: var(--q-primary);
             font-weight: bold;
         }
     ''')
@@ -430,7 +429,7 @@ def map_of_nicegui():
         `ul`,
         `var`,
         `video`,
-        `wbr`,
+        `wbr`
 
         #### `background_tasks`
 
