@@ -59,6 +59,7 @@ class Air:
                 content=data['body'],
             )
             response = await self.client.send(request)
+            self.client.cookies.clear()
             instance_id = data['instance-id']
             content = response.content.replace(
                 b'const extraHeaders = {};',
