@@ -42,11 +42,13 @@ class LinePlot(Pyplot):
         self._convert_to_html()
         return self
 
-    def push(self, x: List[float], Y: List[List[float]]) -> None:
+    def push(self, x: List[float], Y: List[List[float]], update_x_lims: bool = True, update_y_lims: bool = True) -> None:
         """Push new data to the plot.
 
         :param x: list of x values
         :param Y: list of lists of y values (one list per line)
+        :param update_x_lims: Update the x limits based on the current data points (default: True)
+        :param update_y_lims: Update the y limits based on the current data points (default: True)
         """
         self.push_counter += 1
 
@@ -61,15 +63,19 @@ class LinePlot(Pyplot):
             line.set_xdata(self.x)
             line.set_ydata(self.Y[i])
 
-        flat_y = [y_i for y in self.Y for y_i in y]
-        min_x = min(self.x)
-        max_x = max(self.x)
-        min_y = min(flat_y)
-        max_y = max(flat_y)
-        pad_x = 0.01 * (max_x - min_x)
-        pad_y = 0.01 * (max_y - min_y)
-        self.fig.gca().set_xlim(min_x - pad_x, max_x + pad_x)
-        self.fig.gca().set_ylim(min_y - pad_y, max_y + pad_y)
+        if update_x_lims or update_y_lims:
+            flat_y = [y_i for y in self.Y for y_i in y]
+            min_x = min(self.x)
+            max_x = max(self.x)
+            min_y = min(flat_y)
+            max_y = max(flat_y)
+            pad_x = 0.01 * (max_x - min_x)
+            pad_y = 0.01 * (max_y - min_y)
+            if update_x_lims and min_x != max_x:
+                self.fig.gca().set_xlim(min_x - pad_x, max_x + pad_x)
+            if update_y_lims and min_y != max_y:
+                self.fig.gca().set_ylim(min_y - pad_y, max_y + pad_y)
+
         self._convert_to_html()
         self.update()
 
