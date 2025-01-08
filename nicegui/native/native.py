@@ -11,23 +11,24 @@ method_queue: Optional[Queue] = None
 response_queue: Optional[Queue] = None
 
 
-def on_startup():
-    """Initialize the message queues."""
+def create_queues() -> None:
+    """Create the message queues."""
     global method_queue, response_queue  # pylint: disable=global-statement # noqa: PLW0603
     method_queue = Queue()
     response_queue = Queue()
 
 
-def on_shutdown() -> None:
-    """Clean up the message queues by closing them and waiting for threads to finish."""
+def remove_queues() -> None:
+    """Remove the message queues by closing them and waiting for threads to finish."""
     global method_queue, response_queue  # pylint: disable=global-statement # noqa: PLW0603
-    if not method_queue or not response_queue:
-        return
-    method_queue.close()
-    method_queue.join_thread()
-    response_queue.close()
-    response_queue.join_thread()
-    method_queue = response_queue = None
+    if method_queue is not None:
+        method_queue.close()
+        method_queue.join_thread()
+        method_queue = None
+    if response_queue is not None:
+        response_queue.close()
+        response_queue.join_thread()
+        response_queue = None
 
 
 try:
