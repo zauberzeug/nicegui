@@ -1,5 +1,4 @@
-#! /usr/bin/env python3
-
+#!/usr/bin/env python3
 from openai import AsyncOpenAI
 from openai.types.beta.assistant_stream_event import ThreadMessageInProgress
 from openai.types.beta.threads import MessageDeltaEvent, TextDeltaBlock
@@ -11,13 +10,14 @@ client = AsyncOpenAI(api_key='provide your OpenAI API key here')
 
 @ui.page('/')
 async def main():
-
     assistant = await client.beta.assistants.create(
         name='NiceGUI Assistant',
         instructions='''
             You are a personal assistant for NiceGUI developers.
             Your sole focus is to help with questions about the NiceGUI framework.
-            You are precise and concise. Stay on the topic. Very short answers are preferred but always be friendly and polite.
+            You are precise and concise.
+            Stay on the topic.
+            Very short answers are preferred, but always be friendly and polite.
         ''',
         tools=[{'type': 'code_interpreter'}],
         model='gpt-4o-mini',
@@ -25,13 +25,13 @@ async def main():
 
     thread = await client.beta.threads.create()
 
-    async def send():
+    async def send() -> None:
         response.content = ''
         spinner = ui.spinner(size='5em', type='comment').classes('mx-auto')
         await client.beta.threads.messages.create(
             thread_id=thread.id,
             role='user',
-            content=question.value
+            content=question.value,
         )
         stream = await client.beta.threads.runs.create(
             assistant_id=assistant.id,
@@ -49,7 +49,7 @@ async def main():
                 continue
             response.content += content.text.value
 
-    with ui.column().classes('mx-auto w-full max-w-xl mt-16'):
+    with ui.column().classes('mx-auto w-full max-w-xl my-16'):
         ui.label('NiceGUI Assistant').classes('text-2xl font-bold mx-auto')
         question = ui.input(value='Why does NiceGUI use async/await?') \
             .classes('w-full self-center mt-4').props('hint="Ask your question" dense') \
