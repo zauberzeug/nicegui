@@ -144,7 +144,7 @@ def max_tab_storage_age():
 
     @ui.page('/')
     def index():
-        # ui.label(f'Tab storage age: {app.storage.tab.age} seconds')
+        # ui.label(f'Tab storage age: {app.storage.max_tab_storage_age} seconds')
         pass  # HIDE
 
 
