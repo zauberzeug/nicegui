@@ -124,7 +124,8 @@ def run(*,
         show_welcome_message=show_welcome_message,
     )
     core.app.config.endpoint_documentation = endpoint_documentation
-    core.app.add_middleware(GZipMiddleware)
+    if not helpers.is_pytest():
+        core.app.add_middleware(GZipMiddleware)
     core.app.add_middleware(RedirectWithPrefixMiddleware)
 
     for route in core.app.routes:
