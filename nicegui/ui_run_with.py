@@ -3,10 +3,12 @@ from pathlib import Path
 from typing import Literal, Optional, Union
 
 from fastapi import FastAPI
+from fastapi.middleware.gzip import GZipMiddleware
 
 from . import core, storage
 from .air import Air
 from .language import Language
+from .middlewares import RedirectWithPrefixMiddleware
 from .nicegui import _shutdown, _startup
 
 
@@ -59,8 +61,9 @@ def run_with(
         prod_js=prod_js,
         show_welcome_message=show_welcome_message,
     )
-
     storage.set_storage_secret(storage_secret)
+    core.app.add_middleware(GZipMiddleware)
+    core.app.add_middleware(RedirectWithPrefixMiddleware)
 
     if on_air:
         core.air = Air('' if on_air is True else on_air)
