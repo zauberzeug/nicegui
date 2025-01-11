@@ -30,6 +30,7 @@ class State(Enum):
 
 
 class App(FastAPI):
+    from ..timer import Timer as timer  # pylint: disable=import-outside-toplevel
 
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs, docs_url=None, redoc_url=None, openapi_url=None)

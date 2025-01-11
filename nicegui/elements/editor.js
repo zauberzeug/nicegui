@@ -8,7 +8,7 @@ export default {
       <template v-for="(_, slot) in $slots" v-slot:[slot]="slotProps">
         <slot :name="slot" v-bind="slotProps || {}" />
       </template>
-    </q-input>
+    </q-editor>
   `,
   props: {
     value: String,

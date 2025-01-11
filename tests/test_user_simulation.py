@@ -465,3 +465,16 @@ q-layout
     Label [text=Visible]
     Label [text=Hidden, visible=False]
 '''.strip()
+
+async def test_typing_to_disabled_element(user: User) -> None:
+    initial_value = 'Hello first'
+    given_new_input = 'Hello second'
+    target = ui.input(value=initial_value)
+    target.disable()
+
+    await user.open('/')
+    user.find(initial_value).type(given_new_input)
+
+    assert target.value == initial_value
+    await user.should_see(initial_value)
+    await user.should_not_see(given_new_input)
