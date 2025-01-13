@@ -1,0 +1,35 @@
+services:
+  x-nicegui: &nicegui-service
+    build:
+      context: .
+    environment:
+      - NICEGUI_REDIS_URL=redis://redis:6379
+    volumes:
+      - ./:/app
+      - ../../nicegui:/app/nicegui
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.nicegui.rule=PathPrefix(`/`)
+      - traefik.http.services.nicegui.loadbalancer.server.port=8080
+      - traefik.http.services.nicegui.loadbalancer.sticky.cookie=true
+
+  nicegui1:
+    <<: *nicegui-service
+
+  nicegui2:
+    <<: *nicegui-service
+
+  redis:
+    image: redis:alpine
+    ports:
+      - "6379:6379"
+
+  proxy:
+    image: traefik:v2.10
+    command:
+      - --providers.docker
+      - --entrypoints.web.address=:80
+    ports:
+      - "8080:80"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock

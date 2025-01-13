@@ -70,4 +70,5 @@ examples: List[Example] = [
     Example('Node Module Integration', 'Use NPM to add dependencies to a NiceGUI app'),
     Example('Signature Pad', 'A custom element based on [signature_pad](https://www.npmjs.com/package/signature_pad'),
     Example('OpenAI Assistant', "Using OpenAI's Assistant API with async/await"),
+    Example('Redis Storage', 'Use Redis storage to share data across multiple instances behind a reverse proxy or load balancer'),
 ]
