@@ -1,4 +1,4 @@
-from typing import Any, List
+from typing import Any, List, Literal, Tuple, Union
 
 from .pyplot import Pyplot
 
@@ -42,13 +42,19 @@ class LinePlot(Pyplot):
         self._convert_to_html()
         return self
 
-    def push(self, x: List[float], Y: List[List[float]], update_x_lims: bool = True, update_y_lims: bool = True) -> None:
+    def push(self, x: List[float], Y: List[List[float]], x_limits: Union[None, Literal['auto'], Tuple[float, float]] = 'auto', y_limits: Union[None, Literal['auto'], Tuple[float, float]] = 'auto') -> None:
         """Push new data to the plot.
 
         :param x: list of x values
         :param Y: list of lists of y values (one list per line)
-        :param update_x_lims: Update the x limits based on the current data points (default: True)
-        :param update_y_lims: Update the y limits based on the current data points (default: True)
+        :param x_limits: Update the x limits.
+            If None, then the limits are not updated.
+            If 'auto' and the x data points are all not the same value, then the limits will be auto updated.
+            If a tuple of values, then those values will be used for the limit. (default: 'auto')
+        :param y_limits: Update the x limits.
+            If None, then the limits are not updated.
+            If 'auto' and the y data points are all not the same value, then the limits will be auto updated.
+            If a tuple of values, then those values will be used for the limit. (default: 'auto')
         """
         self.push_counter += 1
 
@@ -63,7 +69,7 @@ class LinePlot(Pyplot):
             line.set_xdata(self.x)
             line.set_ydata(self.Y[i])
 
-        if update_x_lims or update_y_lims:
+        if x_limits is not None or y_limits is not None:
             flat_y = [y_i for y in self.Y for y_i in y]
             min_x = min(self.x)
             max_x = max(self.x)
@@ -71,10 +77,15 @@ class LinePlot(Pyplot):
             max_y = max(flat_y)
             pad_x = 0.01 * (max_x - min_x)
             pad_y = 0.01 * (max_y - min_y)
-            if update_x_lims and min_x != max_x:
+            if x_limits == 'auto' and min_x != max_x:
                 self.fig.gca().set_xlim(min_x - pad_x, max_x + pad_x)
-            if update_y_lims and min_y != max_y:
+            elif isinstance(x_limits, tuple):
+                self.fig.gca().set_xlim(*x_limits)
+
+            if y_limits == 'auto' and min_y != max_y:
                 self.fig.gca().set_ylim(min_y - pad_y, max_y + pad_y)
+            elif isinstance(y_limits, tuple):
+                self.fig.gca().set_ylim(*y_limits)
 
         self._convert_to_html()
         self.update()
