@@ -31,10 +31,12 @@ def main_demo() -> None:
             ui.timer(10.0, turn_off, once=True)
     line_checkbox.on('update:model-value', handle_change, args=[None])
 
-@doc.demo("Setting Custom Limits",
+
+@doc.demo('Setting Custom Limits',
           """
         By default, the x and y limits are calculated and changed based on new data points.
-        You can disable this behovior by passing `update_x_lims = True` and/or `update_y_lims = True` to `push`.
+        You can disable this behovior by passing `x_limits = None` and/or `y_limits = None` to `push`.
+        You can also have the push method set custom limits by passing a tuple of `(min, max)` to `x_limits`/`y_limits`.
 """)
 def lims_demo() -> None:
     import math
@@ -45,13 +47,15 @@ def lims_demo() -> None:
         .with_legend(['sin'], loc='upper center', ncol=1)
 
     with line_plot:
-        plt.ylim([0,1])
+        plt.ylim([0, 1])
 
     def update_line_plot() -> None:
         now = datetime.now()
         x = now.timestamp()
         y1 = math.sin(x)
-        line_plot.push([now], [[y1]], update_y_lims=False)
+        line_plot.push([now], [[y1]], y_limits=None)
+        ## or to set the limits here
+        line_plot.push([now], [[y1]], y_limits=(-1,1))
 
     line_updates = ui.timer(0.1, update_line_plot, active=False)
     line_checkbox = ui.checkbox('active').bind_value(line_updates, 'active')
@@ -65,5 +69,6 @@ def lims_demo() -> None:
         if line_checkbox.value:
             ui.timer(10.0, turn_off, once=True)
     line_checkbox.on('update:model-value', handle_change, args=[None])
+
 
 doc.reference(ui.line_plot)
