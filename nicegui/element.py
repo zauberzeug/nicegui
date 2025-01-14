@@ -364,7 +364,7 @@ class Element(Visibility):
         if handler or js_handler:
             listener = EventListener(
                 element_id=self.id,
-                type=helpers.kebab_to_camel_case(type),
+                type=helpers.event_type_to_camel_case(type),
                 args=[args] if args and isinstance(args[0], str) else args,  # type: ignore
                 handler=handler,
                 js_handler=js_handler,
