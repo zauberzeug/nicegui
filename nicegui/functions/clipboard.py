@@ -6,7 +6,7 @@ from ..logging import log
 from .javascript import run_javascript
 
 
-async def read_text() -> str:
+async def read() -> str:
     """Read text from the clipboard.
 
     Note: This function only works in secure contexts (HTTPS or localhost).
@@ -24,7 +24,7 @@ async def read_text() -> str:
     return result or ''
 
 
-def write_text(text: str) -> None:
+def write(text: str) -> None:
     """Write text to the clipboard.
 
     Note: This function only works in secure contexts (HTTPS or localhost).
