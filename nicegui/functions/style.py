@@ -18,6 +18,8 @@ def add_css(content: Union[str, Path]) -> None:
 
     This function can be used to add CSS style definitions to the head of the HTML page.
 
+    *Added in version 2.0.0*
+
     :param content: CSS content (string or file path)
     """
     if helpers.is_file(content):
@@ -29,6 +31,8 @@ def add_scss(content: Union[str, Path], *, indented: bool = False) -> None:
     """Add SCSS style definitions to the page.
 
     This function can be used to add SCSS style definitions to the head of the HTML page.
+
+    *Added in version 2.0.0*
 
     :param content: SCSS content (string or file path)
     :param indented: whether the content is indented (SASS) or not (SCSS) (default: `False`)
@@ -45,6 +49,8 @@ def add_sass(content: Union[str, Path]) -> None:
     """Add SASS style definitions to the page.
 
     This function can be used to add SASS style definitions to the head of the HTML page.
+
+    *Added in version 2.0.0*
 
     :param content: SASS content (string or file path)
     """

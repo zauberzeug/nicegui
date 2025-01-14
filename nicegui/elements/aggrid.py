@@ -101,6 +101,8 @@ class AgGrid(Element,
         If the DataFrame contains non-UTF-8 datatypes, they will be converted to strings.
         To use a different conversion, convert the DataFrame manually before passing it to this method.
 
+        *Added in version 2.7.0*
+
         :param df: Polars DataFrame
         :param theme: AG Grid theme (default: 'balham')
         :param auto_size_columns: whether to automatically resize columns to fit the grid width (default: `True`)

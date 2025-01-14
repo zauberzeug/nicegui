@@ -25,7 +25,7 @@ class Classes(list, Generic[T]):
 
         :param add: whitespace-delimited string of classes
         :param remove: whitespace-delimited string of classes to remove from the element
-        :param toggle: whitespace-delimited string of classes to toggle
+        :param toggle: whitespace-delimited string of classes to toggle (*added in version 2.7.0*)
         :param replace: whitespace-delimited string of classes to use instead of existing ones
         """
         new_classes = self.update_list(self, add, remove, toggle, replace)

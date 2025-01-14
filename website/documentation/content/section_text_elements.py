@@ -28,6 +28,8 @@ doc.intro(html_documentation)
 
     Like with any other element, you can add classes, style, props, tooltips and events.
     One convenience is that the keyword arguments are automatically added to the element's `props` dictionary.
+
+    *Added in version 2.5.0*
 ''')
 def other_html_elements():
     from nicegui import html, ui

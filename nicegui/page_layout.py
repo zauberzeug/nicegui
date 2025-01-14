@@ -275,7 +275,7 @@ class PageSticky(Element):
         :param position: position on the screen (default: "bottom-right")
         :param x_offset: horizontal offset (default: 0)
         :param y_offset: vertical offset (default: 0)
-        :param expand: whether to fully expand instead of shrinking to fit the content (default: ``False``)
+        :param expand: whether to fully expand instead of shrinking to fit the content (default: ``False``, *added in version 2.1.0*)
         """
         super().__init__('q-page-sticky')
         self._props['position'] = position

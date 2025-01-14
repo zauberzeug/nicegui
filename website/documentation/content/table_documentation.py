@@ -20,6 +20,8 @@ def main_demo() -> None:
 @doc.demo('Omitting columns', '''
     If you omit the `columns` parameter, the table will automatically generate columns from the first row.
     Labels are uppercased and sorting is enabled.
+
+    *Updated in version 2.0.0: The `columns` parameter became optional.*
 ''')
 def omitting_columns():
     ui.table(rows=[
@@ -32,6 +34,8 @@ def omitting_columns():
 @doc.demo('Default column parameters', '''
     You can define default column parameters that apply to all columns.
     In this example, all columns are left-aligned by default and have a blue uppercase header.
+
+    *Added in version 2.0.0*
 ''')
 def default_column_parameters():
     ui.table(rows=[
@@ -169,6 +173,8 @@ def table_from_pandas_demo():
 @doc.demo('Table from Polars DataFrame', '''
     You can create a table from a Polars DataFrame using the `from_polars` method.
     This method takes a Polars DataFrame as input and returns a table.
+
+    *Added in version 2.7.0*
 ''')
 def table_from_polars_demo():
     import polars as pl

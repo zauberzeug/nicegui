@@ -203,6 +203,8 @@ class Object3D:
 
         But note that scaling is not preserved.
         If either the parent or the object itself is scaled, the object shape and position can change.
+
+        *Added in version 2.7.0*
         """
         self.detach()
         self.parent = parent
@@ -274,6 +276,8 @@ class Object3D:
 
         But note that scaling is not preserved.
         If either the parent or the object itself is scaled, the object shape and position can change.
+
+        *Added in version 2.7.0*
         """
         self._move_out_of_parent(self.parent)
         self.parent = self.scene.stack[0]
@@ -330,7 +334,10 @@ class Object3D:
 
     @property
     def children(self) -> List[Object3D]:
-        """List of children of the object."""
+        """List of children of the object.
+
+        *Added in version 2.4.0*
+        """
         return [object for object in self.scene.objects.values() if object.parent == self]
 
     def delete(self) -> None:
