@@ -7,7 +7,7 @@ import time
 import urllib
 from enum import Enum
 from pathlib import Path
-from typing import Any, Awaitable, Callable, Iterator, List, Optional, Union
+from typing import Any, Awaitable, Callable, Dict, Iterator, List, Optional, Union
 
 from fastapi import FastAPI, HTTPException, Request, Response
 from fastapi.responses import FileResponse
@@ -41,7 +41,7 @@ class App(FastAPI):
         self.urls = ObservableSet()
         self._state: State = State.STOPPED
         self.config = AppConfig()
-        self._routes_to_remove: dict[str, float] = {}
+        self._routes_to_remove: Dict[str, float] = {}
 
         self._startup_handlers: List[Union[Callable[..., Any], Awaitable]] = []
         self._shutdown_handlers: List[Union[Callable[..., Any], Awaitable]] = []
