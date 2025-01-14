@@ -10,6 +10,8 @@ class Navigate:
     """Navigation functions
 
     These functions allow you to navigate within the browser history and to external URLs.
+
+    *Added in version 2.0.0*
     """
 
     def back(self) -> None:

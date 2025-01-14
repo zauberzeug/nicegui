@@ -30,7 +30,7 @@ class JsonEditor(Element, component='json_editor.js', dependencies=['lib/vanilla
         :param properties: dictionary of JSONEditor properties
         :param on_select: callback which is invoked when some of the content has been selected
         :param on_change: callback which is invoked when the content has changed
-        :param schema: optional `JSON schema <https://json-schema.org/>`_ for validating the data being edited
+        :param schema: optional `JSON schema <https://json-schema.org/>`_ for validating the data being edited (*added in version 2.8.0*)
         """
         super().__init__()
         self._props['properties'] = properties

@@ -51,7 +51,7 @@ class Query:
 
         :param add: whitespace-delimited string of classes
         :param remove: whitespace-delimited string of classes to remove from the element
-        :param toggle: whitespace-delimited string of classes to toggle
+        :param toggle: whitespace-delimited string of classes to toggle (*added in version 2.7.0*)
         :param replace: whitespace-delimited string of classes to use instead of existing ones
         """
         classes = Classes.update_list(self.element.props['classes'], add, remove, toggle, replace)

@@ -45,8 +45,8 @@ class Table(FilterElement, component='table.js'):
         A table based on Quasar's `QTable <https://quasar.dev/vue-components/table>`_ component.
 
         :param rows: list of row objects
-        :param columns: list of column objects (defaults to the columns of the first row)
-        :param column_defaults: optional default column properties
+        :param columns: list of column objects (defaults to the columns of the first row *since version 2.0.0*)
+        :param column_defaults: optional default column properties, *added in version 2.0.0*
         :param row_key: name of the column containing unique data identifying the row (default: "id")
         :param title: title of the table
         :param selection: selection type ("single" or "multiple"; default: `None`)
@@ -128,6 +128,8 @@ class Table(FilterElement, component='table.js'):
         To use a different conversion, convert the DataFrame manually before passing it to this method.
         See `issue 1698 <https://github.com/zauberzeug/nicegui/issues/1698>`_ for more information.
 
+        *Added in version 2.0.0*
+
         :param df: Pandas DataFrame
         :param columns: list of column objects (defaults to the columns of the dataframe)
         :param column_defaults: optional default column properties
@@ -167,6 +169,8 @@ class Table(FilterElement, component='table.js'):
         Note:
         If the DataFrame contains non-UTF-8 datatypes, they will be converted to strings.
         To use a different conversion, convert the DataFrame manually before passing it to this method.
+
+        *Added in version 2.7.0*
 
         :param df: Polars DataFrame
         :param columns: list of column objects (defaults to the columns of the dataframe)

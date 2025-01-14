@@ -47,6 +47,8 @@ def start_immediately_demo():
 @doc.demo('Global app timer', '''
     While `ui.timer` is kind of a UI element that runs in the context of the current page,
     you can also use the global `app.timer` for UI-independent timers.
+
+    *Added in version 2.9.0*
 ''')
 def app_timer_demo():
     from nicegui import app

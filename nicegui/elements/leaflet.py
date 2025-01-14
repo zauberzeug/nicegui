@@ -36,7 +36,7 @@ class Leaflet(Element, component='leaflet.js', default_classes='nicegui-leaflet'
         :param zoom: initial zoom level of the map (default: 13)
         :param draw_control: whether to show the draw toolbar (default: False)
         :param options: additional options passed to the Leaflet map (default: {})
-        :param hide_drawn_items: whether to hide drawn items on the map (default: False)
+        :param hide_drawn_items: whether to hide drawn items on the map (default: False, *added in version 2.0.0*)
         """
         super().__init__()
         self.add_resource(Path(__file__).parent / 'lib' / 'leaflet')

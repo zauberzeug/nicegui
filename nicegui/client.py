@@ -91,7 +91,10 @@ class Client:
     @property
     def ip(self) -> Optional[str]:
         """Return the IP address of the client, or None if it is an
-        `auto-index page <https://nicegui.io/documentation/section_pages_routing#auto-index_page>`_."""
+        `auto-index page <https://nicegui.io/documentation/section_pages_routing#auto-index_page>`_.
+
+        *Updated in version 2.0.0: The IP address is available even before the client connects.*
+        """
         return self.request.client.host if self.request is not None and self.request.client is not None else None
 
     @property
