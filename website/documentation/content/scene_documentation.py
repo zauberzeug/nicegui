@@ -273,6 +273,8 @@ def custom_composed_objects() -> None:
     The position and rotation of the object are preserved so that the object does not move in space.
     But note that scaling is not preserved.
     If either the parent or the object itself is scaled, the object shape and position can change.
+
+    *Added in version 2.7.0*
 ''')
 def attach_detach() -> None:
     import math

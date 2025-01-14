@@ -135,6 +135,8 @@ def tab_storage():
 @doc.demo('Maximum age of tab storage', '''
     By default, the tab storage is kept for 30 days.
     You can change this by setting `app.storage.max_tab_storage_age`.
+
+    *Added in version 2.10.0*
 ''')
 def max_tab_storage_age():
     from nicegui import app
@@ -198,4 +200,6 @@ doc.text('Redis storage', '''
     If you have large data sets, we suggest to use a database instead.
     See our [database example](https://github.com/zauberzeug/nicegui/blob/main/examples/sqlite_database/main.py) for a demo with SQLite.
     But of course to sync between multiple instances you should replace SQLite with PostgreSQL or similar.
+
+    *Added in version 2.10.0*
 ''')
