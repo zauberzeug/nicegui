@@ -21,15 +21,14 @@ def main_demo() -> None:
             ui.notify(await ui.clipboard.read())
         ui.button('Read Text', on_click=read)
 
-        image = ui.image()
-
         async def read_image() -> None:
             img = await ui.clipboard.read_image()
             if not img:
-                ui.notify("you must copy an image to clipboard first.")
+                ui.notify('You must copy an image to clipboard first.')
             else:
                 image.set_source(img)
         ui.button('Read Image', on_click=read_image)
+        image = ui.image().classes('w-72')
 
 
 @doc.demo('Client-side clipboard', '''

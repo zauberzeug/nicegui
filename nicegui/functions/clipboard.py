@@ -1,9 +1,15 @@
 import io
-from PIL import Image
+from typing import Union
 
-from .. import json
+from .. import json, optional_features
 from ..logging import log
 from .javascript import run_javascript
+
+try:
+    from PIL import Image as PIL_Image
+    optional_features.register('pillow')
+except ImportError:
+    pass
 
 
 async def read() -> str:
@@ -41,30 +47,28 @@ def write(text: str) -> None:
     ''')
 
 
-async def read_image() -> Image.Image | None:
+async def read_image() -> Union['PIL_Image.Image', None]:
+    """Read PIL images from the clipboard.
+
+    Note: This function only works in secure contexts (HTTPS or localhost) and requires Pillow to be installed.
     """
-    Read images from the clipboard.
-    Note: This function only works in secure contexts (HTTPS or localhost).
-    """
+    if not optional_features.has('pillow'):
+        log.warning('Pillow is not installed, so we cannot read images from the clipboard.')
+        return None
     content = await run_javascript('''
         if (navigator.clipboard) {
-            var items = await navigator.clipboard.read()
-            var images = []
-            for(var item of items){
-                if(item.types.length>0 && /^image/.test(item.types[0])){
-                    var blob = await item.getType(item.types[0])
-                    images.push(blob)
-                    break
+            const items = await navigator.clipboard.read();
+            for (const item of items) {
+                if (item.types.length > 0 && /^image/.test(item.types[0])) {
+                    return await item.getType(item.types[0]);
                 }
             }
-            //console.log(images)
-            return images
         }
         else {
-            console.error('Clipboard API is only available in secure contexts (HTTPS or localhost).')
-            return []
+            console.error('Clipboard API is only available in secure contexts (HTTPS or localhost).');
         }
     ''', timeout=5)
-    if content:
-        buffer = io.BytesIO(content[0])
-        return Image.open(buffer)
+    if not content:
+        return None
+    buffer = io.BytesIO(content)
+    return PIL_Image.open(buffer)
