@@ -159,17 +159,8 @@ def map_of_nicegui():
     ui.separator().classes('mt-6')
     subheading('Map of NiceGUI', anchor_name='map-of-nicegui')
     ui.add_css('''
-        .map-of-nicegui code {
-            font-weight: bold;
-        }
         .map-of-nicegui a code {
-            color: #3e6a94;
-        }
-        body.dark .map-of-nicegui a code {
-            color: #5898d4;
-        }
-        .map-of-nicegui a:has(code)::after {
-            display: none;
+            font-weight: bold;
         }
     ''')
     ui.markdown('''
