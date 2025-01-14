@@ -23,6 +23,8 @@ from ..storage import Storage
 from .app_config import AppConfig
 from .range_response import get_range_response
 
+SINGLE_USE_ROUTE_TIMEOUT = 10.0
+
 
 class State(Enum):
     STOPPED = 0
@@ -205,7 +207,7 @@ class App(FastAPI):
         @self.get(path)
         def read_item() -> FileResponse:
             if single_use:
-                self._routes_to_remove[path] = time.time() + 10.0
+                self._routes_to_remove[path] = time.time() + SINGLE_USE_ROUTE_TIMEOUT
             return FileResponse(file, headers={'Cache-Control': f'public, max-age={max_cache_age}'})
 
         return urllib.parse.quote(path)
@@ -257,7 +259,7 @@ class App(FastAPI):
         @self.get(path)
         def read_item(request: Request, nicegui_chunk_size: int = 8192) -> Response:
             if single_use:
-                self._routes_to_remove[path] = time.time() + 10.0
+                self._routes_to_remove[path] = time.time() + SINGLE_USE_ROUTE_TIMEOUT
             return get_range_response(file, request, chunk_size=nicegui_chunk_size)
 
         return urllib.parse.quote(path)
@@ -295,4 +297,4 @@ class App(FastAPI):
             for path in routes:
                 self.remove_route(path)
                 del self._routes_to_remove[path]
-            await asyncio.sleep(10.0)
+            await asyncio.sleep(SINGLE_USE_ROUTE_TIMEOUT)

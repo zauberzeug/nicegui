@@ -5,6 +5,7 @@ import pytest
 from fastapi.responses import PlainTextResponse
 
 from nicegui import app, ui
+from nicegui.app import app as app_module
 from nicegui.testing import Screen, screen_plugin
 
 
@@ -31,6 +32,7 @@ def test_download_text_file(screen: Screen, test_route: str):  # pylint: disable
 def test_downloading_local_file_as_src(screen: Screen):
     IMAGE_FILE = Path(__file__).parent.parent / 'examples' / 'slideshow' / 'slides' / 'slide1.jpg'
     ui.button('download', on_click=lambda: ui.download(IMAGE_FILE))
+    app_module.SINGLE_USE_ROUTE_TIMEOUT = 0.1
 
     screen.open('/')
     route_count_before_download = len(app.routes)
