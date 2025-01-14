@@ -45,6 +45,7 @@ class LinePlot(Pyplot):
     def push(self,
              x: List[float],
              Y: List[List[float]],
+             *,
              x_limits: Union[None, Literal['auto'], Tuple[float, float]] = 'auto',
              y_limits: Union[None, Literal['auto'], Tuple[float, float]] = 'auto',
              ) -> None:
