@@ -129,6 +129,7 @@ async def _startup() -> None:
     background_tasks.create(binding.refresh_loop(), name='refresh bindings')
     background_tasks.create(Client.prune_instances(), name='prune clients')
     background_tasks.create(Slot.prune_stacks(), name='prune slot stacks')
+    background_tasks.create(core.app.prune_single_use_routes(), name='prune single-use routes')
     background_tasks.create(core.app.storage.prune_tab_storage(), name='prune tab storage')
     air.connect()
 

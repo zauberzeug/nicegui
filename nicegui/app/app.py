@@ -1,7 +1,9 @@
+import asyncio
 import inspect
 import os
 import platform
 import signal
+import time
 import urllib
 from enum import Enum
 from pathlib import Path
@@ -39,6 +41,7 @@ class App(FastAPI):
         self.urls = ObservableSet()
         self._state: State = State.STOPPED
         self.config = AppConfig()
+        self._routes_to_remove: dict[str, float] = {}
 
         self._startup_handlers: List[Union[Callable[..., Any], Awaitable]] = []
         self._shutdown_handlers: List[Union[Callable[..., Any], Awaitable]] = []
@@ -202,7 +205,7 @@ class App(FastAPI):
         @self.get(path)
         def read_item() -> FileResponse:
             if single_use:
-                self.remove_route(path)
+                self._routes_to_remove[path] = time.time() + 10.0
             return FileResponse(file, headers={'Cache-Control': f'public, max-age={max_cache_age}'})
 
         return urllib.parse.quote(path)
@@ -254,7 +257,7 @@ class App(FastAPI):
         @self.get(path)
         def read_item(request: Request, nicegui_chunk_size: int = 8192) -> Response:
             if single_use:
-                self.remove_route(path)
+                self._routes_to_remove[path] = time.time() + 10.0
             return get_range_response(file, request, chunk_size=nicegui_chunk_size)
 
         return urllib.parse.quote(path)
@@ -284,3 +287,12 @@ class App(FastAPI):
         for client in Client.instances.values():
             if client.page.path == path:
                 yield client
+
+    async def prune_single_use_routes(self) -> None:
+        """Prune single-use routes."""
+        while True:
+            routes = [path for path, timestamp in self._routes_to_remove.items() if time.time() > timestamp]
+            for path in routes:
+                self.remove_route(path)
+                del self._routes_to_remove[path]
+            await asyncio.sleep(10.0)
