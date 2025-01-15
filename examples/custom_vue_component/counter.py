@@ -3,7 +3,7 @@ from typing import Callable, Optional
 from nicegui.element import Element
 
 
-class Counter(Element, component='counter.js'):
+class Counter(Element, component='counter.vue'):    # you can also use component='counter.js'
 
     def __init__(self, title: str, *, on_change: Optional[Callable] = None) -> None:
         super().__init__()
