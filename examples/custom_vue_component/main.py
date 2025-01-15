@@ -14,4 +14,4 @@ with ui.card():
 
 ui.button('Reset', on_click=counter.reset).props('small outline')
 
-ui.run()
+ui.run(uvicorn_reload_includes="*.py,*.js,*.vue")
