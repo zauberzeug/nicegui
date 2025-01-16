@@ -15,7 +15,7 @@ def demo_inline() -> None:
     ui.html('This is <u>emphasized</u>.', tag='em')
 
 
-@doc.demo('Other HTML Elements', '''
+HTML_ELEMENTS_DEMO = doc.demo('Other HTML Elements', '''
     There is also an `html` module that allows you to insert other HTML elements like `<span>`, `<div>`, `<p>`, etc.
     It is equivalent to using the `ui.element` method with the `tag` argument.
 
@@ -24,6 +24,8 @@ def demo_inline() -> None:
 
     *Added in version 2.5.0*
 ''')
+
+@HTML_ELEMENTS_DEMO
 def other_html_elements():
     from nicegui import html, ui
 
