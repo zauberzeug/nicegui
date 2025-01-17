@@ -114,8 +114,11 @@ def bindable_properties():
 
 
 @doc.demo('Bindable dataclass', '''
-    Another convenient way to define bindable properties is to use `bindable_dataclass` decorator.
-    It works just like standard library `dataclasses.dataclass`, additionally making dataclass fields bindable.
+    The `bindable_dataclass` decorator provides a convenient way to create classes with bindable properties.
+    It extends the functionality of Python's standard `dataclasses.dataclass` decorator
+    by automatically making all dataclass fields bindable.
+    This eliminates the need to manually declare each field as a `BindableProperty`
+    while retaining all the benefits of regular dataclasses.
 ''')
 def bindable_dataclass():
     from nicegui import binding
