@@ -376,17 +376,22 @@ function createApp(elements, options) {
           document.getElementById("popup").ariaHidden = false;
         },
         update: async (msg) => {
-          for (const [id, element] of Object.entries(msg)) {
-            if (element === null) {
-              delete this.elements[id];
-              continue;
+          const loadPromises = Object.entries(msg)
+            .filter(([_, element]) => element && (element.component || element.libraries))
+            .map(([_, element]) => loadDependencies(element, options.prefix, options.version));
+
+          await Promise.all(loadPromises);
+
+          Vue.nextTick(() => {
+            for (const [id, element] of Object.entries(msg)) {
+              if (element === null) {
+                delete this.elements[id];
+                continue;
+              }
+              this.elements[id] = element;
+              replaceUndefinedAttributes(this.elements, id);
             }
-            if (element.component || element.libraries) {
-              await loadDependencies(element, options.prefix, options.version);
-            }
-            this.elements[id] = element;
-            replaceUndefinedAttributes(this.elements, id);
-          }
+          });
         },
         run_javascript: (msg) => runJavascript(msg.code, msg.request_id),
         open: (msg) => {
