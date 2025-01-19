@@ -3,16 +3,13 @@ from nicegui import ui
 from . import doc
 
 
-@doc.demo(ui.app_fullscreen)
+@doc.demo(ui.fullscreen)
 def main_demo() -> None:
-    fs = ui.app_fullscreen()
-    
-    with ui.card().classes('w-full items-center'):
-        ui.label('Try fullscreen mode!')
-        with ui.row():
-            ui.button('Enter Fullscreen', on_click=fs.enter)
-            ui.button('Exit Fullscreen', on_click=fs.exit)
-            ui.button('Toggle Fullscreen', on_click=fs.toggle)
+    fullscreen = ui.fullscreen()
+
+    ui.button('Enter Fullscreen', on_click=fullscreen.enter)
+    ui.button('Exit Fullscreen', on_click=fullscreen.exit)
+    ui.button('Toggle Fullscreen', on_click=fullscreen.toggle)
 
 
 @doc.demo('Requiring long-press to exit', '''
@@ -21,13 +18,10 @@ def main_demo() -> None:
 
     Note that this feature only works in some browsers like Google Chrome or Microsoft Edge.
 ''')
-def toggle_demo():
-    fs = ui.app_fullscreen()
-    with ui.card().classes('w-full items-center'):
-        ui.label('Toggle fullscreen with optional long-press escape')
-        with ui.row():
-            ui.switch('Require escape hold').bind_value_to(fs, 'require_escape_hold')
-            ui.button('Toggle Fullscreen', on_click=lambda: fs.toggle())
+def long_press_demo():
+    fullscreen = ui.fullscreen()
+    ui.switch('Require escape hold').bind_value_to(fullscreen, 'require_escape_hold')
+    ui.button('Toggle Fullscreen', on_click=fullscreen.toggle)
 
 
 @doc.demo('Tracking fullscreen state', '''
@@ -37,21 +31,12 @@ def toggle_demo():
     such as a button click.
 ''')
 def state_demo():
-    def state_change(e):
-        ui.notify(f'Fullscreen {"enabled" if e.value else "disabled"}')
-        update_state()
-    
-    def update_state():
-        state = fs.state
-        label.text = f'Fullscreen: {"Yes" if state else "No"}'
-    
-    fs = ui.app_fullscreen(on_state_change=state_change)
-    label = ui.label()
-    update_state()
-
-    with ui.card().classes('w-full items-center'):
-        ui.button('Toggle Fullscreen', on_click=fs.toggle)
-        label
+    fullscreen = ui.fullscreen(
+        on_state_change=lambda e: ui.notify('Enter' if e.value else 'Exit')
+    )
+    ui.button('Toggle Fullscreen', on_click=fullscreen.toggle)
+    ui.label().bind_text_from(fullscreen, 'state',
+                              lambda state: 'Fullscreen' if state else '')
 
 
-doc.reference(ui.app_fullscreen)
+doc.reference(ui.fullscreen)
