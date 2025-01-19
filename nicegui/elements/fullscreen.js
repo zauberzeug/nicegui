@@ -1,44 +1,32 @@
 export default {
+  props: {
+    requireEscapeHold: Boolean,
+  },
   mounted() {
     document.addEventListener("fullscreenchange", this.handleFullscreenChange);
+    document.addEventListener("mozfullscreenchange", this.handleFullscreenChange);
     document.addEventListener("webkitfullscreenchange", this.handleFullscreenChange);
     document.addEventListener("msfullscreenchange", this.handleFullscreenChange);
   },
-
   unmounted() {
     document.removeEventListener("fullscreenchange", this.handleFullscreenChange);
+    document.removeEventListener("mozfullscreenchange", this.handleFullscreenChange);
     document.removeEventListener("webkitfullscreenchange", this.handleFullscreenChange);
     document.removeEventListener("msfullscreenchange", this.handleFullscreenChange);
   },
-
   methods: {
     handleFullscreenChange() {
-      const state = this.getState();
-      this.$emit("fullscreen_change", state);
+      this.$emit("update:model-value", Quasar.AppFullscreen.isActive);
     },
-
-    getState() {
-      return Quasar.AppFullscreen.isActive;
-    },
-
-    enter(blockEscapeKey) {
+    enter() {
       Quasar.AppFullscreen.request().then(() => {
-        if (blockEscapeKey && navigator.keyboard && typeof navigator.keyboard.lock === "function") {
+        if (this.requireEscapeHold && navigator.keyboard && typeof navigator.keyboard.lock === "function") {
           navigator.keyboard.lock(["Escape"]);
         }
       });
     },
-
     exit() {
       Quasar.AppFullscreen.exit();
-    },
-
-    toggle(blockEscapeKey) {
-      if (this.getState()) {
-        return this.exit();
-      } else {
-        return this.enter(blockEscapeKey);
-      }
     },
   },
 };
