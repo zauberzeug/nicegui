@@ -27,7 +27,7 @@ from . import core
 from .logging import log
 
 if TYPE_CHECKING:
-    from _typeshed import DataclassInstance
+    from _typeshed import DataclassInstance, IdentityFunction
 
 MAX_PROPAGATION_TIME = 0.01
 
@@ -36,7 +36,6 @@ bindable_properties: Dict[Tuple[int, str], Any] = {}
 active_links: List[Tuple[Any, str, Any, str, Callable[[Any], Any]]] = []
 
 T = TypeVar('T', bound=type)
-C = TypeVar('C', bound=type)
 
 
 def _has_attribute(obj: Union[object, Mapping], name: str) -> Any:
@@ -214,10 +213,10 @@ def reset() -> None:
     active_links.clear()
 
 
-@dataclass_transform(bindable_fields=True)  # type: ignore[misc]
+@dataclass_transform()
 def bindable_dataclass(cls: Optional[T] = None, /, *,
                        bindable_fields: Optional[Iterable[str]] = None,
-                       **kwargs: Any) -> Union[Type[DataclassInstance], Callable[[C], Type[DataclassInstance]]]:
+                       **kwargs: Any) -> Union[Type[DataclassInstance], IdentityFunction]:
     """A decorator that transforms a class into a dataclass with bindable fields.
 
     This decorator extends the functionality of ``dataclasses.dataclass`` by making specified fields bindable.
