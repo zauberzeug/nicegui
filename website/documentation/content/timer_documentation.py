@@ -36,6 +36,8 @@ def call_after_delay_demo():
     By default, the timer will start immediately.
     You can change this behavior by setting the `immediate` parameter to `False`.
     This will delay the first execution of the callback by the given interval.
+
+    *Added in version 2.9.0*
 ''')
 def start_immediately_demo():
     from datetime import datetime
@@ -47,6 +49,8 @@ def start_immediately_demo():
 @doc.demo('Global app timer', '''
     While `ui.timer` is kind of a UI element that runs in the context of the current page,
     you can also use the global `app.timer` for UI-independent timers.
+
+    *Added in version 2.9.0*
 ''')
 def app_timer_demo():
     from nicegui import app

@@ -59,6 +59,7 @@ class Air:
                 content=data['body'],
             )
             response = await self.client.send(request)
+            self.client.cookies.clear()
             instance_id = data['instance-id']
             content = response.content.replace(
                 b'const extraHeaders = {};',
@@ -208,6 +209,7 @@ class Air:
                 f'{RELAY_HOST}?device_token={self.token}',
                 socketio_path='/on_air/socket.io',
                 transports=['websocket', 'polling'],  # favor websocket over polling
+                wait_timeout=5,
             )
             assert self.relay.connected
             return

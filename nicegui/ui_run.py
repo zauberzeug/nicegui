@@ -4,6 +4,7 @@ import sys
 from pathlib import Path
 from typing import Any, List, Literal, Optional, Tuple, TypedDict, Union
 
+from fastapi.middleware.gzip import GZipMiddleware
 from starlette.routing import Route
 from uvicorn.main import STARTUP_FAILURE
 from uvicorn.supervisors import ChangeReload, Multiprocess
@@ -16,6 +17,7 @@ from .air import Air
 from .client import Client
 from .language import Language
 from .logging import log
+from .middlewares import RedirectWithPrefixMiddleware
 from .server import CustomServerConfig, Server
 
 APP_IMPORT_STRING = 'nicegui:app'
@@ -87,8 +89,8 @@ def run(*,
     :param language: language for Quasar elements (default: `'en-US'`)
     :param binding_refresh_interval: time between binding updates (default: `0.1` seconds, bigger is more CPU friendly)
     :param reconnect_timeout: maximum time the server waits for the browser to reconnect (default: 3.0 seconds)
-    :param message_history_length: maximum number of messages that will be stored and resent after a connection interruption (default: 1000, use 0 to disable)
-    :param fastapi_docs: enable FastAPI's automatic documentation with Swagger UI, ReDoc, and OpenAPI JSON (bool or dictionary as described `here<https://fastapi.tiangolo.com/tutorial/metadata/>`_, default: `False`)
+    :param message_history_length: maximum number of messages that will be stored and resent after a connection interruption (default: 1000, use 0 to disable, *added in version 2.9.0*)
+    :param fastapi_docs: enable FastAPI's automatic documentation with Swagger UI, ReDoc, and OpenAPI JSON (bool or dictionary as described `here <https://fastapi.tiangolo.com/tutorial/metadata/>`_, default: `False`, *updated in version 2.9.0*)
     :param show: automatically open the UI in a browser tab (default: `True`)
     :param on_air: tech preview: `allows temporary remote access <https://nicegui.io/documentation/section_configuration_deployment#nicegui_on_air>`_ if set to `True` (default: disabled)
     :param native: open the UI in a native window of size 800x600 (default: `False`, deactivates `show`, automatically finds an open port)
@@ -122,6 +124,9 @@ def run(*,
         show_welcome_message=show_welcome_message,
     )
     core.app.config.endpoint_documentation = endpoint_documentation
+    if not helpers.is_pytest():
+        core.app.add_middleware(GZipMiddleware)
+    core.app.add_middleware(RedirectWithPrefixMiddleware)
 
     for route in core.app.routes:
         if not isinstance(route, Route):

@@ -15,6 +15,8 @@ def main_demo() -> None:
 @doc.demo('Custom colors', '''
     You can add custom color definitions for branding.
     In this case, `ui.colors` must be called before the custom color is ever used.
+
+    *Added in version 2.2.0*
 ''')
 def custom_color_demo() -> None:
     from random import randint

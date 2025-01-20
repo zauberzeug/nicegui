@@ -48,6 +48,7 @@ def styling():
     - by passing a callable that returns an error message or `None`, or
     - by passing a dictionary that maps error messages to callables that return `True` if the input is valid.
 
+    *Since version 2.7.0:*
     The callable validation function can also be an async coroutine.
     In this case, the validation is performed asynchronously in the background.
 

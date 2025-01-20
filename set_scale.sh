@@ -2,17 +2,17 @@
 
 fly scale count app=1  --region yul -y # Montreal, Quebec (Canada)
 
-fly scale count app=1  --region iad -y # Washington DC, Virginia (US)
+fly scale count app=2  --region iad -y # Washington DC, Virginia (US)
 fly scale count app=1  --region sjc -y # San Jose, California (US)
 fly scale count app=1  --region lax -y # Los Angeles, California (US)
-fly scale count app=1  --region mia -y # Miami, Florida (US)
+fly scale count app=2  --region mia -y # Miami, Florida (US)
 fly scale count app=1  --region sea -y # Seattle, Washington (US)
 
-fly scale count app=2  --region fra -y # Frankfurt, Germany
+fly scale count app=3  --region fra -y # Frankfurt, Germany
 fly scale count app=2  --region ams -y # Amsterdam, Netherlands
 fly scale count app=1  --region mad -y # Madrid, Spain
 fly scale count app=1  --region cdg -y # Paris, France
-fly scale count app=1  --region lhr -y # London, England (UK)
+fly scale count app=2  --region lhr -y # London, England (UK)
 fly scale count app=1  --region otp -y # Bucharest, Romania
 
 fly scale count app=1  --region jnb -y # Johannesburg, South Africa

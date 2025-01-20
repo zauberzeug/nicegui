@@ -46,6 +46,9 @@ class App(FastAPI):
         self._disconnect_handlers: List[Union[Callable[..., Any], Awaitable]] = []
         self._exception_handlers: List[Callable[..., Any]] = [log.exception]
 
+        self.on_startup(self.storage.general.initialize)
+        self.on_shutdown(self.storage.on_shutdown)
+
     @property
     def is_starting(self) -> bool:
         """Return whether NiceGUI is starting."""
@@ -155,7 +158,7 @@ class App(FastAPI):
         :param url_path: string that starts with a slash "/" and identifies the path at which the files should be served
         :param local_directory: local folder with files to serve as static content
         :param follow_symlink: whether to follow symlinks (default: False)
-        :param max_cache_age: value for max-age set in Cache-Control header
+        :param max_cache_age: value for max-age set in Cache-Control header (*added in version 2.8.0*)
         """
         if url_path == '/':
             raise ValueError('''Path cannot be "/", because it would hide NiceGUI's internal "/_nicegui" route.''')
@@ -185,7 +188,7 @@ class App(FastAPI):
         :param local_file: local file to serve as static content
         :param url_path: string that starts with a slash "/" and identifies the path at which the file should be served (default: None -> auto-generated URL path)
         :param single_use: whether to remove the route after the file has been downloaded once (default: False)
-        :param max_cache_age: value for max-age set in Cache-Control header
+        :param max_cache_age: value for max-age set in Cache-Control header (*added in version 2.8.0*)
         :return: encoded URL which can be used to access the file
         """
         if max_cache_age < 0:
@@ -275,6 +278,8 @@ class App(FastAPI):
 
         When using `@ui.page("/path")` each client gets a private view of this page.
         Updates must be sent to each client individually, which this iterator simplifies.
+
+        *Added in version 2.7.0*
 
         :param path: string to filter clients by
         """

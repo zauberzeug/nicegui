@@ -45,18 +45,18 @@ doc.title('Storage')
 
     The following table will help you to choose storage.
 
-    | Storage type                | `tab`  | `client` | `user` | `general` | `browser` |
-    |-----------------------------|--------|----------|--------|-----------|-----------|
-    | Location                    | Server | Server   | Server | Server    | Browser   |
-    | Across tabs                 | No     | No       | Yes    | Yes       | Yes       |
-    | Across browsers             | No     | No       | No     | Yes       | No        |
-    | Across server restarts      | No     | No       | No     | Yes       | No        |
-    | Across page reloads         | Yes    | No       | Yes    | Yes       | Yes       |
-    | Needs page builder function | Yes    | Yes      | Yes    | No        | Yes       |
-    | Needs client connection     | Yes    | No       | No     | No        | No        |
-    | Write only before response  | No     | No       | No     | No        | Yes       |
-    | Needs serializable data     | No     | No       | Yes    | Yes       | Yes       |
-    | Needs `storage_secret`      | No     | No       | Yes    | No        | Yes       |
+    | Storage type                | `client` | `tab`  | `browser` | `user` | `general` |
+    |-----------------------------|----------|--------|-----------|--------|-----------|
+    | Location                    | Server   | Server | Browser   | Server | Server    |
+    | Across tabs                 | No       | No     | Yes       | Yes    | Yes       |
+    | Across browsers             | No       | No     | No        | No     | Yes       |
+    | Across server restarts      | No       | Yes    | No        | Yes    | Yes       |
+    | Across page reloads         | No       | Yes    | Yes       | Yes    | Yes       |
+    | Needs page builder function | Yes      | Yes    | Yes       | Yes    | No        |
+    | Needs client connection     | No       | Yes    | No        | No     | No        |
+    | Write only before response  | No       | No     | Yes       | No     | No        |
+    | Needs serializable data     | No       | No     | Yes       | Yes    | Yes       |
+    | Needs `storage_secret`      | No       | No     | Yes       | Yes    | No        |
 ''')
 def storage_demo():
     from nicegui import app
@@ -132,6 +132,24 @@ def tab_storage():
         ui.button('Reload page', on_click=ui.navigate.reload)
 
 
+@doc.demo('Maximum age of tab storage', '''
+    By default, the tab storage is kept for 30 days.
+    You can change this by setting `app.storage.max_tab_storage_age`.
+
+    *Added in version 2.10.0*
+''')
+def max_tab_storage_age():
+    from nicegui import app
+    from datetime import timedelta
+    # app.storage.max_tab_storage_age = timedelta(minutes=1).total_seconds()
+    ui.label(f'Tab storage age: {timedelta(minutes=1).total_seconds()} seconds')  # HIDE
+
+    @ui.page('/')
+    def index():
+        # ui.label(f'Tab storage age: {app.storage.max_tab_storage_age} seconds')
+        pass  # HIDE
+
+
 @doc.demo('Short-term memory', '''
     The goal of `app.storage.client` is to store data only for the duration of the current page visit.
     In difference to data stored in `app.storage.tab`
@@ -161,4 +179,27 @@ doc.text('Indentation', '''
     By default, the general and user storage data is stored in JSON format without indentation.
     You can change this to an indentation of 2 spaces by setting
     `app.storage.general.indent = True` or `app.storage.user.indent = True`.
+''')
+
+
+doc.text('Redis storage', '''
+    You can use [Redis](https://redis.io/) for storage as an alternative to the default file storage.
+    This is useful if you have multiple NiceGUI instances and want to share data across them.
+
+    To activate this feature install the `redis` package (`pip install nicegui[redis]`)
+    and provide the `NICEGUI_REDIS_URL` environment variable to point to your Redis server.
+    Our [Redis storage example](https://github.com/zauberzeug/nicegui/tree/main/examples/redis_storage) shows
+    how you can setup it up with a reverse proxy or load balancer.
+
+    Please note that the Redis sync always contains all the data, not only the changed values.
+
+    - For `app.storage.general` this is the whole dictionary.
+    - For `app.storage.user` it's all the data of the user.
+    - For `app.storage.tab` it's all the data stored for this specific tab.
+
+    If you have large data sets, we suggest to use a database instead.
+    See our [database example](https://github.com/zauberzeug/nicegui/blob/main/examples/sqlite_database/main.py) for a demo with SQLite.
+    But of course to sync between multiple instances you should replace SQLite with PostgreSQL or similar.
+
+    *Added in version 2.10.0*
 ''')

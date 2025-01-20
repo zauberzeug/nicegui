@@ -28,7 +28,7 @@ class Colors(Element, component='colors.js'):
         :param negative: Negative color (default: "#c10015")
         :param info: Info color (default: "#31ccec")
         :param warning: Warning color (default: "#f2c037")
-        :param custom_colors: Custom color definitions for branding (needs ``ui.colors`` to be called before custom color is ever used)
+        :param custom_colors: Custom color definitions for branding (needs ``ui.colors`` to be called before custom color is ever used, *added in version 2.2.0*)
         """
         super().__init__()
         self._props['primary'] = primary

@@ -101,7 +101,7 @@ def demo(*args, **kwargs) -> Callable[[Callable], Callable]:
             app_name = _find_attribute(nicegui_app, name)
             if ui_name:
                 page.title = f'ui.*{ui_name}*'
-            if app_name:
+            elif app_name:
                 page.title = f'app.*{app_name}*'
         page.parts.append(DocumentationPart(
             title=title_,

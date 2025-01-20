@@ -39,6 +39,11 @@ check() {
 check main.py || exit 1
 for path in examples/*
 do
+    # Skip examples/generate_pdf
+    if [[ $path == "examples/generate_pdf" ]]; then
+        continue # until https://github.com/pygobject/pycairo/issues/387 is fixed
+    fi
+
     # Skip examples/sqlite_database for Python 3.11 and 3.12
     if [[ $(python3 --version | cut -d' ' -f2 | cut -d'.' -f1,2) =~ ^3.1[12]$ ]] && [[ $path == "examples/sqlite_database" ]]; then
         continue # until https://github.com/omnilib/aiosqlite/issues/241 is fixed
