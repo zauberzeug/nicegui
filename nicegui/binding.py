@@ -1,13 +1,33 @@
+from __future__ import annotations
+
 import asyncio
 import dataclasses
 import time
 from collections import defaultdict
-from typing import Any, Callable, DefaultDict, Dict, Iterable, List, Mapping, Optional, Set, Tuple, TypeVar, Union
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Callable,
+    DefaultDict,
+    Dict,
+    Iterable,
+    List,
+    Mapping,
+    Optional,
+    Set,
+    Tuple,
+    Type,
+    TypeVar,
+    Union,
+)
 
 from typing_extensions import dataclass_transform
 
 from . import core
 from .logging import log
+
+if TYPE_CHECKING:
+    from _typeshed import DataclassInstance
 
 MAX_PROPAGATION_TIME = 0.01
 
@@ -194,10 +214,10 @@ def reset() -> None:
     active_links.clear()
 
 
-@dataclass_transform(bindable_fields=None)
+@dataclass_transform(bindable_fields=True)  # type: ignore[misc]
 def bindable_dataclass(cls: Optional[T] = None, /, *,
                        bindable_fields: Optional[Iterable[str]] = None,
-                       **kwargs: Any) -> Union[T, Callable[[C], C]]:
+                       **kwargs: Any) -> Union[Type[DataclassInstance], Callable[[C], Type[DataclassInstance]]]:
     """A decorator that transforms a class into a dataclass with bindable fields.
 
     This decorator extends the functionality of ``dataclasses.dataclass`` by making specified fields bindable.
@@ -220,7 +240,7 @@ def bindable_dataclass(cls: Optional[T] = None, /, *,
         if kwargs.get(unsupported_option):
             raise ValueError(f'`{unsupported_option}=True` is not supported with bindable_dataclass')
 
-    dataclass = dataclasses.dataclass(**kwargs)(cls)
+    dataclass: Type[DataclassInstance] = dataclasses.dataclass(**kwargs)(cls)
     field_names = set(field.name for field in dataclasses.fields(dataclass))
     if bindable_fields is None:
         bindable_fields = field_names
