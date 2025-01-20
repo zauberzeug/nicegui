@@ -382,16 +382,14 @@ function createApp(elements, options) {
 
           await Promise.all(loadPromises);
 
-          Vue.nextTick(() => {
-            for (const [id, element] of Object.entries(msg)) {
-              if (element === null) {
-                delete this.elements[id];
-                continue;
-              }
-              this.elements[id] = element;
-              replaceUndefinedAttributes(this.elements, id);
+          for (const [id, element] of Object.entries(msg)) {
+            if (element === null) {
+              delete this.elements[id];
+              continue;
             }
-          });
+            this.elements[id] = element;
+            replaceUndefinedAttributes(this.elements, id);
+          }
         },
         run_javascript: (msg) => runJavascript(msg.code, msg.request_id),
         open: (msg) => {
