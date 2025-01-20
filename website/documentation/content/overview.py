@@ -291,6 +291,7 @@ def map_of_nicegui():
             - `ui.context`: get the current UI context including the `client` and `request` objects
             - [`ui.dark_mode`](/documentation/dark_mode): get and set the dark mode on a page
             - [`ui.download`](/documentation/download): download a file to the client
+            - [`ui.fullscreen`](/documentation/fullscreen): enter, exit and toggle fullscreen mode
             - [`ui.keyboard`](/documentation/keyboard): define keyboard event handlers
             - [`ui.navigate`](/documentation/navigate): let the browser navigate to another location
             - [`ui.notify`](/documentation/notification): show a notification
