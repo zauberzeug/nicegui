@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import copyreg
 import dataclasses
 import time
 from collections import defaultdict
@@ -33,10 +34,11 @@ MAX_PROPAGATION_TIME = 0.01
 
 bindings: DefaultDict[Tuple[int, str], List] = defaultdict(list)
 bindable_properties: Dict[Tuple[int, str], Any] = {}
+copyable_classes: Set[Type] = set()
 active_links: List[Tuple[Any, str, Any, str, Callable[[Any], Any]]] = []
 
-T = TypeVar('T', bound=type)
-
+TC = TypeVar('TC', bound=type)
+T = TypeVar('T')
 
 def _has_attribute(obj: Union[object, Mapping], name: str) -> Any:
     if isinstance(obj, Mapping):
@@ -169,6 +171,8 @@ class BindableProperty:
 
     def __set__(self, owner: Any, value: Any) -> None:
         has_attr = hasattr(owner, '___' + self.name)
+        if not has_attr and type(owner) not in copyable_classes:
+            _make_copyable(type(owner))
         value_changed = has_attr and getattr(owner, '___' + self.name) != value
         if has_attr and not value_changed:
             return
@@ -214,7 +218,7 @@ def reset() -> None:
 
 
 @dataclass_transform()
-def bindable_dataclass(cls: Optional[T] = None, /, *,
+def bindable_dataclass(cls: Optional[TC] = None, /, *,
                        bindable_fields: Optional[Iterable[str]] = None,
                        **kwargs: Any) -> Union[Type[DataclassInstance], IdentityFunction]:
     """A decorator that transforms a class into a dataclass with bindable fields.
@@ -252,3 +256,41 @@ def bindable_dataclass(cls: Optional[T] = None, /, *,
         bindable_property.__set_name__(dataclass, field_name)
         setattr(dataclass, field_name, bindable_property)
     return dataclass
+
+
+def _register_bindables(original_obj: T, copy_obj: T) -> None:
+    """Ensure BindableProperties of an object copy are registered correctly.
+
+    :param original_obj: The object that was copied.
+    :param original_obj: The object copy.
+    """
+    for attr_name in dir(original_obj):
+        if (id(original_obj), attr_name) in bindable_properties:
+            bindable_properties[(id(copy_obj), attr_name)] = copy_obj
+
+
+def _register_bindables_pickle_function(obj: T) -> Tuple[Callable[..., T], Tuple[Any, ...]]:
+    """Construct the "reduce tuple" of an object with a wrapped pickle function, that registers bindable attributes"
+
+    :param obj: The object to be reduced.
+    """
+    reduced = obj.__reduce__()
+    if isinstance(reduced, str):
+        raise ValueError('Unexpected __reduce__() return type: str')
+    creator = reduced[0]
+
+    def creator_with_hook(*args, **kwargs) -> T:
+        obj_copy = creator(*args, **kwargs)
+        _register_bindables(obj, obj_copy)
+        return obj_copy
+
+    return (creator_with_hook,) + reduced[1:]
+
+
+def _make_copyable(cls: Type[T]) -> None:
+    """Modify the way `copy` module handles class instances so that `BindableProperty` attributes preserve bindability.
+
+    :param cls: The class to modify.
+    """
+    copyreg.pickle(cls, _register_bindables_pickle_function)
+    copyable_classes.add(cls)
