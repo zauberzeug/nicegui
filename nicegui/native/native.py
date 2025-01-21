@@ -2,34 +2,13 @@
 import inspect
 import warnings
 from multiprocessing import Queue
-from typing import Any, Callable, Optional, Tuple
+from typing import Any, Callable, Tuple
 
 from .. import run
 from ..logging import log
 
-method_queue: Optional[Queue] = None
-response_queue: Optional[Queue] = None
-
-
-def create_queues() -> None:
-    """Create the message queues."""
-    global method_queue, response_queue  # pylint: disable=global-statement # noqa: PLW0603
-    method_queue = Queue()
-    response_queue = Queue()
-
-
-def remove_queues() -> None:
-    """Remove the message queues by closing them and waiting for threads to finish."""
-    global method_queue, response_queue  # pylint: disable=global-statement # noqa: PLW0603
-    if method_queue is not None:
-        method_queue.close()
-        method_queue.join_thread()
-        method_queue = None
-    if response_queue is not None:
-        response_queue.close()
-        response_queue.join_thread()
-        response_queue = None
-
+method_queue: Queue = Queue()
+response_queue: Queue = Queue()
 
 try:
     with warnings.catch_warnings():
@@ -141,14 +120,11 @@ try:
 
         def _send(self, *args: Any, **kwargs: Any) -> None:
             name = inspect.currentframe().f_back.f_code.co_name  # type: ignore
-            assert method_queue is not None
             method_queue.put((name, args, kwargs))
 
         async def _request(self, *args: Any, **kwargs: Any) -> Any:
             def wrapper(*args: Any, **kwargs: Any) -> Any:
                 try:
-                    assert method_queue is not None
-                    assert response_queue is not None
                     method_queue.put((name, args, kwargs))
                     return response_queue.get()  # wait for the method to be called and writing its result to the queue
                 except Exception:
