@@ -1,17 +1,41 @@
+from __future__ import annotations
+
 import asyncio
+import dataclasses
 import time
 from collections import defaultdict
-from collections.abc import Mapping
-from typing import Any, Callable, DefaultDict, Dict, Iterable, List, Optional, Set, Tuple, Union
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Callable,
+    DefaultDict,
+    Dict,
+    Iterable,
+    List,
+    Mapping,
+    Optional,
+    Set,
+    Tuple,
+    Type,
+    TypeVar,
+    Union,
+)
+
+from typing_extensions import dataclass_transform
 
 from . import core
 from .logging import log
+
+if TYPE_CHECKING:
+    from _typeshed import DataclassInstance, IdentityFunction
 
 MAX_PROPAGATION_TIME = 0.01
 
 bindings: DefaultDict[Tuple[int, str], List] = defaultdict(list)
 bindable_properties: Dict[Tuple[int, str], Any] = {}
 active_links: List[Tuple[Any, str, Any, str, Callable[[Any], Any]]] = []
+
+T = TypeVar('T', bound=type)
 
 
 def _has_attribute(obj: Union[object, Mapping], name: str) -> Any:
@@ -187,3 +211,44 @@ def reset() -> None:
     bindings.clear()
     bindable_properties.clear()
     active_links.clear()
+
+
+@dataclass_transform()
+def bindable_dataclass(cls: Optional[T] = None, /, *,
+                       bindable_fields: Optional[Iterable[str]] = None,
+                       **kwargs: Any) -> Union[Type[DataclassInstance], IdentityFunction]:
+    """A decorator that transforms a class into a dataclass with bindable fields.
+
+    This decorator extends the functionality of ``dataclasses.dataclass`` by making specified fields bindable.
+    If ``bindable_fields`` is provided, only the listed fields are made bindable.
+    Otherwise, all fields are made bindable by default.
+
+    *Added in version 2.11.0*
+
+    :param cls: class to be transformed into a dataclass
+    :param bindable_fields: optional list of field names to make bindable (defaults to all fields)
+    :param kwargs: optional keyword arguments to be forwarded to ``dataclasses.dataclass``.
+    Usage of ``slots=True`` and ``frozen=True`` are not supported and will raise a ValueError.
+
+    :return: resulting dataclass type
+    """
+    if cls is None:
+        def wrap(cls_):
+            return bindable_dataclass(cls_, bindable_fields=bindable_fields, **kwargs)
+        return wrap
+
+    for unsupported_option in ('slots', 'frozen'):
+        if kwargs.get(unsupported_option):
+            raise ValueError(f'`{unsupported_option}=True` is not supported with bindable_dataclass')
+
+    dataclass: Type[DataclassInstance] = dataclasses.dataclass(**kwargs)(cls)
+    field_names = set(field.name for field in dataclasses.fields(dataclass))
+    if bindable_fields is None:
+        bindable_fields = field_names
+    for field_name in bindable_fields:
+        if field_name not in field_names:
+            raise ValueError(f'"{field_name}" is not a dataclass field')
+        bindable_property = BindableProperty()
+        bindable_property.__set_name__(dataclass, field_name)
+        setattr(dataclass, field_name, bindable_property)
+    return dataclass

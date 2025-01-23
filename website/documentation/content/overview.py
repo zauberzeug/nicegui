@@ -452,6 +452,14 @@ def map_of_nicegui():
         - [`run.cpu_bound()`](/documentation/section_action_events#running_cpu-bound_tasks): run a CPU-bound function in a separate process
         - [`run.io_bound()`](/documentation/section_action_events#running_i_o-bound_tasks): run an IO-bound function in a separate thread
 
+        #### `binding`
+
+        [Bind properties of objects to each other](/documentation/section_binding_properties).
+
+        - [`binding.BindableProperty`](/documentation/section_binding_properties#bindable_properties_for_maximum_performance): bindable properties for maximum performance
+        - [`binding.bindable_dataclass()`](/documentation/section_binding_properties#bindable_dataclass): create a dataclass with bindable properties
+        - `binding.bind()`, `binding.bind_from()`, `binding.bind_to()`: methods to bind two properties
+
         #### `observables`
 
         Observable collections that notify observers when their contents change.

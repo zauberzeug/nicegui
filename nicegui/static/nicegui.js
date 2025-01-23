@@ -376,13 +376,16 @@ function createApp(elements, options) {
           document.getElementById("popup").ariaHidden = false;
         },
         update: async (msg) => {
+          const loadPromises = Object.entries(msg)
+            .filter(([_, element]) => element && (element.component || element.libraries))
+            .map(([_, element]) => loadDependencies(element, options.prefix, options.version));
+
+          await Promise.all(loadPromises);
+
           for (const [id, element] of Object.entries(msg)) {
             if (element === null) {
               delete this.elements[id];
               continue;
-            }
-            if (element.component || element.libraries) {
-              await loadDependencies(element, options.prefix, options.version);
             }
             this.elements[id] = element;
             replaceUndefinedAttributes(this.elements, id);

@@ -51,6 +51,8 @@ async def read_image() -> Union['PIL_Image.Image', None]:
     """Read PIL images from the clipboard.
 
     Note: This function only works in secure contexts (HTTPS or localhost) and requires Pillow to be installed.
+
+    *Added in version 2.10.0*
     """
     if not optional_features.has('pillow'):
         log.warning('Pillow is not installed, so we cannot read images from the clipboard.')
