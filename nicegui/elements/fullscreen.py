@@ -20,7 +20,7 @@ class Fullscreen(ValueElement, component='fullscreen.js'):
         * Due to security reasons, the fullscreen mode can only be entered from a previous user interaction such as a button click.
         * The long-press escape requirement only works in some browsers like Google Chrome or Microsoft Edge.
 
-        *Added in version 2.10.0*
+        *Added in version 2.11.0*
 
         :param require_escape_hold: whether the user needs to long-press the escape key to exit fullscreen mode
         :param on_value_change: callback which is invoked when the fullscreen state changes
