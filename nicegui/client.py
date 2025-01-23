@@ -63,6 +63,7 @@ class Client:
         self._deleted = False
         self.tab_id: Optional[str] = None
 
+        self.page = page
         self.outbox = Outbox(self)
 
         with Element('q-layout', _client=self).props('view="hhh lpr fff"').classes('nicegui-layout') as self.layout:
@@ -75,7 +76,6 @@ class Client:
         self._head_html = ''
         self._body_html = ''
 
-        self.page = page
         self.storage = ObservableDict()
 
         self.connect_handlers: List[Union[Callable[..., Any], Awaitable]] = []
@@ -91,7 +91,10 @@ class Client:
     @property
     def ip(self) -> Optional[str]:
         """Return the IP address of the client, or None if it is an
-        `auto-index page <https://nicegui.io/documentation/section_pages_routing#auto-index_page>`_."""
+        `auto-index page <https://nicegui.io/documentation/section_pages_routing#auto-index_page>`_.
+
+        *Updated in version 2.0.0: The IP address is available even before the client connects.*
+        """
         return self.request.client.host if self.request is not None and self.request.client is not None else None
 
     @property
@@ -123,7 +126,11 @@ class Client:
         elements = json.dumps({
             id: element._to_dict() for id, element in self.elements.items()  # pylint: disable=protected-access
         })
-        socket_io_js_query_params = {**core.app.config.socket_io_js_query_params, 'client_id': self.id}
+        socket_io_js_query_params = {
+            **core.app.config.socket_io_js_query_params,
+            'client_id': self.id,
+            'next_message_id': self.outbox.next_message_id,
+        }
         vue_html, vue_styles, vue_scripts, imports, js_imports = generate_resources(prefix, self.elements.values())
         return templates.TemplateResponse(
             request=request,
@@ -227,8 +234,10 @@ class Client:
         """Add a callback to be invoked when the client disconnects."""
         self.disconnect_handlers.append(handler)
 
-    def handle_handshake(self) -> None:
+    def handle_handshake(self, next_message_id: Optional[int]) -> None:
         """Cancel pending disconnect task and invoke connect handlers."""
+        if next_message_id is not None:
+            self.outbox.try_rewind(next_message_id)
         if self._disconnect_task:
             self._disconnect_task.cancel()
             self._disconnect_task = None
@@ -241,11 +250,7 @@ class Client:
     def handle_disconnect(self) -> None:
         """Wait for the browser to reconnect; invoke disconnect handlers if it doesn't."""
         async def handle_disconnect() -> None:
-            if self.page.reconnect_timeout is not None:
-                delay = self.page.reconnect_timeout
-            else:
-                delay = core.app.config.reconnect_timeout  # pylint: disable=protected-access
-            await asyncio.sleep(delay)
+            await asyncio.sleep(self.page.resolve_reconnect_timeout())
             for t in self.disconnect_handlers:
                 self.safe_invoke(t)
             for t in core.app._disconnect_handlers:  # pylint: disable=protected-access

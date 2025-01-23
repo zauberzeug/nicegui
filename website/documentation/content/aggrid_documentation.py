@@ -130,6 +130,8 @@ def aggrid_from_pandas():
 @doc.demo('Create Grid from Polars DataFrame', '''
     You can create an AG Grid from a Polars DataFrame using the `from_polars` method.
     This method takes a Polars DataFrame as input and returns an AG Grid.
+
+    *Added in version 2.7.0*
 ''')
 def aggrid_from_polars():
     import polars as pl

@@ -419,3 +419,62 @@ async def test_trigger_autocomplete(user: User) -> None:
     await user.should_not_see('apple')
     user.find('fruit').type('a').trigger('keydown.tab')
     await user.should_see('apple')
+
+
+async def test_seeing_invisible_elements(user: User) -> None:
+    visible_label = ui.label('Visible')
+    hidden_label = ui.label('Hidden')
+    hidden_label.visible = False
+
+    await user.open('/')
+    with pytest.raises(AssertionError):
+        await user.should_see('Hidden')
+    with pytest.raises(AssertionError):
+        await user.should_not_see('Visible')
+
+    visible_label.visible = False
+    hidden_label.visible = True
+    await user.should_see('Hidden')
+    await user.should_not_see('Visible')
+
+
+async def test_finding_invisible_elements(user: User) -> None:
+    button = ui.button('click me', on_click=lambda: ui.label('clicked'))
+    button.visible = False
+
+    await user.open('/')
+    with pytest.raises(AssertionError):
+        user.find('click me').click()
+
+    button.visible = True
+    user.find('click me').click()
+    await user.should_see('clicked')
+
+
+async def test_page_to_string_output_for_invisible_elements(user: User) -> None:
+    ui.label('Visible')
+    ui.label('Hidden').set_visibility(False)
+
+    await user.open('/')
+    output = str(user.current_layout)
+    assert output == '''
+q-layout
+ q-page-container
+  q-page
+   div
+    Label [text=Visible]
+    Label [text=Hidden, visible=False]
+'''.strip()
+
+async def test_typing_to_disabled_element(user: User) -> None:
+    initial_value = 'Hello first'
+    given_new_input = 'Hello second'
+    target = ui.input(value=initial_value)
+    target.disable()
+
+    await user.open('/')
+    user.find(initial_value).type(given_new_input)
+
+    assert target.value == initial_value
+    await user.should_see(initial_value)
+    await user.should_not_see(given_new_input)

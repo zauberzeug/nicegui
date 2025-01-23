@@ -66,7 +66,8 @@ def loaded_event():
     You can show crosshairs by passing `cross=True`.
     You can also change the color of the crosshairs by passing a color string.
 
-    Alternatively, you can use the `add_slot` method to add a custom "cross" slot with your own SVG template.
+    *Since version 2.4.0:*
+    You can use the `add_slot` method to add a custom "cross" slot with your own SVG template.
     The `props.x` and `props.y` variables will be available in the template, representing the crosshair position.
 ''')
 def crosshairs():

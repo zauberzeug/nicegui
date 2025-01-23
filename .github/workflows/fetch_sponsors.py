@@ -4,14 +4,14 @@ import os
 import re
 from pathlib import Path
 
-import requests
+import httpx
 
 # NOTE:
 # requires a GitHub token with the necessary permissions read:org and read:user
 # call with `GITHUB_TOKEN=ghp_XXX ./fetch_sponsors.py`
 
 
-response = requests.post(
+response = httpx.post(
     'https://api.github.com/graphql',
     json={
         'query': '''
@@ -48,7 +48,7 @@ response = requests.post(
     },
     headers={
         'Authorization': f'token {os.getenv("GITHUB_TOKEN")}',
-        'Accept': 'application/vnd.github.v3+json'
+        'Accept': 'application/vnd.github.v3+json',
     },
     timeout=10.0,
 )
@@ -76,11 +76,11 @@ sponsors.sort(key=lambda s: s['created_at'])
 contributors = []
 page = 1
 while True:
-    contributors_response = requests.get(
+    contributors_response = httpx.get(
         f'https://api.github.com/repos/zauberzeug/nicegui/contributors?page={page}&per_page=100',
         headers={
             'Authorization': f'token {os.getenv("GITHUB_TOKEN")}',
-            'Accept': 'application/vnd.github.v3+json'
+            'Accept': 'application/vnd.github.v3+json',
         },
         timeout=10.0,
     )

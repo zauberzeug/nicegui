@@ -27,7 +27,8 @@ RUN python -m pip install \
     pytest \
     requests \
     latex2mathml \
-    selenium
+    selenium \
+    redis
 
 WORKDIR /app
 

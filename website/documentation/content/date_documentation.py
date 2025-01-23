@@ -30,6 +30,24 @@ def date_picker_demo():
             ui.icon('edit_calendar').on('click', menu.open).classes('cursor-pointer')
 
 
+@doc.demo('Date range input', '''
+    You can use the "range" prop to select a range of dates.
+    The `value` will be a dictionary with "from" and "to" keys.
+    The following demo shows how to bind a date range picker to an input element,
+    using the `forward` and `backward` functions to convert between the date picker's dictionary and the input string.
+''')
+def date_range_input():
+    date_input = ui.input('Date range').classes('w-40')
+    ui.date().props('range').bind_value(
+        date_input,
+        forward=lambda x: f'{x["from"]} - {x["to"]}' if x else None,
+        backward=lambda x: {
+            'from': x.split(' - ')[0],
+            'to': x.split(' - ')[1],
+        } if ' - ' in (x or '') else None,
+    )
+
+
 @doc.demo('Date filter', '''
     This demo shows how to filter the dates in a date picker.
     In order to pass a function to the date picker, we use the `:options` property.

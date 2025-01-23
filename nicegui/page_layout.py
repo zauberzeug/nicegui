@@ -62,7 +62,7 @@ class Header(ValueElement, default_classes='nicegui-header'):
             add_body_html(f'''
                 <script>
                     window.onload = () => {{
-                        const header = getElement({self.id}).$el;
+                        const header = getHtmlElement({self.id});
                         new ResizeObserver(() => {{
                             document.documentElement.style.scrollPaddingTop = `${{header.offsetHeight}}px`;
                         }}).observe(header);
@@ -275,7 +275,7 @@ class PageSticky(Element):
         :param position: position on the screen (default: "bottom-right")
         :param x_offset: horizontal offset (default: 0)
         :param y_offset: vertical offset (default: 0)
-        :param expand: whether to fully expand instead of shrinking to fit the content (default: ``False``)
+        :param expand: whether to fully expand instead of shrinking to fit the content (default: ``False``, *added in version 2.1.0*)
         """
         super().__init__('q-page-sticky')
         self._props['position'] = position

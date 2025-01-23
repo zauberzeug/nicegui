@@ -36,7 +36,7 @@ class Leaflet(Element, component='leaflet.js', default_classes='nicegui-leaflet'
         :param zoom: initial zoom level of the map (default: 13)
         :param draw_control: whether to show the draw toolbar (default: False)
         :param options: additional options passed to the Leaflet map (default: {})
-        :param hide_drawn_items: whether to hide drawn items on the map (default: False)
+        :param hide_drawn_items: whether to hide drawn items on the map (default: False, *added in version 2.0.0*)
         """
         super().__init__()
         self.add_resource(Path(__file__).parent / 'lib' / 'leaflet')
@@ -61,6 +61,8 @@ class Leaflet(Element, component='leaflet.js', default_classes='nicegui-leaflet'
             options={'attribution': '&copy; <a href="https://openstreetmap.org">OpenStreetMap</a> contributors'},
         )
 
+        self._send_update_on_value_change = True
+
     def __enter__(self) -> Self:
         Layer.current_leaflet = self
         return super().__enter__()
@@ -77,20 +79,25 @@ class Leaflet(Element, component='leaflet.js', default_classes='nicegui-leaflet'
             for layer in self.layers:
                 self.run_method('add_layer', layer.to_dict(), layer.id)
 
-    async def initialized(self) -> None:
-        """Wait until the map is initialized."""
+    async def initialized(self, timeout: float = 3.0) -> None:
+        """Wait until the map is initialized.
+
+        :param timeout: timeout in seconds (default: 3 seconds)
+        """
         event = asyncio.Event()
         self.on('init', event.set, [])
-        await self.client.connected()
+        await self.client.connected(timeout=timeout)
         await event.wait()
 
-    async def _handle_moveend(self, e: GenericEventArguments) -> None:
-        await asyncio.sleep(0.02)  # NOTE: wait for zoom to be updated as well
+    def _handle_moveend(self, e: GenericEventArguments) -> None:
+        self._send_update_on_value_change = False
         self.center = e.args['center']
+        self._send_update_on_value_change = True
 
-    async def _handle_zoomend(self, e: GenericEventArguments) -> None:
-        await asyncio.sleep(0.02)  # NOTE: wait for center to be updated as well
+    def _handle_zoomend(self, e: GenericEventArguments) -> None:
+        self._send_update_on_value_change = False
         self.zoom = e.args['zoom']
+        self._send_update_on_value_change = True
 
     def run_method(self, name: str, *args: Any, timeout: float = 1) -> AwaitableResponse:
         if not self.is_initialized:
@@ -102,14 +109,16 @@ class Leaflet(Element, component='leaflet.js', default_classes='nicegui-leaflet'
         if self._props['center'] == center:
             return
         self._props['center'] = center
-        self.update()
+        if self._send_update_on_value_change:
+            self.update()
 
     def set_zoom(self, zoom: int) -> None:
         """Set the zoom level of the map."""
         if self._props['zoom'] == zoom:
             return
         self._props['zoom'] = zoom
-        self.update()
+        if self._send_update_on_value_change:
+            self.update()
 
     def remove_layer(self, layer: Layer) -> None:
         """Remove a layer from the map."""
