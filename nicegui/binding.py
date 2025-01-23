@@ -223,6 +223,8 @@ def bindable_dataclass(cls: Optional[T] = None, /, *,
     If ``bindable_fields`` is provided, only the listed fields are made bindable.
     Otherwise, all fields are made bindable by default.
 
+    *Added in version 2.11.0*
+
     :param cls: class to be transformed into a dataclass
     :param bindable_fields: optional list of field names to make bindable (defaults to all fields)
     :param kwargs: optional keyword arguments to be forwarded to ``dataclasses.dataclass``.

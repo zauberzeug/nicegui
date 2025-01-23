@@ -119,6 +119,8 @@ def bindable_properties():
     by automatically making all dataclass fields bindable.
     This eliminates the need to manually declare each field as a `BindableProperty`
     while retaining all the benefits of regular dataclasses.
+
+    *Added in version 2.11.0*
 ''')
 def bindable_dataclass():
     from nicegui import binding
