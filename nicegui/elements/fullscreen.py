@@ -1,6 +1,6 @@
-from typing import Callable, Optional
+from typing import Optional
 
-from ..events import ValueChangeEventArguments
+from ..events import Handler, ValueChangeEventArguments
 from .mixins.value_element import ValueElement
 
 
@@ -9,7 +9,7 @@ class Fullscreen(ValueElement, component='fullscreen.js'):
 
     def __init__(self, *,
                  require_escape_hold: bool = False,
-                 on_value_change: Optional[Callable[[ValueChangeEventArguments], None]] = None) -> None:
+                 on_value_change: Optional[Handler[ValueChangeEventArguments]] = None) -> None:
         """Fullscreen control element
 
         This element is based on Quasar's `AppFullscreen <https://quasar.dev/quasar-plugins/app-fullscreen>`_ plugin
