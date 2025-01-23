@@ -32,7 +32,7 @@ def long_press_demo():
 ''')
 def state_demo():
     fullscreen = ui.fullscreen(
-        on_state_change=lambda e: ui.notify('Enter' if e.value else 'Exit')
+        on_value_change=lambda e: ui.notify('Enter' if e.value else 'Exit')
     )
     ui.button('Toggle Fullscreen', on_click=fullscreen.toggle)
     ui.label().bind_text_from(fullscreen, 'state',
