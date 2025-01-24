@@ -192,7 +192,7 @@ class User:
         raise ValueError(message, Warning)
 
     def routes(self):
-        raise Client.page_routes.values()
+        return Client.page_routes.values()
 
     @property
     def current_layout(self) -> Element:
