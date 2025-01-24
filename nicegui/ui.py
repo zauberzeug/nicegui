@@ -39,6 +39,7 @@ __all__ = [
     'element',
     'expansion',
     'footer',
+    'fullscreen',
     'grid',
     'header',
     'highchart',
@@ -154,6 +155,7 @@ from .elements.dialog import Dialog as dialog
 from .elements.echart import EChart as echart
 from .elements.editor import Editor as editor
 from .elements.expansion import Expansion as expansion
+from .elements.fullscreen import Fullscreen as fullscreen
 from .elements.grid import Grid as grid
 from .elements.highchart import highchart
 from .elements.html import Html as html
