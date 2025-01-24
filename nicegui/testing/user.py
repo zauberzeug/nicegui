@@ -191,6 +191,9 @@ class User:
     def print(self, message):
         raise ValueError(message, Warning)
 
+    def routes(self):
+        raise Client.page_routes.values()
+
     @property
     def current_layout(self) -> Element:
         """Return the root layout element of the current page."""
