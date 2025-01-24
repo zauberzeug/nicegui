@@ -123,9 +123,6 @@ export default {
       clearInterval(connectInterval);
     }, 100);
   },
-  updated() {
-    this.map?.setView(this.center, this.zoom);
-  },
   methods: {
     add_layer(layer, id) {
       const l = L[layer.type](...layer.args);
