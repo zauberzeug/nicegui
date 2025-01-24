@@ -189,7 +189,7 @@ class User:
         return UserInteraction(self, elements, target)
 
     def print(self, message):
-        raise ValueError(message, Warning)
+        raise ValueError(message)
 
     def routes(self):
         return Client.page_routes.values()
