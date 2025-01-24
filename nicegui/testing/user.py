@@ -35,6 +35,7 @@ class User:
         self.navigate = UserNavigate(self)
         self.notify = UserNotify()
         self.download = UserDownload(self)
+        self.response = None
 
     @property
     def _client(self) -> Client:
@@ -65,6 +66,7 @@ class User:
         self.back_history.append(path)
         if clear_forward_history:
             self.forward_history.clear()
+        self.response = response
         return self.client
 
     @overload
@@ -185,6 +187,9 @@ class User:
                 raise AssertionError('expected to find at least one ' +
                                      self._build_error_message(target, kind, marker, content))
         return UserInteraction(self, elements, target)
+
+    def print(self, message):
+        raise ValueError(message, Warning)
 
     @property
     def current_layout(self) -> Element:
