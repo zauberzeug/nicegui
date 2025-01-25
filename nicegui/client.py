@@ -59,7 +59,7 @@ class Client:
         self.environ: Optional[Dict[str, Any]] = None
         self.shared = request is None
         self.on_air = False
-        self._disconnect_task: Optional[asyncio.Task] = None
+        self._disconnect_tasks: List[asyncio.Task] = []
         self._deleted = False
         self.tab_id: Optional[str] = None
 
@@ -238,9 +238,8 @@ class Client:
         """Cancel pending disconnect task and invoke connect handlers."""
         if next_message_id is not None:
             self.outbox.try_rewind(next_message_id)
-        if self._disconnect_task:
-            self._disconnect_task.cancel()
-            self._disconnect_task = None
+        while self._disconnect_tasks:
+            self._disconnect_tasks.pop().cancel()
         storage.request_contextvar.set(self.request)
         for t in self.connect_handlers:
             self.safe_invoke(t)
@@ -257,7 +256,7 @@ class Client:
                 self.safe_invoke(t)
             if not self.shared:
                 self.delete()
-        self._disconnect_task = background_tasks.create(handle_disconnect())
+        self._disconnect_tasks.append(background_tasks.create(handle_disconnect()))
 
     def handle_event(self, msg: Dict) -> None:
         """Forward an event to the corresponding element."""
