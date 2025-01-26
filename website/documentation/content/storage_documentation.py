@@ -144,10 +144,9 @@ def max_tab_storage_age():
     # app.storage.max_tab_storage_age = timedelta(minutes=1).total_seconds()
     ui.label(f'Tab storage age: {timedelta(minutes=1).total_seconds()} seconds')  # HIDE
 
-    @ui.page('/')
-    def index():
-        # ui.label(f'Tab storage age: {app.storage.max_tab_storage_age} seconds')
-        pass  # HIDE
+    # @ui.page('/')
+    # def index():
+    #    ui.label(f'Tab storage age: {app.storage.max_tab_storage_age} seconds')
 
 
 @doc.demo('Short-term memory', '''
