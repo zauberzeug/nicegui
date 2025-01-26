@@ -37,7 +37,7 @@ swap_size_mb = 2048
     handlers = ["tls", "http"]
   [services.concurrency]
     type = "requests"
-    hard_limit = 80
+    hard_limit = 120
     soft_limit = 50
 
   [[services.tcp_checks]]
