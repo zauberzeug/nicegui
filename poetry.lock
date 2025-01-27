@@ -3097,18 +3097,18 @@ files = [
 
 [[package]]
 name = "pywebview"
-version = "5.3.2"
+version = "5.4"
 description = "Build GUI for your Python program with JavaScript, HTML, and CSS"
 optional = true
 python-versions = ">=3.7"
 files = [
-    {file = "pywebview-5.3.2-py3-none-any.whl", hash = "sha256:55f5a4bcfaa56738f2d6206977bd3d2864784249b0646c67e84f402ba1740000"},
-    {file = "pywebview-5.3.2.tar.gz", hash = "sha256:77b88a63e65e12913d269205e9c6d357666d4864826749c738bf432bd3ad23d9"},
+    {file = "pywebview-5.4-py3-none-any.whl", hash = "sha256:0559c47db543556498dd38604a2a0479896c320f86c9b23499b8e580b58b699d"},
+    {file = "pywebview-5.4.tar.gz", hash = "sha256:b5e2c6c7502aaf72a9ae6034daf83785f5fad874fac7fa82bf4fcf854f1f083a"},
 ]
 
 [package.dependencies]
 bottle = "*"
-proxy-tools = "*"
+proxy_tools = "*"
 pyobjc-core = {version = "*", markers = "sys_platform == \"darwin\""}
 pyobjc-framework-Cocoa = {version = "*", markers = "sys_platform == \"darwin\""}
 pyobjc-framework-Quartz = {version = "*", markers = "sys_platform == \"darwin\""}
@@ -3116,7 +3116,7 @@ pyobjc-framework-security = {version = "*", markers = "sys_platform == \"darwin\
 pyobjc-framework-WebKit = {version = "*", markers = "sys_platform == \"darwin\""}
 pythonnet = {version = "*", markers = "sys_platform == \"win32\""}
 QtPy = {version = "*", markers = "sys_platform == \"openbsd6\""}
-typing-extensions = "*"
+typing_extensions = "*"
 
 [package.extras]
 android = ["jnius", "kivy"]
@@ -3124,7 +3124,10 @@ cef = ["cefpython3"]
 gtk = ["PyGObject", "PyGObject-stubs"]
 pyside2 = ["PySide2", "QtPy"]
 pyside6 = ["PySide6", "QtPy"]
-qt = ["PyQt5", "QtPy", "pyqtwebengine"]
+qt = ["PyQt6", "PyQt6-WebEngine", "QtPy"]
+qt5 = ["PyQt5", "QtPy", "pyqtwebengine"]
+qt6 = ["PyQt6", "PyQt6-WebEngine", "QtPy"]
+ssl = ["crpytography"]
 
 [[package]]
 name = "pyyaml"
