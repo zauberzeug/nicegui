@@ -41,7 +41,8 @@ try:
         def load_url(self, url: str) -> None:
             self._send(url)
 
-        def load_html(self, content: str, base_uri: str = ...) -> None:  # type: ignore
+        def load_html(self, content: str, base_uri: str = ...) -> None:  # type: ignore # pylint: disable=arguments-renamed
+            # DEPRECATED: `content` will be renamed to `html` in NiceGUI 3.0 to match the parameter name in pywebview>=5.4
             self._send(content, base_uri)
 
         def load_css(self, stylesheet: str) -> None:
