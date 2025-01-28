@@ -178,13 +178,13 @@ async def _on_handshake(sid: str, data: Dict[str, Any]) -> bool:
 
 
 @sio.on('disconnect')
-def _on_disconnect(sid: str) -> None:
+async def _on_disconnect(sid: str) -> None:
     query_bytes: bytearray = sio.get_environ(sid)['asgi.scope']['query_string']
     query = urllib.parse.parse_qs(query_bytes.decode())
     client_id = query['client_id'][0]
     client = Client.instances.get(client_id)
     if client:
-        client.handle_disconnect()
+        await client.handle_disconnect()
 
 
 @sio.on('event')

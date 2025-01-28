@@ -139,12 +139,12 @@ class Air:
             return True
 
         @self.relay.on('client_disconnect')
-        def _handle_client_disconnect(data: Dict[str, Any]) -> None:
+        async def _handle_client_disconnect(data: Dict[str, Any]) -> None:
             self.log.debug('client disconnected.')
             client_id = data['client_id']
             if client_id not in Client.instances:
                 return
-            Client.instances[client_id].handle_disconnect()
+            await Client.instances[client_id].handle_disconnect()
 
         @self.relay.on('connect')
         async def _handle_connect() -> None:

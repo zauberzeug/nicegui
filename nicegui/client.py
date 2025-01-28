@@ -59,7 +59,7 @@ class Client:
         self.environ: Optional[Dict[str, Any]] = None
         self.shared = request is None
         self.on_air = False
-        self._disconnect_task: Optional[asyncio.Task] = None
+        self._num_connections = 0
         self._deleted = False
         self.tab_id: Optional[str] = None
 
@@ -236,28 +236,25 @@ class Client:
 
     def handle_handshake(self, next_message_id: Optional[int]) -> None:
         """Cancel pending disconnect task and invoke connect handlers."""
+        self._num_connections += 1
         if next_message_id is not None:
             self.outbox.try_rewind(next_message_id)
-        if self._disconnect_task:
-            self._disconnect_task.cancel()
-            self._disconnect_task = None
         storage.request_contextvar.set(self.request)
         for t in self.connect_handlers:
             self.safe_invoke(t)
         for t in core.app._connect_handlers:  # pylint: disable=protected-access
             self.safe_invoke(t)
 
-    def handle_disconnect(self) -> None:
+    async def handle_disconnect(self) -> None:
         """Wait for the browser to reconnect; invoke disconnect handlers if it doesn't."""
-        async def handle_disconnect() -> None:
-            await asyncio.sleep(self.page.resolve_reconnect_timeout())
-            for t in self.disconnect_handlers:
-                self.safe_invoke(t)
-            for t in core.app._disconnect_handlers:  # pylint: disable=protected-access
-                self.safe_invoke(t)
-            if not self.shared:
-                self.delete()
-        self._disconnect_task = background_tasks.create(handle_disconnect())
+        self._num_connections -= 1
+        for t in self.disconnect_handlers:
+            self.safe_invoke(t)
+        for t in core.app._disconnect_handlers:  # pylint: disable=protected-access
+            self.safe_invoke(t)
+        await asyncio.sleep(self.page.resolve_reconnect_timeout())
+        if self._num_connections == 0 and not self.shared:
+            self.delete()
 
     def handle_event(self, msg: Dict) -> None:
         """Forward an event to the corresponding element."""
