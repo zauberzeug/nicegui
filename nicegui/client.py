@@ -237,9 +237,7 @@ class Client:
 
     def handle_handshake(self, next_message_id: Optional[int]) -> None:
         """Cancel pending disconnect task and invoke connect handlers."""
-        if self._delete_task:
-            self._delete_task.cancel()
-            self._delete_task = None
+        self._cancel_delete_task()
         self._num_connections += 1
         if next_message_id is not None:
             self.outbox.try_rewind(next_message_id)
@@ -251,6 +249,7 @@ class Client:
 
     def handle_disconnect(self) -> None:
         """Wait for the browser to reconnect; invoke disconnect handlers if it doesn't."""
+        self._cancel_delete_task()
         self._num_connections -= 1
         for t in self.disconnect_handlers:
             self.safe_invoke(t)
@@ -262,6 +261,11 @@ class Client:
                 if self._num_connections == 0:
                     self.delete()
             self._delete_task = background_tasks.create(delete_content())
+
+    def _cancel_delete_task(self) -> None:
+        if self._delete_task:
+            self._delete_task.cancel()
+            self._delete_task = None
 
     def handle_event(self, msg: Dict) -> None:
         """Forward an event to the corresponding element."""
