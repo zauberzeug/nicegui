@@ -60,6 +60,7 @@ class Client:
         self.shared = request is None
         self.on_air = False
         self._num_connections = 0
+        self._delete_task: Optional[asyncio.Task] = None
         self._deleted = False
         self.tab_id: Optional[str] = None
 
@@ -236,6 +237,9 @@ class Client:
 
     def handle_handshake(self, next_message_id: Optional[int]) -> None:
         """Cancel pending disconnect task and invoke connect handlers."""
+        if self._delete_task:
+            self._delete_task.cancel()
+            self._delete_task = None
         self._num_connections += 1
         if next_message_id is not None:
             self.outbox.try_rewind(next_message_id)
@@ -245,16 +249,19 @@ class Client:
         for t in core.app._connect_handlers:  # pylint: disable=protected-access
             self.safe_invoke(t)
 
-    async def handle_disconnect(self) -> None:
+    def handle_disconnect(self) -> None:
         """Wait for the browser to reconnect; invoke disconnect handlers if it doesn't."""
+        async def delete_content() -> None:
+            await asyncio.sleep(self.page.resolve_reconnect_timeout())
+            if self._num_connections == 0:
+                self.delete()
         self._num_connections -= 1
         for t in self.disconnect_handlers:
             self.safe_invoke(t)
         for t in core.app._disconnect_handlers:  # pylint: disable=protected-access
             self.safe_invoke(t)
-        await asyncio.sleep(self.page.resolve_reconnect_timeout())
-        if self._num_connections == 0 and not self.shared:
-            self.delete()
+        if not self.shared:
+            self._delete_task = background_tasks.create(delete_content())
 
     def handle_event(self, msg: Dict) -> None:
         """Forward an event to the corresponding element."""
