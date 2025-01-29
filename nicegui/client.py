@@ -251,16 +251,16 @@ class Client:
 
     def handle_disconnect(self) -> None:
         """Wait for the browser to reconnect; invoke disconnect handlers if it doesn't."""
-        async def delete_content() -> None:
-            await asyncio.sleep(self.page.resolve_reconnect_timeout())
-            if self._num_connections == 0:
-                self.delete()
         self._num_connections -= 1
         for t in self.disconnect_handlers:
             self.safe_invoke(t)
         for t in core.app._disconnect_handlers:  # pylint: disable=protected-access
             self.safe_invoke(t)
         if not self.shared:
+            async def delete_content() -> None:
+                await asyncio.sleep(self.page.resolve_reconnect_timeout())
+                if self._num_connections == 0:
+                    self.delete()
             self._delete_task = background_tasks.create(delete_content())
 
     def handle_event(self, msg: Dict) -> None:
