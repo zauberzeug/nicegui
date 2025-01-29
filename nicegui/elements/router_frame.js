@@ -47,6 +47,9 @@ export default {
             // Use closest to find the nearest parent <a> tag
             let link = e.target.closest('a');
 
+            // ignore link if its opened in a new tab
+            if (link && link.getAttribute('target') === '_blank') return;
+
             // If there's no <a> tag, or the <a> tag has no href attribute, do nothing
             if (!link || !link.hasAttribute('href')) return;
             let href = link.getAttribute('href');
