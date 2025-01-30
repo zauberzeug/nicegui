@@ -1,9 +1,13 @@
 // NOTE: Make sure to reload the browser with cache disabled after making changes to this file.
 export default {
   template: `
-  <button @click="handle_click">
-    <strong>{{title}}: {{value}}</strong>
-  </button>`,
+    <button @click="handle_click" :style="{ background: value > 0 ? '#bf8' : '#eee', padding: '8px 16px', borderRadius: '4px' }">
+      <strong>{{title}}: {{value}}</strong>
+    </button>
+  `,
+  props: {
+    title: String,
+  },
   data() {
     return {
       value: 0,
@@ -17,8 +21,5 @@ export default {
     reset() {
       this.value = 0;
     },
-  },
-  props: {
-    title: String,
   },
 };
