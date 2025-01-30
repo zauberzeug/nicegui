@@ -27,6 +27,7 @@ class Leaflet(Element, component='leaflet.js', default_classes='nicegui-leaflet'
                  options: Dict = {},  # noqa: B006
                  draw_control: Union[bool, Dict] = False,
                  hide_drawn_items: bool = False,
+                 additional_resources: list[str] | None = None,
                  ) -> None:
         """Leaflet map
 
@@ -51,6 +52,7 @@ class Leaflet(Element, component='leaflet.js', default_classes='nicegui-leaflet'
         self._props['options'] = {**options}
         self._props['draw_control'] = draw_control
         self._props['hide_drawn_items'] = hide_drawn_items
+        self._props['additional_resources'] = additional_resources | []
 
         self.on('init', self._handle_init)
         self.on('map-moveend', self._handle_moveend)

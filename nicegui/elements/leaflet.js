@@ -10,6 +10,7 @@ export default {
     draw_control: Object,
     resource_path: String,
     hide_drawn_items: Boolean,
+    additional_resources: Array,
   },
   async mounted() {
     await this.$nextTick(); // NOTE: wait for window.path_prefix to be set
@@ -22,6 +23,11 @@ export default {
         loadResource(window.path_prefix + `${this.resource_path}/leaflet-draw/leaflet.draw.css`),
         loadResource(window.path_prefix + `${this.resource_path}/leaflet-draw/leaflet.draw.js`),
       ]);
+    }
+    // Load additional resources (leaflet plugins, etc)
+    var additionalResourcesLength = this.additional_resources.length;
+    for (var i = 0; additionalResourcesLength > i; ++i) {
+      await Promise.all([loadResource(this.additional_resources[i])]);
     }
     this.map = L.map(this.$el, {
       ...this.options,
