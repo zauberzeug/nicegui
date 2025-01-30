@@ -228,11 +228,12 @@ class Client:
     def open(self, target: Union[Callable[..., Any], str], new_tab: bool = False) -> None:
         """Open a new page in the client."""
         path = target if isinstance(target, str) else self.page_routes[target]
-        for outlet in self.top_level_outlets.values():
-            outlet_target = outlet.resolve_target(path)
-            if outlet_target.valid and context.client.single_page_router is not None:
-                context.client.single_page_router.navigate_to(path)
-                return
+        if not new_tab:
+            for outlet in self.top_level_outlets.values():
+                outlet_target = outlet.resolve_target(path)
+                if outlet_target.valid and context.client.single_page_router is not None:
+                    context.client.single_page_router.navigate_to(path)
+                    return
         self.outbox.enqueue_message('open', {'path': path, 'new_tab': new_tab}, self.id)
 
     def download(self, src: Union[str, bytes], filename: Optional[str] = None, media_type: str = '') -> None:
