@@ -196,4 +196,18 @@ async def wait_for_init() -> None:
         m.run_map_method('fitBounds', [[bounds['_southWest'], bounds['_northEast']]])
     ui.timer(0, page, once=True)  # HIDE
 
+
+@doc.demo('Leaflet Plugins', '''
+    You can add plugins to the map by passing the URLs of JS and CSS files to the `additional_resources` parameter.
+    This demo shows how to add the [Leaflet.RotatedMarker](https://github.com/bbecquet/Leaflet.RotatedMarker) plugin.
+    It allows you to rotate markers by a given `rotationAngle`.
+''')
+def leaflet_plugins() -> None:
+    m = ui.leaflet((51.51, -0.09), additional_resources=[
+        'https://unpkg.com/leaflet-rotatedmarker@0.2.0/leaflet.rotatedMarker.js',
+    ])
+    m.marker(latlng=(51.51, -0.091), options={'rotationAngle': -30})
+    m.marker(latlng=(51.51, -0.090), options={'rotationAngle': 30})
+
+
 doc.reference(ui.leaflet)

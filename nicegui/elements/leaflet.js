@@ -17,17 +17,13 @@ export default {
     await Promise.all([
       loadResource(window.path_prefix + `${this.resource_path}/leaflet/leaflet.css`),
       loadResource(window.path_prefix + `${this.resource_path}/leaflet/leaflet.js`),
+      ...this.additional_resources.map((resource) => loadResource(resource)),
     ]);
     if (this.draw_control) {
       await Promise.all([
         loadResource(window.path_prefix + `${this.resource_path}/leaflet-draw/leaflet.draw.css`),
         loadResource(window.path_prefix + `${this.resource_path}/leaflet-draw/leaflet.draw.js`),
       ]);
-    }
-    // Load additional resources (leaflet plugins, etc)
-    var additionalResourcesLength = this.additional_resources.length;
-    for (var i = 0; additionalResourcesLength > i; ++i) {
-      await Promise.all([loadResource(this.additional_resources[i])]);
     }
     this.map = L.map(this.$el, {
       ...this.options,
