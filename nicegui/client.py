@@ -4,6 +4,7 @@ import asyncio
 import inspect
 import time
 import uuid
+from collections import defaultdict
 from contextlib import contextmanager
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Awaitable, Callable, ClassVar, Dict, Iterable, Iterator, List, Optional, Union
@@ -59,7 +60,7 @@ class Client:
         self.environ: Optional[Dict[str, Any]] = None
         self.shared = request is None
         self.on_air = False
-        self._num_connections = 0
+        self._num_connections = defaultdict(int)
         self._delete_task: Optional[asyncio.Task] = None
         self._deleted = False
         self.tab_id: Optional[str] = None
@@ -235,10 +236,10 @@ class Client:
         """Add a callback to be invoked when the client disconnects."""
         self.disconnect_handlers.append(handler)
 
-    def handle_handshake(self, next_message_id: Optional[int]) -> None:
+    def handle_handshake(self, socket_id: str, next_message_id: Optional[int]) -> None:
         """Cancel pending disconnect task and invoke connect handlers."""
         self._cancel_delete_task()
-        self._num_connections += 1
+        self._num_connections[socket_id] += 1
         if next_message_id is not None:
             self.outbox.try_rewind(next_message_id)
         storage.request_contextvar.set(self.request)
@@ -247,10 +248,10 @@ class Client:
         for t in core.app._connect_handlers:  # pylint: disable=protected-access
             self.safe_invoke(t)
 
-    def handle_disconnect(self) -> None:
+    def handle_disconnect(self, socket_id: str) -> None:
         """Wait for the browser to reconnect; invoke disconnect handlers if it doesn't."""
         self._cancel_delete_task()
-        self._num_connections -= 1
+        self._num_connections[socket_id] -= 1
         for t in self.disconnect_handlers:
             self.safe_invoke(t)
         for t in core.app._disconnect_handlers:  # pylint: disable=protected-access
@@ -258,7 +259,8 @@ class Client:
         if not self.shared:
             async def delete_content() -> None:
                 await asyncio.sleep(self.page.resolve_reconnect_timeout())
-                if self._num_connections == 0:
+                if self._num_connections[socket_id] == 0:
+                    self._num_connections.pop(socket_id)
                     self.delete()
             self._delete_task = background_tasks.create(delete_content())
 
