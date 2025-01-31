@@ -268,7 +268,7 @@ class Client:
                 self._num_connections.pop(socket_id)
                 if not self.shared:
                     self.delete()
-        self._delete_task = background_tasks.create(delete_content())
+        self._delete_tasks[socket_id] = background_tasks.create(delete_content())
 
     def _cancel_delete_task(self, socket_id: str) -> None:
         if socket_id in self._delete_tasks:
