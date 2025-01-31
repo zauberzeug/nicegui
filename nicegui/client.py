@@ -60,8 +60,8 @@ class Client:
         self.environ: Optional[Dict[str, Any]] = None
         self.shared = request is None
         self.on_air = False
-        self._num_connections = defaultdict(int)
-        self._delete_task: Optional[asyncio.Task] = None
+        self._num_connections: defaultdict[str, int] = defaultdict(int)
+        self._delete_tasks: Dict[str, asyncio.Task] = {}
         self._deleted = False
         self.tab_id: Optional[str] = None
 
@@ -238,7 +238,7 @@ class Client:
 
     def handle_handshake(self, socket_id: str, next_message_id: Optional[int]) -> None:
         """Cancel pending disconnect task and invoke connect handlers."""
-        self._cancel_delete_task()
+        self._cancel_delete_task(socket_id)
         self._num_connections[socket_id] += 1
         if next_message_id is not None:
             self.outbox.try_rewind(next_message_id)
@@ -249,25 +249,30 @@ class Client:
             self.safe_invoke(t)
 
     def handle_disconnect(self, socket_id: str) -> None:
-        """Wait for the browser to reconnect; invoke disconnect handlers if it doesn't."""
-        self._cancel_delete_task()
-        self._num_connections[socket_id] -= 1
-        for t in self.disconnect_handlers:
-            self.safe_invoke(t)
-        for t in core.app._disconnect_handlers:  # pylint: disable=protected-access
-            self.safe_invoke(t)
-        if not self.shared:
-            async def delete_content() -> None:
-                await asyncio.sleep(self.page.resolve_reconnect_timeout())
-                if self._num_connections[socket_id] == 0:
-                    self._num_connections.pop(socket_id)
-                    self.delete()
-            self._delete_task = background_tasks.create(delete_content())
+        """Wait for the browser to reconnect; invoke disconnect handlers if it doesn't.
 
-    def _cancel_delete_task(self) -> None:
-        if self._delete_task:
-            self._delete_task.cancel()
-            self._delete_task = None
+        NOTE:
+        In contrast to connect handlers, disconnect handlers are not called during a reconnect.
+        This behavior should be fixed in version 3.0.
+        """
+        self._cancel_delete_task(socket_id)
+        self._num_connections[socket_id] -= 1
+
+        async def delete_content() -> None:
+            await asyncio.sleep(self.page.resolve_reconnect_timeout())
+            if self._num_connections[socket_id] == 0:
+                for t in self.disconnect_handlers:
+                    self.safe_invoke(t)
+                for t in core.app._disconnect_handlers:  # pylint: disable=protected-access
+                    self.safe_invoke(t)
+                self._num_connections.pop(socket_id)
+                if not self.shared:
+                    self.delete()
+        self._delete_task = background_tasks.create(delete_content())
+
+    def _cancel_delete_task(self, socket_id: str) -> None:
+        if socket_id in self._delete_tasks:
+            self._delete_tasks.pop(socket_id).cancel()
 
     def handle_event(self, msg: Dict) -> None:
         """Forward an event to the corresponding element."""
