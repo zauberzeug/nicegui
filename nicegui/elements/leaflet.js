@@ -10,12 +10,14 @@ export default {
     draw_control: Object,
     resource_path: String,
     hide_drawn_items: Boolean,
+    additional_resources: Array,
   },
   async mounted() {
     await this.$nextTick(); // NOTE: wait for window.path_prefix to be set
     await Promise.all([
       loadResource(window.path_prefix + `${this.resource_path}/leaflet/leaflet.css`),
       loadResource(window.path_prefix + `${this.resource_path}/leaflet/leaflet.js`),
+      ...this.additional_resources.map((resource) => loadResource(resource)),
     ]);
     if (this.draw_control) {
       await Promise.all([
