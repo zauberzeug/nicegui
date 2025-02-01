@@ -9,7 +9,7 @@ fly scale count app=2  --region mia -y # Miami, Florida (US)
 fly scale count app=1  --region sea -y # Seattle, Washington (US)
 
 fly scale count app=3  --region fra -y # Frankfurt, Germany
-fly scale count app=2  --region ams -y # Amsterdam, Netherlands
+fly scale count app=4  --region ams -y # Amsterdam, Netherlands
 fly scale count app=1  --region mad -y # Madrid, Spain
 fly scale count app=1  --region cdg -y # Paris, France
 fly scale count app=2  --region lhr -y # London, England (UK)
