@@ -1,25 +1,26 @@
-from typing import Any, Callable, Generator, Optional, Self, Union, Dict, Set, List, AsyncGenerator
+from __future__ import annotations
 
 import inspect
 import re
 from fnmatch import fnmatch
+from typing import Any, AsyncGenerator, Awaitable, Callable, Dict, Generator, List, Optional, Self, Set, Union
 
 from nicegui import ui
 from nicegui.client import Client
+from nicegui.context import context
 from nicegui.elements.router_frame import RouterFrame
 from nicegui.outlet_view import OutletView
 from nicegui.single_page_router import SinglePageRouter
 from nicegui.single_page_target import SinglePageTarget
-from nicegui.context import context
 
-PAGE_TEMPLATE_METHOD_NAME = "page_template"
+PAGE_TEMPLATE_METHOD_NAME = 'page_template'
 
 
 class Outlet:
     def __init__(self,
                  path: str,
-                 parent: Optional['Outlet'] = None,
-                 on_instance_created: Optional[Callable[['SinglePageRouter'], None]] = None,
+                 parent: Optional[Outlet] = None,
+                 on_instance_created: Optional[Callable[[SinglePageRouter], None]] = None,
                  on_navigate: Optional[Callable[[str], Optional[Union[SinglePageTarget, str]]]] = None,
                  router_class: Optional[Callable[..., SinglePageRouter]] = None,
                  **kwargs) -> None:
@@ -58,7 +59,7 @@ class Outlet:
         :param kwargs: additional keyword arguments passed to FastAPI's @app.get method
         """
         super().__init__()
-        self.routes: Dict[str, 'OutletPath'] = {}
+        self.routes: Dict[str, OutletPath] = {}
         self.base_path = path
         self.included_paths: Set[str] = set()
         self.excluded_paths: Set[str] = set()
@@ -70,10 +71,16 @@ class Outlet:
         self.parent_config = parent
         if self.parent_config is not None:
             self.parent_config._register_child_outlet(self)
-        self.child_routers: List['Outlet'] = []
+        self.child_routers: List[Outlet] = []
         self.page_kwargs = kwargs
         self.router_class = SinglePageRouter if router_class is None else router_class
-        self.outlet_builder: Optional[Callable] = None
+        self.outlet_builder: Union[
+            None,
+            Callable[..., Any],
+            Callable[..., Awaitable[Any]],
+            Generator[Dict[str, Any], None, None],
+            AsyncGenerator[Dict[str, Any], None]
+        ] = None
         if parent is None:
             Client.top_level_outlets[path] = self
 
@@ -141,7 +148,7 @@ class Outlet:
         :param overwrite: Optional flag to force the setup of a given page even if one with a conflicting path is
             already existing. Default is False. Classes such as SinglePageApp use this flag to avoid conflicts with
             other routers and resolve those conflicts by rerouting the pages."""
-        for key, route in Client.page_routes.items():
+        for _, route in Client.page_routes.items():
             if route.startswith(self.base_path.rstrip('/') + '/') and route.rstrip('/') not in self.included_paths:
                 self.excluded_paths.add(route)
             if overwrite:
@@ -173,7 +180,7 @@ class Outlet:
         self.included_paths.add(path_mask)
         self.routes[path] = OutletPath(path, builder, title, on_open=on_open).verify()
 
-    def add_router_entry(self, entry: 'OutletPath') -> None:
+    def add_router_entry(self, entry: OutletPath) -> None:
         """Adds a fully configured OutletPath to the router
 
         :param entry: The OutletPath to add"""
@@ -185,8 +192,8 @@ class Outlet:
         :param target: The URL path to open or a builder function
         :return: The resolved target. Defines .valid if the target is valid"""
         if callable(target):
-            for target, entry in self.routes.items():
-                if entry.builder == target:
+            for route_target, entry in self.routes.items():
+                if entry.builder == route_target:
                     return SinglePageTarget(router_path=entry)
             raise ValueError('The target builder function is not registered in the router.')
         resolved = None
@@ -234,6 +241,7 @@ class Outlet:
         # Initialize properties dictionary
         new_user_data = {}
         content_area = None
+
         def add_properties(result):
             if isinstance(result, dict):
                 new_user_data.update(result)
@@ -291,7 +299,7 @@ class Outlet:
     def view(self,
              path: str,
              title: Optional[str] = None
-             ) -> 'OutletView':
+             ) -> OutletView:
         """Decorator for the view function.
 
         With the view function you define the actual content of the page. The view function is called when the user
@@ -303,7 +311,7 @@ class Outlet:
         """
         return OutletView(self, path, title=title)
 
-    def outlet(self, path: str, **kwargs) -> 'Outlet':
+    def outlet(self, path: str, **kwargs) -> Outlet:
         """Defines a nested outlet
 
         :param path: The relative path of the outlet
@@ -325,7 +333,7 @@ class Outlet:
                              'function.')
         return cur_router.target_url
 
-    def _register_child_outlet(self, router_config: 'Outlet') -> None:
+    def _register_child_outlet(self, router_config: Outlet) -> None:
         """Registers a child outlet config to the parent router config"""
         self.child_routers.append(router_config)
 
