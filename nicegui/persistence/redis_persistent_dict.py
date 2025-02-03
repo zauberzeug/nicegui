@@ -14,7 +14,13 @@ class RedisPersistentDict(PersistentDict):
     def __init__(self, *, url: str, id: str, key_prefix: str = 'nicegui:') -> None:  # pylint: disable=redefined-builtin
         if not optional_features.has('redis'):
             raise ImportError('Redis is not installed. Please run "pip install nicegui[redis]".')
-        self.redis_client = redis.from_url(url)
+        self.redis_client = redis.from_url(
+            url,
+            health_check_interval=10,
+            socket_connect_timeout=5,
+            retry_on_timeout=True,
+            socket_keepalive=True,
+        )
         self.pubsub = self.redis_client.pubsub()
         self.key = key_prefix + id
         super().__init__(data={}, on_change=self.publish)
