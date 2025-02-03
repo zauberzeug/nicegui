@@ -201,6 +201,8 @@ async def wait_for_init() -> None:
     You can add plugins to the map by passing the URLs of JS and CSS files to the `additional_resources` parameter.
     This demo shows how to add the [Leaflet.RotatedMarker](https://github.com/bbecquet/Leaflet.RotatedMarker) plugin.
     It allows you to rotate markers by a given `rotationAngle`.
+
+    *Added in version 2.11.0*
 ''')
 def leaflet_plugins() -> None:
     m = ui.leaflet((51.51, -0.09), additional_resources=[
