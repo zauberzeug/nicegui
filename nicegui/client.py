@@ -63,6 +63,7 @@ class Client:
         self._num_connections: defaultdict[str, int] = defaultdict(int)
         self._delete_tasks: Dict[str, asyncio.Task] = {}
         self._deleted = False
+        self._socket_to_document_id: Dict[str, str] = {}
         self.tab_id: Optional[str] = None
 
         self.page = page
@@ -236,10 +237,11 @@ class Client:
         """Add a callback to be invoked when the client disconnects."""
         self.disconnect_handlers.append(handler)
 
-    def handle_handshake(self, socket_id: str, next_message_id: Optional[int]) -> None:
+    def handle_handshake(self, socket_id: str, document_id: str, next_message_id: Optional[int]) -> None:
         """Cancel pending disconnect task and invoke connect handlers."""
-        self._cancel_delete_task(socket_id)
-        self._num_connections[socket_id] += 1
+        self._socket_to_document_id[socket_id] = document_id
+        self._cancel_delete_task(document_id)
+        self._num_connections[document_id] += 1
         if next_message_id is not None:
             self.outbox.try_rewind(next_message_id)
         storage.request_contextvar.set(self.request)
@@ -255,24 +257,25 @@ class Client:
         In contrast to connect handlers, disconnect handlers are not called during a reconnect.
         This behavior should be fixed in version 3.0.
         """
-        self._cancel_delete_task(socket_id)
-        self._num_connections[socket_id] -= 1
+        document_id = self._socket_to_document_id.pop(socket_id)
+        self._cancel_delete_task(document_id)
+        self._num_connections[document_id] -= 1
 
         async def delete_content() -> None:
             await asyncio.sleep(self.page.resolve_reconnect_timeout())
-            if self._num_connections[socket_id] == 0:
+            if self._num_connections[document_id] == 0:
                 for t in self.disconnect_handlers:
                     self.safe_invoke(t)
                 for t in core.app._disconnect_handlers:  # pylint: disable=protected-access
                     self.safe_invoke(t)
-                self._num_connections.pop(socket_id)
+                self._num_connections.pop(document_id)
                 if not self.shared:
                     self.delete()
-        self._delete_tasks[socket_id] = background_tasks.create(delete_content())
+        self._delete_tasks[document_id] = background_tasks.create(delete_content())
 
-    def _cancel_delete_task(self, socket_id: str) -> None:
-        if socket_id in self._delete_tasks:
-            self._delete_tasks.pop(socket_id).cancel()
+    def _cancel_delete_task(self, document_id: str) -> None:
+        if document_id in self._delete_tasks:
+            self._delete_tasks.pop(document_id).cancel()
 
     def handle_event(self, msg: Dict) -> None:
         """Forward an event to the corresponding element."""

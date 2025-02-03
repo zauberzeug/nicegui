@@ -171,7 +171,7 @@ async def _on_handshake(sid: str, data: Dict[str, Any]) -> bool:
     else:
         client.environ = sio.get_environ(sid)
         await sio.enter_room(sid, client.id)
-    client.handle_handshake(sid, data.get('next_message_id'))
+    client.handle_handshake(sid, data['document_id'], data.get('next_message_id'))
     assert client.tab_id is not None
     await core.app.storage._create_tab_storage(client.tab_id)  # pylint: disable=protected-access
     return True
