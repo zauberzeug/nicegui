@@ -78,7 +78,7 @@ class Table(FilterElement, component='table.js'):
 
         def handle_selection(e: GenericEventArguments) -> None:
             if e.args['added']:
-                if selection == 'single':
+                if self.selection == 'single':
                     self.selected.clear()
                 self.selected.extend(e.args['rows'])
             else:
@@ -321,6 +321,26 @@ class Table(FilterElement, component='table.js'):
     def selected(self, value: List[Dict]) -> None:
         self._props['selected'][:] = value
         self.update()
+
+    @property
+    def selection(self) -> Literal['none', 'single', 'multiple']:
+        """Selection type.
+
+        *Added in version 2.11.0*
+        """
+        return self._props['selection']
+
+    @selection.setter
+    def selection(self, value: Literal['none', 'single', 'multiple']) -> None:
+        self._props['selection'] = value
+        self.update()
+
+    def set_selection(self, value: Literal['none', 'single', 'multiple']) -> None:
+        """Set the selection type.
+
+        *Added in version 2.11.0*
+        """
+        self.selection = value
 
     @property
     def pagination(self) -> dict:
