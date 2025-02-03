@@ -111,7 +111,8 @@ def test_slots(screen: Screen):
 
 def test_selection(screen: Screen):
     table = ui.table(columns=columns(), rows=rows(), selection='single')
-    ui.radio(['none', 'single', 'multiple'], on_change=lambda e: table.set_selection(e.value))
+    ui.radio({None: 'none', 'single': 'single', 'multiple': 'multiple'},
+             on_change=lambda e: table.set_selection(e.value))
 
     screen.open('/')
     screen.find('Alice').find_element(By.XPATH, 'preceding-sibling::td').click()
@@ -133,7 +134,7 @@ def test_selection(screen: Screen):
     screen.click('none')
     screen.wait(0.5)
     screen.should_not_contain('1 record selected.')
-    assert table.selection == 'none'
+    assert table.selection is None
 
 
 def test_dynamic_column_attributes(screen: Screen):

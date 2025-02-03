@@ -35,7 +35,7 @@ class Table(FilterElement, component='table.js'):
                  column_defaults: Optional[Dict] = None,
                  row_key: str = 'id',
                  title: Optional[str] = None,
-                 selection: Optional[Literal['single', 'multiple']] = None,
+                 selection: Literal[None, 'single', 'multiple'] = None,
                  pagination: Optional[Union[int, dict]] = None,
                  on_select: Optional[Handler[TableSelectionEventArguments]] = None,
                  on_pagination_change: Optional[Handler[ValueChangeEventArguments]] = None,
@@ -323,19 +323,19 @@ class Table(FilterElement, component='table.js'):
         self.update()
 
     @property
-    def selection(self) -> Literal['none', 'single', 'multiple']:
+    def selection(self) -> Literal[None, 'single', 'multiple']:
         """Selection type.
 
         *Added in version 2.11.0*
         """
-        return self._props['selection']
+        return None if self._props['selection'] == 'none' else self._props['selection']
 
     @selection.setter
-    def selection(self, value: Literal['none', 'single', 'multiple']) -> None:
-        self._props['selection'] = value
+    def selection(self, value: Literal[None, 'single', 'multiple']) -> None:
+        self._props['selection'] = value or 'none'
         self.update()
 
-    def set_selection(self, value: Literal['none', 'single', 'multiple']) -> None:
+    def set_selection(self, value: Literal[None, 'single', 'multiple']) -> None:
         """Set the selection type.
 
         *Added in version 2.11.0*

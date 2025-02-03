@@ -65,7 +65,7 @@ def selection():
         row_key='name',
         on_select=lambda e: ui.notify(f'selected: {e.selection}'),
     )
-    ui.radio(['none', 'single', 'multiple'], value='none',
+    ui.radio({None: 'none', 'single': 'single', 'multiple': 'multiple'},
              on_change=lambda e: table.set_selection(e.value))
 
 
