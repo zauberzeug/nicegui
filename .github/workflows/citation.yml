@@ -12,7 +12,7 @@ jobs:
     steps:
       - name: Upload to Zenodo
         id: release
-        uses: megasanjay/upload-to-zenodo@43390984723d64d501f361820f6e558dececdfcc
+        uses: codingpaula/upload-to-zenodo@fix-octet-stream
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           zenodo_token: ${{ secrets.ZENODO_TOKEN }}
