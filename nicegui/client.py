@@ -269,6 +269,7 @@ class Client:
                 for t in core.app._disconnect_handlers:  # pylint: disable=protected-access
                     self.safe_invoke(t)
                 self._num_connections.pop(document_id)
+                self._delete_tasks.pop(document_id)
                 if not self.shared:
                     self.delete()
         self._delete_tasks[document_id] = background_tasks.create(delete_content())
