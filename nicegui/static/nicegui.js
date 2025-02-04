@@ -331,6 +331,7 @@ function createApp(elements, options) {
     },
     mounted() {
       mounted_app = this;
+      window.documentId = createRandomUUID();
       window.clientId = options.query.client_id;
       const url = window.location.protocol === "https:" ? "wss://" : "ws://" + window.location.host;
       window.path_prefix = options.prefix;
@@ -347,6 +348,7 @@ function createApp(elements, options) {
         connect: () => {
           const args = {
             client_id: window.clientId,
+            document_id: window.documentId,
             tab_id: TAB_ID,
             old_tab_id: OLD_TAB_ID,
             next_message_id: window.nextMessageId,
