@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 import asyncio
-from typing import Awaitable, Dict, Set
+from typing import Awaitable, Dict, Optional, Set
 
 from . import core
 
@@ -27,7 +27,7 @@ def create(coroutine: Awaitable, *, name: str = 'unnamed task') -> asyncio.Task:
     return task
 
 
-def create_lazy(coroutine: Awaitable, *, name: str) -> None:
+def create_lazy(coroutine: Awaitable, *, name: str) -> Optional[asyncio.Task]:
     """Wraps a create call and ensures a second task with the same name is delayed until the first one is done.
 
     If a third task with the same name is created while the first one is still running, the second one is discarded.
@@ -36,7 +36,7 @@ def create_lazy(coroutine: Awaitable, *, name: str) -> None:
         if name in lazy_tasks_waiting:
             asyncio.Task(lazy_tasks_waiting[name]).cancel()
         lazy_tasks_waiting[name] = coroutine
-        return
+        return None
 
     def finalize(name: str) -> None:
         lazy_tasks_running.pop(name)
@@ -45,6 +45,7 @@ def create_lazy(coroutine: Awaitable, *, name: str) -> None:
     task = create(coroutine, name=name)
     lazy_tasks_running[name] = task
     task.add_done_callback(lambda _: finalize(name))
+    return task
 
 
 def _handle_task_result(task: asyncio.Task) -> None:
