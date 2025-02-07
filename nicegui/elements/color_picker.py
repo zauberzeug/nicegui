@@ -26,7 +26,7 @@ class ColorPicker(Menu):
         with self:
             def handle_change(e: GenericEventArguments):
                 for handler in self._pick_handlers:
-                    handle_event(handler, ColorPickEventArguments(sender=self, client=self.client, color=e.args))
+                    handle_event(handler, ColorPickEventArguments.from_generic_event(e, color=e.args))
             self.q_color = Element('q-color').on('change', handle_change)
 
     def set_color(self, color: str) -> None:

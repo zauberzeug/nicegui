@@ -190,7 +190,7 @@ class Notification(Element, component='notification.js'):
 
     def on_dismiss(self, callback: Handler[UiEventArguments]) -> Self:
         """Add a callback to be invoked when the notification is dismissed."""
-        self.on('dismiss', lambda _: handle_event(callback, UiEventArguments(sender=self, client=self.client)), [])
+        self.on('dismiss', lambda e: handle_event(callback, UiEventArguments.from_generic_event(e)), [])
         return self
 
     def dismiss(self) -> None:

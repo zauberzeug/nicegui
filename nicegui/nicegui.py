@@ -188,11 +188,11 @@ def _on_disconnect(sid: str) -> None:
 
 
 @sio.on('event')
-def _on_event(_: str, msg: Dict) -> None:
+def _on_event(sid: str, msg: Dict) -> None:
     client = Client.instances.get(msg['client_id'])
     if not client or not client.has_socket_connection:
         return
-    client.handle_event(msg)
+    client.handle_event(sid, msg)
 
 
 @sio.on('javascript_response')

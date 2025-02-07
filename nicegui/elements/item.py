@@ -33,7 +33,7 @@ class Item(DisableableElement):
     def on_click(self, callback: Handler[ClickEventArguments]) -> Self:
         """Add a callback to be invoked when the List Item is clicked."""
         self._props['clickable'] = True  # idempotent
-        self.on('click', lambda _: handle_event(callback, ClickEventArguments(sender=self, client=self.client)))
+        self.on('click', lambda e: handle_event(callback, ClickEventArguments.from_generic_event(e)))
         return self
 
 

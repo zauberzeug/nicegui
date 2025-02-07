@@ -206,13 +206,13 @@ class Client:
         :return: AwaitableResponse that can be awaited to get the result of the JavaScript code
         """
         request_id = str(uuid.uuid4())
-        target_id = self._temporary_socket_id or self.id
+        target_id = self.target
 
         def send_and_forget():
             self.outbox.enqueue_message('run_javascript', {'code': code}, target_id)
 
         async def send_and_wait():
-            if self is self.auto_index_client:
+            if self is self.auto_index_client and not self._temporary_socket_id:
                 raise RuntimeError('Cannot await JavaScript responses on the auto-index page. '
                                    'There could be multiple clients connected and it is not clear which one to wait for.')
             self.outbox.enqueue_message('run_javascript', {'code': code, 'request_id': request_id}, target_id)
@@ -223,11 +223,12 @@ class Client:
     def open(self, target: Union[Callable[..., Any], str], new_tab: bool = False) -> None:
         """Open a new page in the client."""
         path = target if isinstance(target, str) else self.page_routes[target]
-        self.outbox.enqueue_message('open', {'path': path, 'new_tab': new_tab}, self.id)
+        self.outbox.enqueue_message('open', {'path': path, 'new_tab': new_tab}, self.target)
 
     def download(self, src: Union[str, bytes], filename: Optional[str] = None, media_type: str = '') -> None:
         """Download a file from a given URL or raw bytes."""
-        self.outbox.enqueue_message('download', {'src': src, 'filename': filename, 'media_type': media_type}, self.id)
+        self.outbox.enqueue_message('download', {'src': src, 'filename': filename, 'media_type': media_type},
+                                    self.target)
 
     def on_connect(self, handler: Union[Callable[..., Any], Awaitable]) -> None:
         """Add a callback to be invoked when the client connects."""
@@ -278,7 +279,7 @@ class Client:
         if document_id in self._delete_tasks:
             self._delete_tasks.pop(document_id).cancel()
 
-    def handle_event(self, msg: Dict) -> None:
+    def handle_event(self, sid: str, msg: Dict) -> None:
         """Forward an event to the corresponding element."""
         with self:
             sender = self.elements.get(msg['id'])
@@ -286,7 +287,7 @@ class Client:
                 msg['args'] = [None if arg is None else json.loads(arg) for arg in msg.get('args', [])]
                 if len(msg['args']) == 1:
                     msg['args'] = msg['args'][0]
-                sender._handle_event(msg)  # pylint: disable=protected-access
+                sender._handle_event(sid, msg)  # pylint: disable=protected-access
 
     def handle_javascript_response(self, msg: Dict) -> None:
         """Store the result of a JavaScript command."""
@@ -353,6 +354,14 @@ class Client:
         self._temporary_socket_id = socket_id
         yield
         self._temporary_socket_id = None
+
+    @property
+    def target(self) -> str:
+        """Return the target of the client.
+
+        This is usually the client ID, but can be overridden by the ``individual_target`` context manager.
+        """
+        return self._temporary_socket_id or self.id
 
     @classmethod
     async def prune_instances(cls) -> None:

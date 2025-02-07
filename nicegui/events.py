@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from contextlib import nullcontext
+from contextlib import contextmanager, nullcontext
 from dataclasses import dataclass
 from inspect import Parameter, signature
 from typing import (
@@ -18,6 +18,8 @@ from typing import (
     Union,
     cast,
 )
+
+from typing_extensions import Self
 
 from . import background_tasks, core
 from .awaitable_response import AwaitableResponse
@@ -44,6 +46,19 @@ class ObservableChangeEventArguments(EventArguments):
 class UiEventArguments(EventArguments):
     sender: Element
     client: Client
+    socket_id: str
+
+    @classmethod
+    def from_generic_event(cls, e: GenericEventArguments, **kwargs: Any) -> Self:
+        """Create new event arguments from ``GenericEventArguments``."""
+        return cls(sender=e.sender, client=e.client, socket_id=e.socket_id, **kwargs)
+
+    @property
+    @contextmanager
+    def socket(self) -> Iterator[None]:
+        """Use the socket ID of this event as individual target while in this context."""
+        with self.client.individual_target(self.socket_id):
+            yield
 
 
 @dataclass(**KWONLY_SLOTS)

@@ -183,9 +183,8 @@ class Scene(Element,
         await event.wait()
 
     def _handle_click(self, e: GenericEventArguments) -> None:
-        arguments = SceneClickEventArguments(
-            sender=self,
-            client=self.client,
+        arguments = SceneClickEventArguments.from_generic_event(
+            e,
             click_type=e.args['click_type'],
             button=e.args['button'],
             alt=e.args['alt_key'],
@@ -204,9 +203,8 @@ class Scene(Element,
             handle_event(handler, arguments)
 
     def _handle_drag(self, e: GenericEventArguments) -> None:
-        arguments = SceneDragEventArguments(
-            sender=self,
-            client=self.client,
+        arguments = SceneDragEventArguments.from_generic_event(
+            e,
             type=e.args['type'],
             object_id=e.args['object_id'],
             object_name=e.args['object_name'],

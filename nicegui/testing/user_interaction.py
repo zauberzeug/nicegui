@@ -47,8 +47,12 @@ class UserInteraction(Generic[T]):
                 for listener in element._event_listeners.values():  # pylint: disable=protected-access
                     if listener.type != event:
                         continue
-                    event_arguments = events.GenericEventArguments(sender=element, client=self.user.client, args={})
-                    events.handle_event(listener.handler, event_arguments)
+                    events.handle_event(listener.handler, events.GenericEventArguments(
+                        sender=element,
+                        client=self.user.client,
+                        socket_id='',  # TODO: can we do better here?
+                        args={},
+                    ))
         return self
 
     def type(self, text: str) -> Self:
@@ -86,8 +90,12 @@ class UserInteraction(Generic[T]):
                     args = None
                     if isinstance(element, (ui.checkbox, ui.switch)):
                         args = not element.value
-                    event_arguments = events.GenericEventArguments(sender=element, client=self.user.client, args=args)
-                    events.handle_event(listener.handler, event_arguments)
+                    events.handle_event(listener.handler, events.GenericEventArguments(
+                        sender=element,
+                        client=self.user.client,
+                        socket_id='',  # TODO: can we do better here?
+                        args=args,
+                    ))
         return self
 
     def clear(self) -> Self:

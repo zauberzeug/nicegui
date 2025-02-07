@@ -4,7 +4,7 @@ from typing_extensions import Self
 
 from ...binding import BindableProperty, bind, bind_from, bind_to
 from ...element import Element
-from ...events import Handler, ValueChangeEventArguments, handle_event
+from ...events import GenericEventArguments, Handler, ValueChangeEventArguments, handle_event
 
 
 class SelectableElement(Element):
@@ -25,7 +25,14 @@ class SelectableElement(Element):
         self.selected = selected
         self._props['selected'] = selected
         self.set_selected(selected)
-        self.on('update:selected', lambda e: self.set_selected(e.args))
+
+        self._current_socket_id = ''
+
+        def handle_selection_change(e: GenericEventArguments) -> None:
+            self._current_socket_id = e.socket_id
+            self.set_selected(e.args)
+            self._current_socket_id = ''
+        self.on('update:selected', handle_selection_change)
 
         self._selection_change_handlers: List[Handler[ValueChangeEventArguments]] = []
         if on_selection_change:
@@ -104,6 +111,7 @@ class SelectableElement(Element):
         """
         self._props['selected'] = selected
         self.update()
-        args = ValueChangeEventArguments(sender=self, client=self.client, value=self._props['selected'])
+        args = ValueChangeEventArguments(sender=self, client=self.client, socket_id=self._current_socket_id,
+                                         value=self._props['selected'])
         for handler in self._selection_change_handlers:
             handle_event(handler, args)

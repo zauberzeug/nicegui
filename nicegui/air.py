@@ -169,7 +169,7 @@ class Air:
                 arg0 = json.loads(args[0])
                 arg0['socket_id'] = client_id  # HACK: translate socket_id of ui.scene's init event
                 args[0] = json.dumps(arg0)
-            client.handle_event(data['msg'])
+            client.handle_event(data['sid'], data['msg'])
 
         @self.relay.on('javascript_response')
         def _handle_javascript_response(data: Dict[str, Any]) -> None:

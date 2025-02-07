@@ -39,7 +39,7 @@ class Button(IconElement, TextElement, DisableableElement, BackgroundColorElemen
 
     def on_click(self, callback: Handler[ClickEventArguments]) -> Self:
         """Add a callback to be invoked when the button is clicked."""
-        self.on('click', lambda _: handle_event(callback, ClickEventArguments(sender=self, client=self.client)), [])
+        self.on('click', lambda e: handle_event(callback, ClickEventArguments.from_generic_event(e)), [])
         return self
 
     def _text_to_model_text(self, text: str) -> None:

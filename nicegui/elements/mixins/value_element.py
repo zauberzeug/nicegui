@@ -30,6 +30,7 @@ class ValueElement(Element):
                  ) -> None:
         super().__init__(**kwargs)
         self._send_update_on_value_change = True
+        self._current_socket_id = ''
         self.set_value(value)
         self._props[self.VALUE_PROP] = self._value_to_model_value(value)
         self._props['loopback'] = self.LOOPBACK
@@ -37,8 +38,10 @@ class ValueElement(Element):
 
         def handle_change(e: GenericEventArguments) -> None:
             self._send_update_on_value_change = self.LOOPBACK is True
+            self._current_socket_id = e.socket_id
             self.set_value(self._event_args_to_value(e))
             self._send_update_on_value_change = True
+            self._current_socket_id = ''
         self.on(f'update:{self.VALUE_PROP}', handle_change, [None], throttle=throttle)
 
     def on_value_change(self, callback: Handler[ValueChangeEventArguments]) -> Self:
@@ -111,7 +114,8 @@ class ValueElement(Element):
         self._props[self.VALUE_PROP] = self._value_to_model_value(value)
         if self._send_update_on_value_change:
             self.update()
-        args = ValueChangeEventArguments(sender=self, client=self.client, value=self._value_to_event_value(value))
+        args = ValueChangeEventArguments(sender=self, client=self.client, socket_id=self._current_socket_id,
+                                         value=self._value_to_event_value(value))
         for handler in self._change_handlers:
             handle_event(handler, args)
 

@@ -48,7 +48,7 @@ class DropdownButton(IconElement, TextElement, DisableableElement, BackgroundCol
             self._props['split'] = True
 
         if on_click:
-            self.on('click', lambda _: handle_event(on_click, ClickEventArguments(sender=self, client=self.client)), [])
+            self.on('click', lambda e: handle_event(on_click, ClickEventArguments.from_generic_event(e)), [])
 
     def _text_to_model_text(self, text: str) -> None:
         self._props['label'] = text
