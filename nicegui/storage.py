@@ -165,6 +165,7 @@ class Storage:
         if tab_id not in self._tabs:
             if Storage.redis_url:
                 self._tabs[tab_id] = Storage._create_persistent_dict(f'tab-{tab_id}')
+                assert isinstance(self._tabs[tab_id], PersistentDict)
                 await self._tabs[tab_id].initialize()
             else:
                 self._tabs[tab_id] = ObservableDict()
@@ -184,7 +185,8 @@ class Storage:
             for tab_id, tab in list(self._tabs.items()):
                 if time.time() > tab.last_modified + self.max_tab_storage_age:
                     tab.clear()
-                    await tab.close()
+                    if isinstance(tab, PersistentDict):
+                        await tab.close()
                     del self._tabs[tab_id]
             await asyncio.sleep(PURGE_INTERVAL)
 
