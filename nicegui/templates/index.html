@@ -37,10 +37,25 @@
     {{ body_html | safe }}
 
     <div id="app"></div>
-    <div id="popup" aria-hidden="true">
-      <span>Connection lost.</span>
-      <span>Trying to reconnect...</span>
-    </div>
+    <script>
+      const messages = {
+        'en-US': {
+          connectionLost: 'Connection lost.',
+          tryingReconnect: 'Trying to reconnect...'
+        },
+        'zh-CN': {
+          connectionLost: '连接丢失',
+          tryingReconnect: '正在尝试重新连接...'
+        },
+        'zh-TW': {
+          connectionLost: '連線丟失',
+          tryingReconnect: '正在嘗試重新連線...'
+        },
+      };
+      
+      const currentLang = '{{ language }}';
+      const currentMessages = messages[currentLang] || messages['en-US'];
+    </script>
     <script type="module">
       const app = createApp(parseElements(String.raw`{{ elements | safe }}`), {
         version: "{{ version }}",
