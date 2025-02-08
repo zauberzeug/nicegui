@@ -315,3 +315,23 @@ def test_storage_access_in_binding_function(screen: Screen):
 
     screen.open('/')
     screen.assert_py_logger('ERROR', 'app.storage.user can only be used within a UI context')
+
+
+def test_client_storage_holds_non_serializable_objects(screen: Screen):
+    @ui.page('/')
+    def page():
+        ui.button('Update storage', on_click=lambda: app.storage.client.update(x=len))
+
+    screen.open('/')
+    screen.click('Update storage')
+    screen.wait(0.5)
+
+
+def test_tab_storage_holds_non_serializable_objects(screen: Screen):
+    @ui.page('/')
+    def page():
+        ui.button('Update storage', on_click=lambda: app.storage.tab.update(x=len))
+
+    screen.open('/')
+    screen.click('Update storage')
+    screen.wait(0.5)
