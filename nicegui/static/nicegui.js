@@ -80,7 +80,7 @@ function getComputedProp(target, prop_name) {
 }
 
 function emitEvent(event_name, ...args) {
-  getElement(0).$emit(event_name, ...args);
+  getElement(0).$emit(event_name, args);
 }
 
 function stringifyEventArgs(args, event_args) {
