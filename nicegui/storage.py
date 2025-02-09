@@ -165,8 +165,9 @@ class Storage:
         if tab_id not in self._tabs:
             if Storage.redis_url:
                 self._tabs[tab_id] = Storage._create_persistent_dict(f'tab-{tab_id}')
-                assert isinstance(self._tabs[tab_id], PersistentDict)
-                await self._tabs[tab_id].initialize()
+                tab = self._tabs[tab_id]
+                if isinstance(tab, PersistentDict):
+                    await tab.initialize()
             else:
                 self._tabs[tab_id] = ObservableDict()
 
