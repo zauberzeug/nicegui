@@ -16,13 +16,35 @@ export default {
     convertedOptions() {
       convertDynamicProperties(this.options, true);
       const options = {
-        ...this.options,
+        message: this.message,
+        position: this.position,
+        multiLine: this.multiLine,
+        spinner: this.spinner,
+        closeBtn: this.closeBtn,
+        timeout: this.timeout,
+        group: this.group,
+        attrs: this.attrs,
+        type: this.type,
+        color: this.color,
+        icon: this.icon,
+        kwargs: this.kwargs,
         onDismiss: () => this.$emit("dismiss"),
       };
       return options;
     },
   },
   props: {
-    options: Object,
+    message: String,
+    position: String,
+    multiLine: Boolean,
+    spinner: Boolean,
+    closeBtn: Object,
+    timeout: Number,
+    group: Boolean,
+    attrs: Object,
+    type: String,
+    color: String,
+    icon: String,
+    kwargs: Object,
   },
 };
