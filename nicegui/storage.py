@@ -66,7 +66,7 @@ class Storage:
     def __init__(self) -> None:
         self._general = Storage._create_persistent_dict('general')
         self._users: Dict[str, PersistentDict] = {}
-        self._tabs: Dict[str, PersistentDict] = {}
+        self._tabs: Dict[str, ObservableDict] = {}
 
     @staticmethod
     def _create_persistent_dict(id: str) -> PersistentDict:  # pylint: disable=redefined-builtin
@@ -163,13 +163,21 @@ class Storage:
     async def _create_tab_storage(self, tab_id: str) -> None:
         """Create tab storage for the given tab ID."""
         if tab_id not in self._tabs:
-            self._tabs[tab_id] = Storage._create_persistent_dict(f'tab-{tab_id}')
-            await self._tabs[tab_id].initialize()
+            if Storage.redis_url:
+                self._tabs[tab_id] = Storage._create_persistent_dict(f'tab-{tab_id}')
+                tab = self._tabs[tab_id]
+                assert isinstance(tab, PersistentDict)
+                await tab.initialize()
+            else:
+                self._tabs[tab_id] = ObservableDict()
 
     def copy_tab(self, old_tab_id: str, tab_id: str) -> None:
         """Copy the tab storage to a new tab. (For internal use only.)"""
         if old_tab_id in self._tabs:
-            self._tabs[tab_id] = Storage._create_persistent_dict(f'tab-{tab_id}')
+            if Storage.redis_url:
+                self._tabs[tab_id] = Storage._create_persistent_dict(f'tab-{tab_id}')
+            else:
+                self._tabs[tab_id] = ObservableDict()
             self._tabs[tab_id].update(self._tabs[old_tab_id])
 
     async def prune_tab_storage(self) -> None:
@@ -178,7 +186,8 @@ class Storage:
             for tab_id, tab in list(self._tabs.items()):
                 if time.time() > tab.last_modified + self.max_tab_storage_age:
                     tab.clear()
-                    await tab.close()
+                    if isinstance(tab, PersistentDict):
+                        await tab.close()
                     del self._tabs[tab_id]
             await asyncio.sleep(PURGE_INTERVAL)
 
