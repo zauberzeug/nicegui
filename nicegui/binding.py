@@ -3,6 +3,7 @@ from __future__ import annotations
 import asyncio
 import dataclasses
 import time
+import weakref
 from collections import defaultdict
 from typing import (
     TYPE_CHECKING,
@@ -32,7 +33,7 @@ if TYPE_CHECKING:
 MAX_PROPAGATION_TIME = 0.01
 
 bindings: DefaultDict[Tuple[int, str], List] = defaultdict(list)
-bindable_properties: Dict[Tuple[int, str], Any] = {}
+bindable_properties: Dict[Tuple[int, str], weakref.finalize] = {}
 active_links: List[Tuple[Any, str, Any, str, Callable[[Any], Any]]] = []
 
 T = TypeVar('T', bound=type)
@@ -173,7 +174,8 @@ class BindableProperty:
         if has_attr and not value_changed:
             return
         setattr(owner, '___' + self.name, value)
-        bindable_properties[(id(owner), self.name)] = owner
+        key = (id(owner), str(self.name))
+        bindable_properties.setdefault(key, weakref.finalize(owner, lambda: bindable_properties.pop(key, None)))
         _propagate(owner, self.name)
         if value_changed and self._change_handler is not None:
             self._change_handler(owner, value)
@@ -198,9 +200,10 @@ def remove(objects: Iterable[Any]) -> None:
         ]
         if not binding_list:
             del bindings[key]
-    for (obj_id, name), obj in list(bindable_properties.items()):
-        if id(obj) in object_ids:
+    for (obj_id, name), finalizer in list(bindable_properties.items()):
+        if obj_id in object_ids:
             del bindable_properties[(obj_id, name)]
+            finalizer.detach()
 
 
 def reset() -> None:
