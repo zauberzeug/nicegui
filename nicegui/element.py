@@ -380,7 +380,8 @@ class Element(Visibility):
     def _handle_event(self, sid: str, msg: Dict) -> None:
         listener = self._event_listeners[msg['listener_id']]
         storage.request_contextvar.set(listener.request)
-        args = events.GenericEventArguments(sender=self, client=self.client, socket_id=sid, args=msg['args'])
+        args = events.GenericEventArguments(sender=self, client=self.client, args=msg['args'])
+        args.socket_id = sid
         events.handle_event(listener.handler, args)
 
     def update(self) -> None:

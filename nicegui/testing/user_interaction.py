@@ -50,7 +50,6 @@ class UserInteraction(Generic[T]):
                     events.handle_event(listener.handler, events.GenericEventArguments(
                         sender=element,
                         client=self.user.client,
-                        socket_id='',  # TODO: can we do better here?
                         args={},
                     ))
         return self
@@ -93,7 +92,6 @@ class UserInteraction(Generic[T]):
                     events.handle_event(listener.handler, events.GenericEventArguments(
                         sender=element,
                         client=self.user.client,
-                        socket_id='',  # TODO: can we do better here?
                         args=args,
                     ))
         return self

@@ -114,8 +114,8 @@ class ValueElement(Element):
         self._props[self.VALUE_PROP] = self._value_to_model_value(value)
         if self._send_update_on_value_change:
             self.update()
-        args = ValueChangeEventArguments(sender=self, client=self.client, socket_id=self._current_socket_id,
-                                         value=self._value_to_event_value(value))
+        args = ValueChangeEventArguments(sender=self, client=self.client, value=self._value_to_event_value(value))
+        args.socket_id = self._current_socket_id
         for handler in self._change_handlers:
             handle_event(handler, args)
 

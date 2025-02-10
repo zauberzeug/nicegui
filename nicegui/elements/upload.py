@@ -77,7 +77,6 @@ class Upload(DisableableElement, component='upload.js'):
                 handle_event(upload_handler, UploadEventArguments(
                     sender=self,
                     client=self.client,
-                    socket_id='',  # TODO: can we do better here?
                     content=upload.file,
                     name=upload.filename or '',
                     type=upload.content_type or '',
@@ -85,7 +84,6 @@ class Upload(DisableableElement, component='upload.js'):
         multi_upload_args = MultiUploadEventArguments(
             sender=self,
             client=self.client,
-            socket_id='',  # TODO: can we do better here?
             contents=[upload.file for upload in uploads],
             names=[upload.filename or '' for upload in uploads],
             types=[upload.content_type or '' for upload in uploads],

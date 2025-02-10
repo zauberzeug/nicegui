@@ -111,7 +111,7 @@ class SelectableElement(Element):
         """
         self._props['selected'] = selected
         self.update()
-        args = ValueChangeEventArguments(sender=self, client=self.client, socket_id=self._current_socket_id,
-                                         value=self._props['selected'])
+        args = ValueChangeEventArguments(sender=self, client=self.client, value=self._props['selected'])
+        args.socket_id = self._current_socket_id
         for handler in self._selection_change_handlers:
             handle_event(handler, args)
