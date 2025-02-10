@@ -6,6 +6,9 @@ from nicegui.context import context
 from nicegui.elements.router_frame import RouterFrame
 from nicegui.single_page_target import SinglePageTarget
 
+if TYPE_CHECKING:
+    from nicegui.outlet import Outlet
+
 PATH_RESOLVING_MAX_RECURSION = 100
 
 
@@ -18,7 +21,8 @@ class SinglePageRouter:
     See ui.outlet for more information."""
 
     def __init__(self,
-                 config: 'SinglePageRouterConfig',
+                 *,
+                 outlet: 'Outlet',
                  included_paths: Optional[list[str]] = None,
                  excluded_paths: Optional[list[str]] = None,
                  use_browser_history: bool = True,
@@ -28,7 +32,7 @@ class SinglePageRouter:
                  user_data: Optional[Dict] = None
                  ):
         """
-        :param config: The SinglePageRouter which controls this router frame
+        :param outlet: The Outlet which controls this router frame
         :param included_paths: A list of valid path masks which shall be allowed to be opened by the router
         :param excluded_paths: A list of path masks which shall be excluded from the router
         :param use_browser_history: Optional flag to enable or disable the browser history management. Default is True.
@@ -37,8 +41,8 @@ class SinglePageRouter:
         :param user_data: Optional user data which is passed to the builder functions of the router frame
         """
         super().__init__()
-        self.router_config = config
-        self.base_path = config.base_path
+        self.router_config = outlet
+        self.base_path = outlet.base_path
         if target_url is None:
             if parent is not None and parent.target_url is not None:
                 target_url = parent.target_url

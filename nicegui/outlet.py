@@ -19,6 +19,7 @@ PAGE_TEMPLATE_METHOD_NAME = 'page_template'
 class Outlet:
     def __init__(self,
                  path: str,
+                 *,
                  parent: Optional[Outlet] = None,
                  on_instance_created: Optional[Callable[[SinglePageRouter], None]] = None,
                  on_navigate: Optional[Callable[[str], Optional[Union[SinglePageTarget, str]]]] = None,
@@ -142,17 +143,11 @@ class Outlet:
             OutletView(self.parent_config, relative_path)(outlet_view)
         return self
 
-    def setup_page(self, overwrite=False) -> Self:
-        """Setup the NiceGUI page with all it's endpoints and their base UI structure for the root routers
-
-        :param overwrite: Optional flag to force the setup of a given page even if one with a conflicting path is
-            already existing. Default is False. Classes such as SinglePageApp use this flag to avoid conflicts with
-            other routers and resolve those conflicts by rerouting the pages."""
+    def setup_page(self) -> Self:
+        """Setup the NiceGUI page with all it's endpoints and their base UI structure for the root routers."""
         for _, route in Client.page_routes.items():
             if route.startswith(self.base_path.rstrip('/') + '/') and route.rstrip('/') not in self.included_paths:
                 self.excluded_paths.add(route)
-            if overwrite:
-                continue
 
         @ui.page(self.base_path, **self.page_kwargs)
         @ui.page(f'{self.base_path}' + '{_:path}', **self.page_kwargs)  # all other pages
@@ -279,7 +274,7 @@ class Outlet:
 
         parent_router = SinglePageRouter.current_router()
         prepare_arguments()
-        content = self.router_class(config=self,
+        content = self.router_class(outlet=self,
                                     included_paths=sorted(list(self.included_paths)),
                                     excluded_paths=sorted(list(self.excluded_paths)),
                                     use_browser_history=self.use_browser_history,
