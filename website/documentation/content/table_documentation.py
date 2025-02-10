@@ -50,6 +50,25 @@ def default_column_parameters():
     })
 
 
+@doc.demo('Selection', '''
+    You can set the selection type of a table using the `selection` parameter.
+    The `on_select` event handler is called when the selection changes
+    and the `selected` property contains the selected rows.
+
+    *Added in version 2.11.0:*
+    The `selection` property and the `set_selection` method can be used to change the selection type.
+''')
+def selection():
+    table = ui.table(
+        columns=[{'name': 'name', 'label': 'Name', 'field': 'name'}],
+        rows=[{'name': 'Alice'}, {'name': 'Bob'}, {'name': 'Charlie'}],
+        row_key='name',
+        on_select=lambda e: ui.notify(f'selected: {e.selection}'),
+    )
+    ui.radio({None: 'none', 'single': 'single', 'multiple': 'multiple'},
+             on_change=lambda e: table.set_selection(e.value))
+
+
 @doc.demo('Table with expandable rows', '''
     Scoped slots can be used to insert buttons that toggle the expand state of a table row.
     See the [Quasar documentation](https://quasar.dev/vue-components/table#expanding-rows) for more information.

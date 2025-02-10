@@ -291,6 +291,7 @@ def map_of_nicegui():
             - `ui.context`: get the current UI context including the `client` and `request` objects
             - [`ui.dark_mode`](/documentation/dark_mode): get and set the dark mode on a page
             - [`ui.download`](/documentation/download): download a file to the client
+            - [`ui.fullscreen`](/documentation/fullscreen): enter, exit and toggle fullscreen mode
             - [`ui.keyboard`](/documentation/keyboard): define keyboard event handlers
             - [`ui.navigate`](/documentation/navigate): let the browser navigate to another location
             - [`ui.notify`](/documentation/notification): show a notification
@@ -450,6 +451,14 @@ def map_of_nicegui():
 
         - [`run.cpu_bound()`](/documentation/section_action_events#running_cpu-bound_tasks): run a CPU-bound function in a separate process
         - [`run.io_bound()`](/documentation/section_action_events#running_i_o-bound_tasks): run an IO-bound function in a separate thread
+
+        #### `binding`
+
+        [Bind properties of objects to each other](/documentation/section_binding_properties).
+
+        - [`binding.BindableProperty`](/documentation/section_binding_properties#bindable_properties_for_maximum_performance): bindable properties for maximum performance
+        - [`binding.bindable_dataclass()`](/documentation/section_binding_properties#bindable_dataclass): create a dataclass with bindable properties
+        - `binding.bind()`, `binding.bind_from()`, `binding.bind_to()`: methods to bind two properties
 
         #### `observables`
 

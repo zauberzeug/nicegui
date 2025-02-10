@@ -1,6 +1,6 @@
 import asyncio
 from pathlib import Path
-from typing import Any, Dict, List, Tuple, Union, cast
+from typing import Any, Dict, List, Optional, Tuple, Union, cast
 
 from typing_extensions import Self
 
@@ -27,6 +27,7 @@ class Leaflet(Element, component='leaflet.js', default_classes='nicegui-leaflet'
                  options: Dict = {},  # noqa: B006
                  draw_control: Union[bool, Dict] = False,
                  hide_drawn_items: bool = False,
+                 additional_resources: Optional[List[str]] = None,
                  ) -> None:
         """Leaflet map
 
@@ -37,6 +38,7 @@ class Leaflet(Element, component='leaflet.js', default_classes='nicegui-leaflet'
         :param draw_control: whether to show the draw toolbar (default: False)
         :param options: additional options passed to the Leaflet map (default: {})
         :param hide_drawn_items: whether to hide drawn items on the map (default: False, *added in version 2.0.0*)
+        :param additional_resources: additional resources like CSS or JS files to load (default: None, *added in version 2.11.0*)
         """
         super().__init__()
         self.add_resource(Path(__file__).parent / 'lib' / 'leaflet')
@@ -51,6 +53,7 @@ class Leaflet(Element, component='leaflet.js', default_classes='nicegui-leaflet'
         self._props['options'] = {**options}
         self._props['draw_control'] = draw_control
         self._props['hide_drawn_items'] = hide_drawn_items
+        self._props['additional_resources'] = additional_resources or []
 
         self.on('init', self._handle_init)
         self.on('map-moveend', self._handle_moveend)
@@ -110,7 +113,7 @@ class Leaflet(Element, component='leaflet.js', default_classes='nicegui-leaflet'
             return
         self._props['center'] = center
         if self._send_update_on_value_change:
-            self.update()
+            self.run_map_method('setView', center, self.zoom)
 
     def set_zoom(self, zoom: int) -> None:
         """Set the zoom level of the map."""
@@ -118,7 +121,7 @@ class Leaflet(Element, component='leaflet.js', default_classes='nicegui-leaflet'
             return
         self._props['zoom'] = zoom
         if self._send_update_on_value_change:
-            self.update()
+            self.run_map_method('setView', self.center, zoom)
 
     def remove_layer(self, layer: Layer) -> None:
         """Remove a layer from the map."""

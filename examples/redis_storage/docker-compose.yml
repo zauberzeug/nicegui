@@ -1,7 +1,6 @@
 services:
   x-nicegui: &nicegui-service
-    build:
-      context: .
+    image: zauberzeug/nicegui:2.11.0
     environment:
       - NICEGUI_REDIS_URL=redis://redis:6379
     volumes:

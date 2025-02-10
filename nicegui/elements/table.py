@@ -35,7 +35,7 @@ class Table(FilterElement, component='table.js'):
                  column_defaults: Optional[Dict] = None,
                  row_key: str = 'id',
                  title: Optional[str] = None,
-                 selection: Optional[Literal['single', 'multiple']] = None,
+                 selection: Literal[None, 'single', 'multiple'] = None,
                  pagination: Optional[Union[int, dict]] = None,
                  on_select: Optional[Handler[TableSelectionEventArguments]] = None,
                  on_pagination_change: Optional[Handler[ValueChangeEventArguments]] = None,
@@ -78,7 +78,7 @@ class Table(FilterElement, component='table.js'):
 
         def handle_selection(e: GenericEventArguments) -> None:
             if e.args['added']:
-                if selection == 'single':
+                if self.selection == 'single':
                     self.selected.clear()
                 self.selected.extend(e.args['rows'])
             else:
@@ -321,6 +321,26 @@ class Table(FilterElement, component='table.js'):
     def selected(self, value: List[Dict]) -> None:
         self._props['selected'][:] = value
         self.update()
+
+    @property
+    def selection(self) -> Literal[None, 'single', 'multiple']:
+        """Selection type.
+
+        *Added in version 2.11.0*
+        """
+        return None if self._props['selection'] == 'none' else self._props['selection']
+
+    @selection.setter
+    def selection(self, value: Literal[None, 'single', 'multiple']) -> None:
+        self._props['selection'] = value or 'none'
+        self.update()
+
+    def set_selection(self, value: Literal[None, 'single', 'multiple']) -> None:
+        """Set the selection type.
+
+        *Added in version 2.11.0*
+        """
+        self.selection = value
 
     @property
     def pagination(self) -> dict:

@@ -61,7 +61,11 @@ class User:
         client_id = match.group(1)
         self.client = Client.instances[client_id]
         self.sio.on('connect')
-        await _on_handshake(f'test-{uuid4()}', {'client_id': self.client.id, 'tab_id': str(uuid4())})
+        await _on_handshake(f'test-{uuid4()}', {
+            'client_id': self.client.id,
+            'tab_id': str(uuid4()),
+            'document_id': str(uuid4()),
+        })
         self.back_history.append(path)
         if clear_forward_history:
             self.forward_history.clear()

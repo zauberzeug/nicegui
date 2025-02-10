@@ -15,7 +15,7 @@ def demo_inline() -> None:
     ui.html('This is <u>emphasized</u>.', tag='em')
 
 
-@doc.demo('Other HTML Elements', '''
+@doc.demo(other_html_elements_title := 'Other HTML Elements', other_html_elements_description := '''
     There is also an `html` module that allows you to insert other HTML elements like `<span>`, `<div>`, `<p>`, etc.
     It is equivalent to using the `ui.element` method with the `tag` argument.
 

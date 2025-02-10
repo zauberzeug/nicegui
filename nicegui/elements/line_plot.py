@@ -53,8 +53,8 @@ class LinePlot(Pyplot):
 
         :param x: list of x values
         :param Y: list of lists of y values (one list per line)
-        :param x_limits: new x limits (tuple of floats, or "auto" to fit the data points, or ``None`` to leave unchanged)
-        :param y_limits: new y limits (tuple of floats, or "auto" to fit the data points, or ``None`` to leave unchanged)
+        :param x_limits: new x limits (tuple of floats, or "auto" to fit the data points, or ``None`` to leave unchanged, *added in version 2.10.0*)
+        :param y_limits: new y limits (tuple of floats, or "auto" to fit the data points, or ``None`` to leave unchanged, *added in version 2.10.0*)
         """
         self.push_counter += 1
 
