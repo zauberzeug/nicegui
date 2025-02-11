@@ -3,6 +3,7 @@ import asyncio
 from nicegui import ui
 from nicegui.testing import Screen
 
+
 # pylint: disable=missing-docstring
 
 
@@ -17,9 +18,33 @@ def test_routing_url(screen: Screen):
         ui.label('main content')
 
     screen.open('/')
+    screen.wait(1.0)
     screen.should_contain('main layout')
     screen.should_contain('main content')
-    assert '/main' in screen.selenium.current_url
+    assert screen.selenium.current_url.split('/')[-1] == ''  # just the content should have changed, not the url
+
+
+def test_routing_url_w_forward(screen: Screen):
+    def handle_navigate(url: str):
+        if url == '/':
+            ui.navigate.to('/main')
+            return None  # prevent providing new content, forward to the new url
+        return url
+
+    @ui.outlet('/', on_navigate=handle_navigate)
+    def layout():
+        ui.label('main layout')
+        yield
+
+    @layout.view('/main')
+    def main_content():
+        ui.label('main content')
+
+    screen.open('/')
+    screen.wait(1.0)
+    screen.should_contain('main layout')
+    screen.should_contain('main content')
+    assert screen.selenium.current_url.split('/')[-1] == 'main'  # just the content should have changed, not the url
 
 
 def test_passing_objects_via_yield(screen: Screen):
