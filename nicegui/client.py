@@ -257,6 +257,8 @@ class Client:
         In contrast to connect handlers, disconnect handlers are not called during a reconnect.
         This behavior should be fixed in version 3.0.
         """
+        if socket_id not in self._socket_to_document_id:
+            return
         document_id = self._socket_to_document_id.pop(socket_id)
         self._cancel_delete_task(document_id)
         self._num_connections[document_id] -= 1
