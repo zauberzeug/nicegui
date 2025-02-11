@@ -30,6 +30,8 @@ def main_demo() -> None:
     - `id` must be an integer
     - `name` must be a string
     - `price` must be a number greater than 0
+
+    *Added in version 2.8.0*
 ''')
 def schema_demo() -> None:
     schema = {

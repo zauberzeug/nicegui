@@ -1,4 +1,4 @@
-from . import elements, html, run, ui
+from . import binding, elements, html, run, storage, ui
 from .api_router import APIRouter
 from .app.app import App
 from .client import Client
@@ -16,9 +16,11 @@ __all__ = [
     'Tailwind',
     '__version__',
     'app',
+    'binding',
     'context',
     'elements',
     'html',
     'run',
+    'storage',
     'ui',
 ]

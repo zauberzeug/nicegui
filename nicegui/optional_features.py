@@ -10,8 +10,9 @@ FEATURE = Literal[
     'plotly',
     'polars',
     'pyecharts',
-    'webview',
+    'redis',
     'sass',
+    'webview',
 ]
 
 

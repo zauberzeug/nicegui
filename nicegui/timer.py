@@ -29,7 +29,7 @@ class Timer:
         :param callback: function or coroutine to execute when interval elapses
         :param active: whether the callback should be executed or not (can be changed during runtime)
         :param once: whether the callback is only executed once after a delay specified by `interval` (default: `False`)
-        :param immediate: whether the callback should be executed immediately (default: `True`, ignored if `once` is `True`)
+        :param immediate: whether the callback should be executed immediately (default: `True`, ignored if `once` is `True`, *added in version 2.9.0*)
         """
         super().__init__()
         self.interval = interval

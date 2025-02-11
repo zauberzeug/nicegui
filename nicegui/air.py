@@ -59,6 +59,7 @@ class Air:
                 content=data['body'],
             )
             response = await self.client.send(request)
+            self.client.cookies.clear()
             instance_id = data['instance-id']
             content = response.content.replace(
                 b'const extraHeaders = {};',
@@ -134,7 +135,7 @@ class Air:
                 core.app.storage.copy_tab(data['old_tab_id'], data['tab_id'])
             client.tab_id = data['tab_id']
             client.on_air = True
-            client.handle_handshake(data.get('next_message_id'))
+            client.handle_handshake(data['sid'], data['document_id'], data.get('next_message_id'))
             return True
 
         @self.relay.on('client_disconnect')
@@ -143,7 +144,7 @@ class Air:
             client_id = data['client_id']
             if client_id not in Client.instances:
                 return
-            Client.instances[client_id].handle_disconnect()
+            Client.instances[client_id].handle_disconnect(data['sid'])
 
         @self.relay.on('connect')
         async def _handle_connect() -> None:
@@ -208,6 +209,7 @@ class Air:
                 f'{RELAY_HOST}?device_token={self.token}',
                 socketio_path='/on_air/socket.io',
                 transports=['websocket', 'polling'],  # favor websocket over polling
+                wait_timeout=5,
             )
             assert self.relay.connected
             return

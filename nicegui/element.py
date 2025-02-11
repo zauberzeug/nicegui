@@ -234,7 +234,7 @@ class Element(Visibility):
 
         :param add: whitespace-delimited string of classes
         :param remove: whitespace-delimited string of classes to remove from the element
-        :param toggle: whitespace-delimited string of classes to toggle
+        :param toggle: whitespace-delimited string of classes to toggle (*added in version 2.7.0*)
         :param replace: whitespace-delimited string of classes to use instead of existing ones
         """
         cls._default_classes = Classes.update_list(cls._default_classes, add, remove, toggle, replace)
@@ -364,7 +364,7 @@ class Element(Visibility):
         if handler or js_handler:
             listener = EventListener(
                 element_id=self.id,
-                type=helpers.kebab_to_camel_case(type),
+                type=helpers.event_type_to_camel_case(type),
                 args=[args] if args and isinstance(args[0], str) else args,  # type: ignore
                 handler=handler,
                 js_handler=js_handler,
