@@ -63,4 +63,4 @@ class RedisPersistentDict(PersistentDict):
 
     def clear(self) -> None:
         super().clear()
-        self.redis_client.delete(self.key)
+        background_tasks.create(self.redis_client.delete(self.key), name=f'redis-delete-{self.key}')
