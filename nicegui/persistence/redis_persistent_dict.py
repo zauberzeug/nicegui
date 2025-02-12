@@ -63,4 +63,7 @@ class RedisPersistentDict(PersistentDict):
 
     def clear(self) -> None:
         super().clear()
-        background_tasks.create(self.redis_client.delete(self.key), name=f'redis-delete-{self.key}')
+        if core.loop:
+            background_tasks.create_lazy(self.redis_client.delete(self.key), name=f'redis-delete-{self.key}')
+        else:
+            core.app.on_startup(self.redis_client.delete(self.key))
