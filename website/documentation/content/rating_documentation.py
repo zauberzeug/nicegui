@@ -31,7 +31,7 @@ def rating_color():
 
     ui.label('Change icons to a range of colors')
     colors = ['green-1', 'green-3', 'green-5', 'green-7', 'green-10']
-    
+
     rating = ui.range(value=5)
     rating.props(f':color-selected="{colors}"')
 
@@ -44,10 +44,6 @@ def rating_color():
 def rating_scale():
     rating = ui.rating(value=6.5, icon='star_outline', icon_selected='star', max=10)
     rating.props('icon-half="star_half"')
-
-
-
-    
 
 
 doc.reference(ui.range)
