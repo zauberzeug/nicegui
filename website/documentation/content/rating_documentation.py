@@ -20,7 +20,6 @@ def customize_icons():
     ui.rating(value=4, icon='sentiment_neutral', icon_selected='mood')
 
 
-
 @doc.demo('Change rating color', '''
     You can change the color of the rating.
     This can be a single color or a range of different colors.
@@ -34,7 +33,6 @@ def rating_color():
 
     rating = ui.range(value=5)
     rating.props(f':color-selected="{colors}"')
-
 
 
 @doc.demo('Change rating scale', '''

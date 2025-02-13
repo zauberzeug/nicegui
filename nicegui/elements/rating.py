@@ -12,7 +12,7 @@ class Rating(ValueElement, DisableableElement):
                  icon: Optional[str] = 'star',
                  icon_selected: Optional[str] = None,
                  color: Optional[str] = 'primary',
-                 max: Optional[int] = 5, # pylint: disable=redefined-builtin
+                 max: Optional[int] = 5,  # pylint: disable=redefined-builtin
                  size: Optional[str] = None,
                  on_change: Optional[Handler[ValueChangeEventArguments]] = None,
                  ) -> None:
