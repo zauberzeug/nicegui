@@ -7,7 +7,7 @@ from .mixins.value_element import ValueElement
 
 class Rating(ValueElement, DisableableElement):
 
-    def __init__(self, 
+    def __init__(self,
                  value: Optional[Union[int, float]] = None,
                  icon: Optional[str] = 'star',
                  icon_selected: Optional[str] = None,
@@ -19,7 +19,7 @@ class Rating(ValueElement, DisableableElement):
         """Rating
 
         This element is based on Quasar's `QRating <https://quasar.dev/vue-components/rating>`_ component.
-        
+
         :param value: the initial value (default: `None`)
         :param icon: the name of an icon to be displayed (default: `star`)
         :param icon_selected: the name of an icon to be displayed when selected, if different (default: `None`)
@@ -28,7 +28,7 @@ class Rating(ValueElement, DisableableElement):
         :param size: size in CSS units, including unit name or standard size name (xs|sm|md|lg|xl), examples: 16px, 2rem
         :param on_change: callback to execute when selection changes
         """
-                
+
         super().__init__(tag='q-rating', value=value, on_value_change=on_change, throttle=0.05)
 
         self._props['icon'] = icon
@@ -40,5 +40,3 @@ class Rating(ValueElement, DisableableElement):
 
         if size:
             self._props['size'] = size
-        
-
