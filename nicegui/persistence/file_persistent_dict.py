@@ -1,5 +1,6 @@
+import asyncio
 from pathlib import Path
-from typing import Optional
+from typing import List, Optional
 
 import aiofiles
 
@@ -15,6 +16,7 @@ class FilePersistentDict(PersistentDict):
         self.filepath = filepath
         self.encoding = encoding
         self.indent = indent
+        self.backup_tasks: List[asyncio.Task] = []
         super().__init__(data={}, on_change=self.backup)
 
     async def initialize(self) -> None:
@@ -39,10 +41,17 @@ class FilePersistentDict(PersistentDict):
             async with aiofiles.open(self.filepath, 'w', encoding=self.encoding) as f:
                 await f.write(json.dumps(self, indent=self.indent))
         if core.loop:
-            background_tasks.create_lazy(backup(), name=self.filepath.stem)
+            task = background_tasks.create_lazy(backup(), name=self.filepath.stem)
+            if task:
+                self.backup_tasks.append(task)
+                task.add_done_callback(self.backup_tasks.remove)
         else:
             core.app.on_startup(backup())
 
     def clear(self) -> None:
         super().clear()
         self.filepath.unlink(missing_ok=True)
+
+    async def close(self) -> None:
+        for task in self.backup_tasks:
+            await task
