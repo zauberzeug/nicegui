@@ -23,8 +23,8 @@ class Rating(ValueElement, DisableableElement):
         :param value: the initial value (default: `None`)
         :param icon: the name of an icon to be displayed (default: `star`)
         :param icon_selected: the name of an icon to be displayed when selected, if different (default: `None`)
-        :param color: the color of the button (either a Quasar, Tailwind, or CSS color or `None`, default: 'primary')
-        :param max: the number of rating icons displayed (default: `5`)
+        :param color: the color of the icon (either a Quasar, Tailwind, or CSS color or `None`, default: 'primary')
+        :param max: the maximum number of rating icons displayed (default: `5`)
         :param size: size in CSS units, including unit name or standard size name (xs|sm|md|lg|xl), examples: 16px, 2rem
         :param on_change: callback to execute when selection changes
         """
