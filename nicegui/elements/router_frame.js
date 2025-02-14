@@ -15,15 +15,17 @@ export default {
             let href = normalize_path(path);
             // for all excluded path masks
             for (let mask of router.excluded_path_masks) {
-                // apply filename matching with * and ? wildcards
-                let regex = new RegExp(mask.replace(/\?/g, '.').replace(/\*/g, '.*'));
+                let escapedMask = mask.replace(/[-\/\\^$+.,()|[\]{}]/g, '\\$&');
+                let regexPattern = "^" + escapedMask.replace(/\?/g, '.').replace(/\*/g, '.*') + "$";
+                let regex = new RegExp(regexPattern);
                 if (!regex.test(href)) continue;
                 return false;
             }
             // for all included path masks
             for (let mask of router.included_path_masks) {
-                // apply filename matching with * and ? wildcards
-                let regex = new RegExp(mask.replace(/\?/g, '.').replace(/\*/g, '.*'));
+                let escapedMask = mask.replace(/[-\/\\^$+.,()|[\]{}]/g, '\\$&');
+                let regexPattern = "^" + escapedMask.replace(/\?/g, '.').replace(/\*/g, '.*') + "$";
+                let regex = new RegExp(regexPattern);
                 if (!regex.test(href)) continue;
                 return true;
             }
