@@ -1,8 +1,9 @@
-from typing import Any, Callable, Dict, List, Optional, Union
+from typing import Any, List, Optional, Union
 
+from ..events import Handler, ValueChangeEventArguments
 from .icon import Icon
 from .mixins.disableable_element import DisableableElement
-from .mixins.validation_element import ValidationElement
+from .mixins.validation_element import ValidationDict, ValidationElement, ValidationFunction
 
 
 class Input(ValidationElement, DisableableElement, component='input.js'):
@@ -15,9 +16,9 @@ class Input(ValidationElement, DisableableElement, component='input.js'):
                  value: str = '',
                  password: bool = False,
                  password_toggle_button: bool = False,
-                 on_change: Optional[Callable[..., Any]] = None,
+                 on_change: Optional[Handler[ValueChangeEventArguments]] = None,
                  autocomplete: Optional[List[str]] = None,
-                 validation: Optional[Union[Callable[..., Optional[str]], Dict[str, Callable[..., bool]]]] = None,
+                 validation: Optional[Union[ValidationFunction, ValidationDict]] = None,
                  ) -> None:
         """Text Input
 
@@ -46,7 +47,7 @@ class Input(ValidationElement, DisableableElement, component='input.js'):
         :param password_toggle_button: whether to show a button to toggle the password visibility (default: False)
         :param on_change: callback to execute when the value changes
         :param autocomplete: optional list of strings for autocompletion
-        :param validation: dictionary of validation rules or a callable that returns an optional error message
+        :param validation: dictionary of validation rules or a callable that returns an optional error message (default: None for no validation)
         """
         super().__init__(value=value, on_value_change=on_change, validation=validation)
         if label is not None:

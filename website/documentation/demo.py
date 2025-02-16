@@ -21,7 +21,7 @@ def demo(f: Callable, *, lazy: bool = True, tab: Optional[Union[str, Callable]] 
     with ui.column().classes('w-full items-stretch gap-8 no-wrap min-[1500px]:flex-row'):
         code = inspect.getsource(f).split('# END OF DEMO', 1)[0].strip().splitlines()
         code = [line for line in code if not line.endswith('# HIDE')]
-        while not code[0].strip().startswith('def') and not code[0].strip().startswith('async def'):
+        while not code[0].strip().startswith(('def', 'async def')):
             del code[0]
         del code[0]
         if code[0].strip().startswith('"""'):

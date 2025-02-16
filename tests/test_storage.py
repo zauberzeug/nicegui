@@ -5,7 +5,7 @@ from pathlib import Path
 import httpx
 import pytest
 
-from nicegui import app, background_tasks, context, ui
+from nicegui import app, background_tasks, context, core, ui
 from nicegui import storage as storage_module
 from nicegui.testing import Screen
 
@@ -285,6 +285,7 @@ def test_missing_storage_secret(screen: Screen):
     def page():
         ui.label(app.storage.user.get('message', 'no message'))
 
+    core.app.user_middleware.clear()  # remove the session middlewares added by prepare_simulation by default
     screen.open('/')
     screen.assert_py_logger('ERROR', 'app.storage.user needs a storage_secret passed in ui.run()')
 
@@ -314,3 +315,23 @@ def test_storage_access_in_binding_function(screen: Screen):
 
     screen.open('/')
     screen.assert_py_logger('ERROR', 'app.storage.user can only be used within a UI context')
+
+
+def test_client_storage_holds_non_serializable_objects(screen: Screen):
+    @ui.page('/')
+    def page():
+        ui.button('Update storage', on_click=lambda: app.storage.client.update(x=len))
+
+    screen.open('/')
+    screen.click('Update storage')
+    screen.wait(0.5)
+
+
+def test_tab_storage_holds_non_serializable_objects(screen: Screen):
+    @ui.page('/')
+    def page():
+        ui.button('Update storage', on_click=lambda: app.storage.tab.update(x=len))
+
+    screen.open('/')
+    screen.click('Update storage')
+    screen.wait(0.5)

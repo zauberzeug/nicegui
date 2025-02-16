@@ -10,17 +10,23 @@ def test_dark_mode(screen: Screen):
     ui.button('Auto', on_click=dark.auto)
     ui.button('Toggle', on_click=dark.toggle)
 
+    def assert_dark(value: bool) -> None:
+        classes = (screen.find_by_tag('body').get_attribute('class') or '').split()
+        assert ('dark' in classes) == value
+        assert ('body--dark' in classes) == value
+        assert ('body--light' in classes) != value
+
     screen.open('/')
     screen.should_contain('Hello')
-    assert screen.find_by_tag('body').get_attribute('class') == 'desktop no-touch body--light'
+    assert_dark(False)
 
     screen.click('Dark')
     screen.wait(0.5)
-    assert screen.find_by_tag('body').get_attribute('class') == 'desktop no-touch body--dark dark'
+    assert_dark(True)
 
     screen.click('Auto')
     screen.wait(0.5)
-    assert screen.find_by_tag('body').get_attribute('class') == 'desktop no-touch body--light'
+    assert_dark(False)
 
     screen.click('Toggle')
     screen.wait(0.5)
@@ -28,8 +34,8 @@ def test_dark_mode(screen: Screen):
 
     screen.click('Light')
     screen.wait(0.5)
-    assert screen.find_by_tag('body').get_attribute('class') == 'desktop no-touch body--light'
+    assert_dark(False)
 
     screen.click('Toggle')
     screen.wait(0.5)
-    assert screen.find_by_tag('body').get_attribute('class') == 'desktop no-touch body--dark dark'
+    assert_dark(True)

@@ -94,29 +94,63 @@ def disable_pan_zoom() -> None:
     You can enable a toolbar to draw on the map.
     The `draw_control` can be used to configure the toolbar.
     This demo adds markers and polygons by clicking on the map.
+    By setting "edit" and "remove" to `True` (the default), you can enable editing and deleting drawn shapes.
 ''')
 def draw_on_map() -> None:
     from nicegui import events
 
     def handle_draw(e: events.GenericEventArguments):
-        if e.args['layerType'] == 'marker':
-            m.marker(latlng=(e.args['layer']['_latlng']['lat'],
-                             e.args['layer']['_latlng']['lng']))
-        if e.args['layerType'] == 'polygon':
-            m.generic_layer(name='polygon', args=[e.args['layer']['_latlngs']])
+        layer_type = e.args['layerType']
+        coords = e.args['layer'].get('_latlng') or e.args['layer'].get('_latlngs')
+        ui.notify(f'Drawn a {layer_type} at {coords}')
 
     draw_control = {
         'draw': {
             'polygon': True,
             'marker': True,
+            'circle': True,
+            'rectangle': True,
+            'polyline': True,
+            'circlemarker': True,
+        },
+        'edit': {
+            'edit': True,
+            'remove': True,
+        },
+    }
+    m = ui.leaflet(center=(51.505, -0.09), draw_control=draw_control)
+    m.classes('h-96')
+    m.on('draw:created', handle_draw)
+    m.on('draw:edited', lambda: ui.notify('Edit completed'))
+    m.on('draw:deleted', lambda: ui.notify('Delete completed'))
+
+
+@doc.demo('Draw with Custom Options', '''
+    You can draw shapes with custom options like stroke color and weight.
+    To hide the default rendering of drawn items, set `hide_drawn_items` to `True`.
+''')
+def draw_custom_options():
+    from nicegui import events
+
+    def handle_draw(e: events.GenericEventArguments):
+        options = {'color': 'red', 'weight': 1}
+        m.generic_layer(name='polygon', args=[e.args['layer']['_latlngs'], options])
+
+    draw_control = {
+        'draw': {
+            'polygon': True,
+            'marker': False,
             'circle': False,
             'rectangle': False,
             'polyline': False,
             'circlemarker': False,
         },
-        'edit': False,
+        'edit': {
+            'edit': False,
+            'remove': False,
+        },
     }
-    m = ui.leaflet(center=(51.505, -0.09), zoom=13, draw_control=draw_control)
+    m = ui.leaflet(center=(51.5, 0), draw_control=draw_control, hide_drawn_items=True)
     m.on('draw:created', handle_draw)
 
 
@@ -148,15 +182,34 @@ def run_layer_methods() -> None:
     This is necessary when you want to run methods like fitting the bounds of the map right after the map is created.
 ''')
 async def wait_for_init() -> None:
-    m = ui.leaflet(zoom=5)
-    central_park = m.generic_layer(name='polygon', args=[[
-        (40.767809, -73.981249),
-        (40.800273, -73.958291),
-        (40.797011, -73.949683),
-        (40.764704, -73.973741),
-    ]])
-    await m.initialized()
-    bounds = await central_park.run_method('getBounds')
-    m.run_map_method('fitBounds', [[bounds['_southWest'], bounds['_northEast']]])
+    # @ui.page('/')
+    async def page():
+        m = ui.leaflet(zoom=5)
+        central_park = m.generic_layer(name='polygon', args=[[
+            (40.767809, -73.981249),
+            (40.800273, -73.958291),
+            (40.797011, -73.949683),
+            (40.764704, -73.973741),
+        ]])
+        await m.initialized()
+        bounds = await central_park.run_method('getBounds')
+        m.run_map_method('fitBounds', [[bounds['_southWest'], bounds['_northEast']]])
+    ui.timer(0, page, once=True)  # HIDE
+
+
+@doc.demo('Leaflet Plugins', '''
+    You can add plugins to the map by passing the URLs of JS and CSS files to the `additional_resources` parameter.
+    This demo shows how to add the [Leaflet.RotatedMarker](https://github.com/bbecquet/Leaflet.RotatedMarker) plugin.
+    It allows you to rotate markers by a given `rotationAngle`.
+
+    *Added in version 2.11.0*
+''')
+def leaflet_plugins() -> None:
+    m = ui.leaflet((51.51, -0.09), additional_resources=[
+        'https://unpkg.com/leaflet-rotatedmarker@0.2.0/leaflet.rotatedMarker.js',
+    ])
+    m.marker(latlng=(51.51, -0.091), options={'rotationAngle': -30})
+    m.marker(latlng=(51.51, -0.090), options={'rotationAngle': 30})
+
 
 doc.reference(ui.leaflet)

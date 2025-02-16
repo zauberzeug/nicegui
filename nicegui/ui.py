@@ -1,5 +1,9 @@
 __all__ = [
-    'element',
+    'add_body_html',
+    'add_css',
+    'add_head_html',
+    'add_sass',
+    'add_scss',
     'aggrid',
     'audio',
     'avatar',
@@ -11,10 +15,10 @@ __all__ = [
     'card_section',
     'carousel',
     'carousel_slide',
-    'chart',
     'chat_message',
     'checkbox',
     'chip',
+    'circular_progress',
     'clipboard',
     'code',
     'codemirror',
@@ -27,12 +31,18 @@ __all__ = [
     'dark_mode',
     'date',
     'dialog',
+    'download',
+    'drawer',
     'dropdown_button',
     'drop_zone',
     'echart',
     'editor',
+    'element',
     'expansion',
+    'footer',
+    'fullscreen',
     'grid',
+    'header',
     'highchart',
     'html',
     'icon',
@@ -48,7 +58,9 @@ __all__ = [
     'knob',
     'label',
     'leaflet',
+    'left_drawer',
     'line_plot',
+    'linear_progress',
     'link',
     'link_target',
     'list',
@@ -60,17 +72,26 @@ __all__ = [
     'mermaid',
     'navigate',
     'notification',
+    'notify',
     'number',
+    'on',
+    'page',
+    'page_sticky',
+    'page_title',
     'pagination',
     'plotly',
-    'circular_progress',
-    'linear_progress',
     'pyplot',
     'query',
     'radio',
     'range',
+    'refreshable',
+    'refreshable_method',
     'restructured_text',
+    'right_drawer',
     'row',
+    'run',
+    'run_javascript',
+    'run_with',
     'scene',
     'scene_view',
     'scroll_area',
@@ -81,51 +102,28 @@ __all__ = [
     'space',
     'spinner',
     'splitter',
+    'state',
     'step',
     'stepper',
     'stepper_navigation',
     'switch',
-    'table',
     'tab',
     'tab_panel',
     'tab_panels',
+    'table',
     'tabs',
     'teleport',
     'textarea',
     'time',
-    'timer',
     'timeline',
     'timeline_entry',
+    'timer',
     'toggle',
     'tooltip',
     'tree',
+    'update',
     'upload',
     'video',
-    'download',
-    'add_body_html',
-    'add_head_html',
-    'run_javascript',
-    'notify',
-    'open',
-    'page_title',
-    'refreshable',
-    'refreshable_method',
-    'state',
-    'add_css',
-    'add_sass',
-    'add_scss',
-    'add_style',
-    'update',
-    'page',
-    'drawer',
-    'footer',
-    'header',
-    'left_drawer',
-    'on',
-    'page_sticky',
-    'right_drawer',
-    'run',
-    'run_with',
 ]
 
 from .context import context
@@ -142,7 +140,6 @@ from .elements.card import CardActions as card_actions
 from .elements.card import CardSection as card_section
 from .elements.carousel import Carousel as carousel
 from .elements.carousel import CarouselSlide as carousel_slide
-from .elements.chart import chart
 from .elements.chat_message import ChatMessage as chat_message
 from .elements.checkbox import Checkbox as checkbox
 from .elements.chip import Chip as chip
@@ -160,6 +157,7 @@ from .elements.drop_zone import DropZone as drop_zone
 from .elements.echart import EChart as echart
 from .elements.editor import Editor as editor
 from .elements.expansion import Expansion as expansion
+from .elements.fullscreen import Fullscreen as fullscreen
 from .elements.grid import Grid as grid
 from .elements.highchart import highchart
 from .elements.html import Html as html
@@ -232,13 +230,12 @@ from .functions import clipboard
 from .functions.download import download
 from .functions.html import add_body_html, add_head_html
 from .functions.javascript import run_javascript
-from .functions.navigate import Navigate as navigate
+from .functions.navigate import navigate
 from .functions.notify import notify
 from .functions.on import on
-from .functions.open import open  # pylint: disable=redefined-builtin
 from .functions.page_title import page_title
 from .functions.refreshable import refreshable, refreshable_method, state
-from .functions.style import add_css, add_sass, add_scss, add_style
+from .functions.style import add_css, add_sass, add_scss
 from .functions.update import update
 from .page import page
 from .page_layout import Drawer as drawer

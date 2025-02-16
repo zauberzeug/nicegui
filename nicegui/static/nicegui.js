@@ -43,6 +43,10 @@ function getElement(id) {
   return mounted_app.$refs["r" + _id];
 }
 
+function getHtmlElement(id) {
+  return document.getElementById(`c${id}`);
+}
+
 function runMethod(target, method_name, args) {
   if (typeof target === "object") {
     if (method_name in target) {
@@ -59,6 +63,19 @@ function runMethod(target, method_name, args) {
     return element.$refs.qRef[method_name](...args);
   } else {
     return eval(method_name)(element, ...args);
+  }
+}
+
+function getComputedProp(target, prop_name) {
+  if (typeof target === "object" && prop_name in target) {
+    return target[prop_name];
+  }
+  const element = getElement(target);
+  if (element === null || element === undefined) return;
+  if (prop_name in element) {
+    return element[prop_name];
+  } else if (prop_name in (element.$refs.qRef || [])) {
+    return element.$refs.qRef[prop_name];
   }
 }
 
@@ -145,7 +162,11 @@ function renderRecursively(elements, id) {
   Object.entries(props).forEach(([key, value]) => {
     if (key.startsWith(":")) {
       try {
-        props[key.substring(1)] = eval(value);
+        try {
+          props[key.substring(1)] = new Function(`return (${value})`)();
+        } catch (e) {
+          props[key.substring(1)] = eval(value);
+        }
         delete props[key];
       } catch (e) {
         console.error(`Error while converting ${key} attribute to function:`, e);
@@ -161,14 +182,18 @@ function renderRecursively(elements, id) {
       handler = eval(event.js_handler);
     } else {
       handler = (...args) => {
-        const data = {
-          id: id,
-          client_id: window.clientId,
-          listener_id: event.listener_id,
-          args: stringifyEventArgs(args, event.args),
+        const emitter = () =>
+          window.socket?.emit("event", {
+            id: id,
+            client_id: window.clientId,
+            listener_id: event.listener_id,
+            args: stringifyEventArgs(args, event.args),
+          });
+        const delayed_emitter = () => {
+          if (window.did_handshake) emitter();
+          else setTimeout(emitter, 10);
         };
-        const emitter = () => window.socket?.emit("event", data);
-        throttle(emitter, event.throttle, event.leading_events, event.trailing_events, event.listener_id);
+        throttle(delayed_emitter, event.throttle, event.leading_events, event.trailing_events, event.listener_id);
         if (element.props["loopback"] === False && event.type == "update:modelValue") {
           element.props["model-value"] = args;
         }
@@ -244,6 +269,15 @@ function download(src, filename, mediaType, prefix) {
   }
 }
 
+function ack() {
+  if (window.ackedMessageId >= window.nextMessageId) return;
+  window.socket.emit("ack", {
+    client_id: window.clientId,
+    next_message_id: window.nextMessageId,
+  });
+  window.ackedMessageId = window.nextMessageId;
+}
+
 async function loadDependencies(element, prefix, version) {
   if (element.component) {
     const { name, key, tag } = element.component;
@@ -273,8 +307,19 @@ function createRandomUUID() {
   }
 }
 
+const OLD_TAB_ID = sessionStorage.__nicegui_tab_closed === "false" ? sessionStorage.__nicegui_tab_id : null;
+const TAB_ID =
+  !sessionStorage.__nicegui_tab_id || sessionStorage.__nicegui_tab_closed === "false"
+    ? (sessionStorage.__nicegui_tab_id = createRandomUUID())
+    : sessionStorage.__nicegui_tab_id;
+sessionStorage.__nicegui_tab_closed = "false";
+window.onbeforeunload = function () {
+  sessionStorage.__nicegui_tab_closed = "true";
+};
+
 function createApp(elements, options) {
   replaceUndefinedAttributes(elements, 0);
+  setInterval(() => ack(), 3000);
   return (app = Vue.createApp({
     data() {
       return {
@@ -286,29 +331,36 @@ function createApp(elements, options) {
     },
     mounted() {
       mounted_app = this;
+      window.documentId = createRandomUUID();
       window.clientId = options.query.client_id;
       const url = window.location.protocol === "https:" ? "wss://" : "ws://" + window.location.host;
       window.path_prefix = options.prefix;
+      window.nextMessageId = options.query.next_message_id;
+      window.ackedMessageId = -1;
       window.socket = io(url, {
         path: `${options.prefix}/_nicegui_ws/socket.io`,
         query: options.query,
         extraHeaders: options.extraHeaders,
         transports: options.transports,
       });
+      window.did_handshake = false;
       const messageHandlers = {
         connect: () => {
-          let tabId = sessionStorage.getItem("__nicegui_tab_id");
-          if (!tabId) {
-            tabId = createRandomUUID();
-            sessionStorage.setItem("__nicegui_tab_id", tabId);
-          }
-          window.socket.emit("handshake", { client_id: window.clientId, tab_id: tabId }, (ok) => {
+          const args = {
+            client_id: window.clientId,
+            document_id: window.documentId,
+            tab_id: TAB_ID,
+            old_tab_id: OLD_TAB_ID,
+            next_message_id: window.nextMessageId,
+          };
+          window.socket.emit("handshake", args, (ok) => {
             if (!ok) {
               console.log("reloading because handshake failed for clientId " + window.clientId);
               window.location.reload();
             }
             document.getElementById("popup").ariaHidden = true;
           });
+          window.did_handshake = true;
         },
         connect_error: (err) => {
           if (err.message == "timeout") {
@@ -326,19 +378,22 @@ function createApp(elements, options) {
           document.getElementById("popup").ariaHidden = false;
         },
         update: async (msg) => {
+          const loadPromises = Object.entries(msg)
+            .filter(([_, element]) => element && (element.component || element.libraries))
+            .map(([_, element]) => loadDependencies(element, options.prefix, options.version));
+
+          await Promise.all(loadPromises);
+
           for (const [id, element] of Object.entries(msg)) {
             if (element === null) {
               delete this.elements[id];
               continue;
             }
-            if (element.component || element.libraries) {
-              await loadDependencies(element, options.prefix, options.version);
-            }
             this.elements[id] = element;
             replaceUndefinedAttributes(this.elements, id);
           }
         },
-        run_javascript: (msg) => runJavascript(msg["code"], msg["request_id"]),
+        run_javascript: (msg) => runJavascript(msg.code, msg.request_id),
         open: (msg) => {
           const url = msg.path.startsWith("/") ? options.prefix + msg.path : msg.path;
           const target = msg.new_tab ? "_blank" : "_self";
@@ -351,6 +406,12 @@ function createApp(elements, options) {
       let isProcessingSocketMessage = false;
       for (const [event, handler] of Object.entries(messageHandlers)) {
         window.socket.on(event, async (...args) => {
+          if (args.length > 0 && args[0]._id !== undefined) {
+            const message_id = args[0]._id;
+            if (message_id < window.nextMessageId) return;
+            window.nextMessageId = message_id + 1;
+            delete args[0]._id;
+          }
           socketMessageQueue.push(() => handler(...args));
           if (!isProcessingSocketMessage) {
             while (socketMessageQueue.length > 0) {
@@ -370,4 +431,13 @@ function createApp(elements, options) {
   }).use(Quasar, {
     config: options.quasarConfig,
   }));
+}
+
+// HACK: remove Quasar's rules for divs in QCard (#2265, #2301)
+for (let sheet of document.styleSheets) {
+  if (/\/quasar(?:\.prod)?\.css$/.test(sheet.href)) {
+    for (let rule of sheet.cssRules) {
+      if (/\.q-card > div/.test(rule.selectorText)) rule.selectorText = ".nicegui-card-tight" + rule.selectorText;
+    }
+  }
 }

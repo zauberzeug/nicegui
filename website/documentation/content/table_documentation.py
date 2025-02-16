@@ -17,6 +17,58 @@ def main_demo() -> None:
     ui.table(columns=columns, rows=rows, row_key='name')
 
 
+@doc.demo('Omitting columns', '''
+    If you omit the `columns` parameter, the table will automatically generate columns from the first row.
+    Labels are uppercased and sorting is enabled.
+
+    *Updated in version 2.0.0: The `columns` parameter became optional.*
+''')
+def omitting_columns():
+    ui.table(rows=[
+        {'make': 'Toyota', 'model': 'Celica', 'price': 35000},
+        {'make': 'Ford', 'model': 'Mondeo', 'price': 32000},
+        {'make': 'Porsche', 'model': 'Boxster', 'price': 72000},
+    ])
+
+
+@doc.demo('Default column parameters', '''
+    You can define default column parameters that apply to all columns.
+    In this example, all columns are left-aligned by default and have a blue uppercase header.
+
+    *Added in version 2.0.0*
+''')
+def default_column_parameters():
+    ui.table(rows=[
+        {'name': 'Alice', 'age': 18},
+        {'name': 'Bob', 'age': 21},
+    ], columns=[
+        {'name': 'name', 'label': 'Name', 'field': 'name'},
+        {'name': 'age', 'label': 'Age', 'field': 'age'},
+    ], column_defaults={
+        'align': 'left',
+        'headerClasses': 'uppercase text-primary',
+    })
+
+
+@doc.demo('Selection', '''
+    You can set the selection type of a table using the `selection` parameter.
+    The `on_select` event handler is called when the selection changes
+    and the `selected` property contains the selected rows.
+
+    *Added in version 2.11.0:*
+    The `selection` property and the `set_selection` method can be used to change the selection type.
+''')
+def selection():
+    table = ui.table(
+        columns=[{'name': 'name', 'label': 'Name', 'field': 'name'}],
+        rows=[{'name': 'Alice'}, {'name': 'Bob'}, {'name': 'Charlie'}],
+        row_key='name',
+        on_select=lambda e: ui.notify(f'selected: {e.selection}'),
+    )
+    ui.radio({None: 'none', 'single': 'single', 'multiple': 'multiple'},
+             on_change=lambda e: table.set_selection(e.value))
+
+
 @doc.demo('Table with expandable rows', '''
     Scoped slots can be used to insert buttons that toggle the expand state of a table row.
     See the [Quasar documentation](https://quasar.dev/vue-components/table#expanding-rows) for more information.
@@ -137,15 +189,28 @@ def table_from_pandas_demo():
     ui.table.from_pandas(df).classes('max-h-40')
 
 
+@doc.demo('Table from Polars DataFrame', '''
+    You can create a table from a Polars DataFrame using the `from_polars` method.
+    This method takes a Polars DataFrame as input and returns a table.
+
+    *Added in version 2.7.0*
+''')
+def table_from_polars_demo():
+    import polars as pl
+
+    df = pl.DataFrame(data={'col1': [1, 2], 'col2': [3, 4]})
+    ui.table.from_polars(df).classes('max-h-40')
+
+
 @doc.demo('Adding rows', '''
-    It's simple to add new rows with the `add_rows(dict)` method.
+    It's simple to add new rows with the `add_row(dict)` and `add_rows(list[dict])` methods.
     With the "virtual-scroll" prop set, the table can be programmatically scrolled with the `scrollTo` JavaScript function.
 ''')
 def adding_rows():
     from datetime import datetime
 
     def add():
-        table.add_rows({'date': datetime.now().strftime('%c')})
+        table.add_row({'date': datetime.now().strftime('%c')})
         table.run_method('scrollTo', len(table.rows)-1)
 
     columns = [{'name': 'date', 'label': 'Date', 'field': 'date'}]
@@ -237,6 +302,37 @@ def handle_pagination_changes() -> None:
         pagination=3,
         on_pagination_change=lambda e: ui.notify(e.value),
     )
+
+
+@doc.demo('Computed props', '''
+    You can access the computed props of a table within async callback functions.
+''')
+def computed_props():
+    async def show_filtered_sorted_rows():
+        ui.notify(await table.get_filtered_sorted_rows())
+
+    async def show_computed_rows():
+        ui.notify(await table.get_computed_rows())
+
+    table = ui.table(
+        columns=[
+            {'name': 'name', 'label': 'Name', 'field': 'name', 'align': 'left', 'sortable': True},
+            {'name': 'age', 'label': 'Age', 'field': 'age', 'align': 'left', 'sortable': True}
+        ],
+        rows=[
+            {'name': 'Noah', 'age': 33},
+            {'name': 'Emma', 'age': 21},
+            {'name': 'Rose', 'age': 88},
+            {'name': 'James', 'age': 59},
+            {'name': 'Olivia', 'age': 62},
+            {'name': 'Liam', 'age': 18},
+        ],
+        row_key='name',
+        pagination=3,
+    )
+    ui.input('Search by name/age').bind_value(table, 'filter')
+    ui.button('Show filtered/sorted rows', on_click=show_filtered_sorted_rows)
+    ui.button('Show computed rows', on_click=show_computed_rows)
 
 
 @doc.demo('Computed fields', '''

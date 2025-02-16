@@ -4,7 +4,7 @@ from typing_extensions import Self
 
 from ...binding import BindableProperty, bind, bind_from, bind_to
 from ...element import Element
-from ...events import ValueChangeEventArguments, handle_event
+from ...events import Handler, ValueChangeEventArguments, handle_event
 
 
 class SelectableElement(Element):
@@ -14,7 +14,7 @@ class SelectableElement(Element):
     def __init__(self, *,
                  selectable: bool,
                  selected: bool,
-                 on_selection_change: Optional[Callable[..., Any]],
+                 on_selection_change: Optional[Handler[ValueChangeEventArguments]] = None,
                  **kwargs: Any) -> None:
         super().__init__(**kwargs)
         if not selectable:
@@ -27,11 +27,11 @@ class SelectableElement(Element):
         self.set_selected(selected)
         self.on('update:selected', lambda e: self.set_selected(e.args))
 
-        self._selection_change_handlers: List[Callable[..., Any]] = []
+        self._selection_change_handlers: List[Handler[ValueChangeEventArguments]] = []
         if on_selection_change:
             self.on_selection_change(on_selection_change)
 
-    def on_selection_change(self, callback: Callable[..., Any]) -> Self:
+    def on_selection_change(self, callback: Handler[ValueChangeEventArguments]) -> Self:
         """Add a callback to be invoked when the selection state changes."""
         self._selection_change_handlers.append(callback)
         return self
