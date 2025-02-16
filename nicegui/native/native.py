@@ -1,25 +1,23 @@
 # pylint: disable=C0116
 import inspect
+import multiprocessing as mp
 import warnings
-from multiprocessing import Queue
 from typing import Any, Callable, Tuple
 
 from .. import run
 from ..logging import log
 
-method_queue: Queue = Queue()
-response_queue: Queue = Queue()
-drop_queue: Queue = Queue()
+method_queue: mp.Queue = mp.Queue()
+response_queue: mp.Queue = mp.Queue()
 
 try:
     with warnings.catch_warnings():
         # webview depends on bottle which uses the deprecated CGI function (https://github.com/bottlepy/bottle/issues/1403)
-        warnings.filterwarnings('ignore', category=DeprecationWarning)
+        warnings.filterwarnings("ignore", category=DeprecationWarning)
         import webview
         from webview.window import FixPoint
 
     class WindowProxy(webview.Window):
-
         def __init__(self) -> None:  # pylint: disable=super-init-not-called
             pass  # NOTE we don't call super().__init__ here because this is just a proxy to the actual window
 
@@ -104,9 +102,9 @@ try:
         async def create_file_dialog(  # type: ignore # pylint: disable=invalid-overridden-method
             self,
             dialog_type: int = webview.OPEN_DIALOG,
-            directory: str = '',
+            directory: str = "",
             allow_multiple: bool = False,
-            save_filename: str = '',
+            save_filename: str = "",
             file_types: Tuple[str, ...] = (),
         ) -> Tuple[str, ...]:
             return await self._request(
@@ -130,8 +128,9 @@ try:
                     method_queue.put((name, args, kwargs))
                     return response_queue.get()  # wait for the method to be called and writing its result to the queue
                 except Exception:
-                    log.exception(f'error in {name}')
+                    log.exception(f"error in {name}")
                     return None
+
             name = inspect.currentframe().f_back.f_code.co_name  # type: ignore
             return await run.io_bound(wrapper, *args, **kwargs)
 
@@ -140,5 +139,6 @@ try:
             self._send()
 
 except ModuleNotFoundError:
+
     class WindowProxy:  # type: ignore
         pass  # just a dummy if webview is not installed
