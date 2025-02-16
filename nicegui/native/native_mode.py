@@ -54,7 +54,6 @@ def _open_window(
     frameless: bool,
     method_queue: mp.Queue,
     response_queue: mp.Queue,
-    drop_queue: mp.Queue,
 ) -> None:
     while not helpers.is_port_open(host, port):
         time.sleep(0.1)
@@ -162,7 +161,6 @@ def activate(
         frameless,
         native.method_queue,
         native.response_queue,
-        native.drop_queue,
     )
     process = mp.Process(target=_open_window, args=args, daemon=True)
     process.start()
