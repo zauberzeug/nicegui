@@ -145,3 +145,66 @@ def test_outlet_with_async_sub_outlet(screen: Screen):
     screen.open('/')
     screen.should_contain('main')
     screen.should_contain('sub')
+
+
+def test_nested_outlets_with_yield(screen: Screen):
+    # First level outlet
+    @ui.outlet('/')
+    def root_layout():
+        counter = ui.label('0')
+        ui.button('Increment', on_click=lambda: counter.set_text(str(int(counter.text) + 1)))
+        yield {'counter': counter}
+
+    # Second level outlet
+    @root_layout.outlet('/section/{section_id}')
+    def section_layout(counter: ui.label, section_id: str):
+        ui.label(f'Section {section_id}')
+        section_counter = ui.label('0')
+        ui.button('Add to root', on_click=lambda: counter.set_text(str(int(counter.text) + int(section_counter.text))))
+        yield {'section_counter': section_counter}
+
+    # Third level outlet
+    @section_layout.outlet('/subsection/{subsection_id}')
+    def subsection_layout(section_counter: ui.label, subsection_id: str):
+        ui.label(f'Subsection {subsection_id}')
+        ui.button('Add to section', on_click=lambda: section_counter.set_text(str(int(section_counter.text) + 1)))
+        yield
+
+    # Views for each level
+    @root_layout.view('/')
+    def root_index(counter: ui.label):
+        ui.label('Root Index')
+        ui.link('Go to Section 1', '/section/1')
+
+    @section_layout.view('/')
+    def section_index(section_id: str, section_counter: ui.label):
+        ui.label(f'Section {section_id} Index')
+        ui.link('Go to Subsection A', f'/section/{section_id}/subsection/A')
+
+    @subsection_layout.view('/')
+    def subsection_index(section_id: str, subsection_id: str):
+        ui.label(f'Content of Subsection {subsection_id}')
+
+    # Test the nested structure
+    screen.open('/')
+    screen.should_contain('Root Index')
+    assert screen.selenium.current_url.endswith('/')
+
+    # Navigate to section 1
+    screen.click('Go to Section 1')
+    screen.should_contain('Section 1 Index')
+    assert '/section/1' in screen.selenium.current_url
+
+    # Navigate to subsection A
+    screen.click('Go to Subsection A')
+    screen.should_contain('Content of Subsection A')
+    assert '/section/1/subsection/A' in screen.selenium.current_url
+
+    # Test counter propagation
+    screen.click('Add to section')  # Increment subsection counter
+    screen.click('Add to root')     # Add section counter to root counter
+    screen.should_contain('1')      # Root counter should be 1
+
+    # Test direct root counter increment
+    screen.click('Increment')       # Increment root counter
+    screen.should_contain('2')      # Root counter should be 2
