@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import Literal, Optional
 
 from typing_extensions import Self
@@ -28,9 +30,7 @@ class SlideSide(DisableableElement):
 
         self.side = side
 
-        self._slide_item_parent = self.parent_slot.parent
-        if not isinstance(self._slide_item_parent, SlideItem):
-            raise ValueError('Incorrect parent element used')
+        self._slide_item_parent = self._get_slide_parent()
 
         self._slide_item_parent.add_slot(side)
         self._slide_item_parent._props[f'{side}-color'] = color
@@ -42,6 +42,19 @@ class SlideSide(DisableableElement):
 
         if on_slide:
             self.on_slide(on_slide)
+
+    def _get_slide_parent(self) -> SlideItem:
+        """Get parent slot and confirms it is of `SlideItem` type"""
+
+        if self.parent_slot is None:
+            raise ValueError('Parent slot can not be established')
+
+        slide_item_parent = self.parent_slot.parent
+
+        if not isinstance(slide_item_parent, SlideItem):
+            raise ValueError('Incorrect parent used, `SlideSide` must inherit from `SlideItem`')
+
+        return slide_item_parent
 
     def on_slide(self, callback: Handler[GenericEventArguments]) -> Self:
         """Add a callback to be invoked when the Slide Side is activated."""
@@ -64,7 +77,7 @@ class SlideItem(DisableableElement):
         """
         super().__init__(tag='q-slide-item')
 
-        self._active_slides = []
+        self._active_slides: list[str] = []
 
         if on_change:
             self.on_change(on_change)
