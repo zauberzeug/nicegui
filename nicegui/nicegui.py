@@ -46,6 +46,7 @@ core.app = app = App(default_response_class=NiceGUIJSONResponse, lifespan=_lifes
 try:
     asyncio.run(core.app.storage.general.initialize())
 except RuntimeError:
+    core.loop = asyncio.get_running_loop()
     background_tasks.create(core.app.storage.general.initialize(), name='initialize general storage')
 
 # NOTE we use custom json module which wraps orjson
