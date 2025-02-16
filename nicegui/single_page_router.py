@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING, Any, Callable, Dict, Optional, Self, Union, Aw
 
 from nicegui import core, ui
 from nicegui.context import context
-from nicegui.elements.router_frame import Frame
+from nicegui.elements.frame import Frame
 from nicegui.single_page_target import SinglePageTarget
 
 if TYPE_CHECKING:
@@ -73,7 +73,7 @@ class SinglePageRouter:
         self.base_path = '/'.join(base_path_elements)
         if parent is not None:
             parent._register_child_router(self.base_path, self)
-        self.router_frame = Frame(base_path=self.base_path,
+        self.frame = Frame(base_path=self.base_path,
                                         target_url=target_url,
                                         included_paths=included_paths,
                                         excluded_paths=excluded_paths,
@@ -95,7 +95,7 @@ class SinglePageRouter:
             raise ValueError(f'View with path {path} already exists')
         self.views[path] = RouterView(path, builder, title, **kwargs)
         absolute_path = (self.base_path.rstrip('/') + path).rstrip('/')
-        self.router_frame.add_included_path(absolute_path)
+        self.frame.add_included_path(absolute_path)
         return self
 
     @property
@@ -103,7 +103,7 @@ class SinglePageRouter:
         """The current target url of the router frame
 
         :return: The target url of the router frame"""
-        return self.router_frame.target_url
+        return self.frame.target_url
 
     def resolve_url(self, target: str) -> SinglePageTarget:
         """Resolves a URL target to a SinglePageTarget which contains details about the builder function to
@@ -167,8 +167,8 @@ class SinglePageRouter:
             target = self.handle_navigate(target)
             if target is None:
                 return
-        handler_kwargs = SinglePageRouter.get_user_data() | self.user_data | self.router_frame.user_data | \
-                         {'previous_url_path': self.router_frame.target_url}
+        handler_kwargs = SinglePageRouter.get_user_data() | self.user_data | self.frame.user_data | \
+                         {'previous_url_path': self.frame.target_url}
         if target is None:
             # TODO in which cases can the target be None? What should be the behavior?
             raise ValueError('Target is None')
@@ -202,7 +202,7 @@ class SinglePageRouter:
         self.clear()
         self.user_data['target'] = target
         # check if object address of real target and user_data target are the same
-        self.router_frame.update_content(target.builder, handler_kwargs, target.title, target.fragment)
+        self.frame.update_content(target.builder, handler_kwargs, target.title, target.fragment)
         if self.change_title and target.builder and len(self.child_routers) == 0:
             # note: If the router is just a container for sub routers, the title is not updated here but
             # in the sub router's update_content method
@@ -214,7 +214,7 @@ class SinglePageRouter:
     def clear(self) -> None:
         """Clear the content of the router frame and removes all references to sub frames"""
         self.child_routers.clear()
-        self.router_frame.clear()
+        self.frame.clear()
 
     def update_user_data(self, new_data: dict) -> None:
         """Update the user data of the router frame
@@ -259,7 +259,7 @@ class SinglePageRouter:
         :param path: The path of the child router
         :param frame: The child router"""
         self.child_routers[path] = frame
-        self.router_frame.child_frame_paths = list(self.child_routers.keys())
+        self.frame.child_frame_paths = list(self.child_routers.keys())
 
     @staticmethod
     def _page_not_found() -> None:
@@ -273,7 +273,7 @@ class SinglePageRouter:
         :param target_url: The new target url"""
         cur_router = self
         for _ in range(PATH_RESOLVING_MAX_RECURSION):
-            cur_router.router_frame.target_url = target_url
+            cur_router.frame.target_url = target_url
             cur_router = cur_router.parent
             if cur_router is None:
                 return

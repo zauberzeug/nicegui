@@ -8,7 +8,7 @@ from typing import Any, AsyncGenerator, Awaitable, Callable, Dict, Generator, Li
 from nicegui import ui
 from nicegui.client import Client
 from nicegui.context import context
-from nicegui.elements.router_frame import Frame
+from nicegui.elements.frame import Frame
 from nicegui.outlet_view import OutletView
 from nicegui.single_page_router import SinglePageRouter
 from nicegui.single_page_target import SinglePageTarget
@@ -101,29 +101,29 @@ class Outlet:
         frame = Frame.run_safe(self.outlet_builder, **kwargs)
         is_async = inspect.isasyncgen(frame)
 
-        router_frame = SinglePageRouter.current_frame()
+        current_frame = SinglePageRouter.current_frame()
         if is_async:
             # Handle asynchronous generator function
             try:
                 add_properties(await frame.__anext__())  # Insert UI elements before yield
-                if router_frame is not None:
-                    router_frame.update_user_data(properties)
+                if current_frame is not None:
+                    current_frame.update_user_data(properties)
                 yield properties
                 add_properties(await frame.__anext__())  # Insert UI elements after yield
-                if router_frame is not None:
-                    router_frame.update_user_data(properties)
+                if current_frame is not None:
+                    current_frame.update_user_data(properties)
             except StopAsyncIteration:
                 pass
         else:
             # Handle synchronous generator function
             try:
                 add_properties(next(frame))  # Insert UI elements before yield
-                if router_frame is not None:
-                    router_frame.update_user_data(properties)
+                if current_frame is not None:
+                    current_frame.update_user_data(properties)
                 yield properties
                 add_properties(next(frame))  # Insert UI elements after yield
-                if router_frame is not None:
-                    router_frame.update_user_data(properties)
+                if current_frame is not None:
+                    current_frame.update_user_data(properties)
             except StopIteration:
                 pass
 

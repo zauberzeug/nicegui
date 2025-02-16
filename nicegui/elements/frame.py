@@ -6,7 +6,7 @@ from nicegui import ui, background_tasks
 import asyncio
 
 
-class Frame(ui.element, component='router_frame.js'):
+class Frame(ui.element, component='frame.js'):
     """A Frame is a UI slot which contains sub-outlets/views. It provides the container where page content
     is rendered and updated."""
 
@@ -24,9 +24,9 @@ class Frame(ui.element, component='router_frame.js'):
         :param included_paths: A list of valid path masks which shall be allowed to be opened by the router
         :param excluded_paths: A list of path masks which shall be excluded from the router
         :param use_browser_history: Optional flag to enable or disable the browser history management. Default is True.
-        :param target_url: The initial url of the router frame
+        :param target_url: The initial url of the frame
         :param on_navigate: Optional callback which is called when the browser / JavaScript navigates to a new url
-        :param user_data: Optional user data which is passed to the builder functions of the router frame
+        :param user_data: Optional user data which is passed to the builder functions of the frame
         """
         super().__init__()
         included_masks = []
@@ -62,12 +62,12 @@ class Frame(ui.element, component='router_frame.js'):
 
     @property
     def target_url(self) -> str:
-        """The current target url of the router frame"""
+        """The current target url of the frame"""
         return self._props['target_url']
 
     @target_url.setter
     def target_url(self, value: str):
-        """Set the target url of the router frame"""
+        """Set the target url of the frame"""
         self._props['target_url'] = value
 
     def add_included_path(self, path: str):
@@ -79,7 +79,7 @@ class Frame(ui.element, component='router_frame.js'):
                        builder_kwargs: dict,
                        title: Optional[str],
                        target_fragment: Optional[str]):
-        """Update the content of the router frame
+        """Update the content of the frame
 
         :param builder: The builder function which builds the content of the page
         :param builder_kwargs: The keyword arguments to pass to the builder function
@@ -97,18 +97,18 @@ class Frame(ui.element, component='router_frame.js'):
         background_tasks.create(build())
 
     def clear(self) -> None:
-        """Clear the content of the router frame and removes all references to sub frames"""
+        """Clear the content of the frame and removes all references to sub frames"""
         self._props['child_frame_paths'] = []
         super().clear()
 
     @property
     def child_frame_paths(self) -> list[str]:
-        """The child paths of the router frame"""
+        """The child paths of the frame"""
         return self._props['child_frame_paths']
 
     @child_frame_paths.setter
     def child_frame_paths(self, paths: list[str]) -> None:
-        """Update the child paths of the router frame
+        """Update the child paths of the frame
 
         :param paths: The list of child paths"""
         self._props['child_frame_paths'] = paths

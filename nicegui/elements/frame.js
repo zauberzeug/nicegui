@@ -1,7 +1,7 @@
 export default {
     template: '<slot></slot>',
     mounted() {
-        if (this._debug) console.log('Mounted RouterFrame ' + this.base_path);
+        if (this._debug) console.log('Mounted Frame ' + this.base_path);
 
         let router = this;
 
@@ -37,7 +37,7 @@ export default {
             let href = normalize_path(path);
             for (let frame of router.child_frame_paths) {
                 if (path.startsWith(frame + '/') || (href === frame)) {
-                    if (router._debug) console.log(href + ' handled by child RouterFrame ' + frame + ', skipping...');
+                    if (router._debug) console.log(href + ' handled by child Frame ' + frame + ', skipping...');
                     return true;
                 }
             }
@@ -86,7 +86,7 @@ export default {
     unmounted() {
         document.removeEventListener('click', this.clickEventListener);
         window.removeEventListener('popstate', this.popstateEventListener);
-        if (this._debug) console.log('Unmounted RouterFrame ' + this.base_path);
+        if (this._debug) console.log('Unmounted Frame ' + this.base_path);
     },
     props: {
         base_path: {type: String},
