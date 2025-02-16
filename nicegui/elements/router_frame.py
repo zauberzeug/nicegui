@@ -6,10 +6,9 @@ from nicegui import ui, background_tasks
 import asyncio
 
 
-class RouterFrame(ui.element, component='router_frame.js'):
-    """The RouterFrame is a special element which is used by the SinglePageRouter to exchange the content of
-    the current page with the content of the new page. It serves as container and overrides the browser's history
-    management to prevent the browser from reloading the whole page."""
+class Frame(ui.element, component='router_frame.js'):
+    """A Frame is a UI slot which contains sub-outlets/views. It provides the container where page content
+    is rendered and updated."""
 
     def __init__(self,
                  base_path: str,

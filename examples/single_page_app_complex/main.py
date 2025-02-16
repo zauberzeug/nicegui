@@ -101,7 +101,7 @@ def update_title(service: ServiceDefinition = None,
                  sub_service: SubServiceDefinition = None):
     # Is called for every page within the service_router and sub_service_router via the on_load callback
     # and updates the title of each page
-    SinglePageRouter.current_router().target.title = \
+    SinglePageRouter.current_frame().target.title = \
             'NiceCLOUD - ' + (f'{sub_service.title}' if sub_service else f'{service.title}')
 
 

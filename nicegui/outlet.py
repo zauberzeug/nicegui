@@ -8,7 +8,7 @@ from typing import Any, AsyncGenerator, Awaitable, Callable, Dict, Generator, Li
 from nicegui import ui
 from nicegui.client import Client
 from nicegui.context import context
-from nicegui.elements.router_frame import RouterFrame
+from nicegui.elements.router_frame import Frame
 from nicegui.outlet_view import OutletView
 from nicegui.single_page_router import SinglePageRouter
 from nicegui.single_page_target import SinglePageTarget
@@ -98,10 +98,10 @@ class Outlet:
                 'The outlet builder function is not defined. Use the @outlet decorator to define it or '
                 'pass it as an argument to the SinglePageRouter constructor.'
             )
-        frame = RouterFrame.run_safe(self.outlet_builder, **kwargs)
+        frame = Frame.run_safe(self.outlet_builder, **kwargs)
         is_async = inspect.isasyncgen(frame)
 
-        router_frame = SinglePageRouter.current_router()
+        router_frame = SinglePageRouter.current_frame()
         if is_async:
             # Handle asynchronous generator function
             try:
@@ -232,7 +232,7 @@ class Outlet:
         kwargs['url_path'] = initial_url
 
         # Determine if build_page_template is asynchronous
-        template = RouterFrame.run_safe(self.build_page_template, **kwargs)
+        template = Frame.run_safe(self.build_page_template, **kwargs)
         # Initialize properties dictionary
         new_user_data = {}
         content_area = None
@@ -272,7 +272,7 @@ class Outlet:
                 user_data_kwargs.update({k: v for k, v in cur_parent.user_data.items() if k in param_names})
                 cur_parent = cur_parent.parent
 
-        parent_router = SinglePageRouter.current_router()
+        parent_router = SinglePageRouter.current_frame()
         prepare_arguments()
         content = self.router_class(outlet=self,
                                     included_paths=sorted(list(self.included_paths)),
@@ -322,7 +322,7 @@ class Outlet:
         Only works when called from within the outlet or view builder function.
 
         :return: The current URL of the outlet"""
-        cur_router = SinglePageRouter.current_router()
+        cur_router = SinglePageRouter.current_frame()
         if cur_router is None:
             raise ValueError('The current URL can only be retrieved from within a nested outlet or view builder '
                              'function.')

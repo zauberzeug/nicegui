@@ -88,7 +88,7 @@ __all__ = [
     'refreshable_method',
     'restructured_text',
     'right_drawer',
-    'router_frame',
+    'frame',
     'row',
     'run',
     'run_javascript',
@@ -196,7 +196,7 @@ from .elements.radio import Radio as radio
 from .elements.range import Range as range  # pylint: disable=redefined-builtin
 from .elements.restructured_text import ReStructuredText as restructured_text
 from .elements.row import Row as row
-from .elements.router_frame import RouterFrame as router_frame
+from .elements.router_frame import Frame as frame
 from .elements.scene import Scene as scene
 from .elements.scene_view import SceneView as scene_view
 from .elements.scroll_area import ScrollArea as scroll_area

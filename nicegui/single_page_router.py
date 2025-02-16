@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING, Any, Callable, Dict, Optional, Self, Union, Aw
 
 from nicegui import core, ui
 from nicegui.context import context
-from nicegui.elements.router_frame import RouterFrame
+from nicegui.elements.router_frame import Frame
 from nicegui.single_page_target import SinglePageTarget
 
 if TYPE_CHECKING:
@@ -73,7 +73,7 @@ class SinglePageRouter:
         self.base_path = '/'.join(base_path_elements)
         if parent is not None:
             parent._register_child_router(self.base_path, self)
-        self.router_frame = RouterFrame(base_path=self.base_path,
+        self.router_frame = Frame(base_path=self.base_path,
                                         target_url=target_url,
                                         included_paths=included_paths,
                                         excluded_paths=excluded_paths,
@@ -198,7 +198,7 @@ class SinglePageRouter:
     def update_content(self, target: SinglePageTarget, handler_kwargs: dict):
         """Update the content of the router frame"""
         if target.on_pre_update is not None:
-            RouterFrame.run_safe(target.on_pre_update, **handler_kwargs)
+            Frame.run_safe(target.on_pre_update, **handler_kwargs)
         self.clear()
         self.user_data['target'] = target
         # check if object address of real target and user_data target are the same
@@ -209,7 +209,7 @@ class SinglePageRouter:
             title = target.title if target.title is not None else core.app.config.title
             ui.page_title(title)
         if target.on_post_update is not None:
-            RouterFrame.run_safe(target.on_post_update, **handler_kwargs)
+            Frame.run_safe(target.on_post_update, **handler_kwargs)
 
     def clear(self) -> None:
         """Clear the content of the router frame and removes all references to sub frames"""
@@ -234,7 +234,7 @@ class SinglePageRouter:
         """Returns a combined dictionary of all user data of the parent router frames"""
         result_dict = {}
         for slot in context.slot_stack:
-            if isinstance(slot.parent, RouterFrame):
+            if isinstance(slot.parent, Frame):
                 result_dict.update(slot.parent.user_data['router'].user_data)
         return result_dict
 
@@ -244,12 +244,12 @@ class SinglePageRouter:
         return self.user_data.get('target', None)
 
     @staticmethod
-    def current_router() -> Optional['SinglePageRouter']:
+    def current_frame() -> Optional['SinglePageRouter']:
         """Get the current router frame from the context stack
 
         :return: The current router or None if no router in the context stack"""
         for slot in reversed(context.slot_stack):  # we need to inform the parent router frame about
-            if isinstance(slot.parent, RouterFrame):  # our existence so it can navigate to our pages
+            if isinstance(slot.parent, Frame):  # our existence so it can navigate to our pages
                 return slot.parent.user_data['router']
         return None
 
