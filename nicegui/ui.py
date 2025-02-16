@@ -8,6 +8,7 @@ __all__ = [
     'audio',
     'avatar',
     'badge',
+    'bottom_slide',
     'button',
     'button_group',
     'card',
@@ -58,6 +59,7 @@ __all__ = [
     'label',
     'leaflet',
     'left_drawer',
+    'left_slide',
     'line_plot',
     'linear_progress',
     'link',
@@ -87,6 +89,7 @@ __all__ = [
     'refreshable_method',
     'restructured_text',
     'right_drawer',
+    'right_slide',
     'row',
     'run',
     'run_javascript',
@@ -97,6 +100,8 @@ __all__ = [
     'select',
     'separator',
     'skeleton',
+    'slide_item',
+    'slide_side',
     'slider',
     'space',
     'spinner',
@@ -119,6 +124,7 @@ __all__ = [
     'timer',
     'toggle',
     'tooltip',
+    'top_slide',
     'tree',
     'update',
     'upload',
@@ -200,6 +206,12 @@ from .elements.scroll_area import ScrollArea as scroll_area
 from .elements.select import Select as select
 from .elements.separator import Separator as separator
 from .elements.skeleton import Skeleton as skeleton
+from .elements.slide_item import BottomSlide as bottom_slide
+from .elements.slide_item import LeftSlide as left_slide
+from .elements.slide_item import RightSlide as right_slide
+from .elements.slide_item import SlideItem as slide_item
+from .elements.slide_item import SlideSide as slide_side
+from .elements.slide_item import TopSlide as top_slide
 from .elements.slider import Slider as slider
 from .elements.space import Space as space
 from .elements.spinner import Spinner as spinner
