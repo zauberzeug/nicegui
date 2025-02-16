@@ -43,6 +43,8 @@ class SocketIoApp(socketio.ASGIApp):
 
 
 core.app = app = App(default_response_class=NiceGUIJSONResponse, lifespan=_lifespan)
+asyncio.run(core.app.storage.general.initialize())
+
 # NOTE we use custom json module which wraps orjson
 core.sio = sio = socketio.AsyncServer(async_mode='asgi', cors_allowed_origins='*', json=json)
 sio_app = SocketIoApp(socketio_server=sio, socketio_path='/socket.io')

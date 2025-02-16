@@ -46,7 +46,6 @@ class App(FastAPI):
         self._disconnect_handlers: List[Union[Callable[..., Any], Awaitable]] = []
         self._exception_handlers: List[Callable[..., Any]] = [log.exception]
 
-        self.on_startup(self.storage.general.initialize)
         self.on_shutdown(self.storage.on_shutdown)
 
     @property
