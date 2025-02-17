@@ -60,8 +60,11 @@ class refreshable(Generic[_P, _T]):
     def __init__(self, func: Callable[_P, Union[_T, Awaitable[_T]]]) -> None:
         """Refreshable UI functions
 
-        The `@ui.refreshable` decorator allows you to create functions that have a `refresh` method.
+        The ``@ui.refreshable`` decorator allows you to create functions that have a ``refresh`` method.
         This method will automatically delete all elements created by the function and recreate them.
+
+        For decorating refreshable methods in classes, there is a ``@ui.refreshable_method`` decorator,
+        which is equivalent but prevents static type checking errors.
         """
         self.func = func
         self.instance = None
