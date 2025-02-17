@@ -1,7 +1,8 @@
 from fnmatch import fnmatch
 from typing import TYPE_CHECKING, Any, Callable, Dict, Optional, Self, Union, Awaitable
 
-from nicegui import core, ui
+from nicegui import core, ui, background_tasks
+from nicegui.builder_utils import run_safe
 from nicegui.context import context
 from nicegui.elements.frame import Frame
 from nicegui.single_page_target import SinglePageTarget
@@ -198,7 +199,7 @@ class SinglePageRouter:
     def update_content(self, target: SinglePageTarget, handler_kwargs: dict):
         """Update the content of the router frame"""
         if target.on_pre_update is not None:
-            Frame.run_safe(target.on_pre_update, **handler_kwargs)
+            run_safe(target.on_pre_update, **handler_kwargs)
         self.clear()
         self.user_data['target'] = target
         # check if object address of real target and user_data target are the same
@@ -209,7 +210,7 @@ class SinglePageRouter:
             title = target.title if target.title is not None else core.app.config.title
             ui.page_title(title)
         if target.on_post_update is not None:
-            Frame.run_safe(target.on_post_update, **handler_kwargs)
+            run_safe(target.on_post_update, **handler_kwargs)
 
     def clear(self) -> None:
         """Clear the content of the router frame and removes all references to sub frames"""

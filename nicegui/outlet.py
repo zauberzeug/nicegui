@@ -9,6 +9,7 @@ from nicegui import ui
 from nicegui.client import Client
 from nicegui.context import context
 from nicegui.elements.frame import Frame
+from nicegui.builder_utils import run_safe
 from nicegui.outlet_view import OutletView
 from nicegui.single_page_router import SinglePageRouter
 from nicegui.single_page_target import SinglePageTarget
@@ -98,7 +99,7 @@ class Outlet:
                 'The outlet builder function is not defined. Use the @outlet decorator to define it or '
                 'pass it as an argument to the SinglePageRouter constructor.'
             )
-        frame = Frame.run_safe(self.outlet_builder, **kwargs)
+        frame = run_safe(self.outlet_builder, **kwargs)
         is_async = inspect.isasyncgen(frame)
 
         current_frame = SinglePageRouter.current_frame()
@@ -232,7 +233,7 @@ class Outlet:
         kwargs['url_path'] = initial_url
 
         # Determine if build_page_template is asynchronous
-        template = Frame.run_safe(self.build_page_template, **kwargs)
+        template = run_safe(self.build_page_template, **kwargs)
         # Initialize properties dictionary
         new_user_data = {}
         content_area = None
