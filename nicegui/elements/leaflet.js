@@ -127,7 +127,11 @@ export default {
   },
   methods: {
     add_layer(layer, id) {
-      const l = L[layer.type](...layer.args);
+      if (layer.type == "tileLayer.wms") {
+        var l = L.tileLayer.wms(...layer.args);
+      } else {
+        var l = L[layer.type](...layer.args);
+      }
       l.id = id;
       l.addTo(this.map);
     },
