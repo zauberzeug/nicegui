@@ -13,7 +13,7 @@ response_queue: mp.Queue = mp.Queue()
 try:
     with warnings.catch_warnings():
         # webview depends on bottle which uses the deprecated CGI function (https://github.com/bottlepy/bottle/issues/1403)
-        warnings.filterwarnings("ignore", category=DeprecationWarning)
+        warnings.filterwarnings('ignore', category=DeprecationWarning)
         import webview
         from webview.window import FixPoint
 
@@ -102,9 +102,9 @@ try:
         async def create_file_dialog(  # type: ignore # pylint: disable=invalid-overridden-method
             self,
             dialog_type: int = webview.OPEN_DIALOG,
-            directory: str = "",
+            directory: str = '',
             allow_multiple: bool = False,
-            save_filename: str = "",
+            save_filename: str = '',
             file_types: Tuple[str, ...] = (),
         ) -> Tuple[str, ...]:
             return await self._request(
@@ -128,7 +128,7 @@ try:
                     method_queue.put((name, args, kwargs))
                     return response_queue.get()  # wait for the method to be called and writing its result to the queue
                 except Exception:
-                    log.exception(f"error in {name}")
+                    log.exception(f'error in {name}')
                     return None
 
             name = inspect.currentframe().f_back.f_code.co_name  # type: ignore

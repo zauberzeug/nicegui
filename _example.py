@@ -7,13 +7,13 @@ def say_hi(e: GenericEventArguments):
     ui.notify(e.args)
 
 
-with ui.row().classes("flex-nowrap w-full flex-1 bg-blue-400"):
-    with ui.column().classes("w-full h-screen"):
+with ui.row().classes('flex-nowrap w-full flex-1 bg-blue-400'):
+    with ui.column().classes('w-full h-screen'):
         with ui.drop_zone() as drop_zone:
             ui.label("Drop it like it's hot")
 
-drop_zone.classes(replace="whitespace-nowrap h-full w-full content-center text-center bg-cyan-400")
-drop_zone.on("drop_zone", say_hi)
+drop_zone.classes(replace='whitespace-nowrap h-full w-full content-center text-center bg-cyan-400')
+drop_zone.on('drop_zone', say_hi)
 
 ui.add_css("""
     :root {
