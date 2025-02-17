@@ -1,8 +1,9 @@
-from nicegui import ui
+from nicegui import app, ui
 from nicegui.events import GenericEventArguments
 
 
 def say_hi(e: GenericEventArguments):
+    print('say hi')
     print(e)
     ui.notify(e.args)
 
@@ -32,4 +33,5 @@ ui.add_css("""
 ui.run(
     native=True,
     reload=False,
+    dark=True,
 )

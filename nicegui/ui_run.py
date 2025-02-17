@@ -45,36 +45,37 @@ class DocsConfig(TypedDict):
     license_info: Optional[LicenseInfoDict]
 
 
-def run(*,
-        host: Optional[str] = None,
-        port: Optional[int] = None,
-        title: str = 'NiceGUI',
-        viewport: str = 'width=device-width, initial-scale=1',
-        favicon: Optional[Union[str, Path]] = None,
-        dark: Optional[bool] = False,
-        language: Language = 'en-US',
-        binding_refresh_interval: float = 0.1,
-        reconnect_timeout: float = 3.0,
-        message_history_length: int = 1000,
-        fastapi_docs: Union[bool, DocsConfig] = False,
-        show: bool = True,
-        on_air: Optional[Union[str, Literal[True]]] = None,
-        native: bool = False,
-        window_size: Optional[Tuple[int, int]] = None,
-        fullscreen: bool = False,
-        frameless: bool = False,
-        reload: bool = True,
-        uvicorn_logging_level: str = 'warning',
-        uvicorn_reload_dirs: str = '.',
-        uvicorn_reload_includes: str = '*.py',
-        uvicorn_reload_excludes: str = '.*, .py[cod], .sw.*, ~*',
-        tailwind: bool = True,
-        prod_js: bool = True,
-        endpoint_documentation: Literal['none', 'internal', 'page', 'all'] = 'none',
-        storage_secret: Optional[str] = None,
-        show_welcome_message: bool = True,
-        **kwargs: Any,
-        ) -> None:
+def run(
+    *,
+    host: Optional[str] = None,
+    port: Optional[int] = None,
+    title: str = 'NiceGUI',
+    viewport: str = 'width=device-width, initial-scale=1',
+    favicon: Optional[Union[str, Path]] = None,
+    dark: Optional[bool] = False,
+    language: Language = 'en-US',
+    binding_refresh_interval: float = 0.1,
+    reconnect_timeout: float = 3.0,
+    message_history_length: int = 1000,
+    fastapi_docs: Union[bool, DocsConfig] = False,
+    show: bool = True,
+    on_air: Optional[Union[str, Literal[True]]] = None,
+    native: bool = False,
+    window_size: Optional[Tuple[int, int]] = None,
+    fullscreen: bool = False,
+    frameless: bool = False,
+    reload: bool = True,
+    uvicorn_logging_level: str = 'warning',
+    uvicorn_reload_dirs: str = '.',
+    uvicorn_reload_includes: str = '*.py',
+    uvicorn_reload_excludes: str = '.*, .py[cod], .sw.*, ~*',
+    tailwind: bool = True,
+    prod_js: bool = True,
+    endpoint_documentation: Literal['none', 'internal', 'page', 'all'] = 'none',
+    storage_secret: Optional[str] = None,
+    show_welcome_message: bool = True,
+    **kwargs: Any,
+) -> None:
     """ui.run
 
     You can call `ui.run()` with optional arguments.
@@ -212,6 +213,7 @@ def run(*,
     config.storage_secret = storage_secret
     config.method_queue = native_module.method_queue if native else None
     config.response_queue = native_module.response_queue if native else None
+    config.drop_queue = native_module.drop_queue if native else None
     Server.create_singleton(config)
 
     if (reload or config.workers > 1) and not isinstance(config.app, str):

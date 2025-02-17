@@ -27,26 +27,37 @@ except ModuleNotFoundError:
     pass
 
 
-def on_drop(e: dict[str, Any]):
+def on_drop(e: dict[str, Any], drop_queue: mp.Queue):
+    print('on_drop')
     files = e['dataTransfer']['files']
     if len(files) == 0:
         return
 
     for file in files:
-        drop_events.emit(file.get('pywebviewFullPath'))
+        print('FILE:', file)
+        drop_queue.put(file.get('pywebviewFullPath'))
 
 
-def bind(window: webview.Window) -> None:
+def bind(window: webview.Window, drop_queue: mp.Queue) -> None:
+    print('bind')
     window.dom.document.events.drop += DOMEventHandler(
-        lambda e: on_drop(e),
+        lambda e: on_drop(e, drop_queue),
         True,
         True,
     )
 
 
 def _open_window(
-    host: str, port: int, title: str, width: int, height: int, fullscreen: bool, frameless: bool,
-    method_queue: mp.Queue, response_queue: mp.Queue,
+    host: str,
+    port: int,
+    title: str,
+    width: int,
+    height: int,
+    fullscreen: bool,
+    frameless: bool,
+    method_queue: mp.Queue,
+    response_queue: mp.Queue,
+    drop_queue: mp.Queue,
 ) -> None:
     while not helpers.is_port_open(host, port):
         time.sleep(0.1)
@@ -67,16 +78,18 @@ def _open_window(
     _start_window_method_executor(window, method_queue, response_queue, closed)
     webview.start(
         func=bind,
-        args=(window,),
+        args=(window, drop_queue),
         storage_path=tempfile.mkdtemp(),
         **core.app.native.start_args,
     )
 
 
-def _start_window_method_executor(window: webview.Window,
-                                  method_queue: mp.Queue,
-                                  response_queue: mp.Queue,
-                                  closed: Event) -> None:
+def _start_window_method_executor(
+    window: webview.Window,
+    method_queue: mp.Queue,
+    response_queue: mp.Queue,
+    closed: Event,
+) -> None:
     def execute(method: Callable, args: Tuple[Any, ...], kwargs: Dict[str, Any]) -> None:
         try:
             response = method(*args, **kwargs)
@@ -118,7 +131,15 @@ def _start_window_method_executor(window: webview.Window,
     Thread(target=window_method_executor).start()
 
 
-def activate(host: str, port: int, title: str, width: int, height: int, fullscreen: bool, frameless: bool) -> None:
+def activate(
+    host: str,
+    port: int,
+    title: str,
+    width: int,
+    height: int,
+    fullscreen: bool,
+    frameless: bool,
+) -> None:
     """Activate native mode."""
     def check_shutdown() -> None:
         while process.is_alive():
@@ -129,12 +150,22 @@ def activate(host: str, port: int, title: str, width: int, height: int, fullscre
         _thread.interrupt_main()
 
     if not optional_features.has('webview'):
-        log.error('Native mode is not supported in this configuration.\n'
-                  'Please run "pip install pywebview" to use it.')
+        log.error('Native mode is not supported in this configuration.\n Please run "pip install pywebview" to use it.')
         sys.exit(1)
 
     mp.freeze_support()
-    args = host, port, title, width, height, fullscreen, frameless, native.method_queue, native.response_queue
+    args = (
+        host,
+        port,
+        title,
+        width,
+        height,
+        fullscreen,
+        frameless,
+        native.method_queue,
+        native.response_queue,
+        native.drop_queue,
+    )
     process = mp.Process(target=_open_window, args=args, daemon=True)
     process.start()
 
@@ -155,23 +186,3 @@ def find_open_port(start_port: int = 8000, end_port: int = 8999) -> int:
         except OSError:
             pass
     raise OSError('No open port found')
-
-
-class DropEventSystem:
-    def __init__(self):
-        self._handlers = []
-
-    def emit(self, files):
-        for handler in self._handlers:
-            handler(files)
-
-    def subscribe(self, handler):
-        self._handlers.append(handler)
-
-    def unsubscribe(self, handler):
-        if handler in self._handlers:
-            self._handlers.remove(handler)
-
-
-# Create the singleton instance
-drop_events = DropEventSystem()
