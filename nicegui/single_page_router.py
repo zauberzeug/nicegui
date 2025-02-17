@@ -49,7 +49,7 @@ class SinglePageRouter:
                 target_url = parent.target_url
             else:
                 target_url = self.router_config.base_path
-        self.user_data = user_data
+        self.user_data = user_data if user_data is not None else {}
         self.child_routers: dict[str, "SinglePageRouter"] = {}
         self.use_browser_history = use_browser_history
         self.change_title = change_title
@@ -74,15 +74,40 @@ class SinglePageRouter:
         self.base_path = '/'.join(base_path_elements)
         if parent is not None:
             parent._register_child_router(self.base_path, self)
-        self.frame = Frame(base_path=self.base_path,
-                                        target_url=target_url,
-                                        included_paths=included_paths,
-                                        excluded_paths=excluded_paths,
-                                        use_browser_history=use_browser_history,
-                                        on_navigate=lambda url, history: self.navigate_to(url, history=history),
-                                        user_data={'router': self})
+
+        self.included_paths = set()
+        self.excluded_paths = set()
+        if included_paths is not None:
+            for path in included_paths:
+                cleaned = path.rstrip('/')
+                self.included_paths.add(cleaned)
+                self.included_paths.add(cleaned + '/*')
+        if excluded_paths is not None:
+            for path in excluded_paths:
+                cleaned = path.rstrip('/')
+                self.excluded_paths.add(cleaned)
+                self.excluded_paths.add(cleaned + '/*')
+
+        if user_data is None:
+            user_data = {}
+        user_data['router'] = self
+        self.frame = Frame(router=self,
+                         base_path=self.base_path,
+                         target_url=target_url,
+                         included_paths=list(self.included_paths) if self.included_paths else None,
+                         excluded_paths=list(self.excluded_paths) if self.excluded_paths else None,
+                         use_browser_history=use_browser_history,
+                         on_navigate=lambda url, history: self.navigate_to(url, history=history),
+                         user_data=user_data)
         self._on_navigate: Optional[Callable[[str], Optional[Union[SinglePageTarget, str]]]] = None
         self.views = {}
+
+    def add_included_path(self, path: str):
+        """Add a path to the included paths list"""
+        cleaned = path.rstrip('/')
+        self.included_paths.add(cleaned)
+        self.included_paths.add(cleaned + '/*')
+        self.frame._props['included_path_masks'] += [cleaned, cleaned + '/*']
 
     def add_view(self, path: str, builder: Callable, title: Optional[str] = None, **kwargs) -> Self:
         """Add a view to the router
@@ -96,7 +121,7 @@ class SinglePageRouter:
             raise ValueError(f'View with path {path} already exists')
         self.views[path] = RouterView(path, builder, title, **kwargs)
         absolute_path = (self.base_path.rstrip('/') + path).rstrip('/')
-        self.frame.add_included_path(absolute_path)
+        self.add_included_path(absolute_path)
         return self
 
     @property
@@ -202,8 +227,17 @@ class SinglePageRouter:
             run_safe(target.on_pre_update, **handler_kwargs)
         self.clear()
         self.user_data['target'] = target
-        # check if object address of real target and user_data target are the same
-        self.frame.update_content(target.builder, handler_kwargs, target.title, target.fragment)
+
+        async def build() -> None:
+            with self.frame:
+                result = run_safe(target.builder, **handler_kwargs)
+                if result:
+                    await result
+                if target.fragment is not None:
+                    await ui.run_javascript(f'window.location.href = "#{target.fragment}";')
+
+        background_tasks.create(build())
+
         if self.change_title and target.builder and len(self.child_routers) == 0:
             # note: If the router is just a container for sub routers, the title is not updated here but
             # in the sub router's update_content method
@@ -260,7 +294,9 @@ class SinglePageRouter:
         :param path: The path of the child router
         :param frame: The child router"""
         self.child_routers[path] = frame
-        self.frame.child_frame_paths = list(self.child_routers.keys())
+        # Update the frame's child_frame_paths property to trigger the setter
+        paths = list(self.child_routers.keys())
+        self.frame.child_frame_paths = paths
 
     @staticmethod
     def _page_not_found() -> None:

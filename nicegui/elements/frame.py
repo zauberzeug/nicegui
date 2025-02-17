@@ -11,6 +11,7 @@ class Frame(ui.element, component='frame.js'):
     is rendered and updated."""
 
     def __init__(self,
+                 router: 'SinglePageRouter',
                  base_path: str,
                  target_url: Optional[str] = None,
                  included_paths: Optional[list[str]] = None,
@@ -29,27 +30,19 @@ class Frame(ui.element, component='frame.js'):
         :param user_data: Optional user data which is passed to the builder functions of the frame
         """
         super().__init__()
-        included_masks = []
-        excluded_masks = []
-        if included_paths is not None:
-            for path in included_paths:
-                cleaned = path.rstrip('/')
-                included_masks.append(cleaned)
-                included_masks.append(cleaned + '/*')
-        if excluded_paths is not None:
-            for path in excluded_paths:
-                cleaned = path.rstrip('/')
-                excluded_masks.append(cleaned)
-                excluded_masks.append(cleaned + '/*')
+        self.router = router
+        if user_data is None:
+            user_data = {}
+        user_data['router'] = router
         self._props['target_url'] = target_url
-        self._props['included_path_masks'] = included_masks
-        self._props['excluded_path_masks'] = excluded_masks
+        self._props['included_path_masks'] = included_paths if included_paths is not None else []
+        self._props['excluded_path_masks'] = excluded_paths if excluded_paths is not None else []
         self._props['base_path'] = base_path
         self._props['browser_history'] = use_browser_history
-        self._props['child_frames'] = []
+        self._props['child_frame_paths'] = []
         self.on('open', lambda e: self.handle_navigate(e.args[0], e.args[1]))
         self.on_navigate = on_navigate
-        self.user_data = user_data if user_data is not None else {}
+        self.user_data = user_data
 
     def handle_navigate(self, url: str, history=True):
         """Navigate to a new url
@@ -69,32 +62,6 @@ class Frame(ui.element, component='frame.js'):
     def target_url(self, value: str):
         """Set the target url of the frame"""
         self._props['target_url'] = value
-
-    def add_included_path(self, path: str):
-        """Add a path to the included paths list"""
-        self._props['included_path_masks'] += [path]
-
-    def update_content(self,
-                       builder: Callable,
-                       builder_kwargs: dict,
-                       title: Optional[str],
-                       target_fragment: Optional[str]):
-        """Update the content of the frame
-
-        :param builder: The builder function which builds the content of the page
-        :param builder_kwargs: The keyword arguments to pass to the builder function
-        :param title: The title of the page
-        :param target_fragment: The fragment to navigate to after the content has been loaded"""
-
-        async def build() -> None:
-            with self:
-                result = run_safe(builder, **builder_kwargs)
-                if result:
-                    await result
-                if target_fragment is not None:
-                    await ui.run_javascript(f'window.location.href = "#{target_fragment}";')
-
-        background_tasks.create(build())
 
     def clear(self) -> None:
         """Clear the content of the frame and removes all references to sub frames"""

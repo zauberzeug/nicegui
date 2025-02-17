@@ -147,6 +147,132 @@ def test_outlet_with_async_sub_outlet(screen: Screen):
     screen.should_contain('sub')
 
 
+def test_path_conflict(screen: Screen):
+    """Test that a page and an outlet can share a root path"""
+    @ui.page('/mytestpage')
+    def page():
+        ui.label('Test Page')
+
+    @ui.outlet('/')
+    def layout():
+        ui.label('main layout')
+        yield
+
+    @layout.view('/')
+    def main_content():
+        ui.label('main content')
+
+    screen.open('/mytestpage')
+    screen.should_contain('Test Page')
+    screen.open('/')
+    screen.should_contain('main layout')
+    screen.should_contain('main content')
+
+
+def test_excluded_paths(screen: Screen):
+    """Test that paths defined elsewhere are automatically excluded from the outlet"""
+    @ui.page('/excluded')
+    def excluded_page():
+        ui.label('Excluded Page')
+        ui.label('No outlet content')  # Add this to make it clearer this is the page content
+
+    @ui.outlet('/')
+    def layout():
+        ui.label('main layout')
+        ui.link('Go to excluded', '/excluded')
+        ui.link('Go to allowed', '/allowed')
+        yield
+
+    @layout.view('/allowed')
+    def allowed_page():
+        ui.label('Allowed Page')
+
+    # Test initial page
+    screen.open('/')
+    screen.should_contain('main layout')
+
+    # Test navigation to excluded path
+    screen.open('/excluded')
+    screen.should_contain('Excluded Page')
+    screen.should_not_contain('main layout')  # Verify outlet content is not present
+
+    # Test navigation to allowed path
+    screen.open('/allowed')
+    screen.wait(1.0)  # wait for navigation
+    screen.should_contain('Allowed Page')
+    screen.should_contain('main layout')  # Verify outlet content is present
+
+    # Test navigation to excluded path via click
+    screen.click('Go to excluded')
+    screen.wait(1.0)  # wait for navigation
+    screen.should_contain('Excluded Page')
+    screen.should_not_contain('main layout')  # Verify outlet content is not present
+
+
+def test_sub_outlet_layout_calls(screen: Screen):
+    """Test that the main layout builder is not called when switching pages in a sub outlet"""
+    main_layout_calls = 0
+    sub_layout_calls = 0
+
+    @ui.outlet('/')
+    def main_layout():
+        nonlocal main_layout_calls
+        main_layout_calls += 1
+        ui.label('main layout')
+        ui.link('Go to Page 1', '/sub/page1')  # Add link in root layout
+        yield
+
+    @main_layout.outlet('/sub')
+    def sub_layout():
+        nonlocal sub_layout_calls
+        sub_layout_calls += 1
+        ui.label('sub layout')
+        yield
+
+    @sub_layout.view('/page1')
+    def page1():
+        ui.label('Page 1')
+        ui.link('Go to Page 2', '/sub/page2')
+
+    @sub_layout.view('/page2')
+    def page2():
+        ui.label('Page 2')
+        ui.link('Back to Page 1', '/sub/page1')
+
+    @main_layout.view('/')
+    def root_view():
+        ui.label('Root Page')
+
+    # Initial page load
+    screen.open('/')
+    screen.wait(1.0)
+    screen.should_contain('main layout')
+    screen.should_contain('Root Page')
+    assert main_layout_calls == 1
+    assert sub_layout_calls == 0
+
+    # Navigate to page1 via click
+    screen.click('Go to Page 1')
+    screen.wait(0.5)
+    screen.should_contain('Page 1')
+    assert main_layout_calls == 1  # Should still be 1
+    assert sub_layout_calls == 1
+
+    # Navigate to page2 via click
+    screen.click('Go to Page 2')
+    screen.wait(0.5)
+    screen.should_contain('Page 2')
+    assert main_layout_calls == 1  # Should still be 1
+    assert sub_layout_calls == 1  # Should still be 1
+
+    # Navigate back to page1 via click
+    screen.click('Back to Page 1')
+    screen.wait(0.5)
+    screen.should_contain('Page 1')
+    assert main_layout_calls == 1  # Should still be 1
+    assert sub_layout_calls == 1  # Should still be 1
+
+
 def test_nested_outlets_with_yield(screen: Screen):
     # First level outlet
     @ui.outlet('/')
