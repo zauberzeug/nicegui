@@ -21,10 +21,11 @@ def main_demo() -> None:
     You can find more map styles at <https://leaflet-extras.github.io/leaflet-providers/preview/>.
     Each call to `tile_layer` stacks upon the previous ones.
     So if you want to change the map style, you have to remove the default one first.
-    Both WMTS and WMS map services are supported.
+
+    *Updated in version 2.12.0: Both WMTS and WMS map services are supported.*
 ''')
 def map_style() -> None:
-    # WMTS (Web Map Tile Service)
+    ui.label('Web Map Tile Service')
     map1 = ui.leaflet(center=(51.505, -0.090), zoom=3)
     map1.clear_layers()
     map1.tile_layer(
@@ -36,7 +37,8 @@ def map_style() -> None:
                 'Map style: &copy; <a href="https://opentopomap.org">OpenTopoMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>)'
         },
     )
-    # WMS (Web Map Service)
+
+    ui.label('Web Map Service')
     map2 = ui.leaflet(center=(51.505, -0.090), zoom=3)
     map2.clear_layers()
     map2.wms_layer(
