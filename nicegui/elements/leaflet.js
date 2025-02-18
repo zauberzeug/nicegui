@@ -127,7 +127,11 @@ export default {
   },
   methods: {
     add_layer(layer, id) {
-      const l = L[layer.type](...layer.args);
+      let obj = L;
+      for (const part of layer.type.split(".")) {
+        obj = obj[part];
+      }
+      const l = obj(...layer.args);
       l.id = id;
       l.addTo(this.map);
     },
