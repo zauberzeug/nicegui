@@ -121,6 +121,9 @@ target-version = "py38"
 indent-width = 4
 line-length = 120
 
+[tool.ruff.format]
+quote-style = "single"
+
 [tool.ruff.lint]
 # See complete list: https://docs.astral.sh/ruff/rules/
 select = [
