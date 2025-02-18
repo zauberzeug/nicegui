@@ -37,62 +37,10 @@
     {{ body_html | safe }}
 
     <div id="app"></div>
-    <script>
-      const messages = {
-        'en-US': {
-          connectionLost: 'Connection lost.',
-          tryingReconnect: 'Trying to reconnect...'
-        },
-        'zh-CN': {
-          connectionLost: '连接丢失',
-          tryingReconnect: '正在尝试重新连接...'
-        },
-        'zh-TW': {
-          connectionLost: '連線丟失',
-          tryingReconnect: '正在嘗試重新連線...'
-        },
-        'ja-JP': {
-          connectionLost: '接続が切断されました',
-          tryingReconnect: '再接続を試みています...'
-        },
-        'ko-KR': {
-          connectionLost: '연결이 끊어졌습니다',
-          tryingReconnect: '다시 연결하는 중...'
-        },
-        'fr-FR': {
-          connectionLost: 'Connexion perdue',
-          tryingReconnect: 'Tentative de reconnexion...'
-        },
-        'de-DE': {
-          connectionLost: 'Verbindung verloren',
-          tryingReconnect: 'Versuche erneut zu verbinden...'
-        },
-        'it-IT': {
-          connectionLost: 'Connessione persa',
-          tryingReconnect: 'Tentativo di riconnessione...'
-        },
-        'es-ES': {
-          connectionLost: 'Conexión perdida',
-          tryingReconnect: 'Intentando reconectar...'
-        },
-        'ru-RU': {
-          connectionLost: 'Соединение потеряно',
-          tryingReconnect: 'Попытка переподключения...'
-        }
-      };
-      
-      // 默认使用英文 Default to English
-      const currentLang = '{{ language }}';
-      const currentMessages = messages[currentLang] || messages['en-US'];
-    </script>
     <div id="popup" aria-hidden="true">
-      <span id="connection-lost"></span>
-      <span id="trying-reconnect"></span>
+      <span>{{ translations.connection_lost }}</span>
+      <span>{{ translations.trying_to_reconnect }}</span>
     </div>
-    <script>
-      document.getElementById('connection-lost').textContent = currentMessages.connectionLost;
-      document.getElementById('trying-reconnect').textContent = currentMessages.tryingReconnect;
-    </script>
     <script type="module">
       const app = createApp(parseElements(String.raw`{{ elements | safe }}`), {
         version: "{{ version }}",
