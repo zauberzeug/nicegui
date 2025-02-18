@@ -7,7 +7,7 @@ import sys
 import time
 from threading import Thread
 
-from temp_webview.window import open_window, register
+from nicegui_webview.window import open_window, register
 
 from .. import core, optional_features
 from ..logging import log
