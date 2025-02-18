@@ -83,6 +83,7 @@ __all__ = [
     'query',
     'radio',
     'range',
+    'rating',
     'refreshable',
     'refreshable_method',
     'restructured_text',
@@ -192,6 +193,7 @@ from .elements.pyplot import Pyplot as pyplot
 from .elements.query import Query as query
 from .elements.radio import Radio as radio
 from .elements.range import Range as range  # pylint: disable=redefined-builtin
+from .elements.rating import Rating as rating
 from .elements.restructured_text import ReStructuredText as restructured_text
 from .elements.row import Row as row
 from .elements.scene import Scene as scene
