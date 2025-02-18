@@ -16,6 +16,7 @@ class Leaflet(Element, component='leaflet.js', default_classes='nicegui-leaflet'
     from .leaflet_layers import GenericLayer as generic_layer
     from .leaflet_layers import Marker as marker
     from .leaflet_layers import TileLayer as tile_layer
+    from .leaflet_layers import WmsLayer as wms_layer
 
     center = binding.BindableProperty(lambda sender, value: cast(Leaflet, sender).set_center(value))
     zoom = binding.BindableProperty(lambda sender, value: cast(Leaflet, sender).set_zoom(value))

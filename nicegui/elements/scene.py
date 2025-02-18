@@ -112,7 +112,7 @@ class Scene(Element,
         self.objects: Dict[str, Object3D] = {}
         self.stack: List[Union[Object3D, SceneObject]] = [SceneObject()]
         self._click_handlers = [on_click] if on_click else []
-        self._props['click_events'] = click_events
+        self._props['click_events'] = click_events[:]
         self._drag_start_handlers = [on_drag_start] if on_drag_start else []
         self._drag_end_handlers = [on_drag_end] if on_drag_end else []
         self.on('init', self._handle_init)

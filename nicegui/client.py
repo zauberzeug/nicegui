@@ -23,6 +23,7 @@ from .javascript_request import JavaScriptRequest
 from .logging import log
 from .observables import ObservableDict
 from .outbox import Outbox
+from .translations import translations
 from .version import __version__
 
 if TYPE_CHECKING:
@@ -157,6 +158,7 @@ class Client:
                 'favicon_url': get_favicon_url(self.page, prefix),
                 'dark': str(self.page.resolve_dark()),
                 'language': self.page.resolve_language(),
+                'translations': translations[self.page.resolve_language()],
                 'prefix': prefix,
                 'tailwind': core.app.config.tailwind,
                 'prod_js': core.app.config.prod_js,
