@@ -1,14 +1,15 @@
 # pylint: disable=C0116
 import inspect
+import multiprocessing as mp
 import warnings
-from multiprocessing import Queue
 from typing import Any, Callable, Tuple
 
 from .. import run
 from ..logging import log
 
-method_queue: Queue = Queue()
-response_queue: Queue = Queue()
+method_queue: mp.Queue = mp.Queue()
+response_queue: mp.Queue = mp.Queue()
+drop_queue: mp.Queue = mp.Queue()
 
 try:
     with warnings.catch_warnings():
@@ -18,7 +19,6 @@ try:
         from webview.window import FixPoint
 
     class WindowProxy(webview.Window):
-
         def __init__(self) -> None:  # pylint: disable=super-init-not-called
             pass  # NOTE we don't call super().__init__ here because this is just a proxy to the actual window
 
@@ -131,6 +131,7 @@ try:
                 except Exception:
                     log.exception(f'error in {name}')
                     return None
+
             name = inspect.currentframe().f_back.f_code.co_name  # type: ignore
             return await run.io_bound(wrapper, *args, **kwargs)
 

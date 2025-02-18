@@ -21,14 +21,40 @@ try:
         # webview depends on bottle which uses the deprecated CGI function (https://github.com/bottlepy/bottle/issues/1403)
         warnings.filterwarnings('ignore', category=DeprecationWarning)
         import webview
+        from webview.dom import DOMEventHandler
     optional_features.register('webview')
 except ModuleNotFoundError:
     pass
 
 
+def on_drop(e: dict[str, Any], drop_queue: mp.Queue):
+    files = e['dataTransfer']['files']
+    if len(files) == 0:
+        return
+
+    for file in files:
+        drop_queue.put(file.get('pywebviewFullPath'))
+
+
+def bind(window: webview.Window, drop_queue: mp.Queue) -> None:
+    window.dom.document.events.drop += DOMEventHandler(
+        lambda e: on_drop(e, drop_queue),
+        True,
+        True,
+    )
+
+
 def _open_window(
-    host: str, port: int, title: str, width: int, height: int, fullscreen: bool, frameless: bool,
-    method_queue: mp.Queue, response_queue: mp.Queue,
+    host: str,
+    port: int,
+    title: str,
+    width: int,
+    height: int,
+    fullscreen: bool,
+    frameless: bool,
+    method_queue: mp.Queue,
+    response_queue: mp.Queue,
+    drop_queue: mp.Queue,
 ) -> None:
     while not helpers.is_port_open(host, port):
         time.sleep(0.1)
@@ -47,13 +73,20 @@ def _open_window(
     closed = Event()
     window.events.closed += closed.set
     _start_window_method_executor(window, method_queue, response_queue, closed)
-    webview.start(storage_path=tempfile.mkdtemp(), **core.app.native.start_args)
+    webview.start(
+        func=bind,
+        args=(window, drop_queue),
+        storage_path=tempfile.mkdtemp(),
+        **core.app.native.start_args,
+    )
 
 
-def _start_window_method_executor(window: webview.Window,
-                                  method_queue: mp.Queue,
-                                  response_queue: mp.Queue,
-                                  closed: Event) -> None:
+def _start_window_method_executor(
+    window: webview.Window,
+    method_queue: mp.Queue,
+    response_queue: mp.Queue,
+    closed: Event,
+) -> None:
     def execute(method: Callable, args: Tuple[Any, ...], kwargs: Dict[str, Any]) -> None:
         try:
             response = method(*args, **kwargs)
@@ -95,8 +128,17 @@ def _start_window_method_executor(window: webview.Window,
     Thread(target=window_method_executor).start()
 
 
-def activate(host: str, port: int, title: str, width: int, height: int, fullscreen: bool, frameless: bool) -> None:
+def activate(
+    host: str,
+    port: int,
+    title: str,
+    width: int,
+    height: int,
+    fullscreen: bool,
+    frameless: bool,
+) -> None:
     """Activate native mode."""
+
     def check_shutdown() -> None:
         while process.is_alive():
             time.sleep(0.1)
@@ -106,12 +148,22 @@ def activate(host: str, port: int, title: str, width: int, height: int, fullscre
         _thread.interrupt_main()
 
     if not optional_features.has('webview'):
-        log.error('Native mode is not supported in this configuration.\n'
-                  'Please run "pip install pywebview" to use it.')
+        log.error('Native mode is not supported in this configuration.\n Please run "pip install pywebview" to use it.')
         sys.exit(1)
 
     mp.freeze_support()
-    args = host, port, title, width, height, fullscreen, frameless, native.method_queue, native.response_queue
+    args = (
+        host,
+        port,
+        title,
+        width,
+        height,
+        fullscreen,
+        frameless,
+        native.method_queue,
+        native.response_queue,
+        native.drop_queue,
+    )
     process = mp.Process(target=_open_window, args=args, daemon=True)
     process.start()
 
