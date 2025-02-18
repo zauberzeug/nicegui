@@ -1,5 +1,6 @@
 import asyncio
 import queue
+from typing import Optional
 
 from typing_extensions import Self
 
@@ -17,6 +18,7 @@ class DropZone(Element, component='drop_zone.js'):
         super().__init__()
 
         self.default_classes('relative')
+        self.classes('relative')
 
         self.drop_style = drop_style
         if self.drop_style is None:
@@ -27,7 +29,7 @@ class DropZone(Element, component='drop_zone.js'):
         self.on('drag_over', handler=self._set_drop_style)
         self.on('drag_leave', handler=self._clear_drop_style)
         self.on('__file-dropped', handler=self.file_dropped_handler)
-        self.check_task = None
+        self.check_task: Optional[asyncio.Task] = None
 
     def file_dropped_handler(self, event: GenericEventArguments):
         if self.check_task is None or self.check_task.done():
