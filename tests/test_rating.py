@@ -15,5 +15,4 @@ def test_rating_click(screen: Screen):
     screen.should_contain('Value: 4')
 
     rating_icons[3].click()  # already selected, should unselect
-    screen.wait(0.5)
     screen.should_contain('Value: 0')
