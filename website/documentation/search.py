@@ -23,7 +23,7 @@ def build_search_index() -> None:
     search_index.extend([
         {
             'title': f'{documentation.heading.replace("*", "")}: {part.title}',
-            'content': part.description or '',
+            'content': part.description or part.search_text or '',
             'format': part.description_format,
             'url': f'/documentation/{documentation.name}#{part.link_target}',
         }

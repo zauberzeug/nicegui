@@ -3,13 +3,11 @@ import mimetypes
 import urllib.parse
 from contextlib import asynccontextmanager
 from pathlib import Path
-from typing import Dict
+from typing import Any, Dict
 
 import socketio
 from fastapi import HTTPException, Request
-from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import FileResponse, Response
-from fastapi.staticfiles import StaticFiles
 
 from . import air, background_tasks, binding, core, favicon, helpers, json, run, welcome
 from .app import App
@@ -18,9 +16,9 @@ from .dependencies import js_components, libraries, resources
 from .error import error_content
 from .json import NiceGUIJSONResponse
 from .logging import log
-from .middlewares import RedirectWithPrefixMiddleware
 from .page import page
 from .slot import Slot
+from .staticfiles import CacheControlledStaticFiles
 from .version import __version__
 
 
@@ -54,9 +52,7 @@ app.mount('/_nicegui_ws/', sio_app)
 mimetypes.add_type('text/javascript', '.js')
 mimetypes.add_type('text/css', '.css')
 
-app.add_middleware(GZipMiddleware)
-app.add_middleware(RedirectWithPrefixMiddleware)
-static_files = StaticFiles(
+static_files = CacheControlledStaticFiles(
     directory=(Path(__file__).parent / 'static').resolve(),
     follow_symlink=True,
 )
@@ -163,14 +159,21 @@ async def _exception_handler_500(request: Request, exception: Exception) -> Resp
 
 
 @sio.on('handshake')
-async def _on_handshake(sid: str, data: Dict[str, str]) -> bool:
+async def _on_handshake(sid: str, data: Dict[str, Any]) -> bool:
     client = Client.instances.get(data['client_id'])
     if not client:
         return False
-    client.environ = sio.get_environ(sid)
+    if data.get('old_tab_id'):
+        app.storage.copy_tab(data['old_tab_id'], data['tab_id'])
     client.tab_id = data['tab_id']
-    await sio.enter_room(sid, client.id)
-    client.handle_handshake()
+    if sid[:5].startswith('test-'):
+        client.environ = {'asgi.scope': {'description': 'test client', 'type': 'test'}}
+    else:
+        client.environ = sio.get_environ(sid)
+        await sio.enter_room(sid, client.id)
+    client.handle_handshake(sid, data['document_id'], data.get('next_message_id'))
+    assert client.tab_id is not None
+    await core.app.storage._create_tab_storage(client.tab_id)  # pylint: disable=protected-access
     return True
 
 
@@ -181,7 +184,7 @@ def _on_disconnect(sid: str) -> None:
     client_id = query['client_id'][0]
     client = Client.instances.get(client_id)
     if client:
-        client.handle_disconnect()
+        client.handle_disconnect(sid)
 
 
 @sio.on('event')
@@ -198,3 +201,11 @@ def _on_javascript_response(_: str, msg: Dict) -> None:
     if not client:
         return
     client.handle_javascript_response(msg)
+
+
+@sio.on('ack')
+def _on_ack(_: str, msg: Dict) -> None:
+    client = Client.instances.get(msg['client_id'])
+    if not client:
+        return
+    client.outbox.prune_history(msg['next_message_id'])

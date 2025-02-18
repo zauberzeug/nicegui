@@ -1,4 +1,5 @@
 import { loadResource } from "../../static/utils/resources.js";
+import { cleanObject } from "../../static/utils/json.js";
 
 export default {
   template: "<div></div>",
@@ -8,12 +9,15 @@ export default {
     options: Object,
     draw_control: Object,
     resource_path: String,
+    hide_drawn_items: Boolean,
+    additional_resources: Array,
   },
   async mounted() {
     await this.$nextTick(); // NOTE: wait for window.path_prefix to be set
     await Promise.all([
       loadResource(window.path_prefix + `${this.resource_path}/leaflet/leaflet.css`),
       loadResource(window.path_prefix + `${this.resource_path}/leaflet/leaflet.js`),
+      ...this.additional_resources.map((resource) => loadResource(resource)),
     ]);
     if (this.draw_control) {
       await Promise.all([
@@ -62,8 +66,7 @@ export default {
       "preclick",
       "zoomanim",
     ]) {
-      this.map.on(type, async (e) => {
-        await this.$nextTick(); // NOTE: allow zoom and center to both be updated
+      this.map.on(type, (e) => {
         this.$emit(`map-${type}`, {
           ...e,
           originalEvent: undefined,
@@ -85,10 +88,18 @@ export default {
     if (this.draw_control) {
       for (const key in L.Draw.Event) {
         const type = L.Draw.Event[key];
-        this.map.on(type, (e) => {
+        this.map.on(type, async (e) => {
+          await this.$nextTick(); // NOTE: allow drawn layers to be added
+          const cleanedObject = cleanObject(e, [
+            "_map",
+            "_events",
+            "_eventParents",
+            "_handlers",
+            "_mapToAdd",
+            "_initHooksCalled",
+          ]);
           this.$emit(type, {
-            ...e,
-            layer: e.layer ? { ...e.layer, editing: undefined, _events: undefined } : undefined,
+            ...cleanedObject,
             target: undefined,
             sourceTarget: undefined,
           });
@@ -97,10 +108,16 @@ export default {
       const drawnItems = new L.FeatureGroup();
       this.map.addLayer(drawnItems);
       const drawControl = new L.Control.Draw({
-        edit: { featureGroup: drawnItems },
-        ...this.draw_control,
+        draw: this.draw_control.draw,
+        edit: {
+          ...this.draw_control.edit,
+          featureGroup: drawnItems,
+        },
       });
       this.map.addControl(drawControl);
+      if (!this.hide_drawn_items) {
+        this.map.on("draw:created", (e) => drawnItems.addLayer(e.layer));
+      }
     }
     const connectInterval = setInterval(async () => {
       if (window.socket.id === undefined) return;
@@ -108,12 +125,13 @@ export default {
       clearInterval(connectInterval);
     }, 100);
   },
-  updated() {
-    this.map?.setView(this.center, this.zoom);
-  },
   methods: {
     add_layer(layer, id) {
-      const l = L[layer.type](...layer.args);
+      let obj = L;
+      for (const part of layer.type.split(".")) {
+        obj = obj[part];
+      }
+      const l = obj(...layer.args);
       l.id = id;
       l.addTo(this.map);
     },

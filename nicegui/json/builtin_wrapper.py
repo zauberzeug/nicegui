@@ -1,14 +1,11 @@
+import importlib.util
 import json
 from datetime import date, datetime
 from typing import Any, Optional, Tuple
 
 from fastapi import Response
 
-try:
-    import numpy as np
-    has_numpy = True
-except ImportError:
-    has_numpy = False
+HAS_NUMPY = importlib.util.find_spec('numpy') is not None
 
 
 def dumps(obj: Any,
@@ -51,12 +48,14 @@ class NumpyJsonEncoder(json.JSONEncoder):
     """Special json encoder that supports NumPy arrays and date/datetime objects."""
 
     def default(self, o):
-        if has_numpy and isinstance(o, np.integer):
-            return int(o)
-        if has_numpy and isinstance(o, np.floating):
-            return float(o)
-        if has_numpy and isinstance(o, np.ndarray):
-            return o.tolist()
+        if HAS_NUMPY:
+            import numpy as np  # pylint: disable=import-outside-toplevel
+            if isinstance(o, np.integer):
+                return int(o)
+            if isinstance(o, np.floating):
+                return float(o)
+            if isinstance(o, np.ndarray):
+                return o.tolist()
         if isinstance(o, (datetime, date)):
             return o.isoformat()
         return json.JSONEncoder.default(self, o)

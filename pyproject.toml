@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "nicegui"
-version = "1.4.29-dev"
+version = "2.11.1-dev"
 description = "Create web-based user interfaces with Python. The nice way."
 authors = ["Zauberzeug GmbH <info@zauberzeug.com>"]
 license = "MIT"
@@ -14,27 +14,28 @@ typing-extensions = ">=4.0.0"
 markdown2 = ">=2.4.7,!=2.4.11"
 Pygments = ">=2.15.1,<3.0.0"
 uvicorn = {extras = ["standard"], version = ">=0.22.0"}
-fastapi = ">=0.109.1,<0.110.0" # https://github.com/zauberzeug/nicegui/security/dependabot/27
+fastapi = ">=0.109.1"
 python-socketio = {extras = ["asyncio-client"], version = ">=5.10.0"} # version min: see https://github.com/zauberzeug/nicegui/issues/1809
 vbuild = ">=0.8.2"
 watchfiles = ">=0.18.1"
-jinja2 = "^3.1.4" # https://github.com/zauberzeug/nicegui/security/dependabot/32
-python-multipart = ">=0.0.7"
+jinja2 = "^3.1.5" # https://github.com/zauberzeug/nicegui/security/dependabot/43
+python-multipart = ">=0.0.18"
 orjson = {version = ">=3.9.15", markers = "platform_machine != 'i386' and platform_machine != 'i686'"} # https://github.com/zauberzeug/nicegui/security/dependabot/29, orjson does not support 32bit
 itsdangerous = "^2.1.2"
 aiofiles = ">=23.1.0"
 pywebview = { version = "^5.0.1", optional = true }
-plotly = { version = "^5.13.0", optional = true }
+plotly = { version = ">=5.13,<7.0", optional = true }
 matplotlib = { version = "^3.5.0", optional = true }
 httpx = ">=0.24.0"
-nicegui-highcharts = { version = "^1.0.1", optional = true }
+nicegui-highcharts = { version = "^2.0.2", optional = true }
 ifaddr = ">=0.2.0"
-aiohttp = ">=3.9.2" # https://github.com/zauberzeug/nicegui/security/dependabot/25 and 26
+aiohttp = ">=3.10.2" # https://github.com/zauberzeug/nicegui/security/dependabot/36
 libsass = { version = "^0.23.0", optional = true }
-docutils = "^0.19"
+docutils = ">=0.19.0"
 requests = ">=2.32.0" # https://github.com/zauberzeug/nicegui/security/dependabot/33
 urllib3 = ">=1.26.18,!=2.0.0,!=2.0.1,!=2.0.2,!=2.0.3,!=2.0.4,!=2.0.5,!=2.0.6,!=2.0.7,!=2.1.0,!=2.2.0,!=2.2.1" # https://github.com/zauberzeug/nicegui/security/dependabot/34
 certifi = ">=2024.07.04" # https://github.com/zauberzeug/nicegui/security/dependabot/35
+redis = { version = ">=4.0.0", optional = true }
 
 [tool.poetry.extras]
 native = ["pywebview"]
@@ -42,35 +43,49 @@ plotly = ["plotly"]
 matplotlib = ["matplotlib"]
 highcharts = ["nicegui-highcharts"]
 sass = ["libsass"]
-
+redis = ["redis"]
 [tool.poetry.group.dev.dependencies]
-icecream = "^2.1.0"
-autopep8 = "^1.5.7"
+autopep8 = ">=1.5.7,<3.0.0"
 debugpy = "^1.3.0"
-pytest-selenium = "^4.0.0"
-pytest-asyncio = ">=0.19.0"
+pytest-selenium = "^4.1.0"
+pytest-asyncio = ">=0.23.0"
 pytest-watcher = "^0.4.2"
-pytest = ">=6.2.5,<8"
+pytest = "^8.2.2"
 itsdangerous = "^2.1.2" # required by SessionMiddleware (see https://fastapi.tiangolo.com/?h=itsdangerous#optional-dependencies)
-pandas = "^2.0.0"
+pandas = [
+    {version = "^2.0.0", python = "<3.13"},
+    {version = "^2.2.3", python = ">=3.13,<3.14"}
+]
 secure = ">=0.3.0"
-webdriver-manager = "^3.8.6"
+webdriver-manager = ">=3.8.6,<5.0.0"
 numpy = [
     {version = "^1.24.0", python = "~3.8"},
-    {version = "^1.26.0", python = ">=3.9,<3.13"}
+    {version = ">=1.26.0", python = ">=3.9,<3.14"}
 ]
 selenium = "^4.11.2"
 pyecharts = "^2.0.4"
-ruff = ">=0.3.5"
-pre-commit = ">=3.5.0"
+ruff = ">=0.8.1"
+pre-commit = [
+    {version = "<4.0.0", python = "<3.9"},
+    {version = ">=4.0.0", python = ">=3.9,<3.14"}
+]
 isort = "^5.11"
+polars = [
+    {version = "^1.8.0", python = "~3.8"},
+    {version = "^1.12.0", python = ">=3.9,<3.14"}
+]
+mypy = "^1.13.0"
+pylint = [
+    {version = "^3.1.0", python = "~3.8"},
+    {version = ">=3.3.1", python = ">=3.9,<3.13"}
+]
 
 [tool.poetry.scripts]
 nicegui-pack = "nicegui.scripts.pack:main"
 
 [build-system]
 requires = [
-    "setuptools>=30.3.0,<50",
+    "setuptools>=30.3.0",
     "poetry-core>=1.0.0"
 ]
 build-backend = "poetry.core.masonry.api"
@@ -78,17 +93,21 @@ build-backend = "poetry.core.masonry.api"
 [tool.pytest.ini_options]
 addopts = "--driver Chrome"
 asyncio_mode = "auto"
+testpaths = ["tests"]
+asyncio_default_fixture_loop_scope = "function"
 
 [tool.mypy]
 python_version = "3.8"
+install_types = true
+check_untyped_defs = true
 
 [[tool.mypy.overrides]]
 module = [
-    "icecream",
     "markdown2",
     "matplotlib.*",
     "nicegui_highcharts",
     "plotly.*",
+    "polars.*",
     "pyecharts.*",
     "sass",
     "socketio.*",
@@ -98,6 +117,7 @@ module = [
 ignore_missing_imports = true
 
 [tool.ruff]
+target-version = "py38"
 indent-width = 4
 line-length = 120
 
@@ -115,6 +135,7 @@ select = [
 ]
 fixable = [
     "I",  # isort
+    "RUF022", # `__all__` is not sorted
 ]
 ignore = [
     "E501", # line too long
@@ -128,4 +149,28 @@ ignore = [
 ]
 exclude = [
     "website/documentation/content/*",
+]
+
+[tool.pylint]
+disable = [
+    "C0103", # Invalid name (e.g., variable/function/class naming conventions)
+    "C0114", # Missing module docstring
+    "C0115", # Missing class docstring
+    "C0301", # Line too long (exceeds character limit)
+    "C0302", # Too many lines in module
+    "R0801", # Similar lines in files
+    "R0901", # Too many ancestors
+    "R0902", # Too many instance attributes
+    "R0903", # Too few public methods
+    "R0904", # Too many public methods
+    "R0911", # Too many return statements
+    "R0912", # Too many branches
+    "R0913", # Too many arguments
+    "R0914", # Too many local variables
+    "R0915", # Too many statements
+    "R1705", # Unnecessary "else" after "return"
+    "W0102", # Dangerous default value as argument
+    "W0718", # Catching too general exception
+    "W1203", # Use % formatting in logging functions
+    "W1514" # Using open without explicitly specifying an encoding
 ]

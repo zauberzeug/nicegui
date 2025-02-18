@@ -1,9 +1,7 @@
-from typing import Any, Callable, Optional, Union
-
-from typing_extensions import Self
+from typing import Optional, Union
 
 from ..element import Element
-from ..logging import log
+from ..events import ClickEventArguments, Handler
 from .context_menu import ContextMenu
 from .item import Item
 from .mixins.value_element import ValueElement
@@ -24,6 +22,11 @@ class Menu(ValueElement):
         """
         super().__init__(tag='q-menu', value=value, on_value_change=None)
 
+        # https://github.com/zauberzeug/nicegui/issues/1738
+        self._props.add_warning('touch-position',
+                                'The prop "touch-position" is not supported by `ui.menu`. '
+                                'Use "ui.context_menu()" instead.')
+
     def open(self) -> None:
         """Open the menu."""
         self.value = True
@@ -36,21 +39,12 @@ class Menu(ValueElement):
         """Toggle the menu."""
         self.value = not self.value
 
-    def props(self, add: Optional[str] = None, *, remove: Optional[str] = None) -> Self:
-        super().props(add, remove=remove)
-        if 'touch-position' in self._props:
-            # https://github.com/zauberzeug/nicegui/issues/1738
-            del self._props['touch-position']
-            log.warning('The prop "touch-position" is not supported by `ui.menu`.\n'
-                        'Use "ui.context_menu()" instead.')
-        return self
-
 
 class MenuItem(Item):
 
     def __init__(self,
                  text: str = '',
-                 on_click: Optional[Callable[..., Any]] = None, *,
+                 on_click: Optional[Handler[ClickEventArguments]] = None, *,
                  auto_close: bool = True,
                  ) -> None:
         """Menu Item

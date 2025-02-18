@@ -1,10 +1,10 @@
-from typing import Any, Callable, Dict, Optional, cast
+from typing import Dict, List, Optional, cast
 
 from fastapi import Request
 from starlette.datastructures import UploadFile
 from typing_extensions import Self
 
-from ..events import MultiUploadEventArguments, UiEventArguments, UploadEventArguments, handle_event
+from ..events import Handler, MultiUploadEventArguments, UiEventArguments, UploadEventArguments, handle_event
 from ..nicegui import app
 from .mixins.disableable_element import DisableableElement
 
@@ -16,9 +16,9 @@ class Upload(DisableableElement, component='upload.js'):
                  max_file_size: Optional[int] = None,
                  max_total_size: Optional[int] = None,
                  max_files: Optional[int] = None,
-                 on_upload: Optional[Callable[..., Any]] = None,
-                 on_multi_upload: Optional[Callable[..., Any]] = None,
-                 on_rejected: Optional[Callable[..., Any]] = None,
+                 on_upload: Optional[Handler[UploadEventArguments]] = None,
+                 on_multi_upload: Optional[Handler[MultiUploadEventArguments]] = None,
+                 on_rejected: Optional[Handler[UiEventArguments]] = None,
                  label: str = '',
                  auto_upload: bool = False,
                  ) -> None:
@@ -60,39 +60,48 @@ class Upload(DisableableElement, component='upload.js'):
         @app.post(self._props['url'])
         async def upload_route(request: Request) -> Dict[str, str]:
             form = await request.form()
-            for data in form.values():
-                for upload_handler in self._upload_handlers:
-                    handle_event(upload_handler, UploadEventArguments(
-                        sender=self,
-                        client=self.client,
-                        content=cast(UploadFile, data).file,
-                        name=cast(UploadFile, data).filename or '',
-                        type=cast(UploadFile, data).content_type or '',
-                    ))
-            for multi_upload_handler in self._multi_upload_handlers:
-                handle_event(multi_upload_handler, MultiUploadEventArguments(
-                    sender=self,
-                    client=self.client,
-                    contents=[cast(UploadFile, data).file for data in form.values()],
-                    names=[cast(UploadFile, data).filename or '' for data in form.values()],
-                    types=[cast(UploadFile, data).content_type or '' for data in form.values()],
-                ))
+            uploads = [cast(UploadFile, data) for data in form.values()]
+            self.handle_uploads(uploads)
             return {'upload': 'success'}
 
         if on_rejected:
             self.on_rejected(on_rejected)
 
-    def on_upload(self, callback: Callable[..., Any]) -> Self:
+    def handle_uploads(self, uploads: List[UploadFile]) -> None:
+        """Handle the uploaded files.
+
+        This method is primarily intended for internal use and for simulating file uploads in tests.
+        """
+        for upload in uploads:
+            for upload_handler in self._upload_handlers:
+                handle_event(upload_handler, UploadEventArguments(
+                    sender=self,
+                    client=self.client,
+                    content=upload.file,
+                    name=upload.filename or '',
+                    type=upload.content_type or '',
+                ))
+        multi_upload_args = MultiUploadEventArguments(
+            sender=self,
+            client=self.client,
+            contents=[upload.file for upload in uploads],
+            names=[upload.filename or '' for upload in uploads],
+            types=[upload.content_type or '' for upload in uploads],
+        )
+        for multi_upload_handler in self._multi_upload_handlers:
+            handle_event(multi_upload_handler, multi_upload_args)
+
+    def on_upload(self, callback: Handler[UploadEventArguments]) -> Self:
         """Add a callback to be invoked when a file is uploaded."""
         self._upload_handlers.append(callback)
         return self
 
-    def on_multi_upload(self, callback: Callable[..., Any]) -> Self:
+    def on_multi_upload(self, callback: Handler[MultiUploadEventArguments]) -> Self:
         """Add a callback to be invoked when multiple files have been uploaded."""
         self._multi_upload_handlers.append(callback)
         return self
 
-    def on_rejected(self, callback: Callable[..., Any]) -> Self:
+    def on_rejected(self, callback: Handler[UiEventArguments]) -> Self:
         """Add a callback to be invoked when a file is rejected."""
         self.on('rejected', lambda: handle_event(callback, UiEventArguments(sender=self, client=self.client)), args=[])
         return self

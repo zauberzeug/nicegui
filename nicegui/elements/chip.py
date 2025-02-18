@@ -1,16 +1,17 @@
-from typing import Any, Callable, Optional
+from typing import Optional
 
 from typing_extensions import Self
 
-from ..events import ClickEventArguments, handle_event
+from ..events import ClickEventArguments, Handler, ValueChangeEventArguments, handle_event
 from .mixins.color_elements import BackgroundColorElement, TextColorElement
 from .mixins.disableable_element import DisableableElement
+from .mixins.icon_element import IconElement
 from .mixins.selectable_element import SelectableElement
 from .mixins.text_element import TextElement
 from .mixins.value_element import ValueElement
 
 
-class Chip(ValueElement, TextElement, BackgroundColorElement, TextColorElement, DisableableElement, SelectableElement):
+class Chip(IconElement, ValueElement, TextElement, BackgroundColorElement, TextColorElement, DisableableElement, SelectableElement):
     TEXT_COLOR_PROP = 'text-color'
 
     def __init__(self,
@@ -19,12 +20,12 @@ class Chip(ValueElement, TextElement, BackgroundColorElement, TextColorElement, 
                  icon: Optional[str] = None,
                  color: Optional[str] = 'primary',
                  text_color: Optional[str] = None,
-                 on_click: Optional[Callable[..., Any]] = None,
+                 on_click: Optional[Handler[ClickEventArguments]] = None,
                  selectable: bool = False,
                  selected: bool = False,
-                 on_selection_change: Optional[Callable[..., Any]] = None,
+                 on_selection_change: Optional[Handler[ValueChangeEventArguments]] = None,
                  removable: bool = False,
-                 on_value_change: Optional[Callable[..., Any]] = None,
+                 on_value_change: Optional[Handler[ValueChangeEventArguments]] = None,
                  ) -> None:
         """Chip
 
@@ -43,17 +44,15 @@ class Chip(ValueElement, TextElement, BackgroundColorElement, TextColorElement, 
         :param on_value_change: callback which is invoked when the chip is removed or unremoved
         """
         super().__init__(tag='q-chip', value=True, on_value_change=on_value_change,
-                         text=text, text_color=text_color, background_color=color,
+                         icon=icon, text=text, text_color=text_color, background_color=color,
                          selectable=selectable, selected=selected, on_selection_change=on_selection_change)
-        if icon:
-            self._props['icon'] = icon
 
         self._props['removable'] = removable
 
         if on_click:
             self.on_click(on_click)
 
-    def on_click(self, callback: Callable[..., Any]) -> Self:
+    def on_click(self, callback: Handler[ClickEventArguments]) -> Self:
         """Add a callback to be invoked when the chip is clicked."""
         self._props['clickable'] = True
         self.update()

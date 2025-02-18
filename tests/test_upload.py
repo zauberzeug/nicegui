@@ -76,6 +76,7 @@ def test_replace_upload(screen: Screen):
     screen.open('/')
     screen.should_contain('A')
     screen.click('Replace')
+    screen.wait(0.5)
     screen.should_contain('B')
     screen.should_not_contain('A')
 

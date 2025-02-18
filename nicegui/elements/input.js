@@ -7,6 +7,7 @@ export default {
       :shadow-text="shadowText"
       @keydown.tab="perform_autocomplete"
       :list="id + '-datalist'"
+      :for="id"
     >
       <template v-for="(_, slot) in $slots" v-slot:[slot]="slotProps">
         <slot :name="slot" v-bind="slotProps || {}" />

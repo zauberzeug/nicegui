@@ -1,25 +1,34 @@
 import asyncio
-from typing import Any, Callable, Optional
+from typing import Optional
 
 from typing_extensions import Self
 
-from ..awaitable_response import AwaitableResponse, NullResponse
 from ..element import Element
-from ..events import GenericEventArguments, SceneClickEventArguments, SceneClickHit, handle_event
+from ..events import (
+    ClickEventArguments,
+    GenericEventArguments,
+    Handler,
+    SceneClickEventArguments,
+    SceneClickHit,
+    handle_event,
+)
 from .scene import Scene, SceneCamera
 
 
 class SceneView(Element,
                 component='scene_view.js',
-                libraries=['lib/tween/tween.umd.js'],
-                exposed_libraries=['lib/three/three.module.js']):
+                dependencies=[
+                    'lib/tween/tween.umd.js',
+                    'lib/three/three.module.js',
+                ],
+                default_classes='nicegui-scene-view'):
 
     def __init__(self,
                  scene: Scene,
                  width: int = 400,
                  height: int = 300,
                  camera: Optional[SceneCamera] = None,
-                 on_click: Optional[Callable[..., Any]] = None,
+                 on_click: Optional[Handler[ClickEventArguments]] = None,
                  ) -> None:
         """Scene View
 
@@ -43,19 +52,18 @@ class SceneView(Element,
         self._props['camera_type'] = self.camera.type
         self._props['camera_params'] = self.camera.params
         self._click_handlers = [on_click] if on_click else []
-        self.is_initialized = False
         self.on('init', self._handle_init)
         self.on('click3d', self._handle_click)
 
-    def on_click(self, callback: Callable[..., Any]) -> Self:
+    def on_click(self, callback: Handler[ClickEventArguments]) -> Self:
         """Add a callback to be invoked when a 3D object is clicked."""
         self._click_handlers.append(callback)
         return self
 
     def _handle_init(self, e: GenericEventArguments) -> None:
-        self.is_initialized = True
         with self.client.individual_target(e.args['socket_id']):
             self.move_camera(duration=0)
+            self.run_method('init')
 
     async def initialized(self) -> None:
         """Wait until the scene is initialized."""
@@ -63,11 +71,6 @@ class SceneView(Element,
         self.on('init', event.set, [])
         await self.client.connected()
         await event.wait()
-
-    def run_method(self, name: str, *args: Any, timeout: float = 1, check_interval: float = 0.01) -> AwaitableResponse:
-        if not self.is_initialized:
-            return NullResponse()
-        return super().run_method(name, *args, timeout=timeout, check_interval=check_interval)
 
     def _handle_click(self, e: GenericEventArguments) -> None:
         arguments = SceneClickEventArguments(

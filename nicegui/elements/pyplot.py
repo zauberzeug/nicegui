@@ -33,7 +33,7 @@ except ImportError:
     pass
 
 
-class Pyplot(Element):
+class Pyplot(Element, default_classes='nicegui-pyplot'):
 
     def __init__(self, *, close: bool = True, **kwargs: Any) -> None:
         """Pyplot Context
@@ -47,9 +47,8 @@ class Pyplot(Element):
             raise ImportError('Matplotlib is not installed. Please run "pip install matplotlib".')
 
         super().__init__('div')
-        self._classes.append('nicegui-pyplot')
         self.close = close
-        self.fig = plt.figure(**kwargs)
+        self.fig = plt.figure(**kwargs)  # pylint: disable=possibly-used-before-assignment
         self._convert_to_html()
 
         if not self.client.shared:

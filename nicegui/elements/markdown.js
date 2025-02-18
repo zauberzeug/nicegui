@@ -1,7 +1,10 @@
+import { loadResource } from "../../static/utils/resources.js";
+
 export default {
   template: `<div></div>`,
   async mounted() {
-    this.ensure_codehilite_css();
+    await this.$nextTick(); // NOTE: wait for window.path_prefix to be set
+    await loadResource(window.path_prefix + this.codehilite_css_url);
     if (this.use_mermaid) {
       this.mermaid = (await import("mermaid")).default;
       this.renderMermaid();
@@ -21,17 +24,9 @@ export default {
         await this.mermaid.run({ nodes: [pre.children[0]] });
       });
     },
-    ensure_codehilite_css() {
-      if (!document.querySelector(`style[data-codehilite-css]`)) {
-        const style = document.createElement("style");
-        style.setAttribute("data-codehilite-css", "");
-        style.innerHTML = this.codehilite_css;
-        document.head.appendChild(style);
-      }
-    },
   },
   props: {
-    codehilite_css: String,
+    codehilite_css_url: String,
     use_mermaid: {
       required: false,
       default: false,

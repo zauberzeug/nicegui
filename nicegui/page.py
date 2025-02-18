@@ -40,9 +40,14 @@ class page:
         This means it is private to the user and not shared with others
         (as it is done `when placing elements outside of a page decorator <https://nicegui.io/documentation/section_pages_routing#auto-index_page>`_).
 
-        Note:
-        The name of the decorated function is unused and can be anything.
-        The page route is determined by the `path` argument and registered globally.
+        Notes:
+
+        - The name of the decorated function is unused and can be anything.
+        - The page route is determined by the `path` argument and registered globally.
+        - The decorator does only work for free functions and static methods.
+          Instance methods or initializers would require a `self` argument, which the router cannot associate.
+          See `our modularization example <https://github.com/zauberzeug/nicegui/tree/main/examples/modularization/>`_
+          for strategies to structure your code.
 
         :param path: route of the new page (path must start with '/')
         :param title: optional page title
@@ -51,7 +56,7 @@ class page:
         :param dark: whether to use Quasar's dark mode (defaults to `dark` argument of `run` command)
         :param language: language of the page (defaults to `language` argument of `run` command)
         :param response_timeout: maximum time for the decorated function to build the page (default: 3.0 seconds)
-        :param reconnect_timeout: maximum time the server waits for the browser to reconnect (default: 0.0 seconds)
+        :param reconnect_timeout: maximum time the server waits for the browser to reconnect (defaults to `reconnect_timeout` argument of `run` command))
         :param api_router: APIRouter instance to use, can be left `None` to use the default
         :param kwargs: additional keyword arguments passed to FastAPI's @app.get method
         """
@@ -85,9 +90,13 @@ class page:
         """Return whether the page should use dark mode."""
         return self.dark if self.dark is not ... else core.app.config.dark
 
-    def resolve_language(self) -> Optional[str]:
+    def resolve_language(self) -> Language:
         """Return the language of the page."""
         return self.language if self.language is not ... else core.app.config.language
+
+    def resolve_reconnect_timeout(self) -> float:
+        """Return the reconnect_timeout of the page."""
+        return self.reconnect_timeout if self.reconnect_timeout is not None else core.app.config.reconnect_timeout
 
     def __call__(self, func: Callable[..., Any]) -> Callable[..., Any]:
         core.app.remove_route(self.path)  # NOTE make sure only the latest route definition is used

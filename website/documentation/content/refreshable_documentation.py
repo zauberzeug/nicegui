@@ -145,7 +145,7 @@ def local_scope_b():
     from datetime import datetime
 
     class Clock:
-        @ui.refreshable
+        @ui.refreshable_method
         def time(self):
             ui.label(f'Time: {datetime.now()}')
 

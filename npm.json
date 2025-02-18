@@ -110,8 +110,8 @@
       "package/examples/jsm/controls/DragControls(\\.min)?\\.js",
       "package/examples/jsm/loaders/STLLoader(\\.min)?\\.js",
       "package/examples/jsm/loaders/GLTFLoader(\\.min)?\\.js",
-      "package/examples/jsm/libs/tween\\.module\\.min\\.js",
-      "package/examples/jsm/utils/BufferGeometryUtils\\.min\\.js"
+      "package/examples/jsm/libs/tween\\.module(\\.min)?\\.js",
+      "package/examples/jsm/utils/BufferGeometryUtils(\\.min)?\\.js"
     ],
     "rename": {
       "package/build/": "",
@@ -132,7 +132,7 @@
   },
   "vanilla-jsoneditor": {
     "destination": "nicegui/elements/lib",
-    "keep": ["package/index\\.js", "package/index\\.js\\.map"],
+    "keep": ["package/standalone\\.js", "package/standalone\\.js\\.map"],
     "rename": {
       "package/": ""
     }
