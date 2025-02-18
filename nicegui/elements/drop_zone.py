@@ -30,18 +30,15 @@ class DropZone(Element, component='drop_zone.js'):
         self.check_task = None
 
     def file_dropped_handler(self, event: GenericEventArguments):
-        print('file_dropped_handler')
         if self.check_task is None or self.check_task.done():
             self.check_task = asyncio.create_task(self.check_queue_loop())
 
     async def check_queue_loop(self):
         timeout_count = 0
         while timeout_count < 10:  # Stop checking after 1 second of no activity
-            print('check_queue_loop')
             try:
                 while not drop_queue.empty():
                     data = drop_queue.get_nowait()
-                    print('GOT DATA')
                     self.run_method('drop_emitter', data)
                     return
                 timeout_count += 1

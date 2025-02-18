@@ -28,18 +28,15 @@ except ModuleNotFoundError:
 
 
 def on_drop(e: dict[str, Any], drop_queue: mp.Queue):
-    print('on_drop')
     files = e['dataTransfer']['files']
     if len(files) == 0:
         return
 
     for file in files:
-        print('FILE:', file)
         drop_queue.put(file.get('pywebviewFullPath'))
 
 
 def bind(window: webview.Window, drop_queue: mp.Queue) -> None:
-    print('bind')
     window.dom.document.events.drop += DOMEventHandler(
         lambda e: on_drop(e, drop_queue),
         True,
@@ -141,6 +138,7 @@ def activate(
     frameless: bool,
 ) -> None:
     """Activate native mode."""
+
     def check_shutdown() -> None:
         while process.is_alive():
             time.sleep(0.1)
