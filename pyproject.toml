@@ -97,12 +97,15 @@ module = [
 ]
 ignore_missing_imports = true
 
+[tool.autopep8]
+max-line-length = 120
+in-place = true
+recursive = true
+experimental = true
+
 [tool.ruff]
 indent-width = 4
 line-length = 120
-
-[tool.ruff.format]
-quote-style = "single"
 
 [tool.ruff.lint]
 # See complete list: https://docs.astral.sh/ruff/rules/
