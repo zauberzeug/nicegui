@@ -5,7 +5,7 @@ from .elements.column import Column as column
 from .elements.html import Html as html
 from .elements.label import Label as label
 
-SAD_FACE_SVG = (Path(__file__).parent / 'static' / 'sad_face.svg').read_text()
+SAD_FACE_SVG = (Path(__file__).parent / 'static' / 'sad_face.svg').read_text(encoding='utf-8')
 
 
 def error_content(status_code: int, exception: Union[str, Exception] = '') -> None:

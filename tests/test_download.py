@@ -25,7 +25,7 @@ def test_download_text_file(screen: Screen, test_route: str):  # pylint: disable
     screen.open('/')
     screen.click('Download')
     screen.wait(0.5)
-    assert (screen_plugin.DOWNLOAD_DIR / 'test.txt').read_text() == 'test'
+    assert (screen_plugin.DOWNLOAD_DIR / 'test.txt').read_text(encoding='utf-8') == 'test'
 
 
 def test_downloading_local_file_as_src(screen: Screen):
@@ -46,4 +46,4 @@ def test_download_raw_data(screen: Screen):
     screen.open('/')
     screen.click('download')
     screen.wait(0.5)
-    assert (screen_plugin.DOWNLOAD_DIR / 'test.txt').read_text() == 'test'
+    assert (screen_plugin.DOWNLOAD_DIR / 'test.txt').read_text(encoding='utf-8') == 'test'

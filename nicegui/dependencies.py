@@ -71,7 +71,7 @@ def register_vue_component(path: Path) -> Component:
         if key in vue_components and vue_components[key].path == path:
             return vue_components[key]
         assert key not in vue_components, f'Duplicate VUE component {key}'
-        v = vbuild.VBuild(path.name, path.read_text())
+        v = vbuild.VBuild(path.name, path.read_text(encoding='utf-8'))
         vue_components[key] = VueComponent(key=key, name=name, path=path, html=v.html, script=v.script, style=v.style)
         return vue_components[key]
     if path.suffix == '.js':

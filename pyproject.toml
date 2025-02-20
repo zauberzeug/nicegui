@@ -172,5 +172,4 @@ disable = [
     "W0102", # Dangerous default value as argument
     "W0718", # Catching too general exception
     "W1203", # Use % formatting in logging functions
-    "W1514" # Using open without explicitly specifying an encoding
 ]

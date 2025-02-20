@@ -23,7 +23,7 @@ def add_css(content: Union[str, Path]) -> None:
     :param content: CSS content (string or file path)
     """
     if helpers.is_file(content):
-        content = Path(content).read_text()
+        content = Path(content).read_text(encoding='utf-8')
     add_head_html(f'<style>{content}</style>')
 
 
@@ -41,7 +41,7 @@ def add_scss(content: Union[str, Path], *, indented: bool = False) -> None:
         raise ImportError('Please run "pip install libsass" to use SASS or SCSS.')
 
     if helpers.is_file(content):
-        content = Path(content).read_text()
+        content = Path(content).read_text(encoding='utf-8')
     add_css(sass.compile(string=str(content).strip(), indented=indented))
 
 
