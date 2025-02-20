@@ -112,6 +112,9 @@ def global_scope():
         ui.button('Refresh', on_click=time.refresh)
 
     ui.link('Open demo', demo)
+    # END OF DEMO
+    ui.label('Note: This demo may not work as expected on nicegui.io due to load balancing across multiple servers. '
+             'For accurate results, please run this example locally on your machine.').classes('text-gray-600')
 
 
 @doc.demo('Local scope (variant A)', '''
