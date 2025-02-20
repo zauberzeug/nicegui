@@ -4,6 +4,7 @@ from typing import Optional
 
 from typing_extensions import Self
 
+from .. import core, ui
 from ..element import Element
 from ..events import GenericEventArguments
 from ..native import drop_queue
@@ -32,6 +33,8 @@ class DropZone(Element, component='drop_zone.js'):
         self.check_task: Optional[asyncio.Task] = None
 
     def file_dropped_handler(self, event: GenericEventArguments):
+        if core.app.config.reload:
+            ui.notify('Drop zones does not work when auto-reloading is on')
         if self.check_task is None or self.check_task.done():
             self.check_task = asyncio.create_task(self.check_queue_loop())
 
