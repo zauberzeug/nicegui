@@ -209,6 +209,14 @@ class SinglePageRouter:
             return
         target_url = target.original_path
         assert target_url is not None
+        
+        # Skip rebuilding if we're navigating to the same page with the same builder
+        current_target = self.target
+        if (current_target is not None and 
+            target_url == self.frame.target_url and 
+            target.builder == current_target.builder):
+            return
+
         handler_kwargs['target_url'] = target_url
         self._update_target_url(target_url)
         js_code = ''

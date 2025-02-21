@@ -397,3 +397,58 @@ def test_nested_outlets_with_yield(screen: Screen):
     # Test direct root counter increment
     screen.click('Increment')       # Increment root counter
     screen.should_contain('2')      # Root counter should be 2
+
+
+def test_same_page_navigation(screen: Screen):
+    """Test that navigating to the same page doesn't rebuild it."""
+    build_count = 0
+
+    @ui.outlet('/')
+    def layout():
+        ui.label('layout')
+        yield
+
+    @layout.view('/page')
+    def page():
+        nonlocal build_count
+        build_count += 1
+        ui.label(f'Page built {build_count} times')
+        ui.link('Self link', '/page')
+        ui.button('Self navigate', on_click=lambda: ui.navigate.to('/page'))
+
+    # Initial navigation
+    screen.open('/page')
+    screen.should_contain('Page built 1 times')
+    assert build_count == 1
+
+    # Navigate to same page via link
+    screen.click('Self link')
+    screen.wait(0.5)
+    screen.should_contain('Page built 1 times')
+    assert build_count == 1  # Should not have rebuilt
+
+    # Navigate to same page via ui.navigate
+    screen.click('Self navigate')
+    screen.wait(0.5)
+    screen.should_contain('Page built 1 times')
+    assert build_count == 1  # Should not have rebuilt
+
+    # Add another view and verify build counter increases when switching views
+    @layout.view('/other')
+    def other_page():
+        nonlocal build_count
+        build_count += 1
+        ui.label(f'Other page built {build_count} times')
+        ui.link('Go to first page', '/page')
+
+    # Navigate to different page
+    screen.open('/other')
+    screen.wait(0.5)
+    screen.should_contain('Other page built 2 times')
+    assert build_count == 2  # Should have rebuilt for new view
+
+    # Navigate back to first page
+    screen.click('Go to first page')
+    screen.wait(0.5)
+    screen.should_contain('Page built 3 times')
+    assert build_count == 3  # Should have rebuilt for view switch

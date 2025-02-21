@@ -99,10 +99,9 @@ async def services_router(service_name: str, menu_drawer: LeftDrawer):
 
 def update_title(service: ServiceDefinition = None,
                  sub_service: SubServiceDefinition = None):
-    # Is called for every page within the service_router and sub_service_router via the on_load callback
-    # and updates the title of each page
-    SinglePageRouter.current_frame().target.title = \
+    new_title = \
             'NiceCLOUD - ' + (f'{sub_service.title}' if sub_service else f'{service.title}')
+    ui.page_title(new_title)
 
 
 @services_router.view('/')  # service index page
