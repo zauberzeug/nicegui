@@ -97,8 +97,7 @@ class SinglePageRouter:
                          included_paths=list(self.included_paths) if self.included_paths else None,
                          excluded_paths=list(self.excluded_paths) if self.excluded_paths else None,
                          use_browser_history=use_browser_history,
-                         on_navigate=lambda url, history: self.navigate_to(url, history=history),
-                         user_data=user_data)
+                         on_navigate=lambda url, history: self.navigate_to(url, history=history))
         self._on_navigate: Optional[Callable[[str], Optional[Union[SinglePageTarget, str]]]] = None
         self.views = {}
 
@@ -193,8 +192,13 @@ class SinglePageRouter:
             target = self.handle_navigate(target)
             if target is None:
                 return
-        handler_kwargs = SinglePageRouter.get_user_data() | self.user_data | self.frame.user_data | \
-                         {'previous_url_path': self.frame.target_url}
+        handler_kwargs = (SinglePageRouter.get_user_data() | self.user_data |
+                          {'previous_url_path': self.frame.target_url})
+        # add user data of parent frames
+        parent = self.parent
+        while parent is not None:
+            handler_kwargs.update(parent.user_data)
+            parent = parent.parent
         if target is None:
             # TODO in which cases can the target be None? What should be the behavior?
             raise ValueError('Target is None')
@@ -270,7 +274,7 @@ class SinglePageRouter:
         result_dict = {}
         for slot in context.slot_stack:
             if isinstance(slot.parent, Frame):
-                result_dict.update(slot.parent.user_data['router'].user_data)
+                result_dict.update(slot.parent.router.user_data)
         return result_dict
 
     @property
@@ -285,7 +289,7 @@ class SinglePageRouter:
         :return: The current router or None if no router in the context stack"""
         for slot in reversed(context.slot_stack):  # we need to inform the parent router frame about
             if isinstance(slot.parent, Frame):  # our existence so it can navigate to our pages
-                return slot.parent.user_data['router']
+                return slot.parent.router
         return None
 
     def _register_child_router(self, path: str, frame: 'SinglePageRouter') -> None:

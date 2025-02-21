@@ -18,7 +18,6 @@ class Frame(ui.element, component='frame.js'):
                  excluded_paths: Optional[list[str]] = None,
                  use_browser_history: bool = True,
                  on_navigate: Optional[Callable[[str, Optional[bool]], Any]] = None,
-                 user_data: Optional[dict] = None
                  ):
         """
         :param base_path: The base URL path all relative paths are based on
@@ -31,9 +30,6 @@ class Frame(ui.element, component='frame.js'):
         """
         super().__init__()
         self.router = router
-        if user_data is None:
-            user_data = {}
-        user_data['router'] = router
         self._props['target_url'] = target_url
         self._props['included_path_masks'] = included_paths if included_paths is not None else []
         self._props['excluded_path_masks'] = excluded_paths if excluded_paths is not None else []
@@ -42,7 +38,6 @@ class Frame(ui.element, component='frame.js'):
         self._props['child_frame_paths'] = []
         self.on('open', lambda e: self.handle_navigate(e.args[0], e.args[1]))
         self.on_navigate = on_navigate
-        self.user_data = user_data
 
     def handle_navigate(self, url: str, history=True):
         """Navigate to a new url
