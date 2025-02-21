@@ -273,6 +273,69 @@ def test_sub_outlet_layout_calls(screen: Screen):
     assert sub_layout_calls == 1  # Should still be 1
 
 
+def test_outlet_path_containment(screen: Screen):
+    """Test that navigation works correctly when an outlet path appears to be contained within another."""
+    # First define the mail outlet and its view
+    @ui.outlet('/mail')
+    def mail_layout():
+        ui.label('Mail Layout')
+        yield
+
+    @mail_layout.view('/index')
+    def mail_index():
+        ui.label('Mail Index')
+        ui.button('Navigate to Root (ui.navigate)', on_click=lambda: ui.navigate.to('/'))
+        ui.link('Navigate to Root (link)', '/')
+
+    # Then define the root outlet and its view - order matters for reproducing the bug
+    @ui.outlet('/')
+    def root_layout():
+        ui.label('Root Layout')
+        yield
+
+    @root_layout.view('/')
+    def root_index():
+        ui.label('Root Index')
+        ui.button('Navigate to Mail (ui.navigate)', on_click=lambda: ui.navigate.to('/mail/index'))
+        ui.link('Navigate to Mail (link)', '/mail/index')
+
+    # Start at mail/index
+    screen.open('/mail/index')
+    screen.should_contain('Mail Layout')
+    screen.should_contain('Mail Index')
+    screen.should_not_contain('Root Layout')
+
+    # Test navigation using ui.navigate.to
+    screen.click('Navigate to Root (ui.navigate)')
+    screen.wait(0.5)
+    screen.should_contain('Root Layout')
+    screen.should_contain('Root Index')
+    screen.should_not_contain('Mail Layout')
+
+    # Try to navigate back to mail using ui.navigate.to - this should fail due to the bug
+    screen.click('Navigate to Mail (ui.navigate)')
+    screen.wait(0.5)
+    screen.should_contain('Mail Layout')
+    screen.should_contain('Mail Index')
+    screen.should_not_contain('Root Layout')
+    assert '/mail/index' in screen.selenium.current_url
+
+    # Navigate back to root using link
+    screen.click('Navigate to Root (link)')
+    screen.wait(0.5)
+    screen.should_contain('Root Layout')
+    screen.should_contain('Root Index')
+    screen.should_not_contain('Mail Layout')
+
+    # Try to navigate back to mail using link - this should work
+    screen.click('Navigate to Mail (link)')
+    screen.wait(0.5)
+    screen.should_contain('Mail Layout')
+    screen.should_contain('Mail Index')
+    screen.should_not_contain('Root Layout')
+    assert '/mail/index' in screen.selenium.current_url
+
+
 def test_nested_outlets_with_yield(screen: Screen):
     # First level outlet
     @ui.outlet('/')

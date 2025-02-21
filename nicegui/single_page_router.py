@@ -304,6 +304,37 @@ class SinglePageRouter:
         ui.label(f'Oops! Page Not Found 🚧').classes('text-3xl')
         ui.label(f'Sorry, the page you are looking for could not be found. 😔')
 
+    def is_path_excluded(self, path: str) -> bool:
+        """Check if a path matches any excluded paths.
+
+        :param path: The path to check
+        :return: True if the path matches any excluded paths, False otherwise"""
+        for excluded_path in self.excluded_paths:
+            # Convert excluded path to regex pattern like frame.js does
+            pattern = '^' + excluded_path.replace('*', '.*') + '$'
+            if excluded_path.endswith('/*'):
+                pattern = '^' + excluded_path[:-2] + '(/.*)?$'
+            if __import__('re').match(pattern, path):
+                return True
+        return False
+
+    def is_path_included(self, path: str) -> bool:
+        """Check if a path is included in this router.
+        A path is included if it matches an included path and doesn't match any excluded paths.
+
+        :param path: The path to check
+        :return: True if the path is included, False otherwise"""
+        if self.is_path_excluded(path):
+            return False
+        for included_path in self.included_paths:
+            # Convert included path to regex pattern like frame.js does
+            pattern = '^' + included_path.replace('*', '.*') + '$'
+            if included_path.endswith('/*'):
+                pattern = '^' + included_path[:-2] + '(/.*)?$'
+            if __import__('re').match(pattern, path):
+                return True
+        return False
+
     def _update_target_url(self, target_url: str) -> None:
         """Updates the target url of the router and all parent routers
 
