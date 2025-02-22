@@ -1,7 +1,7 @@
 export default {
   template: `
   <div>
-      <div :class="drop_style"></div>
+      <div :class="hover_style"></div>
       <slot></slot>
   </div>`,
   mounted() {
@@ -35,7 +35,7 @@ export default {
     el.addEventListener("drop", handleDrop, false);
   },
   props: {
-    drop_style: String,
+    hover_style: String,
   },
   methods: {
     handleDragLeave() {

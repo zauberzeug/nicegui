@@ -27,8 +27,8 @@ class DropZone(Element, component='drop_zone.js'):
         self.cleared_drop_style = cleared_drop_style
         self._clear_drop_style()
 
-        self.on('drag_over', handler=self._set_drop_style)
-        self.on('drag_leave', handler=self._clear_drop_style)
+        self.on('drag_over', handler=self._set_hover_style)
+        self.on('drag_leave', handler=self._clear_hover_style)
         self.on('__file-dropped', handler=self.file_dropped_handler)
         self.check_task: Optional[asyncio.Task] = None
 
@@ -51,14 +51,15 @@ class DropZone(Element, component='drop_zone.js'):
                 timeout_count += 1
             await asyncio.sleep(0.1)
 
-    def update_drop_style(self, drop_style: str) -> Self:
-        self.drop_style = drop_style
         return self
 
-    def _set_drop_style(self):
-        self._props['drop_style'] = self.drop_style
+    def update_hover_style(self, hover_style: str) -> Self:
+        self.hover_style = hover_style
+        return self
+    def _set_hover_style(self):
+        self._props['hover_style'] = self.hover_style
         self.update()
 
-    def _clear_drop_style(self):
-        self._props['drop_style'] = self.cleared_drop_style
+    def _clear_hover_style(self):
+        self._props['hover_style'] = self.cleared_hover_style
         self.update()
