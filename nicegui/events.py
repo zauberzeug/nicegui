@@ -139,6 +139,12 @@ class MultiUploadEventArguments(UiEventArguments):
 
 
 @dataclass(**KWONLY_SLOTS)
+class DropZoneEventArguments(UiEventArguments):
+    path: str
+    modifiers: KeyboardModifiers
+
+
+@dataclass(**KWONLY_SLOTS)
 class ValueChangeEventArguments(UiEventArguments):
     value: Any
 

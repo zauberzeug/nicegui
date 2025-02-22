@@ -28,7 +28,7 @@ export default {
     }
 
     const handleDrop = (e) => {
-      this.$emit("__file-dropped", "__file-dropped");
+      this.$emit("__file-dropped", e);
     };
 
     // Handle dropped files
@@ -38,22 +38,6 @@ export default {
     hover_style: String,
   },
   methods: {
-    handleDragLeave() {
-      this.isDragging = false;
-      this.$el.classList.remove("dragover");
-    },
-
-    handleDrop(e) {
-      this.preventDefaults(e);
-      this.isDragging = false;
-      this.$el.classList.remove("dragover");
-
-      const files = e.dataTransfer.files;
-
-      const validFiles = Array.from(files).filter(file => true);
-      this.$emit("__file-dropped", validFiles);
-    },
-
     async drop_emitter(data) {
       try {
         this.isProcessing = true;
