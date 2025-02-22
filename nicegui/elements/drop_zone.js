@@ -37,17 +37,4 @@ export default {
   props: {
     hover_style: String,
   },
-  methods: {
-    async drop_emitter(data) {
-      try {
-        this.isProcessing = true;
-        await this.$emit("drop_zone", data);
-      } catch (error) {
-        console.error("Drop zone error:", error);
-        this.$emit("error", error);
-      } finally {
-        this.isProcessing = false;
-      }
-    }
-  }
 }
