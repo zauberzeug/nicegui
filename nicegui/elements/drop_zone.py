@@ -51,7 +51,6 @@ class DropZone(Element, component='drop_zone.js'):
         if core.app.config.reload:
             ui.notify('Drop zones does not work when auto-reloading is enabled')
         if self.check_task is None or self.check_task.done():
-            # print("file_dropped_handler", event)
             self.check_task = asyncio.create_task(self.check_queue_loop(event))
 
     async def check_queue_loop(self, event: GenericEventArguments):
