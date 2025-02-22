@@ -1,5 +1,7 @@
 import asyncio
 
+import pytest
+
 from nicegui import ui
 from nicegui.testing import Screen
 
@@ -272,9 +274,9 @@ def test_sub_outlet_layout_calls(screen: Screen):
     assert sub_layout_calls == 1  # Should still be 1
 
 
-def test_outlet_path_containment(screen: Screen):
+@pytest.mark.parametrize('navigation_strategy', ['backend', 'frontend'])
+def test_outlet_path_containment(screen: Screen, navigation_strategy: str):
     """Test that navigation works correctly when an outlet path appears to be contained within another."""
-    # First define the mail outlet and its view
     @ui.outlet('/mail')
     def mail_layout():
         ui.label('Mail Layout')
@@ -283,8 +285,8 @@ def test_outlet_path_containment(screen: Screen):
     @mail_layout.view('/index')
     def mail_index():
         ui.label('Mail Index')
-        ui.button('Navigate to Root (ui.navigate)', on_click=lambda: ui.navigate.to('/'))
-        ui.link('Navigate to Root (link)', '/')
+        ui.button('Navigate to root via backend', on_click=lambda: ui.navigate.to('/'))
+        ui.link('Navigate to root via frontend', '/')
 
     # Then define the root outlet and its view - order matters for reproducing the bug
     @ui.outlet('/')
@@ -295,8 +297,8 @@ def test_outlet_path_containment(screen: Screen):
     @root_layout.view('/')
     def root_index():
         ui.label('Root Index')
-        ui.button('Navigate to Mail (ui.navigate)', on_click=lambda: ui.navigate.to('/mail/index'))
-        ui.link('Navigate to Mail (link)', '/mail/index')
+        ui.button('Navigate to mail via backend', on_click=lambda: ui.navigate.to('/mail/index'))
+        ui.link('Navigate to mail via frontend', '/mail/index')
 
     # Start at mail/index
     screen.open('/mail/index')
@@ -304,30 +306,13 @@ def test_outlet_path_containment(screen: Screen):
     screen.should_contain('Mail Index')
     screen.should_not_contain('Root Layout')
 
-    # Test navigation using ui.navigate.to
-    screen.click('Navigate to Root (ui.navigate)')
+    screen.click(f'Navigate to root via {navigation_strategy}')
     screen.wait(0.5)
     screen.should_contain('Root Layout')
     screen.should_contain('Root Index')
     screen.should_not_contain('Mail Layout')
 
-    # Try to navigate back to mail using ui.navigate.to - this should fail due to the bug
-    screen.click('Navigate to Mail (ui.navigate)')
-    screen.wait(0.5)
-    screen.should_contain('Mail Layout')
-    screen.should_contain('Mail Index')
-    screen.should_not_contain('Root Layout')
-    assert '/mail/index' in screen.selenium.current_url
-
-    # Navigate back to root using link
-    screen.click('Navigate to Root (link)')
-    screen.wait(0.5)
-    screen.should_contain('Root Layout')
-    screen.should_contain('Root Index')
-    screen.should_not_contain('Mail Layout')
-
-    # Try to navigate back to mail using link - this should work
-    screen.click('Navigate to Mail (link)')
+    screen.click(f'Navigate to mail via {navigation_strategy}')
     screen.wait(0.5)
     screen.should_contain('Mail Layout')
     screen.should_contain('Mail Index')
