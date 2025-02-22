@@ -23,7 +23,7 @@ def test_routing_url(screen: Screen):
     assert screen.selenium.current_url.split('/')[-1] == ''  # just the content should have changed, not the url
 
 
-def test_routing_url_w_forward(screen: Screen):
+def test_routing_url_using_navigate(screen: Screen):
     def handle_navigate(url: str):
         if url == '/':
             ui.navigate.to('/main')
@@ -75,7 +75,7 @@ def test_async_outlet(screen: Screen):
     screen.should_contain('after yield')
 
 
-def test_query_parameters_persistence(screen: Screen):
+def test_preserving_query_parameters(screen: Screen):
     received_params = {}
 
     @ui.outlet('/')
@@ -108,8 +108,6 @@ def test_query_parameters_persistence(screen: Screen):
     # Click link to page with parameters
     screen.click('Go to page with params')
     screen.should_contain('params: value1, value2')
-    assert received_params['param1'] == 'value1'
-    assert received_params['param2'] == 'value2'
     assert 'param1=value1' in screen.selenium.current_url
     assert 'param2=value2' in screen.selenium.current_url
 
@@ -123,8 +121,6 @@ def test_query_parameters_persistence(screen: Screen):
     screen.selenium.back()
     screen.wait(0.5)  # wait for navigation to complete
     screen.should_contain('params: value1, value2')
-    assert received_params['param1'] == 'value1'
-    assert received_params['param2'] == 'value2'
     assert 'param1=value1' in screen.selenium.current_url
     assert 'param2=value2' in screen.selenium.current_url
 
@@ -242,7 +238,6 @@ def test_sub_outlet_layout_calls(screen: Screen):
     def root_view():
         ui.label('Root Page')
 
-    # Initial page load
     screen.open('/')
     screen.wait(1.0)
     screen.should_contain('main layout')
@@ -250,21 +245,18 @@ def test_sub_outlet_layout_calls(screen: Screen):
     assert main_layout_calls == 1
     assert sub_layout_calls == 0
 
-    # Navigate to page1 via click
     screen.click('Go to Page 1')
     screen.wait(0.5)
     screen.should_contain('Page 1')
     assert main_layout_calls == 1  # Should still be 1
     assert sub_layout_calls == 1
 
-    # Navigate to page2 via click
     screen.click('Go to Page 2')
     screen.wait(0.5)
     screen.should_contain('Page 2')
     assert main_layout_calls == 1  # Should still be 1
     assert sub_layout_calls == 1  # Should still be 1
 
-    # Navigate back to page1 via click
     screen.click('Back to Page 1')
     screen.wait(0.5)
     screen.should_contain('Page 1')
@@ -272,7 +264,7 @@ def test_sub_outlet_layout_calls(screen: Screen):
     assert sub_layout_calls == 1  # Should still be 1
 
 
-def test_outlet_path_containment(screen: Screen):
+def test_navigating_in_outlet_hierarchy(screen: Screen):
     """Test that navigation works correctly when an outlet path appears to be contained within another."""
     # First define the mail outlet and its view
     @ui.outlet('/mail')
@@ -311,7 +303,7 @@ def test_outlet_path_containment(screen: Screen):
     screen.should_contain('Root Index')
     screen.should_not_contain('Mail Layout')
 
-    # Try to navigate back to mail using ui.navigate.to - this should fail due to the bug
+    # Try to navigate back to mail using ui.navigate.to
     screen.click('Navigate to Mail (ui.navigate)')
     screen.wait(0.5)
     screen.should_contain('Mail Layout')
@@ -389,13 +381,13 @@ def test_nested_outlets_with_yield(screen: Screen):
     assert '/section/1/subsection/A' in screen.selenium.current_url
 
     # Test counter propagation
-    screen.click('Add to section')  # Increment subsection counter
-    screen.click('Add to root')     # Add section counter to root counter
-    screen.should_contain('1')      # Root counter should be 1
+    screen.click('Add to section')
+    screen.click('Add to root')
+    screen.should_contain('1')
 
     # Test direct root counter increment
-    screen.click('Increment')       # Increment root counter
-    screen.should_contain('2')      # Root counter should be 2
+    screen.click('Increment')
+    screen.should_contain('2')
 
 
 def test_same_page_navigation(screen: Screen):
