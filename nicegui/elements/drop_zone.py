@@ -23,8 +23,11 @@ class DropZone(Element, component='drop_zone.js'):
         Uses PyWebview's `Drag Drop <https://pywebview.flowrl.com/examples/drag_drop.html>`_ functionality.
         This element will return the path to the file or folder that got dropped into it.
 
+        This controller only works in NiceGUI native mode.
+
+        :param on_drop:	callback to execute for each dropped object
         :param hover_style: change the style that gets applied to the drop zone when an object is hovered
-        :param cleared_hover_style: custom style that gets applied after the object have bin dropped (default: `''`)
+        :param cleared_hover_style: custom style that gets applied after the object have bin dropped
         """
         super().__init__()
 
@@ -46,7 +49,7 @@ class DropZone(Element, component='drop_zone.js'):
 
     def file_dropped_handler(self, event: GenericEventArguments):
         if core.app.config.reload:
-            ui.notify('Drop zones does not work when auto-reloading is on')
+            ui.notify('Drop zones does not work when auto-reloading is enabled')
         if self.check_task is None or self.check_task.done():
             # print("file_dropped_handler", event)
             self.check_task = asyncio.create_task(self.check_queue_loop(event))
