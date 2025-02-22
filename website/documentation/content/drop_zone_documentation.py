@@ -5,8 +5,8 @@ from . import doc
 
 @doc.demo(ui.drop_zone)
 def main_demo() -> None:
-    with ui.drop_zone(on_drop=lambda e: ui.notify(e.path)).classes("whitespace-nowrap h-full w-full content-center text-center bg-blue-400"):
-        ui.label("Drop a file or folder here")
+    with ui.drop_zone(on_drop=lambda e: ui.notify(e.path)).classes('whitespace-nowrap h-full w-full content-center text-center bg-blue-400'):
+        ui.label('Drop a file or folder here')
 
 
 @doc.demo('Modifier keys', '''
@@ -17,12 +17,12 @@ def modifier_keys() -> None:
 
     def file_dropped(e: events.DropZoneEventArguments):
         if e.modifiers.shift:
-            ui.notify(f"Shift is down: {e.path}")
+            ui.notify(f'Shift is down: {e.path}')
         else:
-            ui.notify(f"Shift is not down: {e.path}")
+            ui.notify(f'Shift is not down: {e.path}')
 
-    with ui.drop_zone(on_drop=file_dropped).classes("h-full w-full content-center text-center bg-blue-400"):
-        ui.label("Drop a file or folder here while holding down shift")
+    with ui.drop_zone(on_drop=file_dropped).classes('h-full w-full content-center text-center bg-blue-400'):
+        ui.label('Drop a file or folder here while holding down shift')
 
 
 doc.reference(ui.drop_zone)

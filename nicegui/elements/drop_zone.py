@@ -15,7 +15,7 @@ class DropZone(Element, component='drop_zone.js'):
     def __init__(
         self,
         on_drop: Optional[Handler[DropZoneEventArguments]] = None,
-        hover_style: str | None = None,
+        hover_style: Optional[str] = None,
         cleared_hover_style: str = '',
     ) -> None:
         """Drop Zone
