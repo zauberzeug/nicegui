@@ -1,14 +1,12 @@
 # Advanced demo showing how to use the ui.outlet and outlet.view decorators to create a nested multi-page app with a
 # static header, footer and menu which is shared across all pages and hidden when the user navigates to the root page.
 
+from examples.single_page_app_complex.cms_config import ServiceDefinition, SubServiceDefinition, services
 from nicegui import ui
 from nicegui.page_layout import LeftDrawer
-from nicegui.single_page_router import SinglePageRouter
-
-from examples.single_page_app_complex.cms_config import SubServiceDefinition, ServiceDefinition, services
-
 
 # --- Other app ---
+
 
 @ui.outlet('/other_app')  # Needs to be defined before the main outlet / to avoid conflicts
 async def other_app_router():
@@ -29,7 +27,7 @@ async def other_app_index():
 @ui.outlet('/')  # main app outlet
 async def main_router(url_path: str):
     with ui.header():
-        with ui.link('', '/').style('text-decoration: none; color: inherit;') as lnk:
+        with ui.link('', '/').style('text-decoration: none; color: inherit;'):
             ui.html('<span style="color:white">Nice</span>'
                     '<span style="color:black">CLOUD</span>').classes('text-h3')
     menu_visible = '/services/' in url_path  # make instantly visible if the initial path is a service
@@ -100,14 +98,14 @@ async def services_router(service_name: str, menu_drawer: LeftDrawer):
 def update_title(service: ServiceDefinition = None,
                  sub_service: SubServiceDefinition = None):
     new_title = \
-            'NiceCLOUD - ' + (f'{sub_service.title}' if sub_service else f'{service.title}')
+        'NiceCLOUD - ' + (f'{sub_service.title}' if sub_service else f'{service.title}')
     ui.page_title(new_title)
 
 
 @services_router.view('/')  # service index page
 async def show_index(service: ServiceDefinition):
     update_title(service, None)
-    with ui.row() as row:
+    with ui.row():
         ui.label(service.emoji).classes('text-h4 vertical-middle')
         with ui.column():
             ui.label(service.title).classes('text-h2')

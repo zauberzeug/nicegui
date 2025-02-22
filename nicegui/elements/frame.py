@@ -1,9 +1,11 @@
-from types import coroutine
-from typing import Optional, Any, Callable, Awaitable
+from __future__ import annotations
 
-from nicegui import ui, background_tasks
-from nicegui.builder_utils import run_safe
-import asyncio
+from typing import TYPE_CHECKING, Any, Callable, Optional
+
+from nicegui import ui
+
+if TYPE_CHECKING:
+    from ..single_page_router import SinglePageRouter
 
 
 class Frame(ui.element, component='frame.js'):
@@ -11,7 +13,7 @@ class Frame(ui.element, component='frame.js'):
     is rendered and updated."""
 
     def __init__(self,
-                 router: 'SinglePageRouter',
+                 router: SinglePageRouter,
                  base_path: str,
                  target_url: Optional[str] = None,
                  included_paths: Optional[list[str]] = None,

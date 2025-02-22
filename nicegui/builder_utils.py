@@ -1,5 +1,6 @@
 import inspect
-from typing import Any, get_origin, get_args
+from typing import Any, get_args, get_origin
+
 
 def run_safe(builder, type_check: bool = True, **kwargs) -> Any:
     """Run a builder function but only pass the keyword arguments which are expected by the builder function
@@ -24,14 +25,14 @@ def run_safe(builder, type_check: bool = True, **kwargs) -> Any:
 
                 if origin_type is not None:
                     # Handle parameterized generics like list[int], dict[str, int], etc.
-                    if origin_type == list:
+                    if origin_type is list:
                         if not isinstance(value, list):
                             raise ValueError(f'Invalid type for parameter {func_param_name}, expected a list')
                         element_type = get_args(expected_type)[0]
                         if not all(isinstance(item, element_type) for item in value):
                             raise ValueError(
                                 f'Elements of parameter {func_param_name} must be of type {element_type}')
-                    elif origin_type == dict:
+                    elif origin_type is dict:
                         if not isinstance(value, dict):
                             raise ValueError(f'Invalid type for parameter {func_param_name}, expected a dict')
                         key_type, val_type = get_args(expected_type)
@@ -43,7 +44,7 @@ def run_safe(builder, type_check: bool = True, **kwargs) -> Any:
                         # Add handling for other generic types if needed
                         raise TypeError(
                             f'Unsupported type annotation {expected_type} for parameter {func_param_name}')
-                else:
+                else:  # noqa: PLR5501
                     # Non-generic types
                     if not isinstance(value, expected_type):
                         raise ValueError(f'Invalid type for parameter {func_param_name}, expected {expected_type}')

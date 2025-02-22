@@ -6,10 +6,9 @@ from fnmatch import fnmatch
 from typing import Any, AsyncGenerator, Awaitable, Callable, Dict, Generator, List, Optional, Self, Set, Union
 
 from nicegui import ui
+from nicegui.builder_utils import run_safe
 from nicegui.client import Client
 from nicegui.context import context
-from nicegui.elements.frame import Frame
-from nicegui.builder_utils import run_safe
 from nicegui.outlet_view import OutletView
 from nicegui.single_page_router import SinglePageRouter
 from nicegui.single_page_target import SinglePageTarget

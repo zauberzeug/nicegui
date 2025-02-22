@@ -1,4 +1,4 @@
-from typing import Any, Callable, Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, Callable, Optional
 
 from nicegui.single_page_target import SinglePageTarget
 

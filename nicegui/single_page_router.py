@@ -1,14 +1,17 @@
-from fnmatch import fnmatch
-from typing import TYPE_CHECKING, Any, Callable, Dict, Optional, Self, Union, Awaitable
+from __future__ import annotations
 
-from nicegui import core, ui, background_tasks
+from fnmatch import fnmatch
+from typing import TYPE_CHECKING, Awaitable, Callable, Dict, Optional, Self, Union
+
+from nicegui import background_tasks, core, ui
 from nicegui.builder_utils import run_safe
 from nicegui.context import context
 from nicegui.elements.frame import Frame
 from nicegui.single_page_target import SinglePageTarget
 
 if TYPE_CHECKING:
-    from nicegui.outlet import Outlet
+    from .outlet import Outlet
+    from .single_page_router import SinglePageRouter
 
 PATH_RESOLVING_MAX_RECURSION = 100
 
@@ -23,12 +26,12 @@ class SinglePageRouter:
 
     def __init__(self,
                  *,
-                 outlet: 'Outlet',
+                 outlet: Outlet,
                  included_paths: Optional[list[str]] = None,
                  excluded_paths: Optional[list[str]] = None,
                  use_browser_history: bool = True,
                  change_title: bool = True,
-                 parent: 'SinglePageRouter' = None,
+                 parent: SinglePageRouter = None,
                  target_url: Optional[str] = None,
                  user_data: Optional[Dict] = None
                  ):
@@ -50,7 +53,7 @@ class SinglePageRouter:
             else:
                 target_url = self.router_config.base_path
         self.user_data = user_data if user_data is not None else {}
-        self.child_routers: dict[str, "SinglePageRouter"] = {}
+        self.child_routers: dict[str, SinglePageRouter] = {}
         self.use_browser_history = use_browser_history
         self.change_title = change_title
         self.parent = parent
@@ -59,7 +62,7 @@ class SinglePageRouter:
         # replace all asterisks with the actual path elements from target url where possible
         target_url_elements = target_url.split('/')
         for i, element in enumerate(base_path_elements):
-            if element.startswith("{") and element.endswith("}"):
+            if element.startswith('{') and element.endswith('}'):
                 if i < len(target_url_elements):
                     base_path_elements[i] = target_url_elements[i]
         # repeat the same for all included paths
@@ -92,12 +95,12 @@ class SinglePageRouter:
             user_data = {}
         user_data['router'] = self
         self.frame = Frame(router=self,
-                         base_path=self.base_path,
-                         target_url=target_url,
-                         included_paths=list(self.included_paths) if self.included_paths else None,
-                         excluded_paths=list(self.excluded_paths) if self.excluded_paths else None,
-                         use_browser_history=use_browser_history,
-                         on_navigate=lambda url, history: self.navigate_to(url, history=history))
+                           base_path=self.base_path,
+                           target_url=target_url,
+                           included_paths=list(self.included_paths) if self.included_paths else None,
+                           excluded_paths=list(self.excluded_paths) if self.excluded_paths else None,
+                           use_browser_history=use_browser_history,
+                           on_navigate=lambda url, history: self.navigate_to(url, history=history))
         self._on_navigate: Optional[Callable[[str], Optional[Union[SinglePageTarget, str]]]] = None
         self.views = {}
 
@@ -138,8 +141,7 @@ class SinglePageRouter:
         :return: The resolved SinglePageTarget object"""
         outlet_target = self.router_config.resolve_target(target)
         assert outlet_target.path is not None
-        if isinstance(outlet_target, SinglePageTarget) and not outlet_target.valid and outlet_target.path.startswith(
-                self.base_path):
+        if isinstance(outlet_target, SinglePageTarget) and not outlet_target.valid and outlet_target.path.startswith(self.base_path):
             rem_path = outlet_target.path[len(self.base_path):]
             if rem_path in self.views:
                 outlet_target.builder = self.views[rem_path].builder
@@ -209,12 +211,12 @@ class SinglePageRouter:
             return
         target_url = target.original_path
         assert target_url is not None
-        
+
         # Skip rebuilding if we're navigating to the same page with the same builder
         current_target = self.target
-        if (current_target is not None and 
-            target_url == self.frame.target_url and 
-            target.builder == current_target.builder):
+        if (current_target is not None and
+            target_url == self.frame.target_url and
+                target.builder == current_target.builder):
             return
 
         handler_kwargs['target_url'] = target_url
@@ -291,7 +293,7 @@ class SinglePageRouter:
         return self.user_data.get('target', None)
 
     @staticmethod
-    def current_frame() -> Optional['SinglePageRouter']:
+    def current_frame() -> Optional[SinglePageRouter]:
         """Get the current router frame from the context stack
 
         :return: The current router or None if no router in the context stack"""
@@ -300,7 +302,7 @@ class SinglePageRouter:
                 return slot.parent.router
         return None
 
-    def _register_child_router(self, path: str, frame: 'SinglePageRouter') -> None:
+    def _register_child_router(self, path: str, frame: SinglePageRouter) -> None:
         """Registers a child router which handles a certain sub path
 
         :param path: The path of the child router
@@ -313,8 +315,8 @@ class SinglePageRouter:
     @staticmethod
     def _page_not_found() -> None:
         """Default builder function for the page not found error page"""
-        ui.label(f'Oops! Page Not Found 🚧').classes('text-3xl')
-        ui.label(f'Sorry, the page you are looking for could not be found. 😔')
+        ui.label('Oops! Page Not Found 🚧').classes('text-3xl')
+        ui.label('Sorry, the page you are looking for could not be found. 😔')
 
     def is_path_excluded(self, path: str) -> bool:
         """Check if a path matches any excluded paths.

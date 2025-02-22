@@ -1,10 +1,12 @@
+from __future__ import annotations
+
 import inspect
 import urllib.parse
-from typing import TYPE_CHECKING, Any, Callable, Dict, Optional, Self, get_origin, get_args
+from typing import TYPE_CHECKING, Any, Callable, Dict, Optional, Self, get_args, get_origin
 
 if TYPE_CHECKING:
-    from nicegui.single_page_router import SinglePageRouter
     from nicegui.outlet import OutletPath
+    from nicegui.single_page_router import SinglePageRouter
 
 
 class SinglePageTarget:
@@ -17,8 +19,8 @@ class SinglePageTarget:
                  query_string: Optional[str] = None,
                  builder: Optional[Callable] = None,
                  title: Optional[str] = None,
-                 router: Optional['SinglePageRouter'] = None,
-                 router_path: Optional['OutletPath'] = None,
+                 router: Optional[SinglePageRouter] = None,
+                 router_path: Optional[OutletPath] = None,
                  on_pre_update: Optional[Callable[[Any], None]] = None,
                  on_post_update: Optional[Callable[[Any], None]] = None
                  ):
@@ -47,7 +49,7 @@ class SinglePageTarget:
         self.builder = builder
         self.valid = builder is not None
         self.router = router
-        self.router_path: Optional["OutletPath"] = router_path
+        self.router_path: Optional[OutletPath] = router_path
         self.on_pre_update = on_pre_update
         self.on_post_update = on_post_update
         if router_path is not None and router_path.builder is not None:
@@ -55,7 +57,7 @@ class SinglePageTarget:
             self.title = router_path.title
             self.valid = True
 
-    def parse_url_path(self, routes: Dict[str, 'OutletPath']) -> Self:
+    def parse_url_path(self, routes: Dict[str, OutletPath]) -> Self:
         """
         Parses the route using the provided routes dictionary and path.
 
@@ -83,7 +85,7 @@ class SinglePageTarget:
             self.valid = False
         return self
 
-    def parse_path(self, routes) -> Optional['OutletPath']:
+    def parse_path(self, routes) -> Optional[OutletPath]:
         """Splits the path into its components, tries to match it with the routes and extracts the path arguments
         into their corresponding variables.
 
@@ -106,8 +108,6 @@ class SinglePageTarget:
                 return entry
         return None
 
-    from typing import get_origin, get_args
-
     def convert_arguments(self):
         """Converts the path and query arguments to the expected types of the builder function"""
         if not self.builder:
@@ -126,7 +126,7 @@ class SinglePageTarget:
                     type_args = get_args(expected_type)
 
                     if isinstance(value, list):
-                        if origin_type == list:
+                        if origin_type is list:
                             # Convert each element in the list to the specified type
                             element_type = type_args[0] if type_args else any
                             try:
@@ -136,16 +136,16 @@ class SinglePageTarget:
                             except ValueError as e:
                                 raise ValueError(
                                     f'Could not convert elements of parameter {func_param_name} to {element_type}: {e}'
-                                )
+                                ) from e
                         else:
                             # Expected type is not a list; take the first element
                             value = value[0]
                             try:
                                 params[func_param_name] = expected_type(value)
                             except ValueError as e:
-                                raise ValueError(f'Could not convert parameter {func_param_name}: {e}')
-                    else:
-                        if origin_type == list:
+                                raise ValueError(f'Could not convert parameter {func_param_name}: {e}') from e
+                    else:  # noqa: PLR5501
+                        if origin_type is list:
                             # Value is not a list but expected a list; wrap value in a list
                             element_type = type_args[0] if type_args else any
                             try:
@@ -153,10 +153,10 @@ class SinglePageTarget:
                             except ValueError as e:
                                 raise ValueError(
                                     f'Could not convert parameter {func_param_name} to list[{element_type}]: {e}'
-                                )
+                                ) from e
                         else:
                             # Regular conversion
                             try:
                                 params[func_param_name] = expected_type(value)
                             except ValueError as e:
-                                raise ValueError(f'Could not convert parameter {func_param_name}: {e}')
+                                raise ValueError(f'Could not convert parameter {func_param_name}: {e}') from e

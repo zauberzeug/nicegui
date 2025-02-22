@@ -3,7 +3,6 @@ import asyncio
 from nicegui import ui
 from nicegui.testing import Screen
 
-
 # pylint: disable=missing-docstring
 
 
