@@ -9,6 +9,7 @@ from . import ui
 from .builder_utils import run_safe
 from .client import Client
 from .context import context
+from .logging import log
 from .outlet_view import OutletView
 from .single_page_router import SinglePageRouter
 from .single_page_target import SinglePageTarget
@@ -102,6 +103,9 @@ class Content:
         if inspect.iscoroutine(frame):
             frame = await frame
         if frame is None:
+            if self.routes:
+                log.warning(f'The content function for "{self.base_path}" is not a generator (does not yield). '
+                            'Sub-content will not be available.')
             return  # NOTE if outlet builder is not a generator, run_safe already added all content
         is_async = inspect.isasyncgen(frame)
 
@@ -359,3 +363,6 @@ class OutletPath:
         :param path: The path to convert
         :return: The mask with all path parameters replaced by a wildcard"""
         return re.sub(r'{[^}]+}', '*', path)
+
+    def __repr__(self):
+        return f'OutletPath(path={self.path}, builder={self.builder}, title={self.title}, on_open={self.on_open})'

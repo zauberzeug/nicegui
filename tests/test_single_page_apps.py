@@ -447,3 +447,20 @@ def test_async_outlet_without_yield(screen: Screen):
 
     screen.open('/')
     screen.should_contain('main content without yield')
+
+
+def test_sub_content_is_only_allowed_when_parent_yields(screen: Screen):
+    @ui.content('/')
+    def parent():
+        ui.label('parent')
+
+    @parent.content('/')
+    def child():
+        ui.label('child')
+
+    screen.open('/')
+    screen.should_contain('parent')
+    screen.assert_py_logger(
+        level='WARNING',
+        message='The content function for "/" is not a generator (does not yield). Sub-content will not be available.'
+    )
