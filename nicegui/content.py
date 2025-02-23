@@ -5,13 +5,13 @@ import re
 from fnmatch import fnmatch
 from typing import Any, AsyncGenerator, Awaitable, Callable, Dict, Generator, List, Optional, Self, Set, Union
 
-from nicegui import ui
-from nicegui.builder_utils import run_safe
-from nicegui.client import Client
-from nicegui.context import context
-from nicegui.outlet_view import OutletView
-from nicegui.single_page_router import SinglePageRouter
-from nicegui.single_page_target import SinglePageTarget
+from . import ui
+from .builder_utils import run_safe
+from .client import Client
+from .context import context
+from .outlet_view import OutletView
+from .single_page_router import SinglePageRouter
+from .single_page_target import SinglePageTarget
 
 PAGE_TEMPLATE_METHOD_NAME = 'page_template'
 
