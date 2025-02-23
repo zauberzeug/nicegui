@@ -9,12 +9,12 @@ from nicegui.testing import Screen
 
 
 def test_routing_url(screen: Screen):
-    @ui.outlet('/', on_navigate=lambda _: '/main')
+    @ui.content('/', on_navigate=lambda _: '/main')
     def layout():
         ui.label('main layout')
         yield
 
-    @layout.view('/main')
+    @layout.content('/main')
     def main_content():
         ui.label('main content')
 
@@ -32,12 +32,12 @@ def test_routing_url_using_navigate(screen: Screen):
             return None  # prevent providing new content, forward to the new url
         return url
 
-    @ui.outlet('/', on_navigate=handle_navigate)
+    @ui.content('/', on_navigate=handle_navigate)
     def layout():
         ui.label('main layout')
         yield
 
-    @layout.view('/main')
+    @layout.content('/main')
     def main_content():
         ui.label('main content')
 
@@ -49,12 +49,12 @@ def test_routing_url_using_navigate(screen: Screen):
 
 
 def test_passing_objects_via_yield(screen: Screen):
-    @ui.outlet('/')
+    @ui.content('/')
     def layout():
         title = ui.label('original title')
         yield {'title': title}
 
-    @layout.view('/')
+    @layout.content('/')
     def main_content(title: ui.label):
         title.set_text('changed title')
 
@@ -63,7 +63,7 @@ def test_passing_objects_via_yield(screen: Screen):
 
 
 def test_async_outlet(screen: Screen):
-    @ui.outlet('/')
+    @ui.content('/')
     async def layout():
         ui.label('main layout')
         await asyncio.sleep(0.2)
@@ -80,17 +80,17 @@ def test_async_outlet(screen: Screen):
 def test_preserving_query_parameters(screen: Screen):
     received_params = {}
 
-    @ui.outlet('/')
+    @ui.content('/')
     def layout():
         ui.label('layout')
         yield
 
-    @layout.view('/')
+    @layout.content('/')
     def index():
         ui.label('index')
         ui.link('Go to page with params', '/page?param1=value1&param2=value2')
 
-    @layout.view('/page')
+    @layout.content('/page')
     def page(param1: str = '', param2: str = ''):
         # Store the raw values for assertion
         received_params.clear()  # Clear previous values to avoid state issues
@@ -99,7 +99,7 @@ def test_preserving_query_parameters(screen: Screen):
         ui.label(f'params: {param1}, {param2}')
         ui.link('Go to other', '/other')
 
-    @layout.view('/other')
+    @layout.content('/other')
     def other():
         ui.label('other page')
 
@@ -128,12 +128,12 @@ def test_preserving_query_parameters(screen: Screen):
 
 
 def test_outlet_with_async_sub_outlet(screen: Screen):
-    @ui.outlet('/')
+    @ui.content('/')
     def layout():
         ui.label('main')
         yield
 
-    @layout.outlet('/')
+    @layout.content('/')
     async def main_content():
         await asyncio.sleep(0.2)
         ui.label('sub')
@@ -150,12 +150,12 @@ def test_path_conflict(screen: Screen):
     def page():
         ui.label('Test Page')
 
-    @ui.outlet('/')
+    @ui.content('/')
     def layout():
         ui.label('main layout')
         yield
 
-    @layout.view('/')
+    @layout.content('/')
     def main_content():
         ui.label('main content')
 
@@ -173,14 +173,14 @@ def test_excluded_paths(screen: Screen):
         ui.label('Excluded Page')
         ui.label('No outlet content')  # Add this to make it clearer this is the page content
 
-    @ui.outlet('/')
+    @ui.content('/')
     def layout():
         ui.label('main layout')
         ui.link('Go to excluded', '/excluded')
         ui.link('Go to allowed', '/allowed')
         yield
 
-    @layout.view('/allowed')
+    @layout.content('/allowed')
     def allowed_page():
         ui.label('Allowed Page')
 
@@ -211,7 +211,7 @@ def test_sub_outlet_layout_calls(screen: Screen):
     main_layout_calls = 0
     sub_layout_calls = 0
 
-    @ui.outlet('/')
+    @ui.content('/')
     def main_layout():
         nonlocal main_layout_calls
         main_layout_calls += 1
@@ -219,24 +219,24 @@ def test_sub_outlet_layout_calls(screen: Screen):
         ui.link('Go to Page 1', '/sub/page1')  # Add link in root layout
         yield
 
-    @main_layout.outlet('/sub')
+    @main_layout.content('/sub')
     def sub_layout():
         nonlocal sub_layout_calls
         sub_layout_calls += 1
         ui.label('sub layout')
         yield
 
-    @sub_layout.view('/page1')
+    @sub_layout.content('/page1')
     def page1():
         ui.label('Page 1')
         ui.link('Go to Page 2', '/sub/page2')
 
-    @sub_layout.view('/page2')
+    @sub_layout.content('/page2')
     def page2():
         ui.label('Page 2')
         ui.link('Back to Page 1', '/sub/page1')
 
-    @main_layout.view('/')
+    @main_layout.content('/')
     def root_view():
         ui.label('Root Page')
 
@@ -269,24 +269,24 @@ def test_sub_outlet_layout_calls(screen: Screen):
 @pytest.mark.parametrize('navigation_strategy', ['backend', 'frontend'])
 def test_navigating_in_outlet_hierarchy(screen: Screen, navigation_strategy: str):
     """Test that navigation works correctly when an outlet path appears to be contained within another."""
-    @ui.outlet('/mail')
+    @ui.content('/mail')
     def mail_layout():
         ui.label('Mail Layout')
         yield
 
-    @mail_layout.view('/index')
+    @mail_layout.content('/index')
     def mail_index():
         ui.label('Mail Index')
         ui.button('Navigate to root via backend', on_click=lambda: ui.navigate.to('/'))
         ui.link('Navigate to root via frontend', '/')
 
     # Then define the root outlet and its view - order matters for reproducing the bug
-    @ui.outlet('/')
+    @ui.content('/')
     def root_layout():
         ui.label('Root Layout')
         yield
 
-    @root_layout.view('/')
+    @root_layout.content('/')
     def root_index():
         ui.label('Root Index')
         ui.button('Navigate to mail via backend', on_click=lambda: ui.navigate.to('/mail/index'))
@@ -314,14 +314,14 @@ def test_navigating_in_outlet_hierarchy(screen: Screen, navigation_strategy: str
 
 def test_nested_outlets_with_yield(screen: Screen):
     # First level outlet
-    @ui.outlet('/')
+    @ui.content('/')
     def root_layout():
         counter = ui.label('0')
         ui.button('Increment', on_click=lambda: counter.set_text(str(int(counter.text) + 1)))
         yield {'counter': counter}
 
     # Second level outlet
-    @root_layout.outlet('/section/{section_id}')
+    @root_layout.content('/section/{section_id}')
     def section_layout(counter: ui.label, section_id: str):
         ui.label(f'Section {section_id}')
         section_counter = ui.label('0')
@@ -329,24 +329,24 @@ def test_nested_outlets_with_yield(screen: Screen):
         yield {'section_counter': section_counter}
 
     # Third level outlet
-    @section_layout.outlet('/subsection/{subsection_id}')
+    @section_layout.content('/subsection/{subsection_id}')
     def subsection_layout(section_counter: ui.label, subsection_id: str):
         ui.label(f'Subsection {subsection_id}')
         ui.button('Add to section', on_click=lambda: section_counter.set_text(str(int(section_counter.text) + 1)))
         yield
 
     # Views for each level
-    @root_layout.view('/')
+    @root_layout.content('/')
     def root_index(counter: ui.label):
         ui.label('Root Index')
         ui.link('Go to Section 1', '/section/1')
 
-    @section_layout.view('/')
+    @section_layout.content('/')
     def section_index(section_id: str, section_counter: ui.label):
         ui.label(f'Section {section_id} Index')
         ui.link('Go to Subsection A', f'/section/{section_id}/subsection/A')
 
-    @subsection_layout.view('/')
+    @subsection_layout.content('/')
     def subsection_index(section_id: str, subsection_id: str):
         ui.label(f'Content of Subsection {subsection_id}')
 
@@ -379,12 +379,12 @@ def test_same_page_navigation(screen: Screen):
     """Test that navigating to the same page doesn't rebuild it."""
     build_count = 0
 
-    @ui.outlet('/')
+    @ui.content('/')
     def layout():
         ui.label('layout')
         yield
 
-    @layout.view('/page')
+    @layout.content('/page')
     def page():
         nonlocal build_count
         build_count += 1
@@ -410,7 +410,7 @@ def test_same_page_navigation(screen: Screen):
     assert build_count == 1  # Should not have rebuilt
 
     # Add another view and verify build counter increases when switching views
-    @layout.view('/other')
+    @layout.content('/other')
     def other_page():
         nonlocal build_count
         build_count += 1
@@ -431,7 +431,7 @@ def test_same_page_navigation(screen: Screen):
 
 
 def test_outlet_without_yield(screen: Screen):
-    @ui.outlet('/')
+    @ui.content('/')
     def main():
         ui.label('main content without yield')
 
@@ -440,7 +440,7 @@ def test_outlet_without_yield(screen: Screen):
 
 
 def test_async_outlet_without_yield(screen: Screen):
-    @ui.outlet('/')
+    @ui.content('/')
     async def main():
         await asyncio.sleep(0.2)
         ui.label('main content without yield')

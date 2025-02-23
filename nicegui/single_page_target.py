@@ -5,7 +5,7 @@ import urllib.parse
 from typing import TYPE_CHECKING, Any, Callable, Dict, Optional, Self, get_args, get_origin
 
 if TYPE_CHECKING:
-    from nicegui.outlet import OutletPath
+    from nicegui.content import OutletPath
     from nicegui.single_page_router import SinglePageRouter
 
 

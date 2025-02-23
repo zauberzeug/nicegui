@@ -8,7 +8,7 @@ from nicegui.page_layout import LeftDrawer
 # --- Other app ---
 
 
-@ui.outlet('/other_app')  # Needs to be defined before the main outlet / to avoid conflicts
+@ui.content('/other_app')  # Needs to be defined before the main outlet / to avoid conflicts
 async def other_app_router():
     ui.label('Other app header').classes('text-h2')
     ui.html('<hr>')
@@ -24,7 +24,7 @@ async def other_app_index():
 
 # --- Main app ---
 
-@ui.outlet('/')  # main app outlet
+@ui.content('/')  # main app outlet
 async def main_router(url_path: str):
     with ui.header():
         with ui.link('', '/').style('text-decoration: none; color: inherit;'):
@@ -73,7 +73,7 @@ async def about_page(menu_drawer: LeftDrawer):
     ui.label('Nice Country')
 
 
-@main_router.outlet('/services/{service_name}')  # service outlet
+@main_router.content('/services/{service_name}')  # service outlet
 async def services_router(service_name: str, menu_drawer: LeftDrawer):
     service: ServiceDefinition = services[service_name]
     menu_drawer.clear()
@@ -113,7 +113,7 @@ async def show_index(service: ServiceDefinition):
     ui.html('<br>')
 
 
-@services_router.outlet('/{sub_service_name}')  # sub service outlet
+@services_router.content('/{sub_service_name}')  # sub service outlet
 async def sub_service_router(service: ServiceDefinition, sub_service_name: str):
     sub_service: SubServiceDefinition = service.sub_services[sub_service_name]
     ui.label(f'{service.title} > {sub_service.title}').classes('text-h4')

@@ -27,7 +27,7 @@ from .outbox import Outbox
 from .version import __version__
 
 if TYPE_CHECKING:
-    from nicegui.outlet import Outlet
+    from nicegui.content import Content
 
     from .page import page
     from .single_page_router import SinglePageRouter
@@ -42,7 +42,7 @@ class Client:
     page_configs: ClassVar[Dict[Callable[..., Any], page]] = {}
     """Maps page builders to their page configuration."""
 
-    top_level_outlets: ClassVar[Dict[str, Outlet]] = {}
+    top_level_outlets: ClassVar[Dict[str, Content]] = {}
     """Maps paths to the associated single page routers."""
 
     instances: ClassVar[Dict[str, Client]] = {}

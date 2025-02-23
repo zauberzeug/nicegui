@@ -1,15 +1,17 @@
+from __future__ import annotations
+
 from typing import TYPE_CHECKING, Any, Callable, Optional
 
 from nicegui.single_page_target import SinglePageTarget
 
 if TYPE_CHECKING:
-    from nicegui.outlet import Outlet
+    from nicegui.content import Content
 
 
 class OutletView:
     """Defines a single view / "content page" which is displayed in an outlet"""
 
-    def __init__(self, parent: 'Outlet', path: str, title: Optional[str] = None):
+    def __init__(self, parent: Content, path: str, title: Optional[str] = None):
         """
         :param parent: The parent outlet in which this view is displayed
         :param path: The path of the view, relative to the base path of the outlet

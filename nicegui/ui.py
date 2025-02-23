@@ -26,6 +26,7 @@ __all__ = [
     'color_picker',
     'colors',
     'column',
+    'content',
     'context',
     'context_menu',
     'dark_mode',
@@ -75,7 +76,6 @@ __all__ = [
     'notify',
     'number',
     'on',
-    'outlet',
     'page',
     'page_sticky',
     'page_title',
@@ -127,6 +127,7 @@ __all__ = [
     'video',
 ]
 
+from .content import Content as content
 from .context import context
 from .element import Element as element
 from .elements.aggrid import AgGrid as aggrid
@@ -238,7 +239,6 @@ from .functions.page_title import page_title
 from .functions.refreshable import refreshable, refreshable_method, state
 from .functions.style import add_css, add_sass, add_scss
 from .functions.update import update
-from .outlet import Outlet as outlet
 from .page import page
 from .page_layout import Drawer as drawer
 from .page_layout import Footer as footer

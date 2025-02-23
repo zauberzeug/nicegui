@@ -10,7 +10,7 @@ from nicegui.elements.frame import Frame
 from nicegui.single_page_target import SinglePageTarget
 
 if TYPE_CHECKING:
-    from .outlet import Outlet
+    from .content import Content
     from .single_page_router import SinglePageRouter
 
 PATH_RESOLVING_MAX_RECURSION = 100
@@ -26,7 +26,7 @@ class SinglePageRouter:
 
     def __init__(self,
                  *,
-                 outlet: Outlet,
+                 outlet: Content,
                  included_paths: Optional[list[str]] = None,
                  excluded_paths: Optional[list[str]] = None,
                  use_browser_history: bool = True,

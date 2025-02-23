@@ -16,11 +16,11 @@ from nicegui.single_page_target import SinglePageTarget
 PAGE_TEMPLATE_METHOD_NAME = 'page_template'
 
 
-class Outlet:
+class Content:
     def __init__(self,
                  path: str,
                  *,
-                 parent: Optional[Outlet] = None,
+                 parent: Optional[Content] = None,
                  on_instance_created: Optional[Callable[[SinglePageRouter], None]] = None,
                  on_navigate: Optional[Callable[[str], Optional[Union[SinglePageTarget, str]]]] = None,
                  router_class: Optional[Callable[..., SinglePageRouter]] = None,
@@ -72,7 +72,7 @@ class Outlet:
         self.parent_config = parent
         if self.parent_config is not None:
             self.parent_config._register_child_outlet(self)
-        self.child_routers: List[Outlet] = []
+        self.child_routers: List[Content] = []
         self.page_kwargs = kwargs
         self.router_class = SinglePageRouter if router_class is None else router_class
         self.outlet_builder: Union[
@@ -295,29 +295,14 @@ class Outlet:
             content.navigate_to(initial_url, server_side=True, history=False)
         return content
 
-    def view(self,
-             path: str,
-             title: Optional[str] = None
-             ) -> OutletView:
-        """Decorator for the view function.
-
-        With the view function you define the actual content of the page. The view function is called when the user
-        navigates to the specified path relative to the outlet's base path.
-
-        :param path: The path of the view, relative to the base path of the outlet
-        :param title: Optional title of the view. If a title is set, it will be displayed in the browser tab
-            when the view is active, otherwise the default title of the application is displayed.
-        """
-        return OutletView(self, path, title=title)
-
-    def outlet(self, path: str, **kwargs) -> Outlet:
+    def content(self, path: str, **kwargs) -> Content:
         """Defines a nested outlet
 
         :param path: The relative path of the outlet
         :param kwargs: Additional arguments for the nested ui.outlet
         """
         abs_path = self.base_path.rstrip('/') + path
-        return Outlet(abs_path, parent=self, **kwargs)
+        return Content(abs_path, parent=self, **kwargs)
 
     @property
     def current_url(self) -> str:
@@ -332,7 +317,7 @@ class Outlet:
                              'function.')
         return cur_router.target_url
 
-    def _register_child_outlet(self, router_config: Outlet) -> None:
+    def _register_child_outlet(self, router_config: Content) -> None:
         """Registers a child outlet config to the parent router config"""
         self.child_routers.append(router_config)
 
