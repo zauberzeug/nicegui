@@ -17,7 +17,7 @@ async def other_app_router():
     ui.label('Other app footer')
 
 
-@other_app_router.view('/')
+@other_app_router.content('/')
 async def other_app_index():
     ui.label('Welcome to the index page of the other application')
 
@@ -39,7 +39,7 @@ async def main_router(url_path: str):
         yield {'menu_drawer': menu_drawer}  # pass menu drawer to all sub elements (views and outlets)
 
 
-@main_router.view('/')
+@main_router.content('/')
 async def main_index(menu_drawer: LeftDrawer):  # main app index page
     menu_drawer.clear()  # clear drawer
     menu_drawer.hide()  # hide drawer
@@ -61,7 +61,7 @@ async def main_index(menu_drawer: LeftDrawer):  # main app index page
     ui.markdown('Click [here](/other_app) to visit the other app.')
 
 
-@main_router.view('/about')
+@main_router.content('/about')
 async def about_page(menu_drawer: LeftDrawer):
     menu_drawer.clear()
     menu_drawer.hide()
@@ -102,7 +102,7 @@ def update_title(service: ServiceDefinition = None,
     ui.page_title(new_title)
 
 
-@services_router.view('/')  # service index page
+@services_router.content('/')  # service index page
 async def show_index(service: ServiceDefinition):
     update_title(service, None)
     with ui.row():
@@ -121,7 +121,7 @@ async def sub_service_router(service: ServiceDefinition, sub_service_name: str):
     yield {'sub_service': sub_service}  # pass sub_service object to all sub elements (views and outlets)
 
 
-@sub_service_router.view('/')  # sub service index page
+@sub_service_router.content('/')  # sub service index page
 async def sub_service_index(service: ServiceDefinition, sub_service: SubServiceDefinition):
     update_title(service, sub_service)
     ui.label(sub_service.emoji).classes('text-h1')
