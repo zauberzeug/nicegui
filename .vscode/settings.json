@@ -1,5 +1,4 @@
 {
-  "autopep8.args": ["--max-line-length=120"],
   "editor.defaultFormatter": "esbenp.prettier-vscode",
   "editor.formatOnSave": true,
   "prettier.printWidth": 120,
