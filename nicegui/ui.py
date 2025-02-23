@@ -39,6 +39,7 @@ __all__ = [
     'element',
     'expansion',
     'footer',
+    'frame',
     'fullscreen',
     'grid',
     'header',
@@ -88,7 +89,6 @@ __all__ = [
     'refreshable_method',
     'restructured_text',
     'right_drawer',
-    'frame',
     'row',
     'run',
     'run_javascript',
@@ -157,6 +157,7 @@ from .elements.dialog import Dialog as dialog
 from .elements.echart import EChart as echart
 from .elements.editor import Editor as editor
 from .elements.expansion import Expansion as expansion
+from .elements.frame import Frame as frame
 from .elements.fullscreen import Fullscreen as fullscreen
 from .elements.grid import Grid as grid
 from .elements.highchart import highchart
@@ -196,7 +197,6 @@ from .elements.radio import Radio as radio
 from .elements.range import Range as range  # pylint: disable=redefined-builtin
 from .elements.restructured_text import ReStructuredText as restructured_text
 from .elements.row import Row as row
-from .elements.frame import Frame as frame
 from .elements.scene import Scene as scene
 from .elements.scene_view import SceneView as scene_view
 from .elements.scroll_area import ScrollArea as scroll_area
