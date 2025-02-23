@@ -99,6 +99,10 @@ class Outlet:
                 'pass it as an argument to the SinglePageRouter constructor.'
             )
         frame = run_safe(self.outlet_builder, **kwargs)
+        if inspect.iscoroutine(frame):
+            frame = await frame
+        if frame is None:
+            return  # NOTE if outlet builder is not a generator, run_safe already added all content
         is_async = inspect.isasyncgen(frame)
 
         current_frame = SinglePageRouter.current_frame()

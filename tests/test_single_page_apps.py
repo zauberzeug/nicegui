@@ -428,3 +428,22 @@ def test_same_page_navigation(screen: Screen):
     screen.wait(0.5)
     screen.should_contain('Page built 3 times')
     assert build_count == 3  # Should have rebuilt for view switch
+
+
+def test_outlet_without_yield(screen: Screen):
+    @ui.outlet('/')
+    def main():
+        ui.label('main content without yield')
+
+    screen.open('/')
+    screen.should_contain('main content without yield')
+
+
+def test_async_outlet_without_yield(screen: Screen):
+    @ui.outlet('/')
+    async def main():
+        await asyncio.sleep(0.2)
+        ui.label('main content without yield')
+
+    screen.open('/')
+    screen.should_contain('main content without yield')
