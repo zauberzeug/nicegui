@@ -83,7 +83,7 @@ class Header(ValueElement, default_classes='nicegui-header'):
         self.value = False
 
 
-class Drawer(Element, default_classes='nicegui-drawer'):
+class Drawer(ValueElement, default_classes='nicegui-drawer'):
 
     def __init__(self,
                  side: DrawerSides, *,
@@ -112,11 +112,9 @@ class Drawer(Element, default_classes='nicegui-drawer'):
         """
         _check_current_slot(self)
         with context.client.layout:
-            super().__init__('q-drawer')
+            super().__init__(tag='q-drawer', value=value, on_value_change=None)
         if value is None:
             self._props['show-if-above'] = True
-        else:
-            self._props['model-value'] = value
         self._props['side'] = side
         self._props['bordered'] = bordered
         self._props['elevated'] = elevated
@@ -131,15 +129,15 @@ class Drawer(Element, default_classes='nicegui-drawer'):
 
     def toggle(self) -> None:
         """Toggle the drawer"""
-        self.run_method('toggle')
+        self.value = not self.value
 
     def show(self) -> None:
         """Show the drawer"""
-        self.run_method('show')
+        self.value = True
 
     def hide(self) -> None:
         """Hide the drawer"""
-        self.run_method('hide')
+        self.value = False
 
 
 class LeftDrawer(Drawer):
