@@ -65,6 +65,7 @@ class Storage:
 
     def __init__(self) -> None:
         self._general = Storage._create_persistent_dict('general')
+        self.general.initialize_sync()
         self._users: Dict[str, PersistentDict] = {}
         self._tabs: Dict[str, ObservableDict] = {}
 
