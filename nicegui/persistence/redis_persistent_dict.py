@@ -15,14 +15,8 @@ class RedisPersistentDict(PersistentDict):
     def __init__(self, *, url: str, id: str, key_prefix: str = 'nicegui:') -> None:  # pylint: disable=redefined-builtin
         if not optional_features.has('redis'):
             raise ImportError('Redis is not installed. Please run "pip install nicegui[redis]".')
+        self.url = url
         self.redis_client = redis.from_url(
-            url,
-            health_check_interval=10,
-            socket_connect_timeout=5,
-            retry_on_timeout=True,
-            socket_keepalive=True,
-        )
-        self.redis_client_sync = redis_sync.from_url(
             url,
             health_check_interval=10,
             socket_connect_timeout=5,
@@ -53,11 +47,20 @@ class RedisPersistentDict(PersistentDict):
 
     def initialize_sync(self) -> None:
         """Load initial data from Redis and start listening for changes in a synchronous context."""
+        redis_client_sync = redis_sync.from_url(
+            self.url,
+            health_check_interval=10,
+            socket_connect_timeout=5,
+            retry_on_timeout=True,
+            socket_keepalive=True,
+        )
         try:
-            data = self.redis_client_sync.get(self.key)
+            data = redis_client_sync.get(self.key)
             self.update(json.loads(data) if data else {})
         except Exception:
             log.warning(f'Could not load data from Redis with key {self.key}')
+        finally:
+            redis_client_sync.close()  # Clean up the connection
 
     def publish(self) -> None:
         """Publish the data to Redis and notify other instances."""
