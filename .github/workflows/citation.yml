@@ -17,6 +17,6 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           zenodo_token: ${{ secrets.ZENODO_TOKEN }}
           zenodo_deposition_id: 13623775
-          zenodo_publish: true
+          zenodo_publish: false
           commit_message: "Update CITATION.cff"
           citation_cff: true
