@@ -45,16 +45,8 @@ def bind(window: webview.Window, drop_queue: mp.Queue) -> None:
 
 
 def _open_window(
-    host: str,
-    port: int,
-    title: str,
-    width: int,
-    height: int,
-    fullscreen: bool,
-    frameless: bool,
-    method_queue: mp.Queue,
-    response_queue: mp.Queue,
-    drop_queue: mp.Queue,
+    host: str, port: int, title: str, width: int, height: int, fullscreen: bool, frameless: bool,
+    method_queue: mp.Queue, response_queue: mp.Queue, drop_queue: mp.Queue,
 ) -> None:
     while not helpers.is_port_open(host, port):
         time.sleep(0.1)
@@ -81,12 +73,10 @@ def _open_window(
     )
 
 
-def _start_window_method_executor(
-    window: webview.Window,
-    method_queue: mp.Queue,
-    response_queue: mp.Queue,
-    closed: Event,
-) -> None:
+def _start_window_method_executor(window: webview.Window,
+                                  method_queue: mp.Queue,
+                                  response_queue: mp.Queue,
+                                  closed: Event) -> None:
     def execute(method: Callable, args: Tuple[Any, ...], kwargs: Dict[str, Any]) -> None:
         try:
             response = method(*args, **kwargs)
@@ -128,17 +118,8 @@ def _start_window_method_executor(
     Thread(target=window_method_executor).start()
 
 
-def activate(
-    host: str,
-    port: int,
-    title: str,
-    width: int,
-    height: int,
-    fullscreen: bool,
-    frameless: bool,
-) -> None:
+def activate(host: str, port: int, title: str, width: int, height: int, fullscreen: bool, frameless: bool) -> None:
     """Activate native mode."""
-
     def check_shutdown() -> None:
         while process.is_alive():
             time.sleep(0.1)
@@ -148,22 +129,12 @@ def activate(
         _thread.interrupt_main()
 
     if not optional_features.has('webview'):
-        log.error('Native mode is not supported in this configuration.\n Please run "pip install pywebview" to use it.')
+        log.error('Native mode is not supported in this configuration.\n'
+                  'Please run "pip install pywebview" to use it.')
         sys.exit(1)
 
     mp.freeze_support()
-    args = (
-        host,
-        port,
-        title,
-        width,
-        height,
-        fullscreen,
-        frameless,
-        native.method_queue,
-        native.response_queue,
-        native.drop_queue,
-    )
+    args = host, port, title, width, height, fullscreen, frameless, native.method_queue, native.response_queue, native.drop_queue,
     process = mp.Process(target=_open_window, args=args, daemon=True)
     process.start()
 
