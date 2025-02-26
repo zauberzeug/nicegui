@@ -31,8 +31,7 @@ class FilePersistentDict(PersistentDict):
     def initialize_sync(self) -> None:
         try:
             if self.filepath.exists():
-                with open(self.filepath, encoding=self.encoding) as f:
-                    data = json.loads(f.read())
+                data = json.loads(self.filepath.read_text(encoding=self.encoding))
             else:
                 data = {}
             self.update(data)
