@@ -5,6 +5,7 @@ from typing import Literal, Optional
 from typing_extensions import Self
 
 from ..events import ClickEventArguments, GenericEventArguments, Handler, handle_event
+from ..slot import Slot
 from .mixins.disableable_element import DisableableElement
 
 SlideSides = Literal['left', 'right', 'top', 'bottom']
@@ -33,7 +34,7 @@ class SlideItem(DisableableElement):
               side: SlideSides, *,
               on_slide: Optional[Handler[GenericEventArguments]] = None,
               color: Optional[str] = 'primary',
-              ) -> Self:
+              ) -> Slot:
         """Slide
 
         This method adds a slide action to a specified side of the `SlideItem`
