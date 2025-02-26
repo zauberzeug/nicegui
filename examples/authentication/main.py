@@ -52,7 +52,7 @@ def test_page() -> None:
 
 
 @ui.page('/login')
-def login(r:str = '/') -> Optional[RedirectResponse]:
+def login(r: str = '/') -> Optional[RedirectResponse]:
     def try_login() -> None:  # local function to avoid passing username and password as arguments
         if passwords.get(username.value) == password.value:
             app.storage.user.update({'username': username.value, 'authenticated': True})
