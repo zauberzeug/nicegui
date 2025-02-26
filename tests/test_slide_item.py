@@ -7,7 +7,7 @@ from nicegui.testing import Screen
 def test_slide_item(screen: Screen):
     with ui.slide_item(on_change=lambda: label.set_text('Event: change')) as s:
         ui.label('slide item')
-        ui.left_slide()
+        s.slide(side='left')
     label = ui.label('None')
 
     screen.open('/')
@@ -30,8 +30,8 @@ def test_slide_item(screen: Screen):
 def test_slide_side(screen: Screen):
     with ui.slide_item() as s:
         ui.label('slide item')
-        ui.left_slide(on_slide=lambda: label.set_text('Event: left slide'))
-        ui.right_slide(on_slide=lambda: label.set_text('Event: right slide'))
+        s.slide(side='left', on_slide=lambda: label.set_text('Event: left slide'))
+        s.slide(side='right', on_slide=lambda: label.set_text('Event: right slide'))
 
     label = ui.label('None')
 
