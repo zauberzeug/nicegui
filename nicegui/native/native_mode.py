@@ -28,20 +28,12 @@ except ModuleNotFoundError:
 
 
 def on_drop(e: dict[str, Any], drop_queue: mp.Queue):
-    files = e['dataTransfer']['files']
-    if len(files) == 0:
-        return
-
-    for file in files:
+    for file in e['dataTransfer']['files']:
         drop_queue.put(file.get('pywebviewFullPath'))
 
 
 def bind(window: webview.Window, drop_queue: mp.Queue) -> None:
-    window.dom.document.events.drop += DOMEventHandler(
-        lambda e: on_drop(e, drop_queue),
-        True,
-        True,
-    )
+    window.dom.document.events.drop += DOMEventHandler(lambda e: on_drop(e, drop_queue), True, True) # type: ignore[arg-type]
 
 
 def _open_window(
@@ -65,12 +57,7 @@ def _open_window(
     closed = Event()
     window.events.closed += closed.set
     _start_window_method_executor(window, method_queue, response_queue, closed)
-    webview.start(
-        func=bind,
-        args=(window, drop_queue),
-        storage_path=tempfile.mkdtemp(),
-        **core.app.native.start_args,
-    )
+    webview.start(bind, (window, drop_queue), storage_path=tempfile.mkdtemp(), **core.app.native.start_args)
 
 
 def _start_window_method_executor(window: webview.Window,

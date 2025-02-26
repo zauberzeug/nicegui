@@ -29,9 +29,9 @@ class Server(uvicorn.Server):
         self.instance = self
         assert isinstance(self.config, CustomServerConfig)
         if (
-            self.config.method_queue is not None
-            and self.config.response_queue is not None
-            and self.config.drop_queue is not None
+            self.config.method_queue is not None and
+            self.config.response_queue is not None and
+            self.config.drop_queue is not None
         ):
             core.app.native.main_window = native.WindowProxy()
             native.method_queue = self.config.method_queue
