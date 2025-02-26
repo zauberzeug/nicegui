@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Literal, Optional
+from typing import List, Literal, Optional
 
 from typing_extensions import Self
 
@@ -12,8 +12,8 @@ SlideSides = Literal['left', 'right', 'top', 'bottom']
 
 
 class SlideItem(DisableableElement):
-    def __init__(self,
-                 on_change: Optional[Handler[ClickEventArguments]] = None):
+
+    def __init__(self, on_change: Optional[Handler[ClickEventArguments]] = None) -> None:
         """Slide Item
 
         This element is based on Quasar's `QSlideItem <https://quasar.dev/vue-components/slide-item/>`_ component.
@@ -22,10 +22,9 @@ class SlideItem(DisableableElement):
 
         :param on_change: callback which is invoked when any slide action is activated
         """
-
         super().__init__(tag='q-slide-item')
 
-        self._active_slides: list[str] = []
+        self._active_slides: List[str] = []
 
         if on_change:
             self.on_change(on_change)
@@ -43,7 +42,6 @@ class SlideItem(DisableableElement):
         :param on_slide: callback which is invoked when the slide action is activated
         :param color: the color of the slide background (either a Quasar, Tailwind, or CSS color or `None`, default: 'primary')
         """
-
         if color:
             self._props[f'{side}-color'] = color
 
@@ -70,6 +68,6 @@ class SlideItem(DisableableElement):
         self.run_method('reset')
 
     @property
-    def active_slides(self) -> list:
+    def active_slides(self) -> List[str]:
         """Returns a list of active Slide Sides"""
         return self._active_slides
