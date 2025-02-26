@@ -128,22 +128,26 @@ def test_bindable_dataclass(screen: Screen):
     assert binding.active_links[0][1] == 'not_bindable'
 
 
-def test_copy_instance_with_bindable_property(user: User):
-    class TestClass:
-        x = binding.BindableProperty()
-        y = binding.BindableProperty()
+async def test_copy_instance_with_bindable_property(user: User):
+    @binding.bindable_dataclass
+    class Number:
+        value: int = 1
 
-        def __init__(self):
-            self.x = 1
-            self.y = 2
+    x = Number()
+    y = copy.copy(x)
 
-    original = TestClass()
-    duplicate = copy.copy(original)
-
-    ui.number().bind_value_from(original, 'x')
-    ui.number().bind_value_from(original, 'y')
-    ui.number().bind_value_from(duplicate, 'x')
-    ui.number().bind_value_from(duplicate, 'y')
-
-    assert len(binding.bindings) == 4
+    ui.label().bind_text_from(x, 'value', lambda v: f'x={v}')
+    assert len(binding.bindings) == 1
     assert len(binding.active_links) == 0
+
+    ui.label().bind_text_from(y, 'value', lambda v: f'y={v}')
+    assert len(binding.bindings) == 2
+    assert len(binding.active_links) == 0
+
+    await user.open('/')
+    await user.should_see('x=1')
+    await user.should_see('y=1')
+
+    y.value = 2
+    await user.should_see('x=1')
+    await user.should_see('y=2')
