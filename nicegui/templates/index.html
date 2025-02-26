@@ -38,8 +38,8 @@
 
     <div id="app"></div>
     <div id="popup" aria-hidden="true">
-      <span>Connection lost.</span>
-      <span>Trying to reconnect...</span>
+      <span>{{ translations.connection_lost }}</span>
+      <span>{{ translations.trying_to_reconnect }}</span>
     </div>
     <script type="module">
       const app = createApp(parseElements(String.raw`{{ elements | safe }}`), {

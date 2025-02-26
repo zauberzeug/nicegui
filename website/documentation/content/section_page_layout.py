@@ -8,6 +8,7 @@ from . import (
     dialog_documentation,
     doc,
     expansion_documentation,
+    fullscreen_documentation,
     grid_documentation,
     list_documentation,
     menu_documentation,
@@ -55,6 +56,7 @@ doc.intro(column_documentation)
 doc.intro(row_documentation)
 doc.intro(grid_documentation)
 doc.intro(list_documentation)
+doc.intro(fullscreen_documentation)
 
 
 @doc.demo('Clear Containers', '''

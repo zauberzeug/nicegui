@@ -4,10 +4,10 @@ export default {
   mounted() {
     this.notification = Quasar.Notify.create(this.convertedOptions);
   },
-  updated() {
-    this.notification(this.convertedOptions);
-  },
   methods: {
+    update_notification() {
+      this.notification(this.convertedOptions);
+    },
     dismiss() {
       this.notification();
     },

@@ -1,4 +1,5 @@
 import copy
+import weakref
 from typing import Dict, Optional, Tuple
 
 from selenium.webdriver.common.keys import Keys
@@ -151,3 +152,35 @@ async def test_copy_instance_with_bindable_property(user: User):
     y.value = 2
     await user.should_see('x=1')
     await user.should_see('y=2')
+
+
+def test_automatic_cleanup(screen: Screen):
+    class Model:
+        value = binding.BindableProperty()
+
+        def __init__(self, value: str) -> None:
+            self.value = value
+
+    def create_model_and_label(value: str) -> Tuple[Model, weakref.ref, ui.label]:
+        model = Model(value)
+        label = ui.label(value).bind_text(model, 'value')
+        return id(model), weakref.ref(model), label
+
+    model_id1, ref1, label1 = create_model_and_label('first label')
+    model_id2, ref2, _label2 = create_model_and_label('second label')
+
+    def is_alive(ref: weakref.ref) -> bool:
+        return ref() is not None
+
+    def has_bindable_property(model_id: int) -> bool:
+        return any(obj_id == model_id for obj_id, _ in binding.bindable_properties)
+
+    screen.open('/')
+    screen.should_contain('first label')
+    screen.should_contain('second label')
+    assert is_alive(ref1) and has_bindable_property(model_id1)
+    assert is_alive(ref2) and has_bindable_property(model_id2)
+
+    binding.remove([label1])
+    assert not is_alive(ref1) and not has_bindable_property(model_id1)
+    assert is_alive(ref2) and has_bindable_property(model_id2)

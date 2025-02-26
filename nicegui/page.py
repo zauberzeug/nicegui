@@ -90,7 +90,7 @@ class page:
         """Return whether the page should use dark mode."""
         return self.dark if self.dark is not ... else core.app.config.dark
 
-    def resolve_language(self) -> Optional[str]:
+    def resolve_language(self) -> Language:
         """Return the language of the page."""
         return self.language if self.language is not ... else core.app.config.language
 

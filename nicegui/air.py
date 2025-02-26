@@ -135,7 +135,7 @@ class Air:
                 core.app.storage.copy_tab(data['old_tab_id'], data['tab_id'])
             client.tab_id = data['tab_id']
             client.on_air = True
-            client.handle_handshake(data.get('next_message_id'))
+            client.handle_handshake(data['sid'], data['document_id'], data.get('next_message_id'))
             return True
 
         @self.relay.on('client_disconnect')
@@ -144,7 +144,7 @@ class Air:
             client_id = data['client_id']
             if client_id not in Client.instances:
                 return
-            Client.instances[client_id].handle_disconnect()
+            Client.instances[client_id].handle_disconnect(data['sid'])
 
         @self.relay.on('connect')
         async def _handle_connect() -> None:

@@ -8,7 +8,7 @@ from .examples import examples
 from .header import add_head_html, add_header
 from .style import example_link, features, heading, link_target, section_heading, subtitle, title
 
-SPONSORS = json.loads((Path(__file__).parent / 'sponsors.json').read_text())
+SPONSORS = json.loads((Path(__file__).parent / 'sponsors.json').read_text(encoding='utf-8'))
 
 
 def create() -> None:

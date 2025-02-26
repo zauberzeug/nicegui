@@ -281,13 +281,13 @@ files = [
 
 [[package]]
 name = "certifi"
-version = "2024.12.14"
+version = "2025.1.31"
 description = "Python package for providing Mozilla's CA Bundle."
 optional = false
 python-versions = ">=3.6"
 files = [
-    {file = "certifi-2024.12.14-py3-none-any.whl", hash = "sha256:1275f7a45be9464efc1173084eaa30f866fe2e47d389406136d332ed4967ec56"},
-    {file = "certifi-2024.12.14.tar.gz", hash = "sha256:b650d30f370c2b724812bee08008be0c4163b163ddaec3f2546c1caf65f191db"},
+    {file = "certifi-2025.1.31-py3-none-any.whl", hash = "sha256:ca78db4565a652026a4db2bcdf68f2fb589ea80d0be70e03929ed730746b84fe"},
+    {file = "certifi-2025.1.31.tar.gz", hash = "sha256:3d5da6925056f6f18f119200434a4780a94263f10d1c21d032a6f6b2baa20651"},
 ]
 
 [[package]]
@@ -1683,14 +1683,40 @@ files = [
 ]
 
 [[package]]
+name = "narwhals"
+version = "1.24.1"
+description = "Extremely lightweight compatibility layer between dataframe libraries"
+optional = true
+python-versions = ">=3.8"
+files = [
+    {file = "narwhals-1.24.1-py3-none-any.whl", hash = "sha256:d8983fe14851c95d60576ddca37c094bd4ed24ab9ea98396844fb20ad9aaf184"},
+    {file = "narwhals-1.24.1.tar.gz", hash = "sha256:b09b8253d945f23cdb683a84685abf3afb9f96114d89e9f35dc876e143f65007"},
+]
+
+[package.extras]
+core = ["duckdb", "pandas", "polars", "pyarrow", "pyarrow-stubs"]
+cudf = ["cudf (>=24.10.0)"]
+dask = ["dask[dataframe] (>=2024.8)"]
+dev = ["covdefaults", "hypothesis", "pre-commit", "pytest", "pytest-cov", "pytest-env", "pytest-randomly", "typing-extensions"]
+docs = ["black", "duckdb", "jinja2", "markdown-exec[ansi]", "mkdocs", "mkdocs-autorefs", "mkdocs-material", "mkdocstrings[python]", "pandas", "polars (>=1.0.0)", "pyarrow"]
+duckdb = ["duckdb (>=1.0)"]
+extra = ["scikit-learn"]
+ibis = ["ibis-framework (>=6.0.0)", "packaging", "pyarrow-hotfix", "rich"]
+modin = ["modin"]
+pandas = ["pandas (>=0.25.3)"]
+polars = ["polars (>=0.20.3)"]
+pyarrow = ["pyarrow (>=11.0.0)"]
+pyspark = ["pyspark (>=3.5.0)"]
+
+[[package]]
 name = "nicegui-highcharts"
-version = "2.0.2"
+version = "2.1.0"
 description = "Add Highcharts elements to your NiceGUI app."
 optional = true
 python-versions = "<4.0,>=3.8"
 files = [
-    {file = "nicegui_highcharts-2.0.2-py3-none-any.whl", hash = "sha256:9004ce220bf24e37064f40fe1da38cfbd905cb92c650f31efa7abdc838c0a805"},
-    {file = "nicegui_highcharts-2.0.2.tar.gz", hash = "sha256:3240790086ce7c87171e8ab1e4e59bb2496ad0028b2b6df8da9961f5f428b5af"},
+    {file = "nicegui_highcharts-2.1.0-py3-none-any.whl", hash = "sha256:09e437caa31a434497b6b82cd0d9c1100982fca87549182a4b853f0e98c9c95b"},
+    {file = "nicegui_highcharts-2.1.0.tar.gz", hash = "sha256:343833f508304cd5df938cffc35fc6f2340d4250b50f2a7be5161469f5429a58"},
 ]
 
 [package.dependencies]
@@ -2163,18 +2189,21 @@ type = ["mypy (>=1.11.2)"]
 
 [[package]]
 name = "plotly"
-version = "5.24.1"
+version = "6.0.0"
 description = "An open-source, interactive data visualization library for Python"
 optional = true
 python-versions = ">=3.8"
 files = [
-    {file = "plotly-5.24.1-py3-none-any.whl", hash = "sha256:f67073a1e637eb0dc3e46324d9d51e2fe76e9727c892dde64ddf1e1b51f29089"},
-    {file = "plotly-5.24.1.tar.gz", hash = "sha256:dbc8ac8339d248a4bcc36e08a5659bacfe1b079390b8953533f4eb22169b4bae"},
+    {file = "plotly-6.0.0-py3-none-any.whl", hash = "sha256:f708871c3a9349a68791ff943a5781b1ec04de7769ea69068adcd9202e57653a"},
+    {file = "plotly-6.0.0.tar.gz", hash = "sha256:c4aad38b8c3d65e4a5e7dd308b084143b9025c2cc9d5317fc1f1d30958db87d3"},
 ]
 
 [package.dependencies]
+narwhals = ">=1.15.1"
 packaging = "*"
-tenacity = ">=6.2.0"
+
+[package.extras]
+express = ["numpy"]
 
 [[package]]
 name = "pluggy"
@@ -3097,18 +3126,18 @@ files = [
 
 [[package]]
 name = "pywebview"
-version = "5.3.2"
+version = "5.4"
 description = "Build GUI for your Python program with JavaScript, HTML, and CSS"
 optional = true
 python-versions = ">=3.7"
 files = [
-    {file = "pywebview-5.3.2-py3-none-any.whl", hash = "sha256:55f5a4bcfaa56738f2d6206977bd3d2864784249b0646c67e84f402ba1740000"},
-    {file = "pywebview-5.3.2.tar.gz", hash = "sha256:77b88a63e65e12913d269205e9c6d357666d4864826749c738bf432bd3ad23d9"},
+    {file = "pywebview-5.4-py3-none-any.whl", hash = "sha256:0559c47db543556498dd38604a2a0479896c320f86c9b23499b8e580b58b699d"},
+    {file = "pywebview-5.4.tar.gz", hash = "sha256:b5e2c6c7502aaf72a9ae6034daf83785f5fad874fac7fa82bf4fcf854f1f083a"},
 ]
 
 [package.dependencies]
 bottle = "*"
-proxy-tools = "*"
+proxy_tools = "*"
 pyobjc-core = {version = "*", markers = "sys_platform == \"darwin\""}
 pyobjc-framework-Cocoa = {version = "*", markers = "sys_platform == \"darwin\""}
 pyobjc-framework-Quartz = {version = "*", markers = "sys_platform == \"darwin\""}
@@ -3116,7 +3145,7 @@ pyobjc-framework-security = {version = "*", markers = "sys_platform == \"darwin\
 pyobjc-framework-WebKit = {version = "*", markers = "sys_platform == \"darwin\""}
 pythonnet = {version = "*", markers = "sys_platform == \"win32\""}
 QtPy = {version = "*", markers = "sys_platform == \"openbsd6\""}
-typing-extensions = "*"
+typing_extensions = "*"
 
 [package.extras]
 android = ["jnius", "kivy"]
@@ -3124,7 +3153,10 @@ cef = ["cefpython3"]
 gtk = ["PyGObject", "PyGObject-stubs"]
 pyside2 = ["PySide2", "QtPy"]
 pyside6 = ["PySide6", "QtPy"]
-qt = ["PyQt5", "QtPy", "pyqtwebengine"]
+qt = ["PyQt6", "PyQt6-WebEngine", "QtPy"]
+qt5 = ["PyQt5", "QtPy", "pyqtwebengine"]
+qt6 = ["PyQt6", "PyQt6-WebEngine", "QtPy"]
+ssl = ["crpytography"]
 
 [[package]]
 name = "pyyaml"
@@ -4181,4 +4213,4 @@ sass = ["libsass"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8"
-content-hash = "070f7b280683a2fec6486d3bc4908f3e647efdc970e11f703eb5311944499d72"
+content-hash = "a9abccd4853ef4ef40bd935b9a212e18d2230236b84b33d1d1c7047121cf4e4a"

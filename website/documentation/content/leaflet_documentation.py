@@ -21,17 +21,30 @@ def main_demo() -> None:
     You can find more map styles at <https://leaflet-extras.github.io/leaflet-providers/preview/>.
     Each call to `tile_layer` stacks upon the previous ones.
     So if you want to change the map style, you have to remove the default one first.
+
+    *Updated in version 2.12.0: Both WMTS and WMS map services are supported.*
 ''')
 def map_style() -> None:
-    m = ui.leaflet(center=(51.505, -0.090), zoom=3)
-    m.clear_layers()
-    m.tile_layer(
+    ui.label('Web Map Tile Service')
+    map1 = ui.leaflet(center=(51.505, -0.090), zoom=3)
+    map1.clear_layers()
+    map1.tile_layer(
         url_template=r'https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',
         options={
             'maxZoom': 17,
             'attribution':
                 'Map data: &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, <a href="https://viewfinderpanoramas.org/">SRTM</a> | '
                 'Map style: &copy; <a href="https://opentopomap.org">OpenTopoMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>)'
+        },
+    )
+
+    ui.label('Web Map Service')
+    map2 = ui.leaflet(center=(51.505, -0.090), zoom=3)
+    map2.clear_layers()
+    map2.wms_layer(
+        url_template='http://ows.mundialis.de/services/service?',
+        options={
+            'layers': 'TOPO-WMS,OSM-Overlay-WMS'
         },
     )
 
@@ -195,5 +208,21 @@ async def wait_for_init() -> None:
         bounds = await central_park.run_method('getBounds')
         m.run_map_method('fitBounds', [[bounds['_southWest'], bounds['_northEast']]])
     ui.timer(0, page, once=True)  # HIDE
+
+
+@doc.demo('Leaflet Plugins', '''
+    You can add plugins to the map by passing the URLs of JS and CSS files to the `additional_resources` parameter.
+    This demo shows how to add the [Leaflet.RotatedMarker](https://github.com/bbecquet/Leaflet.RotatedMarker) plugin.
+    It allows you to rotate markers by a given `rotationAngle`.
+
+    *Added in version 2.11.0*
+''')
+def leaflet_plugins() -> None:
+    m = ui.leaflet((51.51, -0.09), additional_resources=[
+        'https://unpkg.com/leaflet-rotatedmarker@0.2.0/leaflet.rotatedMarker.js',
+    ])
+    m.marker(latlng=(51.51, -0.091), options={'rotationAngle': -30})
+    m.marker(latlng=(51.51, -0.090), options={'rotationAngle': 30})
+
 
 doc.reference(ui.leaflet)
