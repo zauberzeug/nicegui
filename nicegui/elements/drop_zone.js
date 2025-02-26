@@ -1,40 +1,49 @@
 export default {
   template: `
   <div>
-      <div :class="hover_style"></div>
-      <slot></slot>
-  </div>`,
+    <div :class="hover_overlay_style"></div>
+    <slot></slot>
+  </div>
+  `,
+  data() {
+    return {
+      dragCounter: 0
+    }
+  },
   mounted() {
     const el = this.$el;
 
-    // Prevent default drag behaviors
-    ["dragenter", "dragover", "dragleave"].forEach(eventName => {
-      el.addEventListener(eventName, preventDefaults);
-      document.body.addEventListener(eventName, preventDefaults);
-    });
-
-    // Highlight drop area when item is dragged over it
-    ["dragenter", "dragover"].forEach(eventName => {
-      el.addEventListener(eventName, () => this.$emit("drag_over", "drag_over"));
-    });
-
-    ["dragleave", "drop"].forEach(eventName => {
-      el.addEventListener(eventName, () => this.$emit("drag_leave", "drag_leave"));
-    });
-
-    function preventDefaults(e) {
+    el.addEventListener("dragenter", (e) => {
       e.preventDefault();
       e.stopPropagation();
-    }
+      this.dragCounter++;
+      if (this.dragCounter === 1) {
+        this.$emit("drag_over", "drag_over");
+      }
+    });
 
-    const handleDrop = (e) => {
-      this.$emit("__file-dropped", e);
-    };
+    el.addEventListener("dragover", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+    });
 
-    // Handle dropped files
-    el.addEventListener("drop", handleDrop, false);
+    el.addEventListener("dragleave", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      this.dragCounter--;
+      if (this.dragCounter === 0) {
+        this.$emit("drag_leave", "drag_leave");
+      }
+    });
+
+    el.addEventListener("drop", (e) => {
+      e.preventDefault();
+      this.dragCounter = 0;
+      this.$emit("drag_leave", "drag_leave");
+      this.$emit("__file_dropped", e);
+    });
   },
   props: {
-    hover_style: String,
+    hover_overlay_style: String,
   },
 }

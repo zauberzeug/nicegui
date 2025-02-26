@@ -1,10 +1,11 @@
 import asyncio
 import queue
-from typing import Optional
+from typing import ClassVar, List, Optional, cast
 
 from typing_extensions import Self
 
 from .. import core, ui
+from ..classes import Classes
 from ..element import Element
 from ..events import DropZoneEventArguments, GenericEventArguments, Handler, KeyboardModifiers, handle_event
 from ..native import drop_queue
@@ -12,11 +13,12 @@ from ..native import drop_queue
 
 class DropZone(Element, component='drop_zone.js'):
 
+    _default_hover_classes: ClassVar[List[str]] = []
+    _default_hover_overlay_classes: ClassVar[List[str]] = []
+
     def __init__(
         self,
         on_drop: Optional[Handler[DropZoneEventArguments]] = None,
-        hover_style: Optional[str] = None,
-        cleared_hover_style: str = '',
     ) -> None:
         """Drop Zone
 
@@ -26,26 +28,34 @@ class DropZone(Element, component='drop_zone.js'):
         This controller only works in NiceGUI native mode.
 
         :param on_drop:	callback to execute for each dropped object
-        :param hover_style: change the style that gets applied to the drop zone when an object is hovered
-        :param cleared_hover_style: custom style that gets applied after the object have bin dropped
         """
         super().__init__()
 
-        self.default_classes('relative')
-        self.classes('relative')
-
-        self.hover_style = hover_style
-        if self.hover_style is None:
-            self.hover_style = 'absolute inset-0 m-1 border-2 border-dashed border-neutral-700 pointer-events-none'
-        self.cleared_hover_style = cleared_hover_style
-        self._clear_hover_style()
+        self._hover_classes: Classes[Self] = Classes(self._default_hover_classes, element=cast(Self, self))
+        self._hover_overlay_classes: Classes[Self] = Classes(
+            self._default_hover_overlay_classes, element=cast(Self, self))
 
         self._drop_handlers = [on_drop] if on_drop else []
 
         self.on('drag_over', handler=self._set_hover_style)
         self.on('drag_leave', handler=self._clear_hover_style)
-        self.on('__file-dropped', handler=self.file_dropped_handler)
+        self.on('__file_dropped', handler=self.file_dropped_handler)
         self.check_task: Optional[asyncio.Task] = None
+
+    @property
+    def classes(self) -> Classes[Self]:
+        """The classes of the element."""
+        return self._classes
+
+    @property
+    def hover_classes(self) -> Classes[Self]:
+        """The classes of the element."""
+        return self._hover_classes
+
+    @property
+    def hover_overlay_classes(self) -> Classes[Self]:
+        """The classes of the element."""
+        return self._hover_overlay_classes
 
     def file_dropped_handler(self, event: GenericEventArguments):
         if core.app.config.reload:
@@ -72,10 +82,6 @@ class DropZone(Element, component='drop_zone.js'):
         self._drop_handlers.append(callback)
         return self
 
-    def update_hover_style(self, hover_style: str) -> Self:
-        self.hover_style = hover_style
-        return self
-
     def _handle_drop(self, event_data) -> None:
         """Handle the uploaded files.
 
@@ -96,9 +102,14 @@ class DropZone(Element, component='drop_zone.js'):
             ))
 
     def _set_hover_style(self):
-        self._props['hover_style'] = self.hover_style
+        self.props['hover_overlay_style'] = self._get_class_string(self.hover_overlay_classes)
+        self.classes(add=self._get_class_string(self.hover_classes))
         self.update()
 
     def _clear_hover_style(self):
-        self._props['hover_style'] = self.cleared_hover_style
+        self.props['hover_overlay_style'] = ''
+        self.classes(remove=self._get_class_string(self.hover_classes))
         self.update()
+
+    def _get_class_string(self, classes: list[str]) -> str:
+        return ' '.join(classes)
