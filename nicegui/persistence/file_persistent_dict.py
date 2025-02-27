@@ -28,6 +28,16 @@ class FilePersistentDict(PersistentDict):
         except Exception:
             log.warning(f'Could not load storage file {self.filepath}')
 
+    def initialize_sync(self) -> None:
+        try:
+            if self.filepath.exists():
+                data = json.loads(self.filepath.read_text(encoding=self.encoding))
+            else:
+                data = {}
+            self.update(data)
+        except Exception:
+            log.warning(f'Could not load storage file {self.filepath}')
+
     def backup(self) -> None:
         """Back up the data to the given file path."""
         if not self.filepath.exists():
