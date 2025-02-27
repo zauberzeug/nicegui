@@ -32,35 +32,39 @@ class RedisPersistentDict(PersistentDict):
         try:
             data = await self.redis_client.get(self.key)
             self.update(json.loads(data) if data else {})
+            self._start_listening()
         except Exception:
             log.warning(f'Could not load data from Redis with key {self.key}')
-        await self.pubsub.subscribe(self.key + 'changes')
 
+    def initialize_sync(self) -> None:
+        """Load initial data from Redis and start listening for changes in a synchronous context."""
+        with redis_sync.from_url(
+            self.url,
+            health_check_interval=10,
+            socket_connect_timeout=5,
+            retry_on_timeout=True,
+            socket_keepalive=True,
+        ) as redis_client_sync:
+            try:
+                data = redis_client_sync.get(self.key)
+                self.update(json.loads(data) if data else {})
+                self._start_listening()
+            except Exception:
+                log.warning(f'Could not load data from Redis with key {self.key}')
+
+    def _start_listening(self) -> None:
         async def listen():
+            await self.pubsub.subscribe(self.key + 'changes')
             async for message in self.pubsub.listen():
                 if message['type'] == 'message':
                     new_data = json.loads(message['data'])
                     if new_data != self:
                         self.update(new_data)
 
-        background_tasks.create(listen(), name=f'redis-listen-{self.key}')
-
-    def initialize_sync(self) -> None:
-        """Load initial data from Redis and start listening for changes in a synchronous context."""
-        redis_client_sync = redis_sync.from_url(
-            self.url,
-            health_check_interval=10,
-            socket_connect_timeout=5,
-            retry_on_timeout=True,
-            socket_keepalive=True,
-        )
-        try:
-            data = redis_client_sync.get(self.key)
-            self.update(json.loads(data) if data else {})
-        except Exception:
-            log.warning(f'Could not load data from Redis with key {self.key}')
-        finally:
-            redis_client_sync.close()  # Clean up the connection
+        if core.loop and core.loop.is_running():
+            background_tasks.create(listen(), name=f'redis-listen-{self.key}')
+        else:
+            core.app.on_startup(listen())
 
     def publish(self) -> None:
         """Publish the data to Redis and notify other instances."""
