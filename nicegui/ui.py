@@ -39,6 +39,7 @@ __all__ = [
     'element',
     'expansion',
     'footer',
+    'frame',
     'fullscreen',
     'grid',
     'header',
@@ -74,6 +75,7 @@ __all__ = [
     'notify',
     'number',
     'on',
+    'outlet',
     'page',
     'page_sticky',
     'page_title',
@@ -156,6 +158,7 @@ from .elements.dialog import Dialog as dialog
 from .elements.echart import EChart as echart
 from .elements.editor import Editor as editor
 from .elements.expansion import Expansion as expansion
+from .elements.frame import Frame as frame
 from .elements.fullscreen import Fullscreen as fullscreen
 from .elements.grid import Grid as grid
 from .elements.highchart import highchart
@@ -237,6 +240,7 @@ from .functions.page_title import page_title
 from .functions.refreshable import refreshable, refreshable_method, state
 from .functions.style import add_css, add_sass, add_scss
 from .functions.update import update
+from .outlet import Outlet as outlet
 from .page import page
 from .page_layout import Drawer as drawer
 from .page_layout import Footer as footer
