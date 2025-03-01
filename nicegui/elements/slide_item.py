@@ -1,46 +1,59 @@
 from __future__ import annotations
 
-from typing import List, Literal, Optional
+from typing import Literal, Optional
 
 from typing_extensions import Self
 
-from ..events import ClickEventArguments, GenericEventArguments, Handler, handle_event
+from ..events import Handler, SlideEventArguments, handle_event
 from ..slot import Slot
+from .item import Item
+from .label import Label
 from .mixins.disableable_element import DisableableElement
 
-SlideSides = Literal['left', 'right', 'top', 'bottom']
+SlideSide = Literal['left', 'right', 'top', 'bottom']
 
 
 class SlideItem(DisableableElement):
 
-    def __init__(self, on_change: Optional[Handler[ClickEventArguments]] = None) -> None:
+    def __init__(self, text: str = '', *, on_slide: Optional[Handler[SlideEventArguments]] = None) -> None:
         """Slide Item
 
         This element is based on Quasar's `QSlideItem <https://quasar.dev/vue-components/slide-item/>`_ component.
 
-        To add slide actions to a specific side (`left`, `right`, `top`, `bottom`) use the `slide` method.
+        If the text parameter is provided, an item will be created with the given text.
+        If you want to customize how the text is displayed, you can place custom elements inside the slide item.
 
+        To fill slots for individual slide actions, use the ``action`` method with a side argument
+        ("left", "right", "top", or "bottom") or the ``left``, ``right``, ``top``, or ``bottom`` methods.
+
+        Once a slide action has occurred, the slide item can be reset back to its initial state using the ``reset`` method.
+
+        *Added in version 2.12.0*
+
+        :param text: text to be displayed (default: "")
         :param on_change: callback which is invoked when any slide action is activated
         """
         super().__init__(tag='q-slide-item')
 
-        self._active_slides: List[str] = []
+        if text:
+            with self:
+                Item(text)
 
-        if on_change:
-            self.on_change(on_change)
+        if on_slide:
+            self.on_slide(None, on_slide)
 
-    def slide(self,
-              side: SlideSides, *,
-              on_slide: Optional[Handler[GenericEventArguments]] = None,
-              color: Optional[str] = 'primary',
-              ) -> Slot:
-        """Slide
+    def action(self,
+               side: SlideSide,
+               text: str = '', *,
+               on_slide: Optional[Handler[SlideEventArguments]] = None,
+               color: Optional[str] = 'primary',
+               ) -> Slot:
+        """Add a slide action to a specified side.
 
-        This method adds a slide action to a specified side of the `SlideItem`
-
-        :param side: side of the Slide Item where the slide should be added (`left`, `right`, `top`, `bottom`)
+        :param side: side of the slide item where the slide should be added ("left", "right", "top", "bottom")
+        :param text: text to be displayed (default: "")
         :param on_slide: callback which is invoked when the slide action is activated
-        :param color: the color of the slide background (either a Quasar, Tailwind, or CSS color or `None`, default: 'primary')
+        :param color: the color of the slide background (either a Quasar, Tailwind, or CSS color or ``None``, default: "primary")
         """
         if color:
             self._props[f'{side}-color'] = color
@@ -48,26 +61,72 @@ class SlideItem(DisableableElement):
         if on_slide:
             self.on_slide(side, on_slide)
 
-        if side not in self._active_slides:
-            self._active_slides.append(side)
+        slot = self.add_slot(side)
+        if text:
+            with slot:
+                Label(text)
 
-        return self.add_slot(side)
+        return slot
 
-    def on_change(self, callback: Handler[ClickEventArguments]) -> Self:
-        """Add a callback to be invoked when the Slide Item is changed."""
-        self.on('action', lambda _: handle_event(callback, ClickEventArguments(sender=self, client=self.client)))
-        return self
+    def left(self,
+             text: str = '', *,
+             on_slide: Optional[Handler[SlideEventArguments]] = None,
+             color: Optional[str] = 'primary',
+             ) -> Slot:
+        """Add a slide action to the left side.
 
-    def on_slide(self, side: SlideSides, callback: Handler[GenericEventArguments]) -> Self:
-        """Add a callback to be invoked when a Slide Side is activated."""
-        self.on(side, lambda _: handle_event(callback, GenericEventArguments(sender=self, client=self.client, args=side)))
+        :param text: text to be displayed (default: "")
+        :param on_slide: callback which is invoked when the slide action is activated
+        :param color: the color of the slide background (either a Quasar, Tailwind, or CSS color or ``None``, default: "primary")
+        """
+        return self.action('left', text=text, on_slide=on_slide, color=color)
+
+    def right(self,
+              text: str = '', *,
+              on_slide: Optional[Handler[SlideEventArguments]] = None,
+              color: Optional[str] = 'primary',
+              ) -> Slot:
+        """Add a slide action to the right side.
+
+        :param text: text to be displayed (default: "")
+        :param on_slide: callback which is invoked when the slide action is activated
+        :param color: the color of the slide background (either a Quasar, Tailwind, or CSS color or ``None``, default: "primary")
+        """
+        return self.action('right', text=text, on_slide=on_slide, color=color)
+
+    def top(self,
+            text: str = '', *,
+            on_slide: Optional[Handler[SlideEventArguments]] = None,
+            color: Optional[str] = 'primary',
+            ) -> Slot:
+        """Add a slide action to the top side.
+
+        :param text: text to be displayed (default: "")
+        :param on_slide: callback which is invoked when the slide action is activated
+        :param color: the color of the slide background (either a Quasar, Tailwind, or CSS color or ``None``, default: "primary")
+        """
+        return self.action('top', text=text, on_slide=on_slide, color=color)
+
+    def bottom(self,
+               text: str = '', *,
+               on_slide: Optional[Handler[SlideEventArguments]] = None,
+               color: Optional[str] = 'primary',
+               ) -> Slot:
+        """Add a slide action to the bottom side.
+
+        :param text: text to be displayed (default: "")
+        :param on_slide: callback which is invoked when the slide action is activated
+        :param color: the color of the slide background (either a Quasar, Tailwind, or CSS color or ``None``, default: "primary")
+        """
+        return self.action('bottom', text=text, on_slide=on_slide, color=color)
+
+    def on_slide(self, side: SlideSide | None, handler: Handler[SlideEventArguments]) -> Self:
+        """Add a callback to be invoked when the slide action is activated."""
+        self.on(side or 'action', lambda e: handle_event(handler, SlideEventArguments(sender=self,
+                                                                                      client=self.client,
+                                                                                      side=e.args.get('side', side))))
         return self
 
     def reset(self) -> None:
-        """Reset the Slide Item to initial state"""
+        """Reset the slide item to its initial state."""
         self.run_method('reset')
-
-    @property
-    def active_slides(self) -> List[str]:
-        """Returns a list of active Slide Sides"""
-        return self._active_slides

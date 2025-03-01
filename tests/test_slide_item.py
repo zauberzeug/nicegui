@@ -5,10 +5,9 @@ from nicegui.testing import Screen
 
 
 def test_slide_item(screen: Screen):
-    with ui.slide_item(on_change=lambda: label.set_text('Event: change')) as slide_item:
-        ui.label('slide item')
-        slide_item.slide(side='left')
     label = ui.label('None')
+    with ui.slide_item('slide item', on_slide=lambda e: label.set_text(f'Event: {e.side}')) as slide_item:
+        slide_item.left()
 
     screen.open('/')
     screen.should_contain('slide item')
@@ -17,21 +16,19 @@ def test_slide_item(screen: Screen):
     ActionChains(screen.selenium) \
         .move_to_element_with_offset(screen.find_element(slide_item), -20, 0) \
         .click_and_hold() \
-        .pause(1) \
+        .pause(0.5) \
         .move_by_offset(60, 0) \
-        .pause(1) \
+        .pause(0.5) \
         .release() \
         .perform()
-    screen.should_contain('Event: change')
+    screen.should_contain('Event: left')
 
 
 def test_slide_side(screen: Screen):
-    with ui.slide_item() as slide_item:
-        ui.label('slide item')
-        slide_item.slide(side='left', on_slide=lambda: label.set_text('Event: left slide'))
-        slide_item.slide(side='right', on_slide=lambda: label.set_text('Event: right slide'))
-
     label = ui.label('None')
+    with ui.slide_item('slide item') as slide_item:
+        slide_item.left(on_slide=lambda e: label.set_text(f'Event: {e.side}'))
+        slide_item.right(on_slide=lambda e: label.set_text(f'Event: {e.side}'))
 
     screen.open('/')
     screen.should_contain('None')
@@ -39,22 +36,22 @@ def test_slide_side(screen: Screen):
     ActionChains(screen.selenium) \
         .move_to_element_with_offset(screen.find_element(slide_item), -20, 0) \
         .click_and_hold() \
-        .pause(1) \
+        .pause(0.5) \
         .move_by_offset(60, 0) \
-        .pause(1) \
+        .pause(0.5) \
         .release() \
         .perform()
-    screen.should_contain('Event: left slide')
+    screen.should_contain('Event: left')
 
     slide_item.reset()
-    screen.wait(1)
+    screen.should_contain('slide item')
 
     ActionChains(screen.selenium) \
         .move_to_element_with_offset(screen.find_element(slide_item), 20, 0) \
         .click_and_hold() \
-        .pause(1) \
+        .pause(0.5) \
         .move_by_offset(-60, 0) \
-        .pause(1) \
+        .pause(0.5) \
         .release() \
         .perform()
-    screen.should_contain('Event: right slide')
+    screen.should_contain('Event: right')
