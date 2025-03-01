@@ -116,6 +116,9 @@ module = [
 ]
 ignore_missing_imports = true
 
+[tool.autopep8]
+max-line-length = 120
+
 [tool.ruff]
 target-version = "py38"
 indent-width = 4
