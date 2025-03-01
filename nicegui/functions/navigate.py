@@ -65,5 +65,20 @@ class Navigate:
             raise TypeError(f'Invalid target type: {type(target)}')
         context.client.open(path, new_tab)
 
+    def set_browser_url(self, url: str) -> None:
+        """
+        Set the browser url (without actually navigating to it).
+
+        See also: https://developer.mozilla.org/en-US/docs/Web/API/History/pushState
+
+        :param url: Relative or absolute URL
+        """
+        state_str = '{}'
+        run_javascript(f'''
+            if (window.location.pathname !== "{url}") {{
+                history.pushState({state_str}, "", "{url}");
+            }}
+        ''')
+
 
 navigate = Navigate()

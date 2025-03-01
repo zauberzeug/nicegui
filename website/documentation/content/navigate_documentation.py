@@ -10,6 +10,8 @@ def main_demo() -> None:
         ui.button('Forward', on_click=ui.navigate.forward)
         ui.button(icon='savings',
                   on_click=lambda: ui.navigate.to('https://github.com/sponsors/zauberzeug'))
+        ui.button('Set browser URL',
+                  on_click=lambda: ui.navigate.set_browser_url('https://github.com/sponsors/zauberzeug'))
 
 
 @doc.demo(ui.navigate.to)
