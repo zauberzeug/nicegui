@@ -27,6 +27,7 @@ from .slot import Slot
 if TYPE_CHECKING:
     from .client import Client
     from .element import Element
+    from .elements.slide_item import SlideSide
     from .observables import ObservableCollection
 
 
@@ -54,6 +55,11 @@ class GenericEventArguments(UiEventArguments):
 @dataclass(**KWONLY_SLOTS)
 class ClickEventArguments(UiEventArguments):
     pass
+
+
+@dataclass(**KWONLY_SLOTS)
+class SlideEventArguments(UiEventArguments):
+    side: SlideSide
 
 
 @dataclass(**KWONLY_SLOTS)
