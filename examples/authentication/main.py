@@ -28,7 +28,7 @@ class AuthMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
         if not app.storage.user.get('authenticated', False):
             if not request.url.path.startswith('/_nicegui') and request.url.path not in unrestricted_page_routes:
-                return RedirectResponse(f'/login?r={request.url.path}')
+                return RedirectResponse(f'/login?redirect_to={request.url.path}')
         return await call_next(request)
 
 
@@ -52,11 +52,11 @@ def test_page() -> None:
 
 
 @ui.page('/login')
-def login(r: str = '/') -> Optional[RedirectResponse]:
+def login(redirect_to: str = '/') -> Optional[RedirectResponse]:
     def try_login() -> None:  # local function to avoid passing username and password as arguments
         if passwords.get(username.value) == password.value:
             app.storage.user.update({'username': username.value, 'authenticated': True})
-            ui.navigate.to(r)  # go back to where the user wanted to go
+            ui.navigate.to(redirect_to)  # go back to where the user wanted to go
         else:
             ui.notify('Wrong username or password', color='negative')
 
