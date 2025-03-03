@@ -174,6 +174,10 @@ class LeftDrawer(Drawer):
         Note: The left drawer is automatically placed above the main page container in the DOM to improve accessibility.
         To change the order, use the `move` method.
 
+        A value of ``None`` will automatically open or close the drawer depending on the current layout width (breakpoint: >=1024 px).
+        On the auto-index page, the value will remain ``None`` until the drawer is opened, closed or toggled.
+        On other pages, the value will be requested from the client when the websocket connection is established.
+
         :param value: whether the drawer is already opened (default: `None`, i.e. if layout width is above threshold)
         :param fixed: whether the drawer is fixed or scrolls with the content (default: `True`)
         :param bordered: whether the drawer should have a border (default: `False`)
@@ -207,6 +211,10 @@ class RightDrawer(Drawer):
 
         Note: The right drawer is automatically placed below the main page container in the DOM to improve accessibility.
         To change the order, use the `move` method.
+
+        A value of ``None`` will automatically open or close the drawer depending on the current layout width (breakpoint: >=1024 px).
+        On the auto-index page, the value will remain ``None`` until the drawer is opened, closed or toggled.
+        On other pages, the value will be requested from the client when the websocket connection is established.
 
         :param value: whether the drawer is already opened (default: `None`, i.e. if layout width is above threshold)
         :param fixed: whether the drawer is fixed or scrolls with the content (default: `True`)
