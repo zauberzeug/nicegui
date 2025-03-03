@@ -102,6 +102,10 @@ class Drawer(ValueElement, default_classes='nicegui-drawer'):
         Note: Depending on the side, the drawer is automatically placed above or below the main page container in the DOM to improve accessibility.
         To change the order, use the `move` method.
 
+        A value of ``None`` will automatically open or close the drawer depending on the current layout width (breakpoint: >=1024 px).
+        On the auto-index page, the value will remain ``None`` until the drawer is opened, closed or toggled.
+        On other pages, the value will be requested from the client when the websocket connection is established.
+
         :param side: side of the page where the drawer should be placed (`left` or `right`)
         :param value: whether the drawer is already opened (default: `None`, i.e. if layout width is above threshold)
         :param fixed: whether the drawer is fixed or scrolls with the content (default: `True`)
