@@ -175,6 +175,7 @@ class App(FastAPI):
                         local_file: Union[str, Path],
                         url_path: Optional[str] = None,
                         single_use: bool = False,
+                        strict : bool = False,
                         max_cache_age: int = 3600) -> str:
         """Add a single static file.
 
@@ -187,6 +188,7 @@ class App(FastAPI):
         :param local_file: local file to serve as static content
         :param url_path: string that starts with a slash "/" and identifies the path at which the file should be served (default: None -> auto-generated URL path)
         :param single_use: whether to remove the route after the file has been downloaded once (default: False)
+        :param strict: whether to raise error if local file does not already exist (default: False)
         :param max_cache_age: value for max-age set in Cache-Control header (*added in version 2.8.0*)
         :return: encoded URL which can be used to access the file
         """
@@ -194,8 +196,8 @@ class App(FastAPI):
             raise ValueError('''Value of max_cache_age must be a positive integer or 0.''')
 
         file = Path(local_file).resolve()
-        if not file.is_file():
-            raise ValueError(f'File not found: {file}')
+        if strict and not file.is_file():
+            raise FileNotFoundError(f'File not found: {file}')
         path = f'/_nicegui/auto/static/{helpers.hash_file_path(file)}/{file.name}' if url_path is None else url_path
 
         @self.get(path)
