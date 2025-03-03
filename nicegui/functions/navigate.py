@@ -65,18 +65,24 @@ class Navigate:
             raise TypeError(f'Invalid target type: {type(target)}')
         context.client.open(path, new_tab)
 
-    def set_browser_url(self, url: str) -> None:
+    def update(self, url: str, with_history: bool = True) -> None:
         """
         Set the browser url (without actually navigating to it).
+        By default the new url is added as a new item to the browser's history.
+        Alternatively the existing history item can be replaced.
 
-        See also: https://developer.mozilla.org/en-US/docs/Web/API/History/pushState
+        See also:
+        - https://developer.mozilla.org/en-US/docs/Web/API/History/pushState
+        - https://developer.mozilla.org/en-US/docs/Web/API/History/replaceState
 
         :param url: Relative or absolute URL
+        :param with_history: Update the browser history
         """
         state_str = '{}'
+        action = "push" if with_history else "replace"
         run_javascript(f'''
             if (window.location.pathname !== "{url}") {{
-                history.pushState({state_str}, "", "{url}");
+                history.{action}State({state_str}, "", "{url}");
             }}
         ''')
 
