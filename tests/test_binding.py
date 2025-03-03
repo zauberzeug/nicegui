@@ -1,10 +1,11 @@
+import copy
 import weakref
 from typing import Dict, Optional, Tuple
 
 from selenium.webdriver.common.keys import Keys
 
 from nicegui import binding, ui
-from nicegui.testing import Screen
+from nicegui.testing import Screen, User
 
 
 def test_ui_select_with_tuple_as_key(screen: Screen):
@@ -126,6 +127,31 @@ def test_bindable_dataclass(screen: Screen):
     assert len(binding.bindings) == 2
     assert len(binding.active_links) == 1
     assert binding.active_links[0][1] == 'not_bindable'
+
+
+async def test_copy_instance_with_bindable_property(user: User):
+    @binding.bindable_dataclass
+    class Number:
+        value: int = 1
+
+    x = Number()
+    y = copy.copy(x)
+
+    ui.label().bind_text_from(x, 'value', lambda v: f'x={v}')
+    assert len(binding.bindings) == 1
+    assert len(binding.active_links) == 0
+
+    ui.label().bind_text_from(y, 'value', lambda v: f'y={v}')
+    assert len(binding.bindings) == 2
+    assert len(binding.active_links) == 0
+
+    await user.open('/')
+    await user.should_see('x=1')
+    await user.should_see('y=1')
+
+    y.value = 2
+    await user.should_see('x=1')
+    await user.should_see('y=2')
 
 
 def test_automatic_cleanup(screen: Screen):

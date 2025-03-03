@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import copyreg
 import dataclasses
 import time
 import weakref
@@ -36,7 +37,8 @@ bindings: DefaultDict[Tuple[int, str], List] = defaultdict(list)
 bindable_properties: Dict[Tuple[int, str], weakref.finalize] = {}
 active_links: List[Tuple[Any, str, Any, str, Callable[[Any], Any]]] = []
 
-T = TypeVar('T', bound=type)
+TC = TypeVar('TC', bound=type)
+T = TypeVar('T')
 
 
 def _has_attribute(obj: Union[object, Mapping], name: str) -> Any:
@@ -170,6 +172,8 @@ class BindableProperty:
 
     def __set__(self, owner: Any, value: Any) -> None:
         has_attr = hasattr(owner, '___' + self.name)
+        if not has_attr:
+            _make_copyable(type(owner))
         value_changed = has_attr and getattr(owner, '___' + self.name) != value
         if has_attr and not value_changed:
             return
@@ -217,7 +221,7 @@ def reset() -> None:
 
 
 @dataclass_transform()
-def bindable_dataclass(cls: Optional[T] = None, /, *,
+def bindable_dataclass(cls: Optional[TC] = None, /, *,
                        bindable_fields: Optional[Iterable[str]] = None,
                        **kwargs: Any) -> Union[Type[DataclassInstance], IdentityFunction]:
     """A decorator that transforms a class into a dataclass with bindable fields.
@@ -255,3 +259,23 @@ def bindable_dataclass(cls: Optional[T] = None, /, *,
         bindable_property.__set_name__(dataclass, field_name)
         setattr(dataclass, field_name, bindable_property)
     return dataclass
+
+
+def _make_copyable(cls: Type[T]) -> None:
+    """Tell the copy module to update the ``bindable_properties`` dictionary when an object is copied."""
+    if cls in copyreg.dispatch_table:
+        return
+
+    def _pickle_function(obj: T) -> Tuple[Callable[..., T], Tuple[Any, ...]]:
+        reduced = obj.__reduce__()
+        assert isinstance(reduced, tuple)
+        creator = reduced[0]
+
+        def creator_with_hook(*args, **kwargs) -> T:
+            copy = creator(*args, **kwargs)
+            for attr_name in dir(obj):
+                if (id(obj), attr_name) in bindable_properties:
+                    bindable_properties[(id(copy), attr_name)] = copy
+            return copy
+        return (creator_with_hook, *reduced[1:])
+    copyreg.pickle(cls, _pickle_function)
