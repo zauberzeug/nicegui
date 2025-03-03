@@ -175,7 +175,7 @@ class App(FastAPI):
                         local_file: Union[str, Path],
                         url_path: Optional[str] = None,
                         single_use: bool = False,
-                        strict : bool = False,
+                        strict: bool = False,
                         max_cache_age: int = 3600) -> str:
         """Add a single static file.
 
@@ -188,7 +188,7 @@ class App(FastAPI):
         :param local_file: local file to serve as static content
         :param url_path: string that starts with a slash "/" and identifies the path at which the file should be served (default: None -> auto-generated URL path)
         :param single_use: whether to remove the route after the file has been downloaded once (default: False)
-        :param strict: whether to raise error if local file does not already exist (default: False)
+        :param strict: whether to raise a ``FileNotFoundError`` if the file does not exist (default: False, *added in version 2.12.0*)
         :param max_cache_age: value for max-age set in Cache-Control header (*added in version 2.8.0*)
         :return: encoded URL which can be used to access the file
         """
