@@ -233,7 +233,7 @@ class App(FastAPI):
                        local_file: Union[str, Path],
                        url_path: Optional[str] = None,
                        single_use: bool = False,
-                       ) -> str:
+                       strict: bool = False) -> str:
         """Add a single media file.
 
         Allows a local file to be streamed.
@@ -245,11 +245,12 @@ class App(FastAPI):
         :param local_file: local file to serve as media content
         :param url_path: string that starts with a slash "/" and identifies the path at which the file should be served (default: None -> auto-generated URL path)
         :param single_use: whether to remove the route after the media file has been downloaded once (default: False)
+        :param strict: whether to raise a ``FileNotFoundError`` if the file does not exist (default: False, *added in version 2.12.0*)
         :return: encoded URL which can be used to access the file
         """
         file = Path(local_file).resolve()
-        if not file.is_file():
-            raise ValueError(f'File not found: {local_file}')
+        if strict and not file.is_file():
+            raise FileNotFoundError(f'File not found: {local_file}')
         path = f'/_nicegui/auto/media/{helpers.hash_file_path(file)}/{file.name}' if url_path is None else url_path
 
         @self.get(path)
