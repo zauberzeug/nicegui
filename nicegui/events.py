@@ -147,6 +147,7 @@ class MultiUploadEventArguments(UiEventArguments):
 @dataclass(**KWONLY_SLOTS)
 class ValueChangeEventArguments(UiEventArguments):
     value: Any
+    previous_value: Any
 
 
 @dataclass(**KWONLY_SLOTS)
