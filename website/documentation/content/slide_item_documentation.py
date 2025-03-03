@@ -14,7 +14,7 @@ def main_demo() -> None:
             slide_item_2.bottom('Bottom', color='purple')
 
 
-@doc.demo('More Complex Layout', '''
+@doc.demo('More complex layout', '''
     You can fill the slide item and its action slots with custom UI elements.
 ''')
 def complex_demo():
@@ -48,8 +48,8 @@ def slide_callbacks():
             slide_item.right('B', on_slide=lambda e: ui.notify(f'B ({e.side})'))
 
 
-@doc.demo('Resetting the Slide Item', '''
-    Once a slide action has occurred, the slide item can be reset back to initial state using the ``reset`` method.
+@doc.demo('Resetting the slide item', '''
+    After a slide action has occurred, the slide item can be reset back to its initial state using the ``reset`` method.
 ''')
 def slide_reset():
     with ui.list().props('bordered'):

@@ -20,18 +20,18 @@ class SlideItem(DisableableElement):
 
         This element is based on Quasar's `QSlideItem <https://quasar.dev/vue-components/slide-item/>`_ component.
 
-        If the text parameter is provided, an item will be created with the given text.
+        If the ``text`` parameter is provided, a nested ``ui.item`` element will be created with the given text.
         If you want to customize how the text is displayed, you can place custom elements inside the slide item.
 
-        To fill slots for individual slide actions, use the ``action`` method with a side argument
-        ("left", "right", "top", or "bottom") or the ``left``, ``right``, ``top``, or ``bottom`` methods.
+        To fill slots for individual slide actions, use the ``left``, ``right``, ``top``, or ``bottom`` methods or
+        the ``action`` method with a side argument ("left", "right", "top", or "bottom").
 
         Once a slide action has occurred, the slide item can be reset back to its initial state using the ``reset`` method.
 
         *Added in version 2.12.0*
 
         :param text: text to be displayed (default: "")
-        :param on_change: callback which is invoked when any slide action is activated
+        :param on_slide: callback which is invoked when any slide action is activated
         """
         super().__init__(tag='q-slide-item')
 
