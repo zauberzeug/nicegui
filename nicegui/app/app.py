@@ -175,7 +175,7 @@ class App(FastAPI):
                         local_file: Union[str, Path],
                         url_path: Optional[str] = None,
                         single_use: bool = False,
-                        strict: bool = False,
+                        strict: bool = True,
                         max_cache_age: int = 3600) -> str:
         """Add a single static file.
 
@@ -185,10 +185,13 @@ class App(FastAPI):
         To make a whole folder of files accessible, use `add_static_files()` instead.
         For media files which should be streamed, you can use `add_media_files()` or `add_media_file()` instead.
 
+        Deprecation warning:
+        Non-existing files will raise a ``FileNotFoundError`` rather than a ``ValueError`` in version 3.0 if ``strict`` is ``True``.
+
         :param local_file: local file to serve as static content
         :param url_path: string that starts with a slash "/" and identifies the path at which the file should be served (default: None -> auto-generated URL path)
         :param single_use: whether to remove the route after the file has been downloaded once (default: False)
-        :param strict: whether to raise a ``FileNotFoundError`` if the file does not exist (default: False, *added in version 2.12.0*)
+        :param strict: whether to raise a ``ValueError`` if the file does not exist (default: False, *added in version 2.12.0*)
         :param max_cache_age: value for max-age set in Cache-Control header (*added in version 2.8.0*)
         :return: encoded URL which can be used to access the file
         """
@@ -197,7 +200,7 @@ class App(FastAPI):
 
         file = Path(local_file).resolve()
         if strict and not file.is_file():
-            raise FileNotFoundError(f'File not found: {file}')
+            raise ValueError(f'File not found: {file}')  # DEPRECATED: will raise a ``FileNotFoundError`` in version 3.0
         path = f'/_nicegui/auto/static/{helpers.hash_file_path(file)}/{file.name}' if url_path is None else url_path
 
         @self.get(path)
@@ -233,7 +236,7 @@ class App(FastAPI):
                        local_file: Union[str, Path],
                        url_path: Optional[str] = None,
                        single_use: bool = False,
-                       strict: bool = False) -> str:
+                       strict: bool = True) -> str:
         """Add a single media file.
 
         Allows a local file to be streamed.
@@ -242,15 +245,18 @@ class App(FastAPI):
         To make a whole folder of media files accessible via streaming, use `add_media_files()` instead.
         For small static files, you can use `add_static_files()` or `add_static_file()` instead.
 
+        Deprecation warning:
+        Non-existing files will raise a ``FileNotFoundError`` rather than a ``ValueError`` in version 3.0 if ``strict`` is ``True``.
+
         :param local_file: local file to serve as media content
         :param url_path: string that starts with a slash "/" and identifies the path at which the file should be served (default: None -> auto-generated URL path)
         :param single_use: whether to remove the route after the media file has been downloaded once (default: False)
-        :param strict: whether to raise a ``FileNotFoundError`` if the file does not exist (default: False, *added in version 2.12.0*)
+        :param strict: whether to raise a ``ValueError`` if the file does not exist (default: False, *added in version 2.12.0*)
         :return: encoded URL which can be used to access the file
         """
         file = Path(local_file).resolve()
         if strict and not file.is_file():
-            raise FileNotFoundError(f'File not found: {local_file}')
+            raise ValueError(f'File not found: {file}')  # DEPRECATED: will raise a ``FileNotFoundError`` in version 3.0
         path = f'/_nicegui/auto/media/{helpers.hash_file_path(file)}/{file.name}' if url_path is None else url_path
 
         @self.get(path)
