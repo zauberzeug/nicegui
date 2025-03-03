@@ -5,13 +5,10 @@ from . import doc
 
 @doc.demo(ui.navigate)
 def main_demo() -> None:
-    with ui.row():
-        ui.button('Back', on_click=ui.navigate.back)
-        ui.button('Forward', on_click=ui.navigate.forward)
-        ui.button(icon='savings',
-                  on_click=lambda: ui.navigate.to('https://github.com/sponsors/zauberzeug'))
-        ui.button('Set browser URL',
-                  on_click=lambda: ui.navigate.set_browser_url('https://github.com/sponsors/zauberzeug'))
+    ui.button('Back', on_click=ui.navigate.back)
+    ui.button('Forward', on_click=ui.navigate.forward)
+    ui.button('Navigate to', on_click=lambda: ui.navigate.to('/documentation'))
+    ui.button('Update URL', on_click=lambda: ui.navigate.update('/random_page'))
 
 
 @doc.demo(ui.navigate.to)
