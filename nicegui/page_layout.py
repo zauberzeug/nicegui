@@ -113,8 +113,7 @@ class Drawer(ValueElement, default_classes='nicegui-drawer'):
         _check_current_slot(self)
         with context.client.layout:
             super().__init__(tag='q-drawer', value=value, on_value_change=None)
-        if value is None:
-            self._props['show-if-above'] = True
+        self._props['show-if-above'] = value is None
         self._props['side'] = side
         self._props['bordered'] = bordered
         self._props['elevated'] = elevated
@@ -127,9 +126,18 @@ class Drawer(ValueElement, default_classes='nicegui-drawer'):
         page_container_index = self.client.layout.default_slot.children.index(self.client.page_container)
         self.move(target_index=page_container_index if side == 'left' else page_container_index + 1)
 
+        if value is None and not self.client.is_auto_index_client:
+            async def _request_value() -> None:
+                js_code = f'!getHtmlElement({self.id}).parentElement.classList.contains("q-layout--prevent-focus")'
+                self.value = await context.client.run_javascript(js_code)
+            self.client.on_connect(_request_value)
+
     def toggle(self) -> None:
         """Toggle the drawer"""
-        self.value = not self.value
+        if self.value is None:
+            self.run_method('toggle')
+        else:
+            self.value = not self.value
 
     def show(self) -> None:
         """Show the drawer"""
@@ -138,6 +146,10 @@ class Drawer(ValueElement, default_classes='nicegui-drawer'):
     def hide(self) -> None:
         """Hide the drawer"""
         self.value = False
+
+    def _handle_value_change(self, value: bool) -> None:
+        super()._handle_value_change(value)
+        self._props['show-if-above'] = value is None
 
 
 class LeftDrawer(Drawer):
