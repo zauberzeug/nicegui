@@ -11,6 +11,7 @@ from typing import Any, Callable, Dict, Optional, Union, overload
 import nicegui
 from nicegui import app as nicegui_app
 from nicegui import ui as nicegui_ui
+from nicegui.functions.navigate import Navigate
 from nicegui.elements.markdown import remove_indentation
 
 from .page import DocumentationPage
@@ -69,7 +70,7 @@ def demo(element: type, /,
 
 
 @overload
-def demo(function: Callable, /,
+def demo(function: Union[Callable, Navigate], /,
          tab: Optional[Union[str, Callable]] = None,
          lazy: bool = True,
          ) -> Callable[[Callable], Callable]:
