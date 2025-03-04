@@ -33,7 +33,7 @@ The simplest way to setup a fully functioning development environment is to star
 
 ### Locally
 
-To set up a local development environment for NiceGUI, you'll need to have Python 3.8+ and pip installed.
+To set up a local development environment for NiceGUI, you'll need to have Python 3.9+ and pip installed.
 
 You can then use the following command to install NiceGUI in editable mode:
 
@@ -49,7 +49,7 @@ There is no special Python version required for development.
 At Zauberzeug we mainly use 3.11.
 This means we sometimes miss some incompatibilities with older versions.
 But these will hopefully be uncovered by the GitHub Actions (see below).
-Also we use the 3.8 Docker container described below to verify compatibility in cases of uncertainty.
+Also we use the 3.9 Docker container described below to verify compatibility in cases of uncertainty.
 
 ### Plain Docker
 
@@ -63,7 +63,7 @@ By default, the development server listens to http://localhost:80/.
 
 The configuration is written in the `docker-compose.yml` file and automatically loads the `main.py` which contains the website https://nicegui.io.
 Every code change will result in reloading the content.
-We use Python 3.8 as a base to ensure compatibility (see `development.dockerfile`).
+We use Python 3.9 as a base to ensure compatibility (see `development.dockerfile`).
 
 To view the log output, use the command
 
@@ -110,9 +110,9 @@ pre-commit run --all-files
 > [!TIP]
 > The command may fail with
 >
-> > RuntimeError: failed to find interpreter for Builtin discover of python_spec='python3.8'
+> > RuntimeError: failed to find interpreter for Builtin discover of python_spec='python3.9'
 >
-> You will need to install Python 3.8 and make sure it is available in your `PATH`.
+> You will need to install Python 3.9 and make sure it is available in your `PATH`.
 
 These checks will also run automatically before every commit:
 
