@@ -13,6 +13,8 @@ def main_demo() -> None:
 
 @doc.demo('Attach to a logger', '''
     You can attach a `ui.log` element to a Python logger object so that log messages are pushed to the log element.
+    When used inside a page function, it is important to remove the handler when the client disconnects.
+    Otherwise, the handler will keep a reference to the log element and the latter will not be garbage collected.
 ''')
 def logger_handler():
     import logging
@@ -34,11 +36,14 @@ def logger_handler():
             except Exception:
                 self.handleError(record)
 
-    log = ui.log(max_lines=10).classes('w-full')
-    handler = LogElementHandler(log)
-    logger.addHandler(handler)
-    ui.context.client.on_disconnect(lambda: logger.removeHandler(handler))
-    ui.button('Log time', on_click=lambda: logger.warning(datetime.now().strftime('%X.%f')[:-5]))
+    # @ui.page('/')
+    def page():
+        log = ui.log(max_lines=10).classes('w-full')
+        handler = LogElementHandler(log)
+        logger.addHandler(handler)
+        ui.context.client.on_disconnect(lambda: logger.removeHandler(handler))
+        ui.button('Log time', on_click=lambda: logger.warning(datetime.now().strftime('%X.%f')[:-5]))
+    page()  # HIDE
 
 
 doc.reference(ui.log)
