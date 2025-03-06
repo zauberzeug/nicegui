@@ -9,9 +9,9 @@ from contextlib import contextmanager
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Awaitable, Callable, ClassVar, Dict, Iterable, Iterator, List, Optional, Union
 
-from fastapi import Request
-from fastapi.responses import Response
-from fastapi.templating import Jinja2Templates
+from starlette.requests import Request
+from starlette.responses import Response
+from starlette.templating import Jinja2Templates
 from typing_extensions import Self
 
 from . import background_tasks, binding, core, helpers, json, storage

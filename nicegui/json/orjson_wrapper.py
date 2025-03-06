@@ -4,7 +4,7 @@ from typing import Any, Optional, Tuple
 
 # pylint: disable=no-member
 import orjson
-from fastapi import Response
+from starlette.responses import Response
 
 HAS_NUMPY = importlib.util.find_spec('numpy') is not None
 

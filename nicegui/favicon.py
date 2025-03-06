@@ -6,7 +6,7 @@ import urllib.parse
 from pathlib import Path
 from typing import TYPE_CHECKING, Optional, Tuple, Union
 
-from fastapi.responses import FileResponse, Response, StreamingResponse
+from starlette.responses import FileResponse, Response, StreamingResponse
 
 from . import core
 from .helpers import is_file

@@ -2,7 +2,7 @@ import uuid
 from dataclasses import dataclass, field
 from typing import Any, Callable, Dict, Optional, Sequence
 
-from fastapi import Request
+from starlette.requests import Request
 
 from .dataclasses import KWONLY_SLOTS
 

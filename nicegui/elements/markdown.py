@@ -3,8 +3,8 @@ from functools import lru_cache
 from typing import List
 
 import markdown2
-from fastapi.responses import PlainTextResponse
 from pygments.formatters import HtmlFormatter  # pylint: disable=no-name-in-module
+from starlette.responses import PlainTextResponse
 
 from .. import core
 from ..version import __version__

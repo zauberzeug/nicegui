@@ -7,8 +7,9 @@ from enum import Enum
 from pathlib import Path
 from typing import Any, Awaitable, Callable, Iterator, List, Optional, Union
 
-from fastapi import FastAPI, HTTPException, Request, Response
-from fastapi.responses import FileResponse
+from fastapi import FastAPI, HTTPException
+from starlette.requests import Request
+from starlette.responses import FileResponse, Response
 
 from .. import background_tasks, helpers
 from ..client import Client

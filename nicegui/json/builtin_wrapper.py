@@ -3,7 +3,7 @@ import json
 from datetime import date, datetime
 from typing import Any, Optional, Tuple
 
-from fastapi import Response
+from starlette.responses import Response
 
 HAS_NUMPY = importlib.util.find_spec('numpy') is not None
 
