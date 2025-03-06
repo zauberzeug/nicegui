@@ -64,19 +64,19 @@ class Tree(FilterElement):
         def handle_selected(e: GenericEventArguments) -> None:
             update_prop('selected', e.args)
             for handler in self._select_handlers:
-                handle_event(handler, ValueChangeEventArguments(sender=self, client=self.client, value=e.args))
+                handle_event(handler, ValueChangeEventArguments.from_generic_event(e, value=e.args))
         self.on('update:selected', handle_selected)
 
         def handle_expanded(e: GenericEventArguments) -> None:
             update_prop('expanded', e.args)
             for handler in self._expand_handlers:
-                handle_event(handler, ValueChangeEventArguments(sender=self, client=self.client, value=e.args))
+                handle_event(handler, ValueChangeEventArguments.from_generic_event(e, value=e.args))
         self.on('update:expanded', handle_expanded)
 
         def handle_ticked(e: GenericEventArguments) -> None:
             update_prop('ticked', e.args)
             for handler in self._tick_handlers:
-                handle_event(handler, ValueChangeEventArguments(sender=self, client=self.client, value=e.args))
+                handle_event(handler, ValueChangeEventArguments.from_generic_event(e, value=e.args))
         self.on('update:ticked', handle_ticked)
 
     def on_select(self, callback: Handler[ValueChangeEventArguments]) -> Self:

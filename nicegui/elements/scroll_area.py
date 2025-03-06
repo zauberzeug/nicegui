@@ -36,9 +36,8 @@ class ScrollArea(Element, default_classes='nicegui-scroll-area'):
         return self
 
     def _handle_scroll(self, handler: Optional[Handler[ScrollEventArguments]], e: GenericEventArguments) -> None:
-        handle_event(handler, ScrollEventArguments(
-            sender=self,
-            client=self.client,
+        handle_event(handler, ScrollEventArguments.from_generic_event(
+            e,
             vertical_position=e.args['verticalPosition'],
             vertical_percentage=e.args['verticalPercentage'],
             vertical_size=e.args['verticalSize'],

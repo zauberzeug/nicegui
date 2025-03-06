@@ -35,27 +35,32 @@ class Joystick(Element,
         self._move_handlers = [on_move] if on_move else []
         self._end_handlers = [on_end] if on_end else []
 
-        def handle_start() -> None:
+        def handle_start(e: GenericEventArguments) -> None:
             self.active = True
-            args = JoystickEventArguments(sender=self, client=self.client, action='start')
+            args = JoystickEventArguments.from_generic_event(
+                e,
+                action='start',
+            )
             for handler in self._start_handlers:
                 handle_event(handler, args)
 
         def handle_move(e: GenericEventArguments) -> None:
             if self.active:
-                args = JoystickEventArguments(sender=self,
-                                              client=self.client,
-                                              action='move',
-                                              x=float(e.args['data']['vector']['x']),
-                                              y=float(e.args['data']['vector']['y']))
+                args = JoystickEventArguments.from_generic_event(
+                    e,
+                    action='move',
+                    x=float(e.args['data']['vector']['x']),
+                    y=float(e.args['data']['vector']['y']),
+                )
                 for handler in self._move_handlers:
                     handle_event(handler, args)
 
-        def handle_end() -> None:
+        def handle_end(e: GenericEventArguments) -> None:
             self.active = False
-            args = JoystickEventArguments(sender=self,
-                                          client=self.client,
-                                          action='end')
+            args = JoystickEventArguments.from_generic_event(
+                e,
+                action='end',
+            )
             for handler in self._end_handlers:
                 handle_event(handler, args)
 

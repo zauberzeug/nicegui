@@ -50,4 +50,4 @@ def notify(message: Any, *,
     options['message'] = str(message)
     options.update(kwargs)
     client = context.client
-    client.outbox.enqueue_message('notify', options, client.id)
+    client.outbox.enqueue_message('notify', options, client.target)
