@@ -13,6 +13,6 @@ profile = LineProfiler()
 sys.modules['__main__'].__dict__['profile'] = profile
 
 if True:
-    from nicegui import ui
+    import nicegui
 
 profile.print_stats()
