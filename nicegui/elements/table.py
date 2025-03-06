@@ -279,7 +279,7 @@ class Table(FilterElement, component='table.js'):
 
     @rows.setter
     def rows(self, value: List[Dict]) -> None:
-        self._props['rows'][:] = value
+        self._props['rows'] = value
         self.update()
 
     @property
@@ -289,7 +289,7 @@ class Table(FilterElement, component='table.js'):
 
     @columns.setter
     def columns(self, value: List[Dict]) -> None:
-        self._props['columns'][:] = self._normalize_columns(value)
+        self._props['columns'] = self._normalize_columns(value)
         self.update()
 
     @property
@@ -319,7 +319,7 @@ class Table(FilterElement, component='table.js'):
 
     @selected.setter
     def selected(self, value: List[Dict]) -> None:
-        self._props['selected'][:] = value
+        self._props['selected'] = value
         self.update()
 
     @property
