@@ -4,7 +4,7 @@ import sys
 from pathlib import Path
 from typing import Any, List, Literal, Optional, Tuple, TypedDict, Union
 
-from fastapi.middleware.gzip import GZipMiddleware
+from starlette.middleware.gzip import GZipMiddleware
 from starlette.routing import Route
 from uvicorn.main import STARTUP_FAILURE
 from uvicorn.supervisors import ChangeReload, Multiprocess

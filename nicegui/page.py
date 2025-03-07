@@ -7,7 +7,8 @@ from functools import wraps
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Callable, Optional, Union
 
-from fastapi import Request, Response
+from starlette.requests import Request
+from starlette.responses import Response
 
 from . import background_tasks, binding, core, helpers
 from .client import Client

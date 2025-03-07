@@ -1,7 +1,7 @@
 from typing import Dict, List, Optional, cast
 
-from fastapi import Request
 from starlette.datastructures import UploadFile
+from starlette.requests import Request
 from typing_extensions import Self
 
 from ..events import Handler, MultiUploadEventArguments, UiEventArguments, UploadEventArguments, handle_event

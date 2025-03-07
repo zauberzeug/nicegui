@@ -1,9 +1,13 @@
+from __future__ import annotations
+
 from contextlib import asynccontextmanager
 from pathlib import Path
-from typing import Literal, Optional, Union
+from typing import TYPE_CHECKING, Literal, Optional, Union
 
-from fastapi import FastAPI
-from fastapi.middleware.gzip import GZipMiddleware
+if TYPE_CHECKING:
+    from fastapi import FastAPI
+
+from starlette.middleware.gzip import GZipMiddleware
 
 from . import core, storage
 from .air import Air

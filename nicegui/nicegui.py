@@ -6,8 +6,9 @@ from pathlib import Path
 from typing import Any, Dict
 
 import socketio
-from fastapi import HTTPException, Request
-from fastapi.responses import FileResponse, Response
+from fastapi import HTTPException
+from starlette.requests import Request
+from starlette.responses import FileResponse, Response
 
 from . import air, background_tasks, binding, core, favicon, helpers, json, run, welcome
 from .app import App
