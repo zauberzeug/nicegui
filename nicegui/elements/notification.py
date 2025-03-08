@@ -1,5 +1,6 @@
 import asyncio
 from typing import Any, Dict, Literal, Optional, Union
+from enum import Enum, auto
 
 from typing_extensions import Self
 
@@ -27,6 +28,8 @@ NotificationType = Optional[Literal[
     'ongoing',
 ]]
 
+class ChangeType(Enum):
+        NoneChange = auto()
 
 class Notification(Element, component='notification.js'):
 
@@ -175,6 +178,16 @@ class Notification(Element, component='notification.js'):
     @spinner.setter
     def spinner(self, value: bool) -> None:
         self._props['options']['spinner'] = value
+        self.update()
+
+    @property
+    def timeout(self) -> Optional[float]:
+        """Timout of the notification."""
+        return self._props['options']['timeout']
+
+    @timeout.setter
+    def timeout(self,value: Optional[float]) -> None:
+        self._props["options"]["timeout"] = (value or 0) *1000
         self.update()
 
     @property
