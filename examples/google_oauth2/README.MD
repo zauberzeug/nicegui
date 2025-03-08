@@ -12,8 +12,8 @@ From there, you want to click the 'Create Credentials' button, and click on OAut
 From there, you set the Application type to be 'Web application', and set the Authorized redirect URIs to be `http://localhost:8000/auth`. Then click 'Create'.
 ![Create OAuth Client ID](guide_images/create_oauth_client_id.png)
 
-Note: This means that when you have the `ui.run`, it must run on port 8000, on localhost. Running on `127.1....` won't work.
+Note: This means that when you have the `ui.run`, it must run on port 8080, on localhost. Running on `127.1....` won't work.
 
-Afterwards, you should see it in the Credentials tab, you can save the Client ID and Client Secret, and use them in the .env file in the environment variables `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` respectively.
+Afterwards, you should see it in the Credentials tab, which you put into the `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` variables in the main.py file.
 
 From there, you can run the main.py
