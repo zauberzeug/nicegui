@@ -23,39 +23,29 @@ oauth.register(
 
 @ui.page('/')
 def main(request: Request):
-    user = request.session.get('user')
-    if user:
-        return RedirectResponse('/welcome')
-    with ui.link(target='/login'):
-        ui.label('Click me to login')
-
-
-@ui.page('/welcome')
-def welcome(request: Request):
-    user = request.session.get('user')
-    if not user:
-        return RedirectResponse('/')
-    ui.label(f'Welcome {user.get('info', {}).get('userinfo', {}).get('name', '')}!')
-    with ui.link(target='/logout'):
-        ui.label('Logout')
+    user_data = app.storage.user.get('user_data', None)
+    if user_data:
+        ui.label(f'Welcome {user_data.get('userinfo', {}).get('name', '')}!')
+        ui.link('Logout', target='/logout')
+    else:
+        ui.link('Click me to login', target='/login')
 
 
 @ui.page('/login')
 async def login(request: Request):
-    url = request.url_for('auth')
+    url = request.url_for('google_oauth')
     return await oauth.google.authorize_redirect(request, url)
 
 
-@ui.page('/auth')
-async def auth(request: Request):
+@app.get('/auth')
+async def google_oauth(request: Request):
     try:
-        token = await oauth.google.authorize_access_token(request)
+        user_data = await oauth.google.authorize_access_token(request)
     except OAuthError as e:
         print(f'OAuth error: {e}')
         return RedirectResponse('/')  # or return an error page/message
-    app.storage.user['info'] = token
-    request.session['user'] = app.storage.user
-    return RedirectResponse('/welcome')
+    app.storage.user['user_data'] = user_data
+    return RedirectResponse('/')
 
 
 @ui.page('/logout')
