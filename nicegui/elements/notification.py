@@ -199,6 +199,11 @@ class Notification(Element, component='notification.js'):
     def set_visibility(self, visible: bool) -> None:
         raise NotImplementedError('Use `dismiss()` to remove the notification. See #3670 for more information.')
 
+    def set_timeout(self,timeout: Optional[float]) -> None:
+        """Set the notification's timeout."""
+        self.props["options"]["timeout"] = (timeout or 0) *1000
+        self.update()
+
     def update(self) -> None:
         super().update()
         self.run_method('update_notification')
