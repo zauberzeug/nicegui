@@ -176,7 +176,8 @@ def run(*,
         host = host or '127.0.0.1'
         port = port or native_module.find_open_port()
         width, height = window_size or (800, 600)
-        native_module.activate(host, port, title, width, height, fullscreen, frameless)
+        native_host = '127.0.0.1' if host == '0.0.0.0' else host
+        native_module.activate(native_host, port, title, width, height, fullscreen, frameless)
     else:
         port = port or 8080
         host = host or '0.0.0.0'
