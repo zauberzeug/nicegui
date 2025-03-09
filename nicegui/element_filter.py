@@ -120,7 +120,13 @@ class ElementFilter(Generic[T]):
                     element_contents.append(element.message)
                 if isinstance(element, (Select, Radio, Toggle)):
                     options = {option['value']: option['label'] for option in element.props.get('options', [])}
-                    element_contents.append(options.get(element.value, ''))
+                    selected_values = element.value
+                    if not isinstance(selected_values, list):
+                        selected_values = [selected_values]
+                    element_contents.extend([
+                        options.get(selected_value, '')
+                        for selected_value in selected_values
+                    ])
                     if not isinstance(element, Select) or element.is_showing_popup:
                         element_contents.extend(options.values())
                 if any(all(needle not in str(haystack) for haystack in element_contents) for needle in self._contents):
