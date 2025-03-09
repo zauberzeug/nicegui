@@ -1,1 +1,1 @@
-dotenv
+python-dotenv
