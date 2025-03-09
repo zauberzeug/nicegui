@@ -12,7 +12,7 @@ except ImportError:
     pass
 
 
-class Plotly(Element, component='plotly.vue', libraries=['lib/plotly/plotly.min.js']):
+class Plotly(Element, component='plotly.vue', dependencies=['lib/plotly/plotly.min.js']):
 
     def __init__(self, figure: Union[Dict, go.Figure]) -> None:
         """Plotly Element
@@ -46,6 +46,7 @@ class Plotly(Element, component='plotly.vue', libraries=['lib/plotly/plotly.min.
     def update(self) -> None:
         self._props['options'] = self._get_figure_json()
         super().update()
+        self.run_method('update')
 
     def _get_figure_json(self) -> Dict:
         if isinstance(self.figure, go.Figure):

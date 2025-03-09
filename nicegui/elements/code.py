@@ -10,18 +10,19 @@ from .mixins.content_element import ContentElement
 from .timer import Timer as timer
 
 
-class Code(ContentElement):
+class Code(ContentElement, default_classes='nicegui-code'):
 
     def __init__(self, content: str = '', *, language: Optional[str] = 'python') -> None:
         """Code
 
         This element displays a code block with syntax highlighting.
 
+        In secure environments (HTTPS or localhost), a copy button is displayed to copy the code to the clipboard.
+
         :param content: code to display
         :param language: language of the code (default: "python")
         """
         super().__init__(content=remove_indentation(content))
-        self._classes.append('nicegui-code')
 
         with self:
             self.markdown = markdown().classes('overflow-auto') \
@@ -33,6 +34,10 @@ class Code(ContentElement):
         self._last_scroll: float = 0.0
         self.markdown.on('scroll', self._handle_scroll)
         timer(0.1, self._update_copy_button)
+
+        self.client.on_connect(lambda: self.client.run_javascript(f'''
+            if (!navigator.clipboard) getHtmlElement({self.copy_button.id}).style.display = 'none';
+        '''))
 
     async def show_checkmark(self) -> None:
         """Show a checkmark icon for 3 seconds."""

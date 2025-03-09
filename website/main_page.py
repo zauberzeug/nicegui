@@ -1,9 +1,14 @@
+import json
+from pathlib import Path
+
 from nicegui import ui
 
 from . import documentation, example_card, svg
 from .examples import examples
 from .header import add_head_html, add_header
 from .style import example_link, features, heading, link_target, section_heading, subtitle, title
+
+SPONSORS = json.loads((Path(__file__).parent / 'sponsors.json').read_text(encoding='utf-8'))
 
 
 def create() -> None:
@@ -100,34 +105,34 @@ def create() -> None:
         section_heading('Features', 'Code *nicely*')
         with ui.row().classes('w-full text-lg leading-tight grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-8'):
             features('swap_horiz', 'Interaction', [
-                'buttons, switches, sliders, inputs, ...',
-                'notifications, dialogs and menus',
-                'interactive images with SVG overlays',
-                'web pages and native window apps',
+                '[buttons, switches, sliders, inputs, ...](/documentation/section_controls)',
+                '[notifications, dialogs and menus](/documentation/section_page_layout)',
+                '[interactive images](/documentation/interactive_image) with SVG overlays',
+                'web pages and [native window apps](/documentation/section_configuration_deployment#native_mode)',
             ])
             features('space_dashboard', 'Layout', [
-                'navigation bars, tabs, panels, ...',
+                '[navigation bars, tabs, panels, ...](/documentation/section_page_layout)',
                 'grouping with rows, columns, grids and cards',
-                'HTML and Markdown elements',
+                '[HTML](/documentation/html) and [Markdown](/documentation/markdown) elements',
                 'flex layout by default',
             ])
             features('insights', 'Visualization', [
-                'charts, diagrams, tables, audio/video',
-                '3D scenes',
-                'straight-forward data binding',
-                'built-in timer for data refresh',
+                '[charts, diagrams, tables](/documentation/section_data_elements), [audio/video](/documentation/section_audiovisual_elements)',
+                '[3D scenes](/documentation/scene)',
+                'straight-forward [data binding](/documentation/section_binding_properties)',
+                'built-in [timer for data refresh](/documentation/timer)',
             ])
             features('brush', 'Styling', [
-                'customizable color themes',
+                'customizable [color themes](/documentation/section_styling_appearance#color_theming)',
                 'custom CSS and classes',
                 'modern look with material design',
                 '[Tailwind CSS](https://tailwindcss.com/) auto-completion',
             ])
             features('source', 'Coding', [
-                'routing for multiple pages',
+                'routing for multiple [pages](/documentation/page)',
                 'auto-reload on code change',
-                'persistent user sessions',
-                'built-in testing framework',
+                'persistent [user sessions](/documentation/storage)',
+                'super nice [testing framework](/documentation/section_testing)',
             ])
             features('anchor', 'Foundation', [
                 'generic [Vue](https://vuejs.org/) to Python bridge',
@@ -158,6 +163,37 @@ def create() -> None:
         with ui.row().classes('w-full text-lg leading-tight grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4'):
             for example in examples:
                 example_link(example)
+
+    with ui.column().classes('dark-box p-8 lg:p-16 my-16 bg-transparent border-y-2'):
+        with ui.column().classes('mx-auto items-center gap-y-8 gap-x-32 lg:flex-row'):
+            with ui.column().classes('max-lg:items-center max-lg:text-center'):
+                link_target('sponsors')
+                ui.markdown('NiceGUI is supported by') \
+                    .classes('text-2xl md:text-3xl font-medium')
+                if SPONSORS['top']:
+                    with ui.row(align_items='center'):
+                        assert SPONSORS['total'] > 0
+                        ui.markdown(f'''
+                            our top {'sponsor' if len(SPONSORS['top']) == 1 else 'sponsors'}
+                        ''')
+                        for sponsor in SPONSORS['top']:
+                            with ui.link(target=f'https://github.com/{sponsor}').classes('row items-center gap-2'):
+                                ui.image(f'https://github.com/{sponsor}.png').classes('w-12 h-12 border')
+                                ui.label(f'@{sponsor}')
+                    ui.markdown(f'''
+                        as well as {SPONSORS['total'] - len(SPONSORS['top'])} other [sponsors](https://github.com/sponsors/zauberzeug)
+                        and {SPONSORS['contributors']} [contributors](https://github.com/zauberzeug/nicegui/graphs/contributors).
+                    ''').classes('bold-links arrow-links')
+                else:
+                    ui.markdown(f'''
+                        {SPONSORS['total']} [sponsors](https://github.com/sponsors/zauberzeug)
+                        and {SPONSORS['contributors']} [contributors](https://github.com/zauberzeug/nicegui/graphs/contributors).
+                    ''').classes('bold-links arrow-links')
+            with ui.link(target='https://github.com/sponsors/zauberzeug').style('color: black !important') \
+                    .classes('rounded-full mx-auto px-12 py-2 border-2 border-[#3e6a94] font-medium text-lg md:text-xl'):
+                with ui.row().classes('items-center gap-4'):
+                    ui.icon('sym_o_favorite', color='#3e6a94')
+                    ui.label('Become a sponsor').classes('text-[#3e6a94]')
 
     with ui.row().classes('dark-box min-h-screen mt-16'):
         link_target('why')

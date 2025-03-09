@@ -33,7 +33,7 @@ except ImportError:
     pass
 
 
-class Pyplot(Element):
+class Pyplot(Element, default_classes='nicegui-pyplot'):
 
     def __init__(self, *, close: bool = True, **kwargs: Any) -> None:
         """Pyplot Context
@@ -48,7 +48,7 @@ class Pyplot(Element):
 
         super().__init__('div')
         self.close = close
-        self.fig = plt.figure(**kwargs)
+        self.fig = plt.figure(**kwargs)  # pylint: disable=possibly-used-before-assignment
         self._convert_to_html()
 
         if not self.client.shared:

@@ -1,6 +1,6 @@
 from typing import Union
 
-from nicegui.element import Element
+from ..element import Element
 
 
 class Teleport(Element, component='teleport.js'):

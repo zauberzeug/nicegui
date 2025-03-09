@@ -1,3 +1,5 @@
+from selenium.webdriver.common.by import By
+
 from nicegui import ui
 from nicegui.testing import Screen
 
@@ -30,7 +32,8 @@ def test_markdown_with_mermaid(screen: Screen):
     screen.wait(0.5)  # wait for Mermaid to render
     screen.should_contain('Mermaid')
     assert screen.find_by_tag('svg').get_attribute('id').startswith('mermaid-')
-    assert screen.find('Node_A').get_attribute('class') == 'nodeLabel'
+    node_a = screen.selenium.find_element(By.XPATH, '//span[p[contains(text(), "Node_A")]]')
+    assert node_a.get_attribute('class') == 'nodeLabel'
 
     m.set_content('''
         New:
@@ -41,7 +44,8 @@ def test_markdown_with_mermaid(screen: Screen):
         ```
     ''')
     screen.should_contain('New')
-    assert screen.find('Node_C').get_attribute('class') == 'nodeLabel'
+    node_c = screen.selenium.find_element(By.XPATH, '//span[p[contains(text(), "Node_C")]]')
+    assert node_c.get_attribute('class') == 'nodeLabel'
     screen.should_not_contain('Node_A')
 
 

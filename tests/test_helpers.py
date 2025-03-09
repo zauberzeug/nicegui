@@ -87,3 +87,12 @@ def test_is_file():
     assert not helpers.is_file(None)
     assert not helpers.is_file('x' * 100_000), 'a very long filepath should not lead to OSError 63'
     assert not helpers.is_file('https://nicegui.io/logo.png')
+
+
+def test_event_type_to_camel_case():
+    assert helpers.event_type_to_camel_case('click') == 'click'
+    assert helpers.event_type_to_camel_case('row-click') == 'rowClick'
+    assert helpers.event_type_to_camel_case('update:model-value') == 'update:modelValue'
+    assert helpers.event_type_to_camel_case('keydown.enter') == 'keydown.enter'
+    assert helpers.event_type_to_camel_case('keydown.+') == 'keydown.+'
+    assert helpers.event_type_to_camel_case('keydown.-') == 'keydown.-'

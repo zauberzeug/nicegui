@@ -1,5 +1,3 @@
-version: "3.9"
-
 services:
   nicegui:
     image: zauberzeug/nicegui:latest

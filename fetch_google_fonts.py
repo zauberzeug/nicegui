@@ -39,4 +39,4 @@ for font_url in re.findall(r'url\((.*?)\)', css):
 css = css.replace('https://fonts.gstatic.com/s/materialicons/v140', 'fonts')
 css = css.replace('https://fonts.gstatic.com/s/roboto/v30', 'fonts')
 css = css.replace("'", '"')
-Path('nicegui/static/fonts.css').write_text(css)
+Path('nicegui/static/fonts.css').write_text(css, encoding='utf-8')

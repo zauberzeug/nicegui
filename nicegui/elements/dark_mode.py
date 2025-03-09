@@ -1,12 +1,14 @@
-from typing import Any, Callable, Optional
+from typing import Optional
 
+from .. import core, helpers
+from ..events import Handler, ValueChangeEventArguments
 from .mixins.value_element import ValueElement
 
 
 class DarkMode(ValueElement, component='dark_mode.js'):
     VALUE_PROP = 'value'
 
-    def __init__(self, value: Optional[bool] = False, *, on_change: Optional[Callable[..., Any]] = None) -> None:
+    def __init__(self, value: Optional[bool] = False, *, on_change: Optional[Handler[ValueChangeEventArguments]] = None) -> None:
         """Dark mode
 
         You can use this element to enable, disable or toggle dark mode on the page.
@@ -18,6 +20,19 @@ class DarkMode(ValueElement, component='dark_mode.js'):
         :param on_change: Callback that is invoked when the value changes.
         """
         super().__init__(value=value, on_value_change=on_change)
+
+        # HACK: this is a temporary warning to inform users about issue #3753
+        if core.app.is_started:
+            self._check_for_issue_3753()
+        else:
+            core.app.on_startup(self._check_for_issue_3753)
+
+    def _check_for_issue_3753(self) -> None:
+        if self.client.page.resolve_dark() is None and core.app.config.tailwind:
+            helpers.warn_once(
+                '`ui.dark_mode` is not supported on pages with `dark=None` while running with `tailwind=True` (the default). '
+                'See https://github.com/zauberzeug/nicegui/issues/3753 for more information.'
+            )
 
     def enable(self) -> None:
         """Enable dark mode."""

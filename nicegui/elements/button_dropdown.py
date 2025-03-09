@@ -1,19 +1,20 @@
-from typing import Any, Callable, Optional
+from typing import Optional
 
-from ..events import ClickEventArguments, handle_event
+from ..events import ClickEventArguments, Handler, ValueChangeEventArguments, handle_event
 from .mixins.color_elements import BackgroundColorElement
 from .mixins.disableable_element import DisableableElement
+from .mixins.icon_element import IconElement
 from .mixins.text_element import TextElement
 from .mixins.value_element import ValueElement
 
 
-class DropdownButton(TextElement, DisableableElement, BackgroundColorElement, ValueElement):
+class DropdownButton(IconElement, TextElement, DisableableElement, BackgroundColorElement, ValueElement):
 
     def __init__(self,
                  text: str = '', *,
                  value: bool = False,
-                 on_value_change: Optional[Callable[..., Any]] = None,
-                 on_click: Optional[Callable[..., Any]] = None,
+                 on_value_change: Optional[Handler[ValueChangeEventArguments]] = None,
+                 on_click: Optional[Handler[ClickEventArguments]] = None,
                  color: Optional[str] = 'primary',
                  icon: Optional[str] = None,
                  auto_close: Optional[bool] = False,
@@ -38,10 +39,7 @@ class DropdownButton(TextElement, DisableableElement, BackgroundColorElement, Va
         :param split: whether to split the dropdown icon into a separate button (default: `False`)
         """
         super().__init__(tag='q-btn-dropdown',
-                         text=text, background_color=color, value=value, on_value_change=on_value_change)
-
-        if icon:
-            self._props['icon'] = icon
+                         icon=icon, text=text, background_color=color, value=value, on_value_change=on_value_change)
 
         if auto_close:
             self._props['auto-close'] = True

@@ -1,12 +1,14 @@
 import inspect
+import os
+import platform
+import signal
 import urllib
 from enum import Enum
 from pathlib import Path
-from typing import Any, Awaitable, Callable, List, Optional, Union
+from typing import Any, Awaitable, Callable, Iterator, List, Optional, Union
 
 from fastapi import FastAPI, HTTPException, Request, Response
 from fastapi.responses import FileResponse
-from fastapi.staticfiles import StaticFiles
 
 from .. import background_tasks, helpers
 from ..client import Client
@@ -14,6 +16,7 @@ from ..logging import log
 from ..native import NativeConfig
 from ..observables import ObservableSet
 from ..server import Server
+from ..staticfiles import CacheControlledStaticFiles
 from ..storage import Storage
 from .app_config import AppConfig
 from .range_response import get_range_response
@@ -27,9 +30,10 @@ class State(Enum):
 
 
 class App(FastAPI):
+    from ..timer import Timer as timer  # pylint: disable=import-outside-toplevel
 
     def __init__(self, **kwargs) -> None:
-        super().__init__(**kwargs)
+        super().__init__(**kwargs, docs_url=None, redoc_url=None, openapi_url=None)
         self.native = NativeConfig()
         self.storage = Storage()
         self.urls = ObservableSet()
@@ -41,6 +45,8 @@ class App(FastAPI):
         self._connect_handlers: List[Union[Callable[..., Any], Awaitable]] = []
         self._disconnect_handlers: List[Union[Callable[..., Any], Awaitable]] = []
         self._exception_handlers: List[Callable[..., Any]] = [log.exception]
+
+        self.on_shutdown(self.storage.on_shutdown)
 
     @property
     def is_starting(self) -> bool:
@@ -124,12 +130,11 @@ class App(FastAPI):
         """Shut down NiceGUI.
 
         This will programmatically stop the server.
-        Only possible when auto-reload is disabled.
         """
-        if self.config.reload:
-            raise RuntimeError('calling shutdown() is not supported when auto-reload is enabled')
         if self.native.main_window:
             self.native.main_window.destroy()
+        if self.config.reload:
+            os.kill(os.getppid(), getattr(signal, 'CTRL_C_EVENT' if platform.system() == 'Windows' else 'SIGINT'))
         else:
             Server.instance.should_exit = True
 
@@ -137,7 +142,8 @@ class App(FastAPI):
                          url_path: str,
                          local_directory: Union[str, Path],
                          *,
-                         follow_symlink: bool = False) -> None:
+                         follow_symlink: bool = False,
+                         max_cache_age: int = 3600) -> None:
         """Add a directory of static files.
 
         `add_static_files()` makes a local directory available at the specified endpoint, e.g. `'/static'`.
@@ -151,11 +157,15 @@ class App(FastAPI):
         :param url_path: string that starts with a slash "/" and identifies the path at which the files should be served
         :param local_directory: local folder with files to serve as static content
         :param follow_symlink: whether to follow symlinks (default: False)
+        :param max_cache_age: value for max-age set in Cache-Control header (*added in version 2.8.0*)
         """
         if url_path == '/':
             raise ValueError('''Path cannot be "/", because it would hide NiceGUI's internal "/_nicegui" route.''')
+        if max_cache_age < 0:
+            raise ValueError('''Value of max_cache_age must be a positive integer or 0.''')
 
-        handler = StaticFiles(directory=local_directory, follow_symlink=follow_symlink)
+        handler = CacheControlledStaticFiles(
+            directory=local_directory, follow_symlink=follow_symlink, max_cache_age=max_cache_age)
 
         @self.get(url_path + '/{path:path}')
         async def static_file(request: Request, path: str = '') -> Response:
@@ -165,7 +175,8 @@ class App(FastAPI):
                         local_file: Union[str, Path],
                         url_path: Optional[str] = None,
                         single_use: bool = False,
-                        ) -> str:
+                        strict: bool = True,
+                        max_cache_age: int = 3600) -> str:
         """Add a single static file.
 
         Allows a local file to be accessed online with enabled caching.
@@ -174,21 +185,29 @@ class App(FastAPI):
         To make a whole folder of files accessible, use `add_static_files()` instead.
         For media files which should be streamed, you can use `add_media_files()` or `add_media_file()` instead.
 
+        Deprecation warning:
+        Non-existing files will raise a ``FileNotFoundError`` rather than a ``ValueError`` in version 3.0 if ``strict`` is ``True``.
+
         :param local_file: local file to serve as static content
         :param url_path: string that starts with a slash "/" and identifies the path at which the file should be served (default: None -> auto-generated URL path)
         :param single_use: whether to remove the route after the file has been downloaded once (default: False)
+        :param strict: whether to raise a ``ValueError`` if the file does not exist (default: False, *added in version 2.12.0*)
+        :param max_cache_age: value for max-age set in Cache-Control header (*added in version 2.8.0*)
         :return: encoded URL which can be used to access the file
         """
+        if max_cache_age < 0:
+            raise ValueError('''Value of max_cache_age must be a positive integer or 0.''')
+
         file = Path(local_file).resolve()
-        if not file.is_file():
-            raise ValueError(f'File not found: {file}')
+        if strict and not file.is_file():
+            raise ValueError(f'File not found: {file}')  # DEPRECATED: will raise a ``FileNotFoundError`` in version 3.0
         path = f'/_nicegui/auto/static/{helpers.hash_file_path(file)}/{file.name}' if url_path is None else url_path
 
         @self.get(path)
         def read_item() -> FileResponse:
             if single_use:
                 self.remove_route(path)
-            return FileResponse(file, headers={'Cache-Control': 'public, max-age=3600'})
+            return FileResponse(file, headers={'Cache-Control': f'public, max-age={max_cache_age}'})
 
         return urllib.parse.quote(path)
 
@@ -217,7 +236,7 @@ class App(FastAPI):
                        local_file: Union[str, Path],
                        url_path: Optional[str] = None,
                        single_use: bool = False,
-                       ) -> str:
+                       strict: bool = True) -> str:
         """Add a single media file.
 
         Allows a local file to be streamed.
@@ -226,14 +245,18 @@ class App(FastAPI):
         To make a whole folder of media files accessible via streaming, use `add_media_files()` instead.
         For small static files, you can use `add_static_files()` or `add_static_file()` instead.
 
+        Deprecation warning:
+        Non-existing files will raise a ``FileNotFoundError`` rather than a ``ValueError`` in version 3.0 if ``strict`` is ``True``.
+
         :param local_file: local file to serve as media content
         :param url_path: string that starts with a slash "/" and identifies the path at which the file should be served (default: None -> auto-generated URL path)
         :param single_use: whether to remove the route after the media file has been downloaded once (default: False)
+        :param strict: whether to raise a ``ValueError`` if the file does not exist (default: False, *added in version 2.12.0*)
         :return: encoded URL which can be used to access the file
         """
         file = Path(local_file).resolve()
-        if not file.is_file():
-            raise ValueError(f'File not found: {local_file}')
+        if strict and not file.is_file():
+            raise ValueError(f'File not found: {file}')  # DEPRECATED: will raise a ``FileNotFoundError`` in version 3.0
         path = f'/_nicegui/auto/media/{helpers.hash_file_path(file)}/{file.name}' if url_path is None else url_path
 
         @self.get(path)
@@ -256,3 +279,18 @@ class App(FastAPI):
         self._connect_handlers.clear()
         self._disconnect_handlers.clear()
         self._exception_handlers[:] = [log.exception]
+
+    @staticmethod
+    def clients(path: str) -> Iterator[Client]:
+        """Iterate over all connected clients with a matching path.
+
+        When using `@ui.page("/path")` each client gets a private view of this page.
+        Updates must be sent to each client individually, which this iterator simplifies.
+
+        *Added in version 2.7.0*
+
+        :param path: string to filter clients by
+        """
+        for client in Client.instances.values():
+            if client.page.path == path:
+                yield client

@@ -1,9 +1,9 @@
 from pathlib import Path
-from typing import Any, Callable, List, Literal, Optional, get_args
+from typing import Callable, List, Literal, Optional, get_args
 
 from nicegui.elements.mixins.disableable_element import DisableableElement
 from nicegui.elements.mixins.value_element import ValueElement
-from nicegui.events import GenericEventArguments
+from nicegui.events import GenericEventArguments, Handler, ValueChangeEventArguments
 
 SUPPORTED_LANGUAGES = Literal[
     'Angular Template',
@@ -154,55 +154,98 @@ SUPPORTED_LANGUAGES = Literal[
 
 SUPPORTED_THEMES = Literal[
     'abcdef',
+    'abcdefDarkStyle',
     'abyss',
+    'abyssDarkStyle',
     'androidstudio',
+    'androidstudioDarkStyle',
     'andromeda',
+    'andromedaDarkStyle',
     'atomone',
+    'atomoneDarkStyle',
     'aura',
+    'auraDarkStyle',
     'basicDark',
+    'basicDarkStyle',
     'basicLight',
+    'basicLightStyle',
     'bbedit',
+    'bbeditLightStyle',
     'bespin',
+    'bespinDarkStyle',
     'consoleDark',
     'consoleLight',
     'copilot',
+    'copilotDarkStyle',
     'darcula',
+    'darculaDarkStyle',
+    'douToneLightStyle',
     'dracula',
+    'draculaDarkStyle',
     'duotoneDark',
+    'duotoneDarkStyle',
     'duotoneLight',
     'eclipse',
+    'eclipseLightStyle',
     'githubDark',
+    'githubDarkStyle',
     'githubLight',
+    'githubLightStyle',
     'gruvboxDark',
+    'gruvboxDarkStyle',
     'gruvboxLight',
     'kimbie',
+    'kimbieDarkStyle',
     'material',
     'materialDark',
+    'materialDarkStyle',
     'materialLight',
+    'materialLightStyle',
     'monokai',
+    'monokaiDarkStyle',
     'monokaiDimmed',
+    'monokaiDimmedDarkStyle',
     'noctisLilac',
+    'noctisLilacLightStyle',
     'nord',
+    'nordDarkStyle',
     'okaidia',
+    'okaidiaDarkStyle',
     'oneDark',
     'quietlight',
+    'quietlightStyle',
     'red',
+    'redDarkStyle',
     'solarizedDark',
+    'solarizedDarkStyle',
     'solarizedLight',
+    'solarizedLightStyle',
     'sublime',
+    'sublimeDarkStyle',
     'tokyoNight',
     'tokyoNightDay',
+    'tokyoNightDayStyle',
     'tokyoNightStorm',
+    'tokyoNightStormStyle',
+    'tokyoNightStyle',
     'tomorrowNightBlue',
+    'tomorrowNightBlueStyle',
     'vscodeDark',
+    'vscodeDarkStyle',
+    'vscodeLight',
+    'vscodeLightStyle',
     'whiteDark',
+    'whiteDarkStyle',
     'whiteLight',
+    'whiteLightStyle',
     'xcodeDark',
+    'xcodeDarkStyle',
     'xcodeLight',
+    'xcodeLightStyle',
 ]
 
 
-class CodeMirror(ValueElement, DisableableElement, component='codemirror.js'):
+class CodeMirror(ValueElement, DisableableElement, component='codemirror.js', default_classes='nicegui-codemirror'):
     VALUE_PROP = 'value'
     LOOPBACK = None
 
@@ -210,7 +253,7 @@ class CodeMirror(ValueElement, DisableableElement, component='codemirror.js'):
         self,
         value: str = '',
         *,
-        on_change: Optional[Callable[..., Any]] = None,
+        on_change: Optional[Handler[ValueChangeEventArguments]] = None,
         language: Optional[SUPPORTED_LANGUAGES] = None,
         theme: SUPPORTED_THEMES = 'basicLight',
         indent: str = ' ' * 4,
@@ -239,8 +282,6 @@ class CodeMirror(ValueElement, DisableableElement, component='codemirror.js'):
         """
         super().__init__(value=value, on_value_change=on_change)
         self.add_resource(Path(__file__).parent / 'lib' / 'codemirror')
-
-        self._classes.append('nicegui-codemirror')
 
         self._props['language'] = language
         self._props['theme'] = theme

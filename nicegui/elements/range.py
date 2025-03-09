@@ -1,5 +1,6 @@
-from typing import Any, Callable, Dict, Optional
+from typing import Dict, Optional
 
+from ..events import Handler, ValueChangeEventArguments
 from .mixins.disableable_element import DisableableElement
 from .mixins.value_element import ValueElement
 
@@ -11,7 +12,7 @@ class Range(ValueElement, DisableableElement):
                  max: float,  # pylint: disable=redefined-builtin
                  step: float = 1.0,
                  value: Optional[Dict[str, int]] = None,
-                 on_change: Optional[Callable[..., Any]] = None,
+                 on_change: Optional[Handler[ValueChangeEventArguments]] = None,
                  ) -> None:
         """Range
 
@@ -27,3 +28,39 @@ class Range(ValueElement, DisableableElement):
         self._props['min'] = min
         self._props['max'] = max
         self._props['step'] = step
+
+    @property
+    def min(self) -> float:
+        """The minimum value allowed."""
+        return self._props['min']
+
+    @min.setter
+    def min(self, value: float) -> None:
+        if self._props['min'] == value:
+            return
+        self._props['min'] = value
+        self.update()
+
+    @property
+    def max(self) -> float:
+        """The maximum value allowed."""
+        return self._props['max']
+
+    @max.setter
+    def max(self, value: float) -> None:
+        if self._props['max'] == value:
+            return
+        self._props['max'] = value
+        self.update()
+
+    @property
+    def step(self) -> float:
+        """The step size between valid values."""
+        return self._props['step']
+
+    @step.setter
+    def step(self, value: float) -> None:
+        if self._props['step'] == value:
+            return
+        self._props['step'] = value
+        self.update()
