@@ -29,6 +29,7 @@ class page:
                  dark: Optional[bool] = ...,  # type: ignore
                  language: Language = ...,  # type: ignore
                  response_timeout: float = 3.0,
+                 check_interval: float = 0.1,
                  reconnect_timeout: Optional[float] = None,
                  api_router: Optional[APIRouter] = None,
                  **kwargs: Any,
@@ -56,6 +57,7 @@ class page:
         :param dark: whether to use Quasar's dark mode (defaults to `dark` argument of `run` command)
         :param language: language of the page (defaults to `language` argument of `run` command)
         :param response_timeout: maximum time for the decorated function to build the page (default: 3.0 seconds)
+        :param check_interval: for async page definitions, interval in seconds to check if the page function is ready (default: 0.1 seconds)
         :param reconnect_timeout: maximum time the server waits for the browser to reconnect (defaults to `reconnect_timeout` argument of `run` command))
         :param api_router: APIRouter instance to use, can be left `None` to use the default
         :param kwargs: additional keyword arguments passed to FastAPI's @app.get method
@@ -67,6 +69,7 @@ class page:
         self.dark = dark
         self.language = language
         self.response_timeout = response_timeout
+        self.check_interval = check_interval
         self.kwargs = kwargs
         self.api_router = api_router or core.app.router
         self.reconnect_timeout = reconnect_timeout
@@ -128,7 +131,7 @@ class page:
                 while task and not client.is_waiting_for_connection and not task.done():
                     if time.time() > deadline:
                         raise TimeoutError(f'Response not ready after {self.response_timeout} seconds')
-                    await asyncio.sleep(0.1)
+                    await asyncio.sleep(self.check_interval)
                 if task.done():
                     result = task.result()
                 else:
