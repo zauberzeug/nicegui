@@ -1,11 +1,18 @@
+import os
+
 from authlib.integrations.starlette_client import OAuth, OAuthError
+from dotenv import load_dotenv
 from fastapi import Request
 from starlette.responses import RedirectResponse
 
 from nicegui import app, ui
 
-GOOGLE_CLIENT_ID = 'your google client id'
-GOOGLE_CLIENT_SECRET = 'your google client secret'
+# Get the credentials from the Google Cloud Console
+# https://developers.google.com/identity/gsi/web/guides/get-google-api-clientid#get_your_google_api_client_id
+# and pass them as environment variables (or write it to an .env file)
+load_dotenv()
+GOOGLE_CLIENT_ID = os.environ.get('GOOGLE_CLIENT_ID')
+GOOGLE_CLIENT_SECRET = os.environ.get('GOOGLE_CLIENT_SECRET')
 
 oauth = OAuth()
 oauth.register(
