@@ -14,7 +14,6 @@ from nicegui import app, ui
 # see https://developers.google.com/identity/gsi/web/guides/get-google-api-clientid#get_your_google_api_client_id
 load_dotenv()
 GOOGLE_CLIENT_ID = os.environ.get('GOOGLE_CLIENT_ID', '')
-assert GOOGLE_CLIENT_ID, 'Please set the GOOGLE_CLIENT_ID environment variable'
 
 
 @ui.page('/')
