@@ -15,33 +15,14 @@ GOOGLE_CLIENT_ID = os.environ.get('GOOGLE_CLIENT_ID')
 GOOGLE_CLIENT_SECRET = os.environ.get('GOOGLE_CLIENT_SECRET')
 
 oauth = OAuth()
+
 oauth.register(
     name='google',
     server_metadata_url='https://accounts.google.com/.well-known/openid-configuration',
     client_id=GOOGLE_CLIENT_ID,
     client_secret=GOOGLE_CLIENT_SECRET,
-    client_kwargs={
-        'scope': 'openid email profile',
-        'redirect_uri': 'http://localhost:8080/auth'
-    },
-    authorize_state='random secret goes here'
+    client_kwargs={'scope': 'openid email profile', },
 )
-
-
-@ui.page('/')
-def main(request: Request):
-    user_data = app.storage.user.get('user_data', None)
-    if user_data:
-        ui.label(f'Welcome {user_data.get('userinfo', {}).get('name', '')}!')
-        ui.link('Logout', target='/logout')
-    else:
-        ui.link('Click me to login', target='/login')
-
-
-@ui.page('/login')
-async def login(request: Request):
-    url = request.url_for('google_oauth')
-    return await oauth.google.authorize_redirect(request, url)
 
 
 @app.get('/auth')
@@ -55,11 +36,22 @@ async def google_oauth(request: Request):
     return RedirectResponse('/')
 
 
-@ui.page('/logout')
-def logout(request: Request):
-    request.session.pop('user', None)
-
-    return RedirectResponse('/')
+def logout():
+    del app.storage.user['user_data']
+    ui.navigate.to('/')
 
 
-ui.run(port=8080, storage_secret='random secret goes here')
+@ui.page('/')
+async def main(request: Request):
+
+    user_data = app.storage.user.get('user_data', None)
+    if user_data:
+        ui.label(f'Welcome {user_data.get('userinfo', {}).get('name', '')}!')
+        ui.button('Logout', on_click=logout)
+    else:
+        url = request.url_for('google_oauth')
+        if url.hostname != 'localhost':  # NOTE this ensures we use the localhost URL configured in Google Console
+            return RedirectResponse(next(app.urls))
+        return await oauth.google.authorize_redirect(request, url)
+
+ui.run(storage_secret='random secret goes here')
