@@ -13,11 +13,9 @@ This is the official NiceGUI repository. With NiceGUI you can write graphical us
 - Vue/Quasar in the frontend
 - socket.io for communication between frontend and backend
 
-
 # Design Decisions
 
 - All user interactions are send to the backend and invoke the proper Python functions.
 - Unlike Streamlit the framework took much care to allow easy integration with any other Python libraries.
 - NiceGUI only uses one uvicorn worker (to not have to implement/support tricky synchronization).
 - The socket.io library is used for managing web sockets. After the initial content is loaded a web socket connection is established and kept open for communication as long as the web page is shown.
--
