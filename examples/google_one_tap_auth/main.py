@@ -9,15 +9,15 @@ from fastapi.responses import RedirectResponse
 from nicegui import app, ui
 
 # Get your Google Client ID from the Google Cloud Console and pass it as an environment variable (or write it to an .env file)
-# For local development, you should add http://localhost:8080 to the authorized javascript origins
-# In production, you should add the domain of your website to the authorized javascript origins
-# see https://developers.google.com/identity/gsi/web/guides/get-google-api-clientid#get_your_google_api_client_id
+# For local development, you should add http://localhost:8080 to the authorized JavaScript origins.
+# In production, you should add the domain of your website to the authorized JavaScript origins.
+# See https://developers.google.com/identity/gsi/web/guides/get-google-api-clientid#get_your_google_api_client_id.
 load_dotenv()
 GOOGLE_CLIENT_ID = os.environ.get('GOOGLE_CLIENT_ID', '')
 
 
 @ui.page('/')
-def main_page():
+def main_page() -> None:
     user_data = app.storage.user.get('user_data', None)
     if not user_data:
         ui.add_head_html('<script src="https://accounts.google.com/gsi/client" async defer></script>')
@@ -25,20 +25,21 @@ def main_page():
             <div id="g_id_onload"
                 data-client_id="{GOOGLE_CLIENT_ID}"
                 data-login_uri="http://localhost:8080/auth">
-            </div>''')
+            </div>
+        ''')
         ui.label('Sign in with Google One Tap')
     else:
         ui.label(f'Welcome {user_data["name"]}!')
         ui.button('Logout', on_click=logout)
 
 
-def logout():
+def logout() -> None:
     del app.storage.user['user_data']
     ui.navigate.to('/')
 
 
 @app.post('/auth')
-async def google_auth(credential: str = Form(...)):
+async def google_auth(credential: str = Form(...)) -> RedirectResponse:
     async with httpx.AsyncClient() as http_client:
         response = await http_client.get(f'https://oauth2.googleapis.com/tokeninfo?id_token={credential}')
     if response.status_code != 200:
