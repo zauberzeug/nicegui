@@ -54,4 +54,4 @@ async def main(request: Request):
             return RedirectResponse(next(app.urls))
         return await oauth.google.authorize_redirect(request, url)
 
-ui.run(storage_secret='random secret goes here')
+ui.run(host='localhost', storage_secret='random secret goes here')
