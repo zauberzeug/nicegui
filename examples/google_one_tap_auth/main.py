@@ -1,19 +1,15 @@
 #!/usr/bin/env python3
-import os
-
 import httpx
-from dotenv import load_dotenv
 from fastapi import Form, HTTPException
 from fastapi.responses import RedirectResponse
 
 from nicegui import app, ui
 
-# Get your Google Client ID from the Google Cloud Console and pass it as an environment variable (or write it to an .env file)
+# Get your Google Client ID from the Google Cloud Console.
 # For local development, you should add http://localhost:8080 to the authorized JavaScript origins.
 # In production, you should add the domain of your website to the authorized JavaScript origins.
 # See https://developers.google.com/identity/gsi/web/guides/get-google-api-clientid#get_your_google_api_client_id.
-load_dotenv()
-GOOGLE_CLIENT_ID = os.environ.get('GOOGLE_CLIENT_ID', '')
+GOOGLE_CLIENT_ID = '484798726913-t4es9ner8aglom3miptbnq1m23dsqagi.apps.googleusercontent.com'
 
 
 @ui.page('/')
@@ -47,4 +43,4 @@ async def google_auth(credential: str = Form(...)) -> RedirectResponse:
     app.storage.user['user_data'] = response.json()
     return RedirectResponse('/', status_code=303)
 
-ui.run(storage_secret='here you should pick a random secret string for your app')
+ui.run(host='localhost', storage_secret='here you should pick a random secret string for your app')
