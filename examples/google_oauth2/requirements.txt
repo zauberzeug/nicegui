@@ -1,2 +1,1 @@
 authlib
-python-dotenv
