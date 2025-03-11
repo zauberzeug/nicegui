@@ -27,15 +27,6 @@ except ModuleNotFoundError:
     pass
 
 
-def on_drop(e: dict[str, Any], drop_queue: mp.Queue):
-    for file in e['dataTransfer']['files']:
-        drop_queue.put(file.get('pywebviewFullPath'))
-
-
-def bind(window: webview.Window, drop_queue: mp.Queue) -> None:
-    window.dom.document.events.drop += DOMEventHandler(lambda e: on_drop(e, drop_queue), True, True) # type: ignore[arg-type]
-
-
 def _open_window(
     host: str, port: int, title: str, width: int, height: int, fullscreen: bool, frameless: bool,
     method_queue: mp.Queue, response_queue: mp.Queue, drop_queue: mp.Queue,
@@ -57,7 +48,7 @@ def _open_window(
     closed = Event()
     window.events.closed += closed.set
     _start_window_method_executor(window, method_queue, response_queue, closed)
-    webview.start(bind, (window, drop_queue), storage_path=tempfile.mkdtemp(), **core.app.native.start_args)
+    webview.start(_bind_events, (window, drop_queue), storage_path=tempfile.mkdtemp(), **core.app.native.start_args)
 
 
 def _start_window_method_executor(window: webview.Window,
@@ -105,6 +96,13 @@ def _start_window_method_executor(window: webview.Window,
     Thread(target=window_method_executor).start()
 
 
+def _bind_events(window: webview.Window, drop_queue: mp.Queue) -> None:
+    def on_drop(e: dict[str, Any]) -> None:
+        for file in e['dataTransfer']['files']:
+            drop_queue.put(file.get('pywebviewFullPath'))
+    window.dom.document.events.drop += DOMEventHandler(on_drop, True, True)
+
+
 def activate(host: str, port: int, title: str, width: int, height: int, fullscreen: bool, frameless: bool) -> None:
     """Activate native mode."""
     def check_shutdown() -> None:
@@ -121,7 +119,7 @@ def activate(host: str, port: int, title: str, width: int, height: int, fullscre
         sys.exit(1)
 
     mp.freeze_support()
-    args = host, port, title, width, height, fullscreen, frameless, native.method_queue, native.response_queue, native.drop_queue,
+    args = host, port, title, width, height, fullscreen, frameless, native.method_queue, native.response_queue, native.drop_queue
     process = mp.Process(target=_open_window, args=args, daemon=True)
     process.start()
 

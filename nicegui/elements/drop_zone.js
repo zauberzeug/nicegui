@@ -7,43 +7,40 @@ export default {
   `,
   data() {
     return {
-      dragCounter: 0
-    }
+      dragCounter: 0,
+    };
   },
   mounted() {
-    const el = this.$el;
-
-    el.addEventListener("dragenter", (e) => {
+    this.$el.addEventListener("dragenter", (e) => {
       e.preventDefault();
       e.stopPropagation();
       this.dragCounter++;
       if (this.dragCounter === 1) {
-        this.$emit("drag_over", "drag_over");
+        this.$emit("drag_over");
       }
     });
 
-    el.addEventListener("dragover", (e) => {
+    this.$el.addEventListener("dragover", (e) => {
       e.preventDefault();
       e.stopPropagation();
     });
 
-    el.addEventListener("dragleave", (e) => {
+    this.$el.addEventListener("dragleave", (e) => {
       e.preventDefault();
       e.stopPropagation();
       this.dragCounter--;
       if (this.dragCounter === 0) {
-        this.$emit("drag_leave", "drag_leave");
+        this.$emit("drag_leave");
       }
     });
 
-    el.addEventListener("drop", (e) => {
+    this.$el.addEventListener("drop", (e) => {
       e.preventDefault();
       this.dragCounter = 0;
-      this.$emit("drag_leave", "drag_leave");
-      this.$emit("__file_dropped", e);
+      this.$emit("file_drop", e);
     });
   },
   props: {
     hover_overlay_style: String,
   },
-}
+};
