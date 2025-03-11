@@ -64,24 +64,21 @@ class DropZone(Element, component='drop_zone.js'):
     async def _check_queue_loop(self, event: GenericEventArguments) -> None:
         deadline = time.time() + 1.0
         while time.time() < deadline:
-            try:
-                while not drop_queue.empty():
-                    args = DropZoneEventArguments(
-                        sender=self,
-                        client=self.client,
-                        path=drop_queue.get_nowait(),
-                        modifiers=KeyboardModifiers(
-                            alt=event.args['altKey'],
-                            ctrl=event.args['ctrlKey'],
-                            meta=event.args['metaKey'],
-                            shift=event.args['shiftKey'],
-                        ),
-                    )
-                    for drop_handler in self._drop_handlers:
-                        handle_event(drop_handler, args)
-                    return
-            except queue.Empty:
-                pass
+            while not drop_queue.empty():
+                args = DropZoneEventArguments(
+                    sender=self,
+                    client=self.client,
+                    path=drop_queue.get_nowait(),
+                    modifiers=KeyboardModifiers(
+                        alt=event.args['altKey'],
+                        ctrl=event.args['ctrlKey'],
+                        meta=event.args['metaKey'],
+                        shift=event.args['shiftKey'],
+                    ),
+                )
+                for drop_handler in self._drop_handlers:
+                    handle_event(drop_handler, args)
+                return
             await asyncio.sleep(0.1)
 
     def on_drop(self, callback: Handler[DropZoneEventArguments]) -> Self:
