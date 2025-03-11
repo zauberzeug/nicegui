@@ -77,7 +77,6 @@ class Notification(Element, component='notification.js'):
                 'closeBtn': close_button,
                 'timeout': (timeout or 0) * 1000,
                 'group': False,
-                'attrs': {'data-id': f'nicegui-dialog-{self.id}'},
             }
             if type is not None:
                 self._props['options']['type'] = type
@@ -199,3 +198,7 @@ class Notification(Element, component='notification.js'):
 
     def set_visibility(self, visible: bool) -> None:
         raise NotImplementedError('Use `dismiss()` to remove the notification. See #3670 for more information.')
+
+    def update(self) -> None:
+        super().update()
+        self.run_method('update_notification')

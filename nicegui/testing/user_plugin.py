@@ -5,6 +5,7 @@ import httpx
 import pytest
 
 from nicegui import Client, core, ui
+from nicegui.functions.download import download
 from nicegui.functions.navigate import Navigate
 from nicegui.functions.notify import notify
 
@@ -46,6 +47,7 @@ async def user(nicegui_reset_globals,  # noqa: F811, pylint: disable=unused-argu
             yield User(client)
     ui.navigate = Navigate()
     ui.notify = notify
+    ui.download = download
 
 
 @pytest.fixture
@@ -59,3 +61,4 @@ async def create_user(nicegui_reset_globals,  # noqa: F811, pylint: disable=unus
         yield lambda: User(httpx.AsyncClient(transport=httpx.ASGITransport(core.app), base_url='http://test'))
     ui.navigate = Navigate()
     ui.notify = notify
+    ui.download = download
