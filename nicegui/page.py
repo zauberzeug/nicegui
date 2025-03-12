@@ -125,6 +125,7 @@ class page:
                         return await result
                 task = background_tasks.create(wait_for_result())
                 deadline = time.time() + self.response_timeout
+                await asyncio.sleep(0)  # NOTE give the task a chance to start
                 while task and not client.is_waiting_for_connection and not task.done():
                     if time.time() > deadline:
                         raise TimeoutError(f'Response not ready after {self.response_timeout} seconds')
