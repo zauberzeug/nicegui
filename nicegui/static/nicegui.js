@@ -19,8 +19,20 @@ function parseElements(raw_elements) {
   );
 }
 
-function replaceUndefinedAttributes(elements, id) {
-  const element = elements[id];
+const noUndefinedAttributes = new Set(); // Expects integers
+
+// Deprecates the old replaceUndefinedAttributes function, as it was slow against Vue mounted objects and not needed anymore.
+function replaceUndefinedAttributes_singleelement(element, element_id) {
+  // speedtest results yields that this is 5x faster than the old solution
+
+  // DO NOT UNCOMMENT THE LINE BELOW!!! Because updated elements are also sent with compact format (#2702), it would yield errors. 
+  // if (noUndefinedAttributes.has(element_id)) return; 
+
+  // check type of element_id, it should be integer, if not, convert and log warning
+  if (typeof element_id !== "number") {
+    console.warn("element_id should be integer, but is " + typeof element_id + ". Converting to integer.");
+    element_id = parseInt(element_id, 10);
+  }
   if (element === undefined) {
     return;
   }
@@ -35,7 +47,18 @@ function replaceUndefinedAttributes(elements, id) {
     default: { ids: element.children || [] },
     ...(element.slots ?? {}),
   };
-  Object.values(element.slots).forEach((slot) => slot.ids.forEach((id) => replaceUndefinedAttributes(elements, id)));
+  noUndefinedAttributes.add(element_id);
+  Object.values(element.slots).forEach((slot) => {
+    slot.ids.forEach((id) => { // id is integer already. Check WS message format.
+      if (element[id] && !noUndefinedAttributes.has(id)) {
+        replaceUndefinedAttributes_singleelement(element[id], id);
+      } 
+      // else if (noUndefinedAttributes.has(id)) {
+      //   console.log("Element with id " + id + " is already defined. Skipping.");
+      //   // this line get's printed a lot, indicating a great performance improvement
+      // }
+    });
+  });
 }
 
 function getElement(id) {
@@ -318,7 +341,8 @@ window.onbeforeunload = function () {
 };
 
 function createApp(elements, options) {
-  replaceUndefinedAttributes(elements, 0);
+  // ensure undefined attributes are replaced for ALL elements, just 0 is not enough
+  Object.entries(elements).forEach(([id, element]) => replaceUndefinedAttributes_singleelement(element, parseInt(id, 10))); // since id is string, check WS message format
   setInterval(() => ack(), 3000);
   return (app = Vue.createApp({
     data() {
@@ -378,20 +402,23 @@ function createApp(elements, options) {
           document.getElementById("popup").ariaHidden = false;
         },
         update: async (msg) => {
+          //console.time('loadDependencies');
           const loadPromises = Object.entries(msg)
             .filter(([_, element]) => element && (element.component || element.libraries))
             .map(([_, element]) => loadDependencies(element, options.prefix, options.version));
-
           await Promise.all(loadPromises);
+          //console.timeEnd('loadDependencies');
 
+          //console.time('updateElements');
           for (const [id, element] of Object.entries(msg)) {
             if (element === null) {
               delete this.elements[id];
               continue;
             }
+            replaceUndefinedAttributes_singleelement(element, parseInt(id, 10)); // since id is string, check WS message format
             this.elements[id] = element;
-            replaceUndefinedAttributes(this.elements, id);
           }
+          //console.timeEnd('updateElements');
         },
         run_javascript: (msg) => runJavascript(msg.code, msg.request_id),
         open: (msg) => {
