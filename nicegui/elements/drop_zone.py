@@ -1,5 +1,4 @@
 import asyncio
-import queue
 import time
 from typing import ClassVar, List, Optional, cast
 
@@ -34,7 +33,7 @@ class DropZone(Element, component='drop_zone.js'):
 
         self._drop_handlers = [on_drop] if on_drop else []
 
-        self.on('drag_over', handler=self._set_hover_style)
+        self.on('drag_enter', handler=self._set_hover_style)
         self.on('drag_leave', handler=self._clear_hover_style)
         self.on('file_drop', handler=self._handle_file_drop)
         self.check_task: Optional[asyncio.Task] = None
