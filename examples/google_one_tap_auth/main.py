@@ -9,7 +9,7 @@ from nicegui import app, ui
 # For local development, you should add http://localhost:8080 to the authorized JavaScript origins.
 # In production, you should add the domain of your website to the authorized JavaScript origins.
 # See https://developers.google.com/identity/gsi/web/guides/get-google-api-clientid#get_your_google_api_client_id.
-GOOGLE_CLIENT_ID = '484798726913-t4es9ner8aglom3miptbnq1m23dsqagi.apps.googleusercontent.com'
+GOOGLE_CLIENT_ID = '...'
 
 
 @ui.page('/')

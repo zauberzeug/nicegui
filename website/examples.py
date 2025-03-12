@@ -13,7 +13,7 @@ class Example:
 
     def __post_init__(self) -> None:
         """Post-initialization hook."""
-        name = self.title.lower().replace(' ', '_')
+        name = self.title.lower().replace(' ', '_').replace('-', '_')
         content = [p for p in (PATH / name).glob('*') if not p.name.startswith(('__pycache__', '.', 'test_'))]
         filename = 'main.py' if len(content) == 1 else ''
         self.url = f'https://github.com/zauberzeug/nicegui/tree/main/examples/{name}/{filename}'
@@ -71,5 +71,6 @@ examples: List[Example] = [
     Example('Signature Pad', 'A custom element based on [signature_pad](https://www.npmjs.com/package/signature_pad'),
     Example('OpenAI Assistant', "Using OpenAI's Assistant API with async/await"),
     Example('Redis Storage', 'Use Redis storage to share data across multiple instances behind a reverse proxy or load balancer'),
+    Example('Google One-Tap Auth', 'Authenticate users via Google One-Tap'),
     Example('Google OAuth2', 'Authenticate with Google OAuth2')
 ]
