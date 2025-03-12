@@ -5,11 +5,19 @@ export default {
       <slot></slot>
     </div>
   `,
+  data() {
+    return {
+      dragCounter: 0,
+    };
+  },
   mounted() {
     this.$el.addEventListener("dragenter", (e) => {
       e.preventDefault();
       e.stopPropagation();
-      this.$emit("drag_enter");
+      this.dragCounter++;
+      if (this.dragCounter === 1) {
+        this.$emit("drag_enter");
+      }
     });
     this.$el.addEventListener("dragover", (e) => {
       e.preventDefault();
@@ -18,10 +26,14 @@ export default {
     this.$el.addEventListener("dragleave", (e) => {
       e.preventDefault();
       e.stopPropagation();
-      this.$emit("drag_leave");
+      this.dragCounter--;
+      if (this.dragCounter === 0) {
+        this.$emit("drag_leave");
+      }
     });
     this.$el.addEventListener("drop", (e) => {
       e.preventDefault();
+      this.dragCounter = 0;
       this.$emit("file_drop", e);
     });
   },
