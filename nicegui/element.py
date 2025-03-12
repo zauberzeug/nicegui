@@ -38,6 +38,7 @@ class Element(Visibility):
     _default_props: ClassVar[Dict[str, Any]] = {}
     _default_classes: ClassVar[List[str]] = []
     _default_style: ClassVar[Dict[str, str]] = {}
+    _UNCHANGED = object()
 
     def __init__(self, tag: Optional[str] = None, *, _client: Optional[Client] = None) -> None:
         """Generic Element
@@ -493,6 +494,12 @@ class Element(Visibility):
 
         This method can be overridden in subclasses to perform cleanup tasks.
         """
+
+    def _reset(self, **kwargs) -> None:
+        _params: dict = {p: kwargs[p] for p in kwargs if kwargs[p] != self._UNCHANGED}
+
+        self.props.update({"options": _params})
+        self.update()
 
     @property
     def is_deleted(self) -> bool:
