@@ -179,7 +179,10 @@ class Notification(Element, component='notification.js'):
 
     @property
     def timeout(self) -> float:
-        """Timeout of the notification in seconds."""
+        """Timeout of the notification in seconds.
+
+        *Added in version 2.13.0*
+        """
         return self._props['options']['timeout'] / 1000
 
     @timeout.setter
