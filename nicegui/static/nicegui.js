@@ -19,9 +19,7 @@ function parseElements(raw_elements) {
   );
 }
 
-const replacedAttributes = new Set();
-
-function replaceUndefinedAttributes(element, element_id) {
+function replaceUndefinedAttributes(element) {
   element.class ??= [];
   element.style ??= {};
   element.props ??= {};
@@ -33,14 +31,6 @@ function replaceUndefinedAttributes(element, element_id) {
     default: { ids: element.children || [] },
     ...(element.slots ?? {}),
   };
-  replacedAttributes.add(element_id);
-  Object.values(element.slots).forEach((slot) => {
-    slot.ids.forEach((id) => {
-      if (element[id] && !replacedAttributes.has(id)) {
-        replaceUndefinedAttributes(element[id], id);
-      }
-    });
-  });
 }
 
 function getElement(id) {
@@ -323,7 +313,7 @@ window.onbeforeunload = function () {
 };
 
 function createApp(elements, options) {
-  Object.entries(elements).forEach(([id, element]) => replaceUndefinedAttributes(element, id));
+  Object.entries(elements).forEach(([_, element]) => replaceUndefinedAttributes(element));
   setInterval(() => ack(), 3000);
   return (app = Vue.createApp({
     data() {
@@ -393,7 +383,7 @@ function createApp(elements, options) {
               delete this.elements[id];
               continue;
             }
-            replaceUndefinedAttributes(element, id);
+            replaceUndefinedAttributes(element);
             this.elements[id] = element;
           }
         },
