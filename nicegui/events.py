@@ -19,7 +19,7 @@ from typing import (
     cast,
 )
 
-from . import background_tasks, core
+from . import background_tasks, core, helpers
 from .awaitable_response import AwaitableResponse
 from .dataclasses import KWONLY_SLOTS
 from .slot import Slot
@@ -147,7 +147,13 @@ class MultiUploadEventArguments(UiEventArguments):
 @dataclass(**KWONLY_SLOTS)
 class ValueChangeEventArguments(UiEventArguments):
     value: Any
-    previous_value: Any
+    previous_value: Any = ...
+
+    def __post_init__(self):
+        # DEPRECATED: previous_value will be required in NiceGUI 3.0
+        if self.previous_value is ...:
+            helpers.warn_once('The new event argument `ValueChangeEventArguments.previous_value` is not set. '
+                              'In NiceGUI 3.0 this will raise an error.')
 
 
 @dataclass(**KWONLY_SLOTS)
