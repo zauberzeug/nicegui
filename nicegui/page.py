@@ -122,6 +122,7 @@ class page:
                 async def wait_for_result() -> None:
                     with client:
                         return await result
+
                 task = background_tasks.create(wait_for_result())
                 try:
                     await asyncio.wait([
@@ -152,4 +153,5 @@ class page:
 
         self.api_router.get(self._path, **self.kwargs)(decorated)
         Client.page_routes[func] = self.path
+        Client.page_configs[func] = self
         return func
