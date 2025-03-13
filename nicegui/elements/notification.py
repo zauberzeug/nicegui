@@ -215,3 +215,17 @@ class Notification(Element, component='notification.js'):
     def update(self) -> None:
         super().update()
         self.run_method('update_notification')
+
+    def reset(self,
+              message: Any = '', *,
+              position: NotificationPosition = Element._UNCHANGED,
+              close_button: Union[bool, str] = Element._UNCHANGED,
+              type: NotificationType = Element._UNCHANGED,
+              color: Optional[str] = Element._UNCHANGED,
+              multi_line: bool = Element._UNCHANGED,
+              icon: Optional[str] = Element._UNCHANGED,
+              spinner: bool = Element._UNCHANGED,
+              timeout: Optional[float] = Element._UNCHANGED,) -> None:
+
+        self._reset(message=message, position=position, close_button=close_button, type=type, color=color,
+                    multi_line=multi_line, icon=icon, spinner=spinner, timeout=timeout)
