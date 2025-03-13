@@ -47,7 +47,9 @@ def test_update(screen: Screen):
     def rebuild_card():
         card.delete()
         ui.card().classes('card')
-        teleport.update()  # type: ignore
+        assert teleport is not None
+        teleport.update()
+        ui.notify('Card rebuilt')
 
     ui.button('rebuild card', on_click=rebuild_card)
 
@@ -55,4 +57,5 @@ def test_update(screen: Screen):
     screen.click('create')
     screen.should_contain('Hello')
     screen.click('rebuild card')
+    screen.should_contain('Card rebuilt')
     assert screen.find_by_css('.card > div').text == 'Hello'

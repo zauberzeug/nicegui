@@ -178,6 +178,19 @@ class Notification(Element, component='notification.js'):
         self.update()
 
     @property
+    def timeout(self) -> float:
+        """Timeout of the notification in seconds.
+
+        *Added in version 2.13.0*
+        """
+        return self._props['options']['timeout'] / 1000
+
+    @timeout.setter
+    def timeout(self, value: Optional[float]) -> None:
+        self._props['options']['timeout'] = (value or 0) * 1000
+        self.update()
+
+    @property
     def close_button(self) -> Union[bool, str]:
         """Whether the notification has a close button."""
         return self._props['options']['closeBtn']
