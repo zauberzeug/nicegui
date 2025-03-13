@@ -4,8 +4,7 @@ import warnings
 from multiprocessing import Queue
 from typing import Any, Callable, Tuple
 
-from nicegui_run import run
-
+from .. import run
 from ..logging import log
 
 method_queue: Queue = Queue()
