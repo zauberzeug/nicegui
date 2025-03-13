@@ -63,6 +63,7 @@ class Element(Visibility):
         self._text: Optional[str] = None
         self.slots: Dict[str, Slot] = {}
         self.default_slot = self.add_slot('default')
+        self._update_method: Optional[str] = None
         self._deleted: bool = False
 
         self.client.elements[self.id] = self
@@ -197,6 +198,7 @@ class Element(Visibility):
                     'slots': self._collect_slot_dict(),
                     'children': [child.id for child in self.default_slot.children],
                     'events': [listener.to_dict() for listener in self._event_listeners.values()],
+                    'update_method': self._update_method,
                     'component': {
                         'key': self.component.key,
                         'name': self.component.name,

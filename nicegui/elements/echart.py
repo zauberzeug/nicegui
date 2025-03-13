@@ -43,6 +43,7 @@ class EChart(Element,
         self._props['options'] = options
         self._props['enable_3d'] = enable_3d or any('3D' in key for key in options)
         self._props['renderer'] = renderer
+        self._update_method = 'update_chart'
 
         if on_point_click:
             self.on_point_click(on_point_click)
@@ -103,10 +104,6 @@ class EChart(Element,
     def options(self) -> Dict:
         """The options dictionary."""
         return self._props['options']
-
-    def update(self) -> None:
-        super().update()
-        self.run_method('update_chart')
 
     def run_chart_method(self, name: str, *args, timeout: float = 1) -> AwaitableResponse:
         """Run a method of the EChart instance.
