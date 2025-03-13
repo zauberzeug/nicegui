@@ -73,9 +73,8 @@ class SceneView(Element,
         await event.wait()
 
     def _handle_click(self, e: GenericEventArguments) -> None:
-        arguments = SceneClickEventArguments(
-            sender=self,
-            client=self.client,
+        arguments = SceneClickEventArguments.from_generic_event(
+            e,
             click_type=e.args['click_type'],
             button=e.args['button'],
             alt=e.args['alt_key'],
