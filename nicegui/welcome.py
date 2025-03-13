@@ -3,7 +3,9 @@ from typing import List
 
 import ifaddr
 
-from . import core, run
+from nicegui_run import run
+
+from . import core
 
 
 def _get_all_ips() -> List[str]:

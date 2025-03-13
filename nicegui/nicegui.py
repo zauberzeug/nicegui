@@ -9,7 +9,9 @@ import socketio
 from fastapi import HTTPException, Request
 from fastapi.responses import FileResponse, Response
 
-from . import air, background_tasks, binding, core, favicon, helpers, json, run, welcome
+from nicegui_run import run
+
+from . import air, background_tasks, binding, core, favicon, helpers, json, welcome
 from .app import App
 from .client import Client
 from .dependencies import js_components, libraries, resources
