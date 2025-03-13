@@ -25,6 +25,7 @@ function replaceUndefinedAttributes(element) {
   element.props ??= {};
   element.text ??= null;
   element.events ??= [];
+  element.update_method ??= null;
   element.component ??= null;
   element.libraries ??= [];
   element.slots = {
@@ -385,6 +386,13 @@ function createApp(elements, options) {
             }
             replaceUndefinedAttributes(element);
             this.elements[id] = element;
+          }
+
+          await this.$nextTick();
+          for (const [id, element] of Object.entries(msg)) {
+            if (element?.update_method) {
+              getElement(id)[element.update_method]();
+            }
           }
         },
         run_javascript: (msg) => runJavascript(msg.code, msg.request_id),
