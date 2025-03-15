@@ -8,6 +8,7 @@ def main_demo() -> None:
     with ui.row():
         ui.button('Back', on_click=ui.navigate.back)
         ui.button('Forward', on_click=ui.navigate.forward)
+        ui.button('Reload', on_click=ui.navigate.reload)
         ui.button(icon='savings',
                   on_click=lambda: ui.navigate.to('https://github.com/sponsors/zauberzeug'))
 
