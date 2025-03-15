@@ -14,6 +14,7 @@ from .client import Client
 from .favicon import create_favicon_route
 from .language import Language
 from .logging import log
+from .error import error_content
 
 if TYPE_CHECKING:
     from .api_router import APIRouter
@@ -118,11 +119,21 @@ class page:
             with Client(self, request=request) as client:
                 if any(p.name == 'client' for p in inspect.signature(func).parameters.values()):
                     dec_kwargs['client'] = client
-                result = func(*dec_args, **dec_kwargs)
+                try:
+                    result = func(*dec_args, **dec_kwargs)
+                except Exception as exception:
+                    with Client(page(''), request=request) as error_client:
+                        error_content(500, exception)
+                        return error_client.build_response(request)
             if helpers.is_coroutine_function(func):
                 async def wait_for_result() -> None:
                     with client:
-                        return await result
+                        try:
+                            return await result
+                        except Exception as exception:
+                            with Client(page(''), request=request) as error_client:
+                                error_content(500, exception)
+                                return error_client.build_response(request)
                 task = background_tasks.create(wait_for_result())
                 deadline = time.time() + self.response_timeout
                 while task and not client.is_waiting_for_connection and not task.done():
