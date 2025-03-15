@@ -46,9 +46,9 @@ def error_content(status_code: int, exception: Union[str, Exception] = '') -> No
         label(title).style('font-size: 1.25rem; line-height: 1.75rem; padding: 1.25rem 0')
         label(message).style('font-size: 1.125rem; line-height: 1.75rem; color: rgb(107 114 128)')
         if message2:
-            button("Show details").on('click', js_handler='() => {document.querySelector(".error-details").style.display = "block"; document.querySelector(".show-details").style.display = "none"; document.querySelector(".hide-details").style.display = "inline-block"}').style(
-                'margin-top: 1rem').classes("show-details")
-            button("Hide details").on('click', js_handler='() => {document.querySelector(".error-details").style.display = "none"; document.querySelector(".show-details").style.display = "inline-block"; document.querySelector(".hide-details").style.display = "none"}').style(
-                'margin-top: 1rem; display: none').classes("hide-details")
+            button('Show details').on('click', js_handler="() => {document.querySelector('.error-details').style.display = 'block'; document.querySelector('.show-details').style.display = 'none'; document.querySelector('.hide-details').style.display = 'inline-block'}").style(
+                'margin-top: 1rem').classes('show-details')
+            button('Hide details').on('click', js_handler="() => {document.querySelector('.error-details').style.display = 'none'; document.querySelector('.show-details').style.display = 'inline-block'; document.querySelector('.hide-details').style.display = 'none'}").style(
+                'margin-top: 1rem; display: none').classes('hide-details')
             code(message2).style(
                 'margin-top: 1rem; width: 100%; height: 20vh; overflow-y: auto; display: none').classes("error-details")
