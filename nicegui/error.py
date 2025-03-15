@@ -33,10 +33,10 @@ def error_content(status_code: int, exception: Union[str, Exception] = '') -> No
         message2 = ''
     else:
         message = exception.__class__.__name__
-        message2 = traceback.format_exc(chain=False)
+        message2 = traceback.format_exc(chain=False).strip()
         if str(exception):
             message += ': ' + str(exception)
-            message2 = message2.rpartition(message)[0].strip()
+            message2 = message2[:len(message2) - len(str(message))].strip()
         # drop lines in traceback if they belong to NiceGUI
         message2 = '\n'.join(message2.split('\n')[:1] + message2.split('\n')[4:])
 
