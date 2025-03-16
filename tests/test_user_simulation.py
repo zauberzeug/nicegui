@@ -361,6 +361,19 @@ async def test_select(user: User) -> None:
     await user.should_not_see('C')
 
 
+async def test_select_multiple_values(user: User):
+    select = ui.select(['A', 'B'], value='A', multiple=True)
+    ui.label().bind_text_from(select, 'value', backward=lambda v: f'value = {v}')
+
+    await user.open('/')
+    await user.should_see("value = ['A']")
+    user.find(ui.select).click()
+    user.find('B').click()
+    await user.should_see("value = ['A', 'B']")
+    user.find('A').click()
+    await user.should_see("value = ['B']")
+
+
 async def test_upload_table(user: User) -> None:
     def receive_file(e: events.UploadEventArguments) -> None:
         reader = csv.DictReader(e.content.read().decode('utf-8').splitlines())

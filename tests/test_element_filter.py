@@ -242,14 +242,3 @@ async def test_typing(user: User):
     _ = ElementFilter(kind=ui.button)  # ElementFilter[ui.button]
     _ = ElementFilter(kind=ui.label)  # ElementFilter[ui.label]
     _ = ElementFilter()  # ElementFilter[Element]
-
-
-async def test_multiple_values(user: User):
-    select = ui.select([
-        'A',
-        'B',
-    ], multiple=True, value='A')
-    ui.label().bind_text_from(select, 'value', backward=lambda v: f'value = {v}')
-
-    await user.open('/')
-    await user.should_see("value = ['A']")
