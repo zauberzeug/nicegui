@@ -103,7 +103,7 @@ class Upload(DisableableElement, component='upload.js'):
 
     def on_rejected(self, callback: Handler[UiEventArguments]) -> Self:
         """Add a callback to be invoked when a file is rejected."""
-        self.on('rejected', lambda: handle_event(callback, UiEventArguments(sender=self, client=self.client)), args=[])
+        self.on('rejected', lambda e: handle_event(callback, UiEventArguments.from_generic_event(e)), args=[])
         return self
 
     def reset(self) -> None:

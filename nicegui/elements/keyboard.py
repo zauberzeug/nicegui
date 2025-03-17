@@ -88,13 +88,7 @@ class Keyboard(Element, component='keyboard.js'):
             code=e.args['code'],
             location=e.args['location'],
         )
-        arguments = KeyEventArguments(
-            sender=self,
-            client=self.client,
-            action=action,
-            modifiers=modifiers,
-            key=key,
-        )
+        arguments = KeyEventArguments.from_generic_event(e, action=action, modifiers=modifiers, key=key)
         for handler in self._key_handlers:
             handle_event(handler, arguments)
 
