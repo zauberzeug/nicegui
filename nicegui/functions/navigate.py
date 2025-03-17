@@ -14,6 +14,9 @@ class Navigate:
     *Added in version 2.0.0*
     """
 
+    def __init__(self) -> None:
+        self.history = History()
+
     def back(self) -> None:
         """ui.navigate.back
 
@@ -65,24 +68,28 @@ class Navigate:
             raise TypeError(f'Invalid target type: {type(target)}')
         context.client.open(path, new_tab)
 
-    def update(self, url: str, *, with_history: bool = True) -> None:
-        """ui.navigate.update
 
-        This function sets the current URL without actually navigating to it.
-        By default the new URL is added as a new item to the browser's history
-        (see JavaScript's `pushState <https://developer.mozilla.org/en-US/docs/Web/API/History/pushState>`_).
-        Alternatively the current history item can be replaced using the `with_history` parameter
-        (see JavaScript's `replaceState <https://developer.mozilla.org/en-US/docs/Web/API/History/replaceState>`_).
+class History:
+
+    def push(self, url: str) -> None:
+        """Push a URL to the browser navigation history.
+
+        See JavaScript's `pushState <https://developer.mozilla.org/en-US/docs/Web/API/History/pushState>`_ for more information.
 
         *Added in version 2.12.0*
 
         :param url: relative or absolute URL
-        :param with_history: whether to add the new URL to the browser history
         """
-        if with_history:
-            run_javascript(f'history.pushState({{}}, "", "{url}");')
-        else:
-            run_javascript(f'history.replaceState({{}}, "", "{url}");')
+        run_javascript(f'history.pushState({{}}, "", "{url}");')
+
+    def replace(self, url: str) -> None:
+        """Replace the current URL in the browser history.
+
+        See JavaScript's `replaceState <https://developer.mozilla.org/en-US/docs/Web/API/History/replaceState>`_ for more information.
+
+        :param url: relative or absolute URL
+        """
+        run_javascript(f'history.replaceState({{}}, "", "{url}");')
 
 
 navigate = Navigate()
