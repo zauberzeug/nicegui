@@ -120,8 +120,14 @@ class ElementFilter(Generic[T]):
                 if isinstance(element, ChoiceElement):
                     is_options_dict = isinstance(element.options, dict)
                     options = element.options.values() if is_options_dict else element.options
-                    element_contents.append(
-                        element.options.get(element.value, '') if is_options_dict else element.value)
+                    if isinstance(element, Select) and element.multiple:
+                        element_contents.extend([
+                            element.options.get(selected_value, '')
+                            for selected_value in element.value
+                        ] if is_options_dict else element.value)
+                    else:
+                        element_contents.append(
+                            element.options.get(element.value, '') if is_options_dict else element.value)
                     if not isinstance(element, Select) or element.is_showing_popup:
                         element_contents.extend(options)
                 if any(all(needle not in str(haystack) for haystack in element_contents) for needle in self._contents):

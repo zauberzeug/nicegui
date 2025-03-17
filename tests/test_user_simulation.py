@@ -375,6 +375,25 @@ async def test_select_from_dict(user: User) -> None:
     await user.should_see('value A')
 
 
+async def test_select_multiple_from_dict(user: User) -> None:
+    ui.select(options={'value A': 'A', 'value B': 'B', 'value C': 'C'},
+              multiple=True, on_change=lambda e: ui.notify(f'{e.value}'))
+
+    await user.open('/')
+    await user.should_not_see('A')
+    await user.should_not_see('B')
+    await user.should_not_see('C')
+    user.find(ui.select).click()
+    await user.should_see('A')
+    await user.should_see('B')
+    await user.should_see('C')
+    user.find('A').click()
+    await user.should_see("['value A']")
+    user.find(ui.select).click()
+    user.find('B').click()
+    await user.should_see("['value A', 'value B']")
+
+
 async def test_select_multiple_values(user: User):
     select = ui.select(['A', 'B'], value='A', multiple=True, on_change=lambda e: ui.notify(f'notify {e.value}'))
     ui.label().bind_text_from(select, 'value', backward=lambda v: f'value = {v}')
