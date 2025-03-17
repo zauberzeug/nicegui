@@ -76,8 +76,18 @@ class UserInteraction(Generic[T]):
                     return self
                 if isinstance(element, ui.select):
                     if element.is_showing_popup:
-                        assert isinstance(self.target, str), 'Target must be string when clicking on ui.select options'
-                        element.set_value(self.target)
+                        is_options_dict = isinstance(element.options, dict)
+                        target = {v: k for k, v in element.options.items()}.get(self.target, '') \
+                            if is_options_dict else self.target
+                        if element.multiple:
+                            value = element.value.copy()
+                            if target in element.value:
+                                value.remove(target)
+                            else:
+                                value.append(target)
+                            element.set_value(value)
+                        else:
+                            element.set_value(target)
                     element._is_showing_popup = not element.is_showing_popup  # pylint: disable=protected-access
                     return self
                 for listener in element._event_listeners.values():  # pylint: disable=protected-access

@@ -376,14 +376,17 @@ async def test_select_from_dict(user: User) -> None:
 
 
 async def test_select_multiple_values(user: User):
-    select = ui.select(['A', 'B'], value='A', multiple=True)
+    select = ui.select(['A', 'B'], value='A', multiple=True, on_change=lambda e: ui.notify(f'notify {e.value}'))
     ui.label().bind_text_from(select, 'value', backward=lambda v: f'value = {v}')
 
     await user.open('/')
     await user.should_see("value = ['A']")
     user.find(ui.select).click()
     user.find('B').click()
+    await user.should_see("notify ['A', 'B']")
     await user.should_see("value = ['A', 'B']")
+    assert select.value == ['A', 'B']
+    user.find(ui.select).click()
     user.find('A').click()
     await user.should_see("value = ['B']")
 
