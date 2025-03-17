@@ -48,9 +48,14 @@ class Client:
     shared_body_html = ''
     """HTML to be inserted in the <body> of every page template."""
 
-    def __init__(self, page: page, *, request: Optional[Request]) -> None:
+    def __init__(self, page: page, *, request: Optional[Request], force_id: str = None) -> None:
         self.request: Optional[Request] = request
-        self.id = str(uuid.uuid4())
+        if force_id is not None:
+            self.id = force_id
+            self.forced_id = True
+        else:
+            self.id = str(uuid.uuid4())
+            self.forced_id = False
         self.created = time.time()
         self.instances[self.id] = self
 
@@ -135,6 +140,7 @@ class Client:
             **core.app.config.socket_io_js_query_params,
             'client_id': self.id,
             'next_message_id': self.outbox.next_message_id,
+            'path': request.url.path,
         }
         vue_html, vue_styles, vue_scripts, imports, js_imports = generate_resources(prefix, self.elements.values())
         return templates.TemplateResponse(
@@ -177,6 +183,9 @@ class Client:
 
     async def connected(self, timeout: float = 3.0, check_interval: float = 0.1) -> None:
         """Block execution until the client is connected."""
+        if self.forced_id:
+            # By the ID being forced, it means we are doing the "software rugpull" and we don't want to wait for the client
+            return
         self.is_waiting_for_connection = True
         self._waiting_for_connection.set()
         deadline = time.time() + timeout
