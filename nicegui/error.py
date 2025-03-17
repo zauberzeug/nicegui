@@ -10,7 +10,7 @@ from .elements.code import Code as code
 
 import traceback
 
-SAD_FACE_SVG = (Path(__file__).parent / 'static' / 'sad_face.svg').read_text()
+SAD_FACE_SVG = (Path(__file__).parent / 'static' / 'sad_face.svg').read_text(encoding='utf-8')
 
 
 def error_content(status_code: int, exception: Union[str, Exception] = '') -> None:
