@@ -98,6 +98,7 @@ __all__ = [
     'select',
     'separator',
     'skeleton',
+    'slide_item',
     'slider',
     'space',
     'spinner',
@@ -202,6 +203,7 @@ from .elements.scroll_area import ScrollArea as scroll_area
 from .elements.select import Select as select
 from .elements.separator import Separator as separator
 from .elements.skeleton import Skeleton as skeleton
+from .elements.slide_item import SlideItem as slide_item
 from .elements.slider import Slider as slider
 from .elements.space import Space as space
 from .elements.spinner import Spinner as spinner

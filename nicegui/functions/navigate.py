@@ -76,7 +76,7 @@ class History:
 
         See JavaScript's `pushState <https://developer.mozilla.org/en-US/docs/Web/API/History/pushState>`_ for more information.
 
-        *Added in version 2.12.0*
+        *Added in version 2.13.0*
 
         :param url: relative or absolute URL
         """
@@ -86,6 +86,8 @@ class History:
         """Replace the current URL in the browser history.
 
         See JavaScript's `replaceState <https://developer.mozilla.org/en-US/docs/Web/API/History/replaceState>`_ for more information.
+
+        *Added in version 2.13.0*
 
         :param url: relative or absolute URL
         """

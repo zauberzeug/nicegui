@@ -7,9 +7,9 @@ authors:
   - family-names: Trappe
     given-names: Rodja
     orcid: https://orcid.org/0009-0009-4735-6227
-title: 'NiceGUI: Web-based user interfaces with Python. The nice way.'
-version: 2.11.1
-date-released: '2025-02-11'
+title: "NiceGUI: Web-based user interfaces with Python. The nice way."
+version: 2.12.1
+date-released: "2025-03-04"
 url: https://github.com/zauberzeug/nicegui
 doi: 10.5281/zenodo.7785516
 identifiers:

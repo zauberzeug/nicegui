@@ -66,6 +66,7 @@ class Notification(Element, component='notification.js'):
         """
         with context.client.layout:
             super().__init__()
+        self._update_method = 'update_notification'
         if options:
             self._props['options'] = options
         else:
@@ -178,6 +179,19 @@ class Notification(Element, component='notification.js'):
         self.update()
 
     @property
+    def timeout(self) -> float:
+        """Timeout of the notification in seconds.
+
+        *Added in version 2.13.0*
+        """
+        return self._props['options']['timeout'] / 1000
+
+    @timeout.setter
+    def timeout(self, value: Optional[float]) -> None:
+        self._props['options']['timeout'] = (value or 0) * 1000
+        self.update()
+
+    @property
     def close_button(self) -> Union[bool, str]:
         """Whether the notification has a close button."""
         return self._props['options']['closeBtn']
@@ -198,7 +212,3 @@ class Notification(Element, component='notification.js'):
 
     def set_visibility(self, visible: bool) -> None:
         raise NotImplementedError('Use `dismiss()` to remove the notification. See #3670 for more information.')
-
-    def update(self) -> None:
-        super().update()
-        self.run_method('update_notification')
