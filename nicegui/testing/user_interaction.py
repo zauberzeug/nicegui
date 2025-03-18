@@ -74,31 +74,37 @@ class UserInteraction(Generic[T]):
                     href = element.props.get('href', '#')
                     background_tasks.create(self.user.open(href))
                     return self
+
                 if isinstance(element, ui.select):
                     if element.is_showing_popup:
-                        is_options_dict = isinstance(element.options, dict)
-                        target = {v: k for k, v in element.options.items()}.get(self.target, '') \
-                            if is_options_dict else self.target
-                        if element.multiple:
-                            value = element.value.copy()
-                            if target in element.value:
-                                value.remove(target)
-                            else:
-                                value.append(target)
-                            element.set_value(value)
-                        else:
-                            element.set_value(target)
-                    element._is_showing_popup = not element.is_showing_popup  # pylint: disable=protected-access
+                        self._pick_from_select_options(element)
+                    element._is_showing_popup = not element.is_showing_popup
                     return self
-                for listener in element._event_listeners.values():  # pylint: disable=protected-access
-                    if listener.element_id != element.id:
-                        continue
-                    args = None
-                    if isinstance(element, (ui.checkbox, ui.switch)):
-                        args = not element.value
-                    event_arguments = events.GenericEventArguments(sender=element, client=self.user.client, args=args)
-                    events.handle_event(listener.handler, event_arguments)
+
+                for listener in element._event_listeners.values():
+                    if listener.element_id == element.id:
+                        args = not element.value if isinstance(element, (ui.checkbox, ui.switch)) else None
+                        event_arguments = events.GenericEventArguments(
+                            sender=element, client=self.user.client, args=args)
+                        events.handle_event(listener.handler, event_arguments)
         return self
+
+    def _pick_from_select_options(self, element: ui.select) -> None:
+        """Handle the value change when clicking on an option from a select element's popup."""
+        if isinstance(element.options, dict):
+            options_reversed = {v: k for k, v in element.options.items()}
+            target = options_reversed.get(self.target, '')
+        else:
+            target = self.target
+        if element.multiple:
+            value = element.value.copy()
+            if target in element.value:
+                value.remove(target)
+            else:
+                value.append(target)
+            element.set_value(value)
+        else:
+            element.set_value(target)
 
     def clear(self) -> Self:
         """Clear the selected elements.
