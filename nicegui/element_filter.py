@@ -6,11 +6,11 @@ from typing_extensions import Self
 
 from .context import context
 from .element import Element
+from .elements.choice_element import ChoiceElement
 from .elements.mixins.content_element import ContentElement
 from .elements.mixins.source_element import SourceElement
 from .elements.mixins.text_element import TextElement
 from .elements.notification import Notification
-from .elements.radio import ChoiceElement
 from .elements.select import Select
 
 T = TypeVar('T', bound=Element)
@@ -118,17 +118,13 @@ class ElementFilter(Generic[T]):
                 if isinstance(element, Notification):
                     element_contents.append(element.message)
                 if isinstance(element, ChoiceElement):
-                    is_options_dict = isinstance(element.options, dict)
-                    options = element.options.values() if is_options_dict else element.options
-                    if isinstance(element, Select) and element.multiple:
-                        selected_values = [element.options.get(val, '')
-                                           for val in element.value] if is_options_dict else element.value
-                        element_contents.extend(selected_values)
-                    else:
-                        selected_value = element.options.get(element.value, '') if is_options_dict else element.value
-                        element_contents.append(selected_value)
+                    if isinstance(element, Select):
+                        values = element.value if element.multiple else [element.value]
+                        labels = [value if isinstance(element.options, list) else element.options.get(value, '')
+                                  for value in values]
+                        element_contents.extend(labels)
                     if not isinstance(element, Select) or element.is_showing_popup:
-                        element_contents.extend(options)
+                        element_contents.extend(element._labels)  # pylint: disable=protected-access
                 if any(all(needle not in str(haystack) for haystack in element_contents) for needle in self._contents):
                     continue
                 if any(needle in str(haystack) for haystack in element_contents for needle in self._exclude_content):

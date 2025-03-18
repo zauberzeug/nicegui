@@ -362,52 +362,64 @@ async def test_select(user: User) -> None:
 
 
 async def test_select_from_dict(user: User) -> None:
-    ui.select(options={'value A': 'A', 'value B': 'B', 'value C': 'C'}, on_change=lambda e: ui.notify(f'{e.value}'))
+    ui.select(options={'value A': 'label A', 'value B': 'label B', 'value C': 'label C'},
+              on_change=lambda e: ui.notify(f'Notify: {e.value}'))
 
     await user.open('/')
-    await user.should_not_see('A')
-    await user.should_not_see('B')
-    await user.should_not_see('C')
+    await user.should_not_see('label A')
+    await user.should_not_see('label B')
+    await user.should_not_see('label C')
+
     user.find(ui.select).click()
-    await user.should_see('B')
-    await user.should_see('C')
-    user.find('A').click()
-    await user.should_see('value A')
+    await user.should_see('label A')
+    await user.should_see('label B')
+    await user.should_see('label C')
+
+    user.find('label A').click()
+    await user.should_see('Notify: value A')
 
 
 async def test_select_multiple_from_dict(user: User) -> None:
-    ui.select(options={'value A': 'A', 'value B': 'B', 'value C': 'C'},
-              multiple=True, on_change=lambda e: ui.notify(f'{e.value}'))
+    ui.select(options={'value A': 'label A', 'value B': 'label B', 'value C': 'label C'},
+              multiple=True, on_change=lambda e: ui.notify(f'Notify: {e.value}'))
 
     await user.open('/')
-    await user.should_not_see('A')
-    await user.should_not_see('B')
-    await user.should_not_see('C')
+    await user.should_not_see('label A')
+    await user.should_not_see('label B')
+    await user.should_not_see('label C')
+
     user.find(ui.select).click()
-    await user.should_see('A')
-    await user.should_see('B')
-    await user.should_see('C')
-    user.find('A').click()
-    await user.should_see("['value A']")
+    await user.should_see('label A')
+    await user.should_see('label B')
+    await user.should_see('label C')
+
+    user.find('label A').click()
+    await user.should_see("Notify: ['value A']")
+
     user.find(ui.select).click()
-    user.find('B').click()
-    await user.should_see("['value A', 'value B']")
+    user.find('label B').click()
+    await user.should_see("Notify: ['value A', 'value B']")
 
 
 async def test_select_multiple_values(user: User):
-    select = ui.select(['A', 'B'], value='A', multiple=True, on_change=lambda e: ui.notify(f'notify {e.value}'))
+    select = ui.select(['A', 'B'], value='A',
+                       multiple=True, on_change=lambda e: ui.notify(f'Notify: {e.value}'))
     ui.label().bind_text_from(select, 'value', backward=lambda v: f'value = {v}')
 
     await user.open('/')
     await user.should_see("value = ['A']")
+
     user.find(ui.select).click()
     user.find('B').click()
-    await user.should_see("notify ['A', 'B']")
+    await user.should_see("Notify: ['A', 'B']")
     await user.should_see("value = ['A', 'B']")
     assert select.value == ['A', 'B']
+
     user.find(ui.select).click()
     user.find('A').click()
+    await user.should_see("Notify: ['B']")
     await user.should_see("value = ['B']")
+    assert select.value == ['B']
 
 
 async def test_upload_table(user: User) -> None:
