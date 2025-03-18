@@ -124,6 +124,21 @@ class Leaflet(Element, component='leaflet.js', default_classes='nicegui-leaflet'
         if self._send_update_on_value_change:
             self.run_map_method('setView', self.center, zoom)
 
+    def set_view(self, center: Tuple[float, float]=None, zoom:int=None) -> None:
+        """Set the map to a new center location, zoom or both in a single operation."""
+        if center is None and zoom is None:
+            return
+        if center is not None and self._props['center'] != center:
+            self._props['center'] = center
+        else:
+            center = self.center
+        if zoom is not None and self._props['zoom'] != zoom:
+            self._props['zoom'] = zoom
+        else:
+            zoom = self.zoom
+        if self._send_update_on_value_change:
+            self.run_map_method('setView', center, zoom)
+
     def remove_layer(self, layer: Layer) -> None:
         """Remove a layer from the map."""
         self.layers.remove(layer)
