@@ -124,7 +124,7 @@ class Leaflet(Element, component='leaflet.js', default_classes='nicegui-leaflet'
         if self._send_update_on_value_change:
             self.run_map_method('setView', self.center, zoom)
 
-    def set_view(self, center: Tuple[float, float]=None, zoom:int=None) -> None:
+    def set_view(self, center: Optional[Tuple[float, float]]=None, zoom:Optional[int]=None) -> None:
         """Set the map to a new center location, zoom or both in a single operation."""
         if center is None and zoom is None:
             return
