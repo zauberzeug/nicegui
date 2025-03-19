@@ -13,6 +13,7 @@ if TYPE_CHECKING:
 class UserNavigate(Navigate):
 
     def __init__(self, user: User) -> None:
+        super().__init__()
         self.user = user
 
     def to(self, target: Union[Callable[..., Any], str, Element], new_tab: bool = False) -> None:

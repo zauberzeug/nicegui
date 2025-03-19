@@ -61,3 +61,6 @@ def slide_reset():
                 ui.item('Right')
 
     ui.button('Reset', on_click=slide_item.reset)
+
+
+doc.reference(ui.slide_item)

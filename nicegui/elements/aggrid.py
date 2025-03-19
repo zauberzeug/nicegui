@@ -45,6 +45,7 @@ class AgGrid(Element,
         self._props['html_columns'] = html_columns[:]
         self._props['auto_size_columns'] = auto_size_columns
         self._classes.append(f'ag-theme-{theme}')
+        self._update_method = 'update_grid'
 
     @classmethod
     def from_pandas(cls,
@@ -120,10 +121,6 @@ class AgGrid(Element,
     def options(self) -> Dict:
         """The options dictionary."""
         return self._props['options']
-
-    def update(self) -> None:
-        super().update()
-        self.run_method('update_grid')
 
     def run_grid_method(self, name: str, *args, timeout: float = 1) -> AwaitableResponse:
         """Run an AG Grid API method.
