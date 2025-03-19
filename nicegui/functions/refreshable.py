@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Any, Callable, ClassVar, Dict, Generic, List, Optional, Tuple, TypeVar, Union, cast
+from typing import Any, Awaitable, Callable, ClassVar, Dict, Generic, List, Optional, Tuple, TypeVar, Union, cast
 
 from typing_extensions import Concatenate, ParamSpec, Self
 
@@ -28,7 +28,7 @@ class RefreshableTarget:
     locals: List[Any] = field(default_factory=list)
     next_index: int = 0
 
-    def run(self, func: Callable[..., _T]]) -> _T:
+    def run(self, func: Callable[..., _T]) -> _T:
         """Run the function and return the result."""
         RefreshableTarget.current_target = self
         self.next_index = 0
@@ -57,7 +57,7 @@ class RefreshableContainer(Element, component='refreshable.js'):
 
 class refreshable(Generic[_P, _T]):
 
-    def __init__(self, func: Callable[_P, _T]]) -> None:
+    def __init__(self, func: Callable[_P, _T]) -> None:
         """Refreshable UI functions
 
         The ``@ui.refreshable`` decorator allows you to create functions that have a ``refresh`` method.
