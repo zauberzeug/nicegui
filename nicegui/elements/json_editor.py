@@ -34,6 +34,7 @@ class JsonEditor(Element, component='json_editor.js', dependencies=['lib/vanilla
         """
         super().__init__()
         self._props['properties'] = properties
+        self._update_method = 'update_editor'
 
         if schema:
             self._props['schema'] = schema
@@ -62,10 +63,6 @@ class JsonEditor(Element, component='json_editor.js', dependencies=['lib/vanilla
     def properties(self) -> Dict:
         """The property dictionary."""
         return self._props['properties']
-
-    def update(self) -> None:
-        super().update()
-        self.run_method('update_editor')
 
     def run_editor_method(self, name: str, *args, timeout: float = 1) -> AwaitableResponse:
         """Run a method of the JSONEditor instance.
