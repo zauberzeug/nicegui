@@ -1,5 +1,8 @@
 blank_issues_enabled: false
 contact_links:
+  - name: Report a Security Vulnerability
+    url: https://github.com/zauberzeug/nicegui?tab=security-ov-file#readme
+    about: Please review our security policy for more details.
   - name: Have an idea or a feature requests?
     url: https://github.com/zauberzeug/nicegui/discussions/categories/ideas-feature-requests
     about: Visit the "💡 Ideas / Feature Requests" forum to view, discuss, vote and propose ideas and feature suggestions.
