@@ -59,6 +59,7 @@ def test_style_parsing(value: Optional[str], expected: Dict[str, str]):
     ('loading percentage=12.5', {'loading': True, 'percentage': '12.5'}),
     ('size=50%', {'size': '50%'}),
     ('href=http://192.168.42.100/', {'href': 'http://192.168.42.100/'}),
+    ('href=http://192.168.42.100/?foo=bar&baz=qux', {'href': 'http://192.168.42.100/?foo=bar&baz=qux'}),
     ('hint="Your \\"given\\" name"', {'hint': 'Your "given" name'}),
     ('input-style="{ color: #ff0000 }"', {'input-style': '{ color: #ff0000 }'}),
     ('accept=.jpeg,.jpg,.png', {'accept': '.jpeg,.jpg,.png'}),

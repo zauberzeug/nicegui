@@ -1,5 +1,3 @@
-from typing import List
-
 from selenium.webdriver.common.keys import Keys
 
 from nicegui import ui
@@ -24,22 +22,23 @@ def test_open_close_dialog(screen: Screen):
 
 def test_await_dialog(screen: Screen):
     with ui.dialog() as dialog, ui.card():
-        ui.label('Are you sure?')
-        with ui.row():
-            ui.button('Yes', on_click=lambda: dialog.submit('Yes'))
-            ui.button('No', on_click=lambda: dialog.submit('No'))
+        ui.button('Yes', on_click=lambda: dialog.submit('Yes'))
+        ui.button('No', on_click=lambda: dialog.submit('No'))
 
     async def show() -> None:
-        results.append(await dialog)
-    results: List[str] = []
+        ui.notify(f'Result: {await dialog}')
+
     ui.button('Open', on_click=show)
 
     screen.open('/')
     screen.click('Open')
     screen.click('Yes')
+    screen.should_contain('Result: Yes')
+
     screen.click('Open')
     screen.click('No')
+    screen.should_contain('Result: No')
+
     screen.click('Open')
     screen.type(Keys.ESCAPE)
-    screen.wait(0.5)
-    assert results == ['Yes', 'No', None]
+    screen.should_contain('Result: None')

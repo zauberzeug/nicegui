@@ -72,4 +72,5 @@ examples: List[Example] = [
     Example('OpenAI Assistant', "Using OpenAI's Assistant API with async/await"),
     Example('Redis Storage', 'Use Redis storage to share data across multiple instances behind a reverse proxy or load balancer'),
     Example('Google One-Tap Auth', 'Authenticate users via Google One-Tap'),
+    Example('Google OAuth2', 'Authenticate with Google OAuth2')
 ]
