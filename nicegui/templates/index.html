@@ -13,6 +13,9 @@
     {% endif %}
     <!-- prevent Prettier from removing this line -->
     {{ head_html | safe }}
+    {% for url in js_imports_urls %}
+      <link rel="modulepreload" href="{{ url }}">
+    {% endfor %}
   </head>
   <body>
     <script src="{{ prefix | safe }}/_nicegui/{{version}}/static/es-module-shims.js"></script>
