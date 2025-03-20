@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Any, Awaitable, Callable, ClassVar, Dict, Generic, List, Optional, Tuple, TypeVar, Union, cast
+from typing import Any, Awaitable, Callable, ClassVar, Dict, Generic, List, Optional, Tuple, TypeVar, cast
 
 from typing_extensions import Concatenate, ParamSpec, Self
 
@@ -42,7 +42,7 @@ class RefreshableTarget:
                         result = func(self.instance, *self.args, **self.kwargs)
                     assert isinstance(result, Awaitable)
                     return await result
-            return wait_for_result() # type: ignore
+            return wait_for_result()  # type: ignore
         else:
             with self.container:
                 if self.instance is None:
