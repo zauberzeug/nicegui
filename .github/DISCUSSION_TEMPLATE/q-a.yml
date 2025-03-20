@@ -25,7 +25,7 @@ body:
           required: true
         - label: I searched the NiceGUI documentation, with the integrated search.
           required: true
-        - label: I already searched in Google "How to X in NiceGUI" and didn't find any information.
+        - label: I already searched online "How to X in NiceGUI" and didn't find any information.
           required: true
   - type: textarea
     id: example
