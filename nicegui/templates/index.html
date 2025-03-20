@@ -13,6 +13,9 @@
     {% endif %}
     <!-- prevent Prettier from removing this line -->
     {{ head_html | safe }}
+    <script type="importmap">
+      {"imports": {{ imports | safe }}}
+    </script>
     {% for url in js_imports_urls %}
       <link rel="modulepreload" href="{{ url }}">
     {% endfor %}
@@ -34,9 +37,6 @@
     <script src="{{ prefix | safe }}/_nicegui/{{version}}/static/nicegui.js"></script>
 
     <script src="{{ prefix | safe }}/_nicegui/{{version}}/static/lang/{{ language }}.umd.prod.js"></script>
-    <script type="importmap">
-      {"imports": {{ imports | safe }}}
-    </script>
     {{ body_html | safe }}
 
     <div id="app"></div>
