@@ -21,7 +21,7 @@ body:
           required: true
         - label: This is not a Q&A. I am sure something is wrong with NiceGUI or its documentation.
           required: true
-        - label: I used the GitHub search to find a similar [issue](https://github.com/zauberzeug/nicegui/issues) and didn't find it.
+        - label: I used the GitHub search to find a similar [issue](https://github.com/zauberzeug/nicegui/issues) and came up empty.
           required: true
   - type: textarea
     id: example
