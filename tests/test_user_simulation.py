@@ -1,3 +1,4 @@
+import asyncio
 import csv
 from io import BytesIO
 from typing import Callable, Dict, Type, Union
@@ -540,3 +541,14 @@ async def test_typing_to_disabled_element(user: User) -> None:
     assert target.value == initial_value
     await user.should_see(initial_value)
     await user.should_not_see(given_new_input)
+
+
+async def test_drawer(user: User):
+    @ui.page('/')
+    def test_page():
+        with ui.left_drawer():
+            ui.label('Hello')
+
+    await user.open('/')
+    await user.should_see('Hello')
+    await asyncio.sleep(1.2)  # wait for javascript to load (see https://github.com/zauberzeug/nicegui/issues/4508)
