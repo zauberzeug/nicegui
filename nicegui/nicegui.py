@@ -162,7 +162,25 @@ async def _exception_handler_500(request: Request, exception: Exception) -> Resp
 async def _on_handshake(sid: str, data: Dict[str, Any]) -> bool:
     client = Client.instances.get(data['client_id'])
     if not client:
-        return False
+        print("We just got cold-called by a client that doesn't exist")
+        for key, value in Client.page_routes.items():
+            print("Apparently, the requested path is: ", data['path'])
+            if value == data['path']:
+                with Client(page(value), request=None, force_id=data['client_id']) as fake_client:
+                    print("We just created a client ad-hoc. See what sticks!")
+                    result = key()
+                    if helpers.is_coroutine_function(key):
+                        # TODO: we simply await it here for simplicity, but a timeout would be beneficial when we move forward...
+                        result = await result
+                    fake_client.tab_id = data['tab_id']
+                    if sid[:5].startswith('test-'):
+                        fake_client.environ = {'asgi.scope': {'description': 'test client', 'type': 'test'}}
+                    else:
+                        fake_client.environ = sio.get_environ(sid)
+                        await sio.enter_room(sid, fake_client.id)
+                    fake_client.handle_handshake(sid, data['document_id'], data.get('next_message_id'))
+                    break
+        return True
     if data.get('old_tab_id'):
         app.storage.copy_tab(data['old_tab_id'], data['tab_id'])
     client.tab_id = data['tab_id']

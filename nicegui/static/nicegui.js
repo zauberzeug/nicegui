@@ -348,6 +348,7 @@ function createApp(elements, options) {
             tab_id: TAB_ID,
             old_tab_id: OLD_TAB_ID,
             next_message_id: window.nextMessageId,
+            path: options.query.path,
           };
           window.socket.emit("handshake", args, (ok) => {
             if (!ok) {
