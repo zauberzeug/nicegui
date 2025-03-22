@@ -305,3 +305,11 @@ h6.q-timeline__title {
   position: absolute;
   left: 1.5em;
 }
+
+/* Hide mermaid diagrams until rendered, fixes mermaid source code being temporarily visible on load */
+.mermaid {
+  display: none;
+}
+.mermaid[data-processed="true"] {
+  display: block;
+}

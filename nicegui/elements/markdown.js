@@ -7,7 +7,8 @@ export default {
     await loadResource(window.path_prefix + this.codehilite_css_url);
     if (this.use_mermaid) {
       this.mermaid = (await import("mermaid")).default;
-      this.renderMermaid();
+      await this.mermaid.initialize({ startOnLoad: false });
+      await this.renderMermaid();
     }
   },
   data() {
@@ -15,14 +16,21 @@ export default {
       mermaid: null,
     };
   },
-  updated() {
-    this.renderMermaid();
+  async updated() {
+    if (this.mermaid) {
+      await this.renderMermaid();
+    }
   },
   methods: {
-    renderMermaid() {
-      this.$el.querySelectorAll(".mermaid-pre").forEach(async (pre, i) => {
-        await this.mermaid.run({ nodes: [pre.children[0]] });
-      });
+    async renderMermaid() {
+      const elements = this.$el.querySelectorAll(".mermaid-pre");
+      for (const pre of elements) {
+        try {
+          await this.mermaid.run({ nodes: [pre.children[0]] });
+        } catch (error) {
+          console.error('Failed to render mermaid diagram:', error);
+        }
+      }
     },
   },
   props: {
