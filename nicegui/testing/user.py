@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import re
-from typing import Any, List, Optional, Set, Type, TypeVar, Union, overload
+from typing import Any, Callable, Dict, List, Optional, Set, Type, TypeVar, Union, overload
 from uuid import uuid4
 
 import httpx
@@ -11,6 +11,7 @@ import socketio
 from nicegui import Client, ElementFilter, ui
 from nicegui.element import Element
 from nicegui.nicegui import _on_handshake
+from nicegui.outbox import Message
 
 from .user_download import UserDownload
 from .user_interaction import UserInteraction
@@ -35,6 +36,7 @@ class User:
         self.navigate = UserNavigate(self)
         self.notify = UserNotify()
         self.download = UserDownload(self)
+        self.javascript_rules: Dict[str, Callable[..., str]] = {}
 
     @property
     def _client(self) -> Client:
@@ -69,7 +71,22 @@ class User:
         self.back_history.append(path)
         if clear_forward_history:
             self.forward_history.clear()
+        self._patch_outbox_emit_function()
         return self.client
+
+    def _patch_outbox_emit_function(self) -> None:
+        async def simulated_emit(message: Message) -> None:
+            id_, type_, data = message
+            if type_ == 'run_javascript':
+                for rule, result in self.javascript_rules.items():
+                    if rule in data['code']:
+                        self._client.handle_javascript_response({
+                            'request_id': data['request_id'],
+                            'result': result()
+                        })
+            self._client.outbox.next_message_id += 1
+
+        self._client.outbox._emit = simulated_emit  # type: ignore
 
     @overload
     async def should_see(self,

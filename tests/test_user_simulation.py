@@ -8,7 +8,7 @@ from fastapi import UploadFile
 from fastapi.datastructures import Headers
 from fastapi.responses import PlainTextResponse
 
-from nicegui import app, events, ui
+from nicegui import app, context, events, ui
 from nicegui.testing import User
 
 # pylint: disable=missing-function-docstring
@@ -552,3 +552,15 @@ async def test_drawer(user: User):
     await user.open('/')
     await user.should_see('Hello')
     await asyncio.sleep(1.2)  # wait for javascript to load (see https://github.com/zauberzeug/nicegui/issues/4508)
+
+
+async def test_run_javascript(user: User):
+    @ui.page('/')
+    async def page():
+        await context.client.connected()
+        time = await ui.run_javascript('Date()')
+        ui.label(time)
+
+    user.javascript_rules['Date'] = lambda: 'fake-time'
+    await user.open('/')
+    await user.should_see('fake-time')
