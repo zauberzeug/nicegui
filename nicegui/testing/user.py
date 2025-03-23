@@ -36,7 +36,9 @@ class User:
         self.navigate = UserNavigate(self)
         self.notify = UserNotify()
         self.download = UserDownload(self)
-        self.javascript_rules: Dict[re.Pattern, Callable[[re.Match], str]] = {}
+        self.javascript_rules: Dict[re.Pattern, Callable[[re.Match], str]] = {
+            re.compile(r'.*parentElement.classList.contains\("q-layout--prevent-focus"\)'): lambda _: 'true',
+        }
 
     @property
     def _client(self) -> Client:
