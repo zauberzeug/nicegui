@@ -78,7 +78,7 @@ class User:
 
     def _patch_outbox_emit_function(self) -> None:
         async def simulated_emit(message: Message) -> None:
-            id_, type_, data = message
+            _, type_, data = message
             if type_ == 'run_javascript':
                 for rule, result in self.javascript_rules.items():
                     match = rule.match(data['code'])
