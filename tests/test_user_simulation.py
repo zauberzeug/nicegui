@@ -1,5 +1,7 @@
 import asyncio
 import csv
+import re
+from datetime import datetime, timezone
 from io import BytesIO
 from typing import Callable, Dict, Type, Union
 
@@ -558,9 +560,10 @@ async def test_run_javascript(user: User):
     @ui.page('/')
     async def page():
         await context.client.connected()
-        time = await ui.run_javascript('Date()')
-        ui.label(time)
+        date = await ui.run_javascript('new Date(1609459200000)')
+        ui.label(date)
 
-    user.javascript_rules['Date'] = lambda: 'fake-time'
+    user.javascript_rules[re.compile(r'new Date\((\d+)\)')] = \
+        lambda match: datetime.fromtimestamp(int(match.group(1))/1000, tz=timezone.utc).isoformat()
     await user.open('/')
-    await user.should_see('fake-time')
+    await user.should_see('2021-01-01T00:00:00+00:00')

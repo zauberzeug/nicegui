@@ -36,7 +36,7 @@ class User:
         self.navigate = UserNavigate(self)
         self.notify = UserNotify()
         self.download = UserDownload(self)
-        self.javascript_rules: Dict[str, Callable[..., str]] = {}
+        self.javascript_rules: Dict[re.Pattern, Callable[[re.Match], str]] = {}
 
     @property
     def _client(self) -> Client:
@@ -79,10 +79,11 @@ class User:
             id_, type_, data = message
             if type_ == 'run_javascript':
                 for rule, result in self.javascript_rules.items():
-                    if rule in data['code']:
+                    match = rule.match(data['code'])
+                    if match:
                         self._client.handle_javascript_response({
                             'request_id': data['request_id'],
-                            'result': result()
+                            'result': result(match)
                         })
             self._client.outbox.next_message_id += 1
 
