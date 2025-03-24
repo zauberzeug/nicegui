@@ -248,11 +248,46 @@ def multiple_users():
         ''')
 
 
+doc.text('Simulate JavasScript', '''
+    The `User` class has a `javascript_rules` dictionary to simulate JavaScript execution.
+    The key is a regular expression and the value is a function that returns a string that will be used as the javascript response.
+    The function will be called with the match object of the regular expression on the JavaScript command.
+
+    *Added in version 2.14.0*
+''')
+
+
+@doc.ui
+def check_outbox():
+    with ui.row().classes('gap-4 items-stretch'):
+        with python_window(classes='w-[500px]', title='some UI code'):
+            ui.markdown('''
+                ```python
+                @ui.page('/')
+                async def page():
+                    await context.client.connected()
+                    date = await ui.run_javascript('new Date(1609459200000)')
+                    ui.label(date)
+                ```
+            ''')
+
+        with python_window(classes='w-[500px]', title='user assertions'):
+            ui.markdown('''
+                ```python
+                user.javascript_rules[re.compile(r'new Date\\((\\d+)\\)')] = \\
+                    lambda match: datetime.fromtimestamp(int(match.group(1))/1000, tz=timezone.utc).isoformat()
+                await user.open('/')
+                await user.should_see('2021-01-01T00:00:00+00:00')
+                ```
+            ''')
+
+
 doc.text('Comparison with the screen fixture', '''
     By cutting out the browser, test execution becomes much faster than the [`screen` fixture](/documentation/screen).
-    Of course, some features like screenshots or browser-specific behavior are not available.
     See our [pytests example](https://github.com/zauberzeug/nicegui/tree/main/examples/pytests)
     which implements the same tests with both fixtures.
+    Of course, some features like screenshots or browser-specific behavior are not available,
+    but in most cases the speed of the `user` fixture makes it the first choice.
 ''')
 
 doc.reference(User, title='User Reference')

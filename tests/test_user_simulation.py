@@ -1,4 +1,7 @@
+import asyncio
 import csv
+import re
+from datetime import datetime, timezone
 from io import BytesIO
 from typing import Callable, Dict, Type, Union
 
@@ -7,7 +10,7 @@ from fastapi import UploadFile
 from fastapi.datastructures import Headers
 from fastapi.responses import PlainTextResponse
 
-from nicegui import app, events, ui
+from nicegui import app, context, events, ui
 from nicegui.testing import User
 
 # pylint: disable=missing-function-docstring
@@ -540,3 +543,27 @@ async def test_typing_to_disabled_element(user: User) -> None:
     assert target.value == initial_value
     await user.should_see(initial_value)
     await user.should_not_see(given_new_input)
+
+
+async def test_drawer(user: User):
+    @ui.page('/')
+    def test_page():
+        with ui.left_drawer():
+            ui.label('Hello')
+
+    await user.open('/')
+    await user.should_see('Hello')
+    await asyncio.sleep(1.2)  # wait for javascript to load (see https://github.com/zauberzeug/nicegui/issues/4508)
+
+
+async def test_run_javascript(user: User):
+    @ui.page('/')
+    async def page():
+        await context.client.connected()
+        date = await ui.run_javascript('new Date(1609459200000)')
+        ui.label(date)
+
+    user.javascript_rules[re.compile(r'new Date\((\d+)\)')] = \
+        lambda match: datetime.fromtimestamp(int(match.group(1))/1000, tz=timezone.utc).isoformat()
+    await user.open('/')
+    await user.should_see('2021-01-01T00:00:00+00:00')
