@@ -66,6 +66,16 @@ class Input(ValidationElement, DisableableElement, component='input.js'):
 
         self._props['_autocomplete'] = autocomplete or []
 
+    @property
+    def label(self) -> str:
+        return self._props["label"]
+
+    @label.setter
+    def label(self, value: Optional[str]) -> None:
+        if value is not None:
+            self._props["label"] = value
+            self.update()
+
     def set_autocomplete(self, autocomplete: Optional[List[str]]) -> None:
         """Set the autocomplete list."""
         self._props['_autocomplete'] = autocomplete
