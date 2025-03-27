@@ -13,7 +13,7 @@ from .. import helpers
 from .html import add_head_html
 
 
-def add_css(content: Union[str, Path]) -> None:
+def add_css(content: Union[str, Path], shared: bool = False) -> None:
     """Add CSS style definitions to the page.
 
     This function can be used to add CSS style definitions to the head of the HTML page.
@@ -24,10 +24,10 @@ def add_css(content: Union[str, Path]) -> None:
     """
     if helpers.is_file(content):
         content = Path(content).read_text(encoding='utf-8')
-    add_head_html(f'<style>{content}</style>')
+    add_head_html(f'<style>{content}</style>', shared=shared)
 
 
-def add_scss(content: Union[str, Path], *, indented: bool = False) -> None:
+def add_scss(content: Union[str, Path], *, indented: bool = False, shared: bool = False) -> None:
     """Add SCSS style definitions to the page.
 
     This function can be used to add SCSS style definitions to the head of the HTML page.
@@ -42,10 +42,10 @@ def add_scss(content: Union[str, Path], *, indented: bool = False) -> None:
 
     if helpers.is_file(content):
         content = Path(content).read_text(encoding='utf-8')
-    add_css(sass.compile(string=str(content).strip(), indented=indented))
+    add_css(sass.compile(string=str(content).strip(), indented=indented), shared=shared)
 
 
-def add_sass(content: Union[str, Path]) -> None:
+def add_sass(content: Union[str, Path], shared: bool = False) -> None:
     """Add SASS style definitions to the page.
 
     This function can be used to add SASS style definitions to the head of the HTML page.
@@ -54,4 +54,4 @@ def add_sass(content: Union[str, Path]) -> None:
 
     :param content: SASS content (string or file path)
     """
-    add_scss(content, indented=True)
+    add_scss(content, indented=True, shared=shared)
