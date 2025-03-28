@@ -8,7 +8,7 @@ from fastapi.middleware.gzip import GZipMiddleware
 from . import core, storage
 from .air import Air
 from .language import Language
-from .middlewares import RedirectWithPrefixMiddleware
+from .middlewares import RedirectWithPrefixMiddleware, SetCacheControlMiddleware
 from .nicegui import _shutdown, _startup
 
 
@@ -28,6 +28,7 @@ def run_with(
     prod_js: bool = True,
     storage_secret: Optional[str] = None,
     show_welcome_message: bool = True,
+    cache_control_directives: Optional[str] = 'public, max-age=31536000, immutable, stale-while-revalidate=31536000'
 ) -> None:
     """Run NiceGUI with FastAPI.
 
@@ -46,6 +47,7 @@ def run_with(
     :param prod_js: whether to use the production version of Vue and Quasar dependencies (default: `True`)
     :param storage_secret: secret key for browser-based storage (default: `None`, a value is required to enable ui.storage.individual and ui.storage.browser)
     :param show_welcome_message: whether to show the welcome message (default: `True`)
+    :param cache_control_directives: cache control directives for static files (default: `'public, max-age=31536000, immutable, stale-while-revalidate=31536000'`)
     """
     core.app.config.add_run_config(
         reload=False,
@@ -60,10 +62,12 @@ def run_with(
         tailwind=tailwind,
         prod_js=prod_js,
         show_welcome_message=show_welcome_message,
+        cache_control_directives=cache_control_directives,
     )
     storage.set_storage_secret(storage_secret)
     core.app.add_middleware(GZipMiddleware)
     core.app.add_middleware(RedirectWithPrefixMiddleware)
+    core.app.add_middleware(SetCacheControlMiddleware)
 
     if on_air:
         core.air = Air('' if on_air is True else on_air)
