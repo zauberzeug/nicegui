@@ -7,8 +7,9 @@ from typing import TYPE_CHECKING, Dict, Iterable, List, Set, Tuple
 import vbuild
 
 from .dataclasses import KWONLY_SLOTS
-from .helpers import hash_file_path
+from .helpers import hash_file_path, hash_file_path_and_contents
 from .version import __version__
+from .logging import log
 
 if TYPE_CHECKING:
     from .element import Element
@@ -118,7 +119,9 @@ def compute_key(path: Path) -> str:
     except ValueError:
         pass
     if is_file:
-        return f'{hash_file_path(path.parent)}/{path.name}'
+        return f'{hash_file_path_and_contents(path)}/{path.name}'
+    else:
+        log.warning(f'Path {path} is not a file, using hash of the path only, no cache-busting')
     return f'{hash_file_path(path)}'
 
 

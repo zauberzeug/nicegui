@@ -54,6 +54,20 @@ def hash_file_path(path: Path) -> str:
     return hashlib.sha256(path.as_posix().encode()).hexdigest()[:32]
 
 
+def hash_file_path_and_contents(path: Path) -> str:
+    """Hash the given path (path.parent) and file contents."""
+
+    hasher = hashlib.sha256()
+    # Hash the path
+    hasher.update(path.parent.as_posix().encode())
+    # Hash the file contents, if path is a file
+    if path.is_file():
+        with path.open('rb') as file:
+            while chunk := file.read(8192):
+                hasher.update(chunk)
+    return hasher.hexdigest()[:32]
+
+
 def is_port_open(host: str, port: int) -> bool:
     """Check if the port is open by checking if a TCP connection can be established."""
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
