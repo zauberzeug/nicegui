@@ -89,6 +89,16 @@ class Select(ValidationElement, ChoiceElement, DisableableElement, component='se
         """Whether the options popup is currently shown."""
         return self._is_showing_popup
 
+    @property
+    def label(self) -> str:
+        return self._props["label"]
+
+    @label.setter
+    def label(self, value: Optional[str]) -> None:
+        if value is not None:
+            self._props["label"] = value
+            self.update()
+
     def _event_args_to_value(self, e: GenericEventArguments) -> Any:
         if self.multiple:
             if e.args is None:
