@@ -136,11 +136,13 @@ class Client:
             'client_id': self.id,
             'next_message_id': self.outbox.next_message_id,
         }
-        vue_html, vue_styles, vue_scripts, imports, js_imports = generate_resources(prefix, self.elements.values())
+        vue_html, vue_styles, vue_scripts, imports, js_imports, js_imports_urls = generate_resources(
+            prefix, self.elements.values())
         return templates.TemplateResponse(
             request=request,
             name='index.html',
             context={
+                'js_imports_urls': js_imports_urls,
                 'request': request,
                 'version': __version__,
                 'elements': elements.replace('&', '&amp;')
