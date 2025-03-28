@@ -7,8 +7,6 @@ from typing import Any, Callable, TypeVar
 
 from typing_extensions import ParamSpec
 
-from . import core, helpers
-
 process_pool = ProcessPoolExecutor()
 thread_pool = ThreadPoolExecutor()
 
@@ -45,8 +43,9 @@ def safe_callback(callback: Callable, *args, **kwargs) -> Any:
 
 
 async def _run(executor: Any, callback: Callable[P, R], *args: P.args, **kwargs: P.kwargs) -> R:
-    if core.app.is_stopping:
-        return  # type: ignore  # the assumption is that the user's code no longer cares about this value
+    # TODO
+    # if core.app.is_stopping:
+    #     return  # type: ignore  # the assumption is that the user's code no longer cares about this value
     try:
         loop = asyncio.get_running_loop()
         return await loop.run_in_executor(executor, partial(callback, *args, **kwargs))
@@ -76,8 +75,9 @@ async def io_bound(callback: Callable[P, R], *args: P.args, **kwargs: P.kwargs) 
 
 def tear_down() -> None:
     """Kill all processes and threads."""
-    if helpers.is_pytest():
-        return
+    # TODO
+    # if helpers.is_pytest():
+    #     return
     for p in process_pool._processes.values():  # pylint: disable=protected-access
         p.kill()
     kwargs = {'cancel_futures': True} if sys.version_info >= (3, 9) else {}
