@@ -124,6 +124,8 @@ class page:
                         with Client(page(''), request=request) as error_client:
                             core.app._page_exception_handler(e)
                             return error_client.build_response(request, 500)
+                    else:
+                        raise e
             if helpers.is_coroutine_function(func):
                 async def wait_for_result() -> None:
                     with client:
@@ -134,6 +136,8 @@ class page:
                                 with Client(page(''), request=request) as error_client:
                                     core.app._page_exception_handler(e)
                                     return error_client.build_response(request, 500)
+                            else:
+                                raise e
                 task = background_tasks.create(wait_for_result())
                 try:
                     await asyncio.wait([
