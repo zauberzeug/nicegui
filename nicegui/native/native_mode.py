@@ -21,6 +21,7 @@ try:
         # webview depends on bottle which uses the deprecated CGI function (https://github.com/bottlepy/bottle/issues/1403)
         warnings.filterwarnings('ignore', category=DeprecationWarning)
         import webview
+        from webview.dom import DOMEventHandler
     optional_features.register('webview')
 except ModuleNotFoundError:
     pass
@@ -28,7 +29,7 @@ except ModuleNotFoundError:
 
 def _open_window(
     host: str, port: int, title: str, width: int, height: int, fullscreen: bool, frameless: bool,
-    method_queue: mp.Queue, response_queue: mp.Queue,
+    method_queue: mp.Queue, response_queue: mp.Queue, drop_queue: mp.Queue,
 ) -> None:
     while not helpers.is_port_open(host, port):
         time.sleep(0.1)
@@ -47,7 +48,7 @@ def _open_window(
     closed = Event()
     window.events.closed += closed.set
     _start_window_method_executor(window, method_queue, response_queue, closed)
-    webview.start(storage_path=tempfile.mkdtemp(), **core.app.native.start_args)
+    webview.start(_bind_events, (window, drop_queue), storage_path=tempfile.mkdtemp(), **core.app.native.start_args)
 
 
 def _start_window_method_executor(window: webview.Window,
@@ -95,6 +96,13 @@ def _start_window_method_executor(window: webview.Window,
     Thread(target=window_method_executor).start()
 
 
+def _bind_events(window: webview.Window, drop_queue: mp.Queue) -> None:
+    def on_drop(e: dict[str, Any]) -> None:
+        for file in e['dataTransfer']['files']:
+            drop_queue.put(file.get('pywebviewFullPath'))
+    window.dom.document.events.drop += DOMEventHandler(on_drop, True, True)
+
+
 def activate(host: str, port: int, title: str, width: int, height: int, fullscreen: bool, frameless: bool) -> None:
     """Activate native mode."""
     def check_shutdown() -> None:
@@ -111,7 +119,7 @@ def activate(host: str, port: int, title: str, width: int, height: int, fullscre
         sys.exit(1)
 
     mp.freeze_support()
-    args = host, port, title, width, height, fullscreen, frameless, native.method_queue, native.response_queue
+    args = host, port, title, width, height, fullscreen, frameless, native.method_queue, native.response_queue, native.drop_queue
     process = mp.Process(target=_open_window, args=args, daemon=True)
     process.start()
 
