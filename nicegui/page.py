@@ -117,11 +117,27 @@ class page:
             with Client(self, request=request) as client:
                 if any(p.name == 'client' for p in inspect.signature(func).parameters.values()):
                     dec_kwargs['client'] = client
-                result = func(*dec_args, **dec_kwargs)
+                try:
+                    result = func(*dec_args, **dec_kwargs)
+                except Exception as e:
+                    if core.app._page_exception_handler is not None:
+                        with Client(page(''), request=request) as error_client:
+                            core.app._page_exception_handler(e)
+                            return error_client.build_response(request, 500)
+                    else:
+                        raise e
             if helpers.is_coroutine_function(func):
                 async def wait_for_result() -> None:
                     with client:
-                        return await result
+                        try:
+                            return await result
+                        except Exception as e:
+                            if core.app._page_exception_handler is not None:
+                                with Client(page(''), request=request) as error_client:
+                                    core.app._page_exception_handler(e)
+                                    return error_client.build_response(request, 500)
+                            else:
+                                raise e
                 task = background_tasks.create(wait_for_result())
                 try:
                     await asyncio.wait([
