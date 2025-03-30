@@ -138,8 +138,8 @@ def generate_resources(prefix: str, elements: Iterable[Element]) -> Tuple[List[s
     vue_scripts: List[str] = []
     vue_html: List[str] = []
     vue_styles: List[str] = []
-    js_imports: List[str] = []
     imports: Dict[str, str] = {}
+    js_imports: List[str] = []
     js_imports_urls: List[str] = []
 
     # build the importmap structure for exposed libraries
@@ -171,7 +171,7 @@ def generate_resources(prefix: str, elements: Iterable[Element]) -> Tuple[List[s
             if js_component.key not in done_components and js_component.path.suffix.lower() == '.js':
                 url = f'{prefix}/_nicegui/{__version__}/components/{js_component.key}'
                 js_imports.append(f'import {{ default as {js_component.name} }} from "{url}";')
-                js_imports_urls.append(url)
                 js_imports.append(f'app.component("{js_component.tag}", {js_component.name});')
+                js_imports_urls.append(url)
                 done_components.add(js_component.key)
     return vue_html, vue_styles, vue_scripts, imports, js_imports, js_imports_urls

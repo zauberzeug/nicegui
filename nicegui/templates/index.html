@@ -17,7 +17,7 @@
       {"imports": {{ imports | safe }}}
     </script>
     {% for url in js_imports_urls %}
-      <link rel="modulepreload" href="{{ url }}">
+    <link rel="modulepreload" href="{{ url }}" />
     {% endfor %}
   </head>
   <body>
