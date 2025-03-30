@@ -3,6 +3,7 @@ from __future__ import annotations
 import asyncio
 import copyreg
 import dataclasses
+import gc
 import time
 import weakref
 from collections import defaultdict
@@ -204,10 +205,18 @@ def remove(objects: Iterable[Any]) -> None:
         ]
         if not binding_list:
             del bindings[key]
-    for (obj_id, name), finalizer in list(bindable_properties.items()):
-        if obj_id in object_ids:
-            del bindable_properties[(obj_id, name)]
-            finalizer.detach()
+
+    gc_was_enabled = gc.isenabled()
+    if gc_was_enabled:
+        gc.disable()  # disable garbage collection to avoid finalizers to pop items while iterating
+    try:
+        for (obj_id, name), finalizer in list(bindable_properties.items()):
+            if obj_id in object_ids:
+                del bindable_properties[(obj_id, name)]
+                finalizer.detach()
+    finally:
+        if gc_was_enabled:
+            gc.enable()
 
 
 def reset() -> None:
