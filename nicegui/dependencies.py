@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING, Dict, Iterable, List, Set, Tuple
 import vbuild
 
 from .dataclasses import KWONLY_SLOTS
-from .helpers import hash_file_path, hash_file_path_and_contents
+from .helpers import hash_file_path_and_contents
 from .version import __version__
 from .logging import log
 
@@ -107,22 +107,29 @@ def register_resource(path: Path) -> Resource:
     return resources[key]
 
 
+cached_path_hashes: Dict[Path, str] = {}
+
+
 def compute_key(path: Path) -> str:
     """Compute a key for a given path using a hash function.
 
     If the path is relative to the NiceGUI base directory, the key is computed from the relative path.
     """
-    nicegui_base = Path(__file__).parent
-    is_file = path.is_file()
-    try:
-        path = path.relative_to(nicegui_base)
-    except ValueError:
-        pass
-    if is_file:
-        return f'{hash_file_path_and_contents(path)}/{path.name}'
+
+    # Check if the path is already cached.
+    # Ensures add_resource doesn't cause file hash on every page reload.
+    # Thus, behaviour matches other resources: hash recompute on server restart.
+    if path in cached_path_hashes:
+        path_hash = cached_path_hashes[path]
     else:
-        log.warning(f'Path {path} is not a file, using hash of the path only, no cache-busting')
-    return f'{hash_file_path(path)}'
+        path_hash = hash_file_path_and_contents(path)
+        cached_path_hashes[path] = path_hash
+
+    is_file = path.is_file()
+    if is_file:
+        return f'{path_hash}/{path.name}'
+    else:
+        return f'{path_hash}'
 
 
 def _get_name(path: Path) -> str:

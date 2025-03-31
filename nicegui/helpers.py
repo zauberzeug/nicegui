@@ -65,16 +65,24 @@ def hash_file_path(path: Path) -> str:
 
 
 def hash_file_path_and_contents(path: Path) -> str:
-    """Hash the given path (path.parent) and file contents."""
+    """Hash the given path and file content(s)."""
 
     hasher = hashlib.sha256()
-    # Hash the path
-    hasher.update(path.parent.as_posix().encode())
-    # Hash the file contents, if path is a file
+    nicegui_base = Path(__file__).parent
+    try:
+        path_shortened = path.relative_to(nicegui_base)
+    except ValueError:
+        path_shortened = path
+
+    hasher.update(path_shortened.parent.as_posix().encode())
     if path.is_file():
-        with path.open('rb') as file:
-            while chunk := file.read(8192):
-                hasher.update(chunk)
+        hasher = hash_file(path, hasher)
+    else:
+        for p in path.rglob('*'):
+            if p.is_file():
+                print("*", end='', flush=True)
+                hasher = hash_file(p, hasher)
+
     return hasher.hexdigest()[:32]
 
 
