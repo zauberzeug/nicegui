@@ -124,7 +124,8 @@ class page:
                         return await result
                 task = background_tasks.create(wait_for_result())
                 task_wait_for_connection = background_tasks.create(
-                    client._waiting_for_connection.wait())  # pylint: disable=protected-access
+                    client._waiting_for_connection.wait(),  # pylint: disable=protected-access
+                )
                 try:
                     await asyncio.wait([
                         task,
