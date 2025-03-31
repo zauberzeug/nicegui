@@ -351,6 +351,10 @@ function createApp(elements, options) {
             path: options.query.path,
           };
           window.socket.emit("handshake", args, (ok) => {
+            if (ok == "ACID") {
+              window.nextMessageId = 0; // because there are no messages in a newly created ACID (automatic client-id) client!
+              console.log("resetting nextMessageId to 0");
+            }
             if (!ok) {
               console.log("reloading because handshake failed for clientId " + window.clientId);
               window.location.reload();
@@ -373,6 +377,8 @@ function createApp(elements, options) {
         },
         disconnect: () => {
           document.getElementById("popup").ariaHidden = false;
+          console.log("immediately attempt a reconnect (ACID)");
+          window.socket.connect();
         },
         update: async (msg) => {
           const loadPromises = Object.entries(msg)
