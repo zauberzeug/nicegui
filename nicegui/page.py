@@ -4,7 +4,7 @@ import asyncio
 import inspect
 from functools import wraps
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Callable, Optional, Union
+from typing import TYPE_CHECKING, Any, Callable, Optional, Union, Dict, ClassVar
 
 from fastapi import Request, Response
 
@@ -19,6 +19,9 @@ if TYPE_CHECKING:
 
 
 class page:
+
+    instances: ClassVar[Dict[str, page]] = {}
+    """Maps paths to pages."""
 
     def __init__(self,
                  path: str, *,
@@ -69,6 +72,8 @@ class page:
         self.kwargs = kwargs
         self.api_router = api_router or core.app.router
         self.reconnect_timeout = reconnect_timeout
+
+        self.instances[path] = self
 
         create_favicon_route(self.path, favicon)
 
