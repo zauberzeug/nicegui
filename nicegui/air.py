@@ -156,7 +156,7 @@ class Air:
 
         @self.relay.on('connect_error')
         async def _handle_connect_error(data) -> None:
-            self.log.debug(f'Connection error: {data}')
+            self.log.warning(f'Connection error: {data.get("message", "Unknown error")}')
 
         @self.relay.on('event')
         def _handle_event(data: Dict[str, Any]) -> None:
