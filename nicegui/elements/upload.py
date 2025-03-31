@@ -7,9 +7,10 @@ from typing_extensions import Self
 from ..events import Handler, MultiUploadEventArguments, UiEventArguments, UploadEventArguments, handle_event
 from ..nicegui import app
 from .mixins.disableable_element import DisableableElement
+from .mixins.label_element import LabelElement
 
 
-class Upload(DisableableElement, component='upload.js'):
+class Upload(LabelElement, DisableableElement, component='upload.js'):
 
     def __init__(self, *,
                  multiple: bool = False,
@@ -36,7 +37,7 @@ class Upload(DisableableElement, component='upload.js'):
         :param label: label for the uploader (default: `''`)
         :param auto_upload: automatically upload files when they are selected (default: `False`)
         """
-        super().__init__()
+        super().__init__(label=label)
         self._props['multiple'] = multiple
         self._props['label'] = label
         self._props['auto-upload'] = auto_upload

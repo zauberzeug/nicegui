@@ -7,6 +7,7 @@ from ..events import Handler, ValueChangeEventArguments
 from .mixins.disableable_element import DisableableElement
 from .mixins.icon_element import IconElement
 from .mixins.value_element import ValueElement
+from .mixins.label_element import LabelElement
 
 
 class Tabs(ValueElement):
@@ -29,7 +30,7 @@ class Tabs(ValueElement):
         return value.props['name'] if isinstance(value, (Tab, TabPanel)) else value
 
 
-class Tab(IconElement, DisableableElement):
+class Tab(LabelElement, IconElement, DisableableElement):
 
     def __init__(self, name: str, label: Optional[str] = None, icon: Optional[str] = None) -> None:
         """Tab
@@ -41,7 +42,7 @@ class Tab(IconElement, DisableableElement):
         :param label: label of the tab (default: `None`, meaning the same as `name`)
         :param icon: icon of the tab (default: `None`)
         """
-        super().__init__(tag='q-tab', icon=icon)
+        super().__init__(label=label, tag='q-tab', icon=icon)
         self._props['name'] = name
         self._props['label'] = label if label is not None else name
         self.tabs = context.slot.parent

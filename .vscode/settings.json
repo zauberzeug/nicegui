@@ -10,5 +10,6 @@
     "editor.codeActionsOnSave": {
       "source.fixAll.ruff": "always"
     }
-  }
+  },
+  "python.analysis.typeCheckingMode": "basic"
 }

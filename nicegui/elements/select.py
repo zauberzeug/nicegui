@@ -6,9 +6,10 @@ from ..events import GenericEventArguments, Handler, ValueChangeEventArguments
 from .choice_element import ChoiceElement
 from .mixins.disableable_element import DisableableElement
 from .mixins.validation_element import ValidationDict, ValidationElement, ValidationFunction
+from .mixins.label_element import LabelElement
 
 
-class Select(ValidationElement, ChoiceElement, DisableableElement, component='select.js'):
+class Select(LabelElement, ValidationElement, ChoiceElement, DisableableElement, component='select.js'):
 
     def __init__(self,
                  options: Union[List, Dict], *,
@@ -60,7 +61,7 @@ class Select(ValidationElement, ChoiceElement, DisableableElement, component='se
                 value = [value]
             else:
                 value = value[:]  # NOTE: avoid modifying the original list which could be the list of options (#3014)
-        super().__init__(options=options, value=value, on_change=on_change, validation=validation)
+        super().__init__(label=label, options=options, value=value, on_change=on_change, validation=validation)
         if label is not None:
             self._props['label'] = label
         if isinstance(key_generator, Generator):
