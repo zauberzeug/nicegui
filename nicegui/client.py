@@ -48,9 +48,12 @@ class Client:
     shared_body_html = ''
     """HTML to be inserted in the <body> of every page template."""
 
-    def __init__(self, page: page, *, request: Optional[Request]) -> None:
+    def __init__(self, page: page, *, request: Optional[Request], force_id: str = None) -> None:
         self.request: Optional[Request] = request
-        self.id = str(uuid.uuid4())
+        if force_id is not None:
+            self.id = force_id
+        else:
+            self.id = str(uuid.uuid4())
         self.created = time.time()
         self.instances[self.id] = self
 
