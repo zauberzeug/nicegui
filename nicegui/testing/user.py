@@ -36,7 +36,7 @@ class User:
         self.navigate = UserNavigate(self)
         self.notify = UserNotify()
         self.download = UserDownload(self)
-        self.javascript_rules: Dict[re.Pattern, Callable[[re.Match], str]] = {
+        self.javascript_rules: Dict[re.Pattern, Callable[[re.Match], Any]] = {
             # ui.drawer() checks the focus value (see https://github.com/zauberzeug/nicegui/issues/4508)
             re.compile(r'.*parentElement.classList.contains\("q-layout--prevent-focus"\)'): lambda _: True,
         }
