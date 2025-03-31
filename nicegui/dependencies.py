@@ -133,6 +133,7 @@ def generate_resources(prefix: str, elements: Iterable[Element]) -> Tuple[List[s
                                                                           List[str],
                                                                           List[str],
                                                                           Dict[str, str],
+                                                                          List[str],
                                                                           List[str]]:
     """Generate the resources required by the elements to be sent to the client."""
     done_libraries: Set[str] = set()
@@ -140,8 +141,9 @@ def generate_resources(prefix: str, elements: Iterable[Element]) -> Tuple[List[s
     vue_scripts: List[str] = []
     vue_html: List[str] = []
     vue_styles: List[str] = []
-    js_imports: List[str] = []
     imports: Dict[str, str] = {}
+    js_imports: List[str] = []
+    js_imports_urls: List[str] = []
 
     # build the importmap structure for exposed libraries
     for key, library in libraries.items():
@@ -165,6 +167,7 @@ def generate_resources(prefix: str, elements: Iterable[Element]) -> Tuple[List[s
                 if not library.expose:
                     url = f'{prefix}/_nicegui/{__version__}/libraries/{library.key}'
                     js_imports.append(f'import "{url}";')
+                    js_imports_urls.append(url)
                 done_libraries.add(library.key)
         if element.component:
             js_component = element.component
@@ -172,5 +175,6 @@ def generate_resources(prefix: str, elements: Iterable[Element]) -> Tuple[List[s
                 url = f'{prefix}/_nicegui/{__version__}/components/{js_component.key}'
                 js_imports.append(f'import {{ default as {js_component.name} }} from "{url}";')
                 js_imports.append(f'app.component("{js_component.tag}", {js_component.name});')
+                js_imports_urls.append(url)
                 done_components.add(js_component.key)
-    return vue_html, vue_styles, vue_scripts, imports, js_imports
+    return vue_html, vue_styles, vue_scripts, imports, js_imports, js_imports_urls
