@@ -38,7 +38,7 @@ class User:
         self.download = UserDownload(self)
         self.javascript_rules: Dict[re.Pattern, Callable[[re.Match], str]] = {
             # ui.drawer() checks the focus value (see https://github.com/zauberzeug/nicegui/issues/4508)
-            re.compile(r'.*parentElement.classList.contains\("q-layout--prevent-focus"\)'): lambda _: 'false',
+            re.compile(r'.*parentElement.classList.contains\("q-layout--prevent-focus"\)'): lambda _: True,
         }
 
     @property
@@ -86,7 +86,7 @@ class User:
                     if match:
                         self._client.handle_javascript_response({
                             'request_id': data['request_id'],
-                            'result': result(match)
+                            'result': result(match),
                         })
             self._client.outbox.next_message_id += 1
 

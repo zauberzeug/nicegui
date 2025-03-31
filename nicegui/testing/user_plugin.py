@@ -38,7 +38,7 @@ def prepare_simulated_auto_index_client(request):
 @pytest.fixture
 async def user(nicegui_reset_globals,  # noqa: F811, pylint: disable=unused-argument
                prepare_simulated_auto_index_client,  # pylint: disable=unused-argument
-                caplog: pytest.LogCaptureFixture,
+               caplog: pytest.LogCaptureFixture,
                request: pytest.FixtureRequest,
                ) -> AsyncGenerator[User, None]:
     """Create a new user fixture."""

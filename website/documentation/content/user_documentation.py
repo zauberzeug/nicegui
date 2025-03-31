@@ -250,7 +250,7 @@ def multiple_users():
 
 doc.text('Simulate JavasScript', '''
     The `User` class has a `javascript_rules` dictionary to simulate JavaScript execution.
-    The key is a regular expression and the value is a function that returns a string that will be used as the javascript response.
+    The key is a compiled regular expression and the value is a function that returns the JavaScript response.
     The function will be called with the match object of the regular expression on the JavaScript command.
 
     *Added in version 2.14.0*
@@ -258,7 +258,7 @@ doc.text('Simulate JavasScript', '''
 
 
 @doc.ui
-def check_outbox():
+def simulate_javascript():
     with ui.row().classes('gap-4 items-stretch'):
         with python_window(classes='w-[500px]', title='some UI code'):
             ui.markdown('''
@@ -266,7 +266,7 @@ def check_outbox():
                 @ui.page('/')
                 async def page():
                     await context.client.connected()
-                    date = await ui.run_javascript('new Date(1609459200000)')
+                    date = await ui.run_javascript('Math.sqrt(1764)')
                     ui.label(date)
                 ```
             ''')
@@ -274,10 +274,10 @@ def check_outbox():
         with python_window(classes='w-[500px]', title='user assertions'):
             ui.markdown('''
                 ```python
-                user.javascript_rules[re.compile(r'new Date\\((\\d+)\\)')] = \\
-                    lambda match: datetime.fromtimestamp(int(match.group(1))/1000, tz=timezone.utc).isoformat()
+                user.javascript_rules[re.compile(r'Math.sqrt\\((\\d+)\\)')] = \\
+                    lambda match: int(match.group(1))**0.5
                 await user.open('/')
-                await user.should_see('2021-01-01T00:00:00+00:00')
+                await user.should_see('42')
                 ```
             ''')
 
