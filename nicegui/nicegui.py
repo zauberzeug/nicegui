@@ -160,6 +160,41 @@ async def _exception_handler_500(request: Request, exception: Exception) -> Resp
 
 @sio.on('handshake')
 async def _on_handshake(sid: str, data: Dict[str, Any]) -> bool:
+    client_type = 'NORMAL'
+    if data['client_id'] not in Client.instances:
+        # create a new ACID (automatic client-id) client
+        for func, path in Client.page_routes.items():
+            if not 'path' in data:
+                return False  # can't help with old clients
+            if path == data['path']:
+                proper_page = page.instances.get(path)
+                if not proper_page:
+                    return False
+                with Client(proper_page, request=None, force_id=data['client_id']) as fake_client:
+                    result = func()  # TODO: Missing args and kwargs from the original call in the decorator
+                    if helpers.is_coroutine_function(func):
+                        async def wait_for_result() -> None:
+                            with fake_client:
+                                return await result
+                        task = background_tasks.create(wait_for_result())
+                        task_wait_for_connection = background_tasks.create(
+                            fake_client._waiting_for_connection.wait())  # pylint: disable=protected-access
+                        try:
+                            await asyncio.wait([
+                                task,
+                                task_wait_for_connection,
+                            ], timeout=proper_page.response_timeout, return_when=asyncio.FIRST_COMPLETED)
+                        except asyncio.TimeoutError as e:
+                            raise TimeoutError(
+                                f'Response not ready after {proper_page.response_timeout} seconds') from e
+                        if task.done():
+                            result = task.result()
+                        else:
+                            result = None
+                        assert not isinstance(
+                            result, Response), 'Cannot return response if client is ACID (automatic client-id), created in response to a WebSocket handshake'
+                client_type = 'ACID'
+
     client = Client.instances.get(data['client_id'])
     if not client:
         return False
@@ -174,7 +209,7 @@ async def _on_handshake(sid: str, data: Dict[str, Any]) -> bool:
     client.handle_handshake(sid, data['document_id'], data.get('next_message_id'))
     assert client.tab_id is not None
     await core.app.storage._create_tab_storage(client.tab_id)  # pylint: disable=protected-access
-    return True
+    return client_type
 
 
 @sio.on('disconnect')
