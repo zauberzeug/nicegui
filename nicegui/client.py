@@ -70,6 +70,7 @@ class Client:
         self._deleted = False
         self._socket_to_document_id: Dict[str, str] = {}
         self.tab_id: Optional[str] = None
+        self._socket_id: Optional[str] = None
 
         self.page = page
         self.outbox = Outbox(self)
@@ -250,6 +251,7 @@ class Client:
         self._socket_to_document_id[socket_id] = document_id
         self._cancel_delete_task(document_id)
         self._num_connections[document_id] += 1
+        self._socket_id = socket_id
         if next_message_id is not None:
             self.outbox.try_rewind(next_message_id)
         storage.request_contextvar.set(self.request)
