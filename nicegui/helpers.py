@@ -49,6 +49,16 @@ def is_file(path: Optional[Union[str, Path]]) -> bool:
         return False
 
 
+def hash_file(path: Path, digestobj: Optional["hashlib._Hash"] = None) -> "hashlib._Hash":
+    """Hash the given file using same algorithm as cpython/Lib/hashlib.py"""
+    buf = bytearray(8192)
+    view = memoryview(buf)
+    with path.open('rb') as file:
+        while size := file.readinto(view):
+            digestobj.update(view[:size])
+    return digestobj
+
+
 def hash_file_path(path: Path) -> str:
     """Hash the given path."""
     return hashlib.sha256(path.as_posix().encode()).hexdigest()[:32]
