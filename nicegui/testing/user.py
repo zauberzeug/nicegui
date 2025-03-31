@@ -78,7 +78,10 @@ class User:
         return self.client
 
     def _patch_outbox_emit_function(self) -> None:
+        original_emit = self._client.outbox._emit
+
         async def simulated_emit(message: Message) -> None:
+            await original_emit(message)
             _, type_, data = message
             if type_ == 'run_javascript':
                 for rule, result in self.javascript_rules.items():
@@ -88,7 +91,6 @@ class User:
                             'request_id': data['request_id'],
                             'result': result(match),
                         })
-            self._client.outbox.next_message_id += 1
 
         self._client.outbox._emit = simulated_emit  # type: ignore
 
