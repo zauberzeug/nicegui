@@ -70,6 +70,13 @@ class Air:
                 new_js_object = match.group(1).decode().rstrip('}') + ", 'fly_instance_id' : '" + instance_id + "'}"
                 content = content.replace(match.group(0), f'const query = {new_js_object}'.encode())
             compressed = gzip.compress(content)
+            if len(compressed) > 10_000_000:
+                self.log.warning(f'Response size of {len(compressed)/1_000_000:.2f} MB exceeds 10 MB limit')
+                return {
+                    'status_code': 413,  # Request Entity Too Large
+                    'headers': [('Content-Type', 'text/plain')],
+                    'content': b'Response too large (exceeds 10 MB limit)',
+                }
             response.headers.update({'content-encoding': 'gzip', 'content-length': str(len(compressed))})
             return {
                 'status_code': response.status_code,
