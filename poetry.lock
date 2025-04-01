@@ -1760,6 +1760,40 @@ files = [
 ]
 
 [[package]]
+name = "nodejs-wheel"
+version = "22.14.0"
+description = "unoffical Node.js package"
+optional = false
+python-versions = ">=3.7"
+groups = ["main"]
+files = [
+    {file = "nodejs_wheel-22.14.0-py3-none-any.whl", hash = "sha256:27736c49046df3083c8fc31bdfe70f4a9652f89d231fb5b39f0f43735a7e8c8c"},
+    {file = "nodejs_wheel-22.14.0.tar.gz", hash = "sha256:1247d7a50d48e50d24c13bda3c1e26e63bfd8f1b5e08d41c1aaf1b30393e2c78"},
+]
+
+[package.dependencies]
+nodejs-wheel-binaries = "22.14.0"
+
+[[package]]
+name = "nodejs-wheel-binaries"
+version = "22.14.0"
+description = "unoffical Node.js package"
+optional = false
+python-versions = ">=3.7"
+groups = ["main"]
+files = [
+    {file = "nodejs_wheel_binaries-22.14.0-py2.py3-none-macosx_11_0_arm64.whl", hash = "sha256:d8ab8690516a3e98458041286e3f0d6458de176d15c14f205c3ea2972131420d"},
+    {file = "nodejs_wheel_binaries-22.14.0-py2.py3-none-macosx_11_0_x86_64.whl", hash = "sha256:b2f200f23b3610bdbee01cf136279e005ffdf8ee74557aa46c0940a7867956f6"},
+    {file = "nodejs_wheel_binaries-22.14.0-py2.py3-none-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:d0877832abd7a9c75c8c5caafa37f986c9341ee025043c2771213d70c4c1defa"},
+    {file = "nodejs_wheel_binaries-22.14.0-py2.py3-none-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:8fded5a70a8a55c2135e67bd580d8b7f2e94fcbafcc679b6a2d5b92f88373d69"},
+    {file = "nodejs_wheel_binaries-22.14.0-py2.py3-none-musllinux_1_2_aarch64.whl", hash = "sha256:c1ade6f3ece458b40c02e89c91d5103792a9f18aaad5026da533eb0dcb87090e"},
+    {file = "nodejs_wheel_binaries-22.14.0-py2.py3-none-musllinux_1_2_x86_64.whl", hash = "sha256:34fa5ed4cf3f65cbfbe9b45c407ffc2fc7d97a06cd8993e6162191ff81f29f48"},
+    {file = "nodejs_wheel_binaries-22.14.0-py2.py3-none-win_amd64.whl", hash = "sha256:ca7023276327455988b81390fa6bbfa5191c1da7fc45bc57c7abc281ba9967e9"},
+    {file = "nodejs_wheel_binaries-22.14.0-py2.py3-none-win_arm64.whl", hash = "sha256:fd59c8e9a202221e316febe1624a1ae3b42775b7fb27737bf12ec79565983eaf"},
+    {file = "nodejs_wheel_binaries-22.14.0.tar.gz", hash = "sha256:c1dc43713598c7310d53795c764beead861b8c5021fe4b1366cb912ce1a4c8bf"},
+]
+
+[[package]]
 name = "numpy"
 version = "1.24.4"
 description = "Fundamental package for array computing in Python"
@@ -1961,7 +1995,7 @@ files = [
     {file = "packaging-24.2-py3-none-any.whl", hash = "sha256:09abb1bccd265c01f4a3aa3f7a7db064b36514d2cba19a2f694fe6150451a759"},
     {file = "packaging-24.2.tar.gz", hash = "sha256:c228a6dc5e932d346bc5739379109d49e8853dd8223571c7c5b55260edc0b97f"},
 ]
-markers = {main = "(extra == \"native\" and sys_platform == \"openbsd6\" or extra == \"matplotlib\" or extra == \"plotly\") and python_version >= \"3.8\""}
+markers = {main = "(extra == \"native\" and sys_platform == \"openbsd6\" or extra == \"plotly\" or extra == \"matplotlib\") and python_version >= \"3.8\""}
 
 [[package]]
 name = "pandas"
@@ -4385,4 +4419,4 @@ sass = ["libsass"]
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.8"
-content-hash = "9d56e02408ddf68596416c26400f7b6c3e93d88701b0ad9637fd08dbbefa9bc8"
+content-hash = "cdf5766535d31c6bc08a481e94ac7b4905ea7b83fc775bdca83507bc0198e94f"
