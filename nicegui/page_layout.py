@@ -132,8 +132,9 @@ class Drawer(ValueElement, default_classes='nicegui-drawer'):
 
         if value is None and not self.client.is_auto_index_client:
             async def _request_value() -> None:
-                js_code = f'!getHtmlElement({self.id}).parentElement.classList.contains("q-layout--prevent-focus")'
-                self.value = await context.client.run_javascript(js_code)
+                self.value = await context.client.run_javascript(
+                    f'!getHtmlElement({self.id}).parentElement.classList.contains("q-layout--prevent-focus")  // __IS_DRAWER_OPEN__'
+                )
             self.client.on_connect(_request_value)
 
     def toggle(self) -> None:
