@@ -25,6 +25,8 @@ from .observables import ObservableDict
 from .outbox import Outbox
 from .translations import translations
 from .version import __version__
+from .ssr import get_ssr_output
+from .run import io_bound
 
 if TYPE_CHECKING:
     from .page import page
@@ -137,17 +139,22 @@ class Client:
             'next_message_id': self.outbox.next_message_id,
         }
         vue_html, vue_styles, vue_scripts, imports, js_imports = generate_resources(prefix, self.elements.values())
+        elements_replaced = elements.replace('&', '&amp;') \
+                                    .replace('<', '&lt;') \
+                                    .replace('>', '&gt;') \
+                                    .replace('`', '&#96;') \
+                                    .replace('$', '&#36;')
+
+        def get_my_ssr_output():
+            return get_ssr_output(elements_replaced)
+        results_ssr = await io_bound(get_my_ssr_output)
         return templates.TemplateResponse(
             request=request,
             name='index.html',
             context={
                 'request': request,
                 'version': __version__,
-                'elements': elements.replace('&', '&amp;')
-                                    .replace('<', '&lt;')
-                                    .replace('>', '&gt;')
-                                    .replace('`', '&#96;')
-                                    .replace('$', '&#36;'),
+                'elements': elements_replaced,
                 'head_html': self.head_html,
                 'body_html': '<style>' + '\n'.join(vue_styles) + '</style>\n' + self.body_html + '\n' + '\n'.join(vue_html),
                 'vue_scripts': '\n'.join(vue_scripts),
@@ -166,6 +173,7 @@ class Client:
                 'socket_io_js_query_params': socket_io_js_query_params,
                 'socket_io_js_extra_headers': core.app.config.socket_io_js_extra_headers,
                 'socket_io_js_transports': core.app.config.socket_io_js_transports,
+                'results_ssr': results_ssr,
             },
             status_code=status_code,
             headers={'Cache-Control': 'no-store', 'X-NiceGUI-Content': 'page'},
