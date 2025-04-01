@@ -70,27 +70,25 @@ class Air:
                 new_js_object = match.group(1).decode().rstrip('}') + ", 'fly_instance_id' : '" + instance_id + "'}"
                 content = content.replace(match.group(0), f'const query = {new_js_object}'.encode())
             compressed = gzip.compress(content)
+            total_size = len(compressed)
 
-            # NOTE: we need to chunk large responses to stay in the socketio limit
-            if len(compressed) > 1_000_000:  # 1 MB threshold instead of 10 MB
-                stream_id = str(uuid4())
-
+            # NOTE: chunk large responses to stay within the SocketIO limit
+            if total_size > 1_000_000:  # 1 MB threshold instead of 10 MB
                 async def chunk_iterator() -> AsyncIterator[bytes]:
-                    chunk_size = 1024 * 512  # 512 KB chunks
-                    total_size = len(compressed)
+                    chunk_size = 512 * 1024
                     for i in range(0, total_size, chunk_size):
                         yield compressed[i:i + chunk_size]
-
+                stream_id = str(uuid4())
                 self.streams[stream_id] = Stream(data=chunk_iterator(), response=response)
-                response.headers.update({'content-encoding': 'gzip', 'content-length': str(len(compressed))})
+                response.headers.update({'content-encoding': 'gzip', 'content-length': str(total_size)})
                 return {
                     'status_code': response.status_code,
                     'headers': response.headers.multi_items(),
                     'stream_id': stream_id,
-                    'total_size': len(compressed),
+                    'total_size': total_size,
                 }
 
-            response.headers.update({'content-encoding': 'gzip', 'content-length': str(len(compressed))})
+            response.headers.update({'content-encoding': 'gzip', 'content-length': str(total_size)})
             return {
                 'status_code': response.status_code,
                 'headers': response.headers.multi_items(),
