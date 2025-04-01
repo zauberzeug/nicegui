@@ -71,29 +71,26 @@ class Air:
                 content = content.replace(match.group(0), f'const query = {new_js_object}'.encode())
             compressed = gzip.compress(content)
             total_size = len(compressed)
+            response.headers.update({'content-encoding': 'gzip', 'content-length': str(total_size)})
+            result = {
+                'status_code': response.status_code,
+                'headers': response.headers.multi_items(),
+                'content': compressed,
+            }
 
             # NOTE: chunk large responses to stay within the SocketIO limit
-            if total_size > 1_000_000:  # 1 MB threshold instead of 10 MB
+            if total_size > 1_000_000:
                 async def chunk_iterator() -> AsyncIterator[bytes]:
                     chunk_size = 512 * 1024
                     for i in range(0, total_size, chunk_size):
                         yield compressed[i:i + chunk_size]
                 stream_id = str(uuid4())
                 self.streams[stream_id] = Stream(data=chunk_iterator(), response=response)
-                response.headers.update({'content-encoding': 'gzip', 'content-length': str(total_size)})
-                return {
-                    'status_code': response.status_code,
-                    'headers': response.headers.multi_items(),
-                    'stream_id': stream_id,
-                    'total_size': total_size,
-                }
+                result['stream_id'] = stream_id
+                result['total_size'] = total_size
+                del result['content']
 
-            response.headers.update({'content-encoding': 'gzip', 'content-length': str(total_size)})
-            return {
-                'status_code': response.status_code,
-                'headers': response.headers.multi_items(),
-                'content': compressed,
-            }
+            return result
 
         @self.relay.on('range-request')
         async def _handle_range_request(data: Dict[str, Any]) -> Dict[str, Any]:
