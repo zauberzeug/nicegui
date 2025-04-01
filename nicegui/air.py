@@ -70,13 +70,26 @@ class Air:
                 new_js_object = match.group(1).decode().rstrip('}') + ", 'fly_instance_id' : '" + instance_id + "'}"
                 content = content.replace(match.group(0), f'const query = {new_js_object}'.encode())
             compressed = gzip.compress(content)
-            if len(compressed) > 10_000_000:
-                self.log.warning(f'Response size of {len(compressed)/1_000_000:.2f} MB exceeds 10 MB limit')
+
+            # NOTE: we need to chunk large responses to stay in the socketio limit
+            if len(compressed) > 1_000_000:  # 1 MB threshold instead of 10 MB
+                stream_id = str(uuid4())
+
+                async def chunk_iterator() -> AsyncIterator[bytes]:
+                    chunk_size = 1024 * 512  # 512 KB chunks
+                    total_size = len(compressed)
+                    for i in range(0, total_size, chunk_size):
+                        yield compressed[i:i + chunk_size]
+
+                self.streams[stream_id] = Stream(data=chunk_iterator(), response=response)
+                response.headers.update({'content-encoding': 'gzip', 'content-length': str(len(compressed))})
                 return {
-                    'status_code': 413,  # Request Entity Too Large
-                    'headers': [('Content-Type', 'text/plain')],
-                    'content': b'Response too large (exceeds 10 MB limit)',
+                    'status_code': response.status_code,
+                    'headers': response.headers.multi_items(),
+                    'stream_id': stream_id,
+                    'total_size': len(compressed),
                 }
+
             response.headers.update({'content-encoding': 'gzip', 'content-length': str(len(compressed))})
             return {
                 'status_code': response.status_code,
