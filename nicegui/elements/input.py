@@ -3,8 +3,8 @@ from typing import Any, List, Optional, Union
 from ..events import Handler, ValueChangeEventArguments
 from .icon import Icon
 from .mixins.disableable_element import DisableableElement
-from .mixins.validation_element import ValidationDict, ValidationElement, ValidationFunction
 from .mixins.label_element import LabelElement
+from .mixins.validation_element import ValidationDict, ValidationElement, ValidationFunction
 
 
 class Input(LabelElement, ValidationElement, DisableableElement, component='input.js'):
@@ -50,9 +50,7 @@ class Input(LabelElement, ValidationElement, DisableableElement, component='inpu
         :param autocomplete: optional list of strings for autocompletion
         :param validation: dictionary of validation rules or a callable that returns an optional error message (default: None for no validation)
         """
-        super().__init__(label=label, value=value,  on_value_change=on_change, validation=validation)
-        if label is not None:
-            self._props['label'] = label
+        super().__init__(label=label, value=value, on_value_change=on_change, validation=validation)
         if placeholder is not None:
             self._props['placeholder'] = placeholder
         self._props['type'] = 'password' if password else 'text'

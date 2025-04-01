@@ -39,7 +39,6 @@ class Upload(LabelElement, DisableableElement, component='upload.js'):
         """
         super().__init__(label=label)
         self._props['multiple'] = multiple
-        self._props['label'] = label
         self._props['auto-upload'] = auto_upload
         self._props['url'] = f'/_nicegui/client/{self.client.id}/upload/{self.id}'
 

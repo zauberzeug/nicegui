@@ -1,4 +1,4 @@
-from typing import Any, Callable, cast, Optional
+from typing import Any, Callable, Optional, cast
 
 from typing_extensions import Self
 
@@ -13,7 +13,8 @@ class LabelElement(Element):
     def __init__(self, *, label: Optional[str], **kwargs: Any) -> None:
         super().__init__(**kwargs)
         self.label = label
-        self._props['label'] = label
+        if label is not None:
+            self._props['label'] = label
 
     def bind_label_to(self,
                       target_object: Any,
@@ -69,17 +70,20 @@ class LabelElement(Element):
         bind(self, 'label', target_object, target_name, forward=forward, backward=backward)
         return self
 
-    def set_label(self, label: str) -> None:
+    def set_label(self, label: Optional[str]) -> None:
         """Set the label of this element.
 
         :param label: The new label.
         """
         self.label = label
 
-    def _handle_label_change(self, label: str) -> None:
+    def _handle_label_change(self, label: Optional[str]) -> None:
         """Called when the label of this element changes.
 
         :param label: The new label.
         """
-        self._props['label'] = label
+        if label is None:
+            del self._props['label']
+        else:
+            self._props['label'] = label
         self.update()

@@ -5,8 +5,8 @@ from typing import Any, Callable, Dict, Iterator, List, Literal, Optional, Union
 from ..events import GenericEventArguments, Handler, ValueChangeEventArguments
 from .choice_element import ChoiceElement
 from .mixins.disableable_element import DisableableElement
-from .mixins.validation_element import ValidationDict, ValidationElement, ValidationFunction
 from .mixins.label_element import LabelElement
+from .mixins.validation_element import ValidationDict, ValidationElement, ValidationFunction
 
 
 class Select(LabelElement, ValidationElement, ChoiceElement, DisableableElement, component='select.js'):
@@ -62,8 +62,6 @@ class Select(LabelElement, ValidationElement, ChoiceElement, DisableableElement,
             else:
                 value = value[:]  # NOTE: avoid modifying the original list which could be the list of options (#3014)
         super().__init__(label=label, options=options, value=value, on_change=on_change, validation=validation)
-        if label is not None:
-            self._props['label'] = label
         if isinstance(key_generator, Generator):
             next(key_generator)  # prime the key generator, prepare it to receive the first value
         self.key_generator = key_generator
