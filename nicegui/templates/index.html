@@ -36,7 +36,7 @@
     </script>
     {{ body_html | safe }}
 
-    <div id="app"></div>
+    <div id="app">{{ results_ssr | safe }}</div>
     <div id="popup" aria-hidden="true">
       <span>{{ translations.connection_lost }}</span>
       <span>{{ translations.trying_to_reconnect }}</span>
@@ -49,6 +49,7 @@
         extraHeaders: {{ socket_io_js_extra_headers | safe }},
         transports: {{ socket_io_js_transports | safe }},
         quasarConfig: {{ quasar_config | safe }},
+        isSSR: {% if results_ssr %}true{% else %}false{% endif %},
       });
 
       {{ js_imports | safe }}
