@@ -62,8 +62,8 @@ Client.auto_index_client = Client(page('/'), request=None).__enter__()  # pylint
 
 
 @app.get('/')
-def _get_index(request: Request) -> Response:
-    return Client.auto_index_client.build_response(request)
+async def _get_index(request: Request) -> Response:
+    return await Client.auto_index_client.build_response(request)
 
 
 @app.get(f'/_nicegui/{__version__}' + '/libraries/{key:path}')
@@ -147,7 +147,7 @@ async def _exception_handler_404(request: Request, exception: Exception) -> Resp
     log.warning(f'{request.url} not found')
     with Client(page(''), request=request) as client:
         error_content(404, exception)
-    return client.build_response(request, 404)
+    return await client.build_response(request, 404)
 
 
 @app.exception_handler(Exception)
@@ -155,7 +155,7 @@ async def _exception_handler_500(request: Request, exception: Exception) -> Resp
     log.exception(exception)
     with Client(page(''), request=request) as client:
         error_content(500, exception)
-    return client.build_response(request, 500)
+    return await client.build_response(request, 500)
 
 
 @sio.on('handshake')
