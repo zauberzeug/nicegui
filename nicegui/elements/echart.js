@@ -54,13 +54,17 @@ export default {
       this.chart.on(event, (e) => this.$emit(`chart:${event}`, e));
     }
 
-    // Prevent interruption of chart animations due to resize operations.
-    // It is recommended to register the callbacks for such an event before setOption.
-    const createResizeObserver = () => {
+    if (this.direct_attach_resizeobserver) {
       new ResizeObserver(this.chart.resize).observe(this.$el);
-      this.chart.off("finished", createResizeObserver);
-    };
-    this.chart.on("finished", createResizeObserver);
+    } else {
+      // Prevent interruption of chart animations due to resize operations.
+      // It is recommended to register the callbacks for such an event before setOption.
+      const createResizeObserver = () => {
+        new ResizeObserver(this.chart.resize).observe(this.$el);
+        this.chart.off("finished", createResizeObserver);
+      };
+      this.chart.on("finished", createResizeObserver);
+    }
 
     this.update_chart();
   },
@@ -91,5 +95,6 @@ export default {
     options: Object,
     enable_3d: Boolean,
     renderer: String,
+    direct_attach_resizeobserver: Boolean,
   },
 };

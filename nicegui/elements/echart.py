@@ -41,6 +41,10 @@ class EChart(Element,
         """
         super().__init__()
         self._props['options'] = options
+        if 'animationDuration' in options:
+            self._props['direct_attach_resizeobserver'] = False
+        else:
+            self._props['direct_attach_resizeobserver'] = True
         self._props['enable_3d'] = enable_3d or any('3D' in key for key in options)
         self._props['renderer'] = renderer
         self._update_method = 'update_chart'
