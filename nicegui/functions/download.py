@@ -22,12 +22,13 @@ class Download:
         :param filename: name of the file to download (default: name of the file on the server)
         :param media_type: media type of the file to download (default: "")
         """
-        if not isinstance(src, bytes):
-            if helpers.is_file(src):
-                src = core.app.add_static_file(local_file=src, single_use=True)
-            else:
-                src = str(src)
-        context.client.download(src, filename, media_type)
+        if isinstance(src, bytes):
+            self.content(src, filename, media_type)
+        elif helpers.is_file(src):
+            self.file(src, filename, media_type)
+        else:
+            assert isinstance(src, str)
+            self.from_url(src, filename, media_type)
 
     def file(self, path: Union[str, Path], filename: Optional[str] = None, media_type: str = '') -> None:
         """Download file from local path
