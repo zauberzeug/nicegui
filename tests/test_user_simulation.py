@@ -454,7 +454,10 @@ async def test_download_file(user: User, data: Union[str, bytes]) -> None:
 
     @ui.page('/')
     def page():
-        ui.button('Download', on_click=lambda: ui.download(data))
+        if isinstance(data, str):
+            ui.button('Download', on_click=lambda: ui.download.file(data))
+        else:
+            ui.button('Download', on_click=lambda: ui.download.content(data))
 
     await user.open('/')
     assert len(user.download.http_responses) == 0
