@@ -3,7 +3,7 @@ from __future__ import annotations
 import asyncio
 import copyreg
 import dataclasses
-import multiprocessing
+import threading
 import time
 import weakref
 from collections import defaultdict
@@ -36,7 +36,7 @@ MAX_PROPAGATION_TIME = 0.01
 
 bindings: DefaultDict[Tuple[int, str], List] = defaultdict(list)
 bindable_properties: Dict[Tuple[int, str], weakref.finalize] = {}
-bindable_properties_lock = multiprocessing.Lock()
+bindable_properties_lock = threading.Lock()
 active_links: List[Tuple[Any, str, Any, str, Callable[[Any], Any]]] = []
 
 TC = TypeVar('TC', bound=type)
