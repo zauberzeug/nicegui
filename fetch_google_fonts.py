@@ -33,10 +33,17 @@ for font_url in re.findall(r'url\((.*?)\)', css):
     filepath = FONTS_DIRECTORY.joinpath(font_url.split('/')[-1])
     filepath = filepath.with_stem(hashlib.sha256(filepath.stem.encode()).hexdigest()[:16])
     if filepath.exists():
-        raise RuntimeError(f'Duplicate filepath: {filepath}')
+        # check if the content is the same between the existing file and the new one
+        with open(filepath, 'rb') as existing_file:
+            existing_content = existing_file.read()
+        if existing_content != font:
+            raise RuntimeError(f'Content mismatch for {filepath}.')
     filepath.write_bytes(font)
     css = css.replace(font_url, f'fonts/{filepath.name}')
 css = css.replace('https://fonts.gstatic.com/s/materialicons/v140', 'fonts')
 css = css.replace('https://fonts.gstatic.com/s/roboto/v30', 'fonts')
 css = css.replace("'", '"')
+# for each @font-face block, add font-display: block
+css = re.sub(r'@font-face\s*{\s*font-family:\s*"Material',
+             r'@font-face {\n  font-display: block;\n  font-family: "Material', css)
 Path('nicegui/static/fonts.css').write_text(css, encoding='utf-8')
