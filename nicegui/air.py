@@ -27,7 +27,7 @@ RELAY_HOST = 'https://on-air.nicegui.io/'
 @dataclass(**KWONLY_SLOTS)
 class Stream:
     data: AsyncIterator[bytes]
-    response: httpx.Response
+    response: Optional[httpx.Response] = None
 
 
 class Air:
@@ -124,7 +124,8 @@ class Air:
 
         @self.relay.on('close-stream')
         async def _handle_close_stream(stream_id: str) -> None:
-            await self.streams[stream_id].response.aclose()
+            if self.streams[stream_id].response:
+                await self.streams[stream_id].response.aclose()
             del self.streams[stream_id]
 
         @self.relay.on('ready')
@@ -243,14 +244,39 @@ class Air:
         if self.relay.connected:
             await self.relay.disconnect()
         for stream in self.streams.values():
-            await stream.response.aclose()
+            if stream.response:
+                await stream.response.aclose()
         self.streams.clear()
         self.log.debug('Disconnected.')
 
     async def emit(self, message_type: str, data: Dict[str, Any], room: str) -> None:
         """Emit a message to the NiceGUI On Air server."""
-        if self.relay.connected:
-            await self.relay.emit('forward', {'event': message_type, 'data': data, 'room': room})
+        if not self.relay.connected:
+            return
+
+        # Check if data has a 'src' key with potentially large content
+        if isinstance(data, dict) and 'src' in data and isinstance(data['src'], (str, bytes)):
+            src = data['src']
+            if isinstance(src, str):
+                src = src.encode()
+
+            # Check if src size exceeds threshold
+            total_size = len(src)
+            chunk_size = 512 * 1024  # 512 KB packs for efficient bulk transfer
+
+            if total_size > chunk_size:
+                # Create a stream for the large content
+                async def chunk_iterator() -> AsyncIterator[bytes]:
+                    for i in range(0, total_size, chunk_size):
+                        yield src[i:i + chunk_size]
+
+                stream_id = str(uuid4())
+                self.streams[stream_id] = Stream(data=chunk_iterator())
+
+                del data['src']
+                data['src_stream_id'] = stream_id
+
+        await self.relay.emit('forward', {'event': message_type, 'data': data, 'room': room})
 
     @staticmethod
     def is_air_target(target_id: str) -> bool:
