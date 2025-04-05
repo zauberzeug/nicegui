@@ -40,9 +40,13 @@
     {{ body_html | safe }}
 
     <div id="app"></div>
-    <div id="popup" aria-hidden="true">
+    <div id="popup" class="nicegui-error-popup" aria-hidden="true">
       <span>{{ translations.connection_lost }}</span>
       <span>{{ translations.trying_to_reconnect }}</span>
+    </div>
+    <div id="popup_toolongmessage" class="nicegui-error-popup" aria-hidden="true">
+      <span>Message too long</span>
+      <span>The message is longer than what the server can handle.</span>
     </div>
     <script type="module">
       const app = createApp(parseElements(String.raw`{{ elements | safe }}`), {
