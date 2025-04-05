@@ -75,7 +75,8 @@ def styling_demo():
                     with ui.row().classes('items-center gap-0 w-full'):
                         def handle_props(e: events.ValueChangeEventArguments):
                             element.props.clear()
-                            element.props['label'] = 'Button'
+                            if select_element.options[select_element.value] not in ["ui.switch", "ui.checkbox"]:
+                                element.props['label'] = 'element'
                             element.props['color'] = 'primary'
                             try:
                                 element.props(e.value)
