@@ -45,8 +45,8 @@
       <span>{{ translations.trying_to_reconnect }}</span>
     </div>
     <div id="popup_toolongmessage" class="nicegui-error-popup" aria-hidden="true">
-      <span>Message too long</span>
-      <span>The message is longer than what the server can handle.</span>
+      <span>{{ translations.message_too_long }}</span>
+      <span>{{ translations.message_too_long_body }}</span>
     </div>
     <script type="module">
       const app = createApp(parseElements(String.raw`{{ elements | safe }}`), {
