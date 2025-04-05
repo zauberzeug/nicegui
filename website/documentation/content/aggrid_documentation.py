@@ -42,36 +42,39 @@ def main_demo() -> None:
     See the [AG Grid documentation](https://www.ag-grid.com/javascript-data-grid/row-selection/#example-single-row-selection) for more information.
 ''')
 def aggrid_with_selectable_rows():
-    grid = ui.aggrid({
-        'columnDefs': [
-            {'headerName': 'Name', 'field': 'name', 'checkboxSelection': True},
-            {'headerName': 'Age', 'field': 'age'},
-        ],
-        'rowData': [
-            {'name': 'Alice', 'age': 18},
-            {'name': 'Bob', 'age': 21},
-            {'name': 'Carol', 'age': 42},
-        ],
-        'rowSelection': 'multiple',
-    }).classes('max-h-40')
+    # @ui.page('/')
+    def page():
+        grid = ui.aggrid({
+            'columnDefs': [
+                {'headerName': 'Name', 'field': 'name', 'checkboxSelection': True},
+                {'headerName': 'Age', 'field': 'age'},
+            ],
+            'rowData': [
+                {'name': 'Alice', 'age': 18},
+                {'name': 'Bob', 'age': 21},
+                {'name': 'Carol', 'age': 42},
+            ],
+            'rowSelection': 'multiple',
+        }).classes('max-h-40')
 
-    async def output_selected_rows():
-        rows = await grid.get_selected_rows()
-        if rows:
-            for row in rows:
+        async def output_selected_rows():
+            rows = await grid.get_selected_rows()
+            if rows:
+                for row in rows:
+                    ui.notify(f"{row['name']}, {row['age']}")
+            else:
+                ui.notify('No rows selected.')
+
+        async def output_selected_row():
+            row = await grid.get_selected_row()
+            if row:
                 ui.notify(f"{row['name']}, {row['age']}")
-        else:
-            ui.notify('No rows selected.')
+            else:
+                ui.notify('No row selected!')
 
-    async def output_selected_row():
-        row = await grid.get_selected_row()
-        if row:
-            ui.notify(f"{row['name']}, {row['age']}")
-        else:
-            ui.notify('No row selected!')
-
-    ui.button('Output selected rows', on_click=output_selected_rows)
-    ui.button('Output selected row', on_click=output_selected_row)
+        ui.button('Output selected rows', on_click=output_selected_rows)
+        ui.button('Output selected row', on_click=output_selected_row)
+    page()  # HIDE
 
 
 @doc.demo('Filter Rows using Mini Filters', '''
