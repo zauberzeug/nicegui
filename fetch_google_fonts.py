@@ -43,4 +43,7 @@ for font_url in re.findall(r'url\((.*?)\)', css):
 css = css.replace('https://fonts.gstatic.com/s/materialicons/v140', 'fonts')
 css = css.replace('https://fonts.gstatic.com/s/roboto/v30', 'fonts')
 css = css.replace("'", '"')
+# for each @font-face block, add font-display: block
+css = re.sub(r'@font-face\s*{\s*font-family:\s*"Material',
+             r'@font-face {\n  font-display: block;\n  font-family: "Material', css)
 Path('nicegui/static/fonts.css').write_text(css, encoding='utf-8')
