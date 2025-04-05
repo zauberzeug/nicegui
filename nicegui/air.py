@@ -78,10 +78,9 @@ class Air:
                 'content': compressed,
             }
 
-            # NOTE: chunk large responses to stay within the SocketIO limit
-            if total_size > 1_000_000:
+            chunk_size = 512 * 1024  # 512 KB packs for efficient bulk transfer
+            if total_size > chunk_size:
                 async def chunk_iterator() -> AsyncIterator[bytes]:
-                    chunk_size = 512 * 1024
                     for i in range(0, total_size, chunk_size):
                         yield compressed[i:i + chunk_size]
                 stream_id = str(uuid4())
@@ -96,7 +95,7 @@ class Air:
         async def _handle_range_request(data: Dict[str, Any]) -> Dict[str, Any]:
             headers: Dict[str, Any] = data['headers']
             url = next(iter(u for u in core.app.urls if self.remote_url != u)) + data['path']
-            data['params']['nicegui_chunk_size'] = 1024
+            data['params']['nicegui_chunk_size'] = 1024 * 64  # 64 KB packs for smooth streaming
             request = self.client.build_request(
                 data['method'],
                 url,
