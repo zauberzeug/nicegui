@@ -245,6 +245,23 @@ SUPPORTED_THEMES = Literal[
 ]
 
 
+def get_code_units_length(text: str) -> int:
+    """Calculate the length of a string in code units (UTF-16)."""
+    return len(text.encode('utf-16le')) // 2
+
+
+def get_first_n_characters_utf16(text: str, n: int) -> str:  # basically doc[:n] for UTF-16
+    """Get the first n characters of a string, considering UTF-16 encoding."""
+    code_units = text.encode('utf-16le')
+    return code_units[:2*n].decode('utf-16le', errors='ignore')
+
+
+def rest_of_string_from_n_utf16(text: str, n: int) -> str:  # basically doc[n:] for UTF-16
+    """Get the rest of the string from the nth character, considering UTF-16 encoding."""
+    code_units = text.encode('utf-16le')
+    return code_units[2*n:].decode('utf-16le', errors='ignore')
+
+
 class CodeMirror(ValueElement, DisableableElement, component='codemirror.js', default_classes='nicegui-codemirror'):
     VALUE_PROP = 'value'
     LOOPBACK = None
@@ -359,7 +376,7 @@ class _ChangeSet:
 
     def apply(self, doc: str) -> str:
         """Apply the changes to a document, returning the modified document."""
-        if self.length() != len(doc):
+        if self.length() != get_code_units_length(doc):
             raise ValueError('Cannot apply change set to a document with the wrong length')
         return _iter_changes(self, doc, _replacement_func, individual=False)
 
@@ -403,7 +420,7 @@ def _iter_changes(
 
 
 def _replace_range(doc: str, from_: int, to: int, new: str) -> str:
-    return doc[:from_] + new + doc[to:]
+    return get_first_n_characters_utf16(doc, from_) + new + rest_of_string_from_n_utf16(doc, to)
 
 
 def _replacement_func(doc: str, from_a: int, to_a: int, from_b: int, _to_b: int, text: str) -> str:
