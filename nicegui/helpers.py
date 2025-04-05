@@ -49,9 +49,41 @@ def is_file(path: Optional[Union[str, Path]]) -> bool:
         return False
 
 
+def hash_file(path: Path, digestobj: Optional["hashlib._Hash"] = None) -> "hashlib._Hash":
+    """Hash the given file using same algorithm as cpython/Lib/hashlib.py"""
+    buf = bytearray(8192)
+    view = memoryview(buf)
+    with path.open('rb') as file:
+        while size := file.readinto(view):
+            digestobj.update(view[:size])
+    return digestobj
+
+
 def hash_file_path(path: Path) -> str:
     """Hash the given path."""
     return hashlib.sha256(path.as_posix().encode()).hexdigest()[:32]
+
+
+def hash_file_path_and_contents(path: Path) -> str:
+    """Hash the given path and file content(s)."""
+
+    hasher = hashlib.sha256()
+    nicegui_base = Path(__file__).parent
+    try:
+        path_shortened = path.relative_to(nicegui_base)
+    except ValueError:
+        path_shortened = path
+
+    hasher.update(path_shortened.parent.as_posix().encode())
+    if path.is_file():
+        hasher = hash_file(path, hasher)
+    else:
+        for p in path.rglob('*'):
+            if p.is_file():
+                print("*", end='', flush=True)
+                hasher = hash_file(p, hasher)
+
+    return hasher.hexdigest()[:32]
 
 
 def is_port_open(host: str, port: int) -> bool:
