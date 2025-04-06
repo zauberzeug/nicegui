@@ -279,7 +279,7 @@ class Scene(Element,
         :param predicate: function which returns `True` for objects which should be deleted
         """
         for obj in list(self.objects.values()):
-            if predicate(obj):
+            if predicate(obj) and obj.id in self.objects:  # NOTE: object might have been deleted already by its parent
                 obj.delete()
 
     def clear(self) -> None:
