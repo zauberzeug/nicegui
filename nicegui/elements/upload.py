@@ -17,6 +17,7 @@ class Upload(LabelElement, DisableableElement, component='upload.js'):
                  max_file_size: Optional[int] = None,
                  max_total_size: Optional[int] = None,
                  max_files: Optional[int] = None,
+                 on_begin_upload: Optional[Handler[UiEventArguments]] = None,
                  on_upload: Optional[Handler[UploadEventArguments]] = None,
                  on_multi_upload: Optional[Handler[MultiUploadEventArguments]] = None,
                  on_rejected: Optional[Handler[UiEventArguments]] = None,
@@ -27,13 +28,24 @@ class Upload(LabelElement, DisableableElement, component='upload.js'):
 
         Based on Quasar's `QUploader <https://quasar.dev/vue-components/uploader>`_ component.
 
+        Upload event handlers are called in the following order:
+
+        1. ``on_begin_upload``: The client begins uploading one or more files to the server.
+        2. ``on_upload``: The upload of an individual file is complete.
+        3. ``on_multi_upload``: The upload of all selected files is complete.
+
+        The following event handler is already called during the file selection process:
+
+        - ``on_rejected``: One or more files have been rejected.
+
         :param multiple: allow uploading multiple files at once (default: `False`)
         :param max_file_size: maximum file size in bytes (default: `0`)
         :param max_total_size: maximum total size of all files in bytes (default: `0`)
         :param max_files: maximum number of files (default: `0`)
+        :param on_begin_upload: callback to execute when upload begins  (*added in version 2.14.0*)
         :param on_upload: callback to execute for each uploaded file
         :param on_multi_upload: callback to execute after multiple files have been uploaded
-        :param on_rejected: callback to execute for each rejected file
+        :param on_rejected: callback to execute when one or more files have been rejected during file selection
         :param label: label for the uploader (default: `''`)
         :param auto_upload: automatically upload files when they are selected (default: `False`)
         """
@@ -54,11 +66,14 @@ class Upload(LabelElement, DisableableElement, component='upload.js'):
         if multiple and on_multi_upload:
             self._props['batch'] = True
 
+        self._begin_upload_handlers = [on_begin_upload] if on_begin_upload else []
         self._upload_handlers = [on_upload] if on_upload else []
         self._multi_upload_handlers = [on_multi_upload] if on_multi_upload else []
 
         @app.post(self._props['url'])
         async def upload_route(request: Request) -> Dict[str, str]:
+            for begin_upload_handler in self._begin_upload_handlers:
+                handle_event(begin_upload_handler, UiEventArguments(sender=self, client=self.client))
             form = await request.form()
             uploads = [cast(UploadFile, data) for data in form.values()]
             self.handle_uploads(uploads)
@@ -91,6 +106,11 @@ class Upload(LabelElement, DisableableElement, component='upload.js'):
         for multi_upload_handler in self._multi_upload_handlers:
             handle_event(multi_upload_handler, multi_upload_args)
 
+    def on_begin_upload(self, callback: Handler[UiEventArguments]) -> Self:
+        """Add a callback to be invoked when the upload begins."""
+        self._begin_upload_handlers.append(callback)
+        return self
+
     def on_upload(self, callback: Handler[UploadEventArguments]) -> Self:
         """Add a callback to be invoked when a file is uploaded."""
         self._upload_handlers.append(callback)
@@ -102,7 +122,7 @@ class Upload(LabelElement, DisableableElement, component='upload.js'):
         return self
 
     def on_rejected(self, callback: Handler[UiEventArguments]) -> Self:
-        """Add a callback to be invoked when a file is rejected."""
+        """Add a callback to be invoked when one or more files have been rejected during file selection."""
         self.on('rejected', lambda: handle_event(callback, UiEventArguments(sender=self, client=self.client)), args=[])
         return self
 

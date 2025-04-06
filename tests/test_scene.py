@@ -139,12 +139,13 @@ def test_object_creation_via_attribute(screen: Screen):
 def test_clearing_scene(screen: Screen):
     with ui.scene() as scene:
         scene.box().with_name('box')
-        scene.box().with_name('box2')
+        with scene.group():  # see https://github.com/zauberzeug/nicegui/issues/4560
+            scene.box().with_name('box2')
     ui.button('Clear', on_click=scene.clear)
 
     screen.open('/')
     screen.wait(0.5)
-    assert len(scene.objects) == 2
+    assert len(scene.objects) == 3
     screen.click('Clear')
     screen.wait(0.5)
     assert len(scene.objects) == 0
