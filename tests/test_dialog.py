@@ -32,10 +32,12 @@ def test_await_dialog(screen: Screen):
 
     screen.open('/')
     screen.click('Open')
+    screen.wait(0.2)
     screen.click('Yes')
     screen.should_contain('Result: Yes')
 
     screen.click('Open')
+    screen.wait(0.2)
     screen.click('No')
     screen.should_contain('Result: No')
 
