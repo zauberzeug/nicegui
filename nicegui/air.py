@@ -31,6 +31,9 @@ class Stream:
 
 
 class Air:
+    # Chunk size constants
+    HTTP_CHUNK_SIZE = 512 * 1024  # 512 KB for efficient bulk transfer
+    STREAM_CHUNK_SIZE = 64 * 1024  # 64 KB for smooth streaming
 
     def __init__(self, token: str) -> None:
         import httpx  # pylint: disable=import-outside-toplevel
@@ -78,13 +81,8 @@ class Air:
                 'content': compressed,
             }
 
-            chunk_size = 512 * 1024  # 512 KB packs for efficient bulk transfer
-            if total_size > chunk_size:
-                async def chunk_iterator() -> AsyncIterator[bytes]:
-                    for i in range(0, total_size, chunk_size):
-                        yield compressed[i:i + chunk_size]
-                stream_id = str(uuid4())
-                self.streams[stream_id] = Stream(data=chunk_iterator(), response=response)
+            if total_size > self.HTTP_CHUNK_SIZE:
+                stream_id = self._create_chunked_stream(compressed, self.HTTP_CHUNK_SIZE, response)
                 result['stream_id'] = stream_id
                 result['total_size'] = total_size
                 del result['content']
@@ -95,7 +93,7 @@ class Air:
         async def _handle_range_request(data: Dict[str, Any]) -> Dict[str, Any]:
             headers: Dict[str, Any] = data['headers']
             url = next(iter(u for u in core.app.urls if self.remote_url != u)) + data['path']
-            data['params']['nicegui_chunk_size'] = 1024 * 64  # 64 KB packs for smooth streaming
+            data['params']['nicegui_chunk_size'] = self.STREAM_CHUNK_SIZE
             request = self.client.build_request(
                 data['method'],
                 url,
@@ -209,6 +207,16 @@ class Air:
             print('Sorry, you have reached the time limit of this NiceGUI On Air preview.', flush=True)
             await self.connect()
 
+    def _create_chunked_stream(self, data: bytes, chunk_size: int, response: Optional[httpx.Response] = None) -> str:
+        """Create a chunked stream for large data."""
+        async def chunk_iterator() -> AsyncIterator[bytes]:
+            for i in range(0, len(data), chunk_size):
+                yield data[i:i + chunk_size]
+
+        stream_id = str(uuid4())
+        self.streams[stream_id] = Stream(data=chunk_iterator(), response=response)
+        return stream_id
+
     async def connect(self) -> None:
         """Connect to the NiceGUI On Air server."""
         if self.connecting:
@@ -258,20 +266,10 @@ class Air:
         # Check if data has a 'src' key with potentially large content
         if isinstance(data, dict) and 'src' in data and isinstance(data['src'], (bytes)):
             src = data['src']
-
-            # Check if src size exceeds threshold
             total_size = len(src)
-            chunk_size = 512 * 1024  # 512 KB packs for efficient bulk transfer
 
-            if total_size > chunk_size:
-                # Create a stream for the large content
-                async def chunk_iterator() -> AsyncIterator[bytes]:
-                    for i in range(0, total_size, chunk_size):
-                        yield src[i:i + chunk_size]
-
-                stream_id = str(uuid4())
-                self.streams[stream_id] = Stream(data=chunk_iterator())
-
+            if total_size > self.HTTP_CHUNK_SIZE:
+                stream_id = self._create_chunked_stream(src, self.HTTP_CHUNK_SIZE)
                 del data['src']
                 data['src_stream_id'] = stream_id
 
