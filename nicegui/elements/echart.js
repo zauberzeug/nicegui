@@ -54,13 +54,10 @@ export default {
       this.chart.on(event, (e) => this.$emit(`chart:${event}`, e));
     }
 
-    // Prevent interruption of chart animations due to resize operations.
-    // It is recommended to register the callbacks for such an event before setOption.
-    const createResizeObserver = () => {
-      new ResizeObserver(this.chart.resize).observe(this.$el);
-      this.chart.off("finished", createResizeObserver);
-    };
-    this.chart.on("finished", createResizeObserver);
+    this.initialResizeTriggered = false;
+    const initialHeight = this.$el.offsetHeight;
+    const initialWidth = this.$el.offsetWidth;
+    const resizeObserver = new ResizeObserver(this.resizeChart).observe(this.$el);
 
     this.update_chart();
   },
@@ -71,6 +68,16 @@ export default {
     this.chart.dispose();
   },
   methods: {
+    resizeChart() {
+      if (!this.initialResizeTriggered) {
+        this.initialResizeTriggered = true;
+        if (this.$el.offsetWidth === initialWidth && this.$el.offsetHeight === initialHeight) {
+          return;
+        }
+      } else {
+        this.chart.resize();
+      }
+    },
     update_chart() {
       if (!this.chart) {
         setTimeout(this.update_chart, 10);
