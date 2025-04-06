@@ -141,7 +141,8 @@ class Client:
             'next_message_id': self.outbox.next_message_id,
             'path': request.url.path,
         }
-        vue_html, vue_styles, vue_scripts, imports, js_imports = generate_resources(prefix, self.elements.values())
+        vue_html, vue_styles, vue_scripts, imports, js_imports, js_imports_urls = \
+            generate_resources(prefix, self.elements.values())
         return templates.TemplateResponse(
             request=request,
             name='index.html',
@@ -158,6 +159,7 @@ class Client:
                 'vue_scripts': '\n'.join(vue_scripts),
                 'imports': json.dumps(imports),
                 'js_imports': '\n'.join(js_imports),
+                'js_imports_urls': js_imports_urls,
                 'quasar_config': json.dumps(core.app.config.quasar_config),
                 'title': self.resolve_title(),
                 'viewport': self.page.resolve_viewport(),

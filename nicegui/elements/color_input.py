@@ -4,10 +4,11 @@ from ..events import Handler, ValueChangeEventArguments
 from .button import Button as button
 from .color_picker import ColorPicker as color_picker
 from .mixins.disableable_element import DisableableElement
+from .mixins.label_element import LabelElement
 from .mixins.value_element import ValueElement
 
 
-class ColorInput(ValueElement, DisableableElement):
+class ColorInput(LabelElement, ValueElement, DisableableElement):
     LOOPBACK = False
 
     def __init__(self,
@@ -27,9 +28,7 @@ class ColorInput(ValueElement, DisableableElement):
         :param on_change: callback to execute when the value changes
         :param preview: change button background to selected color (default: False)
         """
-        super().__init__(tag='q-input', value=value, on_value_change=on_change)
-        if label is not None:
-            self._props['label'] = label
+        super().__init__(tag='q-input', label=label, value=value, on_value_change=on_change)
         if placeholder is not None:
             self._props['placeholder'] = placeholder
 

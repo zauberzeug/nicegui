@@ -38,6 +38,7 @@ def prepare_simulated_auto_index_client(request):
 @pytest.fixture
 async def user(nicegui_reset_globals,  # noqa: F811, pylint: disable=unused-argument
                prepare_simulated_auto_index_client,  # pylint: disable=unused-argument
+               caplog: pytest.LogCaptureFixture,
                request: pytest.FixtureRequest,
                ) -> AsyncGenerator[User, None]:
     """Create a new user fixture."""
@@ -48,6 +49,9 @@ async def user(nicegui_reset_globals,  # noqa: F811, pylint: disable=unused-argu
     ui.navigate = Navigate()
     ui.notify = notify
     ui.download = download
+    logs = caplog.get_records('call')
+    if logs:
+        pytest.fail('There were unexpected logs.', pytrace=False)
 
 
 @pytest.fixture
