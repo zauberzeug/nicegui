@@ -124,8 +124,9 @@ class Air:
 
         @self.relay.on('close-stream')
         async def _handle_close_stream(stream_id: str) -> None:
-            if self.streams[stream_id].response:
-                await self.streams[stream_id].response.aclose()
+            response = self.streams[stream_id].response
+            if response:
+                await response.aclose()
             del self.streams[stream_id]
 
         @self.relay.on('ready')
@@ -255,10 +256,8 @@ class Air:
             return
 
         # Check if data has a 'src' key with potentially large content
-        if isinstance(data, dict) and 'src' in data and isinstance(data['src'], (str, bytes)):
+        if isinstance(data, dict) and 'src' in data and isinstance(data['src'], (bytes)):
             src = data['src']
-            if isinstance(src, str):
-                src = src.encode()
 
             # Check if src size exceeds threshold
             total_size = len(src)
