@@ -262,17 +262,13 @@ class Air:
         """Emit a message to the NiceGUI On Air server."""
         if not self.relay.connected:
             return
-
-        # Check if data has a 'src' key with potentially large content
-        if isinstance(data, dict) and 'src' in data and isinstance(data['src'], (bytes)):
+        if isinstance(data, dict) and 'src' in data and isinstance(data['src'], bytes):
             src = data['src']
             total_size = len(src)
-
             if total_size > self.HTTP_CHUNK_SIZE:
                 stream_id = self._create_chunked_stream(src, self.HTTP_CHUNK_SIZE)
                 del data['src']
                 data['src_stream_id'] = stream_id
-
         await self.relay.emit('forward', {'event': message_type, 'data': data, 'room': room})
 
     @staticmethod
