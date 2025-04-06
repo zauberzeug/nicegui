@@ -2,10 +2,11 @@ from typing import Any, Optional, Union
 
 from ..events import GenericEventArguments, Handler, ValueChangeEventArguments
 from .mixins.disableable_element import DisableableElement
+from .mixins.label_element import LabelElement
 from .mixins.validation_element import ValidationDict, ValidationElement, ValidationFunction
 
 
-class Number(ValidationElement, DisableableElement):
+class Number(LabelElement, ValidationElement, DisableableElement):
     LOOPBACK = False
 
     def __init__(self,
@@ -46,10 +47,8 @@ class Number(ValidationElement, DisableableElement):
         :param validation: dictionary of validation rules or a callable that returns an optional error message (default: None for no validation)
         """
         self.format = format
-        super().__init__(tag='q-input', value=value, on_value_change=on_change, validation=validation)
+        super().__init__(tag='q-input', label=label, value=value, on_value_change=on_change, validation=validation)
         self._props['type'] = 'number'
-        if label is not None:
-            self._props['label'] = label
         if placeholder is not None:
             self._props['placeholder'] = placeholder
         if min is not None:

@@ -248,11 +248,46 @@ def multiple_users():
         ''')
 
 
+doc.text('Simulate JavasScript', '''
+    The `User` class has a `javascript_rules` dictionary to simulate JavaScript execution.
+    The key is a compiled regular expression and the value is a function that returns the JavaScript response.
+    The function will be called with the match object of the regular expression on the JavaScript command.
+
+    *Added in version 2.14.0*
+''')
+
+
+@doc.ui
+def simulate_javascript():
+    with ui.row().classes('gap-4 items-stretch'):
+        with python_window(classes='w-[500px]', title='some UI code'):
+            ui.markdown('''
+                ```python
+                @ui.page('/')
+                async def page():
+                    await context.client.connected()
+                    date = await ui.run_javascript('Math.sqrt(1764)')
+                    ui.label(date)
+                ```
+            ''')
+
+        with python_window(classes='w-[500px]', title='user assertions'):
+            ui.markdown('''
+                ```python
+                user.javascript_rules[re.compile(r'Math.sqrt\\((\\d+)\\)')] = \\
+                    lambda match: int(match.group(1))**0.5
+                await user.open('/')
+                await user.should_see('42')
+                ```
+            ''')
+
+
 doc.text('Comparison with the screen fixture', '''
     By cutting out the browser, test execution becomes much faster than the [`screen` fixture](/documentation/screen).
-    Of course, some features like screenshots or browser-specific behavior are not available.
     See our [pytests example](https://github.com/zauberzeug/nicegui/tree/main/examples/pytests)
     which implements the same tests with both fixtures.
+    Of course, some features like screenshots or browser-specific behavior are not available,
+    but in most cases the speed of the `user` fixture makes it the first choice.
 ''')
 
 doc.reference(User, title='User Reference')
