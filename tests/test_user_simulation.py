@@ -1,4 +1,5 @@
 import csv
+import re
 from io import BytesIO
 from typing import Callable, Dict, Type, Union
 
@@ -540,3 +541,27 @@ async def test_typing_to_disabled_element(user: User) -> None:
     assert target.value == initial_value
     await user.should_see(initial_value)
     await user.should_not_see(given_new_input)
+
+
+async def test_drawer(user: User):
+    @ui.page('/')
+    def test_page():
+        with ui.left_drawer() as drawer:
+            ui.label('Hello')
+        ui.label().bind_text_from(drawer, 'value', lambda v: f'Drawer: {v}')
+
+    await user.open('/')
+    await user.should_see('Hello')
+    await user.should_see('Drawer: True')
+
+
+async def test_run_javascript(user: User):
+    @ui.page('/')
+    async def page():
+        await ui.context.client.connected()
+        date = await ui.run_javascript('Math.sqrt(1764)')
+        ui.label(date)
+
+    user.javascript_rules[re.compile(r'Math.sqrt\((\d+)\)')] = lambda match: int(match.group(1))**0.5
+    await user.open('/')
+    await user.should_see('42')

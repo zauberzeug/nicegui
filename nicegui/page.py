@@ -134,10 +134,13 @@ class page:
                                 error_content(500, exception)
                                 return error_client.build_response(request)
                 task = background_tasks.create(wait_for_result())
+                task_wait_for_connection = background_tasks.create(
+                    client._waiting_for_connection.wait(),  # pylint: disable=protected-access
+                )
                 try:
                     await asyncio.wait([
                         task,
-                        asyncio.create_task(client._waiting_for_connection.wait()),  # pylint: disable=protected-access
+                        task_wait_for_connection,
                     ], timeout=self.response_timeout, return_when=asyncio.FIRST_COMPLETED)
                 except asyncio.TimeoutError as e:
                     raise TimeoutError(f'Response not ready after {self.response_timeout} seconds') from e
