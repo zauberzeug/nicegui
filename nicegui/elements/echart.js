@@ -74,9 +74,8 @@ export default {
         if (this.$el.offsetWidth === initialWidth && this.$el.offsetHeight === initialHeight) {
           return;
         }
-      } else {
-        this.chart.resize();
       }
+      this.chart.resize();
     },
     update_chart() {
       if (!this.chart) {
