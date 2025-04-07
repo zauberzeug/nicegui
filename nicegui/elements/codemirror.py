@@ -335,6 +335,10 @@ class CodeMirror(ValueElement, DisableableElement, component='codemirror.js', de
         new_value = changeset.apply(self.value)
         return new_value
 
+    def set_value(self, value: str) -> None:
+        """Set the value of the editor."""
+        self.client.run_javascript(f'getElement({self.id}).setEditorValue("{value}")')
+        super().set_value(value)
 
 # Below is a Python implementation of relevant parts of https://github.com/codemirror/state/blob/main/src/change.ts
 # to apply a ChangeSet to a text document.
