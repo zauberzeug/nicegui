@@ -337,7 +337,9 @@ class CodeMirror(ValueElement, DisableableElement, component='codemirror.js', de
 
     def set_value(self, value: str) -> None:
         """Set the value of the editor."""
-        self.client.run_javascript(f'getElement({self.id}).setEditorValue("{value}")')
+        target_id = self.client._temporary_socket_id or self.client.id
+        self.client.outbox.enqueue_message(
+            'run_javascript', {'code': f'getElement({self.id}).setEditorValue("{value}")'}, target_id)
         super().set_value(value)
 
 # Below is a Python implementation of relevant parts of https://github.com/codemirror/state/blob/main/src/change.ts
