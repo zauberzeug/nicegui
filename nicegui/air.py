@@ -178,7 +178,7 @@ class Air:
             if message == 'Connection error':
                 helpers.warn_once(self._host_unreachable_warning)
             else:
-                self.log.error(f'Connection error: {message}')
+                self.log.warning(f'Connection error: {message}')
 
         @self.relay.on('event')
         def _handle_event(data: Dict[str, Any]) -> None:
