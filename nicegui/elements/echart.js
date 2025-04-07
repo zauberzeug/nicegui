@@ -55,9 +55,9 @@ export default {
     }
 
     let initialResizeTriggered = false;
-    const initialHeight = this.$el.offsetHeight;
     const initialWidth = this.$el.offsetWidth;
-    new ResizeObserver(()=>{
+    const initialHeight = this.$el.offsetHeight;
+    new ResizeObserver(() => {
       if (!initialResizeTriggered) {
         initialResizeTriggered = true;
         if (this.$el.offsetWidth === initialWidth && this.$el.offsetHeight === initialHeight) {
