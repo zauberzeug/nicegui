@@ -54,12 +54,12 @@ export default {
       this.chart.on(event, (e) => this.$emit(`chart:${event}`, e));
     }
 
-    this.initialResizeTriggered = false;
+    let initialResizeTriggered = false;
     const initialHeight = this.$el.offsetHeight;
     const initialWidth = this.$el.offsetWidth;
     new ResizeObserver(()=>{
-      if (!this.initialResizeTriggered) {
-        this.initialResizeTriggered = true;
+      if (!initialResizeTriggered) {
+        initialResizeTriggered = true;
         if (this.$el.offsetWidth === initialWidth && this.$el.offsetHeight === initialHeight) {
           return;
         }
