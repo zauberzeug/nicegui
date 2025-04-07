@@ -57,7 +57,15 @@ export default {
     this.initialResizeTriggered = false;
     const initialHeight = this.$el.offsetHeight;
     const initialWidth = this.$el.offsetWidth;
-    const resizeObserver = new ResizeObserver(this.resizeChart).observe(this.$el);
+    new ResizeObserver(()=>{
+      if (!this.initialResizeTriggered) {
+        this.initialResizeTriggered = true;
+        if (this.$el.offsetWidth === initialWidth && this.$el.offsetHeight === initialHeight) {
+          return;
+        }
+      }
+      this.chart.resize();
+    }).observe(this.$el);
 
     this.update_chart();
   },
@@ -68,15 +76,6 @@ export default {
     this.chart.dispose();
   },
   methods: {
-    resizeChart() {
-      if (!this.initialResizeTriggered) {
-        this.initialResizeTriggered = true;
-        if (this.$el.offsetWidth === initialWidth && this.$el.offsetHeight === initialHeight) {
-          return;
-        }
-      }
-      this.chart.resize();
-    },
     update_chart() {
       if (!this.chart) {
         setTimeout(this.update_chart, 10);
