@@ -8,6 +8,7 @@ import time
 import webbrowser
 from pathlib import Path
 from typing import Any, Optional, Set, Tuple, Union
+import uuid
 
 from .logging import log
 
@@ -67,6 +68,14 @@ def hash_file_path(path: Path) -> str:
 def hash_file_path_and_contents(path: Path) -> str:
     """Hash the given path and file content(s)."""
 
+    cachebusting_strategy = os.environ.get('NICEGUI_CACHEBUSTING_STRATEGY', 'none')
+    if cachebusting_strategy not in {'none', 'uuid', 'hash', 'timestamp'}:
+        cachebusting_strategy = 'none'
+        warn_once(f'Invalid cachebusting strategy "{cachebusting_strategy}", using "none" instead.')
+
+    if cachebusting_strategy == 'uuid':
+        return str(uuid.uuid4()).replace('-', '')
+
     hasher = hashlib.sha256()
     nicegui_base = Path(__file__).parent
     try:
@@ -75,13 +84,19 @@ def hash_file_path_and_contents(path: Path) -> str:
         path_shortened = path
 
     hasher.update(path_shortened.parent.as_posix().encode())
+
+    if cachebusting_strategy == 'none':
+        return hasher.hexdigest()[:32]
+
     if path.is_file():
         hasher = hash_file(path, hasher)
     else:
         for p in path.rglob('*'):
             if p.is_file():
-                print("*", end='', flush=True)
-                hasher = hash_file(p, hasher)
+                if cachebusting_strategy == 'hash':
+                    hasher = hash_file(p, hasher)
+                else:
+                    hasher.update(int(p.stat().st_mtime).to_bytes(8, 'big'))
 
     return hasher.hexdigest()[:32]
 
