@@ -12,7 +12,7 @@ from uuid import uuid4
 import socketio
 import socketio.exceptions
 
-from . import background_tasks, core
+from . import background_tasks, core, helpers
 from .client import Client
 from .dataclasses import KWONLY_SLOTS
 from .elements.timer import Timer as timer
@@ -43,6 +43,7 @@ class Air:
         self.connecting = False
         self.streams: Dict[str, Stream] = {}
         self.remote_url: Optional[str] = None
+        self._host_unreachable_warning = f'On Air host "{RELAY_HOST}" is not reachable. Please check your internet connection.'
 
         timer(5, self.connect)  # ensure we stay connected
 
@@ -164,6 +165,8 @@ class Air:
         @self.relay.on('connect')
         async def _handle_connect() -> None:
             self.log.debug('connected.')
+            # NOTE: reset the warning so it can be shown again if connection breaks in the future
+            helpers._shown_warnings.discard(self._host_unreachable_warning)  # pylint: disable=protected-access
 
         @self.relay.on('disconnect')
         async def _handle_disconnect() -> None:
@@ -172,7 +175,10 @@ class Air:
         @self.relay.on('connect_error')
         async def _handle_connect_error(data) -> None:
             message = data.get('message', 'Unknown error') if isinstance(data, dict) else data
-            self.log.warning(f'Connection error: {message}')
+            if message == 'Connection error':
+                helpers.warn_once(self._host_unreachable_warning)
+            else:
+                self.log.warning(f'Connection error: {message}')
 
         @self.relay.on('event')
         def _handle_event(data: Dict[str, Any]) -> None:
