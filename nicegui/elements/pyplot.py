@@ -75,7 +75,7 @@ class Pyplot(Element, default_classes='nicegui-pyplot'):
         plt.close(self.fig)
 
 
-class Matplotlib(Element):
+class Matplotlib(Element, default_classes='nicegui-matplotlib'):
 
     def __init__(self, **kwargs: Any) -> None:
         """Matplotlib
