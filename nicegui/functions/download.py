@@ -27,7 +27,7 @@ class Download:
         elif helpers.is_file(src):
             self.file(src, filename, media_type)
         else:
-            assert isinstance(src, str)
+            src = str(src)
             self.from_url(src, filename, media_type)
 
     def file(self, path: Union[str, Path], filename: Optional[str] = None, media_type: str = '') -> None:
