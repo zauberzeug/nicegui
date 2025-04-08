@@ -137,4 +137,4 @@ def test_chart_theme(screen: Screen):
     }, theme=theme, renderer='svg')
 
     screen.open('/')
-    assert screen.find_by_tag('rect').value_of_css_property('fill') == 'rgb(254,248,239)'
+    assert screen.find_by_tag('rect').value_of_css_property('fill') == 'rgb(254, 248, 239)'
