@@ -28,7 +28,7 @@ export default {
         try {
           await this.mermaid.run({ nodes: [pre.children[0]] });
         } catch (error) {
-          console.error('Failed to render mermaid diagram:', error);
+          console.error("Failed to render Mermaid diagram:", error);
         }
       }
     },

@@ -56,7 +56,7 @@ def markdown_tables():
 
 
 @doc.demo('Mermaid diagrams', '''
-    You can use mermaid diagrams with the "mermaid" extra.
+    You can use Mermaid diagrams with the "mermaid" extra.
     See the [markdown2 documentation](https://github.com/trentm/python-markdown2/wiki/Extras#implemented-extras) for a list of available extras.
 ''')
 def mermaid():
@@ -81,8 +81,8 @@ def markdown_latex():
 
         $$e^{i\pi} = -1$$
     ''', extras=['latex'])
-    
-    
+
+
 @doc.demo('Change Markdown content', '''
     You can change the content of a Markdown element by setting its `content` property or calling `set_content`.
 ''')
