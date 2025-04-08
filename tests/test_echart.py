@@ -118,3 +118,23 @@ def test_chart_events(screen: Screen):
 
     screen.open('/')
     screen.should_contain('Chart rendered.')
+
+
+def test_chart_theme(screen: Screen):
+    theme = {
+        'color': [
+            '#b687ac',
+            '#28738a',
+            '#a78f8f',
+        ],
+        'backgroundColor': 'rgba(254,248,239,1)',
+    }
+
+    ui.echart({
+        'xAxis': {'type': 'category'},
+        'yAxis': {'type': 'value'},
+        'series': [{'type': 'line', 'data': [1, 2, 3]}],
+    }, theme=theme, renderer='svg')
+
+    screen.open('/')
+    assert screen.find_by_tag('rect').value_of_css_property('fill') == 'rgb(254,248,239)'
