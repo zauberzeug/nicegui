@@ -23,15 +23,6 @@ export default {
       var custom_theme_name = null
     }
 
-    // if (this.theme) {
-    //   var custom_theme_name = 'custom_theme'
-    //   var custom_theme = await fetch(this.theme)
-    //   var custom_theme_json = await custom_theme.json()
-    //   echarts.registerTheme(custom_theme_name, custom_theme_json)
-    // } else {
-    //   var custom_theme_name = null
-    // }
-
     this.chart = echarts.init(this.$el, custom_theme_name, { renderer: this.renderer });
     this.chart.on("click", (e) => this.$emit("pointClick", e));
     for (const event of [
