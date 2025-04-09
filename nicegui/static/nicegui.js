@@ -316,7 +316,9 @@ window.onbeforeunload = function () {
 function createApp(elements, options) {
   Object.entries(elements).forEach(([_, element]) => replaceUndefinedAttributes(element));
   setInterval(() => ack(), 3000);
-  return (app = Vue.createApp({
+  if (options.isSSR) console.log("SSR mode active!");
+  const createVueApp = options.isSSR ? Vue.createSSRApp : Vue.createApp;
+  return (app = createVueApp({
     data() {
       return {
         elements,
