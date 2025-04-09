@@ -3,7 +3,6 @@ from __future__ import annotations
 import asyncio
 import copyreg
 import dataclasses
-import threading
 import time
 import weakref
 from collections import defaultdict
@@ -36,7 +35,6 @@ MAX_PROPAGATION_TIME = 0.01
 
 bindings: DefaultDict[Tuple[int, str], List] = defaultdict(list)
 bindable_properties: Dict[Tuple[int, str], weakref.finalize] = {}
-bindable_properties_lock = threading.Lock()
 active_links: List[Tuple[Any, str, Any, str, Callable[[Any], Any]]] = []
 
 TC = TypeVar('TC', bound=type)
@@ -181,11 +179,7 @@ class BindableProperty:
             return
         setattr(owner, '___' + self.name, value)
         key = (id(owner), str(self.name))
-
-        def remove_bindable_property():
-            with bindable_properties_lock:
-                bindable_properties.pop(key, None)
-        bindable_properties.setdefault(key, weakref.finalize(owner, remove_bindable_property))
+        bindable_properties.setdefault(key, weakref.finalize(owner, lambda: bindable_properties.pop(key, None)))
         _propagate(owner, self.name)
         if value_changed and self._change_handler is not None:
             self._change_handler(owner, value)
@@ -210,11 +204,10 @@ def remove(objects: Iterable[Any]) -> None:
         ]
         if not binding_list:
             del bindings[key]
-    with bindable_properties_lock:
-        for (obj_id, name), finalizer in list(bindable_properties.items()):
-            if obj_id in object_ids:
-                del bindable_properties[(obj_id, name)]
-                finalizer.detach()
+    for (obj_id, name), finalizer in list(bindable_properties.items()):
+        if obj_id in object_ids:
+            del bindable_properties[(obj_id, name)]
+            finalizer.detach()
 
 
 def reset() -> None:
