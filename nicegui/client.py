@@ -48,9 +48,12 @@ class Client:
     shared_body_html = ''
     """HTML to be inserted in the <body> of every page template."""
 
-    def __init__(self, page: page, *, request: Optional[Request]) -> None:
+    def __init__(self, page: page, *, request: Optional[Request], force_id: str = None) -> None:
         self.request: Optional[Request] = request
-        self.id = str(uuid.uuid4())
+        if force_id is not None:
+            self.id = force_id
+        else:
+            self.id = str(uuid.uuid4())
         self.created = time.time()
         self.instances[self.id] = self
 
@@ -67,6 +70,7 @@ class Client:
         self._deleted = False
         self._socket_to_document_id: Dict[str, str] = {}
         self.tab_id: Optional[str] = None
+        self._socket_id: Optional[str] = None
 
         self.page = page
         self.outbox = Outbox(self)
@@ -135,6 +139,7 @@ class Client:
             **core.app.config.socket_io_js_query_params,
             'client_id': self.id,
             'next_message_id': self.outbox.next_message_id,
+            'path': request.url.path,
         }
         vue_html, vue_styles, vue_scripts, imports, js_imports, js_imports_urls = \
             generate_resources(prefix, self.elements.values())
@@ -248,6 +253,7 @@ class Client:
         self._socket_to_document_id[socket_id] = document_id
         self._cancel_delete_task(document_id)
         self._num_connections[document_id] += 1
+        self._socket_id = socket_id
         if next_message_id is not None:
             self.outbox.try_rewind(next_message_id)
         storage.request_contextvar.set(self.request)
