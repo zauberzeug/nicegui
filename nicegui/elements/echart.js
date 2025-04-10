@@ -1,6 +1,31 @@
 import "echarts";
 import { convertDynamicProperties } from "../../static/utils/dynamic_properties.js";
 
+async function fetchAndParseJson(url) {
+  try {
+    const response = await fetch(url);
+
+    if (!response.ok) {
+      console.error(`HTTP error! Status: ${response.status}`);
+      return;
+    }
+
+    const text = await response.text();
+
+    try {
+      const json = JSON.parse(text);
+      return json;
+    } catch (e) {
+      console.warn("Response is not valid JSON.");
+      return;
+    }
+
+  } catch (error) {
+    console.error("Fetch error:", error);
+    return;
+  }
+}
+
 export default {
   template: "<div></div>",
   async mounted() {
@@ -9,30 +34,31 @@ export default {
       await import("echarts-gl");
     }
 
+    let theme_name = null
+    let theme_json = null
+
     if (this.theme) {
-      let custom_theme_json
-     if (typeof this.theme == 'object') {
-      custom_theme_json = this.theme
-     } else {
-      var custom_theme = await fetch(this.theme)
-      custom_theme_json = await custom_theme.json()
+
+      if (typeof this.theme == 'object') {
+        theme_json = this.theme;
+        theme_name = self.crypto.randomUUID();
+
+      } else {
+        theme_json = await fetchAndParseJson(this.theme);
+
+        if (theme_json) {
+          theme_name = self.crypto.randomUUID();
+        } else {
+          console.log("No valid JSON theme returned.");
+        }
      }
-     var custom_theme_name = 'custom_theme'
-     echarts.registerTheme(custom_theme_name, custom_theme_json)
-    } else {
-      var custom_theme_name = null
     }
 
-    // if (this.theme) {
-    //   var custom_theme_name = 'custom_theme'
-    //   var custom_theme = await fetch(this.theme)
-    //   var custom_theme_json = await custom_theme.json()
-    //   echarts.registerTheme(custom_theme_name, custom_theme_json)
-    // } else {
-    //   var custom_theme_name = null
-    // }
+    if (theme_name && theme_json) {
+     echarts.registerTheme(theme_name, theme_json);
+    }
 
-    this.chart = echarts.init(this.$el, custom_theme_name, { renderer: this.renderer });
+    this.chart = echarts.init(this.$el, theme_name, { renderer: this.renderer });
     this.chart.on("click", (e) => this.$emit("pointClick", e));
     for (const event of [
       "click",
