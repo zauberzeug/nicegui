@@ -23,6 +23,7 @@ NiceGUI is available as [PyPI package](https://pypi.org/project/nicegui/), [Dock
 [![GitHub issues](https://img.shields.io/github/issues/zauberzeug/nicegui?color=blue)](https://github.com/zauberzeug/nicegui/issues)
 [![GitHub forks](https://img.shields.io/github/forks/zauberzeug/nicegui)](https://github.com/zauberzeug/nicegui/network)
 [![GitHub stars](https://img.shields.io/github/stars/zauberzeug/nicegui)](https://github.com/zauberzeug/nicegui/stargazers)
+[![DOI](https://zenodo.org/badge/365250183.svg)](https://doi.org/10.5281/zenodo.7785516)
 
 ## Features
 

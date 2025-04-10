@@ -21,17 +21,30 @@ def main_demo() -> None:
     You can find more map styles at <https://leaflet-extras.github.io/leaflet-providers/preview/>.
     Each call to `tile_layer` stacks upon the previous ones.
     So if you want to change the map style, you have to remove the default one first.
+
+    *Updated in version 2.12.0: Both WMTS and WMS map services are supported.*
 ''')
 def map_style() -> None:
-    m = ui.leaflet(center=(51.505, -0.090), zoom=3)
-    m.clear_layers()
-    m.tile_layer(
+    ui.label('Web Map Tile Service')
+    map1 = ui.leaflet(center=(51.505, -0.090), zoom=3)
+    map1.clear_layers()
+    map1.tile_layer(
         url_template=r'https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',
         options={
             'maxZoom': 17,
             'attribution':
                 'Map data: &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, <a href="https://viewfinderpanoramas.org/">SRTM</a> | '
                 'Map style: &copy; <a href="https://opentopomap.org">OpenTopoMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>)'
+        },
+    )
+
+    ui.label('Web Map Service')
+    map2 = ui.leaflet(center=(51.505, -0.090), zoom=3)
+    map2.clear_layers()
+    map2.wms_layer(
+        url_template='http://ows.mundialis.de/services/service?',
+        options={
+            'layers': 'TOPO-WMS,OSM-Overlay-WMS'
         },
     )
 

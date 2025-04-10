@@ -8,7 +8,7 @@ from .examples import examples
 from .header import add_head_html, add_header
 from .style import example_link, features, heading, link_target, section_heading, subtitle, title
 
-SPONSORS = json.loads((Path(__file__).parent / 'sponsors.json').read_text())
+SPONSORS = json.loads((Path(__file__).parent / 'sponsors.json').read_text(encoding='utf-8'))
 
 
 def create() -> None:
@@ -126,7 +126,7 @@ def create() -> None:
                 'customizable [color themes](/documentation/section_styling_appearance#color_theming)',
                 'custom CSS and classes',
                 'modern look with material design',
-                '[Tailwind CSS](https://tailwindcss.com/) auto-completion',
+                '[Tailwind CSS](https://v3.tailwindcss.com/) auto-completion',
             ])
             features('source', 'Coding', [
                 'routing for multiple [pages](/documentation/page)',

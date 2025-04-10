@@ -8,12 +8,13 @@ from typing import TYPE_CHECKING, Any, List, Optional, Union
 import httpx
 
 from .. import background_tasks
+from ..functions.download import Download
 
 if TYPE_CHECKING:
     from .user import User
 
 
-class UserDownload:
+class UserDownload(Download):
 
     def __init__(self, user: User) -> None:
         self.http_responses: List[httpx.Response] = []
@@ -21,6 +22,15 @@ class UserDownload:
 
     def __call__(self, src: Union[str, Path, bytes], filename: Optional[str] = None, media_type: str = '') -> Any:
         background_tasks.create(self._get(src))
+
+    def file(self, path: Union[str, Path], filename: Optional[str] = None, media_type: str = '') -> None:
+        self(path)
+
+    def from_url(self, url: str, filename: Optional[str] = None, media_type: str = '') -> None:
+        self(url)
+
+    def content(self, content: Union[bytes, str], filename: Optional[str] = None, media_type: str = '') -> None:
+        self(content)
 
     async def _get(self,  src: Union[str, Path, bytes]) -> None:
         if isinstance(src, bytes):

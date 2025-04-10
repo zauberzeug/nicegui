@@ -23,6 +23,7 @@ from .javascript_request import JavaScriptRequest
 from .logging import log
 from .observables import ObservableDict
 from .outbox import Outbox
+from .translations import translations
 from .version import __version__
 
 if TYPE_CHECKING:
@@ -55,6 +56,7 @@ class Client:
 
         self.elements: Dict[int, Element] = {}
         self.next_element_id: int = 0
+        self._waiting_for_connection: asyncio.Event = asyncio.Event()
         self.is_waiting_for_connection: bool = False
         self.is_waiting_for_disconnect: bool = False
         self.environ: Optional[Dict[str, Any]] = None
@@ -134,7 +136,8 @@ class Client:
             'client_id': self.id,
             'next_message_id': self.outbox.next_message_id,
         }
-        vue_html, vue_styles, vue_scripts, imports, js_imports = generate_resources(prefix, self.elements.values())
+        vue_html, vue_styles, vue_scripts, imports, js_imports, js_imports_urls = \
+            generate_resources(prefix, self.elements.values())
         return templates.TemplateResponse(
             request=request,
             name='index.html',
@@ -151,12 +154,14 @@ class Client:
                 'vue_scripts': '\n'.join(vue_scripts),
                 'imports': json.dumps(imports),
                 'js_imports': '\n'.join(js_imports),
+                'js_imports_urls': js_imports_urls,
                 'quasar_config': json.dumps(core.app.config.quasar_config),
                 'title': self.resolve_title(),
                 'viewport': self.page.resolve_viewport(),
                 'favicon_url': get_favicon_url(self.page, prefix),
                 'dark': str(self.page.resolve_dark()),
                 'language': self.page.resolve_language(),
+                'translations': translations.get(self.page.resolve_language(), translations['en-US']),
                 'prefix': prefix,
                 'tailwind': core.app.config.tailwind,
                 'prod_js': core.app.config.prod_js,
@@ -175,6 +180,7 @@ class Client:
     async def connected(self, timeout: float = 3.0, check_interval: float = 0.1) -> None:
         """Block execution until the client is connected."""
         self.is_waiting_for_connection = True
+        self._waiting_for_connection.set()
         deadline = time.time() + timeout
         while not self.has_socket_connection:
             if time.time() > deadline:
@@ -257,6 +263,8 @@ class Client:
         In contrast to connect handlers, disconnect handlers are not called during a reconnect.
         This behavior should be fixed in version 3.0.
         """
+        if socket_id not in self._socket_to_document_id:
+            return
         document_id = self._socket_to_document_id.pop(socket_id)
         self._cancel_delete_task(document_id)
         self._num_connections[document_id] -= 1

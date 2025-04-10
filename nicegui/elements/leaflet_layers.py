@@ -32,6 +32,18 @@ class TileLayer(Layer):
 
 
 @dataclass(**KWONLY_SLOTS)
+class WmsLayer(Layer):
+    url_template: str
+    options: Dict = field(default_factory=dict)
+
+    def to_dict(self) -> Dict:
+        return {
+            'type': 'tileLayer.wms',
+            'args': [self.url_template, self.options],
+        }
+
+
+@dataclass(**KWONLY_SLOTS)
 class Marker(Layer):
     latlng: Tuple[float, float]
     options: Dict = field(default_factory=dict)

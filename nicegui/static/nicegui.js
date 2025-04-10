@@ -19,23 +19,19 @@ function parseElements(raw_elements) {
   );
 }
 
-function replaceUndefinedAttributes(elements, id) {
-  const element = elements[id];
-  if (element === undefined) {
-    return;
-  }
+function replaceUndefinedAttributes(element) {
   element.class ??= [];
   element.style ??= {};
   element.props ??= {};
   element.text ??= null;
   element.events ??= [];
+  element.update_method ??= null;
   element.component ??= null;
   element.libraries ??= [];
   element.slots = {
     default: { ids: element.children || [] },
     ...(element.slots ?? {}),
   };
-  Object.values(element.slots).forEach((slot) => slot.ids.forEach((id) => replaceUndefinedAttributes(elements, id)));
 }
 
 function getElement(id) {
@@ -318,7 +314,7 @@ window.onbeforeunload = function () {
 };
 
 function createApp(elements, options) {
-  replaceUndefinedAttributes(elements, 0);
+  Object.entries(elements).forEach(([_, element]) => replaceUndefinedAttributes(element));
   setInterval(() => ack(), 3000);
   return (app = Vue.createApp({
     data() {
@@ -381,7 +377,6 @@ function createApp(elements, options) {
           const loadPromises = Object.entries(msg)
             .filter(([_, element]) => element && (element.component || element.libraries))
             .map(([_, element]) => loadDependencies(element, options.prefix, options.version));
-
           await Promise.all(loadPromises);
 
           for (const [id, element] of Object.entries(msg)) {
@@ -389,8 +384,15 @@ function createApp(elements, options) {
               delete this.elements[id];
               continue;
             }
+            replaceUndefinedAttributes(element);
             this.elements[id] = element;
-            replaceUndefinedAttributes(this.elements, id);
+          }
+
+          await this.$nextTick();
+          for (const [id, element] of Object.entries(msg)) {
+            if (element?.update_method) {
+              getElement(id)[element.update_method]();
+            }
           }
         },
         run_javascript: (msg) => runJavascript(msg.code, msg.request_id),

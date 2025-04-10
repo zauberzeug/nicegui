@@ -12,7 +12,7 @@ from uuid import uuid4
 import socketio
 import socketio.exceptions
 
-from . import background_tasks, core
+from . import background_tasks, core, helpers
 from .client import Client
 from .dataclasses import KWONLY_SLOTS
 from .elements.timer import Timer as timer
@@ -43,6 +43,7 @@ class Air:
         self.connecting = False
         self.streams: Dict[str, Stream] = {}
         self.remote_url: Optional[str] = None
+        self._host_unreachable_warning = f'On Air host "{RELAY_HOST}" is not reachable. Please check your internet connection.'
 
         timer(5, self.connect)  # ensure we stay connected
 
@@ -70,12 +71,27 @@ class Air:
                 new_js_object = match.group(1).decode().rstrip('}') + ", 'fly_instance_id' : '" + instance_id + "'}"
                 content = content.replace(match.group(0), f'const query = {new_js_object}'.encode())
             compressed = gzip.compress(content)
-            response.headers.update({'content-encoding': 'gzip', 'content-length': str(len(compressed))})
-            return {
+            total_size = len(compressed)
+            response.headers.update({'content-encoding': 'gzip', 'content-length': str(total_size)})
+            result = {
                 'status_code': response.status_code,
                 'headers': response.headers.multi_items(),
                 'content': compressed,
             }
+
+            # NOTE: chunk large responses to stay within the SocketIO limit
+            if total_size > 1_000_000:
+                async def chunk_iterator() -> AsyncIterator[bytes]:
+                    chunk_size = 512 * 1024
+                    for i in range(0, total_size, chunk_size):
+                        yield compressed[i:i + chunk_size]
+                stream_id = str(uuid4())
+                self.streams[stream_id] = Stream(data=chunk_iterator(), response=response)
+                result['stream_id'] = stream_id
+                result['total_size'] = total_size
+                del result['content']
+
+            return result
 
         @self.relay.on('range-request')
         async def _handle_range_request(data: Dict[str, Any]) -> Dict[str, Any]:
@@ -149,6 +165,8 @@ class Air:
         @self.relay.on('connect')
         async def _handle_connect() -> None:
             self.log.debug('connected.')
+            # NOTE: reset the warning so it can be shown again if connection breaks in the future
+            helpers._shown_warnings.discard(self._host_unreachable_warning)  # pylint: disable=protected-access
 
         @self.relay.on('disconnect')
         async def _handle_disconnect() -> None:
@@ -156,7 +174,11 @@ class Air:
 
         @self.relay.on('connect_error')
         async def _handle_connect_error(data) -> None:
-            self.log.debug(f'Connection error: {data}')
+            message = data.get('message', 'Unknown error') if isinstance(data, dict) else data
+            if message == 'Connection error':
+                helpers.warn_once(self._host_unreachable_warning)
+            else:
+                self.log.warning(f'Connection error: {message}')
 
         @self.relay.on('event')
         def _handle_event(data: Dict[str, Any]) -> None:

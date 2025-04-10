@@ -55,7 +55,7 @@ for issue in issues:
     note = f'{title.strip()} ({numbers_str} by @{user})'
     if 'bug' in labels:
         notes['Bugfixes'].append(note)
-    elif 'enhancement' in labels:
+    elif 'enhancement' in labels or 'feature' in labels:
         notes['New features and enhancements'].append(note)
     elif 'documentation' in labels:
         notes['Documentation'].append(note)

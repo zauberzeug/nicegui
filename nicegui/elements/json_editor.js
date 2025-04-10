@@ -4,10 +4,10 @@ export default {
   template: "<div></div>",
   mounted() {
     this.properties.onChange = (updatedContent, previousContent, { contentErrors, patchResult }) => {
-      this.$emit("change", { content: updatedContent, errors: contentErrors });
+      this.$emit("content_change", { content: updatedContent, errors: contentErrors });
     };
     this.properties.onSelect = (selection) => {
-      this.$emit("select", { selection: selection });
+      this.$emit("content_select", { selection: selection });
     };
 
     this.checkValidation();
