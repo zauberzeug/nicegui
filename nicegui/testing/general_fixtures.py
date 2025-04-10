@@ -1,6 +1,7 @@
+import asyncio
 import importlib
 from copy import copy
-from typing import AsyncGenerator, List, Type
+from typing import Generator, List, Type
 
 import pytest
 from starlette.routing import Route
@@ -19,7 +20,7 @@ def pytest_configure(config: pytest.Config) -> None:
 
 
 @pytest.fixture
-async def nicegui_reset_globals() -> AsyncGenerator[None, None]:
+def nicegui_reset_globals() -> Generator[None, None, None]:
     """Reset the global state of the NiceGUI package."""
     for route in app.routes:
         if isinstance(route, Route) and route.path.startswith('/_nicegui/auto/static/'):
@@ -54,8 +55,9 @@ async def nicegui_reset_globals() -> AsyncGenerator[None, None]:
 
     yield
 
+    loop = asyncio.get_event_loop()
     for storage in app.storage._users.values():  # pylint: disable=protected-access
-        await storage.close()
+        loop.run_until_complete(storage.close())
     app.reset()
 
     # restore initial defaults
