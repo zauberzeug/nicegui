@@ -9,7 +9,19 @@ export default {
       await import("echarts-gl");
     }
 
-    this.chart = echarts.init(this.$el, null, { renderer: this.renderer });
+    const theme_name = this.theme ? createRandomUUID() : null;
+    try {
+      if (typeof this.theme == "string") {
+        const response = await fetch(this.theme);
+        echarts.registerTheme(theme_name, await response.json());
+      } else if (this.theme) {
+        echarts.registerTheme(theme_name, this.theme);
+      }
+    } catch (error) {
+      console.error("Could not register theme:", error);
+    }
+
+    this.chart = echarts.init(this.$el, theme_name, { renderer: this.renderer });
     this.chart.on("click", (e) => this.$emit("pointClick", e));
     for (const event of [
       "click",
@@ -96,5 +108,6 @@ export default {
     options: Object,
     enable_3d: Boolean,
     renderer: String,
+    theme: String,
   },
 };
