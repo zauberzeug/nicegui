@@ -8,6 +8,15 @@ let mounted_app = undefined;
 const loaded_libraries = new Set();
 const loaded_components = new Set();
 
+function advanced_serialize(obj) {
+  // Works for object for which JSON.stringify fails
+  const result = {};
+  for (const key in obj) {
+    result[key] = obj[key];
+  }
+  return result;
+}
+
 function parseElements(raw_elements) {
   return JSON.parse(
     raw_elements
@@ -101,7 +110,15 @@ function stringifyEventArgs(args, event_args) {
         }
       }
     }
-    result.push(JSON.stringify(filtered, (k, v) => (v instanceof Node || v instanceof Window ? undefined : v)));
+    result.push(
+      JSON.stringify(filtered, (key, value) => {
+        if (value instanceof Node || value instanceof Window) {
+          return undefined;
+        }
+        if (value instanceof Touch) { return advanced_serialize(value); }
+        return value;
+      })
+    );
   });
   return result;
 }
