@@ -83,6 +83,15 @@ function emitEvent(event_name, ...args) {
   getElement(0).$emit(event_name, ...args);
 }
 
+function emitEventTo(id, event, ...args) {
+  window.socket?.emit("event", {
+    id: id,
+    client_id: window.clientId,
+    listener_id: event.listener_id,
+    args: stringifyEventArgs(args, event.args),
+  });
+}
+
 function stringifyEventArgs(args, event_args) {
   const result = [];
   args.forEach((arg, i) => {
@@ -182,13 +191,7 @@ function renderRecursively(elements, id) {
       handler = eval(event.js_handler);
     } else {
       handler = (...args) => {
-        const emitter = () =>
-          window.socket?.emit("event", {
-            id: id,
-            client_id: window.clientId,
-            listener_id: event.listener_id,
-            args: stringifyEventArgs(args, event.args),
-          });
+        const emitter = () => emitEventTo(id, event, ...args);
         const delayed_emitter = () => {
           if (window.did_handshake) emitter();
           else setTimeout(emitter, 10);

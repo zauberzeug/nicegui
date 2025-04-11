@@ -320,26 +320,6 @@ class Element(Visibility):
             Tooltip(text)
         return self
 
-    @overload
-    def on(self,
-           type: str,  # pylint: disable=redefined-builtin
-           *,
-           js_handler: Optional[str] = None,
-           ) -> Self:
-        ...
-
-    @overload
-    def on(self,
-           type: str,  # pylint: disable=redefined-builtin
-           handler: Optional[events.Handler[events.GenericEventArguments]] = None,
-           args: Union[None, Sequence[str], Sequence[Optional[Sequence[str]]]] = None,
-           *,
-           throttle: float = 0.0,
-           leading_events: bool = True,
-           trailing_events: bool = True,
-           ) -> Self:
-        ...
-
     def on(self,
            type: str,  # pylint: disable=redefined-builtin
            handler: Optional[events.Handler[events.GenericEventArguments]] = None,
@@ -360,9 +340,6 @@ class Element(Visibility):
         :param trailing_events: whether to trigger the event handler after the last event occurrence (default: `True`)
         :param js_handler: JavaScript code that is executed upon occurrence of the event, e.g. `(evt) => alert(evt)` (default: `None`)
         """
-        if handler and js_handler:
-            raise ValueError('Either handler or js_handler can be specified, but not both')
-
         if handler or js_handler:
             listener = EventListener(
                 element_id=self.id,
