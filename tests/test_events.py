@@ -2,11 +2,10 @@ import asyncio
 from typing import Literal
 
 import pytest
-from selenium.webdriver.common.by import By
-
 from nicegui import ui
 from nicegui.events import ClickEventArguments
 from nicegui.testing import Screen
+from selenium.webdriver.common.by import By
 
 
 def click_sync_no_args():
@@ -191,3 +190,22 @@ def test_js_handler(screen: Screen) -> None:
     screen.open('/')
     screen.click('Button')
     screen.should_contain('Click!')
+
+
+def test_delegated_event(screen: Screen) -> None:
+    data = [f'Item {i}' for i in range(5)]
+    snippet = ''.join(f'<li data-index={i}>{item}</li>' for i, item in enumerate(data))
+    root = ui.html(snippet, tag='ul')
+
+    clicked = []
+    def on_click(e):
+        clicked.append(int(e.args['index']))
+
+    root.on('click', on_click, js_handler="(e) => default_handler(null, e.target.dataset)")
+
+    # test
+    screen.open('/')
+    for i, _ in enumerate(data):
+        screen.selenium.find_element(By.CSS_SELECTOR, f'li:nth-child({i+1})').click()
+
+    assert clicked == list(range(len(data)))

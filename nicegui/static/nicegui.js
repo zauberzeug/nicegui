@@ -177,29 +177,31 @@ function renderRecursively(elements, id) {
     let event_name = "on" + event.type[0].toLocaleUpperCase() + event.type.substring(1);
     event.specials.forEach((s) => (event_name += s[0].toLocaleUpperCase() + s.substring(1)));
 
+    let default_handler = (options, ...args) => {
+      let opts = {...event.options, ...options};
+      const emitter = () =>
+        window.socket?.emit("event", {
+          id: id,
+          client_id: window.clientId,
+          listener_id: event.listener_id,
+          args: stringifyEventArgs(args, opts.args),
+        });
+      const delayed_emitter = () => {
+        if (window.did_handshake) emitter();
+        else setTimeout(emitter, 10);
+      };
+      throttle(delayed_emitter, opts.throttle, opts.leading_events, opts.trailing_events, event.listener_id);
+      if (element.props["loopback"] === False && event.type == "update:modelValue") {
+        element.props["model-value"] = args;
+      }
+    }
+
     let handler;
     if (event.js_handler) {
       handler = eval(event.js_handler);
     } else {
-      handler = (...args) => {
-        const emitter = () =>
-          window.socket?.emit("event", {
-            id: id,
-            client_id: window.clientId,
-            listener_id: event.listener_id,
-            args: stringifyEventArgs(args, event.args),
-          });
-        const delayed_emitter = () => {
-          if (window.did_handshake) emitter();
-          else setTimeout(emitter, 10);
-        };
-        throttle(delayed_emitter, event.throttle, event.leading_events, event.trailing_events, event.listener_id);
-        if (element.props["loopback"] === False && event.type == "update:modelValue") {
-          element.props["model-value"] = args;
-        }
-      };
+      handler = (...args) => default_handler(null, ...args);
     }
-
     handler = Vue.withModifiers(handler, event.modifiers);
     handler = event.keys.length ? Vue.withKeys(handler, event.keys) : handler;
     if (props[event_name]) {
