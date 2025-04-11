@@ -9,7 +9,7 @@ export default {
       await import("echarts-gl");
     }
 
-    const theme_name = this.theme ? crypto.randomUUID() : null;
+    const theme_name = this.theme ? createRandomUUID() : null;
     try {
       if (typeof this.theme == "string") {
         const response = await fetch(this.theme);
