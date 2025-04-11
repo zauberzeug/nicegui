@@ -2,7 +2,7 @@ from pyecharts import options
 from pyecharts.charts import Bar
 from pyecharts.commons import utils
 
-from nicegui import ui
+from nicegui import app, ui
 from nicegui.testing import Screen
 
 
@@ -120,21 +120,27 @@ def test_chart_events(screen: Screen):
     screen.should_contain('Chart rendered.')
 
 
-def test_chart_theme(screen: Screen):
-    theme = {
-        'color': [
-            '#b687ac',
-            '#28738a',
-            '#a78f8f',
-        ],
-        'backgroundColor': 'rgba(254,248,239,1)',
-    }
+def test_theme_dictionary(screen: Screen):
+    ui.echart({
+        'xAxis': {'type': 'category'},
+        'yAxis': {'type': 'value'},
+        'series': [{'type': 'line', 'data': [1, 2, 3]}],
+    }, theme={'backgroundColor': 'rgba(254,248,239,1)'}, renderer='svg')
+
+    screen.open('/')
+    assert screen.find_by_tag('rect').value_of_css_property('fill') == 'rgb(254, 248, 239)'
+
+
+def test_theme_url(screen: Screen):
+    @app.get('/theme.json')
+    def theme():
+        return {'backgroundColor': 'rgba(254,248,239,1)'}
 
     ui.echart({
         'xAxis': {'type': 'category'},
         'yAxis': {'type': 'value'},
         'series': [{'type': 'line', 'data': [1, 2, 3]}],
-    }, theme=theme, renderer='svg')
+    }, theme='/theme.json', renderer='svg')
 
     screen.open('/')
     assert screen.find_by_tag('rect').value_of_css_property('fill') == 'rgb(254, 248, 239)'

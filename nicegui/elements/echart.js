@@ -1,31 +1,6 @@
 import "echarts";
 import { convertDynamicProperties } from "../../static/utils/dynamic_properties.js";
 
-async function fetchAndParseJson(url) {
-  try {
-    const response = await fetch(url);
-
-    if (!response.ok) {
-      console.error(`HTTP error! Status: ${response.status}`);
-      return;
-    }
-
-    const text = await response.text();
-
-    try {
-      const json = JSON.parse(text);
-      return json;
-    } catch (e) {
-      console.warn("Response is not valid JSON.");
-      return;
-    }
-
-  } catch (error) {
-    console.error("Fetch error:", error);
-    return;
-  }
-}
-
 export default {
   template: "<div></div>",
   async mounted() {
@@ -34,28 +9,16 @@ export default {
       await import("echarts-gl");
     }
 
-    let theme_name = null
-    let theme_json = null
-
-    if (this.theme) {
-
-      if (typeof this.theme == 'object') {
-        theme_json = this.theme;
-        theme_name = self.crypto.randomUUID();
-
-      } else {
-        theme_json = await fetchAndParseJson(this.theme);
-
-        if (theme_json) {
-          theme_name = self.crypto.randomUUID();
-        } else {
-          console.log("No valid JSON theme returned.");
-        }
-     }
-    }
-
-    if (theme_name && theme_json) {
-     echarts.registerTheme(theme_name, theme_json);
+    const theme_name = this.theme ? crypto.randomUUID() : null;
+    try {
+      if (typeof this.theme == "string") {
+        const response = await fetch(this.theme);
+        echarts.registerTheme(theme_name, await response.json());
+      } else if (this.theme) {
+        echarts.registerTheme(theme_name, this.theme);
+      }
+    } catch (error) {
+      console.error("Could not register theme:", error);
     }
 
     this.chart = echarts.init(this.$el, theme_name, { renderer: this.renderer });
