@@ -5,7 +5,6 @@
   font-family: "Material Icons";
   font-style: normal;
   font-weight: 400;
-  font-display: block;
   src: url(fonts/0c19a63c7528cc1a.woff2) format("woff2");
 }
 /* fallback */
@@ -14,7 +13,6 @@
   font-family: "Material Icons Outlined";
   font-style: normal;
   font-weight: 400;
-  font-display: block;
   src: url(fonts/a35a05f781345176.woff2) format("woff2");
 }
 /* fallback */
@@ -23,7 +21,6 @@
   font-family: "Material Icons Round";
   font-style: normal;
   font-weight: 400;
-  font-display: block;
   src: url(fonts/2af55f54d9fac778.woff2) format("woff2");
 }
 /* fallback */
@@ -32,7 +29,6 @@
   font-family: "Material Icons Sharp";
   font-style: normal;
   font-weight: 400;
-  font-display: block;
   src: url(fonts/1e891d4a2a7f2f96.woff2) format("woff2");
 }
 /* cyrillic-ext */
@@ -442,7 +438,6 @@
   font-family: "Material Symbols Outlined";
   font-style: normal;
   font-weight: 400;
-  font-display: block;
   src: url(fonts/935e23d0cd87ac6f.woff2) format("woff2");
 }
 /* fallback */
@@ -451,7 +446,6 @@
   font-family: "Material Symbols Rounded";
   font-style: normal;
   font-weight: 400;
-  font-display: block;
   src: url(fonts/d4e71f49ac06b20e.woff2) format("woff2");
 }
 /* fallback */
@@ -460,7 +454,6 @@
   font-family: "Material Symbols Sharp";
   font-style: normal;
   font-weight: 400;
-  font-display: block;
   src: url(fonts/bb828b03a1f11130.woff2) format("woff2");
 }
 
