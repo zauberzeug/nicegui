@@ -103,3 +103,43 @@ class Polyline(_Path):
         """
         self.run_method('setLatLngs', latlngs)
 
+@dataclass(**KWONLY_SLOTS)
+class CircleMarker(_Path):
+    """A circle of fixed size with radius specified in pixels.
+    """
+
+    latlng: LatLng = field(default_factory=tuple)
+    options: Dict = field(default_factory=dict)
+
+    def to_dict(self) -> Dict:
+        return {
+            'type': 'circleMarker',
+            'args': [self.latlng, self.options]
+        }
+    
+    def setLatLng(self, latlng: LatLng):
+        """Set the center position of the circle marker to a new location.
+
+        :param latlng: Coordinates (latitude, longitude)
+        """
+        self.latlng = latlng
+        self.run_method('setLatLng', latlng)
+
+    def setRadius(self, radius: float):
+        """Set the radius of the circle
+
+        :param radius: Radius of the circle, in pixels
+        """
+        self.run_method('setRadius', radius)
+
+@dataclass
+class Circle(CircleMarker):
+    """Draws circle overlays on a map. Extends CircleMarker
+    """
+    
+    def to_dict(self) -> Dict:
+        return {
+            'type': 'circle',
+            'args': [self.latlng, self.options]
+        }
+

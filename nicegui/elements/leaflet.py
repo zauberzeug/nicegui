@@ -13,6 +13,8 @@ from .leaflet_layer import Layer
 
 class Leaflet(Element, component='leaflet.js', default_classes='nicegui-leaflet'):
     # pylint: disable=import-outside-toplevel
+    from .leaflet_layers import Circle as circle
+    from .leaflet_layers import CircleMarker as circle_marker
     from .leaflet_layers import GenericLayer as generic_layer
     from .leaflet_layers import Marker as marker
     from .leaflet_layers import Polyline as polyline
