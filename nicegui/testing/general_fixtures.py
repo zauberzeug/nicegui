@@ -1,4 +1,3 @@
-import asyncio
 import importlib
 from copy import copy
 from typing import Generator, List, Type
@@ -55,10 +54,10 @@ def nicegui_reset_globals() -> Generator[None, None, None]:
 
     yield
 
-    loop = asyncio.get_event_loop()
-    for storage in app.storage._users.values():  # pylint: disable=protected-access
-        loop.run_until_complete(storage.close())
-    app.reset()
+    # loop = asyncio.get_event_loop()
+    # for storage in app.storage._users.values():  # pylint: disable=protected-access
+    #     loop.run_until_complete(storage.close())
+    # app.reset()
 
     # restore initial defaults
     for t in element_types:
