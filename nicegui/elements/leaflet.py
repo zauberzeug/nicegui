@@ -29,6 +29,7 @@ class Leaflet(Element, component='leaflet.js', default_classes='nicegui-leaflet'
                  zoom: int = 13,
                  *,
                  options: Dict = {},  # noqa: B006
+                 url_template = None,
                  draw_control: Union[bool, Dict] = False,
                  hide_drawn_items: bool = False,
                  additional_resources: Optional[List[str]] = None,
@@ -62,9 +63,11 @@ class Leaflet(Element, component='leaflet.js', default_classes='nicegui-leaflet'
         self.on('init', self._handle_init)
         self.on('map-moveend', self._handle_moveend)
         self.on('map-zoomend', self._handle_zoomend)
+    
+        url_template = url_template or r'https://{s}.tile.osm.org/{z}/{x}/{y}.png'
 
         self.tile_layer(
-            url_template=r'https://{s}.tile.osm.org/{z}/{x}/{y}.png',
+            url_template=url_template,
             options={'attribution': '&copy; <a href="https://openstreetmap.org">OpenStreetMap</a> contributors'},
         )
 
