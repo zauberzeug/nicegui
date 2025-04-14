@@ -20,6 +20,7 @@ starlette = [
 uvicorn = {extras = ["standard"], version = ">=0.22.0"}
 fastapi = ">=0.109.1"
 python-socketio = {extras = ["asyncio-client"], version = ">=5.10.0"} # version min: see https://github.com/zauberzeug/nicegui/issues/1809
+python-engineio = ">=4.12.0"  # https://github.com/zauberzeug/nicegui/issues/4602
 vbuild = ">=0.8.2"
 watchfiles = ">=0.18.1"
 jinja2 = "^3.1.6" # https://github.com/zauberzeug/nicegui/security/dependabot/44
