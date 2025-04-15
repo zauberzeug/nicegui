@@ -114,7 +114,7 @@ function stringifyEventArgs(args, event_args) {
 function nodeArgs(node) {
     return {
         cid: findComponentId(node),
-        tag: node.tag,
+        tag: node.tagName,
         data: node.dataset,
     }
 }
