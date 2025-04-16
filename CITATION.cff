@@ -8,8 +8,8 @@ authors:
     given-names: Rodja
     orcid: https://orcid.org/0009-0009-4735-6227
 title: "NiceGUI: Web-based user interfaces with Python. The nice way."
-version: 2.14.1
-date-released: "2025-04-09"
+version: 2.15.0
+date-released: "2025-04-16"
 url: https://github.com/zauberzeug/nicegui
 doi: 10.5281/zenodo.7785516
 identifiers:
