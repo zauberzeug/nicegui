@@ -52,6 +52,8 @@ def dynamic_properties() -> None:
 
     Instead of passing the theme as a dictionary, you can pass a URL to a JSON file.
     This allows the browser to cache the theme and load it faster when the same theme is used multiple times.
+
+    *Added in version 2.15.0*
 ''')
 def custom_theme() -> None:
     ui.echart({
