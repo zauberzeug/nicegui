@@ -56,7 +56,7 @@ class FilePersistentDict(PersistentDict):
                 self.backup_tasks.append(task)
                 task.add_done_callback(self.backup_tasks.remove)
         else:
-            core.app.on_startup(async_backup())
+            self.filepath.write_text(json.dumps(self, indent=self.indent), encoding=self.encoding)
 
     def clear(self) -> None:
         super().clear()
