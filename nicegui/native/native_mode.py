@@ -15,6 +15,7 @@ from .. import core, helpers, optional_features
 from ..logging import log
 from ..server import Server
 from . import native
+from .native_config import NativeConfig
 
 try:
     with warnings.catch_warnings():
@@ -28,10 +29,13 @@ except ModuleNotFoundError:
 
 def _open_window(
     host: str, port: int, title: str, width: int, height: int, fullscreen: bool, frameless: bool,
-    method_queue: mp.Queue, response_queue: mp.Queue,
+    method_queue: mp.Queue, response_queue: mp.Queue, native_config: NativeConfig
 ) -> None:
     while not helpers.is_port_open(host, port):
         time.sleep(0.1)
+
+    # Replace fresh, likely empty config with a config supplied to us via MainProcess
+    core.app.native = native_config
 
     window_kwargs = {
         'url': f'http://{host}:{port}',
@@ -111,7 +115,7 @@ def activate(host: str, port: int, title: str, width: int, height: int, fullscre
         sys.exit(1)
 
     mp.freeze_support()
-    args = host, port, title, width, height, fullscreen, frameless, native.method_queue, native.response_queue
+    args = host, port, title, width, height, fullscreen, frameless, native.method_queue, native.response_queue, core.app.native
     process = mp.Process(target=_open_window, args=args, daemon=True)
     process.start()
 
