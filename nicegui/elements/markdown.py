@@ -31,7 +31,7 @@ class Markdown(ContentElement, component='markdown.js', default_classes='nicegui
         super().__init__(content=content)
         if 'mermaid' in extras:
             self._props['use_mermaid'] = True
-            self.libraries.append(Mermaid.exposed_libraries[0])
+            self.libraries.append(next(x for x in Mermaid.exposed_libraries if 'mermaid.esm.min.mjs' in x.key))
 
         self._props['codehilite_css_url'] = CODEHILITE_CSS_URL
         if not any(r for r in core.app.routes if getattr(r, 'path', None) == CODEHILITE_CSS_URL):
