@@ -101,9 +101,33 @@ function stringifyEventArgs(args, event_args) {
         }
       }
     }
-    result.push(JSON.stringify(filtered, (k, v) => (v instanceof Node || v instanceof Window ? undefined : v)));
+    result.push(JSON.stringify(filtered, (_, v) => {
+        if (v instanceof Node || v instanceof Window) {
+            return nodeArgs(v);
+        }
+        return v;
+    }));
   });
   return result;
+}
+
+function nodeArgs(node) {
+    return {
+        cid: findComponentId(node),
+        tag: node.tagName,
+        data: node.dataset,
+    }
+}
+
+function findComponentId(node) {
+    const idPattern = /^c\d+$/;
+    while (node) {
+        if (node.id && idPattern.test(node.id)) {
+            return parseInt(node.id.slice(1), 10);
+        }
+        node = node.parentNode;
+    }
+    return -1;
 }
 
 const waitingCallbacks = new Map();
