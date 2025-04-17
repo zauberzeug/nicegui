@@ -49,6 +49,20 @@ def test_markdown_with_mermaid(screen: Screen):
     screen.should_not_contain('Node_A')
 
 
+def test_markdown_with_mermaid_on_demand(screen: Screen):
+    ui.button('Create Mermaid', on_click=lambda: ui.markdown('''
+        ```mermaid
+        graph TD;
+            Node_A --> Node_B;
+        ```
+    ''', extras=['mermaid', 'fenced-code-blocks']))
+
+    screen.open('/')
+    screen.click('Create Mermaid')
+    screen.should_contain('Node_A')
+    screen.should_contain('Node_B')
+
+
 def test_strip_indentation(screen: Screen):
     ui.markdown('''
         **This is Markdown.**
