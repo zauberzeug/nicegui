@@ -288,6 +288,7 @@ class CodeMirror(ValueElement, DisableableElement, component='codemirror.js', de
         self._props['indent'] = indent
         self._props['lineWrapping'] = line_wrapping
         self._props['highlightWhitespace'] = highlight_whitespace
+        self._update_method = 'setEditorValueFromProps'
 
     @property
     def theme(self) -> str:
