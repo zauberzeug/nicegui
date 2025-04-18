@@ -87,12 +87,15 @@ export default {
         effects: this.themeConfig.reconfigure([new_theme]),
       });
     },
-    setEditorValue() {
+    setEditorValueFromProps() {
+      this.setEditorValue(this.value);
+    },
+    setEditorValue(value) {
       if (!this.editor) return;
-      if (this.editor.state.doc.toString() === this.value) return;
+      if (this.editor.state.doc.toString() === value) return;
 
       this.emitting = false;
-      this.editor.dispatch({ changes: { from: 0, to: this.editor.state.doc.length, insert: this.value } });
+      this.editor.dispatch({ changes: { from: 0, to: this.editor.state.doc.length, insert: value } });
       this.emitting = true;
     },
     setDisabled(disabled) {
