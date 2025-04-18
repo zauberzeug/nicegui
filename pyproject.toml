@@ -100,6 +100,11 @@ addopts = "--driver Chrome"
 asyncio_mode = "auto"
 testpaths = ["tests"]
 asyncio_default_fixture_loop_scope = "function"
+filterwarnings = [
+  'ignore::DeprecationWarning:^vbuild(\.|$)',
+  'ignore::DeprecationWarning:^websockets\.legacy(\.|$)',
+  'ignore::DeprecationWarning:^uvicorn\.protocols\.websockets(\.|$)',
+]
 
 [tool.mypy]
 python_version = "3.8"
