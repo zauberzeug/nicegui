@@ -13,9 +13,6 @@ export default {
     highlightWhitespace: Boolean,
   },
   watch: {
-    value(newValue) {
-      this.setEditorValue(newValue);
-    },
     language(newLanguage) {
       this.setLanguage(newLanguage);
     },
@@ -90,12 +87,12 @@ export default {
         effects: this.themeConfig.reconfigure([new_theme]),
       });
     },
-    setEditorValue(value) {
+    setEditorValue() {
       if (!this.editor) return;
-      if (this.editor.state.doc.toString() === value) return;
+      if (this.editor.state.doc.toString() === this.value) return;
 
       this.emitting = false;
-      this.editor.dispatch({ changes: { from: 0, to: this.editor.state.doc.length, insert: value } });
+      this.editor.dispatch({ changes: { from: 0, to: this.editor.state.doc.length, insert: this.value } });
       this.emitting = true;
     },
     setDisabled(disabled) {
