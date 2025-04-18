@@ -6,7 +6,8 @@
     ],
     "rename": {
       "package/dist": ".."
-    }
+    },
+    "version": "3.4.38"
   },
   "quasar": {
     "destination": "nicegui/static",
@@ -17,13 +18,15 @@
     ],
     "rename": {
       "package/dist": ".."
-    }
+    },
+    "version": "2.16.9"
   },
   "tailwindcss": {
     "destination": "nicegui/static",
     "keep": [],
     "download": "https://cdn.tailwindcss.com",
-    "rename": "../tailwindcss.min.js"
+    "rename": "../tailwindcss.min.js",
+    "version": "3.4.10"
   },
   "socket.io": {
     "destination": "nicegui/static",
@@ -32,7 +35,8 @@
     ],
     "rename": {
       "package/client-dist": ".."
-    }
+    },
+    "version": "4.7.5"
   },
   "es-module-shims": {
     "destination": "nicegui/static",
@@ -41,7 +45,8 @@
     ],
     "rename": {
       "package/dist": ".."
-    }
+    },
+    "version": "1.10.0"
   },
   "aggrid": {
     "package": "ag-grid-community",
@@ -51,7 +56,8 @@
     ],
     "rename": {
       "package/dist/": ""
-    }
+    },
+    "version": "32.1.0"
   },
   "echarts": {
     "destination": "nicegui/elements/lib",
@@ -61,7 +67,8 @@
     ],
     "rename": {
       "package/dist/": ""
-    }
+    },
+    "version": "5.5.1"
   },
   "echarts-gl": {
     "destination": "nicegui/elements/lib",
@@ -71,7 +78,8 @@
     ],
     "rename": {
       "package/dist/": ""
-    }
+    },
+    "version": "2.0.9"
   },
   "leaflet": {
     "destination": "nicegui/elements/lib/leaflet",
@@ -83,7 +91,8 @@
     ],
     "rename": {
       "package/dist/": ""
-    }
+    },
+    "version": "1.9.4"
   },
   "leaflet-draw": {
     "destination": "nicegui/elements/lib/leaflet",
@@ -94,7 +103,8 @@
     ],
     "rename": {
       "package/dist/": ""
-    }
+    },
+    "version": "1.0.4"
   },
   "mermaid": {
     "destination": "nicegui/elements/lib",
@@ -104,7 +114,8 @@
     ],
     "rename": {
       "package/dist/": ""
-    }
+    },
+    "version": "11.0.2"
   },
   "nipplejs": {
     "destination": "nicegui/elements/lib",
@@ -113,7 +124,8 @@
     ],
     "rename": {
       "package/dist/": ""
-    }
+    },
+    "version": "0.10.2"
   },
   "plotly": {
     "package": "plotly.js",
@@ -123,7 +135,8 @@
     ],
     "rename": {
       "package/dist/": ""
-    }
+    },
+    "version": "2.35.0"
   },
   "three": {
     "destination": "nicegui/elements/lib",
@@ -145,7 +158,8 @@
       "package/examples/jsm/loaders/": "modules/",
       "package/examples/jsm/libs/": "modules/",
       "package/examples/jsm/utils/": "modules/"
-    }
+    },
+    "version": "0.168.0"
   },
   "tween": {
     "package": "@tweenjs/tween.js",
@@ -155,7 +169,8 @@
     ],
     "rename": {
       "package/dist/": ""
-    }
+    },
+    "version": "25.0.0"
   },
   "vanilla-jsoneditor": {
     "destination": "nicegui/elements/lib",
@@ -165,6 +180,7 @@
     ],
     "rename": {
       "package/": ""
-    }
+    },
+    "version": "0.23.8"
   }
 }
