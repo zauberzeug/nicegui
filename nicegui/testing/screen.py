@@ -205,7 +205,7 @@ class Screen:
 
     def find_element(self, element: ui.element) -> WebElement:
         """Find the given NiceGUI element."""
-        return self.selenium.find_element(By.ID, f'c{element.id}')
+        return self.selenium.find_element(By.ID, element.html_id)
 
     def find_by_class(self, name: str) -> WebElement:
         """Find the element with the given CSS class."""
