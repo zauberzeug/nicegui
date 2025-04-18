@@ -1,7 +1,9 @@
 {
   "vue": {
     "destination": "nicegui/static",
-    "keep": ["package/dist/vue\\.global(\\.prod)?\\.js"],
+    "keep": [
+      "package/dist/vue\\.global(\\.prod)?\\.js"
+    ],
     "rename": {
       "package/dist": ".."
     }
@@ -25,14 +27,18 @@
   },
   "socket.io": {
     "destination": "nicegui/static",
-    "keep": ["package/client-dist/socket\\.io\\.min\\.js(\\.map)?"],
+    "keep": [
+      "package/client-dist/socket\\.io\\.min\\.js(\\.map)?"
+    ],
     "rename": {
       "package/client-dist": ".."
     }
   },
   "es-module-shims": {
     "destination": "nicegui/static",
-    "keep": ["package/dist/es-module-shims\\.js"],
+    "keep": [
+      "package/dist/es-module-shims\\.js"
+    ],
     "rename": {
       "package/dist": ".."
     }
@@ -40,21 +46,29 @@
   "aggrid": {
     "package": "ag-grid-community",
     "destination": "nicegui/elements/lib",
-    "keep": ["package/dist/ag-grid-community(\\.min)?\\.js"],
+    "keep": [
+      "package/dist/ag-grid-community(\\.min)?\\.js"
+    ],
     "rename": {
       "package/dist/": ""
     }
   },
   "echarts": {
     "destination": "nicegui/elements/lib",
-    "keep": ["package/dist/echarts\\.min\\.js", "package/dist/echarts\\.js\\.map"],
+    "keep": [
+      "package/dist/echarts\\.min\\.js",
+      "package/dist/echarts\\.js\\.map"
+    ],
     "rename": {
       "package/dist/": ""
     }
   },
   "echarts-gl": {
     "destination": "nicegui/elements/lib",
-    "keep": ["package/dist/echarts-gl\\.min\\.js", "package/dist/echarts-gl\\.js\\.map"],
+    "keep": [
+      "package/dist/echarts-gl\\.min\\.js",
+      "package/dist/echarts-gl\\.js\\.map"
+    ],
     "rename": {
       "package/dist/": ""
     }
@@ -73,21 +87,30 @@
   },
   "leaflet-draw": {
     "destination": "nicegui/elements/lib/leaflet",
-    "keep": ["package/dist/leaflet\\.draw\\.css", "package/dist/leaflet\\.draw\\.js", "package/dist/images/.*"],
+    "keep": [
+      "package/dist/leaflet\\.draw\\.css",
+      "package/dist/leaflet\\.draw\\.js",
+      "package/dist/images/.*"
+    ],
     "rename": {
       "package/dist/": ""
     }
   },
   "mermaid": {
     "destination": "nicegui/elements/lib",
-    "keep": ["package/dist/mermaid.esm.min\\.mjs", "package/dist/chunks/mermaid.esm.min/.*\\.mjs"],
+    "keep": [
+      "package/dist/mermaid.esm.min\\.mjs",
+      "package/dist/chunks/mermaid.esm.min/.*\\.mjs"
+    ],
     "rename": {
       "package/dist/": ""
     }
   },
   "nipplejs": {
     "destination": "nicegui/elements/lib",
-    "keep": ["package/dist/nipplejs(\\.min)?\\.js"],
+    "keep": [
+      "package/dist/nipplejs(\\.min)?\\.js"
+    ],
     "rename": {
       "package/dist/": ""
     }
@@ -95,7 +118,9 @@
   "plotly": {
     "package": "plotly.js",
     "destination": "nicegui/elements/lib",
-    "keep": ["package/dist/plotly(\\.min)?\\.js"],
+    "keep": [
+      "package/dist/plotly(\\.min)?\\.js"
+    ],
     "rename": {
       "package/dist/": ""
     }
@@ -125,14 +150,19 @@
   "tween": {
     "package": "@tweenjs/tween.js",
     "destination": "nicegui/elements/lib",
-    "keep": ["package/dist/tween\\.umd(\\.min)?\\.js"],
+    "keep": [
+      "package/dist/tween\\.umd(\\.min)?\\.js"
+    ],
     "rename": {
       "package/dist/": ""
     }
   },
   "vanilla-jsoneditor": {
     "destination": "nicegui/elements/lib",
-    "keep": ["package/standalone\\.js", "package/standalone\\.js\\.map"],
+    "keep": [
+      "package/standalone\\.js",
+      "package/standalone\\.js\\.map"
+    ],
     "rename": {
       "package/": ""
     }
