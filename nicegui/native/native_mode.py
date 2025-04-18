@@ -29,7 +29,7 @@ except ModuleNotFoundError:
 
 def _open_window(
     host: str, port: int, title: str, width: int, height: int, fullscreen: bool, frameless: bool,
-    method_queue: mp.Queue, response_queue: mp.Queue, native_config: NativeConfig
+    method_queue: mp.Queue, response_queue: mp.Queue, native_config: NativeConfig,
 ) -> None:
     while not helpers.is_port_open(host, port):
         time.sleep(0.1)
