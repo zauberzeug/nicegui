@@ -1,11 +1,12 @@
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List, NewType, Tuple
 
 from typing_extensions import Self
 
 from ..dataclasses import KWONLY_SLOTS
 from .leaflet_layer import Layer
 
+LatLng = NewType("LatLng", Tuple[float, float])
 
 @dataclass(**KWONLY_SLOTS)
 class GenericLayer(Layer):
@@ -67,3 +68,78 @@ class Marker(Layer):
         """
         self.latlng = (lat, lng)
         self.run_method('setLatLng', (lat, lng))
+
+@dataclass(**KWONLY_SLOTS)
+class _Path(Layer):
+    """Base class for leaflet Path types"""
+    def redraw(self):
+        raise NotImplementedError
+
+@dataclass(**KWONLY_SLOTS)
+class Polyline(_Path):
+    """Draw a polyline overlay on the map.
+    """
+
+    latlngs: List[LatLng] = field(default_factory=list)
+    options: Dict = field(default_factory=dict)
+
+    def to_dict(self) -> Dict:
+        return {
+                'type': 'polyline',
+                'args': [self.latlngs, self.options]
+                }
+
+    def addLatLng(self, latlng: LatLng):
+        """Add a new point to the polyline.
+
+        :param latlng: Latitude, longitude coordinates
+        """
+        self.run_method('addLatLng', latlng)
+
+    def setLatLngs(self, latlngs: List[LatLng]):
+        """Replace all points in the polyline with the given list
+
+        :param latlngs List of geographic points
+        """
+        self.run_method('setLatLngs', latlngs)
+
+@dataclass(**KWONLY_SLOTS)
+class CircleMarker(_Path):
+    """A circle of fixed size with radius specified in pixels.
+    """
+
+    latlng: LatLng = field(default_factory=tuple)
+    options: Dict = field(default_factory=dict)
+
+    def to_dict(self) -> Dict:
+        return {
+            'type': 'circleMarker',
+            'args': [self.latlng, self.options]
+        }
+    
+    def setLatLng(self, latlng: LatLng):
+        """Set the center position of the circle marker to a new location.
+
+        :param latlng: Coordinates (latitude, longitude)
+        """
+        self.latlng = latlng
+        self.run_method('setLatLng', latlng)
+
+    def setRadius(self, radius: float):
+        """Set the radius of the circle
+
+        :param radius: Radius of the circle, in pixels
+        """
+        self.run_method('setRadius', radius)
+
+@dataclass
+class Circle(CircleMarker):
+    """Draws circle overlays on a map. Extends CircleMarker
+    """
+    
+    def to_dict(self) -> Dict:
+        return {
+            'type': 'circle',
+            'args': [self.latlng, self.options]
+        }
+
