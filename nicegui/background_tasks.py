@@ -68,9 +68,9 @@ def _handle_task_result(task: asyncio.Task) -> None:
 
 async def on_shutdown() -> None:
     """Cancel all running tasks and coroutines on shutdown."""
-    for task in running_tasks:
+    for task in list(running_tasks):
         await _cancel_task(task)
-    for task in lazy_tasks_running.values():
+    for task in list(lazy_tasks_running.values()):
         await _cancel_task(task)
     for coroutine in lazy_coroutines_waiting.values():
         coroutine.close()
