@@ -2,13 +2,13 @@
 from __future__ import annotations
 
 import asyncio
-from typing import Awaitable, Dict, Set
+from typing import Any, Awaitable, Coroutine, Dict, Set
 
 from . import core
 
 running_tasks: Set[asyncio.Task] = set()
 lazy_tasks_running: Dict[str, asyncio.Task] = {}
-lazy_tasks_waiting: Dict[str, Awaitable] = {}
+lazy_coroutines_waiting: Dict[str, Coroutine[Any, Any, Any]] = {}
 
 
 def create(coroutine: Awaitable, *, name: str = 'unnamed task') -> asyncio.Task:
@@ -33,15 +33,15 @@ def create_lazy(coroutine: Awaitable, *, name: str) -> None:
     If a third task with the same name is created while the first one is still running, the second one is discarded.
     """
     if name in lazy_tasks_running:
-        if name in lazy_tasks_waiting:
-            asyncio.Task(lazy_tasks_waiting[name]).cancel()
-        lazy_tasks_waiting[name] = coroutine
+        if name in lazy_coroutines_waiting:
+            lazy_coroutines_waiting[name].close()
+        lazy_coroutines_waiting[name] = coroutine
         return
 
     def finalize(name: str) -> None:
         lazy_tasks_running.pop(name)
-        if name in lazy_tasks_waiting:
-            create_lazy(lazy_tasks_waiting.pop(name), name=name)
+        if name in lazy_coroutines_waiting:
+            create_lazy(lazy_coroutines_waiting.pop(name), name=name)
     task = create(coroutine, name=name)
     lazy_tasks_running[name] = task
     task.add_done_callback(lambda _: finalize(name))
