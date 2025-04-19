@@ -71,6 +71,8 @@ class App(FastAPI):
         self._state = State.STARTING
         for t in self._startup_handlers:
             Client.auto_index_client.safe_invoke(t)
+        self.on_shutdown(self.storage.on_shutdown)
+        self.on_shutdown(background_tasks.on_shutdown)
         self._state = State.STARTED
 
     def stop(self) -> None:
