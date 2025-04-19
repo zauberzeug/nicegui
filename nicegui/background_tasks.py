@@ -27,7 +27,7 @@ def create(coroutine: Awaitable, *, name: str = 'unnamed task') -> asyncio.Task:
     return task
 
 
-def create_lazy(coroutine: Awaitable, *, name: str) -> None:
+def create_lazy(awaitable: Awaitable, *, name: str) -> None:
     """Wraps a create call and ensures a second task with the same name is delayed until the first one is done.
 
     If a third task with the same name is created while the first one is still running, the second one is discarded.
@@ -35,16 +35,26 @@ def create_lazy(coroutine: Awaitable, *, name: str) -> None:
     if name in lazy_tasks_running:
         if name in lazy_coroutines_waiting:
             lazy_coroutines_waiting[name].close()
-        lazy_coroutines_waiting[name] = coroutine
+        lazy_coroutines_waiting[name] = _ensure_coroutine(awaitable)
         return
 
     def finalize(name: str) -> None:
         lazy_tasks_running.pop(name)
         if name in lazy_coroutines_waiting:
             create_lazy(lazy_coroutines_waiting.pop(name), name=name)
-    task = create(coroutine, name=name)
+    task = create(awaitable, name=name)
     lazy_tasks_running[name] = task
     task.add_done_callback(lambda _: finalize(name))
+
+
+def _ensure_coroutine(awaitable: Awaitable[Any]) -> Coroutine[Any, Any, Any]:
+    """Convert an awaitable to a coroutine if it isn't already one."""
+    if asyncio.iscoroutine(awaitable):
+        return awaitable
+
+    async def wrapper() -> Any:
+        return await awaitable
+    return wrapper()
 
 
 def _handle_task_result(task: asyncio.Task) -> None:
