@@ -54,3 +54,12 @@ def _handle_task_result(task: asyncio.Task) -> None:
         pass
     except Exception as e:
         core.app.handle_exception(e)
+
+
+def on_shutdown() -> None:
+    for task in running_tasks:
+        task.cancel()
+    for task in lazy_tasks_running.values():
+        task.cancel()
+    for coroutine in lazy_coroutines_waiting.values():
+        coroutine.close()
