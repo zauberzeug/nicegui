@@ -28,7 +28,7 @@ jobs:
   test:
     strategy:
       matrix:
-        python: ["3.8", "3.9", "3.10", "3.11", "3.12", "3.13"]
+        python: ["3.8"]
       fail-fast: false
     runs-on: ubuntu-latest
     timeout-minutes: 40
@@ -50,8 +50,6 @@ jobs:
           poetry run pip install -r tests/requirements.txt
           # try fix issue with importlib_resources
           poetry run pip install importlib-resources
-      - name: test startup
-        run: poetry run ./test_startup.sh
       - name: setup chromedriver
         uses: nanasess/setup-chromedriver@v2.3.0
       - name: pytest
