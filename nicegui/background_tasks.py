@@ -11,7 +11,7 @@ lazy_tasks_running: Dict[str, asyncio.Task] = {}
 lazy_coroutines_waiting: Dict[str, Coroutine[Any, Any, Any]] = {}
 
 
-def create(coroutine: Awaitable, *, name: str = 'unnamed task') -> asyncio.Task:
+def create(awaitable: Awaitable, *, name: str = 'unnamed task') -> asyncio.Task:
     """Wraps a loop.create_task call and ensures there is an exception handler added to the task.
 
     If the task raises an exception, it is logged and handled by the global exception handlers.
@@ -19,8 +19,8 @@ def create(coroutine: Awaitable, *, name: str = 'unnamed task') -> asyncio.Task:
     See https://docs.python.org/3/library/asyncio-task.html#asyncio.create_task.
     """
     assert core.loop is not None
-    coroutine = coroutine if asyncio.iscoroutine(coroutine) else asyncio.wait_for(coroutine, None)
-    task: asyncio.Task = core.loop.create_task(coroutine, name=name)
+    awaitable = awaitable if asyncio.iscoroutine(awaitable) else asyncio.wait_for(awaitable, None)
+    task: asyncio.Task = core.loop.create_task(awaitable, name=name)
     task.add_done_callback(_handle_task_result)
     running_tasks.add(task)
     task.add_done_callback(running_tasks.discard)
