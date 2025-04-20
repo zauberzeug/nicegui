@@ -55,7 +55,7 @@ jobs:
       - name: setup chromedriver
         uses: nanasess/setup-chromedriver@v2.3.0
       - name: pytest
-        run: poetry run pytest
+        run: poetry run pytest -s -v -W always
 
   slack:
     needs:

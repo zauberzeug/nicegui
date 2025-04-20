@@ -67,6 +67,7 @@ def _handle_task_result(task: asyncio.Task) -> None:
 
 
 async def on_shutdown() -> None:
+    """Cancel all running tasks and coroutines on shutdown."""
     current = asyncio.current_task()
     to_cancel = (
         set(running_tasks) |
