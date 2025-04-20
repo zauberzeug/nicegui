@@ -303,12 +303,13 @@ class Client:
 
     def safe_invoke(self, func: Union[Callable[..., Any], Awaitable]) -> None:
         """Invoke the potentially async function in the client context and catch any exceptions."""
+        func_name = func.__name__ if hasattr(func, '__name__') else str(func)
         try:
             if isinstance(func, Awaitable):
                 async def func_with_client():
                     with self:
                         await func
-                background_tasks.create(func_with_client(), name=f'client {self.id} {func.__name__}')
+                background_tasks.create(func_with_client(), name=f'func with client {self.id} {func_name}')
             else:
                 with self:
                     result = func(self) if len(inspect.signature(func).parameters) == 1 else func()
@@ -316,7 +317,7 @@ class Client:
                     async def result_with_client():
                         with self:
                             await result
-                    background_tasks.create(result_with_client(), name=f'client {self.id} {func.__name__}')
+                    background_tasks.create(result_with_client(), name=f'result with client {self.id} {func_name}')
         except Exception as e:
             core.app.handle_exception(e)
 
