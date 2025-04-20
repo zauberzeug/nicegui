@@ -84,8 +84,9 @@ async def _cancel_all(tasks: set[asyncio.Task]) -> None:
         try:
             await asyncio.wait(tasks, timeout=2.0)
         except asyncio.TimeoutError:
-            for task in [t for t in tasks if not t.done()]:
-                log.error(f'Task {task.get_name()} could not be aborted within timeout')
+            log.error('Could not cancel %s tasks within timeout: %s',
+                      len(tasks),
+                      ', '.join([t.get_name() for t in tasks if not t.done()]))
 
     running_tasks.clear()
     lazy_tasks_running.clear()
