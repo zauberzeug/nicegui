@@ -130,7 +130,7 @@ class App(FastAPI):
         for handler in self._exception_handlers:
             result = handler() if not inspect.signature(handler).parameters else handler(exception)
             if helpers.is_coroutine_function(handler):
-                background_tasks.create(result)
+                background_tasks.create(result, name=f'exception {handler.__name__}')
 
     def shutdown(self) -> None:
         """Shut down NiceGUI.

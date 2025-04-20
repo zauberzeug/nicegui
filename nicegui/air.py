@@ -270,10 +270,10 @@ class Air:
 def connect() -> None:
     """Connect to the NiceGUI On Air server if there is an air instance."""
     if core.air:
-        background_tasks.create(core.air.connect())
+        background_tasks.create(core.air.connect(), name='On Air connect')
 
 
 def disconnect() -> None:
     """Disconnect from the NiceGUI On Air server if there is an air instance."""
     if core.air:
-        background_tasks.create(core.air.disconnect())
+        background_tasks.create(core.air.disconnect(), name='On Air disconnect')

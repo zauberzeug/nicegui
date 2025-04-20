@@ -280,7 +280,8 @@ class Client:
                 self._delete_tasks.pop(document_id)
                 if not self.shared:
                     self.delete()
-        self._delete_tasks[document_id] = background_tasks.create(delete_content())
+        self._delete_tasks[document_id] = \
+            background_tasks.create(delete_content(), name=f'delete content {document_id}')
 
     def _cancel_delete_task(self, document_id: str) -> None:
         if document_id in self._delete_tasks:
@@ -307,7 +308,7 @@ class Client:
                 async def func_with_client():
                     with self:
                         await func
-                background_tasks.create(func_with_client())
+                background_tasks.create(func_with_client(), name=f'client {self.id} {func.__name__}')
             else:
                 with self:
                     result = func(self) if len(inspect.signature(func).parameters) == 1 else func()
@@ -315,7 +316,7 @@ class Client:
                     async def result_with_client():
                         with self:
                             await result
-                    background_tasks.create(result_with_client())
+                    background_tasks.create(result_with_client(), name=f'client {self.id} {func.__name__}')
         except Exception as e:
             core.app.handle_exception(e)
 
