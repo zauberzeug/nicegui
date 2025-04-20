@@ -138,7 +138,7 @@ async def _shutdown() -> None:
     if app.native.main_window:
         app.native.main_window.signal_server_shutdown()
     air.disconnect()
-    app.stop()
+    await app.stop()
     run.tear_down()
 
 

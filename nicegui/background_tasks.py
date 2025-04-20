@@ -68,21 +68,20 @@ def _handle_task_result(task: asyncio.Task) -> None:
 
 async def on_shutdown() -> None:
     """Cancel all running tasks and coroutines on shutdown."""
-    current = asyncio.current_task()
     to_cancel = (
         set(running_tasks) |
         set(lazy_tasks_running.values())
-    ) - {current}
+    )
     await _cancel_all(to_cancel)
     for coro in lazy_coroutines_waiting.values():
         coro.close()
 
 
 async def _cancel_all(tasks: set[asyncio.Task]) -> None:
+    # Cancel all tasks
     for task in tasks:
-        try:
-            await task  # NOTE we must run the task to completion
-        except asyncio.CancelledError:
-            pass
-        task.cancel()
-    await asyncio.gather(*tasks, return_exceptions=True)
+        if not task.done():
+            task.cancel()
+
+    running_tasks.clear()
+    lazy_tasks_running.clear()

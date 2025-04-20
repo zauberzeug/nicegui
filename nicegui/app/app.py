@@ -75,11 +75,17 @@ class App(FastAPI):
         self.on_shutdown(background_tasks.on_shutdown)
         self._state = State.STARTED
 
-    def stop(self) -> None:
+    async def stop(self) -> None:
         """Stop NiceGUI. (For internal use only.)"""
         self._state = State.STOPPING
         for t in self._shutdown_handlers:
-            Client.auto_index_client.safe_invoke(t)
+            if isinstance(t, Awaitable):
+                await t
+            else:
+                with Client.auto_index_client:
+                    result = t()
+                if isinstance(result, Awaitable):
+                    await result
         self._state = State.STOPPED
 
     def on_connect(self, handler: Union[Callable, Awaitable]) -> None:
