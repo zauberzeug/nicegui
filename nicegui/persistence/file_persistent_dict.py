@@ -45,12 +45,13 @@ class FilePersistentDict(PersistentDict):
                 return
             self.filepath.parent.mkdir(exist_ok=True)
 
-        async def backup() -> None:
+        @background_tasks.await_on_shutdown
+        async def async_backup() -> None:
             async with aiofiles.open(self.filepath, 'w', encoding=self.encoding) as f:
                 await f.write(json.dumps(self, indent=self.indent))
 
         if core.loop and core.loop.is_running():
-            background_tasks.create_lazy(backup(), name=self.filepath.stem)
+            background_tasks.create_lazy(async_backup(), name=self.filepath.stem)
         else:
             self.filepath.write_text(json.dumps(self, indent=self.indent), encoding=self.encoding)
 

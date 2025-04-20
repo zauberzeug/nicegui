@@ -48,6 +48,12 @@ def create_lazy(awaitable: Awaitable, *, name: str) -> None:
     task.add_done_callback(lambda _: finalize(name))
 
 
+def await_on_shutdown(fn):
+    """Tag a coroutine so the shutdown logic knows it must be awaited."""
+    fn.await_on_shutdown = True
+    return fn
+
+
 def _ensure_coroutine(awaitable: Awaitable[Any]) -> Coroutine[Any, Any, Any]:
     """Convert an awaitable to a coroutine if it isn't already one."""
     if asyncio.iscoroutine(awaitable):
@@ -69,15 +75,9 @@ def _handle_task_result(task: asyncio.Task) -> None:
 
 async def on_shutdown() -> None:
     """Cancel all running tasks and coroutines on shutdown."""
-    to_cancel = (set(running_tasks) | set(lazy_tasks_running.values()))
-    await _cancel_all(to_cancel)
-    for coro in lazy_coroutines_waiting.values():
-        coro.close()
-
-
-async def _cancel_all(tasks: set[asyncio.Task]) -> None:
+    tasks = (set(running_tasks) | set(lazy_tasks_running.values()))
     for task in tasks:
-        if not task.done():
+        if not task.done() and not task.cancelled() and not hasattr(task.get_coro(), 'await_on_shutdown'):
             task.cancel()
     await asyncio.sleep(0)  # ensure the loop can cancel the tasks before it stops
     if tasks:
@@ -90,3 +90,5 @@ async def _cancel_all(tasks: set[asyncio.Task]) -> None:
 
     running_tasks.clear()
     lazy_tasks_running.clear()
+    for coro in lazy_coroutines_waiting.values():
+        coro.close()
