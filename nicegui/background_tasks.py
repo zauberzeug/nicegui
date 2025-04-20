@@ -89,5 +89,7 @@ async def _cancel_all(tasks: set[asyncio.Task]) -> None:
                 if not task.done():
                     task_name = task.get_name() if hasattr(task, 'get_name') else 'unknown'
                     print(f'Task {task_name} could not be aborted within timeout')
+
+    await asyncio.sleep(0)  # ensure the loop can cancel the tasks before it stops
     running_tasks.clear()
     lazy_tasks_running.clear()
