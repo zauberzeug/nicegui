@@ -101,7 +101,8 @@ class Outbox:
                         await coro
                     except Exception as e:
                         core.app.handle_exception(e)
-
+            except asyncio.CancelledError:
+                break
             except Exception as e:
                 core.app.handle_exception(e)
                 await asyncio.sleep(0.1)
