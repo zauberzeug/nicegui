@@ -5,6 +5,7 @@ import asyncio
 from typing import Any, Awaitable, Coroutine, Dict, Set
 
 from . import core
+from .logging import log
 
 running_tasks: Set[asyncio.Task] = set()
 lazy_tasks_running: Dict[str, asyncio.Task] = {}
@@ -68,10 +69,7 @@ def _handle_task_result(task: asyncio.Task) -> None:
 
 async def on_shutdown() -> None:
     """Cancel all running tasks and coroutines on shutdown."""
-    to_cancel = (
-        set(running_tasks) |
-        set(lazy_tasks_running.values())
-    )
+    to_cancel = (set(running_tasks) | set(lazy_tasks_running.values()))
     await _cancel_all(to_cancel)
     for coro in lazy_coroutines_waiting.values():
         coro.close()
@@ -81,15 +79,13 @@ async def _cancel_all(tasks: set[asyncio.Task]) -> None:
     for task in tasks:
         if not task.done():
             task.cancel()
+    await asyncio.sleep(0)  # ensure the loop can cancel the tasks before it stops
     if tasks:
         try:
             await asyncio.wait(tasks, timeout=2.0)
         except asyncio.TimeoutError:
-            for task in tasks:
-                if not task.done():
-                    task_name = task.get_name() if hasattr(task, 'get_name') else 'unknown'
-                    print(f'Task {task_name} could not be aborted within timeout')
+            for task in [t for t in tasks if not t.done()]:
+                log.error(f'Task {task.get_name()} could not be aborted within timeout')
 
-    await asyncio.sleep(0)  # ensure the loop can cancel the tasks before it stops
     running_tasks.clear()
     lazy_tasks_running.clear()
