@@ -5,6 +5,8 @@ import time
 from collections import deque
 from typing import TYPE_CHECKING, Any, Deque, Dict, Optional, Tuple
 
+import wait_for2
+
 from . import background_tasks, core
 
 if TYPE_CHECKING:
@@ -72,7 +74,7 @@ class Outbox:
             try:
                 if not self._enqueue_event.is_set():
                     try:
-                        await asyncio.wait_for(self._enqueue_event.wait(), timeout=1.0)
+                        await wait_for2.wait_for(self._enqueue_event.wait(), timeout=1.0)
                     except (TimeoutError, asyncio.TimeoutError):
                         continue
 
