@@ -379,4 +379,7 @@ class Client:
             except Exception:
                 # NOTE: make sure the loop doesn't crash
                 log.exception('Error while pruning clients')
-            await asyncio.sleep(10)
+            try:
+                await asyncio.sleep(10)
+            except asyncio.CancelledError:
+                break

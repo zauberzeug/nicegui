@@ -77,20 +77,21 @@ def _handle_task_result(task: asyncio.Task) -> None:
 
 async def on_shutdown() -> None:
     """Cancel all running tasks and coroutines on shutdown."""
-    tasks = (set(running_tasks) | set(lazy_tasks_running.values()))
-    for task in tasks:
-        if not task.done() and not task.cancelled() and not hasattr(task.get_coro(), 'await_on_shutdown'):
-            task.cancel()
-    await asyncio.sleep(0)  # ensure the loop can cancel the tasks before it stops
-    if tasks:
-        try:
-            await asyncio.wait(tasks, timeout=2.0)
-        except asyncio.TimeoutError:
-            log.error('Could not cancel %s tasks within timeout: %s',
-                      len(tasks),
-                      ', '.join([t.get_name() for t in tasks if not t.done()]))
-
-    running_tasks.clear()
-    lazy_tasks_running.clear()
+    while running_tasks or lazy_tasks_running:
+        tasks = (set(running_tasks) | set(lazy_tasks_running.values()))
+        for task in tasks:
+            if not task.done() and not task.cancelled() and not task.get_name().startswith('storage'):
+                task.cancel()
+        await asyncio.sleep(0)  # ensure the loop can cancel the tasks before it stops
+        if tasks:
+            try:
+                await wait_for2.wait_for(asyncio.gather(*tasks), return_exceptions=True, timeout=2.0)
+            except asyncio.TimeoutError:
+                log.error('Could not cancel %s tasks within timeout: %s',
+                          len(tasks),
+                          ', '.join([t.get_name() for t in tasks if not t.done()]))
+            except Exception:
+                log.exception('Error while cancelling tasks')
+        await asyncio.sleep(0)
     for coro in lazy_coroutines_waiting.values():
         coro.close()

@@ -189,7 +189,10 @@ class Storage:
                     if isinstance(tab, PersistentDict):
                         await tab.close()
                     del self._tabs[tab_id]
-            await asyncio.sleep(PURGE_INTERVAL)
+            try:
+                await asyncio.sleep(PURGE_INTERVAL)
+            except asyncio.CancelledError:
+                break
 
     def clear(self) -> None:
         """Clears all storage."""
