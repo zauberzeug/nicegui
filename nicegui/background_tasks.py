@@ -85,7 +85,7 @@ async def on_shutdown() -> None:
         await asyncio.sleep(0)  # ensure the loop can cancel the tasks before it stops
         if tasks:
             try:
-                await wait_for2.wait_for(asyncio.gather(*tasks), return_exceptions=True, timeout=2.0)
+                await wait_for2.wait_for(asyncio.gather(*tasks, return_exceptions=True), timeout=2.0)
             except asyncio.TimeoutError:
                 log.error('Could not cancel %s tasks within timeout: %s',
                           len(tasks),
