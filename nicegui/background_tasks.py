@@ -4,6 +4,8 @@ from __future__ import annotations
 import asyncio
 from typing import Any, Awaitable, Coroutine, Dict, Set
 
+import wait_for2
+
 from . import core
 from .logging import log
 
@@ -20,7 +22,7 @@ def create(awaitable: Awaitable, *, name: str = 'unnamed task') -> asyncio.Task:
     See https://docs.python.org/3/library/asyncio-task.html#asyncio.create_task.
     """
     assert core.loop is not None
-    awaitable = awaitable if asyncio.iscoroutine(awaitable) else asyncio.wait_for(awaitable, None)
+    awaitable = awaitable if asyncio.iscoroutine(awaitable) else wait_for2.wait_for(awaitable, None)
     task: asyncio.Task = core.loop.create_task(awaitable, name=name)
     task.add_done_callback(_handle_task_result)
     running_tasks.add(task)
