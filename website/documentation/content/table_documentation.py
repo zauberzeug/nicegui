@@ -405,6 +405,18 @@ def table_cells_with_links():
     ''')
 
 
+@doc.demo('Table cells with HTML', '''
+    This demo shows how to define a named slot to render HTML content.
+    The slot name "body-cell-[name]" can be adjusted to match any column with corresponding name.
+''')
+def table_cells_with_html():
+    ui.table(rows=[
+        {'name': 'bold', 'code': '<b>Bold</b>'},
+        {'name': 'italic', 'code': '<i>Italic</i>'},
+        {'name': 'underline', 'code': '<u>Underline</u>'},
+    ]).add_slot('body-cell-code', '<q-td v-html="props.row.code"></q-td>')
+
+
 @doc.demo('Table with masonry-like grid', '''
     You can use the `grid` prop to display the table as a masonry-like grid.
     See the [Quasar documentation](https://quasar.dev/vue-components/table#grid-style) for more information.
