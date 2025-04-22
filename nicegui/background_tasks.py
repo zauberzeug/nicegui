@@ -78,7 +78,7 @@ def _handle_task_result(task: asyncio.Task) -> None:
 
 def _should_await_on_shutdown(task: asyncio.Task) -> bool:
     try:
-        return any(fn.__code__ is task._coro.cr_frame.f_code for fn in functions_awaited_on_shutdown)  # pylint: disable=protected-access
+        return any(fn.__code__ is task.get_coro().cr_frame.f_code for fn in functions_awaited_on_shutdown)
     except AttributeError:
         return False
 
