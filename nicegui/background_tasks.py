@@ -76,13 +76,6 @@ def _handle_task_result(task: asyncio.Task) -> None:
         core.app.handle_exception(e)
 
 
-def _should_await_on_shutdown(task: asyncio.Task) -> bool:
-    try:
-        return any(fn.__code__ is task.get_coro().cr_frame.f_code for fn in functions_awaited_on_shutdown)
-    except AttributeError:
-        return False
-
-
 async def on_shutdown() -> None:
     """Cancel all running tasks and coroutines on shutdown."""
     while running_tasks or lazy_tasks_running:
@@ -102,3 +95,11 @@ async def on_shutdown() -> None:
                 log.exception('Error while cancelling tasks')
     for coro in lazy_coroutines_waiting.values():
         coro.close()
+
+
+def _should_await_on_shutdown(task: asyncio.Task) -> bool:
+    try:
+        return any(fn.__code__ is task.get_coro().cr_frame.f_code  # type: ignore
+                   for fn in functions_awaited_on_shutdown)
+    except AttributeError:
+        return False
