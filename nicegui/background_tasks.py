@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 import asyncio
-from typing import Any, Awaitable, Coroutine, Dict, Set
+from typing import Any, Awaitable, Callable, Coroutine, Dict, Set
 
 import wait_for2
 
@@ -12,6 +12,7 @@ from .logging import log
 running_tasks: Set[asyncio.Task] = set()
 lazy_tasks_running: Dict[str, asyncio.Task] = {}
 lazy_coroutines_waiting: Dict[str, Coroutine[Any, Any, Any]] = {}
+functions_awaited_on_shutdown: Set[Callable] = set()
 
 
 def create(awaitable: Awaitable, *, name: str = 'unnamed task') -> asyncio.Task:
@@ -50,9 +51,9 @@ def create_lazy(awaitable: Awaitable, *, name: str) -> None:
     task.add_done_callback(lambda _: finalize(name))
 
 
-def await_on_shutdown(fn):
-    """Tag a coroutine so the shutdown logic knows it must be awaited."""
-    fn.await_on_shutdown = True
+def await_on_shutdown(fn: Callable) -> Callable:
+    """Tag a coroutine function so tasks created from it won't be cancelled during shutdown."""
+    functions_awaited_on_shutdown.add(fn)
     return fn
 
 
@@ -75,15 +76,22 @@ def _handle_task_result(task: asyncio.Task) -> None:
         core.app.handle_exception(e)
 
 
+def _should_await_on_shutdown(task: asyncio.Task) -> bool:
+    try:
+        return any(fn.__code__ is task._coro.cr_frame.f_code for fn in functions_awaited_on_shutdown)  # pylint: disable=protected-access
+    except AttributeError:
+        return False
+
+
 async def on_shutdown() -> None:
     """Cancel all running tasks and coroutines on shutdown."""
     while running_tasks or lazy_tasks_running:
         tasks = (set(running_tasks) | set(lazy_tasks_running.values()))
         for task in tasks:
-            if not task.done() and not task.cancelled() and not task.get_name().startswith('storage'):
+            if not task.done() and not task.cancelled() and not _should_await_on_shutdown(task):
                 task.cancel()
-        await asyncio.sleep(0)  # ensure the loop can cancel the tasks before it stops
         if tasks:
+            await asyncio.sleep(0)  # NOTE: ensure the loop can cancel the tasks before it shuts down
             try:
                 await wait_for2.wait_for(asyncio.gather(*tasks, return_exceptions=True), timeout=2.0)
             except asyncio.TimeoutError:
@@ -92,6 +100,5 @@ async def on_shutdown() -> None:
                           ', '.join([t.get_name() for t in tasks if not t.done()]))
             except Exception:
                 log.exception('Error while cancelling tasks')
-        await asyncio.sleep(0)
     for coro in lazy_coroutines_waiting.values():
         coro.close()
