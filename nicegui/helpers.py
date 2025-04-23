@@ -6,7 +6,7 @@ import socket
 import threading
 import time
 import webbrowser
-from collections.abc import Callable
+from collections.abc import Awaitable
 from pathlib import Path
 from typing import Any, Optional, Set, Tuple, Union
 
@@ -111,7 +111,7 @@ def event_type_to_camel_case(string: str) -> str:
     return '.'.join(kebab_to_camel_case(part) if part != '-' else part for part in string.split('.'))
 
 
-async def wait_for(fut: Callable, timeout: Optional[float] = None) -> None:
+async def wait_for(fut: Awaitable, timeout: Optional[float] = None) -> None:
     """Wait for a future to complete.
 
     This function is a wrapper around ``wait_for2.wait_for`` which is a drop-in replacement for ``asyncio.wait_for``.
