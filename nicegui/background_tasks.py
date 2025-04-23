@@ -13,7 +13,7 @@ lazy_coroutines_waiting: Dict[str, Coroutine[Any, Any, Any]] = {}
 functions_awaited_on_shutdown: Set[Callable] = set()
 
 
-def create(awaitable: Awaitable, *, name: str = 'unnamed task') -> asyncio.Task:
+def create(coroutine: Awaitable, *, name: str = 'unnamed task') -> asyncio.Task:
     """Wraps a loop.create_task call and ensures there is an exception handler added to the task.
 
     If the task raises an exception, it is logged and handled by the global exception handlers.
@@ -21,15 +21,15 @@ def create(awaitable: Awaitable, *, name: str = 'unnamed task') -> asyncio.Task:
     See https://docs.python.org/3/library/asyncio-task.html#asyncio.create_task.
     """
     assert core.loop is not None
-    awaitable = awaitable if asyncio.iscoroutine(awaitable) else helpers.wait_for(awaitable, None)
-    task: asyncio.Task = core.loop.create_task(awaitable, name=name)
+    coroutine = coroutine if asyncio.iscoroutine(coroutine) else helpers.wait_for(coroutine, None)
+    task: asyncio.Task = core.loop.create_task(coroutine, name=name)
     task.add_done_callback(_handle_task_result)
     running_tasks.add(task)
     task.add_done_callback(running_tasks.discard)
     return task
 
 
-def create_lazy(awaitable: Awaitable, *, name: str) -> None:
+def create_lazy(coroutine: Awaitable, *, name: str) -> None:
     """Wraps a create call and ensures a second task with the same name is delayed until the first one is done.
 
     If a third task with the same name is created while the first one is still running, the second one is discarded.
@@ -37,14 +37,14 @@ def create_lazy(awaitable: Awaitable, *, name: str) -> None:
     if name in lazy_tasks_running:
         if name in lazy_coroutines_waiting:
             lazy_coroutines_waiting[name].close()
-        lazy_coroutines_waiting[name] = _ensure_coroutine(awaitable)
+        lazy_coroutines_waiting[name] = _ensure_coroutine(coroutine)
         return
 
     def finalize(name: str) -> None:
         lazy_tasks_running.pop(name)
         if name in lazy_coroutines_waiting:
             create_lazy(lazy_coroutines_waiting.pop(name), name=name)
-    task = create(awaitable, name=name)
+    task = create(coroutine, name=name)
     lazy_tasks_running[name] = task
     task.add_done_callback(lambda _: finalize(name))
 
