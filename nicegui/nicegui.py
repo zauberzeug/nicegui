@@ -1,5 +1,6 @@
 import asyncio
 import mimetypes
+import multiprocessing
 import urllib.parse
 from contextlib import asynccontextmanager
 from pathlib import Path
@@ -140,6 +141,8 @@ async def _shutdown() -> None:
     air.disconnect()
     await app.stop()
     run.tear_down()
+    # NOTE: we need to cleanup the multiprocessing queues, see https://github.com/zauberzeug/nicegui/issues/4131
+    multiprocessing.util._exit_function()  # pylint: disable=protected-access
 
 
 @app.exception_handler(404)
