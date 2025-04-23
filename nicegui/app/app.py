@@ -78,14 +78,14 @@ class App(FastAPI):
     async def stop(self) -> None:
         """Stop NiceGUI. (For internal use only.)"""
         self._state = State.STOPPING
-        for t in self._shutdown_handlers:
-            if isinstance(t, Awaitable):
-                await t
-            else:
-                with Client.auto_index_client:
-                    result = t()
-                if isinstance(result, Awaitable):
-                    await result
+        with Client.auto_index_client:
+            for t in self._shutdown_handlers:
+                if isinstance(t, Awaitable):
+                    await t
+                else:
+                    result = t(self) if len(inspect.signature(t).parameters) == 1 else t()
+                    if helpers.is_coroutine_function(t):
+                        await result
         self._state = State.STOPPED
 
     def on_connect(self, handler: Union[Callable, Awaitable]) -> None:
