@@ -136,3 +136,7 @@ If you have any questions or need help with anything, please don't hesitate to r
 ## Included Web Dependencies
 
 See [DEPENDENCIES.md](https://github.com/zauberzeug/nicegui/blob/main/DEPENDENCIES.md) for a list of web frameworks NiceGUI depends on.
+
+## Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=zauberzeug/nicegui&type=Date)](https://www.star-history.com/#zauberzeug/nicegui&Date)
