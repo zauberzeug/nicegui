@@ -93,8 +93,7 @@ def _start_window_method_executor(window: webview.Window,
             except Exception:
                 log.exception(f'error in window.{method_name}')
         # NOTE: we need to cleanup the multiprocessing queues, see https://github.com/zauberzeug/nicegui/issues/4131
-        if hasattr(multiprocessing.util, '_exit_function'):  # to make mypy happy
-            multiprocessing.util._exit_function()  # pylint: disable=protected-access
+        multiprocessing.util._exit_function()  # pylint: disable=protected-access
 
     Thread(target=window_method_executor).start()
 
