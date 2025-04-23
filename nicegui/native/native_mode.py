@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import _thread
-import multiprocessing
 import multiprocessing as mp
 import queue
 import socket
@@ -92,8 +91,6 @@ def _start_window_method_executor(window: webview.Window,
                 time.sleep(0.016)  # NOTE: avoid issue https://github.com/zauberzeug/nicegui/issues/2482 on Windows
             except Exception:
                 log.exception(f'error in window.{method_name}')
-        # NOTE: we need to cleanup the multiprocessing queues, see https://github.com/zauberzeug/nicegui/issues/4131
-        multiprocessing.util._exit_function()  # pylint: disable=protected-access
 
     Thread(target=window_method_executor).start()
 
