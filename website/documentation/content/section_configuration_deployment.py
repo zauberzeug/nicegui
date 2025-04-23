@@ -82,8 +82,8 @@ def env_var_demo():
 
 
 doc.text('Background Tasks', '''
-    `background_tasks.create()` allows you to run an async function in the background and returns a task object.
-    By default these tasks will be automatically cancelled during shutdown.
+    `background_tasks.create()` allows you to run an async function in the background and return a task object.
+    By default the task will be automatically cancelled during shutdown.
     You can prevent this by using the `@background_tasks.await_on_shutdown` decorator.
     This is useful for tasks that need to be executed even after the app has been shut down.
 ''')
@@ -91,45 +91,44 @@ doc.text('Background Tasks', '''
 
 @doc.ui
 def background_tasks_demo():
-
     with ui.row().classes('w-full items-stretch'):
         with python_window(classes='max-w-lg w-full'):
             ui.markdown('''
-                    ```python
-                    from nicegui import app, background_tasks
+                ```python
+                from nicegui import app, background_tasks
 
-                    async def some_background_task():
-                        await asyncio.sleep(2)
-                        app.storage.client['msg'] = 'completed'
+                async def some_background_task():
+                    await asyncio.sleep(2)
+                    app.storage.client['msg'] = 'completed'
 
-                    @ui.page('/')
-                    def index():
-                        app.storage.client['msg'] = 'created'
-                        background_tasks.create(some_background_task())
-                        ui.label().bind_text_from(app.storage.user, 'msg')
+                @ui.page('/')
+                def index():
+                    app.storage.client['msg'] = 'created'
+                    background_tasks.create(some_background_task())
+                    ui.label().bind_text_from(app.storage.user, 'msg')
 
-                    ui.run()
-                    ```
-                ''')
+                ui.run()
+                ```
+            ''')
         with python_window(classes='max-w-lg w-full'):
             ui.markdown('''
-                    ```python
-                    from nicegui import app, background_tasks
+                ```python
+                from nicegui import app, background_tasks
 
-                    @background_tasks.await_on_shutdown
-                    async def some_background_task():
-                        await asyncio.sleep(2)
-                        print('task completed', flush=True)
+                @background_tasks.await_on_shutdown
+                async def some_background_task():
+                    await asyncio.sleep(2)
+                    print('task completed', flush=True)
 
-                    def shutdown():
-                        background_tasks.create(some_background_task())
-                        print('shutdown', flush=True)
-                        app.shutdown()
+                def shutdown():
+                    background_tasks.create(some_background_task())
+                    print('shutdown', flush=True)
+                    app.shutdown()
 
-                    app.on_startup(shutdown)
-                    ui.run()
-                    ```
-                ''')
+                app.on_startup(shutdown)
+                ui.run()
+                ```
+            ''')
 
 
 doc.text('Custom Vue Components', '''
