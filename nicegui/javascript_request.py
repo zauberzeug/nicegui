@@ -3,7 +3,7 @@ from __future__ import annotations
 import asyncio
 from typing import Any, ClassVar, Dict
 
-import wait_for2
+from . import helpers
 
 
 class JavaScriptRequest:
@@ -25,7 +25,7 @@ class JavaScriptRequest:
 
     def __await__(self) -> Any:
         try:
-            yield from wait_for2.wait_for(self._event.wait(), self.timeout).__await__()
+            yield from helpers.wait_for(self._event.wait(), self.timeout).__await__()
         except asyncio.TimeoutError as e:
             raise TimeoutError(f'JavaScript did not respond within {self.timeout:.1f} s') from e
         else:

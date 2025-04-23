@@ -4,9 +4,7 @@ from __future__ import annotations
 import asyncio
 from typing import Any, Awaitable, Callable, Coroutine, Dict, Set
 
-import wait_for2
-
-from . import core
+from . import core, helpers
 from .logging import log
 
 running_tasks: Set[asyncio.Task] = set()
@@ -23,7 +21,7 @@ def create(awaitable: Awaitable, *, name: str = 'unnamed task') -> asyncio.Task:
     See https://docs.python.org/3/library/asyncio-task.html#asyncio.create_task.
     """
     assert core.loop is not None
-    awaitable = awaitable if asyncio.iscoroutine(awaitable) else wait_for2.wait_for(awaitable, None)
+    awaitable = awaitable if asyncio.iscoroutine(awaitable) else helpers.wait_for(awaitable, None)
     task: asyncio.Task = core.loop.create_task(awaitable, name=name)
     task.add_done_callback(_handle_task_result)
     running_tasks.add(task)
@@ -86,7 +84,7 @@ async def on_shutdown() -> None:
         if tasks:
             await asyncio.sleep(0)  # NOTE: ensure the loop can cancel the tasks before it shuts down
             try:
-                await wait_for2.wait_for(asyncio.gather(*tasks, return_exceptions=True), timeout=2.0)
+                await helpers.wait_for(asyncio.gather(*tasks, return_exceptions=True), timeout=2.0)
             except asyncio.TimeoutError:
                 log.error('Could not cancel %s tasks within timeout: %s',
                           len(tasks),

@@ -10,7 +10,6 @@ from uuid import uuid4
 
 import socketio
 import socketio.exceptions
-import wait_for2
 
 from . import background_tasks, core, helpers
 from .client import Client
@@ -225,7 +224,7 @@ class Air:
         self.connecting = True
         try:
             if self.relay.connected:
-                await wait_for2.wait_for(self.disconnect(), timeout=5)
+                await helpers.wait_for(self.disconnect(), timeout=5)
             self.log.debug('Connecting...')
             await self.relay.connect(
                 f'{RELAY_HOST}?device_token={self.token}',
