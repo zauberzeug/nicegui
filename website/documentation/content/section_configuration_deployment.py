@@ -81,54 +81,30 @@ def env_var_demo():
     ui.label(f'Markdown content cache size is {markdown.prepare_content.cache_info().maxsize}')
 
 
-doc.text('Background Tasks', '''
+@doc.demo('Background Tasks', '''
     `background_tasks.create()` allows you to run an async function in the background and return a task object.
     By default the task will be automatically cancelled during shutdown.
     You can prevent this by using the `@background_tasks.await_on_shutdown` decorator.
-    This is useful for tasks that need to be executed even after the app has been shut down.
+    This is useful for tasks that need to be completed even when the app is shutting down.
 ''')
-
-
-@doc.ui
 def background_tasks_demo():
-    with ui.row().classes('w-full items-stretch'):
-        with python_window(classes='max-w-lg w-full'):
-            ui.markdown('''
-                ```python
-                from nicegui import app, background_tasks
+    from nicegui import background_tasks
+    import asyncio
 
-                async def some_background_task():
-                    await asyncio.sleep(2)
-                    app.storage.client['msg'] = 'completed'
+    results = {'answer': '?'}
 
-                @ui.page('/')
-                def index():
-                    app.storage.client['msg'] = 'created'
-                    background_tasks.create(some_background_task())
-                    ui.label().bind_text_from(app.storage.user, 'msg')
+    async def compute() -> None:
+        await asyncio.sleep(1)
+        results['answer'] = 42
 
-                ui.run()
-                ```
-            ''')
-        with python_window(classes='max-w-lg w-full'):
-            ui.markdown('''
-                ```python
-                from nicegui import app, background_tasks
+    @background_tasks.await_on_shutdown
+    async def backup() -> None:
+        await asyncio.sleep(1)
+        # pathlib.Path('backup.json').write_text(f'{results["answer"]}')
 
-                @background_tasks.await_on_shutdown
-                async def some_background_task():
-                    await asyncio.sleep(2)
-                    print('task completed', flush=True)
-
-                def shutdown():
-                    background_tasks.create(some_background_task())
-                    print('shutdown', flush=True)
-                    app.shutdown()
-
-                app.on_startup(shutdown)
-                ui.run()
-                ```
-            ''')
+    ui.label().bind_text_from(results, 'answer', lambda x: f'answer: {x}')
+    ui.button('Compute', on_click=lambda: background_tasks.create(compute()))
+    ui.button('Backup', on_click=lambda: background_tasks.create(backup()))
 
 
 doc.text('Custom Vue Components', '''
