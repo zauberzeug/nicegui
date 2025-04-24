@@ -12,14 +12,14 @@ response_queue: Optional[Queue] = None
 
 
 def create_queues() -> None:
-    """Create the message queues."""
+    """Create the message queues. (For internal use only.)"""
     global method_queue, response_queue  # pylint: disable=global-statement # noqa: PLW0603
     method_queue = Queue()
     response_queue = Queue()
 
 
 def remove_queues() -> None:
-    """Remove the message queues by closing them and waiting for threads to finish."""
+    """Remove the message queues by closing them and waiting for threads to finish. (For internal use only.)"""
     global method_queue, response_queue  # pylint: disable=global-statement # noqa: PLW0603
     if method_queue is not None:
         method_queue.close()

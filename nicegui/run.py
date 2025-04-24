@@ -16,8 +16,8 @@ P = ParamSpec('P')
 R = TypeVar('R')
 
 
-def setup():
-    """Setup the process pool. (For internal use only)"""
+def setup() -> None:
+    """Setup the process pool. (For internal use only.)"""
     global process_pool  # pylint: disable=global-statement # noqa: PLW0603
     process_pool = ProcessPoolExecutor()
 
