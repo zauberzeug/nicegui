@@ -84,6 +84,7 @@ def tear_down() -> None:
     """Kill all processes and threads."""
     if helpers.is_pytest():
         return
+    assert process_pool is not None
     for p in process_pool._processes.values():  # pylint: disable=protected-access
         p.kill()
     kwargs = {'cancel_futures': True} if sys.version_info >= (3, 9) else {}
