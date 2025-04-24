@@ -125,6 +125,7 @@ async def _startup() -> None:
     else:
         app.add_route('/favicon.ico', lambda _: FileResponse(Path(__file__).parent / 'static' / 'favicon.ico'))
     core.loop = asyncio.get_running_loop()
+    run.setup()
     app.start()
     background_tasks.create(binding.refresh_loop(), name='refresh bindings')
     background_tasks.create(Client.prune_instances(), name='prune clients')
