@@ -211,7 +211,7 @@ class Storage:
             self.path.rmdir()
 
     async def on_shutdown(self) -> None:
-        """Close all persistent storage."""
+        """Close all persistent storage. (For internal use only.)"""
         for user in self._users.values():
             await user.close()
         await self._general.close()

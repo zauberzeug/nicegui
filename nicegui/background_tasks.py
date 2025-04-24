@@ -74,10 +74,10 @@ def _handle_task_result(task: asyncio.Task) -> None:
         core.app.handle_exception(e)
 
 
-async def on_shutdown() -> None:
-    """Cancel all running tasks and coroutines on shutdown."""
+async def teardown() -> None:
+    """Cancel all running tasks and coroutines on shutdown. (For internal use only.)"""
     while running_tasks or lazy_tasks_running:
-        tasks = (set(running_tasks) | set(lazy_tasks_running.values()))
+        tasks = set(running_tasks) | set(lazy_tasks_running.values())
         for task in tasks:
             if not task.done() and not task.cancelled() and not _should_await_on_shutdown(task):
                 task.cancel()
@@ -88,7 +88,7 @@ async def on_shutdown() -> None:
             except asyncio.TimeoutError:
                 log.error('Could not cancel %s tasks within timeout: %s',
                           len(tasks),
-                          ', '.join([t.get_name() for t in tasks if not t.done()]))
+                          ', '.join(t.get_name() for t in tasks if not t.done()))
             except Exception:
                 log.exception('Error while cancelling tasks')
     for coro in lazy_coroutines_waiting.values():
