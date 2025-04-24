@@ -3,17 +3,23 @@ import sys
 import traceback
 from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
 from functools import partial
-from typing import Any, Callable, TypeVar
+from typing import Any, Callable, Optional, TypeVar
 
 from typing_extensions import ParamSpec
 
 from . import core, helpers
 
-process_pool = ProcessPoolExecutor()
+process_pool: Optional[ProcessPoolExecutor] = None
 thread_pool = ThreadPoolExecutor()
 
 P = ParamSpec('P')
 R = TypeVar('R')
+
+
+def setup():
+    """Setup the process pool. (For internal use only)"""
+    global process_pool  # pylint: disable=global-statement # noqa: PLW0603
+    process_pool = ProcessPoolExecutor()
 
 
 class SubprocessException(Exception):
