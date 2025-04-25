@@ -52,6 +52,44 @@ def native_mode_demo():
     # END OF DEMO
     ui.button('enlarge', on_click=lambda: ui.notify('window will be set to 1000x700 in native mode'))
 
+# Currently, options passed via app.native are not used if they are set behind a main guard
+# See discussion at: https://github.com/zauberzeug/nicegui/pull/4627
+doc.text('', '''
+    Note that the native app is run in a separate [multiprocessing.Process](https://docs.python.org/3/library/multiprocessing.html#multiprocessing.Process), and so any configuration changes from code run under a [main guard](https://docs.python.org/3/library/__main__.html#idiomatic-usage) will be ignored by the native app. See the examples below of code that will not work versus code that will work.
+''')
+
+@doc.ui
+def native_main_guard():
+    with ui.row().classes('w-full items-stretch'):
+        with python_window("bad_example.py", classes='max-w-lg w-full'):
+            ui.markdown('''
+                ```python
+                from nicegui import app, ui
+                
+                # Bad Example
+                # Configuration changes will not be applied
+                if __name__ == "__main__":
+                    app.native.window_args['resizable'] = False
+                    app.native.start_args['debug'] = True
+                    app.native.settings['ALLOW_DOWNLOADS'] = True
+
+                    ui.run(native=True)
+                ```
+            ''')
+        with python_window("good_example.py", classes='max-w-lg w-full'):
+            ui.markdown('''
+                ```python
+                from nicegui import app, ui
+                
+                # Good Example
+                app.native.window_args['resizable'] = False
+                app.native.start_args['debug'] = True
+                app.native.settings['ALLOW_DOWNLOADS'] = True
+
+                if __name__ == "__main__":
+                    ui.run(native=True)
+                ```
+            ''')
 
 # Show a helpful workaround until issue is fixed upstream.
 # For more info see: https://github.com/r0x0r/pywebview/issues/1078
