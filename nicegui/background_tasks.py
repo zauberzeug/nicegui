@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import asyncio
+import functools
 from typing import Any, Awaitable, Callable, Coroutine, Dict, Set
 
 from . import core, helpers
@@ -51,8 +52,13 @@ def create_lazy(coroutine: Awaitable, *, name: str) -> None:
 
 def await_on_shutdown(fn: Callable) -> Callable:
     """Tag a coroutine function so tasks created from it won't be cancelled during shutdown."""
-    functions_awaited_on_shutdown.add(fn)
-    return fn
+    @functools.wraps(fn)
+    async def wrapper(*args, **kwargs):
+        coro = fn(*args, **kwargs)
+        task = create(coro)
+        task._await_on_shutdown = True  # type: ignore[attr-defined]  # pylint: disable=protected-access
+        return task
+    return wrapper
 
 
 def _ensure_coroutine(awaitable: Awaitable[Any]) -> Coroutine[Any, Any, Any]:
@@ -79,7 +85,7 @@ async def teardown() -> None:
     while running_tasks or lazy_tasks_running:
         tasks = set(running_tasks) | set(lazy_tasks_running.values())
         for task in tasks:
-            if not task.done() and not task.cancelled() and not _should_await_on_shutdown(task):
+            if not task.done() and not task.cancelled() and not getattr(task, '_await_on_shutdown', False):
                 task.cancel()
         if tasks:
             await asyncio.sleep(0)  # NOTE: ensure the loop can cancel the tasks before it shuts down
@@ -93,11 +99,3 @@ async def teardown() -> None:
                 log.exception('Error while cancelling tasks')
     for coro in lazy_coroutines_waiting.values():
         coro.close()
-
-
-def _should_await_on_shutdown(task: asyncio.Task) -> bool:
-    try:
-        return any(fn.__code__ is task.get_coro().cr_frame.f_code  # type: ignore
-                   for fn in functions_awaited_on_shutdown)
-    except AttributeError:
-        return False
