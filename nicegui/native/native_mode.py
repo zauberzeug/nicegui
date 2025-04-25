@@ -14,7 +14,7 @@ from typing import Any, Callable, Dict, List, Tuple
 from .. import core, helpers, optional_features
 from ..logging import log
 from ..server import Server
-from . import native
+from . import NativeConfig, native
 
 try:
     with warnings.catch_warnings():
@@ -28,7 +28,7 @@ except ModuleNotFoundError:
 
 def _open_window(
     host: str, port: int, title: str, width: int, height: int, fullscreen: bool, frameless: bool,
-    method_queue: mp.Queue, response_queue: mp.Queue,
+    native_config: NativeConfig, method_queue: mp.Queue, response_queue: mp.Queue,
 ) -> None:
     while not helpers.is_port_open(host, port):
         time.sleep(0.1)
@@ -40,14 +40,14 @@ def _open_window(
         'height': height,
         'fullscreen': fullscreen,
         'frameless': frameless,
-        **core.app.native.window_args,
+        **native_config.window_args,
     }
-    webview.settings.update(**core.app.native.settings)
+    webview.settings.update(**native_config.settings)
     window = webview.create_window(**window_kwargs)
     closed = Event()
     window.events.closed += closed.set
     _start_window_method_executor(window, method_queue, response_queue, closed)
-    webview.start(storage_path=tempfile.mkdtemp(), **core.app.native.start_args)
+    webview.start(storage_path=tempfile.mkdtemp(), **native_config.start_args)
 
 
 def _start_window_method_executor(window: webview.Window,
@@ -113,7 +113,7 @@ def activate(host: str, port: int, title: str, width: int, height: int, fullscre
 
     mp.freeze_support()
     native.create_queues()
-    args = host, port, title, width, height, fullscreen, frameless, native.method_queue, native.response_queue
+    args = host, port, title, width, height, fullscreen, frameless, core.app.native, native.method_queue, native.response_queue
     process = mp.Process(target=_open_window, args=args, daemon=True)
     process.start()
 
