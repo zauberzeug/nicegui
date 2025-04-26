@@ -32,9 +32,6 @@ export default {
             const el = this.$el;
             const options = { ...this.options };
 
-            // Process plugin options correctly before passing to Sortable.create()
-            this.processPluginOptions(options);
-
             this.sortableInstance = this.Sortable.create(el, {
                 ...options,
                 onEnd: (evt) => {
@@ -104,46 +101,6 @@ export default {
         }
     },
     methods: {
-        processPluginOptions(options) {
-            // Extract plugin configurations
-            const plugins = options.plugins || {};
-
-            // Clean up plugins property since we're handling it here
-            delete options.plugins;
-
-            // Process AutoScroll options - already mounted, just configure options
-            if (plugins.autoScroll) {
-                options.scroll = true;
-                options.scrollSensitivity = plugins.autoScroll.sensitivity || 30;
-                options.scrollSpeed = plugins.autoScroll.speed || 10;
-                // If explicitly disabled
-                if (plugins.autoScroll.enabled === false) {
-                    options.scroll = false;
-                }
-            }
-
-            // Handle MultiDrag plugin options
-            if (plugins.multiDrag) {
-                options.multiDrag = true;
-                options.multiDragKey = plugins.multiDrag.multiDragKey;
-                options.selectedClass = plugins.multiDrag.selectedClass;
-            }
-
-            // Handle Swap plugin options
-            if (plugins.swap) {
-                options.swap = true;
-                options.swapClass = plugins.swap.swapClass;
-            }
-
-            // OnSpill plugins - they're boolean flags in Sortable
-            if (plugins.removeOnSpill) {
-                options.removeOnSpill = true;
-            }
-
-            if (plugins.revertOnSpill) {
-                options.revertOnSpill = true;
-            }
-        },
         sort(order, useAnimation) {
             if (this.sortableInstance) {
                 this.sortableInstance.sort(order, useAnimation);
