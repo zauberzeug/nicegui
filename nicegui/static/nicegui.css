@@ -306,3 +306,15 @@ h6.q-timeline__title {
   position: absolute;
   left: 1.5em;
 }
+/* sortable */
+.nicegui-sortable-ghost {
+  background-color: #c8ebfb !important;
+}
+.nicegui-sortable-multi-selected {
+  background-color: #f9c7c8 !important;
+  border: solid red 1px !important;
+  z-index: 1 !important;
+}
+.nicegui-swap-highlight {
+  background-color: #b7f8c7 !important;
+}
