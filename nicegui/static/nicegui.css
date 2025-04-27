@@ -318,3 +318,6 @@ h6.q-timeline__title {
 .nicegui-swap-highlight {
   background-color: #b7f8c7 !important;
 }
+.nicegui-sortable-handle {
+  cursor: grab !important;
+}
