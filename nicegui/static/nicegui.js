@@ -44,7 +44,6 @@ function getHtmlElement(id) {
   if (!id_as_a_string.startsWith("c")) {
     id_as_a_string = "c" + id_as_a_string;
   }
-  console.log("getHtmlElement", id_as_a_string);
   return document.getElementById(id_as_a_string);
 }
 
