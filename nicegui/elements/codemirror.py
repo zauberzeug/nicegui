@@ -1,4 +1,4 @@
-from itertools import zip_longest
+from itertools import accumulate, zip_longest
 from pathlib import Path
 from typing import List, Literal, Optional, Tuple, cast, get_args
 
@@ -376,8 +376,7 @@ class CodeMirror(ValueElement, DisableableElement, component='codemirror.js', de
 
 
 def get_cumulative_js_length(doc: str) -> List[int]:
-    js_length_per_character = [len(c.encode('utf-16be'))//2 for c in doc]
-    cumulative_js_length = [sum(js_length_per_character[:i+1]) for i in range(len(js_length_per_character))]
+    cumulative_js_length = list(accumulate(len(c.encode('utf-16be'))//2 for c in doc))
     return cumulative_js_length
 
 
