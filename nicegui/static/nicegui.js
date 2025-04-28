@@ -35,7 +35,7 @@ function replaceUndefinedAttributes(element) {
 }
 
 function getElement(id) {
-  const _id = id instanceof HTMLElement ? id.id : id;
+  const _id = id instanceof Element ? id.id.slice(1) : id;
   return mounted_app.$refs["r" + _id];
 }
 
