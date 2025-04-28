@@ -284,7 +284,7 @@ class CodeMirror(ValueElement, DisableableElement, component='codemirror.js', de
         """
         super().__init__(value=value, on_value_change=self._update_cumulative)
         self._cumulative_corresponds_to_string = value
-        self._cumulative_js_length = []
+        self._cumulative_js_length: List[int] = []
         self._update_cumulative(forced=True)
         if on_change is not None:
             super().on_value_change(on_change)
