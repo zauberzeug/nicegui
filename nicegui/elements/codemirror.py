@@ -350,26 +350,26 @@ class CodeMirror(ValueElement, DisableableElement, component='codemirror.js', de
         # based on https://github.com/codemirror/state/blob/main/src/change.ts
         doc = self.value
 
-        def find_python_index_given_js_index(js_index: int) -> int:
+        def find_python_index(js_index: int) -> int:
             return bisect.bisect_right(self._cumulative_js_length, js_index)
-        assert sum(sections[::2]) == get_total_length_from_cumulative(
+        assert sum(sections[::2]) == get_total_js_length(
             self._cumulative_js_length), 'Cannot apply change set to document due to length mismatch'
         pos = 0
         joined_inserts = ('\n'.join(ins) for ins in inserted)
         for section in zip_longest(sections[::2], sections[1::2], joined_inserts, fillvalue=''):
             old_len, new_len, ins = cast(Tuple[int, int, str], section)
             if new_len >= 0:
-                first_part_index = find_python_index_given_js_index(pos)
-                second_part_index = find_python_index_given_js_index(pos + old_len)
-                doc = doc[:first_part_index] + ins + doc[second_part_index:]
+                first_index = find_python_index(pos)
+                second_index = find_python_index(pos + old_len)
+                doc = doc[:first_index] + ins + doc[second_index:]
 
                 ins_cumulative_js_length = get_cumulative_js_length(ins)
-                first_part_cumulative_js_length = self._cumulative_js_length[:first_part_index]
+                first_part_cumulative_js_length = self._cumulative_js_length[:first_index]
 
                 self._cumulative_js_length = first_part_cumulative_js_length + \
-                    [x + get_total_length_from_cumulative(first_part_cumulative_js_length) for x in ins_cumulative_js_length] + \
-                    [x + get_total_length_from_cumulative(ins_cumulative_js_length)
-                     for x in self._cumulative_js_length[second_part_index:]]
+                    [x + get_total_js_length(first_part_cumulative_js_length) for x in ins_cumulative_js_length] + \
+                    [x + get_total_js_length(ins_cumulative_js_length)
+                     for x in self._cumulative_js_length[second_index:]]
             pos += old_len
             self._cumulative_corresponds_to_string = doc
         return doc
@@ -381,5 +381,5 @@ def get_cumulative_js_length(doc: str) -> List[int]:
     return cumulative_js_length
 
 
-def get_total_length_from_cumulative(cumulative_js_length: List[int]) -> int:
+def get_total_js_length(cumulative_js_length: List[int]) -> int:
     return cumulative_js_length[-1] if cumulative_js_length else 0
