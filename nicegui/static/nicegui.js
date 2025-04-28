@@ -40,7 +40,12 @@ function getElement(id) {
 }
 
 function getHtmlElement(id) {
-  return document.getElementById(`c${id}`);
+  id_as_a_string = id.toString();
+  if (!id_as_a_string.startsWith("c")) {
+    id_as_a_string = "c" + id_as_a_string;
+  }
+  console.log("getHtmlElement", id_as_a_string);
+  return document.getElementById(id_as_a_string);
 }
 
 function runMethod(target, method_name, args) {
