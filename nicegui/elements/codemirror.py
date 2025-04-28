@@ -1,6 +1,6 @@
 from itertools import zip_longest
 from pathlib import Path
-from typing import List, Literal, Optional, get_args
+from typing import List, Literal, Optional, Tuple, cast, get_args
 
 from nicegui.elements.mixins.disableable_element import DisableableElement
 from nicegui.elements.mixins.value_element import ValueElement
@@ -341,7 +341,8 @@ def _apply_change_set(doc, sections: List[int], inserted: List[List[str]]) -> st
     assert sum(sections[::2]) == len(doc), 'Cannot apply change set to document due to length mismatch'
     pos = 0
     joined_inserts = ('\n'.join(ins) for ins in inserted)
-    for old_len, new_len, ins in zip_longest(sections[::2], sections[1::2], joined_inserts, fillvalue=''):
+    for section in zip_longest(sections[::2], sections[1::2], joined_inserts, fillvalue=''):
+        old_len, new_len, ins = cast(Tuple[int, int, str], section)
         if new_len >= 0:
             doc = doc[:pos] + ins + doc[pos + old_len:]
         pos += old_len
