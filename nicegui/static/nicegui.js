@@ -40,7 +40,7 @@ function getElement(id) {
 }
 
 function getHtmlElement(id) {
-  id_as_a_string = id.toString();
+  let id_as_a_string = id.toString();
   if (!id_as_a_string.startsWith("c")) {
     id_as_a_string = "c" + id_as_a_string;
   }
