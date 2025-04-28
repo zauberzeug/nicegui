@@ -1,3 +1,4 @@
+import bisect
 from itertools import accumulate, zip_longest
 from pathlib import Path
 from typing import List, Literal, Optional, Tuple, cast, get_args
@@ -5,8 +6,6 @@ from typing import List, Literal, Optional, Tuple, cast, get_args
 from nicegui.elements.mixins.disableable_element import DisableableElement
 from nicegui.elements.mixins.value_element import ValueElement
 from nicegui.events import GenericEventArguments, Handler, ValueChangeEventArguments
-
-import bisect
 
 SUPPORTED_LANGUAGES = Literal[
     'Angular Template',
