@@ -12,7 +12,7 @@ from fastapi.responses import FileResponse, Response
 from . import air, background_tasks, binding, core, favicon, helpers, json, run, welcome
 from .app import App
 from .client import Client
-from .dependencies import dynamic_resources, js_components, libraries, resources
+from .dependencies import dynamic_resources, js_components, libraries, resources, vue_components
 from .error import error_content
 from .json import NiceGUIJSONResponse
 from .logging import log
@@ -82,7 +82,11 @@ def _get_library(key: str) -> FileResponse:
 @app.get(f'/_nicegui/{__version__}' + '/components/{key:path}')
 def _get_component(key: str) -> FileResponse:
     if key in js_components and js_components[key].path.exists():
-        return FileResponse(js_components[key].path, media_type='text/javascript')
+        headers = {'Cache-Control': 'public, max-age=3600'}
+        return FileResponse(js_components[key].path, media_type='text/javascript', headers=headers)
+    elif key in vue_components:
+        headers = {'Cache-Control': 'public, max-age=3600'}
+        return Response(vue_components[key].script, media_type='text/javascript', headers=headers)
     raise HTTPException(status_code=404, detail=f'component "{key}" not found')
 
 
