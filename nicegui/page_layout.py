@@ -59,17 +59,16 @@ class Header(ValueElement, default_classes='nicegui-header'):
         self.move(target_index=0)
 
         if add_scroll_padding:
-            pass
-            # add_body_html(f'''
-            #     <script>
-            #         window.onload = () => {{
-            #             const header = getHtmlElement({self.id});
-            #             new ResizeObserver(() => {{
-            #                 document.documentElement.style.scrollPaddingTop = `${{header.offsetHeight}}px`;
-            #             }}).observe(header);
-            #         }};
-            #     </script>
-            # ''')
+            add_body_html(f'''
+                <script>
+                    window.onload = () => {{
+                        const header = getHtmlElement({self.id});
+                        new ResizeObserver(() => {{
+                            document.documentElement.style.scrollPaddingTop = `${{header.offsetHeight}}px`;
+                        }}).observe(header);
+                    }};
+                </script>
+            ''')
 
     def toggle(self):
         """Toggle the header"""
