@@ -364,13 +364,12 @@ class CodeMirror(ValueElement, DisableableElement, component='codemirror.js', de
                 doc = doc[:first_part_index] + ins + doc[second_part_index:]
 
                 ins_cumulative_js_length = get_cumulative_js_length(ins)
-                ins_total_length = get_total_length_from_cumulative(ins_cumulative_js_length)
                 first_part_cumulative_js_length = self._cumulative_js_length[:first_part_index]
-                first_part_total_length = get_total_length_from_cumulative(first_part_cumulative_js_length)
 
                 self._cumulative_js_length = first_part_cumulative_js_length + \
-                    [x + first_part_total_length for x in ins_cumulative_js_length] + \
-                    [x + ins_total_length for x in self._cumulative_js_length[second_part_index:]]
+                    [x + get_total_length_from_cumulative(first_part_cumulative_js_length) for x in ins_cumulative_js_length] + \
+                    [x + get_total_length_from_cumulative(ins_cumulative_js_length)
+                     for x in self._cumulative_js_length[second_part_index:]]
             pos += old_len
             self._cumulative_corresponds_to_string = doc
         return doc
