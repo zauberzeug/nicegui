@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import asyncio
+import weakref
 from typing import Any, Awaitable, Callable, Coroutine, Dict, Set
 
 from . import core, helpers
@@ -10,7 +11,7 @@ from .logging import log
 running_tasks: Set[asyncio.Task] = set()
 lazy_tasks_running: Dict[str, asyncio.Task] = {}
 lazy_coroutines_waiting: Dict[str, Coroutine[Any, Any, Any]] = {}
-functions_awaited_on_shutdown: Set[Callable] = set()
+functions_awaited_on_shutdown: weakref.WeakSet[Callable] = weakref.WeakSet()
 
 
 def create(coroutine: Awaitable, *, name: str = 'unnamed task') -> asyncio.Task:
