@@ -376,8 +376,7 @@ class CodeMirror(ValueElement, DisableableElement, component='codemirror.js', de
 
 
 def get_cumulative_js_length(doc: str) -> List[int]:
-    cumulative_js_length = list(accumulate(len(c.encode('utf-16be'))//2 for c in doc))
-    return cumulative_js_length
+    return list(accumulate(len(c.encode('utf-16be'))//2 for c in doc))
 
 
 def get_total_js_length(cumulative_js_length: List[int]) -> int:
