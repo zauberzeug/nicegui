@@ -284,6 +284,7 @@ class CodeMirror(ValueElement, DisableableElement, component='codemirror.js', de
         """
         super().__init__(value=value, on_value_change=self._update_cumulative)
         self._cumulative_corresponds_to_string = value
+        self._cumulative_js_length = []
         self._update_cumulative(forced=True)
         if on_change is not None:
             super().on_value_change(on_change)
@@ -375,8 +376,10 @@ class CodeMirror(ValueElement, DisableableElement, component='codemirror.js', de
 
 
 def get_cumulative_js_length(doc: str) -> List[int]:
+    """Returns a list, where for each index i, the value is the length of the string from 0 to i in UTF-16 (imagine js_len(doc[:i])"""
     return list(accumulate(len(c.encode('utf-16be'))//2 for c in doc))
 
 
 def get_total_js_length(cumulative_js_length: List[int]) -> int:
+    """Returns the length of the string in UTF-16 (imagine js_len(doc))"""
     return cumulative_js_length[-1] if cumulative_js_length else 0
