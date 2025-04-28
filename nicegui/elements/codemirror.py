@@ -6,6 +6,8 @@ from nicegui.elements.mixins.disableable_element import DisableableElement
 from nicegui.elements.mixins.value_element import ValueElement
 from nicegui.events import GenericEventArguments, Handler, ValueChangeEventArguments
 
+import bisect
+
 SUPPORTED_LANGUAGES = Literal[
     'Angular Template',
     'APL',
@@ -281,7 +283,11 @@ class CodeMirror(ValueElement, DisableableElement, component='codemirror.js', de
         :param line_wrapping: whether to wrap lines (default: `False`)
         :param highlight_whitespace: whether to highlight whitespace (default: `False`)
         """
-        super().__init__(value=value, on_value_change=on_change)
+        super().__init__(value=value, on_value_change=self._update_cumulative)
+        self._cumulative_corresponds_to_string = value
+        self._update_cumulative(forced=True)
+        if on_change is not None:
+            super().on_value_change(on_change)
         self.add_resource(Path(__file__).parent / 'lib' / 'codemirror')
 
         self._props['language'] = language
@@ -333,17 +339,63 @@ class CodeMirror(ValueElement, DisableableElement, component='codemirror.js', de
 
     def _event_args_to_value(self, e: GenericEventArguments) -> str:
         """The event contains a change set which is applied to the current value."""
-        return _apply_change_set(self.value, e.args['sections'], e.args['inserted'])
+        return self._apply_change_set(e.args['sections'], e.args['inserted'])
+
+    def _update_cumulative(self, *, forced=False) -> None:
+        if forced or self._cumulative_corresponds_to_string != self.value:
+            print('Updating cumulative length')
+            self._cumulative_js_length = get_cumulative_js_length(self.value)
+            self._cumulative_corresponds_to_string = self.value
+        else:
+            print('Cumulative length update bypassed')
+
+    def _apply_change_set(self, sections: List[int], inserted: List[List[str]]) -> str:
+        # based on https://github.com/codemirror/state/blob/main/src/change.ts
+        print('BEGIN')
+        doc = self.value
+
+        def find_python_index_given_js_index(js_index: int) -> int:
+            return bisect.bisect_right(self._cumulative_js_length, js_index)
+        assert sum(sections[::2]) == get_total_length_from_cumulative(
+            self._cumulative_js_length), 'Cannot apply change set to document due to length mismatch'
+        pos = 0
+        joined_inserts = ('\n'.join(ins) for ins in inserted)
+        for section in zip_longest(sections[::2], sections[1::2], joined_inserts, fillvalue=''):
+            old_len, new_len, ins = cast(Tuple[int, int, str], section)
+            print(f'old_len: {old_len}, new_len: {new_len}, ins: {ins}')
+            print(f'pos: {pos}, cumulative_js_length: {self._cumulative_js_length}')
+            if new_len >= 0:
+                first_part_index = find_python_index_given_js_index(pos)
+                second_part_index = find_python_index_given_js_index(pos + old_len)
+                print(f"First part: [:{first_part_index}]")
+                print(f"Second part: [{second_part_index}:]")
+                doc = doc[:first_part_index] + ins + doc[second_part_index:]
+
+                ins_cumulative_js_length = get_cumulative_js_length(ins)
+                ins_total_length = get_total_length_from_cumulative(ins_cumulative_js_length)
+                first_part_cumulative_js_length = self._cumulative_js_length[:first_part_index]
+                first_part_total_length = get_total_length_from_cumulative(first_part_cumulative_js_length)
+
+                self._cumulative_js_length = first_part_cumulative_js_length + \
+                    [x + first_part_total_length for x in ins_cumulative_js_length] + \
+                    [x + ins_total_length for x in self._cumulative_js_length[second_part_index:]]
+                # test during dev
+                """if not self._cumulative_js_length == get_cumulative_js_length(doc):
+                    print('Cumulative length mismatch')
+                    print(f'cumulative_js_length: {self._cumulative_js_length}')
+                    print(f'get_cumulative_js_length(doc): {get_cumulative_js_length(doc)}')
+                    self._cumulative_js_length = get_cumulative_js_length(doc)"""
+            pos += old_len
+            self._cumulative_corresponds_to_string = doc
+        return doc
 
 
-def _apply_change_set(doc, sections: List[int], inserted: List[List[str]]) -> str:
-    # based on https://github.com/codemirror/state/blob/main/src/change.ts
-    assert sum(sections[::2]) == len(doc), 'Cannot apply change set to document due to length mismatch'
-    pos = 0
-    joined_inserts = ('\n'.join(ins) for ins in inserted)
-    for section in zip_longest(sections[::2], sections[1::2], joined_inserts, fillvalue=''):
-        old_len, new_len, ins = cast(Tuple[int, int, str], section)
-        if new_len >= 0:
-            doc = doc[:pos] + ins + doc[pos + old_len:]
-        pos += old_len
-    return doc
+def get_cumulative_js_length(doc: str) -> List[int]:
+    print(f"=== COSTLY OPERATION get_cumulative_js_length (length: {len(doc)}) ===")
+    js_length_per_character = [len(c.encode('utf-16be'))//2 for c in doc]
+    cumulative_js_length = [sum(js_length_per_character[:i+1]) for i in range(len(js_length_per_character))]
+    return cumulative_js_length
+
+
+def get_total_length_from_cumulative(cumulative_js_length: List[int]) -> int:
+    return cumulative_js_length[-1] if cumulative_js_length else 0
