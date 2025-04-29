@@ -80,7 +80,7 @@ async def teardown() -> None:
     while running_tasks or lazy_tasks_running:
         tasks = running_tasks | set(lazy_tasks_running.values())
         for task in tasks:
-            if not task.done() and not task.cancelled() and not _should_await_on_shutdown(task):
+            if not task.done() and not task.cancelled() and not should_await_on_shutdown(task):
                 task.cancel()
         if tasks:
             await asyncio.sleep(0)  # NOTE: ensure the loop can cancel the tasks before it shuts down
@@ -96,7 +96,8 @@ async def teardown() -> None:
         coro.close()
 
 
-def _should_await_on_shutdown(task: asyncio.Task) -> bool:
+def should_await_on_shutdown(task: asyncio.Task) -> bool:
+    """Check if the task should be awaited on shutdown. (For internal use only.)"""
     try:
         return any(fn.__code__ is task.get_coro().cr_frame.f_code  # type: ignore
                    for fn in functions_awaited_on_shutdown)

@@ -69,6 +69,7 @@ async def test_awaiting_click_handler_background_tasks_on_shutdown(user: User):
     await user.open('/')
     user.find('One').click()
     user.find('Two').click()
+    await asyncio.sleep(0.1)
     # NOTE: teardown is called on shutdown; here we call it directly to test the teardown logic while test is still running
     await background_tasks.teardown()
     assert cancelled_one

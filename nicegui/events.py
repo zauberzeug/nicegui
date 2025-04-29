@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 from contextlib import nullcontext
 from dataclasses import dataclass
 from inspect import Parameter, signature
@@ -441,7 +442,10 @@ def handle_event(handler: Optional[Handler[EventT]], arguments: EventT) -> None:
             async def wait_for_result():
                 with parent_slot:
                     try:
-                        await result
+                        if background_tasks.should_await_on_shutdown(result):
+                            await asyncio.shield(result)
+                        else:
+                            await result
                     except Exception as e:
                         core.app.handle_exception(e)
             if core.loop and core.loop.is_running():
