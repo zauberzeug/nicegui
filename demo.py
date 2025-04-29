@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+from examples.custom_vue_component.composition_api import CompositionApi
 from examples.custom_vue_component.counter import Counter
 from examples.custom_vue_component.fireworks import Fireworks
 from examples.custom_vue_component.on_off import OnOff
@@ -11,6 +12,10 @@ with ui.row(align_items='center'):
 with ui.row(align_items='center'):
     on_off = OnOff('State', on_change=lambda e: ui.notify(f'The value changed to {e.args}.'))
     ui.button('Reset', on_click=on_off.reset).props('outline')
+
+with ui.column(align_items='center'):
+    ui.label('Composition API Demo').classes('text-2xl')
+    composition_api = CompositionApi()
 
 with ui.column(align_items='center'):
     ui.label('Fireworks Demo').classes('text-2xl')
