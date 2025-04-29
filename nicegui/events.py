@@ -437,15 +437,12 @@ def handle_event(handler: Optional[Handler[EventT]], arguments: EventT) -> None:
                 result = cast(Callable[[EventT], Any], handler)(arguments)
             else:
                 result = cast(Callable[[], Any], handler)()
-        if isinstance(result, Awaitable) and not isinstance(result, AwaitableResponse):
+        if isinstance(result, Awaitable) and not isinstance(result, AwaitableResponse) and not isinstance(result, asyncio.Task):
             # NOTE: await an awaitable result even if the handler is not a coroutine (like a lambda statement)
             async def wait_for_result():
                 with parent_slot:
                     try:
-                        if background_tasks.should_await_on_shutdown(result):
-                            await asyncio.shield(result)
-                        else:
-                            await result
+                        await result
                     except Exception as e:
                         core.app.handle_exception(e)
             if core.loop and core.loop.is_running():
