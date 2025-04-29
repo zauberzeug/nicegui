@@ -78,7 +78,7 @@ def _handle_task_result(task: asyncio.Task) -> None:
 async def teardown() -> None:
     """Cancel all running tasks and coroutines on shutdown. (For internal use only.)"""
     while running_tasks or lazy_tasks_running:
-        tasks = set(running_tasks) | set(lazy_tasks_running.values())
+        tasks = running_tasks | set(lazy_tasks_running.values())
         for task in tasks:
             if not task.done() and not task.cancelled() and not _should_await_on_shutdown(task):
                 task.cancel()
