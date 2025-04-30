@@ -387,6 +387,10 @@ def get_total_js_length(cumulative_js_length: List[int]) -> int:
 
 
 def find_python_index(js_index: int, cumulative_js_length: List[int]) -> int:
+    """Given a js_index, returns the position in cumulative_js_length (1-based)
+
+    Note that 1-based indexing enables doc[:find_python_index(pos)] to replace doc[:pos]
+    """
     if js_index == 0:
         return 0
     lo1 = len(cumulative_js_length) - (get_total_js_length(cumulative_js_length) - js_index)
