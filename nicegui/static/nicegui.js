@@ -83,15 +83,6 @@ function emitEvent(event_name, ...args) {
   getElement(0).$emit(event_name, ...args);
 }
 
-function emitEventTo(id, event, ...args) {
-  window.socket?.emit("event", {
-    id: id,
-    client_id: window.clientId,
-    listener_id: event.listener_id,
-    args: stringifyEventArgs(args, event.args),
-  });
-}
-
 function stringifyEventArgs(args, event_args) {
   const result = [];
   args.forEach((arg, i) => {
@@ -186,21 +177,28 @@ function renderRecursively(elements, id) {
     let event_name = "on" + event.type[0].toLocaleUpperCase() + event.type.substring(1);
     event.specials.forEach((s) => (event_name += s[0].toLocaleUpperCase() + s.substring(1)));
 
+    let emitEventToSelf = function(...args) {
+      const emitter = () => window.socket?.emit("event", {
+        id: id,
+        client_id: window.clientId,
+        listener_id: event.listener_id,
+        args: stringifyEventArgs(args, event.args),
+      });
+      const delayed_emitter = () => {
+        if (window.did_handshake) emitter();
+        else setTimeout(emitter, 10);
+      };
+      throttle(delayed_emitter, event.throttle, event.leading_events, event.trailing_events, event.listener_id);
+      if (element.props["loopback"] === False && event.type == "update:modelValue") {
+        element.props["model-value"] = args;
+      }
+    }
+
     let handler;
     if (event.js_handler) {
       handler = eval(event.js_handler);
     } else {
-      handler = (...args) => {
-        const emitter = () => emitEventTo(id, event, ...args);
-        const delayed_emitter = () => {
-          if (window.did_handshake) emitter();
-          else setTimeout(emitter, 10);
-        };
-        throttle(delayed_emitter, event.throttle, event.leading_events, event.trailing_events, event.listener_id);
-        if (element.props["loopback"] === False && event.type == "update:modelValue") {
-          element.props["model-value"] = args;
-        }
-      };
+      handler = emitEventToSelf;
     }
 
     handler = Vue.withModifiers(handler, event.modifiers);
