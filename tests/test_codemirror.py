@@ -74,4 +74,4 @@ def test_find_python_index():
     for combination in product([chr(20), chr(70000)], repeat=n):
         cumulative_js_length = get_cumulative_js_length(combination)
         for elem in cumulative_js_length:
-            assert cumulative_js_length[find_python_index(elem, cumulative_js_length)-1] == elem, f"Failed for {elem}"
+            assert cumulative_js_length[find_python_index(elem, cumulative_js_length)-1] == elem, f'Failed for {elem}'
