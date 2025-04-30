@@ -54,7 +54,7 @@ class User:
 
         Example:
             with user:
-                table = one(ElementFilter(kind=ui.table))
+                tables = list(ElementFilter(kind=ui.table))
         """
         return self._client.__enter__()
 
