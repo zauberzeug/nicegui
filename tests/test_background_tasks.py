@@ -11,10 +11,12 @@ from nicegui.testing import User
 # NOTE: click handlers, and system events used to wrap background_task in a background_task (see https://github.com/zauberzeug/nicegui/pull/4641#issuecomment-2837448265)
 @pytest.mark.parametrize('strategy', ['direct', 'click', 'system'])
 async def test_awaiting_background_tasks_on_shutdown(user: User, strategy: str):
+    run = set()
     cancelled = set()
 
     async def one():
         try:
+            run.add('one')
             await asyncio.sleep(1)
         except asyncio.CancelledError:
             cancelled.add('one')
@@ -22,9 +24,27 @@ async def test_awaiting_background_tasks_on_shutdown(user: User, strategy: str):
     @background_tasks.await_on_shutdown
     async def two():
         try:
+            run.add('two')
             await asyncio.sleep(1)
+            background_tasks.create(three(), name='three')
+            background_tasks.create(four(), name='four')
         except asyncio.CancelledError:
             cancelled.add('two')
+
+    async def three():
+        try:
+            await asyncio.sleep(0.1)
+            run.add('three')
+        except asyncio.CancelledError:
+            cancelled.add('three')
+
+    @background_tasks.await_on_shutdown
+    async def four():
+        try:
+            await asyncio.sleep(0.1)
+            run.add('four')
+        except asyncio.CancelledError:
+            cancelled.add('four')
 
     ui.button('One', on_click=lambda: background_tasks.create(one(), name='one'))
     ui.button('Two', on_click=lambda: background_tasks.create(two(), name='two'))
@@ -46,4 +66,5 @@ async def test_awaiting_background_tasks_on_shutdown(user: User, strategy: str):
 
     # NOTE: teardown is called on shutdown; here we call it directly to test the teardown logic while test is still running
     await background_tasks.teardown()
-    assert cancelled == {'one'}
+    assert cancelled == {'one', 'three'}
+    assert run == {'one', 'two', 'four'}
