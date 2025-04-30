@@ -351,16 +351,7 @@ class CodeMirror(ValueElement, DisableableElement, component='codemirror.js', de
         doc = self.value
 
         def _find_python_index(js_index: int) -> int:
-            if js_index == 0:
-                return 0
-            lo1 = max(0, len(self._cumulative_js_length) - (get_total_js_length(self._cumulative_js_length) - js_index))
-            hi1 = min(js_index, len(self._cumulative_js_length))
-            lo2 = (js_index + 1) // 2
-            hi2 = min(js_index, len(self._cumulative_js_length) -
-                      (get_total_js_length(self._cumulative_js_length) - js_index + 1) // 2)
-            lo = max(lo1, lo2)
-            hi = min(hi1, hi2)
-            return bisect.bisect_right(self._cumulative_js_length, js_index, lo, hi)
+            return find_python_index(js_index, self._cumulative_js_length)
         assert sum(sections[::2]) == get_total_js_length(
             self._cumulative_js_length), 'Cannot apply change set to document due to length mismatch'
         pos = 0
@@ -393,3 +384,15 @@ def get_cumulative_js_length(doc: str) -> List[int]:
 def get_total_js_length(cumulative_js_length: List[int]) -> int:
     """Returns the length of the string in UTF-16 (imagine js_len(doc))"""
     return cumulative_js_length[-1] if cumulative_js_length else 0
+
+
+def find_python_index(js_index: int, cumulative_js_length: List[int]) -> int:
+    if js_index == 0:
+        return 0
+    lo = max(0, len(cumulative_js_length) - (get_total_js_length(cumulative_js_length) - js_index))
+    hi = min(js_index, len(cumulative_js_length))
+    lo2 = (js_index + 1) // 2
+    hi2 = min(js_index, len(cumulative_js_length) - (get_total_js_length(cumulative_js_length) - js_index + 1) // 2)
+    lo = max(lo, lo2)
+    hi = min(hi, hi2)
+    return bisect.bisect_right(cumulative_js_length, js_index, lo, hi)
