@@ -313,7 +313,7 @@ class Client:
             else:
                 with self:
                     result = func(self) if len(inspect.signature(func).parameters) == 1 else func()
-                if helpers.is_coroutine_function(func):
+                if helpers.is_coroutine_function(func) and not isinstance(result, asyncio.Task):
                     async def result_with_client():
                         with self:
                             await result

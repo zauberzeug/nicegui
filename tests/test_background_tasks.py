@@ -2,15 +2,15 @@ import asyncio
 
 import pytest
 
-from nicegui import background_tasks, ui
+from nicegui import app, background_tasks, ui
 from nicegui.testing import User
 
 # pylint: disable=missing-function-docstring
 
 
-# NOTE: click handlers used to wrap background_task in a background_task (see https://github.com/zauberzeug/nicegui/pull/4641#issuecomment-2837448265)
-@pytest.mark.parametrize('with_click_handler', [False, True])
-async def test_awaiting_background_tasks_on_shutdown(user: User, with_click_handler: bool):
+# NOTE: click handlers, and system events used to wrap background_task in a background_task (see https://github.com/zauberzeug/nicegui/pull/4641#issuecomment-2837448265)
+@pytest.mark.parametrize('strategy', ['direct', 'click', 'system'])
+async def test_awaiting_background_tasks_on_shutdown(user: User, strategy: str):
 
     async def one():
         nonlocal cancelled_one
@@ -32,11 +32,16 @@ async def test_awaiting_background_tasks_on_shutdown(user: User, with_click_hand
     ui.button('One', on_click=lambda: background_tasks.create(one(), name='one'))
     ui.button('Two', on_click=lambda: background_tasks.create(two(), name='two'))
 
+    if strategy == 'system':
+        app.on_connect(lambda: background_tasks.create(one(), name='one'))
+        app.on_connect(lambda: background_tasks.create(two(), name='two'))
+
     await user.open('/')
-    if with_click_handler:
+
+    if strategy == 'click':
         user.find('One').click()
         user.find('Two').click()
-    else:
+    elif strategy == 'direct':
         background_tasks.create(one(), name='one')
         background_tasks.create(two(), name='two')
 
