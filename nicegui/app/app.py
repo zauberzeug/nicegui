@@ -128,9 +128,10 @@ class App(FastAPI):
                 background_tasks.create(result)
 
     def on_page_exception(self, handler: Callable) -> None:
-        """Called when an exception occurs in a page. Used for creating a custom error page with clean traceback.
+        """Called when an exception occurs in a page and allows to create a custom error page.
 
-        The callback must accept `Exception`, where all ui elements in the callback are displayed on the error page. 
+        The callback must accept an ``Exception``.
+        All UI elements created in the callback are displayed on the error page.
         """
         self._page_exception_handler = handler
 

@@ -109,6 +109,14 @@ class page:
             except asyncio.CancelledError:
                 pass
 
+        def create_error_page(e: Exception, request: Request) -> Response:
+            exception_handler = core.app._page_exception_handler  # pylint: disable=protected-access
+            if exception_handler is None:
+                raise e
+            with Client(page(''), request=request) as error_client:
+                exception_handler(e)
+                return error_client.build_response(request, 500)
+
         @wraps(func)
         async def decorated(*dec_args, **dec_kwargs) -> Response:
             request = dec_kwargs['request']
@@ -120,24 +128,14 @@ class page:
                 try:
                     result = func(*dec_args, **dec_kwargs)
                 except Exception as e:
-                    if core.app._page_exception_handler is not None:
-                        with Client(page(''), request=request) as error_client:
-                            core.app._page_exception_handler(e)
-                            return error_client.build_response(request, 500)
-                    else:
-                        raise e
+                    return create_error_page(e, request)
             if helpers.is_coroutine_function(func):
                 async def wait_for_result() -> None:
                     with client:
                         try:
                             return await result
                         except Exception as e:
-                            if core.app._page_exception_handler is not None:
-                                with Client(page(''), request=request) as error_client:
-                                    core.app._page_exception_handler(e)
-                                    return error_client.build_response(request, 500)
-                            else:
-                                raise e
+                            return create_error_page(e, request)  # FIXME: at this point we can't return a response
                 task = background_tasks.create(wait_for_result())
                 task_wait_for_connection = background_tasks.create(
                     client._waiting_for_connection.wait(),  # pylint: disable=protected-access
