@@ -8,7 +8,7 @@ from fastapi import UploadFile
 from fastapi.datastructures import Headers
 from fastapi.responses import PlainTextResponse
 
-from nicegui import app, events, ui
+from nicegui import ElementFilter, app, events, ui
 from nicegui.testing import User
 
 # pylint: disable=missing-function-docstring
@@ -568,3 +568,14 @@ async def test_run_javascript(user: User):
     user.javascript_rules[re.compile(r'Math.sqrt\((\d+)\)')] = lambda match: int(match.group(1))**0.5
     await user.open('/')
     await user.should_see('42')
+
+
+async def test_context_manager(user: User) -> None:
+    @ui.page('/')
+    def index():
+        ui.button('click me', on_click=lambda: ui.label('clicked'))
+
+    await user.open('/')
+    with user:
+        elements = list(ElementFilter(kind=ui.button))
+    assert len(elements) == 1 and isinstance(elements[0], ui.button)

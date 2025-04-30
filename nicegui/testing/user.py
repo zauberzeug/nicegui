@@ -46,6 +46,21 @@ class User:
             raise ValueError('This user has not opened a page yet. Did you forgot to call .open()?')
         return self.client
 
+    def __enter__(self):
+        """Enter context manager for the underlying page.
+
+        Within a context manager block, create an ElementFilter to find elements
+        on the page.
+
+        Example:
+            with user:
+                table = one(ElementFilter(kind=ui.table))
+        """
+        return self._client.__enter__()
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        return self._client.__exit__(exc_type, exc_val, exc_tb)
+
     def __getattribute__(self, name: str) -> Any:
         if name not in {'notify', 'navigate', 'download'}:  # NOTE: avoid infinite recursion
             ui.navigate = self.navigate
