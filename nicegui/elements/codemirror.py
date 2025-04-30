@@ -350,11 +350,16 @@ class CodeMirror(ValueElement, DisableableElement, component='codemirror.js', de
         # based on https://github.com/codemirror/state/blob/main/src/change.ts
         doc = self.value
 
-        def find_python_index(js_index: int) -> int:
+        def _find_python_index(js_index: int) -> int:
             if js_index == 0:
                 return 0
-            lo = max(0, len(self._cumulative_js_length) - (get_total_js_length(self._cumulative_js_length) - js_index))
-            hi = min(js_index, len(self._cumulative_js_length))
+            lo1 = max(0, len(self._cumulative_js_length) - (get_total_js_length(self._cumulative_js_length) - js_index))
+            hi1 = min(js_index, len(self._cumulative_js_length))
+            lo2 = (js_index + 1) // 2
+            hi2 = min(js_index, len(self._cumulative_js_length) -
+                      (get_total_js_length(self._cumulative_js_length) - js_index + 1) // 2)
+            lo = max(lo1, lo2)
+            hi = min(hi1, hi2)
             return bisect.bisect_right(self._cumulative_js_length, js_index, lo, hi)
         assert sum(sections[::2]) == get_total_js_length(
             self._cumulative_js_length), 'Cannot apply change set to document due to length mismatch'
@@ -363,8 +368,8 @@ class CodeMirror(ValueElement, DisableableElement, component='codemirror.js', de
         for section in zip_longest(sections[::2], sections[1::2], joined_inserts, fillvalue=''):
             old_len, new_len, ins = cast(Tuple[int, int, str], section)
             if new_len >= 0:
-                first_index = find_python_index(pos)
-                second_index = find_python_index(pos + old_len)
+                first_index = _find_python_index(pos)
+                second_index = _find_python_index(pos + old_len)
                 doc = doc[:first_index] + ins + doc[second_index:]
 
                 just_before_original_end_part = self._cumulative_js_length[second_index - 1] if second_index > 0 else 0
