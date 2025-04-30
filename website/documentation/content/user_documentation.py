@@ -78,6 +78,15 @@ doc.text('Querying', '''
 
 @doc.ui
 def querying():
+    ui.markdown('''
+        You can also use `ElementFilter` directly with `user`'s context manager
+        syntax. This can be useful in the following cases:
+
+        - Retrieving an element and interacting with it directly
+        - Retrieving elements in the order they appear on the page (for example,
+          if a test needs to verify the sequence of elements)
+    ''')
+
     with ui.row().classes('gap-4 items-stretch'):
         with python_window(classes='w-[400px]', title='some UI code'):
             ui.markdown('''
@@ -101,6 +110,9 @@ def querying():
                 await user.should_see('Hello')
                 await user.should_see(marker='greeting')
                 await user.should_see(kind=ui.icon)
+                
+                with user:
+                    icons = list(ElementFilter(kind=ui.icon))
                 ```
             ''')
 
