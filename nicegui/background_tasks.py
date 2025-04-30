@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import asyncio
 import weakref
-from typing import Any, Awaitable, Callable, Coroutine, Dict, Set
+from typing import Any, Awaitable, Callable, Coroutine, Dict, Set, TypeVar
 
 from . import core, helpers
 from .logging import log
@@ -50,10 +50,13 @@ def create_lazy(coroutine: Awaitable, *, name: str) -> None:
     task.add_done_callback(lambda _: finalize(name))
 
 
-def await_on_shutdown(fn: Callable) -> Callable:
+F = TypeVar('F', bound=Callable)
+
+
+def await_on_shutdown(func: F) -> F:
     """Tag a coroutine function so tasks created from it won't be cancelled during shutdown."""
-    functions_awaited_on_shutdown.add(fn)
-    return fn
+    functions_awaited_on_shutdown.add(func)
+    return func
 
 
 def _ensure_coroutine(awaitable: Awaitable[Any]) -> Coroutine[Any, Any, Any]:
@@ -80,7 +83,7 @@ async def teardown() -> None:
     while running_tasks or lazy_tasks_running:
         tasks = running_tasks | set(lazy_tasks_running.values())
         for task in tasks:
-            if not task.done() and not task.cancelled() and not should_await_on_shutdown(task):
+            if not task.done() and not task.cancelled() and not _should_await_on_shutdown(task):
                 task.cancel()
         if tasks:
             await asyncio.sleep(0)  # NOTE: ensure the loop can cancel the tasks before it shuts down
@@ -96,8 +99,7 @@ async def teardown() -> None:
         coro.close()
 
 
-def should_await_on_shutdown(task: asyncio.Task) -> bool:
-    """Check if the task should be awaited on shutdown. (For internal use only.)"""
+def _should_await_on_shutdown(task: asyncio.Task) -> bool:
     try:
         return any(fn.__code__ is task.get_coro().cr_frame.f_code  # type: ignore
                    for fn in functions_awaited_on_shutdown)
