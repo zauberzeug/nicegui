@@ -21,20 +21,23 @@ class UserNavigate(Navigate):
             # NOTE navigation to an element does not do anything in the user simulation (the whole content is always visible)
             return
         path = Client.page_routes[target] if callable(target) else target
-        background_tasks.create(self.user.open(path))
+        background_tasks.create(self.user.open(path), name=f'navigate to {path}')
 
     def back(self) -> None:
         current = self.user.back_history.pop()
         self.user.forward_history.append(current)
         target = self.user.back_history.pop()
-        background_tasks.create(self.user.open(target, clear_forward_history=False))
+        background_tasks.create(self.user.open(target, clear_forward_history=False), name=f'navigate back to {target}')
 
     def forward(self) -> None:
         if not self.user.forward_history:
             return
         target = self.user.forward_history[0]
         del self.user.forward_history[0]
-        background_tasks.create(self.user.open(target, clear_forward_history=False))
+        background_tasks.create(self.user.open(target, clear_forward_history=False),
+                                name=f'navigate forward to {target}')
 
     def reload(self) -> None:
-        background_tasks.create(self.user.open(self.user.back_history.pop(), clear_forward_history=False))
+        target = self.user.back_history.pop()
+        background_tasks.create(self.user.open(target, clear_forward_history=False),
+                                name=f'navigate reload to {target}')
