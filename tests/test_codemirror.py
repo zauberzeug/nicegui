@@ -1,7 +1,8 @@
+from itertools import product
 from typing import Dict, List
 
 from nicegui import ui
-from nicegui.elements.codemirror import _apply_change_set
+from nicegui.elements.codemirror import find_python_index, get_cumulative_js_length
 from nicegui.testing import Screen
 
 
@@ -35,10 +36,42 @@ def test_supported_values(screen: Screen):
 
 
 def test_change_set():
-    assert _apply_change_set('', [0, 1], [['A']]) == 'A'
-    assert _apply_change_set('', [0, 2], [['AB']]) == 'AB'
-    assert _apply_change_set('X', [1, 2], [['AB']]) == 'AB'
-    assert _apply_change_set('X', [1, -1], []) == 'X'
-    assert _apply_change_set('X', [1, -1, 0, 1], [[], ['Y']]) == 'XY'
-    assert _apply_change_set('Hello', [5, -1, 0, 8], [[], [', world!']]) == 'Hello, world!'
-    assert _apply_change_set('Hello, world!', [5, -1, 7, 0, 1, -1], []) == 'Hello!'
+    @ui.page('/')
+    def page():
+        editor = ui.codemirror()
+
+        editor.value = ''
+        editor._apply_change_set([0, 1], [['A']])
+        assert editor.value == 'A'
+
+        editor.value = ''
+        editor._apply_change_set([0, 2], [['AB']])
+        assert editor.value == 'AB'
+
+        editor.value = 'X'
+        editor._apply_change_set([1, 2], [['AB']])
+        assert editor.value == 'AB'
+
+        editor.value = 'X'
+        editor._apply_change_set([1, -1], [])
+        assert editor.value == 'X'
+
+        editor.value = 'X'
+        editor._apply_change_set([1, -1, 0, 1], [[], ['Y']])
+        assert editor.value == 'XY'
+
+        editor.value = 'Hello'
+        editor._apply_change_set([5, -1, 0, 8], [[], [', world!']])
+        assert editor.value == 'Hello, world!'
+
+        editor.value = 'Hello, world!'
+        editor._apply_change_set([5, -1, 7, 0, 1, -1], [])
+        assert editor.value == 'Hello!'
+
+
+def test_find_python_index():
+    n = 10
+    for combination in product([chr(20), chr(70000)], repeat=n):
+        cumulative_js_length = get_cumulative_js_length(combination)
+        for elem in cumulative_js_length:
+            assert cumulative_js_length[find_python_index(elem, cumulative_js_length)-1] == elem, f"Failed for {elem}"
