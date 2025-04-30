@@ -389,10 +389,10 @@ def get_total_js_length(cumulative_js_length: List[int]) -> int:
 def find_python_index(js_index: int, cumulative_js_length: List[int]) -> int:
     if js_index == 0:
         return 0
-    lo = max(0, len(cumulative_js_length) - (get_total_js_length(cumulative_js_length) - js_index))
-    hi = min(js_index, len(cumulative_js_length))
+    lo1 = len(cumulative_js_length) - (get_total_js_length(cumulative_js_length) - js_index)
+    hi1 = js_index
     lo2 = (js_index + 1) // 2
-    hi2 = min(js_index, len(cumulative_js_length) - (get_total_js_length(cumulative_js_length) - js_index + 1) // 2)
-    lo = max(lo, lo2)
-    hi = min(hi, hi2)
+    hi2 = len(cumulative_js_length) - (get_total_js_length(cumulative_js_length) - js_index + 1) // 2
+    lo = max(lo1, lo2, 0)
+    hi = min(hi1, hi2, len(cumulative_js_length))
     return bisect.bisect_right(cumulative_js_length, js_index, lo, hi)
