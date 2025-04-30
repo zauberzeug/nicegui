@@ -351,7 +351,11 @@ class CodeMirror(ValueElement, DisableableElement, component='codemirror.js', de
         doc = self.value
 
         def find_python_index(js_index: int) -> int:
-            return bisect.bisect_right(self._cumulative_js_length, js_index)
+            if js_index == 0:
+                return 0
+            lo = max(0, len(self._cumulative_js_length) - (get_total_js_length(self._cumulative_js_length) - js_index))
+            hi = min(js_index, len(self._cumulative_js_length))
+            return bisect.bisect_right(self._cumulative_js_length, js_index, lo, hi)
         assert sum(sections[::2]) == get_total_js_length(
             self._cumulative_js_length), 'Cannot apply change set to document due to length mismatch'
         pos = 0
