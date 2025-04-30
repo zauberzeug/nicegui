@@ -367,13 +367,14 @@ class CodeMirror(ValueElement, DisableableElement, component='codemirror.js', de
                 second_index = find_python_index(pos + old_len)
                 doc = doc[:first_index] + ins + doc[second_index:]
 
-                ins_cumulative_js_length = get_cumulative_js_length(ins)
-                first_part_cumulative_js_length = self._cumulative_js_length[:first_index]
+                just_before_original_end_part = self._cumulative_js_length[second_index - 1] if second_index > 0 else 0
+                original_end_part = self._cumulative_js_length[second_index:]
 
-                self._cumulative_js_length = first_part_cumulative_js_length + \
-                    [x + get_total_js_length(first_part_cumulative_js_length) for x in ins_cumulative_js_length] + \
-                    [x + get_total_js_length(ins_cumulative_js_length)
-                     for x in self._cumulative_js_length[second_index:]]
+                self._cumulative_js_length = self._cumulative_js_length[:first_index]
+                self._cumulative_js_length += [x + get_total_js_length(self._cumulative_js_length)
+                                               for x in get_cumulative_js_length(ins)]
+                self._cumulative_js_length += [(x - just_before_original_end_part) +
+                                               get_total_js_length(self._cumulative_js_length) for x in original_end_part]
             pos += old_len
             self._cumulative_corresponds_to_string = doc
         return doc
