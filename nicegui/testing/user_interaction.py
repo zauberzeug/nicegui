@@ -72,7 +72,7 @@ class UserInteraction(Generic[T]):
             for element in self.elements:
                 if isinstance(element, ui.link):
                     href = element.props.get('href', '#')
-                    background_tasks.create(self.user.open(href))
+                    background_tasks.create(self.user.open(href), name=f'open {href}')
                     return self
 
                 if isinstance(element, ui.select):

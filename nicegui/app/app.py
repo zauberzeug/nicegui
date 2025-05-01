@@ -47,8 +47,6 @@ class App(FastAPI):
         self._exception_handlers: List[Callable[..., Any]] = [log.exception]
         self._page_exception_handler: Optional[Callable[..., Any]] = None
 
-        self.on_shutdown(self.storage.on_shutdown)
-
     @property
     def is_starting(self) -> bool:
         """Return whether NiceGUI is starting."""
@@ -74,13 +72,21 @@ class App(FastAPI):
         self._state = State.STARTING
         for t in self._startup_handlers:
             Client.auto_index_client.safe_invoke(t)
+        self.on_shutdown(self.storage.on_shutdown)
+        self.on_shutdown(background_tasks.teardown)
         self._state = State.STARTED
 
-    def stop(self) -> None:
+    async def stop(self) -> None:
         """Stop NiceGUI. (For internal use only.)"""
         self._state = State.STOPPING
-        for t in self._shutdown_handlers:
-            Client.auto_index_client.safe_invoke(t)
+        with Client.auto_index_client:
+            for t in self._shutdown_handlers:
+                if isinstance(t, Awaitable):
+                    await t
+                else:
+                    result = t(self) if len(inspect.signature(t).parameters) == 1 else t()
+                    if helpers.is_coroutine_function(t):
+                        await result
         self._state = State.STOPPED
 
     def on_connect(self, handler: Union[Callable, Awaitable]) -> None:
@@ -125,7 +131,7 @@ class App(FastAPI):
         for handler in self._exception_handlers:
             result = handler() if not inspect.signature(handler).parameters else handler(exception)
             if helpers.is_coroutine_function(handler):
-                background_tasks.create(result)
+                background_tasks.create(result, name=f'exception {handler.__name__}')
 
     def on_page_exception(self, handler: Callable) -> None:
         """Called when an exception occurs in a page and allows to create a custom error page.

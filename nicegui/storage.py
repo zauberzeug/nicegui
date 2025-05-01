@@ -189,7 +189,10 @@ class Storage:
                     if isinstance(tab, PersistentDict):
                         await tab.close()
                     del self._tabs[tab_id]
-            await asyncio.sleep(PURGE_INTERVAL)
+            try:
+                await asyncio.sleep(PURGE_INTERVAL)
+            except asyncio.CancelledError:
+                break
 
     def clear(self) -> None:
         """Clears all storage."""
@@ -208,7 +211,7 @@ class Storage:
             self.path.rmdir()
 
     async def on_shutdown(self) -> None:
-        """Close all persistent storage."""
+        """Close all persistent storage. (For internal use only.)"""
         for user in self._users.values():
             await user.close()
         await self._general.close()
