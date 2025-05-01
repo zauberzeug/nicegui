@@ -78,15 +78,6 @@ doc.text('Querying', '''
 
 @doc.ui
 def querying():
-    ui.markdown('''
-        You can also use `ElementFilter` directly with `user`'s context manager
-        syntax. This can be useful in the following cases:
-
-        - Retrieving an element and interacting with it directly
-        - Retrieving elements in the order they appear on the page (for example,
-          if a test needs to verify the sequence of elements)
-    ''')
-
     with ui.row().classes('gap-4 items-stretch'):
         with python_window(classes='w-[400px]', title='some UI code'):
             ui.markdown('''
@@ -110,9 +101,53 @@ def querying():
                 await user.should_see('Hello')
                 await user.should_see(marker='greeting')
                 await user.should_see(kind=ui.icon)
-                
+                ```
+            ''')
+
+
+doc.text(
+    'Using ElementFilter directly',
+    '''
+    Since `user.find` uses a set to avoid duplicates, it does not preserve the order.
+    Consider how the order is not preserved after converting to a set and back in this code:
+    `list(set(["1", "2", "3"])) == ["3", "1", "2"]`.
+
+    Instead, it is possible to use [ElementFilter](/documentation/element_filter) directly
+    by entering the `user` context.
+''')
+
+
+@doc.ui
+def using_elementfilter_directly():
+    ui.markdown('''
+        By entering the `user` context and iterating over `ElementFilter`, you can preserve
+        the natural document order of matching elements.
+''')
+
+    with ui.row().classes('gap-4 items-stretch'):
+        with python_window(classes='w-[400px]', title='UI code'):
+            ui.markdown(
+                '''
+                ```python
+                ui.label("1").mark("text-123")
+                ui.label("2").mark("text-123")
+                ui.label("3").mark("text-123")
+                ```
+            ''')
+
+        with python_window(classes='w-[600px]', title='user assertions'):
+            ui.markdown(
+                '''
+                ```python
                 with user:
-                    icons = list(ElementFilter(kind=ui.icon))
+                    expected_text = ['1', '2', '3']
+                    assert [
+                        label.text == expected
+                        for label, expected in zip(
+                            ElementFilter(marker='text-123'),
+                            expected_text
+                        )
+                    ]
                 ```
             ''')
 
