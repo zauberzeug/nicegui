@@ -3,6 +3,8 @@ from __future__ import annotations
 import asyncio
 from typing import Any, ClassVar, Dict
 
+from . import helpers
+
 
 class JavaScriptRequest:
     _instances: ClassVar[Dict[str, JavaScriptRequest]] = {}
@@ -23,7 +25,7 @@ class JavaScriptRequest:
 
     def __await__(self) -> Any:
         try:
-            yield from asyncio.wait_for(self._event.wait(), self.timeout).__await__()
+            yield from helpers.wait_for(self._event.wait(), self.timeout).__await__()
         except asyncio.TimeoutError as e:
             raise TimeoutError(f'JavaScript did not respond within {self.timeout:.1f} s') from e
         else:
