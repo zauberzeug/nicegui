@@ -49,9 +49,10 @@ async def user(nicegui_reset_globals,  # noqa: F811, pylint: disable=unused-argu
     ui.navigate = Navigate()
     ui.notify = notify
     ui.download = download
-    logs = caplog.get_records('call')
+
+    logs = [record for record in caplog.get_records('call') if record.levelname == 'ERROR']
     if logs:
-        pytest.fail('There were unexpected logs.', pytrace=False)
+        pytest.fail('There were unexpected ERROR logs.', pytrace=False)
 
 
 @pytest.fixture

@@ -13,9 +13,6 @@ export default {
     highlightWhitespace: Boolean,
   },
   watch: {
-    value(newValue) {
-      this.setEditorValue(newValue);
-    },
     language(newLanguage) {
       this.setLanguage(newLanguage);
     },
@@ -89,6 +86,9 @@ export default {
       this.editor.dispatch({
         effects: this.themeConfig.reconfigure([new_theme]),
       });
+    },
+    setEditorValueFromProps() {
+      this.setEditorValue(this.value);
     },
     setEditorValue(value) {
       if (!this.editor) return;

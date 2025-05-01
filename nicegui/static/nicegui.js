@@ -44,12 +44,16 @@ function replaceUndefinedAttributes(element) {
 }
 
 function getElement(id) {
-  const _id = id instanceof HTMLElement ? id.id : id;
+  const _id = id instanceof Element ? id.id.slice(1) : id;
   return mounted_app.$refs["r" + _id];
 }
 
 function getHtmlElement(id) {
-  return document.getElementById(`c${id}`);
+  let id_as_a_string = id.toString();
+  if (!id_as_a_string.startsWith("c")) {
+    id_as_a_string = "c" + id_as_a_string;
+  }
+  return document.getElementById(id_as_a_string);
 }
 
 function runMethod(target, method_name, args) {

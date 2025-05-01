@@ -14,6 +14,6 @@ class Teleport(Element, component='teleport.js'):
         """
         super().__init__()
         if isinstance(to, Element):
-            to = f'#c{to.id}'
+            to = f'#{to.html_id}'
         self._props['to'] = to
         self._update_method = 'update'

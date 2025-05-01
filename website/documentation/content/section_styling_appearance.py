@@ -75,8 +75,10 @@ def styling_demo():
                     with ui.row().classes('items-center gap-0 w-full'):
                         def handle_props(e: events.ValueChangeEventArguments):
                             element.props.clear()
-                            element.props['label'] = 'Button'
-                            element.props['color'] = 'primary'
+                            if isinstance(element, (ui.button, ui.input, ui.textarea)):
+                                element.props['label'] = 'element'
+                            if isinstance(element, ui.button):
+                                element.props['color'] = 'primary'
                             try:
                                 element.props(e.value)
                             except ValueError:

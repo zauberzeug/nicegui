@@ -59,7 +59,10 @@ class Slot:
             except Exception:
                 # NOTE: make sure the loop doesn't crash
                 log.exception('Error while pruning slot stacks')
-            await asyncio.sleep(10)
+            try:
+                await asyncio.sleep(10)
+            except asyncio.CancelledError:
+                break
 
 
 def get_task_id() -> int:
