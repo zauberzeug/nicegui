@@ -130,12 +130,12 @@ class page:
                 except Exception as e:
                     return create_error_page(e, request)
             if helpers.is_coroutine_function(func):
-                async def wait_for_result() -> None:
+                async def wait_for_result() -> Optional[Response]:
                     with client:
                         try:
                             return await result
                         except Exception as e:
-                            return create_error_page(e, request)  # FIXME: at this point we can't return a response
+                            return create_error_page(e, request)
                 task = background_tasks.create(wait_for_result())
                 task_wait_for_connection = background_tasks.create(
                     client._waiting_for_connection.wait(),  # pylint: disable=protected-access
