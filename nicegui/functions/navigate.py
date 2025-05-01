@@ -61,7 +61,7 @@ class Navigate:
         if isinstance(target, str):
             path = target
         elif isinstance(target, Element):
-            path = f'#c{target.id}'
+            path = f'#{target.html_id}'
         elif callable(target):
             path = Client.page_routes[target]
         else:

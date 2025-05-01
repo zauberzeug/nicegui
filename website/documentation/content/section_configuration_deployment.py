@@ -53,6 +53,44 @@ def native_mode_demo():
     ui.button('enlarge', on_click=lambda: ui.notify('window will be set to 1000x700 in native mode'))
 
 
+# Currently, options passed via app.native are not used if they are set behind a main guard
+# See discussion at: https://github.com/zauberzeug/nicegui/pull/4627
+doc.text('', '''
+    Note that the native app is run in a separate
+    [process](https://docs.python.org/3/library/multiprocessing.html#multiprocessing.Process).
+    Therefore any configuration changes from code run under a
+    [main guard](https://docs.python.org/3/library/__main__.html#idiomatic-usage) is ignored by the native app.
+    The following examples show the difference between a working and a non-working configuration.
+''')
+
+
+@doc.ui
+def native_main_guard():
+    with ui.row().classes('w-full items-stretch'):
+        with python_window('good_example.py', classes='max-w-lg w-full'):
+            ui.markdown('''
+                ```python
+                from nicegui import app, ui
+
+                app.native.window_args['resizable'] = False  # works
+
+                if __name__ == '__main__':
+                    ui.run(native=True, reload=False)
+                ```
+            ''')
+        with python_window('bad_example.py', classes='max-w-lg w-full'):
+            ui.markdown('''
+                ```python
+                from nicegui import app, ui
+
+                if __name__ == '__main__':
+                    app.native.window_args['resizable'] = False  # ignored
+
+                    ui.run(native=True, reload=False)
+                ```
+            ''')
+
+
 # Show a helpful workaround until issue is fixed upstream.
 # For more info see: https://github.com/r0x0r/pywebview/issues/1078
 doc.text('', '''
@@ -79,6 +117,35 @@ def env_var_demo():
     from nicegui.elements import markdown
 
     ui.label(f'Markdown content cache size is {markdown.prepare_content.cache_info().maxsize}')
+
+
+@doc.demo('Background Tasks', '''
+    `background_tasks.create()` allows you to run an async function in the background and return a task object.
+    By default the task will be automatically cancelled during shutdown.
+    You can prevent this by using the `@background_tasks.await_on_shutdown` decorator.
+    This is useful for tasks that need to be completed even when the app is shutting down.
+''')
+def background_tasks_demo():
+    from nicegui import background_tasks
+    import asyncio
+    import aiofiles
+
+    results = {'answer': '?'}
+
+    async def compute() -> None:
+        await asyncio.sleep(1)
+        results['answer'] = 42
+
+    @background_tasks.await_on_shutdown
+    async def backup() -> None:
+        await asyncio.sleep(1)
+        # async with aiofiles.open('backup.json', 'w') as f:
+        #     await f.write(f'{results["answer"]}')
+        # print('backup.json written', flush=True)
+
+    ui.label().bind_text_from(results, 'answer', lambda x: f'answer: {x}')
+    ui.button('Compute', on_click=lambda: background_tasks.create(compute()))
+    ui.button('Backup', on_click=lambda: background_tasks.create(backup()))
 
 
 doc.text('Custom Vue Components', '''

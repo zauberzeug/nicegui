@@ -21,7 +21,8 @@ class UserDownload(Download):
         self.user = user
 
     def __call__(self, src: Union[str, Path, bytes], filename: Optional[str] = None, media_type: str = '') -> Any:
-        background_tasks.create(self._get(src))
+        background_tasks.create(self._get(src),
+                                name=f'download {str(src[:10]) + "..." if isinstance(src, bytes) else src}')
 
     def file(self, path: Union[str, Path], filename: Optional[str] = None, media_type: str = '') -> None:
         self(path)

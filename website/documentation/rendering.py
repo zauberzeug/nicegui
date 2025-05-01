@@ -3,6 +3,7 @@ from nicegui import ui
 from ..header import add_head_html, add_header
 from ..style import section_heading, subheading
 from .content import DocumentationPage
+from .custom_restructured_text import CustomRestructuredText as custom_restructured_text
 from .demo import demo
 from .reference import generate_class_doc
 
@@ -40,7 +41,7 @@ def render_page(documentation: DocumentationPage, *, with_menu: bool = True) -> 
                 subheading(part.title, link=part.link, major=part.reference is not None)
             if part.description:
                 if part.description_format == 'rst':
-                    element = ui.restructured_text(part.description.replace(':param ', ':'))
+                    element = custom_restructured_text(part.description.replace(':param ', ':'))
                 else:
                     element = ui.markdown(part.description)
                 element.classes('bold-links arrow-links')
