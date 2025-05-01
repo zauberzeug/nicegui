@@ -4,7 +4,7 @@ import asyncio
 import inspect
 from functools import wraps
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Callable, Optional, Union, cast
+from typing import TYPE_CHECKING, Any, Callable, Optional, Tuple, Type, Union, cast
 
 from fastapi import Request, Response
 
@@ -125,7 +125,7 @@ class page:
 
                 # FastAPI / Starlette exception handlers, attached via
                 for pair in core.app.exception_handlers.items():
-                    exc_class_or_status_code, handler = cast(tuple[Union[int, type[Exception]], Callable], pair)
+                    exc_class_or_status_code, handler = cast(Tuple[Union[int, Type[Exception]], Callable], pair)
                     if isinstance(exc_class_or_status_code, int):
                         if exc_class_or_status_code == 500:
                             run_handler(handler, request, e)
