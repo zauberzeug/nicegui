@@ -16,6 +16,21 @@ P = ParamSpec('P')
 R = TypeVar('R')
 
 
+def setup() -> None:
+    """Setup the process pool and the thread pool. (For internal use only.)"""
+    global process_pool  # pylint: disable=global-statement # noqa: PLW0603
+    global thread_pool  # pylint: disable=global-statement # noqa: PLW0603
+    try:
+        if process_pool is None:
+            process_pool = ProcessPoolExecutor()
+    except NotImplementedError:
+        pass
+    try:
+        if thread_pool is None:
+            thread_pool = ThreadPoolExecutor()
+    except NotImplementedError:
+        pass
+
 class SubprocessException(Exception):
     """A picklable exception to represent exceptions raised in subprocesses."""
 
@@ -66,17 +81,11 @@ async def cpu_bound(callback: Callable[P, R], *args: P.args, **kwargs: P.kwargs)
     It is encouraged to create static methods (or free functions) which get all the data as simple parameters (eg. no class/ui logic)
     and return the result (instead of writing it in class properties or global variables).
     """
-    global process_pool # pylint: disable=global-statement # noqa: PLW0603
-    if process_pool is None:
-        process_pool = ProcessPoolExecutor()
     return await _run(process_pool, safe_callback, callback, *args, **kwargs)
 
 
 async def io_bound(callback: Callable[P, R], *args: P.args, **kwargs: P.kwargs) -> R:
     """Run an I/O-bound function in a separate thread."""
-    global thread_pool # pylint: disable=global-statement # noqa: PLW0603
-    if thread_pool is None:
-        thread_pool = ThreadPoolExecutor()
     return await _run(thread_pool, callback, *args, **kwargs)
 
 
@@ -87,10 +96,10 @@ def tear_down() -> None:
 
     kwargs = {'cancel_futures': True} if sys.version_info >= (3, 9) else {}
 
-    if not process_pool is None:
+    if process_pool is not None:
         for p in process_pool._processes.values():  # pylint: disable=protected-access
             p.kill()
         process_pool.shutdown(wait=True, **kwargs)
 
-    if not thread_pool is None:
+    if thread_pool is not None:
         thread_pool.shutdown(wait=False, **kwargs)
