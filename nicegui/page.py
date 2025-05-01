@@ -104,8 +104,10 @@ class page:
         def check_for_late_return_value(task: asyncio.Task) -> None:
             try:
                 if task.result() is not None:
-                    log.error(f'ignoring {task.result()}; '
-                              'it was returned after the HTML had been delivered to the client')
+                    can_ignore = getattr(task.result(), 'context', {}).get('is_nicegui_error_page', False)
+                    if not can_ignore:
+                        log.error(f'ignoring {task.result()}; '
+                                  'it was returned after the HTML had been delivered to the client')
             except asyncio.CancelledError:
                 pass
 
@@ -136,7 +138,7 @@ class page:
                 core.app.handle_exception(e)
 
                 exception_handler(e)
-                return error_client.build_response(request, 500)
+                return error_client.build_response(request, 500, is_nicegui_error_page=True)
 
         @wraps(func)
         async def decorated(*dec_args, **dec_kwargs) -> Response:
