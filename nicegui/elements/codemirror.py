@@ -348,7 +348,7 @@ class CodeMirror(ValueElement, DisableableElement, component='codemirror.js', de
 
     def _apply_change_set(self, sections: List[int], inserted: List[List[str]]) -> str:
         # based on https://github.com/codemirror/state/blob/main/src/change.ts
-        doc = self.value
+        doc = self.value or ''
 
         def _find_python_index(js_index: int) -> int:
             return find_python_index(js_index, self._cumulative_js_length)
@@ -378,7 +378,7 @@ class CodeMirror(ValueElement, DisableableElement, component='codemirror.js', de
 
 def get_cumulative_js_length(doc: str) -> List[int]:
     """Returns a list, where for each index i, the value is the length of the string from 0 to i in UTF-16 (imagine js_len(doc[:i])"""
-    return list(accumulate(len(c.encode('utf-16be'))//2 for c in doc))
+    return list(accumulate(len(c.encode('utf-16be'))//2 for c in doc)) if doc else []
 
 
 def get_total_js_length(cumulative_js_length: List[int]) -> int:
@@ -391,7 +391,7 @@ def find_python_index(js_index: int, cumulative_js_length: List[int]) -> int:
 
     Note that 1-based indexing enables doc[:find_python_index(pos)] to replace doc[:pos]
     """
-    if js_index == 0:
+    if js_index == 0 or not cumulative_js_length:
         return 0
     lo1 = len(cumulative_js_length) - (get_total_js_length(cumulative_js_length) - js_index)
     hi1 = js_index
