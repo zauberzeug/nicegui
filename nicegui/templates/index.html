@@ -40,7 +40,11 @@
     {{ body_html | safe }}
 
     <div id="app"></div>
-    <div id="popup" aria-hidden="true">
+    <div id="popup_servererror" class="nicegui-error-popup" aria-hidden="true">
+      <span>{{ translations.server_error }}</span>
+      <span id="popup_servererror_message"></span>
+    </div>
+    <div id="popup" class="nicegui-error-popup" aria-hidden="true">
       <span>{{ translations.connection_lost }}</span>
       <span>{{ translations.trying_to_reconnect }}</span>
     </div>

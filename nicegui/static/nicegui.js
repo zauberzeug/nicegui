@@ -407,6 +407,17 @@ function createApp(elements, options) {
         },
         download: (msg) => download(msg.src, msg.filename, msg.media_type, options.prefix),
         notify: (msg) => Quasar.Notify.create(msg),
+        servererror: (msg) => {
+          if (window.serverErrorMessageTimer) {
+            clearTimeout(window.serverErrorMessageTimer);
+          }
+          document.getElementById("popup_servererror_message").innerText = msg.message;
+          const popup = document.getElementById("popup_servererror");
+          popup.ariaHidden = false;
+          window.serverErrorMessageTimer = setTimeout(() => {
+            popup.ariaHidden = true;
+          }, 5000);
+        },
       };
       const socketMessageQueue = [];
       let isProcessingSocketMessage = false;
