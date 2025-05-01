@@ -151,7 +151,8 @@ doc.text('', '''
 
     To serve your application with [HTTPS](https://fastapi.tiangolo.com/deployment/https/) encryption, you can provide SSL certificates in multiple ways.
     For instance, you can directly provide your certificates to [Uvicorn](https://www.uvicorn.org/), which NiceGUI is based on, by passing the
-    relevant [options](https://www.uvicorn.org/#command-line-options) to `ui.run()`:
+    relevant [options](https://www.uvicorn.org/#command-line-options) to `ui.run()`. If both a certificate and key file are provided, the application
+    will automatically be served over HTTPS:
 ''')
 
 
