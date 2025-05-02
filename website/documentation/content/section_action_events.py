@@ -151,6 +151,51 @@ def lifecycle_demo():
     dt = datetime.now()
 
 
+@doc.demo('Custom Error Page Handler', '''
+    You can register a custom error page handler when the page runs into an error. 
+          
+    Points aboout the error page handler:
+          
+    - It must be a synchronous function that takes the error as an argument (expected signature: `def my_error_content(exception):`).
+    - Overrides the default "sad face" error page handler, except when the error is re-raised (`raise exception`).
+    - Inside the function, you can define the UI elements to be returned to the client, just like in a normal page handler.
+    - Return value is ignored.
+    - Attached via `app.on_page_exception(my_error_content)`.
+          
+    The following example shows how to create a custom error page handler that only handles a specific exception.
+          
+    The default error page handler is still used for all other exceptions.
+          
+    **Note: Showing the traceback may not be a good idea in production, as it may leak sensitive information.**
+
+''')
+def error_page_demo():
+    from nicegui import app
+
+    def error_content(exception):
+        if not "This is a special exception" in str(exception):
+            raise exception
+        import traceback
+        ui.label('This is a custom error page.')
+        ui.label(f'Error: {exception}')
+        ui.log().push(traceback.format_exc(chain=False).strip())
+
+    # app.on_page_exception(error_content)
+
+    @ui.page('/raise_special_exception')
+    def raise_special_exception():
+        raise RuntimeError("This is a special exception")
+
+    @ui.page('/raise_normal_exception')
+    def raise_normal_exception():
+        raise RuntimeError("This is a normal exception")
+
+    # ui.run()
+    # END OF DEMO
+    ui.link('Raise special exception', '/raise_special_exception')
+    ui.link('Raise normal exception', '/raise_normal_exception')
+
+
 @doc.demo(app.shutdown)
 def shutdown_demo():
     from nicegui import app
