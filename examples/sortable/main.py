@@ -287,8 +287,7 @@ with ui.card():
     invert_swap.on('update:model-value', update_threshold_ui)
 
     # Add supporting CSS
-    ui.add_head_html("""
-    <style>
+    ui.add_css("""
     .threshold-card {
         position: relative;
         min-height: 80px;
@@ -315,7 +314,6 @@ with ui.card():
     .swap-zone-indicator.east {
         border-right: 2px dashed rgba(255,0,0,0.5);
     }
-    </style>
     """)
 
 # Example 8: Grid
@@ -395,66 +393,64 @@ with ui.card():
         create_nested_list(nested_data)
 
     # Add improved supporting styles for the nested sortables
-    ui.add_head_html("""
-    <style>
-        /* Basic styling for nested items */
-        .nested-item {
-            background-color: #f8f9fa;
-            transition: background-color 0.2s;
-        }
+    ui.add_css("""
+    /* Basic styling for nested items */
+    .nested-item {
+        background-color: #f8f9fa;
+        transition: background-color 0.2s;
+    }
 
-        /* Color differentiation by nesting level */
-        .level-1 {
-            background-color: #f8f9fa;
-        }
+    /* Color differentiation by nesting level */
+    .level-1 {
+        background-color: #f8f9fa;
+    }
 
-        .level-2 {
-            background-color: #e9ecef;
-        }
+    .level-2 {
+        background-color: #e9ecef;
+    }
 
-        .level-3 {
-            background-color: #dee2e6;
-        }
+    .level-3 {
+        background-color: #dee2e6;
+    }
 
-        /* Hover effect */
-        .nested-item:hover {
-            background-color: #e2e8f0;
-        }
+    /* Hover effect */
+    .nested-item:hover {
+        background-color: #e2e8f0;
+    }
 
-        /* Empty sortable containers styling */
-        .nested-sortable:empty {
-            padding: 10px;
-            background-color: rgba(0,0,255,0.05);
-            border: 1px dashed #ccc;
-            border-radius: 4px;
-        }
+    /* Empty sortable containers styling */
+    .nested-sortable:empty {
+        padding: 10px;
+        background-color: rgba(0,0,255,0.05);
+        border: 1px dashed #ccc;
+        border-radius: 4px;
+    }
 
-        /* Highlight empty containers on hover for better UX */
-        .nested-children:hover .nested-sortable:empty {
-            background-color: rgba(0,0,255,0.1);
-            border-color: #aaa;
-        }
+    /* Highlight empty containers on hover for better UX */
+    .nested-children:hover .nested-sortable:empty {
+        background-color: rgba(0,0,255,0.1);
+        border-color: #aaa;
+    }
 
-        /* Ghost element styling (being dragged) */
-        .nicegui-sortable-ghost {
-            opacity: 0.5;
-            background: #c8ebfb !important;
-        }
+    /* Ghost element styling (being dragged) */
+    .nicegui-sortable-ghost {
+        opacity: 0.5;
+        background: #c8ebfb !important;
+    }
 
-        /* Chosen element styling (original position) */
-        .nicegui-sortable-chosen {
-            background-color: #e2f7ff !important;
-            box-shadow: 0 0 0 2px #26b3f9;
-        }
+    /* Chosen element styling (original position) */
+    .nicegui-sortable-chosen {
+        background-color: #e2f7ff !important;
+        box-shadow: 0 0 0 2px #26b3f9;
+    }
 
-        /* Show and highlight empty containers during drag operations */
-        .nicegui-sortable-ghost ~ .nested-sortable:empty,
-        .nested-container.nicegui-sortable-ghost .nested-sortable:empty {
-            display: block;
-            border-color: #26b3f9;
-            background-color: rgba(38, 179, 249, 0.1);
-        }
-    </style>
+    /* Show and highlight empty containers during drag operations */
+    .nicegui-sortable-ghost ~ .nested-sortable:empty,
+    .nested-container.nicegui-sortable-ghost .nested-sortable:empty {
+        display: block;
+        border-color: #26b3f9;
+        background-color: rgba(38, 179, 249, 0.1);
+    }
     """)
 
 # Example 10: MultiDrag Plugin
