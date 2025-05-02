@@ -133,7 +133,8 @@ class page:
             if exception_handler is None:
                 raise e
             with Client(page(''), request=request) as error_client:
-                # invoke the existing exception handlers
+                exception_handler(e)
+                # Then, invoke the existing exception handlers
 
                 def run_handler(handler: Callable, request: Request, e: Exception) -> None:
                     result = handler(request, e)
@@ -154,7 +155,6 @@ class page:
                 # NiceGUI exception handlers, attached via app.on_exception
                 core.app.handle_exception(e)
 
-                exception_handler(e)
                 return error_client.build_response(request, 500, nicegui_error_metadata={
                     'nicegui_error_client_id': notify_client_id,
                     'error_string': str(e),
