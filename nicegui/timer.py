@@ -125,11 +125,17 @@ class Timer:
         """Sleep for a given number of seconds, but allow to abort the sleep."""
         if seconds <= 0:
             return
-        try:
-            await asyncio.wait_for(self._should_abort_sleep.wait(), timeout=seconds)
-            self._should_abort_sleep.clear()
-        except asyncio.TimeoutError:
-            pass
+        while True:
+            try:
+                await asyncio.wait_for(self._should_abort_sleep.wait(), timeout=seconds)
+                self._should_abort_sleep.clear()
+                break
+            except asyncio.TimeoutError:
+                break
+            except RuntimeError:
+                # This is a workaround for Python 3.8-3.9 where the `._loop` is explicitly set (future versions have None as default),
+                # causing "attached to a different loop" error upon awaiting the event.
+                self._should_abort_sleep = asyncio.Event()
 
     async def _run_in_loop(self) -> None:
         try:
