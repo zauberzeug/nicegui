@@ -67,8 +67,8 @@ class Timer:
         self._immediate = immediate if not once else False
         self._should_abort_sleep = asyncio.Event()
         self._skip_callback_once_for_reset = False
-        self._active_changed_handlers = [on_active_changed] if on_active_changed else []
-        self._interval_changed_handlers = [on_interval_changed] if on_interval_changed else []
+        self._base_active_changed_handlers = [on_active_changed] if on_active_changed else []
+        self._base_interval_changed_handlers = [on_interval_changed] if on_interval_changed else []
 
         coroutine = self._run_in_loop
         if core.app.is_started:
@@ -77,11 +77,11 @@ class Timer:
             core.app.on_startup(coroutine)
 
     def _handle_active_change(self, active: bool) -> None:
-        for handler in self._active_changed_handlers:
+        for handler in self._base_active_changed_handlers:
             handle_event(handler, BaseTimerActiveChangeEventArguments(sender=self, active=active))
 
     def _handle_interval_change(self, interval: float) -> None:
-        for handler in self._interval_changed_handlers:
+        for handler in self._base_interval_changed_handlers:
             handle_event(handler, BaseTimerIntervalChangeEventArguments(sender=self, interval=interval))
 
     def _get_context(self) -> ContextManager:
@@ -113,12 +113,12 @@ class Timer:
 
     def on_active_changed(self, callback: Handler[BaseTimerActiveChangeEventArguments]) -> Self:
         """Set a callback which is invoked when the active state is changed."""
-        self._active_changed_handlers.append(callback)
+        self._base_active_changed_handlers.append(callback)
         return self
 
     def on_interval_changed(self, callback: Handler[BaseTimerIntervalChangeEventArguments]) -> Self:
         """Set a callback which is invoked when the interval is changed."""
-        self._interval_changed_handlers.append(callback)
+        self._base_interval_changed_handlers.append(callback)
         return self
 
     async def _sleep_with_abort(self, seconds: float) -> None:
