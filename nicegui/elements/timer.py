@@ -1,5 +1,6 @@
 from contextlib import nullcontext
-from typing import Any, Callable, ContextManager, List, Optional, cast
+from inspect import signature
+from typing import Any, Callable, ContextManager, Optional, Union
 
 from typing_extensions import Self
 
@@ -7,6 +8,7 @@ from ..client import Client
 from ..element import Element
 from ..events import Handler, TimerActiveChangeEventArguments, TimerIntervalChangeEventArguments, handle_event
 from ..logging import log
+from ..timer import BaseTimerActiveChangeEventArguments, BaseTimerIntervalChangeEventArguments
 from ..timer import Timer as BaseTimer
 
 
@@ -37,28 +39,33 @@ class Timer(BaseTimer, Element, component='timer.js'):
         """
         super().__init__(interval=interval, callback=callback, active=active, once=once, immediate=immediate)
 
-        self._active_changed_handlers = cast(List[Handler[TimerActiveChangeEventArguments]], [])
-        self._interval_changed_handlers = cast(List[Handler[TimerIntervalChangeEventArguments]], [])
-
         self._active_changed_handlers = [on_active_changed] if on_active_changed else []
         self._interval_changed_handlers = [on_interval_changed] if on_interval_changed else []
 
     def _handle_active_change(self, active: bool) -> None:
+        super()._handle_active_change(active)
         for handler in self._active_changed_handlers:
             handle_event(handler, TimerActiveChangeEventArguments(sender=self, client=self.client, active=active))
 
     def _handle_interval_change(self, interval: float) -> None:
+        super()._handle_interval_change(interval)
         for handler in self._interval_changed_handlers:
             handle_event(handler, TimerIntervalChangeEventArguments(sender=self, client=self.client, interval=interval))
 
-    def on_active_changed(self, callback: Handler[TimerActiveChangeEventArguments]) -> Self:
+    def on_active_changed(self, callback: Union[Handler[TimerActiveChangeEventArguments], Handler[BaseTimerActiveChangeEventArguments]]) -> Self:
         """Set a callback which is invoked when the active state is changed."""
-        self._active_changed_handlers.append(callback)
+        if any(p.annotation is BaseTimerActiveChangeEventArguments for p in signature(callback).parameters.values()):
+            super().on_active_changed(callback)
+        else:
+            self._active_changed_handlers.append(callback)
         return self
 
-    def on_interval_changed(self, callback: Handler[TimerIntervalChangeEventArguments]) -> Self:
+    def on_interval_changed(self, callback: Union[Handler[TimerIntervalChangeEventArguments], Handler[BaseTimerIntervalChangeEventArguments]]) -> Self:
         """Set a callback which is invoked when the interval is changed."""
-        self._interval_changed_handlers.append(callback)
+        if any(p.annotation is BaseTimerIntervalChangeEventArguments for p in signature(callback).parameters.values()):
+            super().on_interval_changed(callback)
+        else:
+            self._interval_changed_handlers.append(callback)
         return self
 
     def _get_context(self) -> ContextManager:
