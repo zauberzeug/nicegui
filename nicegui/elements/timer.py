@@ -1,6 +1,7 @@
 from contextlib import nullcontext
 from dataclasses import dataclass
 from typing import Any, Callable, ContextManager, Optional
+
 from typing_extensions import Self
 
 from ..client import Client
