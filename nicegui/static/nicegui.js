@@ -182,36 +182,13 @@ function renderRecursively(elements, id) {
       handler = eval(event.js_handler);
     } else {
       handler = (...args) => {
-        const emitter = () => {
-          if (!window.socket) {
-            return;
-          }
-          const payload = {
+        const emitter = () =>
+          window.socket?.emit("event", {
             id: id,
             client_id: window.clientId,
             listener_id: event.listener_id,
             args: stringifyEventArgs(args, event.args),
-          };
-          const expected_socketio_payload = [
-            "event",
-            payload,
-          ]
-          console.log("Length of expected_socketio_payload: ", JSON.stringify(expected_socketio_payload).length + 2);
-
-          if (JSON.stringify(expected_socketio_payload).length + 2 > window.socket.io.engine.maxPayload) {
-            console.log("Payload size exceeds the maximum allowed limit.");
-            if (window.tooLongMessageTimer) {
-              clearTimeout(window.tooLongMessageTimer);
-            }
-            const popup = document.getElementById("popup_toolongmessage");
-            popup.ariaHidden = false;
-            window.tooLongMessageTimer = setTimeout(() => {
-              popup.ariaHidden = true;
-            }, 5000);
-            return;
-          }
-          window.socket.emit("event", payload);
-        };
+          });
         const delayed_emitter = () => {
           if (window.did_handshake) emitter();
           else setTimeout(emitter, 10);
