@@ -531,3 +531,11 @@ class Element(Visibility):
                 result += f'\n {line}'
 
         return result
+
+    @property
+    def html_id(self) -> str:
+        """The ID of the element in the HTML DOM.
+
+        *Added in version 2.16.0*
+        """
+        return f'c{self.id}'

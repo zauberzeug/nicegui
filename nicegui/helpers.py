@@ -6,8 +6,11 @@ import socket
 import threading
 import time
 import webbrowser
+from collections.abc import Awaitable
 from pathlib import Path
 from typing import Any, Optional, Set, Tuple, Union
+
+import wait_for2
 
 from .logging import log
 
@@ -106,3 +109,12 @@ def kebab_to_camel_case(string: str) -> str:
 def event_type_to_camel_case(string: str) -> str:
     """Convert an event type string to camelCase."""
     return '.'.join(kebab_to_camel_case(part) if part != '-' else part for part in string.split('.'))
+
+
+async def wait_for(fut: Awaitable, timeout: Optional[float] = None) -> None:
+    """Wait for a future to complete.
+
+    This function is a wrapper around ``wait_for2.wait_for`` which is a drop-in replacement for ``asyncio.wait_for``.
+    It can be removed once we drop support for older versions than Python 3.13 which fixes ``asyncio.wait_for``.
+    """
+    return await wait_for2.wait_for(fut, timeout)

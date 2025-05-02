@@ -1,5 +1,7 @@
 from nicegui import __version__, background_tasks, events, ui
 
+from .documentation import CustomRestructuredText as custom_restructured_text
+
 
 class Search:
 
@@ -68,7 +70,7 @@ class Search:
                                         if result['item']['format'] == 'md':
                                             element = ui.markdown(intro)
                                         else:
-                                            element = ui.restructured_text(intro)
+                                            element = custom_restructured_text(intro)
                                         element.classes('text-grey line-clamp-1')
         background_tasks.create_lazy(handle_input(), name='handle_search_input')
 

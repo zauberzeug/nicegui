@@ -104,6 +104,7 @@ def activate(host: str, port: int, title: str, width: int, height: int, fullscre
         while not core.app.is_stopped:
             time.sleep(0.1)
         _thread.interrupt_main()
+        native.remove_queues()
 
     if not optional_features.has('webview'):
         log.error('Native mode is not supported in this configuration.\n'
@@ -111,6 +112,7 @@ def activate(host: str, port: int, title: str, width: int, height: int, fullscre
         sys.exit(1)
 
     mp.freeze_support()
+    native.create_queues()
     args = host, port, title, width, height, fullscreen, frameless, native.method_queue, native.response_queue
     process = mp.Process(target=_open_window, args=args, daemon=True)
     process.start()
