@@ -81,11 +81,17 @@ async def cpu_bound(callback: Callable[P, R], *args: P.args, **kwargs: P.kwargs)
     It is encouraged to create static methods (or free functions) which get all the data as simple parameters (eg. no class/ui logic)
     and return the result (instead of writing it in class properties or global variables).
     """
+    if process_pool is None:
+        raise RuntimeError('Process pool not set up. Call run.setup() first.')
+
     return await _run(process_pool, safe_callback, callback, *args, **kwargs)
 
 
 async def io_bound(callback: Callable[P, R], *args: P.args, **kwargs: P.kwargs) -> R:
     """Run an I/O-bound function in a separate thread."""
+    if thread_pool is None:
+        raise RuntimeError('Thread pool not set up. Call run.setup() first.')
+
     return await _run(thread_pool, callback, *args, **kwargs)
 
 
