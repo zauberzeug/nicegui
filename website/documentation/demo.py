@@ -1,9 +1,8 @@
 from typing import Callable, Optional, Union
 
-
 from nicegui import helpers, json, ui
-from .code_extraction import get_full_code
 
+from .code_extraction import get_full_code
 from .intersection_observer import IntersectionObserver as intersection_observer
 from .windows import browser_window, python_window
 

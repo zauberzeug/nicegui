@@ -6,8 +6,8 @@ from fastapi.responses import JSONResponse
 from nicegui import app
 
 from ..examples import examples
-from .content import registry
 from .code_extraction import get_full_code
+from .content import registry
 
 PATH = Path(__file__).parent.parent / 'static' / 'search_index.json'
 search_index: List[Dict[str, str]] = []
