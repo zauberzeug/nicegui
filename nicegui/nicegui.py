@@ -210,3 +210,8 @@ def _on_ack(_: str, msg: Dict) -> None:
     if not client:
         return
     client.outbox.prune_history(msg['next_message_id'])
+
+
+@sio.on('too-long-message')
+def _on_too_long_message(_: str) -> None:
+    log.warning('Received a too long message from the client.')

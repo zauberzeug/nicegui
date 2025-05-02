@@ -346,6 +346,39 @@ function createApp(elements, options) {
       window.did_handshake = false;
       const messageHandlers = {
         connect: () => {
+          function tapIntoFunction(target, functionName, popupId) {
+            try {
+              const originalFunction = target[functionName];
+              target[functionName] = function (...args) {
+                const msg = args[0];
+                if (typeof msg !== "string" || !msg.length) {
+                  console.error("Tapper: Message is not a string or has no length property.");
+                  return originalFunction.call(this, ...args);
+                }
+                if (msg.length > 10000 - 100) {
+                  console.error("Payload size exceeds the maximum allowed limit.", msg.length);
+                  args[0] = '42["too-long-message"]';
+                  if (window.tooLongMessageTimer) {
+                    clearTimeout(window.tooLongMessageTimer);
+                  }
+                  const popup = document.getElementById(popupId);
+                  popup.ariaHidden = false;
+                  window.tooLongMessageTimer = setTimeout(() => {
+                    popup.ariaHidden = true;
+                  }, 5000);
+                } else {
+                  //return originalFunction.call(this, ...args);
+                }
+                return originalFunction.call(this, ...args);
+              };
+              console.log(`${functionName} function tapped successfully.`);
+            } catch (e) {
+              console.log(`Cannot tap into ${functionName} function:`, e);
+            }
+          }
+
+          tapIntoFunction(window.socket.io.engine.transport.ws, "send", "popup_toolongmessage");
+          tapIntoFunction(window.socket.io.engine.transport, "doWrite", "popup_toolongmessage");
           const args = {
             client_id: window.clientId,
             document_id: window.documentId,
