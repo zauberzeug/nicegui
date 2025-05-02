@@ -1,16 +1,30 @@
 import asyncio
 import time
 from contextlib import nullcontext
-from typing import Any, Awaitable, Callable, ContextManager, Optional, cast, Self
+from dataclasses import dataclass
+from typing import Any, Awaitable, Callable, ContextManager, Optional, Self, cast
 
 from . import background_tasks, core
 from .awaitable_response import AwaitableResponse
 from .binding import BindableProperty
+from .dataclasses import KWONLY_SLOTS
+from .events import EventArguments, Handler, handle_event
+
+
+@dataclass(**KWONLY_SLOTS)
+class BaseTimerIntervalChangeEventArguments(EventArguments):
+    sender: 'Timer'
+    interval: float
+
+
+@dataclass(**KWONLY_SLOTS)
+class BaseTimerActiveChangeEventArguments(EventArguments):
+    sender: 'Timer'
+    active: bool
 
 
 class AlreadyRanOnceError(Exception):
     """Exception raised when the timer has already run once, so as to stop the outer while loop in _run_in_loop."""
-    pass
 
 
 class Timer:
@@ -25,8 +39,8 @@ class Timer:
                  active: bool = True,
                  once: bool = False,
                  immediate: bool = True,
-                 on_active_changed: Optional[Callable[[bool], None]] = None,
-                 on_interval_changed: Optional[Callable[[float], None]] = None,
+                 on_active_changed: Optional[Handler[BaseTimerActiveChangeEventArguments]] = None,
+                 on_interval_changed: Optional[Handler[BaseTimerIntervalChangeEventArguments]] = None,
                  ) -> None:
         """Timer
 
@@ -51,13 +65,8 @@ class Timer:
         self._immediate = immediate if not once else False
         self._should_abort_sleep = asyncio.Event()
         self._skip_callback_once_for_reset = False
-        self._on_active_changed: Optional[Callable[[bool], None]] = None
-        self._on_interval_changed: Optional[Callable[[float], None]] = None
-
-        if on_active_changed:
-            self.on_active_changed(on_active_changed)
-        if on_interval_changed:
-            self.on_interval_changed(on_interval_changed)
+        self._active_changed_handlers = [on_active_changed] if on_active_changed else []
+        self._interval_changed_handlers = [on_interval_changed] if on_interval_changed else []
 
         coroutine = self._run_in_loop
         if core.app.is_started:
@@ -66,12 +75,12 @@ class Timer:
             core.app.on_startup(coroutine)
 
     def _handle_active_change(self, active: bool) -> None:
-        if self._on_active_changed:
-            self._on_active_changed(active)
+        for handler in self._active_changed_handlers:
+            handle_event(handler, BaseTimerActiveChangeEventArguments(sender=self, active=active))
 
     def _handle_interval_change(self, interval: float) -> None:
-        if self._on_interval_changed:
-            self._on_interval_changed(interval)
+        for handler in self._interval_changed_handlers:
+            handle_event(handler, BaseTimerIntervalChangeEventArguments(sender=self, interval=interval))
 
     def _get_context(self) -> ContextManager:
         return nullcontext()
@@ -100,14 +109,14 @@ class Timer:
         self._skip_callback_once_for_reset = True
         self.trigger()
 
-    def on_active_changed(self, callback: Callable[[bool], None]) -> Self:
+    def on_active_changed(self, callback: Optional[Handler[BaseTimerActiveChangeEventArguments]]) -> Self:
         """Set a callback which is invoked when the active state is changed."""
-        self._on_active_changed = callback
+        self._active_changed_handlers.append(callback)
         return self
 
-    def on_interval_changed(self, callback: Callable[[float], None]) -> Self:
+    def on_interval_changed(self, callback: Optional[Handler[BaseTimerIntervalChangeEventArguments]]) -> Self:
         """Set a callback which is invoked when the interval is changed."""
-        self._on_interval_changed = callback
+        self._interval_changed_handlers.append(callback)
         return self
 
     async def _sleep_with_abort(self, seconds: float) -> None:
