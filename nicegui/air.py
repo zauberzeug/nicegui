@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import asyncio
 import gzip
 import json
 import logging
@@ -225,7 +224,7 @@ class Air:
         self.connecting = True
         try:
             if self.relay.connected:
-                await asyncio.wait_for(self.disconnect(), timeout=5)
+                await helpers.wait_for(self.disconnect(), timeout=5)
             self.log.debug('Connecting...')
             await self.relay.connect(
                 f'{RELAY_HOST}?device_token={self.token}',
@@ -270,10 +269,10 @@ class Air:
 def connect() -> None:
     """Connect to the NiceGUI On Air server if there is an air instance."""
     if core.air:
-        background_tasks.create(core.air.connect())
+        background_tasks.create(core.air.connect(), name='On Air connect')
 
 
 def disconnect() -> None:
     """Disconnect from the NiceGUI On Air server if there is an air instance."""
     if core.air:
-        background_tasks.create(core.air.disconnect())
+        background_tasks.create(core.air.disconnect(), name='On Air disconnect')
