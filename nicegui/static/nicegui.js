@@ -355,7 +355,7 @@ function createApp(elements, options) {
                   console.error("Tapper: Message is not a string or has no length property.");
                   return originalFunction.call(this, ...args);
                 }
-                if (msg.length > 10000 - 100) {
+                if (msg.length > 1000000 - 100) {
                   console.error("Payload size exceeds the maximum allowed limit.", msg.length);
                   args[0] = '42["too-long-message"]';
                   if (window.tooLongMessageTimer) {
