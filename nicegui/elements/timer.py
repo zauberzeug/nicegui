@@ -1,6 +1,7 @@
 from contextlib import nullcontext
 from dataclasses import dataclass
-from typing import Any, Callable, ContextManager, Optional, Self
+from typing import Any, Callable, ContextManager, Optional
+from typing_extensions import Self
 
 from ..client import Client
 from ..dataclasses import KWONLY_SLOTS
@@ -47,8 +48,10 @@ class Timer(BaseTimer, Element, component='timer.js'):
         :param on_interval_changed: callback which is invoked when the interval is changed (default: `None`)
         """
         super().__init__(interval=interval, callback=callback, active=active, once=once, immediate=immediate)
-        self._active_changed_handlers = [on_active_changed] if on_active_changed else []
-        self._interval_changed_handlers = [on_interval_changed] if on_interval_changed else []
+        self._active_changed_handlers: list[Handler[TimerActiveChangeEventArguments]] = [
+            on_active_changed] if on_active_changed else []
+        self._interval_changed_handlers: list[Handler[TimerIntervalChangeEventArguments]] = [
+            on_interval_changed] if on_interval_changed else []
 
     def _handle_active_change(self, active: bool) -> None:
         for handler in self._active_changed_handlers:
@@ -58,12 +61,12 @@ class Timer(BaseTimer, Element, component='timer.js'):
         for handler in self._interval_changed_handlers:
             handle_event(handler, TimerIntervalChangeEventArguments(sender=self, client=self.client, interval=interval))
 
-    def on_active_changed(self, callback: Optional[Handler[TimerActiveChangeEventArguments]]) -> Self:
+    def on_active_changed(self, callback: Handler[TimerActiveChangeEventArguments]) -> Self:
         """Set a callback which is invoked when the active state is changed."""
         self._active_changed_handlers.append(callback)
         return self
 
-    def on_interval_changed(self, callback: Optional[Handler[TimerIntervalChangeEventArguments]]) -> Self:
+    def on_interval_changed(self, callback: Handler[TimerIntervalChangeEventArguments]) -> Self:
         """Set a callback which is invoked when the interval is changed."""
         self._interval_changed_handlers.append(callback)
         return self

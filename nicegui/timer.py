@@ -2,7 +2,8 @@ import asyncio
 import time
 from contextlib import nullcontext
 from dataclasses import dataclass
-from typing import Any, Awaitable, Callable, ContextManager, Optional, Self, cast
+from typing import Any, Awaitable, Callable, ContextManager, Optional, cast
+from typing_extensions import Self
 
 from . import background_tasks, core
 from .awaitable_response import AwaitableResponse
@@ -109,12 +110,12 @@ class Timer:
         self._skip_callback_once_for_reset = True
         self.trigger()
 
-    def on_active_changed(self, callback: Optional[Handler[BaseTimerActiveChangeEventArguments]]) -> Self:
+    def on_active_changed(self, callback: Handler[BaseTimerActiveChangeEventArguments]) -> Self:
         """Set a callback which is invoked when the active state is changed."""
         self._active_changed_handlers.append(callback)
         return self
 
-    def on_interval_changed(self, callback: Optional[Handler[BaseTimerIntervalChangeEventArguments]]) -> Self:
+    def on_interval_changed(self, callback: Handler[BaseTimerIntervalChangeEventArguments]) -> Self:
         """Set a callback which is invoked when the interval is changed."""
         self._interval_changed_handlers.append(callback)
         return self
