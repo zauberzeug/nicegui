@@ -1,6 +1,6 @@
 from contextlib import nullcontext
 from dataclasses import dataclass
-from typing import Any, Callable, ContextManager, Optional
+from typing import Any, Callable, ContextManager, List, Optional, cast
 
 from typing_extensions import Self
 
@@ -49,10 +49,12 @@ class Timer(BaseTimer, Element, component='timer.js'):
         :param on_interval_changed: callback which is invoked when the interval is changed (default: `None`)
         """
         super().__init__(interval=interval, callback=callback, active=active, once=once, immediate=immediate)
-        self._active_changed_handlers: list[Handler[TimerActiveChangeEventArguments]] = [
-            on_active_changed] if on_active_changed else []
-        self._interval_changed_handlers: list[Handler[TimerIntervalChangeEventArguments]] = [
-            on_interval_changed] if on_interval_changed else []
+
+        self._active_changed_handlers = cast(List[Handler[TimerActiveChangeEventArguments]], [])
+        self._interval_changed_handlers = cast(List[Handler[TimerIntervalChangeEventArguments]], [])
+
+        self._active_changed_handlers = [on_active_changed] if on_active_changed else []
+        self._interval_changed_handlers = [on_interval_changed] if on_interval_changed else []
 
     def _handle_active_change(self, active: bool) -> None:
         for handler in self._active_changed_handlers:
