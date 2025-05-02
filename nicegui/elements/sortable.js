@@ -117,6 +117,25 @@ export default {
                 this.sortableInstance.option('disabled', true);
             }
         },
+        // Add a method to get a specific option value
+        getOption(optionName) {
+            if (this.sortableInstance) {
+                return this.sortableInstance.option(optionName);
+            }
+            return null;
+        },
+        // Add a method to set a specific option
+        setOption(optionName, value) {
+            if (this.sortableInstance) {
+                // Directly set the option on the SortableJS instance
+                this.sortableInstance.option(optionName, value);
+                // Also update our local options object to keep it in sync
+                this.options[optionName] = value;
+                console.debug(`Set ${optionName} to:`, value);
+                return true;
+            }
+            return false;
+        },
         // MultiDrag plugin methods
         getSelected() {
             if (this.sortableInstance) {

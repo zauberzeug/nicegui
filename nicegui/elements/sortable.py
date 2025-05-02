@@ -232,6 +232,7 @@ class Sortable(Element,
     @group.setter
     def group(self, value: str | None):
         self._props['options']['group'] = value
+        self.run_method('setOption', 'group', value)
 
     @property
     def sort(self) -> bool | None:
@@ -240,6 +241,7 @@ class Sortable(Element,
     @sort.setter
     def sort(self, value: bool | None):
         self._props['options']['sort'] = value
+        self.run_method('setOption', 'sort', value)
 
     @property
     def delay(self) -> int | None:
@@ -248,6 +250,7 @@ class Sortable(Element,
     @delay.setter
     def delay(self, value: int | None):
         self._props['options']['delay'] = value
+        self.run_method('setOption', 'delay', value)
 
     @property
     def delay_on_touch_only(self) -> bool | None:
@@ -256,6 +259,7 @@ class Sortable(Element,
     @delay_on_touch_only.setter
     def delay_on_touch_only(self, value: bool | None):
         self._props['options']['delayOnTouchOnly'] = value
+        self.run_method('setOption', 'delayOnTouchOnly', value)
 
     @property
     def touch_start_threshold(self) -> int | None:
@@ -264,6 +268,7 @@ class Sortable(Element,
     @touch_start_threshold.setter
     def touch_start_threshold(self, value: int | None):
         self._props['options']['touchStartThreshold'] = value
+        self.run_method('setOption', 'touchStartThreshold', value)
 
     @property
     def disabled(self) -> bool | None:
@@ -272,6 +277,7 @@ class Sortable(Element,
     @disabled.setter
     def disabled(self, value: bool | None):
         self._props['options']['disabled'] = value
+        self.run_method('setOption', 'disabled', value)
 
     @property
     def store(self) -> dict | None:
@@ -280,6 +286,7 @@ class Sortable(Element,
     @store.setter
     def store(self, value: dict | None):
         self._props['options']['store'] = value
+        self.run_method('setOption', 'store', value)
 
     @property
     def animation(self) -> int | None:
@@ -288,6 +295,7 @@ class Sortable(Element,
     @animation.setter
     def animation(self, value: int | None):
         self._props['options']['animation'] = value
+        self.run_method('setOption', 'animation', value)
 
     @property
     def easing(self) -> str | None:
@@ -296,6 +304,7 @@ class Sortable(Element,
     @easing.setter
     def easing(self, value: str | None):
         self._props['options']['easing'] = value
+        self.run_method('setOption', 'easing', value)
 
     @property
     def handle(self) -> str | None:
@@ -304,6 +313,7 @@ class Sortable(Element,
     @handle.setter
     def handle(self, value: str | None):
         self._props['options']['handle'] = value
+        self.run_method('setOption', 'handle', value)
 
     @property
     def filter(self) -> str | None:
@@ -312,6 +322,7 @@ class Sortable(Element,
     @filter.setter
     def filter(self, value: str | None):
         self._props['options']['filter'] = value
+        self.run_method('setOption', 'filter', value)
 
     @property
     def prevent_on_filter(self) -> bool | None:
@@ -320,6 +331,7 @@ class Sortable(Element,
     @prevent_on_filter.setter
     def prevent_on_filter(self, value: bool | None):
         self._props['options']['preventOnFilter'] = value
+        self.run_method('setOption', 'preventOnFilter', value)
 
     @property
     def draggable(self) -> bool | None:
@@ -328,6 +340,7 @@ class Sortable(Element,
     @draggable.setter
     def draggable(self, value: bool | None):
         self._props['options']['draggable'] = value
+        self.run_method('setOption', 'draggable', value)
 
     @property
     def ghost_class(self) -> str | None:
@@ -336,6 +349,7 @@ class Sortable(Element,
     @ghost_class.setter
     def ghost_class(self, value: str | None):
         self._props['options']['ghostClass'] = value
+        self.run_method('setOption', 'ghostClass', value)
 
     @property
     def chosen_class(self) -> str | None:
@@ -344,6 +358,7 @@ class Sortable(Element,
     @chosen_class.setter
     def chosen_class(self, value: str | None):
         self._props['options']['chosenClass'] = value
+        self.run_method('setOption', 'chosenClass', value)
 
     @property
     def drag_class(self) -> str | None:
@@ -352,6 +367,7 @@ class Sortable(Element,
     @drag_class.setter
     def drag_class(self, value: str | None):
         self._props['options']['dragClass'] = value
+        self.run_method('setOption', 'dragClass', value)
 
     @property
     def data_id_attr(self) -> str | None:
@@ -360,6 +376,7 @@ class Sortable(Element,
     @data_id_attr.setter
     def data_id_attr(self, value: str | None):
         self._props['options']['dataIdAttr'] = value
+        self.run_method('setOption', 'dataIdAttr', value)
 
     @property
     def swap_threshold(self) -> str | None:
@@ -368,6 +385,7 @@ class Sortable(Element,
     @swap_threshold.setter
     def swap_threshold(self, value: str | None):
         self._props['options']['swapThreshold'] = value
+        self.run_method('setOption', 'swapThreshold', value)
 
     @property
     def invert_swap(self) -> bool | None:
@@ -376,6 +394,7 @@ class Sortable(Element,
     @invert_swap.setter
     def invert_swap(self, value: bool | None):
         self._props['options']['invertSwap'] = value
+        self.run_method('setOption', 'invertSwap', value)
 
     @property
     def inverted_swap_threshold(self) -> float | None:
@@ -384,6 +403,7 @@ class Sortable(Element,
     @inverted_swap_threshold.setter
     def inverted_swap_threshold(self, value: float | None):
         self._props['options']['invertedSwapThreshold'] = value
+        self.run_method('setOption', 'invertedSwapThreshold', value)
 
     @property
     def direction(self) -> str | None:
@@ -392,6 +412,7 @@ class Sortable(Element,
     @direction.setter
     def direction(self, value: str | None):
         self._props['options']['direction'] = value
+        self.run_method('setOption', 'direction', value)
 
     @property
     def force_fallback(self) -> bool | None:
@@ -400,6 +421,7 @@ class Sortable(Element,
     @force_fallback.setter
     def force_fallback(self, value: bool | None):
         self._props['options']['forceFallback'] = value
+        self.run_method('setOption', 'forceFallback', value)
 
     @property
     def fallback_class(self) -> str | None:
@@ -408,6 +430,7 @@ class Sortable(Element,
     @fallback_class.setter
     def fallback_class(self, value: str | None):
         self._props['options']['fallbackClass'] = value
+        self.run_method('setOption', 'fallbackClass', value)
 
     @property
     def fallback_on_body(self) -> int | None:
@@ -416,6 +439,7 @@ class Sortable(Element,
     @fallback_on_body.setter
     def fallback_on_body(self, value: int | None):
         self._props['options']['fallbackOnBody'] = value
+        self.run_method('setOption', 'fallbackOnBody', value)
 
     @property
     def fallback_tolerance(self) -> int | None:
@@ -424,6 +448,7 @@ class Sortable(Element,
     @fallback_tolerance.setter
     def fallback_tolerance(self, value: int | None):
         self._props['options']['fallbackTolerance'] = value
+        self.run_method('setOption', 'fallbackTolerance', value)
 
     @property
     def dragover_bubble(self) -> bool | None:
@@ -432,6 +457,7 @@ class Sortable(Element,
     @dragover_bubble.setter
     def dragover_bubble(self, value: bool | None):
         self._props['options']['dragoverBubble'] = value
+        self.run_method('setOption', 'dragoverBubble', value)
 
     @property
     def remove_clone_on_hide(self) -> bool | None:
@@ -440,6 +466,7 @@ class Sortable(Element,
     @remove_clone_on_hide.setter
     def remove_clone_on_hide(self, value: bool | None):
         self._props['options']['removeCloneOnHide'] = value
+        self.run_method('setOption', 'removeCloneOnHide', value)
 
     @property
     def empty_insert_threshold(self) -> int | None:
@@ -448,6 +475,7 @@ class Sortable(Element,
     @empty_insert_threshold.setter
     def empty_insert_threshold(self, value: int | None):
         self._props['options']['emptyInsertThreshold'] = value
+        self.run_method('setOption', 'emptyInsertThreshold', value)
 
     @property
     def multi_drag(self) -> bool | None:
@@ -456,6 +484,7 @@ class Sortable(Element,
     @multi_drag.setter
     def multi_drag(self, value: bool | None):
         self._props['options']['multiDrag'] = value
+        self.run_method('setOption', 'multiDrag', value)
 
     @property
     def multi_drag_key(self) -> str | None:
@@ -464,6 +493,7 @@ class Sortable(Element,
     @multi_drag_key.setter
     def multi_drag_key(self, value: str | None):
         self._props['options']['multiDragKey'] = value
+        self.run_method('setOption', 'multiDragKey', value)
 
     @property
     def multi_drag_class(self) -> str | None:
@@ -472,6 +502,7 @@ class Sortable(Element,
     @multi_drag_class.setter
     def multi_drag_class(self, value: str | None):
         self._props['options']['selectedClass'] = value
+        self.run_method('setOption', 'selectedClass', value)
 
     @property
     def multi_drag_avoid_implicit_deselect(self) -> bool | None:
@@ -480,6 +511,7 @@ class Sortable(Element,
     @multi_drag_avoid_implicit_deselect.setter
     def multi_drag_avoid_implicit_deselect(self, value: bool | None):
         self._props['options']['avoidImplicitDeselect'] = value
+        self.run_method('setOption', 'avoidImplicitDeselect', value)
 
     @property
     def swap(self) -> bool | None:
@@ -488,6 +520,7 @@ class Sortable(Element,
     @swap.setter
     def swap(self, value: bool | None):
         self._props['options']['swap'] = value
+        self.run_method('setOption', 'swap', value)
 
     @property
     def swap_class(self) -> str | None:
@@ -496,6 +529,7 @@ class Sortable(Element,
     @swap_class.setter
     def swap_class(self, value: str | None):
         self._props['options']['swapClass'] = value
+        self.run_method('setOption', 'swapClass', value)
 
     @property
     def auto_scroll(self) -> bool | None:
@@ -504,6 +538,7 @@ class Sortable(Element,
     @auto_scroll.setter
     def auto_scroll(self, value: bool | None):
         self._props['options']['scroll'] = value
+        self.run_method('setOption', 'scroll', value)
 
     @property
     def auto_scroll_sensitivity(self) -> int | None:
@@ -512,6 +547,7 @@ class Sortable(Element,
     @auto_scroll_sensitivity.setter
     def auto_scroll_sensitivity(self, value: int | None):
         self._props['options']['scrollSensitivity'] = value
+        self.run_method('setOption', 'scrollSensitivity', value)
 
     @property
     def auto_scroll_speed(self) -> int | None:
@@ -520,6 +556,7 @@ class Sortable(Element,
     @auto_scroll_speed.setter
     def auto_scroll_speed(self, value: int | None):
         self._props['options']['scrollSpeed'] = value
+        self.run_method('setOption', 'scrollSpeed', value)
 
     @property
     def remove_on_spill(self) -> bool | None:
@@ -528,6 +565,7 @@ class Sortable(Element,
     @remove_on_spill.setter
     def remove_on_spill(self, value: bool | None):
         self._props['options']['removeOnSpill'] = value
+        self.run_method('setOption', 'removeOnSpill', value)
 
     @property
     def revert_on_spill(self) -> bool | None:
@@ -536,6 +574,7 @@ class Sortable(Element,
     @revert_on_spill.setter
     def revert_on_spill(self, value: bool | None):
         self._props['options']['revertOnSpill'] = value
+        self.run_method('setOption', 'revertOnSpill', value)
 
     def _synchronize_order(self, e):
         """Synchronize the Python-side order with the JavaScript DOM order."""
