@@ -345,15 +345,19 @@ with ui.card():
             group='nested',
             animation=150,
             fallback_on_body=True,
-            swap_threshold=0.65,
-            # classes=f'nested-level-{level}'
-        ):
+            swap_threshold=0.4,
+            invert_swap=True,
+            empty_insert_threshold=10,
+            delay=150,
+        ).classes(f'nested-sortable level-{level}'):
             for item in items:
                 with ui.card().classes(f'p-3 mb-2 nested-item level-{level}'):
                     ui.label(item['text']).classes('font-bold')
-                    if item.get('children'):
-                        with ui.element('div').classes('pl-4 mt-2 border-l-2 border-gray-300'):
-                            create_nested_list(item['children'], level + 1)
+                    # Create a container for children regardless of whether they exist
+                    with ui.element('div').classes('pl-4 border-l-2 border-gray-300 nested-children'):
+                        children = item.get('children', [])
+                        create_nested_list(children, level + 1)
+
     # Define the nested structure
     nested_data = [
         {
@@ -389,6 +393,69 @@ with ui.card():
 
     with ui.element('div').classes('nested-container'):
         create_nested_list(nested_data)
+
+    # Add improved supporting styles for the nested sortables
+    ui.add_head_html("""
+    <style>
+        /* Basic styling for nested items */
+        .nested-item {
+            background-color: #f8f9fa;
+            transition: background-color 0.2s;
+        }
+
+        /* Color differentiation by nesting level */
+        .level-1 {
+            background-color: #f8f9fa;
+        }
+
+        .level-2 {
+            background-color: #e9ecef;
+        }
+
+        .level-3 {
+            background-color: #dee2e6;
+        }
+
+        /* Hover effect */
+        .nested-item:hover {
+            background-color: #e2e8f0;
+        }
+
+        /* Empty sortable containers styling */
+        .nested-sortable:empty {
+            padding: 10px;
+            background-color: rgba(0,0,255,0.05);
+            border: 1px dashed #ccc;
+            border-radius: 4px;
+        }
+
+        /* Highlight empty containers on hover for better UX */
+        .nested-children:hover .nested-sortable:empty {
+            background-color: rgba(0,0,255,0.1);
+            border-color: #aaa;
+        }
+
+        /* Ghost element styling (being dragged) */
+        .nicegui-sortable-ghost {
+            opacity: 0.5;
+            background: #c8ebfb !important;
+        }
+
+        /* Chosen element styling (original position) */
+        .nicegui-sortable-chosen {
+            background-color: #e2f7ff !important;
+            box-shadow: 0 0 0 2px #26b3f9;
+        }
+
+        /* Show and highlight empty containers during drag operations */
+        .nicegui-sortable-ghost ~ .nested-sortable:empty,
+        .nested-container.nicegui-sortable-ghost .nested-sortable:empty {
+            display: block;
+            border-color: #26b3f9;
+            background-color: rgba(38, 179, 249, 0.1);
+        }
+    </style>
+    """)
 
 # Example 10: MultiDrag Plugin
 with ui.card():
@@ -514,38 +581,6 @@ with ui.card():
             ui.notify(f'Current order: {items_text}')
 
         ui.button('Show Current Order', on_click=show_current_order)
-
-
-# Add supporting styles for the nested sortables
-ui.add_head_html("""
-<style>
-.nested-container {
-    width: 100%;
-    max-width: 800px;
-}
-
-.nested-item {
-    background-color: #f8f9fa;
-    transition: background-color 0.2s;
-}
-
-.level-1 {
-    background-color: #f8f9fa;
-}
-
-.level-2 {
-    background-color: #e9ecef;
-}
-
-.level-3 {
-    background-color: #dee2e6;
-}
-
-.nested-item:hover {
-    background-color: #e2e8f0;
-}
-</style>
-""")
 
 ui.run(
     title="SortableJS Complete Plugin Examples",
