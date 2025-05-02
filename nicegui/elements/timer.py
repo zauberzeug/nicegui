@@ -1,26 +1,13 @@
 from contextlib import nullcontext
-from dataclasses import dataclass
 from typing import Any, Callable, ContextManager, List, Optional, cast
 
 from typing_extensions import Self
 
 from ..client import Client
-from ..dataclasses import KWONLY_SLOTS
 from ..element import Element
-from ..events import Handler, handle_event
+from ..events import Handler, TimerActiveChangeEventArguments, TimerIntervalChangeEventArguments, handle_event
 from ..logging import log
-from ..timer import BaseTimerActiveChangeEventArguments, BaseTimerIntervalChangeEventArguments
 from ..timer import Timer as BaseTimer
-
-
-@dataclass(**KWONLY_SLOTS)
-class TimerIntervalChangeEventArguments(BaseTimerIntervalChangeEventArguments):
-    client: Client
-
-
-@dataclass(**KWONLY_SLOTS)
-class TimerActiveChangeEventArguments(BaseTimerActiveChangeEventArguments):
-    client: Client
 
 
 class Timer(BaseTimer, Element, component='timer.js'):
