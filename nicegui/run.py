@@ -1,4 +1,5 @@
 import asyncio
+import logging
 import sys
 import traceback
 from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
@@ -24,12 +25,12 @@ def setup() -> None:
         if process_pool is None:
             process_pool = ProcessPoolExecutor()
     except NotImplementedError:
-        pass
+        logging.warning('Failed to initialize ProcessPoolExecutor')
     try:
         if thread_pool is None:
             thread_pool = ThreadPoolExecutor()
     except NotImplementedError:
-        pass
+        logging.warning('Failed to initialize ThreadPoolExecutor')
 
 class SubprocessException(Exception):
     """A picklable exception to represent exceptions raised in subprocesses."""
