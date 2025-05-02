@@ -347,7 +347,7 @@ with ui.card():
             invert_swap=True,
             empty_insert_threshold=10,
             delay=150,
-        ).classes(f'nested-sortable level-{level}'):
+        ).classes(f'nicegui-sortable-nested level-{level}'):
             for item in items:
                 with ui.card().classes(f'p-3 mb-2 nested-item level-{level}'):
                     ui.label(item['text']).classes('font-bold')
@@ -419,37 +419,14 @@ with ui.card():
     }
 
     /* Empty sortable containers styling */
-    .nested-sortable:empty {
-        padding: 10px;
+    .nicegui-sortable-nested:empty {
         background-color: rgba(0,0,255,0.05);
-        border: 1px dashed #ccc;
-        border-radius: 4px;
     }
 
     /* Highlight empty containers on hover for better UX */
-    .nested-children:hover .nested-sortable:empty {
+    .nested-children:hover .nicegui-sortable-nested:empty {
         background-color: rgba(0,0,255,0.1);
         border-color: #aaa;
-    }
-
-    /* Ghost element styling (being dragged) */
-    .nicegui-sortable-ghost {
-        opacity: 0.5;
-        background: #c8ebfb !important;
-    }
-
-    /* Chosen element styling (original position) */
-    .nicegui-sortable-chosen {
-        background-color: #e2f7ff !important;
-        box-shadow: 0 0 0 2px #26b3f9;
-    }
-
-    /* Show and highlight empty containers during drag operations */
-    .nicegui-sortable-ghost ~ .nested-sortable:empty,
-    .nested-container.nicegui-sortable-ghost .nested-sortable:empty {
-        display: block;
-        border-color: #26b3f9;
-        background-color: rgba(38, 179, 249, 0.1);
     }
     """)
 
@@ -478,7 +455,7 @@ with ui.card():
     with ui.sortable(
         animation=150,
         swap=True,
-        swap_class='nicegui-swap-highlight'
+        swap_class='nicegui-sortable-swap-highlight'
     ) as swap_sortable:
         for i in range(1, 7):
             with ui.card().classes('p-2 mb-1'):

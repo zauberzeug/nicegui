@@ -315,9 +315,14 @@ h6.q-timeline__title {
   border: solid red 1px !important;
   z-index: 1 !important;
 }
-.nicegui-swap-highlight {
+.nicegui-sortable-swap-highlight {
   background-color: #b7f8c7 !important;
 }
 .nicegui-sortable-handle {
   cursor: grab !important;
+}
+.nicegui-sortable-nested:empty {
+  padding: 10px;
+  border: 1px dashed #8b8b8b;
+  border-radius: 4px;
 }
