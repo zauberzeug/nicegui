@@ -62,6 +62,17 @@ class Table(FilterElement, component='table.js'):
             first_row = rows[0] if rows else {}
             columns = [{'name': key, 'label': str(key).upper(), 'field': key, 'sortable': True} for key in first_row]
 
+        for row in rows:
+            for key, value in row.items():
+                if isinstance(value, list):
+                    row[key] = ''.join(map(str, value))
+                elif isinstance(value, dict):
+                    row[key] = ''
+                elif isinstance(value, set):
+                    row[key] = ''.join(map(str, value))
+                elif isinstance(value, tuple):
+                    row[key] = ''.join(map(str, value))
+
         self._column_defaults = column_defaults
         self._use_columns_from_df = False
         self._props['columns'] = self._normalize_columns(columns)
