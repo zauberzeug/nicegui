@@ -31,7 +31,17 @@ export default {
       is_running = true;
       while (queue.length) {
         try {
-          await mermaid.run({ nodes: [queue.shift()] });
+          let element = queue.shift();
+
+          let innertext = this.content;
+
+          const { svg, bindFunctions } = await mermaid.render('graphDiv', innertext);
+
+          element.innerHTML = svg;
+
+          if (bindFunctions) {
+            bindFunctions(element);
+          }
         } catch (error) {
           console.error(error);
           this.$emit("error", error);
