@@ -34,6 +34,14 @@ export default {
 
             this.sortableInstance = this.Sortable.create(el, {
                 ...options,
+                onClone: (evt) => {
+                    // Assign a new unique id to the clone in the source list
+                    if (this.options["removeOnAdd"] == true) {
+                        if (evt.clone && !evt.clone.id) {
+                            evt.clone.id = evt.item.id;
+                        }
+                    }
+                },
                 onEnd: (evt) => {
                     // Get the complete current order of all elements to synchronize with Python
                     const currentOrder = this.sortableInstance.toArray();
