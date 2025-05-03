@@ -653,3 +653,14 @@ class Sortable(Element,
             element_id: ID of the element to deselect
         """
         self.run_method('deselect', element_id)
+
+    def remove_item_by_id(self, item_id: str) -> None:
+        """Remove an item from the sortable by its DOM ID.
+
+        This is useful for handling custom drag-and-drop operations where you need
+        to remove auto-created clones from the DOM.
+
+        Args:
+            item_id: The DOM ID of the element to remove
+        """
+        self.run_method('removeItemById', item_id)

@@ -102,9 +102,9 @@ with ui.card():
                     with ui.card().classes('p-2 mb-1 bg-yellow-100'):
                         ui.label(f'Item {i}')
 
-# Example 4: Disabling Sorting
+# Example 4a: Disabling Sorting
 with ui.card():
-    ui.label('Example 4: Disabling Sorting').classes('text-h5')
+    ui.label('Example 4a: Disabling Sorting').classes('text-h5')
     ui.label('Try sorting the list on the left. It is not possible because it has its "sort" option set to false. However, you can still drag from the list on the left to the list on the right.')
 
     with ui.row():
@@ -121,6 +121,65 @@ with ui.card():
             with ui.sortable(group='shared-disabled', animation=150) as disabled_sort_list2:
                 for i in range(1, 7):
                     with ui.card().classes('p-2 mb-1 bg-yellow-100'):
+                        ui.label(f'Item {i}')
+# Example 4b: Disabling Sorting
+with ui.card():
+    ui.label('Example 4b: Disabling Sorting').classes('text-h5')
+    ui.label('This is the same example as 4a but when you drop on the right list the cloned object will get removed in the DOM and a new object will be created in its place.')
+    ui.label('This is good for when a cloned object needs its own python object and not only a DOM clone')
+
+    def on_add_create_clone(e):
+        # Get info about the added item
+        item_id = e.args.get('item')
+        new_index = e.args.get('newIndex')
+
+        # Find the original item in the source list
+        # This is where we need to know which list the item came from
+        source_items = source_list_clone.default_slot.children
+
+        # Find the original item based on DOM ID (removing the "c" prefix)
+        original_item = None
+        for item in source_items:
+            if f"c{item.id}" == item_id:
+                original_item = item
+                break
+
+        if original_item:
+            # Remove the auto-cloned DOM element
+            target_list_clone.remove_item_by_id(item_id)
+
+            # Then create a new Python element with the same content
+            with target_list_clone:
+                # Extract label text from original item (assuming first child is the label)
+                label_text = original_item.default_slot.children[0].text
+
+                # Create a new card with the same content but possibly different styling
+                with ui.card().classes('p-2 mb-1 bg-blue-100') as tmp:
+                    ui.label(f"Clone of {label_text}")
+
+                tmp.move(target_index=new_index)
+
+    with ui.row():
+        with ui.card().classes('w-64'):
+            ui.label('Non-Sortable List (Pull Only)').classes('text-h6')
+            with ui.sortable(
+                group={'name': 'real-clone-example', 'pull': 'clone', 'put': False},
+                animation=150,
+                sort=False
+            ) as source_list_clone:
+                for i in range(1, 7):
+                    with ui.card().classes('p-2 mb-1'):
+                        ui.label(f'Item {i}')
+
+        with ui.card().classes('w-64 ml-4'):
+            ui.label('Sortable List (True Clones)').classes('text-h6')
+            with ui.sortable(
+                group='real-clone-example',
+                animation=150,
+                on_add=on_add_create_clone
+            ) as target_list_clone:
+                for i in range(1, 7):
+                    with ui.card().classes('p-2 mb-1 bg-green-100'):
                         ui.label(f'Item {i}')
 
 # Example 5: Handle Example

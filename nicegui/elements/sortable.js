@@ -192,6 +192,19 @@ export default {
             } catch (error) {
                 console.error("Error in deselect method:", error);
             }
+        },
+        removeItemById(elementId) {
+            try {
+                const el = document.getElementById(elementId);
+                if (el && el.parentNode) {
+                    el.parentNode.removeChild(el);
+                    return true;
+                }
+                return false;
+            } catch (error) {
+                console.error("Error removing element:", elementId, error);
+                return false;
+            }
         }
     },
     beforeDestroy() {
