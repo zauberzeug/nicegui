@@ -68,6 +68,9 @@ export default {
                         item: evt.item.id || evt.item.dataset.id || null,
                         newIndex: evt.newIndex
                     });
+                    if (this.options["removeOnAdd"] == true) {
+                        evt.item.parentNode && evt.item.parentNode.removeChild(evt.item);
+                    }
                 },
                 onSort: (evt) => {
                     this.$emit('sort_change', {
@@ -199,19 +202,6 @@ export default {
                 }
             } catch (error) {
                 console.error("Error in deselect method:", error);
-            }
-        },
-        removeItemById(elementId) {
-            try {
-                const el = document.getElementById(elementId);
-                if (el && el.parentNode) {
-                    el.parentNode.removeChild(el);
-                    return true;
-                }
-                return false;
-            } catch (error) {
-                console.error("Error removing element:", elementId, error);
-                return false;
             }
         }
     },

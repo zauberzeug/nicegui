@@ -146,9 +146,6 @@ with ui.card():
                 break
 
         if original_item:
-            # Remove the auto-cloned DOM element
-            target_list_clone.remove_item_by_id(item_id)
-
             # Then create a new Python element with the same content
             with target_list_clone:
                 # Extract label text from original item (assuming first child is the label)
