@@ -47,6 +47,7 @@ class Sortable(Element,
         dragover_bubble: bool = False,
         remove_clone_on_hide: bool = True,
         empty_insert_threshold: int = 5,
+        remove_on_add: bool = False,
         # Plugin-specific options
         # MultiDrag plugin
         multi_drag: bool = False,
@@ -196,7 +197,8 @@ class Sortable(Element,
             'dragoverBubble': dragover_bubble,
             'removeCloneOnHide': remove_clone_on_hide,
             'emptyInsertThreshold': empty_insert_threshold,
-            'plugins': plugins
+            'removeOnAdd': remove_on_add,
+            'plugins': plugins,
         })
 
         # Remove None values to use SortableJS defaults
@@ -476,6 +478,14 @@ class Sortable(Element,
     def empty_insert_threshold(self, value: int | None):
         self._props['options']['emptyInsertThreshold'] = value
         self.run_method('setOption', 'emptyInsertThreshold', value)
+
+    @property
+    def remove_on_add(self) -> bool | None:
+        return self._props['options']['removeOnAdd']
+
+    @remove_on_add.setter
+    def remove_on_add(self, value: bool | None):
+        self._props['options']['removeOnAdd'] = value
 
     @property
     def multi_drag(self) -> bool | None:

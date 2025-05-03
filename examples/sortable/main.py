@@ -122,6 +122,7 @@ with ui.card():
                 for i in range(1, 7):
                     with ui.card().classes('p-2 mb-1 bg-yellow-100'):
                         ui.label(f'Item {i}')
+
 # Example 4b: Disabling Sorting
 with ui.card():
     ui.label('Example 4b: Disabling Sorting').classes('text-h5')
@@ -176,7 +177,8 @@ with ui.card():
             with ui.sortable(
                 group='real-clone-example',
                 animation=150,
-                on_add=on_add_create_clone
+                on_add=on_add_create_clone,
+                remove_on_add=True,
             ) as target_list_clone:
                 for i in range(1, 7):
                     with ui.card().classes('p-2 mb-1 bg-green-100'):
