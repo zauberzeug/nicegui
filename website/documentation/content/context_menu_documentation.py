@@ -13,29 +13,22 @@ def main_demo() -> None:
             ui.menu_item('Reset', auto_close=False)
 
 
-@doc.demo('Updating context menu items', '''
-    Only the first `ui.context_menu` instance is respected by Quasar. 
-          
-    Therefore, the following paradigm is used to update the context menu items:
-          
-    - Create a new context menu while keeping a reference (`with ui.context_menu() as cmenu:`).
-    - Clear any existing items in the context menu (`cmenu.clear()`).
-    - Add new items to the existing context menu (`with cmenu: ...`).
+@doc.demo('Context menus with dynamic content', '''
+    To show a context menu with content that changes dynamically, e.g. based on the position of the mouse,
+    it is recommended to re-use the same context menu instance.
+    This demo shows how to clear the context menu and add new items to it.
 ''')
 def update_context_menu() -> None:
-    with ui.card().classes('w-full'):
-        ui.label('Right-click to see the context menu.')
-        with ui.context_menu() as cmenu:
-            ui.menu_item('Original item')
+    from nicegui import events
 
-    def update_items(new_item: str) -> None:
-        cmenu.clear()
-        with cmenu:
-            ui.menu_item(new_item)
+    def update_menu(e: events.MouseEventArguments) -> None:
+        context_menu.clear()
+        with context_menu:
+            ui.menu_item(f'Add circle at ({e.image_x:.0f}, {e.image_y:.0f})')
 
-    with ui.row():
-        ui.button('Set new menu items', on_click=lambda: update_items('New item'))
-        ui.button('Reset', on_click=lambda: update_items('Original item'))
+    source = 'https://picsum.photos/id/377/640/360'
+    with ui.interactive_image(source, on_mouse=update_menu, events=['contextmenu']):
+        context_menu = ui.context_menu()
 
 
 doc.reference(ui.context_menu)
