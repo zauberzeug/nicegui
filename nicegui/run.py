@@ -11,7 +11,7 @@ from typing_extensions import ParamSpec
 from . import core, helpers
 
 process_pool: Optional[ProcessPoolExecutor] = None
-thread_pool: Optional[ThreadPoolExecutor] = None
+thread_pool = ThreadPoolExecutor()
 
 P = ParamSpec('P')
 R = TypeVar('R')
@@ -26,11 +26,6 @@ def setup() -> None:
             process_pool = ProcessPoolExecutor()
     except NotImplementedError:
         logging.warning('Failed to initialize ProcessPoolExecutor')
-    try:
-        if thread_pool is None:
-            thread_pool = ThreadPoolExecutor()
-    except NotImplementedError:
-        logging.warning('Failed to initialize ThreadPoolExecutor')
 
 class SubprocessException(Exception):
     """A picklable exception to represent exceptions raised in subprocesses."""
@@ -90,9 +85,6 @@ async def cpu_bound(callback: Callable[P, R], *args: P.args, **kwargs: P.kwargs)
 
 async def io_bound(callback: Callable[P, R], *args: P.args, **kwargs: P.kwargs) -> R:
     """Run an I/O-bound function in a separate thread."""
-    if thread_pool is None:
-        raise RuntimeError('Thread pool not set up. Call run.setup() first.')
-
     return await _run(thread_pool, callback, *args, **kwargs)
 
 
@@ -106,5 +98,4 @@ def tear_down() -> None:
         for p in process_pool._processes.values():  # pylint: disable=protected-access
             p.kill()
         process_pool.shutdown(wait=True, **kwargs)
-    if thread_pool is not None:
-        thread_pool.shutdown(wait=False, **kwargs)
+    thread_pool.shutdown(wait=False, **kwargs)
