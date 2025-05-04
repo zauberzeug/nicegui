@@ -106,6 +106,8 @@ with ui.card():
 with ui.card():
     ui.label('Example 4a: Disabling Sorting').classes('text-h5')
     ui.label('Try sorting the list on the left. It is not possible because it has its "sort" option set to false. However, you can still drag from the list on the left to the list on the right.')
+    ui.label('NOTE! The python object gets moved to the cloned object in the DOM. The original object loses its python object reference')
+    ui.label('For true cloning, please look at example 4b')
 
     with ui.row():
         with ui.card().classes('w-64'):
