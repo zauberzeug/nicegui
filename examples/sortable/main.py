@@ -80,10 +80,12 @@ with ui.card():
                     with ui.card().classes('p-2 mb-1 bg-yellow-100'):
                         ui.label(f'Item {i}')
 
-# Example 3: Cloning
+# Example 3a: Cloning
 with ui.card():
-    ui.label('Example 3: Cloning').classes('text-h5')
+    ui.label('Example 3a: Cloning').classes('text-h5')
     ui.label('Try dragging from one list to another. The item you drag will be cloned and the clone will stay in the original list.')
+    ui.label('NOTE! The python object gets moved to the cloned object in the DOM. The original object loses its python object reference.')
+    ui.label('Both DOM objects will have the same ID. For true cloning, please look at example 3b')
 
     with ui.row():
         with ui.card().classes('w-64'):
@@ -102,12 +104,84 @@ with ui.card():
                     with ui.card().classes('p-2 mb-1 bg-yellow-100'):
                         ui.label(f'Item {i}')
 
-# Example 4a: Disabling Sorting
+# Example 3b: Real Cloning
+
+
+class ClonableCard(ui.card):
+    def __init__(
+        self,
+        label="Slider",
+        bg="",
+    ):
+        super().__init__()
+        self.label = label
+        self.bg = bg
+
+        # Create a new card with the same content but possibly different styling
+        with self.classes(f'p-2 mb-1 {self.bg}'):
+            ui.label(self.label)
+
+    def clone(self):
+        return ClonableCard(
+            label=f"Clone of {self.label}",
+            bg=self.bg,
+        )
+
+
+def on_add_create_clone(e):
+    # Get info about the added item
+    item_id = e.args.get("item")
+    new_index = e.args.get("newIndex")
+
+    # Find the original item in the source list
+    # This is where we need to know which list the item came from
+    if e.sender is true_clone_list2:
+        source_items = true_clone_list1.default_slot.children
+    else:
+        source_items = true_clone_list2.default_slot.children
+
+    # Find the original item based on DOM ID (removing the "c" prefix)
+    original_item = None
+    for item in source_items:
+        if f"c{item.id}" == item_id:
+            original_item = item
+            break
+
+    if original_item:
+        with e.sender:
+            # Get the class of the original item
+            item_class = type(original_item)
+            if hasattr(original_item, "clone"):
+                new_item = original_item.clone()  # type: ignore
+            else:
+                new_item = item_class()  # fallback
+            # Optionally, copy properties from original_item to new_item if needed
+            new_item.move(target_index=new_index)
+
+
 with ui.card():
-    ui.label('Example 4a: Disabling Sorting').classes('text-h5')
+    ui.label('Example 3b: True Cloning').classes('text-h5')
+    ui.label('This is the same example as 3a but instead of making a clone only in the DOM, the clone will get removed and a new python object will be created in its place.')
+
+    with ui.row():
+        with ui.card().classes('w-64'):
+            ui.label('List 1 (Clone Source)').classes('text-h6')
+            with ui.sortable(group={'name': 'true-clone-example', 'pull': 'clone'},
+                             animation=150, remove_on_add=True, on_add=on_add_create_clone) as true_clone_list1:
+                for i in range(1, 7):
+                    ClonableCard(f'Item {i}')
+
+        with ui.card().classes('w-64 ml-4'):
+            ui.label('List 2 (Clone Source)').classes('text-h6')
+            with ui.sortable(group={'name': 'true-clone-example', 'pull': 'clone'},
+                             animation=150, remove_on_add=True, on_add=on_add_create_clone) as true_clone_list2:
+                for i in range(1, 7):
+                    ClonableCard(f'Item {i}', "bg-yellow-100")
+
+# Example 4: Disabling Sorting
+with ui.card():
+    ui.label('Example 4: Disabling Sorting').classes('text-h5')
     ui.label('Try sorting the list on the left. It is not possible because it has its "sort" option set to false. However, you can still drag from the list on the left to the list on the right.')
-    ui.label('NOTE! The python object gets moved to the cloned object in the DOM. The original object loses its python object reference')
-    ui.label('Both DOM objects will have the same ID. For true cloning, please look at example 4b')
 
     with ui.row():
         with ui.card().classes('w-64'):
@@ -123,64 +197,6 @@ with ui.card():
             with ui.sortable(group='shared-disabled', animation=150) as disabled_sort_list2:
                 for i in range(1, 7):
                     with ui.card().classes('p-2 mb-1 bg-yellow-100'):
-                        ui.label(f'Item {i}')
-
-# Example 4b: Disabling Sorting
-with ui.card():
-    ui.label('Example 4b: Disabling Sorting').classes('text-h5')
-    ui.label('This is the same example as 4a but when you drop on the right list the cloned object will get removed in the DOM and a new object will be created in its place.')
-    ui.label('This is good for when a cloned object needs its own python object and not only a DOM clone')
-
-    def on_add_create_clone(e):
-        # Get info about the added item
-        item_id = e.args.get('item')
-        new_index = e.args.get('newIndex')
-
-        # Find the original item in the source list
-        # This is where we need to know which list the item came from
-        source_items = source_list_clone.default_slot.children
-
-        # Find the original item based on DOM ID (removing the "c" prefix)
-        original_item = None
-        for item in source_items:
-            if f"c{item.id}" == item_id:
-                original_item = item
-                break
-
-        if original_item:
-            # Then create a new Python element with the same content
-            with target_list_clone:
-                # Extract label text from original item (assuming first child is the label)
-                label_text = original_item.default_slot.children[0].text
-
-                # Create a new card with the same content but possibly different styling
-                with ui.card().classes('p-2 mb-1 bg-blue-100') as tmp:
-                    ui.label(f"Clone of {label_text}")
-
-                tmp.move(target_index=new_index)
-
-    with ui.row():
-        with ui.card().classes('w-64'):
-            ui.label('Non-Sortable List (Pull Only)').classes('text-h6')
-            with ui.sortable(
-                group={'name': 'real-clone-example', 'pull': 'clone', 'put': False},
-                animation=150,
-                sort=False
-            ) as source_list_clone:
-                for i in range(1, 7):
-                    with ui.card().classes('p-2 mb-1'):
-                        ui.label(f'Item {i}')
-
-        with ui.card().classes('w-64 ml-4'):
-            ui.label('Sortable List (True Clones)').classes('text-h6')
-            with ui.sortable(
-                group='real-clone-example',
-                animation=150,
-                on_add=on_add_create_clone,
-                remove_on_add=True,
-            ) as target_list_clone:
-                for i in range(1, 7):
-                    with ui.card().classes('p-2 mb-1 bg-green-100'):
                         ui.label(f'Item {i}')
 
 # Example 5: Handle Example
