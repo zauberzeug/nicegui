@@ -36,10 +36,8 @@ export default {
                 ...options,
                 onClone: (evt) => {
                     // Assign a new unique id to the clone in the source list
-                    if (this.options["removeOnAdd"] == true) {
-                        if (evt.clone && !evt.clone.id) {
-                            evt.clone.id = evt.item.id;
-                        }
+                    if (evt.clone && !evt.clone.id) {
+                        evt.clone.id = evt.item.id;
                     }
                 },
                 onEnd: (evt) => {
