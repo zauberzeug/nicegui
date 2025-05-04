@@ -6,7 +6,7 @@ from typing import Any, Awaitable, Callable, ContextManager, Optional, cast
 
 from typing_extensions import Self
 
-from . import background_tasks, core
+from . import background_tasks, core, helpers
 from .awaitable_response import AwaitableResponse
 from .binding import BindableProperty
 from .dataclasses import KWONLY_SLOTS
@@ -127,7 +127,7 @@ class Timer:
             return
         while True:
             try:
-                await asyncio.wait_for(self._should_abort_sleep.wait(), timeout=seconds)
+                await helpers.wait_for(self._should_abort_sleep.wait(), timeout=seconds)
                 self._should_abort_sleep.clear()
                 break
             except asyncio.TimeoutError:
