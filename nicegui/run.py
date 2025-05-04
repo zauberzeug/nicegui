@@ -102,11 +102,9 @@ def tear_down() -> None:
         return
 
     kwargs = {'cancel_futures': True} if sys.version_info >= (3, 9) else {}
-
     if process_pool is not None:
         for p in process_pool._processes.values():  # pylint: disable=protected-access
             p.kill()
         process_pool.shutdown(wait=True, **kwargs)
-
     if thread_pool is not None:
         thread_pool.shutdown(wait=False, **kwargs)
