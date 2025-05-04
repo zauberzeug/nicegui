@@ -201,7 +201,7 @@ def test_delegated_event(screen: Screen) -> None:
     def on_click(e):
         clicked.append(int(e.args['index']))
 
-    root.on('click', on_click, js_handler="(e) => default_handler(null, e.target.dataset)")
+    root.on('click', on_click, js_handler="(e) => defaultHandler(e.target.dataset)")
 
     # test
     screen.open('/')

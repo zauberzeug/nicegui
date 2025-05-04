@@ -36,11 +36,9 @@ class EventListener:
             'specials': specials,
             'modifiers': modifiers,
             'keys': keys,
+            'args': self.args,
+            'throttle': self.throttle,
+            'leading_events': self.leading_events,
+            'trailing_events': self.trailing_events,
             'js_handler': self.js_handler,
-            'options': {
-                'args': self.args,
-                'throttle': self.throttle,
-                'leading_events': self.leading_events,
-                'trailing_events': self.trailing_events,
-            },
         }
