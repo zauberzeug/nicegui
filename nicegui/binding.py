@@ -67,7 +67,10 @@ async def refresh_loop() -> None:
     """Refresh all bindings in an endless loop."""
     while True:
         _refresh_step()
-        await asyncio.sleep(core.app.config.binding_refresh_interval)
+        try:
+            await asyncio.sleep(core.app.config.binding_refresh_interval)
+        except asyncio.CancelledError:
+            break
 
 
 @contextmanager

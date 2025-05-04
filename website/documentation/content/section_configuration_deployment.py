@@ -119,6 +119,35 @@ def env_var_demo():
     ui.label(f'Markdown content cache size is {markdown.prepare_content.cache_info().maxsize}')
 
 
+@doc.demo('Background Tasks', '''
+    `background_tasks.create()` allows you to run an async function in the background and return a task object.
+    By default the task will be automatically cancelled during shutdown.
+    You can prevent this by using the `@background_tasks.await_on_shutdown` decorator (added in version 2.16.0).
+    This is useful for tasks that need to be completed even when the app is shutting down.
+''')
+def background_tasks_demo():
+    # import aiofiles
+    import asyncio
+    from nicegui import background_tasks
+
+    results = {'answer': '?'}
+
+    async def compute() -> None:
+        await asyncio.sleep(1)
+        results['answer'] = 42
+
+    @background_tasks.await_on_shutdown
+    async def backup() -> None:
+        await asyncio.sleep(1)
+        # async with aiofiles.open('backup.json', 'w') as f:
+        #     await f.write(f'{results["answer"]}')
+        # print('backup.json written', flush=True)
+
+    ui.label().bind_text_from(results, 'answer', lambda x: f'answer: {x}')
+    ui.button('Compute', on_click=lambda: background_tasks.create(compute()))
+    ui.button('Backup', on_click=lambda: background_tasks.create(backup()))
+
+
 doc.text('Custom Vue Components', '''
     You can create custom components by subclassing `ui.element` and implementing a corresponding Vue component.
     The ["Custom Vue components" example](https://github.com/zauberzeug/nicegui/tree/main/examples/custom_vue_component)

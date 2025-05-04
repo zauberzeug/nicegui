@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "nicegui"
-version = "2.15.0-dev"
+version = "2.16.0-dev"
 description = "Create web-based user interfaces with Python. The nice way."
 authors = ["Zauberzeug GmbH <info@zauberzeug.com>"]
 license = "MIT"
@@ -42,6 +42,7 @@ urllib3 = ">=1.26.18,!=2.0.0,!=2.0.1,!=2.0.2,!=2.0.3,!=2.0.4,!=2.0.5,!=2.0.6,!=2
 certifi = ">=2024.07.04" # https://github.com/zauberzeug/nicegui/security/dependabot/35
 redis = { version = ">=4.0.0", optional = true }
 h11 = ">=0.16.0" # https://github.com/zauberzeug/nicegui/security/dependabot/45
+wait_for2 = ">=0.3.2"
 
 [tool.poetry.extras]
 native = ["pywebview"]
@@ -101,6 +102,11 @@ addopts = "--driver Chrome"
 asyncio_mode = "auto"
 testpaths = ["tests"]
 asyncio_default_fixture_loop_scope = "function"
+filterwarnings = [
+  'ignore::DeprecationWarning:^vbuild(\.|$)',
+  'ignore::DeprecationWarning:^websockets\.legacy(\.|$)',
+  'ignore::DeprecationWarning:^uvicorn\.protocols\.websockets(\.|$)',
+]
 
 [tool.mypy]
 python_version = "3.8"
@@ -118,6 +124,7 @@ module = [
     "sass",
     "socketio.*",
     "vbuild",
+    "wait_for2",
     "webview.*", # can be removed with next pywebview release
 ]
 ignore_missing_imports = true

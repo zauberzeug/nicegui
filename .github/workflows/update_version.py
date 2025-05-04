@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 import sys
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 from pathlib import Path
 
 if __name__ == '__main__':
@@ -20,5 +20,5 @@ if __name__ == '__main__':
         if line.startswith('version: '):
             lines[i] = f'version: {version}'
         if line.startswith('date-released: '):
-            lines[i] = f'date-released: "{datetime.now(UTC).strftime(r"%Y-%m-%d")}"'
+            lines[i] = f'date-released: "{datetime.now(timezone.utc).strftime(r"%Y-%m-%d")}"'
     path.write_text('\n'.join(lines) + '\n', encoding='utf-8')
