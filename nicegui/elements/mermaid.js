@@ -1,5 +1,7 @@
 import mermaid from "mermaid";
 
+window.mermaid = mermaid;
+
 let is_running = false;
 const queue = [];
 
@@ -32,8 +34,19 @@ export default {
           bindFunctions(this.$el);
         }
       } catch (error) {
-        console.error(error);
-        this.$emit("error", error);
+        const { svg, bindFunctions } = await mermaid.render(this.$el.id + "_mermaid", "error");
+        this.$el.innerHTML = svg;
+        if (bindFunctions) {
+          bindFunctions(this.$el);
+        }
+        const mermaidErrorFormat = {
+          str: error.message,
+          message: error.message,
+          hash: error.name,
+          error
+        }
+        console.error(mermaidErrorFormat);
+        this.$emit("error", mermaidErrorFormat);
       }
     },
   },
