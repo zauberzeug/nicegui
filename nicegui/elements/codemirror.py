@@ -1,6 +1,6 @@
-from itertools import zip_longest
+from itertools import accumulate, zip_longest
 from pathlib import Path
-from typing import List, Literal, Optional, Tuple, cast, get_args
+from typing import List, Literal, Optional, get_args
 
 from nicegui.elements.mixins.disableable_element import DisableableElement
 from nicegui.elements.mixins.value_element import ValueElement
@@ -338,12 +338,12 @@ class CodeMirror(ValueElement, DisableableElement, component='codemirror.js', de
 
 def _apply_change_set(doc, sections: List[int], inserted: List[List[str]]) -> str:
     # based on https://github.com/codemirror/state/blob/main/src/change.ts
-    assert sum(sections[::2]) == len(doc), 'Cannot apply change set to document due to length mismatch'
-    pos = 0
+    old_lengths = sections[::2]
+    new_lengths = sections[1::2]
+    end_positions = accumulate(old_lengths)
     joined_inserts = ('\n'.join(ins) for ins in inserted)
-    for section in zip_longest(sections[::2], sections[1::2], joined_inserts, fillvalue=''):
-        old_len, new_len, ins = cast(Tuple[int, int, str], section)
-        if new_len >= 0:
-            doc = doc[:pos] + ins + doc[pos + old_len:]
-        pos += old_len
-    return doc
+    assert sum(old_lengths) == len(doc), 'Cannot apply change set to document due to length mismatch'
+    return ''.join(
+        doc[pos-old_len:pos] if new_len == -1 else ins  # type: ignore
+        for pos, old_len, new_len, ins in zip_longest(end_positions, old_lengths, new_lengths, joined_inserts, fillvalue='')
+    )
