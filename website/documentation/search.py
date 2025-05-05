@@ -32,29 +32,27 @@ def _get_examples_index() -> JSONResponse:
 
 def build_search_index() -> None:
     """Build search index."""
-    search_index.clear()
-    sitewide_index.extend([
+    search_index[:] = _collect_documentation_parts(include_code=False) + _collect_examples()
+    sitewide_index[:] = _collect_documentation_parts(include_code=True)
+    examples_index[:] = _collect_examples()
+
+
+def _collect_documentation_parts(*, include_code: bool = False) -> List[Dict[str, str]]:
+    return [
         {
             'title': f'{documentation.heading.replace("*", "")}: {part.title}',
             'content': part.description or part.search_text or '',
             'format': part.description_format,
-            'demo': get_full_code(part.demo.function) if part.demo is not None else '',
+            **({'demo': get_full_code(part.demo.function) if part.demo is not None else ''} if include_code else {}),
             'url': f'/documentation/{documentation.name}#{part.link_target}',
         }
         for documentation in registry.values()
         for part in documentation.parts
-    ])
-    search_index.extend([
-        {
-            'title': f'{documentation.heading.replace("*", "")}: {part.title}',
-            'content': part.description or part.search_text or '',
-            'format': part.description_format,
-            'url': f'/documentation/{documentation.name}#{part.link_target}',
-        }
-        for documentation in registry.values()
-        for part in documentation.parts
-    ])
-    examples_index.extend([
+    ]
+
+
+def _collect_examples() -> List[Dict[str, str]]:
+    return [
         {
             'title': f'Example: {example.title}',
             'content': example.description,
@@ -62,5 +60,4 @@ def build_search_index() -> None:
             'url': example.url,
         }
         for example in examples
-    ])
-    search_index.extend(examples_index)
+    ]
