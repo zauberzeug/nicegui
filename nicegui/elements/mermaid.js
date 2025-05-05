@@ -24,8 +24,7 @@ export default {
     async update(content) {
       if (this.last_content === content) return;
       this.last_content = content;
-      this.$el.innerHTML = content;
-      this.$el.removeAttribute("data-processed");
+      this.$el.setAttribute("mermaid_content", content);
       queue.push(this.$el);
       if (is_running) return;
       is_running = true;
@@ -33,9 +32,7 @@ export default {
         try {
           let element = queue.shift();
 
-          let innertext = this.content;
-
-          const { svg, bindFunctions } = await mermaid.render('graphDiv', innertext);
+          const { svg, bindFunctions } = await mermaid.render(element.id+"_mermaid", element.getAttribute("mermaid_content"))
 
           element.innerHTML = svg;
 
