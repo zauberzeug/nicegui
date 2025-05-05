@@ -184,7 +184,7 @@ def run(*,
     assert host is not None
     assert port is not None
 
-    if kwargs.get('ssl_certfile', None) and kwargs.get('ssl_keyfile', None):
+    if kwargs.get('ssl_certfile') and kwargs.get('ssl_keyfile'):
         protocol = 'https'
     else:
         protocol = 'http'
