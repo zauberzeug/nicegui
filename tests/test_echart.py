@@ -1,9 +1,19 @@
+from typing import Generator
+
+import pytest
 from pyecharts import options
 from pyecharts.charts import Bar
 from pyecharts.commons import utils
 
-from nicegui import ui
+from nicegui import app, ui
 from nicegui.testing import Screen
+
+
+@pytest.fixture
+def test_route() -> Generator[str, None, None]:
+    TEST_ROUTE = '/theme.json'
+    yield TEST_ROUTE
+    app.remove_route(TEST_ROUTE)
 
 
 def test_create_dynamically(screen: Screen):
@@ -118,3 +128,29 @@ def test_chart_events(screen: Screen):
 
     screen.open('/')
     screen.should_contain('Chart rendered.')
+
+
+def test_theme_dictionary(screen: Screen):
+    ui.echart({
+        'xAxis': {'type': 'category'},
+        'yAxis': {'type': 'value'},
+        'series': [{'type': 'line', 'data': [1, 2, 3]}],
+    }, theme={'backgroundColor': 'rgba(254,248,239,1)'}, renderer='svg')
+
+    screen.open('/')
+    assert screen.find_by_tag('rect').value_of_css_property('fill') == 'rgb(254, 248, 239)'
+
+
+def test_theme_url(screen: Screen, test_route: str):  # pylint: disable=redefined-outer-name
+    @app.get(test_route)
+    def theme():
+        return {'backgroundColor': 'rgba(254,248,239,1)'}
+
+    ui.echart({
+        'xAxis': {'type': 'category'},
+        'yAxis': {'type': 'value'},
+        'series': [{'type': 'line', 'data': [1, 2, 3]}],
+    }, theme=test_route, renderer='svg')
+
+    screen.open('/')
+    assert screen.find_by_tag('rect').value_of_css_property('fill') == 'rgb(254, 248, 239)'

@@ -3,17 +3,23 @@ import sys
 import traceback
 from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
 from functools import partial
-from typing import Any, Callable, TypeVar
+from typing import Any, Callable, Optional, TypeVar
 
 from typing_extensions import ParamSpec
 
 from . import core, helpers
 
-process_pool = ProcessPoolExecutor()
+process_pool: Optional[ProcessPoolExecutor] = None
 thread_pool = ThreadPoolExecutor()
 
 P = ParamSpec('P')
 R = TypeVar('R')
+
+
+def setup() -> None:
+    """Setup the process pool. (For internal use only.)"""
+    global process_pool  # pylint: disable=global-statement # noqa: PLW0603
+    process_pool = ProcessPoolExecutor()
 
 
 class SubprocessException(Exception):
@@ -78,6 +84,7 @@ def tear_down() -> None:
     """Kill all processes and threads."""
     if helpers.is_pytest():
         return
+    assert process_pool is not None
     for p in process_pool._processes.values():  # pylint: disable=protected-access
         p.kill()
     kwargs = {'cancel_futures': True} if sys.version_info >= (3, 9) else {}

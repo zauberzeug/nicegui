@@ -1,5 +1,6 @@
+from itertools import zip_longest
 from pathlib import Path
-from typing import Callable, List, Literal, Optional, get_args
+from typing import List, Literal, Optional, Tuple, cast, get_args
 
 from nicegui.elements.mixins.disableable_element import DisableableElement
 from nicegui.elements.mixins.value_element import ValueElement
@@ -288,6 +289,7 @@ class CodeMirror(ValueElement, DisableableElement, component='codemirror.js', de
         self._props['indent'] = indent
         self._props['lineWrapping'] = line_wrapping
         self._props['highlightWhitespace'] = highlight_whitespace
+        self._update_method = 'setEditorValueFromProps'
 
     @property
     def theme(self) -> str:
@@ -331,80 +333,17 @@ class CodeMirror(ValueElement, DisableableElement, component='codemirror.js', de
 
     def _event_args_to_value(self, e: GenericEventArguments) -> str:
         """The event contains a change set which is applied to the current value."""
-        changeset = _ChangeSet(sections=e.args['sections'], inserted=e.args['inserted'])
-        new_value = changeset.apply(self.value)
-        return new_value
+        return _apply_change_set(self.value, e.args['sections'], e.args['inserted'])
 
 
-# Below is a Python implementation of relevant parts of https://github.com/codemirror/state/blob/main/src/change.ts
-# to apply a ChangeSet to a text document.
-
-
-class _ChangeSet:
-    """A change set represents a group of modifications to a document."""
-
-    def __init__(self, sections: List[int], inserted: List[List[str]]) -> None:
-        # From https://github.com/codemirror/state/blob/main/src/change.ts#L21:
-        # Sections are encoded as pairs of integers. The first is the
-        # length in the current document, and the second is -1 for
-        # unaffected sections, and the length of the replacement content
-        # otherwise. So an insertion would be (0, n>0), a deletion (n>0,
-        # 0), and a replacement two positive numbers.
-        self.sections: List[int] = sections
-        self.inserted: List[str] = ['\n'.join(ins) for ins in inserted]
-
-    def length(self) -> int:
-        """Calculate the length of the document before the change."""
-        return sum(self.sections[::2])
-
-    def apply(self, doc: str) -> str:
-        """Apply the changes to a document, returning the modified document."""
-        if self.length() != len(doc):
-            raise ValueError('Cannot apply change set to a document with the wrong length')
-        return _iter_changes(self, doc, _replacement_func, individual=False)
-
-    def __str__(self) -> str:
-        return f'ChangeSet(sections={self.sections}, inserted={self.inserted})'
-
-
-def _iter_changes(
-    changeset: _ChangeSet, doc: str, func: Callable[[str, int, int, int, int, str], str], individual: bool
-) -> str:
-    inserted = changeset.inserted
-    posA, posB, i = 0, 0, 0
-
-    while i < len(changeset.sections):
-        len_ = changeset.sections[i]
-        i += 1
-        ins = changeset.sections[i]
-        i += 1
-
-        if ins < 0:
-            posA += len_
-            posB += len_
-        else:
-            endA, endB = posA, posB
-            text = ''
-            while True:
-                endA += len_
-                endB += ins
-                if ins and inserted:
-                    text = text + inserted[(i - 2) // 2]
-                if individual or i == len(changeset.sections) or changeset.sections[i + 1] < 0:
-                    break
-                len_ = changeset.sections[i]
-                i += 1
-                ins = changeset.sections[i]
-                i += 1
-            doc = func(doc, posA, endA, posB, endB, text)
-            posA, posB = endA, endB
-
+def _apply_change_set(doc, sections: List[int], inserted: List[List[str]]) -> str:
+    # based on https://github.com/codemirror/state/blob/main/src/change.ts
+    assert sum(sections[::2]) == len(doc), 'Cannot apply change set to document due to length mismatch'
+    pos = 0
+    joined_inserts = ('\n'.join(ins) for ins in inserted)
+    for section in zip_longest(sections[::2], sections[1::2], joined_inserts, fillvalue=''):
+        old_len, new_len, ins = cast(Tuple[int, int, str], section)
+        if new_len >= 0:
+            doc = doc[:pos] + ins + doc[pos + old_len:]
+        pos += old_len
     return doc
-
-
-def _replace_range(doc: str, from_: int, to: int, new: str) -> str:
-    return doc[:from_] + new + doc[to:]
-
-
-def _replacement_func(doc: str, from_a: int, to_a: int, from_b: int, _to_b: int, text: str) -> str:
-    return _replace_range(doc, from_b, from_b + (to_a - from_a), text)

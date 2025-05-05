@@ -70,7 +70,7 @@ class ValidationElement(ValueElement):
                 self.error = await result
             if return_result:
                 raise NotImplementedError('The validate method cannot return results for async validation functions.')
-            background_tasks.create(await_error())
+            background_tasks.create(await_error(), name=f'validate {self.id}')
             return True
 
         if callable(self._validation):

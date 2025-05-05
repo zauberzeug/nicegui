@@ -8,7 +8,6 @@ from pygments.formatters import HtmlFormatter  # pylint: disable=no-name-in-modu
 
 from .. import core
 from ..version import __version__
-from .mermaid import Mermaid
 from .mixins.content_element import ContentElement
 
 CODEHILITE_CSS_URL = f'/_nicegui/{__version__}/codehilite.css'
@@ -31,7 +30,6 @@ class Markdown(ContentElement, component='markdown.js', default_classes='nicegui
         super().__init__(content=content)
         if 'mermaid' in extras:
             self._props['use_mermaid'] = True
-            self.libraries.append(Mermaid.exposed_libraries[0])
 
         self._props['codehilite_css_url'] = CODEHILITE_CSS_URL
         if not any(r for r in core.app.routes if getattr(r, 'path', None) == CODEHILITE_CSS_URL):

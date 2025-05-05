@@ -15,11 +15,11 @@ def main_demo() -> None:
 def arbitrary_content():
     options = ['Star', 'Thump Up', 'Heart']
     radio = ui.radio({x: '' for x in options}, value='Star').props('inline')
-    with ui.teleport(f'#c{radio.id} > div:nth-child(1) .q-radio__label'):
+    with ui.teleport(f'#{radio.html_id} > div:nth-child(1) .q-radio__label'):
         ui.icon('star', size='md')
-    with ui.teleport(f'#c{radio.id} > div:nth-child(2) .q-radio__label'):
+    with ui.teleport(f'#{radio.html_id} > div:nth-child(2) .q-radio__label'):
         ui.icon('thumb_up', size='md')
-    with ui.teleport(f'#c{radio.id} > div:nth-child(3) .q-radio__label'):
+    with ui.teleport(f'#{radio.html_id} > div:nth-child(3) .q-radio__label'):
         ui.icon('favorite', size='md')
     ui.label().bind_text_from(radio, 'value')
 
