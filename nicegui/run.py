@@ -21,8 +21,7 @@ def setup() -> None:
     """Setup the process pool. (For internal use only.)"""
     global process_pool  # pylint: disable=global-statement # noqa: PLW0603
     try:
-        if process_pool is None:
-            process_pool = ProcessPoolExecutor()
+        process_pool = ProcessPoolExecutor()
     except NotImplementedError:
         logging.warning('Failed to initialize ProcessPoolExecutor')
 
