@@ -108,12 +108,11 @@ def querying():
 doc.text(
     'Using ElementFilter directly',
     '''
-    Since `user.find` uses a set to avoid duplicates, it does not preserve the order.
-    Consider how the order is not preserved after converting to a set and back in this code:
-    `list(set(["1", "2", "3"])) == ["3", "1", "2"]`.
+    It may be desirable to use ElementFilter for the following purposes:
 
-    Instead, it is possible to use [ElementFilter](/documentation/element_filter) directly
-    by entering the `user` context.
+    - Preserve order of elements to check their order on the page
+    - More granular filtering options ([ElementFilter](/documentation/element_filter)),
+      such as `ElementFilter(...).within(...)`
 ''')
 
 
