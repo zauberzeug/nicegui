@@ -9,7 +9,6 @@ import vbuild
 from .dataclasses import KWONLY_SLOTS
 from .helpers import hash_file_path_and_contents
 from .version import __version__
-from .logging import log
 
 if TYPE_CHECKING:
     from .element import Element
