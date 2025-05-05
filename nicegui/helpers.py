@@ -71,7 +71,7 @@ def hash_file_path(path: Path) -> str:
 def hash_file_path_and_contents(path: Path) -> str:
     """Hash the given path and file content(s)."""
 
-    cachebusting_strategy = os.environ.get('NICEGUI_CACHEBUSTING_STRATEGY', 'none')
+    cachebusting_strategy = 'uuid'  # hardcode it for now and test
     if cachebusting_strategy not in {'none', 'uuid', 'hash', 'timestamp'}:
         cachebusting_strategy = 'none'
         warn_once(f'Invalid cachebusting strategy "{cachebusting_strategy}", using "none" instead.')

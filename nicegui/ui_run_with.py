@@ -1,5 +1,4 @@
 from contextlib import asynccontextmanager
-import os
 from pathlib import Path
 from typing import Literal, Optional, Union
 
@@ -29,7 +28,6 @@ def run_with(
     prod_js: bool = True,
     storage_secret: Optional[str] = None,
     show_welcome_message: bool = True,
-    cachebusting_strategy: Optional[Literal['uuid', 'hash', 'timestamp']] = None,
 ) -> None:
     """Run NiceGUI with FastAPI.
 
@@ -49,9 +47,6 @@ def run_with(
     :param storage_secret: secret key for browser-based storage (default: `None`, a value is required to enable ui.storage.individual and ui.storage.browser)
     :param show_welcome_message: whether to show the welcome message (default: `True`)
     """
-
-    os.environ['NICEGUI_CACHEBUSTING_STRATEGY'] = cachebusting_strategy or 'none'
-
     core.app.config.add_run_config(
         reload=False,
         title=title,

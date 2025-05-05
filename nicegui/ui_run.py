@@ -73,7 +73,6 @@ def run(*,
         endpoint_documentation: Literal['none', 'internal', 'page', 'all'] = 'none',
         storage_secret: Optional[str] = None,
         show_welcome_message: bool = True,
-        cachebusting_strategy: Optional[Literal['uuid', 'hash', 'timestamp']] = None,
         **kwargs: Any,
         ) -> None:
     """ui.run
@@ -110,9 +109,6 @@ def run(*,
     :param show_welcome_message: whether to show the welcome message (default: `True`)
     :param kwargs: additional keyword arguments are passed to `uvicorn.run`
     """
-
-    os.environ['NICEGUI_CACHEBUSTING_STRATEGY'] = cachebusting_strategy or 'none'
-
     core.app.config.add_run_config(
         reload=reload,
         title=title,
