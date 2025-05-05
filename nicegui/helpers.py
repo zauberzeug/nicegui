@@ -52,7 +52,7 @@ def is_file(path: Optional[Union[str, Path]]) -> bool:
         return False
 
 
-def hash_file(path: Path, digestobj: Optional["hashlib._Hash"] = None) -> "hashlib._Hash":
+def hash_file(path: Path, digestobj: Optional['hashlib._Hash'] = None) -> 'hashlib._Hash':
     """Hash the given file using same algorithm as cpython/Lib/hashlib.py"""
     buf = bytearray(8192)
     view = memoryview(buf)
@@ -62,7 +62,7 @@ def hash_file(path: Path, digestobj: Optional["hashlib._Hash"] = None) -> "hashl
     return digestobj
 
 
-def update_hash_given_file(path: Path, digestobj: Optional["hashlib._Hash"] = None) -> "hashlib._Hash":
+def update_hash_given_file(path: Path, digestobj: Optional['hashlib._Hash'] = None) -> 'hashlib._Hash':
     """Updates the given hash object with the file's last modification time.
 
     Override this function to change to the following behaviour:
