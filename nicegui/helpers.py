@@ -52,21 +52,34 @@ def is_file(path: Optional[Union[str, Path]]) -> bool:
         return False
 
 
-def update_hash_given_file(path: Path, digestobj: Optional['hashlib._Hash'] = None) -> 'hashlib._Hash':
+def update_hash_given_file(path: Path, digestobj: 'hashlib._Hash') -> None:
     """Updates the given hash object with the file's last modification time.
 
     Override this function to change to the following behaviour:
     - Read the entire file and hash it (most accurate, but slow)
-    - Simply return `digestobj` (revert to pre-2.17.0 behaviour)
-    - Hash some random data (cache-busting on every server restart)
+    - Do nothing (revert to pre-2.17.0 behaviour)
     """
     digestobj.update(int(path.stat().st_mtime).to_bytes(8, 'big'))
-    return digestobj
+
+
+def update_hash_given_file_path(path: Path, digestobj: 'hashlib._Hash') -> None:
+    """Updates the given hash object with the file path.
+
+    Override this function to change to the following behaviour:
+    - Hash some random data (cache-busting on every server restart)
+    - Read the git commit hash (cache-busting on every commit)
+
+    Note: If you do, you would also want to override `update_hash_given_file` to do nothing.
+    This can avoid further updating the hash, since the above already does cache-busting effectively.
+    """
+    digestobj.update(path.as_posix().encode())
 
 
 def hash_file_path(path: Path) -> str:
     """Hash the given path."""
-    return hashlib.sha256(path.as_posix().encode()).hexdigest()[:32]
+    hasher = hashlib.sha256()
+    update_hash_given_file_path(path, hasher)
+    return hasher.hexdigest()[:32]
 
 
 def hash_file_path_and_contents(path: Path) -> str:
@@ -79,14 +92,14 @@ def hash_file_path_and_contents(path: Path) -> str:
     except ValueError:
         path_shortened = path
 
-    hasher.update(path_shortened.parent.as_posix().encode())
+    update_hash_given_file_path(path_shortened.parent, hasher)
 
     if path.is_file():
-        hasher = update_hash_given_file(path, hasher)
+        update_hash_given_file(path, hasher)
     else:
         for p in path.rglob('*'):
             if p.is_file():
-                hasher = update_hash_given_file(p, hasher)
+                update_hash_given_file_path(p, hasher)
 
     return hasher.hexdigest()[:32]
 
