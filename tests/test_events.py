@@ -2,10 +2,11 @@ import asyncio
 from typing import Literal
 
 import pytest
+from selenium.webdriver.common.by import By
+
 from nicegui import ui
 from nicegui.events import ClickEventArguments
 from nicegui.testing import Screen
-from selenium.webdriver.common.by import By
 
 
 def click_sync_no_args():
