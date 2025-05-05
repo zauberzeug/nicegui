@@ -199,7 +199,7 @@ function renderRecursively(elements, id) {
     if (event.js_handler) {
       handler = eval(event.js_handler);
     } else {
-      handler = (...args) => defaultHandler(null, ...args);
+      handler = (...args) => defaultHandler(...args);
     }
     handler = Vue.withModifiers(handler, event.modifiers);
     handler = event.keys.length ? Vue.withKeys(handler, event.keys) : handler;
