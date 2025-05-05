@@ -9,7 +9,6 @@ import webbrowser
 from collections.abc import Awaitable
 from pathlib import Path
 from typing import Any, Optional, Set, Tuple, Union
-import uuid
 
 import wait_for2
 
