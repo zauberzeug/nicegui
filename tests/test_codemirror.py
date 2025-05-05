@@ -1,6 +1,8 @@
 from itertools import product
 from typing import Dict, List
 
+import pytest
+
 from nicegui import ui
 from nicegui.elements.codemirror import find_python_index, get_cumulative_js_length
 from nicegui.testing import Screen
@@ -35,38 +37,20 @@ def test_supported_values(screen: Screen):
     assert values['themes'] == values['supported_themes']
 
 
-def test_change_set():
-    @ui.page('/')
-    def page():
-        editor = ui.codemirror()
+@pytest.mark.parametrize('doc, sections, inserted, expected', [
+    ('', [0, 1], [['A']], 'A'),
+    ('', [0, 2], [['AB']], 'AB'),
+    ('X', [1, 2], [['AB']], 'AB'),
+    ('X', [1, -1], [], 'X'),
+    ('X', [1, -1, 0, 1], [[], ['Y']], 'XY'),
+    ('Hello', [5, -1, 0, 8], [[], [', world!']], 'Hello, world!'),
+    ('Hello, world!', [5, -1, 7, 0, 1, -1], [], 'Hello!'),
+])
+def test_change_set(screen: Screen, doc: str, sections: List[int], inserted: List[List[str]], expected: str):
+    editor = ui.codemirror(doc)
 
-        editor.value = ''
-        editor._apply_change_set([0, 1], [['A']])
-        assert editor.value == 'A'
-
-        editor.value = ''
-        editor._apply_change_set([0, 2], [['AB']])
-        assert editor.value == 'AB'
-
-        editor.value = 'X'
-        editor._apply_change_set([1, 2], [['AB']])
-        assert editor.value == 'AB'
-
-        editor.value = 'X'
-        editor._apply_change_set([1, -1], [])
-        assert editor.value == 'X'
-
-        editor.value = 'X'
-        editor._apply_change_set([1, -1, 0, 1], [[], ['Y']])
-        assert editor.value == 'XY'
-
-        editor.value = 'Hello'
-        editor._apply_change_set([5, -1, 0, 8], [[], [', world!']])
-        assert editor.value == 'Hello, world!'
-
-        editor.value = 'Hello, world!'
-        editor._apply_change_set([5, -1, 7, 0, 1, -1], [])
-        assert editor.value == 'Hello!'
+    screen.open('/')
+    assert editor._apply_change_set(sections, inserted) == expected
 
 
 def test_find_python_index():
