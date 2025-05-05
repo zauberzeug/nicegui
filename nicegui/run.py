@@ -27,6 +27,7 @@ def setup() -> None:
     except NotImplementedError:
         logging.warning('Failed to initialize ProcessPoolExecutor')
 
+
 class SubprocessException(Exception):
     """A picklable exception to represent exceptions raised in subprocesses."""
 
