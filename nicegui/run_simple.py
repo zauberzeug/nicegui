@@ -1,22 +1,9 @@
 import traceback
 
 from multiprocessing import Pipe, Process
-from typing import Callable
-from typing_extensions import ParamSpec, TypeVar
 
 from . import core
-from .run import SubprocessException, _run
-
-P = ParamSpec('P')
-R = TypeVar('R')
-
-
-async def io_bound(callback: Callable[P, R],
-                   *args: P.args, **kwargs: P.kwargs) -> R:
-    """Run an I/O-bound function in a separate thread."""
-    # use the default executor because it must be a ThreadPoolExecutor
-    return await _run(None, callback, *args, **kwargs)
-
+from .run import SubprocessException, io_bound, Callable, P, R
 
 async def cpu_bound(callback: Callable[P, R],
                     *args: P.args, **kwargs: P.kwargs) -> R:
@@ -30,17 +17,17 @@ async def cpu_bound(callback: Callable[P, R],
     p = Process(target=_cpu_bound_wrapper, args=(tx, callback, args, kwargs))
     p.start()
 
-    res = await io_bound(rx.recv)
+    (result, exception) = await io_bound(rx.recv)
+    if exception is not None:
+        raise exception
 
-    if isinstance(res, SubprocessException):
-        raise res
-
-    return res
+    return result
 
 
 def _cpu_bound_wrapper(tx, callback, args, kwargs):
+    result, exception = None, None
     try:
-        res = callback(*args, **kwargs)
+        result = callback(*args, **kwargs)
     except Exception as e:
-        res = SubprocessException(type(e).__name__, str(e), traceback.format_exc())
-    tx.send(res)
+        exception = SubprocessException(type(e).__name__, str(e), traceback.format_exc())
+    tx.send((result, exception))

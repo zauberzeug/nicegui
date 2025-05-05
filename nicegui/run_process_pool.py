@@ -4,9 +4,7 @@ import traceback
 from multiprocessing import Pipe, Process
 
 from . import core
-from .run import SubprocessException
-
-from .run_simple import io_bound, P, R, Callable
+from .run import SubprocessException, io_bound, Callable, P, R
 
 
 def _worker_process(tx):
@@ -35,12 +33,11 @@ class Worker:
         self.rx.send((f, args, kwargs))
         return await io_bound(self.rx.recv)
 
-    def shutdown(self):
-        self.rx.send((None, None, None))
-        self.process.join()
-
-    def kill(self):
-        self.process.kill()
+    def shutdown(self, kill=False):
+        if not kill:
+            self.rx.send((None, None, None))
+        else:
+            self.process.kill()
         self.process.join()
 
 
@@ -52,7 +49,7 @@ class ProcessPool:
 
     async def get_worker(self):
         def max_workers_reached():
-            return self.max_size != 0 and len(self.worker) >= self.max_size
+            return len(self.worker) >= self.max_size and self.max_size != 0
 
         if max_workers_reached():
             return await self.pool.get()
@@ -66,20 +63,19 @@ class ProcessPool:
     async def run(self, f, *args, **kwargs):
         worker = await self.get_worker()
         result, exception = await worker.run(f, *args, **kwargs)
-        await self.pool.put(worker)
+        self.pool.put_nowait(worker)
 
         if exception is not None:
             raise exception
 
         return result
 
-    def shutdown(self):
+    def shutdown(self, kill=False):
         for w in self.worker:
-            w.shutdown()
+            w.shutdown(kill)
 
-    def kill(self):
-        for w in self.worker:
-            w.kill()
+        self.worker.clear()
+        self.pool = asyncio.Queue() # reset / clear pool
 
 
 _process_pool = None
@@ -97,8 +93,8 @@ async def cpu_bound(callback: Callable[P, R],
     return await _process_pool.run(callback, *args, **kwargs)
 
 
-def shutdown():
+def shutdown(kill=False):
     global _process_pool
     if _process_pool is not None:
-        _process_pool.shutdown()
+        _process_pool.shutdown(kill)
         _process_pool = None
