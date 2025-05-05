@@ -18,9 +18,8 @@ R = TypeVar('R')
 
 
 def setup() -> None:
-    """Setup the process pool and the thread pool. (For internal use only.)"""
+    """Setup the process pool. (For internal use only.)"""
     global process_pool  # pylint: disable=global-statement # noqa: PLW0603
-    global thread_pool  # pylint: disable=global-statement # noqa: PLW0603
     try:
         if process_pool is None:
             process_pool = ProcessPoolExecutor()
