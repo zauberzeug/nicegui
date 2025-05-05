@@ -24,27 +24,17 @@ export default {
     async update(content) {
       if (this.last_content === content) return;
       this.last_content = content;
-      this.$el.setAttribute("mermaid_content", content);
-      queue.push(this.$el);
-      if (is_running) return;
-      is_running = true;
-      while (queue.length) {
-        try {
-          let element = queue.shift();
+      try {
+        const { svg, bindFunctions } = await mermaid.render(this.$el.id + "_mermaid", content)
+        this.$el.innerHTML = svg;
 
-          const { svg, bindFunctions } = await mermaid.render(element.id+"_mermaid", element.getAttribute("mermaid_content"))
-
-          element.innerHTML = svg;
-
-          if (bindFunctions) {
-            bindFunctions(element);
-          }
-        } catch (error) {
-          console.error(error);
-          this.$emit("error", error);
+        if (bindFunctions) {
+          bindFunctions(this.$el);
         }
+      } catch (error) {
+        console.error(error);
+        this.$emit("error", error);
       }
-      is_running = false;
     },
   },
   props: {
