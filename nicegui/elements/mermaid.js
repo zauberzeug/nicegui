@@ -1,10 +1,5 @@
 import mermaid from "mermaid";
 
-window.mermaid = mermaid;
-
-let is_running = false;
-const queue = [];
-
 export default {
   template: `<div></div>`,
   data: () => ({
@@ -27,9 +22,8 @@ export default {
       if (this.last_content === content) return;
       this.last_content = content;
       try {
-        const { svg, bindFunctions } = await mermaid.render(this.$el.id + "_mermaid", content)
+        const { svg, bindFunctions } = await mermaid.render(this.$el.id + "_mermaid", content);
         this.$el.innerHTML = svg;
-
         if (bindFunctions) {
           bindFunctions(this.$el);
         }
