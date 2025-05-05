@@ -184,12 +184,18 @@ def run(*,
     assert host is not None
     assert port is not None
 
+    if kwargs.get('ssl_certfile') and kwargs.get('ssl_keyfile'):
+        protocol = 'https'
+    else:
+        protocol = 'http'
+
     # NOTE: We save host and port in environment variables so the subprocess started in reload mode can access them.
     os.environ['NICEGUI_HOST'] = host
     os.environ['NICEGUI_PORT'] = str(port)
+    os.environ['NICEGUI_PROTOCOL'] = protocol
 
     if show:
-        helpers.schedule_browser(host, port)
+        helpers.schedule_browser(protocol, host, port)
 
     def split_args(args: str) -> List[str]:
         return [a.strip() for a in args.split(',')]
