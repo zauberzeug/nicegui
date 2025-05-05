@@ -77,7 +77,7 @@ async def cpu_bound(callback: Callable[P, R], *args: P.args, **kwargs: P.kwargs)
     and return the result (instead of writing it in class properties or global variables).
     """
     if process_pool is None:
-        raise RuntimeError('Process pool not set up. Call run.setup() first.')
+        raise RuntimeError('Process pool not set up.')
 
     return await _run(process_pool, safe_callback, callback, *args, **kwargs)
 
