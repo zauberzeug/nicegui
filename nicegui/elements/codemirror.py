@@ -340,10 +340,10 @@ def _apply_change_set(doc, sections: List[int], inserted: List[List[str]]) -> st
     # based on https://github.com/codemirror/state/blob/main/src/change.ts
     assert sum(sections[::2]) == len(doc), 'Cannot apply change set to document due to length mismatch'
     pos = 0
-    new_doc = ''
+    parts = []
     joined_inserts = ('\n'.join(ins) for ins in inserted)
     for section in zip_longest(sections[::2], sections[1::2], joined_inserts, fillvalue=''):
         old_len, new_len, ins = cast(Tuple[int, int, str], section)
-        new_doc += doc[pos:pos + old_len] if new_len == -1 else ins
+        parts.append(doc[pos:pos + old_len] if new_len == -1 else ins)
         pos += old_len
-    return new_doc
+    return ''.join(parts)
