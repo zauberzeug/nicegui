@@ -1,7 +1,6 @@
-import bisect
-from itertools import accumulate, zip_longest
+from itertools import accumulate, chain, repeat
 from pathlib import Path
-from typing import List, Literal, Optional, Tuple, cast, get_args
+from typing import List, Literal, Optional, get_args
 
 from nicegui.elements.mixins.disableable_element import DisableableElement
 from nicegui.elements.mixins.value_element import ValueElement
@@ -282,10 +281,9 @@ class CodeMirror(ValueElement, DisableableElement, component='codemirror.js', de
         :param line_wrapping: whether to wrap lines (default: `False`)
         :param highlight_whitespace: whether to highlight whitespace (default: `False`)
         """
-        super().__init__(value=value, on_value_change=self._update_cumulative)
-        self._cumulative_corresponds_to_string = value
-        self._cumulative_js_length: List[int] = []
-        self._update_cumulative(forced=True)
+        super().__init__(value=value, on_value_change=self._update_emojies)
+        self._emojies: bytes = b''
+        self._update_emojies()
         if on_change is not None:
             super().on_value_change(on_change)
         self.add_resource(Path(__file__).parent / 'lib' / 'codemirror')
@@ -341,62 +339,34 @@ class CodeMirror(ValueElement, DisableableElement, component='codemirror.js', de
         """The event contains a change set which is applied to the current value."""
         return self._apply_change_set(e.args['sections'], e.args['inserted'])
 
-    def _update_cumulative(self, *, forced=False) -> None:
-        if forced or self._cumulative_corresponds_to_string != self.value:
-            self._cumulative_js_length = get_cumulative_js_length(self.value)
-            self._cumulative_corresponds_to_string = self.value
+    @staticmethod
+    def _encode_emojies(doc: str) -> bytes:
+        return b''.join(b'\0\1' if ord(c) > 0xFFFF else b'\0' for c in doc)
+
+    def _update_emojies(self) -> None:
+        """Update ``self.emojies`` for the current value.
+
+        The emojies are a concatenation of '0' for code points <=0xFFFF and '01' for code points >0xFFFF.
+        This is used to convert JavaScript string indices to Python by summing ``emojies`` up to the JavaScript index.
+        """
+        self._emojies = self._encode_emojies(self.value)
 
     def _apply_change_set(self, sections: List[int], inserted: List[List[str]]) -> str:
-        # based on https://github.com/codemirror/state/blob/main/src/change.ts
         doc = self.value or ''
-
-        def _find_python_index(js_index: int) -> int:
-            return find_python_index(js_index, self._cumulative_js_length)
-        assert sum(sections[::2]) == get_total_js_length(
-            self._cumulative_js_length), 'Cannot apply change set to document due to length mismatch'
-        pos = 0
-        joined_inserts = ('\n'.join(ins) for ins in inserted)
-        for section in zip_longest(sections[::2], sections[1::2], joined_inserts, fillvalue=''):
-            old_len, new_len, ins = cast(Tuple[int, int, str], section)
-            if new_len >= 0:
-                first_index = _find_python_index(pos)
-                second_index = _find_python_index(pos + old_len)
-                doc = doc[:first_index] + ins + doc[second_index:]
-
-                just_before_original_end_part = self._cumulative_js_length[second_index - 1] if second_index > 0 else 0
-                original_end_part = self._cumulative_js_length[second_index:]
-
-                self._cumulative_js_length = self._cumulative_js_length[:first_index]
-                self._cumulative_js_length += [x + get_total_js_length(self._cumulative_js_length)
-                                               for x in get_cumulative_js_length(ins)]
-                self._cumulative_js_length += [(x - just_before_original_end_part) +
-                                               get_total_js_length(self._cumulative_js_length) for x in original_end_part]
-            pos += old_len
-            self._cumulative_corresponds_to_string = doc
-        return doc
-
-
-def get_cumulative_js_length(doc: str) -> List[int]:
-    """Returns a list, where for each index i, the value is the length of the string from 0 to i in UTF-16 (imagine js_len(doc[:i])"""
-    return list(accumulate(len(c.encode('utf-16be'))//2 for c in doc)) if doc else []
-
-
-def get_total_js_length(cumulative_js_length: List[int]) -> int:
-    """Returns the length of the string in UTF-16 (imagine js_len(doc))"""
-    return cumulative_js_length[-1] if cumulative_js_length else 0
-
-
-def find_python_index(js_index: int, cumulative_js_length: List[int]) -> int:
-    """Given a js_index, returns the position in cumulative_js_length (1-based)
-
-    Note that 1-based indexing enables doc[:find_python_index(pos)] to replace doc[:pos]
-    """
-    if js_index == 0 or not cumulative_js_length:
-        return 0
-    lo1 = len(cumulative_js_length) - (get_total_js_length(cumulative_js_length) - js_index)
-    hi1 = js_index
-    lo2 = (js_index + 1) // 2
-    hi2 = len(cumulative_js_length) - (get_total_js_length(cumulative_js_length) - js_index + 1) // 2
-    lo = max(lo1, lo2, 0)
-    hi = min(hi1, hi2, len(cumulative_js_length))
-    return bisect.bisect_right(cumulative_js_length, js_index, lo, hi)
+        old_lengths = sections[::2]
+        new_lengths = sections[1::2]
+        end_positions = accumulate(old_lengths)
+        joined_inserts = chain(('\n'.join(ins) for ins in inserted), repeat(''))
+        parts: List[str] = []
+        emojies: List[bytes] = []
+        for pos, old_len, new_len, ins in zip(end_positions, old_lengths, new_lengths, joined_inserts):
+            if new_len == -1:
+                emojies_before_start = sum(self._emojies[:pos-old_len])
+                emojies_before_end = sum(self._emojies[pos-old_len:pos]) + emojies_before_start
+                parts.append(doc[pos - old_len - emojies_before_start: pos - emojies_before_end])
+                emojies.append(self._emojies[pos - old_len: pos])
+            else:
+                parts.append(ins)
+                emojies.append(self._encode_emojies(ins))
+        self._emojies = b''.join(emojies)
+        return ''.join(parts)

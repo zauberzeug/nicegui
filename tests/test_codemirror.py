@@ -1,11 +1,11 @@
-from itertools import product
 from typing import Dict, List
 
 import pytest
 
 from nicegui import ui
-from nicegui.elements.codemirror import find_python_index, get_cumulative_js_length
 from nicegui.testing import Screen
+
+# pylint: disable=protected-access
 
 
 def test_codemirror(screen: Screen):
@@ -46,6 +46,9 @@ def test_supported_values(screen: Screen):
     ('Hello', [5, -1, 0, 8], [[], [', world!']], 'Hello, world!'),
     ('Hello, world!', [5, -1, 7, 0, 1, -1], [], 'Hello!'),
     ('Hello, hello!', [2, -1, 3, 1, 4, -1, 3, 1, 1, -1], [[], ['y'], [], ['y']], 'Hey, hey!'),
+    ('Hello, world!', [5, -1, 1, 3, 7, -1], [[], [' 🙂']], 'Hello 🙂 world!'),
+    ('Hey! 🙂', [7, -1, 0, 4], [[], [' Ho!']], 'Hey! 🙂 Ho!'),
+    ('Ha 🙂\nha 🙂', [3, -1, 2, 0, 4, -1, 2, 0], [[], [''], [], ['']], 'Ha \nha '),
 ])
 def test_change_set(screen: Screen, doc: str, sections: List[int], inserted: List[List[str]], expected: str):
     editor = ui.codemirror(doc)
@@ -54,9 +57,9 @@ def test_change_set(screen: Screen, doc: str, sections: List[int], inserted: Lis
     assert editor._apply_change_set(sections, inserted) == expected
 
 
-def test_find_python_index():
-    n = 10
-    for combination in product([chr(20), chr(70000)], repeat=n):
-        cumulative_js_length = get_cumulative_js_length(combination)
-        for elem in cumulative_js_length:
-            assert cumulative_js_length[find_python_index(elem, cumulative_js_length)-1] == elem, f'Failed for {elem}'
+def test_emojies():
+    assert ui.codemirror._encode_emojies('') == b''
+    assert ui.codemirror._encode_emojies('Hello') == bytes([0, 0, 0, 0, 0])
+    assert ui.codemirror._encode_emojies('🙂') == bytes([0, 1])
+    assert ui.codemirror._encode_emojies('Hello 🙂') == bytes([0, 0, 0, 0, 0, 0, 0, 1])
+    assert ui.codemirror._encode_emojies('😎😎😎') == bytes([0, 1, 0, 1, 0, 1])
