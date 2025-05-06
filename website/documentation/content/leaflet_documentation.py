@@ -80,7 +80,7 @@ def move_markers() -> None:
 @doc.demo('Overlaying Image', '''
     Leaflet supports [image overlays](https://leafletjs.com/reference.html#imageoverlay).
     You can add an image overlay with the `image_overlay` method.
-          
+
     Example is from [Leaflet Image Overlay](https://leafletjs.com/examples/overlays/#:~:text=use%20these%20overlays.-,ImageOverlay,-L.ImageOverlay%20is).
 ''')
 def overlay_image():
@@ -100,7 +100,7 @@ def overlay_image():
 @doc.demo('Overlaying Video', '''
     Leaflet supports [video overlays](https://leafletjs.com/reference.html#videooverlay).
     You can add a video overlay with the `video_overlay` method.
-          
+
     Example is from [Leaflet Video Overlay](https://leafletjs.com/examples/overlays/#:~:text=example%20stand%2Dalone.-,VideoOverlay,-Video%20used%20to).
 ''')
 def overlay_video():
