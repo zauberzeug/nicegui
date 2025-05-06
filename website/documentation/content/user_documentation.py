@@ -105,48 +105,39 @@ def querying():
             ''')
 
 
-doc.text(
-    'Using ElementFilter directly',
-    '''
-    It may be desirable to use ElementFilter for the following purposes:
+doc.text('Using an ElementFilter', '''
+    It may be desirable to use an [`ElementFilter`](/documentation/element_filter) to
 
-    - Preserve order of elements to check their order on the page
-    - More granular filtering options ([ElementFilter](/documentation/element_filter)),
-      such as `ElementFilter(...).within(...)`
+    - preserve the order of elements to check their order on the page, and
+    - more granular filtering options, such as `ElementFilter(...).within(...)`.
+
+    By entering the `user` context and iterating over `ElementFilter`,
+    you can preserve the natural document order of matching elements:
 ''')
 
 
 @doc.ui
-def using_elementfilter_directly():
-    ui.markdown('''
-        By entering the `user` context and iterating over `ElementFilter`, you can preserve
-        the natural document order of matching elements.
-''')
-
+def using_an_elementfilter():
     with ui.row().classes('gap-4 items-stretch'):
         with python_window(classes='w-[400px]', title='UI code'):
             ui.markdown(
                 '''
                 ```python
-                ui.label("1").mark("text-123")
-                ui.label("2").mark("text-123")
-                ui.label("3").mark("text-123")
+                ui.label('1').mark('number')
+                ui.label('2').mark('number')
+                ui.label('3').mark('number')
                 ```
             ''')
 
         with python_window(classes='w-[600px]', title='user assertions'):
-            ui.markdown(
-                '''
+            ui.markdown('''
                 ```python
                 with user:
-                    expected_text = ['1', '2', '3']
-                    assert [
-                        label.text == expected
-                        for label, expected in zip(
-                            ElementFilter(marker='text-123'),
-                            expected_text
-                        )
-                    ]
+                    elements = list(ElementFilter(marker='number'))
+                    assert len(elements) == 3
+                    assert elements[0].text == '1'
+                    assert elements[1].text == '2'
+                    assert elements[2].text == '3'
                 ```
             ''')
 

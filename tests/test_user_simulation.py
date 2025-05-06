@@ -571,9 +571,7 @@ async def test_run_javascript(user: User):
 
 
 async def test_context_manager(user: User) -> None:
-    @ui.page('/')
-    def index():
-        ui.button('click me', on_click=lambda: ui.label('clicked'))
+    ui.button('click me')
 
     await user.open('/')
     with user:
