@@ -57,9 +57,9 @@ def test_change_set(screen: Screen, doc: str, sections: List[int], inserted: Lis
     assert editor._apply_change_set(sections, inserted) == expected
 
 
-def test_emojies():
-    assert ui.codemirror._encode_emojies('') == b''
-    assert ui.codemirror._encode_emojies('Hello') == bytes([0, 0, 0, 0, 0])
-    assert ui.codemirror._encode_emojies('🙂') == bytes([0, 1])
-    assert ui.codemirror._encode_emojies('Hello 🙂') == bytes([0, 0, 0, 0, 0, 0, 0, 1])
-    assert ui.codemirror._encode_emojies('😎😎😎') == bytes([0, 1, 0, 1, 0, 1])
+def test_encode_codepoints():
+    assert ui.codemirror._encode_codepoints('') == b''
+    assert ui.codemirror._encode_codepoints('Hello') == bytes([1, 1, 1, 1, 1])
+    assert ui.codemirror._encode_codepoints('🙂') == bytes([0, 1])
+    assert ui.codemirror._encode_codepoints('Hello 🙂') == bytes([1, 1, 1, 1, 1, 1, 0, 1])
+    assert ui.codemirror._encode_codepoints('😎😎😎') == bytes([0, 1, 0, 1, 0, 1])

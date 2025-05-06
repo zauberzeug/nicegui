@@ -281,9 +281,10 @@ class CodeMirror(ValueElement, DisableableElement, component='codemirror.js', de
         :param line_wrapping: whether to wrap lines (default: `False`)
         :param highlight_whitespace: whether to highlight whitespace (default: `False`)
         """
-        super().__init__(value=value, on_value_change=self._update_emojies)
-        self._emojies: bytes = b''
-        self._update_emojies()
+        super().__init__(value=value, on_value_change=self._update_codepoints)
+        self._codepoints: bytes = b''
+        self._codepoints_represents: str = ''
+        self._update_codepoints()
         if on_change is not None:
             super().on_value_change(on_change)
         self.add_resource(Path(__file__).parent / 'lib' / 'codemirror')
@@ -340,16 +341,19 @@ class CodeMirror(ValueElement, DisableableElement, component='codemirror.js', de
         return self._apply_change_set(e.args['sections'], e.args['inserted'])
 
     @staticmethod
-    def _encode_emojies(doc: str) -> bytes:
-        return b''.join(b'\0\1' if ord(c) > 0xFFFF else b'\0' for c in doc)
+    def _encode_codepoints(doc: str) -> bytes:
+        return b''.join(b'\0\1' if ord(c) > 0xFFFF else b'\1' for c in doc)
 
-    def _update_emojies(self) -> None:
+    def _update_codepoints(self) -> None:
         """Update ``self.emojies`` for the current value.
 
         The emojies are a concatenation of '0' for code points <=0xFFFF and '01' for code points >0xFFFF.
         This is used to convert JavaScript string indices to Python by summing ``emojies`` up to the JavaScript index.
         """
-        self._emojies = self._encode_emojies(self.value)
+        if self.value == self._codepoints_represents:
+            return
+        self._codepoints_represents = self.value
+        self._codepoints = self._encode_codepoints(self.value or '')
 
     def _apply_change_set(self, sections: List[int], inserted: List[List[str]]) -> str:
         doc = self.value or ''
@@ -358,15 +362,14 @@ class CodeMirror(ValueElement, DisableableElement, component='codemirror.js', de
         end_positions = accumulate(old_lengths)
         joined_inserts = chain(('\n'.join(ins) for ins in inserted), repeat(''))
         parts: List[str] = []
-        emojies: List[bytes] = []
+        parts_codepoint: List[bytes] = []
         for pos, old_len, new_len, ins in zip(end_positions, old_lengths, new_lengths, joined_inserts):
             if new_len == -1:
-                emojies_before_start = sum(self._emojies[:pos-old_len])
-                emojies_before_end = sum(self._emojies[pos-old_len:pos]) + emojies_before_start
-                parts.append(doc[pos - old_len - emojies_before_start: pos - emojies_before_end])
-                emojies.append(self._emojies[pos - old_len: pos])
+                parts.append(doc[self._codepoints[:pos-old_len].count(1):self._codepoints[:pos].count(1)])
+                parts_codepoint.append(self._codepoints[pos - old_len: pos])
             else:
                 parts.append(ins)
-                emojies.append(self._encode_emojies(ins))
-        self._emojies = b''.join(emojies)
-        return ''.join(parts)
+                parts_codepoint.append(self._encode_codepoints(ins))
+        self._codepoints = b''.join(parts_codepoint)
+        self._codepoints_represents = ''.join(parts)
+        return self._codepoints_represents
