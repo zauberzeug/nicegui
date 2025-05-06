@@ -220,7 +220,7 @@
   height: 16rem;
 }
 .nicegui-leaflet video.leaflet-image-layer {
-  max-width: none;
+  max-width: none; /* HACK: make the video show up */
 }
 .nicegui-log {
   padding: 0.5rem;

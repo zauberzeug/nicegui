@@ -77,48 +77,29 @@ def move_markers() -> None:
     ui.button('Move marker', on_click=lambda: marker.move(51.51, -0.09))
 
 
-@doc.demo('Overlaying Image', '''
+@doc.demo('Image Overlays', '''
     Leaflet supports [image overlays](https://leafletjs.com/reference.html#imageoverlay).
     You can add an image overlay with the `image_overlay` method.
-
-    Example is from [Leaflet Image Overlay](https://leafletjs.com/examples/overlays/#:~:text=use%20these%20overlays.-,ImageOverlay,-L.ImageOverlay%20is).
 ''')
 def overlay_image():
-    m = ui.leaflet(center=(40.73997376331186, -74.22363281250001), zoom=11).classes('h-96')
+    m = ui.leaflet(center=(40.74, -74.18), zoom=11)
     m.image_overlay(
         url='https://maps.lib.utexas.edu/maps/historical/newark_nj_1922.jpg',
-        bounds=[[40.799311, -74.118464], [40.68202047785919, -74.33]],
-        options={
-            'opacity': 0.8,
-            'errorOverlayUrl': 'https://cdn-icons-png.flaticon.com/512/110/110686.png',
-            'alt': 'Image of Newark, N.J. in 1922. Source: The University of Texas at Austin, UT Libraries Map Collection.',
-            'interactive': True,
-        },
+        bounds=[[40.712216, -74.22655], [40.773941, -74.12544]],
+        options={'opacity': 0.8},
     )
 
 
-@doc.demo('Overlaying Video', '''
+@doc.demo('Video Overlays', '''
     Leaflet supports [video overlays](https://leafletjs.com/reference.html#videooverlay).
     You can add a video overlay with the `video_overlay` method.
-
-    Example is from [Leaflet Video Overlay](https://leafletjs.com/examples/overlays/#:~:text=example%20stand%2Dalone.-,VideoOverlay,-Video%20used%20to).
 ''')
 def overlay_video():
-    m = ui.leaflet(center=(22.998851594142923, -114.87304687500001), zoom=4).classes('h-96')
+    m = ui.leaflet(center=(23.0, -115.0), zoom=3)
     m.video_overlay(
-        url=[
-            'https://labs.mapbox.com/bites/00188/patricia_nasa.webm',
-            'https://labs.mapbox.com/bites/00188/patricia_nasa.mp4',
-        ],
+        url='https://www.mapbox.com/bites/00188/patricia_nasa.webm',
         bounds=[[32, -130], [13, -100]],
-        options={
-            'opacity': 0.8,
-            'errorOverlayUrl': 'https://cdn-icons-png.flaticon.com/512/110/110686.png',
-            'interactive': True,
-            'autoplay': True,
-            'muted': True,
-            'playsInline': True,
-        },
+        options={'opacity': 0.8, 'autoplay': True, 'playsInline': True},
     )
 
 
