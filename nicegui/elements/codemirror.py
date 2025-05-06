@@ -369,7 +369,9 @@ class CodeMirror(ValueElement, DisableableElement, component='codemirror.js', de
         parts_codepoint: List[bytes] = []
         for pos, old_len, new_len, ins in zip(end_positions, old_lengths, new_lengths, joined_inserts):
             if new_len == -1:
-                parts.append(doc[self._codepoints[:pos-old_len].count(1):self._codepoints[:pos].count(1)])
+                first_slice_point = self._codepoints[:pos - old_len].count(1)
+                second_slice_point = first_slice_point + self._codepoints[pos - old_len: pos].count(1)
+                parts.append(doc[first_slice_point: second_slice_point])
                 parts_codepoint.append(self._codepoints[pos - old_len: pos])
             else:
                 parts.append(ins)
