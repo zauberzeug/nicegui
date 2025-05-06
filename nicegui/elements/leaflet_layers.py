@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List, Tuple, Union
 
 from typing_extensions import Self
 
@@ -58,7 +58,7 @@ class ImageOverlay(Layer):
 
 @dataclass(**KWONLY_SLOTS)
 class VideoOverlay(Layer):
-    url: str | List[str]
+    url: Union[str, List[str]]
     bounds: List[List[float]]
     options: Dict = field(default_factory=dict)
 
