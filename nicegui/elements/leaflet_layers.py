@@ -44,6 +44,32 @@ class WmsLayer(Layer):
 
 
 @dataclass(**KWONLY_SLOTS)
+class ImageOverlay(Layer):
+    url: str
+    bounds: List[List[float]]
+    options: Dict = field(default_factory=dict)
+
+    def to_dict(self) -> Dict:
+        return {
+            'type': 'imageOverlay',
+            'args': [self.url, self.bounds, self.options],
+        }
+
+
+@dataclass(**KWONLY_SLOTS)
+class VideoOverlay(Layer):
+    url: str | List[str]
+    bounds: List[List[float]]
+    options: Dict = field(default_factory=dict)
+
+    def to_dict(self) -> Dict:
+        return {
+            'type': 'videoOverlay',
+            'args': [self.url, self.bounds, self.options],
+        }
+
+
+@dataclass(**KWONLY_SLOTS)
 class Marker(Layer):
     latlng: Tuple[float, float]
     options: Dict = field(default_factory=dict)
