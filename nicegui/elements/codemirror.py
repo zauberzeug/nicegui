@@ -345,10 +345,14 @@ class CodeMirror(ValueElement, DisableableElement, component='codemirror.js', de
         return b''.join(b'\0\1' if ord(c) > 0xFFFF else b'\1' for c in doc)
 
     def _update_codepoints(self) -> None:
-        """Update ``self.emojies`` for the current value.
+        """Update `self._codepoints` and `self._codepoints_represents`.
 
-        The emojies are a concatenation of '0' for code points <=0xFFFF and '01' for code points >0xFFFF.
-        This is used to convert JavaScript string indices to Python by summing ``emojies`` up to the JavaScript index.
+        `self._codepoints` are a concatenation of '1' for code points <=0xFFFF and '01' for code points >0xFFFF.
+        This captures how many Unicode code points are encoded by each UTF-16 code unit.
+        This is used to convert JavaScript string indices to Python by summing `self._codepoints` up to the JavaScript index.
+
+        `self._codepoints_represents` is the string which matches `self._codepoints`.
+        This is used to check if the value has changed and to avoid unnecessary updates.
         """
         if self.value == self._codepoints_represents:
             return
