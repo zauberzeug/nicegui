@@ -45,6 +45,7 @@ def test_supported_values(screen: Screen):
     ('X', [1, -1, 0, 1], [[], ['Y']], 'XY'),
     ('Hello', [5, -1, 0, 8], [[], [', world!']], 'Hello, world!'),
     ('Hello, world!', [5, -1, 7, 0, 1, -1], [], 'Hello!'),
+    ('Hello, hello!', [2, -1, 3, 1, 4, -1, 3, 1, 1, -1], [[], ['y'], [], ['y']], 'Hey, hey!'),
 ])
 def test_change_set(screen: Screen, doc: str, sections: List[int], inserted: List[List[str]], expected: str):
     editor = ui.codemirror(doc)
