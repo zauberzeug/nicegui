@@ -75,4 +75,21 @@ def markdown_new_content():
     ui.button('Change Content', on_click=lambda: markdown.set_content('This is new content'))
 
 
+@doc.demo('Styling elements inside Markdown', '''
+    To style HTML elements inside a `ui.markdown` element, you can add custom CSS rules for the "nicegui-markdown" class.
+''')
+def markdown_styling():
+    ui.add_css('''
+        .nicegui-markdown a {
+            color: orange;
+            text-decoration: none;
+        }
+        .nicegui-markdown a:hover {
+            color: orange;
+            text-decoration: underline;
+        }
+    ''')
+    ui.markdown('This is a [link](https://example.com).')
+
+
 doc.reference(ui.markdown)
