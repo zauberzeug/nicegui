@@ -349,7 +349,7 @@ class CodeMirror(ValueElement, DisableableElement, component='codemirror.js', de
         The emojies are a concatenation of '0' for code points <=0xFFFF and '01' for code points >0xFFFF.
         This is used to convert JavaScript string indices to Python by summing ``emojies`` up to the JavaScript index.
         """
-        self._emojies = self._encode_emojies(self.value)
+        self._emojies = self._encode_emojies(self.value or '')
 
     def _apply_change_set(self, sections: List[int], inserted: List[List[str]]) -> str:
         doc = self.value or ''
