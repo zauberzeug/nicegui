@@ -120,8 +120,7 @@ doc.text('Using an ElementFilter', '''
 def using_an_elementfilter():
     with ui.row().classes('gap-4 items-stretch'):
         with python_window(classes='w-[400px]', title='UI code'):
-            ui.markdown(
-                '''
+            ui.markdown('''
                 ```python
                 ui.label('1').mark('number')
                 ui.label('2').mark('number')
