@@ -282,7 +282,7 @@ class CodeMirror(ValueElement, DisableableElement, component='codemirror.js', de
         :param highlight_whitespace: whether to highlight whitespace (default: `False`)
         """
         super().__init__(value=value, on_value_change=self._update_codepoints)
-        self._codepoints: bytes = b''
+        self._codepoints = b''
         self._update_codepoints()
         if on_change is not None:
             super().on_value_change(on_change)
@@ -354,21 +354,22 @@ class CodeMirror(ValueElement, DisableableElement, component='codemirror.js', de
         self._codepoints = self._encode_codepoints(self.value or '')
 
     def _apply_change_set(self, sections: List[int], inserted: List[List[str]]) -> str:
-        doc = self.value or ''
+        document = self.value or ''
         old_lengths = sections[::2]
         new_lengths = sections[1::2]
         end_positions = accumulate(old_lengths)
-        joined_inserts = chain(('\n'.join(ins) for ins in inserted), repeat(''))
-        parts: List[str] = []
-        parts_codepoint: List[bytes] = []
-        for pos, old_len, new_len, ins in zip(end_positions, old_lengths, new_lengths, joined_inserts):
+        document_parts: List[str] = []
+        codepoint_parts: List[bytes] = []
+        for end, old_len, new_len, insert in zip(end_positions, old_lengths, new_lengths, chain(inserted, repeat([]))):
             if new_len == -1:
-                first_slice_point = self._codepoints[:pos - old_len].count(1)
-                second_slice_point = first_slice_point + self._codepoints[pos - old_len: pos].count(1)
-                parts.append(doc[first_slice_point: second_slice_point])
-                parts_codepoint.append(self._codepoints[pos - old_len: pos])
+                start = end - old_len
+                py_start = self._codepoints[:start].count(1)
+                py_end = py_start + self._codepoints[start:end].count(1)
+                document_parts.append(document[py_start:py_end])
+                codepoint_parts.append(self._codepoints[start:end])
             else:
-                parts.append(ins)
-                parts_codepoint.append(self._encode_codepoints(ins))
-        self._codepoints = b''.join(parts_codepoint)
-        return ''.join(parts)
+                joined_insert = '\n'.join(insert)
+                document_parts.append(joined_insert)
+                codepoint_parts.append(self._encode_codepoints(joined_insert))
+        self._codepoints = b''.join(codepoint_parts)
+        return ''.join(document_parts)
