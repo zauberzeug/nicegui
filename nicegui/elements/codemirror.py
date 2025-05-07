@@ -283,7 +283,6 @@ class CodeMirror(ValueElement, DisableableElement, component='codemirror.js', de
         """
         super().__init__(value=value, on_value_change=self._update_codepoints)
         self._codepoints: bytes = b''
-        self._codepoints_represents: str = ''
         self._update_codepoints()
         if on_change is not None:
             super().on_value_change(on_change)
@@ -345,18 +344,13 @@ class CodeMirror(ValueElement, DisableableElement, component='codemirror.js', de
         return b''.join(b'\0\1' if ord(c) > 0xFFFF else b'\1' for c in doc)
 
     def _update_codepoints(self) -> None:
-        """Update `self._codepoints` and `self._codepoints_represents`.
+        """Update `self._codepoints` as a concatenation of "1" for code points <=0xFFFF and "01" for code points >0xFFFF.
 
-        `self._codepoints` are a concatenation of '1' for code points <=0xFFFF and '01' for code points >0xFFFF.
         This captures how many Unicode code points are encoded by each UTF-16 code unit.
         This is used to convert JavaScript string indices to Python by summing `self._codepoints` up to the JavaScript index.
-
-        `self._codepoints_represents` is the string which matches `self._codepoints`.
-        This is used to check if the value has changed and to avoid unnecessary updates.
         """
-        if self.value == self._codepoints_represents:
-            return
-        self._codepoints_represents = self.value
+        if not self._send_update_on_value_change:
+            return  # the update is triggered by the user and codepoints are updated incrementally
         self._codepoints = self._encode_codepoints(self.value or '')
 
     def _apply_change_set(self, sections: List[int], inserted: List[List[str]]) -> str:
@@ -377,5 +371,4 @@ class CodeMirror(ValueElement, DisableableElement, component='codemirror.js', de
                 parts.append(ins)
                 parts_codepoint.append(self._encode_codepoints(ins))
         self._codepoints = b''.join(parts_codepoint)
-        self._codepoints_represents = ''.join(parts)
-        return self._codepoints_represents
+        return ''.join(parts)
