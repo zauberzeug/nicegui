@@ -1,8 +1,11 @@
 from typing import Dict, List
 
+import pytest
+
 from nicegui import ui
-from nicegui.elements.codemirror import _apply_change_set
 from nicegui.testing import Screen
+
+# pylint: disable=protected-access
 
 
 def test_codemirror(screen: Screen):
@@ -34,12 +37,29 @@ def test_supported_values(screen: Screen):
     assert values['themes'] == values['supported_themes']
 
 
-def test_change_set():
-    assert _apply_change_set('', [0, 1], [['A']]) == 'A'
-    assert _apply_change_set('', [0, 2], [['AB']]) == 'AB'
-    assert _apply_change_set('X', [1, 2], [['AB']]) == 'AB'
-    assert _apply_change_set('X', [1, -1], []) == 'X'
-    assert _apply_change_set('X', [1, -1, 0, 1], [[], ['Y']]) == 'XY'
-    assert _apply_change_set('Hello', [5, -1, 0, 8], [[], [', world!']]) == 'Hello, world!'
-    assert _apply_change_set('Hello, world!', [5, -1, 7, 0, 1, -1], []) == 'Hello!'
-    assert _apply_change_set('Hello, hello!', [2, -1, 3, 1, 4, -1, 3, 1, 1, -1], [[], ['y'], [], ['y']]) == 'Hey, hey!'
+@pytest.mark.parametrize('doc, sections, inserted, expected', [
+    ('', [0, 1], [['A']], 'A'),
+    ('', [0, 2], [['AB']], 'AB'),
+    ('X', [1, 2], [['AB']], 'AB'),
+    ('X', [1, -1], [], 'X'),
+    ('X', [1, -1, 0, 1], [[], ['Y']], 'XY'),
+    ('Hello', [5, -1, 0, 8], [[], [', world!']], 'Hello, world!'),
+    ('Hello, world!', [5, -1, 7, 0, 1, -1], [], 'Hello!'),
+    ('Hello, hello!', [2, -1, 3, 1, 4, -1, 3, 1, 1, -1], [[], ['y'], [], ['y']], 'Hey, hey!'),
+    ('Hello, world!', [5, -1, 1, 3, 7, -1], [[], [' 🙂']], 'Hello 🙂 world!'),
+    ('Hey! 🙂', [7, -1, 0, 4], [[], [' Ho!']], 'Hey! 🙂 Ho!'),
+    ('Ha 🙂\nha 🙂', [3, -1, 2, 0, 4, -1, 2, 0], [[], [''], [], ['']], 'Ha \nha '),
+])
+def test_change_set(screen: Screen, doc: str, sections: List[int], inserted: List[List[str]], expected: str):
+    editor = ui.codemirror(doc)
+
+    screen.open('/')
+    assert editor._apply_change_set(sections, inserted) == expected
+
+
+def test_encode_codepoints():
+    assert ui.codemirror._encode_codepoints('') == b''
+    assert ui.codemirror._encode_codepoints('Hello') == bytes([1, 1, 1, 1, 1])
+    assert ui.codemirror._encode_codepoints('🙂') == bytes([0, 1])
+    assert ui.codemirror._encode_codepoints('Hello 🙂') == bytes([1, 1, 1, 1, 1, 1, 0, 1])
+    assert ui.codemirror._encode_codepoints('😎😎😎') == bytes([0, 1, 0, 1, 0, 1])
