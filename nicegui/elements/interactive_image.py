@@ -108,7 +108,27 @@ class InteractiveImage(SourceElement, ContentElement, component='interactive_ima
         *Added in version 2.17.0*
         """
         with self:
-            layer = InteractiveImage(self.source, content=content, size=self._props['size']) \
+            layer = InteractiveImageLayer(source=self.source, content=content, size=self._props['size']) \
                 .classes('nicegui-interactive-image-layer')
             self.on('loaded', lambda e: layer.run_method('updateViewbox', e.args['width'], e.args['height']))
             return layer
+
+
+class InteractiveImageLayer(SourceElement, ContentElement, component='interactive_image.js'):
+    CONTENT_PROP = 'content'
+    PIL_CONVERT_FORMAT = 'PNG'
+
+    def __init__(self, *, source: str, content: str, size: Optional[Tuple[float, float]]) -> None:
+        """Interactive Image Layer
+
+        This element is created when adding a layer to an ``InteractiveImage``.
+
+        *Added in version 2.17.0*
+        """
+        super().__init__(source=source, content=content)
+        self._props['size'] = size
+
+    def _set_props(self, source: Union[str, Path, 'PIL_Image']) -> None:  # noqa: UP037
+        if optional_features.has('pillow') and isinstance(source, PIL_Image):
+            source = pil_to_base64(source, self.PIL_CONVERT_FORMAT)
+        super()._set_props(source)
