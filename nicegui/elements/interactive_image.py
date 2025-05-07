@@ -108,5 +108,7 @@ class InteractiveImage(SourceElement, ContentElement, component='interactive_ima
         *Added in version 2.17.0*
         """
         with self:
-            return InteractiveImage(self.source, content=content, size=self._props['size']) \
+            layer = InteractiveImage(self.source, content=content, size=self._props['size']) \
                 .classes('nicegui-interactive-image-layer')
+            self.on('loaded', lambda e: layer.run_method('updateViewbox', e.args['width'], e.args['height']))
+            return layer
