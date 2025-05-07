@@ -102,7 +102,7 @@ class InteractiveImage(SourceElement, ContentElement, component='interactive_ima
         self._props['t'] = time.time()
         self.update()
 
-    def add_layer(self, *, content: str = '') -> InteractiveImage:
+    def add_layer(self, *, content: str = '') -> InteractiveImageLayer:
         """Add a new layer with its own content.
 
         *Added in version 2.17.0*
