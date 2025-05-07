@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import functools
 from dataclasses import dataclass
 from pathlib import Path
 from typing import TYPE_CHECKING, Dict, Iterable, List, Set, Tuple
@@ -106,29 +107,11 @@ def register_resource(path: Path) -> Resource:
     return resources[key]
 
 
-cached_path_hashes: Dict[Path, str] = {}
-
-
+@functools.lru_cache(maxsize=None)
 def compute_key(path: Path) -> str:
-    """Compute a key for a given path using a hash function.
-
-    If the path is relative to the NiceGUI base directory, the key is computed from the relative path.
-    """
-
-    # Check if the path is already cached.
-    # Ensures add_resource doesn't cause file hash on every page reload.
-    # Thus, behaviour matches other resources: hash recompute on server restart.
-    if path in cached_path_hashes:
-        path_hash = cached_path_hashes[path]
-    else:
-        path_hash = hash_file_path_and_contents(path)
-        cached_path_hashes[path] = path_hash
-
-    is_file = path.is_file()
-    if is_file:
-        return f'{path_hash}/{path.name}'
-    else:
-        return f'{path_hash}'
+    """Compute a key for a given path using a hash function."""
+    hash_ = hash_file_path_and_contents(path)
+    return f'{hash_}/{path.name}' if path.is_file() else f'{hash_}'
 
 
 def _get_name(path: Path) -> str:
