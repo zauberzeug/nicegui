@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import asyncio
 import functools
 import hashlib
@@ -52,24 +54,24 @@ def is_file(path: Optional[Union[str, Path]]) -> bool:
         return False
 
 
-def update_hash_given_file(path: Path, digestobj: 'hashlib._Hash') -> None:
+def update_hash_given_file(path: Path, digestobj: hashlib._Hash) -> None:
     """Updates the given hash object with the file's last modification time.
 
-    Override this function to change to the following behaviour:
+    Override this function to change to the following behavior:
     - Read the entire file and hash it (most accurate, but slow)
-    - Do nothing (revert to pre-2.17.0 behaviour)
+    - Do nothing (revert to pre-2.17.0 behavior)
     """
     digestobj.update(int(path.stat().st_mtime).to_bytes(8, 'big'))
 
 
-def update_hash_given_file_path(path: Path, digestobj: 'hashlib._Hash') -> None:
+def update_hash_given_file_path(path: Path, digestobj: hashlib._Hash) -> None:
     """Updates the given hash object with the file path.
 
-    Override this function to change to the following behaviour:
+    Override this function to change to the following behavior:
     - Hash some random data (cache-busting on every server restart)
     - Read the git commit hash (cache-busting on every commit)
 
-    Note: If you do, you would also want to override `update_hash_given_file` to do nothing.
+    Note: If you do, you would also want to override ``update_hash_given_file`` to do nothing.
     This can avoid further updating the hash, since the above already does cache-busting effectively.
     """
     digestobj.update(path.as_posix().encode())
@@ -84,7 +86,6 @@ def hash_file_path(path: Path) -> str:
 
 def hash_file_path_and_contents(path: Path) -> str:
     """Hash the given path and file content(s)."""
-
     hasher = hashlib.sha256()
     nicegui_base = Path(__file__).parent
     try:
