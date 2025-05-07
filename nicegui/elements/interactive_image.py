@@ -101,3 +101,12 @@ class InteractiveImage(SourceElement, ContentElement, component='interactive_ima
             return
         self._props['t'] = time.time()
         self.update()
+
+    def add_layer(self) -> InteractiveImage:
+        """Add a new layer with its own content.
+
+        *Added in version 2.17.0*
+        """
+        with self:
+            return InteractiveImage(source=self._props['src'], size=self._props['size']) \
+                .classes('nicegui-interactive-image-layer')
