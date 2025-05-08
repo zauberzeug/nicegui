@@ -53,7 +53,7 @@ def is_file(path: Optional[Union[str, Path]]) -> bool:
         return False
 
 
-def hash_file_path(path: Path, *, max_time: float | None = None) -> str:
+def hash_file_path(path: Path, *, max_time: Optional[float] = None) -> str:
     """Hash the given path based on its string representation and optionally the last modification time of given files."""
     hasher = hashlib.sha256(path.as_posix().encode())
     if max_time is not None:
