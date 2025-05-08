@@ -19,17 +19,8 @@ R = TypeVar('R')
 
 
 def set_cpu_bound_executor_type(executor_type: type):
-    """Set concurrent.futures.Executor compliant type for cpu_bound execution
-
-        Note: unfortunately this function will (very likely) be called before
-              all functions that are supposed to be called through the executor
-              are defined. As a result we can not instantiate the executor in
-              this function. If we would, the forked worker processes would not
-              be able to call these functions, because they are not defined yet
-              and thus don't exist in processes that are forked NOW....
-              Therefor this uncommon approach.
-    """
-    # makes no sense to call this function after ui.run which calls setup, right???
+    """Set concurrent.futures.Executor compliant type for cpu_bound execution"""
+    # makes no sense to call this function after ui.run which calls setup
     assert process_pool is None
     assert type(executor_type) is type
 
