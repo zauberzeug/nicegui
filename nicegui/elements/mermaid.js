@@ -24,21 +24,12 @@ export default {
       try {
         const { svg, bindFunctions } = await mermaid.render(this.$el.id + "_mermaid", content);
         this.$el.innerHTML = svg;
-        if (bindFunctions) {
-          bindFunctions(this.$el);
-        }
+        bindFunctions?.(this.$el);
       } catch (error) {
         const { svg, bindFunctions } = await mermaid.render(this.$el.id + "_mermaid", "error");
         this.$el.innerHTML = svg;
-        if (bindFunctions) {
-          bindFunctions(this.$el);
-        }
-        const mermaidErrorFormat = {
-          str: error.message,
-          message: error.message,
-          hash: error.name,
-          error
-        }
+        bindFunctions?.(this.$el);
+        const mermaidErrorFormat = { str: error.message, message: error.message, hash: error.name, error };
         console.error(mermaidErrorFormat);
         this.$emit("error", mermaidErrorFormat);
       }
