@@ -114,21 +114,19 @@ def compute_key(path: Path) -> str:
 
     If the path is relative to the NiceGUI base directory, the key is computed from the relative path.
     """
-    nicegui_base = Path(__file__).parent
-    is_file = path.is_file()
+    NICEGUI_BASE = Path(__file__).parent
     try:
-        path = path.relative_to(nicegui_base)
+        rel_path = path.relative_to(NICEGUI_BASE)
     except ValueError:
-        pass
-    if is_file:
-        return f'{hash_file_path(path.parent)}/{path.name}'
-    return f'{hash_file_path(path)}'
+        rel_path = path
+    if path.is_file():
+        return f'{hash_file_path(rel_path.parent, [path])}/{path.name}'
+    return hash_file_path(rel_path, path.rglob('*'))
 
 
-def hash_file_path(path: Path) -> str:
-    """Hash the given path based on the last modification time."""
-    hasher = hashlib.sha256(path.parent.as_posix().encode())
-    files = [path] if path.is_file() else list(path.rglob('*'))
+def hash_file_path(path: Path, files: Iterable[Path]) -> str:
+    """Hash the given path based on its string representation and the last modification time of given files."""
+    hasher = hashlib.sha256(path.as_posix().encode())
     max_time = max(file.stat().st_mtime for file in files)
     hasher.update(struct.pack('!d', max_time))
     return hasher.hexdigest()[:32]
