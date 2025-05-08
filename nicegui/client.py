@@ -10,7 +10,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any, Awaitable, Callable, ClassVar, Dict, Iterable, Iterator, List, Optional, Union
 
 from fastapi import Request
-from fastapi.responses import Response
+from fastapi.responses import JSONResponse, Response
 from fastapi.templating import Jinja2Templates
 from typing_extensions import Self
 
@@ -124,7 +124,7 @@ class Client:
     def __exit__(self, *_) -> None:
         self.content.__exit__()
 
-    def build_response(self, request: Request, status_code: int = 200) -> Response:
+    def build_response(self, request: Request, status_code: int = 200, *, send_json: bool = False) -> Response:
         """Build a FastAPI response for the client."""
         self.outbox.updates.clear()
         prefix = request.headers.get('X-Forwarded-Prefix', request.scope.get('root_path', ''))
@@ -138,37 +138,44 @@ class Client:
         }
         vue_html, vue_styles, vue_scripts, imports, js_imports, js_imports_urls = \
             generate_resources(prefix, self.elements.values())
+        context = {
+            'version': __version__,
+            'elements': elements.replace('&', '&amp;')
+            .replace('<', '&lt;')
+            .replace('>', '&gt;')
+            .replace('`', '&#96;')
+            .replace('$', '&#36;'),
+            'head_html': self.head_html,
+            'body_html': '<style>' + '\n'.join(vue_styles) + '</style>\n' + self.body_html + '\n' + '\n'.join(vue_html),
+            'vue_scripts': '\n'.join(vue_scripts),
+            'imports': json.dumps(imports),
+            'js_imports': '\n'.join(js_imports),
+            'js_imports_urls': js_imports_urls,
+            'quasar_config': json.dumps(core.app.config.quasar_config),
+            'title': self.resolve_title(),
+            'viewport': self.page.resolve_viewport(),
+            'favicon_url': get_favicon_url(self.page, prefix),
+            'dark': str(self.page.resolve_dark()),
+            'language': self.page.resolve_language(),
+            'translations': translations.get(self.page.resolve_language(), translations['en-US']),
+            'prefix': prefix,
+            'tailwind': core.app.config.tailwind,
+            'prod_js': core.app.config.prod_js,
+            'socket_io_js_query_params': socket_io_js_query_params,
+            'socket_io_js_extra_headers': core.app.config.socket_io_js_extra_headers,
+            'socket_io_js_transports': core.app.config.socket_io_js_transports,
+        }
+        if send_json:
+            return JSONResponse(
+                content=context,
+                status_code=status_code,
+                headers={'Cache-Control': 'no-store', 'X-NiceGUI-Content': 'jsonpage'},
+            )
+        context['request'] = request
         return templates.TemplateResponse(
             request=request,
             name='index.html',
-            context={
-                'request': request,
-                'version': __version__,
-                'elements': elements.replace('&', '&amp;')
-                                    .replace('<', '&lt;')
-                                    .replace('>', '&gt;')
-                                    .replace('`', '&#96;')
-                                    .replace('$', '&#36;'),
-                'head_html': self.head_html,
-                'body_html': '<style>' + '\n'.join(vue_styles) + '</style>\n' + self.body_html + '\n' + '\n'.join(vue_html),
-                'vue_scripts': '\n'.join(vue_scripts),
-                'imports': json.dumps(imports),
-                'js_imports': '\n'.join(js_imports),
-                'js_imports_urls': js_imports_urls,
-                'quasar_config': json.dumps(core.app.config.quasar_config),
-                'title': self.resolve_title(),
-                'viewport': self.page.resolve_viewport(),
-                'favicon_url': get_favicon_url(self.page, prefix),
-                'dark': str(self.page.resolve_dark()),
-                'language': self.page.resolve_language(),
-                'translations': translations.get(self.page.resolve_language(), translations['en-US']),
-                'prefix': prefix,
-                'tailwind': core.app.config.tailwind,
-                'prod_js': core.app.config.prod_js,
-                'socket_io_js_query_params': socket_io_js_query_params,
-                'socket_io_js_extra_headers': core.app.config.socket_io_js_extra_headers,
-                'socket_io_js_transports': core.app.config.socket_io_js_transports,
-            },
+            context=context,
             status_code=status_code,
             headers={'Cache-Control': 'no-store', 'X-NiceGUI-Content': 'page'},
         )
