@@ -5,6 +5,7 @@ import functools
 import hashlib
 import os
 import socket
+import struct
 import threading
 import time
 import webbrowser
@@ -56,7 +57,7 @@ def is_file(path: Optional[Union[str, Path]]) -> bool:
 
 def hash_file(path: Path, digestobj: hashlib._Hash) -> None:
     """Updates the given hash object with the file's last modification time."""
-    digestobj.update(int(path.stat().st_mtime).to_bytes(8, 'big'))
+    digestobj.update(struct.pack('!d', path.stat().st_mtime))
 
 
 def hash_file_path(path: Path) -> str:
