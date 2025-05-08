@@ -447,3 +447,36 @@ for (let sheet of document.styleSheets) {
     }
   }
 }
+
+function softReload(url) {
+  // Make the GET request
+  window.socket.disconnect();
+  fetch(url, {
+    method: 'GET',
+    headers: new Headers({
+      'X-NiceGUI-Client-ID': 'your-client-id' // Replace with your actual client ID
+    })
+  })
+    .then(response => {
+      if (!response.ok) {
+        throw new Error('Network response was not ok')
+      }
+      return response.json()
+    })
+    .then(data => {
+      console.log(data)
+      // Handle the response data
+      createApp(parseElements(data.elements), {
+        version: data.version,
+        prefix: data.prefix,
+        query: data.socket_io_js_query_params,
+        extraHeaders: data.socket_io_js_extra_headers,
+        transports: data.socket_io_js_transports,
+        quasarConfig: JSON.parse(data.quasar_config),
+      })
+      app.mount("#app")
+    })
+    .catch(error => {
+      console.error('There was a problem with the fetch operation:', error)
+    })
+}
