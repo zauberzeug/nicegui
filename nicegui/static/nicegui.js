@@ -473,8 +473,19 @@ function softReload(url) {
         extraHeaders: data.socket_io_js_extra_headers,
         transports: data.socket_io_js_transports,
         quasarConfig: JSON.parse(data.quasar_config),
-      })
-      app.mount("#app")
+      });
+      const importPromises = Object.entries(data.js_import_raw).map(([name, value]) => {
+        console.log(`Importing element ${name}`);
+        return import(value.url).then((module) => {
+          console.log(`Imported element ${name} from ${value.url}`, module);
+          app.component(value.tag, module.default);
+        });
+      });
+
+      Promise.all(importPromises).then(() => {
+        eval(data.vue_scripts); // required for plotly and some libraries
+        app.mount("#app");
+      });
     })
     .catch(error => {
       console.error('There was a problem with the fetch operation:', error)

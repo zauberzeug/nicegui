@@ -136,7 +136,7 @@ class Client:
             'client_id': self.id,
             'next_message_id': self.outbox.next_message_id,
         }
-        vue_html, vue_styles, vue_scripts, imports, js_imports, js_imports_urls = \
+        vue_html, vue_styles, vue_scripts, imports, js_imports, js_imports_urls, js_imports_raw = \
             generate_resources(prefix, self.elements.values())
         context = {
             'version': __version__,
@@ -166,6 +166,7 @@ class Client:
             'socket_io_js_transports': core.app.config.socket_io_js_transports,
         }
         if send_json:
+            context['js_import_raw'] = js_imports_raw
             return JSONResponse(
                 content=context,
                 status_code=status_code,
