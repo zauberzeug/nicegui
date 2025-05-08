@@ -3,7 +3,7 @@ from __future__ import annotations
 import functools
 from dataclasses import dataclass
 from pathlib import Path
-from typing import TYPE_CHECKING, Dict, Iterable, List, Set, Tuple
+from typing import TYPE_CHECKING, Dict, Iterable, List, Optional, Set, Tuple
 
 import vbuild
 
@@ -13,7 +13,6 @@ from .version import __version__
 
 if TYPE_CHECKING:
     from .element import Element
-from typing import Optional
 
 
 @dataclass(**KWONLY_SLOTS)
