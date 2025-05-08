@@ -109,9 +109,19 @@ def register_resource(path: Path) -> Resource:
 
 @functools.lru_cache(maxsize=None)
 def compute_key(path: Path) -> str:
-    """Compute a key for a given path using a hash function."""
-    hash_ = hash_file_path_and_contents(path)
-    return f'{hash_}/{path.name}' if path.is_file() else f'{hash_}'
+    """Compute a key for a given path using a hash function.
+
+    If the path is relative to the NiceGUI base directory, the key is computed from the relative path.
+    """
+    nicegui_base = Path(__file__).parent
+    is_file = path.is_file()
+    try:
+        path = path.relative_to(nicegui_base)
+    except ValueError:
+        pass
+    if is_file:
+        return f'{hash_file_path_and_contents(path.parent)}/{path.name}'
+    return f'{hash_file_path_and_contents(path)}'
 
 
 def _get_name(path: Path) -> str:
