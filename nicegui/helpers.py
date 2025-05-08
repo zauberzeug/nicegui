@@ -54,13 +54,8 @@ def is_file(path: Optional[Union[str, Path]]) -> bool:
         return False
 
 
-def update_hash_given_file(path: Path, digestobj: hashlib._Hash) -> None:
-    """Updates the given hash object with the file's last modification time.
-
-    Override this function to change to the following behavior:
-    - Read the entire file and hash it (most accurate, but slow)
-    - Do nothing (revert to pre-2.17.0 behavior)
-    """
+def hash_file(path: Path, digestobj: hashlib._Hash) -> None:
+    """Updates the given hash object with the file's last modification time."""
     digestobj.update(int(path.stat().st_mtime).to_bytes(8, 'big'))
 
 
@@ -81,11 +76,11 @@ def hash_file_path_and_contents(path: Path) -> str:
     hasher.update(path_shortened.parent.as_posix().encode())
 
     if path.is_file():
-        update_hash_given_file(path, hasher)
+        hash_file(path, hasher)
     else:
         for p in path.rglob('*'):
             if p.is_file():
-                update_hash_given_file(p, hasher)
+                hash_file(p, hasher)
 
     return hasher.hexdigest()[:32]
 
