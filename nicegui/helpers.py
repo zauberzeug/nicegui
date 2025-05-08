@@ -3,6 +3,7 @@ import functools
 import hashlib
 import os
 import socket
+import struct
 import threading
 import time
 import webbrowser
@@ -52,9 +53,12 @@ def is_file(path: Optional[Union[str, Path]]) -> bool:
         return False
 
 
-def hash_file_path(path: Path) -> str:
-    """Hash the given path."""
-    return hashlib.sha256(path.as_posix().encode()).hexdigest()[:32]
+def hash_file_path(path: Path, *, max_time: float | None = None) -> str:
+    """Hash the given path based on its string representation and optionally the last modification time of given files."""
+    hasher = hashlib.sha256(path.as_posix().encode())
+    if max_time is not None:
+        hasher.update(struct.pack('!d', max_time))
+    return hasher.hexdigest()[:32]
 
 
 def is_port_open(host: str, port: int) -> bool:

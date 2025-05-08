@@ -1,8 +1,6 @@
 from __future__ import annotations
 
 import functools
-import hashlib
-import struct
 from dataclasses import dataclass
 from pathlib import Path
 from typing import TYPE_CHECKING, Dict, Iterable, List, Set, Tuple
@@ -10,6 +8,7 @@ from typing import TYPE_CHECKING, Dict, Iterable, List, Set, Tuple
 import vbuild
 
 from .dataclasses import KWONLY_SLOTS
+from .helpers import hash_file_path
 from .version import __version__
 
 if TYPE_CHECKING:
@@ -122,14 +121,6 @@ def compute_key(path: Path, *, max_time: float | None = None) -> str:
     if path.is_file():
         return f'{hash_file_path(rel_path.parent, max_time=max_time)}/{path.name}'
     return hash_file_path(rel_path, max_time=max_time)
-
-
-def hash_file_path(path: Path, *, max_time: float | None = None) -> str:
-    """Hash the given path based on its string representation and optionally the last modification time of given files."""
-    hasher = hashlib.sha256(path.as_posix().encode())
-    if max_time is not None:
-        hasher.update(struct.pack('!d', max_time))
-    return hasher.hexdigest()[:32]
 
 
 def _get_name(path: Path) -> str:
