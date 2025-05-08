@@ -60,14 +60,14 @@ libraries: Dict[str, Library] = {}
 resources: Dict[str, Resource] = {}
 
 
-def register_vue_component(path: Path) -> Component:
+def register_vue_component(path: Path, *, max_time: float | None = None) -> Component:
     """Register a .vue or .js Vue component.
 
     Single-file components (.vue) are built right away
     to delegate this "long" process to the bootstrap phase
     and to avoid building the component on every single request.
     """
-    key = compute_key(path)
+    key = compute_key(path, max_time=max_time)
     name = _get_name(path)
     if path.suffix == '.vue':
         if key in vue_components and vue_components[key].path == path:
@@ -85,9 +85,9 @@ def register_vue_component(path: Path) -> Component:
     raise ValueError(f'Unsupported component type "{path.suffix}"')
 
 
-def register_library(path: Path, *, expose: bool = False) -> Library:
+def register_library(path: Path, *, expose: bool = False, max_time: float | None = None) -> Library:
     """Register a *.js library."""
-    key = compute_key(path)
+    key = compute_key(path, max_time=max_time)
     name = _get_name(path)
     if path.suffix in {'.js', '.mjs'}:
         if key in libraries and libraries[key].path == path:
@@ -98,9 +98,9 @@ def register_library(path: Path, *, expose: bool = False) -> Library:
     raise ValueError(f'Unsupported library type "{path.suffix}"')
 
 
-def register_resource(path: Path) -> Resource:
+def register_resource(path: Path, *, max_time: float | None = None) -> Resource:
     """Register a resource."""
-    key = compute_key(path)
+    key = compute_key(path, max_time=max_time)
     if key in resources and resources[key].path == path:
         return resources[key]
     assert key not in resources, f'Duplicate resource {key}'
@@ -109,7 +109,7 @@ def register_resource(path: Path) -> Resource:
 
 
 @functools.lru_cache(maxsize=None)
-def compute_key(path: Path) -> str:
+def compute_key(path: Path, *, max_time: float | None = None) -> str:
     """Compute a key for a given path using a hash function.
 
     If the path is relative to the NiceGUI base directory, the key is computed from the relative path.
@@ -120,15 +120,15 @@ def compute_key(path: Path) -> str:
     except ValueError:
         rel_path = path
     if path.is_file():
-        return f'{hash_file_path(rel_path.parent, [path])}/{path.name}'
-    return hash_file_path(rel_path, path.rglob('*'))
+        return f'{hash_file_path(rel_path.parent, max_time=max_time)}/{path.name}'
+    return hash_file_path(rel_path, max_time=max_time)
 
 
-def hash_file_path(path: Path, files: Iterable[Path]) -> str:
-    """Hash the given path based on its string representation and the last modification time of given files."""
+def hash_file_path(path: Path, *, max_time: float | None = None) -> str:
+    """Hash the given path based on its string representation and optionally the last modification time of given files."""
     hasher = hashlib.sha256(path.as_posix().encode())
-    max_time = max(file.stat().st_mtime for file in files)
-    hasher.update(struct.pack('!d', max_time))
+    if max_time is not None:
+        hasher.update(struct.pack('!d', max_time))
     return hasher.hexdigest()[:32]
 
 
