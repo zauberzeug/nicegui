@@ -1,11 +1,8 @@
-from __future__ import annotations
-
 import asyncio
 import functools
 import hashlib
 import os
 import socket
-import struct
 import threading
 import time
 import webbrowser
@@ -55,26 +52,9 @@ def is_file(path: Optional[Union[str, Path]]) -> bool:
         return False
 
 
-def hash_file(path: Path, digestobj: hashlib._Hash) -> None:
-    """Updates the given hash object with the file's last modification time."""
-    digestobj.update(struct.pack('!d', path.stat().st_mtime))
-
-
 def hash_file_path(path: Path) -> str:
     """Hash the given path."""
     return hashlib.sha256(path.as_posix().encode()).hexdigest()[:32]
-
-
-def hash_file_path_and_contents(path: Path) -> str:
-    """Hash the given path and file content(s)."""
-    hasher = hashlib.sha256(path.parent.as_posix().encode())
-    if path.is_file():
-        hash_file(path, hasher)
-    else:
-        for p in path.rglob('*'):
-            if p.is_file():
-                hash_file(p, hasher)
-    return hasher.hexdigest()[:32]
 
 
 def is_port_open(host: str, port: int) -> bool:
