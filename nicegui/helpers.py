@@ -100,7 +100,7 @@ def hash_file_path_and_contents(path: Path) -> str:
     else:
         for p in path.rglob('*'):
             if p.is_file():
-                update_hash_given_file_path(p, hasher)
+                update_hash_given_file(p, hasher)
 
     return hasher.hexdigest()[:32]
 
