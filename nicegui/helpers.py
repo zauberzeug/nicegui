@@ -64,24 +64,9 @@ def update_hash_given_file(path: Path, digestobj: hashlib._Hash) -> None:
     digestobj.update(int(path.stat().st_mtime).to_bytes(8, 'big'))
 
 
-def update_hash_given_file_path(path: Path, digestobj: hashlib._Hash) -> None:
-    """Updates the given hash object with the file path.
-
-    Override this function to change to the following behavior:
-    - Hash some random data (cache-busting on every server restart)
-    - Read the git commit hash (cache-busting on every commit)
-
-    Note: If you do, you would also want to override ``update_hash_given_file`` to do nothing.
-    This can avoid further updating the hash, since the above already does cache-busting effectively.
-    """
-    digestobj.update(path.as_posix().encode())
-
-
 def hash_file_path(path: Path) -> str:
     """Hash the given path."""
-    hasher = hashlib.sha256()
-    update_hash_given_file_path(path, hasher)
-    return hasher.hexdigest()[:32]
+    return hashlib.sha256(path.as_posix().encode()).hexdigest()[:32]
 
 
 def hash_file_path_and_contents(path: Path) -> str:
@@ -93,7 +78,7 @@ def hash_file_path_and_contents(path: Path) -> str:
     except ValueError:
         path_shortened = path
 
-    update_hash_given_file_path(path_shortened.parent, hasher)
+    hasher.update(path_shortened.parent.as_posix().encode())
 
     if path.is_file():
         update_hash_given_file(path, hasher)
