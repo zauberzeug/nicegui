@@ -59,6 +59,16 @@ class ClickEventArguments(UiEventArguments):
 
 
 @dataclass(**KWONLY_SLOTS)
+class TimerIntervalChangeEventArguments(UiEventArguments):
+    interval: float
+
+
+@dataclass(**KWONLY_SLOTS)
+class TimerActiveChangeEventArguments(UiEventArguments):
+    active: bool
+
+
+@dataclass(**KWONLY_SLOTS)
 class SlideEventArguments(UiEventArguments):
     side: SlideSide
 
