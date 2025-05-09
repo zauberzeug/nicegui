@@ -58,5 +58,16 @@ def _status():
     return 'Ok'
 
 
+def error_content(exception):
+    if not "This is a special exception" in str(exception):
+        raise exception
+    ui.label('This is a custom error page.')
+    ui.label(f'Error: {exception}')
+    ui.log().push('Traceback (most recent call last):\n...')
+
+
+app.on_page_exception(error_content)
+
+
 # NOTE: do not reload on fly.io (see https://github.com/zauberzeug/nicegui/discussions/1720#discussioncomment-7288741)
 ui.run(uvicorn_reload_includes='*.py, *.css, *.html', reload=not on_fly, reconnect_timeout=10.0)

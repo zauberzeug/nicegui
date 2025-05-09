@@ -45,6 +45,7 @@ class App(FastAPI):
         self._connect_handlers: List[Union[Callable[..., Any], Awaitable]] = []
         self._disconnect_handlers: List[Union[Callable[..., Any], Awaitable]] = []
         self._exception_handlers: List[Callable[..., Any]] = [log.exception]
+        self._page_exception_handler: Optional[Callable[..., Any]] = None
 
     @property
     def is_starting(self) -> bool:
@@ -131,6 +132,14 @@ class App(FastAPI):
             result = handler() if not inspect.signature(handler).parameters else handler(exception)
             if helpers.is_coroutine_function(handler):
                 background_tasks.create(result, name=f'exception {handler.__name__}')
+
+    def on_page_exception(self, handler: Callable) -> None:
+        """Called when an exception occurs in a page and allows to create a custom error page.
+
+        The callback must accept an ``Exception``.
+        All UI elements created in the callback are displayed on the error page.
+        """
+        self._page_exception_handler = handler
 
     def shutdown(self) -> None:
         """Shut down NiceGUI.
