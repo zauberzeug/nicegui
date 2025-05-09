@@ -4,6 +4,9 @@ from ..client import Client
 from ..context import context
 from ..element import Element
 from .javascript import run_javascript
+from .. import background_tasks
+from .. import core
+from .. import ui
 
 
 class Navigate:
@@ -40,6 +43,16 @@ class Navigate:
         It is equivalent to clicking the reload button in the browser.
         """
         run_javascript('history.go(0)')
+
+    def soft_reload(self) -> None:
+        """ui.navigate.soft_reload
+
+        Reload the current page contents without triggering a reload in the browser. 
+        It is done by terminating the socket.io connection, purging the client, and reconnecting.
+        """
+        # basically await core.sio.disconnect(ui.context.client._socket_id)
+        background_tasks.create(core.sio.disconnect(ui.context.client._socket_id))
+        ui.context.client.delete()
 
     def to(self, target: Union[Callable[..., Any], str, Element], new_tab: bool = False) -> None:
         """ui.navigate.to (formerly ui.open)
