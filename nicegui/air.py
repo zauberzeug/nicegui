@@ -14,8 +14,8 @@ import socketio.exceptions
 from . import background_tasks, core, helpers
 from .client import Client
 from .dataclasses import KWONLY_SLOTS
-from .elements.timer import Timer as timer
 from .logging import log
+from .timer import Timer as timer
 
 if TYPE_CHECKING:
     import httpx
