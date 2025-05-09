@@ -65,7 +65,7 @@ class Table(FilterElement, component='table.js'):
         self._column_defaults = column_defaults
         self._use_columns_from_df = False
         self._props['columns'] = self._normalize_columns(columns)
-        self._props['rows'] = rows
+        self._props['rows'] = self._filter_rows(rows)
         self._props['row-key'] = row_key
         self._props['title'] = title
         self._props['hide-pagination'] = pagination is None
@@ -96,6 +96,21 @@ class Table(FilterElement, component='table.js'):
             for handler in self._pagination_change_handlers:
                 handle_event(handler, arguments)
         self.on('update:pagination', handle_pagination_change)
+
+    def _safe_value(self, value: Any) -> Any:
+        """Convert values which QTable cannot handle to strings."""
+        if isinstance(value, (list, set, tuple)):
+            return ''.join(map(str, value))
+        if isinstance(value, dict):
+            return ''
+        return value
+
+    def _filter_rows(self, rows: List[Dict]) -> List[Dict]:
+        """Filter rows for values which can break the QTable."""
+        return [
+            {key: self._safe_value(value) for key, value in row.items()}
+            for row in rows
+        ]
 
     def on_select(self, callback: Handler[TableSelectionEventArguments]) -> Self:
         """Add a callback to be invoked when the selection changes."""
@@ -279,7 +294,7 @@ class Table(FilterElement, component='table.js'):
 
     @rows.setter
     def rows(self, value: List[Dict]) -> None:
-        self._props['rows'] = value
+        self._props['rows'] = self._filter_rows(value)
         self.update()
 
     @property
