@@ -193,6 +193,9 @@
 .nicegui-markdown .codehilite pre {
   margin: 0.5rem 0;
 }
+.nicegui-markdown .mermaid-pre > .mermaid {
+  display: none;
+}
 
 /* other NiceGUI elements */
 .nicegui-grid {

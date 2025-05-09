@@ -31,7 +31,7 @@ def test_markdown_with_mermaid(screen: Screen):
     screen.open('/')
     screen.wait(0.5)  # wait for Mermaid to render
     screen.should_contain('Mermaid')
-    assert screen.find_by_tag('svg').get_attribute('id').startswith('mermaid-')
+    assert 'mermaid' in screen.find_by_tag('svg').get_attribute('id')
     node_a = screen.selenium.find_element(By.XPATH, '//span[p[contains(text(), "Node_A")]]')
     assert node_a.get_attribute('class') == 'nodeLabel'
 
@@ -59,8 +59,10 @@ def test_markdown_with_mermaid_on_demand(screen: Screen):
 
     screen.open('/')
     screen.click('Create Mermaid')
-    screen.should_contain('Node_A')
-    screen.should_contain('Node_B')
+    node_a = screen.selenium.find_element(By.XPATH, '//span[p[contains(text(), "Node_A")]]')
+    assert node_a.get_attribute('class') == 'nodeLabel'
+    node_b = screen.selenium.find_element(By.XPATH, '//span[p[contains(text(), "Node_B")]]')
+    assert node_b.get_attribute('class') == 'nodeLabel'
 
 
 def test_strip_indentation(screen: Screen):
