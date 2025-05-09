@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import inspect
+import os
 import re
 from copy import copy
 from pathlib import Path
@@ -93,8 +94,16 @@ class Element(Visibility):
         base = Path(inspect.getfile(cls)).parent
 
         def glob_absolute_paths(file: Union[str, Path]) -> List[Path]:
+            LIB_OVERRIDE_DIRECTORY = Path(os.getenv('NICEGUI_LIB_OVERRIDE_DIRECTORY', ''))
             path = Path(file)
             if not path.is_absolute():
+                if LIB_OVERRIDE_DIRECTORY and str(path).startswith('lib'):
+                    path_override = LIB_OVERRIDE_DIRECTORY / path
+                    if path_override.exists():
+                        path = path_override
+                        print(f'Using override path: {path}')
+                    else:
+                        print(f'Override path does not exist: {path_override}')
                 path = base / path
             return sorted(path.parent.glob(path.name), key=lambda p: p.stem)
 
