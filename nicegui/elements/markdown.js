@@ -14,6 +14,7 @@ export default {
   data() {
     return {
       mermaid: null,
+      stored: {}, // Initialize stored to avoid undefined errors
     };
   },
   updated() {
@@ -21,15 +22,26 @@ export default {
   },
   methods: {
     renderMermaid() {
+      // drop all keys in this.stored that is not used in this rendering
+      const diagramsToBeRendered = new Set();
+      this.$el.querySelectorAll(".mermaid-pre").forEach((pre, i) => {
+        diagramsToBeRendered.add(pre.children[0].innerText + i);
+      });
+      for (const key in this.stored) {
+        if (!diagramsToBeRendered.has(key)) {
+          delete this.stored[key];
+        }
+      }
       this.$el.querySelectorAll(".mermaid-pre").forEach(async (pre, i) => {
         try {
-          if (pre.children[0].innerText != this.lastContent) {
+          if (!this.stored[pre.children[0].innerText + i]) {
             const { svg, bindFunctions } = await this.mermaid.render(this.$el.id + "_mermaid_" + i, pre.children[0].innerText);
-            this.lastSvg = svg;
-            this.lastBindFunctions = bindFunctions;
-            this.lastContent = pre.children[0].innerText;
+            this.stored[pre.children[0].innerText + i] = {
+              svg: svg,
+              bindFunctions: bindFunctions,
+            }
           }
-          this.addMermaidToElement(pre, this.lastSvg, this.lastBindFunctions);
+          this.addMermaidToElement(pre, this.stored[pre.children[0].innerText + i].svg, this.stored[pre.children[0].innerText + i].bindFunctions);
         } catch (error) {
           const { svg, bindFunctions } = await this.mermaid.render(this.$el.id + "_mermaid_" + i, "error");
           this.addMermaidToElement(pre, svg, bindFunctions);
