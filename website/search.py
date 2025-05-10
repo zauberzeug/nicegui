@@ -1,6 +1,7 @@
 from nicegui import __version__, background_tasks, events, ui
 
 from .documentation import CustomRestructuredText as custom_restructured_text
+from .documentation.search import search_index
 
 
 class Search:
@@ -55,19 +56,22 @@ class Search:
     def handle_input(self, e: events.ValueChangeEventArguments) -> None:
         async def handle_input() -> None:
             with self.results:
-                results = await ui.run_javascript(f'return window.fuse.search("{e.value}").slice(0, 100)', timeout=6)
+                results = await ui.run_javascript(f'return window.fuse.search("{e.value}").map(result => result.refIndex).slice(0, 100)', timeout=6)
                 self.results.clear()
                 with ui.list().props('bordered separator'):
-                    for result in results:
-                        if not result['item']['content']:
+                    for index in results:
+                        if index >= len(search_index) or index < 0:
+                            continue
+                        result_item = search_index[index]
+                        if not result_item['content']:
                             continue
                         with ui.item().props('clickable'):
                             with ui.item_section():
-                                with ui.link(target=result['item']['url']):
-                                    ui.item_label(result['item']['title'])
+                                with ui.link(target=result_item['url']):
+                                    ui.item_label(result_item['title'])
                                     with ui.item_label().props('caption'):
-                                        intro = result['item']['content'].split(':param')[0]
-                                        if result['item']['format'] == 'md':
+                                        intro = result_item['content'].split(':param')[0]
+                                        if result_item['format'] == 'md':
                                             element = ui.markdown(intro)
                                         else:
                                             element = custom_restructured_text(intro)
