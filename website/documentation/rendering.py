@@ -6,6 +6,7 @@ from .content import DocumentationPage
 from .custom_restructured_text import CustomRestructuredText as custom_restructured_text
 from .demo import demo
 from .reference import generate_class_doc
+from .tree import tree_format_list
 
 
 def render_page(documentation: DocumentationPage, *, with_menu: bool = True) -> None:
@@ -16,11 +17,31 @@ def render_page(documentation: DocumentationPage, *, with_menu: bool = True) -> 
         with ui.left_drawer() \
                 .classes('column no-wrap gap-1 bg-[#eee] dark:bg-[#1b1b1b] mt-[-20px] px-8 py-20') \
                 .style('height: calc(100% + 20px) !important') as menu:
-            if documentation.back_link:
-                ui.markdown(f'[← back]({documentation.back_link or "."})').classes('bold-links')
-            else:
-                ui.markdown('[← Overview](/documentation)').classes('bold-links')
-            ui.markdown(f'**{documentation.heading.replace("*", "")}**').classes('mt-4')
+            menu_tree = ui.tree(tree_format_list, label_key='title').props('accordion=true').classes('w-full')
+            menu_tree.add_slot('default-header', '''
+                <span>
+                    <a :href="'/documentation/' + props.node.id" onclick="event.stopPropagation()">{{ props.node.title }}</a>
+                </span>
+            ''')
+
+            def find_node_and_parents(node_list, target_id, parents=None):
+                if parents is None:
+                    parents = []
+                for node in node_list:
+                    if node['id'] == target_id:
+                        return [node['id'], *parents]
+                    if node.get('children'):
+                        result = find_node_and_parents(node['children'], target_id, [node['id'], *parents])
+                        if result:
+                            return result
+                return []
+
+            menu_tree.expand(find_node_and_parents(tree_format_list, documentation.name))
+            ui.run_javascript(f'''
+                Array.from(getHtmlElement({menu_tree.id}).getElementsByTagName("a"))
+                    .find(el => el.innerText.trim() === "{documentation.parts[0].title.replace("*", "")}")
+                    .scrollIntoView({{block: "center"}});
+            ''')
     else:
         menu = None
 
