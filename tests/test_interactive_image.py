@@ -95,3 +95,14 @@ def test_loaded_event(screen: Screen):
     screen.click('Change Source')
     screen.should_contain('loaded')
     assert (screen.find_by_tag('img').get_attribute('src') or '').endswith(URL_PATH2)
+
+
+def test_add_layer(screen: Screen):
+    ii = ui.interactive_image(URL_PATH1, content='<rect x="0" y="0" width="100" height="100" fill="red" />')
+    ii.add_layer(content='<circle cx="100" cy="100" r="15" />')
+
+    screen.open('/')
+    screen.find_by_tag('svg')
+    with screen.implicitly_wait(0.5):
+        assert len(screen.find_all_by_tag('rect')) == 1
+        assert len(screen.find_all_by_tag('circle')) == 1
