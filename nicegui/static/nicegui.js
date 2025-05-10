@@ -448,9 +448,8 @@ for (let sheet of document.styleSheets) {
   }
 }
 
-function softReload(url) {
+function softReload(url, x = 0, y = 0) {
   // Make the GET request
-  window.socket.disconnect();
   fetch(url, {
     method: 'GET',
     headers: new Headers({
@@ -464,6 +463,8 @@ function softReload(url) {
       return response.json()
     })
     .then(data => {
+      window.history.pushState({x: window.scrollX, y: window.scrollY}, '', url);
+      window.socket.disconnect();
       console.log(data)
       // Handle the response data
       createApp(parseElements(data.elements), {
@@ -485,9 +486,16 @@ function softReload(url) {
       Promise.all(importPromises).then(() => {
         eval(data.vue_scripts); // required for plotly and some libraries
         app.mount("#app");
+        window.scrollTo(x, y);
       });
     })
     .catch(error => {
-      console.error('There was a problem with the fetch operation:', error)
+      console.error('There was a problem with the fetch operation:', error);
+      window.location.href = url;
     })
 }
+
+window.addEventListener("popstate", (event) => {
+  console.log("popstate", event.state);
+  softReload(window.location.href, event.state?.x, event.state?.y);
+});
