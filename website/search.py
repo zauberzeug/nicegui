@@ -56,7 +56,7 @@ class Search:
     def handle_input(self, e: events.ValueChangeEventArguments) -> None:
         async def handle_input() -> None:
             with self.results:
-                results = await ui.run_javascript(f'return window.fuse.search("{e.value}").map(result => result.refIndex).slice(0, 100)', timeout=6)
+                results = await ui.run_javascript(f'return window.fuse.search("{e.value}").map(result => result.refIndex).slice(0, (window.innerWidth > 610) ? 100: 25)', timeout=6)
                 self.results.clear()
                 with ui.list().props('bordered separator'):
                     for index in results:
