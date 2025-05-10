@@ -58,5 +58,30 @@ def _status():
     return 'Ok'
 
 
+ui.add_body_html('''<script>
+    // Your custom function
+    function customFunction(event) {
+        let target = event.target;
+        // Traverse up the DOM tree to find the nearest anchor tag
+        while (target && target.tagName !== 'A') {
+            target = target.parentElement;
+        }
+        if (target && target.tagName === 'A') {
+            console.log('Link clicked!'); // Replace with your custom logic
+            console.log(target.href); // Log the href of the clicked link
+            try {
+                window.softReload(target.href);
+                event.preventDefault();
+            } catch (e) {
+                console.error('Error in softReload:', e);
+            }
+        }
+    }
+    // Attach the event listener to the document
+    document.addEventListener('click', customFunction);
+    </script>
+''', shared=True)
+
+
 # NOTE: do not reload on fly.io (see https://github.com/zauberzeug/nicegui/discussions/1720#discussioncomment-7288741)
 ui.run(uvicorn_reload_includes='*.py, *.css, *.html', reload=not on_fly, reconnect_timeout=10.0)
