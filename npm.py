@@ -15,12 +15,12 @@ import json
 import re
 import shutil
 import tarfile
+import tempfile
 from argparse import ArgumentParser
 from pathlib import Path
 from typing import Dict, List
 
 import requests
-import tempfile
 
 temp_dir = tempfile.TemporaryDirectory()
 
