@@ -112,6 +112,7 @@ doc.text('', '''
     - `RST_CONTENT_CACHE_SIZE` (default: 1000): The maximum number of ReStructuredText content snippets that are cached in memory.
     - `NICEGUI_REDIS_URL` (default: None, means local file storage): The URL of the Redis server to use for shared persistent storage.
     - `NICEGUI_REDIS_KEY_PREFIX` (default: "nicegui:"): The prefix for Redis keys.
+    - `NICEGUI_LIB_OVERRIDE_DIRECTORY` (default: None): The path to a directory containing libraries to override the default ones.
 ''')
 def env_var_demo():
     from nicegui.elements import markdown
