@@ -16,8 +16,8 @@ def build_tree_format_list() -> None:
     adjacency_list: List[tuple[str, str, str]] = []
     for k, _ in tiles:
         adjacency_list.append(('', k.__name__.rpartition(
-            ".")[2], registry[k.__name__.rpartition(".")[2]].title))
-        all_registry_keys.remove(k.__name__.rpartition(".")[2])
+            '.')[2], registry[k.__name__.rpartition('.')[2]].title))
+        all_registry_keys.remove(k.__name__.rpartition('.')[2])
 
     i = 0
     while i < len(adjacency_list):
@@ -47,7 +47,7 @@ def build_tree_format_list() -> None:
                 return True
         return False
 
-    adjacency_list = [(k, v, t.replace("*", "")) for k, v, t in adjacency_list]
+    adjacency_list = [(k, v, t.replace('*', '')) for k, v, t in adjacency_list]
 
     # Build the tree from adjacency list
     tree_format_list.clear()
