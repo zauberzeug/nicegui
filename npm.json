@@ -136,5 +136,16 @@
     "rename": {
       "package/": ""
     }
+  },
+  "sortable": {
+    "package": "sortablejs",
+    "destination": "nicegui/elements/lib",
+    "keep": [
+      "package/modular/sortable.complete.esm.js"
+    ],
+    "rename": {
+      "package/modular/": ""
+    },
+    "version": "1.15.6"
   }
 }
