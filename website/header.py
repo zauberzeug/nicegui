@@ -7,8 +7,8 @@ from . import svg
 from .search import Search
 from .star import add_star
 
-HEADER_HTML = (Path(__file__).parent / 'static' / 'header.html').read_text()
-STYLE_CSS = (Path(__file__).parent / 'static' / 'style.css').read_text()
+HEADER_HTML = (Path(__file__).parent / 'static' / 'header.html').read_text(encoding='utf-8')
+STYLE_CSS = (Path(__file__).parent / 'static' / 'style.css').read_text(encoding='utf-8')
 
 
 def add_head_html() -> None:

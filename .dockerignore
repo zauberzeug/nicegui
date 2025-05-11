@@ -11,13 +11,15 @@ demo.py
 **/.pytest_cache
 **/.coverage
 **/.git
+**/.github
 **/.mypy_cache
 **/.nicegui
 
-# flyctl launch added from .pytest_cache/.gitignore
-# Created by pytest automatically.
 .pytest_cache/**/*
-
-# flyctl launch added from tests/.pytest_cache/.gitignore
-# Created by pytest automatically.
 tests/.pytest_cache/**/*
+**/.ruff_cache
+**/*.pyc
+**/.cursor
+**/.DS_Store
+**/.idea
+**/.vscode

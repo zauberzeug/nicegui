@@ -10,7 +10,12 @@ class Navigate:
     """Navigation functions
 
     These functions allow you to navigate within the browser history and to external URLs.
+
+    *Added in version 2.0.0*
     """
+
+    def __init__(self) -> None:
+        self.history = History()
 
     def back(self) -> None:
         """ui.navigate.back
@@ -49,7 +54,6 @@ class Navigate:
 
         Note: When using an `auto-index page </documentation/section_pages_routing#auto-index_page>`_ (e.g. no `@page` decorator),
         all clients (i.e. browsers) connected to the page will open the target URL unless a socket is specified.
-        User events like button clicks provide such a socket.
 
         :param target: page function, NiceGUI element on the same page or string that is a an absolute URL or relative path from base URL
         :param new_tab: whether to open the target in a new tab (might be blocked by the browser)
@@ -57,12 +61,37 @@ class Navigate:
         if isinstance(target, str):
             path = target
         elif isinstance(target, Element):
-            path = f'#c{target.id}'
+            path = f'#{target.html_id}'
         elif callable(target):
             path = Client.page_routes[target]
         else:
             raise TypeError(f'Invalid target type: {type(target)}')
         context.client.open(path, new_tab)
+
+
+class History:
+
+    def push(self, url: str) -> None:
+        """Push a URL to the browser navigation history.
+
+        See JavaScript's `pushState <https://developer.mozilla.org/en-US/docs/Web/API/History/pushState>`_ for more information.
+
+        *Added in version 2.13.0*
+
+        :param url: relative or absolute URL
+        """
+        run_javascript(f'history.pushState({{}}, "", "{url}");')
+
+    def replace(self, url: str) -> None:
+        """Replace the current URL in the browser history.
+
+        See JavaScript's `replaceState <https://developer.mozilla.org/en-US/docs/Web/API/History/replaceState>`_ for more information.
+
+        *Added in version 2.13.0*
+
+        :param url: relative or absolute URL
+        """
+        run_javascript(f'history.replaceState({{}}, "", "{url}");')
 
 
 navigate = Navigate()

@@ -35,7 +35,7 @@ class Table(FilterElement, component='table.js'):
                  column_defaults: Optional[Dict] = None,
                  row_key: str = 'id',
                  title: Optional[str] = None,
-                 selection: Optional[Literal['single', 'multiple']] = None,
+                 selection: Literal[None, 'single', 'multiple'] = None,
                  pagination: Optional[Union[int, dict]] = None,
                  on_select: Optional[Handler[TableSelectionEventArguments]] = None,
                  on_pagination_change: Optional[Handler[ValueChangeEventArguments]] = None,
@@ -45,8 +45,8 @@ class Table(FilterElement, component='table.js'):
         A table based on Quasar's `QTable <https://quasar.dev/vue-components/table>`_ component.
 
         :param rows: list of row objects
-        :param columns: list of column objects (defaults to the columns of the first row)
-        :param column_defaults: optional default column properties
+        :param columns: list of column objects (defaults to the columns of the first row *since version 2.0.0*)
+        :param column_defaults: optional default column properties, *added in version 2.0.0*
         :param row_key: name of the column containing unique data identifying the row (default: "id")
         :param title: title of the table
         :param selection: selection type ("single" or "multiple"; default: `None`)
@@ -78,7 +78,7 @@ class Table(FilterElement, component='table.js'):
 
         def handle_selection(e: GenericEventArguments) -> None:
             if e.args['added']:
-                if selection == 'single':
+                if self.selection == 'single':
                     self.selected.clear()
                 self.selected.extend(e.args['rows'])
             else:
@@ -128,6 +128,8 @@ class Table(FilterElement, component='table.js'):
         To use a different conversion, convert the DataFrame manually before passing it to this method.
         See `issue 1698 <https://github.com/zauberzeug/nicegui/issues/1698>`_ for more information.
 
+        *Added in version 2.0.0*
+
         :param df: Pandas DataFrame
         :param columns: list of column objects (defaults to the columns of the dataframe)
         :param column_defaults: optional default column properties
@@ -167,6 +169,8 @@ class Table(FilterElement, component='table.js'):
         Note:
         If the DataFrame contains non-UTF-8 datatypes, they will be converted to strings.
         To use a different conversion, convert the DataFrame manually before passing it to this method.
+
+        *Added in version 2.7.0*
 
         :param df: Polars DataFrame
         :param columns: list of column objects (defaults to the columns of the dataframe)
@@ -275,7 +279,7 @@ class Table(FilterElement, component='table.js'):
 
     @rows.setter
     def rows(self, value: List[Dict]) -> None:
-        self._props['rows'][:] = value
+        self._props['rows'] = value
         self.update()
 
     @property
@@ -285,7 +289,7 @@ class Table(FilterElement, component='table.js'):
 
     @columns.setter
     def columns(self, value: List[Dict]) -> None:
-        self._props['columns'][:] = self._normalize_columns(value)
+        self._props['columns'] = self._normalize_columns(value)
         self.update()
 
     @property
@@ -315,8 +319,28 @@ class Table(FilterElement, component='table.js'):
 
     @selected.setter
     def selected(self, value: List[Dict]) -> None:
-        self._props['selected'][:] = value
+        self._props['selected'] = value
         self.update()
+
+    @property
+    def selection(self) -> Literal[None, 'single', 'multiple']:
+        """Selection type.
+
+        *Added in version 2.11.0*
+        """
+        return None if self._props['selection'] == 'none' else self._props['selection']
+
+    @selection.setter
+    def selection(self, value: Literal[None, 'single', 'multiple']) -> None:
+        self._props['selection'] = value or 'none'
+        self.update()
+
+    def set_selection(self, value: Literal[None, 'single', 'multiple']) -> None:
+        """Set the selection type.
+
+        *Added in version 2.11.0*
+        """
+        self.selection = value
 
     @property
     def pagination(self) -> dict:

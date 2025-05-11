@@ -193,6 +193,9 @@
 .nicegui-markdown .codehilite pre {
   margin: 0.5rem 0;
 }
+.nicegui-markdown .mermaid-pre > .mermaid {
+  display: none;
+}
 
 /* other NiceGUI elements */
 .nicegui-grid {
@@ -218,6 +221,9 @@
 .nicegui-scroll-area {
   width: 100%;
   height: 16rem;
+}
+.nicegui-leaflet video.leaflet-image-layer {
+  max-width: none; /* HACK: make the video show up */
 }
 .nicegui-log {
   padding: 0.5rem;
@@ -246,6 +252,7 @@ h6.q-timeline__title {
 .nicegui-code .codehilite {
   padding: 0 0.5rem;
 }
+.nicegui-matplotlib > svg,
 .nicegui-pyplot > svg {
   width: 100%;
   height: 100%;

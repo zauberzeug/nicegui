@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import asyncio
 import gzip
 import json
 import logging
@@ -12,11 +11,11 @@ from uuid import uuid4
 import socketio
 import socketio.exceptions
 
-from . import background_tasks, core
+from . import background_tasks, core, helpers
 from .client import Client
 from .dataclasses import KWONLY_SLOTS
-from .elements.timer import Timer as timer
 from .logging import log
+from .timer import Timer as timer
 
 if TYPE_CHECKING:
     import httpx
@@ -43,6 +42,7 @@ class Air:
         self.connecting = False
         self.streams: Dict[str, Stream] = {}
         self.remote_url: Optional[str] = None
+        self._host_unreachable_warning = f'On Air host "{RELAY_HOST}" is not reachable. Please check your internet connection.'
 
         timer(5, self.connect)  # ensure we stay connected
 
@@ -59,6 +59,7 @@ class Air:
                 content=data['body'],
             )
             response = await self.client.send(request)
+            self.client.cookies.clear()
             instance_id = data['instance-id']
             content = response.content.replace(
                 b'const extraHeaders = {};',
@@ -69,12 +70,27 @@ class Air:
                 new_js_object = match.group(1).decode().rstrip('}') + ", 'fly_instance_id' : '" + instance_id + "'}"
                 content = content.replace(match.group(0), f'const query = {new_js_object}'.encode())
             compressed = gzip.compress(content)
-            response.headers.update({'content-encoding': 'gzip', 'content-length': str(len(compressed))})
-            return {
+            total_size = len(compressed)
+            response.headers.update({'content-encoding': 'gzip', 'content-length': str(total_size)})
+            result = {
                 'status_code': response.status_code,
                 'headers': response.headers.multi_items(),
                 'content': compressed,
             }
+
+            # NOTE: chunk large responses to stay within the SocketIO limit
+            if total_size > 1_000_000:
+                async def chunk_iterator() -> AsyncIterator[bytes]:
+                    chunk_size = 512 * 1024
+                    for i in range(0, total_size, chunk_size):
+                        yield compressed[i:i + chunk_size]
+                stream_id = str(uuid4())
+                self.streams[stream_id] = Stream(data=chunk_iterator(), response=response)
+                result['stream_id'] = stream_id
+                result['total_size'] = total_size
+                del result['content']
+
+            return result
 
         @self.relay.on('range-request')
         async def _handle_range_request(data: Dict[str, Any]) -> Dict[str, Any]:
@@ -134,7 +150,7 @@ class Air:
                 core.app.storage.copy_tab(data['old_tab_id'], data['tab_id'])
             client.tab_id = data['tab_id']
             client.on_air = True
-            client.handle_handshake(data.get('next_message_id'))
+            client.handle_handshake(data['sid'], data['document_id'], data.get('next_message_id'))
             return True
 
         @self.relay.on('client_disconnect')
@@ -143,11 +159,13 @@ class Air:
             client_id = data['client_id']
             if client_id not in Client.instances:
                 return
-            Client.instances[client_id].handle_disconnect()
+            Client.instances[client_id].handle_disconnect(data['sid'])
 
         @self.relay.on('connect')
         async def _handle_connect() -> None:
             self.log.debug('connected.')
+            # NOTE: reset the warning so it can be shown again if connection breaks in the future
+            helpers._shown_warnings.discard(self._host_unreachable_warning)  # pylint: disable=protected-access
 
         @self.relay.on('disconnect')
         async def _handle_disconnect() -> None:
@@ -155,7 +173,12 @@ class Air:
 
         @self.relay.on('connect_error')
         async def _handle_connect_error(data) -> None:
-            self.log.debug(f'Connection error: {data}')
+            message = data.get('message', 'Unknown error') if isinstance(data, dict) else data
+            if message == 'Connection error':
+                helpers.warn_once(self._host_unreachable_warning)
+            else:
+                self.log.warning(f'Connection error: {message}')
+            await self.relay.disconnect()
 
         @self.relay.on('event')
         def _handle_event(data: Dict[str, Any]) -> None:
@@ -202,12 +225,13 @@ class Air:
         self.connecting = True
         try:
             if self.relay.connected:
-                await asyncio.wait_for(self.disconnect(), timeout=5)
+                await helpers.wait_for(self.disconnect(), timeout=5)
             self.log.debug('Connecting...')
             await self.relay.connect(
                 f'{RELAY_HOST}?device_token={self.token}',
                 socketio_path='/on_air/socket.io',
                 transports=['websocket', 'polling'],  # favor websocket over polling
+                wait_timeout=5,
             )
             assert self.relay.connected
             return
@@ -246,10 +270,10 @@ class Air:
 def connect() -> None:
     """Connect to the NiceGUI On Air server if there is an air instance."""
     if core.air:
-        background_tasks.create(core.air.connect())
+        background_tasks.create(core.air.connect(), name='On Air connect')
 
 
 def disconnect() -> None:
     """Disconnect from the NiceGUI On Air server if there is an air instance."""
     if core.air:
-        background_tasks.create(core.air.disconnect())
+        background_tasks.create(core.air.disconnect(), name='On Air disconnect')

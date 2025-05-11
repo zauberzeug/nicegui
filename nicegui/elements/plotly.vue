@@ -8,9 +8,6 @@ export default {
     await import("plotly");
     this.update();
   },
-  updated() {
-    this.update();
-  },
   methods: {
     update() {
       // wait for plotly to be loaded

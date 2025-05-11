@@ -39,7 +39,7 @@ def test_schedule_browser(monkeypatch):
         sock.bind(('127.0.0.1', 0))
         host, port = sock.getsockname()
 
-        _, cancel_event = helpers.schedule_browser(host, port)
+        _, cancel_event = helpers.schedule_browser('http', host, port)
 
         try:
             # port bound, but not opened yet
@@ -70,7 +70,7 @@ def test_canceling_schedule_browser(monkeypatch):
     # ... and close it so schedule_browser does not launch the browser
     sock.close()
 
-    thread, cancel_event = helpers.schedule_browser(host, port)
+    thread, cancel_event = helpers.schedule_browser('http', host, port)
     time.sleep(0.2)
     cancel_event.set()
     time.sleep(0.2)
@@ -87,3 +87,12 @@ def test_is_file():
     assert not helpers.is_file(None)
     assert not helpers.is_file('x' * 100_000), 'a very long filepath should not lead to OSError 63'
     assert not helpers.is_file('https://nicegui.io/logo.png')
+
+
+def test_event_type_to_camel_case():
+    assert helpers.event_type_to_camel_case('click') == 'click'
+    assert helpers.event_type_to_camel_case('row-click') == 'rowClick'
+    assert helpers.event_type_to_camel_case('update:model-value') == 'update:modelValue'
+    assert helpers.event_type_to_camel_case('keydown.enter') == 'keydown.enter'
+    assert helpers.event_type_to_camel_case('keydown.+') == 'keydown.+'
+    assert helpers.event_type_to_camel_case('keydown.-') == 'keydown.-'

@@ -45,13 +45,13 @@ class Query:
                 ) -> Self:
         """Apply, remove, toggle, or replace HTML classes.
 
-        This allows modifying the look of the element or its layout using `Tailwind <https://tailwindcss.com/>`_ or `Quasar <https://quasar.dev/>`_ classes.
+        This allows modifying the look of the element or its layout using `Tailwind <https://v3.tailwindcss.com/>`_ or `Quasar <https://quasar.dev/>`_ classes.
 
         Removing or replacing classes can be helpful if predefined classes are not desired.
 
         :param add: whitespace-delimited string of classes
         :param remove: whitespace-delimited string of classes to remove from the element
-        :param toggle: whitespace-delimited string of classes to toggle
+        :param toggle: whitespace-delimited string of classes to toggle (*added in version 2.7.0*)
         :param replace: whitespace-delimited string of classes to use instead of existing ones
         """
         classes = Classes.update_list(self.element.props['classes'], add, remove, toggle, replace)

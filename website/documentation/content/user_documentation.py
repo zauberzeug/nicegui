@@ -105,6 +105,42 @@ def querying():
             ''')
 
 
+doc.text('Using an ElementFilter', '''
+    It may be desirable to use an [`ElementFilter`](/documentation/element_filter) to
+
+    - preserve the order of elements to check their order on the page, and
+    - more granular filtering options, such as `ElementFilter(...).within(...)`.
+
+    By entering the `user` context and iterating over `ElementFilter`,
+    you can preserve the natural document order of matching elements:
+''')
+
+
+@doc.ui
+def using_an_elementfilter():
+    with ui.row().classes('gap-4 items-stretch'):
+        with python_window(classes='w-[400px]', title='UI code'):
+            ui.markdown('''
+                ```python
+                ui.label('1').mark('number')
+                ui.label('2').mark('number')
+                ui.label('3').mark('number')
+                ```
+            ''')
+
+        with python_window(classes='w-[600px]', title='user assertions'):
+            ui.markdown('''
+                ```python
+                with user:
+                    elements = list(ElementFilter(marker='number'))
+                    assert len(elements) == 3
+                    assert elements[0].text == '1'
+                    assert elements[1].text == '2'
+                    assert elements[2].text == '3'
+                ```
+            ''')
+
+
 doc.text('Complex elements', '''
     There are some elements with complex visualization and interaction behaviors (`ui.upload`, `ui.table`, ...).
     Not every aspect of these elements can be tested with `should_see` and `UserInteraction`.
@@ -159,6 +195,8 @@ def upload_table():
 doc.text('Autocomplete', '''
     The `UserInteraction` object returned by `user.find(...)` provides methods to trigger events on the found elements.
     This demo shows how to trigger a "keydown.tab" event to autocomplete an input field.
+
+    *Added in version 2.7.0*
 ''')
 
 
@@ -185,6 +223,8 @@ def trigger_events():
 doc.text('Test Downloads', '''
     You can verify that a download was triggered by checking `user.downloads.http_responses`.
     By awaiting `user.downloads.next()` you can get the next download response.
+
+    *Added in version 2.1.0*
 ''')
 
 
@@ -244,11 +284,46 @@ def multiple_users():
         ''')
 
 
+doc.text('Simulate JavasScript', '''
+    The `User` class has a `javascript_rules` dictionary to simulate JavaScript execution.
+    The key is a compiled regular expression and the value is a function that returns the JavaScript response.
+    The function will be called with the match object of the regular expression on the JavaScript command.
+
+    *Added in version 2.14.0*
+''')
+
+
+@doc.ui
+def simulate_javascript():
+    with ui.row().classes('gap-4 items-stretch'):
+        with python_window(classes='w-[500px]', title='some UI code'):
+            ui.markdown('''
+                ```python
+                @ui.page('/')
+                async def page():
+                    await context.client.connected()
+                    date = await ui.run_javascript('Math.sqrt(1764)')
+                    ui.label(date)
+                ```
+            ''')
+
+        with python_window(classes='w-[500px]', title='user assertions'):
+            ui.markdown('''
+                ```python
+                user.javascript_rules[re.compile(r'Math.sqrt\\((\\d+)\\)')] = \\
+                    lambda match: int(match.group(1))**0.5
+                await user.open('/')
+                await user.should_see('42')
+                ```
+            ''')
+
+
 doc.text('Comparison with the screen fixture', '''
     By cutting out the browser, test execution becomes much faster than the [`screen` fixture](/documentation/screen).
-    Of course, some features like screenshots or browser-specific behavior are not available.
     See our [pytests example](https://github.com/zauberzeug/nicegui/tree/main/examples/pytests)
     which implements the same tests with both fixtures.
+    Of course, some features like screenshots or browser-specific behavior are not available,
+    but in most cases the speed of the `user` fixture makes it the first choice.
 ''')
 
 doc.reference(User, title='User Reference')

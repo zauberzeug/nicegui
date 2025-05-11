@@ -1,4 +1,4 @@
-from typing import Any, List
+from typing import Any, List, Literal, Tuple, Union
 
 from .pyplot import Pyplot
 
@@ -42,11 +42,19 @@ class LinePlot(Pyplot):
         self._convert_to_html()
         return self
 
-    def push(self, x: List[float], Y: List[List[float]]) -> None:
+    def push(self,
+             x: List[float],
+             Y: List[List[float]],
+             *,
+             x_limits: Union[None, Literal['auto'], Tuple[float, float]] = 'auto',
+             y_limits: Union[None, Literal['auto'], Tuple[float, float]] = 'auto',
+             ) -> None:
         """Push new data to the plot.
 
         :param x: list of x values
         :param Y: list of lists of y values (one list per line)
+        :param x_limits: new x limits (tuple of floats, or "auto" to fit the data points, or ``None`` to leave unchanged, *added in version 2.10.0*)
+        :param y_limits: new y limits (tuple of floats, or "auto" to fit the data points, or ``None`` to leave unchanged, *added in version 2.10.0*)
         """
         self.push_counter += 1
 
@@ -61,15 +69,25 @@ class LinePlot(Pyplot):
             line.set_xdata(self.x)
             line.set_ydata(self.Y[i])
 
-        flat_y = [y_i for y in self.Y for y_i in y]
-        min_x = min(self.x)
-        max_x = max(self.x)
-        min_y = min(flat_y)
-        max_y = max(flat_y)
-        pad_x = 0.01 * (max_x - min_x)
-        pad_y = 0.01 * (max_y - min_y)
-        self.fig.gca().set_xlim(min_x - pad_x, max_x + pad_x)
-        self.fig.gca().set_ylim(min_y - pad_y, max_y + pad_y)
+        if isinstance(x_limits, tuple):
+            self.fig.gca().set_xlim(*x_limits)
+        elif x_limits == 'auto':
+            min_x = min(self.x)
+            max_x = max(self.x)
+            if min_x != max_x:
+                pad_x = 0.01 * (max_x - min_x)
+                self.fig.gca().set_xlim(min_x - pad_x, max_x + pad_x)
+
+        if isinstance(y_limits, tuple):
+            self.fig.gca().set_ylim(*y_limits)
+        elif y_limits == 'auto':
+            flat_y = [y_i for y in self.Y for y_i in y]
+            min_y = min(flat_y)
+            max_y = max(flat_y)
+            if min_y != max_y:
+                pad_y = 0.01 * (max_y - min_y)
+                self.fig.gca().set_ylim(min_y - pad_y, max_y + pad_y)
+
         self._convert_to_html()
         self.update()
 

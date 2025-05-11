@@ -1,4 +1,4 @@
-from typing import Callable, Dict, Literal, Optional
+from typing import Callable, Dict, Literal, Optional, Union
 
 from typing_extensions import Self
 
@@ -27,6 +27,7 @@ class EChart(Element,
                  on_point_click: Optional[Handler[EChartPointClickEventArguments]] = None, *,
                  enable_3d: bool = False,
                  renderer: Literal['canvas', 'svg'] = 'canvas',
+                 theme: Optional[Union[str, Dict]] = None,
                  ) -> None:
         """Apache EChart
 
@@ -37,12 +38,15 @@ class EChart(Element,
         :param options: dictionary of EChart options
         :param on_click_point: callback that is invoked when a point is clicked
         :param enable_3d: enforce importing the echarts-gl library
-        :param renderer: renderer to use ("canvas" or "svg")
+        :param renderer: renderer to use ("canvas" or "svg", *added in version 2.7.0*)
+        :param theme: an EChart theme configuration (dictionary or a URL returning a JSON object, *added in version 2.15.0*)
         """
         super().__init__()
         self._props['options'] = options
         self._props['enable_3d'] = enable_3d or any('3D' in key for key in options)
         self._props['renderer'] = renderer
+        self._props['theme'] = theme
+        self._update_method = 'update_chart'
 
         if on_point_click:
             self.on_point_click(on_point_click)
@@ -103,10 +107,6 @@ class EChart(Element,
     def options(self) -> Dict:
         """The options dictionary."""
         return self._props['options']
-
-    def update(self) -> None:
-        super().update()
-        self.run_method('update_chart')
 
     def run_chart_method(self, name: str, *args, timeout: float = 1) -> AwaitableResponse:
         """Run a method of the EChart instance.

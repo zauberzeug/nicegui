@@ -66,6 +66,7 @@ class Notification(Element, component='notification.js'):
         """
         with context.client.layout:
             super().__init__()
+        self._update_method = 'update_notification'
         if options:
             self._props['options'] = options
         else:
@@ -77,7 +78,6 @@ class Notification(Element, component='notification.js'):
                 'closeBtn': close_button,
                 'timeout': (timeout or 0) * 1000,
                 'group': False,
-                'attrs': {'data-id': f'nicegui-dialog-{self.id}'},
             }
             if type is not None:
                 self._props['options']['type'] = type
@@ -176,6 +176,19 @@ class Notification(Element, component='notification.js'):
     @spinner.setter
     def spinner(self, value: bool) -> None:
         self._props['options']['spinner'] = value
+        self.update()
+
+    @property
+    def timeout(self) -> float:
+        """Timeout of the notification in seconds.
+
+        *Added in version 2.13.0*
+        """
+        return self._props['options']['timeout'] / 1000
+
+    @timeout.setter
+    def timeout(self, value: Optional[float]) -> None:
+        self._props['options']['timeout'] = (value or 0) * 1000
         self.update()
 
     @property

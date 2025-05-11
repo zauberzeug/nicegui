@@ -16,7 +16,7 @@ jobs:
         with:
           python-version: "3.x"
       - name: set up Poetry
-        uses: abatilo/actions-poetry@v3
+        uses: abatilo/actions-poetry@v4
       - name: get version
         run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
       - name: Set version
@@ -120,7 +120,7 @@ jobs:
           provider: dockerhub
           short_description: "Web Based User Interface for Python with Buttons, Dialogs, Markdown, 3D Scenes and Plots"
 
-  update_version_and_sponsors:
+  update_version:
     needs: docker
     runs-on: ubuntu-latest
     steps:
@@ -132,18 +132,14 @@ jobs:
           python-version: "3.11"
       - name: Install httpx
         run: pip install httpx
-      - name: Update version in pyproject.toml
-        run: python .github/workflows/update_pyproject.py ${GITHUB_REF#refs/tags/}
-      - name: Update sponsors in README and on website
-        run: python .github/workflows/fetch_sponsors.py
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
+      - name: Update version in pyproject.toml and citation.cff
+        run: python .github/workflows/update_version.py ${GITHUB_REF#refs/tags/}
       - name: Commit and push changes
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add pyproject.toml README.md website/sponsors.json
-          git commit -m "Update version and sponsors"
+          git add pyproject.toml CITATION.cff
+          git commit -m "Update version"
           git push origin HEAD:main
 
   verify:

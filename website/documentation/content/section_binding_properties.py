@@ -111,3 +111,25 @@ def bindable_properties():
     ui.slider(min=1, max=3).bind_value(demo, 'number')
     ui.toggle({1: 'A', 2: 'B', 3: 'C'}).bind_value(demo, 'number')
     ui.number(min=1, max=3).bind_value(demo, 'number')
+
+
+@doc.demo('Bindable dataclass', '''
+    The `bindable_dataclass` decorator provides a convenient way to create classes with bindable properties.
+    It extends the functionality of Python's standard `dataclasses.dataclass` decorator
+    by automatically making all dataclass fields bindable.
+    This eliminates the need to manually declare each field as a `BindableProperty`
+    while retaining all the benefits of regular dataclasses.
+
+    *Added in version 2.11.0*
+''')
+def bindable_dataclass():
+    from nicegui import binding
+
+    @binding.bindable_dataclass
+    class Demo:
+        number: int = 1
+
+    demo = Demo()
+    ui.slider(min=1, max=3).bind_value(demo, 'number')
+    ui.toggle({1: 'A', 2: 'B', 3: 'C'}).bind_value(demo, 'number')
+    ui.number(min=1, max=3).bind_value(demo, 'number')

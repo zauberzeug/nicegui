@@ -80,7 +80,7 @@
   },
   "mermaid": {
     "destination": "nicegui/elements/lib",
-    "keep": ["package/dist/.*\\.m?js"],
+    "keep": ["package/dist/mermaid.esm.min\\.mjs", "package/dist/chunks/mermaid.esm.min/.*\\.mjs"],
     "rename": {
       "package/dist/": ""
     }

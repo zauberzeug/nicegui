@@ -56,6 +56,8 @@ def wait_for_connected_demo():
     The content on a page is private to the client (the browser tab) and has its own local element context.
     If you want to send updates to _all_ clients of a specific page, you can use the `app.clients` iterator.
     This is useful for modifying UI elements from a background process or from other pages.
+
+    *Added in version 2.7.0*
 ''')
 def multicasting():
     from nicegui import app

@@ -63,6 +63,7 @@ class Element(Visibility):
         self._text: Optional[str] = None
         self.slots: Dict[str, Slot] = {}
         self.default_slot = self.add_slot('default')
+        self._update_method: Optional[str] = None
         self._deleted: bool = False
 
         self.client.elements[self.id] = self
@@ -197,6 +198,7 @@ class Element(Visibility):
                     'slots': self._collect_slot_dict(),
                     'children': [child.id for child in self.default_slot.children],
                     'events': [listener.to_dict() for listener in self._event_listeners.values()],
+                    'update_method': self._update_method,
                     'component': {
                         'key': self.component.key,
                         'name': self.component.name,
@@ -226,7 +228,7 @@ class Element(Visibility):
                         replace: Optional[str] = None) -> type[Self]:
         """Apply, remove, toggle, or replace default HTML classes.
 
-        This allows modifying the look of the element or its layout using `Tailwind <https://tailwindcss.com/>`_ or `Quasar <https://quasar.dev/>`_ classes.
+        This allows modifying the look of the element or its layout using `Tailwind <https://v3.tailwindcss.com/>`_ or `Quasar <https://quasar.dev/>`_ classes.
 
         Removing or replacing classes can be helpful if predefined classes are not desired.
         All elements of this class will share these HTML classes.
@@ -234,7 +236,7 @@ class Element(Visibility):
 
         :param add: whitespace-delimited string of classes
         :param remove: whitespace-delimited string of classes to remove from the element
-        :param toggle: whitespace-delimited string of classes to toggle
+        :param toggle: whitespace-delimited string of classes to toggle (*added in version 2.7.0*)
         :param replace: whitespace-delimited string of classes to use instead of existing ones
         """
         cls._default_classes = Classes.update_list(cls._default_classes, add, remove, toggle, replace)
@@ -364,7 +366,7 @@ class Element(Visibility):
         if handler or js_handler:
             listener = EventListener(
                 element_id=self.id,
-                type=helpers.kebab_to_camel_case(type),
+                type=helpers.event_type_to_camel_case(type),
                 args=[args] if args and isinstance(args[0], str) else args,  # type: ignore
                 handler=handler,
                 js_handler=js_handler,
@@ -529,3 +531,11 @@ class Element(Visibility):
                 result += f'\n {line}'
 
         return result
+
+    @property
+    def html_id(self) -> str:
+        """The ID of the element in the HTML DOM.
+
+        *Added in version 2.16.0*
+        """
+        return f'c{self.id}'

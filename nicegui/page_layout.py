@@ -83,7 +83,7 @@ class Header(ValueElement, default_classes='nicegui-header'):
         self.value = False
 
 
-class Drawer(Element, default_classes='nicegui-drawer'):
+class Drawer(ValueElement, default_classes='nicegui-drawer'):
 
     def __init__(self,
                  side: DrawerSides, *,
@@ -102,6 +102,10 @@ class Drawer(Element, default_classes='nicegui-drawer'):
         Note: Depending on the side, the drawer is automatically placed above or below the main page container in the DOM to improve accessibility.
         To change the order, use the `move` method.
 
+        A value of ``None`` will automatically open or close the drawer depending on the current layout width (breakpoint: >=1024 px).
+        On the auto-index page, the value will remain ``None`` until the drawer is opened, closed or toggled.
+        On other pages, the value will be requested from the client when the websocket connection is established.
+
         :param side: side of the page where the drawer should be placed (`left` or `right`)
         :param value: whether the drawer is already opened (default: `None`, i.e. if layout width is above threshold)
         :param fixed: whether the drawer is fixed or scrolls with the content (default: `True`)
@@ -112,11 +116,8 @@ class Drawer(Element, default_classes='nicegui-drawer'):
         """
         _check_current_slot(self)
         with context.client.layout:
-            super().__init__('q-drawer')
-        if value is None:
-            self._props['show-if-above'] = True
-        else:
-            self._props['model-value'] = value
+            super().__init__(tag='q-drawer', value=value, on_value_change=None)
+        self._props['show-if-above'] = value is None
         self._props['side'] = side
         self._props['bordered'] = bordered
         self._props['elevated'] = elevated
@@ -129,17 +130,31 @@ class Drawer(Element, default_classes='nicegui-drawer'):
         page_container_index = self.client.layout.default_slot.children.index(self.client.page_container)
         self.move(target_index=page_container_index if side == 'left' else page_container_index + 1)
 
+        if value is None and not self.client.is_auto_index_client:
+            async def _request_value() -> None:
+                self.value = await context.client.run_javascript(
+                    f'!getHtmlElement({self.id}).parentElement.classList.contains("q-layout--prevent-focus")  // __IS_DRAWER_OPEN__'
+                )
+            self.client.on_connect(_request_value)
+
     def toggle(self) -> None:
         """Toggle the drawer"""
-        self.run_method('toggle')
+        if self.value is None:
+            self.run_method('toggle')
+        else:
+            self.value = not self.value
 
     def show(self) -> None:
         """Show the drawer"""
-        self.run_method('show')
+        self.value = True
 
     def hide(self) -> None:
         """Hide the drawer"""
-        self.run_method('hide')
+        self.value = False
+
+    def _handle_value_change(self, value: bool) -> None:
+        super()._handle_value_change(value)
+        self._props['show-if-above'] = value is None
 
 
 class LeftDrawer(Drawer):
@@ -159,6 +174,10 @@ class LeftDrawer(Drawer):
 
         Note: The left drawer is automatically placed above the main page container in the DOM to improve accessibility.
         To change the order, use the `move` method.
+
+        A value of ``None`` will automatically open or close the drawer depending on the current layout width (breakpoint: >=1024 px).
+        On the auto-index page, the value will remain ``None`` until the drawer is opened, closed or toggled.
+        On other pages, the value will be requested from the client when the websocket connection is established.
 
         :param value: whether the drawer is already opened (default: `None`, i.e. if layout width is above threshold)
         :param fixed: whether the drawer is fixed or scrolls with the content (default: `True`)
@@ -193,6 +212,10 @@ class RightDrawer(Drawer):
 
         Note: The right drawer is automatically placed below the main page container in the DOM to improve accessibility.
         To change the order, use the `move` method.
+
+        A value of ``None`` will automatically open or close the drawer depending on the current layout width (breakpoint: >=1024 px).
+        On the auto-index page, the value will remain ``None`` until the drawer is opened, closed or toggled.
+        On other pages, the value will be requested from the client when the websocket connection is established.
 
         :param value: whether the drawer is already opened (default: `None`, i.e. if layout width is above threshold)
         :param fixed: whether the drawer is fixed or scrolls with the content (default: `True`)
@@ -275,7 +298,7 @@ class PageSticky(Element):
         :param position: position on the screen (default: "bottom-right")
         :param x_offset: horizontal offset (default: 0)
         :param y_offset: vertical offset (default: 0)
-        :param expand: whether to fully expand instead of shrinking to fit the content (default: ``False``)
+        :param expand: whether to fully expand instead of shrinking to fit the content (default: ``False``, *added in version 2.1.0*)
         """
         super().__init__('q-page-sticky')
         self._props['position'] = position

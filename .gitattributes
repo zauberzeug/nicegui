@@ -11,6 +11,7 @@ nicegui/static/quasar.*            linguist-vendored
 nicegui/static/socket.*            linguist-vendored
 nicegui/static/tailwindcss.*       linguist-vendored
 nicegui/static/vue.*               linguist-vendored
+nicegui/language.py                linguist-generated
 website/**                         linguist-documentation
 website/static/fuse.js@*           linguist-vendored
 examples/**                        linguist-documentation

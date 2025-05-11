@@ -4,6 +4,7 @@ import asyncio
 import inspect
 import time
 import uuid
+from collections import defaultdict
 from contextlib import contextmanager
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Awaitable, Callable, ClassVar, Dict, Iterable, Iterator, List, Optional, Union
@@ -22,6 +23,7 @@ from .javascript_request import JavaScriptRequest
 from .logging import log
 from .observables import ObservableDict
 from .outbox import Outbox
+from .translations import translations
 from .version import __version__
 
 if TYPE_CHECKING:
@@ -54,13 +56,16 @@ class Client:
 
         self.elements: Dict[int, Element] = {}
         self.next_element_id: int = 0
+        self._waiting_for_connection: asyncio.Event = asyncio.Event()
         self.is_waiting_for_connection: bool = False
         self.is_waiting_for_disconnect: bool = False
         self.environ: Optional[Dict[str, Any]] = None
         self.shared = request is None
         self.on_air = False
-        self._disconnect_task: Optional[asyncio.Task] = None
+        self._num_connections: defaultdict[str, int] = defaultdict(int)
+        self._delete_tasks: Dict[str, asyncio.Task] = {}
         self._deleted = False
+        self._socket_to_document_id: Dict[str, str] = {}
         self.tab_id: Optional[str] = None
 
         self.page = page
@@ -91,7 +96,10 @@ class Client:
     @property
     def ip(self) -> Optional[str]:
         """Return the IP address of the client, or None if it is an
-        `auto-index page <https://nicegui.io/documentation/section_pages_routing#auto-index_page>`_."""
+        `auto-index page <https://nicegui.io/documentation/section_pages_routing#auto-index_page>`_.
+
+        *Updated in version 2.0.0: The IP address is available even before the client connects.*
+        """
         return self.request.client.host if self.request is not None and self.request.client is not None else None
 
     @property
@@ -128,7 +136,8 @@ class Client:
             'client_id': self.id,
             'next_message_id': self.outbox.next_message_id,
         }
-        vue_html, vue_styles, vue_scripts, imports, js_imports = generate_resources(prefix, self.elements.values())
+        vue_html, vue_styles, vue_scripts, imports, js_imports, js_imports_urls = \
+            generate_resources(prefix, self.elements.values())
         return templates.TemplateResponse(
             request=request,
             name='index.html',
@@ -145,12 +154,14 @@ class Client:
                 'vue_scripts': '\n'.join(vue_scripts),
                 'imports': json.dumps(imports),
                 'js_imports': '\n'.join(js_imports),
+                'js_imports_urls': js_imports_urls,
                 'quasar_config': json.dumps(core.app.config.quasar_config),
                 'title': self.resolve_title(),
                 'viewport': self.page.resolve_viewport(),
                 'favicon_url': get_favicon_url(self.page, prefix),
                 'dark': str(self.page.resolve_dark()),
                 'language': self.page.resolve_language(),
+                'translations': translations.get(self.page.resolve_language(), translations['en-US']),
                 'prefix': prefix,
                 'tailwind': core.app.config.tailwind,
                 'prod_js': core.app.config.prod_js,
@@ -169,6 +180,7 @@ class Client:
     async def connected(self, timeout: float = 3.0, check_interval: float = 0.1) -> None:
         """Block execution until the client is connected."""
         self.is_waiting_for_connection = True
+        self._waiting_for_connection.set()
         deadline = time.time() + timeout
         while not self.has_socket_connection:
             if time.time() > deadline:
@@ -231,30 +243,49 @@ class Client:
         """Add a callback to be invoked when the client disconnects."""
         self.disconnect_handlers.append(handler)
 
-    def handle_handshake(self, next_message_id: Optional[int]) -> None:
+    def handle_handshake(self, socket_id: str, document_id: str, next_message_id: Optional[int]) -> None:
         """Cancel pending disconnect task and invoke connect handlers."""
+        self._socket_to_document_id[socket_id] = document_id
+        self._cancel_delete_task(document_id)
+        self._num_connections[document_id] += 1
         if next_message_id is not None:
             self.outbox.try_rewind(next_message_id)
-        if self._disconnect_task:
-            self._disconnect_task.cancel()
-            self._disconnect_task = None
         storage.request_contextvar.set(self.request)
         for t in self.connect_handlers:
             self.safe_invoke(t)
         for t in core.app._connect_handlers:  # pylint: disable=protected-access
             self.safe_invoke(t)
 
-    def handle_disconnect(self) -> None:
-        """Wait for the browser to reconnect; invoke disconnect handlers if it doesn't."""
-        async def handle_disconnect() -> None:
+    def handle_disconnect(self, socket_id: str) -> None:
+        """Wait for the browser to reconnect; invoke disconnect handlers if it doesn't.
+
+        NOTE:
+        In contrast to connect handlers, disconnect handlers are not called during a reconnect.
+        This behavior should be fixed in version 3.0.
+        """
+        if socket_id not in self._socket_to_document_id:
+            return
+        document_id = self._socket_to_document_id.pop(socket_id)
+        self._cancel_delete_task(document_id)
+        self._num_connections[document_id] -= 1
+
+        async def delete_content() -> None:
             await asyncio.sleep(self.page.resolve_reconnect_timeout())
-            for t in self.disconnect_handlers:
-                self.safe_invoke(t)
-            for t in core.app._disconnect_handlers:  # pylint: disable=protected-access
-                self.safe_invoke(t)
-            if not self.shared:
-                self.delete()
-        self._disconnect_task = background_tasks.create(handle_disconnect())
+            if self._num_connections[document_id] == 0:
+                for t in self.disconnect_handlers:
+                    self.safe_invoke(t)
+                for t in core.app._disconnect_handlers:  # pylint: disable=protected-access
+                    self.safe_invoke(t)
+                self._num_connections.pop(document_id)
+                self._delete_tasks.pop(document_id)
+                if not self.shared:
+                    self.delete()
+        self._delete_tasks[document_id] = \
+            background_tasks.create(delete_content(), name=f'delete content {document_id}')
+
+    def _cancel_delete_task(self, document_id: str) -> None:
+        if document_id in self._delete_tasks:
+            self._delete_tasks.pop(document_id).cancel()
 
     def handle_event(self, msg: Dict) -> None:
         """Forward an event to the corresponding element."""
@@ -272,20 +303,21 @@ class Client:
 
     def safe_invoke(self, func: Union[Callable[..., Any], Awaitable]) -> None:
         """Invoke the potentially async function in the client context and catch any exceptions."""
+        func_name = func.__name__ if hasattr(func, '__name__') else str(func)
         try:
             if isinstance(func, Awaitable):
                 async def func_with_client():
                     with self:
                         await func
-                background_tasks.create(func_with_client())
+                background_tasks.create(func_with_client(), name=f'func with client {self.id} {func_name}')
             else:
                 with self:
                     result = func(self) if len(inspect.signature(func).parameters) == 1 else func()
-                if helpers.is_coroutine_function(func):
+                if helpers.is_coroutine_function(func) and not isinstance(result, asyncio.Task):
                     async def result_with_client():
                         with self:
                             await result
-                    background_tasks.create(result_with_client())
+                    background_tasks.create(result_with_client(), name=f'result with client {self.id} {func_name}')
         except Exception as e:
             core.app.handle_exception(e)
 
@@ -347,4 +379,7 @@ class Client:
             except Exception:
                 # NOTE: make sure the loop doesn't crash
                 log.exception('Error while pruning clients')
-            await asyncio.sleep(10)
+            try:
+                await asyncio.sleep(10)
+            except asyncio.CancelledError:
+                break

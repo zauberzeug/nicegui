@@ -39,6 +39,7 @@ __all__ = [
     'element',
     'expansion',
     'footer',
+    'fullscreen',
     'grid',
     'header',
     'highchart',
@@ -82,6 +83,7 @@ __all__ = [
     'query',
     'radio',
     'range',
+    'rating',
     'refreshable',
     'refreshable_method',
     'restructured_text',
@@ -96,6 +98,7 @@ __all__ = [
     'select',
     'separator',
     'skeleton',
+    'slide_item',
     'slider',
     'space',
     'spinner',
@@ -154,6 +157,7 @@ from .elements.dialog import Dialog as dialog
 from .elements.echart import EChart as echart
 from .elements.editor import Editor as editor
 from .elements.expansion import Expansion as expansion
+from .elements.fullscreen import Fullscreen as fullscreen
 from .elements.grid import Grid as grid
 from .elements.highchart import highchart
 from .elements.html import Html as html
@@ -190,6 +194,7 @@ from .elements.pyplot import Pyplot as pyplot
 from .elements.query import Query as query
 from .elements.radio import Radio as radio
 from .elements.range import Range as range  # pylint: disable=redefined-builtin
+from .elements.rating import Rating as rating
 from .elements.restructured_text import ReStructuredText as restructured_text
 from .elements.row import Row as row
 from .elements.scene import Scene as scene
@@ -198,6 +203,7 @@ from .elements.scroll_area import ScrollArea as scroll_area
 from .elements.select import Select as select
 from .elements.separator import Separator as separator
 from .elements.skeleton import Skeleton as skeleton
+from .elements.slide_item import SlideItem as slide_item
 from .elements.slider import Slider as slider
 from .elements.space import Space as space
 from .elements.spinner import Spinner as spinner

@@ -6,7 +6,6 @@ from .mixins.content_element import ContentElement
 class Mermaid(ContentElement,
               component='mermaid.js',
               dependencies=[
-                  'lib/mermaid/*.js',
                   'lib/mermaid/mermaid.esm.min.mjs',
                   'lib/mermaid/chunks/mermaid.esm.min/*.mjs',
               ]):

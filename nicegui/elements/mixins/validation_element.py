@@ -57,6 +57,8 @@ class ValidationElement(ValueElement):
         For async validation functions, ``return_result`` must be set to ``False`` and the return value will be ``True``,
         independently of the validation result which is evaluated in the background.
 
+        *Updated in version 2.7.0: Added support for async validation functions.*
+
         :param return_result: whether to return the result of the validation (default: ``True``)
         :return: whether the validation was successful (always ``True`` for async validation functions)
         """
@@ -68,7 +70,7 @@ class ValidationElement(ValueElement):
                 self.error = await result
             if return_result:
                 raise NotImplementedError('The validate method cannot return results for async validation functions.')
-            background_tasks.create(await_error())
+            background_tasks.create(await_error(), name=f'validate {self.id}')
             return True
 
         if callable(self._validation):

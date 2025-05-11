@@ -45,6 +45,7 @@ class AgGrid(Element,
         self._props['html_columns'] = html_columns[:]
         self._props['auto_size_columns'] = auto_size_columns
         self._classes.append(f'ag-theme-{theme}')
+        self._update_method = 'update_grid'
 
     @classmethod
     def from_pandas(cls,
@@ -101,6 +102,8 @@ class AgGrid(Element,
         If the DataFrame contains non-UTF-8 datatypes, they will be converted to strings.
         To use a different conversion, convert the DataFrame manually before passing it to this method.
 
+        *Added in version 2.7.0*
+
         :param df: Polars DataFrame
         :param theme: AG Grid theme (default: 'balham')
         :param auto_size_columns: whether to automatically resize columns to fit the grid width (default: `True`)
@@ -118,10 +121,6 @@ class AgGrid(Element,
     def options(self) -> Dict:
         """The options dictionary."""
         return self._props['options']
-
-    def update(self) -> None:
-        super().update()
-        self.run_method('update_grid')
 
     def run_grid_method(self, name: str, *args, timeout: float = 1) -> AwaitableResponse:
         """Run an AG Grid API method.

@@ -19,32 +19,32 @@ function parseElements(raw_elements) {
   );
 }
 
-function replaceUndefinedAttributes(elements, id) {
-  const element = elements[id];
-  if (element === undefined) {
-    return;
-  }
+function replaceUndefinedAttributes(element) {
   element.class ??= [];
   element.style ??= {};
   element.props ??= {};
   element.text ??= null;
   element.events ??= [];
+  element.update_method ??= null;
   element.component ??= null;
   element.libraries ??= [];
   element.slots = {
     default: { ids: element.children || [] },
     ...(element.slots ?? {}),
   };
-  Object.values(element.slots).forEach((slot) => slot.ids.forEach((id) => replaceUndefinedAttributes(elements, id)));
 }
 
 function getElement(id) {
-  const _id = id instanceof HTMLElement ? id.id : id;
+  const _id = id instanceof Element ? id.id.slice(1) : id;
   return mounted_app.$refs["r" + _id];
 }
 
 function getHtmlElement(id) {
-  return document.getElementById(`c${id}`);
+  let id_as_a_string = id.toString();
+  if (!id_as_a_string.startsWith("c")) {
+    id_as_a_string = "c" + id_as_a_string;
+  }
+  return document.getElementById(id_as_a_string);
 }
 
 function runMethod(target, method_name, args) {
@@ -318,7 +318,7 @@ window.onbeforeunload = function () {
 };
 
 function createApp(elements, options) {
-  replaceUndefinedAttributes(elements, 0);
+  Object.entries(elements).forEach(([_, element]) => replaceUndefinedAttributes(element));
   setInterval(() => ack(), 3000);
   return (app = Vue.createApp({
     data() {
@@ -331,6 +331,7 @@ function createApp(elements, options) {
     },
     mounted() {
       mounted_app = this;
+      window.documentId = createRandomUUID();
       window.clientId = options.query.client_id;
       const url = window.location.protocol === "https:" ? "wss://" : "ws://" + window.location.host;
       window.path_prefix = options.prefix;
@@ -347,6 +348,7 @@ function createApp(elements, options) {
         connect: () => {
           const args = {
             client_id: window.clientId,
+            document_id: window.documentId,
             tab_id: TAB_ID,
             old_tab_id: OLD_TAB_ID,
             next_message_id: window.nextMessageId,
@@ -376,16 +378,25 @@ function createApp(elements, options) {
           document.getElementById("popup").ariaHidden = false;
         },
         update: async (msg) => {
+          const loadPromises = Object.entries(msg)
+            .filter(([_, element]) => element && (element.component || element.libraries))
+            .map(([_, element]) => loadDependencies(element, options.prefix, options.version));
+          await Promise.all(loadPromises);
+
           for (const [id, element] of Object.entries(msg)) {
             if (element === null) {
               delete this.elements[id];
               continue;
             }
-            if (element.component || element.libraries) {
-              await loadDependencies(element, options.prefix, options.version);
-            }
+            replaceUndefinedAttributes(element);
             this.elements[id] = element;
-            replaceUndefinedAttributes(this.elements, id);
+          }
+
+          await this.$nextTick();
+          for (const [id, element] of Object.entries(msg)) {
+            if (element?.update_method) {
+              getElement(id)[element.update_method]();
+            }
           }
         },
         run_javascript: (msg) => runJavascript(msg.code, msg.request_id),

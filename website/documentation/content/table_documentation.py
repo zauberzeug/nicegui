@@ -20,6 +20,8 @@ def main_demo() -> None:
 @doc.demo('Omitting columns', '''
     If you omit the `columns` parameter, the table will automatically generate columns from the first row.
     Labels are uppercased and sorting is enabled.
+
+    *Updated in version 2.0.0: The `columns` parameter became optional.*
 ''')
 def omitting_columns():
     ui.table(rows=[
@@ -32,6 +34,8 @@ def omitting_columns():
 @doc.demo('Default column parameters', '''
     You can define default column parameters that apply to all columns.
     In this example, all columns are left-aligned by default and have a blue uppercase header.
+
+    *Added in version 2.0.0*
 ''')
 def default_column_parameters():
     ui.table(rows=[
@@ -44,6 +48,25 @@ def default_column_parameters():
         'align': 'left',
         'headerClasses': 'uppercase text-primary',
     })
+
+
+@doc.demo('Selection', '''
+    You can set the selection type of a table using the `selection` parameter.
+    The `on_select` event handler is called when the selection changes
+    and the `selected` property contains the selected rows.
+
+    *Added in version 2.11.0:*
+    The `selection` property and the `set_selection` method can be used to change the selection type.
+''')
+def selection():
+    table = ui.table(
+        columns=[{'name': 'name', 'label': 'Name', 'field': 'name'}],
+        rows=[{'name': 'Alice'}, {'name': 'Bob'}, {'name': 'Charlie'}],
+        row_key='name',
+        on_select=lambda e: ui.notify(f'selected: {e.selection}'),
+    )
+    ui.radio({None: 'none', 'single': 'single', 'multiple': 'multiple'},
+             on_change=lambda e: table.set_selection(e.value))
 
 
 @doc.demo('Table with expandable rows', '''
@@ -169,6 +192,8 @@ def table_from_pandas_demo():
 @doc.demo('Table from Polars DataFrame', '''
     You can create a table from a Polars DataFrame using the `from_polars` method.
     This method takes a Polars DataFrame as input and returns a table.
+
+    *Added in version 2.7.0*
 ''')
 def table_from_polars_demo():
     import polars as pl
@@ -378,6 +403,18 @@ def table_cells_with_links():
             <a :href="props.value">{{ props.value }}</a>
         </q-td>
     ''')
+
+
+@doc.demo('Table cells with HTML', '''
+    This demo shows how to define a named slot to render HTML content.
+    The slot name "body-cell-[name]" can be adjusted to match any column with corresponding name.
+''')
+def table_cells_with_html():
+    ui.table(rows=[
+        {'name': 'bold', 'code': '<b>Bold</b>'},
+        {'name': 'italic', 'code': '<i>Italic</i>'},
+        {'name': 'underline', 'code': '<u>Underline</u>'},
+    ]).add_slot('body-cell-code', '<q-td v-html="props.row.code"></q-td>')
 
 
 @doc.demo('Table with masonry-like grid', '''
