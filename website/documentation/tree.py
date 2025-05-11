@@ -1,9 +1,9 @@
-from typing import Any, List
+from typing import Any, Dict, List
 
 from .content import registry
 from .content.overview import tiles
 
-tree_format_list: List[dict[str, Any]] = []
+tree_format_list: List[Dict[str, Any]] = []
 
 
 def build_tree_format_list() -> None:
