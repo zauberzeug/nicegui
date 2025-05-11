@@ -10,7 +10,7 @@ class Download:
 
     These functions allow you to download files, URLs or raw data.
 
-    *Added in version 2.x.0*
+    *Added in version 2.14.0*
     """
 
     def __call__(self, src: Union[str, Path, bytes], filename: Optional[str] = None, media_type: str = '') -> None:
@@ -35,7 +35,7 @@ class Download:
 
         Function to trigger the download of a file.
 
-        *Added in version 2.x.0*
+        *Added in version 2.14.0*
 
         :param path: local path of the file
         :param filename: name of the file to download (default: name of the file on the server)
@@ -49,7 +49,7 @@ class Download:
 
         Function to trigger the download from a URL.
 
-        *Added in version 2.x.0*
+        *Added in version 2.14.0*
 
         :param url: URL
         :param filename: name of the file to download (default: name of the file on the server)
@@ -62,7 +62,7 @@ class Download:
 
         Function to trigger the download of raw data.
 
-        *Added in version 2.x.0*
+        *Added in version 2.14.0*
 
         :param content: raw bytes or string
         :param filename: name of the file to download (default: name of the file on the server)
