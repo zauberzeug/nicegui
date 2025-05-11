@@ -25,7 +25,7 @@ export default {
       // render new diagrams
       const usedKeys = new Set();
       this.$el.querySelectorAll(".mermaid-pre").forEach(async (pre, i) => {
-        const key = pre.children[0].innerText + i;
+        const key = pre.children[0].innerText + "\n" + i;
         usedKeys.add(key);
         if (!this.diagrams[key]) {
           try {
