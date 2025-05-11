@@ -42,3 +42,4 @@ def test_change_set():
     assert _apply_change_set('X', [1, -1, 0, 1], [[], ['Y']]) == 'XY'
     assert _apply_change_set('Hello', [5, -1, 0, 8], [[], [', world!']]) == 'Hello, world!'
     assert _apply_change_set('Hello, world!', [5, -1, 7, 0, 1, -1], []) == 'Hello!'
+    assert _apply_change_set('Hello, hello!', [2, -1, 3, 1, 4, -1, 3, 1, 1, -1], [[], ['y'], [], ['y']]) == 'Hey, hey!'
