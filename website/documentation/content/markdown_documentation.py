@@ -57,10 +57,11 @@ def markdown_tables():
 
 @doc.demo('Mermaid diagrams', '''
     You can use Mermaid diagrams with the "mermaid" extra.
-    See the [markdown2 documentation](https://github.com/trentm/python-markdown2/wiki/Extras#implemented-extras) for a list of available extras.
+    See the [markdown2 documentation](https://github.com/trentm/python-markdown2/wiki/Extras#implemented-extras)
+    for a list of available extras.
 ''')
 def mermaid():
-    md = ui.markdown('''
+    ui.markdown('''
         ```mermaid
         graph TD;
             A-->B;
