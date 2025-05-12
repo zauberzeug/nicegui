@@ -266,8 +266,14 @@ h6.q-timeline__title {
 .nicegui-scene-view[data-initializing] {
   visibility: hidden;
 }
-
-/* CodeMirror */
+.nicegui-interactive-image-layer {
+  position: absolute !important;
+  inset: 0;
+  pointer-events: none;
+}
+.nicegui-interactive-image-layer img {
+  display: none;
+}
 .nicegui-codemirror .cm-editor.cm-focused {
   outline: none;
 }
