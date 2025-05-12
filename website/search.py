@@ -1,7 +1,7 @@
 from nicegui import __version__, background_tasks, events, ui
 
 from .documentation import CustomRestructuredText as custom_restructured_text
-from .documentation import search_index
+from .documentation.search import search_index
 
 
 class Search:
@@ -66,16 +66,16 @@ class Search:
                     for index in indices:
                         if not 0 <= index < len(search_index):
                             continue
-                        result = search_index[index]
-                        if not result['content']:
+                        result_item = search_index[index]
+                        if not result_item['content']:
                             continue
                         with ui.item().props('clickable'):
                             with ui.item_section():
-                                with ui.link(target=result['url']):
-                                    ui.item_label(result['title'])
+                                with ui.link(target=result_item['url']):
+                                    ui.item_label(result_item['title'])
                                     with ui.item_label().props('caption'):
-                                        intro = result['content'].split(':param')[0]
-                                        if result['format'] == 'md':
+                                        intro = result_item['content'].split(':param')[0]
+                                        if result_item['format'] == 'md':
                                             element = ui.markdown(intro)
                                         else:
                                             element = custom_restructured_text(intro)
