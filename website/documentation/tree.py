@@ -1,4 +1,4 @@
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Tuple
 
 from .content import registry
 from .content.overview import tiles
@@ -11,10 +11,10 @@ tree_format_list: List[Node] = []
 def build_tree_format_list() -> None:
     """Build tree format list."""
     # First build the adjacency list
-    adjacency_list: List[tuple[str, str, str]] = []
+    adjacency_list: List[Tuple[str, str, str]] = []
     for module, _ in tiles:
-        name = module.__name__.split('.')[-1]
-        adjacency_list.append(('', name, registry[name].title))
+        name = module.__name__.rsplit('.', 1)[-1]
+        adjacency_list.append(('', name, registry[name].title or ''))
 
     i = 0
     while i < len(adjacency_list):
@@ -28,9 +28,9 @@ def build_tree_format_list() -> None:
         if registry_entry and registry_entry.parts:
             for part in registry_entry.parts:
                 if part.link:
-                    adjacency_list.append((v, part.link, part.title))
+                    adjacency_list.append((v, part.link, part.title or ''))
                 elif part.link_target:
-                    adjacency_list.append((v, f'{v}#{part.link_target}', part.title))
+                    adjacency_list.append((v, f'{v}#{part.link_target}', part.title or ''))
         i += 1
 
     def add_to_tree(tree: List[Node], parent_id: str, child_id: str, title: str) -> bool:
