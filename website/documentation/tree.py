@@ -5,15 +5,15 @@ from typing import Any, Dict, List, Optional
 from .content import DocumentationPage, registry
 from .content.overview import tiles
 
-tree_format_list: List[Dict[str, Any]] = []
+nodes: List[Dict[str, Any]] = []
 
 
-def build_tree_format_list() -> None:
-    """Build tree format list."""
-    tree_format_list.clear()
+def build_tree() -> None:
+    """Build tree by recursively collecting documentation pages and parts."""
+    nodes.clear()
     for module, _ in tiles:
         page = registry[module.__name__.rsplit('.', 1)[-1]]
-        tree_format_list.append({
+        nodes.append({
             'id': page.name,
             'title': _plain(page.title),
             'children': _children(page),

@@ -1,3 +1,5 @@
+from typing import List
+
 from nicegui import ui
 
 from ..header import add_head_html, add_header
@@ -6,7 +8,7 @@ from .content import DocumentationPage
 from .custom_restructured_text import CustomRestructuredText as custom_restructured_text
 from .demo import demo
 from .reference import generate_class_doc
-from .tree import tree_format_list
+from .tree import nodes
 
 
 def render_page(documentation: DocumentationPage, *, with_menu: bool = True) -> None:
@@ -17,29 +19,14 @@ def render_page(documentation: DocumentationPage, *, with_menu: bool = True) -> 
         with ui.left_drawer() \
                 .classes('column no-wrap gap-1 bg-[#eee] dark:bg-[#1b1b1b] mt-[-20px] px-8 py-20') \
                 .style('height: calc(100% + 20px) !important') as menu:
-            menu_tree = ui.tree(tree_format_list, label_key='title').props('accordion=true').classes('w-full')
-            menu_tree.add_slot('default-header', '''
-                <span>
-                    <a :href="'/documentation/' + props.node.id" onclick="event.stopPropagation()">{{ props.node.title }}</a>
-                </span>
+            tree = ui.tree(nodes, label_key='title').props('accordion=true').classes('w-full')
+            tree.add_slot('default-header', '''
+                <a :href="'/documentation/' + props.node.id" onclick="event.stopPropagation()">{{ props.node.title }}</a>
             ''')
-
-            def find_node_and_parents(node_list, target_id, parents=None):
-                if parents is None:
-                    parents = []
-                for node in node_list:
-                    if node['id'] == target_id:
-                        return [node['id'], *parents]
-                    if node.get('children'):
-                        result = find_node_and_parents(node['children'], target_id, [node['id'], *parents])
-                        if result:
-                            return result
-                return []
-
-            menu_tree.expand(find_node_and_parents(tree_format_list, documentation.name))
+            tree.expand(_ancestor_nodes(documentation.name))
             ui.run_javascript(f'''
-                Array.from(getHtmlElement({menu_tree.id}).getElementsByTagName("a"))
-                    .find(el => el.innerText.trim() === "{documentation.parts[0].title.replace("*", "")}")
+                Array.from(getHtmlElement({tree.id}).getElementsByTagName("a"))
+                    .find(el => el.innerText.trim() === "{(documentation.parts[0].title or '').replace('*', '')}")
                     .scrollIntoView({{block: "center"}});
             ''')
     else:
@@ -85,3 +72,8 @@ def render_page(documentation: DocumentationPage, *, with_menu: bool = True) -> 
                     documentation.extra_column()
         else:
             render_content()
+
+
+def _ancestor_nodes(node_id: str) -> List[str]:
+    parent = next((node for node in nodes if any(child['id'] == node_id for child in node.get('children', []))), None)
+    return [node_id] + (_ancestor_nodes(parent['id']) if parent else [])
