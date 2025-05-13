@@ -3,21 +3,22 @@ from typing import Any, Dict, List
 from .content import registry
 from .content.overview import tiles
 
-tree_format_list: List[Dict[str, Any]] = []
+Tree = Dict[str, Any]
+
+tree_format_list: List[Tree] = []
 
 
 def build_tree_format_list() -> None:
     """Build tree format list."""
-    all_registry_keys = list(registry.keys())
-
+    all_registry_keys = list(registry)
     all_registry_keys.remove('')
 
     # First build the adjacency list
     adjacency_list: List[tuple[str, str, str]] = []
-    for k, _ in tiles:
-        adjacency_list.append(('', k.__name__.rpartition(
-            '.')[2], registry[k.__name__.rpartition('.')[2]].title))
-        all_registry_keys.remove(k.__name__.rpartition('.')[2])
+    for module, _ in tiles:
+        name = module.__name__.split('.')[-1]
+        adjacency_list.append(('', name, registry[name].title))
+        all_registry_keys.remove(name)
 
     i = 0
     while i < len(adjacency_list):
@@ -37,7 +38,7 @@ def build_tree_format_list() -> None:
                     adjacency_list.append((v, f'{v}#{part.link_target}', part.title))
         i += 1
 
-    def add_to_tree(tree, parent_id, child_id, title):
+    def add_to_tree(tree: Tree, parent_id: str, child_id: str, title: str) -> bool:
         for node in tree:
             if node['id'] == parent_id:
                 node['children'].append({'id': child_id, 'children': [], 'title': title})
@@ -51,10 +52,10 @@ def build_tree_format_list() -> None:
 
     # Build the tree from adjacency list
     tree_format_list.clear()
-    for k, v, t in adjacency_list:
-        if k == '':
-            tree_format_list.append({'id': v, 'children': [], 'title': t})
-        elif not add_to_tree(tree_format_list, k, v, t):
+    for key, v, title in adjacency_list:
+        if key == '':
+            tree_format_list.append({'id': v, 'children': [], 'title': title})
+        elif not add_to_tree(tree_format_list, key, v, title):
             # Try to add the child to the correct parent in the tree
             # If the parent is not found, create a new top-level node
-            tree_format_list.append({'id': k, 'children': [{'id': v, 'children': [], 'title': t}]})
+            tree_format_list.append({'id': key, 'children': [{'id': v, 'children': [], 'title': title}]})
