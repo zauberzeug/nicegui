@@ -19,7 +19,7 @@ def render_page(documentation: DocumentationPage, *, with_menu: bool = True) -> 
         with ui.left_drawer() \
                 .classes('column no-wrap gap-1 bg-[#eee] dark:bg-[#1b1b1b] mt-[-20px] px-8 py-20') \
                 .style('height: calc(100% + 20px) !important') as menu:
-            tree = ui.tree(nodes, label_key='title').props('accordion=true').classes('w-full')
+            tree = ui.tree(nodes, label_key='title').classes('w-full').props('accordion no-connectors')
             tree.add_slot('default-header', '''
                 <a :href="'/documentation/' + props.node.id" onclick="event.stopPropagation()">{{ props.node.title }}</a>
             ''')
