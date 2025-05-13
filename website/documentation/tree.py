@@ -3,9 +3,9 @@ from typing import Any, Dict, List
 from .content import registry
 from .content.overview import tiles
 
-Tree = Dict[str, Any]
+Node = Dict[str, Any]
 
-tree_format_list: List[Tree] = []
+tree_format_list: List[Node] = []
 
 
 def build_tree_format_list() -> None:
@@ -38,7 +38,7 @@ def build_tree_format_list() -> None:
                     adjacency_list.append((v, f'{v}#{part.link_target}', part.title))
         i += 1
 
-    def add_to_tree(tree: Tree, parent_id: str, child_id: str, title: str) -> bool:
+    def add_to_tree(tree: List[Node], parent_id: str, child_id: str, title: str) -> bool:
         for node in tree:
             if node['id'] == parent_id:
                 node['children'].append({'id': child_id, 'children': [], 'title': title})
