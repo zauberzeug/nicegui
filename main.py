@@ -52,6 +52,21 @@ def _documentation_detail_page(name: str) -> Optional[RedirectResponse]:
         return RedirectResponse(documentation.redirects[name])
     raise HTTPException(404, f'documentation for "{name}" could not be found')
 
+# Debug page for setting the language
+
+
+@ui.page('/set_language')
+def _set_language() -> None:
+    my_input = ui.input('Language', placeholder='en')
+
+    def set_language():
+        app.storage.user['language'] = my_input.value
+        ui.navigate.reload()
+
+    ui.button('Set Language', on_click=set_language)
+
+    ui.label(f"Current Language: {app.storage.user.get('language', 'en')}")
+
 
 @app.get('/status')
 def _status():
