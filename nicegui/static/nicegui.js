@@ -364,8 +364,6 @@ function createApp(elements, options) {
         notify: (msg) => Quasar.Notify.create(msg),
       };
 
-      console.log("Run premount messages", JSON.stringify(window.premountMessageQueue));
-
       // Process queued messages that were received before the app was mounted
       while (window.premountMessageQueue.length > 0) {
         const { event, args } = window.premountMessageQueue.shift();

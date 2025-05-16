@@ -33,7 +33,6 @@ function initSocketIO(options) {
     transports: options.transports,
   });
   window.did_handshake = false;
-  console.log("Socket.IO connected");
   // Queue for messages received before the app is mounted
   window.premountMessageQueue = [];
   window.catchAllHandler = (event, ...args) => {
