@@ -41,4 +41,5 @@ class EventListener:
             'leading_events': self.leading_events,
             'trailing_events': self.trailing_events,
             'js_handler': self.js_handler,
+            'handler': self.handler is not None,
         }

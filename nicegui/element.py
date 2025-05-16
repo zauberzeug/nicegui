@@ -4,7 +4,7 @@ import inspect
 import re
 from copy import copy
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, ClassVar, Dict, Iterator, List, Optional, Sequence, Union, cast, overload
+from typing import TYPE_CHECKING, Any, ClassVar, Dict, Iterator, List, Optional, Sequence, Union, cast
 
 from typing_extensions import Self
 
@@ -320,26 +320,6 @@ class Element(Visibility):
             Tooltip(text)
         return self
 
-    @overload
-    def on(self,
-           type: str,  # pylint: disable=redefined-builtin
-           *,
-           js_handler: Optional[str] = None,
-           ) -> Self:
-        ...
-
-    @overload
-    def on(self,
-           type: str,  # pylint: disable=redefined-builtin
-           handler: Optional[events.Handler[events.GenericEventArguments]] = None,
-           args: Union[None, Sequence[str], Sequence[Optional[Sequence[str]]]] = None,
-           *,
-           throttle: float = 0.0,
-           leading_events: bool = True,
-           trailing_events: bool = True,
-           ) -> Self:
-        ...
-
     def on(self,
            type: str,  # pylint: disable=redefined-builtin
            handler: Optional[events.Handler[events.GenericEventArguments]] = None,
@@ -360,8 +340,10 @@ class Element(Visibility):
         :param trailing_events: whether to trigger the event handler after the last event occurrence (default: `True`)
         :param js_handler: JavaScript code that is executed upon occurrence of the event, e.g. `(evt) => alert(evt)` (default: `None`)
         """
-        if handler and js_handler:
-            raise ValueError('Either handler or js_handler can be specified, but not both')
+        if args and js_handler:
+            raise ValueError('''args and js_handler never coexist.
+- If you intend to use js_handler solo without handler, then args is never involved.
+- If you intend to use js_handler with handler, then pick either args or js_handler for your filtering needs.''')
 
         if handler or js_handler:
             listener = EventListener(

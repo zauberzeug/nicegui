@@ -178,16 +178,22 @@ function renderRecursively(elements, id) {
     event.specials.forEach((s) => (event_name += s[0].toLocaleUpperCase() + s.substring(1)));
 
     let handler;
-    if (event.js_handler) {
+    if (!event.handler) {
       handler = eval(event.js_handler);
     } else {
       handler = (...args) => {
+        if (event.js_handler) {
+          processed_args = [JSON.stringify(eval(event.js_handler)(...args))];
+          console.log("js_eval_args_update", args);
+        } else {
+          processed_args = stringifyEventArgs(args, event.args);
+        }
         const emitter = () =>
           window.socket?.emit("event", {
             id: id,
             client_id: window.clientId,
             listener_id: event.listener_id,
-            args: stringifyEventArgs(args, event.args),
+            args: processed_args,
           });
         const delayed_emitter = () => {
           if (window.did_handshake) emitter();
