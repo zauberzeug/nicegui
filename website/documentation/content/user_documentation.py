@@ -105,6 +105,72 @@ def querying():
             ''')
 
 
+
+
+doc.text('Selecting options in a ui.select', '''
+    The `UserInteraction` object can be used to choose items in a `ui.select`.
+    To do this:
+
+    - Locate the `ui.select` element using `user.find()`
+    - Use `click()` to open the dropdown
+    - Locate the specific _option_ you want to select, again using `user.find()`
+    - Use `click()` a second time to select the desired option
+    
+    For a multi-select element, repeat the click-and-choose steps for each item.
+''')
+
+
+@doc.ui
+def selecting_options_in_a_select():
+    with ui.row().classes('gap-4 items-stretch'):
+        with python_window(classes='w-[550px]', title='UI code'):
+            ui.markdown('''
+                ```python
+                ui.select(
+                    options=[
+                        "engineer1@company.com",
+                        "engineer2@company.com",
+                        "manager1@company.com"
+                    ],
+                    on_change=lambda e: ui.notify(f"Username: {e.value}"),
+                ).mark("Username")
+                ui.select(
+                    options=[
+                        "Project A",
+                        "Project B",
+                        "Project C"
+                    ],
+                    multiple=True,
+                    on_change=lambda e: ui.notify(f"Projects: {e.value}"),
+                ).mark("Projects")                
+                ```
+            ''')
+
+        with python_window(classes='w-[450px]', title='user assertions'):
+            ui.markdown('''
+                ```python
+                # Single-select
+                await user.open("/")
+                username = user.find("Username")
+                username.click()
+                user.find("engineer1@company.com").click()
+                await user.should_see(
+                    "Username: engineer1@company.com"
+                )
+            
+                # Multi-select
+                projects = user.find("Projects")
+                projects.click()
+                user.find("Project A").click()
+                projects.click()
+                user.find("Project B").click()
+                await user.should_see(
+                    "Projects: ['Project A', 'Project B']"
+                )
+                ```
+            ''')
+
+
 doc.text('Using an ElementFilter', '''
     It may be desirable to use an [`ElementFilter`](/documentation/element_filter) to
 
