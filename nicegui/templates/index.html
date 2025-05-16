@@ -4,6 +4,26 @@
     <title>{{ title }}</title>
     <meta name="viewport" content="{{ viewport }}" />
     <link href="{{ favicon_url }}" rel="shortcut icon" />
+    <script src="{{ prefix | safe }}/_nicegui/{{version}}/static/socket.io.min.js" fetchpriority="high"></script>
+    <script src="{{ prefix | safe }}/_nicegui/{{version}}/static/nicegui_head.js" fetchpriority="high"></script>
+    <script>
+      console.log('before initSocketIO');
+      console.time('initSocketIO');
+      window.nicegui_options = {
+        version: "{{ version }}",
+        prefix: "{{ prefix | safe }}",
+        query: {{ socket_io_js_query_params | safe }},
+        extraHeaders: {{ socket_io_js_extra_headers | safe }},
+        transports: {{ socket_io_js_transports | safe }},
+        quasarConfig: {{ quasar_config | safe }},
+      }
+      initSocketIO(window.nicegui_options);
+      console.timeEnd('initSocketIO');
+      console.log('initSocketIO');
+      window.socket.on('connect', () => {
+        console.log('connected_debug');
+      });
+    </script>
     <link href="{{ prefix | safe }}/_nicegui/{{version}}/static/nicegui.css" rel="stylesheet" type="text/css" />
     <link href="{{ prefix | safe }}/_nicegui/{{version}}/static/fonts.css" rel="stylesheet" type="text/css" />
     {% if prod_js %}
@@ -19,20 +39,6 @@
     {% for url in js_imports_urls %}
     <link rel="modulepreload" href="{{ url }}" />
     {% endfor %}
-    <script src="{{ prefix | safe }}/_nicegui/{{version}}/static/socket.io.min.js"></script>
-    <script src="{{ prefix | safe }}/_nicegui/{{version}}/static/nicegui_head.js"></script>
-    <script>
-      window.nicegui_options = {
-        version: "{{ version }}",
-        prefix: "{{ prefix | safe }}",
-        query: {{ socket_io_js_query_params | safe }},
-        extraHeaders: {{ socket_io_js_extra_headers | safe }},
-        transports: {{ socket_io_js_transports | safe }},
-        quasarConfig: {{ quasar_config | safe }},
-      }
-      initSocketIO(window.nicegui_options);
-      console.log('initSocketIO');
-    </script>
   </head>
   <body>
     <script src="{{ prefix | safe }}/_nicegui/{{version}}/static/es-module-shims.js"></script>
