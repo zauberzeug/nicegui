@@ -62,7 +62,10 @@ function handleConnect() {
       console.log("reloading because handshake failed for clientId " + window.clientId);
       window.location.reload();
     }
-    // document.getElementById("popup").ariaHidden = true;
+    const popup = document.getElementById("popup");
+    if (popup) {
+      popup.ariaHidden = true;
+    }
   });
   window.did_handshake = true;
 }

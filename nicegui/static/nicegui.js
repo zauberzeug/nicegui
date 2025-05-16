@@ -317,7 +317,6 @@ function createApp(elements, options) {
 
       // Define message handlers
       const messageHandlers = {
-        connect: () => {handleConnect()},
         connect_error: (err) => {
           if (err.message == "timeout") {
             console.log("reloading because connection timed out");
