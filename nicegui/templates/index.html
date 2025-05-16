@@ -59,7 +59,7 @@
     <script type="module">
       const app = createApp(parseElements(String.raw`{{ elements | safe }}`), window.nicegui_options);
 
-      {{ js_imports | safe }
+      {{ js_imports | safe }}
       {{ vue_scripts | safe }}
 
       const dark = {{ dark }};
