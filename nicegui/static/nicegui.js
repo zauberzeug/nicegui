@@ -320,6 +320,56 @@ window.onbeforeunload = function () {
 function createApp(elements, options) {
   Object.entries(elements).forEach(([_, element]) => replaceUndefinedAttributes(element));
   setInterval(() => ack(), 3000);
+
+  let handleConnect = () => {
+    const args = {
+      client_id: window.clientId,
+      document_id: window.documentId,
+      tab_id: TAB_ID,
+      old_tab_id: OLD_TAB_ID,
+      next_message_id: window.nextMessageId,
+    };
+    window.socket.emit("handshake", args, (ok) => {
+      if (!ok) {
+        console.log("reloading because handshake failed for clientId " + window.clientId);
+        window.location.reload();
+      }
+      document.getElementById("popup").ariaHidden = true;
+    });
+    window.did_handshake = true;
+  }
+
+  // Initialize window variables needed for socket communication
+  window.documentId = createRandomUUID();
+  window.clientId = options.query.client_id;
+  window.path_prefix = options.prefix;
+  window.nextMessageId = options.query.next_message_id;
+  window.ackedMessageId = -1;
+
+  // Initialize Socket.IO early
+  const url = window.location.protocol === "https:" ? "wss://" : "ws://" + window.location.host;
+  window.socket = io(url, {
+    path: `${options.prefix}/_nicegui_ws/socket.io`,
+    query: options.query,
+    extraHeaders: options.extraHeaders,
+    transports: options.transports,
+  });
+  window.did_handshake = false;
+
+  // Queue for messages received before the app is mounted
+  let premountMessageQueue = [];
+  const catchAllHandler = (event, ...args) => {
+    if (args.length > 0 && args[0]._id !== undefined) {
+      const message_id = args[0]._id;
+      if (message_id < window.nextMessageId) return;
+      window.nextMessageId = message_id + 1;
+      delete args[0]._id;
+    }
+    premountMessageQueue.push({ event, args });
+  };
+  window.socket.onAny(catchAllHandler); // onAny does not cover "connect", though
+  window.socket.on("connect", handleConnect);
+
   return (app = Vue.createApp({
     data() {
       return {
@@ -329,39 +379,15 @@ function createApp(elements, options) {
     render() {
       return renderRecursively(this.elements, 0);
     },
-    mounted() {
+    async mounted() {
       mounted_app = this;
-      window.documentId = createRandomUUID();
-      window.clientId = options.query.client_id;
-      const url = window.location.protocol === "https:" ? "wss://" : "ws://" + window.location.host;
-      window.path_prefix = options.prefix;
-      window.nextMessageId = options.query.next_message_id;
-      window.ackedMessageId = -1;
-      window.socket = io(url, {
-        path: `${options.prefix}/_nicegui_ws/socket.io`,
-        query: options.query,
-        extraHeaders: options.extraHeaders,
-        transports: options.transports,
-      });
-      window.did_handshake = false;
+
+      // Remove temporary catch-all handler
+      window.socket.offAny(catchAllHandler);
+
+      // Define message handlers
       const messageHandlers = {
-        connect: () => {
-          const args = {
-            client_id: window.clientId,
-            document_id: window.documentId,
-            tab_id: TAB_ID,
-            old_tab_id: OLD_TAB_ID,
-            next_message_id: window.nextMessageId,
-          };
-          window.socket.emit("handshake", args, (ok) => {
-            if (!ok) {
-              console.log("reloading because handshake failed for clientId " + window.clientId);
-              window.location.reload();
-            }
-            document.getElementById("popup").ariaHidden = true;
-          });
-          window.did_handshake = true;
-        },
+        connect: () => {handleConnect()},
         connect_error: (err) => {
           if (err.message == "timeout") {
             console.log("reloading because connection timed out");
@@ -408,6 +434,25 @@ function createApp(elements, options) {
         download: (msg) => download(msg.src, msg.filename, msg.media_type, options.prefix),
         notify: (msg) => Quasar.Notify.create(msg),
       };
+
+      console.log("Run premount messages", JSON.stringify(premountMessageQueue));
+
+      // Process queued messages that were received before the app was mounted
+      while (premountMessageQueue.length > 0) {
+        const { event, args } = premountMessageQueue.shift();
+        const handler = messageHandlers[event];
+        if (!handler) {
+          console.warn(`No handler for event '${event}'`);
+          continue;
+        }
+        try {
+          await handler(...args);
+        } catch (e) {
+          console.error(e);
+        }
+      }
+
+      // Set up ordered message processing for new messages
       const socketMessageQueue = [];
       let isProcessingSocketMessage = false;
       for (const [event, handler] of Object.entries(messageHandlers)) {
