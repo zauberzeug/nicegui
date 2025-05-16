@@ -358,9 +358,9 @@ function createApp(elements, options) {
               console.log("reloading because handshake failed for clientId " + window.clientId);
               window.location.reload();
             }
+            window.did_handshake = true;
             document.getElementById("popup").ariaHidden = true;
           });
-          window.did_handshake = true;
         },
         connect_error: (err) => {
           if (err.message == "timeout") {
