@@ -4,7 +4,7 @@ import asyncio
 import inspect
 from functools import wraps
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Callable, Optional, Union
+from typing import TYPE_CHECKING, Any, Callable, Optional, Tuple, Type, Union, cast
 
 from fastapi import Request, Response
 
@@ -104,10 +104,62 @@ class page:
         def check_for_late_return_value(task: asyncio.Task) -> None:
             try:
                 if task.result() is not None:
-                    log.error(f'ignoring {task.result()}; '
-                              'it was returned after the HTML had been delivered to the client')
+                    nicegui_error_metadata = getattr(task.result(), 'context', {}).get('nicegui_error_metadata', {})
+                    if not nicegui_error_metadata:
+                        log.error(f'ignoring {task.result()}; '
+                                  'it was returned after the HTML had been delivered to the client')
+                        return
+
+                    client_id = nicegui_error_metadata.get('nicegui_error_client_id', '')
+                    if not client_id:
+                        log.error('No client_id found in nicegui_error_metadata')
+                        return
+
+                    client = Client.instances[client_id]
+                    if client is None:
+                        log.error(f'Cannot find client {client_id}')
+                        return
+
+                    error_message = nicegui_error_metadata.get('error_type', 'Error')
+                    error_message += ': ' + nicegui_error_metadata.get('error_string', '')
+
+                    client.outbox.enqueue_message('servererror', {'message': error_message}, target_id=client.id)
+
             except asyncio.CancelledError:
                 pass
+
+        def create_error_page(e: Exception, request: Request, *, notify_client_id: Optional[str] = None) -> Response:
+            exception_handler = core.app._page_exception_handler  # pylint: disable=protected-access
+            if exception_handler is None:
+                raise e
+            with Client(page(''), request=request) as error_client:
+                exception_handler(e)
+                # Then, invoke the existing exception handlers
+
+                def run_handler(handler: Callable, request: Request, e: Exception) -> None:
+                    result = handler(request, e)
+                    if helpers.is_coroutine_function(handler):
+                        async def await_handler() -> None:
+                            await result
+                        background_tasks.create(await_handler(), name=f'exception handler {handler.__name__}')
+
+                # FastAPI / Starlette exception handlers, attached via
+                for pair in core.app.exception_handlers.items():
+                    exc_class_or_status_code, handler = cast(Tuple[Union[int, Type[Exception]], Callable], pair)
+                    if isinstance(exc_class_or_status_code, int):
+                        if exc_class_or_status_code == 500:
+                            run_handler(handler, request, e)
+                    elif isinstance(e, exc_class_or_status_code):
+                        run_handler(handler, request, e)
+
+                # NiceGUI exception handlers, attached via app.on_exception
+                core.app.handle_exception(e)
+
+                return error_client.build_response(request, 500, nicegui_error_metadata={
+                    'nicegui_error_client_id': notify_client_id,
+                    'error_string': str(e),
+                    'error_type': type(e).__name__,
+                })
 
         @wraps(func)
         async def decorated(*dec_args, **dec_kwargs) -> Response:
@@ -117,11 +169,17 @@ class page:
             with Client(self, request=request) as client:
                 if any(p.name == 'client' for p in inspect.signature(func).parameters.values()):
                     dec_kwargs['client'] = client
-                result = func(*dec_args, **dec_kwargs)
+                try:
+                    result = func(*dec_args, **dec_kwargs)
+                except Exception as e:
+                    return create_error_page(e, request, notify_client_id=client.id)
             if helpers.is_coroutine_function(func):
-                async def wait_for_result() -> None:
+                async def wait_for_result() -> Optional[Response]:
                     with client:
-                        return await result
+                        try:
+                            return await result
+                        except Exception as e:
+                            return create_error_page(e, request, notify_client_id=client.id)
                 task = background_tasks.create(wait_for_result())
                 task_wait_for_connection = background_tasks.create(
                     client._waiting_for_connection.wait(),  # pylint: disable=protected-access
