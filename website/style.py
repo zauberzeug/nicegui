@@ -73,16 +73,6 @@ def subheading(text: str, *, link: Optional[str] = None, major: bool = False, an
             ui.label(text).classes(classes)
         with ui.link(target=f'#{name}').classes('absolute').style('transform: translateX(-150%)'):
             ui.icon('link', size='sm').classes('opacity-10 hover:opacity-80')
-    drawers = [element for element in ui.context.client.elements.values() if isinstance(element, ui.left_drawer)]
-    if drawers:
-        menu = drawers[0]
-        with menu:
-            async def click():
-                if await ui.run_javascript('!!document.querySelector("div.q-drawer__backdrop")', timeout=5.0):
-                    menu.hide()
-                    ui.navigate.to(f'#{name}')
-            ui.link(text, target=f'#{name}').props('data-close-overlay').on('click', click, []) \
-                .classes('font-bold mt-4' if major else '')
 
 
 def create_anchor_name(text: str) -> str:

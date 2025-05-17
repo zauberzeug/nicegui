@@ -28,6 +28,30 @@ def bindings_demo():
         ui.number().bind_value(demo, 'number')
 
 
+@doc.demo('Transformation functions', '''
+    You can use ``forward`` and ``backward`` transformation functions to convert the value
+    when propagating it from one object to another.
+    These functions are called whenever the source attribute changes,
+    or - in case of active links (see below) - whenever the source attribute is checked for changes.
+
+    Note:
+    NiceGUI 2.16.0 improved efficiency of binding propagation by strictly adhering to a Depth-First-Search approach,
+    updating every affected node once and executing the transformation function once.
+    If you are migrating from NiceGUI 2.15.0 or older, there may be extra runs on transformation functions,
+    especially ones in the opposite direction to the current propagation direction,
+    which are no-longer ran in NiceGUI 2.16.0.
+    As a result, you would need to change your code appropriately.
+
+    We would also like to mention that, for the most stable behaviour across releases,
+    it is best-practice that transform functions have no side-effects and do basic transform operations only.
+    This way, it will not matter how NiceGUI chooses to call them in what order and by how many times.
+''')
+def transformation_functions():
+    i = ui.input(value='Lorem ipsum')
+    ui.label().bind_text_from(i, 'value',
+                              backward=lambda text: f'{len(text)} characters')
+
+
 @doc.demo('Bind to dictionary', '''
     Here we are binding the text of labels to a dictionary.
 ''')

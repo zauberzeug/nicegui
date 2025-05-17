@@ -105,6 +105,42 @@ def querying():
             ''')
 
 
+doc.text('Using an ElementFilter', '''
+    It may be desirable to use an [`ElementFilter`](/documentation/element_filter) to
+
+    - preserve the order of elements to check their order on the page, and
+    - more granular filtering options, such as `ElementFilter(...).within(...)`.
+
+    By entering the `user` context and iterating over `ElementFilter`,
+    you can preserve the natural document order of matching elements:
+''')
+
+
+@doc.ui
+def using_an_elementfilter():
+    with ui.row().classes('gap-4 items-stretch'):
+        with python_window(classes='w-[400px]', title='UI code'):
+            ui.markdown('''
+                ```python
+                ui.label('1').mark('number')
+                ui.label('2').mark('number')
+                ui.label('3').mark('number')
+                ```
+            ''')
+
+        with python_window(classes='w-[600px]', title='user assertions'):
+            ui.markdown('''
+                ```python
+                with user:
+                    elements = list(ElementFilter(marker='number'))
+                    assert len(elements) == 3
+                    assert elements[0].text == '1'
+                    assert elements[1].text == '2'
+                    assert elements[2].text == '3'
+                ```
+            ''')
+
+
 doc.text('Complex elements', '''
     There are some elements with complex visualization and interaction behaviors (`ui.upload`, `ui.table`, ...).
     Not every aspect of these elements can be tested with `should_see` and `UserInteraction`.
