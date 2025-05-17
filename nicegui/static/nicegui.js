@@ -187,13 +187,13 @@ function renderRecursively(elements, id) {
         });
       const delayed_emitter = () => {
         if (window.did_handshake) emitter();
-        else setTimeout(emitter, 10);
+        else setTimeout(delayed_emitter, 10);
       };
       throttle(delayed_emitter, event.throttle, event.leading_events, event.trailing_events, event.listener_id);
       if (element.props["loopback"] === False && event.type == "update:modelValue") {
         element.props["model-value"] = args;
       }
-    }
+    };
 
     let handler;
     if (event.js_handler) {
@@ -360,9 +360,9 @@ function createApp(elements, options) {
               console.log("reloading because handshake failed for clientId " + window.clientId);
               window.location.reload();
             }
+            window.did_handshake = true;
             document.getElementById("popup").ariaHidden = true;
           });
-          window.did_handshake = true;
         },
         connect_error: (err) => {
           if (err.message == "timeout") {
