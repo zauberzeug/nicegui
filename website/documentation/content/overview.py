@@ -18,14 +18,14 @@ from ...style import subheading
 
 doc.title('*NiceGUI* Documentation', 'Reference, Demos and more')
 
-doc.text('Overview', '''
+doc.text('Overview<!--TRANSLATEID-id1-->', '''
     NiceGUI is an open-source Python library to write graphical user interfaces which run in the browser.
     It has a very gentle learning curve while still offering the option for advanced customizations.
     NiceGUI follows a backend-first philosophy:
     It handles all the web development details.
     You can focus on writing Python code.
     This makes it ideal for a wide range of projects including short
-    scripts, dashboards, robotics projects, IoT solutions, smart home automation, and machine learning.
+    scripts, dashboards, robotics projects, IoT solutions, smart home automation, and machine learning.<!--TRANSLATEID-id2-->
 ''')
 
 doc.text('How to use this guide', '''

@@ -104,6 +104,8 @@ def demo(*args, **kwargs) -> Callable[[Callable], Callable]:
                 page.title = f'ui.*{ui_name}*'
             elif app_name:
                 page.title = f'app.*{app_name}*'
+        print('Title:', title_)
+        print('Description:', description)
         page.parts.append(DocumentationPart(
             title=title_,
             description=description,
