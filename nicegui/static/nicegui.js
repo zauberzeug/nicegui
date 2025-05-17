@@ -177,7 +177,7 @@ function renderRecursively(elements, id) {
     let event_name = "on" + event.type[0].toLocaleUpperCase() + event.type.substring(1);
     event.specials.forEach((s) => (event_name += s[0].toLocaleUpperCase() + s.substring(1)));
 
-    let defaultHandler = (...args) => {
+    let emit = (...args) => {
       const emitter = () =>
         window.socket?.emit("event", {
           id: id,
@@ -199,7 +199,7 @@ function renderRecursively(elements, id) {
     if (event.js_handler) {
       handler = eval(event.js_handler);
     } else {
-      handler = defaultHandler;
+      handler = emit;
     }
 
     handler = Vue.withModifiers(handler, event.modifiers);
