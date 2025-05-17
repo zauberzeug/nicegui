@@ -16,13 +16,23 @@ class Log(Element, default_classes='nicegui-log'):
         super().__init__()
         self.max_lines = max_lines
 
-    def push(self, line: Any) -> None:
+    def push(self, line: Any, *,
+             classes: Optional[str] = None,
+             style: Optional[str] = None,
+             props: Optional[str] = None) -> None:
         """Add a new line to the log.
 
         :param line: the line to add (can contain line breaks)
         """
         for text in str(line).splitlines():
             with self:
-                Label(text)
+                label = Label(text)
+                if classes is not None:
+                    label.classes(replace=classes)
+                if style is not None:
+                    label.style(replace=style)
+                if props is not None:
+                    label.props.clear()
+                    label.props(props)
         while self.max_lines is not None and len(self.default_slot.children) > self.max_lines:
             self.remove(0)
