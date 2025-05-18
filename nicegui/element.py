@@ -328,7 +328,7 @@ class Element(Visibility):
            throttle: float = 0.0,
            leading_events: bool = True,
            trailing_events: bool = True,
-           js_handler: Optional[str] = None,
+           js_handler: Optional[str] = "emit",
            ) -> Self:
         """Subscribe to an event.
 
@@ -338,7 +338,8 @@ class Element(Visibility):
         :param throttle: minimum time (in seconds) between event occurrences (default: 0.0)
         :param leading_events: whether to trigger the event handler immediately upon the first event occurrence (default: `True`)
         :param trailing_events: whether to trigger the event handler after the last event occurrence (default: `True`)
-        :param js_handler: JavaScript code that is executed upon occurrence of the event, e.g. `(evt) => alert(evt)` (default: `None`)
+        :param js_handler: JavaScript code that is executed upon occurrence of the event, e.g. `(evt) => alert(evt)`,
+            it can call `emit` to emit the event to the python `handler` (default: `emit`)
         """
         if handler or js_handler:
             listener = EventListener(

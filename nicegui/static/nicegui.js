@@ -177,7 +177,7 @@ function renderRecursively(elements, id) {
     let event_name = "on" + event.type[0].toLocaleUpperCase() + event.type.substring(1);
     event.specials.forEach((s) => (event_name += s[0].toLocaleUpperCase() + s.substring(1)));
 
-    let emit = (...args) => {
+    const emit = (...args) => {
       const emitter = () =>
         window.socket?.emit("event", {
           id: id,
