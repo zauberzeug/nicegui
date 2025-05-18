@@ -105,9 +105,36 @@ def querying():
             ''')
 
 
+doc.text('User Interaction', '''
+    `user.find(...)` returns an `UserInteraction` object which provides methods to type text,
+    clear inputs, click buttons and trigger events on the found elements.
+    This demo shows how to trigger a "keydown.tab" event to autocomplete an input field after typing the first letter.
+
+    *triggering events was added in version 2.7.0*
+''')
 
 
-doc.text('Selecting options in a ui.select', '''
+@doc.ui
+def trigger_events():
+    with ui.row().classes('gap-4 items-stretch'):
+        with python_window(classes='w-[500px]', title='some UI code'):
+            ui.markdown('''
+                ```python
+                fruits = ['apple', 'banana', 'cherry']
+                ui.input(label='fruit', autocomplete=fruits)
+                ```
+            ''')
+        with python_window(classes='w-[500px]', title='user assertions'):
+            ui.markdown('''
+                ```python
+                await user.open('/')
+                user.find('fruit').type('a').trigger('keydown.tab')
+                await user.should_see('apple')
+                ```
+            ''')
+
+
+doc.text('Selecting options', '''
     The `UserInteraction` object can be used to choose items in a `ui.select`.
     To do this:
 
@@ -115,7 +142,7 @@ doc.text('Selecting options in a ui.select', '''
     - Use `click()` to open the dropdown
     - Locate the specific _option_ you want to select, again using `user.find()`
     - Use `click()` a second time to select the desired option
-    
+
     For a multi-select element, repeat the click-and-choose steps for each item.
 ''')
 
@@ -142,7 +169,7 @@ def selecting_options_in_a_select():
                     ],
                     multiple=True,
                     on_change=lambda e: ui.notify(f"Projects: {e.value}"),
-                ).mark("Projects")                
+                ).mark("Projects")
                 ```
             ''')
 
@@ -157,7 +184,7 @@ def selecting_options_in_a_select():
                 await user.should_see(
                     "Username: engineer1@company.com"
                 )
-            
+
                 # Multi-select
                 projects = user.find("Projects")
                 projects.click()
@@ -254,34 +281,6 @@ def upload_table():
                     {'name': 'Alice', 'age': '30'},
                     {'name': 'Bob', 'age': '28'},
                 ]
-                ```
-            ''')
-
-
-doc.text('Autocomplete', '''
-    The `UserInteraction` object returned by `user.find(...)` provides methods to trigger events on the found elements.
-    This demo shows how to trigger a "keydown.tab" event to autocomplete an input field.
-
-    *Added in version 2.7.0*
-''')
-
-
-@doc.ui
-def trigger_events():
-    with ui.row().classes('gap-4 items-stretch'):
-        with python_window(classes='w-[500px]', title='some UI code'):
-            ui.markdown('''
-                ```python
-                fruits = ['apple', 'banana', 'cherry']
-                ui.input(label='fruit', autocomplete=fruits)
-                ```
-            ''')
-        with python_window(classes='w-[500px]', title='user assertions'):
-            ui.markdown('''
-                ```python
-                await user.open('/')
-                user.find('fruit').type('a').trigger('keydown.tab')
-                await user.should_see('apple')
                 ```
             ''')
 
