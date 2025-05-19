@@ -6,6 +6,7 @@ from typing import Optional
 from fastapi import HTTPException, Request
 from fastapi.responses import RedirectResponse
 from starlette.middleware.sessions import SessionMiddleware
+
 from nicegui import app, ui
 from website import anti_scroll_hack, documentation, fly, main_page, svg
 
