@@ -23,6 +23,9 @@ class Log(Element, default_classes='nicegui-log'):
         """Add a new line to the log.
 
         :param line: the line to add (can contain line breaks)
+        :param classes: classes to apply to the line (*added in version 2.18.0*)
+        :param style: style to apply to the line (*added in version 2.18.0*)
+        :param props: props to apply to the line (*added in version 2.18.0*)
         """
         for text in str(line).splitlines():
             with self:
