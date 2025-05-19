@@ -47,19 +47,24 @@ def logger_handler():
 
 
 @doc.demo('Styling lines', '''
-    On the basis that individual lines in `ui.log` are `ui.label` instances, it is possible to style the inserted lines via `classes`, `style` and `props`.
+    On the basis that individual lines in `ui.log` are `ui.label` instances,
+    it is possible to style the inserted lines via `classes`, `style` and `props`.
     One notable use would be colored logs.
 
-    Note that if applied, this would clear any existing [classes](element#default_classes)/[style](element#default_style)/[props](element#default_props) currently set as default on `ui.label`
+    Note that if applied, this would clear any existing
+    [classes](element#default_classes),
+    [style](element#default_style), and
+    [props](element#default_props)
+    currently set as default on `ui.label`.
 ''')
 def styling_lines_demo():
     log = ui.log(max_lines=10).classes('w-full h-40')
     with ui.row():
-        ui.button('Log default', on_click=lambda: log.push('Some normal information'))
-        ui.button('Log debug', on_click=lambda: log.push('Some detail information', classes='text-gray-500'))
-        ui.button('Log info', on_click=lambda: log.push('Everything is fine', classes='text-blue-500'))
-        ui.button('Log warning', on_click=lambda: log.push('Something is fishy', classes='text-yellow-500'))
-        ui.button('Log error', on_click=lambda: log.push('Something is wrong', classes='text-red-500'))
+        ui.button('Normal', on_click=lambda: log.push('Text'))
+        ui.button('Debug', on_click=lambda: log.push('Debug', classes='text-grey'))
+        ui.button('Info', on_click=lambda: log.push('Info', classes='text-blue'))
+        ui.button('Warning', on_click=lambda: log.push('Warning', classes='text-orange'))
+        ui.button('Error', on_click=lambda: log.push('Error', classes='text-red'))
 
 
 doc.reference(ui.log)
