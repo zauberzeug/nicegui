@@ -56,6 +56,8 @@ def logger_handler():
     [style](element#default_style), and
     [props](element#default_props)
     currently set as default on `ui.label`.
+
+    *Added in version 2.18.0*
 ''')
 def styling_lines_demo():
     log = ui.log(max_lines=10).classes('w-full h-40')
