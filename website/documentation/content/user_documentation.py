@@ -106,7 +106,7 @@ def querying():
 
 
 doc.text('User Interaction', '''
-    `user.find(...)` returns an `UserInteraction` object which provides methods to type text,
+    `user.find(...)` returns a `UserInteraction` object which provides methods to type text,
     clear inputs, click buttons and trigger events on the found elements.
     This demo shows how to trigger a "keydown.tab" event to autocomplete an input field after typing the first letter.
 
