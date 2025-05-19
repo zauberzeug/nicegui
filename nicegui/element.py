@@ -29,6 +29,8 @@ TAG_START_CHAR = r':|[A-Z]|_|[a-z]|[\u00C0-\u00D6]|[\u00D8-\u00F6]|[\u00F8-\u02F
 TAG_CHAR = TAG_START_CHAR + r'|-|\.|[0-9]|\u00B7|[\u0300-\u036F]|[\u203F-\u2040]'
 TAG_PATTERN = re.compile(fr'^({TAG_START_CHAR})({TAG_CHAR})*$')
 
+DEFAULT_JS_HANDLER = '(...args) => emit(...args)'
+
 
 class Element(Visibility):
     component: Optional[Component] = None
@@ -328,7 +330,7 @@ class Element(Visibility):
            throttle: float = 0.0,
            leading_events: bool = True,
            trailing_events: bool = True,
-           js_handler: Optional[str] = "emit",
+           js_handler: Optional[str] = DEFAULT_JS_HANDLER,
            ) -> Self:
         """Subscribe to an event.
 
@@ -339,8 +341,13 @@ class Element(Visibility):
         :param leading_events: whether to trigger the event handler immediately upon the first event occurrence (default: `True`)
         :param trailing_events: whether to trigger the event handler after the last event occurrence (default: `True`)
         :param js_handler: JavaScript code that is executed upon occurrence of the event, e.g. `(evt) => alert(evt)`,
-            it can call `emit` to emit the event to the python `handler` (default: `emit`)
+            it can call `emit` to emit the event to the python `handler` (default: `(...args) => emit(...args)`)
         """
+
+        # The behavior of None is equivalent to DEFAULT_JS_HANDLER
+        if js_handler == DEFAULT_JS_HANDLER:
+            js_handler = None
+
         if handler or js_handler:
             listener = EventListener(
                 element_id=self.id,
