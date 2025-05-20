@@ -59,7 +59,7 @@ libraries: Dict[str, Library] = {}
 resources: Dict[str, Resource] = {}
 
 
-def register_vue_component(path: Path, *, max_time: Optional[float] = None) -> Component:
+def register_vue_component(path: Path, *, max_time: Optional[float]) -> Component:
     """Register a .vue or .js Vue component.
 
     Single-file components (.vue) are built right away
@@ -84,7 +84,7 @@ def register_vue_component(path: Path, *, max_time: Optional[float] = None) -> C
     raise ValueError(f'Unsupported component type "{path.suffix}"')
 
 
-def register_library(path: Path, *, expose: bool = False, max_time: Optional[float] = None) -> Library:
+def register_library(path: Path, *, expose: bool = False, max_time: Optional[float]) -> Library:
     """Register a *.js library."""
     key = compute_key(path, max_time=max_time)
     name = _get_name(path)
@@ -97,7 +97,7 @@ def register_library(path: Path, *, expose: bool = False, max_time: Optional[flo
     raise ValueError(f'Unsupported library type "{path.suffix}"')
 
 
-def register_resource(path: Path, *, max_time: Optional[float] = None) -> Resource:
+def register_resource(path: Path, *, max_time: Optional[float]) -> Resource:
     """Register a resource."""
     key = compute_key(path, max_time=max_time)
     if key in resources and resources[key].path == path:
@@ -108,7 +108,7 @@ def register_resource(path: Path, *, max_time: Optional[float] = None) -> Resour
 
 
 @functools.lru_cache(maxsize=None)
-def compute_key(path: Path, *, max_time: Optional[float] = None) -> str:
+def compute_key(path: Path, *, max_time: Optional[float]) -> str:
     """Compute a key for a given path using a hash function.
 
     If the path is relative to the NiceGUI base directory, the key is computed from the relative path.
