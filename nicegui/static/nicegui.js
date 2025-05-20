@@ -329,7 +329,8 @@ function createApp(elements, options) {
     render() {
       return renderRecursively(this.elements, 0);
     },
-    beforeCreate() {
+    created() {
+      mounted_app = this;
       window.documentId = createRandomUUID();
       window.clientId = options.query.client_id;
       const url = window.location.protocol === "https:" ? "wss://" : "ws://" + window.location.host;
@@ -432,9 +433,6 @@ function createApp(elements, options) {
           }
         });
       }
-    },
-    mounted() {
-      mounted_app = this;
     },
   }).use(Quasar, {
     config: options.quasarConfig,
