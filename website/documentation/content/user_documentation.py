@@ -110,7 +110,7 @@ doc.text('User Interaction', '''
     clear inputs, click buttons and trigger events on the found elements.
     This demo shows how to trigger a "keydown.tab" event to autocomplete an input field after typing the first letter.
 
-    *triggering events was added in version 2.7.0*
+    *Added in version 2.7.0: triggering events*
 ''')
 
 
@@ -137,10 +137,10 @@ def trigger_events():
 doc.text('Selecting options', '''
     To choose items in a `ui.select` simply
 
-    - Locate the `ui.select` element using `user.find()`
-    - Use `click()` to open the dropdown
-    - Locate the specific _option_ you want to select, again using `user.find()`
-    - Use `click()` a second time to select the desired option
+    - locate the `ui.select` element using `user.find()`,
+    - use `click()` to open the dropdown,
+    - locate the specific _option_ you want to select, again using `user.find()`, and
+    - use `click()` a second time to select the desired option.
 
     For a multi-select element, repeat the click-and-choose steps for each item.
 ''')
@@ -149,27 +149,27 @@ doc.text('Selecting options', '''
 @doc.ui
 def selecting_options_in_a_select():
     with ui.row().classes('gap-4 items-stretch'):
-        with python_window(classes='w-[550px]', title='UI code'):
+        with python_window(classes='w-[500px]', title='UI code'):
             ui.markdown('''
                 ```python
                 ui.select(
                     label='Fruits',
-                    options=['Apple', 'Banana', 'Cherry', 'Fig'],
+                    options=['Apple', 'Banana', 'Cherry'],
                     multiple=True,
                     on_change=lambda e: ui.notify(', '.join(e.value)),
                 )
                 ```
             ''')
 
-        with python_window(classes='w-[450px]', title='user assertions'):
+        with python_window(classes='w-[500px]', title='user assertions'):
             ui.markdown('''
                 ```python
                 fruits = user.find('Fruits')
                 fruits.click()
                 user.find('Apple').click()
                 fruits.click()
-                user.find("Banana").click()
-                await user.should_see("Apple, Banana")
+                user.find('Banana').click()
+                await user.should_see('Apple, Banana')
                 ```
             ''')
 
