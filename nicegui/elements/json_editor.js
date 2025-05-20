@@ -1,5 +1,5 @@
 import { JSONEditor, createAjvValidator } from "standalone";
-import sethvincentajvFormats from 'https://cdn.jsdelivr.net/npm/@sethvincent/ajv-formats@3.0.2/+esm'
+import sethvincentajvFormats from "https://cdn.jsdelivr.net/npm/@sethvincent/ajv-formats@3.0.2/+esm";
 
 export default {
   template: "<div></div>",
@@ -30,9 +30,7 @@ export default {
           schema: this.schema,
           schemaDefinitions: {},
           ajvOptions: {},
-          onCreateAjv: (ajv) => {
-            sethvincentajvFormats(ajv)
-          }
+          onCreateAjv: (ajv) => sethvincentajvFormats(ajv),
         });
       }
     },
