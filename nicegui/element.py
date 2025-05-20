@@ -144,7 +144,8 @@ class Element(Visibility):
 
         :param path: path to the resource (e.g. folder with CSS and JavaScript files)
         """
-        resource = register_resource(Path(path), max_time=path.stat().st_mtime if isinstance(path, Path) else None)
+        path_ = Path(path)
+        resource = register_resource(path_, max_time=path_.stat().st_mtime)
         self._props['resource_path'] = f'/_nicegui/{__version__}/resources/{resource.key}'
 
     def add_slot(self, name: str, template: Optional[str] = None) -> Slot:
