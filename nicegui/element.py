@@ -4,7 +4,20 @@ import inspect
 import re
 from copy import copy
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, ClassVar, Dict, Iterator, List, Optional, Sequence, Union, cast, overload
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Callable,
+    ClassVar,
+    Dict,
+    Iterator,
+    List,
+    Optional,
+    Sequence,
+    Union,
+    cast,
+    overload,
+)
 
 from typing_extensions import Self
 
@@ -12,7 +25,14 @@ from . import core, events, helpers, json, storage
 from .awaitable_response import AwaitableResponse, NullResponse
 from .classes import Classes
 from .context import context
-from .dependencies import Component, Library, register_library, register_resource, register_vue_component
+from .dependencies import (
+    Component,
+    Library,
+    register_library,
+    register_resource,
+    register_resource_from_callable,
+    register_vue_component,
+)
 from .elements.mixins.visibility import Visibility
 from .event_listener import EventListener
 from .props import Props
@@ -142,6 +162,17 @@ class Element(Visibility):
         """
         resource = register_resource(Path(path))
         self._props['resource_path'] = f'/_nicegui/{__version__}/resources/{resource.key}'
+
+    def add_dynamic_resource(self,
+                             filename: str,
+                             callable: Callable) -> None:
+        """Add a resource from a callable.
+
+        :param filename: name of the file
+        :param callable: callable that returns the resource response
+        """
+        resource = register_resource_from_callable(filename, callable)
+        self._props['resource_path'] = f'/_nicegui/{__version__}/dynamic_resources/{resource.key}'
 
     def add_slot(self, name: str, template: Optional[str] = None) -> Slot:
         """Add a slot to the element.
@@ -515,7 +546,7 @@ class Element(Visibility):
             additions.append(f'text={shorten(self._text)}')
         if hasattr(self, 'content') and self.content:  # pylint: disable=no-member
             additions.append(f'content={shorten(self.content)}')  # pylint: disable=no-member
-        IGNORED_PROPS = {'loopback', 'color', 'view', 'innerHTML', 'codehilite_css_url'}
+        IGNORED_PROPS = {'loopback', 'color', 'view', 'innerHTML'}
         additions += [
             f'{key}={shorten(value)}'
             for key, value in self._props.items()
