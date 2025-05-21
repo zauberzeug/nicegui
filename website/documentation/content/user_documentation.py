@@ -153,8 +153,8 @@ def selecting_options_in_a_select():
             ui.markdown('''
                 ```python
                 ui.select(
+                    ['Apple', 'Banana', 'Cherry'],
                     label='Fruits',
-                    options=['Apple', 'Banana', 'Cherry'],
                     multiple=True,
                     on_change=lambda e: ui.notify(', '.join(e.value)),
                 )
@@ -164,10 +164,8 @@ def selecting_options_in_a_select():
         with python_window(classes='w-[500px]', title='user assertions'):
             ui.markdown('''
                 ```python
-                fruits = user.find('Fruits')
-                fruits.click()
+                user.find('Fruits').click()
                 user.find('Apple').click()
-                fruits.click()
                 user.find('Banana').click()
                 await user.should_see('Apple, Banana')
                 ```
