@@ -171,8 +171,8 @@ class Element(Visibility):
         :param filename: name of the file
         :param callable: callable that returns the resource response
         """
-        resource = register_resource_from_callable(filename, result_callable)
-        self._props['resource_path'] = f'/_nicegui/{__version__}/dynamic_resources/{resource.key}'
+        register_resource_from_callable(filename, result_callable)
+        self._props['dynamic_resource_path'] = f'/_nicegui/{__version__}/dynamic_resources'
 
     def add_slot(self, name: str, template: Optional[str] = None) -> Slot:
         """Add a slot to the element.

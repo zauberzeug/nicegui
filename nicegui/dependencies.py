@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING, Callable, Dict, Iterable, List, Set, Tuple
 import vbuild
 
 from .dataclasses import KWONLY_SLOTS
-from .helpers import hash_file_path, hash_string
+from .helpers import hash_file_path
 from .version import __version__
 
 if TYPE_CHECKING:
@@ -46,7 +46,6 @@ class Resource:
 
 @dataclass(**KWONLY_SLOTS)
 class ResourceFromCallable:
-    key: str
     filename: str
     result_callable: Callable
 
@@ -115,10 +114,9 @@ def register_resource(path: Path) -> Resource:
 
 
 def register_resource_from_callable(filename: str, result_callable: Callable) -> ResourceFromCallable:
-    """Register a resource from a callable."""
-    key = hash_string(filename)
-    dynamic_resources[key] = ResourceFromCallable(key=key, filename=filename, result_callable=result_callable)
-    return dynamic_resources[key]
+    """Register a resource from a callable. Overwrites the previous one if it exists."""
+    dynamic_resources[filename] = ResourceFromCallable(filename=filename, result_callable=result_callable)
+    return dynamic_resources[filename]
 
 
 def compute_key(path: Path) -> str:

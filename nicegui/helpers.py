@@ -52,14 +52,9 @@ def is_file(path: Optional[Union[str, Path]]) -> bool:
         return False
 
 
-def hash_string(string: str) -> str:
-    """Hash the given string."""
-    return hashlib.sha256(string.encode()).hexdigest()[:32]
-
-
 def hash_file_path(path: Path) -> str:
     """Hash the given path."""
-    return hash_string(path.as_posix())
+    return hashlib.sha256(path.as_posix().encode()).hexdigest()[:32]
 
 
 def is_port_open(host: str, port: int) -> bool:

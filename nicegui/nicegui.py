@@ -103,12 +103,11 @@ def _get_resource(key: str, path: str) -> FileResponse:
     raise HTTPException(status_code=404, detail=f'resource "{key}" not found')
 
 
-@app.get(f'/_nicegui/{__version__}' + '/dynamic_resources/{key}/{filename}')
-def _get_dynamic_resource(key: str, filename: str) -> Response:
-    if key in dynamic_resources:
-        if filename == dynamic_resources[key].filename:
-            return dynamic_resources[key].result_callable()
-    raise HTTPException(status_code=404, detail=f'dynamic resource "{key}" not found')
+@app.get(f'/_nicegui/{__version__}' + '/dynamic_resources/{filename}')
+def _get_dynamic_resource(filename: str) -> Response:
+    if filename in dynamic_resources:
+        return dynamic_resources[filename].result_callable()
+    raise HTTPException(status_code=404, detail=f'dynamic resource "{filename}" not found')
 
 
 async def _startup() -> None:

@@ -4,7 +4,7 @@ export default {
   template: `<div></div>`,
   async mounted() {
     await this.$nextTick(); // NOTE: wait for window.path_prefix to be set
-    await loadResource(window.path_prefix + `${this.resource_path}/codehilite.css`);
+    await loadResource(window.path_prefix + `${this.dynamic_resource_path}/codehilite.css`);
     if (this.use_mermaid) {
       this.mermaid = (await import("mermaid")).default;
       this.mermaid.initialize({ startOnLoad: false });
@@ -52,7 +52,7 @@ export default {
     },
   },
   props: {
-    resource_path: String,
+    dynamic_resource_path: String,
     use_mermaid: {
       required: false,
       default: false,
