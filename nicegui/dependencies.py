@@ -48,7 +48,7 @@ class Resource:
 class ResourceFromCallable:
     key: str
     filename: str
-    callable: Callable
+    result_callable: Callable
 
 
 @dataclass(**KWONLY_SLOTS)
@@ -114,10 +114,10 @@ def register_resource(path: Path) -> Resource:
     return resources[key]
 
 
-def register_resource_from_callable(filename: str, callable: Callable) -> ResourceFromCallable:
+def register_resource_from_callable(filename: str, result_callable: Callable) -> ResourceFromCallable:
     """Register a resource from a callable."""
     key = hash_string(filename)
-    dynamic_resources[key] = ResourceFromCallable(key=key, filename=filename, callable=callable)
+    dynamic_resources[key] = ResourceFromCallable(key=key, filename=filename, result_callable=result_callable)
     return dynamic_resources[key]
 
 

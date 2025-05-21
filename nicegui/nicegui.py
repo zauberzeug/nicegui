@@ -107,7 +107,7 @@ def _get_resource(key: str, path: str) -> FileResponse:
 def _get_dynamic_resource(key: str, filename: str) -> Response:
     if key in dynamic_resources:
         if filename == dynamic_resources[key].filename:
-            return dynamic_resources[key].callable()
+            return dynamic_resources[key].result_callable()
     raise HTTPException(status_code=404, detail=f'dynamic resource "{key}" not found')
 
 

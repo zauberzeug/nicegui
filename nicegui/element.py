@@ -165,13 +165,13 @@ class Element(Visibility):
 
     def add_dynamic_resource(self,
                              filename: str,
-                             callable: Callable) -> None:
+                             result_callable: Callable) -> None:
         """Add a resource from a callable.
 
         :param filename: name of the file
         :param callable: callable that returns the resource response
         """
-        resource = register_resource_from_callable(filename, callable)
+        resource = register_resource_from_callable(filename, result_callable)
         self._props['resource_path'] = f'/_nicegui/{__version__}/dynamic_resources/{resource.key}'
 
     def add_slot(self, name: str, template: Optional[str] = None) -> Slot:
