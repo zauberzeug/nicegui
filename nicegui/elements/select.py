@@ -1,9 +1,9 @@
 from collections.abc import Generator, Iterable
 from copy import deepcopy
-from typing import Any, Callable, Dict, Iterator, List, Literal, Optional, Union
+from typing import Any, Callable, Collection, Dict, Iterator, List, Literal, Optional, Union
 
 from ..events import GenericEventArguments
-from .choice_element import ChoiceElement
+from .choice_element import ChoiceElement, Option
 from .mixins.disableable_element import DisableableElement
 from .mixins.validation_element import ValidationElement
 
@@ -11,7 +11,7 @@ from .mixins.validation_element import ValidationElement
 class Select(ValidationElement, ChoiceElement, DisableableElement, component='select.js'):
 
     def __init__(self,
-                 options: Union[List, Dict], *,
+                 options: Collection[Option], *,
                  label: Optional[str] = None,
                  value: Any = None,
                  on_change: Optional[Callable[..., Any]] = None,
@@ -85,7 +85,7 @@ class Select(ValidationElement, ChoiceElement, DisableableElement, component='se
             if e.args is None:
                 return []
             else:
-                args = [self._values[arg['value']] if isinstance(arg, dict) else arg for arg in e.args]
+                args = [arg['value'] if isinstance(arg, dict) else arg for arg in e.args]
                 for arg in e.args:
                     if isinstance(arg, str):
                         self._handle_new_value(arg)
@@ -98,25 +98,14 @@ class Select(ValidationElement, ChoiceElement, DisableableElement, component='se
                     new_value = self._handle_new_value(e.args)
                     return new_value if new_value in self._values else None
                 else:
-                    return self._values[e.args['value']]
+                    return e.args['value']
 
-    def _value_to_model_value(self, value: Any) -> Any:
+    def _value_to_model_value(self, value: Any) -> List[Option] | Option:
         # pylint: disable=no-else-return
         if self.multiple:
-            result = []
-            for item in value or []:
-                try:
-                    index = self._values.index(item)
-                    result.append({'value': index, 'label': self._labels[index]})
-                except ValueError:
-                    pass
-            return result
+            return [self._values_to_option[v] for v in value or []]
         else:
-            try:
-                index = self._values.index(value)
-                return {'value': index, 'label': self._labels[index]}
-            except ValueError:
-                return None
+            return self._values_to_option.get(value)
 
     def _generate_key(self, value: str) -> Any:
         if isinstance(self.key_generator, Generator):
