@@ -14,7 +14,7 @@ from .mixins.validation_element import (ValidationDict, ValidationElement,
 class Select(LabelElement, ValidationElement, ChoiceElement, DisableableElement, component='select.js'):
 
     def __init__(self,
-                 options: Collection[Option], *,
+                 options: Collection[Option | str], *,
                  label: Optional[str] = None,
                  value: Any = None,
                  on_change: Optional[Handler[ValueChangeEventArguments]] = None,
@@ -68,8 +68,6 @@ class Select(LabelElement, ValidationElement, ChoiceElement, DisableableElement,
             next(key_generator)  # prime the key generator, prepare it to receive the first value
         self.key_generator = key_generator
         if new_value_mode is not None:
-            if isinstance(options, dict) and new_value_mode == 'add' and key_generator is None:
-                raise ValueError('new_value_mode "add" is not supported for dict options without key_generator')
             self._props['new-value-mode'] = new_value_mode
             with_input = True
         if with_input:

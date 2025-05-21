@@ -1,4 +1,5 @@
-from typing import Any, Collection, Dict, Optional, TypedDict
+from token import OP
+from typing import Any, Collection, Optional, TypedDict, Union
 
 from ..events import Handler, ValueChangeEventArguments
 from .mixins.value_element import ValueElement
@@ -9,15 +10,21 @@ class Option(TypedDict):
     value: Any
 
 
+def _to_option(value: Union[Option, str]) -> Option:
+    if isinstance(value, Option):
+        return value
+    return Option(label=value, value=value)
+
+
 class ChoiceElement(ValueElement):
 
     def __init__(self, *,
                  tag: Optional[str] = None,
-                 options: Collection[Option],
+                 options: Collection[Option | str],
                  value: Any,
                  on_change: Optional[Handler[ValueChangeEventArguments]] = None,
                  ) -> None:
-        self.options = options
+        self.options: list[Option] = [_to_option(v) for v in options]
         self._values: list[str] = []
         self._labels: list[str] = []
         self._values_to_option: dict[str, Option] = {
@@ -32,7 +39,7 @@ class ChoiceElement(ValueElement):
     def _update_values_and_labels(self) -> None:
         self._values = [o["value"] for o in self.options]
         self._labels = [o["label"] for o in self.options]
-        self._values_to_option: Dict[str, Option] = {
+        self._values_to_option: dict[str, Option] = {
             o["value"]: o for o in self.options
         }
 
