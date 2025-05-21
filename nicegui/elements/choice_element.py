@@ -1,3 +1,4 @@
+from token import OP
 from typing import Any, Callable, Collection, Dict, List, Optional, Union, TypedDict
 
 from .mixins.value_element import ValueElement
@@ -8,15 +9,21 @@ class Option(TypedDict):
     value: Any
 
 
+def _to_option(value: Union[Option, str]) -> Option:
+    if isinstance(value, Option):
+        return value
+    return Option(label=value, value=value)
+
+
 class ChoiceElement(ValueElement):
 
     def __init__(self, *,
                  tag: Optional[str] = None,
-                 options: Collection[Option],
+                 options: Collection[Option | str],
                  value: Any,
                  on_change: Optional[Callable[..., Any]] = None,
                  ) -> None:
-        self.options = options
+        self.options: List[Option] = [_to_option(v) for v in options]
         self._values: List[str] = []
         self._labels: List[str] = []
         self._values_to_option: Dict[str, Option] = {
