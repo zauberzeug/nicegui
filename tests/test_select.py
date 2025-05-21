@@ -4,7 +4,7 @@ import pytest
 from selenium.webdriver import Keys
 
 from nicegui import ui
-from nicegui.testing import Screen
+from nicegui.testing import Screen, User
 
 
 def test_select(screen: Screen):
@@ -205,3 +205,53 @@ def test_invalid_value(screen: Screen):
         ui.select(['A', 'B', 'C'], value='X')
 
     screen.open('/')
+
+
+@pytest.mark.parametrize('multiple', [False, True])
+def test_opening_and_closing_popup_with_screen(multiple: bool, screen: Screen):
+    select = ui.select(['Apple', 'Banana', 'Cherry'], label='Select', value='Apple', multiple=multiple).classes('w-24')
+    ui.label().bind_text_from(select, '_is_showing_popup', lambda v: f'is_showing_popup = {v}')
+    ui.label().bind_text_from(select, 'value', lambda v: f'value = {str(v).lower()}')
+
+    screen.open('/')
+    screen.should_contain('is_showing_popup = False')
+
+    screen.find_element(select).click()
+    screen.should_contain('is_showing_popup = True')
+    screen.find_element(select).click()
+    screen.should_contain('is_showing_popup = False')
+
+    screen.find_element(select).click()
+    screen.should_contain('is_showing_popup = True')
+    screen.click('Banana')
+    if multiple:
+        screen.should_contain("value = ['apple', 'banana']")
+        screen.should_contain('is_showing_popup = True')
+    else:
+        screen.should_contain('value = banana')
+        screen.should_contain('is_showing_popup = False')
+
+
+@pytest.mark.parametrize('multiple', [False, True])
+async def test_opening_and_closing_popup_with_user(multiple: bool, user: User):
+    select = ui.select(['Apple', 'Banana', 'Cherry'], label='Select', value='Apple', multiple=multiple).mark('select')
+    ui.label().bind_text_from(select, '_is_showing_popup', lambda v: f'is_showing_popup = {v}')
+    ui.label().bind_text_from(select, 'value', lambda v: f'value = {str(v).lower()}')
+
+    await user.open('/')
+    await user.should_see('is_showing_popup = False')
+
+    user.find('select').click()
+    await user.should_see('is_showing_popup = True')
+    user.find('select').click()
+    await user.should_see('is_showing_popup = False')
+
+    user.find('select').click()
+    await user.should_see('is_showing_popup = True')
+    user.find('Banana').click()
+    if multiple:
+        await user.should_see("value = ['apple', 'banana']")
+        await user.should_see('is_showing_popup = True')
+    else:
+        await user.should_see('value = banana')
+        await user.should_see('is_showing_popup = False')
