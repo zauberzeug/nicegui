@@ -16,6 +16,7 @@ from . import (
     number_documentation,
     radio_documentation,
     range_documentation,
+    rating_documentation,
     select_documentation,
     slider_documentation,
     switch_documentation,
@@ -39,6 +40,7 @@ doc.intro(checkbox_documentation)
 doc.intro(switch_documentation)
 doc.intro(slider_documentation)
 doc.intro(range_documentation)
+doc.intro(rating_documentation)
 doc.intro(joystick_documentation)
 doc.intro(input_documentation)
 doc.intro(textarea_documentation)

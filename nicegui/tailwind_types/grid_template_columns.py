@@ -14,4 +14,5 @@ GridTemplateColumns = Literal[
     '11',
     '12',
     'none',
+    'subgrid',
 ]

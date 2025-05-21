@@ -1,4 +1,4 @@
-from nicegui import ui
+from nicegui import ui, ElementFilter
 
 from . import doc
 
@@ -26,7 +26,7 @@ def main_demo() -> None:
 
     ui.button('Update', on_click=update)
     ui.button('Select all', on_click=lambda: grid.run_grid_method('selectAll'))
-    ui.button('Show parent', on_click=lambda: grid.run_column_method('setColumnVisible', 'parent', True))
+    ui.button('Show parent', on_click=lambda: grid.run_grid_method('setColumnsVisible', ['parent'], True))
 
 
 @doc.demo('Select AG Grid Rows', '''
@@ -42,36 +42,39 @@ def main_demo() -> None:
     See the [AG Grid documentation](https://www.ag-grid.com/javascript-data-grid/row-selection/#example-single-row-selection) for more information.
 ''')
 def aggrid_with_selectable_rows():
-    grid = ui.aggrid({
-        'columnDefs': [
-            {'headerName': 'Name', 'field': 'name', 'checkboxSelection': True},
-            {'headerName': 'Age', 'field': 'age'},
-        ],
-        'rowData': [
-            {'name': 'Alice', 'age': 18},
-            {'name': 'Bob', 'age': 21},
-            {'name': 'Carol', 'age': 42},
-        ],
-        'rowSelection': 'multiple',
-    }).classes('max-h-40')
+    # @ui.page('/')
+    def page():
+        grid = ui.aggrid({
+            'columnDefs': [
+                {'headerName': 'Name', 'field': 'name', 'checkboxSelection': True},
+                {'headerName': 'Age', 'field': 'age'},
+            ],
+            'rowData': [
+                {'name': 'Alice', 'age': 18},
+                {'name': 'Bob', 'age': 21},
+                {'name': 'Carol', 'age': 42},
+            ],
+            'rowSelection': 'multiple',
+        }).classes('max-h-40')
 
-    async def output_selected_rows():
-        rows = await grid.get_selected_rows()
-        if rows:
-            for row in rows:
+        async def output_selected_rows():
+            rows = await grid.get_selected_rows()
+            if rows:
+                for row in rows:
+                    ui.notify(f"{row['name']}, {row['age']}")
+            else:
+                ui.notify('No rows selected.')
+
+        async def output_selected_row():
+            row = await grid.get_selected_row()
+            if row:
                 ui.notify(f"{row['name']}, {row['age']}")
-        else:
-            ui.notify('No rows selected.')
+            else:
+                ui.notify('No row selected!')
 
-    async def output_selected_row():
-        row = await grid.get_selected_row()
-        if row:
-            ui.notify(f"{row['name']}, {row['age']}")
-        else:
-            ui.notify('No row selected!')
-
-    ui.button('Output selected rows', on_click=output_selected_rows)
-    ui.button('Output selected row', on_click=output_selected_row)
+        ui.button('Output selected rows', on_click=output_selected_rows)
+        ui.button('Output selected row', on_click=output_selected_row)
+    page()  # HIDE
 
 
 @doc.demo('Filter Rows using Mini Filters', '''
@@ -125,6 +128,19 @@ def aggrid_from_pandas():
 
     df = pd.DataFrame(data={'col1': [1, 2], 'col2': [3, 4]})
     ui.aggrid.from_pandas(df).classes('max-h-40')
+
+
+@doc.demo('Create Grid from Polars DataFrame', '''
+    You can create an AG Grid from a Polars DataFrame using the `from_polars` method.
+    This method takes a Polars DataFrame as input and returns an AG Grid.
+
+    *Added in version 2.7.0*
+''')
+def aggrid_from_polars():
+    import polars as pl
+
+    df = pl.DataFrame(data={'col1': [1, 2], 'col2': [3, 4]})
+    ui.aggrid.from_polars(df).classes('max-h-40')
 
 
 @doc.demo('Render columns as HTML', '''
@@ -224,18 +240,39 @@ def aggrid_run_row_method():
 @doc.demo('Filter return values', '''
     You can filter the return values of method calls by passing string that defines a JavaScript function.
     This demo runs the grid method "getDisplayedRowAtIndex" and returns the "data" property of the result.
+
+    Note that requesting data from the client is only supported for page functions, not for the shared auto-index page.
 ''')
 def aggrid_filter_return_values():
-    grid = ui.aggrid({
-        'columnDefs': [{'field': 'name'}],
-        'rowData': [{'name': 'Alice'}, {'name': 'Bob'}],
-    })
+    # @ui.page('/')
+    def page():
+        grid = ui.aggrid({
+            'columnDefs': [{'field': 'name'}],
+            'rowData': [{'name': 'Alice'}, {'name': 'Bob'}],
+        })
 
-    async def get_first_name() -> None:
-        row = await grid.run_grid_method('(g) => g.getDisplayedRowAtIndex(0).data')
-        ui.notify(row['name'])
+        async def get_first_name() -> None:
+            row = await grid.run_grid_method('g => g.getDisplayedRowAtIndex(0).data')
+            ui.notify(row['name'])
 
-    ui.button('Get First Name', on_click=get_first_name)
+        ui.button('Get First Name', on_click=get_first_name)
+    page()  # HIDE
+
+
+@doc.demo('Handle theme change', '''
+    You can change the theme of the AG Grid by adding or removing classes.
+    This demo shows how to change the theme using a switch.
+''')
+def aggrid_handle_theme_change():
+    from nicegui import events
+
+    grid = ui.aggrid({})
+
+    def handle_theme_change(e: events.ValueChangeEventArguments):
+        grid.classes(add='ag-theme-balham-dark' if e.value else 'ag-theme-balham',
+                     remove='ag-theme-balham ag-theme-balham-dark')
+
+    ui.switch('Dark', on_change=handle_theme_change)
 
 
 doc.reference(ui.aggrid)

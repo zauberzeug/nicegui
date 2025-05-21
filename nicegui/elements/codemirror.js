@@ -13,9 +13,6 @@ export default {
     highlightWhitespace: Boolean,
   },
   watch: {
-    value(newValue) {
-      this.setEditorValue(newValue);
-    },
     language(newLanguage) {
       this.setLanguage(newLanguage);
     },
@@ -90,6 +87,9 @@ export default {
         effects: this.themeConfig.reconfigure([new_theme]),
       });
     },
+    setEditorValueFromProps() {
+      this.setEditorValue(this.value);
+    },
     setEditorValue(value) {
       if (!this.editor) return;
       if (this.editor.state.doc.toString() === value) return;
@@ -147,7 +147,8 @@ export default {
     },
   },
   async mounted() {
-    this.CM = await import(`${this.resource_path}/editor.js`);
+    await this.$nextTick(); // NOTE: wait for window.path_prefix to be set
+    this.CM = await import(window.path_prefix + `${this.resource_path}/editor.js`);
     const CM = this.CM;
 
     // This is used to prevent emitting the value we just received from the server.

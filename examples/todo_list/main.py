@@ -37,7 +37,8 @@ def todo_ui():
         ui.label(f'Remaining: {sum(not item.done for item in todos.items)}')
     for item in todos.items:
         with ui.row().classes('items-center'):
-            ui.checkbox(value=item.done, on_change=todo_ui.refresh).bind_value(item, 'done')
+            ui.checkbox(value=item.done, on_change=todo_ui.refresh).bind_value(item, 'done') \
+                .mark(f'checkbox-{item.name.lower().replace(" ", "-")}')
             ui.input(value=item.name).classes('flex-grow').bind_value(item, 'name')
             ui.button(on_click=lambda item=item: todos.remove(item), icon='delete').props('flat fab-mini color=grey')
 
@@ -51,7 +52,9 @@ todos.add('Call mom')
 with ui.card().classes('w-80 items-stretch'):
     ui.label().bind_text_from(todos, 'title').classes('text-semibold text-2xl')
     todo_ui()
-    add_input = ui.input('New item').classes('mx-12')
-    add_input.on('keydown.enter', lambda: (todos.add(add_input.value), add_input.set_value('')))
+    add_input = ui.input('New item').classes('mx-12').mark('new-item')
+    add_input.on('keydown.enter', lambda: todos.add(add_input.value))
+    add_input.on('keydown.enter', lambda: add_input.set_value(''))
 
-ui.run()
+if __name__ in {'__main__', '__mp_main__'}:
+    ui.run()

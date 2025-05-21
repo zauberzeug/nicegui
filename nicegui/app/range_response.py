@@ -1,6 +1,6 @@
 import hashlib
 import mimetypes
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Generator
 
@@ -13,7 +13,7 @@ mimetypes.init()
 def get_range_response(file: Path, request: Request, chunk_size: int) -> Response:
     """Get a Response for the given file, supporting range-requests, E-Tag and Last-Modified."""
     file_size = file.stat().st_size
-    last_modified_time = datetime.utcfromtimestamp(file.stat().st_mtime)
+    last_modified_time = datetime.fromtimestamp(file.stat().st_mtime, timezone.utc)
     start = 0
     end = file_size - 1
     status_code = 200

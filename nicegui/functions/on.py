@@ -1,10 +1,11 @@
-from typing import Any, Callable, Optional, Sequence, Union
+from typing import Optional, Sequence, Union
 
 from ..context import context
+from ..events import GenericEventArguments, Handler
 
 
 def on(type: str,  # pylint: disable=redefined-builtin
-       handler: Optional[Callable[..., Any]] = None,
+       handler: Optional[Handler[GenericEventArguments]] = None,
        args: Union[None, Sequence[str], Sequence[Optional[Sequence[str]]]] = None, *,
        throttle: float = 0.0,
        leading_events: bool = True,

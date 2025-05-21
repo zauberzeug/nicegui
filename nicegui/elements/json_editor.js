@@ -1,14 +1,16 @@
-import { JSONEditor } from "index";
+import { JSONEditor, createAjvValidator } from "standalone";
 
 export default {
   template: "<div></div>",
   mounted() {
     this.properties.onChange = (updatedContent, previousContent, { contentErrors, patchResult }) => {
-      this.$emit("change", { content: updatedContent, errors: contentErrors });
+      this.$emit("content_change", { content: updatedContent, errors: contentErrors });
     };
     this.properties.onSelect = (selection) => {
-      this.$emit("select", { selection: selection });
+      this.$emit("content_select", { selection: selection });
     };
+
+    this.checkValidation();
     this.editor = new JSONEditor({
       target: this.$el,
       props: this.properties,
@@ -21,8 +23,14 @@ export default {
     this.destroyEditor();
   },
   methods: {
+    checkValidation() {
+      if (this.schema !== undefined) {
+        this.properties.validator = createAjvValidator({ schema: this.schema, schemaDefinitions: {}, ajvOptions: {} });
+      }
+    },
     update_editor() {
       if (this.editor) {
+        this.checkValidation();
         this.editor.updateProps(this.properties);
       }
     },
@@ -43,5 +51,6 @@ export default {
   },
   props: {
     properties: Object,
+    schema: Object,
   },
 };

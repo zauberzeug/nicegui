@@ -41,7 +41,9 @@ def main() -> None:
     parser.add_argument('--add-data', type=str, action='append', default=[
         f'{Path(nicegui.__file__).parent}{os.pathsep}nicegui',
     ], help='Include additional data.')
-    parser.add_argument('--dry-run', action='store_true', help='Dry run', default=False)
+    parser.add_argument('--icon', type=str, help='Path to an icon file.')
+    parser.add_argument('--osx-bundle-identifier', type=str, help='Mac OS .app bundle identifier.')
+    parser.add_argument('--dry-run', action='store_true', help='Dry run.', default=False)
     parser.add_argument('main', default='main.py', help='Main file which calls `ui.run()`.')
     args = parser.parse_args()
 
@@ -57,6 +59,11 @@ def main() -> None:
         command.append('--onefile')
     for data in args.add_data:
         command.extend(['--add-data', data])
+    if args.icon:
+        command.extend(['--icon', args.icon])
+    if args.osx_bundle_identifier:
+        command.extend(['--osx-bundle-identifier', args.osx_bundle_identifier])
+
     command.extend([args.main])
 
     print('PyInstaller command:')

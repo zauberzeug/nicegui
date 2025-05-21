@@ -2,12 +2,21 @@ import inspect
 from typing import Callable, Optional
 
 from nicegui import binding, ui
+from nicegui.elements.markdown import remove_indentation
 
 from ..style import create_anchor_name, subheading
+from .custom_restructured_text import CustomRestructuredText as custom_restructured_text
 
 
 def generate_class_doc(class_obj: type, part_title: str) -> None:
     """Generate documentation for a class including all its methods and properties."""
+    doc = class_obj.__doc__ or class_obj.__init__.__doc__
+    if doc and ':param' in doc:
+        subheading('Initializer', anchor_name=create_anchor_name(part_title.replace('Reference', 'Initializer')))
+        description = remove_indentation(doc.split('\n', 1)[-1])
+        lines = [line.replace(':param ', ':') for line in description.splitlines() if ':param' in line]
+        custom_restructured_text('\n'.join(lines)).classes('bold-links arrow-links rst-param-tables')
+
     mro = [base for base in class_obj.__mro__ if base.__module__.startswith('nicegui.')]
     ancestors = mro[1:]
     attributes = {}
@@ -95,9 +104,9 @@ def _generate_method_signature_description(method: Callable) -> str:
     return description
 
 
-def _render_docstring(doc: str) -> ui.restructured_text:
+def _render_docstring(doc: str) -> custom_restructured_text:
     doc = _remove_indentation_from_docstring(doc)
-    return ui.restructured_text(doc).classes('bold-links arrow-links rst-param-tables')
+    return custom_restructured_text(doc).classes('bold-links arrow-links rst-param-tables')
 
 
 def _remove_indentation_from_docstring(text: str) -> str:

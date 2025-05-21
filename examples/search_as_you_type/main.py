@@ -22,7 +22,7 @@ async def search(e: events.ValueChangeEventArguments) -> None:
     response = await running_query
     if response.text == '':
         return
-    with results:  # enter the context of the the results row
+    with results:  # enter the context of the results row
         for drink in response.json()['drinks'] or []:  # iterate over the response data of the api
             with ui.image(drink['strDrinkThumb']).classes('w-64'):
                 ui.label(drink['strDrink']).classes('absolute-bottom text-subtitle2 text-center')

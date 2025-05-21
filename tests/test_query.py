@@ -1,3 +1,5 @@
+from typing import List
+
 from nicegui import ui
 from nicegui.testing import Screen
 
@@ -12,17 +14,20 @@ def test_query_body(screen: Screen):
     ui.button('Data X = 1', on_click=lambda: ui.query('body').props('data-x=1'))
     ui.button('Data X = 2', on_click=lambda: ui.query('body').props('data-x=2'))
 
+    def get_bg_classes() -> List[str]:
+        return [c for c in (screen.find_by_tag('body').get_attribute('class') or '').split() if c.startswith('bg-')]
+
     screen.open('/')
     screen.should_contain('Hello')
-    assert screen.find_by_tag('body').get_attribute('class') == 'desktop no-touch body--light bg-orange-100'
+    assert get_bg_classes() == ['bg-orange-100']
 
     screen.click('Red background')
     screen.wait(0.5)
-    assert screen.find_by_tag('body').get_attribute('class') == 'desktop no-touch body--light bg-red-100'
+    assert get_bg_classes() == ['bg-red-100']
 
     screen.click('Blue background')
     screen.wait(0.5)
-    assert screen.find_by_tag('body').get_attribute('class') == 'desktop no-touch body--light bg-blue-100'
+    assert get_bg_classes() == ['bg-blue-100']
 
     screen.click('Small padding')
     screen.wait(0.5)

@@ -4,7 +4,8 @@
 
 <script>
 export default {
-  mounted() {
+  async mounted() {
+    await import("nipplejs");
     const joystick = nipplejs.create({
       zone: this.$el.children[0],
       position: { left: "50%", top: "50%" },
@@ -23,9 +24,8 @@ export default {
 
 <style scoped>
 :scope > div {
-  background-color: AliceBlue;
-  width: 10em;
-  height: 10em;
+  width: 100%;
+  height: 100%;
   position: relative;
 }
 </style>

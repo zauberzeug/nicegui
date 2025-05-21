@@ -47,6 +47,25 @@ def dynamic_properties() -> None:
     })
 
 
+@doc.demo('EChart with custom theme', '''
+    You can apply custom themes created with the [Theme Builder](https://echarts.apache.org/en/theme-builder.html).
+
+    Instead of passing the theme as a dictionary, you can pass a URL to a JSON file.
+    This allows the browser to cache the theme and load it faster when the same theme is used multiple times.
+
+    *Added in version 2.15.0*
+''')
+def custom_theme() -> None:
+    ui.echart({
+        'xAxis': {'type': 'category'},
+        'yAxis': {'type': 'value'},
+        'series': [{'type': 'bar', 'data': [20, 10, 30, 50, 40, 30]}],
+    }, theme={
+        'color': ['#b687ac', '#28738a', '#a78f8f'],
+        'backgroundColor': 'rgba(254,248,239,1)',
+    })
+
+
 @doc.demo('EChart from pyecharts', '''
     You can create an EChart element from a pyecharts object using the `from_pyecharts` method.
     For defining dynamic options like a formatter function, you can use the `JsCode` class from `pyecharts.commons.utils`.
@@ -79,25 +98,30 @@ def echart_from_pyecharts_demo():
 
     The colon ":" in front of the method name "setOption" indicates that the argument is a JavaScript expression
     that is evaluated on the client before it is passed to the method.
+
+    Note that requesting data from the client is only supported for page functions, not for the shared auto-index page.
 ''')
 def methods_demo() -> None:
-    echart = ui.echart({
-        'xAxis': {'type': 'category', 'data': ['Mon', 'Tue', 'Wed', 'Thu', 'Fri']},
-        'yAxis': {'type': 'value'},
-        'series': [{'type': 'line', 'data': [150, 230, 224, 218, 135]}],
-    })
+    # @ui.page('/')
+    def page():
+        echart = ui.echart({
+            'xAxis': {'type': 'category', 'data': ['Mon', 'Tue', 'Wed', 'Thu', 'Fri']},
+            'yAxis': {'type': 'value'},
+            'series': [{'type': 'line', 'data': [150, 230, 224, 218, 135]}],
+        })
 
-    ui.button('Show Loading', on_click=lambda: echart.run_chart_method('showLoading'))
-    ui.button('Hide Loading', on_click=lambda: echart.run_chart_method('hideLoading'))
+        ui.button('Show Loading', on_click=lambda: echart.run_chart_method('showLoading'))
+        ui.button('Hide Loading', on_click=lambda: echart.run_chart_method('hideLoading'))
 
-    async def get_width():
-        width = await echart.run_chart_method('getWidth')
-        ui.notify(f'Width: {width}')
-    ui.button('Get Width', on_click=get_width)
+        async def get_width():
+            width = await echart.run_chart_method('getWidth')
+            ui.notify(f'Width: {width}')
+        ui.button('Get Width', on_click=get_width)
 
-    ui.button('Set Tooltip', on_click=lambda: echart.run_chart_method(
-        ':setOption', r'{tooltip: {formatter: params => "$" + params.value}}',
-    ))
+        ui.button('Set Tooltip', on_click=lambda: echart.run_chart_method(
+            ':setOption', r'{tooltip: {formatter: params => "$" + params.value}}',
+        ))
+    page()  # HIDE
 
 
 @doc.demo('Arbitrary chart events', '''
@@ -115,6 +139,23 @@ def events_demo() -> None:
         f'Selected point {e.args["fromActionPayload"]["dataIndexInside"]}'
     ))
     label = ui.label()
+
+
+@doc.demo('3D Graphing', '''
+    Charts will automatically be 3D enabled if the initial options contain the string "3D".
+    If not, set the `enable_3d` argument to `True`.
+''')
+def echarts_gl_demo() -> None:
+    ui.echart({
+        'xAxis3D': {},
+        'yAxis3D': {},
+        'zAxis3D': {},
+        'grid3D': {},
+        'series': [{
+            'type': 'line3D',
+            'data': [[1, 1, 1], [3, 3, 3]],
+        }],
+    })
 
 
 doc.reference(ui.echart)

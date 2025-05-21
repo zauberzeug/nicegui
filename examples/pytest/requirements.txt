@@ -1,7 +1,0 @@
-icecream
-autopep8
-pytest-selenium
-pytest-asyncio
-pytest
-webdriver-manager
-selenium

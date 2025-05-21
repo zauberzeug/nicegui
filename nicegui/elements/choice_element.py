@@ -1,6 +1,6 @@
-from token import OP
-from typing import Any, Callable, Collection, Dict, List, Optional, Union, TypedDict
+from typing import Any, Dict, List, Optional, Union, Callable, Collection, TypedDict
 
+from ..events import Handler, ValueChangeEventArguments
 from .mixins.value_element import ValueElement
 
 
@@ -21,7 +21,7 @@ class ChoiceElement(ValueElement):
                  tag: Optional[str] = None,
                  options: Collection[Option | str],
                  value: Any,
-                 on_change: Optional[Callable[..., Any]] = None,
+                 on_change: Optional[Handler[ValueChangeEventArguments]] = None,
                  ) -> None:
         self.options: List[Option] = [_to_option(v) for v in options]
         self._values: List[str] = []
@@ -30,6 +30,8 @@ class ChoiceElement(ValueElement):
             o["value"]: o for o in self.options
         }
         self._update_values_and_labels()
+        if not isinstance(value, list) and value is not None and value not in self._values:
+            raise ValueError(f'Invalid value: {value}')
         super().__init__(tag=tag, value=value, on_value_change=on_change)
         self._update_options()
 
@@ -59,7 +61,6 @@ class ChoiceElement(ValueElement):
         :param value: The new value. If not given, the current value is kept.
         """
         self.options = options
-        self.update()
         if value is not ...:
             self.value = value
-            self.update()
+        self.update()

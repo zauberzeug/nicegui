@@ -25,6 +25,19 @@ def move_elements() -> None:
     ui.button('Move X to top', on_click=lambda: x.move(target_index=0))
 
 
+@doc.demo('Move elements to slots', '''
+    This demo shows how to move elements between slots within an element.
+''')
+def move_elements_to_slots() -> None:
+    with ui.card() as card:
+        name = ui.input('Name', value='Paul')
+        name.add_slot('append')
+        icon = ui.icon('face')
+
+    ui.button('Move into input', on_click=lambda: icon.move(name, target_slot='append'))
+    ui.button('Move out of input', on_click=lambda: icon.move(card))
+
+
 @doc.demo('Default props', '''
     You can set default props for all elements of a certain class.
     This way you can avoid repeating the same props over and over again.

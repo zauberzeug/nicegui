@@ -19,3 +19,10 @@ def test_json_editor_methods(screen: Screen):
 
     screen.click('Get Data')
     screen.should_contain("Data: {'json': {'a': 1, 'b': 2}}")
+
+
+def test_json_editor_validation(screen: Screen):
+    ui.json_editor({'content': {'json': {'x': 0}}}, schema={'type': 'object', 'properties': {'x': {'type': 'string'}}})
+
+    screen.open('/')
+    screen.should_contain('must be string')

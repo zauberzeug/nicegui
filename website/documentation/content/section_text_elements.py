@@ -9,6 +9,7 @@ from . import (
     mermaid_documentation,
     restructured_text_documentation,
 )
+from .html_documentation import other_html_elements_description, other_html_elements_title, other_html_elements
 
 doc.title('*Text* Elements')
 
@@ -20,3 +21,4 @@ doc.intro(markdown_documentation)
 doc.intro(restructured_text_documentation)
 doc.intro(mermaid_documentation)
 doc.intro(html_documentation)
+doc.demo(other_html_elements_title, other_html_elements_description)(other_html_elements)

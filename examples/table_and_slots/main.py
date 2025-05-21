@@ -25,7 +25,7 @@ with ui.table(title='My Team', columns=columns, rows=rows, selection='multiple',
         with table.row():
             with table.cell():
                 ui.button(on_click=lambda: (
-                    table.add_rows({'id': time.time(), 'name': new_name.value, 'age': new_age.value}),
+                    table.add_row({'id': time.time(), 'name': new_name.value, 'age': new_age.value}),
                     new_name.set_value(None),
                     new_age.set_value(None),
                 ), icon='add').props('flat fab-mini')
@@ -35,7 +35,7 @@ with ui.table(title='My Team', columns=columns, rows=rows, selection='multiple',
                 new_age = ui.number('Age')
 
 ui.label().bind_text_from(table, 'selected', lambda val: f'Current selection: {val}')
-ui.button('Remove', on_click=lambda: table.remove_rows(*table.selected)) \
+ui.button('Remove', on_click=lambda: table.remove_rows(table.selected)) \
     .bind_visibility_from(table, 'selected', backward=lambda val: bool(val))
 
 ui.run()

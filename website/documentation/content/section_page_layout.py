@@ -8,19 +8,23 @@ from . import (
     dialog_documentation,
     doc,
     expansion_documentation,
+    fullscreen_documentation,
     grid_documentation,
     list_documentation,
     menu_documentation,
+    slide_item_documentation,
     notification_documentation,
     notify_documentation,
     pagination_documentation,
     row_documentation,
     scroll_area_documentation,
     separator_documentation,
+    skeleton_documentation,
     space_documentation,
     splitter_documentation,
     stepper_documentation,
     tabs_documentation,
+    teleport_documentation,
     timeline_documentation,
     tooltip_documentation,
 )
@@ -53,6 +57,8 @@ doc.intro(column_documentation)
 doc.intro(row_documentation)
 doc.intro(grid_documentation)
 doc.intro(list_documentation)
+doc.intro(slide_item_documentation)
+doc.intro(fullscreen_documentation)
 
 
 @doc.demo('Clear Containers', '''
@@ -80,10 +86,12 @@ def clear_containers_demo():
     ui.button('Clear', on_click=container.clear)
 
 
+doc.intro(teleport_documentation)
 doc.intro(expansion_documentation)
 doc.intro(scroll_area_documentation)
 doc.intro(separator_documentation)
 doc.intro(space_documentation)
+doc.intro(skeleton_documentation)
 doc.intro(splitter_documentation)
 doc.intro(tabs_documentation)
 doc.intro(stepper_documentation)

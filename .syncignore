@@ -10,6 +10,7 @@ venv
 .idea
 .nicegui/
 *.sqlite*
+.cursor/
 .DS_Store
 .pytest_cache/
 .vscode/

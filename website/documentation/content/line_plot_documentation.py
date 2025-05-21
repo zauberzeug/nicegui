@@ -16,7 +16,7 @@ def main_demo() -> None:
         x = now.timestamp()
         y1 = math.sin(x)
         y2 = math.cos(x)
-        line_plot.push([now], [[y1], [y2]])
+        line_plot.push([now], [[y1], [y2]], y_limits=(-1.5, 1.5))
 
     line_updates = ui.timer(0.1, update_line_plot, active=False)
     line_checkbox = ui.checkbox('active').bind_value(line_updates, 'active')

@@ -1,10 +1,21 @@
-FROM python:3.11.3-slim
+FROM python:3.11-slim
 
 LABEL maintainer="Zauberzeug GmbH <nicegui@zauberzeug.com>"
 
 RUN apt update && apt install -y curl procps
 
-RUN pip install itsdangerous prometheus_client isort docutils pandas plotly pyecharts matplotlib requests dnspython
+RUN pip install \
+    dnspython \
+    docutils \
+    isort \
+    itsdangerous \
+    matplotlib \
+    pandas \
+    plotly \
+    pyecharts \
+    pytest \
+    requests \
+    selenium
 
 RUN curl -sSL https://install.python-poetry.org | python3 - && \
     cd /usr/local/bin && \
@@ -15,7 +26,9 @@ WORKDIR /app
 
 COPY pyproject.toml poetry.lock*  ./
 
-RUN poetry install --no-root --extras "plotly matplotlib highcharts"
+RUN poetry install --no-root --extras "plotly matplotlib highcharts sass"
+
+RUN pip install latex2mathml
 
 ADD . .
 
@@ -27,7 +40,6 @@ RUN sed -i "/\[tool.poetry\]/,/]/s/version = .*/version = \"$VERSION\"/" pyproje
 RUN pip install .
 
 EXPOSE 8080
-EXPOSE 9062
 
 COPY fly-entrypoint.sh /entrypoint.sh
 

@@ -12,7 +12,7 @@ except ImportError:
     pass
 
 
-class Plotly(Element, component='plotly.vue', libraries=['lib/plotly/plotly.min.js']):
+class Plotly(Element, component='plotly.vue', dependencies=['lib/plotly/plotly.min.js']):
 
     def __init__(self, figure: Union[Dict, go.Figure]) -> None:
         """Plotly Element
@@ -37,6 +37,7 @@ class Plotly(Element, component='plotly.vue', libraries=['lib/plotly/plotly.min.
         self.figure = figure
         self.update()
         self._classes.append('js-plotly-plot')
+        self._update_method = 'update'
 
     def update_figure(self, figure: Union[Dict, go.Figure]):
         """Overrides figure instance of this Plotly chart and updates chart on client side."""

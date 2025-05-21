@@ -23,7 +23,7 @@ def control_demo() -> None:
 
 
 @doc.demo('Event subscription', '''
-    This demo shows how to subscribe to some of the [available events](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/audio#events).  
+    This demo shows how to subscribe to some of the [available events](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/audio#events).
 ''')
 def event_demo() -> None:
     a = ui.audio('https://cdn.pixabay.com/download/audio/2022/02/22/audio_d1718ab41b.mp3')

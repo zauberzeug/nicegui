@@ -3,11 +3,11 @@ from pathlib import Path
 from nicegui import ui
 
 PATH = Path(__file__).parent / 'static'
-HAPPY_FACE_SVG = (PATH / 'happy_face.svg').read_text()
-NICEGUI_WORD_SVG = (PATH / 'nicegui_word.svg').read_text()
-GITHUB_SVG = (PATH / 'github.svg').read_text()
-DISCORD_SVG = (PATH / 'discord.svg').read_text()
-REDDIT_SVG = (PATH / 'reddit.svg').read_text()
+HAPPY_FACE_SVG = (PATH / 'happy_face.svg').read_text(encoding='utf-8')
+NICEGUI_WORD_SVG = (PATH / 'nicegui_word.svg').read_text(encoding='utf-8')
+GITHUB_SVG = (PATH / 'github.svg').read_text(encoding='utf-8')
+DISCORD_SVG = (PATH / 'discord.svg').read_text(encoding='utf-8')
+REDDIT_SVG = (PATH / 'reddit.svg').read_text(encoding='utf-8')
 
 
 def face(half: bool = False) -> ui.html:

@@ -23,4 +23,17 @@ def main_demo() -> None:
     ))
 
 
+@doc.demo('Binding to a switch', '''
+    The value of the `ui.dark_mode` element can be bound to other elements like a `ui.switch`.
+''')
+def bind_to_switch() -> None:
+    # dark = ui.dark_mode()
+    # ui.switch('Dark mode').bind_value(dark)
+    # END OF DEMO
+    ui.switch('Dark mode', on_change=lambda e: (
+        e.sender.style('color: white' if e.value else 'color: black'),
+        e.sender.parent_slot.parent.style(f'background-color: {WINDOW_BG_COLORS["browser"][1 if e.value else 0]}'),
+    ))
+
+
 doc.reference(ui.dark_mode)

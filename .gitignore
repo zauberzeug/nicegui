@@ -5,9 +5,9 @@ dist
 /test.py
 *.pickle
 screenshots/
-tests/media/
 venv
 .idea
 .nicegui/
 *.sqlite*
 .DS_Store
+.env

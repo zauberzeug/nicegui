@@ -17,5 +17,6 @@ MixBlendMode = Literal[
     'saturation',
     'color',
     'luminosity',
+    'plus-darker',
     'plus-lighter',
 ]

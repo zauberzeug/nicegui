@@ -62,8 +62,8 @@ class local_file_picker(ui.dialog):
             }
             for p in paths
         ]
-        if self.upper_limit is None and self.path != self.path.parent or \
-                self.upper_limit is not None and self.path != self.upper_limit:
+        if (self.upper_limit is None and self.path != self.path.parent) or \
+                (self.upper_limit is not None and self.path != self.upper_limit):
             self.grid.options['rowData'].insert(0, {
                 'name': '📁 <strong>..</strong>',
                 'path': str(self.path.parent),
@@ -78,5 +78,5 @@ class local_file_picker(ui.dialog):
             self.submit([str(self.path)])
 
     async def _handle_ok(self):
-        rows = await ui.run_javascript(f'getElement({self.grid.id}).gridOptions.api.getSelectedRows()')
+        rows = await self.grid.get_selected_rows()
         self.submit([r['path'] for r in rows])

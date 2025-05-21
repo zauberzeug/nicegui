@@ -62,7 +62,7 @@ def get_favicon_response() -> Response:
 
 
 def _is_remote_url(favicon: str) -> bool:
-    return favicon.startswith('http://') or favicon.startswith('https://')
+    return favicon.startswith(('http://', 'https://'))
 
 
 def _is_char(favicon: str) -> bool:

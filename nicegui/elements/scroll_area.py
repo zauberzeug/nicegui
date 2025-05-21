@@ -1,14 +1,14 @@
-from typing import Any, Callable, Literal, Optional
+from typing import Literal, Optional
 
 from typing_extensions import Self
 
 from ..element import Element
-from ..events import GenericEventArguments, ScrollEventArguments, handle_event
+from ..events import GenericEventArguments, Handler, ScrollEventArguments, handle_event
 
 
-class ScrollArea(Element):
+class ScrollArea(Element, default_classes='nicegui-scroll-area'):
 
-    def __init__(self, *, on_scroll: Optional[Callable[..., Any]] = None) -> None:
+    def __init__(self, *, on_scroll: Optional[Handler[ScrollEventArguments]] = None) -> None:
         """Scroll Area
 
         A way of customizing the scrollbars by encapsulating your content.
@@ -17,12 +17,11 @@ class ScrollArea(Element):
         :param on_scroll: function to be called when the scroll position changes
         """
         super().__init__('q-scroll-area')
-        self._classes.append('nicegui-scroll-area')
 
         if on_scroll:
             self.on_scroll(on_scroll)
 
-    def on_scroll(self, callback: Callable[..., Any]) -> Self:
+    def on_scroll(self, callback: Handler[ScrollEventArguments]) -> Self:
         """Add a callback to be invoked when the scroll position changes."""
         self.on('scroll', lambda e: self._handle_scroll(callback, e), args=[
             'verticalPosition',
@@ -36,7 +35,7 @@ class ScrollArea(Element):
         ])
         return self
 
-    def _handle_scroll(self, handler: Optional[Callable[..., Any]], e: GenericEventArguments) -> None:
+    def _handle_scroll(self, handler: Optional[Handler[ScrollEventArguments]], e: GenericEventArguments) -> None:
         handle_event(handler, ScrollEventArguments(
             sender=self,
             client=self.client,

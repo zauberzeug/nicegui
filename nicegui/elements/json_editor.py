@@ -1,18 +1,25 @@
-from typing import Any, Callable, Dict, Optional
+from typing import Dict, Optional
 
 from typing_extensions import Self
 
 from ..awaitable_response import AwaitableResponse
 from ..element import Element
-from ..events import GenericEventArguments, JsonEditorChangeEventArguments, JsonEditorSelectEventArguments, handle_event
+from ..events import (
+    GenericEventArguments,
+    Handler,
+    JsonEditorChangeEventArguments,
+    JsonEditorSelectEventArguments,
+    handle_event,
+)
 
 
-class JsonEditor(Element, component='json_editor.js', exposed_libraries=['lib/vanilla-jsoneditor/index.js']):
+class JsonEditor(Element, component='json_editor.js', dependencies=['lib/vanilla-jsoneditor/standalone.js']):
 
     def __init__(self,
                  properties: Dict, *,
-                 on_select: Optional[Callable] = None,
-                 on_change: Optional[Callable] = None,
+                 on_select: Optional[Handler[JsonEditorSelectEventArguments]] = None,
+                 on_change: Optional[Handler[JsonEditorChangeEventArguments]] = None,
+                 schema: Optional[Dict] = None,
                  ) -> None:
         """JSONEditor
 
@@ -23,9 +30,14 @@ class JsonEditor(Element, component='json_editor.js', exposed_libraries=['lib/va
         :param properties: dictionary of JSONEditor properties
         :param on_select: callback which is invoked when some of the content has been selected
         :param on_change: callback which is invoked when the content has changed
+        :param schema: optional `JSON schema <https://json-schema.org/>`_ for validating the data being edited (*added in version 2.8.0*)
         """
         super().__init__()
         self._props['properties'] = properties
+        self._update_method = 'update_editor'
+
+        if schema:
+            self._props['schema'] = schema
 
         if on_select:
             self.on_select(on_select)
@@ -33,18 +45,18 @@ class JsonEditor(Element, component='json_editor.js', exposed_libraries=['lib/va
         if on_change:
             self.on_change(on_change)
 
-    def on_change(self, callback: Callable[..., Any]) -> Self:
+    def on_change(self, callback: Handler[JsonEditorChangeEventArguments]) -> Self:
         """Add a callback to be invoked when the content changes."""
         def handle_on_change(e: GenericEventArguments) -> None:
             handle_event(callback, JsonEditorChangeEventArguments(sender=self, client=self.client, **e.args))
-        self.on('change', handle_on_change, ['content', 'errors'])
+        self.on('content_change', handle_on_change, ['content', 'errors'])
         return self
 
-    def on_select(self, callback: Callable[..., Any]) -> Self:
+    def on_select(self, callback: Handler[JsonEditorSelectEventArguments]) -> Self:
         """Add a callback to be invoked when some of the content has been selected."""
         def handle_on_select(e: GenericEventArguments) -> None:
             handle_event(callback, JsonEditorSelectEventArguments(sender=self, client=self.client, **e.args))
-        self.on('select', handle_on_select, ['selection'])
+        self.on('content_select', handle_on_select, ['selection'])
         return self
 
     @property
@@ -52,12 +64,7 @@ class JsonEditor(Element, component='json_editor.js', exposed_libraries=['lib/va
         """The property dictionary."""
         return self._props['properties']
 
-    def update(self) -> None:
-        super().update()
-        self.run_method('update_editor')
-
-    def run_editor_method(self, name: str, *args, timeout: float = 1,
-                          check_interval: float = 0.01) -> AwaitableResponse:
+    def run_editor_method(self, name: str, *args, timeout: float = 1) -> AwaitableResponse:
         """Run a method of the JSONEditor instance.
 
         See the `JSONEditor README <https://github.com/josdejong/svelte-jsoneditor/>`_ for a list of methods.
@@ -71,4 +78,4 @@ class JsonEditor(Element, component='json_editor.js', exposed_libraries=['lib/va
 
         :return: AwaitableResponse that can be awaited to get the result of the method call
         """
-        return self.run_method('run_editor_method', name, *args, timeout=timeout, check_interval=check_interval)
+        return self.run_method('run_editor_method', name, *args, timeout=timeout)

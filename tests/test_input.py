@@ -1,3 +1,6 @@
+import asyncio
+from typing import Literal, Optional
+
 import pytest
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
@@ -54,12 +57,25 @@ def test_toggle_button(screen: Screen):
     assert element.get_attribute('type') == 'password'
 
 
-@pytest.mark.parametrize('use_callable', [False, True])
-def test_input_validation(use_callable: bool, screen: Screen):
-    if use_callable:
+@pytest.mark.parametrize('method', ['dict', 'sync', 'async'])
+def test_input_validation(method: Literal['dict', 'sync', 'async'], screen: Screen):
+    if method == 'sync':
         input_ = ui.input('Name', validation=lambda x: 'Short' if len(x) < 3 else 'Still short' if len(x) < 5 else None)
-    else:
+    elif method == 'dict':
         input_ = ui.input('Name', validation={'Short': lambda x: len(x) >= 3, 'Still short': lambda x: len(x) >= 5})
+    else:
+        async def validate(x: str) -> Optional[str]:
+            await asyncio.sleep(0.1)
+            return 'Short' if len(x) < 3 else 'Still short' if len(x) < 5 else None
+        input_ = ui.input('Name', validation=validate)
+
+    def assert_validation(expected: bool):
+        if method == 'async':
+            with pytest.raises(NotImplementedError):
+                input_.validate()
+            assert input_.validate(return_result=False)
+        else:
+            assert input_.validate() == expected
 
     screen.open('/')
     screen.should_contain('Name')
@@ -68,19 +84,19 @@ def test_input_validation(use_callable: bool, screen: Screen):
     element.send_keys('Jo')
     screen.should_contain('Short')
     assert input_.error == 'Short'
-    assert not input_.validate()
+    assert_validation(False)
 
     element.send_keys('hn')
     screen.should_contain('Still short')
     assert input_.error == 'Still short'
-    assert not input_.validate()
+    assert_validation(False)
 
     element.send_keys(' Doe')
     screen.wait(1.0)
     screen.should_not_contain('Short')
     screen.should_not_contain('Still short')
     assert input_.error is None
-    assert input_.validate()
+    assert_validation(True)
 
 
 def test_input_with_multi_word_error_message(screen: Screen):

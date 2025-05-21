@@ -7,13 +7,10 @@ from fastapi import HTTPException, Request
 from fastapi.responses import RedirectResponse
 from starlette.middleware.sessions import SessionMiddleware
 
-import prometheus
 from nicegui import app, ui
 from website import anti_scroll_hack, documentation, fly, main_page, svg
 
-prometheus.start_monitor(app)
-
-# session middleware is required for demo in documentation and prometheus
+# session middleware is required for demo in documentation
 app.add_middleware(SessionMiddleware, secret_key=os.environ.get('NICEGUI_SECRET_KEY', ''))
 
 on_fly = fly.setup()
@@ -26,6 +23,7 @@ app.add_static_file(local_file=svg.PATH / 'logo.png', url_path='/logo.png')
 app.add_static_file(local_file=svg.PATH / 'logo_square.png', url_path='/logo_square.png')
 
 documentation.build_search_index()
+documentation.build_tree()
 
 
 @app.post('/dark_mode')

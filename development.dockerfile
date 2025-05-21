@@ -13,4 +13,6 @@ WORKDIR /app
 COPY . .
 RUN poetry install --all-extras
 
+RUN pip install latex2mathml
+
 CMD python3 -m debugpy --listen 5678 main.py

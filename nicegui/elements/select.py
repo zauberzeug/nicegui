@@ -2,24 +2,25 @@ from collections.abc import Generator, Iterable
 from copy import deepcopy
 from typing import Any, Callable, Collection, Dict, Iterator, List, Literal, Optional, Union
 
-from ..events import GenericEventArguments
+from ..events import GenericEventArguments, Handler, ValueChangeEventArguments
 from .choice_element import ChoiceElement, Option
 from .mixins.disableable_element import DisableableElement
-from .mixins.validation_element import ValidationElement
+from .mixins.label_element import LabelElement
+from .mixins.validation_element import ValidationDict, ValidationElement, ValidationFunction
 
 
-class Select(ValidationElement, ChoiceElement, DisableableElement, component='select.js'):
+class Select(LabelElement, ValidationElement, ChoiceElement, DisableableElement, component='select.js'):
 
     def __init__(self,
                  options: Collection[Option | str], *,
                  label: Optional[str] = None,
                  value: Any = None,
-                 on_change: Optional[Callable[..., Any]] = None,
+                 on_change: Optional[Handler[ValueChangeEventArguments]] = None,
                  with_input: bool = False,
                  new_value_mode: Optional[Literal['add', 'add-unique', 'toggle']] = None,
                  multiple: bool = False,
                  clearable: bool = False,
-                 validation: Optional[Union[Callable[..., Optional[str]], Dict[str, Callable[..., bool]]]] = None,
+                 validation: Optional[Union[ValidationFunction, ValidationDict]] = None,
                  key_generator: Optional[Union[Callable[[Any], Any], Iterator[Any]]] = None,
                  ) -> None:
         """Dropdown Selection
@@ -49,7 +50,7 @@ class Select(ValidationElement, ChoiceElement, DisableableElement, component='se
         :param new_value_mode: handle new values from user input (default: None, i.e. no new values)
         :param multiple: whether to allow multiple selections
         :param clearable: whether to add a button to clear the selection
-        :param validation: dictionary of validation rules or a callable that returns an optional error message
+        :param validation: dictionary of validation rules or a callable that returns an optional error message (default: None for no validation)
         :param key_generator: a callback or iterator to generate a dictionary key for new values
         """
         self.multiple = multiple
@@ -60,9 +61,7 @@ class Select(ValidationElement, ChoiceElement, DisableableElement, component='se
                 value = [value]
             else:
                 value = value[:]  # NOTE: avoid modifying the original list which could be the list of options (#3014)
-        super().__init__(options=options, value=value, on_change=on_change, validation=validation)
-        if label is not None:
-            self._props['label'] = label
+        super().__init__(label=label, options=options, value=value, on_change=on_change, validation=validation)
         if isinstance(key_generator, Generator):
             next(key_generator)  # prime the key generator, prepare it to receive the first value
         self.key_generator = key_generator
@@ -77,6 +76,15 @@ class Select(ValidationElement, ChoiceElement, DisableableElement, component='se
             self._props['input-debounce'] = 0
         self._props['multiple'] = multiple
         self._props['clearable'] = clearable
+
+        self._is_showing_popup = False
+        self.on('popup-show', lambda e: setattr(e.sender, '_is_showing_popup', True))
+        self.on('popup-hide', lambda e: setattr(e.sender, '_is_showing_popup', False))
+
+    @property
+    def is_showing_popup(self) -> bool:
+        """Whether the options popup is currently shown."""
+        return self._is_showing_popup
 
     def _event_args_to_value(self, e: GenericEventArguments) -> Any:
         if self.multiple:

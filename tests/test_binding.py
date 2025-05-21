@@ -1,9 +1,11 @@
+import copy
+import weakref
 from typing import Dict, Optional, Tuple
 
 from selenium.webdriver.common.keys import Keys
 
-from nicegui import ui
-from nicegui.testing import Screen
+from nicegui import binding, ui
+from nicegui.testing import Screen, User
 
 
 def test_ui_select_with_tuple_as_key(screen: Screen):
@@ -74,6 +76,7 @@ def test_binding_to_input(screen: Screen):
     screen.type(Keys.TAB)
     screen.type('two')
     screen.should_contain_input('two')
+    screen.wait(0.1)
     assert data.text == 'two'
     data.text = 'three'
     screen.should_contain_input('three')
@@ -104,3 +107,80 @@ def test_missing_target_attribute(screen: Screen):
 
     screen.open('/')
     screen.should_contain("text='Hello'")
+
+
+def test_bindable_dataclass(screen: Screen):
+    @binding.bindable_dataclass(bindable_fields=['bindable'])
+    class TestClass:
+        not_bindable: str = 'not_bindable_text'
+        bindable: str = 'bindable_text'
+
+    instance = TestClass()
+
+    ui.label().bind_text_from(instance, 'not_bindable')
+    ui.label().bind_text_from(instance, 'bindable')
+
+    screen.open('/')
+    screen.should_contain('not_bindable_text')
+    screen.should_contain('bindable_text')
+
+    assert len(binding.bindings) == 2
+    assert len(binding.active_links) == 1
+    assert binding.active_links[0][1] == 'not_bindable'
+
+
+async def test_copy_instance_with_bindable_property(user: User):
+    @binding.bindable_dataclass
+    class Number:
+        value: int = 1
+
+    x = Number()
+    y = copy.copy(x)
+
+    ui.label().bind_text_from(x, 'value', lambda v: f'x={v}')
+    assert len(binding.bindings) == 1
+    assert len(binding.active_links) == 0
+
+    ui.label().bind_text_from(y, 'value', lambda v: f'y={v}')
+    assert len(binding.bindings) == 2
+    assert len(binding.active_links) == 0
+
+    await user.open('/')
+    await user.should_see('x=1')
+    await user.should_see('y=1')
+
+    y.value = 2
+    await user.should_see('x=1')
+    await user.should_see('y=2')
+
+
+def test_automatic_cleanup(screen: Screen):
+    class Model:
+        value = binding.BindableProperty()
+
+        def __init__(self, value: str) -> None:
+            self.value = value
+
+    def create_model_and_label(value: str) -> Tuple[Model, weakref.ref, ui.label]:
+        model = Model(value)
+        label = ui.label(value).bind_text(model, 'value')
+        return id(model), weakref.ref(model), label
+
+    model_id1, ref1, label1 = create_model_and_label('first label')
+    model_id2, ref2, _label2 = create_model_and_label('second label')
+
+    def is_alive(ref: weakref.ref) -> bool:
+        return ref() is not None
+
+    def has_bindable_property(model_id: int) -> bool:
+        return any(obj_id == model_id for obj_id, _ in binding.bindable_properties)
+
+    screen.open('/')
+    screen.should_contain('first label')
+    screen.should_contain('second label')
+    assert is_alive(ref1) and has_bindable_property(model_id1)
+    assert is_alive(ref2) and has_bindable_property(model_id2)
+
+    binding.remove([label1])
+    assert not is_alive(ref1) and not has_bindable_property(model_id1)
+    assert is_alive(ref2) and has_bindable_property(model_id2)

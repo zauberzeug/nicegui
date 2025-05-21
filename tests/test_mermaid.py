@@ -1,3 +1,6 @@
+import pytest
+from selenium.webdriver.common.by import By
+
 from nicegui import ui
 from nicegui.testing import Screen
 
@@ -9,13 +12,15 @@ def test_mermaid(screen: Screen):
     ''')
 
     screen.open('/')
-    assert screen.find('Node_A').get_attribute('class') == 'nodeLabel'
+    node_a = screen.selenium.find_element(By.XPATH, '//span[p[contains(text(), "Node_A")]]')
+    assert node_a.get_attribute('class') == 'nodeLabel'
 
     m.set_content('''
 graph TD;
     Node_C --> Node_D;
 ''')
-    assert screen.find('Node_C').get_attribute('class') == 'nodeLabel'
+    node_c = screen.selenium.find_element(By.XPATH, '//span[p[contains(text(), "Node_C")]]')
+    assert node_c.get_attribute('class') == 'nodeLabel'
     screen.should_not_contain('Node_A')
 
 
@@ -75,3 +80,20 @@ def test_error(screen: Screen):
     screen.open('/')
     screen.should_contain('Syntax error in text')
     screen.should_contain('Parse error on line 3')
+
+
+@pytest.mark.parametrize('security_level', ['loose', 'strict'])
+def test_click_mermaid_node(security_level: str, screen: Screen):
+    ui.mermaid('''
+        flowchart TD;
+            A;
+            click A call document.write("Success")
+    ''', config={'securityLevel': security_level})
+
+    screen.open('/')
+    screen.click('A')
+    screen.wait(0.5)
+    if security_level == 'loose':
+        screen.should_contain('Success')
+    else:
+        screen.should_not_contain('Success')

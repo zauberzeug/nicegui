@@ -2,8 +2,9 @@ import multiprocessing
 import os
 import sys
 from pathlib import Path
-from typing import Any, List, Literal, Optional, Tuple, Union
+from typing import Any, List, Literal, Optional, Tuple, TypedDict, Union
 
+from fastapi.middleware.gzip import GZipMiddleware
 from starlette.routing import Route
 from uvicorn.main import STARTUP_FAILURE
 from uvicorn.supervisors import ChangeReload, Multiprocess
@@ -16,9 +17,32 @@ from .air import Air
 from .client import Client
 from .language import Language
 from .logging import log
+from .middlewares import RedirectWithPrefixMiddleware
 from .server import CustomServerConfig, Server
 
 APP_IMPORT_STRING = 'nicegui:app'
+
+
+class ContactDict(TypedDict):
+    name: Optional[str]
+    url: Optional[str]
+    email: Optional[str]
+
+
+class LicenseInfoDict(TypedDict):
+    name: str
+    identifier: Optional[str]
+    url: Optional[str]
+
+
+class DocsConfig(TypedDict):
+    title: Optional[str]
+    summary: Optional[str]
+    description: Optional[str]
+    version: Optional[str]
+    terms_of_service: Optional[str]
+    contact: Optional[ContactDict]
+    license_info: Optional[LicenseInfoDict]
 
 
 def run(*,
@@ -31,6 +55,8 @@ def run(*,
         language: Language = 'en-US',
         binding_refresh_interval: float = 0.1,
         reconnect_timeout: float = 3.0,
+        message_history_length: int = 1000,
+        fastapi_docs: Union[bool, DocsConfig] = False,
         show: bool = True,
         on_air: Optional[Union[str, Literal[True]]] = None,
         native: bool = False,
@@ -63,6 +89,8 @@ def run(*,
     :param language: language for Quasar elements (default: `'en-US'`)
     :param binding_refresh_interval: time between binding updates (default: `0.1` seconds, bigger is more CPU friendly)
     :param reconnect_timeout: maximum time the server waits for the browser to reconnect (default: 3.0 seconds)
+    :param message_history_length: maximum number of messages that will be stored and resent after a connection interruption (default: 1000, use 0 to disable, *added in version 2.9.0*)
+    :param fastapi_docs: enable FastAPI's automatic documentation with Swagger UI, ReDoc, and OpenAPI JSON (bool or dictionary as described `here <https://fastapi.tiangolo.com/tutorial/metadata/>`_, default: `False`, *updated in version 2.9.0*)
     :param show: automatically open the UI in a browser tab (default: `True`)
     :param on_air: tech preview: `allows temporary remote access <https://nicegui.io/documentation/section_configuration_deployment#nicegui_on_air>`_ if set to `True` (default: disabled)
     :param native: open the UI in a native window of size 800x600 (default: `False`, deactivates `show`, automatically finds an open port)
@@ -90,11 +118,15 @@ def run(*,
         language=language,
         binding_refresh_interval=binding_refresh_interval,
         reconnect_timeout=reconnect_timeout,
+        message_history_length=message_history_length,
         tailwind=tailwind,
         prod_js=prod_js,
         show_welcome_message=show_welcome_message,
     )
     core.app.config.endpoint_documentation = endpoint_documentation
+    if not helpers.is_pytest():
+        core.app.add_middleware(GZipMiddleware)
+    core.app.add_middleware(RedirectWithPrefixMiddleware)
 
     for route in core.app.routes:
         if not isinstance(route, Route):
@@ -103,6 +135,25 @@ def run(*,
             route.include_in_schema = endpoint_documentation in {'internal', 'all'}
         if route.path == '/' or route.path in Client.page_routes.values():
             route.include_in_schema = endpoint_documentation in {'page', 'all'}
+
+    if fastapi_docs:
+        if not core.app.docs_url:
+            core.app.docs_url = '/docs'
+        if not core.app.redoc_url:
+            core.app.redoc_url = '/redoc'
+        if not core.app.openapi_url:
+            core.app.openapi_url = '/openapi.json'
+        if isinstance(fastapi_docs, dict):
+            core.app.title = fastapi_docs.get('title') or title
+            core.app.summary = fastapi_docs.get('summary')
+            core.app.description = fastapi_docs.get('description') or ''
+            core.app.version = fastapi_docs.get('version') or '0.1.0'
+            core.app.terms_of_service = fastapi_docs.get('terms_of_service')
+            contact = fastapi_docs.get('contact')
+            license_info = fastapi_docs.get('license_info')
+            core.app.contact = dict(contact) if contact else None
+            core.app.license_info = dict(license_info) if license_info else None
+        core.app.setup()
 
     if on_air:
         core.air = Air('' if on_air is True else on_air)
@@ -125,19 +176,26 @@ def run(*,
         host = host or '127.0.0.1'
         port = port or native_module.find_open_port()
         width, height = window_size or (800, 600)
-        native_module.activate(host, port, title, width, height, fullscreen, frameless)
+        native_host = '127.0.0.1' if host == '0.0.0.0' else host
+        native_module.activate(native_host, port, title, width, height, fullscreen, frameless)
     else:
         port = port or 8080
         host = host or '0.0.0.0'
     assert host is not None
     assert port is not None
 
+    if kwargs.get('ssl_certfile') and kwargs.get('ssl_keyfile'):
+        protocol = 'https'
+    else:
+        protocol = 'http'
+
     # NOTE: We save host and port in environment variables so the subprocess started in reload mode can access them.
     os.environ['NICEGUI_HOST'] = host
     os.environ['NICEGUI_PORT'] = str(port)
+    os.environ['NICEGUI_PROTOCOL'] = protocol
 
     if show:
-        helpers.schedule_browser(host, port)
+        helpers.schedule_browser(protocol, host, port)
 
     def split_args(args: str) -> List[str]:
         return [a.strip() for a in args.split(',')]
@@ -159,8 +217,8 @@ def run(*,
         **kwargs,
     )
     config.storage_secret = storage_secret
-    config.method_queue = native_module.method_queue if native else None
-    config.response_queue = native_module.response_queue if native else None
+    config.method_queue = native_module.native.method_queue if native else None
+    config.response_queue = native_module.native.response_queue if native else None
     Server.create_singleton(config)
 
     if (reload or config.workers > 1) and not isinstance(config.app, str):

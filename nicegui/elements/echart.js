@@ -1,11 +1,27 @@
+import "echarts";
 import { convertDynamicProperties } from "../../static/utils/dynamic_properties.js";
 
 export default {
   template: "<div></div>",
   async mounted() {
-    await this.$nextTick(); // wait for Tailwind classes to be applied
+    await new Promise((resolve) => setTimeout(resolve, 0)); // wait for Tailwind classes to be applied
+    if (this.enable_3d) {
+      await import("echarts-gl");
+    }
 
-    this.chart = echarts.init(this.$el);
+    const theme_name = this.theme ? createRandomUUID() : null;
+    try {
+      if (typeof this.theme == "string") {
+        const response = await fetch(this.theme);
+        echarts.registerTheme(theme_name, await response.json());
+      } else if (this.theme) {
+        echarts.registerTheme(theme_name, this.theme);
+      }
+    } catch (error) {
+      console.error("Could not register theme:", error);
+    }
+
+    this.chart = echarts.init(this.$el, theme_name, { renderer: this.renderer });
     this.chart.on("click", (e) => this.$emit("pointClick", e));
     for (const event of [
       "click",
@@ -50,13 +66,18 @@ export default {
       this.chart.on(event, (e) => this.$emit(`chart:${event}`, e));
     }
 
-    // Prevent interruption of chart animations due to resize operations.
-    // It is recommended to register the callbacks for such an event before setOption.
-    const createResizeObserver = () => {
-      new ResizeObserver(this.chart.resize).observe(this.$el);
-      this.chart.off("finished", createResizeObserver);
-    };
-    this.chart.on("finished", createResizeObserver);
+    let initialResizeTriggered = false;
+    const initialWidth = this.$el.offsetWidth;
+    const initialHeight = this.$el.offsetHeight;
+    new ResizeObserver(() => {
+      if (!initialResizeTriggered) {
+        initialResizeTriggered = true;
+        if (this.$el.offsetWidth === initialWidth && this.$el.offsetHeight === initialHeight) {
+          return;
+        }
+      }
+      this.chart.resize();
+    }).observe(this.$el);
 
     this.update_chart();
   },
@@ -68,6 +89,10 @@ export default {
   },
   methods: {
     update_chart() {
+      if (!this.chart) {
+        setTimeout(this.update_chart, 10);
+        return;
+      }
       convertDynamicProperties(this.options, true);
       this.chart.setOption(this.options, { notMerge: this.chart.options?.series.length != this.options.series.length });
     },
@@ -81,5 +106,8 @@ export default {
   },
   props: {
     options: Object,
+    enable_3d: Boolean,
+    renderer: String,
+    theme: String,
   },
 };

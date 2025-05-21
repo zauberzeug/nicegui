@@ -48,9 +48,31 @@ def wait_for_connected_demo():
         await ui.context.client.connected()
         await asyncio.sleep(2)
         ui.label('This text is displayed 2 seconds after the page has been fully loaded.')
-        ui.label(f'The IP address {ui.context.client.ip} was obtained from the websocket.')
 
     ui.link('wait for connection', wait_for_connection)
+
+
+@doc.demo('Multicasting', '''
+    The content on a page is private to the client (the browser tab) and has its own local element context.
+    If you want to send updates to _all_ clients of a specific page, you can use the `app.clients` iterator.
+    This is useful for modifying UI elements from a background process or from other pages.
+
+    *Added in version 2.7.0*
+''')
+def multicasting():
+    from nicegui import app
+
+    @ui.page('/multicast_receiver')
+    def page():
+        ui.label('This page will show messages from the index page.')
+
+    def send(message: str):
+        for client in app.clients('/multicast_receiver'):
+            with client:
+                ui.notify(message)
+
+    ui.button('Send message', on_click=lambda: send('Hi!'))
+    ui.link('Open receiver', '/multicast_receiver', new_tab=True)
 
 
 @doc.demo('Modularize with APIRouter', '''

@@ -1,6 +1,5 @@
-from .. import optional_features
+from .. import helpers, optional_features
 from ..element import Element
-from ..logging import log
 from .markdown import Markdown
 
 try:
@@ -22,4 +21,4 @@ except ImportError:
             """
             super().__init__()
             Markdown('Highcharts is not installed. Please run `pip install nicegui[highcharts]`.')
-            log.warning('Highcharts is not installed. Please run "pip install nicegui[highcharts]".')
+            helpers.warn_once('Highcharts is not installed. Please run "pip install nicegui[highcharts]".')

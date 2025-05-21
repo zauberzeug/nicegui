@@ -42,7 +42,7 @@ case $cmd in
         docker compose up -d --build $cmd_args
         ;;
     d | down)
-        docker compose down -d $cmd_args
+        docker compose down $cmd_args
         ;;
     s | start)
         docker compose start $cmd_args

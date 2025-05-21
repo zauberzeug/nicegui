@@ -2,12 +2,13 @@ from __future__ import annotations
 
 import time
 from pathlib import Path
-from typing import Any, Callable, List, Optional, Tuple, Union, cast
+from typing import List, Optional, Tuple, Union, cast
 
 from typing_extensions import Self
 
 from .. import optional_features
-from ..events import GenericEventArguments, MouseEventArguments, handle_event
+from ..events import GenericEventArguments, Handler, MouseEventArguments, handle_event
+from ..logging import log
 from .image import pil_to_base64
 from .mixins.content_element import ContentElement
 from .mixins.source_element import SourceElement
@@ -27,7 +28,7 @@ class InteractiveImage(SourceElement, ContentElement, component='interactive_ima
                  source: Union[str, Path, 'PIL_Image'] = '', *,  # noqa: UP037
                  content: str = '',
                  size: Optional[Tuple[float, float]] = None,
-                 on_mouse: Optional[Callable[..., Any]] = None,
+                 on_mouse: Optional[Handler[MouseEventArguments]] = None,
                  events: List[str] = ['click'],  # noqa: B006
                  cross: Union[bool, str] = False,
                  ) -> None:
@@ -67,7 +68,7 @@ class InteractiveImage(SourceElement, ContentElement, component='interactive_ima
     def set_source(self, source: Union[str, Path, 'PIL_Image']) -> None:  # noqa: UP037
         return super().set_source(source)
 
-    def on_mouse(self, on_mouse: Callable[..., Any]) -> Self:
+    def on_mouse(self, on_mouse: Handler[MouseEventArguments]) -> Self:
         """Add a callback to be invoked when a mouse event occurs."""
         def handle_mouse(e: GenericEventArguments) -> None:
             args = cast(dict, e.args)
@@ -95,5 +96,39 @@ class InteractiveImage(SourceElement, ContentElement, component='interactive_ima
 
     def force_reload(self) -> None:
         """Force the image to reload from the source."""
+        if self._props['src'].startswith('data:'):
+            log.warning('ui.interactive_image: force_reload() only works with network sources (not base64)')
+            return
         self._props['t'] = time.time()
         self.update()
+
+    def add_layer(self, *, content: str = '') -> InteractiveImageLayer:
+        """Add a new layer with its own content.
+
+        *Added in version 2.17.0*
+        """
+        with self:
+            layer = InteractiveImageLayer(source=self.source, content=content, size=self._props['size']) \
+                .classes('nicegui-interactive-image-layer')
+            self.on('loaded', lambda e: layer.run_method('updateViewbox', e.args['width'], e.args['height']))
+            return layer
+
+
+class InteractiveImageLayer(SourceElement, ContentElement, component='interactive_image.js'):
+    CONTENT_PROP = 'content'
+    PIL_CONVERT_FORMAT = 'PNG'
+
+    def __init__(self, *, source: str, content: str, size: Optional[Tuple[float, float]]) -> None:
+        """Interactive Image Layer
+
+        This element is created when adding a layer to an ``InteractiveImage``.
+
+        *Added in version 2.17.0*
+        """
+        super().__init__(source=source, content=content)
+        self._props['size'] = size
+
+    def _set_props(self, source: Union[str, Path, 'PIL_Image']) -> None:  # noqa: UP037
+        if optional_features.has('pillow') and isinstance(source, PIL_Image):
+            source = pil_to_base64(source, self.PIL_CONVERT_FORMAT)
+        super()._set_props(source)

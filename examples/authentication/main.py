@@ -11,7 +11,7 @@ from fastapi import Request
 from fastapi.responses import RedirectResponse
 from starlette.middleware.base import BaseHTTPMiddleware
 
-from nicegui import Client, app, ui
+from nicegui import app, ui
 
 # in reality users passwords would obviously need to be hashed
 passwords = {'user1': 'pass1', 'user2': 'pass2'}
@@ -27,9 +27,8 @@ class AuthMiddleware(BaseHTTPMiddleware):
 
     async def dispatch(self, request: Request, call_next):
         if not app.storage.user.get('authenticated', False):
-            if request.url.path in Client.page_routes.values() and request.url.path not in unrestricted_page_routes:
-                app.storage.user['referrer_path'] = request.url.path  # remember where the user wanted to go
-                return RedirectResponse('/login')
+            if not request.url.path.startswith('/_nicegui') and request.url.path not in unrestricted_page_routes:
+                return RedirectResponse(f'/login?redirect_to={request.url.path}')
         return await call_next(request)
 
 
@@ -38,10 +37,13 @@ app.add_middleware(AuthMiddleware)
 
 @ui.page('/')
 def main_page() -> None:
+    def logout() -> None:
+        app.storage.user.clear()
+        ui.navigate.to('/login')
+
     with ui.column().classes('absolute-center items-center'):
         ui.label(f'Hello {app.storage.user["username"]}!').classes('text-2xl')
-        ui.button(on_click=lambda: (app.storage.user.clear(), ui.navigate.to('/login')), icon='logout') \
-            .props('outline round')
+        ui.button(on_click=logout, icon='logout').props('outline round')
 
 
 @ui.page('/subpage')
@@ -50,11 +52,11 @@ def test_page() -> None:
 
 
 @ui.page('/login')
-def login() -> Optional[RedirectResponse]:
+def login(redirect_to: str = '/') -> Optional[RedirectResponse]:
     def try_login() -> None:  # local function to avoid passing username and password as arguments
         if passwords.get(username.value) == password.value:
             app.storage.user.update({'username': username.value, 'authenticated': True})
-            ui.navigate.to(app.storage.user.get('referrer_path', '/'))  # go back to where the user wanted to go
+            ui.navigate.to(redirect_to)  # go back to where the user wanted to go
         else:
             ui.notify('Wrong username or password', color='negative')
 
@@ -67,4 +69,5 @@ def login() -> Optional[RedirectResponse]:
     return None
 
 
-ui.run(storage_secret='THIS_NEEDS_TO_BE_CHANGED')
+if __name__ in {'__main__', '__mp_main__'}:
+    ui.run(storage_secret='THIS_NEEDS_TO_BE_CHANGED')

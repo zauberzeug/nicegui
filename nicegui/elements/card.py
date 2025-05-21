@@ -1,24 +1,32 @@
+from typing import Literal, Optional
+
 from typing_extensions import Self
 
 from ..element import Element
 
 
-class Card(Element):
+class Card(Element, default_classes='nicegui-card'):
 
-    def __init__(self) -> None:
+    def __init__(self, *,
+                 align_items: Optional[Literal['start', 'end', 'center', 'baseline', 'stretch']] = None,
+                 ) -> None:
         """Card
 
         This element is based on Quasar's `QCard <https://quasar.dev/vue-components/card>`_ component.
         It provides a container with a dropped shadow.
 
         Note:
-        There are subtle differences between the Quasar component and this element.
-        In contrast to this element, the original QCard has no padding by default and hides outer borders of nested elements.
+        In contrast to this element,
+        the original QCard has no padding by default and hides outer borders and shadows of nested elements.
         If you want the original behavior, use the `tight` method.
-        If you want the padding and borders for nested children, move the children into another container.
+
+        *Updated in version 2.0.0: Don't hide outer borders and shadows of nested elements anymore.*
+
+        :param align_items: alignment of the items in the card ("start", "end", "center", "baseline", or "stretch"; default: `None`)
         """
         super().__init__('q-card')
-        self._classes.append('nicegui-card')
+        if align_items:
+            self._classes.append(f'items-{align_items}')
 
     def tight(self) -> Self:
         """Remove padding and gaps between nested elements."""

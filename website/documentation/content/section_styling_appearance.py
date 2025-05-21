@@ -1,17 +1,24 @@
 from nicegui import events, ui
 
 from ..windows import browser_window, python_window
-from . import add_style_documentation, colors_documentation, dark_mode_documentation, doc, query_documentation
+from . import (
+    add_style_documentation,
+    colors_documentation,
+    dark_mode_documentation,
+    doc,
+    element_filter_documentation,
+    query_documentation,
+)
 
 doc.title('Styling & Appearance')
 
 
 @doc.demo('Styling', '''
-    NiceGUI uses the [Quasar Framework](https://quasar.dev/) version 1.0 and hence has its full design power.
+    NiceGUI uses the [Quasar Framework](https://quasar.dev/) and hence has its full design power.
     Each NiceGUI element provides a `props` method whose content is passed [to the Quasar component](https://justpy.io/quasar_tutorial/introduction/#props-of-quasar-components):
     Have a look at [the Quasar documentation](https://quasar.dev/vue-components/button#design) for all styling props.
     Props with a leading `:` can contain JavaScript expressions that are evaluated on the client.
-    You can also apply [Tailwind CSS](https://tailwindcss.com/) utility classes with the `classes` method.
+    You can also apply [Tailwind CSS](https://v3.tailwindcss.com/) utility classes with the `classes` method.
 
     If you really need to apply CSS, you can use the `style` method. Here the delimiter is `;` instead of a blank space.
 
@@ -25,7 +32,7 @@ def design_demo():
 
 doc.text('Try styling NiceGUI elements!', '''
     Try out how
-    [Tailwind CSS classes](https://tailwindcss.com/),
+    [Tailwind CSS classes](https://v3.tailwindcss.com/),
     [Quasar props](https://justpy.io/quasar_tutorial/introduction/#props-of-quasar-components),
     and CSS styles affect NiceGUI elements.
 ''')
@@ -48,7 +55,7 @@ def styling_demo():
     def live_demo_ui():
         with ui.column().classes('w-full items-stretch gap-8 no-wrap min-[1500px]:flex-row'):
             with python_window(classes='w-full max-w-[44rem]'):
-                with ui.column().classes('w-full gap-4'):
+                with ui.column().classes('w-full gap-2'):
                     ui.markdown(f'''
                         ```py
                         from nicegui import ui
@@ -56,34 +63,38 @@ def styling_demo():
                         element = {select_element.options[select_element.value]}('element')
                         ```
                     ''').classes('mb-[-0.25em]')
-                    with ui.row().classes('items-center gap-0 w-full px-2'):
+                    with ui.row().classes('items-center gap-0 w-full'):
                         def handle_classes(e: events.ValueChangeEventArguments):
                             try:
                                 element.classes(replace=e.value)
                             except ValueError:
                                 pass
                         ui.markdown("`element.classes('`")
-                        ui.input(on_change=handle_classes).classes('mt-[-0.5em] text-mono grow').props('dense')
+                        ui.input(on_change=handle_classes).classes('text-mono grow').props('dense hide-bottom-space')
                         ui.markdown("`')`")
-                    with ui.row().classes('items-center gap-0 w-full px-2'):
+                    with ui.row().classes('items-center gap-0 w-full'):
                         def handle_props(e: events.ValueChangeEventArguments):
-                            element._props = {'label': 'Button', 'color': 'primary'}
+                            element.props.clear()
+                            if isinstance(element, (ui.button, ui.input, ui.textarea)):
+                                element.props['label'] = 'element'
+                            if isinstance(element, ui.button):
+                                element.props['color'] = 'primary'
                             try:
                                 element.props(e.value)
                             except ValueError:
                                 pass
                             element.update()
                         ui.markdown("`element.props('`")
-                        ui.input(on_change=handle_props).classes('mt-[-0.5em] text-mono grow').props('dense')
+                        ui.input(on_change=handle_props).classes('text-mono grow').props('dense hide-bottom-space')
                         ui.markdown("`')`")
-                    with ui.row().classes('items-center gap-0 w-full px-2'):
+                    with ui.row().classes('items-center gap-0 w-full'):
                         def handle_style(e: events.ValueChangeEventArguments):
                             try:
                                 element.style(replace=e.value)
                             except ValueError:
                                 pass
                         ui.markdown("`element.style('`")
-                        ui.input(on_change=handle_style).classes('mt-[-0.5em] text-mono grow').props('dense')
+                        ui.input(on_change=handle_style).classes('text-mono grow').props('dense hide-bottom-space')
                         ui.markdown("`')`")
                     ui.markdown('''
                         ```py
@@ -96,7 +107,7 @@ def styling_demo():
 
 
 @doc.demo('Tailwind CSS', '''
-    [Tailwind CSS](https://tailwindcss.com/) is a CSS framework for rapidly building custom user interfaces.
+    [Tailwind CSS](https://v3.tailwindcss.com/) is a CSS framework for rapidly building custom user interfaces.
     NiceGUI provides a fluent, auto-complete friendly interface for adding Tailwind classes to UI elements.
 
     You can discover available classes by navigating the methods of the `tailwind` property.
@@ -145,6 +156,7 @@ def tailwind_layers():
         ui.label('world').classes('blue-box')
 
 
+doc.intro(element_filter_documentation)
 doc.intro(query_documentation)
 doc.intro(colors_documentation)
 

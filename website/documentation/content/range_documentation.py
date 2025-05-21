@@ -11,7 +11,7 @@ def main_demo() -> None:
 
 
 @doc.demo('Customize labels', '''
-        You can customize the colors of the range and its labels by setting them individually or for the range in total.
+    You can customize the colors of the range and its labels by setting them individually or for the range in total.
 ''')
 def customize_labels():
     ui.label('Color the entire range')
@@ -21,6 +21,18 @@ def customize_labels():
     ui.label('Customize the color of the labels')
     ui.range(min=0, max=100, value={'min': 40, 'max': 80}) \
         .props('label-always snap label-color="secondary" right-label-text-color="black"')
+
+
+@doc.demo('Change range limits', '''
+    This demo shows how to change the limits on the click of a button.
+''')
+def range_limits():
+    def increase_limits():
+        r.min -= 10
+        r.max += 10
+
+    ui.button('Increase limits', on_click=increase_limits)
+    r = ui.range(min=0, max=100, value={'min': 30, 'max': 70}).props('label-always')
 
 
 doc.reference(ui.range)

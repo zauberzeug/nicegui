@@ -53,11 +53,11 @@ def get_soup(url: str) -> BeautifulSoup:
     path = Path('/tmp/nicegui_tailwind') / url.split('/')[-1]
     path.parent.mkdir(parents=True, exist_ok=True)
     if path.exists():
-        html = path.read_text()
+        html = path.read_text(encoding='utf-8')
     else:
         req = requests.get(url, timeout=5)
         html = req.text
-        path.write_text(html)
+        path.write_text(html, encoding='utf-8')
     return BeautifulSoup(html, 'html.parser')
 
 
@@ -89,7 +89,8 @@ def generate_type_files(properties: List[Property]) -> None:
     for property_ in properties:
         if not property_.members:
             continue
-        with (Path(__file__).parent / 'nicegui' / 'tailwind_types' / f'{property_.snake_title}.py').open('w') as f:
+        with (Path(__file__).parent / 'nicegui' / 'tailwind_types' / f'{property_.snake_title}.py') \
+                .open('w', encoding='utf-8') as f:
             f.write('from typing import Literal\n')
             f.write('\n')
             f.write(f'{property_.pascal_title} = Literal[\n')
@@ -100,7 +101,7 @@ def generate_type_files(properties: List[Property]) -> None:
 
 def generate_tailwind_file(properties: List[Property]) -> None:
     """Generate the tailwind.py file."""
-    with (Path(__file__).parent / 'nicegui' / 'tailwind.py').open('w') as f:
+    with (Path(__file__).parent / 'nicegui' / 'tailwind.py').open('w', encoding='utf-8') as f:
         f.write('# pylint: disable=too-many-lines\n')
         f.write('from __future__ import annotations\n')
         f.write('\n')

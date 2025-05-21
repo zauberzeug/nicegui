@@ -1,0 +1,13 @@
+services:
+  app:
+    image: zauberzeug/nicegui:1.4.27
+    volumes:
+      - ./app:/app # mount local app directory
+  proxy:
+    image: nginx:1.27.0-alpine
+    ports:
+      - "80:80" # map internal port 80 to external port 80
+      - "443:443" # map internal port 443 to external port 443
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf # use custom nginx config
+      - ./certs:/certs

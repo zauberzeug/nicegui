@@ -4,7 +4,7 @@ from . import doc
 
 
 @doc.demo('Read and write to the clipboard', '''
-    The following demo shows how to use `ui.clipboard.read()` and `ui.clipboard.write()` to interact with the clipboard.
+    The following demo shows how to use `ui.clipboard.read()`, `ui.clipboard.write()` and `ui.clipboard.read_image()` to interact with the clipboard.
 
     Because auto-index page can be accessed by multiple browser tabs simultaneously, reading the clipboard is not supported on this page.
     This is only possible within page-builder functions decorated with `ui.page`, as shown in this demo.
@@ -15,11 +15,20 @@ def main_demo() -> None:
     # @ui.page('/')
     # async def index():
     with ui.column():  # HIDE
-        ui.button('Write', on_click=lambda: ui.clipboard.write('Hi!'))
+        ui.button('Write Text', on_click=lambda: ui.clipboard.write('Hi!'))
 
         async def read() -> None:
             ui.notify(await ui.clipboard.read())
-        ui.button('Read', on_click=read)
+        ui.button('Read Text', on_click=read)
+
+        async def read_image() -> None:
+            img = await ui.clipboard.read_image()
+            if not img:
+                ui.notify('You must copy an image to clipboard first.')
+            else:
+                image.set_source(img)
+        ui.button('Read Image', on_click=read_image)
+        image = ui.image().classes('w-72')
 
 
 @doc.demo('Client-side clipboard', '''

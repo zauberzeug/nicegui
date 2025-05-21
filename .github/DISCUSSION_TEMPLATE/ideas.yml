@@ -1,10 +1,33 @@
 body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for your interest in NiceGUI! 🚀
+
+        Please answer the following questions to describe your idea or feature request. 🙏
   - type: textarea
     id: content
     attributes:
-      label: Idea
+      label: Description
       description: |
-        If possible, give a [minimal reproducible code example](https://en.wikipedia.org/wiki/Minimal_reproducible_example).
-        Put source code in [fenced code blocks with syntax highlighting](https://docs.github.com/en/get-started/writing-on-github/working-with-advanced-formatting/creating-and-highlighting-code-blocks#syntax-highlighting).
+        What is your idea or feature request?
     validations:
       required: true
+  - type: textarea
+    id: content
+    attributes:
+      label: Contribution
+      description: |
+        How will the NiceGUI community benefit from it?
+    validations:
+      required: true
+  - type: textarea
+    id: example
+    attributes:
+      label: Example Code
+      description: |
+        How will the new feature be used?
+      placeholder: |
+        with ui.tic_tac_toe() as game:
+            game.make_move('X', (1, 1))
+      render: python

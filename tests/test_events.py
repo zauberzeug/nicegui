@@ -163,19 +163,26 @@ def test_throttling_variants(screen: Screen):
 
 @pytest.mark.parametrize('attribute', ['disabled', 'hidden'])
 def test_server_side_validation(screen: Screen, attribute: Literal['disabled', 'hidden']):
-    b = ui.button('Button', on_click=lambda: ui.label('Success'))
+    b = ui.button('Button', on_click=lambda: ui.label('Button clicked'))
+    n = ui.number('Number', on_change=lambda: ui.label('Number changed'))
     if attribute == 'disabled':
         b.disable()
+        n.disable()
     else:
         b.set_visibility(False)
-    ui.button('Hack', on_click=lambda: ui.run_javascript(f'''
+        n.set_visibility(False)
+    ui.button('Forbidden', on_click=lambda: ui.run_javascript(f'''
         getElement({b.id}).$emit("click", {{"id": {b.id}, "listener_id": "{next(iter(b._event_listeners))}"}});
     '''))  # pylint: disable=protected-access
+    ui.button('Allowed', on_click=lambda: n.set_value(42))
 
     screen.open('/')
-    screen.click('Hack')
+    screen.click('Forbidden')
     screen.wait(0.5)
-    screen.should_not_contain('Success')
+    screen.should_not_contain('Button clicked')  # triggering the click event through JavaScript does not work
+
+    screen.click('Allowed')
+    screen.should_contain('Number changed')  # triggering the change event through Python works
 
 
 def test_js_handler(screen: Screen) -> None:

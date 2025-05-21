@@ -1,4 +1,4 @@
-FROM python:3.8
+FROM --platform=linux/amd64 python:3.8
 
 ENV POETRY_VERSION=1.6.1 \
     POETRY_NO_INTERACTION=1 \
@@ -29,6 +29,7 @@ ENV CHROME_BINARY_LOCATION=/usr/bin/chromium
 RUN pip install -U pip && pip install poetry==$POETRY_VERSION
 COPY pyproject.toml poetry.lock README.md ./
 RUN poetry install --all-extras --no-root
+RUN pip install latex2mathml
 
 USER $USERNAME
 

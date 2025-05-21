@@ -1,19 +1,20 @@
 import asyncio
-from typing import Any, Callable, Optional
+from typing import Optional
 
 from typing_extensions import Self
 
-from ..events import ClickEventArguments, handle_event
+from ..events import ClickEventArguments, Handler, handle_event
 from .mixins.color_elements import BackgroundColorElement
 from .mixins.disableable_element import DisableableElement
+from .mixins.icon_element import IconElement
 from .mixins.text_element import TextElement
 
 
-class Button(TextElement, DisableableElement, BackgroundColorElement):
+class Button(IconElement, TextElement, DisableableElement, BackgroundColorElement):
 
     def __init__(self,
                  text: str = '', *,
-                 on_click: Optional[Callable[..., Any]] = None,
+                 on_click: Optional[Handler[ClickEventArguments]] = None,
                  color: Optional[str] = 'primary',
                  icon: Optional[str] = None,
                  ) -> None:
@@ -31,15 +32,12 @@ class Button(TextElement, DisableableElement, BackgroundColorElement):
         :param color: the color of the button (either a Quasar, Tailwind, or CSS color or `None`, default: 'primary')
         :param icon: the name of an icon to be displayed on the button (default: `None`)
         """
-        super().__init__(tag='q-btn', text=text, background_color=color)
-
-        if icon:
-            self._props['icon'] = icon
+        super().__init__(tag='q-btn', text=text, background_color=color, icon=icon)
 
         if on_click:
             self.on_click(on_click)
 
-    def on_click(self, callback: Callable[..., Any]) -> Self:
+    def on_click(self, callback: Handler[ClickEventArguments]) -> Self:
         """Add a callback to be invoked when the button is clicked."""
         self.on('click', lambda _: handle_event(callback, ClickEventArguments(sender=self, client=self.client)), [])
         return self

@@ -1,11 +1,12 @@
-from typing import Any, Callable, Dict, Optional, Union
+from typing import Any, Optional, Union
 
-from ..events import GenericEventArguments
+from ..events import GenericEventArguments, Handler, ValueChangeEventArguments
 from .mixins.disableable_element import DisableableElement
-from .mixins.validation_element import ValidationElement
+from .mixins.label_element import LabelElement
+from .mixins.validation_element import ValidationDict, ValidationElement, ValidationFunction
 
 
-class Number(ValidationElement, DisableableElement):
+class Number(LabelElement, ValidationElement, DisableableElement):
     LOOPBACK = False
 
     def __init__(self,
@@ -19,15 +20,15 @@ class Number(ValidationElement, DisableableElement):
                  prefix: Optional[str] = None,
                  suffix: Optional[str] = None,
                  format: Optional[str] = None,  # pylint: disable=redefined-builtin
-                 on_change: Optional[Callable[..., Any]] = None,
-                 validation: Optional[Union[Callable[..., Optional[str]], Dict[str, Callable[..., bool]]]] = None,
+                 on_change: Optional[Handler[ValueChangeEventArguments]] = None,
+                 validation: Optional[Union[ValidationFunction, ValidationDict]] = None,
                  ) -> None:
         """Number Input
 
         This element is based on Quasar's `QInput <https://quasar.dev/vue-components/input>`_ component.
 
         You can use the `validation` parameter to define a dictionary of validation rules,
-        e.g. ``{'Too small!': lambda value: value < 3}``.
+        e.g. ``{'Too small!': lambda value: value > 3}``.
         The key of the first rule that fails will be displayed as an error message.
         Alternatively, you can pass a callable that returns an optional error message.
         To disable the automatic validation on every value change, you can use the `without_auto_validation` method.
@@ -43,13 +44,11 @@ class Number(ValidationElement, DisableableElement):
         :param suffix: a suffix to append to the displayed value
         :param format: a string like "%.2f" to format the displayed value
         :param on_change: callback to execute when the value changes
-        :param validation: dictionary of validation rules or a callable that returns an optional error message
+        :param validation: dictionary of validation rules or a callable that returns an optional error message (default: None for no validation)
         """
         self.format = format
-        super().__init__(tag='q-input', value=value, on_value_change=on_change, validation=validation)
+        super().__init__(tag='q-input', label=label, value=value, on_value_change=on_change, validation=validation)
         self._props['type'] = 'number'
-        if label is not None:
-            self._props['label'] = label
         if placeholder is not None:
             self._props['placeholder'] = placeholder
         if min is not None:
@@ -116,6 +115,7 @@ class Number(ValidationElement, DisableableElement):
         if self.precision is not None:
             value = float(round(value, self.precision))
         self.set_value(float(self.format % value) if self.format else value)
+        self.update()
 
     def _event_args_to_value(self, e: GenericEventArguments) -> Any:
         if not e.args:
@@ -133,6 +133,3 @@ class Number(ValidationElement, DisableableElement):
         if value == '':
             return 0
         return self.format % float(value)
-
-    def _value_to_event_value(self, value: Any) -> Any:
-        return float(value) if value else 0

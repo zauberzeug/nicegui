@@ -53,6 +53,44 @@ def native_mode_demo():
     ui.button('enlarge', on_click=lambda: ui.notify('window will be set to 1000x700 in native mode'))
 
 
+# Currently, options passed via app.native are not used if they are set behind a main guard
+# See discussion at: https://github.com/zauberzeug/nicegui/pull/4627
+doc.text('', '''
+    Note that the native app is run in a separate
+    [process](https://docs.python.org/3/library/multiprocessing.html#multiprocessing.Process).
+    Therefore any configuration changes from code run under a
+    [main guard](https://docs.python.org/3/library/__main__.html#idiomatic-usage) is ignored by the native app.
+    The following examples show the difference between a working and a non-working configuration.
+''')
+
+
+@doc.ui
+def native_main_guard():
+    with ui.row().classes('w-full items-stretch'):
+        with python_window('good_example.py', classes='max-w-lg w-full'):
+            ui.markdown('''
+                ```python
+                from nicegui import app, ui
+
+                app.native.window_args['resizable'] = False  # works
+
+                if __name__ == '__main__':
+                    ui.run(native=True, reload=False)
+                ```
+            ''')
+        with python_window('bad_example.py', classes='max-w-lg w-full'):
+            ui.markdown('''
+                ```python
+                from nicegui import app, ui
+
+                if __name__ == '__main__':
+                    app.native.window_args['resizable'] = False  # ignored
+
+                    ui.run(native=True, reload=False)
+                ```
+            ''')
+
+
 # Show a helpful workaround until issue is fixed upstream.
 # For more info see: https://github.com/r0x0r/pywebview/issues/1078
 doc.text('', '''
@@ -72,12 +110,56 @@ doc.text('', '''
     - `NICEGUI_STORAGE_PATH` (default: local ".nicegui") can be set to change the location of the storage files.
     - `MARKDOWN_CONTENT_CACHE_SIZE` (default: 1000): The maximum number of Markdown content snippets that are cached in memory.
     - `RST_CONTENT_CACHE_SIZE` (default: 1000): The maximum number of ReStructuredText content snippets that are cached in memory.
+    - `NICEGUI_REDIS_URL` (default: None, means local file storage): The URL of the Redis server to use for shared persistent storage.
+    - `NICEGUI_REDIS_KEY_PREFIX` (default: "nicegui:"): The prefix for Redis keys.
 ''')
 def env_var_demo():
     from nicegui.elements import markdown
 
     ui.label(f'Markdown content cache size is {markdown.prepare_content.cache_info().maxsize}')
 
+
+@doc.demo('Background Tasks', '''
+    `background_tasks.create()` allows you to run an async function in the background and return a task object.
+    By default the task will be automatically cancelled during shutdown.
+    You can prevent this by using the `@background_tasks.await_on_shutdown` decorator (added in version 2.16.0).
+    This is useful for tasks that need to be completed even when the app is shutting down.
+''')
+def background_tasks_demo():
+    # import aiofiles
+    import asyncio
+    from nicegui import background_tasks
+
+    results = {'answer': '?'}
+
+    async def compute() -> None:
+        await asyncio.sleep(1)
+        results['answer'] = 42
+
+    @background_tasks.await_on_shutdown
+    async def backup() -> None:
+        await asyncio.sleep(1)
+        # async with aiofiles.open('backup.json', 'w') as f:
+        #     await f.write(f'{results["answer"]}')
+        # print('backup.json written', flush=True)
+
+    ui.label().bind_text_from(results, 'answer', lambda x: f'answer: {x}')
+    ui.button('Compute', on_click=lambda: background_tasks.create(compute()))
+    ui.button('Backup', on_click=lambda: background_tasks.create(backup()))
+
+
+doc.text('Custom Vue Components', '''
+    You can create custom components by subclassing `ui.element` and implementing a corresponding Vue component.
+    The ["Custom Vue components" example](https://github.com/zauberzeug/nicegui/tree/main/examples/custom_vue_component)
+    demonstrates how to create a custom counter component which emits events and receives updates from the server.
+
+    The ["Signature pad" example](https://github.com/zauberzeug/nicegui/blob/main/examples/signature_pad)
+    shows how to define dependencies for a custom component using a `package.json` file.
+    This allows you to use third-party libraries via NPM in your component.
+
+    Last but not least, the ["Node module integration" example](https://github.com/zauberzeug/nicegui/blob/main/examples/node_module_integration)
+    demonstrates how to create a package.json file and a webpack.config.js file to bundle a custom Vue component with its dependencies.
+''')
 
 doc.text('Server Hosting', '''
     To deploy your NiceGUI app on a server, you will need to execute your `main.py` (or whichever file contains your `ui.run(...)`) on your cloud infrastructure.
@@ -134,9 +216,34 @@ doc.text('', '''
     There are other handy features in the Docker image like non-root user execution and signal pass-through.
     For more details we recommend to have a look at our [Docker example](https://github.com/zauberzeug/nicegui/tree/main/examples/docker_image).
 
-    You can provide SSL certificates directly using [FastAPI](https://fastapi.tiangolo.com/deployment/https/).
+    To serve your application with [HTTPS](https://fastapi.tiangolo.com/deployment/https/) encryption, you can provide SSL certificates in multiple ways.
+    For instance, you can directly provide your certificates to [Uvicorn](https://www.uvicorn.org/), which NiceGUI is based on, by passing the
+    relevant [options](https://www.uvicorn.org/#command-line-options) to `ui.run()`.
+    If both a certificate and key file are provided, the application will automatically be served over HTTPS:
+''')
+
+
+@doc.ui
+def uvicorn_ssl():
+    with python_window('main.py', classes='max-w-lg w-full'):
+        ui.markdown('''
+            ```python
+            from nicegui import ui
+
+            ui.run(
+                port=443,
+                ssl_certfile="<path_to_certfile>",
+                ssl_keyfile="<path_to_keyfile>",
+            )
+            ```
+        ''')
+
+
+doc.text('', '''
     In production we also like using reverse proxies like [Traefik](https://doc.traefik.io/traefik/) or [NGINX](https://www.nginx.com/) to handle these details for us.
-    See our development [docker-compose.yml](https://github.com/zauberzeug/nicegui/blob/main/docker-compose.yml) as an example.
+    See our development [docker-compose.yml](https://github.com/zauberzeug/nicegui/blob/main/docker-compose.yml) as an example based on traefik or
+    [this example nginx.conf file](https://github.com/zauberzeug/nicegui/blob/main/examples/nginx_https/nginx.conf) showing how NGINX can be used to handle the SSL certificates and
+    reverse proxy to your NiceGUI app.
 
     You may also have a look at [our demo for using a custom FastAPI app](https://github.com/zauberzeug/nicegui/tree/main/examples/fastapi).
     This will allow you to do very flexible deployments as described in the [FastAPI documentation](https://fastapi.tiangolo.com/deployment/).
@@ -147,7 +254,7 @@ doc.text('Package for Installation', '''
     NiceGUI apps can also be bundled into an executable with `nicegui-pack` which is based on [PyInstaller](https://www.pyinstaller.org/).
     This allows you to distribute your app as a single file that can be executed on any computer.
 
-    Just take care your `ui.run` command does not use the `reload` argument.
+    Just make sure to call `ui.run` with `reload=False` in your main script to disable the auto-reload feature.
     Running the `nicegui-pack` command below will create an executable `myapp` in the `dist` folder:
 ''')
 

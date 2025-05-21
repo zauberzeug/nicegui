@@ -5,14 +5,17 @@
 <script>
 export default {
   async mounted() {
-    await this.$nextTick();
-    this.update();
-  },
-  updated() {
+    await import("plotly");
     this.update();
   },
   methods: {
     update() {
+      // wait for plotly to be loaded
+      if (typeof Plotly === "undefined") {
+        setTimeout(this.update, 10);
+        return;
+      }
+
       // default responsive to true
       const options = this.options;
       if (options.config === undefined) options.config = { responsive: true };
@@ -91,5 +94,11 @@ export default {
 }
 .js-plotly-plot .plotly .modebar-btn svg {
   position: static;
+}
+/*
+  fix overflow when adding borders to the plotly plot
+*/
+.js-plotly-plot {
+  box-sizing: content-box;
 }
 </style>

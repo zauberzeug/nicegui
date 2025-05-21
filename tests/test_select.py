@@ -198,3 +198,10 @@ def test_select_validation(auto_validation: bool, screen: Screen):
         screen.should_contain('Too long')
     else:
         screen.should_not_contain('Too long')
+
+
+def test_invalid_value(screen: Screen):
+    with pytest.raises(ValueError, match='Invalid value: X'):
+        ui.select(['A', 'B', 'C'], value='X')
+
+    screen.open('/')

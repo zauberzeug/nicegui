@@ -1,4 +1,3 @@
-version: "3.9"
 services:
   app:
     build:
@@ -20,7 +19,6 @@ services:
     image: traefik:v2.3
     command:
       - --providers.docker
-      - --api.insecure=true
       - --accesslog # http access log
       - --log #Traefik log, for configurations and errors
       - --api # Enable the Dashboard and API

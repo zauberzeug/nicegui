@@ -1,4 +1,4 @@
-from typing import Any, Callable, List, Literal, Optional
+from typing import List, Literal, Optional
 
 from typing_extensions import Self
 
@@ -6,6 +6,7 @@ from ..binding import BindableProperty
 from ..element import Element
 from ..events import (
     GenericEventArguments,
+    Handler,
     KeyboardAction,
     KeyboardKey,
     KeyboardModifiers,
@@ -18,7 +19,7 @@ class Keyboard(Element, component='keyboard.js'):
     active = BindableProperty()
 
     def __init__(self,
-                 on_key: Optional[Callable[..., Any]] = None, *,
+                 on_key: Optional[Handler[KeyEventArguments]] = None, *,
                  active: bool = True,
                  repeating: bool = True,
                  ignore: List[Literal['input', 'select', 'button', 'textarea']] =
@@ -97,7 +98,7 @@ class Keyboard(Element, component='keyboard.js'):
         for handler in self._key_handlers:
             handle_event(handler, arguments)
 
-    def on_key(self, handler: Callable[..., Any]) -> Self:
+    def on_key(self, handler: Handler[KeyEventArguments]) -> Self:
         """Add a callback to be invoked when keyboard events occur."""
         self._key_handlers.append(handler)
         return self
