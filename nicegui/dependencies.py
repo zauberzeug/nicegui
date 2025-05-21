@@ -46,7 +46,7 @@ class Resource:
 
 
 @dataclass(**KWONLY_SLOTS)
-class ResourceFromCallable:
+class DynamicResource:
     filename: str
     result_callable: Callable
 
@@ -63,7 +63,7 @@ vue_components: Dict[str, VueComponent] = {}
 js_components: Dict[str, JsComponent] = {}
 libraries: Dict[str, Library] = {}
 resources: Dict[str, Resource] = {}
-dynamic_resources: Dict[str, ResourceFromCallable] = {}
+dynamic_resources: Dict[str, DynamicResource] = {}
 
 
 def register_vue_component(path: Path, *, max_time: Optional[float]) -> Component:
@@ -114,9 +114,11 @@ def register_resource(path: Path, *, max_time: Optional[float]) -> Resource:
     return resources[key]
 
 
-def register_resource_from_callable(filename: str, result_callable: Callable) -> ResourceFromCallable:
-    """Register a resource from a callable. Overwrites the previous one if it exists."""
-    dynamic_resources[filename] = ResourceFromCallable(filename=filename, result_callable=result_callable)
+def register_dynamic_resource(filename: str, result_callable: Callable) -> DynamicResource:
+    """Register a dynamic resource, returning result from a callable on access.
+
+    Overwrites the previous one if it exists."""
+    dynamic_resources[filename] = DynamicResource(filename=filename, result_callable=result_callable)
     return dynamic_resources[filename]
 
 

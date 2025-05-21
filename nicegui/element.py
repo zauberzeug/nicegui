@@ -28,9 +28,9 @@ from .context import context
 from .dependencies import (
     Component,
     Library,
+    register_dynamic_resource,
     register_library,
     register_resource,
-    register_resource_from_callable,
     register_vue_component,
 )
 from .elements.mixins.visibility import Visibility
@@ -171,12 +171,12 @@ class Element(Visibility):
     def add_dynamic_resource(self,
                              filename: str,
                              result_callable: Callable) -> None:
-        """Add a resource from a callable.
+        """Add a dynamic resource to the element, returning result from a callable on access.
 
         :param filename: name of the file
         :param callable: callable that returns the resource response
         """
-        register_resource_from_callable(filename, result_callable)
+        register_dynamic_resource(filename, result_callable)
         self._props['dynamic_resource_path'] = f'/_nicegui/{__version__}/dynamic_resources'
 
     def add_slot(self, name: str, template: Optional[str] = None) -> Slot:
