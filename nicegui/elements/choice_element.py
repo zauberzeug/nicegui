@@ -11,7 +11,7 @@ class Option(TypedDict):
 
 
 def _to_option(value: Union[Option, str]) -> Option:
-    if isinstance(value, Option):
+    if isinstance(value, dict):
         return value
     return Option(label=value, value=value)
 
