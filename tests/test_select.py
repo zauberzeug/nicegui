@@ -215,6 +215,7 @@ def test_opening_and_closing_popup_with_screen(multiple: bool, screen: Screen):
 
     screen.open('/')
     fruits = screen.find_element(select)
+    screen.should_contain('closed')
 
     fruits.click()
     screen.should_contain('open')
