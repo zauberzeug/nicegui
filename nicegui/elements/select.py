@@ -12,7 +12,7 @@ from .mixins.validation_element import ValidationDict, ValidationElement, Valida
 class Select(Generic[T], LabelElement, ValidationElement, ChoiceElement, DisableableElement, component='select.js'):
 
     def __init__(self,
-                 options: Collection[Option[T] | str], *,
+                 options: Collection[Union[Option[T], str]], *,
                  label: Optional[str] = None,
                  value: Optional[T] = None,
                  on_change: Optional[Handler[ValueChangeEventArguments]] = None,
@@ -112,7 +112,7 @@ class Select(Generic[T], LabelElement, ValidationElement, ChoiceElement, Disable
                 else:
                     return e.args['value']
 
-    def _value_to_model_value(self, value: Any) -> List[Option] | Option:
+    def _value_to_model_value(self, value: Any) -> Union[List[Option], Option]:
         # pylint: disable=no-else-return
         if self.multiple:
             try:
