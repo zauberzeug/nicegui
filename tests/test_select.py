@@ -4,7 +4,7 @@ import pytest
 from selenium.webdriver import Keys
 
 from nicegui import ui
-from nicegui.testing import Screen
+from nicegui.testing import Screen, User
 
 
 def test_select(screen: Screen):
@@ -205,3 +205,59 @@ def test_invalid_value(screen: Screen):
         ui.select(['A', 'B', 'C'], value='X')
 
     screen.open('/')
+
+
+@pytest.mark.parametrize('multiple', [False, True])
+def test_opening_and_closing_popup_with_screen(multiple: bool, screen: Screen):
+    select = ui.select(options=['Apple', 'Banana', 'Cherry'], label='Fruits', multiple=multiple).classes('w-24')
+    ui.label().bind_text_from(select, 'is_showing_popup', lambda v: 'open' if v else 'closed')
+    ui.label().bind_text_from(select, 'value', lambda v: f'value = {v}')
+
+    screen.open('/')
+    fruits = screen.find_element(select)
+    screen.should_contain('closed')
+
+    fruits.click()
+    screen.should_contain('open')
+    fruits.click()
+    screen.should_contain('closed')
+
+    fruits.click()
+    screen.click('Apple')
+    if multiple:
+        screen.click('Banana')
+        screen.should_contain("value = ['Apple', 'Banana']")
+        screen.should_contain('open')
+    else:
+        fruits.click()
+        screen.click('Banana')
+        screen.should_contain('value = Banana')
+        screen.should_contain('closed')
+
+
+@pytest.mark.parametrize('multiple', [False, True])
+async def test_opening_and_closing_popup_with_user(multiple: bool, user: User):
+    select = ui.select(options=['Apple', 'Banana', 'Cherry'], label='Fruits', multiple=multiple)
+    ui.label().bind_text_from(select, 'is_showing_popup', lambda v: 'open' if v else 'closed')
+    ui.label().bind_text_from(select, 'value', lambda v: f'value = {v}')
+
+    await user.open('/')
+    fruits = user.find('Fruits')
+    await user.should_see('closed')
+
+    fruits.click()
+    await user.should_see('open')
+    fruits.click()
+    await user.should_see('closed')
+
+    fruits.click()
+    user.find('Apple').click()
+    if multiple:
+        user.find('Banana').click()
+        await user.should_see("value = ['Apple', 'Banana']")
+        await user.should_see('open')
+    else:
+        fruits.click()
+        user.find('Banana').click()
+        await user.should_see('value = Banana')
+        await user.should_see('closed')
