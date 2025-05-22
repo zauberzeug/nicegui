@@ -34,6 +34,7 @@ export default {
 
             this.sortableInstance = this.Sortable.create(el, {
                 ...options,
+                dataIdAttr: 'id', // Explicitly tell SortableJS to use the HTML id attribute
                 onClone: (evt) => {
                     // Assign a new unique id to the clone in the source list
                     if (evt.clone && !evt.clone.id) {
