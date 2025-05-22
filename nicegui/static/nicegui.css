@@ -307,17 +307,18 @@ h6.q-timeline__title {
   position: absolute;
   left: 1.5em;
 }
+
 /* sortable */
 .nicegui-sortable-ghost {
-  background-color: #c8ebfb !important;
+  background-color: #ffffff60 !important;
 }
 .nicegui-sortable-multi-selected {
-  background-color: #f9c7c8 !important;
-  border: solid red 1px !important;
+  background-color: #f9c7c860 !important;
+  border: solid #ff000060 1px !important;
   z-index: 1 !important;
 }
 .nicegui-sortable-swap-highlight {
-  background-color: #b7f8c7 !important;
+  background-color: #a3ffba80 !important;
 }
 .nicegui-sortable-handle {
   cursor: grab !important;
