@@ -1,22 +1,22 @@
 from collections.abc import Generator, Iterable, Iterator
 from copy import deepcopy
-from typing import (Any, Callable, Collection, Iterator, List, Literal,
-                    Optional, Union)
+from typing import (Any, Callable, Collection, Generic, Iterator, List,
+                    Literal, Optional, Union)
 
 from ..events import GenericEventArguments, Handler, ValueChangeEventArguments
-from .choice_element import ChoiceElement, Option
+from .choice_element import ChoiceElement, Option, T
 from .mixins.disableable_element import DisableableElement
 from .mixins.label_element import LabelElement
 from .mixins.validation_element import (ValidationDict, ValidationElement,
                                         ValidationFunction)
 
 
-class Select(LabelElement, ValidationElement, ChoiceElement, DisableableElement, component='select.js'):
+class Select(Generic[T], LabelElement, ValidationElement, ChoiceElement, DisableableElement, component='select.js'):
 
     def __init__(self,
-                 options: Collection[Option | str], *,
+                 options: Collection[Option[T] | str], *,
                  label: Optional[str] = None,
-                 value: Any = None,
+                 value: Optional[T] = None,
                  on_change: Optional[Handler[ValueChangeEventArguments]] = None,
                  with_input: bool = False,
                  new_value_mode: Optional[Literal['add', 'add-unique', 'toggle']] = None,
@@ -84,6 +84,12 @@ class Select(LabelElement, ValidationElement, ChoiceElement, DisableableElement,
         self.on('popup-hide', lambda e: setattr(e.sender, '_is_showing_popup', False))
 
     @property
+    def selected(self) -> List[Option[T]]:
+        if self.multiple:
+            return [self._values_to_option[v] for v in self.value]
+        return self._values_to_option[self.value]
+
+    @property
     def is_showing_popup(self) -> bool:
         """Whether the options popup is currently shown."""
         return self._is_showing_popup
@@ -119,7 +125,12 @@ class Select(LabelElement, ValidationElement, ChoiceElement, DisableableElement,
     def _value_to_model_value(self, value: Any) -> List[Option] | Option:
         # pylint: disable=no-else-return
         if self.multiple:
-            return [self._values_to_option[v] for v in value or []]
+            try:
+                return [self._values_to_option[v] for v in value or []]
+            except KeyError as e:
+                raise ValueError(
+                    f"{set(value) - set(self._values_to_option.keys())} are not values in {set(self._values_to_option.keys())}"
+                ) from e
         else:
             return self._values_to_option.get(value)
 
