@@ -17,8 +17,8 @@ def add_head_html() -> None:
     ui.add_head_html(HEADER_HTML + f'<style>{STYLE_CSS}</style>')
     if os.environ.get('ENABLE_ANALYTICS', 'false').lower() == 'true':
         ui.add_head_html(
-            '<script defer data-domain="nicegui.io" '
-            'src="https://plausible.io/js/script.hash.outbound-links.js"></script>'
+            '<script defer data-domain="nicegui.io" src="https://plausible.io/js/script.hash.outbound-links.js">'
+            '</script>'
         )
 
 
