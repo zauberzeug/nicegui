@@ -4,7 +4,6 @@ from nicegui.testing import Screen
 
 def test_sortable_renders(screen: Screen):
     """Test if the sortable element renders correctly."""
-    # Create a page with the sortable element
     @ui.page('/')
     def page():
         with ui.sortable():
@@ -12,15 +11,12 @@ def test_sortable_renders(screen: Screen):
             ui.label('Item 2')
             ui.label('Item 3')
 
-    # Open the page
     screen.open('/')
 
-    # Check if all items are rendered
     screen.should_contain('Item 1')
     screen.should_contain('Item 2')
     screen.should_contain('Item 3')
 
-    # Verify the sortable element exists
     element = screen.find_by_class('nicegui-sortable')
     assert element is not None
 
@@ -44,8 +40,6 @@ def test_sortable_options(screen: Screen):
                 ui.icon('drag_handle').classes('handle')
                 ui.label('Item 3')
 
-            # Create a button to test options directly in the browser
-            # This avoids direct API access which is causing issues
             ui.button('Check Options', on_click=lambda: ui.notify(
                 f"Animation: {sortable._props['options']['animation']}, "
                 f"Handle: {sortable._props['options']['handle']}, "
@@ -55,7 +49,6 @@ def test_sortable_options(screen: Screen):
 
     screen.open('/')
 
-    # Verify the options through the UI instead of JavaScript
     screen.click('Check Options')
     screen.should_contain('Animation: 200')
     screen.should_contain('Handle: .handle')
@@ -82,14 +75,11 @@ def test_sortable_synchronization(screen: Screen):
 
     screen.open('/')
 
-    # Check initial order
     screen.click('Show Order')
     screen.should_contain('Current order: Item 1, Item 2, Item 3')
 
-    # Reverse the order
     screen.click('Reverse Order')
 
-    # Check new order
     screen.click('Show Order')
     screen.should_contain('Current order: Item 3, Item 2, Item 1')
 
@@ -111,18 +101,14 @@ def test_sortable_drag_and_drop(screen: Screen):
 
     screen.open('/')
 
-    # Check initial order
     screen.click('Show Order')
     screen.should_contain('Current order: Item 1, Item 2, Item 3')
-    # Wait for the sorting to complete
 
-    # Perform drag and drop using the built-in method
     screen.drag_and_drop('Item 1', 'Item 3')
 
     # Wait for the sorting to complete
     screen.wait(0.5)
 
-    # Check new order
     screen.click('Show Order')
     screen.should_contain('Current order: Item 2, Item 3, Item 1')
 
@@ -162,23 +148,19 @@ def test_sortable_drag_between_containers(screen: Screen):
 
     screen.open('/')
 
-    # Check initial orders
     screen.click('Show Source Order')
     screen.should_contain('Source order: Source Item 1, Source Item 2, Source Item 3')
 
     screen.click('Show Target Order')
     screen.should_contain('Target order: Target Item A, Target Item B, Target Item C')
 
-    # Drag an item from source to target
     screen.drag_and_drop("Source Item 2", "Target Item B")
 
-    # Wait for the sorting to complete and synchronization to happen
+    # Wait for the sorting to complete
     screen.wait(0.5)
 
-    # Check updated orders
     screen.click('Show Source Order')
     screen.should_contain('Source order: Source Item 1, Source Item 3')
 
     screen.click('Show Target Order')
-    # The exact order may depend on how SortableJS inserts the item
-    screen.should_contain('Tdarget order: Target Item A, Source Item 2, Target Item B, Target Item C')
+    screen.should_contain('Target order: Target Item A, Source Item 2, Target Item B, Target Item C')

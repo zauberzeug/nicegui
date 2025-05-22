@@ -294,13 +294,11 @@ def nested_sortables() -> None:
 
     # Add improved supporting styles for the nested sortables
     ui.add_css("""
-    /* Basic styling for nested items */
     .nested-item {
         background-color: #2d3748;
         transition: background-color 0.2s;
     }
 
-    /* Color differentiation by nesting level */
     .level-1 {
         background-color: #2d3748;
     }
@@ -313,17 +311,14 @@ def nested_sortables() -> None:
         background-color: #171f2e;
     }
 
-    /* Hover effect */
     .nested-item:hover {
         background-color: #3a4a5e;
     }
 
-    /* Empty sortable containers styling */
     .nicegui-sortable-nested:empty {
         background-color: rgba(59, 130, 246, 0.1);
     }
 
-    /* Highlight empty containers on hover for better UX */
     .nested-children:hover .nicegui-sortable-nested:empty {
         background-color: rgba(59, 130, 246, 0.2);
         border-color: #4b5563;

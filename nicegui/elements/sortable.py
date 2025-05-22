@@ -24,7 +24,7 @@ class Sortable(Element,
 
     def __init__(
         self,
-        options: Optional[Dict] = None, *,  # Make options optional with default None
+        options: Optional[Dict] = None, *,
         on_end: Optional[Callable] = None,
         on_add: Optional[Callable] = None,
         on_sort: Optional[Callable] = None,
@@ -48,11 +48,8 @@ class Sortable(Element,
             on_deselect: Callback when an item is deselected (MultiDrag)
         """
         super().__init__()
-
-        # Add the resource
         self.add_resource(Path(__file__).parent / 'lib' / 'sortable')
 
-        # Apply flex layout by default
         self.classes('nicegui-sortable')
 
         # Initialize options with defaults if not provided
@@ -70,9 +67,7 @@ class Sortable(Element,
             'selectedClass': 'nicegui-sortable-multi-selected',
             **options
         }
-
-        # Remove None values to use SortableJS defaults
-        self._props['options'] = {k: v for k, v in sortable_options.items() if v is not None}
+        self._props['options'] = sortable_options
 
         # Register this instance in the class registry
         Sortable._instances[self.id] = self
@@ -104,7 +99,6 @@ class Sortable(Element,
     def _handle_cross_container_add(self, e):
         """Handle an element being added from another sortable container."""
         try:
-            # Get the DOM ID of the moved element (with 'c' prefix)
             moved_dom_id = e.args.get('item')
             if not moved_dom_id:
                 return
@@ -119,9 +113,9 @@ class Sortable(Element,
             found_element = None
             source_sortable = None
 
-            for instance_id, instance in Sortable._instances.items():
+            for instance in Sortable._instances.values():
                 if instance == self:
-                    continue  # Skip this instance
+                    continue
 
                 if instance.default_slot and instance.default_slot.children:
                     for child in instance.default_slot.children:
@@ -129,9 +123,6 @@ class Sortable(Element,
                             found_element = child
                             source_sortable = instance
                             break
-
-                if found_element:
-                    break
 
             if found_element and source_sortable:
                 # Remove the element from the source sortable
@@ -144,8 +135,8 @@ class Sortable(Element,
                         self.default_slot.children.insert(new_index, found_element)
                     else:
                         self.default_slot.children.append(found_element)
-        except Exception as ex:
-            print(f"Error handling cross-container add: {ex}")
+        except Exception as e:
+            print(f"Error handling cross-container add: {e}")
 
     def _synchronize_order(self, e):
         """Synchronize the Python-side order with the JavaScript DOM order."""
@@ -173,8 +164,8 @@ class Sortable(Element,
 
                 # Replace the children with the ordered list
                 self.default_slot.children = ordered_items
-        except Exception as ex:
-            print(f"Error synchronizing order: {ex}")
+        except Exception as e:
+            print(f"Error synchronizing order: {e}")
 
     def set_option(self, name: str, value: Any) -> None:
         """Set a specific SortableJS option.
