@@ -4,7 +4,7 @@ import inspect
 import re
 from copy import copy
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, ClassVar, Dict, Iterator, List, Optional, Sequence, Union, cast, overload
+from typing import TYPE_CHECKING, Any, ClassVar, Dict, Iterator, List, Optional, Sequence, Union, cast
 
 from typing_extensions import Self
 
@@ -333,21 +333,38 @@ class Element(Visibility):
            throttle: float = 0.0,
            leading_events: bool = True,
            trailing_events: bool = True,
-           js_handler: Optional[str] = '(...args) => emit(...args)',
+           js_handler: Optional[str] = '(...args) => emit(...args)',  # DEPRECATED: None will be removed in version 3.0
            ) -> Self:
         """Subscribe to an event.
 
+        The event handler can be a Python function, a JavaScript function or a combination of both:
+
+        - If you want to handle the event on the server with all (serializable) event arguments,
+          use a Python ``handler``.
+        - If you want to handle the event on the client side without emitting anything to the server,
+          use ``js_handler`` with a JavaScript function handling the event.
+        - If you want to handle the event on the server with a subset or transformed version of the event arguments,
+          use ``js_handler`` with a JavaScript function emitting the transformed arguments using ``emit()``, and
+          use a Python ``handler`` to handle these arguments on the server side.
+          The ``js_handler`` can also decide to selectively emit arguments to the server,
+          in which case the Python ``handler`` will not always be called.
+
+        Note that the arguments ``throttle``, ``leading_events``, and ``trailing_events`` are only relevant
+        when emitting events to the server.
+
+        *Updated in version 2.18.0: Both handlers can be specified at the same time.*
+
         :param type: name of the event (e.g. "click", "mousedown", or "update:model-value")
         :param handler: callback that is called upon occurrence of the event
-        :param args: arguments included in the event message sent to the event handler (default: `None` meaning all)
+        :param args: arguments included in the event message sent to the event handler (default: ``None`` meaning all)
         :param throttle: minimum time (in seconds) between event occurrences (default: 0.0)
-        :param leading_events: whether to trigger the event handler immediately upon the first event occurrence (default: `True`)
-        :param trailing_events: whether to trigger the event handler after the last event occurrence (default: `True`)
-        :param js_handler: JavaScript code that is executed upon occurrence of the event, e.g. `(evt) => alert(evt)`,
-            it can call `emit` to emit the event to the python `handler` (default: `(...args) => emit(...args)`)
+        :param leading_events: whether to trigger the event handler immediately upon the first event occurrence (default: ``True``)
+        :param trailing_events: whether to trigger the event handler after the last event occurrence (default: ``True`)
+        :param js_handler: JavaScript function that is handling the event on the client (default: "(...args) => emit(...args)")
         """
-
-        # The behavior of None is equivalent to '(...args) => emit(...args)'
+        if js_handler is None:
+            helpers.warn_once('Passing `js_handler=None` to `on()` is deprecated. '
+                              'Use the default "(...args) => emit(...args)" instead or remove the parameter.')
         if js_handler == '(...args) => emit(...args)':
             js_handler = None
 
