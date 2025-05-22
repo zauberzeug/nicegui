@@ -229,6 +229,157 @@ def filter_example() -> None:
                     ui.label(f'Item {i}')
 
 
+@doc.demo('Thresholds', '''
+    This example demonstrates how swap thresholds affect drag and drop behavior in sortable lists.
+    The threshold determines when items will swap positions as you drag an item over others.
+''')
+def thresholds_demo() -> None:
+    with ui.row():
+        ui.label('Swap Threshold')
+        swap_threshold = ui.slider(min=0, max=1, value=0.5, step=0.01).props('label-always')
+        invert_swap = ui.checkbox('Invert Swap')
+
+    # First add tabbed navigation for vertical vs horizontal examples
+    with ui.tabs().classes('w-full') as tabs:
+        vertical_tab = ui.tab('Vertical List')
+        horizontal_tab = ui.tab('Horizontal List')
+
+    with ui.tab_panels(tabs, value=vertical_tab).classes('w-full'):
+        # Vertical list panel
+        with ui.tab_panel(vertical_tab):
+            # Create a container for visual indicators
+            vertical_cards = []
+
+            with ui.sortable({
+                'swapThreshold': 0.5,  # Initial value
+                'invertedSwapThreshold': 0.5  # Add this initial value
+            }) as vertical_sortable:
+                for i in range(1, 5):
+                    with ui.card().classes('p-4 m-2 bg-blue-100 dark:bg-blue-800 threshold-card') as card:
+                        north_indicator = ui.element('div').classes('swap-zone-indicator north').style(
+                            'position: absolute; background-color: rgba(255,0,0,0.2); ' +
+                            'width: 100%; left: 0; transition: all 0.3s ease;'
+                        )
+                        south_indicator = ui.element('div').classes('swap-zone-indicator south').style(
+                            'position: absolute; background-color: rgba(255,0,0,0.2); ' +
+                            'width: 100%; left: 0; transition: all 0.3s ease;'
+                        )
+
+                        vertical_cards.append((north_indicator, south_indicator))
+                        ui.label(f'Drag {i}').classes('text-center')
+
+        # Horizontal list panel
+        with ui.tab_panel(horizontal_tab):
+            # Create a container for horizontal visual indicators
+            horizontal_cards = []
+
+            with ui.sortable({
+                'direction': 'horizontal',  # Set direction to horizontal
+                'swapThreshold': 0.5,
+                'invertedSwapThreshold': 0.5
+            }).classes('flex-row').style("overflow-y: auto;") as horizontal_sortable:
+                for i in range(1, 5):
+                    with ui.card().classes('p-4 m-2 bg-green-100 dark:bg-green-800 horizontal-threshold-card') as card:
+                        west_indicator = ui.element('div').classes('swap-zone-indicator west').style(
+                            'position: absolute; background-color: rgba(255,0,0,0.2); ' +
+                            'height: 100%; top: 0; transition: all 0.3s ease;'
+                        )
+                        east_indicator = ui.element('div').classes('swap-zone-indicator east').style(
+                            'position: absolute; background-color: rgba(255,0,0,0.2); ' +
+                            'height: 100%; top: 0; transition: all 0.3s ease;'
+                        )
+
+                        horizontal_cards.append((west_indicator, east_indicator))
+                        ui.label(f'Drag {i}').classes('text-center')
+
+    # Update both vertical and horizontal thresholds when the slider changes
+    def update_threshold_ui(e=None):
+        threshold_value = swap_threshold.value
+        invert_value = invert_swap.value
+
+        # Update vertical sortable
+        vertical_sortable.set_option('swapThreshold', threshold_value)
+        vertical_sortable.set_option('invertedSwapThreshold', threshold_value)
+        vertical_sortable.set_option('invertSwap', invert_value)
+
+        # Update horizontal sortable
+        horizontal_sortable.set_option('swapThreshold', threshold_value)
+        horizontal_sortable.set_option('invertedSwapThreshold', threshold_value)
+        horizontal_sortable.set_option('invertSwap', invert_value)
+
+        # Update vertical indicators
+        for north, south in vertical_cards:
+            indicator_height = threshold_value * 100
+
+            if invert_value:
+                # In inverted mode, indicators move to edges
+                north.style(
+                    f'height: {indicator_height/2}%; top: auto; ' +
+                    'bottom: 0; transform: none;'
+                )
+                south.style(
+                    f'height: {indicator_height/2}%; bottom: auto; ' +
+                    'top: 0; transform: none;'
+                )
+            else:
+                # In normal mode, both indicators stack in the center
+                north.style(
+                    f'height: {indicator_height}%; top: 50%; transform: translateY(-50%);'
+                )
+                south.style(
+                    f'height: {indicator_height}%; top: 50%; transform: translateY(-50%);'
+                )
+
+        # Update horizontal indicators
+        for west, east in horizontal_cards:
+            indicator_width = threshold_value * 100
+
+            if invert_value:
+                # In inverted mode, indicators move to edges
+                west.style(
+                    f'width: {indicator_width/2}%; left: auto; ' +
+                    'right: 0; transform: none;'
+                )
+                east.style(
+                    f'width: {indicator_width/2}%; right: auto; ' +
+                    'left: 0; transform: none;'
+                )
+            else:
+                # In normal mode, both indicators stack in the center
+                west.style(
+                    f'width: {indicator_width}%; left: 50%; transform: translateX(-50%);'
+                )
+                east.style(
+                    f'width: {indicator_width}%; left: 50%; transform: translateX(-50%);'
+                )
+
+        ui.notify(f'Updated threshold to {threshold_value}, invert: {invert_value}')
+
+    # Initialize the display
+    update_threshold_ui()
+
+    # Add event handlers for UI controls
+    swap_threshold.on('update:model-value', update_threshold_ui)
+    invert_swap.on('update:model-value', update_threshold_ui)
+
+    # Add supporting CSS
+    ui.add_css("""
+    .threshold-card {
+        position: relative;
+        min-height: 80px;
+        width: 100%;
+    }
+    .horizontal-threshold-card {
+        position: relative;
+    }
+    .swap-zone-indicator {
+        pointer-events: none;
+        z-index: 10;
+        border: 2px dashed rgba(255,0,0,0.5);
+    }
+    """)
+
+
 @doc.demo('Grid', '''
     You can create a sortable grid layout with flex wrapping.
 ''')
