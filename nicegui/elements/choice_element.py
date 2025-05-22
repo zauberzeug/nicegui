@@ -20,7 +20,7 @@ class ChoiceElement(ValueElement):
 
     def __init__(self, *,
                  tag: Optional[str] = None,
-                 options: Collection[Option | str],
+                 options: Collection[Union[Option, str]],
                  value: Any,
                  on_change: Optional[Handler[ValueChangeEventArguments]] = None,
                  ) -> None:
