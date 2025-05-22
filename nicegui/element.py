@@ -116,17 +116,21 @@ class Element(Visibility):
         cls.extra_libraries = copy(cls.extra_libraries)
         cls.exposed_libraries = copy(cls.exposed_libraries)
         if component:
+            max_time = max((path.stat().st_mtime for path in glob_absolute_paths(component)), default=None)
             for path in glob_absolute_paths(component):
-                cls.component = register_vue_component(path)
+                cls.component = register_vue_component(path, max_time=max_time)
         for library in libraries:
+            max_time = max((path.stat().st_mtime for path in glob_absolute_paths(library)), default=None)
             for path in glob_absolute_paths(library):
-                cls.libraries.append(register_library(path))
+                cls.libraries.append(register_library(path, max_time=max_time))
         for library in extra_libraries:
+            max_time = max((path.stat().st_mtime for path in glob_absolute_paths(library)), default=None)
             for path in glob_absolute_paths(library):
-                cls.extra_libraries.append(register_library(path))
+                cls.extra_libraries.append(register_library(path, max_time=max_time))
         for library in exposed_libraries + dependencies:
+            max_time = max((path.stat().st_mtime for path in glob_absolute_paths(library)), default=None)
             for path in glob_absolute_paths(library):
-                cls.exposed_libraries.append(register_library(path, expose=True))
+                cls.exposed_libraries.append(register_library(path, expose=True, max_time=max_time))
 
         cls._default_props = copy(cls._default_props)
         cls._default_classes = copy(cls._default_classes)
@@ -140,7 +144,8 @@ class Element(Visibility):
 
         :param path: path to the resource (e.g. folder with CSS and JavaScript files)
         """
-        resource = register_resource(Path(path))
+        path_ = Path(path)
+        resource = register_resource(path_, max_time=path_.stat().st_mtime)
         self._props['resource_path'] = f'/_nicegui/{__version__}/resources/{resource.key}'
 
     def add_slot(self, name: str, template: Optional[str] = None) -> Slot:
