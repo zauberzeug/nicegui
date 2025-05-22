@@ -1,12 +1,16 @@
-from typing import Any, Dict, List, Optional, Union, Callable, Collection, TypedDict
+from typing import Any, Dict, List, Optional, Union, Collection, TypedDict, Generic, Hashable
+from typing_extensions import TypeVar
 
 from ..events import Handler, ValueChangeEventArguments
 from .mixins.value_element import ValueElement
 
 
-class Option(TypedDict):
+T = TypeVar("T", bound=Hashable, default=str)
+
+
+class Option(TypedDict, Generic[T]):
     label: str
-    value: Any
+    value: T
 
 
 def _to_option(value: Union[Option, str]) -> Option:
@@ -19,7 +23,7 @@ class ChoiceElement(ValueElement):
 
     def __init__(self, *,
                  tag: Optional[str] = None,
-                 options: Collection[Union[Option, str]],
+                 options: Collection[Option | str],
                  value: Any,
                  on_change: Optional[Handler[ValueChangeEventArguments]] = None,
                  ) -> None:
