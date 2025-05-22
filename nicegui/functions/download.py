@@ -3,6 +3,7 @@ from typing import Optional, Union
 
 from .. import core, helpers
 from ..context import context
+from ..logging import log
 
 
 class Download:
@@ -55,6 +56,14 @@ class Download:
         :param filename: name of the file to download (default: name of the file on the server)
         :param media_type: media type of the file to download (default: "")
         """
+        is_relative = url.startswith('/') or url.startswith('./') or url.startswith('../')
+        if not is_relative:
+            log.warning(f'ui.download.from_url: You have initiated a cross-origin download from {url}.')
+            log.warning('If cross-origin, browser ignores the instruction to start a download, and tries to view the file in a new tab if possible (such as images, PDFs, etc.). \n'
+                        'Incidentally, download may work for some file types (such as .zip, .db, etc.), but it is not guaranteed to work for all file types.\n')
+            if filename is not None or media_type != '':
+                log.warning(
+                    'Moreover, browser ignores filename and media_type parameters, respecting the origin server\'s headers instead.')
         context.client.download(url, filename, media_type)
 
     def content(self, content: Union[bytes, str], filename: Optional[str] = None, media_type: str = '') -> None:
