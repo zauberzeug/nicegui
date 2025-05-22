@@ -1,8 +1,9 @@
 from __future__ import annotations
 
+import functools
 from dataclasses import dataclass
 from pathlib import Path
-from typing import TYPE_CHECKING, Dict, Iterable, List, Set, Tuple
+from typing import TYPE_CHECKING, Dict, Iterable, List, Optional, Set, Tuple
 
 import vbuild
 
@@ -58,14 +59,14 @@ libraries: Dict[str, Library] = {}
 resources: Dict[str, Resource] = {}
 
 
-def register_vue_component(path: Path) -> Component:
+def register_vue_component(path: Path, *, max_time: Optional[float]) -> Component:
     """Register a .vue or .js Vue component.
 
     Single-file components (.vue) are built right away
     to delegate this "long" process to the bootstrap phase
     and to avoid building the component on every single request.
     """
-    key = compute_key(path)
+    key = compute_key(path, max_time=max_time)
     name = _get_name(path)
     if path.suffix == '.vue':
         if key in vue_components and vue_components[key].path == path:
@@ -83,9 +84,9 @@ def register_vue_component(path: Path) -> Component:
     raise ValueError(f'Unsupported component type "{path.suffix}"')
 
 
-def register_library(path: Path, *, expose: bool = False) -> Library:
+def register_library(path: Path, *, expose: bool = False, max_time: Optional[float]) -> Library:
     """Register a *.js library."""
-    key = compute_key(path)
+    key = compute_key(path, max_time=max_time)
     name = _get_name(path)
     if path.suffix in {'.js', '.mjs'}:
         if key in libraries and libraries[key].path == path:
@@ -96,9 +97,9 @@ def register_library(path: Path, *, expose: bool = False) -> Library:
     raise ValueError(f'Unsupported library type "{path.suffix}"')
 
 
-def register_resource(path: Path) -> Resource:
+def register_resource(path: Path, *, max_time: Optional[float]) -> Resource:
     """Register a resource."""
-    key = compute_key(path)
+    key = compute_key(path, max_time=max_time)
     if key in resources and resources[key].path == path:
         return resources[key]
     assert key not in resources, f'Duplicate resource {key}'
@@ -106,20 +107,20 @@ def register_resource(path: Path) -> Resource:
     return resources[key]
 
 
-def compute_key(path: Path) -> str:
+@functools.lru_cache(maxsize=None)
+def compute_key(path: Path, *, max_time: Optional[float]) -> str:
     """Compute a key for a given path using a hash function.
 
     If the path is relative to the NiceGUI base directory, the key is computed from the relative path.
     """
-    nicegui_base = Path(__file__).parent
-    is_file = path.is_file()
+    NICEGUI_BASE = Path(__file__).parent
     try:
-        path = path.relative_to(nicegui_base)
+        rel_path = path.relative_to(NICEGUI_BASE)
     except ValueError:
-        pass
-    if is_file:
-        return f'{hash_file_path(path.parent)}/{path.name}'
-    return f'{hash_file_path(path)}'
+        rel_path = path
+    if path.is_file():
+        return f'{hash_file_path(rel_path.parent, max_time=max_time)}/{path.name}'
+    return hash_file_path(rel_path, max_time=max_time)
 
 
 def _get_name(path: Path) -> str:
