@@ -12,7 +12,6 @@ RUN pip install \
     matplotlib \
     pandas \
     plotly \
-    prometheus_client \
     pyecharts \
     pytest \
     requests \
@@ -41,7 +40,6 @@ RUN sed -i "/\[tool.poetry\]/,/]/s/version = .*/version = \"$VERSION\"/" pyproje
 RUN pip install .
 
 EXPOSE 8080
-EXPOSE 9062
 
 COPY fly-entrypoint.sh /entrypoint.sh
 
