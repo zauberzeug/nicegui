@@ -25,7 +25,8 @@
 .nicegui-splitter .q-splitter__panel,
 .nicegui-timeline-entry .q-timeline__content,
 .nicegui-row,
-.nicegui-column {
+.nicegui-column,
+.nicegui-sortable {
   display: flex;
   flex-direction: column;
   align-items: flex-start;

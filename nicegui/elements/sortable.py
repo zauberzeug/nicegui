@@ -53,7 +53,7 @@ class Sortable(Element,
         self.add_resource(Path(__file__).parent / 'lib' / 'sortable')
 
         # Apply flex layout by default
-        self.classes('nicegui-sortable flex')
+        self.classes('nicegui-sortable')
 
         # Initialize options with defaults if not provided
         options = options or {}
