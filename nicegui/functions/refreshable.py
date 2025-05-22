@@ -160,7 +160,7 @@ def state(value: Any) -> Tuple[Any, Callable[[Any], None]]:
         if target.locals[index] == new_value:
             return
         target.locals[index] = new_value
-        target.refreshable.refresh()
+        target.refreshable.refresh(_instance=target.instance)
 
     target.next_index += 1
 
