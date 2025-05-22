@@ -193,20 +193,16 @@ def test_js_handler(screen: Screen) -> None:
     screen.should_contain('Click!')
 
 
-def test_delegated_event(screen: Screen) -> None:
-    data = [f'Item {i}' for i in range(5)]
-    snippet = ''.join(f'<li data-index={i}>{item}</li>' for i, item in enumerate(data))
-    root = ui.html(snippet, tag='ul')
+def test_delegated_event_with_argument_filtering(screen: Screen) -> None:
+    ids = []
+    ui.html('''
+        <p data-id="A">Item A</p>
+        <p data-id="B">Item B</p>
+        <p data-id="C">Item C</p>
+    ''').on('click', lambda e: ids.append(e.args), js_handler='(e) => emit(e.target.dataset.id)')
 
-    clicked = []
-    def on_click(e):
-        clicked.append(int(e.args['index']))
-
-    root.on('click', on_click, js_handler="(e) => emit(e.target.dataset)")
-
-    # test
     screen.open('/')
-    for i, _ in enumerate(data):
-        screen.selenium.find_element(By.CSS_SELECTOR, f'li:nth-child({i+1})').click()
-
-    assert clicked == list(range(len(data)))
+    screen.click('Item A')
+    screen.click('Item B')
+    screen.click('Item C')
+    assert ids == ['A', 'B', 'C']
