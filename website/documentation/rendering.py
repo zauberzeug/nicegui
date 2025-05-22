@@ -1,6 +1,7 @@
 from typing import List
 
 from nicegui import ui
+from website.documentation.i18n import i18nify
 
 from ..header import add_head_html, add_header
 from ..style import section_heading, subheading
@@ -46,12 +47,12 @@ def render_page(documentation: DocumentationPage, *, with_menu: bool = True) -> 
             if part.title:
                 if part.link_target:
                     ui.link_target(part.link_target)
-                subheading(part.title, link=part.link, major=part.reference is not None)
+                subheading(i18nify(part.title), link=part.link, major=part.reference is not None)
             if part.description:
                 if part.description_format == 'rst':
-                    element = custom_restructured_text(part.description.replace(':param ', ':'))
+                    element = custom_restructured_text(i18nify(part.description).replace(':param ', ':'))
                 else:
-                    element = ui.markdown(part.description)
+                    element = ui.markdown(i18nify(part.description))
                 element.classes('bold-links arrow-links')
                 if ':param' in part.description:
                     element.classes('rst-param-tables')
