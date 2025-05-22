@@ -1,7 +1,8 @@
 from __future__ import annotations
 
+import weakref
 from pathlib import Path
-from typing import Callable, Dict, List, Optional, Union
+from typing import Any, Callable, Dict, List, Optional
 
 from nicegui.element import Element
 from nicegui.events import handle_event
@@ -11,10 +12,15 @@ class Sortable(Element,
                component='sortable.js',
                dependencies=[],
                default_classes='nicegui-sortable'):
-    """SortableJS integration for NiceGUI.
+    """Sortable.
 
-    This element creates a draggable and sortable container. Child elements can be reordered by dragging.
+    This element creates a draggable and sortable container based on `SortableJS <https://github.com/SortableJS/Sortable>`_.
+
+    Child elements can be reordered by dragging.
     """
+
+    # Class-level registry to track all sortable instances
+    _instances = weakref.WeakValueDictionary()
 
     def __init__(
         self,
@@ -68,9 +74,14 @@ class Sortable(Element,
         # Remove None values to use SortableJS defaults
         self._props['options'] = {k: v for k, v in sortable_options.items() if v is not None}
 
+        # Register this instance in the class registry
+        Sortable._instances[self.id] = self
 
         # When the order of objects have changed, synchronize
         self.on('order_updated', self._synchronize_order)
+
+        # Add handlers for cross-container operations
+        self.on('sort_add', self._handle_cross_container_add)
 
         # Set up event handlers
         if on_end:
@@ -90,6 +101,51 @@ class Sortable(Element,
         if on_deselect:
             self.on('sort_deselect', lambda e: handle_event(on_deselect, e))
 
+    def _handle_cross_container_add(self, e):
+        """Handle an element being added from another sortable container."""
+        try:
+            # Get the DOM ID of the moved element (with 'c' prefix)
+            moved_dom_id = e.args.get('item')
+            if not moved_dom_id:
+                return
+
+            # Extract actual element ID (remove 'c' prefix if present)
+            moved_id = moved_dom_id[1:] if moved_dom_id.startswith('c') else moved_dom_id
+
+            # Get the index where the item should be inserted
+            new_index = e.args.get('newIndex', 0)
+
+            # Search all other sortable instances for the element
+            found_element = None
+            source_sortable = None
+
+            for instance_id, instance in Sortable._instances.items():
+                if instance == self:
+                    continue  # Skip this instance
+
+                if instance.default_slot and instance.default_slot.children:
+                    for child in instance.default_slot.children:
+                        if str(child.id) == moved_id:
+                            found_element = child
+                            source_sortable = instance
+                            break
+
+                if found_element:
+                    break
+
+            if found_element and source_sortable:
+                # Remove the element from the source sortable
+                if found_element in source_sortable.default_slot.children:
+                    source_sortable.default_slot.children.remove(found_element)
+
+                # Add the element to this sortable at the specified index
+                if found_element not in self.default_slot.children:
+                    if new_index < len(self.default_slot.children):
+                        self.default_slot.children.insert(new_index, found_element)
+                    else:
+                        self.default_slot.children.append(found_element)
+        except Exception as ex:
+            print(f"Error handling cross-container add: {ex}")
 
     def _synchronize_order(self, e):
         """Synchronize the Python-side order with the JavaScript DOM order."""
@@ -97,31 +153,26 @@ class Sortable(Element,
             if not self.default_slot:
                 return
 
-            # If no items or no order data, exit early
-            if not self.default_slot.children or 'childrenData' not in e.args:
-                return
+            # Check if this is a regular order update with childrenData
+            if 'childrenData' in e.args and e.args.get('childrenData') is not None:
+                ordered_items: list[Element] = []
 
-            if e.args.get('childrenData') is None:
-                return
+                # First, create a map of ID to item
+                # Add "c" in front of ID to match DOMs ID
+                id_to_item = {f"c{item.id}": item for item in self.default_slot.children}
 
-            ordered_items: list[Element] = []
+                # Then construct the new order based on the DOM order
+                for item in e.args.get('childrenData'):
+                    if item['id'] in id_to_item:
+                        ordered_items.append(id_to_item[item['id']])
 
-            # First, create a map of ID to item
-            # Add "c" in front of ID to match DOMs ID
-            id_to_item = {f"c{item.id}": item for item in self.default_slot.children}
+                # Add any remaining items that might not be in the currentOrder
+                for item in self.default_slot.children:
+                    if f"c{item.id}" not in [child['id'] for child in e.args.get('childrenData')] and item not in ordered_items:
+                        ordered_items.append(item)
 
-            # Then construct the new order based on the DOM order
-            for item in e.args.get('childrenData'):
-                if item['id'] in id_to_item:
-                    ordered_items.append(id_to_item[item['id']])
-
-            # Add any remaining items that might not be in the currentOrder
-            for item in self.default_slot.children:
-                if str(item.id) not in e.args.get('childrenData') and item not in ordered_items:
-                    ordered_items.append(item)
-
-            # Replace the children with the ordered list
-            self.default_slot.children = ordered_items
+                # Replace the children with the ordered list
+                self.default_slot.children = ordered_items
         except Exception as ex:
             print(f"Error synchronizing order: {ex}")
 
