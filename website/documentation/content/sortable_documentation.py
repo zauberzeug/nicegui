@@ -408,21 +408,20 @@ def dynamic_list_management() -> None:
             add_deletable_object(string)
         ui.notify('Item added to the list')
 
+    with ui.sortable({'fallbackOnBody': True}, on_end=on_end) as dynamic_sortable:
+        for i in range(1, 5):
+            add_deletable_object(f'Sortable Item {i} - Drag to reorder')
+
     # Form for adding new items
     with ui.row().classes('w-full items-center mb-4'):
         new_item_input = ui.input('Enter new item text').classes('flex-grow mr-2')
         ui.button('Add Item', on_click=lambda: add_new_item(new_item_input.value)).classes('bg-green-500')
-        new_item_input.value = ''  # Clear the input
-
-    with ui.sortable({'fallbackOnBody': True}, on_end=on_end) as dynamic_sortable:
-        # Pre-populate with some items
-        for i in range(1, 5):
-            add_deletable_object(f'Sortable Item {i} - Drag to reorder')
+        # new_item_input.value = ''  # Clear the input
 
     # Action buttons
     with ui.row().classes('mt-4'):
         ui.button('Delete All', color='red', on_click=lambda: dynamic_sortable.clear()).classes('mr-2')
-        ui.button('Add 3 Items', color='green', on_click=lambda: [
+        ui.button('Add 3 Random Items', color='green', on_click=lambda: [
             add_new_item(f'Random Item {randint(1, 100)}') for _ in range(3)]).classes('mr-2')
 
         async def show_current_order():
