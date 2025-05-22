@@ -64,7 +64,7 @@ class Download:
             if filename is not None or media_type != '':
                 log.warning(
                     'Moreover, browser ignores filename and media_type parameters, respecting the origin server\'s headers instead.')
-            log.warning('\nIf you insist, use `ui.navigate.to(url, new_tab=True)` instead. \n')
+            log.warning('\nIt is best to change to a relative URL if you control the downloaded content. \nOr, if you insist, use `ui.navigate.to(url, new_tab=True)` instead. \n')
         context.client.download(url, filename, media_type)
 
     def content(self, content: Union[bytes, str], filename: Optional[str] = None, media_type: str = '') -> None:
