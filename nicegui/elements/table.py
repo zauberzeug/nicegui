@@ -14,6 +14,7 @@ from ..events import (
 )
 from ..helpers import warn_once
 from .mixins.filter_element import FilterElement
+from .table_cell_slot import TableCellSlot
 
 if importlib.util.find_spec('pandas'):
     optional_features.register('pandas')
@@ -412,6 +413,12 @@ class Table(FilterElement, component='table.js'):
             self.selected.clear()
         self.update()
 
+
+    def cell_slot(self, field:str ):
+        def decorator(func:Callable[...,None]):
+            return TableCellSlot(self,field,func)
+        return decorator
+
     async def get_filtered_sorted_rows(self, *, timeout: float = 1) -> List[Dict]:
         """Asynchronously return the filtered and sorted rows of the table."""
         return await self.get_computed_prop('filteredSortedRows', timeout=timeout)
@@ -423,6 +430,7 @@ class Table(FilterElement, component='table.js'):
     async def get_computed_rows_number(self, *, timeout: float = 1) -> int:
         """Asynchronously return the number of computed rows of the table."""
         return await self.get_computed_prop('computedRowsNumber', timeout=timeout)
+
 
     class row(Element):
 
