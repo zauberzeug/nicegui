@@ -19,7 +19,7 @@ class Sortable(Element,
     """
 
     # Class-level registry to track all sortable instances
-    _instances = weakref.WeakValueDictionary()
+    _instances: weakref.WeakValueDictionary[int, Sortable] = weakref.WeakValueDictionary()
 
     def __init__(
         self,
