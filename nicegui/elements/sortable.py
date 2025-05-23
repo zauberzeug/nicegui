@@ -13,7 +13,7 @@ class Sortable(Element,
                default_classes='nicegui-sortable'):
     """Sortable.
 
-    This element creates a draggable and sortable container based on `SortableJS <https://github.com/SortableJS/Sortable>`_.
+    This element creates a draggable and sortable element based on `SortableJS <https://github.com/SortableJS/Sortable>`_.
 
     Child elements can be reordered by dragging.
     """
@@ -71,8 +71,8 @@ class Sortable(Element,
         # When the order of objects have changed, synchronize
         self.on('order_updated', self._synchronize_order)
 
-        # Add handlers for cross-container operations
-        self.on('sort_add', self._handle_cross_container_add)
+        # Add handlers for cross-element operations
+        self.on('sort_add', self._handle_cross_element_add)
 
         # Set up event handlers
         if on_end:
@@ -92,8 +92,8 @@ class Sortable(Element,
         if on_deselect:
             self.on('sort_deselect', lambda e: handle_event(on_deselect, e))
 
-    def _handle_cross_container_add(self, e: GenericEventArguments) -> None:
-        """Handle an element being added from another sortable container."""
+    def _handle_cross_element_add(self, e: GenericEventArguments) -> None:
+        """Handle an element being added from another sortable element."""
         try:
             moved_dom_id = e.args.get('item')
             if not moved_dom_id:
@@ -133,7 +133,7 @@ class Sortable(Element,
                         self.default_slot.children.append(found_element)
 
         except Exception as err:
-            print(f'Error handling cross-container add: {err}')
+            print(f'Error handling cross-element add: {err}')
 
     def _synchronize_order(self, e: GenericEventArguments) -> None:
         """Synchronize the Python-side order with the JavaScript DOM order."""
