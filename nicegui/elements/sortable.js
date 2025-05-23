@@ -259,9 +259,9 @@ export default {
                 console.error("Error in deselect method:", error);
             }
         },
-        removeItem(elementId) {
-            const element = document.getElementById(elementId);
-            if (element && this.sortableInstance) {
+        remove(elementId) {
+            const element = this.sortableInstance.el.querySelector(`#${elementId}`);
+            if (element) {
                 if (element.parentNode === this.sortableInstance.el) {
                     element.parentNode.removeChild(element);
                     return true;

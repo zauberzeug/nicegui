@@ -254,18 +254,59 @@ class Sortable(Element,
         """
         self.run_method('deselect', element_id)
 
-    def remove_item(self, item: Element) -> None:
+    def remove_item(self, item: Element | int | str) -> None:
         """Remove an item from this sortable list.
 
         This removes the item both from the Python object and the DOM object.
 
         Args:
-            item: The element to remove
+            item: The element to remove. Can be:
+                - An Element object
+                - A string ID (with or without 'c' prefix)
+                - An integer ID
         """
-        item_id = f'c{item.id}'
-        self.run_method('removeItem', item_id)
+        # Get the element and its DOM ID
+        element_to_remove = None
+        dom_id = None
 
-        item.delete()
+        # Handle different item types
+        if isinstance(item, Element):
+            element_to_remove = item
+            dom_id = f'c{item.id}'
+        elif isinstance(item, str):
+            dom_id = item if item.startswith('c') else f'c{item}'
+
+            # Try to find the element in our children
+            if self.default_slot and self.default_slot.children:
+                # Get the ID without the 'c' prefix
+                raw_id = dom_id[1:] if dom_id.startswith('c') else dom_id
+                for child in self.default_slot.children:
+                    if str(child.id) == raw_id:
+                        element_to_remove = child
+                        break
+        elif isinstance(item, int):
+            dom_id = f'c{item}'
+
+            # Try to find the element in our children
+            if self.default_slot and self.default_slot.children:
+                for child in self.default_slot.children:
+                    if child.id == item:
+                        element_to_remove = child
+                        break
+        else:
+            raise TypeError(f'Expected Element, str, or int, got {type(item).__name__}')
+
+        # Remove from DOM
+        self.run_method('remove', dom_id)
+
+        # Remove from Python data structure and delete the element
+        if element_to_remove:
+            # Remove from parent slot's children list if present
+            if self.default_slot and element_to_remove in self.default_slot.children:
+                self.default_slot.children.remove(element_to_remove)
+
+            # Delete the element
+            element_to_remove.delete()
 
     def clear(self) -> None:
         """Remove all child elements.
