@@ -50,6 +50,7 @@ class AgGrid(Element,
     @classmethod
     def from_pandas(cls,
                     df: 'pd.DataFrame', *,
+                    html_columns: List[int] = [],  # noqa: B006
                     theme: str = 'balham',
                     auto_size_columns: bool = True,
                     options: Dict = {}) -> Self:  # noqa: B006
@@ -89,11 +90,12 @@ class AgGrid(Element,
             'rowData': df.to_dict('records'),
             'suppressFieldDotNotation': True,
             **options,
-        }, theme=theme, auto_size_columns=auto_size_columns)
+        }, html_columns=html_columns, theme=theme, auto_size_columns=auto_size_columns)
 
     @classmethod
     def from_polars(cls,
                     df: 'pl.DataFrame', *,
+                    html_columns: List[int] = [],  # noqa: B006
                     theme: str = 'balham',
                     auto_size_columns: bool = True,
                     options: Dict = {}) -> Self:  # noqa: B006
@@ -115,7 +117,7 @@ class AgGrid(Element,
             'rowData': df.to_dicts(),
             'suppressFieldDotNotation': True,
             **options,
-        }, theme=theme, auto_size_columns=auto_size_columns)
+        }, html_columns=html_columns, theme=theme, auto_size_columns=auto_size_columns)
 
     @property
     def options(self) -> Dict:
