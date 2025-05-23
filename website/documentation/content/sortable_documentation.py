@@ -1,43 +1,44 @@
 from nicegui import ui
+from nicegui.events import GenericEventArguments
 from random import randint
 
 from . import doc
 
 
 # Event handlers
-def on_end(e):
+def on_end(e: GenericEventArguments):
     ui.notify(f'Item moved from {e.args["oldIndex"]} to {e.args["newIndex"]}')
 
 
-def on_add(e):
+def on_add():
     ui.notify('Item added from another list')
 
 
-def on_sort(e):
+def on_sort():
     ui.notify('List order changed')
 
 
-def on_move(e):
+def on_move():
     ui.notify('Item being moved')
 
 
-def on_clone_add(e):
+def on_clone_add(e: GenericEventArguments):
     ui.notify(f'Cloned item added to the target list at index {e.args["newIndex"]}')
 
 
-def on_filter(e):
+def on_filter(e: GenericEventArguments):
     ui.notify(f'Filtered item was clicked: {e.args["item"]}')
 
 
-def on_select(e):
+def on_select(e: GenericEventArguments):
     ui.notify(f'Item selected: {e.args["item"]}')
 
 
-def on_deselect(e):
+def on_deselect(e: GenericEventArguments):
     ui.notify(f'Item deselected: {e.args["item"]}')
 
 
-def on_spill(e):
+def on_spill(e: GenericEventArguments):
     ui.notify(f'Item spilled: {e.args["item"]}')
 
 
@@ -113,8 +114,8 @@ def true_cloning() -> None:
     class ClonableCard(ui.card):
         def __init__(
             self,
-            label="Slider",
-            bg="",
+            label='Slider',
+            bg='',
         ):
             super().__init__()
             self.label = label
@@ -126,14 +127,14 @@ def true_cloning() -> None:
 
         def clone(self):
             return ClonableCard(
-                label=f"Clone of {self.label}",
+                label=f'Clone of {self.label}',
                 bg=self.bg,
             )
 
     def on_add_create_clone(e):
         # Get info about the added item
-        item_id = e.args.get("item")
-        new_index = e.args.get("newIndex")
+        item_id = e.args.get('item')
+        new_index = e.args.get('newIndex')
 
         # Find the original item in the source list
         # This is where we need to know which list the item came from
@@ -145,7 +146,7 @@ def true_cloning() -> None:
         # Find the original item based on DOM ID (removing the "c" prefix)
         original_item = None
         for item in source_items:
-            if f"c{item.id}" == item_id:
+            if f'c{item.id}' == item_id:
                 original_item = item
                 break
 
@@ -153,7 +154,7 @@ def true_cloning() -> None:
             with e.sender:
                 # Get the class of the original item
                 item_class = type(original_item)
-                if hasattr(original_item, "clone"):
+                if hasattr(original_item, 'clone'):
                     new_item = original_item.clone()  # type: ignore
                 else:
                     new_item = item_class()  # fallback
@@ -177,7 +178,7 @@ def true_cloning() -> None:
                 'removeOnAdd': True
             }, on_add=on_add_create_clone) as true_clone_list2:
                 for i in range(1, 7):
-                    ClonableCard(f'Item {i}', "bg-amber-500")
+                    ClonableCard(f'Item {i}', 'bg-amber-500')
 
 
 @doc.demo('Disabling Sorting', '''
@@ -211,7 +212,7 @@ def handle_example() -> None:
         for i in range(1, 7):
             with ui.card():
                 with ui.row().classes('items-center w-full'):
-                    ui.icon('drag_handle').classes("nicegui-sortable-handle")
+                    ui.icon('drag_handle').classes('nicegui-sortable-handle')
                     ui.label(f'Item {i}')
 
 
@@ -277,7 +278,7 @@ def thresholds_demo() -> None:
                 'direction': 'horizontal',  # Set direction to horizontal
                 'swapThreshold': 0.5,
                 'invertedSwapThreshold': 0.5
-            }).classes('flex-row').style("overflow-y: auto;") as horizontal_sortable:
+            }).classes('flex-row').style('overflow-y: auto;') as horizontal_sortable:
                 for i in range(1, 5):
                     with ui.card().classes('p-4 m-2 bg-green-100 dark:bg-green-800 horizontal-threshold-card') as card:
                         west_indicator = ui.element('div').classes('swap-zone-indicator west').style(

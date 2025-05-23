@@ -1,10 +1,10 @@
 from __future__ import annotations
 
 import weakref
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any, Dict, List, Optional
 
 from nicegui.element import Element
-from nicegui.events import GenericEventArguments, handle_event
+from nicegui.events import GenericEventArguments, Handler, handle_event
 
 
 class Sortable(Element,
@@ -24,14 +24,14 @@ class Sortable(Element,
     def __init__(
         self,
         options: Optional[Dict] = None, *,
-        on_end: Optional[Callable] = None,
-        on_add: Optional[Callable] = None,
-        on_sort: Optional[Callable] = None,
-        on_move: Optional[Callable] = None,
-        on_filter: Optional[Callable] = None,
-        on_spill: Optional[Callable] = None,
-        on_select: Optional[Callable] = None,
-        on_deselect: Optional[Callable] = None,
+        on_end: Optional[Handler[GenericEventArguments]] = None,
+        on_add: Optional[Handler[GenericEventArguments]] = None,
+        on_sort: Optional[Handler[GenericEventArguments]] = None,
+        on_move: Optional[Handler[GenericEventArguments]] = None,
+        on_filter: Optional[Handler[GenericEventArguments]] = None,
+        on_spill: Optional[Handler[GenericEventArguments]] = None,
+        on_select: Optional[Handler[GenericEventArguments]] = None,
+        on_deselect: Optional[Handler[GenericEventArguments]] = None,
     ) -> None:
         """Initialize the sortable element.
 
