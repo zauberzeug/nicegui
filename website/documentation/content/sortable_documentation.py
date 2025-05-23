@@ -113,7 +113,7 @@ def cloning() -> None:
     This is an advanced example that creates true Python object clones when items are dragged between lists.
 ''')
 def true_cloning() -> None:
-    class CloneableCard(ui.card):
+    class ClonableCard(ui.card):
         def __init__(
             self,
             label='Slider',
@@ -171,7 +171,7 @@ def true_cloning() -> None:
                 'removeOnAdd': True
             }, on_add=on_add_create_clone) as true_clone_list1:
                 for i in range(1, 7):
-                    CloneableCard(f'Item {i}')
+                    ClonableCard(f'Item {i}')
 
         with ui.card():
             ui.label('List 2').classes('text-h6')
