@@ -387,9 +387,7 @@ def thresholds_demo() -> None:
     You can create a sortable grid layout with flex wrapping.
 ''')
 def grid_example() -> None:
-    with ui.sortable({
-        'delay': 150  # Adding a small delay helps with touch devices
-    }).classes('flex flex-wrap flex-row'):
+    with ui.sortable().classes('flex flex-wrap flex-row'):
         for i in range(1, 21):
             with ui.card().classes('grid-square w-20 m-1 p-2 items-center justify-center'):
                 ui.label(f'Item {i}')
@@ -407,7 +405,6 @@ def nested_sortables() -> None:
             'swapThreshold': 0.4,
             'invertSwap': True,
             'emptyInsertThreshold': 10,
-            'delay': 150
         }).classes(f'nicegui-sortable-nested level-{level}'):
             for item in items:
                 with ui.card().classes(f'p-3 mb-2 nested-item level-{level}'):
