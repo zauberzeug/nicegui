@@ -225,7 +225,7 @@ def filter_example() -> None:
     with ui.sortable({'filter': '.nicegui-sortable-filtered'}, on_filter=on_filter):
         for i in range(1, 7):
             if i == 4:
-                with ui.card().classes('nicegui-sortable-filtered bg-red-200'):
+                with ui.card().classes('nicegui-sortable-filtered'):
                     ui.label('Filtered').classes('text-red-800')
             else:
                 with ui.card():

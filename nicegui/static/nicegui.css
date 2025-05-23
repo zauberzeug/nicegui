@@ -340,3 +340,6 @@ h6.q-timeline__title {
   border: 1px dashed #8b8b8b;
   border-radius: 4px;
 }
+.nicegui-sortable-filtered {
+  background-color: #f87171 !important;
+}
