@@ -137,6 +137,12 @@ target-version = "py38"
 indent-width = 4
 line-length = 120
 
+[tool.ruff.lint.flake8-quotes]
+inline-quotes = "single"
+multiline-quotes = "single"
+docstring-quotes = "double"
+avoid-escape = true
+
 [tool.ruff.lint]
 # See complete list: https://docs.astral.sh/ruff/rules/
 select = [
@@ -148,10 +154,12 @@ select = [
     "UP", # pyupgrade
     "RUF", # ruff
     "PL", # pylint
+    "Q" # flake8-quotes
 ]
 fixable = [
     "I",  # isort
     "RUF022", # `__all__` is not sorted
+    "Q000"  # quote style
 ]
 ignore = [
     "E501", # line too long
