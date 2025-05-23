@@ -449,3 +449,55 @@ for (let sheet of document.styleSheets) {
     }
   }
 }
+
+function softReload(url, x = 0, y = 0) {
+  // Make the GET request
+  fetch(url, {
+    method: 'GET',
+    headers: new Headers({
+      'X-NiceGUI-Client-ID': 'your-client-id' // Replace with your actual client ID
+    })
+  })
+    .then(response => {
+      if (!response.ok) {
+        throw new Error('Network response was not ok')
+      }
+      return response.json()
+    })
+    .then(data => {
+      window.history.pushState({x: window.scrollX, y: window.scrollY}, '', url);
+      window.socket.disconnect();
+      console.log(data)
+      // Handle the response data
+      createApp(parseElements(data.elements), {
+        version: data.version,
+        prefix: data.prefix,
+        query: data.socket_io_js_query_params,
+        extraHeaders: data.socket_io_js_extra_headers,
+        transports: data.socket_io_js_transports,
+        quasarConfig: JSON.parse(data.quasar_config),
+      });
+      const importPromises = Object.entries(data.js_import_raw).map(([name, value]) => {
+        console.log(`Importing element ${name}`);
+        return import(value.url).then((module) => {
+          console.log(`Imported element ${name} from ${value.url}`, module);
+          app.component(value.tag, module.default);
+        });
+      });
+
+      Promise.all(importPromises).then(() => {
+        eval(data.vue_scripts); // required for plotly and some libraries
+        app.mount("#app");
+        window.scrollTo(x, y);
+      });
+    })
+    .catch(error => {
+      console.error('There was a problem with the fetch operation:', error);
+      window.location.href = url;
+    })
+}
+
+window.addEventListener("popstate", (event) => {
+  console.log("popstate", event.state);
+  softReload(window.location.href, event.state?.x, event.state?.y);
+});
