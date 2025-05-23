@@ -357,8 +357,6 @@ def thresholds_demo() -> None:
                     f'width: {indicator_width}%; left: 50%; transform: translateX(-50%);'
                 )
 
-        ui.notify(f'Updated threshold to {threshold_value}, invert: {invert_value}')
-
     # Initialize the display
     update_threshold_ui()
 
