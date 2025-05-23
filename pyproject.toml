@@ -154,12 +154,16 @@ select = [
     "UP", # pyupgrade
     "RUF", # ruff
     "PL", # pylint
-    "Q" # flake8-quotes
+    "Q", # flake8-quotes
 ]
 fixable = [
     "I",  # isort
     "RUF022", # `__all__` is not sorted
-    "Q000"  # quote style
+    "Q000",  # bad quotes inline string
+    "Q001",  # bad quotes multiline string
+    "Q002",  # bad quotes docstring
+    "Q003",  # avoidable escaped quote
+    "Q004",  # unnecessary escaped quote
 ]
 ignore = [
     "E501", # line too long
