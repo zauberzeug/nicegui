@@ -135,7 +135,6 @@ class Sortable(Element,
         except Exception as err:
             print(f'Error handling cross-container add: {err}')
 
-
     def _synchronize_order(self, e: GenericEventArguments) -> None:
         """Synchronize the Python-side order with the JavaScript DOM order."""
         try:

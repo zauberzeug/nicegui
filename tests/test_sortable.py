@@ -66,8 +66,8 @@ def test_sortable_synchronization(screen: Screen):
             ui.label('Item 3')
 
             def show_order():
-                current_order = ", ".join(item.text for item in sortable.default_slot.children)
-                ui.notify(f"Current order: {current_order}")
+                current_order = ', '.join(item.text for item in sortable.default_slot.children)
+                ui.notify(f'Current order: {current_order}')
 
         ui.button('Show Order', on_click=show_order)
         ui.button('Reverse Order', on_click=lambda: sortable.sort(
@@ -94,8 +94,8 @@ def test_sortable_drag_and_drop(screen: Screen):
             ui.label('Item 3').classes('draggable')
 
             def show_order():
-                current_order = ", ".join(item.text for item in sortable.default_slot.children)
-                ui.notify(f"Current order: {current_order}")
+                current_order = ', '.join(item.text for item in sortable.default_slot.children)
+                ui.notify(f'Current order: {current_order}')
 
         ui.button('Show Order', on_click=show_order)
 
@@ -123,24 +123,24 @@ def test_sortable_drag_between_containers(screen: Screen):
     def page():
         nonlocal src1, src2, src3, target1, target2, target3
         ui.label('Source List').classes('text-xl')
-        with ui.sortable({"group": "shared-group"}) as source_sortable:
+        with ui.sortable({'group': 'shared-group'}) as source_sortable:
             src1 = ui.label('Source Item 1').classes('draggable bg-blue-100')
             src2 = ui.label('Source Item 2').classes('draggable bg-blue-100')
             src3 = ui.label('Source Item 3').classes('draggable bg-blue-100')
 
             def show_source_order():
-                current_order = ", ".join(item.text for item in source_sortable.default_slot.children)
-                ui.notify(f"Source order: {current_order}")
+                current_order = ', '.join(item.text for item in source_sortable.default_slot.children)
+                ui.notify(f'Source order: {current_order}')
 
         ui.label('Target List').classes('text-xl mt-4')
-        with ui.sortable({"group": "shared-group"}) as target_sortable:
+        with ui.sortable({'group': 'shared-group'}) as target_sortable:
             target1 = ui.label('Target Item A').classes('draggable bg-green-100')
             target2 = ui.label('Target Item B').classes('draggable bg-green-100')
             target3 = ui.label('Target Item C').classes('draggable bg-green-100')
 
             def show_target_order():
-                current_order = ", ".join(item.text for item in target_sortable.default_slot.children)
-                ui.notify(f"Target order: {current_order}")
+                current_order = ', '.join(item.text for item in target_sortable.default_slot.children)
+                ui.notify(f'Target order: {current_order}')
 
         with ui.column():
             ui.button('Show Source Order', on_click=show_source_order)
@@ -154,7 +154,7 @@ def test_sortable_drag_between_containers(screen: Screen):
     screen.click('Show Target Order')
     screen.should_contain('Target order: Target Item A, Target Item B, Target Item C')
 
-    screen.drag_and_drop("Source Item 2", "Target Item B")
+    screen.drag_and_drop('Source Item 2', 'Target Item B')
 
     # Wait for the sorting to complete
     screen.wait(0.5)
