@@ -180,7 +180,24 @@ def true_cloning() -> None:
                 'removeOnAdd': True
             }, on_add=on_add_create_clone) as true_clone_list2:
                 for i in range(1, 7):
-                    ClonableCard(f'Item {i}', 'bg-amber-500')
+                    ClonableCard(f'List2 {i}', 'bg-amber-500')
+
+        async def show_current_order1():
+            items_text = [item.id
+                          for item in true_clone_list1.default_slot.children]
+            ui.notify(f'Current order: {items_text}')
+            dom_order = await true_clone_list1.run_method('getChildrenOrder')
+            ui.notify(f'Current DOM order: {dom_order}')
+
+        async def show_current_order2():
+            items_text = [item.id
+                          for item in true_clone_list2.default_slot.children]
+            ui.notify(f'Current order: {items_text}')
+            dom_order = await true_clone_list2.run_method('getChildrenOrder')
+            ui.notify(f'Current DOM order: {dom_order}')
+
+        ui.button('Show Current Order 1', on_click=show_current_order1)
+        ui.button('Show Current Order 2', on_click=show_current_order2)
 
 
 @doc.demo('Disabling Sorting', '''
