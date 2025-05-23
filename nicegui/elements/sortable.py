@@ -131,8 +131,10 @@ class Sortable(Element,
                         self.default_slot.children.insert(new_index, found_element)
                     else:
                         self.default_slot.children.append(found_element)
+
         except Exception as err:
             print(f'Error handling cross-container add: {err}')
+
 
     def _synchronize_order(self, e: GenericEventArguments) -> None:
         """Synchronize the Python-side order with the JavaScript DOM order."""
