@@ -26,6 +26,51 @@ export default {
                     if (evt.clone && !evt.clone.id) {
                         evt.clone.id = evt.item.id;
                     }
+                    this.$emit('sort_clone', {
+                        item: evt.item.id || evt.item.dataset.id || null,
+                        origEl: evt.item ? (evt.item.id || evt.item.dataset.id || null) : null,
+                        clone: evt.clone ? (evt.clone.id || evt.clone.dataset.id || null) : null,
+                    });
+                },
+                onChoose: (evt) => {
+                    this.$emit('sort_choose', {
+                        item: evt.item.id || evt.item.dataset.id || null,
+                        oldIndex: evt.oldIndex
+                    });
+                },
+                onUnchoose: (evt) => {
+                    this.$emit('sort_unchoose', {
+                        item: evt.item.id || evt.item.dataset.id || null,
+                        oldIndex: evt.oldIndex
+                    });
+                },
+                onStart: (evt) => {
+                    this.$emit('sort_start', {
+                        item: evt.item.id || evt.item.dataset.id || null,
+                        oldIndex: evt.oldIndex
+                    });
+                },
+                onChange: (evt) => {
+                    this.$emit('sort_change', {
+                        item: evt.item.id || evt.item.dataset.id || null,
+                        newIndex: evt.newIndex,
+                        oldIndex: evt.oldIndex
+                    });
+                },
+                onUpdate: (evt) => {
+                    this.$emit('sort_update', {
+                        item: evt.item.id || evt.item.dataset.id || null,
+                        newIndex: evt.newIndex,
+                        oldIndex: evt.oldIndex
+                    });
+                },
+                onRemove: (evt) => {
+                    this.$emit('sort_remove', {
+                        item: evt.item.id || evt.item.dataset.id || null,
+                        oldIndex: evt.oldIndex,
+                        from: evt.from ? (evt.from.id || null) : null,
+                        to: evt.to ? (evt.to.id || null) : null
+                    });
                 },
                 onEnd: (evt) => {
                     // Get the complete current order of all elements to synchronize with Python
@@ -37,35 +82,60 @@ export default {
                     }));
 
                     this.$emit('sort_end', {
+                        item: evt.item.id || evt.item.dataset.id || null,
+                        to: evt.to ? (evt.to.id || null) : null,
+                        from: evt.from ? (evt.from.id || null) : null,
                         oldIndex: evt.oldIndex,
                         newIndex: evt.newIndex,
-                        item: evt.item.id || evt.item.dataset.id || null,
-                        childrenData: childrenData
-                    });
-
-                    // Emit a separate event for synchronizing order
-                    this.$emit('order_updated', {
+                        oldDraggableIndex: evt.oldDraggableIndex,
+                        newDraggableIndex: evt.newDraggableIndex,
+                        clone: evt.clone,
+                        pullMode: evt.pullMode,
                         childrenData: childrenData
                     });
                 },
                 onAdd: (evt) => {
                     this.$emit('sort_add', {
                         item: evt.item.id || evt.item.dataset.id || null,
-                        newIndex: evt.newIndex
+                        newIndex: evt.newIndex,
+                        from: evt.from ? (evt.from.id || null) : null,
+                        to: evt.to ? (evt.to.id || null) : null,
                     });
-                    if (this.options["removeOnAdd"] == true) {
-                        evt.item.parentNode && evt.item.parentNode.removeChild(evt.item);
-                    }
+                    //if (this.options["removeOnAdd"] == true) {
+                    //    console.log("yaa")
+                    //    evt.item.parentNode.removeChild(evt.item);
+                    //}
                 },
                 onSort: (evt) => {
-                    this.$emit('sort_change', {
-                        item: evt.item.id || evt.item.dataset.id || null
+                    // Get the complete current order of all elements to synchronize with Python
+                    const currentOrder = this.sortableInstance.toArray();
+                    const childElements = Array.from(this.sortableInstance.el.children);
+                    const childrenData = childElements.map(el => ({
+                        id: el.id || el.dataset.id || null,
+                        index: currentOrder.indexOf(el.id || el.dataset.id || "")
+                    }));
+
+                    this.$emit('sort_sort', {
+                        item: evt.item.id || evt.item.dataset.id || null,
+                        to: evt.to ? (evt.to.id || null) : null,
+                        from: evt.from ? (evt.from.id || null) : null,
+                        oldIndex: evt.oldIndex,
+                        newIndex: evt.newIndex,
+                        oldDraggableIndex: evt.oldDraggableIndex,
+                        newDraggableIndex: evt.newDraggableIndex,
+                        clone: evt.clone,
+                        pullMode: evt.pullMode,
+                        childrenData: childrenData
                     });
                 },
                 onMove: (evt, originalEvent) => {
                     const result = this.$emit('sort_move', {
+                        dragged: evt.dragged.id || evt.dragged.dataset.id || null,
+                        draggedRect: evt.draggedRect,
                         related: evt.related.id || evt.related.dataset.id || null,
-                        dragged: evt.dragged.id || evt.dragged.dataset.id || null
+                        relatedRect: evt.relatedRect,
+                        willInsertAfter: evt.willInsertAfter,
+
                     });
                     return result !== false;
                 },

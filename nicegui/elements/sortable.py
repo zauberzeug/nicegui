@@ -24,10 +24,17 @@ class Sortable(Element,
     def __init__(
         self,
         options: Optional[Dict] = None, *,
+        on_choose: Optional[Handler[GenericEventArguments]] = None,
+        on_unchoose: Optional[Handler[GenericEventArguments]] = None,
+        on_start: Optional[Handler[GenericEventArguments]] = None,
         on_end: Optional[Handler[GenericEventArguments]] = None,
         on_add: Optional[Handler[GenericEventArguments]] = None,
+        on_update: Optional[Handler[GenericEventArguments]] = None,
         on_sort: Optional[Handler[GenericEventArguments]] = None,
+        on_remove: Optional[Handler[GenericEventArguments]] = None,
         on_move: Optional[Handler[GenericEventArguments]] = None,
+        on_clone: Optional[Handler[GenericEventArguments]] = None,
+        on_change: Optional[Handler[GenericEventArguments]] = None,
         on_filter: Optional[Handler[GenericEventArguments]] = None,
         on_spill: Optional[Handler[GenericEventArguments]] = None,
         on_select: Optional[Handler[GenericEventArguments]] = None,
@@ -37,10 +44,17 @@ class Sortable(Element,
 
         Args:
             options: Dictionary of options to pass to SortableJS. See https://github.com/SortableJS/Sortable#options for available options.
+            on_choose: Callback when element is chosen
+            on_unchoose: Callback when element is unchosen
+            on_start: Callback when element dragging starts
             on_end: Callback when element dragging ends
             on_add: Callback when element is dropped into the list from another list
-            on_sort: Callback when the list order changes
+            on_update: Callback when sorting within list is changed
+            on_sort: Called by any change to the list (add / update / remove)
+            on_remove: Callback when element is removed from the list into another list
             on_move: Callback when you move an item
+            on_clone: Callback when creating a clone of element
+            on_change: Callback when dragging element changes position
             on_filter: Callback when filtered item is clicked
             on_spill: Callback when an item is spilled outside a list
             on_select: Callback when an item is selected (MultiDrag)
@@ -68,21 +82,32 @@ class Sortable(Element,
         # Register this instance in the class registry
         Sortable._instances[self.id] = self
 
-        # When the order of objects have changed, synchronize
-        self.on('order_updated', self._synchronize_order)
-
         # Add handlers for cross-element operations
-        self.on('sort_add', self._handle_cross_element_add)
+        self.on('sort_end', self._handle_cross_element_add)
 
         # Set up event handlers
+        if on_choose:
+            self.on('sort_choose', lambda e: handle_event(on_choose, e))
+        if on_unchoose:
+            self.on('sort_unchoose', lambda e: handle_event(on_unchoose, e))
+        if on_start:
+            self.on('sort_start', lambda e: handle_event(on_start, e))
         if on_end:
             self.on('sort_end', lambda e: handle_event(on_end, e))
         if on_add:
             self.on('sort_add', lambda e: handle_event(on_add, e))
+        if on_update:
+            self.on('sort_update', lambda e: handle_event(on_update, e))
         if on_sort:
-            self.on('sort_change', lambda e: handle_event(on_sort, e))
+            self.on('sort_sort', lambda e: handle_event(on_sort, e))
+        if on_remove:
+            self.on('sort_remove', lambda e: handle_event(on_remove, e))
         if on_move:
             self.on('sort_move', lambda e: handle_event(on_move, e))
+        if on_clone:
+            self.on('sort_clone', lambda e: handle_event(on_clone, e))
+        if on_change:
+            self.on('sort_change', lambda e: handle_event(on_change, e))
         if on_filter:
             self.on('sort_filter', lambda e: handle_event(on_filter, e))
         if on_spill:
