@@ -1,44 +1,45 @@
-from random import randint
-
 from nicegui import ui
+from nicegui.events import GenericEventArguments
+
+from random import randint
 
 from . import doc
 
 
 # Event handlers
-def on_end(e):
+def on_end(e: GenericEventArguments):
     ui.notify(f'Item moved from {e.args["oldIndex"]} to {e.args["newIndex"]}')
 
 
-def on_add(e):
+def on_add():
     ui.notify('Item added from another list')
 
 
-def on_sort(e):
+def on_sort():
     ui.notify('List order changed')
 
 
-def on_move(e):
+def on_move():
     ui.notify('Item being moved')
 
 
-def on_clone_add(e):
+def on_clone_add(e: GenericEventArguments):
     ui.notify(f'Cloned item added to the target list at index {e.args["newIndex"]}')
 
 
-def on_filter(e):
+def on_filter(e: GenericEventArguments):
     ui.notify(f'Filtered item was clicked: {e.args["item"]}')
 
 
-def on_select(e):
+def on_select(e: GenericEventArguments):
     ui.notify(f'Item selected: {e.args["item"]}')
 
 
-def on_deselect(e):
+def on_deselect(e: GenericEventArguments):
     ui.notify(f'Item deselected: {e.args["item"]}')
 
 
-def on_spill(e):
+def on_spill(e: GenericEventArguments):
     ui.notify(f'Item spilled: {e.args["item"]}')
 
 
@@ -127,7 +128,7 @@ def true_cloning() -> None:
                 ui.label(self.label)
 
         def clone(self):
-            return CloneableCard(
+            return ClonableCard(
                 label=f'Clone of {self.label}',
                 bg=self.bg,
             )
@@ -179,7 +180,7 @@ def true_cloning() -> None:
                 'removeOnAdd': True
             }, on_add=on_add_create_clone) as true_clone_list2:
                 for i in range(1, 7):
-                    CloneableCard(f'Item {i}', 'bg-amber-500')
+                    ClonableCard(f'Item {i}', 'bg-amber-500')
 
 
 @doc.demo('Disabling Sorting', '''

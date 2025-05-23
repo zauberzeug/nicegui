@@ -1,16 +1,15 @@
 from __future__ import annotations
 
 import weakref
-from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any, Dict, List, Optional
 
 from nicegui.element import Element
-from nicegui.events import handle_event
+from nicegui.events import GenericEventArguments, Handler, handle_event
 
 
 class Sortable(Element,
                component='sortable.js',
-               dependencies=[],
+               dependencies=['lib/sortable/sortable.complete.esm.js'],
                default_classes='nicegui-sortable'):
     """Sortable.
 
@@ -20,19 +19,19 @@ class Sortable(Element,
     """
 
     # Class-level registry to track all sortable instances
-    _instances = weakref.WeakValueDictionary()
+    _instances: weakref.WeakValueDictionary[int, Sortable] = weakref.WeakValueDictionary()
 
     def __init__(
         self,
         options: Optional[Dict] = None, *,
-        on_end: Optional[Callable] = None,
-        on_add: Optional[Callable] = None,
-        on_sort: Optional[Callable] = None,
-        on_move: Optional[Callable] = None,
-        on_filter: Optional[Callable] = None,
-        on_spill: Optional[Callable] = None,
-        on_select: Optional[Callable] = None,
-        on_deselect: Optional[Callable] = None,
+        on_end: Optional[Handler[GenericEventArguments]] = None,
+        on_add: Optional[Handler[GenericEventArguments]] = None,
+        on_sort: Optional[Handler[GenericEventArguments]] = None,
+        on_move: Optional[Handler[GenericEventArguments]] = None,
+        on_filter: Optional[Handler[GenericEventArguments]] = None,
+        on_spill: Optional[Handler[GenericEventArguments]] = None,
+        on_select: Optional[Handler[GenericEventArguments]] = None,
+        on_deselect: Optional[Handler[GenericEventArguments]] = None,
     ) -> None:
         """Initialize the sortable element.
 
@@ -48,9 +47,6 @@ class Sortable(Element,
             on_deselect: Callback when an item is deselected (MultiDrag)
         """
         super().__init__()
-        self.add_resource(Path(__file__).parent / 'lib' / 'sortable')
-
-        self.classes('nicegui-sortable')
 
         # Initialize options with defaults if not provided
         options = options or {}
@@ -96,7 +92,7 @@ class Sortable(Element,
         if on_deselect:
             self.on('sort_deselect', lambda e: handle_event(on_deselect, e))
 
-    def _handle_cross_container_add(self, e):
+    def _handle_cross_container_add(self, e: GenericEventArguments) -> None:
         """Handle an element being added from another sortable container."""
         try:
             moved_dom_id = e.args.get('item')
@@ -135,17 +131,19 @@ class Sortable(Element,
                         self.default_slot.children.insert(new_index, found_element)
                     else:
                         self.default_slot.children.append(found_element)
-        except Exception as ex:
-            print(f'Error handling cross-container add: {ex}')
 
-    def _synchronize_order(self, e):
+        except Exception as err:
+            print(f'Error handling cross-container add: {err}')
+
+
+    def _synchronize_order(self, e: GenericEventArguments) -> None:
         """Synchronize the Python-side order with the JavaScript DOM order."""
         try:
             if not self.default_slot:
                 return
 
             # Check if this is a regular order update with childrenData
-            if 'childrenData' in e.args and e.args.get('childrenData') is not None:
+            if e.args.get('childrenData') is not None:
                 ordered_items: list[Element] = []
 
                 # First, create a map of ID to item
@@ -159,14 +157,13 @@ class Sortable(Element,
 
                 # Add any remaining items that might not be in the currentOrder
                 for item in self.default_slot.children:
-                    if f'c{item.id}' not in [child['id']
-                                             for child in e.args.get('childrenData')] and item not in ordered_items:
+                    if f'c{item.id}' not in [child['id'] for child in e.args.get('childrenData')] and item not in ordered_items:
                         ordered_items.append(item)
 
                 # Replace the children with the ordered list
                 self.default_slot.children = ordered_items
-        except Exception as ex:
-            print(f'Error synchronizing order: {ex}')
+        except Exception as err:
+            print(f'Error synchronizing order: {err}')
 
     def set_option(self, name: str, value: Any) -> None:
         """Set a specific SortableJS option.
