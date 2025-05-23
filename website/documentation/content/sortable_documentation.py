@@ -588,4 +588,102 @@ def dynamic_list_management() -> None:
         ui.button('Show Current Order', on_click=show_current_order)
 
 
+@doc.demo('Event Debugging', '''
+    This example shows all available events from SortableJS and displays
+    information about them when they're triggered.
+''')
+def event_debugging() -> None:
+    # Create a log panel to display event information
+    log_panel = ui.log().classes('w-full h-64 overflow-auto bg-gray-800 text-white p-2')
+
+    def log_event(name, e):
+        """Log an event to the panel with its name and arguments"""
+        log_panel.push(f'{name}: {e.args}')
+
+    # Create handlers for all events
+    def on_choose(e): log_event('choose', e)
+    def on_unchoose(e): log_event('unchoose', e)
+    def on_start(e): log_event('start', e)
+    def on_end(e): log_event('end', e)
+    def on_add(e): log_event('add', e)
+    def on_update(e): log_event('update', e)
+    def on_sort(e): log_event('sort', e)
+    def on_remove(e): log_event('remove', e)
+    def on_move(e): log_event('move', e)
+    def on_clone(e): log_event('clone', e)
+    def on_change(e): log_event('change', e)
+    def on_filter(e): log_event('filter', e)
+    def on_spill(e): log_event('spill', e)
+    def on_select(e): log_event('select', e)
+    def on_deselect(e): log_event('deselect', e)
+
+    # Clear the log
+    ui.button('Clear Log', on_click=lambda: log_panel.clear()).classes('mb-4')
+
+    with ui.row():
+        with ui.card():
+            ui.label('List 1').classes('text-h6')
+            with ui.sortable({
+                'group': {'name': 'event-debugging', 'pull': 'clone'},
+                'filter': '.nicegui-sortable-filtered',  # Items with this class won't be draggable
+                'multiDrag': True,  # Enable multiple selection with Ctrl/Cmd
+                'multiDragKey': 'ctrl',
+            },
+                    on_choose=on_choose,
+                    on_unchoose=on_unchoose,
+                    on_start=on_start,
+                    on_end=on_end,
+                    on_add=on_add,
+                    on_update=on_update,
+                    on_sort=on_sort,
+                    on_remove=on_remove,
+                    on_move=on_move,
+                    on_clone=on_clone,
+                    on_change=on_change,
+                    on_filter=on_filter,
+                    on_spill=on_spill,
+                    on_select=on_select,
+                    on_deselect=on_deselect):
+                for i in range(1, 6):
+                    # Make one item non-draggable to test filtering
+                    if i == 3:
+                        with ui.card().classes('nicegui-sortable-filtered'):
+                            ui.label(f'Filtered Item {i} (non-draggable)')
+                    else:
+                        with ui.card():
+                            ui.label(f'Item {i} (hold Ctrl/Cmd to select multiple)')
+
+        with ui.card():
+            ui.label('List 2').classes('text-h6')
+            with ui.sortable({
+                'group': {'name': 'event-debugging', 'pull': 'clone'},
+            },
+                    on_choose=on_choose,
+                    on_unchoose=on_unchoose,
+                    on_start=on_start,
+                    on_end=on_end,
+                    on_add=on_add,
+                    on_update=on_update,
+                    on_sort=on_sort,
+                    on_remove=on_remove,
+                    on_move=on_move,
+                    on_clone=on_clone,
+                    on_change=on_change,
+                    on_filter=on_filter,
+                    on_spill=on_spill,
+                    on_select=on_select,
+                    on_deselect=on_deselect):
+                for i in range(1, 4):
+                    with ui.card():
+                        ui.label(f'Target Item {i}')
+
+    ui.label('''
+        This demo shows all available sortable events. Try:
+        - Dragging items between lists
+        - Clicking the filtered (red) item
+        - Holding Ctrl/Cmd and clicking multiple items
+        - Rearranging items within a list
+    ''').classes('mt-4 text-sm')
+
+
 doc.reference(ui.sortable)
