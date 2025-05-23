@@ -1,5 +1,6 @@
-from nicegui import ui
 from random import randint
+
+from nicegui import ui
 
 from . import doc
 
@@ -59,8 +60,8 @@ def control_panel() -> None:
                 ui.label(f'Item {i}')
 
     with ui.row():
-        ui.button('Enable', on_click=lambda: simple_sortable.enable())
-        ui.button('Disable', on_click=lambda: simple_sortable.disable())
+        ui.button('Enable', on_click=simple_sortable.enable)
+        ui.button('Disable', on_click=simple_sortable.disable)
         ui.button('Reverse Order', on_click=lambda: simple_sortable.sort(
             list(reversed(simple_sortable.default_slot.children)), True))
 
@@ -87,7 +88,8 @@ def shared_lists() -> None:
 
 @doc.demo('Cloning', '''
     Items can be cloned when dragging from one list to another, keeping the original item in place.
-    NOTE: The python object gets moved to the cloned object in the DOM. The original object loses its python object reference.
+    NOTE: The python object gets moved to the cloned object in the DOM.
+          The original object loses its python object reference.
 ''')
 def cloning() -> None:
     with ui.row():
@@ -110,11 +112,11 @@ def cloning() -> None:
     This is an advanced example that creates true Python object clones when items are dragged between lists.
 ''')
 def true_cloning() -> None:
-    class ClonableCard(ui.card):
+    class CloneableCard(ui.card):
         def __init__(
             self,
-            label="Slider",
-            bg="",
+            label='Slider',
+            bg='',
         ):
             super().__init__()
             self.label = label
@@ -125,15 +127,15 @@ def true_cloning() -> None:
                 ui.label(self.label)
 
         def clone(self):
-            return ClonableCard(
-                label=f"Clone of {self.label}",
+            return CloneableCard(
+                label=f'Clone of {self.label}',
                 bg=self.bg,
             )
 
     def on_add_create_clone(e):
         # Get info about the added item
-        item_id = e.args.get("item")
-        new_index = e.args.get("newIndex")
+        item_id = e.args.get('item')
+        new_index = e.args.get('newIndex')
 
         # Find the original item in the source list
         # This is where we need to know which list the item came from
@@ -145,7 +147,7 @@ def true_cloning() -> None:
         # Find the original item based on DOM ID (removing the "c" prefix)
         original_item = None
         for item in source_items:
-            if f"c{item.id}" == item_id:
+            if f'c{item.id}' == item_id:
                 original_item = item
                 break
 
@@ -153,7 +155,7 @@ def true_cloning() -> None:
             with e.sender:
                 # Get the class of the original item
                 item_class = type(original_item)
-                if hasattr(original_item, "clone"):
+                if hasattr(original_item, 'clone'):
                     new_item = original_item.clone()  # type: ignore
                 else:
                     new_item = item_class()  # fallback
@@ -168,7 +170,7 @@ def true_cloning() -> None:
                 'removeOnAdd': True
             }, on_add=on_add_create_clone) as true_clone_list1:
                 for i in range(1, 7):
-                    ClonableCard(f'Item {i}')
+                    CloneableCard(f'Item {i}')
 
         with ui.card():
             ui.label('List 2').classes('text-h6')
@@ -177,7 +179,7 @@ def true_cloning() -> None:
                 'removeOnAdd': True
             }, on_add=on_add_create_clone) as true_clone_list2:
                 for i in range(1, 7):
-                    ClonableCard(f'Item {i}', "bg-amber-500")
+                    CloneableCard(f'Item {i}', 'bg-amber-500')
 
 
 @doc.demo('Disabling Sorting', '''
@@ -211,7 +213,7 @@ def handle_example() -> None:
         for i in range(1, 7):
             with ui.card():
                 with ui.row().classes('items-center w-full'):
-                    ui.icon('drag_handle').classes("nicegui-sortable-handle")
+                    ui.icon('drag_handle').classes('nicegui-sortable-handle')
                     ui.label(f'Item {i}')
 
 
@@ -277,9 +279,11 @@ def thresholds_demo() -> None:
                 'direction': 'horizontal',  # Set direction to horizontal
                 'swapThreshold': 0.5,
                 'invertedSwapThreshold': 0.5
-            }).classes('flex-row').style("overflow-y: auto;") as horizontal_sortable:
+            }).classes('flex-row').style('overflow-y: auto;') as horizontal_sortable:
                 for i in range(1, 5):
-                    with ui.card().classes('p-4 m-2 bg-green-100 dark:bg-green-800 horizontal-threshold-card') as card:
+                    with ui.card().classes(
+                        'p-4 m-2 bg-green-100 dark:bg-green-800 horizontal-threshold-card'
+                    ):
                         west_indicator = ui.element('div').classes('swap-zone-indicator west').style(
                             'position: absolute; background-color: rgba(255,0,0,0.2); ' +
                             'height: 100%; top: 0; transition: all 0.3s ease;'
@@ -363,7 +367,7 @@ def thresholds_demo() -> None:
     invert_swap.on('update:model-value', update_threshold_ui)
 
     # Add supporting CSS
-    ui.add_css("""
+    ui.add_css('''
     .threshold-card {
         position: relative;
         min-height: 80px;
@@ -377,7 +381,7 @@ def thresholds_demo() -> None:
         z-index: 10;
         border: 2px dashed rgba(255,0,0,0.5);
     }
-    """)
+    ''')
 
 
 @doc.demo('Grid', '''
@@ -444,7 +448,7 @@ def nested_sortables() -> None:
         create_nested_list(nested_data)
 
     # Add improved supporting styles for the nested sortables
-    ui.add_css("""
+    ui.add_css('''
     .nested-item {
         background-color: #2d3748;
         transition: background-color 0.2s;
@@ -474,7 +478,7 @@ def nested_sortables() -> None:
         background-color: rgba(59, 130, 246, 0.2);
         border-color: #4b5563;
     }
-    """)
+    ''')
 
 
 @doc.demo('MultiDrag Plugin', '''
@@ -551,8 +555,11 @@ def dynamic_list_management() -> None:
         with ui.card():
             with ui.row().classes('items-center w-full'):
                 ui.label(label).classes('flex-grow')
-                ui.button(icon='delete', color='red',
-                          on_click=lambda e: e.sender.parent_slot.parent.parent_slot.parent.delete()).classes('min-w-0 w-8 h-8')
+                ui.button(
+                    icon='delete',
+                    color='red',
+                    on_click=lambda e: e.sender.parent_slot.parent.parent_slot.parent.delete(),
+                ).classes('min-w-0 w-8 h-8')
 
     def add_new_item(string: str):
         with dynamic_sortable:
@@ -566,12 +573,15 @@ def dynamic_list_management() -> None:
     # Form for adding new items
     with ui.row().classes('w-full items-center mb-4'):
         new_item_input = ui.input('Enter new item text').classes('flex-grow mr-2')
-        ui.button('Add Item', on_click=lambda: add_new_item(new_item_input.value)).classes('bg-green-500')
+        ui.button(
+            'Add Item',
+            on_click=lambda: add_new_item(new_item_input.value),
+        ).classes('bg-green-500')
         # new_item_input.value = ''  # Clear the input
 
     # Action buttons
     with ui.row().classes('mt-4'):
-        ui.button('Delete All', color='red', on_click=lambda: dynamic_sortable.clear()).classes('mr-2')
+        ui.button('Delete All', color='red', on_click=dynamic_sortable.clear).classes('mr-2')
         ui.button('Add 3 Random Items', color='green', on_click=lambda: [
             add_new_item(f'Random Item {randint(1, 100)}') for _ in range(3)]).classes('mr-2')
 
