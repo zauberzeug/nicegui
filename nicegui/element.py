@@ -359,7 +359,7 @@ class Element(Visibility):
         :param args: arguments included in the event message sent to the event handler (default: ``None`` meaning all)
         :param throttle: minimum time (in seconds) between event occurrences (default: 0.0)
         :param leading_events: whether to trigger the event handler immediately upon the first event occurrence (default: ``True``)
-        :param trailing_events: whether to trigger the event handler after the last event occurrence (default: ``True`)
+        :param trailing_events: whether to trigger the event handler after the last event occurrence (default: ``True``)
         :param js_handler: JavaScript function that is handling the event on the client (default: "(...args) => emit(...args)")
         """
         if js_handler is None:
