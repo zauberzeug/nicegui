@@ -154,32 +154,44 @@ class Sortable(Element,
             print(f'Error handling cross-element add: {err}')
         await self._synchronize_order_js_to_py()
 
-    def _synchronize_order(self, e: GenericEventArguments) -> None:
+    async def _synchronize_order_js_to_py(self) -> None:
         """Synchronize the Python-side order with the JavaScript DOM order."""
         try:
+
             if not self.default_slot:
                 return
 
-            # Check if this is a regular order update with childrenData
-            if e.args.get('childrenData') is not None:
-                ordered_items: list[Element] = []
+            # Get the current DOM order directly from JavaScript
+            dom_order = await self.run_method('getChildrenOrder')
 
-                # First, create a map of ID to item
-                # Add "c" in front of ID to match DOMs ID
-                id_to_item = {f'c{item.id}': item for item in self.default_slot.children}
+            if not dom_order:
+                return
 
-                # Then construct the new order based on the DOM order
-                for item in e.args.get('childrenData'):
-                    if item['id'] in id_to_item:
-                        ordered_items.append(id_to_item[item['id']])
+            # Create a map of DOM ID to Python object
+            id_to_item = {f'c{item.id}': item for item in self.default_slot.children}
 
-                # Add any remaining items that might not be in the currentOrder
-                for item in self.default_slot.children:
-                    if f'c{item.id}' not in [child['id'] for child in e.args.get('childrenData')] and item not in ordered_items:
-                        ordered_items.append(item)
+            # Create a new ordered list based on the DOM order
+            ordered_items: list[Element] = []
+            ordered_items_id: list[str] = []
 
+            # First, add items in the order they appear in the DOM
+            for dom_id in dom_order:
+                if dom_id in id_to_item:
+                    ordered_items.append(id_to_item[dom_id])
+                    ordered_items_id.append(dom_id)
+
+            # Then add any remaining items that might not be in the DOM
+            for item in self.default_slot.children:
+                item_dom_id = f'c{item.id}'
+                if item_dom_id not in dom_order and item not in ordered_items:
+                    ordered_items.append(item)
+                    ordered_items_id.append(item_dom_id)
+
+            # Only update if the order has actually changed
+            if ordered_items != self.default_slot.children:
                 # Replace the children with the ordered list
                 self.default_slot.children = ordered_items
+
         except Exception as err:
             print(f'Error synchronizing order: {err}')
 
