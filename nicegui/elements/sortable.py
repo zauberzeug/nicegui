@@ -141,7 +141,7 @@ class Sortable(Element,
                 return
 
             # Check if this is a regular order update with childrenData
-            if 'childrenData' in e.args and e.args.get('childrenData') is not None:
+            if e.args.get('childrenData') is not None:
                 ordered_items: list[Element] = []
 
                 # First, create a map of ID to item
