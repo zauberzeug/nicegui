@@ -122,6 +122,48 @@ class AgGrid(Element,
         """The options dictionary."""
         return self._props['options']
 
+    @property
+    def html_columns(self) -> List[int]:
+        """The list of columns that should be rendered as HTML."""
+        return self._props['html_columns']
+
+    @html_columns.setter
+    def html_columns(self, value: List[int]) -> None:
+        """Set the list of columns that should be rendered as HTML."""
+        self._props['html_columns'] = value[:]
+        self.update()
+
+    @property
+    def theme(self) -> Optional[str]:
+        """The AG Grid theme."""
+        for class_name in self._classes:
+            if class_name.startswith('ag-theme-'):
+                return class_name[len('ag-theme-'):]
+        return None
+
+    @theme.setter
+    def theme(self, value: str) -> None:
+        """Set the AG Grid theme."""
+        print(f'Changing theme to {value}')
+        for class_name in self._classes:
+            if class_name.startswith('ag-theme-'):
+                self._classes.remove(class_name)
+                break
+        self._classes.append(f'ag-theme-{value}')
+        print(f'Classes after theme change: {self._classes}')
+        self.update()
+
+    @property
+    def auto_size_columns(self) -> bool:
+        """Whether to automatically resize columns to fit the grid width."""
+        return self._props['auto_size_columns']
+
+    @auto_size_columns.setter
+    def auto_size_columns(self, value: bool) -> None:
+        """Set whether to automatically resize columns to fit the grid width."""
+        self._props['auto_size_columns'] = value
+        self.update()
+
     def run_grid_method(self, name: str, *args, timeout: float = 1) -> AwaitableResponse:
         """Run an AG Grid API method.
 
