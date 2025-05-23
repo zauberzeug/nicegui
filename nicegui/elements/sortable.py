@@ -117,12 +117,16 @@ class Sortable(Element,
         if on_deselect:
             self.on('sort_deselect', lambda e: handle_event(on_deselect, e))
 
-    def _handle_cross_element_add(self, e: GenericEventArguments) -> None:
-        """Handle an element being added from another sortable element."""
+    async def _handle_cross_element_add(self, e: GenericEventArguments) -> None:
+        """Handle when an element being moved from another sortable element."""
         try:
-            moved_dom_id = e.args.get('item')
-            if not moved_dom_id:
+
+            # If moved within its own list, ignore
+            if e.args['from'] == e.args['to'] or self.props.get('removeOnAdd', False):
+                await self._synchronize_order_js_to_py()
                 return
+
+            moved_dom_id = e.args.get('item')
 
             # Extract actual element ID (remove 'c' prefix if present)
             moved_id = moved_dom_id[1:] if moved_dom_id.startswith('c') else moved_dom_id
@@ -132,7 +136,6 @@ class Sortable(Element,
 
             # Search all other sortable instances for the element
             found_element = None
-            source_sortable = None
 
             for instance in Sortable._instances.values():
                 if instance == self:
@@ -142,23 +145,14 @@ class Sortable(Element,
                     for child in instance.default_slot.children:
                         if str(child.id) == moved_id:
                             found_element = child
-                            source_sortable = instance
                             break
 
-            if found_element and source_sortable:
-                # Remove the element from the source sortable
-                if found_element in source_sortable.default_slot.children:
-                    source_sortable.default_slot.children.remove(found_element)
-
-                # Add the element to this sortable at the specified index
-                if found_element not in self.default_slot.children:
-                    if new_index < len(self.default_slot.children):
-                        self.default_slot.children.insert(new_index, found_element)
-                    else:
-                        self.default_slot.children.append(found_element)
+            if found_element:
+                found_element.move(self, new_index)
 
         except Exception as err:
             print(f'Error handling cross-element add: {err}')
+        await self._synchronize_order_js_to_py()
 
     def _synchronize_order(self, e: GenericEventArguments) -> None:
         """Synchronize the Python-side order with the JavaScript DOM order."""
