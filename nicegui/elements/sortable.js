@@ -268,6 +268,17 @@ export default {
                 }
             }
             return false;
+        },
+        getChildrenOrder() {
+            if (this.sortableInstance) {
+                // Get all children DOM elements
+                const childElements = Array.from(this.sortableInstance.el.children);
+
+                // Return array of element IDs in their current DOM order
+                return childElements.map(el => el.id || el.dataset.id || null)
+                    .filter(id => id !== null); // Filter out any null IDs
+            }
+            return [];
         }
     },
     beforeDestroy() {

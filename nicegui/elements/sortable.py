@@ -316,3 +316,26 @@ class Sortable(Element,
         for slot in self.slots.values():
             for child in reversed(slot.children):
                 self.remove_item(child)
+
+    def get_child_by_id(self, item_id: str | int) -> Element | None:
+        id = int(str(item_id)[1:] if str(item_id).startswith('c') else item_id)
+        for item in self.default_slot.children:
+            if item.id == id:
+                return item
+
+        return None
+
+    def move_item(self, item: Element, target_index: int = -1) -> None:
+        """Move an item within this sortable list and sync the DOM.
+
+        This method ensures both Python and JavaScript stay in sync.
+
+        Args:
+            item: The element to move
+            target_index: The target index where to move the element
+        """
+        # First perform the standard move operation in Python
+        item.move(self, target_index=target_index)
+
+        # Then synchronize the DOM to match the Python order
+        self.sort(self.default_slot.children, False)
