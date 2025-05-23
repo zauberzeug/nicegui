@@ -324,9 +324,17 @@ class Sortable(Element,
                 self.remove_item(child)
 
     def get_child_by_id(self, item_id: str | int) -> Element | None:
-        id = int(str(item_id)[1:] if str(item_id).startswith('c') else item_id)
+        """Retrieve a child element by its ID within the default slot.
+
+        Args:
+            item_id: The ID of the child element to find, with optional 'c' prefix.
+
+        Returns:
+            The matching child Element if found, otherwise None.
+        """
+        id_number = int(str(item_id)[1:] if str(item_id).startswith('c') else item_id)
         for item in self.default_slot.children:
-            if item.id == id:
+            if item.id == id_number:
                 return item
 
         return None
