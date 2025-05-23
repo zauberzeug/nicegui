@@ -141,27 +141,27 @@ def true_cloning() -> None:
         # Find the original item in the source list
         # This is where we need to know which list the item came from
         if e.sender is true_clone_list2:
-            source_items = true_clone_list1.default_slot.children
+            source_list = true_clone_list1
+            dest_list = true_clone_list2
         else:
-            source_items = true_clone_list2.default_slot.children
+            source_list = true_clone_list2
+            dest_list = true_clone_list1
 
-        # Find the original item based on DOM ID (removing the "c" prefix)
-        original_item = None
-        for item in source_items:
-            if f'c{item.id}' == item_id:
-                original_item = item
-                break
+        # Find the original item based on DOM ID
+        original_item = source_list.get_child_by_id(item_id)
 
         if original_item:
-            with e.sender:
+            # dest_list.remove_item(item_id)
+
+            with dest_list:
                 # Get the class of the original item
                 item_class = type(original_item)
                 if hasattr(original_item, 'clone'):
                     new_item = original_item.clone()  # type: ignore
                 else:
                     new_item = item_class()  # fallback
-                # Optionally, copy properties from original_item to new_item if needed
-                new_item.move(target_index=new_index)
+
+                new_item.move(dest_list, target_index=new_index)
 
     with ui.row():
         with ui.card():
@@ -171,7 +171,7 @@ def true_cloning() -> None:
                 'removeOnAdd': True
             }, on_add=on_add_create_clone) as true_clone_list1:
                 for i in range(1, 7):
-                    ClonableCard(f'Item {i}')
+                    ClonableCard(f'List1 {i}')
 
         with ui.card():
             ui.label('List 2').classes('text-h6')
