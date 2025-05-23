@@ -1,16 +1,15 @@
 from __future__ import annotations
 
 import weakref
-from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional
 
 from nicegui.element import Element
-from nicegui.events import handle_event
+from nicegui.events import GenericEventArguments, handle_event
 
 
 class Sortable(Element,
                component='sortable.js',
-               dependencies=[],
+               dependencies=['lib/sortable/sortable.complete.esm.js'],
                default_classes='nicegui-sortable'):
     """Sortable.
 
@@ -48,9 +47,6 @@ class Sortable(Element,
             on_deselect: Callback when an item is deselected (MultiDrag)
         """
         super().__init__()
-        self.add_resource(Path(__file__).parent / 'lib' / 'sortable')
-
-        self.classes('nicegui-sortable')
 
         # Initialize options with defaults if not provided
         options = options or {}
@@ -96,7 +92,7 @@ class Sortable(Element,
         if on_deselect:
             self.on('sort_deselect', lambda e: handle_event(on_deselect, e))
 
-    def _handle_cross_container_add(self, e):
+    def _handle_cross_container_add(self, e: GenericEventArguments) -> None:
         """Handle an element being added from another sortable container."""
         try:
             moved_dom_id = e.args.get('item')
@@ -135,10 +131,10 @@ class Sortable(Element,
                         self.default_slot.children.insert(new_index, found_element)
                     else:
                         self.default_slot.children.append(found_element)
-        except Exception as e:
-            print(f"Error handling cross-container add: {e}")
+        except Exception as err:
+            print(f'Error handling cross-container add: {err}')
 
-    def _synchronize_order(self, e):
+    def _synchronize_order(self, e: GenericEventArguments) -> None:
         """Synchronize the Python-side order with the JavaScript DOM order."""
         try:
             if not self.default_slot:
@@ -150,7 +146,7 @@ class Sortable(Element,
 
                 # First, create a map of ID to item
                 # Add "c" in front of ID to match DOMs ID
-                id_to_item = {f"c{item.id}": item for item in self.default_slot.children}
+                id_to_item = {f'c{item.id}': item for item in self.default_slot.children}
 
                 # Then construct the new order based on the DOM order
                 for item in e.args.get('childrenData'):
@@ -159,13 +155,13 @@ class Sortable(Element,
 
                 # Add any remaining items that might not be in the currentOrder
                 for item in self.default_slot.children:
-                    if f"c{item.id}" not in [child['id'] for child in e.args.get('childrenData')] and item not in ordered_items:
+                    if f'c{item.id}' not in [child['id'] for child in e.args.get('childrenData')] and item not in ordered_items:
                         ordered_items.append(item)
 
                 # Replace the children with the ordered list
                 self.default_slot.children = ordered_items
-        except Exception as e:
-            print(f"Error synchronizing order: {e}")
+        except Exception as err:
+            print(f'Error synchronizing order: {err}')
 
     def set_option(self, name: str, value: Any) -> None:
         """Set a specific SortableJS option.
@@ -197,7 +193,7 @@ class Sortable(Element,
         """
         self.default_slot.children = order
         # Add "c" in front of ID to match DOMs ID
-        self.run_method('sort', [f"c{item.id}" for item in order], use_animation)
+        self.run_method('sort', [f'c{item.id}' for item in order], use_animation)
 
     def enable(self) -> None:
         """Enable the sortable instance."""

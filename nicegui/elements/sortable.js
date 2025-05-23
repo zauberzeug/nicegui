@@ -1,3 +1,5 @@
+import { default as Sortable } from 'sortable';
+
 export default {
     template: `
     <div>
@@ -5,34 +7,18 @@ export default {
     </div>`,
     props: {
         options: Object,
-        resource_path: String
     },
     data() {
         return {
             sortableInstance: null,
-            Sortable: null
         };
     },
     async mounted() {
-        await this.$nextTick(); // Wait for window.path_prefix to be set
-
-        // Dynamically import Sortable
         try {
-            // Import the module
-            const SortableModule = await import(window.path_prefix + `${this.resource_path}/sortable.complete.esm.js`);
-
-            // Get the Sortable constructor (could be exported in different ways)
-            this.Sortable = SortableModule.default || SortableModule.Sortable || window.Sortable;
-
-            if (!this.Sortable) {
-                console.error("Failed to load Sortable library. Not found in module exports or global scope.");
-                return;
-            }
-
             const el = this.$el;
             const options = { ...this.options };
 
-            this.sortableInstance = this.Sortable.create(el, {
+            this.sortableInstance = Sortable.create(el, {
                 ...options,
                 dataIdAttr: 'id', // Explicitly tell SortableJS to use the HTML id attribute
                 onClone: (evt) => {
@@ -164,16 +150,16 @@ export default {
                 const element = document.getElementById(elementId);
                 if (element && this.sortableInstance) {
                     const parent = element.parentNode;
-                    if (parent && parent[this.Sortable.expando]) {
+                    if (parent && parent[Sortable.expando]) {
                         // Get the Sortable instance that manages this element
-                        const sortableInstance = parent[this.Sortable.expando];
+                        const sortableInstance = parent[Sortable.expando];
 
                         // Use the MultiDrag plugin's select utility if available
-                        if (this.Sortable.utils && this.Sortable.utils.select) {
-                            this.Sortable.utils.select(element);
+                        if (Sortable.utils && Sortable.utils.select) {
+                            Sortable.utils.select(element);
                         } else if (sortableInstance.multiDrag) {
                             // Attempt to access the select method via plugin
-                            this.Sortable.plugins.find(p => p.pluginName === 'multiDrag')?.utils?.select(element);
+                            Sortable.plugins.find(p => p.pluginName === 'multiDrag')?.utils?.select(element);
                         }
                     }
                 }
@@ -186,16 +172,16 @@ export default {
                 const element = document.getElementById(elementId);
                 if (element && this.sortableInstance) {
                     const parent = element.parentNode;
-                    if (parent && parent[this.Sortable.expando]) {
+                    if (parent && parent[Sortable.expando]) {
                         // Get the Sortable instance that manages this element
-                        const sortableInstance = parent[this.Sortable.expando];
+                        const sortableInstance = parent[Sortable.expando];
 
                         // Use the MultiDrag plugin's deselect utility if available
-                        if (this.Sortable.utils && this.Sortable.utils.deselect) {
-                            this.Sortable.utils.deselect(element);
+                        if (Sortable.utils && Sortable.utils.deselect) {
+                            Sortable.utils.deselect(element);
                         } else if (sortableInstance.multiDrag) {
                             // Attempt to access the deselect method via plugin
-                            this.Sortable.plugins.find(p => p.pluginName === 'multiDrag')?.utils?.deselect(element);
+                            Sortable.plugins.find(p => p.pluginName === 'multiDrag')?.utils?.deselect(element);
                         }
                     }
                 }
