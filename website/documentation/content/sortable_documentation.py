@@ -547,39 +547,38 @@ def autoscroll_plugin() -> None:
     This example shows how to dynamically add and remove items from a sortable list.
 ''')
 def dynamic_list_management() -> None:
-    def add_deletable_object(label: str):
-        with ui.card():
+    def add_deletable_object(label: str, sortable_object: ui.sortable):
+        with ui.card() as card:
             with ui.row().classes('items-center w-full'):
                 ui.label(label).classes('flex-grow')
                 ui.button(
                     icon='delete',
                     color='red',
-                    on_click=lambda e: e.sender.parent_slot.parent.parent_slot.parent.delete(),
+                    on_click=lambda e: sortable_object.remove_item(card),
                 ).classes('min-w-0 w-8 h-8')
 
-    def add_new_item(string: str):
-        with dynamic_sortable:
-            add_deletable_object(string)
+    def add_new_item(string: str, sortable_object: ui.sortable):
+        with sortable_object:
+            add_deletable_object(string, sortable_object)
         ui.notify('Item added to the list')
 
     with ui.sortable({'fallbackOnBody': True}, on_end=on_end) as dynamic_sortable:
         for i in range(1, 5):
-            add_deletable_object(f'Sortable Item {i} - Drag to reorder')
+            add_deletable_object(f'Sortable Item {i} - Drag to reorder', dynamic_sortable)
 
     # Form for adding new items
     with ui.row().classes('w-full items-center mb-4'):
         new_item_input = ui.input('Enter new item text').classes('flex-grow mr-2')
         ui.button(
             'Add Item',
-            on_click=lambda: add_new_item(new_item_input.value),
+            on_click=lambda: [add_new_item(new_item_input.value, dynamic_sortable), new_item_input.set_value('')],
         ).classes('bg-green-500')
-        # new_item_input.value = ''  # Clear the input
 
     # Action buttons
     with ui.row().classes('mt-4'):
         ui.button('Delete All', color='red', on_click=dynamic_sortable.clear).classes('mr-2')
         ui.button('Add 3 Random Items', color='green', on_click=lambda: [
-            add_new_item(f'Random Item {randint(1, 100)}') for _ in range(3)]).classes('mr-2')
+            add_new_item(f'Random Item {randint(1, 100)}', dynamic_sortable) for _ in range(3)]).classes('mr-2')
 
         async def show_current_order():
             items_text = [item.default_slot.children[0].default_slot.children[0].text

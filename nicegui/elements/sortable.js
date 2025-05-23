@@ -188,6 +188,16 @@ export default {
             } catch (error) {
                 console.error("Error in deselect method:", error);
             }
+        },
+        removeItem(elementId) {
+            const element = document.getElementById(elementId);
+            if (element && this.sortableInstance) {
+                if (element.parentNode === this.sortableInstance.el) {
+                    element.parentNode.removeChild(element);
+                    return true;
+                }
+            }
+            return false;
         }
     },
     beforeDestroy() {

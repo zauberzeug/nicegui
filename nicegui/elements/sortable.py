@@ -228,3 +228,25 @@ class Sortable(Element,
             element_id: ID of the element to deselect
         """
         self.run_method('deselect', element_id)
+
+    def remove_item(self, item: Element) -> None:
+        """Remove an item from this sortable list.
+
+        This removes the item both from the Python object and the DOM object.
+
+        Args:
+            item: The element to remove
+        """
+        item_id = f'c{item.id}'
+        self.run_method('removeItem', item_id)
+
+        item.delete()
+
+    def clear(self) -> None:
+        """Remove all child elements.
+
+        Overwritten from Element class
+        """
+        for slot in self.slots.values():
+            for child in reversed(slot.children):
+                self.remove_item(child)
