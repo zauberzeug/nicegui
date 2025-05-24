@@ -88,7 +88,12 @@ def _ancestor_nodes(node_id: str) -> List[str]:
 
 
 async def preload_pages() -> None:
-    """Execute demo functions once to register all page routes."""
+    """Execute demo functions once to register all page routes.
+
+    This ensures all @ui.page routes defined within demo functions
+    are available immediately on server startup, preventing 404s
+    in multi-server deployments."""
+
     async def call_next(_):
         return Response(status_code=200)
 
