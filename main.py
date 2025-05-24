@@ -25,6 +25,8 @@ app.add_static_file(local_file=svg.PATH / 'logo_square.png', url_path='/logo_squ
 documentation.build_search_index()
 documentation.build_tree()
 
+app.on_startup(documentation.preload_pages)
+
 
 @app.post('/dark_mode')
 async def _post_dark_mode(request: Request) -> None:
