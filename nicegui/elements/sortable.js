@@ -1,5 +1,88 @@
 import { default as Sortable } from 'sortable';
 
+// Add RemoveOnAddPlugin
+function RemoveOnAddPlugin() {
+    function RemoveOnAdd() {
+        this.defaults = {
+            removeOnAdd: false  // Disabled by default
+        };
+    }
+
+    RemoveOnAdd.prototype = {
+        drop({ rootEl, parentEl, dispatchSortableEvent, dragEl, cloneEl, newIndex, oldIndex }) {
+            // Only act if removeOnAdd is enabled
+            if (!this.options.removeOnAdd) return;
+
+            try {
+                // Store original index before reverting
+                const originalIndex = oldIndex;
+
+                // Only call revertOnSpill if an actual drag operation occurred
+                if (this.sortable.revertOnSpill && this.sortable.revertOnSpill.onSpill && rootEl != parentEl) {
+                    this.sortable.revertOnSpill.onSpill(...arguments);
+
+                    // After reverting, move the element back to its original position
+                    if (dragEl && rootEl && originalIndex !== undefined) {
+                        // Get all children of rootEl
+                        const children = Array.from(rootEl.children);
+                        // Find where the element is now (should be at the end)
+                        const currentIndex = children.indexOf(dragEl);
+
+                        // If it's not already at the right place, move it
+                        if (currentIndex !== originalIndex && currentIndex !== -1) {
+                            // If there's an element at the original position, insert before it
+                            if (children[originalIndex]) {
+                                rootEl.insertBefore(dragEl, children[originalIndex]);
+                            } else {
+                                // Otherwise append to the end
+                                rootEl.appendChild(dragEl);
+                            }
+                        }
+                    }
+                } else {
+                    return;
+                }
+
+                // Clean up the drag element
+                if (dragEl) {
+                    dragEl.classList.remove(this.options.ghostClass || '');
+                    dragEl.classList.remove(this.options.chosenClass || '');
+                    dragEl.removeAttribute('draggable');
+                }
+
+                // Remove any clone created by SortableJS
+                if (cloneEl) {
+                    cloneEl.remove();
+                }
+
+                // Emit a special event for true cloning with all necessary data
+                if (this.options.onRemoveOnAdd && dragEl) {
+                    this.options.onRemoveOnAdd({
+                        sourceItem: dragEl ? (dragEl.id || dragEl.dataset.id || null) : null,
+                        newIndex: newIndex !== undefined ? newIndex : -1,
+                        sourceList: rootEl ? (rootEl.id || rootEl.dataset.id || null) : null,
+                        targetList: parentEl ? (parentEl.id || parentEl.dataset.id || null) : null,
+                    });
+                }
+
+                // Dispatch 'end' event
+                dispatchSortableEvent('end');
+            } catch (error) {
+                console.error("Error in RemoveOnAdd plugin:", error);
+            }
+
+            return false; // Cancel the default drop
+        }
+    };
+
+    return Object.assign(RemoveOnAdd, {
+        pluginName: 'removeOnAdd'
+    });
+}
+
+// Mount the RemoveOnAddPlugin
+Sortable.mount(RemoveOnAddPlugin());
+
 export default {
     template: `
     <div>
@@ -16,11 +99,24 @@ export default {
     async mounted() {
         try {
             const el = this.$el;
-            const options = { ...this.options };
+            const options = {
+                ...this.options,
+                // Add plugin defaults if not explicitly overridden
+                removeOnAdd: this.options.removeOnAdd !== undefined ? this.options.removeOnAdd : false,
+            };
 
             this.sortableInstance = Sortable.create(el, {
                 ...options,
                 dataIdAttr: 'id', // Explicitly tell SortableJS to use the HTML id attribute
+                // Add a handler for the removeOnAdd event
+                onRemoveOnAdd: (evt) => {
+                    this.$emit('true_clone', {
+                        sourceItem: evt.sourceItem || null,
+                        newIndex: evt.newIndex,
+                        sourceList: evt.sourceList || null,
+                        targetList: evt.targetList || null
+                    });
+                },
                 onClone: (evt) => {
                     // Assign a new unique id to the clone in the source list
                     if (evt.clone && !evt.clone.id) {
