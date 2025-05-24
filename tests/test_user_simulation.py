@@ -397,7 +397,6 @@ async def test_select_multiple_from_dict(user: User) -> None:
     user.find('label A').click()
     await user.should_see("Notify: ['value A']")
 
-    user.find(ui.select).click()
     user.find('label B').click()
     await user.should_see("Notify: ['value A', 'value B']")
 
@@ -416,7 +415,6 @@ async def test_select_multiple_values(user: User):
     await user.should_see("value = ['A', 'B']")
     assert select.value == ['A', 'B']
 
-    user.find(ui.select).click()
     user.find('A').click()
     await user.should_see("Notify: ['B']")
     await user.should_see("value = ['B']")
