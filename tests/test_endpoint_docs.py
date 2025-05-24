@@ -33,10 +33,10 @@ def test_endpoint_documentation_internal_only(screen: Screen):
 
     screen.open('/')
     assert get_openapi_paths() == {
-        f'/_nicegui/{__version__}/codehilite.css',
         f'/_nicegui/{__version__}/libraries/{{key}}',
         f'/_nicegui/{__version__}/components/{{key}}',
         f'/_nicegui/{__version__}/resources/{{key}}/{{path}}',
+        f'/_nicegui/{__version__}/dynamic_resources/{{filename}}'
     }
 
 
@@ -47,8 +47,8 @@ def test_endpoint_documentation_all(screen: Screen):
     screen.open('/')
     assert get_openapi_paths() == {
         '/',
-        f'/_nicegui/{__version__}/codehilite.css',
         f'/_nicegui/{__version__}/libraries/{{key}}',
         f'/_nicegui/{__version__}/components/{{key}}',
         f'/_nicegui/{__version__}/resources/{{key}}/{{path}}',
+        f'/_nicegui/{__version__}/dynamic_resources/{{filename}}'
     }
