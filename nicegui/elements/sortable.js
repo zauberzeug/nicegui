@@ -110,7 +110,7 @@ export default {
                 dataIdAttr: 'id', // Explicitly tell SortableJS to use the HTML id attribute
                 // Add a handler for the removeOnAdd event
                 onRemoveOnAdd: (evt) => {
-                    this.$emit('true_clone', {
+                    this.$emit('sort_remove_on_add', {
                         sourceItem: evt.sourceItem || null,
                         newIndex: evt.newIndex,
                         sourceList: evt.sourceList || null,

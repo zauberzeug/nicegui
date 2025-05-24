@@ -39,6 +39,7 @@ class Sortable(Element,
         on_spill: Optional[Handler[GenericEventArguments]] = None,
         on_select: Optional[Handler[GenericEventArguments]] = None,
         on_deselect: Optional[Handler[GenericEventArguments]] = None,
+        on_remove_on_add: Optional[Handler[GenericEventArguments]] = None,
     ) -> None:
         """Initialize the sortable element.
 
@@ -59,6 +60,7 @@ class Sortable(Element,
             on_spill: Callback when an item is spilled outside a list
             on_select: Callback when an item is selected (MultiDrag)
             on_deselect: Callback when an item is deselected (MultiDrag)
+            on_remove_on_add: Callback when an item is removed from the list into another list
         """
         super().__init__()
 
@@ -116,6 +118,8 @@ class Sortable(Element,
             self.on('sort_select', lambda e: handle_event(on_select, e))
         if on_deselect:
             self.on('sort_deselect', lambda e: handle_event(on_deselect, e))
+        if on_remove_on_add:
+            self.on('sort_remove_on_add', lambda e: handle_event(on_remove_on_add, e))
 
     async def _handle_cross_element_add(self, e: GenericEventArguments) -> None:
         """Handle when an element being moved from another sortable element."""
