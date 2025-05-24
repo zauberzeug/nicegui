@@ -1,10 +1,16 @@
+import asyncio
 from typing import List
 
-from nicegui import ui
+from fastapi import Request, Response
+
+from nicegui import Client, app, ui
+from nicegui.logging import log
+from nicegui.page import page
+from nicegui.storage import RequestTrackingMiddleware
 
 from ..header import add_head_html, add_header
 from ..style import section_heading, subheading
-from .content import DocumentationPage
+from .content import DocumentationPage, registry
 from .custom_restructured_text import CustomRestructuredText as custom_restructured_text
 from .demo import demo
 from .reference import generate_class_doc
@@ -79,3 +85,29 @@ def render_page(documentation: DocumentationPage, *, with_menu: bool = True) -> 
 def _ancestor_nodes(node_id: str) -> List[str]:
     parent = next((node for node in nodes if any(child['id'] == node_id for child in node.get('children', []))), None)
     return [node_id] + (_ancestor_nodes(parent['id']) if parent else [])
+
+
+async def preload_pages() -> None:
+    """Execute demo functions once to register all page routes."""
+    async def call_next(_):
+        return Response(status_code=200)
+
+    request = Request(scope={'type': 'http', 'method': 'GET', 'path': '/', 'session': {}})
+    await RequestTrackingMiddleware(app).dispatch(request, call_next)
+    with Client(page(''), request=request) as client:
+        client.tab_id = 'page_preload_client'
+        await app.storage._create_tab_storage(client.tab_id)  # pylint: disable=protected-access
+        for documentation in registry.values():
+            for part in documentation.parts:
+                if part.demo is not None:
+                    with ui.element() as container:
+                        try:
+                            result = part.demo.function()
+                            if asyncio.iscoroutine(result):
+                                # NOTE: we are not using helpers.wait_for because it messes up the context and does not need to be cancelled
+                                await asyncio.wait_for(result, timeout=1)
+                        except TimeoutError:
+                            pass
+                        except Exception:
+                            log.exception('Error in demo function %s in "%s"', part.demo.function.__name__, part.title)
+                        container.delete()
