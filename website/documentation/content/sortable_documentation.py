@@ -133,35 +133,30 @@ def true_cloning() -> None:
                 bg=self.bg,
             )
 
-    def on_add_create_clone(e):
+    def handle_true_clone(e):
         # Get info about the added item
-        item_id = e.args.get('item')
-        new_index = e.args.get('newIndex')
+        item_id = e.args.get('sourceItem')
+        target_index = e.args.get('newIndex')
 
         # Find the original item in the source list
         # This is where we need to know which list the item came from
-        if e.sender is true_clone_list2:
+        if e.sender.id == true_clone_list1.id:
             source_list = true_clone_list1
             dest_list = true_clone_list2
         else:
             source_list = true_clone_list2
             dest_list = true_clone_list1
 
-        # Find the original item based on DOM ID
-        original_item = source_list.get_child_by_id(item_id)
+        # Find the source element by its ID
+        source_element = source_list.get_child_by_id(item_id)
 
-        if original_item:
-            # dest_list.remove_item(item_id)
-
+        if source_element:
             with dest_list:
-                # Get the class of the original item
-                item_class = type(original_item)
-                if hasattr(original_item, 'clone'):
-                    new_item = original_item.clone()  # type: ignore
-                else:
-                    new_item = item_class()  # fallback
-
-                new_item.move(dest_list, target_index=new_index)
+                # Create a clone
+                clone = source_element.clone()
+                clone.move(dest_list, target_index=target_index)
+                # Notify user
+                ui.notify(f'Cloned {source_element.label} to position {target_index}')
 
     with ui.row():
         with ui.card():
@@ -169,7 +164,7 @@ def true_cloning() -> None:
             with ui.sortable({
                 'group': {'name': 'true-clone-example', 'pull': 'clone'},
                 'removeOnAdd': True
-            }, on_add=on_add_create_clone) as true_clone_list1:
+            }, on_remove_on_add=handle_true_clone) as true_clone_list1:
                 for i in range(1, 7):
                     ClonableCard(f'List1 {i}')
 
@@ -178,7 +173,7 @@ def true_cloning() -> None:
             with ui.sortable({
                 'group': {'name': 'true-clone-example', 'pull': 'clone'},
                 'removeOnAdd': True
-            }, on_add=on_add_create_clone) as true_clone_list2:
+            }, on_remove_on_add=handle_true_clone) as true_clone_list2:
                 for i in range(1, 7):
                     ClonableCard(f'List2 {i}', 'bg-amber-500')
 
@@ -645,6 +640,7 @@ def event_debugging() -> None:
                 'filter': '.nicegui-sortable-filtered',  # Items with this class won't be draggable
                 'multiDrag': True,  # Enable multiple selection with Ctrl/Cmd
                 'multiDragKey': 'ctrl',
+                'cancelSort': True,
             },
                     on_choose=on_choose,
                     on_unchoose=on_unchoose,
@@ -674,6 +670,7 @@ def event_debugging() -> None:
             ui.label('List 2').classes('text-h6')
             with ui.sortable({
                 'group': {'name': 'event-debugging', 'pull': 'clone'},
+                'cancelSort': True,
             },
                     on_choose=on_choose,
                     on_unchoose=on_unchoose,
