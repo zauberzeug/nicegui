@@ -24,7 +24,7 @@ async def preload_pages() -> None:
     request = Request(scope={'type': 'http', 'method': 'GET', 'path': '/', 'session': {}})
     await RequestTrackingMiddleware(app).dispatch(request, call_next)
     with Client(page(''), request=request) as client:
-        client.tab_id = '1'
+        client.tab_id = 'page_preload_client'
         await app.storage._create_tab_storage(client.tab_id)  # pylint: disable=protected-access
         for documentation in registry.values():
             for part in documentation.parts:
