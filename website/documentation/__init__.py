@@ -1,4 +1,6 @@
-from nicegui import ui
+import asyncio
+
+from nicegui import Client, ui
 
 from .content import overview, redirects, registry
 from .custom_restructured_text import CustomRestructuredText
@@ -9,17 +11,20 @@ from .tree import build_tree
 from .windows import bash_window, browser_window, python_window
 
 
-def preload_pages() -> None:
+async def preload_pages() -> None:
     """Execute demo functions once to register all page routes."""
-    for documentation in registry.values():
-        for part in documentation.parts:
-            if part.demo is not None:
-                with ui.element() as container:
-                    try:
-                        part.demo.function()
-                    except Exception:
-                        pass
-                container.delete()
+    with Client.auto_index_client:
+        for documentation in registry.values():
+            for part in documentation.parts:
+                if part.demo is not None:
+                    with ui.element() as container:
+                        try:
+                            result = part.demo.function()
+                            if asyncio.iscoroutine(result):
+                                await result
+                        except Exception:
+                            pass
+                    container.delete()
 
 
 __all__ = [
