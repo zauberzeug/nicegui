@@ -19,6 +19,7 @@ from . import (
     rating_documentation,
     select_documentation,
     slider_documentation,
+    sortable_documentation,
     switch_documentation,
     textarea_documentation,
     time_documentation,
@@ -39,6 +40,7 @@ doc.intro(select_documentation)
 doc.intro(checkbox_documentation)
 doc.intro(switch_documentation)
 doc.intro(slider_documentation)
+doc.intro(sortable_documentation)
 doc.intro(range_documentation)
 doc.intro(rating_documentation)
 doc.intro(joystick_documentation)
