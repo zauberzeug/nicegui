@@ -17,8 +17,8 @@ export default {
     await Promise.all([
       loadResource(window.path_prefix + `${this.resource_path}/leaflet/leaflet.css`),
       loadResource(window.path_prefix + `${this.resource_path}/leaflet/leaflet.js`),
-      ...this.additional_resources.map((resource) => loadResource(resource)),
     ]);
+    await Promise.all(this.additional_resources.map((resource) => loadResource(resource)));
     if (this.draw_control) {
       await Promise.all([
         loadResource(window.path_prefix + `${this.resource_path}/leaflet-draw/leaflet.draw.css`),
@@ -127,7 +127,11 @@ export default {
   },
   methods: {
     add_layer(layer, id) {
-      const l = L[layer.type](...layer.args);
+      let obj = L;
+      for (const part of layer.type.split(".")) {
+        obj = obj[part];
+      }
+      const l = obj(...layer.args);
       l.id = id;
       l.addTo(this.map);
     },

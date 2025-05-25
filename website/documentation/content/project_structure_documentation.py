@@ -160,6 +160,7 @@ def modular_project():
                 │   ├── __init__.py
                 │   └── startup.py
                 └── tests
+                    ├── __init__.py
                     ├── conftest.py
                     └── test_app.py
                 ```

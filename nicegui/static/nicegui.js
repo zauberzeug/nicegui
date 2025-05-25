@@ -19,32 +19,32 @@ function parseElements(raw_elements) {
   );
 }
 
-function replaceUndefinedAttributes(elements, id) {
-  const element = elements[id];
-  if (element === undefined) {
-    return;
-  }
+function replaceUndefinedAttributes(element) {
   element.class ??= [];
   element.style ??= {};
   element.props ??= {};
   element.text ??= null;
   element.events ??= [];
+  element.update_method ??= null;
   element.component ??= null;
   element.libraries ??= [];
   element.slots = {
     default: { ids: element.children || [] },
     ...(element.slots ?? {}),
   };
-  Object.values(element.slots).forEach((slot) => slot.ids.forEach((id) => replaceUndefinedAttributes(elements, id)));
 }
 
 function getElement(id) {
-  const _id = id instanceof HTMLElement ? id.id : id;
+  const _id = id instanceof Element ? id.id.slice(1) : id;
   return mounted_app.$refs["r" + _id];
 }
 
 function getHtmlElement(id) {
-  return document.getElementById(`c${id}`);
+  let id_as_a_string = id.toString();
+  if (!id_as_a_string.startsWith("c")) {
+    id_as_a_string = "c" + id_as_a_string;
+  }
+  return document.getElementById(id_as_a_string);
 }
 
 function runMethod(target, method_name, args) {
@@ -177,27 +177,29 @@ function renderRecursively(elements, id) {
     let event_name = "on" + event.type[0].toLocaleUpperCase() + event.type.substring(1);
     event.specials.forEach((s) => (event_name += s[0].toLocaleUpperCase() + s.substring(1)));
 
+    const emit = (...args) => {
+      const emitter = () =>
+        window.socket?.emit("event", {
+          id: id,
+          client_id: window.clientId,
+          listener_id: event.listener_id,
+          args: stringifyEventArgs(args, event.args),
+        });
+      const delayed_emitter = () => {
+        if (window.did_handshake) emitter();
+        else setTimeout(delayed_emitter, 10);
+      };
+      throttle(delayed_emitter, event.throttle, event.leading_events, event.trailing_events, event.listener_id);
+      if (element.props["loopback"] === False && event.type == "update:modelValue") {
+        element.props["model-value"] = args;
+      }
+    };
+
     let handler;
     if (event.js_handler) {
       handler = eval(event.js_handler);
     } else {
-      handler = (...args) => {
-        const emitter = () =>
-          window.socket?.emit("event", {
-            id: id,
-            client_id: window.clientId,
-            listener_id: event.listener_id,
-            args: stringifyEventArgs(args, event.args),
-          });
-        const delayed_emitter = () => {
-          if (window.did_handshake) emitter();
-          else setTimeout(emitter, 10);
-        };
-        throttle(delayed_emitter, event.throttle, event.leading_events, event.trailing_events, event.listener_id);
-        if (element.props["loopback"] === False && event.type == "update:modelValue") {
-          element.props["model-value"] = args;
-        }
-      };
+      handler = emit;
     }
 
     handler = Vue.withModifiers(handler, event.modifiers);
@@ -318,7 +320,7 @@ window.onbeforeunload = function () {
 };
 
 function createApp(elements, options) {
-  replaceUndefinedAttributes(elements, 0);
+  Object.entries(elements).forEach(([_, element]) => replaceUndefinedAttributes(element));
   setInterval(() => ack(), 3000);
   return (app = Vue.createApp({
     data() {
@@ -358,9 +360,9 @@ function createApp(elements, options) {
               console.log("reloading because handshake failed for clientId " + window.clientId);
               window.location.reload();
             }
+            window.did_handshake = true;
             document.getElementById("popup").ariaHidden = true;
           });
-          window.did_handshake = true;
         },
         connect_error: (err) => {
           if (err.message == "timeout") {
@@ -381,7 +383,6 @@ function createApp(elements, options) {
           const loadPromises = Object.entries(msg)
             .filter(([_, element]) => element && (element.component || element.libraries))
             .map(([_, element]) => loadDependencies(element, options.prefix, options.version));
-
           await Promise.all(loadPromises);
 
           for (const [id, element] of Object.entries(msg)) {
@@ -389,8 +390,15 @@ function createApp(elements, options) {
               delete this.elements[id];
               continue;
             }
+            replaceUndefinedAttributes(element);
             this.elements[id] = element;
-            replaceUndefinedAttributes(this.elements, id);
+          }
+
+          await this.$nextTick();
+          for (const [id, element] of Object.entries(msg)) {
+            if (element?.update_method) {
+              getElement(id)[element.update_method]();
+            }
           }
         },
         run_javascript: (msg) => runJavascript(msg.code, msg.request_id),

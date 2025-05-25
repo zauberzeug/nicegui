@@ -1,5 +1,6 @@
 import asyncio
 import copy
+import time
 from pathlib import Path
 
 import httpx
@@ -79,7 +80,7 @@ def test_user_storage_modifications(screen: Screen):
     screen.should_contain('3')
 
 
-async def test_access_user_storage_from_fastapi(screen: Screen):
+def test_access_user_storage_from_fastapi(screen: Screen):
     @app.get('/api')
     def api():
         app.storage.user['msg'] = 'yes'
@@ -87,12 +88,12 @@ async def test_access_user_storage_from_fastapi(screen: Screen):
 
     screen.ui_run_kwargs['storage_secret'] = 'just a test'
     screen.open('/')
-    async with httpx.AsyncClient() as http_client:
-        response = await http_client.get(f'http://localhost:{Screen.PORT}/api')
+    with httpx.Client() as http_client:
+        response = http_client.get(f'http://localhost:{Screen.PORT}/api')
         assert response.status_code == 200
         assert response.text == '"OK"'
-        await asyncio.sleep(0.5)  # wait for storage to be written
-        assert next(Path('.nicegui').glob('storage-user-*.json')).read_text('utf-8') == '{"msg":"yes"}'
+        time.sleep(0.5)  # wait for storage to be written
+        assert next(Path('.nicegui').glob('storage-user-*.json')).read_text(encoding='utf-8') == '{"msg":"yes"}'
 
 
 def test_access_user_storage_on_interaction(screen: Screen):
@@ -106,7 +107,7 @@ def test_access_user_storage_on_interaction(screen: Screen):
     screen.open('/')
     screen.click('switch')
     screen.wait(0.5)
-    assert next(Path('.nicegui').glob('storage-user-*.json')).read_text('utf-8') == '{"test_switch":true}'
+    assert next(Path('.nicegui').glob('storage-user-*.json')).read_text(encoding='utf-8') == '{"test_switch":true}'
 
 
 def test_access_user_storage_from_button_click_handler(screen: Screen):
@@ -118,10 +119,11 @@ def test_access_user_storage_from_button_click_handler(screen: Screen):
     screen.open('/')
     screen.click('test')
     screen.wait(1)
-    assert next(Path('.nicegui').glob('storage-user-*.json')).read_text('utf-8') == '{"inner_function":"works"}'
+    assert \
+        next(Path('.nicegui').glob('storage-user-*.json')).read_text(encoding='utf-8') == '{"inner_function":"works"}'
 
 
-async def test_access_user_storage_from_background_task(screen: Screen):
+def test_access_user_storage_from_background_task(screen: Screen):
     @ui.page('/')
     def page():
         async def subtask():
@@ -131,7 +133,7 @@ async def test_access_user_storage_from_background_task(screen: Screen):
 
     screen.ui_run_kwargs['storage_secret'] = 'just a test'
     screen.open('/')
-    assert next(Path('.nicegui').glob('storage-user-*.json')).read_text('utf-8') == '{"subtask":"works"}'
+    assert next(Path('.nicegui').glob('storage-user-*.json')).read_text(encoding='utf-8') == '{"subtask":"works"}'
 
 
 def test_user_and_general_storage_is_persisted(screen: Screen):
@@ -165,7 +167,7 @@ def test_rapid_storage(screen: Screen):
     screen.open('/')
     screen.click('test')
     screen.wait(0.5)
-    assert Path('.nicegui', 'storage-general.json').read_text('utf-8') == '{"one":1,"two":2,"three":3}'
+    assert Path('.nicegui', 'storage-general.json').read_text(encoding='utf-8') == '{"one":1,"two":2,"three":3}'
 
 
 def test_tab_storage_is_local(screen: Screen):
@@ -277,7 +279,7 @@ def test_deepcopy(screen: Screen):
     screen.open('/')
     screen.should_contain('Loaded')
     screen.wait(0.5)
-    assert Path('.nicegui', 'storage-general.json').read_text('utf-8') == '{"a":{"b":0}}'
+    assert Path('.nicegui', 'storage-general.json').read_text(encoding='utf-8') == '{"a":{"b":0}}'
 
 
 def test_missing_storage_secret(screen: Screen):

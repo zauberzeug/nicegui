@@ -4,7 +4,7 @@
 #
 
 app = "nicegui"
-primary_region = "fra"
+primary_region = "lhr"
 kill_signal = "SIGTERM"
 kill_timeout = "5s"
 swap_size_mb = 2048
@@ -37,8 +37,8 @@ swap_size_mb = 2048
     handlers = ["tls", "http"]
   [services.concurrency]
     type = "requests"
-    hard_limit = 80
-    soft_limit = 50
+    hard_limit = 200
+    soft_limit = 100
 
   [[services.tcp_checks]]
     interval = "10s"
@@ -53,7 +53,3 @@ swap_size_mb = 2048
     path = "/status"
     protocol = "http"
     tls_skip_verify = false
-
-[[metrics]]
-  path = "/"
-  port = 9062

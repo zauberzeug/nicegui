@@ -8,7 +8,7 @@ def main_demo() -> None:
     markdown = ui.markdown('Enter your **name**!')
 
     def inject_input():
-        with ui.teleport(f'#c{markdown.id} strong'):
+        with ui.teleport(f'#{markdown.html_id} strong'):
             ui.input('name').classes('inline-flex').props('dense outlined')
 
     ui.button('inject input', on_click=inject_input)
@@ -20,11 +20,11 @@ def main_demo() -> None:
 def arbitrary_content():
     options = ['Star', 'Thump Up', 'Heart']
     radio = ui.radio({x: '' for x in options}, value='Star').props('inline')
-    with ui.teleport(f'#c{radio.id} > div:nth-child(1) .q-radio__label'):
+    with ui.teleport(f'#{radio.html_id} > div:nth-child(1) .q-radio__label'):
         ui.icon('star', size='md')
-    with ui.teleport(f'#c{radio.id} > div:nth-child(2) .q-radio__label'):
+    with ui.teleport(f'#{radio.html_id} > div:nth-child(2) .q-radio__label'):
         ui.icon('thumb_up', size='md')
-    with ui.teleport(f'#c{radio.id} > div:nth-child(3) .q-radio__label'):
+    with ui.teleport(f'#{radio.html_id} > div:nth-child(3) .q-radio__label'):
         ui.icon('favorite', size='md')
     ui.label().bind_text_from(radio, 'value')
 
@@ -44,7 +44,7 @@ def graph_in_table():
     ]
     table = ui.table(columns=columns, rows=rows, row_key='name').classes('w-72')
     for r, row in enumerate(rows):
-        with ui.teleport(f'#c{table.id} tr:nth-child({r+1}) td:nth-child(2)'):
+        with ui.teleport(f'#{table.html_id} tr:nth-child({r+1}) td:nth-child(2)'):
             ui.echart({
                 'xAxis': {'type': 'category', 'show': False},
                 'yAxis': {'type': 'value', 'show': False},
