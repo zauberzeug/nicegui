@@ -13,7 +13,7 @@ if TYPE_CHECKING:
 
 class Slot:
     stacks: ClassVar[Dict[int, List[Slot]]] = {}
-    """Maps asyncio task IDs to slot stacks, which keep track of the current slot in each task."""
+    '''Maps asyncio task IDs to slot stacks, which keep track of the current slot in each task.'''
 
     def __init__(self, parent: Element, name: str, template: Optional[str] = None) -> None:
         self.name = name
@@ -59,7 +59,10 @@ class Slot:
             except Exception:
                 # NOTE: make sure the loop doesn't crash
                 log.exception('Error while pruning slot stacks')
-            await asyncio.sleep(10)
+            try:
+                await asyncio.sleep(10)
+            except asyncio.CancelledError:
+                break
 
 
 def get_task_id() -> int:

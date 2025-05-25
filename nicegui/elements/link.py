@@ -28,14 +28,14 @@ class Link(TextElement, component='link.js', default_classes='nicegui-link'):
         if isinstance(target, str):
             self._props['href'] = target
         elif isinstance(target, Element):
-            self._props['href'] = f'#c{target.id}'
+            self._props['href'] = f'#{target.html_id}'
         elif isinstance(target, OutletView):
             self._props['href'] = target.url
         elif callable(target):
             if target in Client.page_routes:
                 self._props['href'] = Client.page_routes[target]
             else:
-                self._props['href'] = "#"
+                self._props['href'] = '#'
                 self.on('click', lambda: target())
         self._props['target'] = '_blank' if new_tab else '_self'
 

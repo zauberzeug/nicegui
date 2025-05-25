@@ -76,7 +76,7 @@ export default {
         this.loading = true;
       }
       if (!this.src && this.size) {
-        this.viewBox = `0 0 ${this.size[0]} ${this.size[1]}`;
+        this.updateViewbox(this.size[0], this.size[1]);
       }
     },
     updateCrossHair(e) {
@@ -88,7 +88,7 @@ export default {
     onImageLoaded(e) {
       this.loaded_image_width = e.target.naturalWidth;
       this.loaded_image_height = e.target.naturalHeight;
-      this.viewBox = `0 0 ${this.loaded_image_width} ${this.loaded_image_height}`;
+      this.updateViewbox(this.loaded_image_width, this.loaded_image_height);
       this.$emit("loaded", { width: this.loaded_image_width, height: this.loaded_image_height, source: e.target.src });
     },
     onMouseEvent(type, e) {
@@ -115,6 +115,9 @@ export default {
         image_x: (e.offsetX * imageWidth) / this.$refs.svg.clientWidth,
         image_y: (e.offsetY * imageHeight) / this.$refs.svg.clientHeight,
       });
+    },
+    updateViewbox(width, height) {
+      this.viewBox = `0 0 ${width} ${height}`;
     },
   },
   computed: {

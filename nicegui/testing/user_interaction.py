@@ -72,20 +72,33 @@ class UserInteraction(Generic[T]):
             for element in self.elements:
                 if isinstance(element, ui.link):
                     href = element.props.get('href', '#')
-                    background_tasks.create(self.user.open(href))
+                    background_tasks.create(self.user.open(href), name=f'open {href}')
                     return self
+
                 if isinstance(element, ui.select):
                     if element.is_showing_popup:
-                        assert isinstance(self.target, str), 'Target must be string when clicking on ui.select options'
-                        element.set_value(self.target)
-                    element._is_showing_popup = not element.is_showing_popup  # pylint: disable=protected-access
+                        if isinstance(element.options, dict):
+                            target_value = next((k for k, v in element.options.items() if v == self.target), '')
+                        else:
+                            target_value = self.target
+                        if element.multiple:
+                            if target_value in element.value:
+                                element.value = [v for v in element.value if v != target_value]
+                            elif target_value in element._values:  # pylint: disable=protected-access
+                                element.value = [*element.value, target_value]
+                            else:
+                                element._is_showing_popup = False  # pylint: disable=protected-access
+                        else:
+                            element.value = target_value
+                            element._is_showing_popup = False  # pylint: disable=protected-access
+                    else:
+                        element._is_showing_popup = True  # pylint: disable=protected-access
                     return self
+
                 for listener in element._event_listeners.values():  # pylint: disable=protected-access
                     if listener.element_id != element.id:
                         continue
-                    args = None
-                    if isinstance(element, (ui.checkbox, ui.switch)):
-                        args = not element.value
+                    args = not element.value if isinstance(element, (ui.checkbox, ui.switch)) else None
                     event_arguments = events.GenericEventArguments(sender=element, client=self.user.client, args=args)
                     events.handle_event(listener.handler, event_arguments)
         return self

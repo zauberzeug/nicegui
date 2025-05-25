@@ -15,6 +15,9 @@ class Navigate:
     *Added in version 2.0.0*
     """
 
+    def __init__(self) -> None:
+        self.history = History()
+
     def back(self) -> None:
         """ui.navigate.back
 
@@ -59,7 +62,7 @@ class Navigate:
         if isinstance(target, str):
             path = target
         elif isinstance(target, Element):
-            path = f'#c{target.id}'
+            path = f'#{target.html_id}'
         elif isinstance(target, OutletView):
             path = target.url
         elif callable(target):
@@ -67,6 +70,31 @@ class Navigate:
         else:
             raise TypeError(f'Invalid target type: {type(target)}')
         context.client.open(path, new_tab)
+
+
+class History:
+
+    def push(self, url: str) -> None:
+        """Push a URL to the browser navigation history.
+
+        See JavaScript's `pushState <https://developer.mozilla.org/en-US/docs/Web/API/History/pushState>`_ for more information.
+
+        *Added in version 2.13.0*
+
+        :param url: relative or absolute URL
+        """
+        run_javascript(f'history.pushState({{}}, "", "{url}");')
+
+    def replace(self, url: str) -> None:
+        """Replace the current URL in the browser history.
+
+        See JavaScript's `replaceState <https://developer.mozilla.org/en-US/docs/Web/API/History/replaceState>`_ for more information.
+
+        *Added in version 2.13.0*
+
+        :param url: relative or absolute URL
+        """
+        run_javascript(f'history.replaceState({{}}, "", "{url}");')
 
 
 navigate = Navigate()
