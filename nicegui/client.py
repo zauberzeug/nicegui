@@ -28,8 +28,7 @@ from .translations import translations
 from .version import __version__
 
 if TYPE_CHECKING:
-    from nicegui.outlet import Outlet
-
+    from .content import Content
     from .page import page
     from .single_page_router import SinglePageRouter
 
@@ -43,7 +42,7 @@ class Client:
     page_configs: ClassVar[Dict[Callable[..., Any], page]] = {}
     '''Maps page builders to their page configuration.'''
 
-    top_level_outlets: ClassVar[Dict[str, Outlet]] = {}
+    top_level_content: ClassVar[Dict[str, Content]] = {}
     '''Maps paths to the associated single page routers.'''
 
     instances: ClassVar[Dict[str, Client]] = {}
@@ -242,9 +241,9 @@ class Client:
         """Open a new page in the client."""
         path = target if isinstance(target, str) else self.page_routes[target]
         if not new_tab and context.client.single_page_router is not None:
-            for outlet in self.top_level_outlets.values():
-                outlet_target = outlet.resolve_target(path)
-                if outlet_target.valid and context.client.single_page_router.is_path_included(path):
+            for content in self.top_level_content.values():
+                content_target = content.resolve_target(path)
+                if content_target.valid and context.client.single_page_router.is_path_included(path):
                     context.client.single_page_router.navigate_to(path)
                     return
         self.outbox.enqueue_message('open', {'path': path, 'new_tab': new_tab}, self.id)

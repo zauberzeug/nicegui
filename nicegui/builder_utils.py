@@ -45,8 +45,13 @@ def run_safe(builder, type_check: bool = True, **kwargs) -> Any:
                         raise TypeError(
                             f'Unsupported type annotation {expected_type} for parameter {func_param_name}')
                 else:  # noqa: PLR5501
+                    # query params are always lists, so we unpack single values if the type matches
+                    if isinstance(value, list) and len(value) == 1 and isinstance(value[0], expected_type):
+                        kwargs[func_param_name] = value[0]
+
                     # Non-generic types
-                    if not isinstance(value, expected_type):
-                        raise ValueError(f'Invalid type for parameter {func_param_name}, expected {expected_type}')
+                    elif not isinstance(value, expected_type):
+                        raise ValueError(f'Invalid type for parameter {func_param_name}, '
+                                         f'expected {expected_type} but got {type(value)}')
     filtered = {k: v for k, v in kwargs.items() if k in args} if not has_kwargs else kwargs
     return builder(**filtered)

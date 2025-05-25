@@ -2,14 +2,14 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Callable, Optional
 
-from nicegui import ui
+from ..element import Element
 
 if TYPE_CHECKING:
     from ..single_page_router import SinglePageRouter
 
 
-class Frame(ui.element, component='frame.js'):
-    """A Frame is a UI slot which contains sub-outlets/views. It provides the container where page content
+class Frame(Element, component='frame.js'):
+    """A Frame is a UI slot which contains sub-content. It provides the container where page content
     is rendered and updated."""
 
     def __init__(self,

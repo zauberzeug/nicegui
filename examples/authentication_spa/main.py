@@ -1,15 +1,13 @@
 #!/usr/bin/env python3
 import html
 import uuid
-from typing import Optional, Union
 
 from nicegui import app, ui
-from nicegui.single_page_target import SinglePageTarget
 
 INDEX_URL = '/'
 SECRET_AREA_URL = '/secret_area'
 
-DUMMY_LOGINS = {"admin": "NicePass"}
+DUMMY_LOGINS = {'admin': 'NicePass'}
 
 
 def verify_authentication(url) -> str:
@@ -19,7 +17,7 @@ def verify_authentication(url) -> str:
     return '/login'
 
 
-@ui.outlet('/', on_navigate=verify_authentication)
+@ui.content('/', on_navigate=verify_authentication)
 def main_layout():
     with ui.header():
         ui.link('SPA Login Example', '/').style('text-decoration: none; color: inherit;').classes('text-h3')

@@ -5,49 +5,44 @@ import re
 from fnmatch import fnmatch
 from typing import Any, AsyncGenerator, Awaitable, Callable, Dict, Generator, List, Optional, Self, Set, Union
 
-from nicegui import ui
-from nicegui.builder_utils import run_safe
-from nicegui.client import Client
-from nicegui.context import context
-from nicegui.outlet_view import OutletView
-from nicegui.single_page_router import SinglePageRouter
-from nicegui.single_page_target import SinglePageTarget
+from . import ui
+from .builder_utils import run_safe
+from .client import Client
+from .content_view import ContentView
+from .context import context
+from .logging import log
+from .single_page_router import SinglePageRouter
+from .single_page_target import SinglePageTarget
 
 PAGE_TEMPLATE_METHOD_NAME = 'page_template'
 
 
-class Outlet:
+class Content:
     def __init__(self,
                  path: str,
                  *,
-                 parent: Optional[Outlet] = None,
+                 parent: Optional[Content] = None,
                  on_instance_created: Optional[Callable[[SinglePageRouter], None]] = None,
                  on_navigate: Optional[Callable[[str], Optional[Union[SinglePageTarget, str]]]] = None,
                  router_class: Optional[Callable[..., SinglePageRouter]] = None,
                  **kwargs) -> None:
-        """Outlets: Building Single-Page Applications
+        """Content: Building Single-Page Applications
 
-        In NiceGUI, outlets facilitate the creation of single-page applications by enabling seamless transitions between
-        views without full page reloads. The outlet decorator allows defining the layout of the page once at the top level
-        and then adding multiple views that are rendered inside the layout.
+        In NiceGUI, the content decorator facilitates the creation of single-page applications by enabling seamless
+        transitions between views without full page reloads. The decorator allows defining the layout of the
+        page once at the top level and then adding multiple views that are rendered inside the layout.
 
         The decorated function has to be a generator function containing a `yield` statement separating the layout from
         the content area. The actual content is added at the point where the yield statement is reached.
 
-        The views of the single page application are defined using the `outlet.view` decorator which works quite
-        similar to the `ui.page` decorator but instead of specifying the path directly, it uses a relative path starting
-        from the outlet's base path. `ui.page` parameters like `title`, query parameters or path parameters can be used
-        as well.
 
         Notes:
 
         - The `yield` statement can be used to return a dictionary of keyword arguments that are passed to each
           of its views. Such keyword arguments can be references to shared UI elements such as the sidebar or header but
           also any other data that should be shared between the views.
-        - As each page instance gets its own outlet instance, the state of the application can be stored in the outlet
-          and passed via the keyword arguments to the views.
-        - Outlets can be nested to create complex single page applications with multiple levels of navigation.
-        - Linking and navigating via `ui.navigate` or `ui.link` works for outlet views as for classic pages.
+        - Content can be nested to create complex single page applications with multiple levels of navigation.
+        - Linking and navigating via `ui.navigate` or `ui.link` works for content as for classic pages.
 
         :param path: route of the new page (path must start with '/')
         :param on_instance_created: Called when a new instance is created. Each browser tab creates is a new instance.
@@ -56,11 +51,11 @@ class Outlet:
             prevent or modify the navigation. Return the new URL if the navigation should be allowed, modify the URL
             or return None to prevent the navigation.
         :param router_class: Class which is used to create the router instance. By default, SinglePageRouter is used.
-        :param parent: The parent outlet of this outlet.
+        :param parent: The parent content.
         :param kwargs: additional keyword arguments passed to FastAPI's @app.get method
         """
         super().__init__()
-        self.routes: Dict[str, OutletPath] = {}
+        self.routes: Dict[str, ContentPath] = {}
         self.base_path = path
         self.included_paths: Set[str] = set()
         self.excluded_paths: Set[str] = set()
@@ -71,11 +66,11 @@ class Outlet:
         self._setup_configured = False
         self.parent_config = parent
         if self.parent_config is not None:
-            self.parent_config._register_child_outlet(self)
-        self.child_routers: List[Outlet] = []
+            self.parent_config._register_child(self)
+        self.child_routers: List[Content] = []
         self.page_kwargs = kwargs
         self.router_class = SinglePageRouter if router_class is None else router_class
-        self.outlet_builder: Union[
+        self.content_builder: Union[
             None,
             Callable[..., Any],
             Callable[..., Awaitable[Any]],
@@ -83,7 +78,7 @@ class Outlet:
             AsyncGenerator[Dict[str, Any], None]
         ] = None
         if parent is None:
-            Client.top_level_outlets[path] = self
+            Client.top_level_content[path] = self
 
     async def build_page_template(self, **kwargs):
         """Set up the content area for the single page router."""
@@ -93,12 +88,19 @@ class Outlet:
             if isinstance(result, dict):
                 properties.update(result)
 
-        if self.outlet_builder is None:
+        if self.content_builder is None:
             raise ValueError(
-                'The outlet builder function is not defined. Use the @outlet decorator to define it or '
+                'The content builder function is not defined. Use the @content decorator to define it or '
                 'pass it as an argument to the SinglePageRouter constructor.'
             )
-        frame = run_safe(self.outlet_builder, **kwargs)
+        frame = run_safe(self.content_builder, **kwargs)
+        if inspect.iscoroutine(frame):
+            frame = await frame
+        if frame is None:
+            if self.routes:
+                log.warning(f'The content function for "{self.base_path}" is not a generator (does not yield). '
+                            'Sub-content will not be available.')
+            return  # NOTE if content builder is not a generator, run_safe already added all content
         is_async = inspect.isasyncgen(frame)
 
         current_frame = SinglePageRouter.current_frame()
@@ -128,19 +130,19 @@ class Outlet:
                 pass
 
     def __call__(self, func: Callable[..., Any]) -> Self:
-        """Decorator for the layout builder / "outlet" function"""
+        """Decorator for the content builder function"""
 
-        async def outlet_view(**kwargs):
+        async def create_content(**kwargs):
             result = self.build_page(**kwargs)
             if inspect.isawaitable(result):
                 await result
 
-        self.outlet_builder = func
+        self.content_builder = func
         if self.parent_config is None:
             self.setup_page()
         else:
             relative_path = self.base_path[len(self.parent_config.base_path):]
-            OutletView(self.parent_config, relative_path)(outlet_view)
+            ContentView(self.parent_config, relative_path)(create_content)
         return self
 
     def setup_page(self) -> Self:
@@ -171,14 +173,14 @@ class Outlet:
         :param title: Optional title of the page
         :param on_open: Optional on_resolve function which is called when this path was selected.
         """
-        path_mask = OutletPath.create_path_mask(path.rstrip('/'))
+        path_mask = ContentPath.create_path_mask(path.rstrip('/'))
         self.included_paths.add(path_mask)
-        self.routes[path] = OutletPath(path, builder, title, on_open=on_open).verify()
+        self.routes[path] = ContentPath(path, builder, title, on_open=on_open).verify()
 
-    def add_router_entry(self, entry: OutletPath) -> None:
-        """Adds a fully configured OutletPath to the router
+    def add_router_entry(self, entry: ContentPath) -> None:
+        """Adds a fully configured ContentPath to the router
 
-        :param entry: The OutletPath to add"""
+        :param entry: The ContentPath to add"""
         self.routes[entry.path] = entry.verify()
 
     def resolve_target(self, target: Union[Callable, str]) -> SinglePageTarget:
@@ -195,7 +197,7 @@ class Outlet:
         path = target.split('#')[0].split('?')[0]
         for router in self.child_routers:
             # replace {} placeholders with * to match the fnmatch pattern
-            mask = OutletPath.create_path_mask(router.base_path.rstrip('/') + '/*')
+            mask = ContentPath.create_path_mask(router.base_path.rstrip('/') + '/*')
             if fnmatch(path, mask) or path == router.base_path:
                 resolved = router.resolve_target(target)
                 if resolved.valid:
@@ -274,7 +276,7 @@ class Outlet:
 
         parent_router = SinglePageRouter.current_frame()
         prepare_arguments()
-        content = self.router_class(outlet=self,
+        content = self.router_class(content=self,
                                     included_paths=sorted(list(self.included_paths)),
                                     excluded_paths=sorted(list(self.excluded_paths)),
                                     use_browser_history=self.use_browser_history,
@@ -291,50 +293,35 @@ class Outlet:
             content.navigate_to(initial_url, server_side=True, history=False)
         return content
 
-    def view(self,
-             path: str,
-             title: Optional[str] = None
-             ) -> OutletView:
-        """Decorator for the view function.
+    def content(self, path: str, **kwargs) -> Content:
+        """Defines nested content
 
-        With the view function you define the actual content of the page. The view function is called when the user
-        navigates to the specified path relative to the outlet's base path.
-
-        :param path: The path of the view, relative to the base path of the outlet
-        :param title: Optional title of the view. If a title is set, it will be displayed in the browser tab
-            when the view is active, otherwise the default title of the application is displayed.
-        """
-        return OutletView(self, path, title=title)
-
-    def outlet(self, path: str, **kwargs) -> Outlet:
-        """Defines a nested outlet
-
-        :param path: The relative path of the outlet
-        :param kwargs: Additional arguments for the nested ui.outlet
+        :param path: The relative path of the content
+        :param kwargs: Additional arguments for the nested content
         """
         abs_path = self.base_path.rstrip('/') + path
-        return Outlet(abs_path, parent=self, **kwargs)
+        return Content(abs_path, parent=self, **kwargs)
 
     @property
     def current_url(self) -> str:
-        """Returns the current URL of the outlet.
+        """Returns the current URL.
 
-        Only works when called from within the outlet or view builder function.
+        Only works when called from within the content builder function.
 
-        :return: The current URL of the outlet"""
+        :return: The current URL"""
         cur_router = SinglePageRouter.current_frame()
         if cur_router is None:
-            raise ValueError('The current URL can only be retrieved from within a nested outlet or view builder '
+            raise ValueError('The current URL can only be retrieved from within a nested content or view builder '
                              'function.')
         return cur_router.target_url
 
-    def _register_child_outlet(self, router_config: Outlet) -> None:
-        """Registers a child outlet config to the parent router config"""
+    def _register_child(self, router_config: Content) -> None:
+        """Registers a child config to the parent router config"""
         self.child_routers.append(router_config)
 
 
-class OutletPath:
-    """The OutletPath is a data class which holds the configuration of one router path"""
+class ContentPath:
+    """A data class which holds the configuration of one router path"""
 
     def __init__(self, path: str, builder: Callable, title: Union[str, None] = None,
                  on_open: Optional[Callable[[SinglePageTarget, Any], SinglePageTarget]] = None):
@@ -349,7 +336,7 @@ class OutletPath:
         self.on_open = on_open
 
     def verify(self) -> Self:
-        """Verifies a OutletPath for correctness. Raises a ValueError if the entry is invalid."""
+        """Verifies a ContentPath for correctness. Raises a ValueError if the entry is invalid."""
         path = self.path
         if '{' in path:
             # verify only a single open and close curly bracket is present
@@ -370,3 +357,6 @@ class OutletPath:
         :param path: The path to convert
         :return: The mask with all path parameters replaced by a wildcard"""
         return re.sub(r'{[^}]+}', '*', path)
+
+    def __repr__(self):
+        return f'ContentPath(path={self.path}, builder={self.builder}, title={self.title}, on_open={self.on_open})'
