@@ -1,4 +1,4 @@
-# Advanced demo showing how to use the ui.outlet and outlet.view decorators to create a nested multi-page app with a
+# Advanced demo showing how to use the ui.content decorators to create a nested multi-page app with a
 # static header, footer and menu which is shared across all pages and hidden when the user navigates to the root page.
 
 from examples.single_page_app_complex.cms_config import ServiceDefinition, SubServiceDefinition, services
@@ -8,7 +8,7 @@ from nicegui.page_layout import LeftDrawer
 # --- Other app ---
 
 
-@ui.content('/other_app')  # Needs to be defined before the main outlet / to avoid conflicts
+@ui.content('/other_app')  # Needs to be defined before the / to avoid conflicts
 async def other_app_router():
     ui.label('Other app header').classes('text-h2')
     ui.html('<hr>')
@@ -24,7 +24,7 @@ async def other_app_index():
 
 # --- Main app ---
 
-@ui.content('/')  # main app outlet
+@ui.content('/')  # main app
 async def main_router(url_path: str):
     with ui.header():
         with ui.link('', '/').style('text-decoration: none; color: inherit;'):
@@ -36,7 +36,7 @@ async def main_router(url_path: str):
         with ui.element('a').props('href="/about"'):
             ui.label('Copyright 2024 by NiceCLOUD Inc.').classes('text-h7')
     with ui.element().classes('p-8'):
-        yield {'menu_drawer': menu_drawer}  # pass menu drawer to all sub elements (views and outlets)
+        yield {'menu_drawer': menu_drawer}  # pass menu drawer to all sub elements
 
 
 @main_router.content('/')
@@ -73,7 +73,7 @@ async def about_page(menu_drawer: LeftDrawer):
     ui.label('Nice Country')
 
 
-@main_router.content('/services/{service_name}')  # service outlet
+@main_router.content('/services/{service_name}')
 async def services_router(service_name: str, menu_drawer: LeftDrawer):
     service: ServiceDefinition = services[service_name]
     menu_drawer.clear()
@@ -92,7 +92,7 @@ async def services_router(service_name: str, menu_drawer: LeftDrawer):
                 service_element.classes('text-white text-h6 bg-gray cursor-pointer')
                 service_element.style('text-shadow: 2px 2px #00000070;')
                 service_element.on('click', lambda url=f'/services/{service_name}/{key}': ui.navigate.to(url))
-    yield {'service': service}  # pass service object to all sub elements (views and outlets)
+    yield {'service': service}  # pass service object to all sub elements
 
 
 def update_title(service: ServiceDefinition = None,
@@ -113,15 +113,15 @@ async def show_index(service: ServiceDefinition):
     ui.html('<br>')
 
 
-@services_router.content('/{sub_service_name}')  # sub service outlet
+@services_router.content('/{sub_service_name}')
 async def sub_service_router(service: ServiceDefinition, sub_service_name: str):
     sub_service: SubServiceDefinition = service.sub_services[sub_service_name]
     ui.label(f'{service.title} > {sub_service.title}').classes('text-h4')
     ui.html('<br>')
-    yield {'sub_service': sub_service}  # pass sub_service object to all sub elements (views and outlets)
+    yield {'sub_service': sub_service}  # pass sub_service object to all sub elements
 
 
-@sub_service_router.content('/')  # sub service index page
+@sub_service_router.content('/')
 async def sub_service_index(service: ServiceDefinition, sub_service: SubServiceDefinition):
     update_title(service, sub_service)
     ui.label(sub_service.emoji).classes('text-h1')

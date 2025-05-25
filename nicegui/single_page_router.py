@@ -22,11 +22,11 @@ class SinglePageRouter:
     When ever a new page is opened, the SinglePageRouter exchanges the content of the current page with the content
     of the new page. The SinglePageRouter also manages the browser history and title updates.
 
-    See ui.outlet for more information."""
+    See ui.content for more information."""
 
     def __init__(self,
                  *,
-                 outlet: Content,
+                 content: Content,
                  included_paths: Optional[list[str]] = None,
                  excluded_paths: Optional[list[str]] = None,
                  use_browser_history: bool = True,
@@ -36,7 +36,7 @@ class SinglePageRouter:
                  user_data: Optional[Dict] = None
                  ):
         """
-        :param outlet: The Outlet which controls this router frame
+        :param content: The Content which controls this router frame
         :param included_paths: A list of valid path masks which shall be allowed to be opened by the router
         :param excluded_paths: A list of path masks which shall be excluded from the router
         :param use_browser_history: Optional flag to enable or disable the browser history management. Default is True.
@@ -45,8 +45,8 @@ class SinglePageRouter:
         :param user_data: Optional user data which is passed to the builder functions of the router frame
         """
         super().__init__()
-        self.router_config = outlet
-        self.base_path = outlet.base_path
+        self.router_config = content
+        self.base_path = content.base_path
         if target_url is None:
             if parent is not None and parent.target_url is not None:
                 target_url = parent.target_url
@@ -139,24 +139,24 @@ class SinglePageRouter:
 
         :param target: The target object such as a URL or Callable
         :return: The resolved SinglePageTarget object"""
-        outlet_target = self.router_config.resolve_target(target)
-        assert outlet_target.path is not None
-        if isinstance(outlet_target, SinglePageTarget) and not outlet_target.valid and outlet_target.path.startswith(self.base_path):
-            rem_path = outlet_target.path[len(self.base_path):]
+        target = self.router_config.resolve_target(target)
+        assert target.path is not None
+        if isinstance(target, SinglePageTarget) and not target.valid and target.path.startswith(self.base_path):
+            rem_path = target.path[len(self.base_path):]
             if rem_path in self.views:
-                outlet_target.builder = self.views[rem_path].builder
-                outlet_target.title = self.views[rem_path].title
-                outlet_target.valid = True
-        if outlet_target.valid and outlet_target.router is None:
-            outlet_target.router = self
-        if outlet_target is None:
+                target.builder = self.views[rem_path].builder
+                target.title = self.views[rem_path].title
+                target.valid = True
+        if target.valid and target.router is None:
+            target.router = self
+        if target is None:
             raise NotImplementedError
-        return outlet_target
+        return target
 
     def handle_navigate(self, target: str) -> Union[SinglePageTarget, str, None]:
         """Is called when there was a navigation event in the browser or by the navigate_to method.
 
-        By default, the original target is returned. The SinglePageRouter and the router config (the outlet) can
+        By default, the original target is returned. The SinglePageRouter and the router config can
         manipulate the target before it is resolved. If the target is None, the navigation is suppressed.
 
         :param target: The target URL
@@ -362,7 +362,7 @@ class SinglePageRouter:
 
 
 class RouterView:
-    """Defines a single, router instance specific view / "content page" which is displayed in an outlet"""
+    """Defines a single, router instance specific view / "content page" which is displayed"""
 
     def __init__(self, path: str, builder: Callable, title: Optional[str] = None, **kwargs):
         self.path = path

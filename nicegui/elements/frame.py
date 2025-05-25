@@ -9,7 +9,7 @@ if TYPE_CHECKING:
 
 
 class Frame(Element, component='frame.js'):
-    """A Frame is a UI slot which contains sub-outlets/views. It provides the container where page content
+    """A Frame is a UI slot which contains sub-content. It provides the container where page content
     is rendered and updated."""
 
     def __init__(self,

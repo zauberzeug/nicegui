@@ -62,7 +62,7 @@ def test_passing_objects_via_yield(screen: Screen):
     screen.should_contain('changed title')
 
 
-def test_async_outlet(screen: Screen):
+def test_async_content(screen: Screen):
     @ui.content('/')
     async def layout():
         ui.label('main layout')
@@ -127,7 +127,7 @@ def test_preserving_query_parameters(screen: Screen):
     assert 'param2=value2' in screen.selenium.current_url
 
 
-def test_outlet_with_async_sub_outlet(screen: Screen):
+def test_content_with_async_sub_content(screen: Screen):
     @ui.content('/')
     def layout():
         ui.label('main')
@@ -145,7 +145,7 @@ def test_outlet_with_async_sub_outlet(screen: Screen):
 
 
 def test_path_conflict(screen: Screen):
-    """Test that a page and an outlet can share a root path"""
+    """Test that a page and an content can share a root path"""
     @ui.page('/mytestpage')
     def page():
         ui.label('Test Page')
@@ -167,11 +167,11 @@ def test_path_conflict(screen: Screen):
 
 
 def test_excluded_paths(screen: Screen):
-    """Test that paths defined elsewhere are automatically excluded from the outlet"""
+    """Test that paths defined elsewhere are automatically excluded from the content"""
     @ui.page('/excluded')
     def excluded_page():
         ui.label('Excluded Page')
-        ui.label('No outlet content')  # Add this to make it clearer this is the page content
+        ui.label('No content')  # Add this to make it clearer this is the page content
 
     @ui.content('/')
     def layout():
@@ -191,23 +191,23 @@ def test_excluded_paths(screen: Screen):
     # Test navigation to excluded path
     screen.open('/excluded')
     screen.should_contain('Excluded Page')
-    screen.should_not_contain('main layout')  # Verify outlet content is not present
+    screen.should_not_contain('main layout')
 
     # Test navigation to allowed path
     screen.open('/allowed')
     screen.wait(1.0)  # wait for navigation
     screen.should_contain('Allowed Page')
-    screen.should_contain('main layout')  # Verify outlet content is present
+    screen.should_contain('main layout')
 
     # Test navigation to excluded path via click
     screen.click('Go to excluded')
     screen.wait(1.0)  # wait for navigation
     screen.should_contain('Excluded Page')
-    screen.should_not_contain('main layout')  # Verify outlet content is not present
+    screen.should_not_contain('main layout')
 
 
-def test_sub_outlet_layout_calls(screen: Screen):
-    """Test that the main layout builder is not called when switching pages in a sub outlet"""
+def test_sub_content_layout_calls(screen: Screen):
+    """Test that the main layout builder is not called when switching pages in a sub content"""
     main_layout_calls = 0
     sub_layout_calls = 0
 
@@ -267,8 +267,8 @@ def test_sub_outlet_layout_calls(screen: Screen):
 
 
 @pytest.mark.parametrize('navigation_strategy', ['backend', 'frontend'])
-def test_navigating_in_outlet_hierarchy(screen: Screen, navigation_strategy: str):
-    """Test that navigation works correctly when an outlet path appears to be contained within another."""
+def test_navigating_in_content_hierarchy(screen: Screen, navigation_strategy: str):
+    """Test that navigation works correctly when an content path appears to be contained within another."""
     @ui.content('/mail')
     def mail_layout():
         ui.label('Mail Layout')
@@ -280,7 +280,7 @@ def test_navigating_in_outlet_hierarchy(screen: Screen, navigation_strategy: str
         ui.button('Navigate to root via backend', on_click=lambda: ui.navigate.to('/'))
         ui.link('Navigate to root via frontend', '/')
 
-    # Then define the root outlet and its view - order matters for reproducing the bug
+    # Then define the root content and its view - order matters for reproducing the bug
     @ui.content('/')
     def root_layout():
         ui.label('Root Layout')
@@ -312,15 +312,15 @@ def test_navigating_in_outlet_hierarchy(screen: Screen, navigation_strategy: str
     assert '/mail/index' in screen.selenium.current_url
 
 
-def test_nested_outlets_with_yield(screen: Screen):
-    # First level outlet
+def test_nested_contents_with_yield(screen: Screen):
+    # First level content
     @ui.content('/')
     def root_layout():
         counter = ui.label('0')
         ui.button('Increment', on_click=lambda: counter.set_text(str(int(counter.text) + 1)))
         yield {'counter': counter}
 
-    # Second level outlet
+    # Second level content
     @root_layout.content('/section/{section_id}')
     def section_layout(counter: ui.label, section_id: str):
         ui.label(f'Section {section_id}')
@@ -328,7 +328,7 @@ def test_nested_outlets_with_yield(screen: Screen):
         ui.button('Add to root', on_click=lambda: counter.set_text(str(int(counter.text) + int(section_counter.text))))
         yield {'section_counter': section_counter}
 
-    # Third level outlet
+    # Third level content
     @section_layout.content('/subsection/{subsection_id}')
     def subsection_layout(section_counter: ui.label, subsection_id: str):
         ui.label(f'Subsection {subsection_id}')
@@ -430,7 +430,7 @@ def test_same_page_navigation(screen: Screen):
     assert build_count == 3  # Should have rebuilt for view switch
 
 
-def test_outlet_without_yield(screen: Screen):
+def test_content_without_yield(screen: Screen):
     @ui.content('/')
     def main():
         ui.label('main content without yield')
@@ -439,7 +439,7 @@ def test_outlet_without_yield(screen: Screen):
     screen.should_contain('main content without yield')
 
 
-def test_async_outlet_without_yield(screen: Screen):
+def test_async_content_without_yield(screen: Screen):
     @ui.content('/')
     async def main():
         await asyncio.sleep(0.2)
