@@ -98,7 +98,7 @@ Path('website/sponsors.json').write_text(json.dumps({
     'top': [s['login'] for s in sponsors if s['tier_amount'] >= 100 and not s['tier_is_one_time']],
     'total': len(sponsors),
     'contributors': len(contributors),
-}, indent=2) + '\n')
+}, indent=2) + '\n', encoding='utf-8')
 
 sponsor_html = '<p align="center">\n'
 for sponsor in sponsors:
@@ -106,13 +106,13 @@ for sponsor in sponsors:
         sponsor_html += f'  <a href="{sponsor["url"]}"><img src="{sponsor["url"]}.png" width="50px" alt="{sponsor["name"]}" /></a>\n'
 sponsor_html += '</p>'
 readme_path = Path('README.md')
-readme_content = readme_path.read_text()
+readme_content = readme_path.read_text(encoding='utf-8')
 updated_content = re.sub(
     r'<!-- SPONSORS -->.*?<!-- SPONSORS -->',
     f'<!-- SPONSORS -->\n{sponsor_html}\n<!-- SPONSORS -->',
     readme_content,
     flags=re.DOTALL,
 )
-readme_path.write_text(updated_content)
+readme_path.write_text(updated_content, encoding='utf-8')
 
 print('README.md and sponsors.json updated successfully.')

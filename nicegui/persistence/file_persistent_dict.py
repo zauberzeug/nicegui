@@ -28,6 +28,16 @@ class FilePersistentDict(PersistentDict):
         except Exception:
             log.warning(f'Could not load storage file {self.filepath}')
 
+    def initialize_sync(self) -> None:
+        try:
+            if self.filepath.exists():
+                data = json.loads(self.filepath.read_text(encoding=self.encoding))
+            else:
+                data = {}
+            self.update(data)
+        except Exception:
+            log.warning(f'Could not load storage file {self.filepath}')
+
     def backup(self) -> None:
         """Back up the data to the given file path."""
         if not self.filepath.exists():
@@ -35,13 +45,15 @@ class FilePersistentDict(PersistentDict):
                 return
             self.filepath.parent.mkdir(exist_ok=True)
 
-        async def backup() -> None:
+        @background_tasks.await_on_shutdown
+        async def async_backup() -> None:
             async with aiofiles.open(self.filepath, 'w', encoding=self.encoding) as f:
                 await f.write(json.dumps(self, indent=self.indent))
-        if core.loop:
-            background_tasks.create_lazy(backup(), name=self.filepath.stem)
+
+        if core.loop and core.loop.is_running():
+            background_tasks.create_lazy(async_backup(), name=self.filepath.stem)
         else:
-            core.app.on_startup(backup())
+            self.filepath.write_text(json.dumps(self, indent=self.indent), encoding=self.encoding)
 
     def clear(self) -> None:
         super().clear()

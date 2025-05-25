@@ -24,6 +24,7 @@ from .javascript_request import JavaScriptRequest
 from .logging import log
 from .observables import ObservableDict
 from .outbox import Outbox
+from .translations import translations
 from .version import __version__
 
 if TYPE_CHECKING:
@@ -37,25 +38,25 @@ templates = Jinja2Templates(Path(__file__).parent / 'templates')
 
 class Client:
     page_routes: ClassVar[Dict[Callable[..., Any], str]] = {}
-    """Maps page builders to their routes."""
+    '''Maps page builders to their routes.'''
 
     page_configs: ClassVar[Dict[Callable[..., Any], page]] = {}
-    """Maps page builders to their page configuration."""
+    '''Maps page builders to their page configuration.'''
 
     top_level_outlets: ClassVar[Dict[str, Outlet]] = {}
-    """Maps paths to the associated single page routers."""
+    '''Maps paths to the associated single page routers.'''
 
     instances: ClassVar[Dict[str, Client]] = {}
-    """Maps client IDs to clients."""
+    '''Maps client IDs to clients.'''
 
     auto_index_client: Client
-    """The client that is used to render the auto-index page."""
+    '''The client that is used to render the auto-index page.'''
 
     shared_head_html = ''
-    """HTML to be inserted in the <head> of every page template."""
+    '''HTML to be inserted in the <head> of every page template.'''
 
     shared_body_html = ''
-    """HTML to be inserted in the <body> of every page template."""
+    '''HTML to be inserted in the <body> of every page template.'''
 
     def __init__(self, page: page, *, request: Optional[Request]) -> None:
         self.request: Optional[Request] = request
@@ -65,6 +66,7 @@ class Client:
 
         self.elements: Dict[int, Element] = {}
         self.next_element_id: int = 0
+        self._waiting_for_connection: asyncio.Event = asyncio.Event()
         self.is_waiting_for_connection: bool = False
         self.is_waiting_for_disconnect: bool = False
         self.environ: Optional[Dict[str, Any]] = None
@@ -146,7 +148,8 @@ class Client:
             'client_id': self.id,
             'next_message_id': self.outbox.next_message_id,
         }
-        vue_html, vue_styles, vue_scripts, imports, js_imports = generate_resources(prefix, self.elements.values())
+        vue_html, vue_styles, vue_scripts, imports, js_imports, js_imports_urls = \
+            generate_resources(prefix, self.elements.values())
         return templates.TemplateResponse(
             request=request,
             name='index.html',
@@ -163,12 +166,14 @@ class Client:
                 'vue_scripts': '\n'.join(vue_scripts),
                 'imports': json.dumps(imports),
                 'js_imports': '\n'.join(js_imports),
+                'js_imports_urls': js_imports_urls,
                 'quasar_config': json.dumps(core.app.config.quasar_config),
                 'title': self.resolve_title(),
                 'viewport': self.page.resolve_viewport(),
                 'favicon_url': get_favicon_url(self.page, prefix),
                 'dark': str(self.page.resolve_dark()),
                 'language': self.page.resolve_language(),
+                'translations': translations.get(self.page.resolve_language(), translations['en-US']),
                 'prefix': prefix,
                 'tailwind': core.app.config.tailwind,
                 'prod_js': core.app.config.prod_js,
@@ -187,6 +192,7 @@ class Client:
     async def connected(self, timeout: float = 3.0, check_interval: float = 0.1) -> None:
         """Block execution until the client is connected."""
         self.is_waiting_for_connection = True
+        self._waiting_for_connection.set()
         deadline = time.time() + timeout
         while not self.has_socket_connection:
             if time.time() > deadline:
@@ -292,7 +298,8 @@ class Client:
                 self._delete_tasks.pop(document_id)
                 if not self.shared:
                     self.delete()
-        self._delete_tasks[document_id] = background_tasks.create(delete_content())
+        self._delete_tasks[document_id] = \
+            background_tasks.create(delete_content(), name=f'delete content {document_id}')
 
     def _cancel_delete_task(self, document_id: str) -> None:
         if document_id in self._delete_tasks:
@@ -314,20 +321,21 @@ class Client:
 
     def safe_invoke(self, func: Union[Callable[..., Any], Awaitable]) -> None:
         """Invoke the potentially async function in the client context and catch any exceptions."""
+        func_name = func.__name__ if hasattr(func, '__name__') else str(func)
         try:
             if isinstance(func, Awaitable):
                 async def func_with_client():
                     with self:
                         await func
-                background_tasks.create(func_with_client())
+                background_tasks.create(func_with_client(), name=f'func with client {self.id} {func_name}')
             else:
                 with self:
                     result = func(self) if len(inspect.signature(func).parameters) == 1 else func()
-                if helpers.is_coroutine_function(func):
+                if helpers.is_coroutine_function(func) and not isinstance(result, asyncio.Task):
                     async def result_with_client():
                         with self:
                             await result
-                    background_tasks.create(result_with_client())
+                    background_tasks.create(result_with_client(), name=f'result with client {self.id} {func_name}')
         except Exception as e:
             core.app.handle_exception(e)
 
@@ -389,4 +397,7 @@ class Client:
             except Exception:
                 # NOTE: make sure the loop doesn't crash
                 log.exception('Error while pruning clients')
-            await asyncio.sleep(10)
+            try:
+                await asyncio.sleep(10)
+            except asyncio.CancelledError:
+                break

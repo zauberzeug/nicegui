@@ -32,7 +32,7 @@ RUN python -m pip install \
 
 WORKDIR /app
 
-COPY main.py README.md prometheus.py ./
+COPY main.py README.md ./
 COPY examples ./examples
 COPY website ./website
 RUN mkdir /resources

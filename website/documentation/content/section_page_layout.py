@@ -12,6 +12,7 @@ from . import (
     grid_documentation,
     list_documentation,
     menu_documentation,
+    slide_item_documentation,
     notification_documentation,
     notify_documentation,
     pagination_documentation,
@@ -56,6 +57,7 @@ doc.intro(column_documentation)
 doc.intro(row_documentation)
 doc.intro(grid_documentation)
 doc.intro(list_documentation)
+doc.intro(slide_item_documentation)
 doc.intro(fullscreen_documentation)
 
 

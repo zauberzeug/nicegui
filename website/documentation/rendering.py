@@ -1,10 +1,14 @@
+from typing import List
+
 from nicegui import ui
 
 from ..header import add_head_html, add_header
 from ..style import section_heading, subheading
 from .content import DocumentationPage
+from .custom_restructured_text import CustomRestructuredText as custom_restructured_text
 from .demo import demo
 from .reference import generate_class_doc
+from .tree import nodes
 
 
 def render_page(documentation: DocumentationPage, *, with_menu: bool = True) -> None:
@@ -15,11 +19,16 @@ def render_page(documentation: DocumentationPage, *, with_menu: bool = True) -> 
         with ui.left_drawer() \
                 .classes('column no-wrap gap-1 bg-[#eee] dark:bg-[#1b1b1b] mt-[-20px] px-8 py-20') \
                 .style('height: calc(100% + 20px) !important') as menu:
-            if documentation.back_link:
-                ui.markdown(f'[← back]({documentation.back_link or "."})').classes('bold-links')
-            else:
-                ui.markdown('[← Overview](/documentation)').classes('bold-links')
-            ui.markdown(f'**{documentation.heading.replace("*", "")}**').classes('mt-4')
+            tree = ui.tree(nodes, label_key='title').classes('w-full').props('accordion no-connectors')
+            tree.add_slot('default-header', '''
+                <a :href="'/documentation/' + props.node.id" onclick="event.stopPropagation()">{{ props.node.title }}</a>
+            ''')
+            tree.expand(_ancestor_nodes(documentation.name))
+            ui.run_javascript(f'''
+                Array.from(getHtmlElement({tree.id}).getElementsByTagName("a"))
+                    .find(el => el.innerText.trim() === "{(documentation.parts[0].title or '').replace('*', '')}")
+                    .scrollIntoView({{block: "center"}});
+            ''')
     else:
         menu = None
 
@@ -40,7 +49,7 @@ def render_page(documentation: DocumentationPage, *, with_menu: bool = True) -> 
                 subheading(part.title, link=part.link, major=part.reference is not None)
             if part.description:
                 if part.description_format == 'rst':
-                    element = ui.restructured_text(part.description.replace(':param ', ':'))
+                    element = custom_restructured_text(part.description.replace(':param ', ':'))
                 else:
                     element = ui.markdown(part.description)
                 element.classes('bold-links arrow-links')
@@ -63,3 +72,10 @@ def render_page(documentation: DocumentationPage, *, with_menu: bool = True) -> 
                     documentation.extra_column()
         else:
             render_content()
+    with ui.column().classes('w-full p-4 items-end'):
+        ui.link('Imprint & Privacy', '/imprint_privacy').classes('text-sm')
+
+
+def _ancestor_nodes(node_id: str) -> List[str]:
+    parent = next((node for node in nodes if any(child['id'] == node_id for child in node.get('children', []))), None)
+    return [node_id] + (_ancestor_nodes(parent['id']) if parent else [])

@@ -3,11 +3,15 @@ import functools
 import hashlib
 import os
 import socket
+import struct
 import threading
 import time
 import webbrowser
+from collections.abc import Awaitable
 from pathlib import Path
 from typing import Any, Optional, Set, Tuple, Union
+
+import wait_for2
 
 from .logging import log
 
@@ -49,9 +53,12 @@ def is_file(path: Optional[Union[str, Path]]) -> bool:
         return False
 
 
-def hash_file_path(path: Path) -> str:
-    """Hash the given path."""
-    return hashlib.sha256(path.as_posix().encode()).hexdigest()[:32]
+def hash_file_path(path: Path, *, max_time: Optional[float] = None) -> str:
+    """Hash the given path based on its string representation and optionally the last modification time of given files."""
+    hasher = hashlib.sha256(path.as_posix().encode())
+    if max_time is not None:
+        hasher.update(struct.pack('!d', max_time))
+    return hasher.hexdigest()[:32]
 
 
 def is_port_open(host: str, port: int) -> bool:
@@ -69,7 +76,7 @@ def is_port_open(host: str, port: int) -> bool:
         sock.close()
 
 
-def schedule_browser(host: str, port: int) -> Tuple[threading.Thread, threading.Event]:
+def schedule_browser(protocol: str, host: str, port: int) -> Tuple[threading.Thread, threading.Event]:
     """Wait non-blockingly for the port to be open, then start a webbrowser.
 
     This function launches a thread in order to be non-blocking.
@@ -85,15 +92,15 @@ def schedule_browser(host: str, port: int) -> Tuple[threading.Thread, threading.
     """
     cancel = threading.Event()
 
-    def in_thread(host: str, port: int) -> None:
+    def in_thread(protocol: str, host: str, port: int) -> None:
         while not is_port_open(host, port):
             if cancel.is_set():
                 return
             time.sleep(0.1)
-        webbrowser.open(f'http://{host}:{port}/')
+        webbrowser.open(f'{protocol}://{host}:{port}/')
 
     host = host if host != '0.0.0.0' else '127.0.0.1'
-    thread = threading.Thread(target=in_thread, args=(host, port), daemon=True)
+    thread = threading.Thread(target=in_thread, args=(protocol, host, port), daemon=True)
     thread.start()
     return thread, cancel
 
@@ -106,3 +113,12 @@ def kebab_to_camel_case(string: str) -> str:
 def event_type_to_camel_case(string: str) -> str:
     """Convert an event type string to camelCase."""
     return '.'.join(kebab_to_camel_case(part) if part != '-' else part for part in string.split('.'))
+
+
+async def wait_for(fut: Awaitable, timeout: Optional[float] = None) -> None:
+    """Wait for a future to complete.
+
+    This function is a wrapper around ``wait_for2.wait_for`` which is a drop-in replacement for ``asyncio.wait_for``.
+    It can be removed once we drop support for older versions than Python 3.13 which fixes ``asyncio.wait_for``.
+    """
+    return await wait_for2.wait_for(fut, timeout)

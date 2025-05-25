@@ -251,6 +251,7 @@ def map_of_nicegui():
             - [`ui.plotly`](/documentation/plotly)
             - [`ui.pyplot`](/documentation/pyplot)
             - [`ui.radio`](/documentation/radio)
+            - [`ui.rating`](/documentation/rating)
             - [`ui.range`](/documentation/range)
             - [`ui.restructured_text`](/documentation/restructured_text)
             - [`ui.row`](/documentation/row)
@@ -259,6 +260,7 @@ def map_of_nicegui():
             - [`ui.select`](/documentation/select)
             - [`ui.separator`](/documentation/separator)
             - [`ui.skeleton`](/documentation/skeleton)
+            - [`ui.slide_item`](/documentation/slide_item)
             - [`ui.slider`](/documentation/slider)
             - [`ui.space`](/documentation/space)
             - [`ui.spinner`](/documentation/spinner)
@@ -444,6 +446,7 @@ def map_of_nicegui():
 
         - `create()`: create a background task
         - `create_lazy()`: prevent two tasks with the same name from running at the same time
+        - `await_on_shutdown`: mark a coroutine function to be awaited during shutdown (by default all background tasks are cancelled)
 
         #### `run`
 

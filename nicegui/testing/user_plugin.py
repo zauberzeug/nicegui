@@ -5,6 +5,7 @@ import httpx
 import pytest
 
 from nicegui import Client, core, ui
+from nicegui.functions.download import download
 from nicegui.functions.navigate import Navigate
 from nicegui.functions.notify import notify
 
@@ -37,6 +38,7 @@ def prepare_simulated_auto_index_client(request):
 @pytest.fixture
 async def user(nicegui_reset_globals,  # noqa: F811, pylint: disable=unused-argument
                prepare_simulated_auto_index_client,  # pylint: disable=unused-argument
+               caplog: pytest.LogCaptureFixture,
                request: pytest.FixtureRequest,
                ) -> AsyncGenerator[User, None]:
     """Create a new user fixture."""
@@ -46,6 +48,11 @@ async def user(nicegui_reset_globals,  # noqa: F811, pylint: disable=unused-argu
             yield User(client)
     ui.navigate = Navigate()
     ui.notify = notify
+    ui.download = download
+
+    logs = [record for record in caplog.get_records('call') if record.levelname == 'ERROR']
+    if logs:
+        pytest.fail('There were unexpected ERROR logs.', pytrace=False)
 
 
 @pytest.fixture
@@ -59,3 +66,4 @@ async def create_user(nicegui_reset_globals,  # noqa: F811, pylint: disable=unus
         yield lambda: User(httpx.AsyncClient(transport=httpx.ASGITransport(core.app), base_url='http://test'))
     ui.navigate = Navigate()
     ui.notify = notify
+    ui.download = download

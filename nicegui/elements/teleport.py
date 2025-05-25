@@ -14,13 +14,6 @@ class Teleport(Element, component='teleport.js'):
         """
         super().__init__()
         if isinstance(to, Element):
-            to = f'#c{to.id}'
+            to = f'#{to.html_id}'
         self._props['to'] = to
-
-    def update(self) -> None:
-        """Force the internal content to be retransmitted to the specified location.
-
-        This method is usually called after the target container is rebuilt.
-        """
-        super().update()
-        self.run_method('update')
+        self._update_method = 'update'

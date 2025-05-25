@@ -37,6 +37,7 @@ class Plotly(Element, component='plotly.vue', dependencies=['lib/plotly/plotly.m
         self.figure = figure
         self.update()
         self._classes.append('js-plotly-plot')
+        self._update_method = 'update'
 
     def update_figure(self, figure: Union[Dict, go.Figure]):
         """Overrides figure instance of this Plotly chart and updates chart on client side."""
@@ -46,7 +47,6 @@ class Plotly(Element, component='plotly.vue', dependencies=['lib/plotly/plotly.m
     def update(self) -> None:
         self._props['options'] = self._get_figure_json()
         super().update()
-        self.run_method('update')
 
     def _get_figure_json(self) -> Dict:
         if isinstance(self.figure, go.Figure):
