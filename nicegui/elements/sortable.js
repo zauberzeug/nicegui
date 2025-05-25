@@ -1,31 +1,29 @@
 import { default as Sortable } from 'sortable';
 
-// Add RemoveOnAddPlugin
-function RemoveOnAddPlugin() {
-    function RemoveOnAdd() {
+// Add CancelClonePlugin
+function CancelClonePlugin() {
+    function CancelClone() {
         this.defaults = {
-            removeOnAdd: false  // Disabled by default
+            cancelClone: false  // Disabled by default
         };
     }
 
-    RemoveOnAdd.prototype = {
+    CancelClone.prototype = {
         drop({ rootEl, parentEl, dispatchSortableEvent, dragEl, cloneEl, newIndex, oldIndex }) {
-            // Only act if removeOnAdd is enabled
-            if (!this.options.removeOnAdd) return;
+            // Only act if cancelClone is enabled
+            if (!this.options.cancelClone) return;
 
             try {
-                // Store original index before reverting
-                const originalIndex = oldIndex;
-
                 // Only call revertOnSpill if an actual drag operation occurred
                 if (this.sortable.revertOnSpill && this.sortable.revertOnSpill.onSpill && rootEl != parentEl) {
+                    // Store original index before reverting
+                    const originalIndex = oldIndex;
+
                     this.sortable.revertOnSpill.onSpill(...arguments);
 
                     // After reverting, move the element back to its original position
                     if (dragEl && rootEl && originalIndex !== undefined) {
-                        // Get all children of rootEl
                         const children = Array.from(rootEl.children);
-                        // Find where the element is now (should be at the end)
                         const currentIndex = children.indexOf(dragEl);
 
                         // If it's not already at the right place, move it
@@ -56,8 +54,8 @@ function RemoveOnAddPlugin() {
                 }
 
                 // Emit a special event for true cloning with all necessary data
-                if (this.options.onRemoveOnAdd && dragEl) {
-                    this.options.onRemoveOnAdd({
+                if (this.options.onCancelClone && dragEl) {
+                    this.options.onCancelClone({
                         sourceItem: dragEl ? (dragEl.id || dragEl.dataset.id || null) : null,
                         newIndex: newIndex !== undefined ? newIndex : -1,
                         sourceList: rootEl ? (rootEl.id || rootEl.dataset.id || null) : null,
@@ -68,20 +66,20 @@ function RemoveOnAddPlugin() {
                 // Dispatch 'end' event
                 dispatchSortableEvent('end');
             } catch (error) {
-                console.error("Error in RemoveOnAdd plugin:", error);
+                console.error("Error in CancelClone plugin:", error);
             }
 
             return false; // Cancel the default drop
         }
     };
 
-    return Object.assign(RemoveOnAdd, {
-        pluginName: 'removeOnAdd'
+    return Object.assign(CancelClone, {
+        pluginName: 'cancelClone'
     });
 }
 
-// Mount the RemoveOnAddPlugin
-Sortable.mount(RemoveOnAddPlugin());
+// Mount the CancelClonePlugin
+Sortable.mount(CancelClonePlugin());
 
 export default {
     template: `
@@ -102,14 +100,13 @@ export default {
             const options = {
                 ...this.options,
                 // Add plugin defaults if not explicitly overridden
-                removeOnAdd: this.options.removeOnAdd !== undefined ? this.options.removeOnAdd : false,
+                cancelClone: this.options.cancelClone !== undefined ? this.options.cancelClone : false,
             };
 
             this.sortableInstance = Sortable.create(el, {
                 ...options,
                 dataIdAttr: 'id', // Explicitly tell SortableJS to use the HTML id attribute
-                // Add a handler for the removeOnAdd event
-                onRemoveOnAdd: (evt) => {
+                onCancelClone: (evt) => {
                     this.$emit('sort_remove_on_add', {
                         sourceItem: evt.sourceItem || null,
                         newIndex: evt.newIndex,
@@ -197,10 +194,6 @@ export default {
                         from: evt.from ? (evt.from.id || null) : null,
                         to: evt.to ? (evt.to.id || null) : null,
                     });
-                    //if (this.options["removeOnAdd"] == true) {
-                    //    console.log("yaa")
-                    //    evt.item.parentNode.removeChild(evt.item);
-                    //}
                 },
                 onSort: (evt) => {
                     // Get the complete current order of all elements to synchronize with Python

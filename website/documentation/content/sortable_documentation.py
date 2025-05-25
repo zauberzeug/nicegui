@@ -163,7 +163,7 @@ def true_cloning() -> None:
             ui.label('List 1').classes('text-h6')
             with ui.sortable({
                 'group': {'name': 'true-clone-example', 'pull': 'clone'},
-                'removeOnAdd': True
+                'cancelClone': True
             }, on_remove_on_add=handle_true_clone) as true_clone_list1:
                 for i in range(1, 7):
                     ClonableCard(f'List1 {i}')
@@ -172,7 +172,7 @@ def true_cloning() -> None:
             ui.label('List 2').classes('text-h6')
             with ui.sortable({
                 'group': {'name': 'true-clone-example', 'pull': 'clone'},
-                'removeOnAdd': True
+                'cancelClone': True
             }, on_remove_on_add=handle_true_clone) as true_clone_list2:
                 for i in range(1, 7):
                     ClonableCard(f'List2 {i}', 'bg-amber-500')

@@ -39,7 +39,7 @@ class Sortable(Element,
         on_spill: Optional[Handler[GenericEventArguments]] = None,
         on_select: Optional[Handler[GenericEventArguments]] = None,
         on_deselect: Optional[Handler[GenericEventArguments]] = None,
-        on_remove_on_add: Optional[Handler[GenericEventArguments]] = None,
+        on_cancel_clone: Optional[Handler[GenericEventArguments]] = None,
     ) -> None:
         """Initialize the sortable element.
 
@@ -60,7 +60,7 @@ class Sortable(Element,
             on_spill: Callback when an item is spilled outside a list
             on_select: Callback when an item is selected (MultiDrag)
             on_deselect: Callback when an item is deselected (MultiDrag)
-            on_remove_on_add: Callback when an item is removed from the list into another list
+            on_cancel_clone: Callback when an item is removed from the list into another list
         """
         super().__init__()
 
@@ -118,15 +118,15 @@ class Sortable(Element,
             self.on('sort_select', lambda e: handle_event(on_select, e))
         if on_deselect:
             self.on('sort_deselect', lambda e: handle_event(on_deselect, e))
-        if on_remove_on_add:
-            self.on('sort_remove_on_add', lambda e: handle_event(on_remove_on_add, e))
+        if on_cancel_clone:
+            self.on('sort_cancel_clone', lambda e: handle_event(on_cancel_clone, e))
 
     async def _handle_cross_element_add(self, e: GenericEventArguments) -> None:
         """Handle when an element being moved from another sortable element."""
         try:
 
             # If moved within its own list, ignore
-            if e.args['from'] == e.args['to'] or self.props.get('removeOnAdd', False):
+            if e.args['from'] == e.args['to'] or self.props.get('cancelClone', False):
                 await self._synchronize_order_js_to_py()
                 return
 
