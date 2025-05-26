@@ -91,12 +91,15 @@ class Client:
         self._temporary_socket_id: Optional[str] = None
 
     def fetch_string_from_browser_data_store(self, key: str) -> str:
+        """Placeholder string to instruct the browser to fetch a string from the browser data store."""
         return f'{self.browser_data_store_token}:{key}'
 
     def fetch_list_from_browser_data_store(self, key: str) -> List[str]:
+        """Placeholder list to instruct the browser to fetch a list from the browser data store."""
         return [self.browser_data_store_token, key]
 
     def fetch_dict_from_browser_data_store(self, key: str) -> Dict[str, str]:
+        """Placeholder dict to instruct the browser to fetch a dict from the browser data store."""
         return {self.browser_data_store_token: key}
 
     @property
