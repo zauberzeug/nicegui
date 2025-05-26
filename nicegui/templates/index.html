@@ -24,19 +24,19 @@
     <script src="{{ prefix | safe }}/_nicegui/{{version}}/static/es-module-shims.js"></script>
     <script src="{{ prefix | safe }}/_nicegui/{{version}}/static/socket.io.min.js"></script>
     {% if tailwind %}
-    <script src="{{ prefix | safe }}/_nicegui/{{version}}/static/tailwindcss.min.js"></script>
+    <script defer src="{{ prefix | safe }}/_nicegui/{{version}}/static/tailwindcss.min.js"></script>
     {% endif %}
     <!-- prevent Prettier from removing this line -->
     {% if prod_js %}
-    <script src="{{ prefix | safe }}/_nicegui/{{version}}/static/vue.global.prod.js"></script>
-    <script src="{{ prefix | safe }}/_nicegui/{{version}}/static/quasar.umd.prod.js"></script>
+    <script defer src="{{ prefix | safe }}/_nicegui/{{version}}/static/vue.global.prod.js"></script>
+    <script defer src="{{ prefix | safe }}/_nicegui/{{version}}/static/quasar.umd.prod.js"></script>
     {% else %}
-    <script src="{{ prefix | safe }}/_nicegui/{{version}}/static/vue.global.js"></script>
-    <script src="{{ prefix | safe }}/_nicegui/{{version}}/static/quasar.umd.js"></script>
+    <script defer src="{{ prefix | safe }}/_nicegui/{{version}}/static/vue.global.js"></script>
+    <script defer src="{{ prefix | safe }}/_nicegui/{{version}}/static/quasar.umd.js"></script>
     {% endif %}
-    <script src="{{ prefix | safe }}/_nicegui/{{version}}/static/nicegui.js"></script>
+    <script defer src="{{ prefix | safe }}/_nicegui/{{version}}/static/nicegui.js"></script>
 
-    <script src="{{ prefix | safe }}/_nicegui/{{version}}/static/lang/{{ language }}.umd.prod.js"></script>
+    <script defer src="{{ prefix | safe }}/_nicegui/{{version}}/static/lang/{{ language }}.umd.prod.js"></script>
     {{ body_html | safe }}
 
     <div id="app"></div>
