@@ -19,6 +19,7 @@ from .awaitable_response import AwaitableResponse
 from .dependencies import generate_resources
 from .element import Element
 from .favicon import get_favicon_url
+from .helpers import hash_data_store_entry
 from .javascript_request import JavaScriptRequest
 from .logging import log
 from .observables import ObservableDict
@@ -67,6 +68,7 @@ class Client:
         self._deleted = False
         self._socket_to_document_id: Dict[str, str] = {}
         self.tab_id: Optional[str] = None
+        self.browser_data_store_token = f'BDS-TOKEN-{uuid.uuid4().hex}'
 
         self.page = page
         self.outbox = Outbox(self)
@@ -87,6 +89,15 @@ class Client:
         self.disconnect_handlers: List[Union[Callable[..., Any], Awaitable]] = []
 
         self._temporary_socket_id: Optional[str] = None
+
+    def fetch_string_from_browser_data_store(self, key: str) -> str:
+        return f'{self.browser_data_store_token}:{key}'
+
+    def fetch_list_from_browser_data_store(self, key: str) -> List[str]:
+        return [self.browser_data_store_token, key]
+
+    def fetch_dict_from_browser_data_store(self, key: str) -> Dict[str, str]:
+        return {self.browser_data_store_token: key}
 
     @property
     def is_auto_index_client(self) -> bool:
@@ -128,6 +139,18 @@ class Client:
         """Build a FastAPI response for the client."""
         self.outbox.updates.clear()
         prefix = request.headers.get('X-Forwarded-Prefix', request.scope.get('root_path', ''))
+        client_declared_data_store_entries_string: str = request.cookies.get('nicegui_data_store', '{}')
+        client_declared_data_store_entries: Dict[str, str] = json.loads(client_declared_data_store_entries_string)
+        filtered_browser_data_store = {
+            key: value
+            for key, value in core.app.browser_data_store.items()
+            if hash_data_store_entry(value) != client_declared_data_store_entries.get(key, '')
+        }
+        # value = None, for keys which the client declare contain, but not exist in the server's browser data store anymore
+        for key in client_declared_data_store_entries:
+            if key not in core.app.browser_data_store:
+                filtered_browser_data_store[key] = None
+        filtered_browser_data_store = json.dumps(filtered_browser_data_store)
         elements = json.dumps({
             id: element._to_dict() for id, element in self.elements.items()  # pylint: disable=protected-access
         })
@@ -165,6 +188,12 @@ class Client:
                 'prefix': prefix,
                 'tailwind': core.app.config.tailwind,
                 'prod_js': core.app.config.prod_js,
+                'filtered_browser_data_store': filtered_browser_data_store.replace('&', '&amp;')
+                .replace('<', '&lt;')
+                .replace('>', '&gt;')
+                .replace('`', '&#96;')
+                .replace('$', '&#36;'),
+                'browser_data_store_token': self.browser_data_store_token,
                 'socket_io_js_query_params': socket_io_js_query_params,
                 'socket_io_js_extra_headers': core.app.config.socket_io_js_extra_headers,
                 'socket_io_js_transports': core.app.config.socket_io_js_transports,

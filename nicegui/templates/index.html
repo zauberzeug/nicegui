@@ -45,7 +45,9 @@
       <span>{{ translations.trying_to_reconnect }}</span>
     </div>
     <script type="module">
-      const app = createApp(parseElements(String.raw`{{ elements | safe }}`), {
+      updateBrowserDataStore(String.raw`{{ filtered_browser_data_store | safe }}`);
+
+      const app = createApp(parseElements(String.raw`{{ elements | safe }}`, "{{browser_data_store_token}}"), {
         version: "{{ version }}",
         prefix: "{{ prefix | safe }}",
         query: {{ socket_io_js_query_params | safe }},

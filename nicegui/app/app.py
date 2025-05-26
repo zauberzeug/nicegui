@@ -5,7 +5,7 @@ import signal
 import urllib
 from enum import Enum
 from pathlib import Path
-from typing import Any, Awaitable, Callable, Iterator, List, Optional, Union
+from typing import Any, Awaitable, Callable, Dict, Iterator, List, Optional, Union
 
 from fastapi import FastAPI, HTTPException, Request, Response
 from fastapi.responses import FileResponse
@@ -45,6 +45,7 @@ class App(FastAPI):
         self._connect_handlers: List[Union[Callable[..., Any], Awaitable]] = []
         self._disconnect_handlers: List[Union[Callable[..., Any], Awaitable]] = []
         self._exception_handlers: List[Callable[..., Any]] = [log.exception]
+        self.browser_data_store: Dict[str, str] = {}
 
     @property
     def is_starting(self) -> bool:
