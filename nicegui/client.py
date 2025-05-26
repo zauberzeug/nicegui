@@ -141,7 +141,7 @@ class Client:
         prefix = request.headers.get('X-Forwarded-Prefix', request.scope.get('root_path', ''))
         client_declared_data_store_entries_string: str = request.cookies.get('nicegui_data_store', '{}')
         client_declared_data_store_entries: Dict[str, str] = json.loads(client_declared_data_store_entries_string)
-        filtered_browser_data_store = {
+        filtered_browser_data_store: Dict[str, Optional[str]] = {
             key: value
             for key, value in core.app.browser_data_store.items()
             if hash_data_store_entry(value) != client_declared_data_store_entries.get(key, '')
