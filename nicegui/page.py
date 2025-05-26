@@ -112,6 +112,7 @@ class page:
         @wraps(func)
         async def decorated(*dec_args, **dec_kwargs) -> Response:
             request = dec_kwargs['request']
+            special_header_set_in_request = 'X-NiceGUI-Client-ID' in request.headers
             # NOTE cleaning up the keyword args so the signature is consistent with "func" again
             dec_kwargs = {k: v for k, v in dec_kwargs.items() if k in parameters_of_decorated_func}
             with Client(self, request=request) as client:
@@ -141,6 +142,8 @@ class page:
             if isinstance(result, Response):  # NOTE if setup returns a response, we don't need to render the page
                 return result
             binding._refresh_step()  # pylint: disable=protected-access
+            if special_header_set_in_request:
+                return client.build_response(request, send_json=True)
             return client.build_response(request)
 
         parameters = [p for p in inspect.signature(func).parameters.values() if p.name != 'client']
