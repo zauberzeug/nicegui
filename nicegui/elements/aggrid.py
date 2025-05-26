@@ -26,45 +26,47 @@ class AgGrid(Element,
     def __init__(self,
                  options: Dict, *,
                  html_columns: List[int] = [],  # noqa: B006
-                 theme: str = 'balham',
+                 theme: Optional[str] = 'balham',
                  auto_size_columns: bool = True,
                  ) -> None:
         """AG Grid
 
         An element to create a grid using `AG Grid <https://www.ag-grid.com/>`_.
 
-        The methods `run_grid_method` and `run_row_method` can be used to interact with the AG Grid instance on the client.
+        The methods ``run_grid_method`` and ``run_row_method`` can be used to interact with the AG Grid instance on the client.
 
         :param options: dictionary of AG Grid options
-        :param html_columns: list of columns that should be rendered as HTML (default: `[]`)
-        :param theme: AG Grid theme (default: 'balham')
-        :param auto_size_columns: whether to automatically resize columns to fit the grid width (default: `True`)
+        :param html_columns: list of columns that should be rendered as HTML (default: ``[]``)
+        :param theme: AG Grid theme (default: "balham")
+        :param auto_size_columns: whether to automatically resize columns to fit the grid width (default: ``True``)
         """
         super().__init__()
         self._props['options'] = options
         self._props['html_columns'] = html_columns[:]
         self._props['auto_size_columns'] = auto_size_columns
-        self._classes.append(f'ag-theme-{theme}')
+        if theme:
+            self._classes.append(f'ag-theme-{theme}')
         self._update_method = 'update_grid'
 
     @classmethod
     def from_pandas(cls,
                     df: 'pd.DataFrame', *,
                     html_columns: List[int] = [],  # noqa: B006
-                    theme: str = 'balham',
+                    theme: Optional[str] = 'balham',
                     auto_size_columns: bool = True,
                     options: Dict = {}) -> Self:  # noqa: B006
         """Create an AG Grid from a Pandas DataFrame.
 
         Note:
-        If the DataFrame contains non-serializable columns of type `datetime64[ns]`, `timedelta64[ns]`, `complex128` or `period[M]`,
+        If the DataFrame contains non-serializable columns of type ``datetime64[ns]``, ``timedelta64[ns]``, ``complex128`` or ``period[M]``,
         they will be converted to strings.
         To use a different conversion, convert the DataFrame manually before passing it to this method.
         See `issue 1698 <https://github.com/zauberzeug/nicegui/issues/1698>`_ for more information.
 
         :param df: Pandas DataFrame
-        :param theme: AG Grid theme (default: 'balham')
-        :param auto_size_columns: whether to automatically resize columns to fit the grid width (default: `True`)
+        :param html_columns: list of columns that should be rendered as HTML (default: ``[]``, *added in version 2.19.0*)
+        :param theme: AG Grid theme (default: "balham")
+        :param auto_size_columns: whether to automatically resize columns to fit the grid width (default: ``True``)
         :param options: dictionary of additional AG Grid options
         :return: AG Grid element
         """
@@ -96,7 +98,7 @@ class AgGrid(Element,
     def from_polars(cls,
                     df: 'pl.DataFrame', *,
                     html_columns: List[int] = [],  # noqa: B006
-                    theme: str = 'balham',
+                    theme: Optional[str] = 'balham',
                     auto_size_columns: bool = True,
                     options: Dict = {}) -> Self:  # noqa: B006
         """Create an AG Grid from a Polars DataFrame.
@@ -107,8 +109,9 @@ class AgGrid(Element,
         *Added in version 2.7.0*
 
         :param df: Polars DataFrame
-        :param theme: AG Grid theme (default: 'balham')
-        :param auto_size_columns: whether to automatically resize columns to fit the grid width (default: `True`)
+        :param html_columns: list of columns that should be rendered as HTML (default: ``[]``, *added in version 2.19.0*)
+        :param theme: AG Grid theme (default: "balham")
+        :param auto_size_columns: whether to automatically resize columns to fit the grid width (default: ``True``)
         :param options: dictionary of additional AG Grid options
         :return: AG Grid element
         """
@@ -124,6 +127,11 @@ class AgGrid(Element,
         """The options dictionary."""
         return self._props['options']
 
+    @options.setter
+    def options(self, value: Dict) -> None:
+        self._props['options'] = value
+        self.update()
+
     @property
     def html_columns(self) -> List[int]:
         """The list of columns that should be rendered as HTML."""
@@ -131,7 +139,6 @@ class AgGrid(Element,
 
     @html_columns.setter
     def html_columns(self, value: List[int]) -> None:
-        """Set the list of columns that should be rendered as HTML."""
         self._props['html_columns'] = value[:]
         self.update()
 
@@ -144,15 +151,12 @@ class AgGrid(Element,
         return None
 
     @theme.setter
-    def theme(self, value: str) -> None:
-        """Set the AG Grid theme."""
-        print(f'Changing theme to {value}')
+    def theme(self, value: Optional[str]) -> None:
         for class_name in self._classes:
             if class_name.startswith('ag-theme-'):
                 self._classes.remove(class_name)
-                break
-        self._classes.append(f'ag-theme-{value}')
-        print(f'Classes after theme change: {self._classes}')
+        if value:
+            self._classes.append(f'ag-theme-{value}')
         self.update()
 
     @property
@@ -162,7 +166,6 @@ class AgGrid(Element,
 
     @auto_size_columns.setter
     def auto_size_columns(self, value: bool) -> None:
-        """Set whether to automatically resize columns to fit the grid width."""
         self._props['auto_size_columns'] = value
         self.update()
 
