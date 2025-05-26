@@ -150,7 +150,7 @@ class Client:
         for key in client_declared_data_store_entries:
             if key not in core.app.browser_data_store:
                 filtered_browser_data_store[key] = None
-        filtered_browser_data_store = json.dumps(filtered_browser_data_store)
+        filtered_browser_data_store_string = json.dumps(filtered_browser_data_store)
         elements = json.dumps({
             id: element._to_dict() for id, element in self.elements.items()  # pylint: disable=protected-access
         })
@@ -188,7 +188,7 @@ class Client:
                 'prefix': prefix,
                 'tailwind': core.app.config.tailwind,
                 'prod_js': core.app.config.prod_js,
-                'filtered_browser_data_store': filtered_browser_data_store.replace('&', '&amp;')
+                'filtered_browser_data_store': filtered_browser_data_store_string.replace('&', '&amp;')
                 .replace('<', '&lt;')
                 .replace('>', '&gt;')
                 .replace('`', '&#96;')
