@@ -58,13 +58,17 @@ class Download:
         """
         is_relative = url.startswith('/') or url.startswith('./') or url.startswith('../')
         if not is_relative:
-            log.warning(f'ui.download.from_url: You have initiated a cross-origin download from {url}.')
-            log.warning('If cross-origin, browser ignores the instruction to start a download, and tries to view the file in a new tab if possible (such as images, PDFs, etc.). \n'
-                        'Incidentally, download may work for some file types (such as .zip, .db, etc.), but it is not guaranteed to work for all file types.')
+            log.warning(
+                f'You have initiated a cross-origin download from {url} using `ui.download.from_url`.\n'
+                'The browser ignores the download instruction and tries to view the file in a new tab if possible, '
+                'such as images, PDFs, etc.\n'
+                'Therefore, the download may only work for some file types such as .zip, .db, etc.',
+            )
             if filename is not None or media_type != '':
-                log.warning(
-                    'Moreover, browser ignores filename and media_type parameters, respecting the origin server\'s headers instead.')
-            log.warning('\nIt is best to change to a relative URL if you control the downloaded content. \nOr, if you insist, use `ui.navigate.to(url, new_tab=True)` instead. \n')
+                log.warning('Moreover, the browser ignores filename and media_type parameters, '
+                            "respecting the origin server's headers instead.")
+            log.warning('It is best to change to a relative URL if you control the downloaded content.\n'
+                        'Or, if you insist, use `ui.navigate.to(url, new_tab=True)` instead.')
         context.client.download(url, filename, media_type)
 
     def content(self, content: Union[bytes, str], filename: Optional[str] = None, media_type: str = '') -> None:
