@@ -21,6 +21,12 @@ registry: Dict[str, DocumentationPage] = {}
 redirects: Dict[str, str] = {}
 
 
+def auto_execute(func):
+    """Decorator to automatically execute the function when the module is imported."""
+    func()
+    return func
+
+
 def get_page(documentation: ModuleType) -> DocumentationPage:
     """Return the documentation page for the given documentation module."""
     target_name = _removesuffix(documentation.__name__.split('.')[-1], '_documentation')
