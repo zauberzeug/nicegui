@@ -1,5 +1,9 @@
 export default {
-  template: "<slot></slot>",
+  template: `
+    <div class="nicegui-column">
+      <slot></slot>
+    </div>
+  `,
   mounted() {
     const initial_path = window.location.pathname;
     window.addEventListener("popstate", (event) => {
