@@ -4,7 +4,7 @@ import inspect
 import re
 from copy import copy
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, ClassVar, Dict, Iterator, List, Optional, Sequence, Union, cast
+from typing import TYPE_CHECKING, Any, ClassVar, Dict, Iterator, List, Optional, Sequence, Tuple, Union, cast
 
 from typing_extensions import Self
 
@@ -200,7 +200,7 @@ class Element(Visibility):
         if self.cache_name is not None:
             core.app.browser_data_store[self.cache_name] = json.dumps(self._to_dict_internal()[0])
 
-    def _to_dict_internal(self) -> Dict[str, Any]:
+    def _to_dict_internal(self) -> Tuple[Dict[str, Any], Dict[str, Any]]:
         element_dict = {
             'tag': self.tag,
             **({'text': self._text} if self._text is not None else {}),
