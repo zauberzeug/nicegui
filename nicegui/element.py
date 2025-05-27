@@ -15,11 +15,14 @@ from .context import context
 from .dependencies import Component, Library, register_library, register_resource, register_vue_component
 from .elements.mixins.visibility import Visibility
 from .event_listener import EventListener
+from .helpers import hash_data_store_entry
 from .props import Props
 from .slot import Slot
 from .style import Style
 from .tailwind import Tailwind
 from .version import __version__
+
+DYNAMIC_KEYS = ['events', 'children']
 
 if TYPE_CHECKING:
     from .client import Client
@@ -78,6 +81,8 @@ class Element(Visibility):
         self.client.outbox.enqueue_update(self)
         if self.parent_slot:
             self.client.outbox.enqueue_update(self.parent_slot.parent)
+
+        self.cache_name: Optional[str] = None
 
     def __init_subclass__(cls, *,
                           component: Union[str, Path, None] = None,
@@ -190,8 +195,13 @@ class Element(Visibility):
             if slot != self.default_slot
         }
 
-    def _to_dict(self) -> Dict[str, Any]:
-        return {
+    def _populate_browser_data_store_if_needed(self) -> None:
+        """Populate the browser data store with the element's data if needed."""
+        if self.cache_name is not None:
+            core.app.browser_data_store[self.cache_name] = json.dumps(self._to_dict_internal()[0])
+
+    def _to_dict_internal(self) -> Dict[str, Any]:
+        element_dict = {
             'tag': self.tag,
             **({'text': self._text} if self._text is not None else {}),
             **{
@@ -219,6 +229,35 @@ class Element(Visibility):
                 if value
             },
         }
+
+        element_dict_static = {
+            key: value
+            for key, value in element_dict.items()
+            if key not in DYNAMIC_KEYS
+        }
+        element_dict_dynamic = {
+            key: value
+            for key, value in element_dict.items()
+            if key in DYNAMIC_KEYS
+        }
+
+        return element_dict_static, element_dict_dynamic
+
+    def _to_dict(self, *, client_declared_data_store_entries: Optional[Dict[str, str]] = None) -> Dict[str, Any]:
+        element_dict_static, element_dict_dynamic = self._to_dict_internal()
+        if client_declared_data_store_entries is None or self.cache_name is None or \
+                hash_data_store_entry(core.app.browser_data_store[self.cache_name]) != client_declared_data_store_entries.get(self.cache_name):
+            # return the normal un-filtered dict
+            return {
+                **element_dict_static,
+                **element_dict_dynamic,
+            }
+        else:
+            # cache hit, congrats!
+            return {
+                self.client.browser_data_store_token: self.cache_name,
+                **element_dict_dynamic,
+            }
 
     @property
     def classes(self) -> Classes[Self]:

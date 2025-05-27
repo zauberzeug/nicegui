@@ -23,6 +23,7 @@ function updateBrowserDataStore(str_in) {
     .replace(/&lt;/g, "<")
     .replace(/&amp;/g, "&")
   );
+  console.log("Updating browser data store with:", dict_in);
   // Maintain a list of all keys in __nicegui_data_store_keys__ in localStorage
   let allKeys = [];
   try {
@@ -112,6 +113,15 @@ function parseElements(raw_elements, token) {
     } else if (value !== null && typeof value === "object" && token in value) {
       const storedValue = JSON.parse(localStorage.getItem(value[token]));
       console.log(`Dictionary: Retrieving "${value[token]}" from localStorage, since found ${JSON.stringify(value)} in the elements as an object.`);
+      // Add original keys (except the token) on top of storedValue
+      if (storedValue && typeof storedValue === "object") {
+        for (const k in value) {
+          if (k !== token) {
+            console.log(`Adding key "${k}" with value "${value[k]}" to storedValue.`);
+            storedValue[k] = value[k];
+          }
+        }
+      }
       return storedValue;
     }
     return value;

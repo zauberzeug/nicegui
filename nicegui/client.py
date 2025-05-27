@@ -142,6 +142,8 @@ class Client:
         """Build a FastAPI response for the client."""
         self.outbox.updates.clear()
         prefix = request.headers.get('X-Forwarded-Prefix', request.scope.get('root_path', ''))
+        for element in self.elements.values():
+            element._populate_browser_data_store_if_needed()  # pylint: disable=protected-access
         client_declared_data_store_entries_string: str = request.cookies.get('nicegui_data_store', '{}')
         client_declared_data_store_entries: Dict[str, str] = json.loads(client_declared_data_store_entries_string)
         filtered_browser_data_store: Dict[str, Optional[str]] = {
@@ -155,7 +157,7 @@ class Client:
                 filtered_browser_data_store[key] = None
         filtered_browser_data_store_string = json.dumps(filtered_browser_data_store)
         elements = json.dumps({
-            id: element._to_dict() for id, element in self.elements.items()  # pylint: disable=protected-access
+            id: element._to_dict(client_declared_data_store_entries=client_declared_data_store_entries) for id, element in self.elements.items()  # pylint: disable=protected-access
         })
         socket_io_js_query_params = {
             **core.app.config.socket_io_js_query_params,
