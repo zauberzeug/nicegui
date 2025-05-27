@@ -21,10 +21,10 @@ registry: Dict[str, DocumentationPage] = {}
 redirects: Dict[str, str] = {}
 
 
-def auto_execute(func):
+def auto_execute(function: Callable) -> Callable:
     """Decorator to automatically execute the function when the module is imported."""
-    func()
-    return func
+    function()
+    return function
 
 
 def get_page(documentation: ModuleType) -> DocumentationPage:
