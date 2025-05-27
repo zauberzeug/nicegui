@@ -22,6 +22,11 @@ class SubPages(Element, component='sub_pages.js'):
         """Show the page for the given path."""
         if path in self._routes:
             self.clear()
+            ui.run_javascript(f'''
+                if (window.location.pathname !== "{path}") {{
+                    history.pushState({{page: "{path}"}}, "", "{path}");
+                }}
+            ''')
             with self:
                 result = self._routes[path]()
             if iscoroutine(result):

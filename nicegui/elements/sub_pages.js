@@ -2,11 +2,13 @@ export default {
   template: "<slot></slot>",
   mounted() {
     const initial_path = window.location.pathname;
-    //this.$emit("open", initial_path);
-    // Listen for browser back/forward navigation
     window.addEventListener("popstate", (event) => {
       console.log("popstate", event);
-      this.$emit("route_change", event.state?.page || window.location.pathname);
+      this.$emit("open", event.state?.page || window.location.pathname);
+    });
+    window.addEventListener("pushstate", (event) => {
+      console.log("pushstate", event);
+      this.$emit("open", event.state?.page || window.location.pathname);
     });
 
     document.addEventListener("click", (e) => {

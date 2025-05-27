@@ -1,8 +1,10 @@
 from nicegui import ui
 from nicegui.testing import Screen
 
+# pylint: disable=missing-function-docstring
 
-def test_switching_between_sub_pages_keeps_other_content(screen: Screen):
+
+def test_switching_between_sub_pages(screen: Screen):
     index_calls = 0
 
     @ui.page('/')
@@ -29,9 +31,19 @@ def test_switching_between_sub_pages_keeps_other_content(screen: Screen):
     screen.should_contain('some text before main content')
     screen.should_contain('goto main')
     screen.should_not_contain('goto other')
+    screen.selenium.back()
+    assert index_calls == 1
+    screen.should_contain('some text before main content')
+    screen.should_contain('goto other')
+    screen.should_not_contain('goto main')
+    screen.selenium.forward()
+    assert index_calls == 1
+    screen.should_contain('some text before main content')
+    screen.should_contain('goto main')
+    screen.should_not_contain('goto other')
 
 
-def test_opening_sub_page(screen: Screen):
+def test_accessing_sub_page_directly(screen: Screen):
     @ui.page('/two')
     @ui.page('/one')
     def index():
