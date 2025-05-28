@@ -22,7 +22,6 @@ from .logging import log
 from .page import page
 from .slot import Slot
 from .staticfiles import CacheControlledStaticFiles
-from .storage import Storage
 from .version import __version__
 
 
@@ -119,7 +118,7 @@ def _get_tailwind_jit_csstext(classes: frozenset) -> Optional[str]:
         log.warning(f'Tailwind JIT called {_tailwind_jit_call_count} times. This is not efficient.\n'
                     'Consider declaring the classes you need to use beforehand,\n'
                     'using an invisible element and .classes() method.')
-    jit_working_directory = Storage.path
+    jit_working_directory = Path.cwd() / '.tailwind_jit'
     tailwindcss_exe = jit_working_directory / 'tailwindcss.exe'
     if not tailwindcss_exe.exists():
         log.warning('Tailwind JIT compilation requires tailwindcss.exe in the NiceGUI storage directory.')
