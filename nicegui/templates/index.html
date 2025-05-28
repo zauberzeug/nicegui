@@ -11,6 +11,9 @@
     {% else %}
     <link href="{{ prefix | safe }}/_nicegui/{{version}}/static/quasar.css" rel="stylesheet" type="text/css" />
     {% endif %}
+    {% if tailwind_jit %}
+    <link href="{{ prefix | safe }}/_nicegui/{{version}}/tailwind_jit/tailwind.jit.css?{{tailwind_jit_cachebusting}}" rel="stylesheet" type="text/css" />
+    {% endif %}
     <!-- prevent Prettier from removing this line -->
     {{ head_html | safe }}
     <script type="importmap">

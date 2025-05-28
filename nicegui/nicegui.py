@@ -1,9 +1,11 @@
 import asyncio
+import functools
 import mimetypes
+import subprocess
 import urllib.parse
 from contextlib import asynccontextmanager
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
 import socketio
 from fastapi import HTTPException, Request
@@ -11,6 +13,7 @@ from fastapi.responses import FileResponse, Response
 
 from . import air, background_tasks, binding, core, favicon, helpers, json, run, welcome
 from .app import App
+from .classes import ALL_CLASSES_EVER_USED
 from .client import Client
 from .dependencies import js_components, libraries, resources
 from .error import error_content
@@ -19,6 +22,7 @@ from .logging import log
 from .page import page
 from .slot import Slot
 from .staticfiles import CacheControlledStaticFiles
+from .storage import Storage
 from .version import __version__
 
 
@@ -101,6 +105,62 @@ def _get_resource(key: str, path: str) -> FileResponse:
             media_type, _ = mimetypes.guess_type(filepath)
             return FileResponse(filepath, media_type=media_type, headers=headers)
     raise HTTPException(status_code=404, detail=f'resource "{key}" not found')
+
+
+_tailwind_jit_call_count = 0  # global variable to track calls
+
+
+@functools.lru_cache(maxsize=1)
+def _get_tailwind_jit_csstext(classes: frozenset) -> Optional[str]:
+    """Get the result of the Tailwind JIT compilation for the given classes."""
+    global _tailwind_jit_call_count  # noqa: PLW0603
+    _tailwind_jit_call_count += 1
+    if _tailwind_jit_call_count > 1:
+        log.warning(f'Tailwind JIT called {_tailwind_jit_call_count} times. This is not efficient.\n'
+                    'Consider declaring the classes you need to use beforehand,\n'
+                    'using an invisible element and .classes() method.')
+    jit_working_directory = Storage.path
+    tailwindcss_exe = jit_working_directory / 'tailwindcss.exe'
+    if not tailwindcss_exe.exists():
+        log.warning('Tailwind JIT compilation requires tailwindcss.exe in the NiceGUI storage directory.')
+        return None
+    tailwind_config_js = jit_working_directory / 'tailwind.config.js'
+    tailwind_config_js.write_text(
+        '''/** @type {import('tailwindcss').Config} */
+module.exports = {
+content: [".nicegui_jit.html"],
+theme: {
+    extend: {},
+},
+plugins: [],
+}''')
+    jit_html = jit_working_directory / '.nicegui_jit.html'
+    jit_html.write_text(f'<div class="{" ".join(sorted(classes))}"></div>')
+    # Run tailwind.exe to generate the CSS
+    try:
+        result = subprocess.run(
+            [str(tailwindcss_exe), '-o', '.nicegui_jit.css', '--minify'],
+            capture_output=True,
+            text=True,
+            check=True,
+            cwd=jit_working_directory
+        )
+        assert result.returncode == 0, f'Tailwind JIT compilation failed with return code {result.returncode}'
+        # Read the output.css file
+        jit_css = (jit_working_directory / '.nicegui_jit.css').read_text()
+        return jit_css
+    except (AssertionError, subprocess.CalledProcessError, FileNotFoundError) as e:
+        log.error(f'Tailwind JIT compilation failed: {getattr(e, "stderr", e)}')
+        return None
+
+
+@app.get(f'/_nicegui/{__version__}' + '/tailwind_jit/tailwind.jit.css')
+def _get_tailwind_jit_result() -> Response:
+    """Get the result of the Tailwind JIT compilation."""
+    jit_css = _get_tailwind_jit_csstext(frozenset(ALL_CLASSES_EVER_USED))
+    headers = {'Cache-Control': 'public, max-age=86400, immutable'}  # cache for 1 day, immutable
+    content = jit_css if jit_css is not None else '/* Tailwind JIT compilation failed or tailwindcss.exe not found */'
+    return Response(content=content, media_type='text/css', headers=headers)
 
 
 async def _startup() -> None:

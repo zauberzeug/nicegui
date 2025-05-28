@@ -16,6 +16,7 @@ from typing_extensions import Self
 
 from . import background_tasks, binding, core, helpers, json, storage
 from .awaitable_response import AwaitableResponse
+from .classes import ALL_CLASSES_EVER_USED
 from .dependencies import generate_resources
 from .element import Element
 from .favicon import get_favicon_url
@@ -163,7 +164,9 @@ class Client:
                 'language': self.page.resolve_language(),
                 'translations': translations.get(self.page.resolve_language(), translations['en-US']),
                 'prefix': prefix,
-                'tailwind': core.app.config.tailwind,
+                'tailwind': core.app.config.tailwind is True,
+                'tailwind_jit': core.app.config.tailwind == 'jit',
+                'tailwind_jit_cachebusting': hash(frozenset(ALL_CLASSES_EVER_USED)) if core.app.config.tailwind == 'jit' else None,
                 'prod_js': core.app.config.prod_js,
                 'socket_io_js_query_params': socket_io_js_query_params,
                 'socket_io_js_extra_headers': core.app.config.socket_io_js_extra_headers,

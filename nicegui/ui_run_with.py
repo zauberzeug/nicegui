@@ -24,7 +24,7 @@ def run_with(
     message_history_length: int = 1000,
     mount_path: str = '/',
     on_air: Optional[Union[str, Literal[True]]] = None,
-    tailwind: bool = True,
+    tailwind: Optional[Union[bool, Literal['jit']]] = True,
     prod_js: bool = True,
     storage_secret: Optional[str] = None,
     show_welcome_message: bool = True,
@@ -42,7 +42,7 @@ def run_with(
     :param message_history_length: maximum number of messages that will be stored and resent after a connection interruption (default: 1000, use 0 to disable, *added in version 2.9.0*)
     :param mount_path: mount NiceGUI at this path (default: `'/'`)
     :param on_air: tech preview: `allows temporary remote access <https://nicegui.io/documentation/section_configuration_deployment#nicegui_on_air>`_ if set to `True` (default: disabled)
-    :param tailwind: whether to use Tailwind CSS (experimental, default: `True`)
+    :param tailwind: True/False => whether to use Tailwind; 'jit' => Use Tailwind JIT (experimental, default: `True`)
     :param prod_js: whether to use the production version of Vue and Quasar dependencies (default: `True`)
     :param storage_secret: secret key for browser-based storage (default: `None`, a value is required to enable ui.storage.individual and ui.storage.browser)
     :param show_welcome_message: whether to show the welcome message (default: `True`)

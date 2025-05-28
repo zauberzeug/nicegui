@@ -5,6 +5,8 @@ if TYPE_CHECKING:
 
 T = TypeVar('T', bound='Element')
 
+ALL_CLASSES_EVER_USED = set()
+
 
 class Classes(list, Generic[T]):
 
@@ -30,6 +32,10 @@ class Classes(list, Generic[T]):
         """
         # DEPRECATED: replace Tailwind v3 link with v4 (throughout the whole codebase!) after upgrading in NiceGUI 3.0
         new_classes = self.update_list(self, add, remove, toggle, replace)
+        # Update ALL_CLASSES_EVER_USED with any classes mentioned in add, remove, toggle, replace
+        for arg in (add, remove, toggle, replace):
+            if arg:
+                ALL_CLASSES_EVER_USED.update(arg.split())
         if self != new_classes:
             self[:] = new_classes
             self.element.update()
