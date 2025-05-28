@@ -60,13 +60,13 @@ class ChoiceElement(ValueElement):
             self._update_options()
         super().update()
 
-    def set_options(self, options: Collection[Option], *, value: Any = ...) -> None:
+    def set_options(self, options: Collection[Option | str], *, value: Any = ...) -> None:
         """Set the options of this choice element.
 
         :param options: The new options.
         :param value: The new value. If not given, the current value is kept.
         """
-        self.options = options
+        self.options = [_to_option(v) for v in options]
         if value is not ...:
             self.value = value
         self.update()
