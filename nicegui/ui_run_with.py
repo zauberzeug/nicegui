@@ -24,7 +24,7 @@ def run_with(
     message_history_length: int = 1000,
     mount_path: str = '/',
     on_air: Optional[Union[str, Literal[True]]] = None,
-    tailwind: Optional[Union[bool, Literal['jit']]] = True,
+    tailwind: Union[bool, Literal['jit']] = True,
     prod_js: bool = True,
     storage_secret: Optional[str] = None,
     show_welcome_message: bool = True,
