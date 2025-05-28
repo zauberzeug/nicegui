@@ -16,7 +16,7 @@ class Select(Generic[T], LabelElement, ValidationElement, ChoiceElement, Disable
     def __init__(self,
                  options: Collection[Union[Option[T], str]], *,
                  label: Optional[str] = None,
-                 value: Optional[T] = None,
+                 value: Optional[T | Collection[T]] = None,
                  on_change: Optional[Handler[ValueChangeEventArguments]] = None,
                  with_input: bool = False,
                  new_value_mode: Optional[Literal['add', 'add-unique', 'toggle']] = None,
