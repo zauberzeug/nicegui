@@ -361,12 +361,14 @@ export default {
             } else {
               // Fallback: No open edges found, display full wireframe as per original EdgesGeometry
               // This also handles cases where only_show_open_edges is true but the mesh is perfectly closed.
-              let edges_geometry = new THREE.EdgesGeometry(geometry, threshold_angle === null ? undefined : threshold_angle);
+              const effective_threshold_angle_fallback = threshold_angle === null ? 0 : threshold_angle;
+              let edges_geometry = new THREE.EdgesGeometry(geometry, effective_threshold_angle_fallback);
               mesh = new THREE.LineSegments(edges_geometry, new THREE.LineBasicMaterial({ transparent: true }));
             }
           } else {
             // Standard wireframe (not only_show_open_edges)
-            let edges_geometry = new THREE.EdgesGeometry(geometry, threshold_angle === null ? undefined : threshold_angle);
+            const effective_threshold_angle = threshold_angle === null ? 0 : threshold_angle;
+            let edges_geometry = new THREE.EdgesGeometry(geometry, effective_threshold_angle);
             mesh = new THREE.LineSegments(edges_geometry, new THREE.LineBasicMaterial({ transparent: true }));
           }
         } else {
