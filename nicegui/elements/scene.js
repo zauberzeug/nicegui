@@ -210,6 +210,29 @@ export default {
     };
     this.click_events.forEach((event) => this.$el.addEventListener(event, click_handler));
 
+    const hover_handler = (mouseMove) => {
+      let x = (mouseMove.offsetX / this.renderer.domElement.width) * 2 - 1;
+      let y = -(mouseMove.offsetY / this.renderer.domElement.height) * 2 + 1;
+      raycaster.setFromCamera({ x: x, y: y }, this.camera);
+      this.$emit("hover3d", {
+        hits: raycaster
+          .intersectObjects(this.scene.children, true)
+          .filter((o) => o.object.object_id)
+          .map((o) => ({
+            object_id: o.object.object_id,
+            object_name: o.object.name,
+            point: o.point,
+          })),
+        hover_type: mouseMove.type,    //    button: mouseMove.button,
+        alt_key: mouseMove.altKey,
+        ctrl_key: mouseMove.ctrlKey,
+        meta_key: mouseMove.metaKey,
+        shift_key: mouseMove.shiftKey,
+      });
+    };
+    this.hover_events.forEach((event) => this.$el.addEventListener(event, hover_handler));
+
+
     this.texture_loader = new THREE.TextureLoader();
     this.stl_loader = new STLLoader();
     this.gltf_loader = new GLTFLoader();
@@ -290,6 +313,66 @@ export default {
       } else if (type == "axes_helper") {
         mesh = new THREE.AxesHelper(args[0]);
         mesh.material.transparent = true;
+      } else if (type == "mesh") {
+        const vertices = args[0];
+        const triangles = args[1];
+        const wireframe = args[2];
+        const threshold_angle = args[3];
+        const only_show_open_edges = args[4]; // New parameter
+
+        const geometry = new THREE.BufferGeometry();
+        const flat_vertices = new Float32Array(vertices.flat());
+        geometry.setAttribute("position", new THREE.BufferAttribute(flat_vertices, 3));
+        geometry.setIndex(triangles.flat());
+        geometry.computeVertexNormals();
+
+        if (wireframe) {
+          if (only_show_open_edges) {
+            const edgeCounts = new Map();
+
+            for (const triangle of triangles) { // triangles is args[1]
+              const triEdges = [
+                [Math.min(triangle[0], triangle[1]), Math.max(triangle[0], triangle[1])],
+                [Math.min(triangle[1], triangle[2]), Math.max(triangle[1], triangle[2])],
+                [Math.min(triangle[2], triangle[0]), Math.max(triangle[2], triangle[0])],
+              ];
+              for (const edge of triEdges) {
+                const edgeKey = `${edge[0]}-${edge[1]}`;
+                edgeCounts.set(edgeKey, (edgeCounts.get(edgeKey) || 0) + 1);
+              }
+            }
+
+            const open_edges_vertices_flat = [];
+            for (const [edgeKey, count] of edgeCounts.entries()) {
+              if (count === 1) { // If it's an open edge
+                const indices = edgeKey.split('-').map(Number);
+                const v1_coords = vertices[indices[0]]; // vertices is args[0]
+                const v2_coords = vertices[indices[1]];
+                if (v1_coords && v2_coords) {
+                    open_edges_vertices_flat.push(...v1_coords, ...v2_coords);
+                }
+              }
+            }
+
+            if (open_edges_vertices_flat.length > 0) {
+              const open_edges_geometry = new THREE.BufferGeometry();
+              open_edges_geometry.setAttribute('position', new THREE.Float32BufferAttribute(new Float32Array(open_edges_vertices_flat), 3));
+              mesh = new THREE.LineSegments(open_edges_geometry, new THREE.LineBasicMaterial({ transparent: true }));
+            } else {
+              // Fallback: No open edges found, display full wireframe as per original EdgesGeometry
+              // This also handles cases where only_show_open_edges is true but the mesh is perfectly closed.
+              let edges_geometry = new THREE.EdgesGeometry(geometry, threshold_angle === null ? undefined : threshold_angle);
+              mesh = new THREE.LineSegments(edges_geometry, new THREE.LineBasicMaterial({ transparent: true }));
+            }
+          } else {
+            // Standard wireframe (not only_show_open_edges)
+            let edges_geometry = new THREE.EdgesGeometry(geometry, threshold_angle === null ? undefined : threshold_angle);
+            mesh = new THREE.LineSegments(edges_geometry, new THREE.LineBasicMaterial({ transparent: true }));
+          }
+        } else {
+          // Solid mesh
+          mesh = new THREE.Mesh(geometry, new THREE.MeshPhongMaterial({ transparent: true, flatShading: threshold_angle !== null }));
+        }
       } else {
         let geometry;
         const wireframe = args.pop();
@@ -545,6 +628,7 @@ export default {
     camera_type: String,
     camera_params: Object,
     click_events: Array,
+    hover_events: Array,
     drag_constraints: String,
     background_color: String,
   },

@@ -12,6 +12,7 @@ from ..events import (
     Handler,
     SceneClickEventArguments,
     SceneClickHit,
+    SceneHoverEventArguments,
     SceneDragEventArguments,
     handle_event,
 )
@@ -70,6 +71,10 @@ class Scene(Element,
     from .scene_objects import Text as text
     from .scene_objects import Text3d as text3d
     from .scene_objects import Texture as texture
+    from .scene_objects import Mesh as mesh
+    from .scene_objects import FacetMesh as facetmesh
+    from .scene_objects import CQShape as cq_shape # CadQuery Shape
+    from .scene_objects import CQAssembly as cq_assembly  # CadQuery Assembly
 
     def __init__(self,
                  width: int = 400,
@@ -77,7 +82,9 @@ class Scene(Element,
                  grid: Union[bool, Tuple[int, int]] = True,
                  camera: Optional[SceneCamera] = None,
                  on_click: Optional[Handler[SceneClickEventArguments]] = None,
+                 on_hover: Optional[Handler[SceneHoverEventArguments]] = None,
                  click_events: List[str] = ['click', 'dblclick'],  # noqa: B006
+                 hover_events: List[str] = ['mousemove', 'mouseenter', 'mouseleave'],  # noqa: B006
                  on_drag_start: Optional[Handler[SceneDragEventArguments]] = None,
                  on_drag_end: Optional[Handler[SceneDragEventArguments]] = None,
                  drag_constraints: str = '',
@@ -95,7 +102,9 @@ class Scene(Element,
         :param grid: whether to display a grid (boolean or tuple of ``size`` and ``divisions`` for `Three.js' GridHelper <https://threejs.org/docs/#api/en/helpers/GridHelper>`_, default: 100x100)
         :param camera: camera definition, either instance of ``ui.scene.perspective_camera`` (default) or ``ui.scene.orthographic_camera``
         :param on_click: callback to execute when a 3D object is clicked (use ``click_events`` to specify which events to subscribe to)
+        :param on_hover: callback to execute when a 3D object is clicked (use ``click_events`` to specify which events to subscribe to)
         :param click_events: list of JavaScript click events to subscribe to (default: ``['click', 'dblclick']``)
+        :param hover_events: list of JavaScript click events to subscribe to (default: ``['mousemove', 'mouseenter', 'mouseleave']``)
         :param on_drag_start: callback to execute when a 3D object is dragged
         :param on_drag_end: callback to execute when a 3D object is dropped
         :param drag_constraints: comma-separated JavaScript expression for constraining positions of dragged objects (e.g. ``'x = 0, z = y / 2'``)
@@ -112,11 +121,14 @@ class Scene(Element,
         self.objects: Dict[str, Object3D] = {}
         self.stack: List[Union[Object3D, SceneObject]] = [SceneObject()]
         self._click_handlers = [on_click] if on_click else []
+        self._hover_handlers = [on_hover] if on_hover else []
         self._props['click_events'] = click_events[:]
+        self._props['hover_events'] = hover_events[:]
         self._drag_start_handlers = [on_drag_start] if on_drag_start else []
         self._drag_end_handlers = [on_drag_end] if on_drag_end else []
         self.on('init', self._handle_init)
         self.on('click3d', self._handle_click)
+        self.on('hover3d', self._handle_hover)
         self.on('dragstart', self._handle_drag)
         self.on('dragend', self._handle_drag)
         self._props['drag_constraints'] = drag_constraints
@@ -126,6 +138,11 @@ class Scene(Element,
         self._click_handlers.append(callback)
         return self
 
+    def on_hover(self, callback: Handler[SceneHoverEventArguments]) -> Self:
+        """Add a callback to be invoked when a 3D object is clicked."""
+        self._hover_handlers.append(callback)
+        return self
+    
     def on_drag_start(self, callback: Handler[SceneDragEventArguments]) -> Self:
         """Add a callback to be invoked when a 3D object is dragged."""
         self._drag_start_handlers.append(callback)
@@ -201,6 +218,27 @@ class Scene(Element,
             ) for hit in e.args['hits']],
         )
         for handler in self._click_handlers:
+            handle_event(handler, arguments)
+
+    def _handle_hover(self, e: GenericEventArguments) -> None:
+        arguments = SceneHoverEventArguments(
+            sender=self,
+            client=self.client,
+            hover_type=e.args['hover_type'],
+            #button=e.args['button'],
+            alt=e.args['alt_key'],
+            ctrl=e.args['ctrl_key'],
+            meta=e.args['meta_key'],
+            shift=e.args['shift_key'],
+            hits=[SceneClickHit(
+                object_id=hit['object_id'],
+                object_name=hit['object_name'],
+                x=hit['point']['x'],
+                y=hit['point']['y'],
+                z=hit['point']['z'],
+            ) for hit in e.args['hits']],
+        )
+        for handler in self._hover_handlers:
             handle_event(handler, arguments)
 
     def _handle_drag(self, e: GenericEventArguments) -> None:

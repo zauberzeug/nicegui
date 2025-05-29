@@ -87,6 +87,30 @@ export default {
     this.$el.onclick = click_handler;
     this.$el.ondblclick = click_handler;
 
+    const hover_handler = (mouseMove) => {
+      let x = (mouseMove.offsetX / this.renderer.domElement.width) * 2 - 1;
+      let y = -(mouseMove.offsetY / this.renderer.domElement.height) * 2 + 1;
+      raycaster.setFromCamera({ x: x, y: y }, this.camera);
+      this.$emit("hover3d", {
+        hits: raycaster
+          .intersectObjects(this.scene.children, true)
+          .filter((o) => o.object.object_id)
+          .map((o) => ({
+            object_id: o.object.object_id,
+            object_name: o.object.name,
+            point: o.point,
+          })),
+        hover_type: mouseMove.type,    //    button: mouseMove.button,
+        alt_key: mouseMove.altKey,
+        ctrl_key: mouseMove.ctrlKey,
+        meta_key: mouseMove.metaKey,
+        shift_key: mouseMove.shiftKey,
+      });
+    };
+    this.$el.onmousemove = hover_handler;
+    this.$el.onmouseenter = hover_handler;
+    this.$el.onmouseleave = hover_handler;
+
     const connectInterval = setInterval(() => {
       if (window.socket.id === undefined) return;
       this.$emit("init", { socket_id: window.socket.id });
