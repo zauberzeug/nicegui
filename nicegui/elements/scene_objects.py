@@ -15,7 +15,7 @@ class Group(Object3D):
         This element is based on Three.js' `Group <https://threejs.org/docs/index.html#api/en/objects/Group>`_ object.
         It is used to group objects together.
         """
-        super().__init__("group")
+        super().__init__('group')
 
 
 class Box(Object3D):
@@ -36,7 +36,7 @@ class Box(Object3D):
         :param depth: depth of the box (default: 1.0)
         :param wireframe: whether to display the box as a wireframe (default: `False`)
         """
-        super().__init__("box", width, height, depth, wireframe)
+        super().__init__('box', width, height, depth, wireframe)
 
 
 class Sphere(Object3D):
@@ -57,7 +57,7 @@ class Sphere(Object3D):
         :param height_segments: number of vertical segments (default: 16)
         :param wireframe: whether to display the sphere as a wireframe (default: `False`)
         """
-        super().__init__("sphere", radius, width_segments, height_segments, wireframe)
+        super().__init__('sphere', radius, width_segments, height_segments, wireframe)
 
 
 class Cylinder(Object3D):
@@ -82,7 +82,7 @@ class Cylinder(Object3D):
         :param height_segments: number of vertical segments (default: 1)
         :param wireframe: whether to display the cylinder as a wireframe (default: `False`)
         """
-        super().__init__("cylinder", top_radius, bottom_radius, height, radial_segments, height_segments, wireframe)
+        super().__init__('cylinder', top_radius, bottom_radius, height, radial_segments, height_segments, wireframe)
 
 
 class Ring(Object3D):
@@ -110,7 +110,7 @@ class Ring(Object3D):
         :param wireframe: whether to display the ring as a wireframe (default: `False`)
         """
         super().__init__(
-            "ring", inner_radius, outer_radius, theta_segments, phi_segments, theta_start, theta_length, wireframe
+            'ring', inner_radius, outer_radius, theta_segments, phi_segments, theta_start, theta_length, wireframe
         )
 
 
@@ -141,7 +141,7 @@ class QuadraticBezierTube(Object3D):
         :param wireframe: whether to display the tube as a wireframe (default: `False`)
         """
         super().__init__(
-            "quadratic_bezier_tube", start, mid, end, tubular_segments, radius, radial_segments, closed, wireframe
+            'quadratic_bezier_tube', start, mid, end, tubular_segments, radius, radial_segments, closed, wireframe
         )
 
 
@@ -161,7 +161,7 @@ class Extrusion(Object3D):
         :param height: height of the extrusion
         :param wireframe: whether to display the extrusion as a wireframe (default: `False`)
         """
-        super().__init__("extrusion", outline, height, wireframe)
+        super().__init__('extrusion', outline, height, wireframe)
 
 
 class Stl(Object3D):
@@ -177,7 +177,7 @@ class Stl(Object3D):
         :param url: URL of the STL file
         :param wireframe: whether to display the STL as a wireframe (default: `False`)
         """
-        super().__init__("stl", url, wireframe)
+        super().__init__('stl', url, wireframe)
 
 
 class Gltf(Object3D):
@@ -191,7 +191,7 @@ class Gltf(Object3D):
 
         :param url: URL of the glTF file
         """
-        super().__init__("gltf", url)
+        super().__init__('gltf', url)
 
 
 class Line(Object3D):
@@ -208,7 +208,7 @@ class Line(Object3D):
         :param start: start point of the line
         :param end: end point of the line
         """
-        super().__init__("line", start, end)
+        super().__init__('line', start, end)
 
 
 class Curve(Object3D):
@@ -230,14 +230,14 @@ class Curve(Object3D):
         :param end: end point of the curve
         :param num_points: number of points to use for the curve (default: 20)
         """
-        super().__init__("curve", start, control1, control2, end, num_points)
+        super().__init__('curve', start, control1, control2, end, num_points)
 
 
 class Text(Object3D):
     def __init__(
         self,
         text: str,
-        style: str = "",
+        style: str = '',
     ) -> None:
         """Text
 
@@ -247,14 +247,14 @@ class Text(Object3D):
         :param text: text to display
         :param style: CSS style (default: '')
         """
-        super().__init__("text", text, style)
+        super().__init__('text', text, style)
 
 
 class Text3d(Object3D):
     def __init__(
         self,
         text: str,
-        style: str = "",
+        style: str = '',
     ) -> None:
         """3D Text
 
@@ -264,7 +264,7 @@ class Text3d(Object3D):
         :param text: text to display
         :param style: CSS style (default: '')
         """
-        super().__init__("text3d", text, style)
+        super().__init__('text3d', text, style)
 
 
 class Texture(Object3D):
@@ -280,23 +280,23 @@ class Texture(Object3D):
         :param url: URL of the texture image
         :param coordinates: texture coordinates
         """
-        super().__init__("texture", url, coordinates)
+        super().__init__('texture', url, coordinates)
 
     def set_url(self, url: str) -> None:
         """Change the URL of the texture image."""
         self.args[0] = url
-        self.scene.run_method("set_texture_url", self.id, url)
+        self.scene.run_method('set_texture_url', self.id, url)
 
     def set_coordinates(self, coordinates: List[List[Optional[List[float]]]]) -> None:
         """Change the texture coordinates."""
         self.args[1] = coordinates
-        self.scene.run_method("set_texture_coordinates", self.id, coordinates)
+        self.scene.run_method('set_texture_coordinates', self.id, coordinates)
 
 
 class SpotLight(Object3D):
     def __init__(
         self,
-        color: str = "#ffffff",
+        color: str = '#ffffff',
         intensity: float = 1.0,
         distance: float = 0.0,
         angle: float = math.pi / 3,
@@ -315,7 +315,7 @@ class SpotLight(Object3D):
         :param penumbra: penumbra (default: 0.0)
         :param decay: decay (default: 2.0)
         """
-        super().__init__("spot_light", color, intensity, distance, angle, penumbra, decay)
+        super().__init__('spot_light', color, intensity, distance, angle, penumbra, decay)
 
 
 class PointCloud(Object3D):
@@ -333,7 +333,7 @@ class PointCloud(Object3D):
         :param colors: optional list of colors (one per point)
         :param point_size: size of the points (default: 1.0)
         """
-        super().__init__("point_cloud", points, colors, point_size)
+        super().__init__('point_cloud', points, colors, point_size)
         if colors is not None:
             self.material(color=None)
 
@@ -341,7 +341,7 @@ class PointCloud(Object3D):
         """Change the points and colors of the point cloud."""
         self.args[0] = points
         self.args[1] = colors
-        self.scene.run_method("set_points", self.id, points, colors)
+        self.scene.run_method('set_points', self.id, points, colors)
         if colors is not None:
             self.material(color=None)
 
@@ -361,7 +361,7 @@ class AxesHelper(Object3D):
 
         :param length: length of the the axes (default: 1.0)
         """
-        super().__init__("axes_helper", length)
+        super().__init__('axes_helper', length)
 
 
 class Mesh(Object3D):
@@ -384,7 +384,7 @@ class Mesh(Object3D):
         :param threshold_angle: angle in degrees to determine sharp edges for display (default: `None`, meaning all edges of a wireframe are shown, or smooth shading for solid mesh)
         :param only_show_open_edges: if `True`, only edges that are not shared by two triangles are shown (default: `False`). This parameter only has an effect if `wireframe` is `True`.
         """
-        super().__init__("mesh", vertices, triangles, wireframe, threshold_angle, only_show_open_edges)
+        super().__init__('mesh', vertices, triangles, wireframe, threshold_angle, only_show_open_edges)
         self.wireframe = wireframe
 
 
@@ -409,7 +409,7 @@ class FacetMesh(Object3D):
         :param wireframe: whether to display the mesh as a wireframe (default: `False`)
         :param show_edges: whether to show edges of the facets (default: `True`)
         """
-        super().__init__("group")  # Initialize FacetMesh as a group
+        super().__init__('group')  # Initialize FacetMesh as a group
         self.facet_meshes = []  # List to hold the individual meshes for each facet
         self.facet_edge_meshes = []  # List to hold the edge meshes for each facet
         if facets is None:
@@ -438,9 +438,9 @@ class FacetMesh(Object3D):
 
     def material(
         self,
-        color: Optional[str] = "#ffffff",
+        color: Optional[str] = '#ffffff',
         opacity: float = 1.0,
-        side: Literal["front", "back", "both"] = "front",
+        side: Literal['front', 'back', 'both'] = 'front',
     ) -> Self:
         # Call the parent's material method to set material properties on the FacetMesh group itself.
         super().material(color, opacity, side)
@@ -448,21 +448,21 @@ class FacetMesh(Object3D):
         # self.children is a property from Object3D that lists direct children.
         # self.color, self.opacity, self.side_ will be the values just set by super().material().
         for facet_mesh in self.facet_meshes:
-            if hasattr(facet_mesh, "material") and callable(facet_mesh.material):  # Ensure child can have material
+            if hasattr(facet_mesh, 'material') and callable(facet_mesh.material):  # Ensure child can have material
                 facet_mesh.material(color=self.color, opacity=self.opacity, side=self.side_)
         return self
 
-    def edge_material(self, color: Optional[str] = "#ffffff", opacity: float = 1.0) -> Self:
+    def edge_material(self, color: Optional[str] = '#ffffff', opacity: float = 1.0) -> Self:
         for facet_edge_mesh in self.facet_edge_meshes:
-            if hasattr(facet_edge_mesh, "material") and callable(facet_edge_mesh.material):
-                facet_edge_mesh.material(color=color, opacity=opacity, side="both")
+            if hasattr(facet_edge_mesh, 'material') and callable(facet_edge_mesh.material):
+                facet_edge_mesh.material(color=color, opacity=opacity, side='both')
         return self
 
 
 class CQShape(FacetMesh):
     def __init__(
         self,
-        cq_object: "cq.Shape",
+        cq_object: 'cq.Shape',
         tolerance: float = 0.1,
         angular_tolerance: float = 0.1,
         wireframe: bool = False,
@@ -502,7 +502,7 @@ class CQShape(FacetMesh):
             faces_to_process = [cq_object]
         else:
             # Or log a warning and create an empty FacetMesh
-            raise ValueError(f"Unsupported CadQuery object type: {type(cq_object)}. Expected Solid, Compound, or Face.")
+            raise ValueError(f'Unsupported CadQuery object type: {type(cq_object)}. Expected Solid, Compound, or Face.')
 
         for cq_face in faces_to_process:
             try:
@@ -533,14 +533,14 @@ class CQShape(FacetMesh):
 
                 vertex_offset += current_face_vertex_count
             except Exception as e:
-                logging.error(f"Error tessellating a CadQuery face: {e}")
+                logging.error(f'Error tessellating a CadQuery face: {e}')
                 continue
 
         if not global_vertices and not global_triangles and not facets_data:
             # If no geometry was generated (e.g. empty shape or all faces failed)
             # Initialize with empty data to avoid errors in super().__init__
             # This will result in an empty group being created.
-            logging.warning("No geometry generated from CadQuery object for CQShape.")
+            logging.warning('No geometry generated from CadQuery object for CQShape.')
             global_vertices, global_triangles, facets_data = [], [], []
 
         _show_edges = show_edges  # Use a temporary variable to hold the intended show_edges value
@@ -562,7 +562,7 @@ class CQShape(FacetMesh):
 class CQAssembly(Object3D):
     def __init__(
         self,
-        cq_assembly: "cq.Assembly",
+        cq_assembly: 'cq.Assembly',
         tolerance: float = 0.1,
         angular_tolerance: float = 0.1,
         wireframe: bool = False,
@@ -588,7 +588,7 @@ class CQAssembly(Object3D):
                 "The 'cadquery' library is not installed. Please install it to use CQAssembly (e.g., pip install cadquery)."
             ) from e
 
-        super().__init__("group")  # Initialize CQAssembly as a group
+        super().__init__('group')  # Initialize CQAssembly as a group
         self.cq_assembly = cq_assembly
         self.wireframe = wireframe  # Storing for potential future use or consistency, passed to children
         if parent is not None:
@@ -601,7 +601,7 @@ class CQAssembly(Object3D):
                 assembly_item.color.toTuple() if assembly_item.color else (0.8, 0.8, 0.8, 1.0)
             )  # Default color if None
             color_rgb = color_tuple[0:3]
-            color_hex = f"#{int(color_rgb[0] * 255):02X}{int(color_rgb[1] * 255):02X}{int(color_rgb[2] * 255):02X}"
+            color_hex = f'#{int(color_rgb[0] * 255):02X}{int(color_rgb[1] * 255):02X}{int(color_rgb[2] * 255):02X}'
             opacity = color_tuple[3]
 
             # Extract translation from CadQuery Location

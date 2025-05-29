@@ -167,6 +167,9 @@ exclude = [
     "website/documentation/content/*",
 ]
 
+[tool.ruff.format]
+quote-style = "single"
+
 [tool.pylint]
 disable = [
     "C0103", # Invalid name (e.g., variable/function/class naming conventions)

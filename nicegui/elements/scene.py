@@ -21,7 +21,7 @@ from .scene_object3d import Object3D
 
 @dataclass(**KWONLY_SLOTS)
 class SceneCamera:
-    type: Literal["perspective", "orthographic"]
+    type: Literal['perspective', 'orthographic']
     params: Dict[str, float]
     x: float = 0
     y: float = -3
@@ -36,24 +36,24 @@ class SceneCamera:
 
 @dataclass(**KWONLY_SLOTS)
 class SceneObject:
-    id: str = "scene"
+    id: str = 'scene'
 
 
 class Scene(
     Element,
-    component="scene.js",
+    component='scene.js',
     dependencies=[
-        "lib/three/three.module.js",
-        "lib/three/modules/BufferGeometryUtils.js",
-        "lib/three/modules/CSS2DRenderer.js",
-        "lib/three/modules/CSS3DRenderer.js",
-        "lib/three/modules/DragControls.js",
-        "lib/three/modules/GLTFLoader.js",
-        "lib/three/modules/OrbitControls.js",
-        "lib/three/modules/STLLoader.js",
-        "lib/tween/tween.umd.js",
+        'lib/three/three.module.js',
+        'lib/three/modules/BufferGeometryUtils.js',
+        'lib/three/modules/CSS2DRenderer.js',
+        'lib/three/modules/CSS3DRenderer.js',
+        'lib/three/modules/DragControls.js',
+        'lib/three/modules/GLTFLoader.js',
+        'lib/three/modules/OrbitControls.js',
+        'lib/three/modules/STLLoader.js',
+        'lib/tween/tween.umd.js',
     ],
-    default_classes="nicegui-scene",
+    default_classes='nicegui-scene',
 ):
     # pylint: disable=import-outside-toplevel
     from .scene_objects import AxesHelper as axes_helper
@@ -86,12 +86,12 @@ class Scene(
         camera: Optional[SceneCamera] = None,
         on_click: Optional[Handler[SceneClickEventArguments]] = None,
         on_hover: Optional[Handler[SceneHoverEventArguments]] = None,
-        click_events: List[str] = ["click", "dblclick"],  # noqa: B006
-        hover_events: List[str] = ["mousemove", "mouseenter", "mouseleave"],  # noqa: B006
+        click_events: List[str] = ['click', 'dblclick'],  # noqa: B006
+        hover_events: List[str] = ['mousemove', 'mouseenter', 'mouseleave'],  # noqa: B006
         on_drag_start: Optional[Handler[SceneDragEventArguments]] = None,
         on_drag_end: Optional[Handler[SceneDragEventArguments]] = None,
-        drag_constraints: str = "",
-        background_color: str = "#eee",
+        drag_constraints: str = '',
+        background_color: str = '#eee',
     ) -> None:
         """3D Scene
 
@@ -114,27 +114,27 @@ class Scene(
         :param background_color: background color of the scene (default: "#eee")
         """
         super().__init__()
-        self._props["width"] = width
-        self._props["height"] = height
-        self._props["grid"] = grid
-        self._props["background_color"] = background_color
+        self._props['width'] = width
+        self._props['height'] = height
+        self._props['grid'] = grid
+        self._props['background_color'] = background_color
         self.camera = camera or self.perspective_camera()
-        self._props["camera_type"] = self.camera.type
-        self._props["camera_params"] = self.camera.params
+        self._props['camera_type'] = self.camera.type
+        self._props['camera_params'] = self.camera.params
         self.objects: Dict[str, Object3D] = {}
         self.stack: List[Union[Object3D, SceneObject]] = [SceneObject()]
         self._click_handlers = [on_click] if on_click else []
         self._hover_handlers = [on_hover] if on_hover else []
-        self._props["click_events"] = click_events[:]
-        self._props["hover_events"] = hover_events[:]
+        self._props['click_events'] = click_events[:]
+        self._props['hover_events'] = hover_events[:]
         self._drag_start_handlers = [on_drag_start] if on_drag_start else []
         self._drag_end_handlers = [on_drag_end] if on_drag_end else []
-        self.on("init", self._handle_init)
-        self.on("click3d", self._handle_click)
-        self.on("hover3d", self._handle_hover)
-        self.on("dragstart", self._handle_drag)
-        self.on("dragend", self._handle_drag)
-        self._props["drag_constraints"] = drag_constraints
+        self.on('init', self._handle_init)
+        self.on('click3d', self._handle_click)
+        self.on('hover3d', self._handle_hover)
+        self.on('dragstart', self._handle_drag)
+        self.on('dragend', self._handle_drag)
+        self._props['drag_constraints'] = drag_constraints
 
     def on_click(self, callback: Handler[SceneClickEventArguments]) -> Self:
         """Add a callback to be invoked when a 3D object is clicked."""
@@ -164,7 +164,7 @@ class Scene(
         :param near: near clipping plane
         :param far: far clipping plane
         """
-        return SceneCamera(type="perspective", params={"fov": fov, "near": near, "far": far})
+        return SceneCamera(type='perspective', params={'fov': fov, 'near': near, 'far': far})
 
     @staticmethod
     def orthographic_camera(*, size: float = 10, near: float = 0.1, far: float = 1000) -> SceneCamera:
@@ -177,7 +177,7 @@ class Scene(
         :param near: near clipping plane
         :param far: far clipping plane
         """
-        return SceneCamera(type="orthographic", params={"size": size, "near": near, "far": far})
+        return SceneCamera(type='orthographic', params={'size': size, 'near': near, 'far': far})
 
     def __enter__(self) -> Self:
         Object3D.current_scene = self
@@ -191,14 +191,14 @@ class Scene(
         return attribute
 
     def _handle_init(self, e: GenericEventArguments) -> None:
-        with self.client.individual_target(e.args["socket_id"]):
+        with self.client.individual_target(e.args['socket_id']):
             self.move_camera(duration=0)
-            self.run_method("init_objects", [obj.data for obj in self.objects.values()])
+            self.run_method('init_objects', [obj.data for obj in self.objects.values()])
 
     async def initialized(self) -> None:
         """Wait until the scene is initialized."""
         event = asyncio.Event()
-        self.on("init", event.set, [])
+        self.on('init', event.set, [])
         await self.client.connected()
         await event.wait()
 
@@ -206,21 +206,21 @@ class Scene(
         arguments = SceneClickEventArguments(
             sender=self,
             client=self.client,
-            click_type=e.args["click_type"],
-            button=e.args["button"],
-            alt=e.args["alt_key"],
-            ctrl=e.args["ctrl_key"],
-            meta=e.args["meta_key"],
-            shift=e.args["shift_key"],
+            click_type=e.args['click_type'],
+            button=e.args['button'],
+            alt=e.args['alt_key'],
+            ctrl=e.args['ctrl_key'],
+            meta=e.args['meta_key'],
+            shift=e.args['shift_key'],
             hits=[
                 SceneClickHit(
-                    object_id=hit["object_id"],
-                    object_name=hit["object_name"],
-                    x=hit["point"]["x"],
-                    y=hit["point"]["y"],
-                    z=hit["point"]["z"],
+                    object_id=hit['object_id'],
+                    object_name=hit['object_name'],
+                    x=hit['point']['x'],
+                    y=hit['point']['y'],
+                    z=hit['point']['z'],
                 )
-                for hit in e.args["hits"]
+                for hit in e.args['hits']
             ],
         )
         for handler in self._click_handlers:
@@ -230,20 +230,20 @@ class Scene(
         arguments = SceneHoverEventArguments(
             sender=self,
             client=self.client,
-            hover_type=e.args["hover_type"],
-            alt=e.args["alt_key"],
-            ctrl=e.args["ctrl_key"],
-            meta=e.args["meta_key"],
-            shift=e.args["shift_key"],
+            hover_type=e.args['hover_type'],
+            alt=e.args['alt_key'],
+            ctrl=e.args['ctrl_key'],
+            meta=e.args['meta_key'],
+            shift=e.args['shift_key'],
             hits=[
                 SceneClickHit(
-                    object_id=hit["object_id"],
-                    object_name=hit["object_name"],
-                    x=hit["point"]["x"],
-                    y=hit["point"]["y"],
-                    z=hit["point"]["z"],
+                    object_id=hit['object_id'],
+                    object_name=hit['object_name'],
+                    x=hit['point']['x'],
+                    y=hit['point']['y'],
+                    z=hit['point']['z'],
                 )
-                for hit in e.args["hits"]
+                for hit in e.args['hits']
             ],
         )
         for handler in self._hover_handlers:
@@ -253,17 +253,17 @@ class Scene(
         arguments = SceneDragEventArguments(
             sender=self,
             client=self.client,
-            type=e.args["type"],
-            object_id=e.args["object_id"],
-            object_name=e.args["object_name"],
-            x=e.args["x"],
-            y=e.args["y"],
-            z=e.args["z"],
+            type=e.args['type'],
+            object_id=e.args['object_id'],
+            object_name=e.args['object_name'],
+            x=e.args['x'],
+            y=e.args['y'],
+            z=e.args['z'],
         )
-        if arguments.type == "dragend":
+        if arguments.type == 'dragend':
             self.objects[arguments.object_id].move(arguments.x, arguments.y, arguments.z)
 
-        for handler in self._drag_start_handlers if arguments.type == "dragstart" else self._drag_end_handlers:
+        for handler in self._drag_start_handlers if arguments.type == 'dragstart' else self._drag_end_handlers:
             handle_event(handler, arguments)
 
     def __len__(self) -> int:
@@ -305,7 +305,7 @@ class Scene(
         self.camera.up_y = self.camera.up_y if up_y is None else up_y
         self.camera.up_z = self.camera.up_z if up_z is None else up_z
         self.run_method(
-            "move_camera",
+            'move_camera',
             self.camera.x,
             self.camera.y,
             self.camera.z,
@@ -324,7 +324,7 @@ class Scene(
         In contrast to the `camera` property,
         the result of this method includes the current camera pose caused by the user navigating the scene in the browser.
         """
-        return await self.run_method("get_camera")
+        return await self.run_method('get_camera')
 
     def _handle_delete(self) -> None:
         binding.remove(list(self.objects.values()))

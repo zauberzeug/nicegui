@@ -109,7 +109,7 @@ class SceneHoverEventArguments(ClickEventArguments):
 
 @dataclass(**KWONLY_SLOTS)
 class SceneDragEventArguments(ClickEventArguments):
-    type: Literal["dragstart", "dragend"]
+    type: Literal['dragstart', 'dragend']
     object_id: str
     object_name: str
     x: float
@@ -206,182 +206,182 @@ class KeyboardKey:
     @property
     def is_cursorkey(self) -> bool:
         """Whether the key is a cursor key (arrow keys)."""
-        return self.code.startswith("Arrow")
+        return self.code.startswith('Arrow')
 
     @property
     def number(self) -> Optional[int]:
         """Integer value of a number key."""
-        return int(self.code[len("Digit") :]) if self.code.startswith("Digit") else None
+        return int(self.code[len('Digit') :]) if self.code.startswith('Digit') else None
 
     @property
     def backspace(self) -> bool:
         """Whether the key is the backspace key."""
-        return self.name == "Backspace"
+        return self.name == 'Backspace'
 
     @property
     def tab(self) -> bool:
         """Whether the key is the tab key."""
-        return self.name == "Tab"
+        return self.name == 'Tab'
 
     @property
     def enter(self) -> bool:
         """Whether the key is the enter key."""
-        return self.name == "Enter"
+        return self.name == 'Enter'
 
     @property
     def shift(self) -> bool:
         """Whether the key is the shift key."""
-        return self.name == "Shift"
+        return self.name == 'Shift'
 
     @property
     def control(self) -> bool:
         """Whether the key is the control key."""
-        return self.name == "Control"
+        return self.name == 'Control'
 
     @property
     def alt(self) -> bool:
         """Whether the key is the alt key."""
-        return self.name == "Alt"
+        return self.name == 'Alt'
 
     @property
     def pause(self) -> bool:
         """Whether the key is the pause key."""
-        return self.name == "Pause"
+        return self.name == 'Pause'
 
     @property
     def caps_lock(self) -> bool:
         """Whether the key is the caps lock key."""
-        return self.name == "CapsLock"
+        return self.name == 'CapsLock'
 
     @property
     def escape(self) -> bool:
         """Whether the key is the escape key."""
-        return self.name == "Escape"
+        return self.name == 'Escape'
 
     @property
     def space(self) -> bool:
         """Whether the key is the space key."""
-        return self.name == "Space"
+        return self.name == 'Space'
 
     @property
     def page_up(self) -> bool:
         """Whether the key is the page up key."""
-        return self.name == "PageUp"
+        return self.name == 'PageUp'
 
     @property
     def page_down(self) -> bool:
         """Whether the key is the page down key."""
-        return self.name == "PageDown"
+        return self.name == 'PageDown'
 
     @property
     def end(self) -> bool:
         """Whether the key is the end key."""
-        return self.name == "End"
+        return self.name == 'End'
 
     @property
     def home(self) -> bool:
         """Whether the key is the home key."""
-        return self.name == "Home"
+        return self.name == 'Home'
 
     @property
     def arrow_left(self) -> bool:
         """Whether the key is the arrow left key."""
-        return self.name == "ArrowLeft"
+        return self.name == 'ArrowLeft'
 
     @property
     def arrow_up(self) -> bool:
         """Whether the key is the arrow up key."""
-        return self.name == "ArrowUp"
+        return self.name == 'ArrowUp'
 
     @property
     def arrow_right(self) -> bool:
         """Whether the key is the arrow right key."""
-        return self.name == "ArrowRight"
+        return self.name == 'ArrowRight'
 
     @property
     def arrow_down(self) -> bool:
         """Whether the key is the arrow down key."""
-        return self.name == "ArrowDown"
+        return self.name == 'ArrowDown'
 
     @property
     def print_screen(self) -> bool:
         """Whether the key is the print screen key."""
-        return self.name == "PrintScreen"
+        return self.name == 'PrintScreen'
 
     @property
     def insert(self) -> bool:
         """Whether the key is the insert key."""
-        return self.name == "Insert"
+        return self.name == 'Insert'
 
     @property
     def delete(self) -> bool:
         """Whether the key is the delete key."""
-        return self.name == "Delete"
+        return self.name == 'Delete'
 
     @property
     def meta(self) -> bool:
         """Whether the key is the meta key."""
-        return self.name == "Meta"
+        return self.name == 'Meta'
 
     @property
     def f1(self) -> bool:
         """Whether the key is the F1 key."""
-        return self.name == "F1"
+        return self.name == 'F1'
 
     @property
     def f2(self) -> bool:
         """Whether the key is the F2 key."""
-        return self.name == "F2"
+        return self.name == 'F2'
 
     @property
     def f3(self) -> bool:
         """Whether the key is the F3 key."""
-        return self.name == "F3"
+        return self.name == 'F3'
 
     @property
     def f4(self) -> bool:
         """Whether the key is the F4 key."""
-        return self.name == "F4"
+        return self.name == 'F4'
 
     @property
     def f5(self) -> bool:
         """Whether the key is the F5 key."""
-        return self.name == "F5"
+        return self.name == 'F5'
 
     @property
     def f6(self) -> bool:
         """Whether the key is the F6 key."""
-        return self.name == "F6"
+        return self.name == 'F6'
 
     @property
     def f7(self) -> bool:
         """Whether the key is the F7 key."""
-        return self.name == "F7"
+        return self.name == 'F7'
 
     @property
     def f8(self) -> bool:
         """Whether the key is the F8 key."""
-        return self.name == "F8"
+        return self.name == 'F8'
 
     @property
     def f9(self) -> bool:
         """Whether the key is the F9 key."""
-        return self.name == "F9"
+        return self.name == 'F9'
 
     @property
     def f10(self) -> bool:
         """Whether the key is the F10 key."""
-        return self.name == "F10"
+        return self.name == 'F10'
 
     @property
     def f11(self) -> bool:
         """Whether the key is the F11 key."""
-        return self.name == "F11"
+        return self.name == 'F11'
 
     @property
     def f12(self) -> bool:
         """Whether the key is the F12 key."""
-        return self.name == "F12"
+        return self.name == 'F12'
 
 
 @dataclass(**KWONLY_SLOTS)
@@ -414,7 +414,7 @@ class JsonEditorChangeEventArguments(UiEventArguments):
     errors: Dict
 
 
-EventT = TypeVar("EventT", bound=EventArguments)
+EventT = TypeVar('EventT', bound=EventArguments)
 Handler = Union[Callable[[EventT], Any], Callable[[], Any]]
 
 

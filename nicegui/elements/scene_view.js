@@ -109,7 +109,6 @@ export default {
     };
     this.$el.onmousemove = hover_handler;
     this.$el.onmouseenter = hover_handler;
-    this.$el.onmouseleave = hover_handler;
 
     const connectInterval = setInterval(() => {
       if (window.socket.id === undefined) return;
