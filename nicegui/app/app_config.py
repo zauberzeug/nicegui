@@ -33,7 +33,7 @@ class AppConfig:
     binding_refresh_interval: float = field(init=False)
     reconnect_timeout: float = field(init=False)
     message_history_length: int = field(init=False)
-    tailwind: bool = field(init=False)
+    tailwind: Union[bool, Literal['jit']] = field(init=False)
     prod_js: bool = field(init=False)
     show_welcome_message: bool = field(init=False)
     _has_run_config: bool = False
@@ -49,7 +49,7 @@ class AppConfig:
                        binding_refresh_interval: float,
                        reconnect_timeout: float,
                        message_history_length: int,
-                       tailwind: bool,
+                       tailwind: Union[bool, Literal['jit']],
                        prod_js: bool,
                        show_welcome_message: bool,
                        ) -> None:
