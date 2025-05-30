@@ -97,6 +97,17 @@ class SceneClickEventArguments(ClickEventArguments):
 
 
 @dataclass(**KWONLY_SLOTS)
+class SceneHoverEventArguments(ClickEventArguments):
+    hover_type: str
+    # button: int
+    alt: bool
+    ctrl: bool
+    meta: bool
+    shift: bool
+    hits: List[SceneClickHit]
+
+
+@dataclass(**KWONLY_SLOTS)
 class SceneDragEventArguments(ClickEventArguments):
     type: Literal['dragstart', 'dragend']
     object_id: str
@@ -200,7 +211,7 @@ class KeyboardKey:
     @property
     def number(self) -> Optional[int]:
         """Integer value of a number key."""
-        return int(self.code[len('Digit'):]) if self.code.startswith('Digit') else None
+        return int(self.code[len('Digit') :]) if self.code.startswith('Digit') else None
 
     @property
     def backspace(self) -> bool:
@@ -421,10 +432,12 @@ def handle_event(handler: Optional[Handler[EventT]], arguments: EventT) -> None:
     if handler is None:
         return
     try:
-        expects_arguments = any(p.default is Parameter.empty and
-                                p.kind is not Parameter.VAR_POSITIONAL and
-                                p.kind is not Parameter.VAR_KEYWORD
-                                for p in signature(handler).parameters.values())
+        expects_arguments = any(
+            p.default is Parameter.empty
+            and p.kind is not Parameter.VAR_POSITIONAL
+            and p.kind is not Parameter.VAR_KEYWORD
+            for p in signature(handler).parameters.values()
+        )
 
         parent_slot: Union[Slot, nullcontext]
         if isinstance(arguments, UiEventArguments):
@@ -437,7 +450,11 @@ def handle_event(handler: Optional[Handler[EventT]], arguments: EventT) -> None:
                 result = cast(Callable[[EventT], Any], handler)(arguments)
             else:
                 result = cast(Callable[[], Any], handler)()
-        if isinstance(result, Awaitable) and not isinstance(result, AwaitableResponse) and not isinstance(result, asyncio.Task):
+        if (
+            isinstance(result, Awaitable)
+            and not isinstance(result, AwaitableResponse)
+            and not isinstance(result, asyncio.Task)
+        ):
             # NOTE: await an awaitable result even if the handler is not a coroutine (like a lambda statement)
             async def wait_for_result():
                 with parent_slot:
@@ -445,6 +462,7 @@ def handle_event(handler: Optional[Handler[EventT]], arguments: EventT) -> None:
                         await result
                     except Exception as e:
                         core.app.handle_exception(e)
+
             if core.loop and core.loop.is_running():
                 background_tasks.create(wait_for_result(), name=str(handler))
             else:

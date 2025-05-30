@@ -13,6 +13,7 @@ from ..events import (
     SceneClickEventArguments,
     SceneClickHit,
     SceneDragEventArguments,
+    SceneHoverEventArguments,
     handle_event,
 )
 from .scene_object3d import Object3D
@@ -38,29 +39,35 @@ class SceneObject:
     id: str = 'scene'
 
 
-class Scene(Element,
-            component='scene.js',
-            dependencies=[
-                'lib/three/three.module.js',
-                'lib/three/modules/BufferGeometryUtils.js',
-                'lib/three/modules/CSS2DRenderer.js',
-                'lib/three/modules/CSS3DRenderer.js',
-                'lib/three/modules/DragControls.js',
-                'lib/three/modules/GLTFLoader.js',
-                'lib/three/modules/OrbitControls.js',
-                'lib/three/modules/STLLoader.js',
-                'lib/tween/tween.umd.js',
-            ],
-            default_classes='nicegui-scene'):
+class Scene(
+    Element,
+    component='scene.js',
+    dependencies=[
+        'lib/three/three.module.js',
+        'lib/three/modules/BufferGeometryUtils.js',
+        'lib/three/modules/CSS2DRenderer.js',
+        'lib/three/modules/CSS3DRenderer.js',
+        'lib/three/modules/DragControls.js',
+        'lib/three/modules/GLTFLoader.js',
+        'lib/three/modules/OrbitControls.js',
+        'lib/three/modules/STLLoader.js',
+        'lib/tween/tween.umd.js',
+    ],
+    default_classes='nicegui-scene',
+):
     # pylint: disable=import-outside-toplevel
     from .scene_objects import AxesHelper as axes_helper
     from .scene_objects import Box as box
+    from .scene_objects import CQAssembly as cq_assembly  # CadQuery Assembly
+    from .scene_objects import CQShape as cq_shape  # CadQuery Shape
     from .scene_objects import Curve as curve
     from .scene_objects import Cylinder as cylinder
     from .scene_objects import Extrusion as extrusion
+    from .scene_objects import FacetMesh as facetmesh
     from .scene_objects import Gltf as gltf
     from .scene_objects import Group as group
     from .scene_objects import Line as line
+    from .scene_objects import Mesh as mesh
     from .scene_objects import PointCloud as point_cloud
     from .scene_objects import QuadraticBezierTube as quadratic_bezier_tube
     from .scene_objects import Ring as ring
@@ -71,22 +78,25 @@ class Scene(Element,
     from .scene_objects import Text3d as text3d
     from .scene_objects import Texture as texture
 
-    def __init__(self,
-                 width: int = 400,
-                 height: int = 300,
-                 grid: Union[bool, Tuple[int, int]] = True,
-                 camera: Optional[SceneCamera] = None,
-                 on_click: Optional[Handler[SceneClickEventArguments]] = None,
-                 click_events: List[str] = ['click', 'dblclick'],  # noqa: B006
-                 on_drag_start: Optional[Handler[SceneDragEventArguments]] = None,
-                 on_drag_end: Optional[Handler[SceneDragEventArguments]] = None,
-                 drag_constraints: str = '',
-                 background_color: str = '#eee',
-                 ) -> None:
+    def __init__(
+        self,
+        width: int = 400,
+        height: int = 300,
+        grid: Union[bool, Tuple[int, int]] = True,
+        camera: Optional[SceneCamera] = None,
+        on_click: Optional[Handler[SceneClickEventArguments]] = None,
+        on_hover: Optional[Handler[SceneHoverEventArguments]] = None,
+        click_events: List[str] = ['click', 'dblclick'],  # noqa: B006
+        hover_events: List[str] = ['mousemove', 'mouseenter', 'mouseleave'],  # noqa: B006
+        on_drag_start: Optional[Handler[SceneDragEventArguments]] = None,
+        on_drag_end: Optional[Handler[SceneDragEventArguments]] = None,
+        drag_constraints: str = '',
+        background_color: str = '#eee',
+    ) -> None:
         """3D Scene
 
         Display a 3D scene using `three.js <https://threejs.org/>`_.
-        Currently NiceGUI supports boxes, spheres, cylinders/cones, extrusions, straight lines, curves and textured meshes.
+        Currently NiceGUI supports a variety of 3D objects including boxes, spheres, cylinders/cones, extrusions, straight lines, curves, textured meshes, custom meshes (defined by vertices and triangles), facet meshes, and direct integration for CadQuery shapes (CQShape) and assemblies (CQAssembly).
         Objects can be translated, rotated and displayed with different color, opacity or as wireframes.
         They can also be grouped to apply joint movements.
 
@@ -95,7 +105,9 @@ class Scene(Element,
         :param grid: whether to display a grid (boolean or tuple of ``size`` and ``divisions`` for `Three.js' GridHelper <https://threejs.org/docs/#api/en/helpers/GridHelper>`_, default: 100x100)
         :param camera: camera definition, either instance of ``ui.scene.perspective_camera`` (default) or ``ui.scene.orthographic_camera``
         :param on_click: callback to execute when a 3D object is clicked (use ``click_events`` to specify which events to subscribe to)
+        :param on_hover: callback to execute when a 3D object is clicked (use ``click_events`` to specify which events to subscribe to)
         :param click_events: list of JavaScript click events to subscribe to (default: ``['click', 'dblclick']``)
+        :param hover_events: list of JavaScript click events to subscribe to (default: ``['mousemove', 'mouseenter', 'mouseleave']``)
         :param on_drag_start: callback to execute when a 3D object is dragged
         :param on_drag_end: callback to execute when a 3D object is dropped
         :param drag_constraints: comma-separated JavaScript expression for constraining positions of dragged objects (e.g. ``'x = 0, z = y / 2'``)
@@ -112,11 +124,14 @@ class Scene(Element,
         self.objects: Dict[str, Object3D] = {}
         self.stack: List[Union[Object3D, SceneObject]] = [SceneObject()]
         self._click_handlers = [on_click] if on_click else []
+        self._hover_handlers = [on_hover] if on_hover else []
         self._props['click_events'] = click_events[:]
+        self._props['hover_events'] = hover_events[:]
         self._drag_start_handlers = [on_drag_start] if on_drag_start else []
         self._drag_end_handlers = [on_drag_end] if on_drag_end else []
         self.on('init', self._handle_init)
         self.on('click3d', self._handle_click)
+        self.on('hover3d', self._handle_hover)
         self.on('dragstart', self._handle_drag)
         self.on('dragend', self._handle_drag)
         self._props['drag_constraints'] = drag_constraints
@@ -124,6 +139,11 @@ class Scene(Element,
     def on_click(self, callback: Handler[SceneClickEventArguments]) -> Self:
         """Add a callback to be invoked when a 3D object is clicked."""
         self._click_handlers.append(callback)
+        return self
+
+    def on_hover(self, callback: Handler[SceneHoverEventArguments]) -> Self:
+        """Add a callback to be invoked when a 3D object is clicked."""
+        self._hover_handlers.append(callback)
         return self
 
     def on_drag_start(self, callback: Handler[SceneDragEventArguments]) -> Self:
@@ -192,15 +212,41 @@ class Scene(Element,
             ctrl=e.args['ctrl_key'],
             meta=e.args['meta_key'],
             shift=e.args['shift_key'],
-            hits=[SceneClickHit(
-                object_id=hit['object_id'],
-                object_name=hit['object_name'],
-                x=hit['point']['x'],
-                y=hit['point']['y'],
-                z=hit['point']['z'],
-            ) for hit in e.args['hits']],
+            hits=[
+                SceneClickHit(
+                    object_id=hit['object_id'],
+                    object_name=hit['object_name'],
+                    x=hit['point']['x'],
+                    y=hit['point']['y'],
+                    z=hit['point']['z'],
+                )
+                for hit in e.args['hits']
+            ],
         )
         for handler in self._click_handlers:
+            handle_event(handler, arguments)
+
+    def _handle_hover(self, e: GenericEventArguments) -> None:
+        arguments = SceneHoverEventArguments(
+            sender=self,
+            client=self.client,
+            hover_type=e.args['hover_type'],
+            alt=e.args['alt_key'],
+            ctrl=e.args['ctrl_key'],
+            meta=e.args['meta_key'],
+            shift=e.args['shift_key'],
+            hits=[
+                SceneClickHit(
+                    object_id=hit['object_id'],
+                    object_name=hit['object_name'],
+                    x=hit['point']['x'],
+                    y=hit['point']['y'],
+                    z=hit['point']['z'],
+                )
+                for hit in e.args['hits']
+            ],
+        )
+        for handler in self._hover_handlers:
             handle_event(handler, arguments)
 
     def _handle_drag(self, e: GenericEventArguments) -> None:
@@ -217,23 +263,25 @@ class Scene(Element,
         if arguments.type == 'dragend':
             self.objects[arguments.object_id].move(arguments.x, arguments.y, arguments.z)
 
-        for handler in (self._drag_start_handlers if arguments.type == 'dragstart' else self._drag_end_handlers):
+        for handler in self._drag_start_handlers if arguments.type == 'dragstart' else self._drag_end_handlers:
             handle_event(handler, arguments)
 
     def __len__(self) -> int:
         return len(self.objects)
 
-    def move_camera(self,
-                    x: Optional[float] = None,
-                    y: Optional[float] = None,
-                    z: Optional[float] = None,
-                    look_at_x: Optional[float] = None,
-                    look_at_y: Optional[float] = None,
-                    look_at_z: Optional[float] = None,
-                    up_x: Optional[float] = None,
-                    up_y: Optional[float] = None,
-                    up_z: Optional[float] = None,
-                    duration: float = 0.5) -> None:
+    def move_camera(
+        self,
+        x: Optional[float] = None,
+        y: Optional[float] = None,
+        z: Optional[float] = None,
+        look_at_x: Optional[float] = None,
+        look_at_y: Optional[float] = None,
+        look_at_z: Optional[float] = None,
+        up_x: Optional[float] = None,
+        up_y: Optional[float] = None,
+        up_z: Optional[float] = None,
+        duration: float = 0.5,
+    ) -> None:
         """Move the camera to a new position.
 
         :param x: camera x position
@@ -256,10 +304,19 @@ class Scene(Element,
         self.camera.up_x = self.camera.up_x if up_x is None else up_x
         self.camera.up_y = self.camera.up_y if up_y is None else up_y
         self.camera.up_z = self.camera.up_z if up_z is None else up_z
-        self.run_method('move_camera',
-                        self.camera.x, self.camera.y, self.camera.z,
-                        self.camera.look_at_x, self.camera.look_at_y, self.camera.look_at_z,
-                        self.camera.up_x, self.camera.up_y, self.camera.up_z, duration)
+        self.run_method(
+            'move_camera',
+            self.camera.x,
+            self.camera.y,
+            self.camera.z,
+            self.camera.look_at_x,
+            self.camera.look_at_y,
+            self.camera.look_at_z,
+            self.camera.up_x,
+            self.camera.up_y,
+            self.camera.up_z,
+            duration,
+        )
 
     async def get_camera(self) -> Dict[str, Any]:
         """Get the current camera parameters.
