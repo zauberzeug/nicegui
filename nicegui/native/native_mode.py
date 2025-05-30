@@ -47,7 +47,7 @@ def _open_window(
     closed = Event()
     window.events.closed += closed.set
     _start_window_method_executor(window, method_queue, response_queue, closed)
-    if core.app.native.start_args.get("private_mode") == False and "storage_path" not in core.app.native.start_args:
+    if core.app.native.start_args.get('private_mode') == False and 'storage_path' not in core.app.native.start_args:
         log.warning('Pass in your own `storage_path` to enable proper `private_mode=False` behaviour')
     webview.start(**{'storage_path': tempfile.mkdtemp(), **core.app.native.start_args})
 
