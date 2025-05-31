@@ -1,6 +1,7 @@
 export default {
   template: `
-    <q-img
+    <component
+      :is="is_parallax ? 'q-parallax' : 'q-img'"
       ref="qRef"
       v-bind="$attrs"
       :src="computed_src"
@@ -8,11 +9,15 @@ export default {
       <template v-for="(_, slot) in $slots" v-slot:[slot]="slotProps">
         <slot :name="slot" v-bind="slotProps || {}" />
       </template>
-    </q-img>
+    </component>
   `,
   props: {
     src: String,
     t: String,
+    is_parallax: {
+      type: Boolean,
+      default: false,
+    },
   },
   data: function () {
     return {
@@ -20,7 +25,7 @@ export default {
     };
   },
   mounted() {
-    setTimeout(() => this.compute_src(), 0); // NOTE: wait for window.path_prefix to be set in app.mounted()
+    setTimeout(() => this.compute_src(), 0);
   },
   updated() {
     this.compute_src();
