@@ -302,30 +302,22 @@ async def test_page_to_string_output_used_in_error_messages(user: User) -> None:
 
     await user.open('/')
     output = str(user.current_layout)
-    # Compare output line-by-line, using regex only for the line with "dynamic_resource_path"
-    expected_lines = [
-        'q-layout',
-        ' q-page-container',
-        '  q-page',
-        '   div',
-        '    Label [markers=first, text=Hello]',
-        '    Row',
-        '     Column',
-        '      Button [markers=second, label=World]',
-        '      Icon [markers=third, name=thumbs-up]',
-        '    Avatar [icon=star]',
-        '    Input [value=typed, label=some input, placeholder=type here, type=text]',
-        r'    Markdown \[content=## Markdown\.\.\., dynamic_resource_path=.+\]',
-        '    Card',
-        '     Image [src=https://via.placehol...]',
-    ]
-    output_lines = output.splitlines()
-    assert len(output_lines) == len(expected_lines)
-    for actual, expected in zip(output_lines, expected_lines):
-        if 'dynamic_resource_path=' in expected:
-            assert re.match(expected, actual), f'Line does not match regex:\nExpected: {expected}\nActual:   {actual}'
-        else:
-            assert actual == expected, f'Line does not match:\nExpected: {expected}\nActual:   {actual}'
+    assert output == '''
+q-layout
+ q-page-container
+  q-page
+   div
+    Label [markers=first, text=Hello]
+    Row
+     Column
+      Button [markers=second, label=World]
+      Icon [markers=third, name=thumbs-up]
+    Avatar [icon=star]
+    Input [value=typed, label=some input, placeholder=type here, type=text]
+    Markdown [content=## Markdown...]
+    Card
+     Image [src=https://via.placehol...]
+'''.strip()
 
 
 async def test_combined_filter_parameters(user: User) -> None:

@@ -47,8 +47,8 @@ class Resource:
 
 @dataclass(**KWONLY_SLOTS)
 class DynamicResource:
-    filename: str
-    result_callable: Callable
+    name: str
+    function: Callable
 
 
 @dataclass(**KWONLY_SLOTS)
@@ -114,12 +114,10 @@ def register_resource(path: Path, *, max_time: Optional[float]) -> Resource:
     return resources[key]
 
 
-def register_dynamic_resource(filename: str, result_callable: Callable) -> DynamicResource:
-    """Register a dynamic resource, returning result from a callable on access.
-
-    Overwrites the previous one if it exists."""
-    dynamic_resources[filename] = DynamicResource(filename=filename, result_callable=result_callable)
-    return dynamic_resources[filename]
+def register_dynamic_resource(name: str, function: Callable) -> DynamicResource:
+    """Register a dynamic resource which returns the result of a function."""
+    dynamic_resources[name] = DynamicResource(name=name, function=function)
+    return dynamic_resources[name]
 
 
 @functools.lru_cache(maxsize=None)

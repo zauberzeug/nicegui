@@ -155,15 +155,13 @@ class Element(Visibility):
         resource = register_resource(path_, max_time=path_.stat().st_mtime)
         self._props['resource_path'] = f'/_nicegui/{__version__}/resources/{resource.key}'
 
-    def add_dynamic_resource(self,
-                             filename: str,
-                             result_callable: Callable) -> None:
-        """Add a dynamic resource to the element, returning result from a callable on access.
+    def add_dynamic_resource(self, name: str, function: Callable) -> None:
+        """Add a dynamic resource to the element which returns the result of a function.
 
-        :param filename: name of the file
-        :param callable: callable that returns the resource response
+        :param name: name of the resource
+        :param function: function that returns the resource response
         """
-        register_dynamic_resource(filename, result_callable)
+        register_dynamic_resource(name, function)
         self._props['dynamic_resource_path'] = f'/_nicegui/{__version__}/dynamic_resources'
 
     def add_slot(self, name: str, template: Optional[str] = None) -> Slot:
@@ -538,7 +536,7 @@ class Element(Visibility):
             additions.append(f'text={shorten(self._text)}')
         if hasattr(self, 'content') and self.content:  # pylint: disable=no-member
             additions.append(f'content={shorten(self.content)}')  # pylint: disable=no-member
-        IGNORED_PROPS = {'loopback', 'color', 'view', 'innerHTML'}
+        IGNORED_PROPS = {'loopback', 'color', 'view', 'innerHTML', 'dynamic_resource_path'}
         additions += [
             f'{key}={shorten(value)}'
             for key, value in self._props.items()
