@@ -48,6 +48,12 @@ class Scene(Element,
                 'lib/three/modules/DragControls.js',
                 'lib/three/modules/GLTFLoader.js',
                 'lib/three/modules/OrbitControls.js',
+                'lib/three/modules/ArcballControls.js',
+                'lib/three/modules/TrackballControls.js',
+                'lib/three/modules/MapControls.js',
+                'lib/three/modules/FlyControls.js',
+                'lib/three/modules/PointerLockControls.js',
+                'lib/three/modules/FirstPersonControls.js',
                 'lib/three/modules/STLLoader.js',
                 'lib/tween/tween.umd.js',
             ],
@@ -82,6 +88,8 @@ class Scene(Element,
                  on_drag_end: Optional[Handler[SceneDragEventArguments]] = None,
                  drag_constraints: str = '',
                  background_color: str = '#eee',
+                 control_type: Literal['orbit', 'arcball', 'trackball',
+                     'map', 'fly', 'first-person', 'pointer-lock'] = 'orbit',
                  ) -> None:
         """3D Scene
 
@@ -120,6 +128,7 @@ class Scene(Element,
         self.on('dragstart', self._handle_drag)
         self.on('dragend', self._handle_drag)
         self._props['drag_constraints'] = drag_constraints
+        self._props['control_type'] = control_type
 
     def on_click(self, callback: Handler[SceneClickEventArguments]) -> Self:
         """Add a callback to be invoked when a 3D object is clicked."""

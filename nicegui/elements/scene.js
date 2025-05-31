@@ -67,8 +67,10 @@ export default {
       <div style="position:absolute;pointer-events:none;top:0"></div>
     </div>`,
 
-  mounted() {
+  async mounted() {
+    await this.fetch_controls();
     this.scene = new THREE.Scene();
+    this.clock = new THREE.Clock();
     this.objects = new Map();
     this.objects.set("scene", this.scene);
     this.draggable_objects = [];
@@ -152,7 +154,7 @@ export default {
       grid.rotateX(Math.PI / 2);
       this.scene.add(grid);
     }
-    this.controls = new OrbitControls(this.camera, this.renderer.domElement);
+    this.setup_controls();
     this.drag_controls = new DragControls(this.draggable_objects, this.camera, this.renderer.domElement);
     this.drag_controls.transformGroup = true;
     const applyConstraint = (constraint, position) => {
@@ -180,6 +182,7 @@ export default {
     const render = () => {
       requestAnimationFrame(() => setTimeout(() => render(), 1000 / 20));
       this.camera_tween?.update();
+      this.controls.update(this.clock.getDelta());
       this.renderer.render(this.scene, this.camera);
       this.text_renderer.render(this.scene, this.camera);
       this.text3d_renderer.render(this.scene, this.camera);
@@ -227,6 +230,45 @@ export default {
   },
 
   methods: {
+    async fetch_controls() {
+      if (this.control_type === "arcball") {
+      this.ArcballControls = await import("ArcballControls");
+      } else if (this.control_type === "trackball") {
+      this.TrackballControls = await import("TrackballControls");
+      } else if (this.control_type === "map") {
+      this.MapControls = await import("MapControls");
+      } else if (this.control_type === "fly") {
+      this.FlyControls = await import("FlyControls");
+      } else if (this.control_type === "first-person") {
+      this.FirstPersonControls = await import("FirstPersonControls");
+      } else if (this.control_type === "pointer-lock") {
+      this.PointerLockControls = await import("PointerLockControls");
+      } else {
+      this.OrbitControls = await import("OrbitControls");
+      }
+    },
+    setup_controls() {
+      if (this.control_type === "arcball") {
+      this.controls = new this.ArcballControls.ArcballControls(this.camera, this.renderer.domElement, this.scene);
+      } else if (this.control_type === "trackball") {
+      this.controls = new this.TrackballControls.TrackballControls(this.camera, this.renderer.domElement);
+      } else if (this.control_type === "map") {
+      this.controls = new this.MapControls.MapControls(this.camera, this.renderer.domElement);
+      } else if (this.control_type === "fly") {
+      this.controls = new this.FlyControls.FlyControls(this.camera, this.renderer.domElement);
+      } else if (this.control_type === "first-person") {
+      this.controls = new this.FirstPersonControls.FirstPersonControls(this.camera, this.renderer.domElement);
+      } else if (this.control_type === "pointer-lock") {
+      this.controls = new this.PointerLockControls.PointerLockControls(this.camera, this.renderer.domElement);
+      // Add click to enable pointer lock
+      this.$el.addEventListener("click", () => {
+        this.controls.lock();
+      });
+      } else {
+      this.controls = new this.OrbitControls.OrbitControls(this.camera, this.renderer.domElement);
+      }
+    },
+
     create(type, id, parent_id, ...args) {
       if (!this.is_initialized) return;
       let mesh;
@@ -462,13 +504,13 @@ export default {
           this.camera.up.set(p[3], p[4], p[5]); // NOTE: before calling lookAt
           this.look_at.set(p[6], p[7], p[8]);
           this.camera.lookAt(p[6], p[7], p[8]);
-          this.controls.target.set(p[6], p[7], p[8]);
+          this.controls.target?.set(p[6], p[7], p[8]);
         })
         .onComplete(() => {
           if (camera_up_changed) {
             this.controls.dispose();
-            this.controls = new OrbitControls(this.camera, this.renderer.domElement);
-            this.controls.target.copy(this.look_at);
+            this.setup_controls();
+            this.controls.target?.copy(this.look_at);
             this.camera.lookAt(this.look_at);
           }
         })
@@ -547,5 +589,9 @@ export default {
     click_events: Array,
     drag_constraints: String,
     background_color: String,
+    control_type: {
+      type: String,
+      default: 'orbit',
+    },
   },
 };
