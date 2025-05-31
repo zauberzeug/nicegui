@@ -5,12 +5,25 @@ from . import doc
 
 @doc.auto_execute
 @doc.demo('Page Layout', '''
-    With `ui.header`, `ui.footer`, `ui.left_drawer` and `ui.right_drawer` you can add additional layout elements to a page.
-    The `fixed` argument controls whether the element should scroll or stay fixed on the screen.
-    The `top_corner` and `bottom_corner` arguments indicate whether a drawer should expand to the top or bottom of the page.
-    See <https://quasar.dev/layout/header-and-footer> and <https://quasar.dev/layout/drawer> for more information about possible props.
-    With `ui.page_sticky` you can place an element "sticky" on the screen.
-    See <https://quasar.dev/layout/page-sticky> for more information.
+    With [`ui.header`](page_layout#reference_for_ui_header),
+    [`ui.footer`](page_layout#reference_for_ui_footer),
+    [`ui.left_drawer`](page_layout#reference_for_ui_left_drawer) and
+    [`ui.right_drawer`](page_layout#reference_for_ui_right_drawer) you can add additional layout elements to a page.
+
+    - The `fixed` argument controls whether the element should scroll or stay fixed on the screen.
+    - The `top_corner` and `bottom_corner` arguments indicate whether a drawer should expand to the top or bottom of the page.
+    - See <https://quasar.dev/layout/header-and-footer> and <https://quasar.dev/layout/drawer> for more information about possible props.
+
+    With [`ui.page_sticky`](page_layout#reference_for_ui_page_sticky) you can place an element "sticky" on the screen.
+
+    - The `position`, `x_offset` and `y_offset` arguments control the position of the sticky element.
+    - See <https://quasar.dev/layout/page-sticky> for more information.
+
+    With [`ui.page_scroller`](page_layout#reference_for_ui_page_scroller) you can add a scroll-to-top button to the page.
+
+    - Shares the basic arguments with [`ui.page_sticky`](page_layout#reference_for_ui_page_sticky).
+    - The `scroll_offset`, `duration` and `reverse` arguments control the behavior.
+    - See <https://quasar.dev/layout/page-scroller> for more information.
 ''')
 def page_layout_demo():
     @ui.page('/page_layout')
@@ -26,6 +39,10 @@ def page_layout_demo():
             ui.label('RIGHT DRAWER')
         with ui.footer().style('background-color: #3874c8'):
             ui.label('FOOTER')
+        with ui.page_sticky(position='bottom-left', x_offset=20, y_offset=20):
+            ui.button('Sticky Button', on_click=lambda: ui.notify('Sticky Button Clicked'))
+        with ui.page_scroller(position='bottom-right', x_offset=20, y_offset=20):
+            ui.button('Scroll to Top')
 
     ui.link('show page with fancy layout', page_layout)
 
