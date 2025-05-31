@@ -1,5 +1,5 @@
 from asyncio import iscoroutine
-from typing import Callable, Dict
+from typing import Callable, Dict, Optional
 
 from typing_extensions import Self
 
@@ -12,44 +12,40 @@ class SubPages(Element, component='sub_pages.js'):
     def __init__(self, routes: Dict[str, Callable]):
         super().__init__()
         self._routes = routes
-        self._base_path = self._find_base_path()
-        self._current_path = '/'
-        self.show(ui.context.client.request.url.path if ui.context.client.request else '/')
-        self.on('open', lambda e: self.show(e.args))
+        if self._is_root():
+            path = ui.context.client.request.url.path if ui.context.client.request else '/'
+            if self.show(path):
+                ui.run_javascript(f'''
+                    if (window.location.pathname !== "{path}") {{
+                        history.pushState({{page: "{path}"}}, "", "{path}");
+                    }}
+                ''')
+
+            self.on('open', lambda e: self.show(e.args))
 
     def add(self, path: str, page: Callable) -> Self:
         """Add a new route to the sub pages."""
         self._routes[path] = page
         return self
 
-    def show(self, full_path: str):
+    def show(self, full_path: str) -> bool:
         """Show the page for the given path."""
-        if full_path.startswith(self._base_path):
-            path = full_path[len(self._base_path):]
-            if not path.startswith('/'):
-                path = '/' + path
-        else:
-            path = full_path
-        if path in self._routes:
-            self._current_path = path
-            self.clear()
-            ui.run_javascript(f'''
-                if (window.location.pathname !== "{full_path}") {{
-                    history.pushState({{page: "{full_path}"}}, "", "{full_path}");
-                }}
-            ''')
-            with self:
-                result = self._routes[path]()
-            if iscoroutine(result):
-                async def background_task():
-                    with self:
-                        await result
-                background_tasks.create(background_task(), name=f'building sub_page {full_path}')
-        else:
-            if any(full_path.startswith(route) for route in self._routes):
-                return
-            with self:
-                ui.label(f'404: sub page "{path}" not found on {self._base_path}')
+        segments = full_path.split('/')
+        while segments:
+            sub_path = '/'.join(segments)
+            if not sub_path.startswith('/'):
+                sub_path = '/' + sub_path
+            for path, builder in self._routes.items():
+                if sub_path == path:
+                    self._replace_content(path, builder)
+                    child_sub_pages = find_child_sub_pages(self)
+                    if child_sub_pages:
+                        child_sub_pages.show(full_path.removeprefix(path))
+                    return True
+            segments.pop()
+        with self:
+            ui.label(f'404: sub page "{full_path}" not found')
+        return False
 
     def _find_base_path(self):
         parent = self
@@ -59,3 +55,31 @@ class SubPages(Element, component='sub_pages.js'):
             parent = parent.parent_slot.parent
             if isinstance(parent, SubPages):
                 return parent._current_path
+
+    def _is_root(self) -> bool:
+        parent: ui.element = self
+        while parent.parent_slot is not None:
+            parent = parent.parent_slot.parent
+            if isinstance(parent, SubPages):
+                return False
+        return True
+
+    def _replace_content(self, path: str, builder: Callable):
+        self.clear()
+        with self:
+            result = builder()
+        if iscoroutine(result):
+            async def background_task():
+                with self:
+                    await result
+            background_tasks.create(background_task(), name=f'building sub_page {path}')
+
+
+def find_child_sub_pages(element: ui.element) -> Optional[SubPages]:
+    for child in element.default_slot.children:
+        if isinstance(child, SubPages):
+            return child
+        result = find_child_sub_pages(child)
+        if result is not None:
+            return result
+    return None

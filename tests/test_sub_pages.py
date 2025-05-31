@@ -78,20 +78,19 @@ def test_sub_page_in_sub_page(screen: Screen):
         ui.label('sub')
         ui.link('goto a', '/sub/a')
         ui.link('goto b', '/sub/b')
-        ui.sub_pages(
-            {
-                '/': sub_main,
-                '/a': sub_page1_a,
-                '/b': sub_page1_b
-            })
+        ui.sub_pages({
+            '/': sub_main,
+            '/a': sub_page_a,
+            '/b': sub_page_b
+        })
 
     def sub_main():
         ui.label('sub-main')
 
-    def sub_page1_a():
+    def sub_page_a():
         ui.label('sub-a')
 
-    def sub_page1_b():
+    def sub_page_b():
         ui.label('sub-b')
 
     screen.open('/')
