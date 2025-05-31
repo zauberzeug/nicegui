@@ -12,7 +12,7 @@ class Time(ValueElement, DisableableElement):
                  mask: str = 'HH:mm',
                  on_change: Optional[Handler[ValueChangeEventArguments]] = None,
                  ) -> None:
-        """Time Input
+        """Time Picker
 
         This element is based on Quasar's `QTime <https://quasar.dev/vue-components/time>`_ component.
         The time is a string in the format defined by the `mask` parameter.

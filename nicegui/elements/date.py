@@ -14,7 +14,7 @@ class Date(ValueElement, DisableableElement):
                  *,
                  mask: str = 'YYYY-MM-DD',
                  on_change: Optional[Handler[ValueChangeEventArguments]] = None) -> None:
-        """Date Input
+        """Date Picker
 
         This element is based on Quasar's `QDate <https://quasar.dev/vue-components/date>`_ component.
         The date is a string in the format defined by the `mask` parameter.
