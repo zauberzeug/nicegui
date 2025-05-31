@@ -307,7 +307,7 @@ class PageSticky(Element):
             self._props['expand'] = True
 
 
-class PageScroller(Element):
+class PageScroller(PageSticky):
 
     def __init__(self,
                  position: PageStickyPositions = 'bottom-right',
@@ -337,16 +337,12 @@ class PageScroller(Element):
         :param duration: the duration in milliseconds for the scroll animation (default: 300)
         :param reverse: if True, the scroller will work in reverse, showing when at the top of the page, and scrolls to bottom when triggered (default: ``False``)
         """
-        super().__init__('q-page-scroller')
-        self._props['position'] = position
-        self._props['offset'] = [x_offset, y_offset]
-        if expand:
-            self._props['expand'] = True
-
+        super().__init__(position=position, x_offset=x_offset, y_offset=y_offset, expand=expand)
+        self.tag = 'q-page-scroller'
         self._props['scroll-offset'] = scroll_offset
         self._props['duration'] = duration
         if reverse:
-            self.props('reverse')
+            self._props['reverse'] = True
 
 
 def _check_current_slot(element: Element) -> None:
