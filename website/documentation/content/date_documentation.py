@@ -10,6 +10,8 @@ def main_demo() -> None:
 
 
 @doc.demo('Input element with date picker', '''
+    **Check out the [new implementation using `ui.date_input`](date_input)**. It is more convenient to use, and the picker button is implemented with a `ui.button` element.
+
     This demo shows how to implement a date picker with an input element.
     We place an icon in the input element's append slot.
     When the icon is clicked, we open a menu with a date picker.
