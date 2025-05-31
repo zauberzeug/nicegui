@@ -6,6 +6,7 @@ from typing_extensions import Self
 from ..context import context
 from ..element import Element
 from ..events import Handler, UiEventArguments, handle_event
+from .mixins.color_elements import QUASAR_COLORS, TAILWIND_COLORS
 
 NotificationPosition = Literal[
     'top-left',
@@ -212,3 +213,45 @@ class Notification(Element, component='notification.js'):
 
     def set_visibility(self, visible: bool) -> None:
         raise NotImplementedError('Use `dismiss()` to remove the notification. See #3670 for more information.')
+
+    def add_action(self, event_name: str,
+                   *,
+                   no_dismiss: bool = False,
+                   text: str = '',
+                   color: Optional[str] = 'primary',
+                   icon: Optional[str] = None,
+                   **kwargs: Any) -> Self:
+        """Add an action button to the notification, which emits an event when clicked.
+
+        To do anything useful, you need to also subscribe to the event you specify in `event_name` to handle the button click (e.g. ``notification.on('my-event', ...)``).
+
+        (Unless you want to simply make a dismiss button, then any arbitrary event name can be used, and you can choose to not subscribe to it.)
+
+        Note: There will be no arguments passed to the event handler, because there are none from Quasar.
+
+        :param event_name: the name of the event to be emitted when the action button is clicked
+        :param no_dismiss: if True, the notification will not be dismissed when the action button is clicked (default: False)
+        :param text: the label of the action button
+        :param color: the color of the action button (either a Quasar, Tailwind, or CSS color or `None`, default: 'primary')
+        :param icon: the name of an icon to be displayed on the action button (default: `None`)
+
+        Note: You can pass additional keyword arguments according to `Quasar's QBtn API <https://quasar.dev/vue-components/button#qbtn-api>`_.
+        """
+        assert '"' not in event_name, 'Event names must not contain double quotes (")'
+
+        self._props['options'].setdefault('actions', [])
+
+        action = {
+            'noDismiss': no_dismiss,
+            'label': text,
+            'icon': icon,
+            ':handler': f'() => getElement({self.id}).$emit("{event_name}")',
+        }
+        if color in QUASAR_COLORS:
+            action['color'] = color
+        elif color in TAILWIND_COLORS:
+            action['class'] = f'text-{color} ' + action.get('class', '')
+        elif color is not None:
+            action['style'] = f'color: {color};' + action.get('style', '')
+        action.update(kwargs)
+        self._props['options']['actions'].append(action)
