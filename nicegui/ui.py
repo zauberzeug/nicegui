@@ -38,6 +38,8 @@ __all__ = [
     'editor',
     'element',
     'expansion',
+    'fab',
+    'fab_action',
     'footer',
     'fullscreen',
     'grid',
@@ -157,6 +159,8 @@ from .elements.dialog import Dialog as dialog
 from .elements.echart import EChart as echart
 from .elements.editor import Editor as editor
 from .elements.expansion import Expansion as expansion
+from .elements.fab import Fab as fab
+from .elements.fab import FabAction as fab_action
 from .elements.fullscreen import Fullscreen as fullscreen
 from .elements.grid import Grid as grid
 from .elements.highchart import highchart
