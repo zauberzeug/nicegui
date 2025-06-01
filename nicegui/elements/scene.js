@@ -231,39 +231,19 @@ export default {
 
   methods: {
     async fetch_controls() {
-      if (this.control_type === "arcball") {
-      this.ArcballControls = await import("ArcballControls");
-      } else if (this.control_type === "trackball") {
+      if (this.control_type === "trackball") {
       this.TrackballControls = await import("TrackballControls");
       } else if (this.control_type === "map") {
       this.MapControls = await import("MapControls");
-      } else if (this.control_type === "fly") {
-      this.FlyControls = await import("FlyControls");
-      } else if (this.control_type === "first-person") {
-      this.FirstPersonControls = await import("FirstPersonControls");
-      } else if (this.control_type === "pointer-lock") {
-      this.PointerLockControls = await import("PointerLockControls");
       } else {
       this.OrbitControls = await import("OrbitControls");
       }
     },
     setup_controls() {
-      if (this.control_type === "arcball") {
-      this.controls = new this.ArcballControls.ArcballControls(this.camera, this.renderer.domElement, this.scene);
-      } else if (this.control_type === "trackball") {
+      if (this.control_type === "trackball") {
       this.controls = new this.TrackballControls.TrackballControls(this.camera, this.renderer.domElement);
       } else if (this.control_type === "map") {
       this.controls = new this.MapControls.MapControls(this.camera, this.renderer.domElement);
-      } else if (this.control_type === "fly") {
-      this.controls = new this.FlyControls.FlyControls(this.camera, this.renderer.domElement);
-      } else if (this.control_type === "first-person") {
-      this.controls = new this.FirstPersonControls.FirstPersonControls(this.camera, this.renderer.domElement);
-      } else if (this.control_type === "pointer-lock") {
-      this.controls = new this.PointerLockControls.PointerLockControls(this.camera, this.renderer.domElement);
-      // Add click to enable pointer lock
-      this.$el.addEventListener("click", () => {
-        this.controls.lock();
-      });
       } else {
       this.controls = new this.OrbitControls.OrbitControls(this.camera, this.renderer.domElement);
       }
