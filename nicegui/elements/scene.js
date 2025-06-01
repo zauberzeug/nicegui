@@ -4,6 +4,8 @@ import { CSS3DRenderer, CSS3DObject } from "CSS3DRenderer";
 import { DragControls } from "DragControls";
 import { GLTFLoader } from "GLTFLoader";
 import { OrbitControls } from "OrbitControls";
+import { TrackballControls } from "TrackballControls";
+import { MapControls } from "MapControls";
 import { STLLoader } from "STLLoader";
 import "tween";
 
@@ -67,8 +69,7 @@ export default {
       <div style="position:absolute;pointer-events:none;top:0"></div>
     </div>`,
 
-  async mounted() {
-    await this.fetch_controls();
+  mounted() {
     this.scene = new THREE.Scene();
     this.clock = new THREE.Clock();
     this.objects = new Map();
@@ -230,22 +231,13 @@ export default {
   },
 
   methods: {
-    async fetch_controls() {
-      if (this.control_type === "trackball") {
-      this.TrackballControls = await import("TrackballControls");
-      } else if (this.control_type === "map") {
-      this.MapControls = await import("MapControls");
-      } else {
-      this.OrbitControls = await import("OrbitControls");
-      }
-    },
     setup_controls() {
       if (this.control_type === "trackball") {
-      this.controls = new this.TrackballControls.TrackballControls(this.camera, this.renderer.domElement);
+      this.controls = new TrackballControls(this.camera, this.renderer.domElement);
       } else if (this.control_type === "map") {
-      this.controls = new this.MapControls.MapControls(this.camera, this.renderer.domElement);
+      this.controls = new MapControls(this.camera, this.renderer.domElement);
       } else {
-      this.controls = new this.OrbitControls.OrbitControls(this.camera, this.renderer.domElement);
+      this.controls = new OrbitControls(this.camera, this.renderer.domElement);
       }
     },
 
