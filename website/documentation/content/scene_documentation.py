@@ -5,7 +5,7 @@ from . import doc
 
 @doc.demo(ui.scene)
 def main_demo() -> None:
-    with ui.scene().classes('w-full h-64') as scene:
+    with ui.scene(fps=60, show_stats=True).classes('w-full h-64') as scene:
         scene.axes_helper()
         scene.sphere().material('#4488ff').move(2, 2)
         scene.cylinder(1, 0.5, 2, 20).material('#ff8800', opacity=0.5).move(-2, 1)
@@ -88,6 +88,19 @@ def context_menu_for_3d_objects():
                       click_events=['contextmenu']) as scene:
             scene.sphere().move(x=-1, z=1).with_name('sphere')
             scene.box().move(x=1, z=1).with_name('box')
+
+
+@doc.demo('FPS configuration', '''
+    You can configure the target frames per second (FPS) of the scene using the `fps` argument.
+    The default value is 20, but you can set it to a higher value for smoother animations, or a lower value to save resources.
+
+    If you turn on the `show_stats` argument, the FPS will be displayed in the top left corner of the scene.
+    You will notice that the FPS is generally lower than the target frame rate, because the browser also takes some time to render the scene.
+''')
+def fps_configuration() -> None:
+    ui.label('Custom frame rate instead of default 20 FPS')
+    with ui.scene(fps=60, show_stats=True).classes('w-full h-64') as scene:
+        scene.sphere()
 
 
 @doc.demo('Draggable objects', '''
