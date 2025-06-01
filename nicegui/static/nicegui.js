@@ -499,8 +499,3 @@ function softReload(url, x = 0, y = 0) {
       window.location.href = url;
     })
 }
-
-window.addEventListener("popstate", (event) => {
-  console.log("popstate", event.state);
-  softReload(window.location.href, event.state?.x, event.state?.y);
-});

@@ -82,6 +82,11 @@ ui.add_body_html('''<script>
     }
     // Attach the event listener to the document
     document.addEventListener('click', customFunction);
+
+    window.addEventListener("popstate", (event) => {
+        console.log("popstate", event.state);
+        softReload(window.location.href, event.state?.x, event.state?.y);
+    });
     </script>
 ''', shared=True)
 
