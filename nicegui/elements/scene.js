@@ -484,13 +484,13 @@ export default {
           this.camera.up.set(p[3], p[4], p[5]); // NOTE: before calling lookAt
           this.look_at.set(p[6], p[7], p[8]);
           this.camera.lookAt(p[6], p[7], p[8]);
-          this.controls.target?.set(p[6], p[7], p[8]);
+          this.controls.target.set(p[6], p[7], p[8]);
         })
         .onComplete(() => {
           if (camera_up_changed) {
             this.controls.dispose();
             this.setup_controls();
-            this.controls.target?.copy(this.look_at);
+            this.controls.target.copy(this.look_at);
             this.camera.lookAt(this.look_at);
           }
         })
