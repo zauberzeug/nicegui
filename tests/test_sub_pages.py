@@ -109,3 +109,33 @@ def test_sub_page_in_sub_page(screen: Screen):
 
     screen.open('/sub/a')
     screen.should_contain('sub-a')
+
+
+def test_parameterized_sub_pages(screen: Screen):
+    @ui.page('/')
+    @ui.page('/{_:path}')
+    def index(_):
+        ui.link('goto main', '/')
+        ui.link('goto one', '/one-1')
+        ui.link('goto two', '/two/two')
+        ui.sub_pages({
+            '/': main,
+            '/one-{idx}': one,
+            '/two/{idx}': two,
+        })
+
+    def main():
+        ui.label('main')
+
+    def one(idx: int):
+        ui.label(f'one-{idx}-{isinstance(idx, int)}')
+
+    def two(idx: str):
+        ui.label(f'two-{idx}')
+
+    screen.open('/')
+    screen.should_contain('main')
+    screen.click('goto one')
+    screen.should_contain('one-1-True')
+    screen.click('goto two')
+    screen.should_contain('two-two')
