@@ -469,6 +469,9 @@ function softReload(url, x = 0, y = 0) {
       window.socket.disconnect();
       console.log(data)
       // Handle the response data
+      // clear set loaded_libraries and loaded_components
+      loaded_libraries.clear();
+      loaded_components.clear();
       createApp(parseElements(data.elements), {
         version: data.version,
         prefix: data.prefix,
