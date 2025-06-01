@@ -115,7 +115,7 @@ class refreshable(Generic[_P, _T]):
             if is_coroutine_function(self.func):
                 assert isinstance(result, Awaitable)
                 if core.loop and core.loop.is_running():
-                    background_tasks.create(result)
+                    background_tasks.create(result, name=f'refresh {self.func.__name__}')
                 else:
                     core.app.on_startup(result)
 
@@ -160,7 +160,7 @@ def state(value: Any) -> Tuple[Any, Callable[[Any], None]]:
         if target.locals[index] == new_value:
             return
         target.locals[index] = new_value
-        target.refreshable.refresh()
+        target.refreshable.refresh(_instance=target.instance)
 
     target.next_index += 1
 

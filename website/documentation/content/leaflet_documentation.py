@@ -77,6 +77,36 @@ def move_markers() -> None:
     ui.button('Move marker', on_click=lambda: marker.move(51.51, -0.09))
 
 
+@doc.demo('Image Overlays', '''
+    Leaflet supports [image overlays](https://leafletjs.com/reference.html#imageoverlay).
+    You can add an image overlay with the `image_overlay` method.
+
+    *Added in version 2.17.0*
+''')
+def overlay_image():
+    m = ui.leaflet(center=(40.74, -74.18), zoom=11)
+    m.image_overlay(
+        url='https://maps.lib.utexas.edu/maps/historical/newark_nj_1922.jpg',
+        bounds=[[40.712216, -74.22655], [40.773941, -74.12544]],
+        options={'opacity': 0.8},
+    )
+
+
+@doc.demo('Video Overlays', '''
+    Leaflet supports [video overlays](https://leafletjs.com/reference.html#videooverlay).
+    You can add a video overlay with the `video_overlay` method.
+
+    *Added in version 2.17.0*
+''')
+def overlay_video():
+    m = ui.leaflet(center=(23.0, -115.0), zoom=3)
+    m.video_overlay(
+        url='https://www.mapbox.com/bites/00188/patricia_nasa.webm',
+        bounds=[[32, -130], [13, -100]],
+        options={'opacity': 0.8, 'autoplay': True, 'playsInline': True},
+    )
+
+
 @doc.demo('Vector Layers', '''
     Leaflet supports a set of [vector layers](https://leafletjs.com/reference.html#:~:text=VideoOverlay-,Vector%20Layers,-Path) like circle, polygon etc.
     These can be added with the `generic_layer` method.

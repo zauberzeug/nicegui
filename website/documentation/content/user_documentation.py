@@ -105,6 +105,109 @@ def querying():
             ''')
 
 
+doc.text('User Interaction', '''
+    `user.find(...)` returns a `UserInteraction` object which provides methods to type text,
+    clear inputs, click buttons and trigger events on the found elements.
+    This demo shows how to trigger a "keydown.tab" event to autocomplete an input field after typing the first letter.
+
+    *Added in version 2.7.0: triggering events*
+''')
+
+
+@doc.ui
+def trigger_events():
+    with ui.row().classes('gap-4 items-stretch'):
+        with python_window(classes='w-[500px]', title='some UI code'):
+            ui.markdown('''
+                ```python
+                fruits = ['apple', 'banana', 'cherry']
+                ui.input(label='fruit', autocomplete=fruits)
+                ```
+            ''')
+        with python_window(classes='w-[500px]', title='user assertions'):
+            ui.markdown('''
+                ```python
+                await user.open('/')
+                user.find('fruit').type('a').trigger('keydown.tab')
+                await user.should_see('apple')
+                ```
+            ''')
+
+
+doc.text('Selecting options', '''
+    To choose items in a `ui.select` simply
+
+    - locate the `ui.select` element using `user.find()`,
+    - use `click()` to open the dropdown,
+    - locate the specific _option_ you want to select, again using `user.find()`, and
+    - use `click()` a second time to select the desired option.
+
+    For a multi-select element, repeat the click-and-choose steps for each item.
+''')
+
+
+@doc.ui
+def selecting_options_in_a_select():
+    with ui.row().classes('gap-4 items-stretch'):
+        with python_window(classes='w-[500px]', title='UI code'):
+            ui.markdown('''
+                ```python
+                ui.select(
+                    ['Apple', 'Banana', 'Cherry'],
+                    label='Fruits',
+                    multiple=True,
+                    on_change=lambda e: ui.notify(', '.join(e.value)),
+                )
+                ```
+            ''')
+
+        with python_window(classes='w-[500px]', title='user assertions'):
+            ui.markdown('''
+                ```python
+                user.find('Fruits').click()
+                user.find('Apple').click()
+                user.find('Banana').click()
+                await user.should_see('Apple, Banana')
+                ```
+            ''')
+
+
+doc.text('Using an ElementFilter', '''
+    It may be desirable to use an [`ElementFilter`](/documentation/element_filter) to
+
+    - preserve the order of elements to check their order on the page, and
+    - more granular filtering options, such as `ElementFilter(...).within(...)`.
+
+    By entering the `user` context and iterating over `ElementFilter`,
+    you can preserve the natural document order of matching elements:
+''')
+
+
+@doc.ui
+def using_an_elementfilter():
+    with ui.row().classes('gap-4 items-stretch'):
+        with python_window(classes='w-[400px]', title='UI code'):
+            ui.markdown('''
+                ```python
+                ui.label('1').mark('number')
+                ui.label('2').mark('number')
+                ui.label('3').mark('number')
+                ```
+            ''')
+
+        with python_window(classes='w-[600px]', title='user assertions'):
+            ui.markdown('''
+                ```python
+                with user:
+                    elements = list(ElementFilter(marker='number'))
+                    assert len(elements) == 3
+                    assert elements[0].text == '1'
+                    assert elements[1].text == '2'
+                    assert elements[2].text == '3'
+                ```
+            ''')
+
+
 doc.text('Complex elements', '''
     There are some elements with complex visualization and interaction behaviors (`ui.upload`, `ui.table`, ...).
     Not every aspect of these elements can be tested with `should_see` and `UserInteraction`.
@@ -152,34 +255,6 @@ def upload_table():
                     {'name': 'Alice', 'age': '30'},
                     {'name': 'Bob', 'age': '28'},
                 ]
-                ```
-            ''')
-
-
-doc.text('Autocomplete', '''
-    The `UserInteraction` object returned by `user.find(...)` provides methods to trigger events on the found elements.
-    This demo shows how to trigger a "keydown.tab" event to autocomplete an input field.
-
-    *Added in version 2.7.0*
-''')
-
-
-@doc.ui
-def trigger_events():
-    with ui.row().classes('gap-4 items-stretch'):
-        with python_window(classes='w-[500px]', title='some UI code'):
-            ui.markdown('''
-                ```python
-                fruits = ['apple', 'banana', 'cherry']
-                ui.input(label='fruit', autocomplete=fruits)
-                ```
-            ''')
-        with python_window(classes='w-[500px]', title='user assertions'):
-            ui.markdown('''
-                ```python
-                await user.open('/')
-                user.find('fruit').type('a').trigger('keydown.tab')
-                await user.should_see('apple')
                 ```
             ''')
 

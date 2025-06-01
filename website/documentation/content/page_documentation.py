@@ -3,6 +3,7 @@ from nicegui import ui
 from . import doc
 
 
+@doc.auto_execute
 @doc.demo(ui.page)
 def main_demo() -> None:
     @ui.page('/other_page')
@@ -17,6 +18,7 @@ def main_demo() -> None:
     ui.link('Visit dark page', dark_page)
 
 
+@doc.auto_execute
 @doc.demo('Pages with Path Parameters', '''
     Page routes can contain parameters like [FastAPI](https://fastapi.tiangolo.com/tutorial/path-params/).
     If type-annotated, they are automatically converted to bool, int, float and complex values.
@@ -31,6 +33,7 @@ def page_with_path_parameters_demo():
     ui.link('Say hi to Santa!', '/repeat/Ho! /3')
 
 
+@doc.auto_execute
 @doc.demo('Wait for Client Connection', '''
     To wait for a client connection, you can add a `client` argument to the decorated page function
     and await `client.connected()`.
@@ -52,6 +55,7 @@ def wait_for_connected_demo():
     ui.link('wait for connection', wait_for_connection)
 
 
+@doc.auto_execute
 @doc.demo('Multicasting', '''
     The content on a page is private to the client (the browser tab) and has its own local element context.
     If you want to send updates to _all_ clients of a specific page, you can use the `app.clients` iterator.

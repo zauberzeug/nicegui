@@ -72,7 +72,7 @@ class UserInteraction(Generic[T]):
             for element in self.elements:
                 if isinstance(element, ui.link):
                     href = element.props.get('href', '#')
-                    background_tasks.create(self.user.open(href))
+                    background_tasks.create(self.user.open(href), name=f'open {href}')
                     return self
 
                 if isinstance(element, ui.select):
@@ -84,11 +84,15 @@ class UserInteraction(Generic[T]):
                         if element.multiple:
                             if target_value in element.value:
                                 element.value = [v for v in element.value if v != target_value]
-                            else:
+                            elif target_value in element._values:  # pylint: disable=protected-access
                                 element.value = [*element.value, target_value]
+                            else:
+                                element._is_showing_popup = False  # pylint: disable=protected-access
                         else:
                             element.value = target_value
-                    element._is_showing_popup = not element.is_showing_popup  # pylint: disable=protected-access
+                            element._is_showing_popup = False  # pylint: disable=protected-access
+                    else:
+                        element._is_showing_popup = True  # pylint: disable=protected-access
                     return self
 
                 for listener in element._event_listeners.values():  # pylint: disable=protected-access

@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "nicegui"
-version = "2.13.0-dev"
+version = "2.18.0-dev"
 description = "Create web-based user interfaces with Python. The nice way."
 authors = ["Zauberzeug GmbH <info@zauberzeug.com>"]
 license = "MIT"
@@ -20,6 +20,7 @@ starlette = [
 uvicorn = {extras = ["standard"], version = ">=0.22.0"}
 fastapi = ">=0.109.1"
 python-socketio = {extras = ["asyncio-client"], version = ">=5.10.0"} # version min: see https://github.com/zauberzeug/nicegui/issues/1809
+python-engineio = ">=4.12.0"  # https://github.com/zauberzeug/nicegui/issues/4602
 vbuild = ">=0.8.2"
 watchfiles = ">=0.18.1"
 jinja2 = "^3.1.6" # https://github.com/zauberzeug/nicegui/security/dependabot/44
@@ -40,6 +41,8 @@ requests = ">=2.32.0" # https://github.com/zauberzeug/nicegui/security/dependabo
 urllib3 = ">=1.26.18,!=2.0.0,!=2.0.1,!=2.0.2,!=2.0.3,!=2.0.4,!=2.0.5,!=2.0.6,!=2.0.7,!=2.1.0,!=2.2.0,!=2.2.1" # https://github.com/zauberzeug/nicegui/security/dependabot/34
 certifi = ">=2024.07.04" # https://github.com/zauberzeug/nicegui/security/dependabot/35
 redis = { version = ">=4.0.0", optional = true }
+h11 = ">=0.16.0" # https://github.com/zauberzeug/nicegui/security/dependabot/45
+wait_for2 = ">=0.3.2"
 
 [tool.poetry.extras]
 native = ["pywebview"]
@@ -99,6 +102,11 @@ addopts = "--driver Chrome"
 asyncio_mode = "auto"
 testpaths = ["tests"]
 asyncio_default_fixture_loop_scope = "function"
+filterwarnings = [
+  'ignore::DeprecationWarning:^vbuild(\.|$)',
+  'ignore::DeprecationWarning:^websockets\.legacy(\.|$)',
+  'ignore::DeprecationWarning:^uvicorn\.protocols\.websockets(\.|$)',
+]
 
 [tool.mypy]
 python_version = "3.8"
@@ -116,6 +124,7 @@ module = [
     "sass",
     "socketio.*",
     "vbuild",
+    "wait_for2",
     "webview.*", # can be removed with next pywebview release
 ]
 ignore_missing_imports = true
@@ -128,6 +137,12 @@ target-version = "py38"
 indent-width = 4
 line-length = 120
 
+[tool.ruff.lint.flake8-quotes]
+inline-quotes = "single"
+multiline-quotes = "single"
+docstring-quotes = "double"
+avoid-escape = true
+
 [tool.ruff.lint]
 # See complete list: https://docs.astral.sh/ruff/rules/
 select = [
@@ -139,10 +154,16 @@ select = [
     "UP", # pyupgrade
     "RUF", # ruff
     "PL", # pylint
+    "Q", # flake8-quotes
 ]
 fixable = [
     "I",  # isort
     "RUF022", # `__all__` is not sorted
+    "Q000",  # bad quotes inline string
+    "Q001",  # bad quotes multiline string
+    "Q002",  # bad quotes docstring
+    "Q003",  # avoidable escaped quote
+    "Q004",  # unnecessary escaped quote
 ]
 ignore = [
     "E501", # line too long
