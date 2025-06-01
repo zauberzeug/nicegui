@@ -4,7 +4,7 @@ import inspect
 import re
 from copy import copy
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, ClassVar, Dict, Iterator, List, Optional, Sequence, Tuple, Union, cast
+from typing import TYPE_CHECKING, Any, Callable, ClassVar, Dict, Iterator, List, Optional, Sequence, Tuple, Union, cast
 
 from typing_extensions import Self
 
@@ -12,7 +12,14 @@ from . import core, events, helpers, json, storage
 from .awaitable_response import AwaitableResponse, NullResponse
 from .classes import Classes
 from .context import context
-from .dependencies import Component, Library, register_library, register_resource, register_vue_component
+from .dependencies import (
+    Component,
+    Library,
+    register_dynamic_resource,
+    register_library,
+    register_resource,
+    register_vue_component,
+)
 from .elements.mixins.visibility import Visibility
 from .event_listener import EventListener
 from .helpers import hash_data_store_entry
@@ -152,6 +159,15 @@ class Element(Visibility):
         path_ = Path(path)
         resource = register_resource(path_, max_time=path_.stat().st_mtime)
         self._props['resource_path'] = f'/_nicegui/{__version__}/resources/{resource.key}'
+
+    def add_dynamic_resource(self, name: str, function: Callable) -> None:
+        """Add a dynamic resource to the element which returns the result of a function.
+
+        :param name: name of the resource
+        :param function: function that returns the resource response
+        """
+        register_dynamic_resource(name, function)
+        self._props['dynamic_resource_path'] = f'/_nicegui/{__version__}/dynamic_resources'
 
     def add_slot(self, name: str, template: Optional[str] = None) -> Slot:
         """Add a slot to the element.
@@ -559,7 +575,7 @@ class Element(Visibility):
             additions.append(f'text={shorten(self._text)}')
         if hasattr(self, 'content') and self.content:  # pylint: disable=no-member
             additions.append(f'content={shorten(self.content)}')  # pylint: disable=no-member
-        IGNORED_PROPS = {'loopback', 'color', 'view', 'innerHTML', 'codehilite_css_url'}
+        IGNORED_PROPS = {'loopback', 'color', 'view', 'innerHTML', 'dynamic_resource_path'}
         additions += [
             f'{key}={shorten(value)}'
             for key, value in self._props.items()
