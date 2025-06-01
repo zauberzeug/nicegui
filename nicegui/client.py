@@ -153,7 +153,7 @@ class Client:
         }
         # value = None, for keys which the client declare contain, but not exist in the server's browser data store anymore
         for key in client_declared_data_store_entries:
-            if key not in core.app.browser_data_store:
+            if key not in core.app.browser_data_store or core.app.browser_data_store[key] is None:
                 filtered_browser_data_store[key] = None
         filtered_browser_data_store_string = json.dumps(filtered_browser_data_store)
         elements = json.dumps({

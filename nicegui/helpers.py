@@ -53,8 +53,10 @@ def is_file(path: Optional[Union[str, Path]]) -> bool:
         return False
 
 
-def hash_data_store_entry(entry: str) -> str:
+def hash_data_store_entry(entry: Optional[str]) -> str:
     """Hashes the data store entry, which must be a string."""
+    if entry is None:
+        return ''
     return hashlib.sha256(entry.encode('utf-8')).hexdigest()
 
 

@@ -90,6 +90,7 @@ class Element(Visibility):
             self.client.outbox.enqueue_update(self.parent_slot.parent)
 
         self.cache_name: Optional[str] = None
+        self.auto_id: bool = False
 
     def __init_subclass__(cls, *,
                           component: Union[str, Path, None] = None,
@@ -555,6 +556,9 @@ class Element(Visibility):
 
         This method can be overridden in subclasses to perform cleanup tasks.
         """
+        # delete the cache, if it is auto-generated ID
+        if self.auto_id and self.cache_name in core.app.browser_data_store:
+            core.app.browser_data_store[self.cache_name] = None
 
     @property
     def is_deleted(self) -> bool:
@@ -599,3 +603,17 @@ class Element(Visibility):
         *Added in version 2.16.0*
         """
         return f'c{self.id}'
+
+    def cache(self, cache_name: Optional[str] = None) -> Self:
+        """Cache the element in the browser data store.
+
+        :param cache_name: name of the cache entry (default: None, which uses the element's interal hash automatically)
+        """
+        if cache_name is None:
+            cache_name = f'auto_{hash_data_store_entry(json.dumps(self._to_dict_internal()[0]))}'
+            self.auto_id = True
+        else:
+            self.auto_id = False
+        self.cache_name = cache_name
+        self._populate_browser_data_store_if_needed()
+        return self

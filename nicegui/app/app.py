@@ -45,7 +45,7 @@ class App(FastAPI):
         self._connect_handlers: List[Union[Callable[..., Any], Awaitable]] = []
         self._disconnect_handlers: List[Union[Callable[..., Any], Awaitable]] = []
         self._exception_handlers: List[Callable[..., Any]] = [log.exception]
-        self.browser_data_store: Dict[str, str] = {}
+        self.browser_data_store: Dict[str, Optional[str]] = {}
 
     @property
     def is_starting(self) -> bool:
