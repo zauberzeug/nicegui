@@ -96,11 +96,16 @@ def context_menu_for_3d_objects():
 
     If you turn on the `show_stats` argument, the FPS will be displayed in the top left corner of the scene.
     You will notice that the FPS is generally lower than the target frame rate, because the browser also takes some time to render the scene.
+
+    This also applies to `ui.scene_view`
 ''')
 def fps_configuration() -> None:
-    ui.label('Custom frame rate instead of default 20 FPS')
-    with ui.scene(fps=60, show_stats=True).classes('w-full h-64') as scene:
+    ui.label('Higher frame rate instead of default 20 FPS for the movable view')
+    with ui.scene(fps=60, show_stats=True).classes('w-full h-32') as scene:
         scene.sphere()
+    ui.label('Lower frame rate instead of default 20 FPS for the static view')
+    with ui.scene_view(scene, fps=5, show_stats=True).classes('w-full h-32') as scene_view:
+        scene_view.move_camera(x=1, y=-3, z=5)
 
 
 @doc.demo('Draggable objects', '''
