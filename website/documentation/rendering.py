@@ -7,7 +7,6 @@ from ..style import section_heading, subheading
 from .content import DocumentationPage
 from .custom_restructured_text import CustomRestructuredText as custom_restructured_text
 from .demo import demo
-from .helpers import scroll_tree_to_position
 from .reference import generate_class_doc
 from .tree import nodes
 
@@ -27,7 +26,11 @@ def render_page(documentation: DocumentationPage, *, with_menu: bool = True) -> 
             tree.expand(_ancestor_nodes(documentation.name))
 
             def tree_expand_callable():
-                return scroll_tree_to_position(tree.id, (documentation.parts[0].title or '').replace('*', ''))
+                ui.run_javascript(f'''
+                    Array.from(getHtmlElement({tree.id})?.getElementsByTagName("a") ?? [])
+                        .find(el => el.innerText.trim() === "{(documentation.parts[0].title or '').replace('*', '')}")
+                        ?.scrollIntoView({{block: "center"}});
+                ''')
 
             tree_expand_callable()  # try right away, assuming desktop view
     else:
