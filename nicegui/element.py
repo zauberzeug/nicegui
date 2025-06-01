@@ -91,6 +91,7 @@ class Element(Visibility):
 
         self.cache_name: Optional[str] = None
         self.auto_id: bool = False
+        self.derive_dict_from_cache: bool = False
 
     def __init_subclass__(cls, *,
                           component: Union[str, Path, None] = None,
@@ -214,6 +215,8 @@ class Element(Visibility):
 
     def _populate_browser_data_store_if_needed(self) -> None:
         """Populate the browser data store with the element's data if needed."""
+        if self.derive_dict_from_cache:
+            return  # do not populate if the element is derived from cache
         if self.cache_name is not None:
             core.app.browser_data_store[self.cache_name] = json.dumps(self._to_dict_internal()[0])
 
@@ -262,6 +265,12 @@ class Element(Visibility):
 
     def _to_dict(self, *, client_declared_data_store_entries: Optional[Dict[str, str]] = None) -> Dict[str, Any]:
         element_dict_static, element_dict_dynamic = self._to_dict_internal()
+        if self.derive_dict_from_cache and self.cache_name is not None and self.cache_name in core.app.browser_data_store:
+            # if it is an element derived from cache, we always use the cached version
+            return {
+                self.client.browser_data_store_token: self.cache_name,
+                **element_dict_dynamic,
+            }
         if client_declared_data_store_entries is None or self.cache_name is None or \
                 hash_data_store_entry(core.app.browser_data_store[self.cache_name]) != client_declared_data_store_entries.get(self.cache_name):
             # return the normal un-filtered dict
@@ -556,6 +565,8 @@ class Element(Visibility):
 
         This method can be overridden in subclasses to perform cleanup tasks.
         """
+        if self.derive_dict_from_cache:
+            return
         # delete the cache, if it is auto-generated ID
         if self.auto_id and self.cache_name in core.app.browser_data_store:
             core.app.browser_data_store[self.cache_name] = None
@@ -609,6 +620,7 @@ class Element(Visibility):
 
         :param cache_name: name of the cache entry (default: None, which uses the element's interal hash automatically)
         """
+        self.derive_dict_from_cache = False
         if cache_name is None:
             cache_name = f'auto_{hash_data_store_entry(json.dumps(self._to_dict_internal()[0]))}'
             self.auto_id = True
@@ -617,3 +629,12 @@ class Element(Visibility):
         self.cache_name = cache_name
         self._populate_browser_data_store_if_needed()
         return self
+
+    def from_cache(self, cache_name: str) -> Self:
+        """Load the element from the browser data store.
+
+        :param cache_name: name of the cache entry
+        :return: the element loaded from the cache
+        """
+        self.derive_dict_from_cache = True
+        self.cache_name = cache_name
