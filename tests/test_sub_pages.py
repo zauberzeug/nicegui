@@ -43,6 +43,32 @@ def test_switching_between_sub_pages(screen: Screen):
     screen.should_not_contain('goto other')
 
 
+def test_passing_element_to_sub_page(screen: Screen):
+    @ui.page('/')
+    @ui.page('/other')
+    def index():
+        title = ui.label()
+        ui.sub_pages({
+            '/': lambda: child(title),
+            '/other': lambda: child2(title)
+        })
+
+    def child(title: ui.label):
+        title.set_text('child title')
+        ui.link('goto other', '/other')
+
+    def child2(title: ui.label):
+        title.set_text('other title')
+        ui.link('goto main', '/')
+
+    screen.open('/')
+    screen.should_contain('child title')
+    screen.click('goto other')
+    screen.should_contain('other title')
+    screen.click('goto main')
+    screen.should_contain('child title')
+
+
 def test_accessing_sub_page_directly(screen: Screen):
     @ui.page('/')
     @ui.page('/{_:path}')
