@@ -40,14 +40,26 @@ class SubPages(Element, component='sub_pages.js'):
             for path, builder in self._routes.items():
                 params = self._match_path(path, sub_path)
                 if params is not None:
+                    if sub_path == '/':
+                        remaining_path = full_path
+                    else:
+                        remaining_path = full_path[len(sub_path):]
+                    if not remaining_path:
+                        remaining_path = '/'
+                    if sub_path == '/' and remaining_path == full_path and sub_path != full_path:
+                        continue
                     self._replace_content(path, builder, params)
                     child_sub_pages = find_child_sub_pages(self)
-                    if child_sub_pages:
-                        child_sub_pages.show(full_path.removeprefix(path))
-                    return True
+
+                    if child_sub_pages and remaining_path != sub_path:
+                        if child_sub_pages.show(remaining_path):
+                            return True
+                    elif sub_path == full_path:
+                        return True
             segments.pop()
+        self.clear()
         with self:
-            ui.label(f'404: sub page "{full_path}" not found')
+            ui.label(f'404: sub page {full_path} not found')
         return False
 
     @staticmethod

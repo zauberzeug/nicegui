@@ -112,12 +112,15 @@ def test_sub_page_in_sub_page(screen: Screen):
 
 
 def test_parameterized_sub_pages(screen: Screen):
+    main_content_calls = 0
+
     @ui.page('/')
     @ui.page('/{_:path}')
     def index(_):
         ui.link('goto main', '/')
         ui.link('goto one', '/one-1')
         ui.link('goto two', '/two/two')
+        ui.link('goto wrong match', '/two-3')
         ui.sub_pages({
             '/': main,
             '/one-{idx}': one,
@@ -125,7 +128,9 @@ def test_parameterized_sub_pages(screen: Screen):
         })
 
     def main():
-        ui.label('main')
+        nonlocal main_content_calls
+        main_content_calls += 1
+        ui.label('main_content')
 
     def one(idx: int):
         ui.label(f'one-{idx}-{isinstance(idx, int)}')
@@ -134,8 +139,15 @@ def test_parameterized_sub_pages(screen: Screen):
         ui.label(f'two-{idx}')
 
     screen.open('/')
-    screen.should_contain('main')
+    screen.should_contain('main_content')
     screen.click('goto one')
     screen.should_contain('one-1-True')
     screen.click('goto two')
     screen.should_contain('two-two')
+    assert main_content_calls == 1
+    screen.click('goto wrong match')
+    screen.should_not_contain('main_content')
+    screen.should_not_contain('one-1-True')
+    screen.should_not_contain('two-two')
+    screen.should_contain('404: sub page /two-3 not found')
+    assert main_content_calls == 1
