@@ -95,6 +95,7 @@ class Scene(Element,
         :param on_drag_end: callback to execute when a 3D object is dropped
         :param drag_constraints: comma-separated JavaScript expression for constraining positions of dragged objects (e.g. ``'x = 0, z = y / 2'``)
         :param background_color: background color of the scene (default: "#eee")
+        :param control_type: type of controls to use for navigating the scene, one of 'orbit', 'trackball', 'map' (default: 'orbit')
         """
         super().__init__()
         self._props['width'] = width
