@@ -49,6 +49,7 @@ class Scene(Element,
                 'lib/three/modules/GLTFLoader.js',
                 'lib/three/modules/OrbitControls.js',
                 'lib/three/modules/STLLoader.js',
+                'lib/three/modules/stats.module.js',
                 'lib/tween/tween.umd.js',
             ],
             default_classes='nicegui-scene'):
@@ -82,6 +83,8 @@ class Scene(Element,
                  on_drag_end: Optional[Handler[SceneDragEventArguments]] = None,
                  drag_constraints: str = '',
                  background_color: str = '#eee',
+                 fps: int = 20,
+                 show_stats: bool = False
                  ) -> None:
         """3D Scene
 
@@ -100,6 +103,8 @@ class Scene(Element,
         :param on_drag_end: callback to execute when a 3D object is dropped
         :param drag_constraints: comma-separated JavaScript expression for constraining positions of dragged objects (e.g. ``'x = 0, z = y / 2'``)
         :param background_color: background color of the scene (default: "#eee")
+        :param fps: target frame rate for the scene in frames per second (default: 20)
+        :param show_stats: whether to show the frame rate, frame times and memory usage in the top left corner of the scene (default: False)
         """
         super().__init__()
         self._props['width'] = width
@@ -120,6 +125,8 @@ class Scene(Element,
         self.on('dragstart', self._handle_drag)
         self.on('dragend', self._handle_drag)
         self._props['drag_constraints'] = drag_constraints
+        self._props['fps'] = fps
+        self._props['show_stats'] = show_stats
 
     def on_click(self, callback: Handler[SceneClickEventArguments]) -> Self:
         """Add a callback to be invoked when a 3D object is clicked."""

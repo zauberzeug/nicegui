@@ -6,6 +6,7 @@ import { GLTFLoader } from "GLTFLoader";
 import { OrbitControls } from "OrbitControls";
 import { STLLoader } from "STLLoader";
 import "tween";
+import Stats from "stats";
 
 function texture_geometry(coords) {
   const geometry = new THREE.BufferGeometry();
@@ -73,6 +74,13 @@ export default {
     this.objects.set("scene", this.scene);
     this.draggable_objects = [];
     this.is_initialized = false;
+
+    if (this.show_stats) {
+      this.stats = new Stats();
+      this.stats.domElement.style.position = 'absolute';
+      this.stats.domElement.style.top = '0px';
+      this.$el.appendChild(this.stats.domElement);
+    }
 
     window["scene_" + this.$el.id] = this.scene; // NOTE: for selenium tests only
 
@@ -178,11 +186,12 @@ export default {
     this.drag_controls.addEventListener("dragend", handleDrag);
 
     const render = () => {
-      requestAnimationFrame(() => setTimeout(() => render(), 1000 / 20));
+      requestAnimationFrame(() => setTimeout(() => render(), 1000 / this.fps));
       this.camera_tween?.update();
       this.renderer.render(this.scene, this.camera);
       this.text_renderer.render(this.scene, this.camera);
       this.text3d_renderer.render(this.scene, this.camera);
+      if (this.stats) this.stats.update();
     };
     render();
 
@@ -547,5 +556,13 @@ export default {
     click_events: Array,
     drag_constraints: String,
     background_color: String,
+    fps: {
+      type: Number,
+      default: 20,
+    },
+    show_stats: {
+      type: Boolean,
+      default: false,
+    },
   },
 };
