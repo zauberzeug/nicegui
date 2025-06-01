@@ -145,7 +145,8 @@ def generate_resources(prefix: str, elements: Iterable[Element]) -> Tuple[List[s
                                                                           List[str],
                                                                           Dict[str, str],
                                                                           List[str],
-                                                                          List[str]]:
+                                                                          List[str],
+                                                                          Dict[str, Dict[str, str]]]:
     """Generate the resources required by the elements to be sent to the client."""
     done_libraries: Set[str] = set()
     done_components: Set[str] = set()
