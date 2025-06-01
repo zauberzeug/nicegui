@@ -465,6 +465,7 @@ function softReload(url, x = 0, y = 0) {
       return response.json()
     })
     .then(data => {
+      document.title = data.title || document.title;
       window.history.pushState({ x: window.scrollX, y: window.scrollY }, '', url);
       window.socket.disconnect();
       console.log(data)
@@ -490,6 +491,7 @@ function softReload(url, x = 0, y = 0) {
 
       Promise.all(importPromises).then(() => {
         eval(data.vue_scripts); // required for plotly and some libraries
+        app.unmount();
         app.mount("#app");
         window.scrollTo(x, y);
       });
