@@ -15,7 +15,7 @@ from . import air, background_tasks, binding, core, favicon, helpers, json, run,
 from .app import App
 from .classes import ALL_CLASSES_EVER_USED
 from .client import Client
-from .dependencies import js_components, libraries, resources
+from .dependencies import dynamic_resources, js_components, libraries, resources
 from .error import error_content
 from .json import NiceGUIJSONResponse
 from .logging import log
@@ -160,6 +160,13 @@ def _get_tailwind_jit_result() -> Response:
     headers = {'Cache-Control': 'public, max-age=86400, immutable'}  # cache for 1 day, immutable
     content = jit_css if jit_css is not None else '/* Tailwind JIT compilation failed or tailwindcss.exe not found */'
     return Response(content=content, media_type='text/css', headers=headers)
+
+  
+@app.get(f'/_nicegui/{__version__}' + '/dynamic_resources/{name}')
+def _get_dynamic_resource(name: str) -> Response:
+    if name in dynamic_resources:
+        return dynamic_resources[name].function()
+    raise HTTPException(status_code=404, detail=f'dynamic resource "{name}" not found')
 
 
 async def _startup() -> None:
