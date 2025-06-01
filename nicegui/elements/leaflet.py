@@ -27,7 +27,7 @@ class Leaflet(Element, component='leaflet.js', default_classes='nicegui-leaflet'
                  center: Tuple[float, float] = (0.0, 0.0),
                  zoom: int = 13,
                  *,
-                 options: Dict = {},  # noqa: B006
+                 options: Optional[Dict] = None,
                  draw_control: Union[bool, Dict] = False,
                  hide_drawn_items: bool = False,
                  additional_resources: Optional[List[str]] = None,
@@ -43,6 +43,8 @@ class Leaflet(Element, component='leaflet.js', default_classes='nicegui-leaflet'
         :param hide_drawn_items: whether to hide drawn items on the map (default: False, *added in version 2.0.0*)
         :param additional_resources: additional resources like CSS or JS files to load (default: None, *added in version 2.11.0*)
         """
+        if options is None:
+            options = {}
         super().__init__()
         self.add_resource(Path(__file__).parent / 'lib' / 'leaflet')
 

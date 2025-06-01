@@ -22,8 +22,7 @@ class Keyboard(Element, component='keyboard.js'):
                  on_key: Optional[Handler[KeyEventArguments]] = None, *,
                  active: bool = True,
                  repeating: bool = True,
-                 ignore: List[Literal['input', 'select', 'button', 'textarea']] =
-                     ['input', 'select', 'button', 'textarea'],  # noqa: B006
+                 ignore: Optional[List[Literal['input', 'select', 'button', 'textarea']]] = None,
                  ) -> None:
         """Keyboard
 
@@ -60,6 +59,8 @@ class Keyboard(Element, component='keyboard.js'):
         :param repeating: boolean flag indicating whether held keys should be sent repeatedly (default: ``True``)
         :param ignore: ignore keys when one of these element types is focussed (default: ``['input', 'select', 'button', 'textarea']``)
         """
+        if ignore is None:
+            ignore = ['input', 'select', 'button', 'textarea']
         super().__init__()
         self._key_handlers = [on_key] if on_key else []
         self.active = active

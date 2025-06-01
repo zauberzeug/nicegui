@@ -29,7 +29,7 @@ class InteractiveImage(SourceElement, ContentElement, component='interactive_ima
                  content: str = '',
                  size: Optional[Tuple[float, float]] = None,
                  on_mouse: Optional[Handler[MouseEventArguments]] = None,
-                 events: List[str] = ['click'],  # noqa: B006
+                 events: Optional[List[str]] = None,
                  cross: Union[bool, str] = False,
                  ) -> None:
         """Interactive Image
@@ -57,6 +57,8 @@ class InteractiveImage(SourceElement, ContentElement, component='interactive_ima
         :param events: list of JavaScript events to subscribe to (default: `['click']`)
         :param cross: whether to show crosshairs or a color string (default: `False`)
         """
+        if events is None:
+            events = ['click']
         super().__init__(source=source, content=content)
         self._props['events'] = events[:]
         self._props['cross'] = cross
