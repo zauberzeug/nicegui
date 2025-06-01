@@ -34,19 +34,19 @@ templates = Jinja2Templates(Path(__file__).parent / 'templates')
 
 class Client:
     page_routes: ClassVar[Dict[Callable[..., Any], str]] = {}
-    """Maps page builders to their routes."""
+    '''Maps page builders to their routes.'''
 
     instances: ClassVar[Dict[str, Client]] = {}
-    """Maps client IDs to clients."""
+    '''Maps client IDs to clients.'''
 
     auto_index_client: Client
-    """The client that is used to render the auto-index page."""
+    '''The client that is used to render the auto-index page.'''
 
     shared_head_html = ''
-    """HTML to be inserted in the <head> of every page template."""
+    '''HTML to be inserted in the <head> of every page template.'''
 
     shared_body_html = ''
-    """HTML to be inserted in the <body> of every page template."""
+    '''HTML to be inserted in the <body> of every page template.'''
 
     def __init__(self, page: page, *, request: Optional[Request]) -> None:
         self.request: Optional[Request] = request
