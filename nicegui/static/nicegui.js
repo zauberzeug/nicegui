@@ -465,7 +465,7 @@ function softReload(url, x = 0, y = 0) {
       return response.json()
     })
     .then(data => {
-      window.history.pushState({x: window.scrollX, y: window.scrollY}, '', url);
+      window.history.pushState({ x: window.scrollX, y: window.scrollY }, '', url);
       window.socket.disconnect();
       console.log(data)
       // Handle the response data
