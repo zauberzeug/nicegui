@@ -7,6 +7,7 @@ from ..style import section_heading, subheading
 from .content import DocumentationPage
 from .custom_restructured_text import CustomRestructuredText as custom_restructured_text
 from .demo import demo
+from .helpers import scroll_tree_to_position
 from .reference import generate_class_doc
 from .tree import nodes
 
@@ -24,17 +25,18 @@ def render_page(documentation: DocumentationPage, *, with_menu: bool = True) -> 
                 <a :href="'/documentation/' + props.node.id" onclick="event.stopPropagation()">{{ props.node.title }}</a>
             ''')
             tree.expand(_ancestor_nodes(documentation.name))
-            ui.run_javascript(f'''
-                Array.from(getHtmlElement({tree.id}).getElementsByTagName("a"))
-                    .find(el => el.innerText.trim() === "{(documentation.parts[0].title or '').replace('*', '')}")
-                    .scrollIntoView({{block: "center"}});
-            ''')
+
+            def tree_expand_callable():
+                return scroll_tree_to_position(tree.id, (documentation.parts[0].title or '').replace('*', ''))
+
+            tree_expand_callable()  # try right away, assuming desktop view
     else:
         menu = None
+        tree_expand_callable = None
 
     # header
     add_head_html()
-    add_header(menu)
+    add_header(menu, tree_expand_callable=tree_expand_callable)  # for the mobile view
     ui.add_css('html {scroll-behavior: auto}')
     title = (documentation.title or '').replace('*', '')
     ui.page_title('NiceGUI' if not title else title if title.split()[0] == 'NiceGUI' else f'{title} | NiceGUI')
