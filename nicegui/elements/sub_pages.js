@@ -5,7 +5,6 @@ export default {
     </div>
   `,
   mounted() {
-    const initial_path = window.location.pathname;
     window.addEventListener("popstate", (event) => {
       console.log("popstate", event);
       this.$emit("open", event.state?.page || window.location.pathname);
