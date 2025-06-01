@@ -20,7 +20,7 @@ def demo(f: Callable, *, lazy: bool = True, tab: Optional[Union[str, Callable]] 
         with browser_window(title=tab,
                             classes='w-full max-w-[44rem] min-[1500px]:max-w-[20rem] min-h-[10rem] browser-window') as window:
             if lazy:
-                spinner = ui.spinner(size='lg').props('thickness=2')
+                spinner = ui.image('/static/loading.gif').classes('w-8 h-8')
 
                 async def handle_intersection():
                     window.remove(spinner)
