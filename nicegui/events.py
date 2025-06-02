@@ -15,6 +15,7 @@ from typing import (
     List,
     Literal,
     Optional,
+    Tuple,
     TypeVar,
     Union,
     cast,
@@ -143,12 +144,6 @@ class MultiUploadEventArguments(UiEventArguments):
     contents: List[BinaryIO]
     names: List[str]
     types: List[str]
-
-
-@dataclass(**KWONLY_SLOTS)
-class DropZoneEventArguments(UiEventArguments):
-    path: str
-    modifiers: KeyboardModifiers
 
 
 @dataclass(**KWONLY_SLOTS)
@@ -407,6 +402,12 @@ class JsonEditorSelectEventArguments(UiEventArguments):
 class JsonEditorChangeEventArguments(UiEventArguments):
     content: Dict
     errors: Dict
+
+
+@dataclass(**KWONLY_SLOTS)
+class PywebviewEventArguments(EventArguments):
+    id: str
+    args: Tuple[Any, ...]
 
 
 EventT = TypeVar('EventT', bound=EventArguments)
