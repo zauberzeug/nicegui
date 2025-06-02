@@ -12,7 +12,7 @@ from fastapi.responses import FileResponse, Response
 from . import air, background_tasks, binding, core, favicon, helpers, json, run, welcome
 from .app import App
 from .client import Client
-from .dependencies import js_components, libraries, resources
+from .dependencies import dynamic_resources, js_components, libraries, resources
 from .error import error_content
 from .json import NiceGUIJSONResponse
 from .logging import log
@@ -101,6 +101,13 @@ def _get_resource(key: str, path: str) -> FileResponse:
             media_type, _ = mimetypes.guess_type(filepath)
             return FileResponse(filepath, media_type=media_type, headers=headers)
     raise HTTPException(status_code=404, detail=f'resource "{key}" not found')
+
+
+@app.get(f'/_nicegui/{__version__}' + '/dynamic_resources/{name}')
+def _get_dynamic_resource(name: str) -> Response:
+    if name in dynamic_resources:
+        return dynamic_resources[name].function()
+    raise HTTPException(status_code=404, detail=f'dynamic resource "{name}" not found')
 
 
 async def _startup() -> None:

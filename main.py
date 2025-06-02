@@ -7,13 +7,10 @@ from fastapi import HTTPException, Request
 from fastapi.responses import RedirectResponse
 from starlette.middleware.sessions import SessionMiddleware
 
-import prometheus
 from nicegui import app, ui
-from website import anti_scroll_hack, documentation, fly, main_page, svg
+from website import anti_scroll_hack, documentation, fly, imprint_privacy, main_page, svg
 
-prometheus.start_monitor(app)
-
-# session middleware is required for demo in documentation and prometheus
+# session middleware is required for demo in documentation
 app.add_middleware(SessionMiddleware, secret_key=os.environ.get('NICEGUI_SECRET_KEY', ''))
 
 on_fly = fly.setup()
@@ -52,6 +49,11 @@ def _documentation_detail_page(name: str) -> Optional[RedirectResponse]:
     if name in documentation.redirects:
         return RedirectResponse(documentation.redirects[name])
     raise HTTPException(404, f'documentation for "{name}" could not be found')
+
+
+@ui.page('/imprint_privacy')
+def _imprint_privacy() -> None:
+    imprint_privacy.create()
 
 
 @app.get('/status')

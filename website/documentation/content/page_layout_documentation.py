@@ -3,6 +3,7 @@ from nicegui import ui
 from . import doc
 
 
+@doc.auto_execute
 @doc.demo('Page Layout', '''
     With `ui.header`, `ui.footer`, `ui.left_drawer` and `ui.right_drawer` you can add additional layout elements to a page.
     The `fixed` argument controls whether the element should scroll or stay fixed on the screen.
