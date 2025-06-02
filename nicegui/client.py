@@ -124,13 +124,23 @@ class Client:
     def __exit__(self, *_) -> None:
         self.content.__exit__()
 
-    def build_response(self, request: Request, status_code: int = 200, *, send_json: bool = False) -> Response:
+    def build_response(self, request: Request, status_code: int = 200, *, send_json: bool = False, past_client_id: Optional[str] = None) -> Response:
         """Build a FastAPI response for the client."""
         self.outbox.updates.clear()
         prefix = request.headers.get('X-Forwarded-Prefix', request.scope.get('root_path', ''))
-        elements = json.dumps({
+        elements_dict = {
             id: element._to_dict() for id, element in self.elements.items()  # pylint: disable=protected-access
-        })
+        }
+        past_client = Client.instances.get(past_client_id)
+        past_elements_dict = {
+            id: element._to_dict() for id, element in past_client.elements.items()
+        } if past_client is not None else {}
+
+        for id, past_element in past_elements_dict.items():
+            if elements_dict.get(id) == past_element:
+                elements_dict[id] = {'=': True}
+
+        elements = json.dumps(elements_dict)
         socket_io_js_query_params = {
             **core.app.config.socket_io_js_query_params,
             'client_id': self.id,
@@ -148,7 +158,6 @@ class Client:
             'head_html': self.head_html,
             'body_html': '<style>' + '\n'.join(vue_styles) + '</style>\n' + self.body_html + '\n' + '\n'.join(vue_html),
             'vue_scripts': '\n'.join(vue_scripts),
-            'imports': json.dumps(imports),
             'js_imports': '\n'.join(js_imports),
             'js_imports_urls': js_imports_urls,
             'quasar_config': json.dumps(core.app.config.quasar_config),
@@ -173,6 +182,7 @@ class Client:
                 headers={'Cache-Control': 'no-store', 'X-NiceGUI-Content': 'jsonpage'},
             )
         context['request'] = request
+        context['imports'] = json.dumps(imports)
         return templates.TemplateResponse(
             request=request,
             name='index.html',

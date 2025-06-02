@@ -19,7 +19,8 @@ function parseElements(raw_elements) {
   );
 }
 
-function replaceUndefinedAttributes(element) {
+function replaceUndefinedAttributes(element, id) {
+  if (element && element['='] === true) Object.assign(element, mounted_app.elements[id]);
   element.class ??= [];
   element.style ??= {};
   element.props ??= {};
@@ -320,7 +321,7 @@ window.onbeforeunload = function () {
 };
 
 function createApp(elements, options) {
-  Object.entries(elements).forEach(([_, element]) => replaceUndefinedAttributes(element));
+  Object.entries(elements).forEach(([id, element]) => replaceUndefinedAttributes(element, id));
   setInterval(() => ack(), 3000);
   return (app = Vue.createApp({
     data() {
@@ -390,7 +391,7 @@ function createApp(elements, options) {
               delete this.elements[id];
               continue;
             }
-            replaceUndefinedAttributes(element);
+            replaceUndefinedAttributes(element, id);
             this.elements[id] = element;
           }
 
@@ -455,7 +456,7 @@ function softReload(url, x = 0, y = 0) {
   fetch(url, {
     method: 'GET',
     headers: new Headers({
-      'X-NiceGUI-Client-ID': 'your-client-id' // Replace with your actual client ID
+      'X-NiceGUI-Client-ID': window.clientId
     })
   })
     .then(response => {
