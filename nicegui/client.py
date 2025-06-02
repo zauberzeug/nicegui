@@ -131,7 +131,7 @@ class Client:
         elements_dict = {
             id: element._to_dict() for id, element in self.elements.items()  # pylint: disable=protected-access
         }
-        past_client = Client.instances.get(past_client_id)
+        past_client = Client.instances.get(past_client_id) if past_client_id is not None else None
         past_elements_dict = {
             id: element._to_dict() for id, element in past_client.elements.items()
         } if past_client is not None else {}
