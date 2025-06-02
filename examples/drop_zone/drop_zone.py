@@ -4,12 +4,12 @@ from typing import ClassVar, List, Optional, cast
 
 from typing_extensions import Self
 
-from .. import background_tasks, core
-from ..classes import Classes
-from ..element import Element
-from ..events import DropZoneEventArguments, GenericEventArguments, Handler, KeyboardModifiers, handle_event
-from ..functions.notify import notify
-from ..native import native
+from nicegui import background_tasks, core
+from nicegui.classes import Classes
+from nicegui.element import Element
+from nicegui.events import DropZoneEventArguments, GenericEventArguments, Handler, KeyboardModifiers, handle_event
+from nicegui.functions.notify import notify
+from nicegui.native import native
 
 
 class DropZone(Element, component='drop_zone.js'):

@@ -1,3 +1,5 @@
+from drop_zone import DropZone as drop_zone
+
 from nicegui import ui
 from nicegui.events import DropZoneEventArguments
 
@@ -18,10 +20,10 @@ def say_hi_again(e: DropZoneEventArguments):
 
 with ui.row().classes('flex-nowrap w-full flex-1 bg-blue-400'):
     with ui.column().classes('w-full h-screen'):
-        with ui.drop_zone(say_hi) as drop_zone1:
+        with drop_zone(say_hi) as drop_zone1:
             ui.label("Drop it like it's hot (and try hold down Shift when dropping)")
         ui.label('Some text in between')
-        with ui.drop_zone(say_hi_again) as drop_zone2:
+        with drop_zone(say_hi_again) as drop_zone2:
             ui.label("Drop it like it's hot again!")
 
 drop_zone1.classes(add='relative whitespace-nowrap h-full w-full content-center text-center bg-cyan-400')

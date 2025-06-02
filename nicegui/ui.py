@@ -33,7 +33,6 @@ __all__ = [
     'dialog',
     'download',
     'drawer',
-    'drop_zone',
     'dropdown_button',
     'echart',
     'editor',
@@ -155,7 +154,6 @@ from .elements.context_menu import ContextMenu as context_menu
 from .elements.dark_mode import DarkMode as dark_mode
 from .elements.date import Date as date
 from .elements.dialog import Dialog as dialog
-from .elements.drop_zone import DropZone as drop_zone
 from .elements.echart import EChart as echart
 from .elements.editor import Editor as editor
 from .elements.expansion import Expansion as expansion
