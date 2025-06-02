@@ -9,7 +9,7 @@ from ..classes import Classes
 from ..element import Element
 from ..events import DropZoneEventArguments, GenericEventArguments, Handler, KeyboardModifiers, handle_event
 from ..functions.notify import notify
-from ..native import drop_queue
+from ..native import native
 
 
 class DropZone(Element, component='drop_zone.js'):
@@ -63,11 +63,11 @@ class DropZone(Element, component='drop_zone.js'):
     async def _check_queue_loop(self, event: GenericEventArguments) -> None:
         deadline = time.time() + 1.0
         while time.time() < deadline:
-            if not drop_queue.empty():
+            if not native.drop_queue.empty():
                 args = DropZoneEventArguments(
                     sender=self,
                     client=self.client,
-                    path=drop_queue.get_nowait(),
+                    path=native.drop_queue.get_nowait(),
                     modifiers=KeyboardModifiers(
                         alt=event.args['altKey'],
                         ctrl=event.args['ctrlKey'],
