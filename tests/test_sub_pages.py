@@ -177,3 +177,20 @@ def test_parameterized_sub_pages(screen: Screen):
     screen.should_not_contain('two-two')
     screen.should_contain('404: sub page /two-3 not found')
     assert main_content_calls == 1
+
+
+def test_sub_page_with_default_parameter(screen: Screen):
+    @ui.page('/')
+    @ui.page('/{_:path}')
+    def index(_):
+        ui.sub_pages({
+            '/': item_page,
+            '/{item}': item_page,
+        })
+
+    def item_page(item: str = 'nothing'):
+        ui.label(f'item: {item}')
+    screen.open('/')
+    screen.should_contain('item: nothing')
+    screen.open('/3')
+    screen.should_contain('item: 3')
