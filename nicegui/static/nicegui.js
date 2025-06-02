@@ -20,7 +20,7 @@ function parseElements(raw_elements) {
 }
 
 function replaceUndefinedAttributes(element, id) {
-  if (element && element['='] === true) Object.assign(element, mounted_app.elements[id]);
+  if (element && element['='] === true) Object.assign(element, {...mounted_app.elements[id], ...element});
   element.class ??= [];
   element.style ??= {};
   element.props ??= {};
