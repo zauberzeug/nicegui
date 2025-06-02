@@ -176,19 +176,26 @@ def run(*,
         host = host or '127.0.0.1'
         port = port or native_module.find_open_port()
         width, height = window_size or (800, 600)
-        native_module.activate(host, port, title, width, height, fullscreen, frameless)
+        native_host = '127.0.0.1' if host == '0.0.0.0' else host
+        native_module.activate(native_host, port, title, width, height, fullscreen, frameless)
     else:
         port = port or 8080
         host = host or '0.0.0.0'
     assert host is not None
     assert port is not None
 
+    if kwargs.get('ssl_certfile') and kwargs.get('ssl_keyfile'):
+        protocol = 'https'
+    else:
+        protocol = 'http'
+
     # NOTE: We save host and port in environment variables so the subprocess started in reload mode can access them.
     os.environ['NICEGUI_HOST'] = host
     os.environ['NICEGUI_PORT'] = str(port)
+    os.environ['NICEGUI_PROTOCOL'] = protocol
 
     if show:
-        helpers.schedule_browser(host, port)
+        helpers.schedule_browser(protocol, host, port)
 
     def split_args(args: str) -> List[str]:
         return [a.strip() for a in args.split(',')]
@@ -210,9 +217,9 @@ def run(*,
         **kwargs,
     )
     config.storage_secret = storage_secret
-    config.method_queue = native_module.method_queue if native else None
-    config.response_queue = native_module.response_queue if native else None
-    config.drop_queue = native_module.drop_queue if native else None
+    config.method_queue = native_module.native.method_queue if native else None
+    config.response_queue = native_module.native.response_queue if native else None
+    config.drop_queue = native_module.native.drop_queue if native else None
     Server.create_singleton(config)
 
     if (reload or config.workers > 1) and not isinstance(config.app, str):

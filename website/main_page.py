@@ -126,7 +126,7 @@ def create() -> None:
                 'customizable [color themes](/documentation/section_styling_appearance#color_theming)',
                 'custom CSS and classes',
                 'modern look with material design',
-                '[Tailwind CSS](https://tailwindcss.com/) auto-completion',
+                '[Tailwind CSS](https://v3.tailwindcss.com/) auto-completion',
             ])
             features('source', 'Coding', [
                 'routing for multiple [pages](/documentation/page)',
@@ -232,3 +232,5 @@ def create() -> None:
                         because of their great performance and ease of use.
                     ''')
             svg.face().classes('stroke-white shrink-0 w-[200px] md:w-[300px] lg:w-[450px]')
+        with ui.column().classes('w-full p-4 items-end text-white self-end'):
+            ui.link('Imprint & Privacy', '/imprint_privacy').classes('text-sm')

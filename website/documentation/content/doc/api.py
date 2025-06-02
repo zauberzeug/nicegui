@@ -11,6 +11,7 @@ from typing import Any, Callable, Dict, Optional, Union, overload
 import nicegui
 from nicegui import app as nicegui_app
 from nicegui import ui as nicegui_ui
+from nicegui.functions.navigate import Navigate
 from nicegui.elements.markdown import remove_indentation
 
 from .page import DocumentationPage
@@ -18,6 +19,12 @@ from .part import Demo, DocumentationPart
 
 registry: Dict[str, DocumentationPage] = {}
 redirects: Dict[str, str] = {}
+
+
+def auto_execute(function: Callable) -> Callable:
+    """Decorator to automatically execute the function when the module is imported."""
+    function()
+    return function
 
 
 def get_page(documentation: ModuleType) -> DocumentationPage:
@@ -69,7 +76,7 @@ def demo(element: type, /,
 
 
 @overload
-def demo(function: Callable, /,
+def demo(function: Union[Callable, Navigate], /,
          tab: Optional[Union[str, Callable]] = None,
          lazy: bool = True,
          ) -> Callable[[Callable], Callable]:

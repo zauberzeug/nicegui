@@ -15,11 +15,14 @@ import json
 import re
 import shutil
 import tarfile
+import tempfile
 from argparse import ArgumentParser
 from pathlib import Path
 from typing import Dict, List
 
 import requests
+
+temp_dir = tempfile.TemporaryDirectory()
 
 parser = ArgumentParser()
 parser.add_argument('path', default='.', help='path to the root of the repository')
@@ -44,9 +47,7 @@ def url_to_filename(url: str) -> str:
 
 
 def download_buffered(url: str) -> Path:
-    path = Path('/tmp/nicegui_dependencies')
-    path.mkdir(exist_ok=True)
-    filepath = path / url_to_filename(url)
+    filepath = Path(temp_dir.name) / url_to_filename(url)
     if not filepath.exists():
         response = requests.get(url, headers={'User-Agent': 'Mozilla/5.0'}, timeout=3)
         filepath.write_bytes(response.content)
@@ -121,6 +122,8 @@ for key, dependency in dependencies.items():
                 filename = filename.replace(rename, dependency['rename'][rename])
 
             newfile = prepare(Path(destination, filename))
+            if newfile.exists():
+                newfile.unlink()
             Path(tmp, key, extracted.name).rename(newfile)
 
             if 'GLTFLoader' in filename:
@@ -144,8 +147,13 @@ for key, dependency in dependencies.items():
                 content = re.sub(r'"\./chunks/mermaid.esm.min/(.*?)\.mjs"', r'"\1"', content)
                 newfile.write_text(content, encoding='utf-8')
 
-    # Delete destination folder if empty.
-    if not any(destination.iterdir()):
-        destination.rmdir()
+    try:
+        # Delete destination folder if empty.
+        if not any(destination.iterdir()):
+            destination.rmdir()
+    except Exception:
+        pass
+
+temp_dir.cleanup()
 
 cleanup(tmp)

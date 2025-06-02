@@ -6,12 +6,13 @@ import dataclasses
 import time
 import weakref
 from collections import defaultdict
+from contextlib import contextmanager
+from contextvars import ContextVar
 from typing import (
     TYPE_CHECKING,
     Any,
     Callable,
     DefaultDict,
-    Dict,
     Iterable,
     List,
     Mapping,
@@ -33,8 +34,10 @@ if TYPE_CHECKING:
 
 MAX_PROPAGATION_TIME = 0.01
 
+propagation_visited: ContextVar[Optional[Set[Tuple[int, str]]]] = ContextVar('propagation_visited', default=None)
+
 bindings: DefaultDict[Tuple[int, str], List] = defaultdict(list)
-bindable_properties: Dict[Tuple[int, str], weakref.finalize] = {}
+bindable_properties: weakref.WeakValueDictionary[Tuple[int, str], Any] = weakref.WeakValueDictionary()
 active_links: List[Tuple[Any, str, Any, str, Callable[[Any], Any]]] = []
 
 TC = TypeVar('TC', bound=type)
@@ -64,44 +67,60 @@ async def refresh_loop() -> None:
     """Refresh all bindings in an endless loop."""
     while True:
         _refresh_step()
-        await asyncio.sleep(core.app.config.binding_refresh_interval)
+        try:
+            await asyncio.sleep(core.app.config.binding_refresh_interval)
+        except asyncio.CancelledError:
+            break
+
+
+@contextmanager
+def _propagation_context():
+    visited = propagation_visited.get()
+    is_root_call = visited is None
+    if is_root_call:
+        visited = set()
+        token = propagation_visited.set(visited)
+    try:
+        yield visited
+    finally:
+        if is_root_call:
+            propagation_visited.reset(token)
 
 
 def _refresh_step() -> None:
-    visited: Set[Tuple[int, str]] = set()
     t = time.time()
-    for link in active_links:
-        (source_obj, source_name, target_obj, target_name, transform) = link
-        if _has_attribute(source_obj, source_name):
-            value = transform(_get_attribute(source_obj, source_name))
-            if not _has_attribute(target_obj, target_name) or _get_attribute(target_obj, target_name) != value:
-                _set_attribute(target_obj, target_name, value)
-                _propagate(target_obj, target_name, visited)
-        del link, source_obj, target_obj  # pylint: disable=modified-iterating-list
+    with _propagation_context():
+        for link in active_links:
+            (source_obj, source_name, target_obj, target_name, transform) = link
+            if _has_attribute(source_obj, source_name):
+                value = transform(_get_attribute(source_obj, source_name))
+                if not _has_attribute(target_obj, target_name) or _get_attribute(target_obj, target_name) != value:
+                    _set_attribute(target_obj, target_name, value)
+                    _propagate(target_obj, target_name)
+            del link, source_obj, target_obj  # pylint: disable=modified-iterating-list
     if time.time() - t > MAX_PROPAGATION_TIME:
         log.warning(f'binding propagation for {len(active_links)} active links took {time.time() - t:.3f} s')
 
 
-def _propagate(source_obj: Any, source_name: str, visited: Optional[Set[Tuple[int, str]]] = None) -> None:
-    if visited is None:
-        visited = set()
-    source_obj_id = id(source_obj)
-    if source_obj_id in visited:
-        return
-    visited.add((source_obj_id, source_name))
+def _propagate(source_obj: Any, source_name: str) -> None:
+    with _propagation_context() as visited:
+        source_obj_id = id(source_obj)
+        if (source_obj_id, source_name) in visited:
+            return
+        visited.add((source_obj_id, source_name))
 
-    if not _has_attribute(source_obj, source_name):
-        return
-    source_value = _get_attribute(source_obj, source_name)
+        if not _has_attribute(source_obj, source_name):
+            return
+        source_value = _get_attribute(source_obj, source_name)
 
-    for _, target_obj, target_name, transform in bindings.get((source_obj_id, source_name), []):
-        if (id(target_obj), target_name) in visited:
-            continue
+        for _, target_obj, target_name, transform in bindings.get((source_obj_id, source_name), []):
+            if (id(target_obj), target_name) in visited:
+                continue
 
-        target_value = transform(source_value)
-        if not _has_attribute(target_obj, target_name) or _get_attribute(target_obj, target_name) != target_value:
-            _set_attribute(target_obj, target_name, target_value)
-            _propagate(target_obj, target_name, visited)
+            target_value = transform(source_value)
+            if not _has_attribute(target_obj, target_name) or _get_attribute(target_obj, target_name) != target_value:
+                _set_attribute(target_obj, target_name, target_value)
+                _propagate(target_obj, target_name)
 
 
 def bind_to(self_obj: Any, self_name: str, other_obj: Any, other_name: str, forward: Callable[[Any], Any]) -> None:
@@ -179,7 +198,7 @@ class BindableProperty:
             return
         setattr(owner, '___' + self.name, value)
         key = (id(owner), str(self.name))
-        bindable_properties.setdefault(key, weakref.finalize(owner, lambda: bindable_properties.pop(key, None)))
+        bindable_properties[key] = owner
         _propagate(owner, self.name)
         if value_changed and self._change_handler is not None:
             self._change_handler(owner, value)
@@ -204,10 +223,9 @@ def remove(objects: Iterable[Any]) -> None:
         ]
         if not binding_list:
             del bindings[key]
-    for (obj_id, name), finalizer in list(bindable_properties.items()):
+    for obj_id, name in list(bindable_properties):
         if obj_id in object_ids:
             del bindable_properties[(obj_id, name)]
-            finalizer.detach()
 
 
 def reset() -> None:

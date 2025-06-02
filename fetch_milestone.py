@@ -38,6 +38,7 @@ notes: Dict[str, List[str]] = {
     'New features and enhancements': [],
     'Bugfixes': [],
     'Documentation': [],
+    'Testing': [],
     'Dependencies': [],
     'Others': [],
 }
@@ -55,10 +56,12 @@ for issue in issues:
     note = f'{title.strip()} ({numbers_str} by @{user})'
     if 'bug' in labels:
         notes['Bugfixes'].append(note)
-    elif 'enhancement' in labels:
+    elif 'feature' in labels:
         notes['New features and enhancements'].append(note)
     elif 'documentation' in labels:
         notes['Documentation'].append(note)
+    elif 'testing' in labels:
+        notes['Testing'].append(note)
     elif 'dependencies' in labels:
         notes['Dependencies'].append(note)
     else:

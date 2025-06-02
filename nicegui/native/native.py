@@ -2,14 +2,40 @@
 import inspect
 import warnings
 from multiprocessing import Queue
-from typing import Any, Callable, Tuple
+from typing import Any, Callable, Optional, Tuple
 
 from .. import run
 from ..logging import log
 
-method_queue: Queue = Queue()
-response_queue: Queue = Queue()
-drop_queue: Queue = Queue()
+method_queue: Optional[Queue] = None
+response_queue: Optional[Queue] = None
+drop_queue: Optional[Queue] = None
+
+
+def create_queues() -> None:
+    """Create the message queues. (For internal use only.)"""
+    global method_queue, response_queue, drop_queue  # pylint: disable=global-statement # noqa: PLW0603
+    method_queue = Queue()
+    response_queue = Queue()
+    drop_queue = Queue()
+
+
+def remove_queues() -> None:
+    """Remove the message queues by closing them and waiting for threads to finish. (For internal use only.)"""
+    global method_queue, response_queue, drop_queue  # pylint: disable=global-statement # noqa: PLW0603
+    if method_queue is not None:
+        method_queue.close()
+        method_queue.join_thread()
+        method_queue = None
+    if response_queue is not None:
+        response_queue.close()
+        response_queue.join_thread()
+        response_queue = None
+    if drop_queue is not None:
+        drop_queue.close()
+        drop_queue.join_thread()
+        drop_queue = None
+
 
 try:
     with warnings.catch_warnings():
@@ -121,11 +147,14 @@ try:
             raise NotImplementedError(f'exposing "{function}" is not supported')
 
         def _send(self, *args: Any, **kwargs: Any) -> None:
+            assert method_queue is not None
             name = inspect.currentframe().f_back.f_code.co_name  # type: ignore
             method_queue.put((name, args, kwargs))
 
         async def _request(self, *args: Any, **kwargs: Any) -> Any:
             def wrapper(*args: Any, **kwargs: Any) -> Any:
+                assert method_queue is not None
+                assert response_queue is not None
                 try:
                     method_queue.put((name, args, kwargs))
                     return response_queue.get()  # wait for the method to be called and writing its result to the queue

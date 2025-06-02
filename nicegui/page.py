@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import asyncio
 import inspect
-import time
 from functools import wraps
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Callable, Optional, Union
@@ -124,11 +123,16 @@ class page:
                     with client:
                         return await result
                 task = background_tasks.create(wait_for_result())
-                deadline = time.time() + self.response_timeout
-                while task and not client.is_waiting_for_connection and not task.done():
-                    if time.time() > deadline:
-                        raise TimeoutError(f'Response not ready after {self.response_timeout} seconds')
-                    await asyncio.sleep(0.1)
+                task_wait_for_connection = background_tasks.create(
+                    client._waiting_for_connection.wait(),  # pylint: disable=protected-access
+                )
+                try:
+                    await asyncio.wait([
+                        task,
+                        task_wait_for_connection,
+                    ], timeout=self.response_timeout, return_when=asyncio.FIRST_COMPLETED)
+                except asyncio.TimeoutError as e:
+                    raise TimeoutError(f'Response not ready after {self.response_timeout} seconds') from e
                 if task.done():
                     result = task.result()
                 else:

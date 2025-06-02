@@ -47,6 +47,25 @@ def dynamic_properties() -> None:
     })
 
 
+@doc.demo('EChart with custom theme', '''
+    You can apply custom themes created with the [Theme Builder](https://echarts.apache.org/en/theme-builder.html).
+
+    Instead of passing the theme as a dictionary, you can pass a URL to a JSON file.
+    This allows the browser to cache the theme and load it faster when the same theme is used multiple times.
+
+    *Added in version 2.15.0*
+''')
+def custom_theme() -> None:
+    ui.echart({
+        'xAxis': {'type': 'category'},
+        'yAxis': {'type': 'value'},
+        'series': [{'type': 'bar', 'data': [20, 10, 30, 50, 40, 30]}],
+    }, theme={
+        'color': ['#b687ac', '#28738a', '#a78f8f'],
+        'backgroundColor': 'rgba(254,248,239,1)',
+    })
+
+
 @doc.demo('EChart from pyecharts', '''
     You can create an EChart element from a pyecharts object using the `from_pyecharts` method.
     For defining dynamic options like a formatter function, you can use the `JsCode` class from `pyecharts.commons.utils`.

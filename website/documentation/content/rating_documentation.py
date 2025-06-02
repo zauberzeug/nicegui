@@ -46,4 +46,4 @@ def rating_scale():
     ui.rating(max=10, icon='circle').bind_value(slider)
 
 
-doc.reference(ui.range)
+doc.reference(ui.rating)

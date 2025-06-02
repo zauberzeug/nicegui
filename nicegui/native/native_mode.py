@@ -48,7 +48,10 @@ def _open_window(
     closed = Event()
     window.events.closed += closed.set
     _start_window_method_executor(window, method_queue, response_queue, closed)
-    webview.start(_bind_events, (window, drop_queue), storage_path=tempfile.mkdtemp(), **core.app.native.start_args)
+    if not core.app.native.start_args.get('private_mode', True) and 'storage_path' not in core.app.native.start_args:
+        log.warning('Pass in a `storage_path` to properly disable `private_mode` for the native app.')
+    webview.start(_bind_events, (window, drop_queue), **
+                  {'storage_path': tempfile.mkdtemp(), **core.app.native.start_args})
 
 
 def _start_window_method_executor(window: webview.Window,
@@ -112,6 +115,7 @@ def activate(host: str, port: int, title: str, width: int, height: int, fullscre
         while not core.app.is_stopped:
             time.sleep(0.1)
         _thread.interrupt_main()
+        native.remove_queues()
 
     if not optional_features.has('webview'):
         log.error('Native mode is not supported in this configuration.\n'
@@ -119,6 +123,7 @@ def activate(host: str, port: int, title: str, width: int, height: int, fullscre
         sys.exit(1)
 
     mp.freeze_support()
+    native.create_queues()
     args = host, port, title, width, height, fullscreen, frameless, native.method_queue, native.response_queue, native.drop_queue
     process = mp.Process(target=_open_window, args=args, daemon=True)
     process.start()

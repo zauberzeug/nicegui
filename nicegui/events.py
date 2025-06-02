@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 from contextlib import nullcontext
 from dataclasses import dataclass
 from inspect import Parameter, signature
@@ -27,6 +28,7 @@ from .slot import Slot
 if TYPE_CHECKING:
     from .client import Client
     from .element import Element
+    from .elements.slide_item import SlideSide
     from .observables import ObservableCollection
 
 
@@ -54,6 +56,11 @@ class GenericEventArguments(UiEventArguments):
 @dataclass(**KWONLY_SLOTS)
 class ClickEventArguments(UiEventArguments):
     pass
+
+
+@dataclass(**KWONLY_SLOTS)
+class SlideEventArguments(UiEventArguments):
+    side: SlideSide
 
 
 @dataclass(**KWONLY_SLOTS)
@@ -436,7 +443,7 @@ def handle_event(handler: Optional[Handler[EventT]], arguments: EventT) -> None:
                 result = cast(Callable[[EventT], Any], handler)(arguments)
             else:
                 result = cast(Callable[[], Any], handler)()
-        if isinstance(result, Awaitable) and not isinstance(result, AwaitableResponse):
+        if isinstance(result, Awaitable) and not isinstance(result, AwaitableResponse) and not isinstance(result, asyncio.Task):
             # NOTE: await an awaitable result even if the handler is not a coroutine (like a lambda statement)
             async def wait_for_result():
                 with parent_slot:
