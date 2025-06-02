@@ -392,7 +392,6 @@ function createApp(elements, options) {
 
             const oldTypes = new Set((this.elements[id]?.events || []).map(ev => ev.type));
             if (element.events?.some(e => !oldTypes.has(e.type))) {
-              console.log("Re-rendering element " + id + " because of new events");
               delete this.elements[id];
               needAwaitNextTick = true;
             }
