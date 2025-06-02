@@ -9,9 +9,9 @@ from nicegui import background_tasks, core
 from nicegui.classes import Classes
 from nicegui.dataclasses import KWONLY_SLOTS
 from nicegui.element import Element
-from nicegui.events import GenericEventArguments, Handler, KeyboardModifiers, handle_event
+from nicegui.events import GenericEventArguments, Handler, KeyboardModifiers, PywebviewEventArguments, handle_event
 from nicegui.functions.notify import notify
-from nicegui.native import PywebviewEventArguments, event_manager
+from nicegui.native import event_manager
 
 
 @dataclass(**KWONLY_SLOTS)
