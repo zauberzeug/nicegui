@@ -33,7 +33,7 @@ class AppConfig:
     binding_refresh_interval: float = field(init=False)
     reconnect_timeout: float = field(init=False)
     message_history_length: int = field(init=False)
-    cache_control_directives: Optional[str] = field(init=False)
+    cache_control_directives: str = field(init=False)
     tailwind: bool = field(init=False)
     prod_js: bool = field(init=False)
     show_welcome_message: bool = field(init=False)
@@ -50,7 +50,7 @@ class AppConfig:
                        binding_refresh_interval: float,
                        reconnect_timeout: float,
                        message_history_length: int,
-                       cache_control_directives: Optional[str] = 'public, max-age=31536000, immutable, stale-while-revalidate=31536000',
+                       cache_control_directives: str = 'public, max-age=31536000, immutable, stale-while-revalidate=31536000',
                        tailwind: bool,
                        prod_js: bool,
                        show_welcome_message: bool,

@@ -22,7 +22,7 @@ def run_with(
     binding_refresh_interval: float = 0.1,
     reconnect_timeout: float = 3.0,
     message_history_length: int = 1000,
-    cache_control_directives: Optional[str] = 'public, max-age=31536000, immutable, stale-while-revalidate=31536000',
+    cache_control_directives: str = 'public, max-age=31536000, immutable, stale-while-revalidate=31536000',
     mount_path: str = '/',
     on_air: Optional[Union[str, Literal[True]]] = None,
     tailwind: bool = True,
