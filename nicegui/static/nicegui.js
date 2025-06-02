@@ -98,31 +98,27 @@ function updateBrowserDataStore(str_in) {
 }
 
 function parseElements(raw_elements, token) {
-  console.log("Token is", token);
-  function reviver(_, value) {
-    string_detection_prefix = token + ":";
-    if (typeof value === "string" && value.startsWith(string_detection_prefix)) {
-      const localKey = value.slice(string_detection_prefix.length);
-      const storedValue = localStorage.getItem(localKey);
-      console.log(`String: Retrieving "${localKey}" from localStorage, since found ${value} in the elements as a string.`);
-      return storedValue;
-    } else if (Array.isArray(value) && value[0] === token) {
-      const storedValue = JSON.parse(localStorage.getItem(value[1]));
-      console.log(`Array: Retrieving "${value[1]}" from localStorage, since found ${value} in the elements as an array.`);
-      return storedValue;
-    } else if (value !== null && typeof value === "object" && token in value) {
-      const storedValue = JSON.parse(localStorage.getItem(value[token]));
-      console.log(`Dictionary: Retrieving "${value[token]}" from localStorage, since found ${JSON.stringify(value)} in the elements as an object.`);
-      // Add original keys (except the token) on top of storedValue
-      if (storedValue && typeof storedValue === "object") {
-        for (const k in value) {
-          if (k !== token) {
-            console.log(`Adding key "${k}" with value "${value[k]}" to storedValue.`);
-            storedValue[k] = value[k];
-          }
+  // Reviver function handles compressed values
+  const reviver = (_, value) => {
+    // Handle string references (token:key)
+    if (typeof value === 'string' && value.startsWith(`${token}:`)) {
+      const key = value.slice(`${token}:`.length);
+      return localStorage.getItem(key);
+    }
+    // Handle array references [token, key]
+    if (Array.isArray(value) && value[0] === token && value.length > 1) {
+      return JSON.parse(localStorage.getItem(value[1]));
+    }
+    // Handle object references { [token]: key, ...extraProps }
+    if (value && typeof value === 'object' && token in value) {
+      const stored = JSON.parse(localStorage.getItem(value[token]));
+      // Merge extra properties if stored value is an object
+      if (stored && typeof stored === 'object') {
+        for (const [k, v] of Object.entries(value)) {
+          if (k !== token) stored[k] = v;
         }
       }
-      return storedValue;
+      return stored;
     }
     return value;
   }
