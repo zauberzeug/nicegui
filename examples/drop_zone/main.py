@@ -1,21 +1,23 @@
 from drop_zone import DropZone as drop_zone
+from drop_zone import DropZoneEventArguments
 
 from nicegui import ui
-from nicegui.events import DropZoneEventArguments
 
 
 def say_hi(e: DropZoneEventArguments):
     print(e)
-    if e.modifiers.shift:
-        ui.notify('Shift key hold')
-    else:
-        ui.notify('Shift key not hold')
-    ui.notify(e.path)
+    for drop in e.args:
+        if e.modifiers.shift:
+            ui.notify('Shift key hold')
+        else:
+            ui.notify('Shift key not hold')
+        ui.notify(drop['pywebviewFullPath'])
 
 
 def say_hi_again(e: DropZoneEventArguments):
     print(e)
-    ui.notify(f'again! {e.path}')
+    for drop in e.args:
+        ui.notify(f'again! {drop["pywebviewFullPath"]}')
 
 
 with ui.row().classes('flex-nowrap w-full flex-1 bg-blue-400'):
