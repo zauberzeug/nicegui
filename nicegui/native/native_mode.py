@@ -14,7 +14,7 @@ from typing import Any, Callable, Dict, List, Tuple
 from .. import core, helpers, optional_features
 from ..logging import log
 from ..server import Server
-from . import native
+from . import event_manager, native
 
 try:
     with warnings.catch_warnings():
@@ -29,7 +29,7 @@ except ModuleNotFoundError:
 
 def _open_window(
     host: str, port: int, title: str, width: int, height: int, fullscreen: bool, frameless: bool,
-    method_queue: mp.Queue, response_queue: mp.Queue, drop_queue: mp.Queue,
+    method_queue: mp.Queue, response_queue: mp.Queue, event_queue: mp.Queue,
 ) -> None:
     while not helpers.is_port_open(host, port):
         time.sleep(0.1)
@@ -48,9 +48,10 @@ def _open_window(
     closed = Event()
     window.events.closed += closed.set
     _start_window_method_executor(window, method_queue, response_queue, closed)
+    _bind_pywebview_events(window, event_queue)
     if not core.app.native.start_args.get('private_mode', True) and 'storage_path' not in core.app.native.start_args:
         log.warning('Pass in a `storage_path` to properly disable `private_mode` for the native app.')
-    webview.start(_bind_events, (window, drop_queue), **
+    webview.start(_bind_pywebview_dom_events, (window, event_queue), **
                   {'storage_path': tempfile.mkdtemp(), **core.app.native.start_args})
 
 
@@ -99,11 +100,34 @@ def _start_window_method_executor(window: webview.Window,
     Thread(target=window_method_executor).start()
 
 
-def _bind_events(window: webview.Window, drop_queue: mp.Queue) -> None:
-    def on_drop(e: dict[str, Any]) -> None:
-        for file in e['dataTransfer']['files']:
-            drop_queue.put(file.get('pywebviewFullPath'))
-    window.dom.document.events.drop += DOMEventHandler(on_drop, True, True)
+def _bind_pywebview_events(window: webview.Window, event_queue: mp.Queue) -> None:
+    def event(name: str) -> Callable:
+        def handler(*args) -> None:
+            event_queue.put({'id': name, 'args': args})
+        return handler
+
+    window.events.closed += event('closed')
+    window.events.closing += event('closing')
+    window.events.before_show += event('before_show')
+    window.events.shown += event('shown')
+    window.events.loaded += event('loaded')
+    window.events.minimized += event('minimized')
+    window.events.maximized += event('maximized')
+    window.events.restored += event('restored')
+    window.events.resized += event('resized')
+    window.events.moved += event('moved')
+
+
+def _bind_pywebview_dom_events(window: webview.Window, event_queue: mp.Queue) -> None:
+    def event(name: str) -> Callable:
+        def handler(*args) -> None:
+            event_queue.put({'id': name, 'args': args})
+        return handler
+
+    window.dom.document.events.dragenter += DOMEventHandler(event('dragenter'), True, True)  # type: ignore
+    window.dom.document.events.dragstart += DOMEventHandler(event('dragstart'), True, True)  # type: ignore
+    window.dom.document.events.dragover += DOMEventHandler(event('dragover'), True, True, debounce=500)  # type: ignore
+    window.dom.document.events.drop += DOMEventHandler(event('drop'), True, True)  # type: ignore
 
 
 def activate(host: str, port: int, title: str, width: int, height: int, fullscreen: bool, frameless: bool) -> None:
@@ -124,7 +148,8 @@ def activate(host: str, port: int, title: str, width: int, height: int, fullscre
 
     mp.freeze_support()
     native.create_queues()
-    args = host, port, title, width, height, fullscreen, frameless, native.method_queue, native.response_queue, native.drop_queue
+    event_manager.start()
+    args = host, port, title, width, height, fullscreen, frameless, native.method_queue, native.response_queue, native.event_queue
     process = mp.Process(target=_open_window, args=args, daemon=True)
     process.start()
 

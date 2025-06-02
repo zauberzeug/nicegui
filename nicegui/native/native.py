@@ -9,20 +9,20 @@ from ..logging import log
 
 method_queue: Optional[Queue] = None
 response_queue: Optional[Queue] = None
-drop_queue: Optional[Queue] = None
+event_queue: Optional[Queue] = None
 
 
 def create_queues() -> None:
     """Create the message queues. (For internal use only.)"""
-    global method_queue, response_queue, drop_queue  # pylint: disable=global-statement # noqa: PLW0603
+    global method_queue, response_queue, event_queue  # pylint: disable=global-statement # noqa: PLW0603
     method_queue = Queue()
     response_queue = Queue()
-    drop_queue = Queue()
+    event_queue = Queue()
 
 
 def remove_queues() -> None:
     """Remove the message queues by closing them and waiting for threads to finish. (For internal use only.)"""
-    global method_queue, response_queue, drop_queue  # pylint: disable=global-statement # noqa: PLW0603
+    global method_queue, response_queue, event_queue  # pylint: disable=global-statement # noqa: PLW0603
     if method_queue is not None:
         method_queue.close()
         method_queue.join_thread()
@@ -31,10 +31,10 @@ def remove_queues() -> None:
         response_queue.close()
         response_queue.join_thread()
         response_queue = None
-    if drop_queue is not None:
-        drop_queue.close()
-        drop_queue.join_thread()
-        drop_queue = None
+    if event_queue is not None:
+        event_queue.close()
+        event_queue.join_thread()
+        event_queue = None
 
 
 try:

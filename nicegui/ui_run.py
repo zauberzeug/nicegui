@@ -219,7 +219,7 @@ def run(*,
     config.storage_secret = storage_secret
     config.method_queue = native_module.native.method_queue if native else None
     config.response_queue = native_module.native.response_queue if native else None
-    config.drop_queue = native_module.native.drop_queue if native else None
+    config.event_queue = native_module.native.event_queue if native else None
     Server.create_singleton(config)
 
     if (reload or config.workers > 1) and not isinstance(config.app, str):
