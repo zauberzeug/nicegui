@@ -118,3 +118,15 @@ def test_mimetypes_of_static_files(screen: Screen):
     response = requests.get(f'http://localhost:{Screen.PORT}/_nicegui/{__version__}/static/nicegui.css', timeout=5)
     assert response.status_code == 200
     assert response.headers['Content-Type'].startswith('text/css')
+
+
+def test_cache_control_header_of_static_files(screen: Screen):
+    ui.markdown()
+    screen.open('/')
+
+    response1 = requests.get(f'http://localhost:{Screen.PORT}/_nicegui/{__version__}/static/nicegui.css', timeout=5)
+    assert 'immutable' in response1.headers.get('Cache-Control', '')
+
+    response2 = requests.get(
+        f'http://localhost:{Screen.PORT}/_nicegui/{__version__}/dynamic_resources/codehilite.css', timeout=5)
+    assert 'immutable' not in response2.headers.get('Cache-Control', '')
