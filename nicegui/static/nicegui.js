@@ -111,9 +111,7 @@ function parseElements(raw_elements, token) {
       console.log(`Array: Retrieving "${value[1]}" from localStorage, since found ${value} in the elements as an array.`);
       return storedValue;
     } else if (value !== null && typeof value === "object" && token in value) {
-      console.log("REVIVING KEY:", _, "VALUE:", value);
       const storedValue = JSON.parse(localStorage.getItem(value[token]));
-      console.log('Stored value:', storedValue);
       console.log(`Dictionary: Retrieving "${value[token]}" from localStorage, since found ${JSON.stringify(value)} in the elements as an object.`);
       // Add original keys (except the token) on top of storedValue
       if (storedValue && typeof storedValue === "object") {
@@ -128,8 +126,7 @@ function parseElements(raw_elements, token) {
     }
     return value;
   }
-  console.log("Raw elements:", raw_elements);
-  retval = JSON.parse(
+  return JSON.parse(
     raw_elements
       .replace(/&#36;/g, "$")
       .replace(/&#96;/g, "`")
@@ -138,8 +135,6 @@ function parseElements(raw_elements, token) {
       .replace(/&amp;/g, "&"),
     reviver
   );
-  console.log("Parsed elements:", retval);
-  return retval;
 }
 
 function replaceUndefinedAttributes(element) {
