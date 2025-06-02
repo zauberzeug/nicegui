@@ -15,7 +15,7 @@ RUN apt update && apt install curl build-essential -y
 
 # pin the last seed packages that still support 3.8
 RUN python -m pip install --upgrade "pip<25" "setuptools<80" wheel
-RUN python -m pip install "virtualenv<20.31" "poetry==1.8.5" && poetry config virtualenvs.create false
+RUN python -m pip install "virtualenv<20.31" "poetry~=1.8" && poetry config virtualenvs.create false
 
 WORKDIR /app
 
