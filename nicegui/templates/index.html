@@ -25,6 +25,20 @@
     <script defer src="{{ prefix | safe }}/_nicegui/{{version}}/static/socket.io.min.js"></script>
     {% if tailwind %}
     <script defer src="{{ prefix | safe }}/_nicegui/{{version}}/static/tailwindcss.min.js"></script>
+    {% else %}
+    <!-- TODO: Add style reset CSS for Tailwind CSS into npm.json! -->
+    <link rel="stylesheet" href="{{ prefix | safe }}/_nicegui/{{version}}/static/unocss/tailwind.css" />
+    <script src="{{ prefix | safe }}/_nicegui/{{version}}/static/unocss/preset-wind.global.js"></script>
+    <script>
+        window.__unocss = {
+            presets: [
+                () =>
+                    window.__unocss_runtime.presets.presetWind()
+            ],
+        }
+    </script>
+    <!-- Tried out with uno.global.js, equally broken! -->
+    <script src="{{ prefix | safe }}/_nicegui/{{version}}/static/unocss/core.global.js"></script>
     {% endif %}
     <!-- prevent Prettier from removing this line -->
     {% if prod_js %}
