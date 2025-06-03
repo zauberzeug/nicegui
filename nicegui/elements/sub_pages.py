@@ -31,7 +31,11 @@ class SubPages(Element, component='sub_pages.js'):
         return self
 
     def show(self, full_path: str) -> bool:
-        """Show the page for the given path."""
+        """Show the page for the given path.
+
+        :param full_path: The path to navigate to
+        :return: True if the path was handled, False otherwise
+        """
         segments = full_path.split('/')
         while segments:
             sub_path = '/'.join(segments)
@@ -60,6 +64,18 @@ class SubPages(Element, component='sub_pages.js'):
         self.clear()
         with self:
             ui.label(f'404: sub page {full_path} not found')
+        return False
+
+    def show_and_update_history(self, path: str) -> bool:
+        """Show the page and update browser history if successful.
+
+        :param path: The path to navigate to
+        :return: True if the path was handled, False otherwise
+        """
+        if self.show(path):
+            if self._is_root():
+                ui.run_javascript(f'history.pushState({{page: "{path}"}}, "", "{path}");')
+            return True
         return False
 
     @staticmethod
@@ -123,6 +139,21 @@ class SubPages(Element, component='sub_pages.js'):
                 with self:
                     await result
             background_tasks.create(background_task(), name=f'building sub_page {path}')
+
+
+def find_root_sub_page(element: ui.element) -> Optional[SubPages]:
+    """Find the root SubPages component in an element tree."""
+    def find_in_element(el: ui.element):
+        if isinstance(el, SubPages) and el._is_root():
+            return el
+        if hasattr(el, 'default_slot') and el.default_slot:
+            for child in el.default_slot.children:
+                result = find_in_element(child)
+                if result:
+                    return result
+        return None
+
+    return find_in_element(element)
 
 
 def find_child_sub_pages(element: ui.element) -> Optional[SubPages]:

@@ -66,6 +66,18 @@ class Navigate:
             path = Client.page_routes[target]
         else:
             raise TypeError(f'Invalid target type: {type(target)}')
+
+        if not new_tab and isinstance(target, str):
+            from ..elements.sub_pages import find_root_sub_page
+            try:
+                client = context.client
+                if client and client.content:
+                    sub_page = find_root_sub_page(client.content)
+                    if sub_page and sub_page.show_and_update_history(path):
+                        return
+            except Exception:
+                pass
+
         context.client.open(path, new_tab)
 
 

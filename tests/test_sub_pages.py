@@ -194,3 +194,62 @@ def test_sub_page_with_default_parameter(screen: Screen):
     screen.should_contain('item: nothing')
     screen.open('/3')
     screen.should_contain('item: 3')
+
+
+def test_sub_page_changing_via_navigate_to(screen: Screen):
+    index_calls = 0
+
+    @ui.page('/')
+    @ui.page('/{_:path}')
+    def index(_):
+        nonlocal index_calls
+        index_calls += 1
+        ui.button('go', on_click=lambda: ui.navigate.to('/test'))
+        ui.sub_pages({
+            '/': main_content,
+            '/{item}': item_content,
+        })
+
+    def main_content():
+        ui.label('main-content')
+
+    def item_content(item: str):
+        ui.label(f'item: {item}')
+
+    screen.open('/')
+    screen.should_contain('main-content')
+    screen.click('go')
+    screen.should_contain('item: test')
+    assert index_calls == 1
+
+
+def test_navigate_to_new_tab_fallback(screen: Screen):
+    """Test that ui.navigate.to with new_tab=True always uses normal navigation."""
+    index_calls = 0
+
+    @ui.page('/')
+    @ui.page('/{_:path}')
+    def index(_):
+        nonlocal index_calls
+        index_calls += 1
+        ui.button('new tab', on_click=lambda: ui.navigate.to('/internal', new_tab=True))
+        ui.sub_pages({
+            '/': main_content,
+            '/internal': internal_content,
+        })
+
+    def main_content():
+        ui.label('main-content')
+
+    def internal_content():
+        ui.label('internal-content')
+
+    screen.open('/')
+    screen.should_contain('main-content')
+    assert index_calls == 1
+
+    # Even though this is a sub page route, new_tab=True should use normal navigation
+    screen.click('new tab')
+    screen.wait(0.5)
+    screen.switch_to(1)
+    screen.should_contain('internal-content')
