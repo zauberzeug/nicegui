@@ -163,15 +163,12 @@ class Client:
             'head_html': self.head_html,
             'body_html': '<style>' + '\n'.join(vue_styles) + '</style>\n' + self.body_html + '\n' + '\n'.join(vue_html),
             'vue_scripts': '\n'.join(vue_scripts),
-            'js_imports': '\n'.join(js_imports),
-            'js_imports_urls': js_imports_urls,
             'quasar_config': json.dumps(core.app.config.quasar_config),
             'title': self.resolve_title(),
             'viewport': self.page.resolve_viewport(),
             'favicon_url': get_favicon_url(self.page, prefix),
             'dark': str(self.page.resolve_dark()),
             'language': self.page.resolve_language(),
-            'translations': translations.get(self.page.resolve_language(), translations['en-US']),
             'prefix': prefix,
             'tailwind': core.app.config.tailwind,
             'prod_js': core.app.config.prod_js,
@@ -188,6 +185,9 @@ class Client:
             )
         context['request'] = request
         context['imports'] = json.dumps(imports)
+        context['js_imports'] = '\n'.join(js_imports)
+        context['js_imports_urls'] = js_imports_urls
+        context['translations'] = translations.get(self.page.resolve_language(), translations['en-US'])
         return templates.TemplateResponse(
             request=request,
             name='index.html',
