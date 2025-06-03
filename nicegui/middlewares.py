@@ -21,7 +21,7 @@ class SetCacheControlMiddleware(BaseHTTPMiddleware):
 
     async def dispatch(self, request: Request, call_next: RequestResponseEndpoint) -> Response:
         response = await call_next(request)
-        if request.url.path.startswith(f'/_nicegui/{__version__}/')\
+        if request.url.path.startswith(f'/_nicegui/{__version__}/') \
                 and not request.url.path.startswith(f'/_nicegui/{__version__}/dynamic_resources/'):
             response.headers['Cache-Control'] = core.app.config.cache_control_directives
         return response
