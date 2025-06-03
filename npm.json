@@ -136,5 +136,17 @@
     "rename": {
       "package/": ""
     }
+  },
+  "unocss": {
+    "version": "66.1.3",
+    "package": "@unocss/runtime",
+    "destination": "nicegui/static",
+    "keep": [
+      "package/core\\.global\\.js",
+      "package/preset-.*\\.global\\.js"
+    ],
+    "rename": {
+      "package/": ""
+    }
   }
 }
