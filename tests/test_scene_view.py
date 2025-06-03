@@ -47,3 +47,18 @@ def test_camera_move(screen: Screen):
     screen.wait(1)
     position = screen.selenium.execute_script(f'return getElement({scene_view.id}).camera_tween._object')
     assert np.allclose(position, [1, 2, 3, 7, 8, 9, 4, 5, 6])
+
+
+def test_custom_controls(screen: Screen):
+    with ui.scene(control_type='trackball') as scene_trackball:
+        scene_trackball.box()
+
+    with ui.scene(control_type='map') as scene_map:
+        scene_map.box()
+
+    screen.open('/')
+    screen.wait(1)
+    assert screen.selenium.execute_script(
+        f'return getElement({scene_trackball.id}).controls.constructor.name') == 'TrackballControls'
+    assert screen.selenium.execute_script(
+        f'return getElement({scene_map.id}).controls.constructor.name') == 'MapControls'
