@@ -55,13 +55,13 @@ def test_adding_single_media_file(screen: Screen):
 
 @pytest.mark.parametrize('url_path', ['/static', '/static/'])
 def test_get_from_static_files_dir(url_path: str, screen: Screen):
-    app.add_static_files(url_path, Path(TEST_DIR).parent)
+    app.add_static_files(url_path, Path(TEST_DIR).parent, max_cache_age=3456)
 
     screen.open('/')
     with httpx.Client() as http_client:
         r = http_client.get(f'http://localhost:{Screen.PORT}/static/examples/slideshow/slides/slide1.jpg')
         assert r.status_code == 200
-        assert 'max-age=' in r.headers['Cache-Control']
+        assert 'max-age=3456' in r.headers['Cache-Control']
 
 
 def test_404_for_non_existing_static_file(screen: Screen):
@@ -76,13 +76,13 @@ def test_404_for_non_existing_static_file(screen: Screen):
 
 
 def test_adding_single_static_file(screen: Screen):
-    url_path = app.add_static_file(local_file=IMAGE_FILE)
+    url_path = app.add_static_file(local_file=IMAGE_FILE, max_cache_age=3456)
 
     screen.open('/')
     with httpx.Client() as http_client:
         r = http_client.get(f'http://localhost:{Screen.PORT}{url_path}')
         assert r.status_code == 200
-        assert 'max-age=' in r.headers['Cache-Control']
+        assert 'max-age=3456' in r.headers['Cache-Control']
 
 
 def test_auto_serving_file_from_image_source(screen: Screen):
@@ -118,3 +118,23 @@ def test_mimetypes_of_static_files(screen: Screen):
     response = requests.get(f'http://localhost:{Screen.PORT}/_nicegui/{__version__}/static/nicegui.css', timeout=5)
     assert response.status_code == 200
     assert response.headers['Content-Type'].startswith('text/css')
+
+
+def test_cache_control_header_of_static_files(screen: Screen):
+    ui.markdown()
+    app.add_static_files('/static', Path(TEST_DIR).parent)
+
+    screen.open('/')
+
+    # resources are served with cache-control headers from `ui.run`
+    response1 = requests.get(f'http://localhost:{Screen.PORT}/_nicegui/{__version__}/static/nicegui.css', timeout=5)
+    assert 'immutable' in response1.headers.get('Cache-Control', '')
+
+    # dynamic resources are _not_ served with cache-control headers from `ui.run`
+    response2 = requests.get(
+        f'http://localhost:{Screen.PORT}/_nicegui/{__version__}/dynamic_resources/codehilite.css', timeout=5)
+    assert 'immutable' not in response2.headers.get('Cache-Control', '')
+
+    # static resources are _not_ served with cache-control headers from `ui.run`
+    response3 = requests.get(f'http://localhost:{Screen.PORT}/static/examples/slideshow/slides/slide1.jpg', timeout=5)
+    assert 'immutable' not in response3.headers.get('Cache-Control', '')

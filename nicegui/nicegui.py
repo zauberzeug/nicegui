@@ -78,16 +78,14 @@ def _get_library(key: str) -> FileResponse:
         if is_map:
             path = path.with_name(path.name + '.map')
         if path.exists():
-            headers = {'Cache-Control': 'public, max-age=3600'}
-            return FileResponse(path, media_type='text/javascript', headers=headers)
+            return FileResponse(path, media_type='text/javascript')
     raise HTTPException(status_code=404, detail=f'library "{key}" not found')
 
 
 @app.get(f'/_nicegui/{__version__}' + '/components/{key:path}')
 def _get_component(key: str) -> FileResponse:
     if key in js_components and js_components[key].path.exists():
-        headers = {'Cache-Control': 'public, max-age=3600'}
-        return FileResponse(js_components[key].path, media_type='text/javascript', headers=headers)
+        return FileResponse(js_components[key].path, media_type='text/javascript')
     raise HTTPException(status_code=404, detail=f'component "{key}" not found')
 
 
@@ -100,9 +98,8 @@ def _get_resource(key: str, path: str) -> FileResponse:
         except ValueError as e:
             raise HTTPException(status_code=403, detail='forbidden') from e
         if filepath.exists():
-            headers = {'Cache-Control': 'public, max-age=3600'}
             media_type, _ = mimetypes.guess_type(filepath)
-            return FileResponse(filepath, media_type=media_type, headers=headers)
+            return FileResponse(filepath, media_type=media_type)
     raise HTTPException(status_code=404, detail=f'resource "{key}" not found')
 
 
