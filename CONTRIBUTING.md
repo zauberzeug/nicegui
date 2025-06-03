@@ -194,6 +194,31 @@ To list your addition on the website itself, you can use the `example_link` func
 ["In-depth examples" section heading](https://github.com/zauberzeug/nicegui/blob/8a86d2064f8f4464f3819ac5c6763a2cb2d0e990/main.py#L242).
 The title should match the example folder name when [snake case converted](https://github.com/zauberzeug/nicegui/blob/8a86d2064f8f4464f3819ac5c6763a2cb2d0e990/website/style.py#L31).
 
+## Node dependencies
+
+We use [npm.json](https://github.com/zauberzeug/nicegui/blob/main/npm.json) to pin the versions of the node dependencies.
+They are usually updated by the maintainers during major releases.
+
+To update or add new dependencies, we follow these steps:
+
+1. Use `npm` or other derivative tools, modify the `package.json` file with new versions or add dependencies.
+   - We **never** modify the version in `package.json` or `npm.json` directly, since there may be conflicts between versions.
+   - `npx npm-check-updates -u --target semver` is a good starting point for updating dependencies.
+2. Run `npm install` to install the new dependencies.
+   Any conflicts in installation will be caught at this moment.
+3. Run `pin_versions.py` to update the `npm.json` file.
+4. Run `npm.py` to download dependencies into the `nicegui/static/` and `nicegui/elements/lib/` directories.
+5. Remember to commit `package.json` in addition to the new dependencies and `DEPENDENCIES.md`, such that Dependabot can catch outdated dependencies with security issues.
+
+Apart from updating Node libraries, the following tools are used to update other resources:
+
+- scripts/codemirror/bundle.bash for managing the CodeMirror dependency
+- fetch_google_fonts.py for fetching the Google Fonts
+- fetch_languages.py to update the list of supported languages in language.py
+- fetch_milestone.py to prepare the release notes for a given milestone
+- fetch_sponsors.py to update the list of sponsors on the website and in the README.md file
+- fetch_tailwind.py to update NiceGUI's Tailwind API
+
 ## Pull requests
 
 To get started, fork the repository on GitHub, clone it somewhere on your filesystem, commit and push your changes,
