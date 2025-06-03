@@ -12,7 +12,7 @@ from fastapi.responses import FileResponse, Response
 from . import air, background_tasks, binding, core, favicon, helpers, json, run, welcome
 from .app import App
 from .client import Client
-from .dependencies import js_components, libraries, resources
+from .dependencies import dynamic_resources, js_components, libraries, resources
 from .error import error_content
 from .json import NiceGUIJSONResponse
 from .logging import log
@@ -75,16 +75,14 @@ def _get_library(key: str) -> FileResponse:
         if is_map:
             path = path.with_name(path.name + '.map')
         if path.exists():
-            headers = {'Cache-Control': 'public, max-age=3600'}
-            return FileResponse(path, media_type='text/javascript', headers=headers)
+            return FileResponse(path, media_type='text/javascript')
     raise HTTPException(status_code=404, detail=f'library "{key}" not found')
 
 
 @app.get(f'/_nicegui/{__version__}' + '/components/{key:path}')
 def _get_component(key: str) -> FileResponse:
     if key in js_components and js_components[key].path.exists():
-        headers = {'Cache-Control': 'public, max-age=3600'}
-        return FileResponse(js_components[key].path, media_type='text/javascript', headers=headers)
+        return FileResponse(js_components[key].path, media_type='text/javascript')
     raise HTTPException(status_code=404, detail=f'component "{key}" not found')
 
 
@@ -97,10 +95,16 @@ def _get_resource(key: str, path: str) -> FileResponse:
         except ValueError as e:
             raise HTTPException(status_code=403, detail='forbidden') from e
         if filepath.exists():
-            headers = {'Cache-Control': 'public, max-age=3600'}
             media_type, _ = mimetypes.guess_type(filepath)
-            return FileResponse(filepath, media_type=media_type, headers=headers)
+            return FileResponse(filepath, media_type=media_type)
     raise HTTPException(status_code=404, detail=f'resource "{key}" not found')
+
+
+@app.get(f'/_nicegui/{__version__}' + '/dynamic_resources/{name}')
+def _get_dynamic_resource(name: str) -> Response:
+    if name in dynamic_resources:
+        return dynamic_resources[name].function()
+    raise HTTPException(status_code=404, detail=f'dynamic resource "{name}" not found')
 
 
 async def _startup() -> None:

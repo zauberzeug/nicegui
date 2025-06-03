@@ -29,14 +29,14 @@ doc.intro(run_documentation)
     You can enable native mode for NiceGUI by specifying `native=True` in the `ui.run` function.
     To customize the initial window size and display mode, use the `window_size` and `fullscreen` parameters respectively.
     Additionally, you can provide extra keyword arguments via `app.native.window_args` and `app.native.start_args`.
-    Pick any parameter as it is defined by the internally used [pywebview module](https://pywebview.flowrl.com/guide/api.html)
+    Pick any parameter as it is defined by the internally used [pywebview module](https://pywebview.flowrl.com/api)
     for the `webview.create_window` and `webview.start` functions.
     Note that these keyword arguments will take precedence over the parameters defined in `ui.run`.
 
     Additionally, you can change `webview.settings` via `app.native.settings`.
 
     In native mode the `app.native.main_window` object allows you to access the underlying window.
-    It is an async version of [`Window` from pywebview](https://pywebview.flowrl.com/guide/api.html#window-object).
+    It is an async version of [`Window` from pywebview](https://pywebview.flowrl.com/api/#webview-window).
 ''', tab=lambda: ui.label('NiceGUI'))
 def native_mode_demo():
     from nicegui import app
@@ -122,13 +122,13 @@ def env_var_demo():
 @doc.demo('Background Tasks', '''
     `background_tasks.create()` allows you to run an async function in the background and return a task object.
     By default the task will be automatically cancelled during shutdown.
-    You can prevent this by using the `@background_tasks.await_on_shutdown` decorator.
+    You can prevent this by using the `@background_tasks.await_on_shutdown` decorator (added in version 2.16.0).
     This is useful for tasks that need to be completed even when the app is shutting down.
 ''')
 def background_tasks_demo():
-    from nicegui import background_tasks
+    # import aiofiles
     import asyncio
-    import aiofiles
+    from nicegui import background_tasks
 
     results = {'answer': '?'}
 
@@ -218,7 +218,8 @@ doc.text('', '''
 
     To serve your application with [HTTPS](https://fastapi.tiangolo.com/deployment/https/) encryption, you can provide SSL certificates in multiple ways.
     For instance, you can directly provide your certificates to [Uvicorn](https://www.uvicorn.org/), which NiceGUI is based on, by passing the
-    relevant [options](https://www.uvicorn.org/#command-line-options) to `ui.run()`:
+    relevant [options](https://www.uvicorn.org/#command-line-options) to `ui.run()`.
+    If both a certificate and key file are provided, the application will automatically be served over HTTPS:
 ''')
 
 

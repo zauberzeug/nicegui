@@ -1,4 +1,5 @@
 import asyncio
+import logging
 import sys
 import traceback
 from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
@@ -19,7 +20,10 @@ R = TypeVar('R')
 def setup() -> None:
     """Setup the process pool. (For internal use only.)"""
     global process_pool  # pylint: disable=global-statement # noqa: PLW0603
-    process_pool = ProcessPoolExecutor()
+    try:
+        process_pool = ProcessPoolExecutor()
+    except NotImplementedError:
+        logging.warning('Failed to initialize ProcessPoolExecutor')
 
 
 class SubprocessException(Exception):
@@ -72,6 +76,9 @@ async def cpu_bound(callback: Callable[P, R], *args: P.args, **kwargs: P.kwargs)
     It is encouraged to create static methods (or free functions) which get all the data as simple parameters (eg. no class/ui logic)
     and return the result (instead of writing it in class properties or global variables).
     """
+    if process_pool is None:
+        raise RuntimeError('Process pool not set up.')
+
     return await _run(process_pool, safe_callback, callback, *args, **kwargs)
 
 
@@ -84,9 +91,10 @@ def tear_down() -> None:
     """Kill all processes and threads."""
     if helpers.is_pytest():
         return
-    assert process_pool is not None
-    for p in process_pool._processes.values():  # pylint: disable=protected-access
-        p.kill()
+
     kwargs = {'cancel_futures': True} if sys.version_info >= (3, 9) else {}
-    process_pool.shutdown(wait=True, **kwargs)
+    if process_pool is not None:
+        for p in process_pool._processes.values():  # pylint: disable=protected-access
+            p.kill()
+        process_pool.shutdown(wait=True, **kwargs)
     thread_pool.shutdown(wait=False, **kwargs)

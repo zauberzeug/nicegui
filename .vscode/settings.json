@@ -8,6 +8,7 @@
   "python.testing.pytestArgs": ["."],
   "python.testing.pytestEnabled": true,
   "python.testing.unittestEnabled": false,
+  "files.insertFinalNewline": true,
   "[python]": {
     "editor.defaultFormatter": "ms-python.autopep8",
     "editor.codeActionsOnSave": {

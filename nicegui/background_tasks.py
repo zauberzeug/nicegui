@@ -54,7 +54,10 @@ F = TypeVar('F', bound=Callable)
 
 
 def await_on_shutdown(func: F) -> F:
-    """Tag a coroutine function so tasks created from it won't be cancelled during shutdown."""
+    """Tag a coroutine function so tasks created from it won't be cancelled during shutdown.
+
+    *Added in version 2.16.0*
+    """
     functions_awaited_on_shutdown.add(func)
     return func
 
