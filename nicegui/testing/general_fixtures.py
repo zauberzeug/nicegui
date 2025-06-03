@@ -24,8 +24,25 @@ def nicegui_reset_globals() -> Generator[None, None, None]:
     for route in app.routes:
         if isinstance(route, Route) and route.path.startswith('/_nicegui/auto/static/'):
             app.remove_route(route.path)
-    for path in {'/'}.union(Client.page_routes.values()):
+
+    all_page_routes = set(Client.page_routes.values())
+    all_page_routes.add('/')
+    for path in all_page_routes:
         app.remove_route(path)
+
+    remaining_routes = []
+    for route in app.routes:
+        if isinstance(route, Route):
+            # Keep only internal NiceGUI routes and system routes
+            if (route.path.startswith('/_nicegui/') or
+                route.path.startswith('/docs') or
+                route.path.startswith('/openapi.json') or
+                    route.path.startswith('/redoc')):
+                remaining_routes.append(route)
+        else:
+            remaining_routes.append(route)
+    app.routes[:] = remaining_routes
+
     app.openapi_schema = None
     app.middleware_stack = None
     app.user_middleware.clear()
