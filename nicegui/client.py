@@ -137,13 +137,8 @@ class Client:
         } if past_client is not None else {}
 
         for id, past_element in past_elements_dict.items():
-            current_element = elements_dict.get(id)
-            if current_element is not None:
-                compressed = {'=': True}
-                for key in current_element.keys():
-                    if current_element.get(key) != past_element.get(key):
-                        compressed[key] = current_element[key]
-                elements_dict[id] = compressed
+            if elements_dict.get(id) == past_element:
+                elements_dict[id] = {'=': True}
 
         elements = json.dumps(elements_dict)
         socket_io_js_query_params = {
