@@ -406,7 +406,11 @@ function createApp(elements, options) {
         open: (msg) => {
           const url = msg.path.startsWith("/") ? options.prefix + msg.path : msg.path;
           const target = msg.new_tab ? "_blank" : "_self";
-          window.open(url, target);
+          if (msg.soft_reload) {
+            softReload(url);
+          } else {
+            window.open(url, target);
+          }
         },
         download: (msg) => download(msg.src, msg.filename, msg.media_type, options.prefix),
         notify: (msg) => Quasar.Notify.create(msg),

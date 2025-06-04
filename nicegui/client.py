@@ -244,10 +244,10 @@ class Client:
 
         return AwaitableResponse(send_and_forget, send_and_wait)
 
-    def open(self, target: Union[Callable[..., Any], str], new_tab: bool = False) -> None:
+    def open(self, target: Union[Callable[..., Any], str], new_tab: bool = False, *, soft_reload: bool = False) -> None:
         """Open a new page in the client."""
         path = target if isinstance(target, str) else self.page_routes[target]
-        self.outbox.enqueue_message('open', {'path': path, 'new_tab': new_tab}, self.id)
+        self.outbox.enqueue_message('open', {'path': path, 'new_tab': new_tab, 'soft_reload': soft_reload}, self.id)
 
     def download(self, src: Union[str, bytes], filename: Optional[str] = None, media_type: str = '') -> None:
         """Download a file from a given URL or raw bytes."""

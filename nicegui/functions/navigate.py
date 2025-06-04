@@ -3,6 +3,7 @@ from typing import Any, Callable, Union
 from ..client import Client
 from ..context import context
 from ..element import Element
+from ..logging import log
 from .javascript import run_javascript
 
 
@@ -33,15 +34,19 @@ class Navigate:
         """
         run_javascript('history.forward()')
 
-    def reload(self) -> None:
+    def reload(self, *, soft_reload: bool = False) -> None:
         """ui.navigate.reload
 
         Reload the current page.
-        It is equivalent to clicking the reload button in the browser.
-        """
-        run_javascript('history.go(0)')
 
-    def to(self, target: Union[Callable[..., Any], str, Element], new_tab: bool = False) -> None:
+        :param soft_reload: whether to use NiceGUI's soft reload mechanism to pull in the new content, or a full reload (equivalent to clicking the reload button in the browser)
+        """
+        if soft_reload:
+            run_javascript('softReload(window.location.href)')
+        else:
+            run_javascript('history.go(0)')
+
+    def to(self, target: Union[Callable[..., Any], str, Element], new_tab: bool = False, *, soft_reload: bool = False) -> None:
         """ui.navigate.to (formerly ui.open)
 
         Can be used to programmatically open a different page or URL.
@@ -58,15 +63,20 @@ class Navigate:
         :param target: page function, NiceGUI element on the same page or string that is a an absolute URL or relative path from base URL
         :param new_tab: whether to open the target in a new tab (might be blocked by the browser)
         """
+        can_soft_reload: bool = False
         if isinstance(target, str):
             path = target
+            can_soft_reload = True
         elif isinstance(target, Element):
             path = f'#{target.html_id}'
         elif callable(target):
             path = Client.page_routes[target]
+            can_soft_reload = True
         else:
             raise TypeError(f'Invalid target type: {type(target)}')
-        context.client.open(path, new_tab)
+        if not can_soft_reload and soft_reload:
+            log.warning('When navigating to an element, no reload is actually performed, so soft_reload is ignored.')
+        context.client.open(path, new_tab, soft_reload=soft_reload and can_soft_reload)
 
 
 class History:
