@@ -16,7 +16,7 @@ class UserNavigate(Navigate):
         super().__init__()
         self.user = user
 
-    def to(self, target: Union[Callable[..., Any], str, Element], new_tab: bool = False) -> None:
+    def to(self, target: Union[Callable[..., Any], str, Element], new_tab: bool = False, *, soft_reload: bool = False) -> None:
         if isinstance(target, Element):
             # NOTE navigation to an element does not do anything in the user simulation (the whole content is always visible)
             return
@@ -37,7 +37,7 @@ class UserNavigate(Navigate):
         background_tasks.create(self.user.open(target, clear_forward_history=False),
                                 name=f'navigate forward to {target}')
 
-    def reload(self) -> None:
+    def reload(self, *, soft_reload: bool = False) -> None:
         target = self.user.back_history.pop()
         background_tasks.create(self.user.open(target, clear_forward_history=False),
                                 name=f'navigate reload to {target}')
