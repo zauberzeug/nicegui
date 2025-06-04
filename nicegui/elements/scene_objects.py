@@ -392,7 +392,7 @@ class FacetMesh(Object3D):
         self,
         vertices: List[List[float]],
         triangles: List[List[int]],
-        facets: Optional[int] = None,
+        facets: Optional[List[List[int]]] = None,
         wireframe: bool = False,
         show_facets: bool = True,
         show_edges: bool = True,
