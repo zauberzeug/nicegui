@@ -102,7 +102,7 @@ class Scene(Element,
         :param grid: whether to display a grid (boolean or tuple of ``size`` and ``divisions`` for `Three.js' GridHelper <https://threejs.org/docs/#api/en/helpers/GridHelper>`_, default: 100x100)
         :param camera: camera definition, either instance of ``ui.scene.perspective_camera`` (default) or ``ui.scene.orthographic_camera``
         :param on_click: callback to execute when a 3D object is clicked (use ``click_events`` to specify which events to subscribe to)
-        :param on_hover: callback to execute when a 3D object is clicked (use ``click_events`` to specify which events to subscribe to)
+        :param on_hover: callback to execute when the 3D scene with its 3D objects is hovered (use ``hover_events`` to specify which events to subscribe to)
         :param click_events: list of JavaScript click events to subscribe to (default: ``['click', 'dblclick']``)
         :param hover_events: list of JavaScript click events to subscribe to (default: ``['mousemove', 'mouseenter', 'mouseleave']``)
         :param on_drag_start: callback to execute when a 3D object is dragged
