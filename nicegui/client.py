@@ -133,12 +133,12 @@ class Client:
         }
         past_client = Client.instances.get(past_client_id) if past_client_id is not None else None
         past_elements_dict = {
-            id: element._to_dict() for id, element in past_client.elements.items()
+            id: element._to_dict() for id, element in past_client.elements.items()  # pylint: disable=protected-access
         } if past_client is not None else {}
 
-        for id, past_element in past_elements_dict.items():
-            if elements_dict.get(id) == past_element:
-                elements_dict[id] = {'=': True}
+        for elem_id, past_element in past_elements_dict.items():
+            if elements_dict.get(elem_id) == past_element:
+                elements_dict[elem_id] = {'=': True}
 
         elements = json.dumps(elements_dict)
         socket_io_js_query_params = {
