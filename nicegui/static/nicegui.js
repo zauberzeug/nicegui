@@ -359,7 +359,7 @@ function createApp(elements, options) {
           window.socket.emit("handshake", args, (ok) => {
             if (!ok) {
               console.log("reloading because handshake failed for clientId " + window.clientId);
-              window.location.reload();
+              softReload(window.location.href, window.scrollX, window.scrollY);
             }
             window.did_handshake = true;
             document.getElementById("popup").ariaHidden = true;
@@ -368,14 +368,14 @@ function createApp(elements, options) {
         connect_error: (err) => {
           if (err.message == "timeout") {
             console.log("reloading because connection timed out");
-            window.location.reload(); // see https://github.com/zauberzeug/nicegui/issues/198
+            softReload(window.location.href, window.scrollX, window.scrollY);
           }
         },
         try_reconnect: async () => {
           document.getElementById("popup").ariaHidden = false;
           await fetch(window.location.href, { headers: { "NiceGUI-Check": "try_reconnect" } });
           console.log("reloading because reconnect was requested");
-          window.location.reload();
+          softReload(window.location.href, window.scrollX, window.scrollY);
         },
         disconnect: () => {
           document.getElementById("popup").ariaHidden = false;
