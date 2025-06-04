@@ -30,6 +30,7 @@ class page:
                  response_timeout: float = 3.0,
                  reconnect_timeout: Optional[float] = None,
                  api_router: Optional[APIRouter] = None,
+                 shared_client: bool = False,
                  **kwargs: Any,
                  ) -> None:
         """Page
@@ -69,6 +70,7 @@ class page:
         self.kwargs = kwargs
         self.api_router = api_router or core.app.router
         self.reconnect_timeout = reconnect_timeout
+        self.shared_client = shared_client
 
         create_favicon_route(self.path, favicon)
 
@@ -112,9 +114,13 @@ class page:
         @wraps(func)
         async def decorated(*dec_args, **dec_kwargs) -> Response:
             request = dec_kwargs['request']
+            if self.shared_client:
+                for client in Client.instances.values():
+                    if client.page == self:
+                        return client.build_response(request)
             # NOTE cleaning up the keyword args so the signature is consistent with "func" again
             dec_kwargs = {k: v for k, v in dec_kwargs.items() if k in parameters_of_decorated_func}
-            with Client(self, request=request) as client:
+            with Client(self, request=request, shared=self.shared_client) as client:
                 if any(p.name == 'client' for p in inspect.signature(func).parameters.values()):
                     dec_kwargs['client'] = client
                 result = func(*dec_args, **dec_kwargs)
