@@ -39,22 +39,20 @@ class SceneObject:
     id: str = 'scene'
 
 
-class Scene(
-    Element,
-    component='scene.js',
-    dependencies=[
-        'lib/three/three.module.js',
-        'lib/three/modules/BufferGeometryUtils.js',
-        'lib/three/modules/CSS2DRenderer.js',
-        'lib/three/modules/CSS3DRenderer.js',
-        'lib/three/modules/DragControls.js',
-        'lib/three/modules/GLTFLoader.js',
-        'lib/three/modules/OrbitControls.js',
-        'lib/three/modules/STLLoader.js',
-        'lib/tween/tween.umd.js',
-    ],
-    default_classes='nicegui-scene',
-):
+class Scene(Element,
+            component='scene.js',
+            dependencies=[
+                'lib/three/three.module.js',
+                'lib/three/modules/BufferGeometryUtils.js',
+                'lib/three/modules/CSS2DRenderer.js',
+                'lib/three/modules/CSS3DRenderer.js',
+                'lib/three/modules/DragControls.js',
+                'lib/three/modules/GLTFLoader.js',
+                'lib/three/modules/OrbitControls.js',
+                'lib/three/modules/STLLoader.js',
+                'lib/tween/tween.umd.js',
+            ],
+            default_classes='nicegui-scene'):
     # pylint: disable=import-outside-toplevel
     from .scene_objects import AxesHelper as axes_helper
     from .scene_objects import Box as box
@@ -78,21 +76,20 @@ class Scene(
     from .scene_objects import Text3d as text3d
     from .scene_objects import Texture as texture
 
-    def __init__(
-        self,
-        width: int = 400,
-        height: int = 300,
-        grid: Union[bool, Tuple[int, int]] = True,
-        camera: Optional[SceneCamera] = None,
-        on_click: Optional[Handler[SceneClickEventArguments]] = None,
-        on_hover: Optional[Handler[SceneHoverEventArguments]] = None,
-        click_events: List[str] = ['click', 'dblclick'],  # noqa: B006
-        hover_events: List[str] = ['mousemove', 'mouseenter', 'mouseleave'],  # noqa: B006
-        on_drag_start: Optional[Handler[SceneDragEventArguments]] = None,
-        on_drag_end: Optional[Handler[SceneDragEventArguments]] = None,
-        drag_constraints: str = '',
-        background_color: str = '#eee',
-    ) -> None:
+    def __init__(self,
+                 width: int = 400,
+                 height: int = 300,
+                 grid: Union[bool, Tuple[int, int]] = True,
+                 camera: Optional[SceneCamera] = None,
+                 on_click: Optional[Handler[SceneClickEventArguments]] = None,
+                 on_hover: Optional[Handler[SceneHoverEventArguments]] = None,
+                 click_events: List[str] = ['click', 'dblclick'],  # noqa: B006
+                 hover_events: List[str] = ['mousemove', 'mouseenter', 'mouseleave'],  
+                 on_drag_start: Optional[Handler[SceneDragEventArguments]] = None,
+                 on_drag_end: Optional[Handler[SceneDragEventArguments]] = None,
+                 drag_constraints: str = '',
+                 background_color: str = '#eee',
+                 ) -> None:
         """3D Scene
 
         Display a 3D scene using `three.js <https://threejs.org/>`_.
@@ -212,16 +209,13 @@ class Scene(
             ctrl=e.args['ctrl_key'],
             meta=e.args['meta_key'],
             shift=e.args['shift_key'],
-            hits=[
-                SceneClickHit(
-                    object_id=hit['object_id'],
-                    object_name=hit['object_name'],
-                    x=hit['point']['x'],
-                    y=hit['point']['y'],
-                    z=hit['point']['z'],
-                )
-                for hit in e.args['hits']
-            ],
+            hits=[SceneClickHit(
+                object_id=hit['object_id'],
+                object_name=hit['object_name'],
+                x=hit['point']['x'],
+                y=hit['point']['y'],
+                z=hit['point']['z'],
+            ) for hit in e.args['hits']],
         )
         for handler in self._click_handlers:
             handle_event(handler, arguments)
@@ -263,25 +257,23 @@ class Scene(
         if arguments.type == 'dragend':
             self.objects[arguments.object_id].move(arguments.x, arguments.y, arguments.z)
 
-        for handler in self._drag_start_handlers if arguments.type == 'dragstart' else self._drag_end_handlers:
+        for handler in (self._drag_start_handlers if arguments.type == 'dragstart' else self._drag_end_handlers):
             handle_event(handler, arguments)
 
     def __len__(self) -> int:
         return len(self.objects)
 
-    def move_camera(
-        self,
-        x: Optional[float] = None,
-        y: Optional[float] = None,
-        z: Optional[float] = None,
-        look_at_x: Optional[float] = None,
-        look_at_y: Optional[float] = None,
-        look_at_z: Optional[float] = None,
-        up_x: Optional[float] = None,
-        up_y: Optional[float] = None,
-        up_z: Optional[float] = None,
-        duration: float = 0.5,
-    ) -> None:
+    def move_camera(self,
+                    x: Optional[float] = None,
+                    y: Optional[float] = None,
+                    z: Optional[float] = None,
+                    look_at_x: Optional[float] = None,
+                    look_at_y: Optional[float] = None,
+                    look_at_z: Optional[float] = None,
+                    up_x: Optional[float] = None,
+                    up_y: Optional[float] = None,
+                    up_z: Optional[float] = None,
+                    duration: float = 0.5) -> None:
         """Move the camera to a new position.
 
         :param x: camera x position
@@ -304,19 +296,10 @@ class Scene(
         self.camera.up_x = self.camera.up_x if up_x is None else up_x
         self.camera.up_y = self.camera.up_y if up_y is None else up_y
         self.camera.up_z = self.camera.up_z if up_z is None else up_z
-        self.run_method(
-            'move_camera',
-            self.camera.x,
-            self.camera.y,
-            self.camera.z,
-            self.camera.look_at_x,
-            self.camera.look_at_y,
-            self.camera.look_at_z,
-            self.camera.up_x,
-            self.camera.up_y,
-            self.camera.up_z,
-            duration,
-        )
+        self.run_method('move_camera',
+                        self.camera.x, self.camera.y, self.camera.z,
+                        self.camera.look_at_x, self.camera.look_at_y, self.camera.look_at_z,
+                        self.camera.up_x, self.camera.up_y, self.camera.up_z, duration)
 
     async def get_camera(self) -> Dict[str, Any]:
         """Get the current camera parameters.

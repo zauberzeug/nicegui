@@ -9,6 +9,7 @@ if TYPE_CHECKING:
 
 
 class Group(Object3D):
+
     def __init__(self) -> None:
         """Group
 
@@ -19,13 +20,13 @@ class Group(Object3D):
 
 
 class Box(Object3D):
-    def __init__(
-        self,
-        width: float = 1.0,
-        height: float = 1.0,
-        depth: float = 1.0,
-        wireframe: bool = False,
-    ) -> None:
+
+    def __init__(self,
+                 width: float = 1.0,
+                 height: float = 1.0,
+                 depth: float = 1.0,
+                 wireframe: bool = False,
+                 ) -> None:
         """Box
 
         This element is based on Three.js' `BoxGeometry <https://threejs.org/docs/index.html#api/en/geometries/BoxGeometry>`_ object.
@@ -40,13 +41,13 @@ class Box(Object3D):
 
 
 class Sphere(Object3D):
-    def __init__(
-        self,
-        radius: float = 1.0,
-        width_segments: int = 32,
-        height_segments: int = 16,
-        wireframe: bool = False,
-    ) -> None:
+
+    def __init__(self,
+                 radius: float = 1.0,
+                 width_segments: int = 32,
+                 height_segments: int = 16,
+                 wireframe: bool = False,
+                 ) -> None:
         """Sphere
 
         This element is based on Three.js' `SphereGeometry <https://threejs.org/docs/index.html#api/en/geometries/SphereGeometry>`_ object.
@@ -61,15 +62,15 @@ class Sphere(Object3D):
 
 
 class Cylinder(Object3D):
-    def __init__(
-        self,
-        top_radius: float = 1.0,
-        bottom_radius: float = 1.0,
-        height: float = 1.0,
-        radial_segments: int = 8,
-        height_segments: int = 1,
-        wireframe: bool = False,
-    ) -> None:
+
+    def __init__(self,
+                 top_radius: float = 1.0,
+                 bottom_radius: float = 1.0,
+                 height: float = 1.0,
+                 radial_segments: int = 8,
+                 height_segments: int = 1,
+                 wireframe: bool = False,
+                 ) -> None:
         """Cylinder
 
         This element is based on Three.js' `CylinderGeometry <https://threejs.org/docs/index.html#api/en/geometries/CylinderGeometry>`_ object.
@@ -86,16 +87,16 @@ class Cylinder(Object3D):
 
 
 class Ring(Object3D):
-    def __init__(
-        self,
-        inner_radius: float = 0.5,
-        outer_radius: float = 1.0,
-        theta_segments: int = 8,
-        phi_segments: int = 1,
-        theta_start: float = 0,
-        theta_length: float = 2 * math.pi,
-        wireframe: bool = False,
-    ) -> None:
+
+    def __init__(self,
+                 inner_radius: float = 0.5,
+                 outer_radius: float = 1.0,
+                 theta_segments: int = 8,
+                 phi_segments: int = 1,
+                 theta_start: float = 0,
+                 theta_length: float = 2 * math.pi,
+                 wireframe: bool = False,
+                 ) -> None:
         """Ring
 
         This element is based on Three.js' `RingGeometry <https://threejs.org/docs/index.html#api/en/geometries/RingGeometry>`_ object.
@@ -109,23 +110,22 @@ class Ring(Object3D):
         :param theta_length: central angle in radians (default: 2π)
         :param wireframe: whether to display the ring as a wireframe (default: `False`)
         """
-        super().__init__(
-            'ring', inner_radius, outer_radius, theta_segments, phi_segments, theta_start, theta_length, wireframe
-        )
+        super().__init__('ring',
+                         inner_radius, outer_radius, theta_segments, phi_segments, theta_start, theta_length, wireframe)
 
 
 class QuadraticBezierTube(Object3D):
-    def __init__(
-        self,
-        start: List[float],
-        mid: List[float],
-        end: List[float],
-        tubular_segments: int = 64,
-        radius: float = 1.0,
-        radial_segments: int = 8,
-        closed: bool = False,
-        wireframe: bool = False,
-    ) -> None:
+
+    def __init__(self,
+                 start: List[float],
+                 mid: List[float],
+                 end: List[float],
+                 tubular_segments: int = 64,
+                 radius: float = 1.0,
+                 radial_segments: int = 8,
+                 closed: bool = False,
+                 wireframe: bool = False,
+                 ) -> None:
         """Quadratic Bezier Tube
 
         This element is based on Three.js' `QuadraticBezierCurve3 <https://threejs.org/docs/index.html#api/en/extras/curves/QuadraticBezierCurve3>`_ object.
@@ -140,18 +140,17 @@ class QuadraticBezierTube(Object3D):
         :param closed: whether the tube should be closed (default: `False`)
         :param wireframe: whether to display the tube as a wireframe (default: `False`)
         """
-        super().__init__(
-            'quadratic_bezier_tube', start, mid, end, tubular_segments, radius, radial_segments, closed, wireframe
-        )
+        super().__init__('quadratic_bezier_tube',
+                         start, mid, end, tubular_segments, radius, radial_segments, closed, wireframe)
 
 
 class Extrusion(Object3D):
-    def __init__(
-        self,
-        outline: List[List[float]],
-        height: float,
-        wireframe: bool = False,
-    ) -> None:
+
+    def __init__(self,
+                 outline: List[List[float]],
+                 height: float,
+                 wireframe: bool = False,
+                 ) -> None:
         """Extrusion
 
         This element is based on Three.js' `ExtrudeGeometry <https://threejs.org/docs/index.html#api/en/geometries/ExtrudeGeometry>`_ object.
@@ -165,11 +164,11 @@ class Extrusion(Object3D):
 
 
 class Stl(Object3D):
-    def __init__(
-        self,
-        url: str,
-        wireframe: bool = False,
-    ) -> None:
+
+    def __init__(self,
+                 url: str,
+                 wireframe: bool = False,
+                 ) -> None:
         """STL
 
         This element is used to create a mesh from an STL file.
@@ -181,10 +180,10 @@ class Stl(Object3D):
 
 
 class Gltf(Object3D):
-    def __init__(
-        self,
-        url: str,
-    ) -> None:
+
+    def __init__(self,
+                 url: str,
+                 ) -> None:
         """GLTF
 
         This element is used to create a mesh from a glTF file.
@@ -195,11 +194,11 @@ class Gltf(Object3D):
 
 
 class Line(Object3D):
-    def __init__(
-        self,
-        start: List[float],
-        end: List[float],
-    ) -> None:
+
+    def __init__(self,
+                 start: List[float],
+                 end: List[float],
+                 ) -> None:
         """Line
 
         This element is based on Three.js' `Line <https://threejs.org/docs/index.html#api/en/objects/Line>`_ object.
@@ -212,14 +211,14 @@ class Line(Object3D):
 
 
 class Curve(Object3D):
-    def __init__(
-        self,
-        start: List[float],
-        control1: List[float],
-        control2: List[float],
-        end: List[float],
-        num_points: int = 20,
-    ) -> None:
+
+    def __init__(self,
+                 start: List[float],
+                 control1: List[float],
+                 control2: List[float],
+                 end: List[float],
+                 num_points: int = 20,
+                 ) -> None:
         """Curve
 
         This element is based on Three.js' `CubicBezierCurve3 <https://threejs.org/docs/index.html#api/en/extras/curves/CubicBezierCurve3>`_ object.
@@ -234,11 +233,11 @@ class Curve(Object3D):
 
 
 class Text(Object3D):
-    def __init__(
-        self,
-        text: str,
-        style: str = '',
-    ) -> None:
+
+    def __init__(self,
+                 text: str,
+                 style: str = '',
+                 ) -> None:
         """Text
 
         This element is used to add 2D text to the scene.
@@ -251,11 +250,11 @@ class Text(Object3D):
 
 
 class Text3d(Object3D):
-    def __init__(
-        self,
-        text: str,
-        style: str = '',
-    ) -> None:
+
+    def __init__(self,
+                 text: str,
+                 style: str = '',
+                 ) -> None:
         """3D Text
 
         This element is used to add a 3D text mesh to the scene.
@@ -268,11 +267,11 @@ class Text3d(Object3D):
 
 
 class Texture(Object3D):
-    def __init__(
-        self,
-        url: str,
-        coordinates: List[List[Optional[List[float]]]],
-    ) -> None:
+
+    def __init__(self,
+                 url: str,
+                 coordinates: List[List[Optional[List[float]]]],
+                 ) -> None:
         """Texture
 
         This element is used to add a texture to a mesh.
@@ -294,15 +293,15 @@ class Texture(Object3D):
 
 
 class SpotLight(Object3D):
-    def __init__(
-        self,
-        color: str = '#ffffff',
-        intensity: float = 1.0,
-        distance: float = 0.0,
-        angle: float = math.pi / 3,
-        penumbra: float = 0.0,
-        decay: float = 1.0,
-    ) -> None:
+
+    def __init__(self,
+                 color: str = '#ffffff',
+                 intensity: float = 1.0,
+                 distance: float = 0.0,
+                 angle: float = math.pi / 3,
+                 penumbra: float = 0.0,
+                 decay: float = 1.0,
+                 ) -> None:
         """Spot Light
 
         This element is based on Three.js' `SpotLight <https://threejs.org/docs/index.html#api/en/lights/SpotLight>`_ object.
@@ -319,12 +318,12 @@ class SpotLight(Object3D):
 
 
 class PointCloud(Object3D):
-    def __init__(
-        self,
-        points: List[List[float]],
-        colors: Optional[List[List[float]]] = None,
-        point_size: float = 1.0,
-    ) -> None:
+
+    def __init__(self,
+                 points: List[List[float]],
+                 colors: Optional[List[List[float]]] = None,
+                 point_size: float = 1.0,
+                 ) -> None:
         """Point Cloud
 
         This element is based on Three.js' `Points <https://threejs.org/docs/index.html#api/en/objects/Points>`_ object.
@@ -347,10 +346,10 @@ class PointCloud(Object3D):
 
 
 class AxesHelper(Object3D):
-    def __init__(
-        self,
-        length: float = 1.0,
-    ) -> None:
+
+    def __init__(self,
+                 length: float = 1.0,
+                 ) -> None:
         """Axes Helper
 
         This element is based on Three.js' `AxesHelper <https://threejs.org/docs/#api/en/helpers/AxesHelper>`_ object.
