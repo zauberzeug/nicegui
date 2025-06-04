@@ -12,7 +12,9 @@
     <link href="{{ prefix | safe }}/_nicegui/{{version}}/static/quasar.css" rel="stylesheet" type="text/css" />
     {% endif %}
     <!-- prevent Prettier from removing this line -->
-    {{ head_html | safe }}
+    <div id="nicegui-head">
+      {{ head_html | safe }}
+    </div>
     <script type="importmap">
       {"imports": {{ imports | safe }}}
     </script>
@@ -37,7 +39,9 @@
     <script defer src="{{ prefix | safe }}/_nicegui/{{version}}/static/nicegui.js"></script>
 
     <script defer src="{{ prefix | safe }}/_nicegui/{{version}}/static/lang/{{ language }}.umd.prod.js"></script>
-    {{ body_html | safe }}
+    <div id="nicegui-body">
+      {{ body_html | safe }}
+    </div>
 
     <div id="app"></div>
     <div id="popup" aria-hidden="true">

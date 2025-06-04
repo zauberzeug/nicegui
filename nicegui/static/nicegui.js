@@ -474,7 +474,9 @@ function softReload(url, x = undefined, y = undefined) {
       document.title = data.title || document.title;
       window.history.pushState({ x: window.scrollX, y: window.scrollY }, '', url);
       window.socket.disconnect();
-      console.log(data)
+      console.log(data);
+      updateElement('nicegui-head', data.head_html);
+      updateElement('nicegui-body', data.body_html);
       // Handle the response data
       // clear set loaded_libraries and loaded_components
       loaded_libraries.clear();
@@ -508,4 +510,28 @@ function softReload(url, x = undefined, y = undefined) {
       console.error('There was a problem with the fetch operation:', error);
       window.location.href = url;
     })
+}
+
+function removeAllChildren(element) {
+    while (element.firstChild) {
+        element.removeChild(element.firstChild);
+    }
+}
+
+function updateElement(targetId, htmlString) {
+  const target = document.getElementById(targetId);
+  if (!target) return;
+  removeAllChildren(target);
+  const tempDiv = document.createElement("div");
+  tempDiv.innerHTML = htmlString;
+
+  Array.from(tempDiv.childNodes).forEach(node => {
+    if (node.tagName === "SCRIPT") {
+      const newScript = document.createElement("script");
+      newScript.textContent = node.textContent;
+      target.appendChild(newScript);
+    } else {
+      target.appendChild(node);
+    }
+  });
 }
