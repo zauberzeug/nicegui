@@ -229,16 +229,13 @@ class Scene(Element,
             ctrl=e.args['ctrl_key'],
             meta=e.args['meta_key'],
             shift=e.args['shift_key'],
-            hits=[
-                SceneClickHit(
-                    object_id=hit['object_id'],
-                    object_name=hit['object_name'],
-                    x=hit['point']['x'],
-                    y=hit['point']['y'],
-                    z=hit['point']['z'],
-                )
-                for hit in e.args['hits']
-            ],
+            hits=[SceneClickHit(
+                object_id=hit['object_id'],
+                object_name=hit['object_name'],
+                x=hit['point']['x'],
+                y=hit['point']['y'],
+                z=hit['point']['z'],
+            ) for hit in e.args['hits']],
         )
         for handler in self._hover_handlers:
             handle_event(handler, arguments)
