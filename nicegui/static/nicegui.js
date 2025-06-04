@@ -452,6 +452,11 @@ for (let sheet of document.styleSheets) {
 }
 
 function softReload(url, x = 0, y = 0) {
+  // check if url same origin as current location, if not redirect to that url
+  if (new URL(url, window.location.href).origin !== window.location.origin) {
+    window.location.href = url;
+    return;
+  }
   // Make the GET request
   fetch(url, {
     method: 'GET',

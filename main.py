@@ -73,6 +73,11 @@ ui.add_body_html('''<script>
             console.log('Link clicked!'); // Replace with your custom logic
             console.log(target.href); // Log the href of the clicked link
             try {
+                 // check the target href is same origin, if not raise an error
+                const url = new URL(target.href);
+                if (url.origin !== window.location.origin) {
+                    throw new Error('Cross-origin link clicked');
+                }
                 window.softReload(target.href);
                 event.preventDefault();
             } catch (e) {
