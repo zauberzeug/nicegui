@@ -364,14 +364,13 @@ class AxesHelper(Object3D):
 
 
 class Mesh(Object3D):
-    def __init__(
-        self,
-        vertices: List[List[float]],
-        triangles: List[List[int]],
-        wireframe: bool = False,
-        threshold_angle: Optional[float] = None,
-        only_show_open_edges: bool = False,
-    ) -> None:
+    def __init__(self,
+                 vertices: List[List[float]],
+                 triangles: List[List[int]],
+                 wireframe: bool = False,
+                 threshold_angle: Optional[float] = None,
+                 only_show_open_edges: bool = False,
+                 ) -> None:
         """Mesh
 
         This element is based on Three.js' `BufferGeometry <https://threejs.org/docs/#api/en/core/BufferGeometry>`_ object.
@@ -388,15 +387,14 @@ class Mesh(Object3D):
 
 
 class FacetMesh(Object3D):
-    def __init__(
-        self,
-        vertices: List[List[float]],
-        triangles: List[List[int]],
-        facets: Optional[List[List[int]]] = None,
-        wireframe: bool = False,
-        show_facets: bool = True,
-        show_edges: bool = True,
-    ) -> None:
+    def __init__(self,
+                 vertices: List[List[float]],
+                 triangles: List[List[int]],
+                 facets: Optional[List[List[int]]] = None,
+                 wireframe: bool = False,
+                 show_facets: bool = True,
+                 show_edges: bool = True,
+                 ) -> None:
         """Facet Mesh
 
         This element is based on Three.js' `BufferGeometry <https://threejs.org/docs/#api/en/core/BufferGeometry>`_ object.
@@ -435,12 +433,11 @@ class FacetMesh(Object3D):
                     )
         self.wireframe = wireframe
 
-    def material(
-        self,
-        color: Optional[str] = '#ffffff',
-        opacity: float = 1.0,
-        side: Literal['front', 'back', 'both'] = 'front',
-    ) -> Self:
+    def material(self,
+                 color: Optional[str] = '#ffffff',
+                 opacity: float = 1.0,
+                 side: Literal['front', 'back', 'both'] = 'front',
+                 ) -> Self:
         # Call the parent's material method to set material properties on the FacetMesh group itself.
         super().material(color, opacity, side)
         # Apply this material to all child meshes.
@@ -548,26 +545,24 @@ class CQShape(FacetMesh):
             _show_edges = True
 
         # Call the FacetMesh constructor with the generated data
-        super().__init__(
-            vertices=global_vertices,
-            triangles=global_triangles,
-            facets=facets_data,
-            wireframe=False,
-            show_facets=not wireframe,
-            show_edges=_show_edges,
-        )
+        super().__init__(vertices=global_vertices,
+                         triangles=global_triangles,
+                         facets=facets_data,
+                         wireframe=False,
+                         show_facets=not wireframe,
+                         show_edges=_show_edges,
+                         )
 
 
 class CQAssembly(Object3D):
-    def __init__(
-        self,
-        cq_assembly: 'cq.Assembly',
-        tolerance: float = 0.1,
-        angular_tolerance: float = 0.1,
-        wireframe: bool = False,
-        show_edges: bool = False,
-        parent: Optional[Object3D] = None,
-    ) -> None:
+    def __init__(self,
+                 cq_assembly: 'cq.Assembly',
+                 tolerance: float = 0.1,
+                 angular_tolerance: float = 0.1,
+                 wireframe: bool = False,
+                 show_edges: bool = False,
+                 parent: Optional[Object3D] = None,
+                 ) -> None:
         """CadQuery Assembly
 
         This element renders a CadQuery assembly by tessellating its components and creating a FacetMesh for each.
