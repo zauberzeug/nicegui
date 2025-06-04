@@ -359,7 +359,7 @@ function createApp(elements, options) {
           window.socket.emit("handshake", args, (ok) => {
             if (!ok) {
               console.log("reloading because handshake failed for clientId " + window.clientId);
-              softReload(window.location.href, window.scrollX, window.scrollY);
+              softReload(window.location.href);
             }
             window.did_handshake = true;
             document.getElementById("popup").ariaHidden = true;
@@ -368,14 +368,14 @@ function createApp(elements, options) {
         connect_error: (err) => {
           if (err.message == "timeout") {
             console.log("reloading because connection timed out");
-            softReload(window.location.href, window.scrollX, window.scrollY);
+            softReload(window.location.href);
           }
         },
         try_reconnect: async () => {
           document.getElementById("popup").ariaHidden = false;
           await fetch(window.location.href, { headers: { "NiceGUI-Check": "try_reconnect" } });
           console.log("reloading because reconnect was requested");
-          softReload(window.location.href, window.scrollX, window.scrollY);
+          softReload(window.location.href);
         },
         disconnect: () => {
           document.getElementById("popup").ariaHidden = false;
@@ -451,7 +451,7 @@ for (let sheet of document.styleSheets) {
   }
 }
 
-function softReload(url, x = 0, y = 0) {
+function softReload(url, x = undefined, y = undefined) {
   // check if url same origin as current location, if not redirect to that url
   if (new URL(url, window.location.href).origin !== window.location.origin) {
     window.location.href = url;
@@ -499,7 +499,9 @@ function softReload(url, x = 0, y = 0) {
         eval(data.vue_scripts); // required for plotly and some libraries
         app.unmount();
         app.mount("#app");
-        window.scrollTo(x, y);
+        if (x !== undefined && y !== undefined) {
+          window.scrollTo(x, y);
+        }
       });
     })
     .catch(error => {
