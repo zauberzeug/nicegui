@@ -87,7 +87,7 @@ class Select(Generic[T], LabelElement, ValidationElement, ChoiceElement, Disable
     def selected(self) -> List[Option[T]]:
         if self.multiple:
             return [self._values_to_option[v] for v in self.value]
-        return self._values_to_option[self.value]
+        return [self._values_to_option[self.value]]
 
     @property
     def is_showing_popup(self) -> bool:
