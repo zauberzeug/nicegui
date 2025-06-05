@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "nicegui"
-version = "2.16.0-dev"
+version = "2.19.0-dev"
 description = "Create web-based user interfaces with Python. The nice way."
 authors = ["Zauberzeug GmbH <info@zauberzeug.com>"]
 license = "MIT"
@@ -137,6 +137,12 @@ target-version = "py38"
 indent-width = 4
 line-length = 120
 
+[tool.ruff.lint.flake8-quotes]
+inline-quotes = "single"
+multiline-quotes = "single"
+docstring-quotes = "double"
+avoid-escape = true
+
 [tool.ruff.lint]
 # See complete list: https://docs.astral.sh/ruff/rules/
 select = [
@@ -148,10 +154,16 @@ select = [
     "UP", # pyupgrade
     "RUF", # ruff
     "PL", # pylint
+    "Q", # flake8-quotes
 ]
 fixable = [
     "I",  # isort
     "RUF022", # `__all__` is not sorted
+    "Q000",  # bad quotes inline string
+    "Q001",  # bad quotes multiline string
+    "Q002",  # bad quotes docstring
+    "Q003",  # avoidable escaped quote
+    "Q004",  # unnecessary escaped quote
 ]
 ignore = [
     "E501", # line too long

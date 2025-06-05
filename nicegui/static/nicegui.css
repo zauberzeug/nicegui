@@ -193,6 +193,9 @@
 .nicegui-markdown .codehilite pre {
   margin: 0.5rem 0;
 }
+.nicegui-markdown .mermaid-pre > .mermaid {
+  display: none;
+}
 
 /* other NiceGUI elements */
 .nicegui-grid {
@@ -218,6 +221,9 @@
 .nicegui-scroll-area {
   width: 100%;
   height: 16rem;
+}
+.nicegui-leaflet video.leaflet-image-layer {
+  max-width: none; /* HACK: make the video show up */
 }
 .nicegui-log {
   padding: 0.5rem;
@@ -260,8 +266,14 @@ h6.q-timeline__title {
 .nicegui-scene-view[data-initializing] {
   visibility: hidden;
 }
-
-/* CodeMirror */
+.nicegui-interactive-image-layer {
+  position: absolute !important;
+  inset: 0;
+  pointer-events: none;
+}
+.nicegui-interactive-image-layer img {
+  display: none;
+}
 .nicegui-codemirror .cm-editor.cm-focused {
   outline: none;
 }

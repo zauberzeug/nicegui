@@ -8,7 +8,7 @@ from fastapi import UploadFile
 from fastapi.datastructures import Headers
 from fastapi.responses import PlainTextResponse
 
-from nicegui import app, events, ui
+from nicegui import ElementFilter, app, events, ui
 from nicegui.testing import User
 
 # pylint: disable=missing-function-docstring
@@ -397,7 +397,6 @@ async def test_select_multiple_from_dict(user: User) -> None:
     user.find('label A').click()
     await user.should_see("Notify: ['value A']")
 
-    user.find(ui.select).click()
     user.find('label B').click()
     await user.should_see("Notify: ['value A', 'value B']")
 
@@ -416,7 +415,6 @@ async def test_select_multiple_values(user: User):
     await user.should_see("value = ['A', 'B']")
     assert select.value == ['A', 'B']
 
-    user.find(ui.select).click()
     user.find('A').click()
     await user.should_see("Notify: ['B']")
     await user.should_see("value = ['B']")
@@ -568,3 +566,12 @@ async def test_run_javascript(user: User):
     user.javascript_rules[re.compile(r'Math.sqrt\((\d+)\)')] = lambda match: int(match.group(1))**0.5
     await user.open('/')
     await user.should_see('42')
+
+
+async def test_context_manager(user: User) -> None:
+    ui.button('click me')
+
+    await user.open('/')
+    with user:
+        elements = list(ElementFilter(kind=ui.button))
+    assert len(elements) == 1 and isinstance(elements[0], ui.button)
