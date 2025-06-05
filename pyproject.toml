@@ -43,7 +43,6 @@ certifi = ">=2024.07.04" # https://github.com/zauberzeug/nicegui/security/depend
 redis = { version = ">=4.0.0", optional = true }
 h11 = ">=0.16.0" # https://github.com/zauberzeug/nicegui/security/dependabot/45
 
-
 [tool.poetry.extras]
 native = ["pywebview"]
 plotly = ["plotly"]
@@ -124,7 +123,6 @@ module = [
     "sass",
     "socketio.*",
     "vbuild",
-
     "webview.*", # can be removed with next pywebview release
 ]
 ignore_missing_imports = true
