@@ -12,6 +12,7 @@ from . import background_tasks, binding, core, helpers
 from .client import Client
 from .favicon import create_favicon_route
 from .language import Language
+from .logging import log
 
 if TYPE_CHECKING:
     from .api_router import APIRouter
@@ -103,6 +104,8 @@ class page:
         def check_for_late_return_value(task: asyncio.Task) -> None:
             try:
                 if task.result() is not None:
+                    log.error(f'ignoring {task.result()}; '
+                              'it was returned after the HTML had been delivered to the client')
                     error_data = getattr(task.result(), 'context', {}).get('error_metadata', {})
                     client = Client.instances[error_data['client_id']]
                     message = f'{error_data["error_type"]}: {error_data["error_string"]}'
