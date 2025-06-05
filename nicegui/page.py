@@ -4,7 +4,7 @@ import asyncio
 import inspect
 from functools import wraps
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Callable, Optional, Tuple, Type, Union, cast
+from typing import TYPE_CHECKING, Any, Callable, Optional, Type, Union
 
 from fastapi import Request, Response
 
@@ -118,23 +118,19 @@ class page:
             if exception_handler is None:
                 raise e
             with Client(page(''), request=request) as error_client:
+                # page exception handler
                 exception_handler(e)
 
-                def run_handler(handler: Callable, request: Request, e: Exception) -> None:
-                    result = handler(request, e)
-                    if helpers.is_coroutine_function(handler):
-                        async def await_handler() -> None:
-                            await result
-                        background_tasks.create(await_handler(), name=f'exception handler {handler.__name__}')
+                # FastAPI exception handlers
+                for key, handler in core.app.exception_handlers.items():
+                    if key == 500 or (isinstance(key, Type) and isinstance(e, key)):
+                        result = handler(request, e)
+                        if helpers.is_coroutine_function(handler):
+                            async def await_handler(result: Any) -> None:
+                                await result
+                            background_tasks.create(await_handler(result), name=f'exception handler {handler.__name__}')
 
-                for pair in core.app.exception_handlers.items():
-                    exc_class_or_status_code, handler = cast(Tuple[Union[int, Type[Exception]], Callable], pair)
-                    if isinstance(exc_class_or_status_code, int):
-                        if exc_class_or_status_code == 500:
-                            run_handler(handler, request, e)
-                    elif isinstance(e, exc_class_or_status_code):
-                        run_handler(handler, request, e)
-
+                # NiceGUI exception handlers
                 core.app.handle_exception(e)
 
                 return error_client.build_response(request, 500, error_metadata={
