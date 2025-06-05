@@ -12,7 +12,6 @@ from . import background_tasks, binding, core, helpers
 from .client import Client
 from .favicon import create_favicon_route
 from .language import Language
-from .logging import log
 
 if TYPE_CHECKING:
     from .api_router import APIRouter
@@ -104,27 +103,10 @@ class page:
         def check_for_late_return_value(task: asyncio.Task) -> None:
             try:
                 if task.result() is not None:
-                    nicegui_error_metadata = getattr(task.result(), 'context', {}).get('nicegui_error_metadata', {})
-                    if not nicegui_error_metadata:
-                        log.error(f'ignoring {task.result()}; '
-                                  'it was returned after the HTML had been delivered to the client')
-                        return
-
-                    client_id = nicegui_error_metadata.get('nicegui_error_client_id', '')
-                    if not client_id:
-                        log.error('No client_id found in nicegui_error_metadata')
-                        return
-
-                    client = Client.instances[client_id]
-                    if client is None:
-                        log.error(f'Cannot find client {client_id}')
-                        return
-
-                    error_message = nicegui_error_metadata.get('error_type', 'Error')
-                    error_message += ': ' + nicegui_error_metadata.get('error_string', '')
-
-                    client.outbox.enqueue_message('server_error', {'message': error_message}, target_id=client.id)
-
+                    error_data = getattr(task.result(), 'context', {}).get('error_metadata', {})
+                    client = Client.instances[error_data['client_id']]
+                    message = f'{error_data["error_type"]}: {error_data["error_string"]}'
+                    client.outbox.enqueue_message('server_error', {'message': message}, target_id=client.id)
             except asyncio.CancelledError:
                 pass
 
@@ -134,7 +116,6 @@ class page:
                 raise e
             with Client(page(''), request=request) as error_client:
                 exception_handler(e)
-                # Then, invoke the existing exception handlers
 
                 def run_handler(handler: Callable, request: Request, e: Exception) -> None:
                     result = handler(request, e)
@@ -143,7 +124,6 @@ class page:
                             await result
                         background_tasks.create(await_handler(), name=f'exception handler {handler.__name__}')
 
-                # FastAPI / Starlette exception handlers, attached via
                 for pair in core.app.exception_handlers.items():
                     exc_class_or_status_code, handler = cast(Tuple[Union[int, Type[Exception]], Callable], pair)
                     if isinstance(exc_class_or_status_code, int):
@@ -152,11 +132,10 @@ class page:
                     elif isinstance(e, exc_class_or_status_code):
                         run_handler(handler, request, e)
 
-                # NiceGUI exception handlers, attached via app.on_exception
                 core.app.handle_exception(e)
 
-                return error_client.build_response(request, 500, nicegui_error_metadata={
-                    'nicegui_error_client_id': notify_client_id,
+                return error_client.build_response(request, 500, error_metadata={
+                    'client_id': notify_client_id,
                     'error_string': str(e),
                     'error_type': type(e).__name__,
                 })
