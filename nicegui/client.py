@@ -69,6 +69,7 @@ class Client:
         self.tab_id: Optional[str] = None
 
         self.page = page
+        self._page_error: str = ''
         self.outbox = Outbox(self)
 
         with Element('q-layout', _client=self).props('view="hhh lpr fff"').classes('nicegui-layout') as self.layout:
@@ -124,7 +125,7 @@ class Client:
     def __exit__(self, *_) -> None:
         self.content.__exit__()
 
-    def build_response(self, request: Request, status_code: int = 200, *, error_metadata: Optional[Dict[str, Any]] = None) -> Response:
+    def build_response(self, request: Request, status_code: int = 200) -> Response:
         """Build a FastAPI response for the client."""
         self.outbox.updates.clear()
         prefix = request.headers.get('X-Forwarded-Prefix', request.scope.get('root_path', ''))
@@ -168,7 +169,6 @@ class Client:
                 'socket_io_js_query_params': socket_io_js_query_params,
                 'socket_io_js_extra_headers': core.app.config.socket_io_js_extra_headers,
                 'socket_io_js_transports': core.app.config.socket_io_js_transports,
-                **({'error_metadata': error_metadata} if error_metadata else {}),
             },
             status_code=status_code,
             headers={'Cache-Control': 'no-store', 'X-NiceGUI-Content': 'page'},

@@ -101,19 +101,17 @@ class page:
         core.app.remove_route(self.path)  # NOTE make sure only the latest route definition is used
         parameters_of_decorated_func = list(inspect.signature(func).parameters.keys())
 
-        def check_for_late_return_value(task: asyncio.Task) -> None:
+        def check_for_late_return_value(task: asyncio.Task, client: Client) -> None:
             try:
                 if task.result() is not None:
                     log.error(f'ignoring {task.result()}; '
                               'it was returned after the HTML had been delivered to the client')
-                    error_data = getattr(task.result(), 'context', {}).get('error_metadata', {})
-                    client = Client.instances[error_data['client_id']]
-                    message = f'{error_data["error_type"]}: {error_data["error_string"]}'
+                    message = client._page_error  # pylint: disable=protected-access
                     client.outbox.enqueue_message('server_error', {'message': message}, target_id=client.id)
             except asyncio.CancelledError:
                 pass
 
-        def create_error_page(e: Exception, request: Request, *, notify_client_id: Optional[str] = None) -> Response:
+        def create_error_page(e: Exception, request: Request, client: Client) -> Response:
             exception_handler = core.app._page_exception_handler  # pylint: disable=protected-access
             if exception_handler is None:
                 raise e
@@ -133,11 +131,8 @@ class page:
                 # NiceGUI exception handlers
                 core.app.handle_exception(e)
 
-                return error_client.build_response(request, 500, error_metadata={
-                    'client_id': notify_client_id,
-                    'error_string': str(e),
-                    'error_type': type(e).__name__,
-                })
+                client._page_error = f'{type(e).__name__}: {e}'  # pylint: disable=protected-access
+                return error_client.build_response(request, 500)
 
         @wraps(func)
         async def decorated(*dec_args, **dec_kwargs) -> Response:
@@ -150,14 +145,14 @@ class page:
                 try:
                     result = func(*dec_args, **dec_kwargs)
                 except Exception as e:
-                    return create_error_page(e, request, notify_client_id=client.id)
+                    return create_error_page(e, request, client)
             if helpers.is_coroutine_function(func):
                 async def wait_for_result() -> Optional[Response]:
                     with client:
                         try:
                             return await result
                         except Exception as e:
-                            return create_error_page(e, request, notify_client_id=client.id)
+                            return create_error_page(e, request, client)
                 task = background_tasks.create(wait_for_result())
                 task_wait_for_connection = background_tasks.create(
                     client._waiting_for_connection.wait(),  # pylint: disable=protected-access
@@ -173,7 +168,7 @@ class page:
                     result = task.result()
                 else:
                     result = None
-                    task.add_done_callback(check_for_late_return_value)
+                    task.add_done_callback(lambda task: check_for_late_return_value(task, client))
             if isinstance(result, Response):  # NOTE if setup returns a response, we don't need to render the page
                 return result
             binding._refresh_step()  # pylint: disable=protected-access
