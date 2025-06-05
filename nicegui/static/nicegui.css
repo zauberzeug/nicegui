@@ -305,14 +305,12 @@ h6.q-timeline__title {
   opacity: 0;
   visibility: hidden;
 }
-#popup[aria-hidden="false"] {
+.nicegui-error-popup[aria-hidden="false"] {
   opacity: 1;
   visibility: visible;
-  transition-delay: 2000ms;
 }
-#popup_servererror[aria-hidden="false"] {
-  opacity: 1;
-  visibility: visible;
+#popup[aria-hidden="false"] {
+  transition-delay: 2000ms;
 }
 .nicegui-error-popup > span:first-child {
   font-weight: bold;

@@ -409,16 +409,14 @@ function createApp(elements, options) {
         },
         download: (msg) => download(msg.src, msg.filename, msg.media_type, options.prefix),
         notify: (msg) => Quasar.Notify.create(msg),
-        servererror: (msg) => {
+        server_error: (msg) => {
           if (window.serverErrorMessageTimer) {
             clearTimeout(window.serverErrorMessageTimer);
           }
-          document.getElementById("popup_servererror_message").innerText = msg.message;
-          const popup = document.getElementById("popup_servererror");
+          document.getElementById("popup_server_error_message").innerText = msg.message;
+          const popup = document.getElementById("popup_server_error");
           popup.ariaHidden = false;
-          window.serverErrorMessageTimer = setTimeout(() => {
-            popup.ariaHidden = true;
-          }, 5000);
+          window.serverErrorMessageTimer = setTimeout(() => (popup.ariaHidden = true), 5000);
         },
       };
       const socketMessageQueue = [];

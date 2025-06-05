@@ -123,7 +123,7 @@ class page:
                     error_message = nicegui_error_metadata.get('error_type', 'Error')
                     error_message += ': ' + nicegui_error_metadata.get('error_string', '')
 
-                    client.outbox.enqueue_message('servererror', {'message': error_message}, target_id=client.id)
+                    client.outbox.enqueue_message('server_error', {'message': error_message}, target_id=client.id)
 
             except asyncio.CancelledError:
                 pass
