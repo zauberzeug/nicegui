@@ -182,13 +182,14 @@ doc.text('Indentation', '''
 
 
 doc.text('Redis storage', '''
-    You can use [Redis](https://redis.io/) for storage as an alternative to the default file storage.
-    This is useful if you have multiple NiceGUI instances and want to share data across them.
+    You can use [Redis](https://redis.io/) or a compatible solution such as Valkey for storage as an alternative
+    to the default file storage. This is useful if you have multiple NiceGUI instances and want to share data across them.
 
     To activate this feature install the `redis` package (`pip install nicegui[redis]`)
     and provide the `NICEGUI_REDIS_URL` environment variable to point to your Redis server.
     Our [Redis storage example](https://github.com/zauberzeug/nicegui/tree/main/examples/redis_storage) shows
-    how you can setup it up with a reverse proxy or load balancer.
+    how you can setup it up with a reverse proxy or load balancer, as well as to define connection
+    parameters for Redis.
 
     Please note that the Redis sync always contains all the data, not only the changed values.
 
