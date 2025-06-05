@@ -6,6 +6,7 @@ from . import (
     doc,
     download_documentation,
     navigate_documentation,
+    content_documentation,
     page_documentation,
     page_layout_documentation,
     page_title_documentation,
@@ -67,6 +68,7 @@ def parameter_demo():
 
 doc.intro(page_title_documentation)
 doc.intro(navigate_documentation)
+doc.intro(content_documentation)
 
 doc.redirects['open'] = 'navigate#ui_navigate_to_(formerly_ui_open)'
 doc.text('ui.open', f'''

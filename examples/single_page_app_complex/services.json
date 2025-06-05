@@ -1,0 +1,202 @@
+{
+  "services": {
+    "compute": {
+      "title": "Compute",
+      "emoji": "🖥",
+      "description": "Powerful virtual machines",
+      "sub_services": {
+        "vm_instances": {
+          "title": "VM Instances",
+          "emoji": "💻",
+          "description": "Scalable virtual machines available in seconds."
+        },
+        "kubernetes_services": {
+          "title": "Kubernetes Services",
+          "emoji": "🐳",
+          "description": "Managed Kubernetes clusters to orchestrate containers."
+        },
+        "serverless_functions": {
+          "title": "Serverless Functions",
+          "emoji": "⚡",
+          "description": "Run code without provisioning servers."
+        }
+      }
+    },
+    "storage": {
+      "title": "Storage",
+      "emoji": "🗄️",
+      "description": "Secure and scalable object storage",
+      "sub_services": {
+        "blob_storage": {
+          "title": "Blob Storage",
+          "emoji": "📦",
+          "description": "Massively scalable object storage for unstructured data."
+        },
+        "file_storage": {
+          "title": "File Storage",
+          "emoji": "📂",
+          "description": "Managed file shares for cloud or on-premises deployments."
+        },
+        "queue_storage": {
+          "title": "Queue Storage",
+          "emoji": "📬",
+          "description": "A messaging store for reliable messaging between application components."
+        }
+      }
+    },
+    "networking": {
+      "title": "Networking",
+      "emoji": "🔗",
+      "description": "Private networks and connectivity",
+      "sub_services": {
+        "vnetwork": {
+          "title": "Virtual Network",
+          "emoji": "🌐",
+          "description": "Provision private networks, optionally connect to on-premises datacenters."
+        },
+        "load_balancer": {
+          "title": "Load Balancer",
+          "emoji": "⚖️",
+          "description": "Deliver high availability and network performance to your applications."
+        },
+        "vpn_gateway": {
+          "title": "VPN Gateway",
+          "emoji": "🔐",
+          "description": "Establish secure, cross-premises connectivity."
+        }
+      }
+    },
+    "database": {
+      "title": "Database",
+      "emoji": "💾",
+      "description": "Managed SQL and NoSQL databases",
+      "sub_services": {
+        "sql_database": {
+          "title": "SQL Database",
+          "emoji": "🗃️",
+          "description": "Managed, intelligent SQL in the cloud."
+        },
+        "cosmos_db": {
+          "title": "Cosmos DB",
+          "emoji": "🌍",
+          "description": "Globally distributed, multi-model database service."
+        },
+        "database_migration": {
+          "title": "Database Migration",
+          "emoji": "🚚",
+          "description": "Simplify on-premises database migration to the cloud."
+        }
+      }
+    },
+    "ai": {
+      "title": "AI & Machine Learning",
+      "emoji": "🤖",
+      "description": "AI services to build machine learning models",
+      "sub_services": {
+        "machine_learning": {
+          "title": "Machine Learning",
+          "emoji": "🧠",
+          "description": "Build, train, and deploy models from the cloud to the edge."
+        },
+        "cognitive_services": {
+          "title": "Cognitive Services",
+          "emoji": "🧩",
+          "description": "Infuse your apps, websites and bots with intelligent algorithms."
+        },
+        "bot_services": {
+          "title": "Bot Services",
+          "emoji": "🤖",
+          "description": "Develop intelligent, enterprise-grade bots."
+        }
+      }
+    },
+    "analytics": {
+      "title": "Analytics",
+      "emoji": "📊",
+      "description": "Big data processing and analytics",
+      "sub_services": {
+        "hdinsight": {
+          "title": "HDInsight",
+          "emoji": "🔬",
+          "description": "Provision cloud Hadoop, Spark, R Server, HBase, and Storm clusters."
+        },
+        "data_lake_analytics": {
+          "title": "Data Lake Analytics",
+          "emoji": "🏞️",
+          "description": "On-demand analytics job service using a simple developer experience."
+        },
+        "stream_analytics": {
+          "title": "Stream Analytics",
+          "emoji": "🌊",
+          "description": "Real-time data stream processing from millions of IoT devices."
+        }
+      }
+    },
+    "devops": {
+      "title": "DevOps",
+      "emoji": "🛠️",
+      "description": "Tools and services for CI/CD",
+      "sub_services": {
+        "devops_pipelines": {
+          "title": "DevOps Pipelines",
+          "emoji": "🚀",
+          "description": "CI/CD that works with any language, platform, and cloud."
+        },
+        "artifacts": {
+          "title": "Artifacts",
+          "emoji": "📦",
+          "description": "Create, host, and share packages with your team."
+        },
+        "source_repositories": {
+          "title": "Source Repositories",
+          "emoji": "🗂️",
+          "description": "Host private Git repositories."
+        }
+      }
+    },
+    "security": {
+      "title": "Security & Identity",
+      "emoji": "🔒",
+      "description": "Identity management and threat detection",
+      "sub_services": {
+        "identity_services": {
+          "title": "Identity Services",
+          "emoji": "🔑",
+          "description": "Protect and manage identities as a primary security perimeter."
+        },
+        "threat_protection": {
+          "title": "Threat Protection",
+          "emoji": "🛡️",
+          "description": "Advanced threat detection and protection across cloud services."
+        },
+        "information_protection": {
+          "title": "Information Protection",
+          "emoji": "📄",
+          "description": "Secure sensitive data everywhere it resides."
+        }
+      }
+    },
+    "iot": {
+      "title": "Internet of Things",
+      "emoji": "🌐",
+      "description": "Internet of Things services",
+      "sub_services": {
+        "iot_hub": {
+          "title": "IoT Hub",
+          "emoji": "🔗",
+          "description": "Connect, monitor and manage billions of IoT assets."
+        },
+        "iot_edge": {
+          "title": "IoT Edge",
+          "emoji": "🛠️",
+          "description": "Deploy cloud intelligence directly on IoT devices to operate in offline mode."
+        },
+        "digital_twins": {
+          "title": "Digital Twins",
+          "emoji": "👥",
+          "description": "Create digital representations of connected environments."
+        }
+      }
+    }
+  }
+}
