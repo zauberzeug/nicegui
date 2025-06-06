@@ -1,6 +1,6 @@
 # Using Redis for session storage
 
-NiceGUI can use Redis as the session storage, which is particularly interesting in environments where you want session persistance or there are multiple workers. To make this work, you set environment variables:
+NiceGUI can use Redis for storage. To make this work, you set environment variables:
 
 ## `NICEGUI_REDIS_URL`
 

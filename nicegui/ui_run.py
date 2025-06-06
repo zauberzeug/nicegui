@@ -205,9 +205,7 @@ def run(*,
         return [a.strip() for a in args.split(',')]
 
     if kwargs.get('workers', 1) > 1:
-        # Check if the NICEGUI_REDIS_URL is set. If not, do not allow multiple workers.
-        if not os.environ.get('NICEGUI_REDIS_URL', None):
-            raise ValueError('NiceGUI does not support multiple workers yet. Please set the NICEGUI_REDIS_URL environment variable.')
+        raise ValueError('NiceGUI does not support multiple workers yet. Please set the NICEGUI_REDIS_URL environment variable.')
 
     # NOTE: The following lines are basically a copy of `uvicorn.run`, but keep a reference to the `server`.
 
