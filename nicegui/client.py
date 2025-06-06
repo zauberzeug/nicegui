@@ -69,6 +69,7 @@ class Client:
         self.tab_id: Optional[str] = None
 
         self.page = page
+        self._page_error: str = ''
         self.outbox = Outbox(self)
 
         with Element('q-layout', _client=self).props('view="hhh lpr fff"').classes('nicegui-layout') as self.layout:

@@ -279,7 +279,7 @@ h6.q-timeline__title {
 }
 
 /* connection popup */
-#popup {
+.nicegui-error-popup {
   position: fixed;
   bottom: 0;
   left: 0;
@@ -295,25 +295,27 @@ h6.q-timeline__title {
   pointer-events: none;
   z-index: 10000;
 }
-.body--dark #popup {
+.body--dark .nicegui-error-popup {
   background-color: black;
 }
-.body--light #popup {
+.body--light .nicegui-error-popup {
   background-color: white;
 }
-#popup[aria-hidden="true"] {
+.nicegui-error-popup[aria-hidden="true"] {
   opacity: 0;
   visibility: hidden;
 }
-#popup[aria-hidden="false"] {
+.nicegui-error-popup[aria-hidden="false"] {
   opacity: 1;
   visibility: visible;
+}
+#popup[aria-hidden="false"] {
   transition-delay: 2000ms;
 }
-#popup > span:first-child {
+.nicegui-error-popup > span:first-child {
   font-weight: bold;
 }
-#popup > span:first-child::before {
+.nicegui-error-popup > span:first-child::before {
   content: "⚠️";
   position: absolute;
   left: 1.5em;
