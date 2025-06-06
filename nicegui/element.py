@@ -83,14 +83,24 @@ class Element(Visibility):
             self.parent_slot = slot_stack[-1]
             self.parent_slot.children.append(self)
 
+        self.cache_name: Optional[str] = None
+        self.auto_id: bool = False
+        self.cache_apply_to_child: bool = False
+        self.child_id_per_slot_name: Dict[str, int] = {}
+
         self.tailwind = Tailwind(self)
 
         self.client.outbox.enqueue_update(self)
         if self.parent_slot:
-            self.client.outbox.enqueue_update(self.parent_slot.parent)
-
-        self.cache_name: Optional[str] = None
-        self.auto_id: bool = False
+            parent = self.parent_slot.parent
+            self.client.outbox.enqueue_update(parent)
+            if parent.cache_apply_to_child:
+                slot_name = self.parent_slot.name
+                child_id = parent.child_id_per_slot_name.setdefault(slot_name, 0)
+                self.cache_name = f'{parent.cache_name}.{slot_name}:{child_id}'
+                parent.child_id_per_slot_name[slot_name] += 1
+                self.auto_id = parent.auto_id
+                self.cache_apply_to_child = True
 
     def __init_subclass__(cls, *,
                           component: Union[str, Path, None] = None,
@@ -604,16 +614,30 @@ class Element(Visibility):
         """
         return f'c{self.id}'
 
-    def cache(self, cache_name: Optional[str] = None) -> Self:
+    def cache(self, cache_name: Optional[str] = None, *, apply_to_child: bool = False) -> Self:
         """Cache the element in the browser data store.
 
         :param cache_name: name of the cache entry (default: None, which uses the element's interal hash automatically)
+        :param apply_to_child: whether to apply the cache to all child elements as well (default: False)
         """
+        if cache_name is not None and ('@' in cache_name or '#' in cache_name or '.' in cache_name):
+            raise ValueError('Cache names must not contain "@", "#", or "." characters.')
+        self.cache_apply_to_child = apply_to_child
         if cache_name is None:
-            cache_name = f'auto_{hash_data_store_entry(json.dumps(self._to_dict_internal()[0]))}'
+            cache_name = f'auto#{hash_data_store_entry(json.dumps(self._to_dict_internal()[0]))}'
             self.auto_id = True
         else:
             self.auto_id = False
         self.cache_name = cache_name
         self._populate_browser_data_store_if_needed()
+        return self
+
+    def disable_cache(self) -> Self:
+        """Disable caching for the element.
+
+        This is useful when if the element is inside a parent element that is cached with apply_to_child is True.
+        """
+        self.cache_name = None
+        self.auto_id = False
+        self.cache_apply_to_child = False
         return self
