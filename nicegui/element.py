@@ -23,6 +23,7 @@ from .dependencies import (
 from .elements.mixins.visibility import Visibility
 from .event_listener import EventListener
 from .helpers import hash_data_store_entry
+from .logging import log
 from .props import Props
 from .slot import Slot
 from .style import Style
@@ -567,8 +568,11 @@ class Element(Visibility):
         This method can be overridden in subclasses to perform cleanup tasks.
         """
         # delete the cache, if it is auto-generated ID
-        if self.auto_id and self.cache_name in core.app.browser_data_store:
-            core.app.browser_data_store[self.cache_name] = None
+        if self.auto_id:
+            if self.cache_name in core.app.browser_data_store:
+                core.app.browser_data_store[self.cache_name] = None
+            if self.cache_name in self.client.used_cache_names:
+                self.client.used_cache_names.remove(self.cache_name)
 
     @property
     def is_deleted(self) -> bool:
@@ -622,6 +626,10 @@ class Element(Visibility):
         """
         if cache_name is not None and ('@' in cache_name or '#' in cache_name or '.' in cache_name):
             raise ValueError('Cache names must not contain "@", "#", or "." characters.')
+        if cache_name in self.client.used_cache_names:
+            log.warning(f'Ignoring caching for this element since cache name "{cache_name}" is already used in this client.\n'
+                        'Use a different name or consider automatic cache name generation by not passing a name / passing None.')
+            return
         self.cache_apply_to_child = apply_to_child
         if cache_name is None:
             cache_name = f'auto#{hash_data_store_entry(json.dumps(self._to_dict_internal()[0]))}'
@@ -629,6 +637,7 @@ class Element(Visibility):
         else:
             self.auto_id = False
         self.cache_name = cache_name
+        self.client.used_cache_names.add(cache_name)
         self._populate_browser_data_store_if_needed()
         return self
 

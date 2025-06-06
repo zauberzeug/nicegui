@@ -7,7 +7,20 @@ import uuid
 from collections import defaultdict
 from contextlib import contextmanager
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Awaitable, Callable, ClassVar, Dict, Iterable, Iterator, List, Optional, Union
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Awaitable,
+    Callable,
+    ClassVar,
+    Dict,
+    Iterable,
+    Iterator,
+    List,
+    Optional,
+    Set,
+    Union,
+)
 
 from fastapi import Request
 from fastapi.responses import Response
@@ -89,6 +102,8 @@ class Client:
         self.disconnect_handlers: List[Union[Callable[..., Any], Awaitable]] = []
 
         self._temporary_socket_id: Optional[str] = None
+
+        self.used_cache_names: Set[str] = set()
 
     def fetch_string_from_browser_data_store(self, key: str) -> str:
         """Placeholder string to instruct the browser to fetch a string from the browser data store."""
