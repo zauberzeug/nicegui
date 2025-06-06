@@ -205,7 +205,7 @@ def run(*,
         return [a.strip() for a in args.split(',')]
 
     if kwargs.get('workers', 1) > 1:
-        raise ValueError('NiceGUI does not support multiple workers yet. Please set the NICEGUI_REDIS_URL environment variable.')
+        raise ValueError('NiceGUI does not support multiple workers yet.')
 
     # NOTE: The following lines are basically a copy of `uvicorn.run`, but keep a reference to the `server`.
 
