@@ -21,7 +21,7 @@ def render_page(documentation: DocumentationPage, *, with_menu: bool = True) -> 
                 .style('height: calc(100% + 20px) !important') as menu:
             tree = ui.tree(nodes, label_key='title').classes('w-full').props('accordion no-connectors')
             tree.add_slot('default-header', '''
-                <a :href="'/documentation/' + props.node.id" onclick="event.stopPropagation()">{{ props.node.title }}</a>
+                <a :href="'/documentation/' + props.node.id" onclick="event.stopPropagation(); event.preventDefault(); window.softReload(this.href)">{{ props.node.title }}</a>
             ''')
             tree.expand(_ancestor_nodes(documentation.name))
             ui.run_javascript(f'''

@@ -10,7 +10,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any, Awaitable, Callable, ClassVar, Dict, Iterable, Iterator, List, Optional, Union
 
 from fastapi import Request
-from fastapi.responses import Response
+from fastapi.responses import JSONResponse, Response
 from fastapi.templating import Jinja2Templates
 from typing_extensions import Self
 
@@ -124,51 +124,69 @@ class Client:
     def __exit__(self, *_) -> None:
         self.content.__exit__()
 
-    def build_response(self, request: Request, status_code: int = 200) -> Response:
+    def build_response(self, request: Request, status_code: int = 200, *, send_json: bool = False, past_client_id: Optional[str] = None) -> Response:
         """Build a FastAPI response for the client."""
         self.outbox.updates.clear()
         prefix = request.headers.get('X-Forwarded-Prefix', request.scope.get('root_path', ''))
-        elements = json.dumps({
+        elements_dict = {
             id: element._to_dict() for id, element in self.elements.items()  # pylint: disable=protected-access
-        })
+        }
+        past_client = Client.instances.get(past_client_id) if past_client_id is not None else None
+        past_elements_dict = {
+            id: element._to_dict() for id, element in past_client.elements.items()  # pylint: disable=protected-access
+        } if past_client is not None else {}
+
+        for elem_id, past_element in past_elements_dict.items():
+            if elements_dict.get(elem_id) == past_element:
+                elements_dict[elem_id] = {'=': True}
+
+        elements = json.dumps(elements_dict)
         socket_io_js_query_params = {
             **core.app.config.socket_io_js_query_params,
             'client_id': self.id,
             'next_message_id': self.outbox.next_message_id,
         }
-        vue_html, vue_styles, vue_scripts, imports, js_imports, js_imports_urls = \
+        vue_html, vue_styles, vue_scripts, imports, js_imports, js_imports_urls, js_imports_raw = \
             generate_resources(prefix, self.elements.values())
+        context = {
+            'version': __version__,
+            'elements': elements.replace('&', '&amp;')
+            .replace('<', '&lt;')
+            .replace('>', '&gt;')
+            .replace('`', '&#96;')
+            .replace('$', '&#36;'),
+            'head_html': self.head_html,
+            'body_html': '<style>' + '\n'.join(vue_styles) + '</style>\n' + self.body_html + '\n' + '\n'.join(vue_html),
+            'vue_scripts': '\n'.join(vue_scripts),
+            'quasar_config': json.dumps(core.app.config.quasar_config),
+            'title': self.resolve_title(),
+            'viewport': self.page.resolve_viewport(),
+            'favicon_url': get_favicon_url(self.page, prefix),
+            'dark': str(self.page.resolve_dark()),
+            'language': self.page.resolve_language(),
+            'prefix': prefix,
+            'tailwind': core.app.config.tailwind,
+            'prod_js': core.app.config.prod_js,
+            'socket_io_js_query_params': socket_io_js_query_params,
+            'socket_io_js_extra_headers': core.app.config.socket_io_js_extra_headers,
+            'socket_io_js_transports': core.app.config.socket_io_js_transports,
+        }
+        if send_json:
+            context['js_import_raw'] = js_imports_raw
+            return JSONResponse(
+                content=context,
+                status_code=status_code,
+                headers={'Cache-Control': 'no-store', 'X-NiceGUI-Content': 'jsonpage'},
+            )
+        context['request'] = request
+        context['imports'] = json.dumps(imports)
+        context['js_imports'] = '\n'.join(js_imports)
+        context['js_imports_urls'] = js_imports_urls
+        context['translations'] = translations.get(self.page.resolve_language(), translations['en-US'])
         return templates.TemplateResponse(
             request=request,
             name='index.html',
-            context={
-                'request': request,
-                'version': __version__,
-                'elements': elements.replace('&', '&amp;')
-                                    .replace('<', '&lt;')
-                                    .replace('>', '&gt;')
-                                    .replace('`', '&#96;')
-                                    .replace('$', '&#36;'),
-                'head_html': self.head_html,
-                'body_html': '<style>' + '\n'.join(vue_styles) + '</style>\n' + self.body_html + '\n' + '\n'.join(vue_html),
-                'vue_scripts': '\n'.join(vue_scripts),
-                'imports': json.dumps(imports),
-                'js_imports': '\n'.join(js_imports),
-                'js_imports_urls': js_imports_urls,
-                'quasar_config': json.dumps(core.app.config.quasar_config),
-                'title': self.resolve_title(),
-                'viewport': self.page.resolve_viewport(),
-                'favicon_url': get_favicon_url(self.page, prefix),
-                'dark': str(self.page.resolve_dark()),
-                'language': self.page.resolve_language(),
-                'translations': translations.get(self.page.resolve_language(), translations['en-US']),
-                'prefix': prefix,
-                'tailwind': core.app.config.tailwind,
-                'prod_js': core.app.config.prod_js,
-                'socket_io_js_query_params': socket_io_js_query_params,
-                'socket_io_js_extra_headers': core.app.config.socket_io_js_extra_headers,
-                'socket_io_js_transports': core.app.config.socket_io_js_transports,
-            },
+            context=context,
             status_code=status_code,
             headers={'Cache-Control': 'no-store', 'X-NiceGUI-Content': 'page'},
         )
@@ -226,10 +244,10 @@ class Client:
 
         return AwaitableResponse(send_and_forget, send_and_wait)
 
-    def open(self, target: Union[Callable[..., Any], str], new_tab: bool = False) -> None:
+    def open(self, target: Union[Callable[..., Any], str], new_tab: bool = False, *, soft_reload: bool = False) -> None:
         """Open a new page in the client."""
         path = target if isinstance(target, str) else self.page_routes[target]
-        self.outbox.enqueue_message('open', {'path': path, 'new_tab': new_tab}, self.id)
+        self.outbox.enqueue_message('open', {'path': path, 'new_tab': new_tab, 'soft_reload': soft_reload}, self.id)
 
     def download(self, src: Union[str, bytes], filename: Optional[str] = None, media_type: str = '') -> None:
         """Download a file from a given URL or raw bytes."""
