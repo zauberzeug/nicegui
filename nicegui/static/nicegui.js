@@ -322,6 +322,7 @@ window.onbeforeunload = function () {
 };
 
 async function generateStylesFromClasses(classes) {
+  if (window.__unocss_runtime === undefined) return
   const div = document.createElement("div");
   div.className = Array.from(classes).join(" ");
   const html = div.outerHTML;
