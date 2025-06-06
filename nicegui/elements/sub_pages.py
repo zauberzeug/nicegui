@@ -156,7 +156,7 @@ def find_root_sub_pages_element(element: Element) -> Optional[SubPages]:
     :return: the root ui.sub_pages element if found, None otherwise
     """
     def find_in_element(el: Element):
-        if isinstance(el, SubPages) and el._is_root():  # type: ignore
+        if isinstance(el, SubPages) and el._is_root():  # pylint: disable=protected-access
             return el
         if hasattr(el, 'default_slot') and el.default_slot:
             for child in el.default_slot.children:
