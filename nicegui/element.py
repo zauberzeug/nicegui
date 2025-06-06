@@ -88,14 +88,18 @@ class Element(Visibility):
 
     def __init_subclass__(cls, *,
                           component: Union[str, Path, None] = None,
-                          dependencies: List[Union[str, Path]] = [],  # noqa: B006
-                          libraries: List[Union[str, Path]] = [],  # noqa: B006  # DEPRECATED
-                          exposed_libraries: List[Union[str, Path]] = [],  # noqa: B006  # DEPRECATED
-                          extra_libraries: List[Union[str, Path]] = [],  # noqa: B006  # DEPRECATED
+                          dependencies: Optional[List[Union[str, Path]]] = None,
+                          libraries: Optional[List[Union[str, Path]]] = None,  # DEPRECATED
+                          exposed_libraries: Optional[List[Union[str, Path]]] = None,  # DEPRECATED
+                          extra_libraries: Optional[List[Union[str, Path]]] = None,  # DEPRECATED
                           default_classes: Optional[str] = None,
                           default_style: Optional[str] = None,
                           default_props: Optional[str] = None,
                           ) -> None:
+        dependencies = dependencies or []
+        libraries = libraries or []
+        exposed_libraries = exposed_libraries or []
+        extra_libraries = extra_libraries or []
         super().__init_subclass__()
         base = Path(inspect.getfile(cls)).parent
 
