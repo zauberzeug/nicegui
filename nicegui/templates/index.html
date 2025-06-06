@@ -40,6 +40,11 @@
             }
         }
     </script>
+    <style>
+      .nicegui-prevent-fouc {
+        display: none;
+      }
+    </style>
     <!-- Tried out with uno.global.js, equally broken! -->
     <script src="{{ prefix | safe }}/_nicegui/{{version}}/static/unocss/core.global.js"></script>
     {% endif %}
