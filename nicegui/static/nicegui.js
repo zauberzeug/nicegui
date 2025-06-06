@@ -8,6 +8,8 @@ let mounted_app = undefined;
 const loaded_libraries = new Set();
 const loaded_components = new Set();
 
+const allClassesFromElements = new Set();
+
 function parseElements(raw_elements) {
   return JSON.parse(
     raw_elements
@@ -319,9 +321,33 @@ window.onbeforeunload = function () {
   sessionStorage.__nicegui_tab_closed = "true";
 };
 
+async function generateStylesFromClasses(classes) {
+  const div = document.createElement("div");
+  div.className = Array.from(classes).join(" ");
+  const html = div.outerHTML;
+  await window.__unocss_runtime.extract(html);
+  // Wait until the style elements have been moved
+  await new Promise((resolve) => {
+    document.querySelectorAll('style[data-unocss-runtime-layer]:not([data-nicegui-moved])')
+      .forEach(style => {
+        document.head.appendChild(style);
+        style.setAttribute('data-nicegui-moved', 'true');
+      });
+    resolve();
+  });
+}
+
 function createApp(elements, options) {
   Object.entries(elements).forEach(([_, element]) => replaceUndefinedAttributes(element));
   setInterval(() => ack(), 3000);
+  Object.values(elements).forEach((element) => {
+    if (element.class) {
+      element.class.forEach((c) => allClassesFromElements.add(c));
+    }
+  });
+  generateStylesFromClasses(allClassesFromElements).then(() => {
+    document.querySelector(".nicegui-prevent-fouc").classList.remove("nicegui-prevent-fouc");
+  })
   return (app = Vue.createApp({
     data() {
       return {
@@ -384,6 +410,15 @@ function createApp(elements, options) {
             .filter(([_, element]) => element && (element.component || element.libraries))
             .map(([_, element]) => loadDependencies(element, options.prefix, options.version));
           await Promise.all(loadPromises);
+
+          originalClassesCount = allClassesFromElements.size;
+          Object.entries(msg).forEach(([_, element]) => {
+            allClassesFromElements.add(...(element?.class || []));
+          });
+          if (allClassesFromElements.size > originalClassesCount) {
+            console.log("Generating styles for classes:", allClassesFromElements);
+            await generateStylesFromClasses(allClassesFromElements);
+          }
 
           for (const [id, element] of Object.entries(msg)) {
             if (element === null) {

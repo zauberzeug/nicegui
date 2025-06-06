@@ -35,6 +35,9 @@
                 () =>
                     window.__unocss_runtime.presets.presetWind()
             ],
+            runtime: {
+              ready: () => false,
+            }
         }
     </script>
     <!-- Tried out with uno.global.js, equally broken! -->
@@ -53,7 +56,7 @@
     <script defer src="{{ prefix | safe }}/_nicegui/{{version}}/static/lang/{{ language }}.umd.prod.js"></script>
     {{ body_html | safe }}
 
-    <div id="app"></div>
+    <div id="app" class="nicegui-prevent-fouc"></div>
     <div id="popup" aria-hidden="true">
       <span>{{ translations.connection_lost }}</span>
       <span>{{ translations.trying_to_reconnect }}</span>

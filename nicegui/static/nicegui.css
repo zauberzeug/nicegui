@@ -4,6 +4,10 @@
   --nicegui-default-gap: 1rem;
 }
 
+.nicegui-prevent-fouc {
+  display: none;
+}
+
 /* prevent q-layout from getting strange outline when focussed */
 .nicegui-layout {
   outline: 2px solid transparent;
