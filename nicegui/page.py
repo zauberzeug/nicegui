@@ -121,7 +121,7 @@ class page:
 
                 # FastAPI exception handlers
                 for key, handler in core.app.exception_handlers.items():
-                    if key == 500 or (isinstance(key, Exception) and isinstance(e, key)):
+                    if key == 500 or (isinstance(key, type) and isinstance(e, key)):
                         result = handler(request, e)
                         if helpers.is_coroutine_function(handler):
                             async def await_handler(result: Any) -> None:
