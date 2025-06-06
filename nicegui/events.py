@@ -15,6 +15,7 @@ from typing import (
     List,
     Literal,
     Optional,
+    Tuple,
     TypeVar,
     Union,
     cast,
@@ -401,6 +402,12 @@ class JsonEditorSelectEventArguments(UiEventArguments):
 class JsonEditorChangeEventArguments(UiEventArguments):
     content: Dict
     errors: Dict
+
+
+@dataclass(**KWONLY_SLOTS)
+class PywebviewEventArguments(EventArguments):
+    id: str
+    args: Tuple[Any, ...]
 
 
 EventT = TypeVar('EventT', bound=EventArguments)
