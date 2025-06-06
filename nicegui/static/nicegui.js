@@ -455,7 +455,14 @@ for (let sheet of document.styleSheets) {
   }
 }
 
+let softReloadInProgress = False;
+
 function softReload(url, x = undefined, y = undefined) {
+  if (softReloadInProgress) {
+    console.warn("Soft reload already in progress, ignoring request.");
+    return;
+  }
+  softReloadInProgress = True;
   // check if url same origin as current location, if not redirect to that url
   if (new URL(url, window.location.href).origin !== window.location.origin) {
     window.location.href = url;
@@ -508,6 +515,7 @@ function softReload(url, x = undefined, y = undefined) {
         if (x !== undefined && y !== undefined) {
           window.scrollTo(x, y);
         }
+        softReloadInProgress = False;
       });
     })
     .catch(error => {
@@ -533,6 +541,7 @@ function updateElement(targetId, htmlString) {
     if (node.tagName === "SCRIPT") {
       const newScript = document.createElement("script");
       newScript.textContent = node.textContent;
+      newScript.type = node.type;
       target.appendChild(newScript);
     } else {
       target.appendChild(node);
