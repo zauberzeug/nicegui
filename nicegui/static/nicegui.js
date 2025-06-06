@@ -8,14 +8,128 @@ let mounted_app = undefined;
 const loaded_libraries = new Set();
 const loaded_components = new Set();
 
-function parseElements(raw_elements) {
+function setCookie(cname, cvalue, exdays) {
+  const d = new Date();
+  d.setTime(d.getTime() + (exdays * 24 * 60 * 60 * 1000));
+  let expires = "expires=" + d.toUTCString();
+  document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
+}
+
+function updateBrowserDataStore(str_in) {
+  dict_in = JSON.parse(str_in
+    .replace(/&#36;/g, "$")
+    .replace(/&#96;/g, "`")
+    .replace(/&gt;/g, ">")
+    .replace(/&lt;/g, "<")
+    .replace(/&amp;/g, "&")
+  );
+  console.log("Updating browser data store with:", dict_in);
+  // Maintain a list of all keys in __nicegui_data_store_keys__ in localStorage
+  let allKeys = [];
+  try {
+    const storedKeys = localStorage.getItem("__nicegui_data_store_keys__");
+    if (storedKeys) {
+      allKeys = JSON.parse(storedKeys);
+      if (!Array.isArray(allKeys)) allKeys = [];
+    }
+  } catch (e) {
+    allKeys = [];
+  }
+
+  // Prepare for hashing
+  const encoder = new TextEncoder();
+  const hashPromises = [];
+  const keysToAdd = [];
+
+  // Iterate dict_in once for all operations
+  for (const [key, value] of Object.entries(dict_in)) {
+    if (value === null || value === undefined) {
+      localStorage.removeItem(key);
+      // Remove key from allKeys if present
+      const idx = allKeys.indexOf(key);
+      if (idx !== -1) allKeys.splice(idx, 1);
+      console.log(`Removed localStorage key "${key}"`);
+    } else {
+      try {
+        console.log(`Setting localStorage key "${key}" to value:`, value);
+        localStorage.setItem(key, value); // value is always string
+        if (!allKeys.includes(key)) allKeys.push(key);
+      } catch (e) {
+        console.error(`Error setting localStorage key "${key}":`, e);
+      }
+    }
+  }
+
+  localStorage.setItem("__nicegui_data_store_keys__", JSON.stringify(allKeys));
+
+  // Hash values for all keys in __nicegui_data_store_keys__ for nicegui_data_store
+  // Also hash any keys that were already present but not updated in this call
+  for (const key of allKeys) {
+    const value = localStorage.getItem(key);
+    if (value !== null) {
+      hashPromises.push(
+        (async () => {
+          try {
+            const data = encoder.encode(value);
+            const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+            return { key, hashHex };
+          } catch (e) {
+            console.error(`Error hashing value for key "${key}":`, e);
+            return null;
+          }
+        })()
+      );
+    }
+  }
+  console.log("Hash promises:", hashPromises);
+
+  Promise.all(hashPromises).then(results => {
+    const data_store = {};
+    results.forEach(item => {
+      if (item) {
+        data_store[item.key] = item.hashHex;
+      }
+    });
+    console.log("Updated data_store:", data_store);
+    setCookie("nicegui_data_store", JSON.stringify(data_store), 365);
+  });
+}
+
+function parseElements(raw_elements, token) {
+  // Reviver function handles compressed values
+  const reviver = (_, value) => {
+    // Handle string references (token:key)
+    if (typeof value === 'string' && value.startsWith(`${token}:`)) {
+      const key = value.slice(`${token}:`.length);
+      return localStorage.getItem(key);
+    }
+    // Handle array references [token, key]
+    if (Array.isArray(value) && value[0] === token && value.length > 1) {
+      return JSON.parse(localStorage.getItem(value[1]));
+    }
+    // Handle object references { [token]: key, ...extraProps }
+    if (value && typeof value === 'object' && token in value) {
+      const stored = JSON.parse(localStorage.getItem(value[token]));
+      // Merge extra properties if stored value is an object
+      if (stored && typeof stored === 'object') {
+        for (const [k, v] of Object.entries(value)) {
+          if (k !== token) stored[k] = v;
+        }
+      }
+      return stored;
+    }
+    return value;
+  }
   return JSON.parse(
     raw_elements
       .replace(/&#36;/g, "$")
       .replace(/&#96;/g, "`")
       .replace(/&gt;/g, ">")
       .replace(/&lt;/g, "<")
-      .replace(/&amp;/g, "&")
+      .replace(/&amp;/g, "&"),
+    reviver
   );
 }
 
