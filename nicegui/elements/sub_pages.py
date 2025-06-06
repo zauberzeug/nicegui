@@ -5,8 +5,11 @@ from typing import Any, Callable, Dict, Optional
 
 from typing_extensions import Self
 
-from .. import background_tasks, ui
+from .. import background_tasks
+from ..context import context
 from ..element import Element
+from ..elements.label import Label
+from ..functions.javascript import run_javascript
 
 
 class SubPages(Element, component='sub_pages.js'):
@@ -15,9 +18,9 @@ class SubPages(Element, component='sub_pages.js'):
         super().__init__()
         self._routes = routes
         if self._is_root():
-            path = ui.context.client.request.url.path if ui.context.client.request else '/'
+            path = context.client.request.url.path if context.client.request else '/'
             if self.show(path):
-                ui.run_javascript(f'''
+                run_javascript(f'''
                     if (window.location.pathname !== "{path}") {{
                         history.pushState({{page: "{path}"}}, "", "{path}");
                     }}
@@ -26,14 +29,19 @@ class SubPages(Element, component='sub_pages.js'):
             self.on('open', lambda e: self.show(e.args))
 
     def add(self, path: str, page: Callable) -> Self:
-        """Add a new route to the sub pages."""
+        """Add a new route to the sub pages.
+
+        :param path: the path pattern to match (can include {param} placeholders)
+        :param page: the callable to execute when the path is matched ({param} placeholders will be passed to the function parameters with same name)
+        :return: self for method chaining
+        """
         self._routes[path] = page
         return self
 
     def show(self, full_path: str) -> bool:
         """Show the page for the given path.
 
-        :param full_path: The path to navigate to
+        :param full_path: the path to navigate to
         :return: True if the path was handled, False otherwise
         """
         segments = full_path.split('/')
@@ -53,7 +61,7 @@ class SubPages(Element, component='sub_pages.js'):
                     if sub_path == '/' and remaining_path == full_path and sub_path != full_path:
                         continue
                     self._replace_content(path, builder, params)
-                    child_sub_pages = find_child_sub_pages(self)
+                    child_sub_pages = find_child_sub_pages_element(self)
 
                     if child_sub_pages and remaining_path != sub_path:
                         if child_sub_pages.show(remaining_path):
@@ -63,24 +71,24 @@ class SubPages(Element, component='sub_pages.js'):
             segments.pop()
         self.clear()
         with self:
-            ui.label(f'404: sub page {full_path} not found')
+            Label(f'404: sub page {full_path} not found')
         return False
 
     def show_and_update_history(self, path: str) -> bool:
         """Show the page and update browser history if successful.
 
-        :param path: The path to navigate to
+        :param path: the path to navigate to
         :return: True if the path was handled, False otherwise
         """
         if self.show(path):
             if self._is_root():
-                ui.run_javascript(f'history.pushState({{page: "{path}"}}, "", "{path}");')
+                run_javascript(f'history.pushState({{page: "{path}"}}, "", "{path}");')
             return True
         return False
 
     @staticmethod
     def _match_path(pattern: str, path: str) -> Optional[Dict[str, str]]:
-        """Match a path pattern against an actual path and extract parameters.
+        """Match a path pattern against an actual path and extract parameters noted with {param} placeholders.
 
         :return: empty dict for exact matches, parameter dict for parameterized matches, None for no match.
         """
@@ -110,7 +118,7 @@ class SubPages(Element, component='sub_pages.js'):
             return value
 
     def _is_root(self) -> bool:
-        parent: ui.element = self
+        parent: Element = self
         while parent.parent_slot is not None:
             parent = parent.parent_slot.parent
             if isinstance(parent, SubPages):
@@ -141,10 +149,14 @@ class SubPages(Element, component='sub_pages.js'):
             background_tasks.create(background_task(), name=f'building sub_page {path}')
 
 
-def find_root_sub_page(element: ui.element) -> Optional[SubPages]:
-    """Find the root SubPages component in an element tree."""
-    def find_in_element(el: ui.element):
-        if isinstance(el, SubPages) and el._is_root():
+def find_root_sub_pages_element(element: Element) -> Optional[SubPages]:
+    """Find the root ui.sub_pages element in an element tree.
+
+    :param element: the element to search from
+    :return: the root ui.sub_pages element if found, None otherwise
+    """
+    def find_in_element(el: Element):
+        if isinstance(el, SubPages) and el._is_root():  # type: ignore
             return el
         if hasattr(el, 'default_slot') and el.default_slot:
             for child in el.default_slot.children:
@@ -156,11 +168,15 @@ def find_root_sub_page(element: ui.element) -> Optional[SubPages]:
     return find_in_element(element)
 
 
-def find_child_sub_pages(element: ui.element) -> Optional[SubPages]:
+def find_child_sub_pages_element(element: Element) -> Optional[SubPages]:
+    """Find child ui.sub_pages element, ensuring only one exists per level.
+
+    :return: the ui.sub_pages element if found, None otherwise
+    """
     for child in element.default_slot.children:
         if isinstance(child, SubPages):
             return child
-        result = find_child_sub_pages(child)
+        result = find_child_sub_pages_element(child)
         if result is not None:
             return result
     return None

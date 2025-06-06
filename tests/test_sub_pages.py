@@ -248,7 +248,7 @@ def test_navigate_to_new_tab_fallback(screen: Screen):
     screen.should_contain('main-content')
     assert index_calls == 1
 
-    # Even though this is a sub page route, new_tab=True should use normal navigation
+    # NOTE: even though this is a sub page route, new_tab=True should use normal navigation
     screen.click('new tab')
     screen.wait(0.5)
     screen.switch_to(1)

@@ -3,6 +3,7 @@ from typing import Any, Callable, Union
 from ..client import Client
 from ..context import context
 from ..element import Element
+from ..elements.sub_pages import find_root_sub_pages_element
 from .javascript import run_javascript
 
 
@@ -68,11 +69,10 @@ class Navigate:
             raise TypeError(f'Invalid target type: {type(target)}')
 
         if not new_tab and isinstance(target, str):
-            from ..elements.sub_pages import find_root_sub_page
             try:
                 client = context.client
                 if client and client.content:
-                    sub_page = find_root_sub_page(client.content)
+                    sub_page = find_root_sub_pages_element(client.content)
                     if sub_page and sub_page.show_and_update_history(path):
                         return
             except Exception:
