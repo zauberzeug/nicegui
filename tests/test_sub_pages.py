@@ -17,9 +17,11 @@ def test_switching_between_sub_pages(screen: Screen):
 
     def child():
         ui.link('goto other', '/other')
+        ui.link('goto other with slash', '/other/')
 
     def child2():
         ui.link('goto main', '/')
+        ui.link('goto this path with slash', '/other/')
 
     screen.open('/')
     assert index_calls == 1
@@ -41,6 +43,12 @@ def test_switching_between_sub_pages(screen: Screen):
     screen.should_contain('some text before main content')
     screen.should_contain('goto main')
     screen.should_not_contain('goto other')
+
+    screen.click('goto main')
+    screen.click('goto other with slash')
+    screen.should_contain('goto main')
+    screen.click('goto this path with slash')
+    screen.should_contain('goto main')
 
 
 def test_passing_element_to_sub_page(screen: Screen):
@@ -87,6 +95,9 @@ def test_accessing_sub_page_directly(screen: Screen):
     screen.open('/two')
     screen.should_contain('two')
     screen.should_not_contain('one')
+    screen.open('/one/')  # NOTE: having a slash at the end of the path should not cause an error
+    screen.should_contain('one')
+    screen.should_not_contain('two')
 
 
 def test_sub_page_in_sub_page(screen: Screen):

@@ -73,7 +73,8 @@ class Navigate:
                 client = context.client
                 if client and client.content:
                     sub_page = find_root_sub_pages_element(client.content)
-                    if sub_page and sub_page.show_and_update_history(path):
+                    if sub_page:
+                        sub_page.show_and_update_history(path)
                         return
             except (AttributeError, TypeError):
                 pass

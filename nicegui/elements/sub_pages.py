@@ -18,14 +18,9 @@ class SubPages(Element, component='sub_pages.js'):
         super().__init__()
         self._routes = routes
         if self._is_root():
-            path = context.client.request.url.path if context.client.request else '/'
-            if self.show(path):
-                run_javascript(f'''
-                    if (window.location.pathname !== "{path}") {{
-                        history.pushState({{page: "{path}"}}, "", "{path}");
-                    }}
-                ''')
-
+            assert context.client.request
+            path = context.client.request.url.path
+            self.show_and_update_history(path)
             self.on('open', lambda e: self.show(e.args))
 
     def add(self, path: str, page: Callable) -> Self:
@@ -39,53 +34,43 @@ class SubPages(Element, component='sub_pages.js'):
         self._routes[path] = page
         return self
 
-    def show(self, full_path: str) -> bool:
+    def show(self, full_path: str) -> None:
         """Show the page for the given path.
 
-        :param full_path: the path to navigate to
-        :return: True if the path was handled, False otherwise
+        :param full_path: the path to navigate to (can be empty string for root path; trailing slash is ignored)
         """
+        if full_path.endswith('/') and full_path != '/':
+            full_path = full_path[:-1]
+        if full_path == '':
+            full_path = '/'
         segments = full_path.split('/')
         while segments:
             sub_path = '/'.join(segments)
-            if not sub_path.startswith('/'):
-                sub_path = '/' + sub_path
-            for path, builder in self._routes.items():
-                params = self._match_path(path, sub_path)
-                if params is not None:
-                    if sub_path == '/':
-                        remaining_path = full_path
-                    else:
-                        remaining_path = full_path[len(sub_path):]
-                    if not remaining_path:
-                        remaining_path = '/'
-                    if sub_path == '/' and remaining_path == full_path and sub_path != full_path:
-                        continue
-                    self._replace_content(path, builder, params)
+            for route, builder in self._routes.items():
+                matches = self._match_path(route, sub_path)
+                if matches is not None:
+                    self._replace_content(route, builder, matches)
                     child_sub_pages = find_child_sub_pages_element(self)
-
-                    if child_sub_pages and remaining_path != sub_path:
-                        if child_sub_pages.show(remaining_path):
-                            return True
-                    elif sub_path == full_path:
-                        return True
+                    if child_sub_pages:
+                        child_sub_pages.show(full_path[len(sub_path):])
+                    return
             segments.pop()
         self.clear()
         with self:
             Label(f'404: sub page {full_path} not found')
-        return False
 
-    def show_and_update_history(self, path: str) -> bool:
+    def show_and_update_history(self, path: str) -> None:
         """Show the page and update browser history if successful.
 
         :param path: the path to navigate to
-        :return: True if the path was handled, False otherwise
         """
-        if self.show(path):
-            if self._is_root():
-                run_javascript(f'history.pushState({{page: "{path}"}}, "", "{path}");')
-            return True
-        return False
+        self.show(path)
+        if self._is_root():
+            run_javascript(f'''
+                if (window.location.pathname !== "{path}") {{
+                    history.pushState({{page: "{path}"}}, "", "{path}");
+                }}
+            ''')
 
     @staticmethod
     def _match_path(pattern: str, path: str) -> Optional[Dict[str, str]]:
