@@ -1,4 +1,3 @@
-import pytest
 from selenium.webdriver.common.by import By
 
 from nicegui import ui
@@ -82,18 +81,19 @@ def test_error(screen: Screen):
     screen.should_contain('Parse error on line 3')
 
 
-@pytest.mark.parametrize('security_level', ['loose', 'strict'])
-def test_click_mermaid_node(security_level: str, screen: Screen):
+def test_click_mermaid_node(screen: Screen):
     ui.mermaid('''
         flowchart TD;
-            A;
-            click A call document.write("Success")
-    ''', config={'securityLevel': security_level})
+            A[Node A];
+            B[Node B];
+            click A call nodeClick()
+            click B call nodeClick()
+    ''', on_node_click=lambda e: label.set_text(str(e.args)))
+    label = ui.label('')
 
     screen.open('/')
-    screen.click('A')
-    screen.wait(0.5)
-    if security_level == 'loose':
-        screen.should_contain('Success')
-    else:
-        screen.should_not_contain('Success')
+    screen.click('Node A')
+    assert 'A' in label.text
+
+    screen.click('Node B')
+    assert 'Node B' in label.text
