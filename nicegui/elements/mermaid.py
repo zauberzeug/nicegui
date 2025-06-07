@@ -1,6 +1,6 @@
 import re
 from datetime import datetime
-from typing import Dict, Match, Optional
+from typing import Dict, Match, Optional, Tuple
 
 from ..events import GenericEventArguments, Handler
 from .mixins.content_element import ContentElement
@@ -47,7 +47,7 @@ class Mermaid(ContentElement,
         self._props[self.CONTENT_PROP] = content.strip()
         self.run_method('update', content.strip())
 
-    def _update_click_handler(self, content: str) -> str:
+    def _update_click_handler(self, content: str) -> Tuple[str, int]:
         pattern = r'click\s+(\w+)\s+(?:call\s+)?nodeClick(\([^)]*\))?'
 
         dt = datetime.now()
