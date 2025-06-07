@@ -14,17 +14,19 @@ def main_demo() -> None:
     list(ui.context.client.elements.values())[-1].props['config'] = {'securityLevel': 'loose'}  # HACK: for click_demo
 
 
-@doc.demo('Handle click events', '''
-    You can register to click events by adding a `click` directive to a node and emitting a custom event.
-    Make sure to set the `securityLevel` to `loose` in the `config` parameter to allow JavaScript execution.
+@doc.demo('Handle node events', '''
+    You can register to click events by adding a `click` directive to a node to call `nodeClick()`, this will trigger the callback defined at `on_node_click`.
+    When a callback is specified the `config` is updated to include ``{"securityLevel": "loose"}`` to allow JavaScript execution.
 ''')
 def click_demo() -> None:
     ui.mermaid('''
     graph LR;
-        A((Click me!));
-        click A call emitEvent("mermaid_click", "You clicked me!")
-    ''', config={'securityLevel': 'loose'})
-    ui.on('mermaid_click', lambda e: ui.notify(e.args))
+        A((Click Me));
+        B((Or Click Me));
+        A --> B;
+        click A call nodeClick()
+        click B call nodeClick()
+    ''', on_node_click=lambda e: ui.notify(e.args))
 
 
 @doc.demo('Handle errors', '''
