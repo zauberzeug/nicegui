@@ -264,3 +264,25 @@ def test_navigate_to_new_tab_fallback(screen: Screen):
     screen.wait(0.5)
     screen.switch_to(1)
     screen.should_contain('internal-content')
+
+
+def test_adding_sub_pages_after_initialization(screen: Screen):
+    @ui.page('/')
+    def index():
+        pages = ui.sub_pages()
+        pages.add('/', lambda: main_content(pages))
+
+    def main_content(pages: ui.sub_pages):
+        ui.button('add sub page', on_click=lambda: pages.add('/sub', sub_content))
+        ui.button('goto sub', on_click=lambda: ui.navigate.to('/sub'))
+
+    def sub_content():
+        ui.label('sub-content')
+
+    screen.open('/')
+    screen.click('goto sub')
+    screen.should_contain('404: sub page /sub not found')
+    screen.open('/')
+    screen.click('add sub page')
+    screen.click('goto sub')
+    screen.should_contain('sub-content')

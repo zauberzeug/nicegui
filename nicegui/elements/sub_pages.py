@@ -14,14 +14,10 @@ from ..functions.javascript import run_javascript
 
 class SubPages(Element, component='sub_pages.js'):
 
-    def __init__(self, routes: Dict[str, Callable]):
+    def __init__(self, routes: Optional[Dict[str, Callable]] = None):
         super().__init__()
-        self._routes = routes
-        if self._is_root():
-            assert context.client.request
-            path = context.client.request.url.path
-            self.show_and_update_history(path)
-            self.on('open', lambda e: self.show(e.args))
+        self._routes = routes or {}
+        self._on_new_route()
 
     def add(self, path: str, page: Callable) -> Self:
         """Add a new route to the sub pages.
@@ -32,6 +28,8 @@ class SubPages(Element, component='sub_pages.js'):
         :return: self for method chaining
         """
         self._routes[path] = page
+        if path == '/':
+            self._on_new_route()
         return self
 
     def show(self, full_path: str) -> None:
@@ -71,6 +69,13 @@ class SubPages(Element, component='sub_pages.js'):
                     history.pushState({{page: "{path}"}}, "", "{path}");
                 }}
             ''')
+
+    def _on_new_route(self) -> None:
+        if self._is_root():
+            assert context.client.request
+            path = context.client.request.url.path
+            self.show_and_update_history(path)
+            self.on('open', lambda e: self.show(e.args))
 
     @staticmethod
     def _match_path(pattern: str, path: str) -> Optional[Dict[str, str]]:
