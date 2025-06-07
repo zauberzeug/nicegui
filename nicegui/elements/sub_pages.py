@@ -32,7 +32,8 @@ class SubPages(Element, component='sub_pages.js'):
         """Add a new route to the sub pages.
 
         :param path: the path pattern to match (can include {param} placeholders)
-        :param page: the callable to execute when the path is matched ({param} placeholders will be passed to the function parameters with same name)
+        :param page: the callable to execute when the path is matched
+            ({param} placeholders will be passed to the function parameters with same name)
         :return: self for method chaining
         """
         self._routes[path] = page
@@ -125,7 +126,7 @@ class SubPages(Element, component='sub_pages.js'):
                 return False
         return True
 
-    def _replace_content(self, path: str, builder: Callable, params: Optional[Dict[str, str]] = None):
+    def _replace_content(self, path: str, builder: Callable, params: Optional[Dict[str, str]] = None) -> None:
         self.clear()
         with self:
             if params:
