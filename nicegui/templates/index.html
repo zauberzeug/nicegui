@@ -25,6 +25,28 @@
     <script defer src="{{ prefix | safe }}/_nicegui/{{version}}/static/socket.io.min.js"></script>
     {% if tailwind %}
     <script defer src="{{ prefix | safe }}/_nicegui/{{version}}/static/tailwindcss.min.js"></script>
+    {% else %}
+    <!-- TODO: Add style reset CSS for Tailwind CSS into npm.json! -->
+    <link rel="stylesheet" href="{{ prefix | safe }}/_nicegui/{{version}}/static/unocss/tailwind.css" />
+    <script src="{{ prefix | safe }}/_nicegui/{{version}}/static/unocss/preset-wind.global.js"></script>
+    <script>
+        window.__unocss = {
+            presets: [
+                () =>
+                    window.__unocss_runtime.presets.presetWind()
+            ],
+            runtime: {
+              ready: () => false,
+            }
+        }
+    </script>
+    <style>
+      .nicegui-prevent-fouc {
+        display: none;
+      }
+    </style>
+    <!-- Tried out with uno.global.js, equally broken! -->
+    <script src="{{ prefix | safe }}/_nicegui/{{version}}/static/unocss/core.global.js"></script>
     {% endif %}
     <!-- prevent Prettier from removing this line -->
     {% if prod_js %}
@@ -39,7 +61,7 @@
     <script defer src="{{ prefix | safe }}/_nicegui/{{version}}/static/lang/{{ language }}.umd.prod.js"></script>
     {{ body_html | safe }}
 
-    <div id="app"></div>
+    <div id="app" class="nicegui-prevent-fouc"></div>
     <div id="popup" aria-hidden="true">
       <span>{{ translations.connection_lost }}</span>
       <span>{{ translations.trying_to_reconnect }}</span>
@@ -62,8 +84,8 @@
       Quasar.Dark.set(dark === None ? "auto" : dark);
       {% if tailwind %}
       if (dark !== None) tailwind.config.darkMode = "class";
-      if (dark === True) document.body.classList.add("dark");
       {% endif %}
+      if (dark === True) document.body.classList.add("dark");
 
       app.mount("#app");
     </script>
