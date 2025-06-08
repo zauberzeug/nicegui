@@ -7,7 +7,7 @@ from fastapi import HTTPException, Request
 from fastapi.responses import RedirectResponse
 from starlette.middleware.sessions import SessionMiddleware
 
-from nicegui import app, json, ui
+from nicegui import app, ui
 from website import anti_scroll_hack, documentation, fly, imprint_privacy, main_page, svg
 
 # session middleware is required for demo in documentation
@@ -24,7 +24,6 @@ app.add_static_file(local_file=svg.PATH / 'logo_square.png', url_path='/logo_squ
 
 documentation.build_search_index()
 documentation.build_tree()
-app.browser_data_store['side_tree_hierarchy'] = json.dumps(documentation.tree.nodes)
 
 
 @app.post('/dark_mode')
