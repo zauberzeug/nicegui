@@ -97,43 +97,19 @@ function updateBrowserDataStore(str_in) {
   });
 }
 
-function parseElements(raw_elements, token) {
-  // Reviver function handles compressed values
-  const reviver = (_, value) => {
-    // Handle string references (token:key)
-    if (typeof value === 'string' && value.startsWith(`${token}:`)) {
-      const key = value.slice(`${token}:`.length);
-      return localStorage.getItem(key);
-    }
-    // Handle array references [token, key]
-    if (Array.isArray(value) && value[0] === token && value.length > 1) {
-      return JSON.parse(localStorage.getItem(value[1]));
-    }
-    // Handle object references { [token]: key, ...extraProps }
-    if (value && typeof value === 'object' && token in value) {
-      const stored = JSON.parse(localStorage.getItem(value[token]));
-      // Merge extra properties if stored value is an object
-      if (stored && typeof stored === 'object') {
-        for (const [k, v] of Object.entries(value)) {
-          if (k !== token) stored[k] = v;
-        }
-      }
-      return stored;
-    }
-    return value;
-  }
+function parseElements(raw_elements) {
   return JSON.parse(
     raw_elements
       .replace(/&#36;/g, "$")
       .replace(/&#96;/g, "`")
       .replace(/&gt;/g, ">")
       .replace(/&lt;/g, "<")
-      .replace(/&amp;/g, "&"),
-    reviver
+      .replace(/&amp;/g, "&")
   );
 }
 
 function replaceUndefinedAttributes(element) {
+  if (element && element.CACHE) Object.assign(element, {...JSON.parse(localStorage.getItem(element.CACHE)), ...element});
   element.class ??= [];
   element.style ??= {};
   element.props ??= {};

@@ -7,20 +7,7 @@ import uuid
 from collections import defaultdict
 from contextlib import contextmanager
 from pathlib import Path
-from typing import (
-    TYPE_CHECKING,
-    Any,
-    Awaitable,
-    Callable,
-    ClassVar,
-    Dict,
-    Iterable,
-    Iterator,
-    List,
-    Optional,
-    Set,
-    Union,
-)
+from typing import TYPE_CHECKING, Any, Awaitable, Callable, ClassVar, Dict, Iterable, Iterator, List, Optional, Union
 
 from fastapi import Request
 from fastapi.responses import Response
@@ -81,7 +68,6 @@ class Client:
         self._deleted = False
         self._socket_to_document_id: Dict[str, str] = {}
         self.tab_id: Optional[str] = None
-        self.browser_data_store_token = f'BDS-TOKEN-{uuid.uuid4().hex}'
 
         self.page = page
         self.outbox = Outbox(self)
@@ -103,19 +89,7 @@ class Client:
 
         self._temporary_socket_id: Optional[str] = None
 
-        self.used_cache_names: Set[str] = set()
-
-    def fetch_string_from_browser_data_store(self, key: str) -> str:
-        """Placeholder string to instruct the browser to fetch a string from the browser data store."""
-        return f'{self.browser_data_store_token}:{key}'
-
-    def fetch_list_from_browser_data_store(self, key: str) -> List[str]:
-        """Placeholder list to instruct the browser to fetch a list from the browser data store."""
-        return [self.browser_data_store_token, key]
-
-    def fetch_dict_from_browser_data_store(self, key: str) -> Dict[str, str]:
-        """Placeholder dict to instruct the browser to fetch a dict from the browser data store."""
-        return {self.browser_data_store_token: key}
+        self.last_element_hashes: Dict[str, str] = {}
 
     @property
     def is_auto_index_client(self) -> bool:
@@ -172,7 +146,7 @@ class Client:
                 filtered_browser_data_store[key] = None
         filtered_browser_data_store_string = json.dumps(filtered_browser_data_store)
         elements = json.dumps({
-            id: element._to_dict(client_declared_data_store_entries=client_declared_data_store_entries) for id, element in self.elements.items()  # pylint: disable=protected-access
+            id: element._to_dict() for id, element in self.elements.items()  # pylint: disable=protected-access
         })
         socket_io_js_query_params = {
             **core.app.config.socket_io_js_query_params,
@@ -213,7 +187,6 @@ class Client:
                 .replace('>', '&gt;')
                 .replace('`', '&#96;')
                 .replace('$', '&#36;'),
-                'browser_data_store_token': self.browser_data_store_token,
                 'socket_io_js_query_params': socket_io_js_query_params,
                 'socket_io_js_extra_headers': core.app.config.socket_io_js_extra_headers,
                 'socket_io_js_transports': core.app.config.socket_io_js_transports,

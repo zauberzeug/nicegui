@@ -19,11 +19,12 @@ def render_page(documentation: DocumentationPage, *, with_menu: bool = True) -> 
         with ui.left_drawer() \
                 .classes('column no-wrap gap-1 bg-[#eee] dark:bg-[#1b1b1b] mt-[-20px] px-8 py-20') \
                 .style('height: calc(100% + 20px) !important') as menu:
-            tree = ui.tree(ui.context.client.fetch_dict_from_browser_data_store('side_tree_hierarchy'),
-                           label_key='title').classes('w-full').props('accordion no-connectors')
+            tree = ui.tree(nodes, label_key='title').classes('w-full').props('accordion no-connectors')
             tree.add_slot('default-header', '''
                 <a :href="'/documentation/' + props.node.id" onclick="event.stopPropagation()">{{ props.node.title }}</a>
             ''')
+            # tree.dynamic_keys.append('props')  # either way caching doesn't work
+            # tree.cache('nicegui-documentation-tree')  # since `nodes` is inside `props`, which contains `expanded`
             tree.expand(_ancestor_nodes(documentation.name))
             ui.run_javascript(f'''
                 Array.from(getHtmlElement({tree.id}).getElementsByTagName("a"))
