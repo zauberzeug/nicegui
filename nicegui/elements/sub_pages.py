@@ -85,19 +85,19 @@ class SubPages(Element, component='sub_pages.js'):
         """
         if '{' not in pattern:
             return {} if pattern == path else None
-        regex_pattern = pattern
-        for match in re.finditer(r'\{(\w+)\}', pattern):
-            param_name = match.group(1)
-            regex_pattern = regex_pattern.replace(f'{{{param_name}}}', f'(?P<{param_name}>[^/]+)')
-        regex_pattern = f'^{regex_pattern}$'
-        regex_match = re.match(regex_pattern, path)
-        if regex_match:
-            return regex_match.groupdict()
-        return None
 
-    def _convert_parameter(self, value: str, param_type: type) -> Any:
+        regex_pattern = re.escape(pattern)
+        for match in re.finditer(r'\\{(\w+)\\}', regex_pattern):
+            param_name = match.group(1)
+            regex_pattern = regex_pattern.replace(f'\\{{{param_name}\\}}', f'(?P<{param_name}>[^/]+)')
+
+        regex_match = re.match(f'^{regex_pattern}$', path)
+        return regex_match.groupdict() if regex_match else None
+
+    @staticmethod
+    def _convert_parameter(value: str, param_type: type) -> Any:
         """Convert a string parameter to the specified type."""
-        if param_type is str:
+        if param_type is str or param_type is inspect.Parameter.empty:
             return value
         elif param_type is int:
             return int(value)
@@ -105,8 +105,7 @@ class SubPages(Element, component='sub_pages.js'):
             return float(value)
         elif param_type is bool:
             return value.lower() in ('true', '1', 'yes', 'on')
-        else:
-            return value
+        return value
 
     def _is_root(self) -> bool:
         parent: Element = self
@@ -121,15 +120,11 @@ class SubPages(Element, component='sub_pages.js'):
         with self:
             if params:
                 sig = inspect.signature(builder)
-                converted_params = {}
-                for param_name, param_value in params.items():
-                    if param_name in sig.parameters:
-                        param_info = sig.parameters[param_name]
-                        param_type = param_info.annotation
-                        if param_type != inspect.Parameter.empty:
-                            converted_params[param_name] = self._convert_parameter(param_value, param_type)
-                        else:
-                            converted_params[param_name] = param_value
+                converted_params = {
+                    name: self._convert_parameter(value, sig.parameters[name].annotation)
+                    for name, value in params.items()
+                    if name in sig.parameters
+                }
                 result = builder(**converted_params)
             else:
                 result = builder()
