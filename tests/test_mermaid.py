@@ -86,8 +86,20 @@ def test_error(screen: Screen):
 def test_click_mermaid_node(security_level: str, screen: Screen):
     ui.mermaid('''
         flowchart TD;
+            C;
+            click C alert
+    ''', config={'securityLevel': security_level})
+
+    ui.mermaid('''
+        flowchart TD;
             A;
             click A call document.write("Success")
+    ''', config={'securityLevel': security_level})
+
+    ui.mermaid('''
+        flowchart TD;
+            B;
+            click B alert
     ''', config={'securityLevel': security_level})
 
     screen.open('/')
