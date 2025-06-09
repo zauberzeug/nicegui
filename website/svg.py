@@ -15,7 +15,10 @@ def face(half: bool = False) -> ui.html:
     if half:
         return ui.html(HALF_HAPPY_FACE_SVG).cache('half-happy-face-svg')
     else:
-        return ui.html(HAPPY_FACE_SVG).cache()
+        happy_face_svg_element = ui.html(HAPPY_FACE_SVG)
+        happy_face_svg_element.dynamic_keys.add('class')  # allow different classes across caches
+        happy_face_svg_element.cache('happy-face-svg')
+        return happy_face_svg_element
 
 
 def word() -> ui.html:
