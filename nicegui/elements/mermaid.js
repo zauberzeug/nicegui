@@ -27,7 +27,7 @@ export default {
       queue.push({element: this.$el, content: content});
       if (is_running) return;
       is_running = true;
-      while (queue.length > 0) {
+      while (queue.length) {
         const { element, content } = queue.shift();
         try {
           const { svg, bindFunctions } = await mermaid.render(element.id + "_mermaid", content);
@@ -42,6 +42,7 @@ export default {
           this.$emit("error", mermaidErrorFormat);
         }
       }
+      is_running = false;
     },
   },
   props: {
