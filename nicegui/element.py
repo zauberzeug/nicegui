@@ -321,9 +321,9 @@ class Element(Visibility):
 
         return element_dict_static, element_dict_dynamic
 
-    def _to_dict(self) -> Dict[str, Any]:
+    def _to_dict(self, *, caching: bool = False) -> Dict[str, Any]:
         element_dict_static, element_dict_dynamic = self._to_dict_internal()
-        if self.cache_name is None:
+        if self.cache_name is None or not caching:
             # return the normal un-filtered dict
             return {
                 **element_dict_static,

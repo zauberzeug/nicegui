@@ -146,7 +146,7 @@ class Client:
                 filtered_browser_data_store[key] = None
         filtered_browser_data_store_string = json.dumps(filtered_browser_data_store)
         elements = json.dumps({
-            id: element._to_dict() for id, element in self.elements.items()  # pylint: disable=protected-access
+            id: element._to_dict(caching=True) for id, element in self.elements.items()  # pylint: disable=protected-access
         })
         socket_io_js_query_params = {
             **core.app.config.socket_io_js_query_params,
