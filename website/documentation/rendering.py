@@ -23,8 +23,8 @@ def render_page(documentation: DocumentationPage, *, with_menu: bool = True) -> 
             tree.add_slot('default-header', '''
                 <a :href="'/documentation/' + props.node.id" onclick="event.stopPropagation()">{{ props.node.title }}</a>
             ''')
-            # tree.dynamic_keys.append('props')  # either way caching doesn't work
-            # tree.cache('nicegui-documentation-tree')  # since `nodes` is inside `props`, which contains `expanded`
+            tree.static_prop_keys.add('nodes')
+            tree.cache('nicegui-documentation-tree')
             tree.expand(_ancestor_nodes(documentation.name))
             ui.run_javascript(f'''
                 Array.from(getHtmlElement({tree.id}).getElementsByTagName("a"))

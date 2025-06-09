@@ -4,7 +4,21 @@ import inspect
 import re
 from copy import copy
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Callable, ClassVar, Dict, Iterator, List, Optional, Sequence, Tuple, Union, cast
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Callable,
+    ClassVar,
+    Dict,
+    Iterator,
+    List,
+    Optional,
+    Sequence,
+    Set,
+    Tuple,
+    Union,
+    cast,
+)
 
 from typing_extensions import Self
 
@@ -29,7 +43,7 @@ from .style import Style
 from .tailwind import Tailwind
 from .version import __version__
 
-DYNAMIC_KEYS = ['events', 'children']
+DYNAMIC_KEYS = {'events', 'children'}
 
 if TYPE_CHECKING:
     from .client import Client
@@ -88,7 +102,8 @@ class Element(Visibility):
         self.cache_apply_to_child: bool = False
         self.child_id_per_slot_name: Dict[str, int] = {}
 
-        self.dynamic_keys: List[str] = DYNAMIC_KEYS.copy()
+        self.dynamic_keys: Set[str] = DYNAMIC_KEYS.copy()
+        self.static_prop_keys: Set[str] = set()
 
         self.tailwind = Tailwind(self)
 
@@ -278,16 +293,31 @@ class Element(Visibility):
             },
         }
 
+        props_dict_static = {
+            key: value
+            for key, value in self._props.items()
+            if key in self.static_prop_keys
+        }
+
+        props_dict_dynamic = {
+            key: value
+            for key, value in self._props.items()
+            if key not in self.static_prop_keys
+        }
+
         element_dict_static = {
             key: value
             for key, value in element_dict.items()
-            if key not in self.dynamic_keys
+            if key not in self.dynamic_keys and key != 'props'
         }
+        element_dict_static['props'] = props_dict_static
+
         element_dict_dynamic = {
             key: value
             for key, value in element_dict.items()
-            if key in self.dynamic_keys
+            if key in self.dynamic_keys and key != 'props'
         }
+        element_dict_dynamic['props'] = props_dict_dynamic
 
         return element_dict_static, element_dict_dynamic
 

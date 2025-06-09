@@ -109,7 +109,15 @@ function parseElements(raw_elements) {
 }
 
 function replaceUndefinedAttributes(element) {
-  if (element && element.CACHE) Object.assign(element, {...JSON.parse(localStorage.getItem(element.CACHE)), ...element});
+  if (element && element.CACHE) {
+    const cached = JSON.parse(localStorage.getItem(element.CACHE));
+    if (cached) {
+      if (cached.props && element.props) {
+        element.props = { ...cached.props, ...element.props };
+      }
+      Object.assign(element, { ...cached, ...element, props: element.props });
+    }
+  }
   element.class ??= [];
   element.style ??= {};
   element.props ??= {};
