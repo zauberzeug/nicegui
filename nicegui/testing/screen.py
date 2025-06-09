@@ -5,6 +5,7 @@ import time
 from contextlib import contextmanager
 from pathlib import Path
 from typing import Callable, Generator, List, Optional, Union, overload
+from urllib.parse import urlparse
 
 import pytest
 from selenium import webdriver
@@ -264,3 +265,8 @@ class Screen:
         self.selenium.implicitly_wait(t)
         yield
         self.selenium.implicitly_wait(self.IMPLICIT_WAIT)
+
+    @property
+    def current_path(self) -> str:
+        """Get the current path of the browser."""
+        return urlparse(self.selenium.current_url).path

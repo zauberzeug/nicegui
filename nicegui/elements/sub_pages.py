@@ -70,8 +70,9 @@ class SubPages(Element, component='sub_pages.js'):
         self.show(path)
         if self._is_root():
             run_javascript(f'''
-                if (window.location.pathname !== "{path}") {{
-                    history.pushState({{page: "{path}"}}, "", "{path}");
+                const fullPath = (window.path_prefix || '') + "{path}";
+                if (window.location.pathname !== fullPath) {{
+                    history.pushState({{page: "{path}"}}, "", fullPath);
                 }}
             ''')
 
@@ -80,7 +81,7 @@ class SubPages(Element, component='sub_pages.js'):
             assert context.client.request
             path = context.client.request.url.path
             self.show_and_update_history(path)
-            self.on('open', lambda e: self.show(e.args))
+            self.on('open', lambda e: self.show_and_update_history(e.args))
 
     def _normalize_path(self, path: str) -> str:
         """Normalize the path by trimming root path and handling trailing slashes."""

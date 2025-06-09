@@ -179,16 +179,20 @@ def test_parameterized_sub_pages(screen: Screen):
 
     screen.open('/')
     screen.should_contain('main_content')
+    assert screen.current_path == '/'
     screen.click('goto one')
     screen.should_contain('one-1-True')
+    assert screen.current_path == '/one-1'
     screen.click('goto two')
     screen.should_contain('two-two')
+    assert screen.current_path == '/two/two'
     assert main_content_calls == 1
     screen.click('goto wrong match')
     screen.should_not_contain('main_content')
     screen.should_not_contain('one-1-True')
     screen.should_not_contain('two-two')
     screen.should_contain('404: sub page /two-3 not found')
+    assert screen.current_path == '/two-3'
     assert main_content_calls == 1
 
 
@@ -205,8 +209,10 @@ def test_sub_page_with_default_parameter(screen: Screen):
         ui.label(f'item: {item}')
     screen.open('/')
     screen.should_contain('item: nothing')
+    assert screen.current_path == '/'
     screen.open('/3')
     screen.should_contain('item: 3')
+    assert screen.current_path == '/3'
 
 
 def test_sub_page_changing_via_navigate_to(screen: Screen):
@@ -307,10 +313,15 @@ def test_starting_on_non_root_path(screen: Screen, page_route: str):
 
     screen.open('/foo/sub')
     screen.should_contain('sub-content')
+    assert screen.current_path == '/foo/sub'
+    screen.click('goto main')
+    screen.should_contain('main-content')
+    assert screen.current_path == '/foo'
+    screen.click('goto sub')
+    screen.should_contain('sub-content')
+    assert screen.current_path == '/foo/sub'
     screen.click('goto main')
     screen.should_contain('main-content')
     screen.click('goto sub')
     screen.should_contain('sub-content')
-    screen.click('goto main')
-    screen.should_contain('main-content')
-    screen.click('goto sub')
+    assert screen.current_path == '/foo/sub'
