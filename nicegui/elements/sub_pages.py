@@ -14,9 +14,17 @@ from ..functions.javascript import run_javascript
 
 class SubPages(Element, component='sub_pages.js'):
 
-    def __init__(self, routes: Optional[Dict[str, Callable]] = None):
+    def __init__(self, routes: Optional[Dict[str, Callable]] = None, *, root_path: Optional[str] = None):
+        """Sub Pages
+
+        Create a sub pages element to handle client-side routing within a page.
+
+        :param routes: dictionary mapping sub-page paths to page builder functions
+        :param root_path: optional root path to strip from incoming paths (useful for non-root page mounts)
+        """
         super().__init__()
         self._routes = routes or {}
+        self._root_path = root_path
         self._on_new_route()
 
     def add(self, path: str, page: Callable) -> Self:
@@ -37,10 +45,7 @@ class SubPages(Element, component='sub_pages.js'):
 
         :param full_path: the path to navigate to (can be empty string for root path; trailing slash is ignored)
         """
-        if full_path.endswith('/') and full_path != '/':
-            full_path = full_path[:-1]
-        if full_path == '':
-            full_path = '/'
+        full_path = self._normalize_path(full_path)
         segments = full_path.split('/')
         while segments:
             sub_path = '/'.join(segments)
@@ -76,6 +81,18 @@ class SubPages(Element, component='sub_pages.js'):
             path = context.client.request.url.path
             self.show_and_update_history(path)
             self.on('open', lambda e: self.show(e.args))
+
+    def _normalize_path(self, path: str) -> str:
+        """Normalize the path by trimming root path and handling trailing slashes."""
+        if self._root_path is not None:
+            root = self._root_path.rstrip('/')
+            if path.startswith(root):
+                path = path[len(root):]
+        if path.endswith('/') and path != '/':
+            path = path[:-1]
+        if path == '':
+            path = '/'
+        return path
 
     @staticmethod
     def _match_path(pattern: str, path: str) -> Optional[Dict[str, str]]:

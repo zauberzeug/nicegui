@@ -1,3 +1,5 @@
+import pytest
+
 from nicegui import ui
 from nicegui.testing import Screen
 
@@ -286,3 +288,29 @@ def test_adding_sub_pages_after_initialization(screen: Screen):
     screen.click('add sub page')
     screen.click('goto sub')
     screen.should_contain('sub-content')
+
+
+@pytest.mark.parametrize('page_route', ['/foo/{_:path}', '/foo/sub', '/foo/sub/', '/{_:str}/sub'])
+def test_starting_on_non_root_path(screen: Screen, page_route: str):
+    @ui.page('/foo')
+    @ui.page(page_route)
+    def index():
+        ui.sub_pages({'/': main_content, '/sub': sub_content}, root_path='/foo')
+
+    def main_content():
+        ui.label('main-content')
+        ui.link('goto sub', '/foo/sub')
+
+    def sub_content():
+        ui.label('sub-content')
+        ui.link('goto main', '/foo')
+
+    screen.open('/foo/sub')
+    screen.should_contain('sub-content')
+    screen.click('goto main')
+    screen.should_contain('main-content')
+    screen.click('goto sub')
+    screen.should_contain('sub-content')
+    screen.click('goto main')
+    screen.should_contain('main-content')
+    screen.click('goto sub')
