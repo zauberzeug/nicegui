@@ -1,5 +1,8 @@
 import mermaid from "mermaid";
 
+let is_running = false;
+const queue = [];
+
 export default {
   template: `<div></div>`,
   data: () => ({
@@ -31,34 +34,27 @@ export default {
     async update(content) {
       if (this.last_content === content) return;
       this.last_content = content;
-      try {
-        const { svg, bindFunctions } = await mermaid.render(this.$el.id + "_mermaid", content);
-        this.$el.innerHTML = svg;
-        bindFunctions?.(this.$el);
 
-        if (this.clickInstance) {
-          const handlerName = this.getHandlerName();
-          window[handlerName] = (nodeId, nodeText) => {
-            this.$emit("nodeClick", {
-              node: this.getNodeName(nodeId),
-              nodeId,
-              nodeText,
-            });
-          };
+      queue.push({ element: this.$el, content: content });
+      if (is_running) return;
+      is_running = true;
+      while (queue.length) {
+        const { element, content } = queue.shift();
+        try {
+          const { svg, bindFunctions } = await mermaid.render(element.id + "_mermaid", content);
+          element.innerHTML = svg;
+          bindFunctions?.(element);
+        } catch (error) {
+          const { svg, bindFunctions } = await mermaid.render(element.id + "_mermaid", "error");
+          element.innerHTML = svg;
+          bindFunctions?.(element);
+          const mermaidErrorFormat = { str: error.message, message: error.message, hash: error.name, error };
+          console.error(mermaidErrorFormat);
+          this.$emit("error", mermaidErrorFormat);
+        }
 
-          this.$nextTick(() => {
-            this.attachClickHandlers(this.getHandlerName());
-          });
-        };
-
-      } catch (error) {
-        const { svg, bindFunctions } = await mermaid.render(this.$el.id + "_mermaid", "error");
-        this.$el.innerHTML = svg;
-        bindFunctions?.(this.$el);
-        const mermaidErrorFormat = { str: error.message, message: error.message, hash: error.name, error };
-        console.error(mermaidErrorFormat);
-        this.$emit("error", mermaidErrorFormat);
       }
+      is_running = false;
     },
     attachClickHandlers(handlerName) {
       const clickables = this.$el.querySelectorAll("g.node.clickable");
