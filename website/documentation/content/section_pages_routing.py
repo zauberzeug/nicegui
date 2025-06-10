@@ -9,6 +9,7 @@ from . import (
     page_documentation,
     page_layout_documentation,
     page_title_documentation,
+    sub_pages_documentation,
 )
 
 CONSTANT_UUID = str(uuid.uuid4())
@@ -43,6 +44,7 @@ def auto_index_page():
 
 
 doc.intro(page_layout_documentation)
+doc.intro(sub_pages_documentation)
 
 
 @doc.demo('Parameter injection', '''
