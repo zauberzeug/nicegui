@@ -60,17 +60,14 @@ def test_radio_set_options(screen: Screen):
 
 async def test_radio_click_with_user(user: User):
     radio = ui.radio(['A', 'B', 'C'])
-    label = ui.label().bind_text_from(radio, 'value', lambda x: f'Value: {x}')
+    ui.label().bind_text_from(radio, 'value', lambda x: f'Value: {x}')
 
     await user.open('/')
-    radio_interaction = user.find(target='A', kind=ui.radio)
-    radio_interaction.click()
-    assert label.text == 'Value: A'
-    radio_interaction = user.find(target='B', kind=ui.radio)
-    radio_interaction.click()
-    assert label.text == 'Value: B'
+    user.find('A', kind=ui.radio).click()
+    await user.should_see('Value: A')
 
-    # already selected, should not change
-    radio_interaction = user.find(target='B', kind=ui.radio)
-    radio_interaction.click()
-    assert label.text == 'Value: B'
+    user.find('B', kind=ui.radio).click()
+    await user.should_see('Value: B')
+
+    user.find('B', kind=ui.radio).click()  # already selected, should not change
+    await user.should_see('Value: B')
