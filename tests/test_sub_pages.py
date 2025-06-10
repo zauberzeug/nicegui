@@ -381,3 +381,34 @@ def test_navigate_to_path_which_is_not_a_sub_page(screen: Screen):
     screen.click('goto other')
     screen.should_contain('other page')
     assert screen.current_path == '/other'
+
+
+def test_multiple_sub_pages_with_same_path(screen: Screen):
+    @ui.page('/')
+    def index():
+        ui.sub_pages({'/': main, '/other': other})
+        ui.sub_pages({'/': main2, '/other': other2})
+        ui.link('goto other', '/other')
+
+    def main():
+        ui.label('main content')
+
+    def main2():
+        ui.label('main2 content')
+
+    def other():
+        ui.label('other content')
+
+    def other2():
+        ui.label('other2 content')
+
+    screen.open('/')
+    screen.should_contain('main content')
+    screen.should_contain('main2 content')
+    screen.should_not_contain('other content')
+    screen.should_not_contain('other2 content')
+    screen.click('goto other')
+    screen.should_contain('other content')
+    screen.should_contain('other2 content')
+    screen.should_not_contain('main content')
+    screen.should_not_contain('main2 content')

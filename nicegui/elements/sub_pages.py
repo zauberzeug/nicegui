@@ -2,7 +2,7 @@ import inspect
 import re
 from asyncio import iscoroutine
 from dataclasses import dataclass
-from typing import Any, Callable, Dict, Optional
+from typing import Any, Callable, Dict, List, Optional
 
 from typing_extensions import Self
 
@@ -183,23 +183,23 @@ class SubPages(Element, component='sub_pages.js'):
             background_tasks.create(background_task(), name=f'building sub_page {route_match.pattern}')
 
 
-def find_root_sub_pages_element(element: Element) -> Optional[SubPages]:
-    """Find the root ui.sub_pages element in an element tree.
+def find_root_sub_pages_elements(element: Element) -> List[SubPages]:
+    """Find all root ui.sub_pages elements in an element tree.
 
     :param element: the element to search from
-    :return: the root ui.sub_pages element if found, None otherwise
+    :return: list of all root ui.sub_pages elements found
     """
+    sub_pages_list = []
+
     def find_in_element(el: Element):
         if isinstance(el, SubPages) and el._is_root():  # pylint: disable=protected-access
-            return el
+            sub_pages_list.append(el)
         if hasattr(el, 'default_slot') and el.default_slot:
             for child in el.default_slot.children:
-                result = find_in_element(child)
-                if result:
-                    return result
-        return None
+                find_in_element(child)
 
-    return find_in_element(element)
+    find_in_element(element)
+    return sub_pages_list
 
 
 def find_child_sub_pages_element(element: Element) -> Optional[SubPages]:
