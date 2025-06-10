@@ -1,3 +1,4 @@
+import asyncio
 from nicegui import ui
 
 from . import doc
@@ -14,19 +15,19 @@ from . import doc
 def main_demo() -> None:
     from uuid import uuid4
     # @ui.page('/')
-    # @ui.page('/{_:path}')
+    # @ui.page('/{_:path}') # NOTE: our page should catch all paths
     # def index():
     #     ui.label(f'This id {str(uuid4())[:6]} changes only on reload')
     #     ui.separator()
-    #     ui.sub_pages({'/': child, '/other': child2})
+    #     ui.sub_pages({'/': main, '/other': other})
     location = 'section_pages_routing' if 'section_pages_routing' in ui.context.client.request.url.path else 'sub_pages'  # HIDE
 
-    def child():
+    def main():
         ui.label('Main page content')
         # ui.link('Go to other page', '/other')
         ui.link('Go to other page', f'/documentation/{location}/other')  # HIDE
 
-    def child2():
+    def other():
         ui.label('Another page content')
         # ui.link('Go to main page', '/')
         ui.link('Go to main page', f'/documentation/{location}')  # HIDE
@@ -34,4 +35,68 @@ def main_demo() -> None:
     # END OF DEMO
     ui.label(f'This id {str(uuid4())[:6]} changes only on reload')
     ui.separator()
-    ui.sub_pages({'/': child, '/other': child2}, root_path=f'/documentation/{location}')
+    ui.sub_pages({'/': main, '/other': other}, root_path=f'/documentation/{location}')
+
+
+@doc.demo('Passing Parameters', '''
+    If a sub page needs to modify content from it's parent, the object can simply be passed via lambda.
+''')
+def parameters_demo():
+    # @ui.page('/')
+    # def index():
+    #     with ui.row():
+    #         ui.label('Title:')
+    #         title = ui.label()
+    #     ui.separator()
+    #     ui.sub_pages({
+    #        '/': lambda: main(title),
+    #        '/other': lambda: other(title),
+    #     })
+
+    async def main(title: ui.label):
+        title.set_text('Main page content')
+        # ui.button('Go to other page', on_click=lambda: ui.navigate.to('/other'))
+        ui.button('Go to other page', on_click=lambda: ui.navigate.to('/documentation/sub_pages/other'))  # HIDE
+
+    def other(title: ui.label):
+        title.set_text('Other page content')
+        # ui.button('Go to main page', on_click=ui.navigate.to('/'))
+        ui.button('Go to main page', on_click=lambda: ui.navigate.to('/documentation/sub_pages'))  # HIDE
+
+    # END OF DEMO
+    with ui.row():
+        ui.label('Title:')
+        title = ui.label()
+    ui.separator()
+    ui.sub_pages({'/': lambda: main(title), '/other': lambda: other(title)}, root_path='/documentation/sub_pages')
+
+
+@doc.demo('Async Sub Pages', '''
+    `ui.sub_pages` also work for async builder functions.
+''')
+def async_demo():
+    # @ui.page('/')
+    # def index():
+    #     title = ui.label()
+    #     ui.sub_pages({'/': lambda: main(title)})
+    #     ui.toggle({'main': '/', 'other': '/other'},
+    #               value='main',
+    #               on_change=lambda e: ui.navigate.to(f'/{e.value}'))
+
+    async def main(delay: int):
+        label = ui.label('delayed...')
+        await asyncio.sleep(delay)
+        label.set_text(f'after {delay} sec')
+
+    async def other():
+        label = ui.label('delayed...')
+        await asyncio.sleep(1)
+        label.set_text('after 1 sec')
+
+    # END OF DEMO
+    ui.sub_pages({'/': lambda: main(2), '/other': other}, root_path='/documentation/sub_pages')
+    ui.toggle({'': 'main', 'other': 'other'}, value='',
+              on_change=lambda e: ui.navigate.to(f'/documentation/sub_pages/{e.value}'))
+
+
+doc.reference(ui.sub_pages)
