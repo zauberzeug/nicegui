@@ -86,26 +86,28 @@ def test_error(screen: Screen):
 def test_click_mermaid_node(security_level: str, screen: Screen):
     ui.mermaid('''
         flowchart TD;
-            C;
-            click C alert
+            X;
+            click X call document.write("Clicked X")
     ''', config={'securityLevel': security_level})
 
     ui.mermaid('''
         flowchart TD;
-            A;
-            click A call document.write("Success")
+            Y;
+            click Y call document.write("Clicked Y")
     ''', config={'securityLevel': security_level})
 
     ui.mermaid('''
         flowchart TD;
-            B;
-            click B alert
+            Z;
+            click Z call document.write("Clicked Z")
     ''', config={'securityLevel': security_level})
 
     screen.open('/')
-    screen.click('A')
+    screen.click('Y')
     screen.wait(0.5)
+    screen.should_not_contain('Clicked X')
+    screen.should_not_contain('Clicked Z')
     if security_level == 'loose':
-        screen.should_contain('Success')
+        screen.should_contain('Clicked Y')
     else:
-        screen.should_not_contain('Success')
+        screen.should_not_contain('Clicked Y')

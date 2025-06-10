@@ -24,7 +24,7 @@ export default {
     async update(content) {
       if (this.last_content === content) return;
       this.last_content = content;
-      queue.push({element: this.$el, content: content});
+      queue.push({ element: this.$el, content: content });
       if (is_running) return;
       is_running = true;
       while (queue.length) {
