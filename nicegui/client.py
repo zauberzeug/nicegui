@@ -16,6 +16,7 @@ from typing_extensions import Self
 
 from . import background_tasks, binding, core, helpers, json, storage
 from .awaitable_response import AwaitableResponse
+from .context import context
 from .dependencies import generate_resources
 from .element import Element
 from .favicon import get_favicon_url
@@ -27,7 +28,9 @@ from .translations import translations
 from .version import __version__
 
 if TYPE_CHECKING:
+    from .content import Content
     from .page import page
+    from .single_page_router import SinglePageRouter
 
 templates = Jinja2Templates(Path(__file__).parent / 'templates')
 
@@ -35,6 +38,12 @@ templates = Jinja2Templates(Path(__file__).parent / 'templates')
 class Client:
     page_routes: ClassVar[Dict[Callable[..., Any], str]] = {}
     '''Maps page builders to their routes.'''
+
+    page_configs: ClassVar[Dict[Callable[..., Any], page]] = {}
+    '''Maps page builders to their page configuration.'''
+
+    top_level_content: ClassVar[Dict[str, Content]] = {}
+    '''Maps paths to the associated single page routers.'''
 
     instances: ClassVar[Dict[str, Client]] = {}
     '''Maps client IDs to clients.'''
@@ -81,6 +90,8 @@ class Client:
         self._head_html = ''
         self._body_html = ''
 
+        self.page = page
+        self.single_page_router: Optional[SinglePageRouter] = None
         self.storage = ObservableDict()
 
         self.connect_handlers: List[Union[Callable[..., Any], Awaitable]] = []
@@ -229,6 +240,12 @@ class Client:
     def open(self, target: Union[Callable[..., Any], str], new_tab: bool = False) -> None:
         """Open a new page in the client."""
         path = target if isinstance(target, str) else self.page_routes[target]
+        if not new_tab and context.client.single_page_router is not None:
+            for content in self.top_level_content.values():
+                content_target = content.resolve_target(path)
+                if content_target.valid and context.client.single_page_router.is_path_included(path):
+                    context.client.single_page_router.navigate_to(path)
+                    return
         self.outbox.enqueue_message('open', {'path': path, 'new_tab': new_tab}, self.id)
 
     def download(self, src: Union[str, bytes], filename: Optional[str] = None, media_type: str = '') -> None:

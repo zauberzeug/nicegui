@@ -1,6 +1,7 @@
 from typing import Any, Callable, Union
 
 from ..client import Client
+from ..content_view import ContentView
 from ..element import Element
 from .mixins.text_element import TextElement
 
@@ -28,8 +29,14 @@ class Link(TextElement, component='link.js', default_classes='nicegui-link'):
             self._props['href'] = target
         elif isinstance(target, Element):
             self._props['href'] = f'#{target.html_id}'
+        elif isinstance(target, ContentView):
+            self._props['href'] = target.url
         elif callable(target):
-            self._props['href'] = Client.page_routes[target]
+            if target in Client.page_routes:
+                self._props['href'] = Client.page_routes[target]
+            else:
+                self._props['href'] = '#'
+                self.on('click', lambda: target())
         self._props['target'] = '_blank' if new_tab else '_self'
 
 
