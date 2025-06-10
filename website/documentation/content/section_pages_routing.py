@@ -19,6 +19,7 @@ doc.title('*Pages* & Routing')
 doc.intro(page_documentation)
 
 
+@doc.auto_execute
 @doc.demo('Auto-index page', '''
     Pages created with the `@ui.page` decorator are "private".
     Their content is re-created for each client.
@@ -47,6 +48,7 @@ doc.intro(page_layout_documentation)
 doc.intro(sub_pages_documentation)
 
 
+@doc.auto_execute
 @doc.demo('Parameter injection', '''
     Thanks to FastAPI, a page function accepts optional parameters to provide
     [path parameters](https://fastapi.tiangolo.com/tutorial/path-params/),
@@ -122,6 +124,7 @@ def add_head_html_demo():
     ui.label('RED').classes('my-red-label')
 
 
+@doc.auto_execute
 @doc.demo('API Responses', '''
     NiceGUI is based on [FastAPI](https://fastapi.tiangolo.com/).
     This means you can use all of FastAPI's features.
