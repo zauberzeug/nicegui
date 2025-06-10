@@ -289,7 +289,9 @@ def test_adding_sub_pages_after_initialization(screen: Screen):
 
     screen.open('/')
     screen.click('goto sub')
-    screen.should_contain('404: sub page /sub not found')
+    assert screen.current_path == '/sub'
+    screen.should_contain('404')
+    screen.should_contain("This page doesn't exist")
     screen.open('/')
     screen.click('add sub page')
     screen.click('goto sub')
@@ -325,3 +327,57 @@ def test_starting_on_non_root_path(screen: Screen, page_route: str):
     screen.click('goto sub')
     screen.should_contain('sub-content')
     assert screen.current_path == '/foo/sub'
+
+
+def test_links_pointing_to_path_which_is_not_a_sub_page(screen: Screen):
+    @ui.page('/')
+    def index():
+        ui.link('goto main', '/')
+        ui.link('goto sub', '/sub')
+        ui.link('goto other', '/other')
+        ui.sub_pages({'/': main, '/sub': sub})
+
+    def main():
+        ui.label('main')
+
+    def sub():
+        ui.label('sub')
+
+    @ui.page('/other')
+    def other():
+        ui.label('other page')
+
+    screen.open('/')
+    screen.click('goto sub')
+    screen.should_contain('sub')
+    assert screen.current_path == '/sub'
+    screen.click('goto other')
+    screen.should_contain('other page')
+    assert screen.current_path == '/other'
+
+
+def test_navigate_to_path_which_is_not_a_sub_page(screen: Screen):
+    @ui.page('/')
+    def index():
+        ui.button('goto main', on_click=lambda: ui.navigate.to('/'))
+        ui.button('goto sub', on_click=lambda: ui.navigate.to('/sub'))
+        ui.button('goto other', on_click=lambda: ui.navigate.to('/other'))
+        ui.sub_pages({'/': main, '/sub': sub})
+
+    def main():
+        ui.label('main')
+
+    def sub():
+        ui.label('sub')
+
+    @ui.page('/other')
+    def other():
+        ui.label('other page')
+
+    screen.open('/')
+    screen.click('goto sub')
+    screen.should_contain('sub')
+    assert screen.current_path == '/sub'
+    screen.click('goto other')
+    screen.should_contain('other page')
+    assert screen.current_path == '/other'

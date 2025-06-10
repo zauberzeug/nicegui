@@ -15,10 +15,11 @@ export default {
     document.addEventListener("click", (e) => {
       const a = e.target.closest("a[href]");
       if (!a) return;
-      e.preventDefault();
-      const path = a.getAttribute("href");
-      history.pushState({}, "", path);
-      this.$emit("open", path);
+      const href = a.getAttribute("href");
+      if (href.startsWith("/") && a.target !== "_blank" && !a.hasAttribute("download")) {
+        e.preventDefault();
+        this.$emit("navigate", href);
+      }
     });
   },
 };

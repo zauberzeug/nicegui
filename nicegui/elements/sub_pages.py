@@ -1,6 +1,7 @@
 import inspect
 import re
 from asyncio import iscoroutine
+from dataclasses import dataclass
 from typing import Any, Callable, Dict, Optional
 
 from typing_extensions import Self
@@ -10,6 +11,19 @@ from ..context import context
 from ..element import Element
 from ..elements.label import Label
 from ..functions.javascript import run_javascript
+
+
+@dataclass
+class RouteMatch:
+    """Information about a matched route."""
+    path: str
+    '''The sub-path that actually matched (e.g., "/user/123")'''
+    pattern: str
+    '''The original route pattern (e.g., "/user/{id}")'''
+    builder: Callable
+    '''The function to call to build the page'''
+    params: Dict[str, str]
+    '''The extracted parameters (name -> value) from the path (e.g., {"id": "123"})'''
 
 
 class SubPages(Element, component='sub_pages.js'):
@@ -45,19 +59,13 @@ class SubPages(Element, component='sub_pages.js'):
 
         :param full_path: the path to navigate to (can be empty string for root path; trailing slash is ignored)
         """
-        full_path = self._normalize_path(full_path)
-        segments = full_path.split('/')
-        while segments:
-            sub_path = '/'.join(segments)
-            for route, builder in self._routes.items():
-                matches = self._match_path(route, sub_path)
-                if matches is not None:
-                    self._replace_content(route, builder, matches)
-                    child_sub_pages = find_child_sub_pages_element(self)
-                    if child_sub_pages:
-                        child_sub_pages.show(full_path[len(sub_path):])
-                    return
-            segments.pop()
+        match_result = self.find_route_match(full_path)
+        if match_result is not None:
+            self._replace_content(match_result)
+            child_sub_pages = find_child_sub_pages_element(self)
+            if child_sub_pages:
+                child_sub_pages.show(full_path[len(match_result.path):])
+            return
         self.clear()
         with self:
             Label(f'404: sub page {full_path} not found')
@@ -76,12 +84,34 @@ class SubPages(Element, component='sub_pages.js'):
                 }}
             ''')
 
+    def find_route_match(self, path: str) -> Optional[RouteMatch]:
+        """Find the first matching route for a path with segment dropping.
+
+        :return: RouteMatch object if found, None otherwise
+        """
+        normalized_path = self._normalize_path(path)
+        segments = normalized_path.split('/')
+        while segments:
+            sub_path = '/'.join(segments)
+            for route, builder in self._routes.items():
+                matches = self._match_path(route, sub_path)
+                if matches is not None:
+                    return RouteMatch(sub_path, route, builder, matches)
+            segments.pop()
+        return None
+
     def _on_new_route(self) -> None:
         if self._is_root():
             assert context.client.request
             path = context.client.request.url.path
             self.show_and_update_history(path)
             self.on('open', lambda e: self.show_and_update_history(e.args))
+            self.on('navigate', lambda e: self._handle_navigate(e.args))
+
+    def _handle_navigate(self, path: str) -> None:
+        """Handle navigate event from link clicks"""
+        from ..functions.navigate import navigate  # NOTE: Late import to avoid circular dependency
+        navigate.to(path)
 
     def _normalize_path(self, path: str) -> str:
         """Normalize the path by trimming root path and handling trailing slashes."""
@@ -133,24 +163,24 @@ class SubPages(Element, component='sub_pages.js'):
                 return False
         return True
 
-    def _replace_content(self, path: str, builder: Callable, params: Optional[Dict[str, str]] = None) -> None:
+    def _replace_content(self, route_match: RouteMatch) -> None:
         self.clear()
         with self:
-            if params:
-                sig = inspect.signature(builder)
+            if route_match.params:
+                sig = inspect.signature(route_match.builder)
                 converted_params = {
                     name: self._convert_parameter(value, sig.parameters[name].annotation)
-                    for name, value in params.items()
+                    for name, value in route_match.params.items()
                     if name in sig.parameters
                 }
-                result = builder(**converted_params)
+                result = route_match.builder(**converted_params)
             else:
-                result = builder()
+                result = route_match.builder()
         if iscoroutine(result):
             async def background_task():
                 with self:
                     await result
-            background_tasks.create(background_task(), name=f'building sub_page {path}')
+            background_tasks.create(background_task(), name=f'building sub_page {route_match.pattern}')
 
 
 def find_root_sub_pages_element(element: Element) -> Optional[SubPages]:
