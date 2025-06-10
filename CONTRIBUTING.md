@@ -100,7 +100,7 @@ on a second line and leave the other arguments as they are.
 
 - Always prefer simple solutions
 - Avoid having files over 200-300 lines of code. Refactor at that point
-- Use single quotes for strings in Python, double quotes in JS
+- Use single quotes for strings in Python, double quotes in JavaScript
 - Use f-strings wherever possible for better readability (except in performance-critical sections which should be marked with "NOTE:" comments)
 - Follow autopep8 formatting with 120 character line length
 - Each sentence in documentation should be on a new line
