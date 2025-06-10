@@ -63,7 +63,7 @@ class SubPages(Element, component='sub_pages.js'):
             Label(f'404: sub page {full_path} not found')
 
     def show_and_update_history(self, path: str) -> None:
-        """Show the page and update browser history if successful.
+        """Show the page and update browser history.
 
         :param path: the path to navigate to
         """
