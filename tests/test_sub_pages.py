@@ -8,6 +8,7 @@ from nicegui.testing import Screen
 
 def test_switching_between_sub_pages(screen: Screen):
     index_calls = 0
+    other_calls = 0
 
     @ui.page('/')
     @ui.page('/other')
@@ -22,6 +23,8 @@ def test_switching_between_sub_pages(screen: Screen):
         ui.link('goto other with slash', '/other/')
 
     def child2():
+        nonlocal other_calls
+        other_calls += 1
         ui.link('goto main', '/')
         ui.link('goto this path with slash', '/other/')
 
@@ -31,26 +34,33 @@ def test_switching_between_sub_pages(screen: Screen):
     screen.should_contain('goto other')
     screen.should_not_contain('goto main')
     screen.click('goto other')
-    assert index_calls == 1
     screen.should_contain('some text before main content')
     screen.should_contain('goto main')
     screen.should_not_contain('goto other')
-    screen.selenium.back()
     assert index_calls == 1
+    assert other_calls == 1
+    screen.selenium.back()
     screen.should_contain('some text before main content')
     screen.should_contain('goto other')
+    assert index_calls == 1
+    assert other_calls == 1
     screen.should_not_contain('goto main')
     screen.selenium.forward()
-    assert index_calls == 1
     screen.should_contain('some text before main content')
     screen.should_contain('goto main')
     screen.should_not_contain('goto other')
+    assert index_calls == 1
+    assert other_calls == 2
 
     screen.click('goto main')
     screen.click('goto other with slash')
     screen.should_contain('goto main')
+    assert index_calls == 1
+    assert other_calls == 3
     screen.click('goto this path with slash')
     screen.should_contain('goto main')
+    assert index_calls == 1
+    assert other_calls == 4
 
 
 def test_passing_element_to_sub_page(screen: Screen):
@@ -310,14 +320,21 @@ def test_direct_access_to_sub_page_which_was_added_after_initialization(screen: 
     def main_content():
         ui.link('goto sub', '/sub')
 
+    sub_content_calls = 0
+
     def sub_content():
+        nonlocal sub_content_calls
+        sub_content_calls += 1
         ui.link('goto main', '/')
 
     screen.open('/sub')
+    screen.should_contain('goto main')
+    assert sub_content_calls == 1
     assert screen.current_path == '/sub'
     screen.click('goto main')
     screen.should_contain('goto sub')
     assert screen.current_path == '/'
+    assert sub_content_calls == 1
 
 
 @pytest.mark.parametrize('page_route', ['/foo/{_:path}', '/foo/sub', '/foo/sub/', '/{_:str}/sub'])
