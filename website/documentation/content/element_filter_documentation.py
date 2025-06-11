@@ -60,6 +60,7 @@ def marker_demo() -> None:
     ElementFilter(marker='red strong', local_scope=True).classes('bg-red-600 text-white')
 
 
+@doc.auto_execute
 @doc.demo('Find elements on other pages', '''
     You can use the `app.clients` iterator to apply the element filter to all clients of a specific page.
 ''')

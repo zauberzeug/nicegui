@@ -4,7 +4,7 @@ import inspect
 import re
 from copy import copy
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, ClassVar, Dict, Iterator, List, Optional, Sequence, Union, cast, overload
+from typing import TYPE_CHECKING, Any, Callable, ClassVar, Dict, Iterator, List, Optional, Sequence, Union, cast
 
 from typing_extensions import Self
 
@@ -12,7 +12,14 @@ from . import core, events, helpers, json, storage
 from .awaitable_response import AwaitableResponse, NullResponse
 from .classes import Classes
 from .context import context
-from .dependencies import Component, Library, register_library, register_resource, register_vue_component
+from .dependencies import (
+    Component,
+    Library,
+    register_dynamic_resource,
+    register_library,
+    register_resource,
+    register_vue_component,
+)
 from .elements.mixins.visibility import Visibility
 from .event_listener import EventListener
 from .props import Props
@@ -147,6 +154,15 @@ class Element(Visibility):
         path_ = Path(path)
         resource = register_resource(path_, max_time=path_.stat().st_mtime)
         self._props['resource_path'] = f'/_nicegui/{__version__}/resources/{resource.key}'
+
+    def add_dynamic_resource(self, name: str, function: Callable) -> None:
+        """Add a dynamic resource to the element which returns the result of a function.
+
+        :param name: name of the resource
+        :param function: function that returns the resource response
+        """
+        register_dynamic_resource(name, function)
+        self._props['dynamic_resource_path'] = f'/_nicegui/{__version__}/dynamic_resources'
 
     def add_slot(self, name: str, template: Optional[str] = None) -> Slot:
         """Add a slot to the element.
@@ -325,15 +341,6 @@ class Element(Visibility):
             Tooltip(text)
         return self
 
-    @overload
-    def on(self,
-           type: str,  # pylint: disable=redefined-builtin
-           *,
-           js_handler: Optional[str] = None,
-           ) -> Self:
-        ...
-
-    @overload
     def on(self,
            type: str,  # pylint: disable=redefined-builtin
            handler: Optional[events.Handler[events.GenericEventArguments]] = None,
@@ -342,31 +349,40 @@ class Element(Visibility):
            throttle: float = 0.0,
            leading_events: bool = True,
            trailing_events: bool = True,
-           ) -> Self:
-        ...
-
-    def on(self,
-           type: str,  # pylint: disable=redefined-builtin
-           handler: Optional[events.Handler[events.GenericEventArguments]] = None,
-           args: Union[None, Sequence[str], Sequence[Optional[Sequence[str]]]] = None,
-           *,
-           throttle: float = 0.0,
-           leading_events: bool = True,
-           trailing_events: bool = True,
-           js_handler: Optional[str] = None,
+           js_handler: Optional[str] = '(...args) => emit(...args)',  # DEPRECATED: None will be removed in version 3.0
            ) -> Self:
         """Subscribe to an event.
 
+        The event handler can be a Python function, a JavaScript function or a combination of both:
+
+        - If you want to handle the event on the server with all (serializable) event arguments,
+          use a Python ``handler``.
+        - If you want to handle the event on the client side without emitting anything to the server,
+          use ``js_handler`` with a JavaScript function handling the event.
+        - If you want to handle the event on the server with a subset or transformed version of the event arguments,
+          use ``js_handler`` with a JavaScript function emitting the transformed arguments using ``emit()``, and
+          use a Python ``handler`` to handle these arguments on the server side.
+          The ``js_handler`` can also decide to selectively emit arguments to the server,
+          in which case the Python ``handler`` will not always be called.
+
+        Note that the arguments ``throttle``, ``leading_events``, and ``trailing_events`` are only relevant
+        when emitting events to the server.
+
+        *Updated in version 2.18.0: Both handlers can be specified at the same time.*
+
         :param type: name of the event (e.g. "click", "mousedown", or "update:model-value")
         :param handler: callback that is called upon occurrence of the event
-        :param args: arguments included in the event message sent to the event handler (default: `None` meaning all)
+        :param args: arguments included in the event message sent to the event handler (default: ``None`` meaning all)
         :param throttle: minimum time (in seconds) between event occurrences (default: 0.0)
-        :param leading_events: whether to trigger the event handler immediately upon the first event occurrence (default: `True`)
-        :param trailing_events: whether to trigger the event handler after the last event occurrence (default: `True`)
-        :param js_handler: JavaScript code that is executed upon occurrence of the event, e.g. `(evt) => alert(evt)` (default: `None`)
+        :param leading_events: whether to trigger the event handler immediately upon the first event occurrence (default: ``True``)
+        :param trailing_events: whether to trigger the event handler after the last event occurrence (default: ``True``)
+        :param js_handler: JavaScript function that is handling the event on the client (default: "(...args) => emit(...args)")
         """
-        if handler and js_handler:
-            raise ValueError('Either handler or js_handler can be specified, but not both')
+        if js_handler is None:
+            helpers.warn_once('Passing `js_handler=None` to `on()` is deprecated. '
+                              'Use the default "(...args) => emit(...args)" instead or remove the parameter.')
+        if js_handler == '(...args) => emit(...args)':
+            js_handler = None
 
         if handler or js_handler:
             listener = EventListener(
@@ -520,7 +536,7 @@ class Element(Visibility):
             additions.append(f'text={shorten(self._text)}')
         if hasattr(self, 'content') and self.content:  # pylint: disable=no-member
             additions.append(f'content={shorten(self.content)}')  # pylint: disable=no-member
-        IGNORED_PROPS = {'loopback', 'color', 'view', 'innerHTML', 'codehilite_css_url'}
+        IGNORED_PROPS = {'loopback', 'color', 'view', 'innerHTML', 'dynamic_resource_path'}
         additions += [
             f'{key}={shorten(value)}'
             for key, value in self._props.items()

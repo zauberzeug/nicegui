@@ -46,5 +46,6 @@ COPY fly-entrypoint.sh /entrypoint.sh
 ENTRYPOINT ["/entrypoint.sh"]
 
 ENV PYTHONUNBUFFERED=1
+ENV ENABLE_ANALYTICS=true
 
 CMD ["python", "main.py"]

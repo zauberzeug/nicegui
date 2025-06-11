@@ -255,7 +255,8 @@ class Table(FilterElement, component='table.js'):
             return (pd.api.types.is_datetime64_any_dtype(dtype) or
                     pd.api.types.is_timedelta64_dtype(dtype) or
                     pd.api.types.is_complex_dtype(dtype) or
-                    isinstance(dtype, pd.PeriodDtype))
+                    pd.api.types.is_object_dtype(dtype) or
+                    isinstance(dtype, (pd.PeriodDtype, pd.IntervalDtype)))
         special_cols = df.columns[df.dtypes.apply(is_special_dtype)]
         if not special_cols.empty:
             df = df.copy()

@@ -33,6 +33,7 @@ def same_page_links():
         ui.link('Goto B', '#target_B')  # HIDE
 
 
+@doc.auto_execute
 @doc.demo('Links to other pages', '''
     You can link to other pages by providing the link target as path or function reference.
 ''')

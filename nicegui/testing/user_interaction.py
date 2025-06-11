@@ -84,11 +84,22 @@ class UserInteraction(Generic[T]):
                         if element.multiple:
                             if target_value in element.value:
                                 element.value = [v for v in element.value if v != target_value]
-                            else:
+                            elif target_value in element._values:  # pylint: disable=protected-access
                                 element.value = [*element.value, target_value]
+                            else:
+                                element._is_showing_popup = False  # pylint: disable=protected-access
                         else:
                             element.value = target_value
-                    element._is_showing_popup = not element.is_showing_popup  # pylint: disable=protected-access
+                            element._is_showing_popup = False  # pylint: disable=protected-access
+                    else:
+                        element._is_showing_popup = True  # pylint: disable=protected-access
+                    return self
+                elif isinstance(element, ui.radio):
+                    if isinstance(element.options, dict):
+                        target_value = next((k for k, v in element.options.items() if v == self.target), '')
+                    else:
+                        target_value = self.target
+                    element.value = target_value
                     return self
 
                 for listener in element._event_listeners.values():  # pylint: disable=protected-access

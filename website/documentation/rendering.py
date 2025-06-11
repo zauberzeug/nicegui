@@ -52,7 +52,7 @@ def render_page(documentation: DocumentationPage, *, with_menu: bool = True) -> 
                     element = custom_restructured_text(part.description.replace(':param ', ':'))
                 else:
                     element = ui.markdown(part.description)
-                element.classes('bold-links arrow-links')
+                element.classes('bold-links arrow-links w-full overflow-x-auto')
                 if ':param' in part.description:
                     element.classes('rst-param-tables')
             if part.ui:
@@ -72,6 +72,8 @@ def render_page(documentation: DocumentationPage, *, with_menu: bool = True) -> 
                     documentation.extra_column()
         else:
             render_content()
+    with ui.column().classes('w-full p-4 items-end'):
+        ui.link('Imprint & Privacy', '/imprint_privacy').classes('text-sm')
 
 
 def _ancestor_nodes(node_id: str) -> List[str]:

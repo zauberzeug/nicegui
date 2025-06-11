@@ -13,7 +13,7 @@ if TYPE_CHECKING:
 
 class Slot:
     stacks: ClassVar[Dict[int, List[Slot]]] = {}
-    """Maps asyncio task IDs to slot stacks, which keep track of the current slot in each task."""
+    '''Maps asyncio task IDs to slot stacks, which keep track of the current slot in each task.'''
 
     def __init__(self, parent: Element, name: str, template: Optional[str] = None) -> None:
         self.name = name

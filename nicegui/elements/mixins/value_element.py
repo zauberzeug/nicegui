@@ -9,15 +9,15 @@ from ...events import GenericEventArguments, Handler, ValueChangeEventArguments,
 
 class ValueElement(Element):
     VALUE_PROP: str = 'model-value'
-    """Name of the prop that holds the value of the element"""
+    '''Name of the prop that holds the value of the element'''
 
     LOOPBACK: Optional[bool] = True
-    """Whether to set the new value directly on the client or after getting an update from the server.
+    '''Whether to set the new value directly on the client or after getting an update from the server.
 
     - ``True``: The value is updated by sending a change event to the server which responds with an update.
     - ``False``: The value is updated by setting the VALUE_PROP directly on the client.
     - ``None``: The value is updated automatically by the Vue element.
-    """
+    '''
 
     value = BindableProperty(
         on_change=lambda sender, value: cast(Self, sender)._handle_value_change(value))  # pylint: disable=protected-access

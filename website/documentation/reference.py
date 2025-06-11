@@ -29,21 +29,22 @@ def generate_class_doc(class_obj: type, part_title: str) -> None:
 
     if properties:
         subheading('Properties', anchor_name=create_anchor_name(part_title.replace('Reference', 'Properties')))
-        with ui.column().classes('gap-2'):
+        with ui.column().classes('gap-2 w-full overflow-x-auto'):
             for name, property_ in sorted(properties.items()):
                 ui.markdown(f'**`{name}`**`{_generate_property_signature_description(property_)}`')
                 if property_.__doc__:
                     _render_docstring(property_.__doc__).classes('ml-8')
     if methods:
         subheading('Methods', anchor_name=create_anchor_name(part_title.replace('Reference', 'Methods')))
-        with ui.column().classes('gap-2'):
+        with ui.column().classes('gap-2 w-full overflow-x-auto'):
             for name, method in sorted(methods.items()):
                 decorator = ''
                 if isinstance(class_obj.__dict__.get(name), staticmethod):
                     decorator += '`@staticmethod`<br />'
                 if isinstance(class_obj.__dict__.get(name), classmethod):
                     decorator += '`@classmethod`<br />'
-                ui.markdown(f'{decorator}**`{name}`**`{_generate_method_signature_description(method)}`')
+                ui.markdown(f'{decorator}**`{name}`**`{_generate_method_signature_description(method)}`') \
+                    .classes('w-full overflow-x-auto')
                 if method.__doc__:
                     _render_docstring(method.__doc__).classes('ml-8')
     if ancestors:

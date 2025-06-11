@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 import gzip
 import json
 import logging
@@ -225,7 +226,7 @@ class Air:
         self.connecting = True
         try:
             if self.relay.connected:
-                await helpers.wait_for(self.disconnect(), timeout=5)
+                await asyncio.wait_for(self.disconnect(), timeout=5)
             self.log.debug('Connecting...')
             await self.relay.connect(
                 f'{RELAY_HOST}?device_token={self.token}',

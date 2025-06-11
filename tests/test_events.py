@@ -191,3 +191,18 @@ def test_js_handler(screen: Screen) -> None:
     screen.open('/')
     screen.click('Button')
     screen.should_contain('Click!')
+
+
+def test_delegated_event_with_argument_filtering(screen: Screen) -> None:
+    ids = []
+    ui.html('''
+        <p data-id="A">Item A</p>
+        <p data-id="B">Item B</p>
+        <p data-id="C">Item C</p>
+    ''').on('click', lambda e: ids.append(e.args), js_handler='(e) => emit(e.target.dataset.id)')
+
+    screen.open('/')
+    screen.click('Item A')
+    screen.click('Item B')
+    screen.click('Item C')
+    assert ids == ['A', 'B', 'C']

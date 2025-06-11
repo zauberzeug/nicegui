@@ -6,11 +6,7 @@ import markdown2
 from fastapi.responses import PlainTextResponse
 from pygments.formatters import HtmlFormatter  # pylint: disable=no-name-in-module
 
-from .. import core
-from ..version import __version__
 from .mixins.content_element import ContentElement
-
-CODEHILITE_CSS_URL = f'/_nicegui/{__version__}/codehilite.css'
 
 
 class Markdown(ContentElement, component='markdown.js', default_classes='nicegui-markdown'):
@@ -31,13 +27,14 @@ class Markdown(ContentElement, component='markdown.js', default_classes='nicegui
         if 'mermaid' in extras:
             self._props['use_mermaid'] = True
 
-        self._props['codehilite_css_url'] = CODEHILITE_CSS_URL
-        if not any(r for r in core.app.routes if getattr(r, 'path', None) == CODEHILITE_CSS_URL):
-            core.app.get(CODEHILITE_CSS_URL)(lambda: PlainTextResponse(
+        self.add_dynamic_resource(
+            'codehilite.css',
+            lambda: PlainTextResponse(
                 HtmlFormatter(nobackground=True).get_style_defs('.codehilite') +
                 HtmlFormatter(nobackground=True, style='github-dark').get_style_defs('.body--dark .codehilite'),
                 media_type='text/css',
-            ))
+            ),
+        )
 
     def _handle_content_change(self, content: str) -> None:
         html = prepare_content(content, extras=' '.join(self.extras))
