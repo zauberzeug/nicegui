@@ -3,7 +3,7 @@ from typing import Any, Callable, Union
 from ..client import Client
 from ..context import context
 from ..element import Element
-from ..elements.sub_pages import find_root_sub_pages_elements
+from ..elements.sub_pages import navigate_to_sub_page
 from .javascript import run_javascript
 
 
@@ -69,27 +69,8 @@ class Navigate:
             raise TypeError(f'Invalid target type: {type(target)}')
 
         if not new_tab and isinstance(target, str):
-            try:
-                client = context.client
-                if client and client.content:
-                    sub_pages_elements = find_root_sub_pages_elements(client.content)
-                    handled_by_sub_pages = False
-                    for sub_page in sub_pages_elements:
-                        route_match = sub_page.find_route_match(path)
-                        if route_match is not None:
-                            sub_page.show(path)
-                            handled_by_sub_pages = True
-                    if handled_by_sub_pages:
-                        run_javascript(f'''
-                            const fullPath = (window.path_prefix || '') + "{path}";
-                            if (window.location.pathname !== fullPath) {{
-                                history.pushState({{page: "{path}"}}, "", fullPath);
-                            }}
-                        ''')
-                    if handled_by_sub_pages:
-                        return
-            except (AttributeError, TypeError):
-                pass
+            if navigate_to_sub_page(path):
+                return
 
         context.client.open(path, new_tab)
 

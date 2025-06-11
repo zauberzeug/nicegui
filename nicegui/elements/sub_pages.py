@@ -110,9 +110,8 @@ class SubPages(Element, component='sub_pages.js'):
 
     def _handle_navigate(self, path: str) -> None:
         """Handle navigate event from link clicks"""
-        # NOTE: Late import to avoid circular dependency
-        from ..functions.navigate import navigate  # pylint: disable=import-outside-toplevel
-        navigate.to(path)
+        if not navigate_to_sub_page(path):
+            context.client.open(path)
 
     def _normalize_path(self, path: str) -> str:
         """Normalize the path by trimming root path and handling trailing slashes."""
@@ -182,6 +181,35 @@ class SubPages(Element, component='sub_pages.js'):
                 with self:
                     await result
             background_tasks.create(background_task(), name=f'building sub_page {route_match.pattern}')
+
+
+def navigate_to_sub_page(path: str) -> bool:
+    """Handle navigation through sub_pages system.
+
+    :param path: the path to navigate to
+    :return: True if handled by sub_pages, False otherwise
+    """
+    try:
+        client = context.client
+        if client and client.content:
+            sub_pages_elements = find_root_sub_pages_elements(client.content)
+            handled_by_sub_pages = False
+            for sub_page in sub_pages_elements:
+                route_match = sub_page.find_route_match(path)
+                if route_match is not None:
+                    sub_page.show(path)
+                    handled_by_sub_pages = True
+            if handled_by_sub_pages:
+                run_javascript(f'''
+                    const fullPath = (window.path_prefix || '') + "{path}";
+                    if (window.location.pathname !== fullPath) {{
+                        history.pushState({{page: "{path}"}}, "", fullPath);
+                    }}
+                ''')
+            return handled_by_sub_pages
+    except (AttributeError, TypeError):
+        pass
+    return False
 
 
 def find_root_sub_pages_elements(element: Element) -> List[SubPages]:
