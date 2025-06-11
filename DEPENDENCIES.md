@@ -17,4 +17,5 @@
 - three: 0.168.0 ([MIT](https://opensource.org/licenses/MIT))
 - tween: 25.0.0 ([MIT](https://opensource.org/licenses/MIT))
 - vanilla-jsoneditor: 0.23.8 ([ISC](https://opensource.org/licenses/ISC))
-- unocss: 66.1.3 ([MIT](https://opensource.org/licenses/MIT))
+- unocss_runtime: 66.1.4 ([MIT](https://opensource.org/licenses/MIT))
+- unocss_reset: 66.1.4 ([MIT](https://opensource.org/licenses/MIT))
