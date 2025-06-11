@@ -112,12 +112,15 @@ class page:
                 pass
 
         def create_error_page(e: Exception, request: Request, client: Client) -> Response:
-            exception_handler = core.app._page_exception_handler  # pylint: disable=protected-access
-            if exception_handler is None:
+            page_exception_handler = core.app._page_exception_handler  # pylint: disable=protected-access
+            if page_exception_handler is None:
                 raise e
             with Client(page(''), request=request) as error_client:
                 # page exception handler
-                exception_handler(e)
+                if helpers.expects_arguments(page_exception_handler):
+                    page_exception_handler(e)
+                else:
+                    page_exception_handler()
 
                 # FastAPI exception handlers
                 for key, handler in core.app.exception_handlers.items():
