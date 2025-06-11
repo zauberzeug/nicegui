@@ -231,16 +231,22 @@ def test_dark_mode(use_tailwind: bool, screen: Screen):
     @ui.page('/auto', dark=None)
     def page():
         app.config.tailwind = use_tailwind
+        if not use_tailwind:
+            app.config.unocss_preset = 'wind3'
         ui.label('A').classes('text-blue-400 dark:text-red-400')
 
     @ui.page('/light', dark=False)
     def light_page():
         app.config.tailwind = use_tailwind
+        if not use_tailwind:
+            app.config.unocss_preset = 'wind3'
         ui.label('B').classes('text-blue-400 dark:text-red-400')
 
     @ui.page('/dark', dark=True)
     def dark_page():
         app.config.tailwind = use_tailwind
+        if not use_tailwind:
+            app.config.unocss_preset = 'wind3'
         ui.label('C').classes('text-blue-400 dark:text-red-400')
 
     blue = 'rgba(96, 165, 250, 1)'
@@ -251,18 +257,24 @@ def test_dark_mode(use_tailwind: bool, screen: Screen):
     screen.open('/auto')
     assert (screen.selenium.page_source.find('tailwindcss.min.js') != -1) == use_tailwind, \
         'tailwindcss.min.js should be loaded when use_tailwind is True, and vice versa'
+    assert (screen.selenium.page_source.find('core.global.js') != -1) != use_tailwind, \
+        'core.global.js should be loaded when use_tailwind is False, and vice versa'
     assert screen.find('A').value_of_css_property('color') == blue
     assert screen.find_by_tag('body').value_of_css_property('background-color') == white
 
     screen.open('/light')
     assert (screen.selenium.page_source.find('tailwindcss.min.js') != -1) == use_tailwind, \
         'tailwindcss.min.js should be loaded when use_tailwind is True, and vice versa'
+    assert (screen.selenium.page_source.find('core.global.js') != -1) != use_tailwind, \
+        'core.global.js should be loaded when use_tailwind is False, and vice versa'
     assert screen.find('B').value_of_css_property('color') == blue
     assert screen.find_by_tag('body').value_of_css_property('background-color') == white
 
     screen.open('/dark')
     assert (screen.selenium.page_source.find('tailwindcss.min.js') != -1) == use_tailwind, \
         'tailwindcss.min.js should be loaded when use_tailwind is True, and vice versa'
+    assert (screen.selenium.page_source.find('core.global.js') != -1) != use_tailwind, \
+        'core.global.js should be loaded when use_tailwind is False, and vice versa'
     assert screen.find('C').value_of_css_property('color') == red
     assert screen.find_by_tag('body').value_of_css_property('background-color') == black
 
