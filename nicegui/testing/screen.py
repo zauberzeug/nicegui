@@ -186,9 +186,9 @@ class Screen:
         """Find the element containing the given text."""
         try:
             query = f'//*[not(self::script) and not(self::style) and text()[contains(., "{text}")]]'
-            element = self.selenium.find_element(By.XPATH, query)
             # HACK: repeat check after a short delay to avoid timing issue on fast machines
             for _ in range(5):
+                element = self.selenium.find_element(By.XPATH, query)
                 try:
                     if element.is_displayed():
                         return element
