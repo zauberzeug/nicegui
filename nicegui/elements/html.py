@@ -11,7 +11,7 @@ class Html(ContentElement):
         You can also use `ui.add_head_html` to add html code into the head of the document and `ui.add_body_html`
         to add it into the body.
 
-        :param content: the HTML code to be displayed
+        :param content: (cached) the HTML code to be displayed
         :param tag: the HTML tag to wrap the content in (default: "div")
         """
         super().__init__(tag=tag, content=content)
