@@ -110,7 +110,8 @@ class SubPages(Element, component='sub_pages.js'):
 
     def _handle_navigate(self, path: str) -> None:
         """Handle navigate event from link clicks"""
-        from ..functions.navigate import navigate  # NOTE: Late import to avoid circular dependency
+        # NOTE: Late import to avoid circular dependency
+        from ..functions.navigate import navigate  # pylint: disable=import-outside-toplevel
         navigate.to(path)
 
     def _normalize_path(self, path: str) -> str:
