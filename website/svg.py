@@ -17,30 +17,21 @@ def face(half: bool = False) -> ui.html:
     else:
         happy_face_svg_element = ui.html(HAPPY_FACE_SVG)
         happy_face_svg_element.dynamic_keys.add('class')  # allow different classes across caches
-        happy_face_svg_element.static_prop_keys.add('innerHTML')
         happy_face_svg_element.cache('happy-face-svg')
         return happy_face_svg_element
 
 
 def word() -> ui.html:
-    word_svg_element = ui.html(NICEGUI_WORD_SVG)
-    word_svg_element.static_prop_keys.add('innerHTML')
-    return word_svg_element.cache('word-svg')
+    return ui.html(NICEGUI_WORD_SVG).cache('word-svg')
 
 
 def github() -> ui.html:
-    github_svg_element = ui.html(GITHUB_SVG)
-    github_svg_element.static_prop_keys.add('innerHTML')
-    return github_svg_element.cache('github-svg')
+    return ui.html(GITHUB_SVG).cache('github-svg')
 
 
 def discord() -> ui.html:
-    discord_svg_element = ui.html(DISCORD_SVG)
-    discord_svg_element.static_prop_keys.add('innerHTML')
-    return discord_svg_element.cache('discord-svg')
+    return ui.html(DISCORD_SVG).cache('discord-svg')
 
 
 def reddit() -> ui.html:
-    reddit_svg_element = ui.html(REDDIT_SVG)
-    reddit_svg_element.static_prop_keys.add('innerHTML')
-    return reddit_svg_element.cache('reddit-svg')
+    return ui.html(REDDIT_SVG).cache('reddit-svg')

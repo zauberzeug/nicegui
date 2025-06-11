@@ -103,7 +103,7 @@ class Element(Visibility):
         self.child_id_per_slot_name: Dict[str, int] = {}
 
         self.dynamic_keys: Set[str] = DYNAMIC_KEYS.copy()
-        self.static_prop_keys: Set[str] = set()
+        self.static_props_keys: Set[str] = set()
 
         self.tailwind = Tailwind(self)
 
@@ -296,13 +296,13 @@ class Element(Visibility):
         props_dict_static = {
             key: value
             for key, value in self._props.items()
-            if key in self.static_prop_keys
+            if key in self.static_props_keys
         }
 
         props_dict_dynamic = {
             key: value
             for key, value in self._props.items()
-            if key not in self.static_prop_keys
+            if key not in self.static_props_keys
         }
 
         element_dict_static = {

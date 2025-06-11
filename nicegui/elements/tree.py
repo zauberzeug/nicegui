@@ -26,7 +26,7 @@ class Tree(FilterElement):
 
         To use checkboxes and ``on_tick``, set the ``tick_strategy`` parameter to "leaf", "leaf-filtered" or "strict".
 
-        :param nodes: hierarchical list of node objects
+        :param nodes: (cached) hierarchical list of node objects
         :param node_key: property name of each node object that holds its unique id (default: "id")
         :param label_key: property name of each node object that holds its label (default: "label")
         :param children_key: property name of each node object that holds its list of children (default: "children")
@@ -37,6 +37,7 @@ class Tree(FilterElement):
         """
         super().__init__(tag='q-tree', filter=None)
         self._props['nodes'] = nodes
+        self.static_props_keys.add('nodes')
         self._props['node-key'] = node_key
         self._props['label-key'] = label_key
         self._props['children-key'] = children_key
