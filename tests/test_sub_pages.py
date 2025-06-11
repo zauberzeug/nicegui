@@ -276,6 +276,7 @@ def test_navigate_to_new_tab_fallback(screen: Screen):
 
 def test_adding_sub_pages_after_initialization(screen: Screen):
     @ui.page('/')
+    @ui.page('/sub')
     def index():
         pages = ui.sub_pages()
         pages.add('/', lambda: main_content(pages))
@@ -289,13 +290,34 @@ def test_adding_sub_pages_after_initialization(screen: Screen):
 
     screen.open('/')
     screen.click('goto sub')
+    screen.should_contain('404: sub page /sub not found')
     assert screen.current_path == '/sub'
-    screen.should_contain('404')
-    screen.should_contain("This page doesn't exist")
     screen.open('/')
     screen.click('add sub page')
+    screen.wait(0.2)
     screen.click('goto sub')
     screen.should_contain('sub-content')
+
+
+def test_direct_access_to_sub_page_which_was_added_after_initialization(screen: Screen):
+    @ui.page('/')
+    @ui.page('/sub')
+    def index():
+        pages = ui.sub_pages()
+        pages.add('/', main_content)
+        pages.add('/sub', sub_content)
+
+    def main_content():
+        ui.link('goto sub', '/sub')
+
+    def sub_content():
+        ui.link('goto main', '/')
+
+    screen.open('/sub')
+    assert screen.current_path == '/sub'
+    screen.click('goto main')
+    screen.should_contain('goto sub')
+    assert screen.current_path == '/'
 
 
 @pytest.mark.parametrize('page_route', ['/foo/{_:path}', '/foo/sub', '/foo/sub/', '/{_:str}/sub'])

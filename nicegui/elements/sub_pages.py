@@ -39,7 +39,10 @@ class SubPages(Element, component='sub_pages.js'):
         super().__init__()
         self._routes = routes or {}
         self._root_path = root_path
-        self._on_new_route()
+        self._on_routes_changed()
+        if self._is_root():
+            self.on('open', lambda e: self.show_and_update_history(e.args))
+            self.on('navigate', lambda e: self._handle_navigate(e.args))
 
     def add(self, path: str, page: Callable) -> Self:
         """Add a new route to the sub pages.
@@ -50,8 +53,7 @@ class SubPages(Element, component='sub_pages.js'):
         :return: self for method chaining
         """
         self._routes[path] = page
-        if path == '/':
-            self._on_new_route()
+        self._on_routes_changed()
         return self
 
     def show(self, full_path: str) -> None:
@@ -100,13 +102,11 @@ class SubPages(Element, component='sub_pages.js'):
             segments.pop()
         return None
 
-    def _on_new_route(self) -> None:
+    def _on_routes_changed(self) -> None:
         if self._is_root():
             assert context.client.request
             path = context.client.request.url.path
             self.show_and_update_history(path)
-            self.on('open', lambda e: self.show_and_update_history(e.args))
-            self.on('navigate', lambda e: self._handle_navigate(e.args))
 
     def _handle_navigate(self, path: str) -> None:
         """Handle navigate event from link clicks"""
