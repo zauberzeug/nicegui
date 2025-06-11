@@ -255,6 +255,7 @@ def test_dark_mode(use_tailwind: bool, screen: Screen):
     black = 'rgba(18, 18, 18, 1)'
 
     screen.open('/auto')
+    screen.wait(1)
     assert (screen.selenium.page_source.find('tailwindcss.min.js') != -1) == use_tailwind, \
         'tailwindcss.min.js should be loaded when use_tailwind is True, and vice versa'
     assert (screen.selenium.page_source.find('core.global.js') != -1) != use_tailwind, \
@@ -263,6 +264,7 @@ def test_dark_mode(use_tailwind: bool, screen: Screen):
     assert screen.find_by_tag('body').value_of_css_property('background-color') == white
 
     screen.open('/light')
+    screen.wait(1)
     assert (screen.selenium.page_source.find('tailwindcss.min.js') != -1) == use_tailwind, \
         'tailwindcss.min.js should be loaded when use_tailwind is True, and vice versa'
     assert (screen.selenium.page_source.find('core.global.js') != -1) != use_tailwind, \
@@ -271,6 +273,7 @@ def test_dark_mode(use_tailwind: bool, screen: Screen):
     assert screen.find_by_tag('body').value_of_css_property('background-color') == white
 
     screen.open('/dark')
+    screen.wait(1)
     assert (screen.selenium.page_source.find('tailwindcss.min.js') != -1) == use_tailwind, \
         'tailwindcss.min.js should be loaded when use_tailwind is True, and vice versa'
     assert (screen.selenium.page_source.find('core.global.js') != -1) != use_tailwind, \
