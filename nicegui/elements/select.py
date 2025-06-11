@@ -4,19 +4,19 @@ from typing import (Any, Callable, Collection, Generic, Iterator, List,
                     Literal, Optional, Union)
 
 from ..events import GenericEventArguments, Handler, ValueChangeEventArguments
-from .choice_element import ChoiceElement, Option, T
+from .choice_element import LT, VT, ChoiceElement, Option, _to_option
 from .mixins.disableable_element import DisableableElement
 from .mixins.label_element import LabelElement
 from .mixins.validation_element import (ValidationDict, ValidationElement,
                                         ValidationFunction)
 
 
-class Select(Generic[T], LabelElement, ValidationElement, ChoiceElement, DisableableElement, component='select.js'):
+class Select(LabelElement, ValidationElement, ChoiceElement, DisableableElement, Generic[LT, VT], component='select.js'):
 
     def __init__(self,
-                 options: Collection[Union[Option[T], str]], *,
+                 options: Collection[Union[Option[LT, VT], VT]], *,
                  label: Optional[str] = None,
-                 value: Optional[T | Collection[T]] = None,
+                 value: Optional[VT | Collection[VT]] = None,
                  on_change: Optional[Handler[ValueChangeEventArguments]] = None,
                  with_input: bool = False,
                  new_value_mode: Optional[Literal['add', 'add-unique', 'toggle']] = None,
@@ -84,10 +84,10 @@ class Select(Generic[T], LabelElement, ValidationElement, ChoiceElement, Disable
         self.on('popup-hide', lambda e: setattr(e.sender, '_is_showing_popup', False))
 
     @property
-    def selected(self) -> List[Option[T]]:
+    def selected(self) -> List[Optional[Option[LT, VT]]]:
         if self.multiple:
-            return [self._values_to_option[v] for v in self.value]
-        return [self._values_to_option[self.value]]
+            return [self._values_to_option.get(v) for v in self.value]
+        return [self._values_to_option.get(self.value)]
 
     @property
     def is_showing_popup(self) -> bool:
@@ -107,7 +107,7 @@ class Select(Generic[T], LabelElement, ValidationElement, ChoiceElement, Disable
                             if arg1 == arg2['label']:
                                 e.args.remove(arg1)
                                 break
-                args = [arg['value'] if isinstance(arg, dict) else arg for arg in e.args]
+                args = [arg["value"] if isinstance(arg, dict) else arg for arg in e.args]
                 for arg in e.args:
                     if isinstance(arg, str):
                         self._handle_new_value(arg)
@@ -117,12 +117,14 @@ class Select(Generic[T], LabelElement, ValidationElement, ChoiceElement, Disable
                 return None
             else:  # noqa: PLR5501
                 if isinstance(e.args, str):
-                    new_value = self._handle_new_value(e.args)
-                    return new_value if new_value in self._values else None
+                    new_value = self._handle_new_value(_to_option(e.args))
+                    if not new_value:
+                        return None
+                    return new_value["value"] if new_value["value"] in self._values else None
                 else:
-                    return e.args['value']
+                    return e.args["value"]
 
-    def _value_to_model_value(self, value: Any) -> Union[List[Option], Option]:
+    def _value_to_model_value(self, value: VT) -> List[dict] | dict | None:
         # pylint: disable=no-else-return
         if self.multiple:
             try:
@@ -134,44 +136,18 @@ class Select(Generic[T], LabelElement, ValidationElement, ChoiceElement, Disable
         else:
             return self._values_to_option.get(value)
 
-    def _generate_key(self, value: str) -> Any:
-        if isinstance(self.key_generator, Generator):
-            return self.key_generator.send(value)
-        if isinstance(self.key_generator, Iterable):
-            return next(self.key_generator)
-        if callable(self.key_generator):
-            return self.key_generator(value)
-        return value
-
-    def _handle_new_value(self, value: str) -> Any:
+    def _handle_new_value(self, value: VT | Option[LT, VT]) -> Optional[Option[LT, VT]]:
         mode = self._props['new-value-mode']
-        if isinstance(self.options, list):
-            if mode == 'add':
-                self.options.append(value)
-            elif mode == 'add-unique':
-                if value not in self.options:
-                    self.options.append(value)
-            elif mode == 'toggle':
-                if value in self.options:
-                    self.options.remove(value)
-                else:
-                    self.options.append(value)
-            # NOTE: self._labels and self._values are updated via self.options since they share the same references
-            return value
-        else:
-            key = value
-            if mode == 'add':
-                key = self._generate_key(value)
-                self.options[key] = value
-            elif mode == 'add-unique':
-                if value not in self.options.values():
-                    key = self._generate_key(value)
-                    self.options[key] = value
-            elif mode == 'toggle':
-                if value in self.options:
-                    self.options.pop(value)
-                else:
-                    key = self._generate_key(value)
-                    self.options.update({key: value})
-            self._update_values_and_labels()
-            return key
+        option = value if isinstance(value, dict) else _to_option(value)
+        if mode == 'add':
+            self.options.append(option)
+        elif mode == 'add-unique':
+            if option["value"] not in self._values_to_option:
+                self.options.append(option)
+        elif mode == 'toggle':
+            if option["value"] in self._values_to_option:
+                self.options = [o for o in self.options if o["value"] != option["value"]]
+            else:
+                self.options.append(option)
+        self._update_values_and_labels()
+        return option

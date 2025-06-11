@@ -4,7 +4,8 @@ from typing_extensions import Self
 
 from ...binding import BindableProperty, bind, bind_from, bind_to
 from ...element import Element
-from ...events import GenericEventArguments, Handler, ValueChangeEventArguments, handle_event
+from ...events import (GenericEventArguments, Handler,
+                       ValueChangeEventArguments, handle_event)
 
 
 class ValueElement(Element):
