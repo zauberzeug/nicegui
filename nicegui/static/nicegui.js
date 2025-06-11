@@ -414,7 +414,7 @@ function createApp(elements, options) {
 
           originalClassesCount = allClassesFromElements.size;
           Object.entries(msg).forEach(([_, element]) => {
-            allClassesFromElements.add(...(element?.class || []));
+            (element?.class || []).forEach((c) => allClassesFromElements.add(c));
           });
           if (allClassesFromElements.size > originalClassesCount) {
             await generateStylesFromClasses(allClassesFromElements);
