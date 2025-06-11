@@ -325,9 +325,11 @@ class Element(Visibility):
         element_dict_static, element_dict_dynamic = self._to_dict_internal()
         if self.cache_name is None or not caching:
             # return the normal un-filtered dict
+            merged_props = {**element_dict_static.get('props', {}), **element_dict_dynamic.get('props', {})}
             return {
                 **element_dict_static,
                 **element_dict_dynamic,
+                'props': merged_props,
             }
         else:
             # return the cached format
