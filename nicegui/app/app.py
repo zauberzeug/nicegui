@@ -285,6 +285,7 @@ class App(FastAPI):
         self._connect_handlers.clear()
         self._disconnect_handlers.clear()
         self._exception_handlers[:] = [log.exception]
+        self.configure_vue_ui_framework()
 
     @staticmethod
     def clients(path: str) -> Iterator[Client]:
