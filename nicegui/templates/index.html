@@ -25,27 +25,42 @@
     <script defer src="{{ prefix | safe }}/_nicegui/{{version}}/static/socket.io.min.js"></script>
     {% if tailwind %}
     <script defer src="{{ prefix | safe }}/_nicegui/{{version}}/static/tailwindcss.min.js"></script>
-    {% else %}
-    <!-- TODO: Add style reset CSS for Tailwind CSS into npm.json! -->
+    {% endif %}
+    <!-- prevent Prettier from removing this line -->
+    {% if unocss %}
     <link rel="stylesheet" href="{{ prefix | safe }}/_nicegui/{{version}}/static/unocss_reset/tailwind.css" />
-    <script src="{{ prefix | safe }}/_nicegui/{{version}}/static/unocss_runtime/preset-wind.global.js"></script>
+    <script src="{{ prefix | safe }}/_nicegui/{{version}}/static/unocss_runtime/{{unocss_filename}}.global.js"></script>
     <script>
         window.__unocss = {
             presets: [
-                () =>
-                    window.__unocss_runtime.presets.presetWind()
+                {{ unocss_initline | safe }}
             ],
             runtime: {
               ready: () => false,
             }
         }
+
+        const UnoCSSLUT = {
+          "False": false,
+          "True": true,
+          "None": null,
+        }
+
+        window.nicegui_unocss_dark = UnoCSSLUT["{{ dark | safe }}"];
+
+        setInterval(() => {
+          if (window.nicegui_unocss_dark === true || (window.nicegui_unocss_dark === null && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.body.classList.add("dark");
+          } else {
+            document.body.classList.remove("dark");
+          }
+        }, 100);
     </script>
     <style>
       .nicegui-prevent-fouc {
         display: none;
       }
     </style>
-    <!-- Tried out with uno.global.js, equally broken! -->
     <script src="{{ prefix | safe }}/_nicegui/{{version}}/static/unocss_runtime/core.global.js"></script>
     {% endif %}
     <!-- prevent Prettier from removing this line -->
@@ -84,8 +99,8 @@
       Quasar.Dark.set(dark === None ? "auto" : dark);
       {% if tailwind %}
       if (dark !== None) tailwind.config.darkMode = "class";
-      {% endif %}
       if (dark === True) document.body.classList.add("dark");
+      {% endif %}
 
       app.mount("#app");
     </script>

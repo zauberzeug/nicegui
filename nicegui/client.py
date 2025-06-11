@@ -19,6 +19,7 @@ from .awaitable_response import AwaitableResponse
 from .dependencies import generate_resources
 from .element import Element
 from .favicon import get_favicon_url
+from .helpers import unocss_filenames, unocss_initlines
 from .javascript_request import JavaScriptRequest
 from .logging import log
 from .observables import ObservableDict
@@ -164,6 +165,9 @@ class Client:
                 'translations': translations.get(self.page.resolve_language(), translations['en-US']),
                 'prefix': prefix,
                 'tailwind': core.app.config.tailwind,
+                'unocss': core.app.config.unocss_preset is not None,
+                'unocss_filename': unocss_filenames.get(core.app.config.unocss_preset, ''),
+                'unocss_initline': unocss_initlines.get(core.app.config.unocss_preset, ''),
                 'prod_js': core.app.config.prod_js,
                 'socket_io_js_query_params': socket_io_js_query_params,
                 'socket_io_js_extra_headers': core.app.config.socket_io_js_extra_headers,

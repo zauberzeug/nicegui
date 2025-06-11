@@ -122,3 +122,15 @@ async def wait_for(fut: Awaitable, timeout: Optional[float] = None) -> None:
     It can be removed once we drop support for older versions than Python 3.13 which fixes ``asyncio.wait_for``.
     """
     return await wait_for2.wait_for(fut, timeout)
+
+unocss_filenames = {
+    'mini': 'preset-mini',
+    'wind3': 'preset-wind',  # until upstream renames this to preset-wind3.css, then update this
+    'wind4': 'preset-wind4',
+}
+
+unocss_initlines = {
+    'mini': '() => window.__unocss_runtime.presets.presetMini()',
+    'wind3': '() => window.__unocss_runtime.presets.presetWind()',  # until upstream renames this to presetWind3()
+    'wind4': '() => window.__unocss_runtime.presets.presetWind4()',
+}
