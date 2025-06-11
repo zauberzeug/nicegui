@@ -1,36 +1,43 @@
-from typing import Any, Dict, List, Optional, Union, Collection, TypedDict, Generic, Hashable
+from typing import Any, Dict, List, Optional, Union, Collection, Generic, Hashable
 from typing_extensions import TypeVar
 
 from ..events import Handler, ValueChangeEventArguments
 from .mixins.value_element import ValueElement
+from ..helpers import PYTHON_VERSION
+from packaging.version import Version
+
+if PYTHON_VERSION > Version("3.11"):
+    from typing import TypedDict
+else:
+    from typing_extensions import TypedDict
 
 
-T = TypeVar("T", bound=Hashable, default=str)
+LT = TypeVar("LT", bound=Hashable, default=str)
+VT = TypeVar("VT", default=str)
 
-
-class Option(TypedDict, Generic[T]):
-    label: str
-    value: T
+class Option(TypedDict, Generic[LT, VT]):
+    label: LT
+    value: VT
 
 
 def _to_option(value: Union[Option, str]) -> Option:
-    if isinstance(value, dict):
-        return value
-    return Option(label=value, value=value)
+    if not isinstance(value, dict):
+        return Option(label=value, value=value)
+    return value
 
 
-class ChoiceElement(ValueElement):
+class ChoiceElement(ValueElement, Generic[LT, VT]):
 
     def __init__(self, *,
                  tag: Optional[str] = None,
-                 options: Collection[Union[Option, str]],
-                 value: Any,
+                 options: Collection[Union[Option[LT, VT], VT]],
+                 value: VT,
                  on_change: Optional[Handler[ValueChangeEventArguments]] = None,
                  ) -> None:
-        self.options: List[Option] = [_to_option(v) for v in options]
-        self._values: List[str] = []
-        self._labels: List[str] = []
-        self._values_to_option: Dict[str, Option] = {
+        self.options: List[Option[LT, VT]] = [_to_option(v) for v in options]
+        self._values: List[VT] = []
+        self._labels: List[LT] = []
+        self._values_to_option: Dict[VT, Option[LT, VT]] = {
             o["value"]: o for o in self.options
         }
         self._update_values_and_labels()
@@ -42,7 +49,7 @@ class ChoiceElement(ValueElement):
     def _update_values_and_labels(self) -> None:
         self._values = [o["value"] for o in self.options]
         self._labels = [o["label"] for o in self.options]
-        self._values_to_option: Dict[str, Option] = {
+        self._values_to_option: Dict[VT, Option[LT, VT]] = {
             o["value"]: o for o in self.options
         }
 
@@ -51,7 +58,7 @@ class ChoiceElement(ValueElement):
         self._props['options'] = self.options
         self._props[self.VALUE_PROP] = self._value_to_model_value(before_value)
         if not isinstance(before_value, list):  # NOTE: no need to update value in case of multi-select
-            self.value = before_value if before_value in self._values else None
+            self.value: Optional[VT] = before_value if before_value in self._values else None
 
     def update(self) -> None:
         self._update_values_and_labels()

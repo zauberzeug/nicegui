@@ -5,6 +5,7 @@ from selenium.webdriver import Keys
 
 from nicegui import ui
 from nicegui.testing import Screen
+from nicegui.elements.choice_element import Option
 
 
 def test_select(screen: Screen):
@@ -100,19 +101,28 @@ def test_set_options(screen:  Screen):
 @pytest.mark.parametrize('multiple', [False, True])
 @pytest.mark.parametrize('new_value_mode', ['add', 'add-unique', 'toggle', None])
 def test_add_new_values(screen:  Screen, option_dict: bool, multiple: bool, new_value_mode: Optional[str]):
-    options = {'a': 'A', 'b': 'B', 'c': 'C'} if option_dict else ['a', 'b', 'c']
-    if option_dict and new_value_mode == 'add':
-        with pytest.raises(ValueError, match='new_value_mode "add" is not supported for dict options'):
-            ui.select(options=options, multiple=multiple, new_value_mode=new_value_mode)
-        return
 
-    s = ui.select(options=options, multiple=multiple, new_value_mode=new_value_mode)
+    def to_options(options, as_str = True):
+        option_vals = []
+        for o in options:
+            if isinstance(o, tuple):
+                value, label = o
+            else:
+                value, label = o, o
+            option_vals.append(Option(label=label, value=value))
+        if as_str:
+            return "[" + ", ".join([f"{{'label': '{o['label']}', 'value': '{o['value']}'}}" for o in option_vals]) + "]"
+        return option_vals
+    
+    options = [('a', 'A'), ('b', 'B'), ('c', 'C')] if option_dict else ['a', 'b', 'c']
+
+    s = ui.select(options=to_options(options, False) if option_dict else options, multiple=multiple, new_value_mode=new_value_mode)
     ui.label().bind_text_from(s, 'value', lambda v: f'value = {v}')
     ui.label().bind_text_from(s, 'options', lambda v: f'options = {v}')
 
     screen.open('/')
     screen.should_contain('value = []' if multiple else 'value = None')
-    screen.should_contain("options = {'a': 'A', 'b': 'B', 'c': 'C'}" if option_dict else "options = ['a', 'b', 'c']")
+    screen.should_contain(f"options = {to_options(options)}")
 
     screen.find_by_class('q-select').click()
     screen.wait(0.5)
@@ -129,16 +139,13 @@ def test_add_new_values(screen:  Screen, option_dict: bool, multiple: bool, new_
             screen.wait(0.5)
         if new_value_mode == 'add':
             screen.should_contain("value = ['a', 'd', 'd']" if multiple else 'value = d')
-            screen.should_contain("options = {'a': 'A', 'b': 'B', 'c': 'C', 'd': 'd', 'd': 'd'}" if option_dict else
-                                  "options = ['a', 'b', 'c', 'd', 'd']")
+            screen.should_contain("options = " + to_options([('a', 'A'), ('b', 'B'), ('c', 'C'), ('d', 'd'), ('d', 'd')] if option_dict else ['a', 'b', 'c', 'd', 'd']))
         elif new_value_mode == 'add-unique':
-            screen.should_contain("value = ['a', 'd', 'd']" if multiple else 'value = d')
-            screen.should_contain("options = {'a': 'A', 'b': 'B', 'c': 'C', 'd': 'd'}" if option_dict else
-                                  "options = ['a', 'b', 'c', 'd']")
+            screen.should_contain("value = ['a', 'd']" if multiple else 'value = d')
+            screen.should_contain("options = " + to_options([('a', 'A'), ('b', 'B'), ('c', 'C'), ('d', 'd')] if option_dict else ['a', 'b', 'c', 'd']))
         elif new_value_mode == 'toggle':
             screen.should_contain("value = ['a']" if multiple else 'value = None')
-            screen.should_contain("options = {'a': 'A', 'b': 'B', 'c': 'C'}" if option_dict else
-                                  "options = ['a', 'b', 'c']")
+            screen.should_contain("options = " + to_options([('a', 'A'), ('b', 'B'), ('c', 'C')]))
 
 
 def test_id_generator(screen: Screen):

@@ -43,6 +43,7 @@ certifi = ">=2024.07.04" # https://github.com/zauberzeug/nicegui/security/depend
 redis = { version = ">=4.0.0", optional = true }
 h11 = ">=0.16.0" # https://github.com/zauberzeug/nicegui/security/dependabot/45
 wait_for2 = ">=0.3.2"
+packaging = "*"
 
 [tool.poetry.extras]
 native = ["pywebview"]

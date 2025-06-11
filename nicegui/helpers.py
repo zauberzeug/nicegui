@@ -9,11 +9,16 @@ import time
 import webbrowser
 from collections.abc import Awaitable
 from pathlib import Path
-from typing import Any, Optional, Set, Tuple, Union
+from typing import Any, Optional, Set, Tuple, Union, Final
+from packaging.version import Version
+import sys
 
 import wait_for2
 
 from .logging import log
+
+_v = sys.version_info
+PYTHON_VERSION: Final = Version(f"{_v.major}.{_v.minor}.{_v.micro}")
 
 _shown_warnings: Set[str] = set()
 

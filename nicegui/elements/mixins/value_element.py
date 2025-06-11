@@ -108,6 +108,7 @@ class ValueElement(Element):
         self.value = value
 
     def _handle_value_change(self, value: Any) -> None:
+        print(value)
         self._props[self.VALUE_PROP] = self._value_to_model_value(value)
         if self._send_update_on_value_change:
             self.update()
