@@ -155,7 +155,7 @@ class Client:
                 'imports': json.dumps(imports),
                 'js_imports': '\n'.join(js_imports),
                 'js_imports_urls': js_imports_urls,
-                'quasar_config': json.dumps(core.app.config.quasar_config),
+                'ui_framework_config_script': core.app.config.ui_framework_config_script.format(config=json.dumps(core.app.config.quasar_config)),
                 'title': self.resolve_title(),
                 'viewport': self.page.resolve_viewport(),
                 'favicon_url': get_favicon_url(self.page, prefix),

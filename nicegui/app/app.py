@@ -18,7 +18,7 @@ from ..observables import ObservableSet
 from ..server import Server
 from ..staticfiles import CacheControlledStaticFiles
 from ..storage import Storage
-from .app_config import AppConfig
+from .app_config import DEFAULT_APP_CONFIGURATOR, AppConfig
 from .range_response import get_range_response
 
 
@@ -300,3 +300,14 @@ class App(FastAPI):
         for client in Client.instances.values():
             if client.page.path == path:
                 yield client
+
+    def configure_vue_ui_framework(self, config_script: str = DEFAULT_APP_CONFIGURATOR):
+        """Configure the UI framework used with the Vue app.
+        This is used to set up the UI framework (e.g. Quasar) with the provided configuration.
+
+        :param config_script: JavaScript code to configure the UI framework (default: DEFAULT_APP_CONFIGURATOR)
+
+        Note: the config_script should be a format string of JavaScript code that will be executed in the browser.
+        It will be called with `.format(config=json.dumps({...})` to populate the configuration.
+        """
+        self.config.ui_framework_config_script = config_script

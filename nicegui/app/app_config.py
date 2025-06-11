@@ -5,6 +5,12 @@ from typing import Dict, List, Literal, Optional, Union
 from ..dataclasses import KWONLY_SLOTS
 from ..language import Language
 
+DEFAULT_APP_CONFIGURATOR = '''
+app.use(Quasar, {{config: {config}}});
+Quasar.lang.set(Quasar.lang[language.replace('-', '')]);
+Quasar.Dark.set(dark === null ? "auto" : dark);
+'''
+
 
 @dataclass(**KWONLY_SLOTS)
 class AppConfig:
@@ -23,6 +29,7 @@ class AppConfig:
                 'skipHijack': False,
             },
         })
+    ui_framework_config_script: str = field(default_factory=lambda: DEFAULT_APP_CONFIGURATOR)
 
     reload: bool = field(init=False)
     title: str = field(init=False)
