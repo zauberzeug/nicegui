@@ -20,6 +20,11 @@ export default {
         console.error(error);
         this.$emit("error", error);
       }
+      if (this.function_name) {
+        window[this.function_name] = (node, param) => {
+          this.$emit("nodeClicked", {node: node, param: param});
+        }
+      }
     },
     async update(content) {
       if (this.last_content === content) return;
@@ -48,5 +53,6 @@ export default {
   props: {
     config: Object,
     content: String,
+    function_name: String,
   },
 };
