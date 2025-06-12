@@ -155,13 +155,16 @@ def lifecycle_demo():
 @doc.demo('Custom error page', '''
     You can use `@app.on_page_exception` to define a custom error page.
 
-    The handler must be a synchronous function that takes the exception as an argument and creates a page like a normal page function.
+    The handler must be a synchronous function that creates a page like a normal page function.
+    It can take the exception as an argument, but it is not required.
     It overrides the default "sad face" error page, except when the error is re-raised.
 
     The following example shows how to create a custom error page handler that only handles a specific exception.
     The default error page handler is still used for all other exceptions.
 
     Note: Showing the traceback may not be a good idea in production, as it may leak sensitive information.
+
+    *Added in version 2.20.0*
 ''')
 def error_page_demo():
     from nicegui import app

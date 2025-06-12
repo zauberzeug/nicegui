@@ -138,6 +138,9 @@ class App(FastAPI):
 
         The callback can accept an optional ``Exception`` as argument.
         All UI elements created in the callback are displayed on the error page.
+        Asynchronous handlers are currently not supported.
+
+        *Added in version 2.20.0*
         """
         self._page_exception_handler = handler
 
