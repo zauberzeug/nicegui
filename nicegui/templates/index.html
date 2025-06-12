@@ -41,6 +41,9 @@
 
     <div id="app"></div>
     <div id="popup" aria-hidden="true">
+      <span>{{ translations.connection_lost }}</span>
+      <span>{{ translations.trying_to_reconnect }}</span>
+    </div>
     <script type="module">
       const app = createApp(parseElements(String.raw`{{ elements | safe }}`), {
         version: "{{ version }}",
