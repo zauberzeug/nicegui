@@ -8,7 +8,7 @@ def test_element_plus(screen: Screen):
         <script defer src="//unpkg.com/element-plus"></script>
     ''', shared=True)
 
-    app.configure_vue_ui_framework('''
+    app.set_vue_config('''
         app.use(ElementPlus);
     ''')
 

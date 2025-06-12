@@ -18,7 +18,7 @@ from ..observables import ObservableSet
 from ..server import Server
 from ..staticfiles import CacheControlledStaticFiles
 from ..storage import Storage
-from .app_config import DEFAULT_APP_CONFIGURATOR, AppConfig
+from .app_config import DEFAULT_VUE_CONFIG, AppConfig
 from .range_response import get_range_response
 
 
@@ -285,7 +285,7 @@ class App(FastAPI):
         self._connect_handlers.clear()
         self._disconnect_handlers.clear()
         self._exception_handlers[:] = [log.exception]
-        self.configure_vue_ui_framework()
+        self.set_vue_config()
 
     @staticmethod
     def clients(path: str) -> Iterator[Client]:
@@ -302,13 +302,12 @@ class App(FastAPI):
             if client.page.path == path:
                 yield client
 
-    def configure_vue_ui_framework(self, config_script: str = DEFAULT_APP_CONFIGURATOR):
-        """Configure the UI framework used with the Vue app.
-        This is used to set up the UI framework (e.g. Quasar) with the provided configuration.
+    def set_vue_config(self, script: str = DEFAULT_VUE_CONFIG):
+        """Set JavaScript Code which loads the UI framework into the Vue app.
 
-        :param config_script: JavaScript code to configure the UI framework (default: DEFAULT_APP_CONFIGURATOR)
+        This feature is strictly experimental but allows you to experiment with other Vue UI frameworks than Quasar.
+        See https://github.com/zauberzeug/nicegui/discussions/4858 for more details.
 
-        Note: the config_script should be a format string of JavaScript code that will be executed in the browser.
-        It will be called with `.format(config=json.dumps({...})` to populate the configuration.
+        :param script: JavaScript code to configure the UI framework (default: Quasar)
         """
-        self.config.ui_framework_config_script = config_script
+        self.config.vue_config = script
