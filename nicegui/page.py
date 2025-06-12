@@ -101,14 +101,11 @@ class page:
         core.app.remove_route(self.path)  # NOTE make sure only the latest route definition is used
         parameters_of_decorated_func = list(inspect.signature(func).parameters.keys())
 
-        def check_for_late_return_value(task: asyncio.Task, client: Client) -> None:
+        def check_for_late_return_value(task: asyncio.Task) -> None:
             try:
                 if task.result() is not None:
                     log.error(f'ignoring {task.result()}; '
                               'it was returned after the HTML had been delivered to the client')
-                    error_message = client._page_error  # pylint: disable=protected-access
-                    if error_message:
-                        client.outbox.enqueue_message('server_error', {'message': error_message}, target_id=client.id)
             except asyncio.CancelledError:
                 pass
 
@@ -172,7 +169,7 @@ class page:
                     result = task.result()
                 else:
                     result = None
-                    task.add_done_callback(lambda task: check_for_late_return_value(task, client))
+                    task.add_done_callback(check_for_late_return_value)
             if isinstance(result, Response):  # NOTE if setup returns a response, we don't need to render the page
                 return result
             binding._refresh_step()  # pylint: disable=protected-access
