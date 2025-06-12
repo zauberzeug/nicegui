@@ -106,8 +106,9 @@ class page:
                 if task.result() is not None:
                     log.error(f'ignoring {task.result()}; '
                               'it was returned after the HTML had been delivered to the client')
-                    message = client._page_error  # pylint: disable=protected-access
-                    client.outbox.enqueue_message('server_error', {'message': message}, target_id=client.id)
+                    error_message = client._page_error  # pylint: disable=protected-access
+                    if error_message:
+                        client.outbox.enqueue_message('server_error', {'message': error_message}, target_id=client.id)
             except asyncio.CancelledError:
                 pass
 
