@@ -132,7 +132,6 @@ class page:
                 # NiceGUI exception handlers
                 core.app.handle_exception(e)
 
-                client._page_error = f'{type(e).__name__}: {e}'  # pylint: disable=protected-access
                 return error_client.build_response(request, 500)
 
         @wraps(func)
