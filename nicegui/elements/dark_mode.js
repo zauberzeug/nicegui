@@ -14,6 +14,9 @@ export default {
         if (this.value) document.body.classList.add("dark");
         else document.body.classList.remove("dark");
       }
+      if (window.__unocss) {
+        window.nicegui_unocss_dark = this.value;
+      }
     },
   },
   props: {
