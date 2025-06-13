@@ -145,7 +145,8 @@ def generate_resources(prefix: str, elements: Iterable[Element]) -> Tuple[List[s
                                                                           List[str],
                                                                           Dict[str, str],
                                                                           List[str],
-                                                                          List[str]]:
+                                                                          List[str],
+                                                                          Dict[str, Dict[str, str]]]:
     """Generate the resources required by the elements to be sent to the client."""
     done_libraries: Set[str] = set()
     done_components: Set[str] = set()
@@ -155,6 +156,7 @@ def generate_resources(prefix: str, elements: Iterable[Element]) -> Tuple[List[s
     imports: Dict[str, str] = {}
     js_imports: List[str] = []
     js_imports_urls: List[str] = []
+    js_imports_raw: Dict[str, Dict[str, str]] = {}
 
     # build the importmap structure for exposed libraries
     for key, library in libraries.items():
@@ -186,6 +188,10 @@ def generate_resources(prefix: str, elements: Iterable[Element]) -> Tuple[List[s
                 url = f'{prefix}/_nicegui/{__version__}/components/{js_component.key}'
                 js_imports.append(f'import {{ default as {js_component.name} }} from "{url}";')
                 js_imports.append(f'app.component("{js_component.tag}", {js_component.name});')
+                js_imports_raw[js_component.name] = {
+                    'tag': js_component.tag,
+                    'url': url,
+                }
                 js_imports_urls.append(url)
                 done_components.add(js_component.key)
-    return vue_html, vue_styles, vue_scripts, imports, js_imports, js_imports_urls
+    return vue_html, vue_styles, vue_scripts, imports, js_imports, js_imports_urls, js_imports_raw
