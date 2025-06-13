@@ -302,7 +302,7 @@ class App(FastAPI):
             if client.page.path == path:
                 yield client
 
-    def set_vue_config(self, script: str = DEFAULT_VUE_CONFIG):
+    def set_vue_config(self, script: str = DEFAULT_VUE_CONFIG) -> None:
         """Set JavaScript Code which loads the UI framework into the Vue app.
 
         This feature is strictly experimental but allows you to experiment with other Vue UI frameworks than Quasar.
