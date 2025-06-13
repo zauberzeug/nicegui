@@ -112,6 +112,10 @@ doc.text('', '''
     - `RST_CONTENT_CACHE_SIZE` (default: 1000): The maximum number of ReStructuredText content snippets that are cached in memory.
     - `NICEGUI_REDIS_URL` (default: None, means local file storage): The URL of the Redis server to use for shared persistent storage.
     - `NICEGUI_REDIS_KEY_PREFIX` (default: "nicegui:"): The prefix for Redis keys.
+    - `NICEGUI_REDIS_HEALTH_CHECK_INTERVAL` (default: 10): The interval in seconds for the Redis health check.
+    - `NICEGUI_REDIS_SOCKET_CONNECT_TIMEOUT` (default: 5): The timeout in seconds for the Redis socket connection.
+    - `NICEGUI_REDIS_RETRY_ON_TIMEOUT` (default: True): Whether to retry on timeout for the Redis connection.
+    - `NICEGUI_REDIS_SOCKET_KEEPALIVE` (default: True): Whether to keep the Redis socket alive.
 ''')
 def env_var_demo():
     from nicegui.elements import markdown
