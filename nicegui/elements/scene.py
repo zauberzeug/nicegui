@@ -77,7 +77,7 @@ class Scene(Element,
                  grid: Union[bool, Tuple[int, int]] = True,
                  camera: Optional[SceneCamera] = None,
                  on_click: Optional[Handler[SceneClickEventArguments]] = None,
-                 click_events: List[str] = ['click', 'dblclick'],  # noqa: B006
+                 click_events: Optional[List[str]] = None,
                  on_drag_start: Optional[Handler[SceneDragEventArguments]] = None,
                  on_drag_end: Optional[Handler[SceneDragEventArguments]] = None,
                  drag_constraints: str = '',
@@ -101,6 +101,8 @@ class Scene(Element,
         :param drag_constraints: comma-separated JavaScript expression for constraining positions of dragged objects (e.g. ``'x = 0, z = y / 2'``)
         :param background_color: background color of the scene (default: "#eee")
         """
+        if click_events is None:
+            click_events = ['click', 'dblclick']
         super().__init__()
         self._props['width'] = width
         self._props['height'] = height
