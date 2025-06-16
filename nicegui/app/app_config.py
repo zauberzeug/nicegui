@@ -8,7 +8,7 @@ from ..language import Language
 DEFAULT_VUE_CONFIG = '''
     app.use(Quasar, {{config: {config}}});
     Quasar.lang.set(Quasar.lang[language.replace('-', '')]);
-    Quasar.Dark.set(dark === null ? "auto" : dark);
+    Quasar.Dark.set(dark === None ? "auto" : dark);
 '''
 
 
