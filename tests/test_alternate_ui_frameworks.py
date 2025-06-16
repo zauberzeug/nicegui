@@ -11,7 +11,7 @@ def test_quasar(screen: Screen):
 
 def test_element_plus(screen: Screen):
     ui.add_body_html('<script defer src="https://unpkg.com/element-plus"></script>')
-    app.set_vue_config('app.use(ElementPlus);')
+    app.config.vue_config = 'app.use(ElementPlus);'
 
     ui.element('el-button')
 
