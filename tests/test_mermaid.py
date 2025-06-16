@@ -84,30 +84,14 @@ def test_error(screen: Screen):
 def test_click_mermaid_node(screen: Screen):
     ui.mermaid('''
         flowchart TD;
-
-            X;
-            click X call document.write("Clicked X")
-    ''', config={'securityLevel': security_level})
-
-    ui.mermaid('''
-        flowchart TD;
-            Y;
-            click Y call document.write("Clicked Y")
-    ''', config={'securityLevel': security_level})
-
-    ui.mermaid('''
-        flowchart TD;
-            Z;
-            click Z call document.write("Clicked Z")
-    ''', config={'securityLevel': security_level})
+            A[Node A];
+            B[Node B];
+    ''', on_node_click=lambda e: label.set_text(str(e.args['nodeText'])))
+    label = ui.label('')
 
     screen.open('/')
-    screen.click('Y')
-    screen.wait(0.5)
-    screen.should_not_contain('Clicked X')
-    screen.should_not_contain('Clicked Z')
-    if security_level == 'loose':
-        screen.should_contain('Clicked Y')
-    else:
-        screen.should_not_contain('Clicked Y')
+    screen.click('Node A')
+    assert 'Node A' in label.text
 
+    screen.click('Node B')
+    assert 'Node B' in label.text

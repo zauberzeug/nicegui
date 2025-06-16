@@ -12,17 +12,7 @@ export default {
     this.initialize();
     this.update(this.content);
   },
-  beforeUnmount() {
-    this.clearHandler();
-  },
   methods: {
-    getHandlerName() {
-      return `nodeClick_${this.clickInstance}`;
-    },
-    clearHandler() {
-      const handlerName = this.getHandlerName();
-      if (window[handlerName]) delete window[handlerName];
-    },
     initialize() {
       try {
         mermaid.initialize(this.config || {});
@@ -34,7 +24,6 @@ export default {
     async update(content) {
       if (this.last_content === content) return;
       this.last_content = content;
-
       queue.push({ element: this.$el, content: content });
       if (is_running) return;
       is_running = true;
@@ -44,6 +33,10 @@ export default {
           const { svg, bindFunctions } = await mermaid.render(element.id + "_mermaid", content);
           element.innerHTML = svg;
           bindFunctions?.(element);
+          if (this.clickInstance) {
+            await this.$nextTick();
+            this.attachClickHandlers(element);
+          };
         } catch (error) {
           const { svg, bindFunctions } = await mermaid.render(element.id + "_mermaid", "error");
           element.innerHTML = svg;
@@ -52,22 +45,26 @@ export default {
           console.error(mermaidErrorFormat);
           this.$emit("error", mermaidErrorFormat);
         }
-
       }
       is_running = false;
     },
-    attachClickHandlers(handlerName) {
-      const clickables = this.$el.querySelectorAll("g.node.clickable");
+    attachClickHandlers(element) {
+      const clickables = element.querySelectorAll("g.node");
+      console.log(clickables)
       clickables.forEach(node => {
-        node.removeAttribute("onclick");
-        node.onclick = null;
+        if (node.getAttribute('data-listener-added')) return;
+        node.setAttribute('data-listener-added', 'true');
+        node.style.cursor = "pointer";
 
-        const newNode = node.cloneNode(true);
-        node.parentNode.replaceChild(newNode, node);
+        const nodeText = node.textContent.trim();
+        const nodeId = node.id;
 
-        const nodeText = newNode.textContent.trim();
-        newNode.addEventListener("click", () => {
-          window[handlerName](newNode.id, nodeText);
+        node.addEventListener("click", () => {
+          this.$emit("nodeClick", {
+            node: this.getNodeName(nodeId),
+            nodeId,
+            nodeText,
+          });
         });
       });
     },
@@ -82,6 +79,6 @@ export default {
   props: {
     config: Object,
     content: String,
-    clickInstance: Number,
+    clickInstance: Boolean,
   },
 };

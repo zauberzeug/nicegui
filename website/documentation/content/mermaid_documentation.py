@@ -15,7 +15,7 @@ def main_demo() -> None:
 
 
 @doc.demo('Handle node events', '''
-    You can register to click events by adding a `click` directive to a node to call `nodeClick()`, this will trigger the callback defined at `on_node_click`.
+    You can register to click events by adding a callback to the `on_node_click` parameter.
     When a callback is specified the `config` is updated to include ``{"securityLevel": "loose"}`` to allow JavaScript execution.
 ''')
 def click_demo() -> None:
@@ -24,8 +24,6 @@ def click_demo() -> None:
         A((Click Me));
         B((Or Click Me));
         A --> B;
-        click A call nodeClick()
-        click B call nodeClick()
     ''', on_node_click=lambda e: ui.notify(e.args))
 
 

@@ -1,6 +1,4 @@
-import re
-from datetime import datetime
-from typing import Dict, Match, Optional, Tuple
+from typing import Dict, Optional
 
 from ..events import GenericEventArguments, Handler
 from .mixins.content_element import ContentElement
@@ -32,7 +30,6 @@ class Mermaid(ContentElement,
             :param config: configuration dictionary to be passed to ``mermaid.initialize()``
             :param on_node_click: callback that is invoked when a node is clicked, applies ``{'securityLevel': 'loose'}`` automatically
             """
-        content, timestamp = self._update_click_handler(content)
 
         super().__init__(content=content)
 
@@ -41,20 +38,8 @@ class Mermaid(ContentElement,
         if on_node_click:
             self.on('nodeClick', on_node_click)
             self._props['config']['securityLevel'] = 'loose'
-            self._props['clickInstance'] = timestamp
+            self._props['clickInstance'] = True
 
     def _handle_content_change(self, content: str) -> None:
         self._props[self.CONTENT_PROP] = content.strip()
         self.run_method('update', content.strip())
-
-    def _update_click_handler(self, content: str) -> Tuple[str, int]:
-        pattern = r'click\s+(\w+)\s+(?:call\s+)?nodeClick(\([^)]*\))?'
-
-        dt = datetime.now()
-        timestamp = int(dt.timestamp())
-
-        def repl(m: Match[str]) -> str:
-            node = m.group(1)
-            return f'click {node} call nodeClick_c{timestamp}()'
-
-        return re.sub(pattern, repl, content), timestamp
