@@ -29,7 +29,7 @@ class AppConfig:
                 'skipHijack': False,
             },
         })
-    vue_config: str = field(default_factory=lambda: DEFAULT_VUE_CONFIG)
+    vue_config: str = DEFAULT_VUE_CONFIG
 
     reload: bool = field(init=False)
     title: str = field(init=False)
