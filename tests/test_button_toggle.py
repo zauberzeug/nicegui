@@ -4,7 +4,7 @@ from nicegui.testing import Screen
 
 def test_button_toggle(screen: Screen):
     result_label = ui.label()
-    toggle = ui.button_toggle(['Option A', 'Option B', 'Option C'],
+    ui.button_toggle(['Option A', 'Option B', 'Option C'],
                              value='Option A',
                              on_change=lambda e: result_label.set_text(f'Selected: {e.value}'))
 
@@ -25,7 +25,7 @@ def test_button_toggle(screen: Screen):
 
 def test_button_toggle_with_dict_options(screen: Screen):
     result_label = ui.label()
-    toggle = ui.button_toggle([
+    ui.button_toggle([
         {'label': 'Today', 'value': '1d'},
         {'label': 'This Week', 'value': '7d'},
         {'label': 'This Month', 'value': '30d'},
