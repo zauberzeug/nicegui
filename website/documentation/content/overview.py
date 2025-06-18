@@ -205,6 +205,7 @@ def map_of_nicegui():
             - [`ui.badge`](/documentation/badge)
             - [`ui.button`](/documentation/button)
             - [`ui.button_group`](/documentation/button_group)
+            - [`ui.button_toggle`](/documentation/button_toggle)
             - [`ui.card`](/documentation/card), `ui.card_actions`, `ui.card_section`
             - [`ui.carousel`](/documentation/carousel), `ui.carousel_slide`
             - [`ui.chat_message`](/documentation/chat_message)

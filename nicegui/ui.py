@@ -10,6 +10,7 @@ __all__ = [
     'badge',
     'button',
     'button_group',
+    'button_toggle',
     'card',
     'card_actions',
     'card_section',
@@ -136,6 +137,7 @@ from .elements.badge import Badge as badge
 from .elements.button import Button as button
 from .elements.button_dropdown import DropdownButton as dropdown_button
 from .elements.button_group import ButtonGroup as button_group
+from .elements.button_toggle import ButtonToggle as button_toggle
 from .elements.card import Card as card
 from .elements.card import CardActions as card_actions
 from .elements.card import CardSection as card_section

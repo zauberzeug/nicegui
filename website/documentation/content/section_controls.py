@@ -3,6 +3,7 @@ from . import (
     button_documentation,
     button_dropdown_documentation,
     button_group_documentation,
+    button_toggle_documentation,
     checkbox_documentation,
     codemirror_documentation,
     chip_documentation,
@@ -30,6 +31,7 @@ doc.title('*Controls*')
 
 doc.intro(button_documentation)
 doc.intro(button_group_documentation)
+doc.intro(button_toggle_documentation)
 doc.intro(button_dropdown_documentation)
 doc.intro(badge_documentation)
 doc.intro(chip_documentation)
