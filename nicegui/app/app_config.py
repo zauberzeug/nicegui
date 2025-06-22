@@ -5,8 +5,8 @@ from typing import Dict, List, Literal, Optional, Union
 from ..dataclasses import KWONLY_SLOTS
 from ..language import Language
 
-DEFAULT_VUE_CONFIG = '''
-    app.use(Quasar, {{config: {config}}});
+DEFAULT_VUE_CONFIG_SCRIPT = '''
+    app.use(Quasar, vue_config);
     Quasar.lang.set(Quasar.lang[language.replace('-', '')]);
     Quasar.Dark.set(dark === None ? "auto" : dark);
 '''
@@ -29,7 +29,7 @@ class AppConfig:
                 'skipHijack': False,
             },
         })
-    vue_config: str = DEFAULT_VUE_CONFIG
+    vue_config_script: str = DEFAULT_VUE_CONFIG_SCRIPT
 
     reload: bool = field(init=False)
     title: str = field(init=False)

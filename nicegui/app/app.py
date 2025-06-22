@@ -18,7 +18,7 @@ from ..observables import ObservableSet
 from ..server import Server
 from ..staticfiles import CacheControlledStaticFiles
 from ..storage import Storage
-from .app_config import DEFAULT_VUE_CONFIG, AppConfig
+from .app_config import DEFAULT_VUE_CONFIG_SCRIPT, AppConfig
 from .range_response import get_range_response
 
 
@@ -297,7 +297,7 @@ class App(FastAPI):
         self._connect_handlers.clear()
         self._disconnect_handlers.clear()
         self._exception_handlers[:] = [log.exception]
-        self.config.vue_config = DEFAULT_VUE_CONFIG
+        self.config.vue_config_script = DEFAULT_VUE_CONFIG_SCRIPT
 
     @staticmethod
     def clients(path: str) -> Iterator[Client]:

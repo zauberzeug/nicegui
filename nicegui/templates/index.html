@@ -54,7 +54,8 @@
       });
       const dark = {{ dark }};
       const language = "{{ language }}";
-      {{ vue_config | safe }}
+      const vue_config = {{ vue_config | safe }};
+      {{ vue_config_script | safe }}
 
       {{ js_imports | safe }}
       {{ vue_scripts | safe }}
