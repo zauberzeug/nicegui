@@ -8,6 +8,7 @@ from fastapi.responses import RedirectResponse
 from starlette.middleware.sessions import SessionMiddleware
 
 from nicegui import app, ui
+from nicegui.app.app_config import DEFAULT_VUE_CONFIG_SCRIPT
 from website import anti_scroll_hack, documentation, fly, imprint_privacy, main_page, svg
 
 # session middleware is required for demo in documentation
@@ -21,6 +22,13 @@ app.add_static_files('/fonts', str(Path(__file__).parent / 'website' / 'fonts'))
 app.add_static_files('/static', str(Path(__file__).parent / 'website' / 'static'))
 app.add_static_file(local_file=svg.PATH / 'logo.png', url_path='/logo.png')
 app.add_static_file(local_file=svg.PATH / 'logo_square.png', url_path='/logo_square.png')
+
+app.config.vue_config_script = f'''
+if (window.USE_ELEMENT_PLUS) {{
+    app.use(ElementPlus);
+}} else {{
+    {DEFAULT_VUE_CONFIG_SCRIPT}
+}}'''
 
 documentation.build_search_index()
 documentation.build_tree()

@@ -203,3 +203,36 @@ def overwrite_tailwind_style_demo():
 
 doc.intro(dark_mode_documentation)
 doc.intro(add_style_documentation)
+
+
+@doc.auto_execute
+@doc.demo('Using other Vue UI frameworks', '''
+    **This is strictly a beta feature! Many NiceGUI elements are likely to break, and the API is not yet stable.**
+
+    NiceGUI uses the [Quasar Framework](https://quasar.dev/) by default.
+    However, you can also try to use other Vue UI frameworks like [Element Plus](https://element-plus.org/en-US/) or [Vuetify](https://vuetifyjs.com/en/).
+    To do so, you need to add the framework's JavaScript and CSS file to the head of your HTML document and configure NiceGUI accordingly with `app.config.vue_config_script`.
+''')
+def other_vue_ui_frameworks_demo():
+    # from nicegui import app, ui
+    # ui.add_body_html('''
+    #     <link rel="stylesheet" href="//unpkg.com/element-plus/dist/index.css" />
+    #     <script defer src="https://unpkg.com/element-plus"></script>
+    # ''')
+    # app.config.vue_config_script = '''
+    #     app.use(ElementPlus);
+    # '''
+    # with ui.element('el-button'):
+    #     ui.html('I am a button from Element Plus')
+    # ui.run()
+    # END OF DEMO
+    @ui.page('/element_plus')
+    def element_plus_page():
+        ui.add_body_html('''
+            <link rel="stylesheet" href="/static/element-plus.css" />
+            <script defer src="/static/element-plus.js"></script>
+        ''')
+        ui.add_head_html('<script>USE_ELEMENT_PLUS = true;</script>')
+        with ui.element('el-button'):
+            ui.html('I am a button from Element Plus')
+    ui.link('Element Plus', '/element_plus')
