@@ -249,7 +249,7 @@ class KeyboardKey:
     @property
     def space(self) -> bool:
         """Whether the key is the space key."""
-        return self.name == 'Space'
+        return self.name == ' '
 
     @property
     def page_up(self) -> bool:
