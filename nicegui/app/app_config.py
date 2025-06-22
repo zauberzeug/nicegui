@@ -6,7 +6,7 @@ from ..dataclasses import KWONLY_SLOTS
 from ..language import Language
 
 DEFAULT_VUE_CONFIG_SCRIPT = '''
-    app.use(Quasar, vue_config);
+    app.use(Quasar, {config: vue_config});
     Quasar.lang.set(Quasar.lang[language.replace('-', '')]);
     Quasar.Dark.set(dark === None ? "auto" : dark);
 '''
