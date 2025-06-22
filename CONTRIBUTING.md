@@ -19,6 +19,11 @@ By participating, you agree to abide by its terms.
 We are excited that you want to contribute code to NiceGUI.
 We're always looking for bug fixes, performance improvements, and new features.
 
+### AI Assistant Integration
+
+This project is designed to work well with AI assistants like Cursor, GitHub Copilot, and others.
+The `.cursor/rules/` directory contains guidelines specifically for AI assistants that complement this contributing guide.
+
 ## Setup
 
 ### Dev Container
@@ -46,7 +51,7 @@ Thereby enabling you to use your local version of NiceGUI in other projects.
 To run the tests you need some additional setup which is described in [tests/README.md](https://github.com/zauberzeug/nicegui/blob/main/tests/README.md).
 
 There is no special Python version required for development.
-At Zauberzeug we mainly use 3.11.
+At Zauberzeug we mainly use 3.12.
 This means we sometimes miss some incompatibilities with older versions.
 But these will hopefully be uncovered by the GitHub Actions (see below).
 Also we use the 3.8 Docker container described below to verify compatibility in cases of uncertainty.
@@ -90,6 +95,33 @@ In our point of view, the Black formatter is sometimes a bit too strict.
 There are cases where one or the other arrangement of, e.g., function arguments is more readable than the other.
 Then we like the flexibility to either put all arguments on separate lines or only put the lengthy event handler
 on a second line and leave the other arguments as they are.
+
+### Style Principles
+
+- Always prefer simple solutions
+- Avoid having files over 200-300 lines of code. Refactor at that point
+- Use single quotes for strings in Python, double quotes in JavaScript
+- Use f-strings wherever possible for better readability (except in performance-critical sections which should be marked with "NOTE:" comments)
+- Follow autopep8 formatting with 120 character line length
+- Each sentence in documentation should be on a new line
+- Use ruff for linting and code checks
+
+### Workflow Guidelines
+
+- Always simplify the implementation as much as possible:
+  - Avoid duplication of code whenever possible, which means checking for other areas of the codebase that might already have similar code and functionality
+  - Remove obsolete code
+  - Ensure the code is not too complicated
+  - Strive to have minimal maintenance burden and self explanatory code without the need of additional comments
+- Be careful to only make changes that are requested or are well understood and related to the change being requested
+- When fixing an issue or bug, do not introduce a new pattern or technology without first exhausting all options for the existing implementation. And if you finally do this, make sure to remove the old implementation afterwards so we don't have duplicate logic
+- Keep the codebase very clean and organized
+- Write tests for new features
+- Run tests before submitting any changes
+- Format code using autopep8 before submitting changes
+- Use pre-commit hooks to ensure coding style compliance
+- When adding new features, include corresponding tests
+- For documentation, ensure each sentence is on a new line
 
 ### Linting
 
