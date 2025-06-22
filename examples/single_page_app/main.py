@@ -1,35 +1,55 @@
 #!/usr/bin/env python3
-from nicegui import ui
+from custom_sub_pages import custom_sub_pages, protected
+
+from nicegui import app, ui
 
 
-@ui.page('/')  # normal index page (e.g. the entry point of the app)
-@ui.page('/{_:path}')  # all other pages will be handled by the router but must be registered to also show the SPA index page
+@ui.page('/')
+@ui.page('/{_:path}')
 def main_page():
+    with ui.header().classes('justify-between items-center p-4 bg-blue-100'):
+        with ui.row().classes('gap-2'):
+            ui.button('Home', on_click=lambda: ui.navigate.to('/')).props('flat')
+            ui.button('Admin', on_click=lambda: ui.navigate.to('/admin')).props('flat')
+            ui.button('Secret', on_click=lambda: ui.navigate.to('/secret')).props('flat')
+            ui.button('Invalid', on_click=lambda: ui.navigate.to('/invalid')).props('flat')
 
-    # adding some navigation buttons to switch between the different pages
-    with ui.row():
-        ui.button('One', on_click=lambda: ui.navigate.to('/')).classes('w-32')
-        ui.button('Two', on_click=lambda: ui.navigate.to('/two')).classes('w-32')
-        ui.button('Three', on_click=lambda: ui.navigate.to('/three')).classes('w-32')
+        with ui.row().classes('items-center gap-2').bind_visibility_from(app.storage.user, 'authenticated'):
+            ui.icon('lock_open').classes('text-green-600')
+            ui.label('Authenticated').classes('text-green-600 text-sm')
+            ui.button('Logout', on_click=lambda: [
+                app.storage.user.update(authenticated=False),
+                ui.navigate.to('/')
+            ]).props('flat')
 
-    # depending on the url path, the corresponding page will be displayed
-    ui.sub_pages({
-        '/': show_one,
-        '/two': show_two,
-        '/three': show_three,
-    }).classes('w-full p-4 bg-gray-100')
-
-
-def show_one():
-    ui.label('Content One').classes('text-2xl')
-
-
-def show_two():
-    ui.label('Content Two').classes('text-2xl')
-
-
-def show_three():
-    ui.label('Content Three').classes('text-2xl')
+    custom_sub_pages({
+        '/': show_home,
+        '/admin': show_admin,
+        '/secret': show_secret,
+    }).classes('flex-grow p-4')
 
 
-ui.run()
+def show_home():
+    ui.markdown('''
+        This example shows inheritance from `ui.sub_pages` for decorator-based route protection and a custom 404 page.
+
+        **Try it:** Navigate to Admin/Secret pages (passphrase: "spa") or Invalid for 404.
+    ''')
+
+
+@protected
+def show_admin():
+    ui.label('Admin Dashboard').classes('text-2xl mb-4')
+    ui.icon('admin_panel_settings', size='2rem').classes('text-blue-600 mb-2')
+    ui.label('You have successfully accessed the protected admin area!').classes('text-green-600')
+
+
+@protected
+def show_secret():
+    ui.label('Secret Area').classes('text-2xl mb-4')
+    ui.icon('lock', size='2rem').classes('text-purple-600 mb-2')
+    ui.label('This is confidential information only for authenticated users.').classes('text-purple-600')
+
+
+if __name__ in {'__main__', '__mp_main__'}:
+    ui.run(storage_secret='demo_secret_key_change_in_production')
