@@ -5,19 +5,21 @@ from . import doc
 
 
 @doc.demo('Sub Pages', '''
-    Sub pages provide url based navigation between different views.
+    Sub pages provide URL-based navigation between different views.
     This allows you to easily build a single page application (SPA).
     The `ui.sub_pages` element itself functions as the container for the currently active sub page.
     You only need to provide the routes for each view builder function.
-    NiceGUI takes care of replacing the content without triggering a full page reload when the url changes.
-    The `ui.sub_pages` element can be used as a context manager to automatically navigate to the correct sub page when the context is entered or exited.
+    NiceGUI takes care of replacing the content without triggering a full page reload when the URL changes.
+    The `ui.sub_pages` element can be used as a context manager to automatically navigate to the correct sub page
+    when the context is entered or exited.
 ''')
 def main_demo() -> None:
     from uuid import uuid4
+
     # @ui.page('/')
-    # @ui.page('/{_:path}') # NOTE: our page should catch all paths
+    # @ui.page('/{_:path}')  # NOTE: our page should catch all paths
     # def index():
-    #     ui.label(f'This id {str(uuid4())[:6]} changes only on reload')
+    #     ui.label(f'This ID {str(uuid4())[:6]} changes only on reload.')
     #     ui.separator()
     #     ui.sub_pages({'/': main, '/other': other})
     location = 'section_pages_routing' if 'section_pages_routing' in ui.context.client.request.url.path else 'sub_pages'  # HIDE
@@ -33,13 +35,13 @@ def main_demo() -> None:
         ui.link('Go to main page', f'/documentation/{location}')  # HIDE
 
     # END OF DEMO
-    ui.label(f'This id {str(uuid4())[:6]} changes only on reload')
+    ui.label(f'This ID {str(uuid4())[:6]} changes only on reload.')
     ui.separator()
     ui.sub_pages({'/': main, '/other': other}, root_path=f'/documentation/{location}')
 
 
 @doc.demo('Passing Parameters to Sub Page', '''
-    If a sub page needs to modify content from it's parent, the object can simply be passed via lambda.
+    If a sub page needs to modify content from its parent, the object can simply be passed in a lambda function.
 ''')
 def parameters_demo():
     # @ui.page('/')
@@ -54,13 +56,13 @@ def parameters_demo():
     #        '/other': lambda: other(title),
     #     })
 
-    async def main(title: ui.label):
-        title.set_text('Main page content')
+    def main(title: ui.label):
+        title.text = 'Main page content'
         # ui.button('Go to other page', on_click=lambda: ui.navigate.to('/other'))
         ui.button('Go to other page', on_click=lambda: ui.navigate.to('/documentation/sub_pages/other'))  # HIDE
 
     def other(title: ui.label):
-        title.set_text('Other page content')
+        title.text = 'Other page content'
         # ui.button('Go to main page', on_click=ui.navigate.to('/'))
         ui.button('Go to main page', on_click=lambda: ui.navigate.to('/documentation/sub_pages'))  # HIDE
 
@@ -73,7 +75,7 @@ def parameters_demo():
 
 
 @doc.demo('Async Sub Pages', '''
-    `ui.sub_pages` also work with async builder functions.
+    Sub pages also work with async builder functions.
 ''')
 def async_demo():
     # @ui.page('/')
@@ -117,12 +119,12 @@ def adding_sub_pages_demo() -> None:
     #     pages.add('/other', lambda: other(footer))
 
     def main(footer: ui.label):
-        footer.set_text('normal footer')
+        footer.text = 'normal footer'
         # ui.link('Go to other page', '/other')
         ui.link('Go to other page', '/documentation/sub_pages/other')  # HIDE
 
     def other(footer: ui.label):
-        footer.set_text('other footer')
+        footer.text = 'other footer'
         # ui.link('Go to main page', '/')
         ui.link('Go to main page', '/documentation/sub_pages')  # HIDE
 
