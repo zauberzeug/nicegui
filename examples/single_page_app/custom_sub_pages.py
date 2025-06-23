@@ -1,7 +1,7 @@
 from typing import Callable
 
 from nicegui import app, ui
-from nicegui.elements.sub_pages import SubPages, find_child_sub_pages_element
+from nicegui.elements.sub_pages import find_child_sub_pages_element
 
 
 def protected(func: Callable) -> Callable:
@@ -10,7 +10,7 @@ def protected(func: Callable) -> Callable:
     return func
 
 
-class CustomSubPages(SubPages):
+class CustomSubPages(ui.sub_pages):
     """Custom ui.sub_pages with built-in authentication and custom 404 handling."""
 
     def show(self, full_path: str) -> None:
