@@ -26,7 +26,7 @@ class RouteMatch:
     '''The extracted parameters (name -> value) from the path (e.g., ``{"id": "123"}``)'''
 
 
-class SubPages(Element, component='sub_pages.js'):
+class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-pages'):
 
     def __init__(self, routes: Optional[Dict[str, Callable]] = None, *, root_path: Optional[str] = None):
         """Sub Pages
