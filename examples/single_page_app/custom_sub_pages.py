@@ -36,34 +36,32 @@ class CustomSubPages(ui.sub_pages):
     def _show_login_form(self, intended_path: str) -> None:
         self.clear()
         with self:
-            with ui.card().classes('absolute-center'):
-                ui.label('Protected Area').classes('text-xl mb-4')
-                ui.label('Enter passphrase to continue:').classes('mb-2')
-                passphrase_input = ui.input('Passphrase', password=True, password_toggle_button=True) \
-                    .classes('w-64')
+            with ui.card().classes('absolute-center items-stretch'):
+                ui.label('Protected Area').classes('text-2xl')
+                ui.label('Enter passphrase to continue.')
+                passphrase = ui.input('Passphrase', password=True, password_toggle_button=True).classes('w-64')
 
                 def try_login():
-                    if passphrase_input.value == 'spa':
+                    if passphrase.value == 'spa':
                         app.storage.user['authenticated'] = True
                         ui.navigate.to(intended_path)
                     else:
                         ui.notify('Incorrect passphrase', color='negative')
-                        passphrase_input.value = ''
+                        passphrase.value = ''
 
-                passphrase_input.on('keydown.enter', try_login)
-                ui.button('Login', on_click=try_login).classes('w-full mt-2')
+                passphrase.on('keydown.enter', try_login)
+                ui.button('Login', on_click=try_login)
 
     def _show_404_page(self, path: str) -> None:
         self.clear()
         with self:
-            with ui.column().classes('items-center text-center p-8'):
-                ui.icon('error_outline', size='4rem').classes('text-red-500 mb-4')
-                ui.label('404 - Page Not Found').classes('text-3xl text-red-500 mb-2')
-                ui.label(f'The page "{path}" does not exist.').classes('text-gray-600 mb-4')
-                ui.separator().classes('w-32 mb-4')
-                with ui.row().classes('gap-4'):
-                    ui.button('Go Home', on_click=lambda: ui.navigate.to('/')).props('outline')
-                    ui.button('Go Back', on_click='history.back()').props('outline')
+            with ui.column().classes('absolute-center items-center'):
+                ui.icon('error_outline', size='4rem').classes('text-red')
+                ui.label('404 - Page Not Found').classes('text-2xl text-red')
+                ui.label(f'The page "{path}" does not exist.').classes('text-gray-600')
+                with ui.row().classes('mt-4'):
+                    ui.button('Go Home', icon='home', on_click=lambda: ui.navigate.to('/')).props('outline')
+                    ui.button('Go Back', icon='arrow_back', on_click='history.back()').props('outline')
 
 
 # Function-like access following NiceGUI convention where classes are callable to feel like functions

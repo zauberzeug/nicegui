@@ -9,20 +9,16 @@ from nicegui import app, ui
 def main_page():
     with ui.header().classes('items-center bg-blue-100'):
         ui.button('Home', on_click=lambda: ui.navigate.to('/')).props('flat')
-        ui.button('Admin', on_click=lambda: ui.navigate.to('/admin')).props('flat')
         ui.button('Secret', on_click=lambda: ui.navigate.to('/secret')).props('flat')
         ui.button('Invalid', on_click=lambda: ui.navigate.to('/invalid')).props('flat')
         ui.space()
-        ui.icon('lock_open').classes('text-green-600')
-        ui.label('Authenticated').classes('text-green-600 text-sm')
-        ui.button('Logout', on_click=lambda: (
+        ui.button('Logout', icon='logout', on_click=lambda: (
             app.storage.user.update(authenticated=False),
             ui.navigate.to('/'),
-        )).props('flat')
+        )).props('flat').bind_visibility_from(app.storage.user, 'authenticated')
 
     custom_sub_pages({
         '/': show_home,
-        '/admin': show_admin,
         '/secret': show_secret,
     }).classes('flex-grow p-4')
 
@@ -31,22 +27,17 @@ def show_home():
     ui.markdown('''
         This example shows inheritance from `ui.sub_pages` for decorator-based route protection and a custom 404 page.
 
-        **Try it:** Navigate to Admin/Secret pages (passphrase: "spa") or Invalid for 404.
+        **Try it:** Navigate to "Secret" (passphrase: "spa") or "Invalid" for 404.
     ''')
 
 
 @protected
-def show_admin():
-    ui.label('Admin Dashboard').classes('text-2xl mb-4')
-    ui.icon('admin_panel_settings', size='2rem').classes('text-blue-600 mb-2')
-    ui.label('You have successfully accessed the protected admin area!').classes('text-green-600')
-
-
-@protected
 def show_secret():
-    ui.label('Secret Area').classes('text-2xl mb-4')
-    ui.icon('lock', size='2rem').classes('text-purple-600 mb-2')
-    ui.label('This is confidential information only for authenticated users.').classes('text-purple-600')
+    ui.markdown('''
+        ### Secret Area 🔑
+
+        This is confidential information only for authenticated users.
+    ''')
 
 
 if __name__ in {'__main__', '__mp_main__'}:
