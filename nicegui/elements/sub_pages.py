@@ -40,7 +40,7 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
         self._routes = routes or {}
         self._root_path = root_path
         self._handle_routes_change()
-        if self._is_root():
+        if self.is_root:
             self.on('open', lambda e: self.show_and_update_history(e.args))
             self.on('navigate', lambda e: self._handle_navigate(e.args))
 
@@ -78,7 +78,7 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
         :param path: the path to navigate to
         """
         self.show(path)
-        if self._is_root():
+        if self.is_root:
             run_javascript(f'''
                 const fullPath = (window.path_prefix || '') + "{path}";
                 if (window.location.pathname !== fullPath) {{
@@ -103,7 +103,7 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
         return None
 
     def _handle_routes_change(self) -> None:
-        if self._is_root():
+        if self.is_root:
             assert context.client.request
             path = context.client.request.url.path
             self.show_and_update_history(path)
@@ -155,10 +155,10 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
             return value.lower() in ('true', '1', 'yes', 'on')
         return value
 
-    def _is_root(self) -> bool:
-        parent: Element = self
-        while parent.parent_slot is not None:
-            parent = parent.parent_slot.parent
+    @property
+    def is_root(self) -> bool:
+        """Whether this is a root ``ui.sub_pages`` element."""
+        for parent in self.ancestors():
             if isinstance(parent, SubPages):
                 return False
         return True
@@ -211,33 +211,17 @@ def try_navigate_to_sub_page(path: str) -> bool:
 
 
 def find_root_sub_pages_elements(element: Element) -> List[SubPages]:
-    """Find all root ui.sub_pages elements in an element tree.
+    """Find all root ``ui.sub_pages`` elements in an element tree.
 
     :param element: the element to search from
-    :return: list of all root ui.sub_pages elements found
+    :return: list of all root ``ui.sub_pages`` elements found
     """
-    sub_pages_list = []
-
-    def find_in_element(el: Element):
-        if isinstance(el, SubPages) and el._is_root():  # pylint: disable=protected-access
-            sub_pages_list.append(el)
-        if hasattr(el, 'default_slot') and el.default_slot:
-            for child in el.default_slot.children:
-                find_in_element(child)
-
-    find_in_element(element)
-    return sub_pages_list
+    return [el for el in element.descendants(include_self=True) if isinstance(el, SubPages) and el.is_root]
 
 
 def find_child_sub_pages_element(element: Element) -> Optional[SubPages]:
-    """Find child ui.sub_pages element, ensuring only one exists per level.
+    """Find child ``ui.sub_pages`` element, ensuring only one exists per level.
 
-    :return: the ui.sub_pages element if found, None otherwise
+    :return: the ``ui.sub_pages`` element if found, ``None`` otherwise
     """
-    for child in element.default_slot.children:
-        if isinstance(child, SubPages):
-            return child
-        result = find_child_sub_pages_element(child)
-        if result is not None:
-            return result
-    return None
+    return next((el for el in element.descendants() if isinstance(el, SubPages)), None)
