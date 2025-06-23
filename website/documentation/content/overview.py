@@ -266,6 +266,7 @@ def map_of_nicegui():
             - [`ui.spinner`](/documentation/spinner)
             - [`ui.splitter`](/documentation/splitter)
             - [`ui.stepper`](/documentation/stepper), `ui.step`, `ui.stepper_navigation`
+            - [`ui.sub_pages`](/documentation/sub_pages)
             - [`ui.switch`](/documentation/switch)
             - [`ui.tabs`](/documentation/tabs), `ui.tab`, `ui.tab_panels`, `ui.tab_panel`
             - [`ui.table`](/documentation/table)
