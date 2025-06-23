@@ -3,7 +3,7 @@ from typing import Any, Callable, Union
 from ..client import Client
 from ..context import context
 from ..element import Element
-from ..elements.sub_pages import navigate_to_sub_page
+from ..elements.sub_pages import try_navigate_to_sub_page
 from .javascript import run_javascript
 
 
@@ -69,7 +69,7 @@ class Navigate:
             raise TypeError(f'Invalid target type: {type(target)}')
 
         if not new_tab and isinstance(target, str):
-            if navigate_to_sub_page(path):
+            if try_navigate_to_sub_page(path):
                 return
 
         context.client.open(path, new_tab)

@@ -110,7 +110,7 @@ class SubPages(Element, component='sub_pages.js'):
 
     def _handle_navigate(self, path: str) -> None:
         """Handle navigate event from link clicks"""
-        if not navigate_to_sub_page(path):
+        if not try_navigate_to_sub_page(path):
             context.client.open(path)
 
     def _normalize_path(self, path: str) -> str:
@@ -181,11 +181,11 @@ class SubPages(Element, component='sub_pages.js'):
             background_tasks.create(background_task(), name=f'building sub_page {route_match.pattern}')
 
 
-def navigate_to_sub_page(path: str) -> bool:
-    """Handle navigation through sub_pages system.
+def try_navigate_to_sub_page(path: str) -> bool:
+    """Try to handle navigation through ``ui.sub_pages`` system.
 
     :param path: the path to navigate to
-    :return: True if handled by sub_pages, False otherwise
+    :return: ``True`` if handled by ``ui.sub_pages``, ``False`` otherwise
     """
     try:
         client = context.client
