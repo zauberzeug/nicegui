@@ -9,11 +9,12 @@ export default {
     window.addEventListener("pushstate", (event) => this.$emit("open", event.state?.page || window.location.pathname));
     document.addEventListener("click", (e) => {
       const a = e.target.closest("a[href]");
-      if (!a) return;
-      const href = a.getAttribute("href");
-      if (href.startsWith("/") && a.target !== "_blank" && !a.hasAttribute("download")) {
-        e.preventDefault();
-        this.$emit("navigate", href);
+      if (a && a.target !== "_blank" && !a.hasAttribute("download")) {
+        const href = a.getAttribute("href");
+        if (href.startsWith("/")) {
+          e.preventDefault();
+          this.$emit("navigate", href);
+        }
       }
     });
   },
