@@ -61,16 +61,16 @@ class SubPages(Element, component='sub_pages.js'):
 
         :param full_path: the path to navigate to (can be empty string for root path; trailing slash is ignored)
         """
-        match_result = self.find_route_match(full_path)
-        if match_result is not None:
-            self._replace_content(match_result)
+        self.clear()
+        with self:
+            match_result = self.find_route_match(full_path)
+            if match_result is None:
+                Label(f'404: sub page {full_path} not found')
+                return
+            self._place_content(match_result)
             child_sub_pages = find_child_sub_pages_element(self)
             if child_sub_pages:
                 child_sub_pages.show(full_path[len(match_result.path):])
-            return
-        self.clear()
-        with self:
-            Label(f'404: sub page {full_path} not found')
 
     def show_and_update_history(self, path: str) -> None:
         """Show the page and update browser history.
@@ -163,19 +163,17 @@ class SubPages(Element, component='sub_pages.js'):
                 return False
         return True
 
-    def _replace_content(self, route_match: RouteMatch) -> None:
-        self.clear()
-        with self:
-            if route_match.params:
-                sig = inspect.signature(route_match.builder)
-                converted_params = {
-                    name: self._convert_parameter(value, sig.parameters[name].annotation)
-                    for name, value in route_match.params.items()
-                    if name in sig.parameters
-                }
-                result = route_match.builder(**converted_params)
-            else:
-                result = route_match.builder()
+    def _place_content(self, route_match: RouteMatch) -> None:
+        if route_match.params:
+            sig = inspect.signature(route_match.builder)
+            converted_params = {
+                name: self._convert_parameter(value, sig.parameters[name].annotation)
+                for name, value in route_match.params.items()
+                if name in sig.parameters
+            }
+            result = route_match.builder(**converted_params)
+        else:
+            result = route_match.builder()
         if helpers.is_coroutine_function(result):
             async def background_task():
                 with self:
