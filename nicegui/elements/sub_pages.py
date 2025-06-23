@@ -22,13 +22,13 @@ class RouteMatch:
     '''The original route pattern (e.g., "/user/{id}")'''
     builder: Callable
     '''The function to call to build the page'''
-    params: Dict[str, str]
+    parameters: Dict[str, str]
     '''The extracted parameters (name -> value) from the path (e.g., ``{"id": "123"}``)'''
 
 
 class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-pages'):
 
-    def __init__(self, routes: Optional[Dict[str, Callable]] = None, *, root_path: Optional[str] = None):
+    def __init__(self, routes: Optional[Dict[str, Callable]] = None, *, root_path: Optional[str] = None) -> None:
         """Sub Pages
 
         Create a sub pages element to handle client-side routing within a page.
@@ -39,7 +39,7 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
         super().__init__()
         self._routes = routes or {}
         self._root_path = root_path
-        self._on_routes_changed()
+        self._handle_routes_change()
         if self._is_root():
             self.on('open', lambda e: self.show_and_update_history(e.args))
             self.on('navigate', lambda e: self._handle_navigate(e.args))
@@ -53,7 +53,7 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
         :return: self for method chaining
         """
         self._routes[path] = page
-        self._on_routes_changed()
+        self._handle_routes_change()
         return self
 
     def show(self, full_path: str) -> None:
@@ -98,18 +98,18 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
             for route, builder in self._routes.items():
                 matches = self._match_path(route, sub_path)
                 if matches is not None:
-                    return RouteMatch(path=sub_path, pattern=route, builder=builder, params=matches)
+                    return RouteMatch(path=sub_path, pattern=route, builder=builder, parameters=matches)
             segments.pop()
         return None
 
-    def _on_routes_changed(self) -> None:
+    def _handle_routes_change(self) -> None:
         if self._is_root():
             assert context.client.request
             path = context.client.request.url.path
             self.show_and_update_history(path)
 
     def _handle_navigate(self, path: str) -> None:
-        """Handle navigate event from link clicks"""
+        """Handle navigate event from link clicks."""
         if not try_navigate_to_sub_page(path):
             context.client.open(path)
 
@@ -164,14 +164,14 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
         return True
 
     def _place_content(self, route_match: RouteMatch) -> None:
-        if route_match.params:
-            sig = inspect.signature(route_match.builder)
-            converted_params = {
-                name: self._convert_parameter(value, sig.parameters[name].annotation)
-                for name, value in route_match.params.items()
-                if name in sig.parameters
+        if route_match.parameters:
+            parameters = inspect.signature(route_match.builder).parameters
+            converted_parameters = {
+                name: self._convert_parameter(value, parameters[name].annotation)
+                for name, value in route_match.parameters.items()
+                if name in parameters
             }
-            result = route_match.builder(**converted_params)
+            result = route_match.builder(**converted_parameters)
         else:
             result = route_match.builder()
         if helpers.is_coroutine_function(result):
