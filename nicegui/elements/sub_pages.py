@@ -1,19 +1,19 @@
 import inspect
 import re
-from asyncio import iscoroutine
 from dataclasses import dataclass
 from typing import Any, Callable, Dict, List, Optional
 
 from typing_extensions import Self
 
-from .. import background_tasks
+from .. import background_tasks, helpers
 from ..context import context
+from ..dataclasses import KWONLY_SLOTS
 from ..element import Element
 from ..elements.label import Label
 from ..functions.javascript import run_javascript
 
 
-@dataclass
+@dataclass(**KWONLY_SLOTS)
 class RouteMatch:
     """Information about a matched route."""
     path: str
@@ -23,7 +23,7 @@ class RouteMatch:
     builder: Callable
     '''The function to call to build the page'''
     params: Dict[str, str]
-    '''The extracted parameters (name -> value) from the path (e.g., {"id": "123"})'''
+    '''The extracted parameters (name -> value) from the path (e.g., ``{"id": "123"}``)'''
 
 
 class SubPages(Element, component='sub_pages.js'):
@@ -98,7 +98,7 @@ class SubPages(Element, component='sub_pages.js'):
             for route, builder in self._routes.items():
                 matches = self._match_path(route, sub_path)
                 if matches is not None:
-                    return RouteMatch(sub_path, route, builder, matches)
+                    return RouteMatch(path=sub_path, pattern=route, builder=builder, params=matches)
             segments.pop()
         return None
 
@@ -176,7 +176,7 @@ class SubPages(Element, component='sub_pages.js'):
                 result = route_match.builder(**converted_params)
             else:
                 result = route_match.builder()
-        if iscoroutine(result):
+        if helpers.is_coroutine_function(result):
             async def background_task():
                 with self:
                     await result
