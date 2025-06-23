@@ -7,20 +7,18 @@ from nicegui import app, ui
 @ui.page('/')
 @ui.page('/{_:path}')
 def main_page():
-    with ui.header().classes('justify-between items-center p-4 bg-blue-100'):
-        with ui.row().classes('gap-2'):
-            ui.button('Home', on_click=lambda: ui.navigate.to('/')).props('flat')
-            ui.button('Admin', on_click=lambda: ui.navigate.to('/admin')).props('flat')
-            ui.button('Secret', on_click=lambda: ui.navigate.to('/secret')).props('flat')
-            ui.button('Invalid', on_click=lambda: ui.navigate.to('/invalid')).props('flat')
-
-        with ui.row().classes('items-center gap-2').bind_visibility_from(app.storage.user, 'authenticated'):
-            ui.icon('lock_open').classes('text-green-600')
-            ui.label('Authenticated').classes('text-green-600 text-sm')
-            ui.button('Logout', on_click=lambda: [
-                app.storage.user.update(authenticated=False),
-                ui.navigate.to('/')
-            ]).props('flat')
+    with ui.header().classes('items-center bg-blue-100'):
+        ui.button('Home', on_click=lambda: ui.navigate.to('/')).props('flat')
+        ui.button('Admin', on_click=lambda: ui.navigate.to('/admin')).props('flat')
+        ui.button('Secret', on_click=lambda: ui.navigate.to('/secret')).props('flat')
+        ui.button('Invalid', on_click=lambda: ui.navigate.to('/invalid')).props('flat')
+        ui.space()
+        ui.icon('lock_open').classes('text-green-600')
+        ui.label('Authenticated').classes('text-green-600 text-sm')
+        ui.button('Logout', on_click=lambda: (
+            app.storage.user.update(authenticated=False),
+            ui.navigate.to('/'),
+        )).props('flat')
 
     custom_sub_pages({
         '/': show_home,
