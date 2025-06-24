@@ -189,22 +189,21 @@ def try_navigate_to_sub_page(path: str) -> bool:
     """
     try:
         client = context.client
-        if client and client.content:
-            sub_pages_elements = find_root_sub_pages_elements(client.content)
-            handled_by_sub_pages = False
-            for sub_page in sub_pages_elements:
-                route_match = sub_page.find_route_match(path)
-                if route_match is not None:
-                    sub_page.show(path)
-                    handled_by_sub_pages = True
-            if handled_by_sub_pages:
-                run_javascript(f'''
-                    const fullPath = (window.path_prefix || '') + "{path}";
-                    if (window.location.pathname !== fullPath) {{
-                        history.pushState({{page: "{path}"}}, "", fullPath);
-                    }}
-                ''')
-            return handled_by_sub_pages
+        sub_pages_elements = find_root_sub_pages_elements(client.content)
+        handled_by_sub_pages = False
+        for sub_page in sub_pages_elements:
+            route_match = sub_page.find_route_match(path)
+            if route_match is not None:
+                sub_page.show(path)
+                handled_by_sub_pages = True
+        if handled_by_sub_pages:
+            run_javascript(f'''
+                const fullPath = (window.path_prefix || '') + "{path}";
+                if (window.location.pathname !== fullPath) {{
+                    history.pushState({{page: "{path}"}}, "", fullPath);
+                }}
+            ''')
+        return handled_by_sub_pages
     except (AttributeError, TypeError):
         pass
     return False
