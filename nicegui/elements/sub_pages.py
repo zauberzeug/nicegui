@@ -41,7 +41,7 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
         self._root_path = root_path
         self._handle_routes_change()
         if self.is_root:
-            self.on('open', lambda e: self.show_and_update_history(e.args))
+            self.on('open', lambda e: self._show_and_update_history(e.args))
             self.on('navigate', lambda e: self._handle_navigate(e.args))
 
     def add(self, path: str, page: Callable) -> Self:
@@ -72,19 +72,20 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
             if child_sub_pages:
                 child_sub_pages.show(full_path[len(match_result.path):])
 
-    def show_and_update_history(self, path: str) -> None:
+    def _show_and_update_history(self, path: str) -> None:
         """Show the page and update browser history.
+
+        We assume that this method is only called by the root sub pages element.
 
         :param path: the path to navigate to
         """
         self.show(path)
-        if self.is_root:
-            run_javascript(f'''
-                const fullPath = (window.path_prefix || '') + "{path}";
-                if (window.location.pathname !== fullPath) {{
-                    history.pushState({{page: "{path}"}}, "", fullPath);
-                }}
-            ''')
+        run_javascript(f'''
+            const fullPath = (window.path_prefix || '') + "{path}";
+            if (window.location.pathname !== fullPath) {{
+                history.pushState({{page: "{path}"}}, "", fullPath);
+            }}
+        ''')
 
     def find_route_match(self, path: str) -> Optional[RouteMatch]:
         """Find the first matching route for a path with segment dropping.
@@ -106,7 +107,7 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
         if self.is_root:
             assert context.client.request
             path = context.client.request.url.path
-            self.show_and_update_history(path)
+            self._show_and_update_history(path)
 
     def _handle_navigate(self, path: str) -> None:
         """Handle navigate event from link clicks."""
