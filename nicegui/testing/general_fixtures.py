@@ -30,15 +30,13 @@ def nicegui_reset_globals() -> Generator[None, None, None]:
     for path in all_page_routes:
         app.remove_route(path)
 
-    routes_to_remove = []
     for route in list(app.routes):
-        if isinstance(route, Route) and '{' in route.path and '}' in route.path:
-            if (not route.path.startswith('/_nicegui/') and
-                    not ('{path:path}' in route.path or '{filename:path}' in route.path)):
-                routes_to_remove.append(route.path)
-
-    for path in routes_to_remove:
-        app.remove_route(path)
+        if (
+            isinstance(route, Route) and
+            '{' in route.path and '}' in route.path and
+            not route.path.startswith('/_nicegui/')
+        ):
+            app.remove_route(route.path)
 
     app.openapi_schema = None
     app.middleware_stack = None
