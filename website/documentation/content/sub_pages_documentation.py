@@ -10,8 +10,6 @@ from . import doc
     The `ui.sub_pages` element itself functions as the container for the currently active sub page.
     You only need to provide the routes for each view builder function.
     NiceGUI takes care of replacing the content without triggering a full page reload when the URL changes.
-    The `ui.sub_pages` element can be used as a context manager to automatically navigate to the correct sub page
-    when the context is entered or exited.
 ''')
 def main_demo() -> None:
     from uuid import uuid4
