@@ -16,7 +16,7 @@ class CustomSubPages(ui.sub_pages):
     def show(self, full_path: str) -> None:
         self.clear()
         with self:
-            match_result = self.find_route_match(full_path)
+            match_result = self._find_route_match(full_path)
             if match_result is not None:
                 if self._is_route_protected(match_result.builder):
                     if not self._is_authenticated():
