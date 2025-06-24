@@ -206,11 +206,16 @@ doc.intro(add_style_documentation)
 
 
 @doc.demo('Using other Vue UI frameworks', '''
-    **This is strictly a beta feature! Many NiceGUI elements are likely to break, and the API is not yet stable.**
+    **This is an experimental feature.**
+    **Many NiceGUI elements are likely to break, and the API is subject to change.**
 
     NiceGUI uses the [Quasar Framework](https://quasar.dev/) by default.
-    However, you can also try to use other Vue UI frameworks like [Element Plus](https://element-plus.org/en-US/) or [Vuetify](https://vuetifyjs.com/en/).
-    To do so, you need to add the framework's JavaScript and CSS file to the head of your HTML document and configure NiceGUI accordingly with `app.config.vue_config_script`.
+    However, you can also try to use other Vue UI frameworks
+    like [Element Plus](https://element-plus.org/en-US/) or [Vuetify](https://vuetifyjs.com/en/).
+    To do so, you need to add the framework's JavaScript and CSS file to the head of your HTML document
+    and configure NiceGUI accordingly by setting `app.config.vue_config_script`.
+
+    *Added in NiceGUI 2.21.0*
 ''')
 def other_vue_ui_frameworks_demo():
     from nicegui import app
