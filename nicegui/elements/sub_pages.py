@@ -198,7 +198,7 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
             sub_pages_elements = SubPages.find_roots(client.content)
             handled_by_sub_pages = False
             for sub_page in sub_pages_elements:
-                route_match = sub_page._find_route_match(path)
+                route_match = sub_page._find_route_match(path)  # pylint: disable=protected-access
                 if route_match is not None:
                     sub_page.show(path)
                     handled_by_sub_pages = True
