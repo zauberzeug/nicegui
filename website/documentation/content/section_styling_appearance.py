@@ -213,7 +213,7 @@ doc.intro(add_style_documentation)
     However, you can also try to use other Vue UI frameworks
     like [Element Plus](https://element-plus.org/en-US/) or [Vuetify](https://vuetifyjs.com/en/).
     To do so, you need to add the framework's JavaScript and CSS file to the head of your HTML document
-    and configure NiceGUI accordingly by setting `app.config.vue_config_script`.
+    and configure NiceGUI accordingly by extending or replacing `app.config.vue_config_script`.
 
     *Added in NiceGUI 2.21.0*
 ''')
@@ -224,12 +224,14 @@ def other_vue_ui_frameworks_demo():
     #     <link rel="stylesheet" href="//unpkg.com/element-plus/dist/index.css" />
     #     <script defer src="https://unpkg.com/element-plus"></script>
     # ''')
-    # app.config.vue_config_script = '''
+    # app.config.vue_config_script += '''
     #     app.use(ElementPlus);
     # '''
 
-    with ui.element('el-button'):
-        ui.html('I am a button from Element Plus')
+    with ui.element('el-button').on('click', lambda: ui.notify('Hi!')):
+        ui.html('Element Plus button')
+
+    ui.button('Quasar button', on_click=lambda: ui.notify('Ho!'))
 
     # END OF DEMO
     ui.add_css('''
