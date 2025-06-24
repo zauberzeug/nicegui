@@ -90,7 +90,7 @@ def test_passing_element_to_sub_page(screen: Screen):
     screen.should_contain('main title')
 
 
-def test_accessing_sub_page_directly(screen: Screen):
+def test_opening_sub_pages_directly(screen: Screen):
     @ui.page('/')
     @ui.page('/{_:path}')
     def index():
