@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import inspect
 import re
 from dataclasses import dataclass
@@ -40,7 +42,7 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
         self._routes = routes or {}
         self._root_path = root_path
         self._handle_routes_change()
-        if self.is_root:
+        if self._is_root:
             self.on('open', lambda e: self._show_and_update_history(e.args))
             self.on('navigate', lambda e: self._handle_navigate(e.args))
 
@@ -68,7 +70,7 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
                 Label(f'404: sub page {full_path} not found')
                 return
             self._place_content(match_result)
-            child_sub_pages = find_child_sub_pages_element(self)
+            child_sub_pages = SubPages.find_child(self)
             if child_sub_pages:
                 child_sub_pages.show(full_path[len(match_result.path):])
 
@@ -104,14 +106,14 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
         return None
 
     def _handle_routes_change(self) -> None:
-        if self.is_root:
+        if self._is_root:
             assert context.client.request
             path = context.client.request.url.path
             self._show_and_update_history(path)
 
     def _handle_navigate(self, path: str) -> None:
         """Handle navigate event from link clicks."""
-        if not try_navigate_to_sub_page(path):
+        if not SubPages.try_navigate_to(path):
             context.client.open(path)
 
     def _normalize_path(self, path: str) -> str:
@@ -157,7 +159,7 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
         return value
 
     @property
-    def is_root(self) -> bool:
+    def _is_root(self) -> bool:
         """Whether this is a root ``ui.sub_pages`` element."""
         for parent in self.ancestors():
             if isinstance(parent, SubPages):
@@ -181,47 +183,47 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
                     await result
             background_tasks.create(background_task(), name=f'building sub_page {route_match.pattern}')
 
+    @staticmethod
+    def try_navigate_to(path: str) -> bool:
+        """Try to handle navigation through ``ui.sub_pages`` system.
 
-def try_navigate_to_sub_page(path: str) -> bool:
-    """Try to handle navigation through ``ui.sub_pages`` system.
+        :param path: the path to navigate to
+        :return: ``True`` if handled by ``ui.sub_pages``, ``False`` otherwise
+        """
+        try:
+            client = context.client
+            sub_pages_elements = SubPages.find_roots(client.content)
+            handled_by_sub_pages = False
+            for sub_page in sub_pages_elements:
+                route_match = sub_page.find_route_match(path)
+                if route_match is not None:
+                    sub_page.show(path)
+                    handled_by_sub_pages = True
+            if handled_by_sub_pages:
+                run_javascript(f'''
+                    const fullPath = (window.path_prefix || '') + "{path}";
+                    if (window.location.pathname !== fullPath) {{
+                        history.pushState({{page: "{path}"}}, "", fullPath);
+                    }}
+                ''')
+            return handled_by_sub_pages
+        except (AttributeError, TypeError):
+            pass
+        return False
 
-    :param path: the path to navigate to
-    :return: ``True`` if handled by ``ui.sub_pages``, ``False`` otherwise
-    """
-    try:
-        client = context.client
-        sub_pages_elements = find_root_sub_pages_elements(client.content)
-        handled_by_sub_pages = False
-        for sub_page in sub_pages_elements:
-            route_match = sub_page.find_route_match(path)
-            if route_match is not None:
-                sub_page.show(path)
-                handled_by_sub_pages = True
-        if handled_by_sub_pages:
-            run_javascript(f'''
-                const fullPath = (window.path_prefix || '') + "{path}";
-                if (window.location.pathname !== fullPath) {{
-                    history.pushState({{page: "{path}"}}, "", fullPath);
-                }}
-            ''')
-        return handled_by_sub_pages
-    except (AttributeError, TypeError):
-        pass
-    return False
+    @staticmethod
+    def find_roots(element: Element) -> List[SubPages]:
+        """Find all root ``ui.sub_pages`` elements in an element tree.
 
+        :param element: the element to search from
+        :return: list of all root ``ui.sub_pages`` elements found
+        """
+        return [el for el in element.descendants(include_self=True) if isinstance(el, SubPages) and el._is_root]  # pylint: disable=protected-access
 
-def find_root_sub_pages_elements(element: Element) -> List[SubPages]:
-    """Find all root ``ui.sub_pages`` elements in an element tree.
+    @staticmethod
+    def find_child(element: Element) -> Optional[SubPages]:
+        """Find child ``ui.sub_pages`` element, ensuring only one exists per level.
 
-    :param element: the element to search from
-    :return: list of all root ``ui.sub_pages`` elements found
-    """
-    return [el for el in element.descendants(include_self=True) if isinstance(el, SubPages) and el.is_root]
-
-
-def find_child_sub_pages_element(element: Element) -> Optional[SubPages]:
-    """Find child ``ui.sub_pages`` element, ensuring only one exists per level.
-
-    :return: the ``ui.sub_pages`` element if found, ``None`` otherwise
-    """
-    return next((el for el in element.descendants() if isinstance(el, SubPages)), None)
+        :return: the ``ui.sub_pages`` element if found, ``None`` otherwise
+        """
+        return next((el for el in element.descendants() if isinstance(el, SubPages)), None)

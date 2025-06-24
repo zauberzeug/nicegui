@@ -1,7 +1,7 @@
 from typing import Callable
 
 from nicegui import app, ui
-from nicegui.elements.sub_pages import find_child_sub_pages_element
+from nicegui.elements.sub_pages import SubPages
 
 
 def protected(func: Callable) -> Callable:
@@ -23,7 +23,7 @@ class CustomSubPages(ui.sub_pages):
                         self._show_login_form(full_path)
                         return
                 self._place_content(match_result)
-                child_sub_pages = find_child_sub_pages_element(self)
+                child_sub_pages = SubPages.find_child(self)
                 if child_sub_pages:
                     child_sub_pages.show(full_path[len(match_result.path):])
                 return
