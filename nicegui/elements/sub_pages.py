@@ -147,15 +147,18 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
 
     @staticmethod
     def _convert_parameter(value: str, param_type: type) -> Any:
-        """Convert a string parameter to the specified type."""
+        """Convert a string parameter to the specified type (``str``, ``int``, or ``float``).
+
+        :param value: the string value to convert
+        :param param_type: the type to convert to
+        :return: the converted value
+        """
         if param_type is str or param_type is inspect.Parameter.empty:
             return value
         elif param_type is int:
             return int(value)
         elif param_type is float:
             return float(value)
-        elif param_type is bool:
-            return value.lower() in ('true', '1', 'yes', 'on')
         return value
 
     @property
