@@ -23,6 +23,11 @@ class AppConfig:
                 'skipHijack': False,
             },
         })
+    vue_config_script: str = r'''
+        app.use(Quasar, {config: vue_config});
+        Quasar.lang.set(Quasar.lang[language.replace('-', '')]);
+        Quasar.Dark.set(dark === None ? "auto" : dark);
+    '''
 
     reload: bool = field(init=False)
     title: str = field(init=False)

@@ -51,15 +51,15 @@
         query: {{ socket_io_js_query_params | safe }},
         extraHeaders: {{ socket_io_js_extra_headers | safe }},
         transports: {{ socket_io_js_transports | safe }},
-        quasarConfig: {{ quasar_config | safe }},
       });
+      const dark = {{ dark }};
+      const language = "{{ language }}";
+      const vue_config = {{ vue_config | safe }};
+      {{ vue_config_script | safe }}
 
       {{ js_imports | safe }}
       {{ vue_scripts | safe }}
 
-      const dark = {{ dark }};
-      Quasar.lang.set(Quasar.lang["{{ language }}".replace('-', '')]);
-      Quasar.Dark.set(dark === None ? "auto" : dark);
       {% if tailwind %}
       if (dark !== None) tailwind.config.darkMode = "class";
       if (dark === True) document.body.classList.add("dark");
