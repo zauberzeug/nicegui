@@ -65,7 +65,7 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
         """
         self.clear()
         with self:
-            match_result = self._find_route_match(full_path)
+            match_result = self._match_route(full_path)
             if match_result is None:
                 Label(f'404: sub page {full_path} not found')
                 return
@@ -89,7 +89,7 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
             }}
         ''')
 
-    def _find_route_match(self, path: str) -> Optional[RouteMatch]:
+    def _match_route(self, path: str) -> Optional[RouteMatch]:
         """Find the first matching route for a path with segment dropping.
 
         :return: RouteMatch object if found, None otherwise
@@ -193,26 +193,20 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
         :param path: the path to navigate to
         :return: ``True`` if handled by ``ui.sub_pages``, ``False`` otherwise
         """
-        try:
-            client = context.client
-            sub_pages_elements = SubPages.find_roots(client.content)
-            handled_by_sub_pages = False
-            for sub_page in sub_pages_elements:
-                route_match = sub_page._find_route_match(path)  # pylint: disable=protected-access
-                if route_match is not None:
-                    sub_page.show(path)
-                    handled_by_sub_pages = True
-            if handled_by_sub_pages:
-                run_javascript(f'''
-                    const fullPath = (window.path_prefix || '') + "{path}";
-                    if (window.location.pathname !== fullPath) {{
-                        history.pushState({{page: "{path}"}}, "", fullPath);
-                    }}
-                ''')
-            return handled_by_sub_pages
-        except (AttributeError, TypeError):
-            pass
-        return False
+        sub_pages_elements = SubPages.find_roots(context.client.content)
+        handled_by_sub_pages = False
+        for sub_page in sub_pages_elements:
+            if sub_page._match_route(path):  # pylint: disable=protected-access
+                sub_page.show(path)
+                handled_by_sub_pages = True
+        if handled_by_sub_pages:
+            run_javascript(f'''
+                const fullPath = (window.path_prefix || '') + "{path}";
+                if (window.location.pathname !== fullPath) {{
+                    history.pushState({{page: "{path}"}}, "", fullPath);
+                }}
+            ''')
+        return handled_by_sub_pages
 
     @staticmethod
     def find_roots(element: Element) -> List[SubPages]:
