@@ -4,7 +4,7 @@ import asyncio
 import inspect
 import re
 from dataclasses import dataclass
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any, Callable, Dict, List, Optional, Set
 
 from typing_extensions import Self
 
@@ -42,6 +42,7 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
         super().__init__()
         self._routes = routes or {}
         self._root_path = root_path
+        self._active_tasks: Set[asyncio.Task] = set()
         self._handle_routes_change()
         if self._is_root:
             self.on('open', lambda e: self._show_and_update_history(e.args))
@@ -64,6 +65,7 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
 
         :param full_path: the path to navigate to (can be empty string for root path; trailing slash is ignored)
         """
+        self._cancel_active_tasks()
         self.clear()
         with self:
             match_result = self._match_route(full_path)
@@ -74,6 +76,13 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
             child_sub_pages = SubPages.find_child(self)
             if child_sub_pages:
                 child_sub_pages.show(full_path[len(match_result.path):])
+
+    def _cancel_active_tasks(self) -> None:
+        """Cancel all active async tasks for this SubPages instance."""
+        for task in self._active_tasks:
+            if not task.done() and not task.cancelled():
+                task.cancel()
+        self._active_tasks.clear()
 
     def _show_and_update_history(self, path: str) -> None:
         """Show the page and update browser history.
@@ -185,7 +194,9 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
             async def background_task():
                 with self:
                     await result
-            background_tasks.create(background_task(), name=f'building sub_page {route_match.pattern}')
+            task = background_tasks.create(background_task(), name=f'building sub_page {route_match.pattern}')
+            self._active_tasks.add(task)
+            task.add_done_callback(self._active_tasks.discard)
 
     @staticmethod
     def try_navigate_to(path: str) -> bool:
