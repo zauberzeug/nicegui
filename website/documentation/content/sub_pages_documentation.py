@@ -1,4 +1,3 @@
-import asyncio
 from nicegui import ui
 
 from . import doc
@@ -76,8 +75,8 @@ def parameters_demo():
     Sub pages also work with async builder functions.
 ''')
 def async_demo():
-    # import asyncio
-    #
+    import asyncio
+
     # @ui.page('/')
     # @ui.page('/{_:path}')
     # def index():
@@ -85,7 +84,7 @@ def async_demo():
     #         ui.link('main', '/')
     #         ui.link('other', '/other')
     #     ui.sub_pages({'/': main, '/other': lambda: other('other page')})
-    #
+
     async def main():
         ui.label('main page').classes('font-bold')
         await asyncio.sleep(2)

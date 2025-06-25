@@ -416,6 +416,7 @@ def test_links_pointing_to_path_which_is_not_a_sub_page(screen: Screen):
     screen.click('Go to sub')
     screen.should_contain('sub')
     assert screen.current_path == '/sub'
+
     screen.click('Go to other')
     screen.should_contain('other page')
     assert screen.current_path == '/other'
@@ -459,7 +460,7 @@ def test_multiple_sub_pages_with_same_path(screen: Screen, open_with: str):
         ui.sub_pages({'/': main2, '/other': other2})
         if open_with == 'navigate_to':
             ui.button('Go to other', on_click=lambda: ui.navigate.to('/other'))
-        else:  # link
+        elif open_with == 'link':
             ui.link('Go to other', '/other')
 
     def main():
@@ -497,9 +498,11 @@ def test_async_sub_pages(screen: Screen):
     @ui.page('/')
     @ui.page('/{_:path}')
     def index():
-        ui.toggle({'': '/', '0.1': '/0.1', '1.0': '/1.0'}, value='',
-                  on_change=lambda e: ui.navigate.to(f'/{e.value}'))
-        ui.sub_pages({'/': lambda: main(0), '/{delay}': lambda delay: main(float(delay))})
+        ui.toggle(['/', '/0.1', '/1.0'], value='/', on_change=lambda e: ui.navigate.to(e.value))
+        ui.sub_pages({
+            '/': lambda: main(0),
+            '/{delay}': lambda delay: main(float(delay)),
+        })
 
     async def main(delay: float):
         ui.label(f'waiting for {delay} sec')
@@ -508,13 +511,14 @@ def test_async_sub_pages(screen: Screen):
 
     screen.open('/')
     screen.should_contain('after 0 sec')
-    screen.click('0.1')
+
+    screen.click('/0.1')
     screen.should_contain('after 0.1 sec')
 
     # NOTE: below we ensure that quick page changes are not affected by the async sub page
-    screen.click('1.0')
+    screen.click('/1.0')
     screen.wait(0.1)
-    screen.click('0.1')
+    screen.click('/0.1')
     screen.wait(1)
     screen.should_contain('after 0.1 sec')
     screen.should_not_contain('after 1.0 sec')
