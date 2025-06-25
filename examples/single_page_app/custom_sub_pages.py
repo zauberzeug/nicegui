@@ -39,7 +39,8 @@ class CustomSubPages(ui.sub_pages):
         with ui.card().classes('absolute-center items-stretch'):
             ui.label('Protected Area').classes('text-2xl')
             ui.label('Enter passphrase to continue.')
-            passphrase = ui.input('Passphrase', password=True, password_toggle_button=True).classes('w-64')
+            passphrase = ui.input('Passphrase', password=True, password_toggle_button=True) \
+                .classes('w-64').props('autofocus')
 
             def try_login():
                 if passphrase.value == 'spa':
@@ -59,7 +60,7 @@ class CustomSubPages(ui.sub_pages):
             ui.label(f'The page "{path}" does not exist.').classes('text-gray-600')
             with ui.row().classes('mt-4'):
                 ui.button('Go Home', icon='home', on_click=lambda: ui.navigate.to('/')).props('outline')
-                ui.button('Go Back', icon='arrow_back', on_click='history.back()').props('outline')
+                ui.button('Go Back', icon='arrow_back', on_click=ui.navigate.back).props('outline')
 
 
 # Function-like access following NiceGUI convention where classes are callable to feel like functions
