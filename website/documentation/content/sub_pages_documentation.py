@@ -95,7 +95,6 @@ def async_demo():
         ui.label(title).classes('font-bold')
         await asyncio.sleep(1)
         ui.label('after 1 sec')
-        print('other page')
 
     # END OF DEMO
 
