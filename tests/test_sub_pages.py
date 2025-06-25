@@ -449,14 +449,18 @@ def test_navigate_to_path_which_is_not_a_sub_page(screen: Screen):
     assert screen.current_path == '/other'
 
 
-def test_multiple_sub_pages_with_same_path(screen: Screen):
+@pytest.mark.parametrize('open_with', ['navigate_to', 'link'])
+def test_multiple_sub_pages_with_same_path(screen: Screen, open_with: str):
     calls = {'main': 0, 'main2': 0, 'other': 0, 'other2': 0}
 
     @ui.page('/')
     def index():
         ui.sub_pages({'/': main, '/other': other})
         ui.sub_pages({'/': main2, '/other': other2})
-        ui.link('Go to other', '/other')
+        if open_with == 'navigate_to':
+            ui.button('Go to other', on_click=lambda: ui.navigate.to('/other'))
+        else:  # link
+            ui.link('Go to other', '/other')
 
     def main():
         calls['main'] += 1
