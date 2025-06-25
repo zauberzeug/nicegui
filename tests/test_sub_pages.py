@@ -450,6 +450,8 @@ def test_navigate_to_path_which_is_not_a_sub_page(screen: Screen):
 
 
 def test_multiple_sub_pages_with_same_path(screen: Screen):
+    calls = {'main': 0, 'main2': 0, 'other': 0, 'other2': 0}
+
     @ui.page('/')
     def index():
         ui.sub_pages({'/': main, '/other': other})
@@ -457,15 +459,19 @@ def test_multiple_sub_pages_with_same_path(screen: Screen):
         ui.link('Go to other', '/other')
 
     def main():
+        calls['main'] += 1
         ui.label('main content')
 
     def main2():
+        calls['main2'] += 1
         ui.label('main2 content')
 
     def other():
+        calls['other'] += 1
         ui.label('other content')
 
     def other2():
+        calls['other2'] += 1
         ui.label('other2 content')
 
     screen.open('/')
@@ -473,12 +479,14 @@ def test_multiple_sub_pages_with_same_path(screen: Screen):
     screen.should_contain('main2 content')
     screen.should_not_contain('other content')
     screen.should_not_contain('other2 content')
+    assert calls == {'main': 1, 'main2': 1, 'other': 0, 'other2': 0}
 
     screen.click('Go to other')
     screen.should_contain('other content')
     screen.should_contain('other2 content')
     screen.should_not_contain('main content')
     screen.should_not_contain('main2 content')
+    assert calls == {'main': 1, 'main2': 1, 'other': 1, 'other2': 1}
 
 
 def test_async_sub_pages(screen: Screen):
