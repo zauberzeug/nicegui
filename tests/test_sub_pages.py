@@ -493,11 +493,12 @@ def test_async_sub_pages(screen: Screen):
     @ui.page('/')
     @ui.page('/{_:path}')
     def index():
-        ui.toggle({'': '/', '0.1': '/0.1', '0.3': '/0.3'}, value='',
+        ui.toggle({'': '/', '0.1': '/0.1', '1.0': '/1.0'}, value='',
                   on_change=lambda e: ui.navigate.to(f'/{e.value}'))
         ui.sub_pages({'/': lambda: main(0), '/{delay}': lambda delay: main(float(delay))})
 
     async def main(delay: float):
+        ui.label(f'waiting for {delay} sec')
         await asyncio.sleep(delay)
         ui.label(f'after {delay} sec')
 
@@ -505,5 +506,11 @@ def test_async_sub_pages(screen: Screen):
     screen.should_contain('after 0 sec')
     screen.click('0.1')
     screen.should_contain('after 0.1 sec')
-    screen.click('0.3')
-    screen.should_contain('after 0.3 sec')
+
+    # NOTE: below we ensure that quick page changes are not affected by the async sub page
+    screen.click('1.0')
+    screen.wait(0.1)
+    screen.click('0.1')
+    screen.wait(1)
+    screen.should_contain('after 0.1 sec')
+    screen.should_not_contain('after 1.0 sec')
