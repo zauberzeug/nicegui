@@ -123,7 +123,7 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
 
     def _handle_navigate(self, path: str) -> None:
         """Handle navigate event from link clicks."""
-        if not SubPages.try_navigate_to(path):
+        if not self._try_navigate_to(path):
             context.client.open(path)
 
     def _normalize_path(self, path: str) -> str:
@@ -198,6 +198,23 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
             self._active_tasks.add(task)
             task.add_done_callback(self._active_tasks.discard)
 
+    def _try_navigate_to(self, path: str) -> bool:
+        """Try to handle navigation through ``ui.sub_pages`` system.
+
+        :param path: the path to navigate to
+        :return: ``True`` if handled by ``ui.sub_pages``, ``False`` otherwise
+        """
+        if self._match_route(path):
+            self.show(path)
+            run_javascript(f'''
+                const fullPath = (window.path_prefix || '') + "{path}";
+                if (window.location.pathname !== fullPath) {{
+                    history.pushState({{page: "{path}"}}, "", fullPath);
+                }}
+            ''')
+            return True
+        return False
+
     @staticmethod
     def try_navigate_to(path: str) -> bool:
         """Try to handle navigation through ``ui.sub_pages`` system.
@@ -205,19 +222,10 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
         :param path: the path to navigate to
         :return: ``True`` if handled by ``ui.sub_pages``, ``False`` otherwise
         """
-        sub_pages_elements = SubPages.find_roots(context.client.content)
         handled_by_sub_pages = False
-        for sub_page in sub_pages_elements:
-            if sub_page._match_route(path):  # pylint: disable=protected-access
-                sub_page.show(path)
+        for sub_page in SubPages.find_roots(context.client.content):
+            if sub_page._try_navigate_to(path):  # pylint: disable=protected-access
                 handled_by_sub_pages = True
-        if handled_by_sub_pages:
-            run_javascript(f'''
-                const fullPath = (window.path_prefix || '') + "{path}";
-                if (window.location.pathname !== fullPath) {{
-                    history.pushState({{page: "{path}"}}, "", fullPath);
-                }}
-            ''')
         return handled_by_sub_pages
 
     @staticmethod
