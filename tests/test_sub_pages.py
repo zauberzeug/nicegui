@@ -1,3 +1,5 @@
+import asyncio
+
 import pytest
 
 from nicegui import ui
@@ -477,3 +479,23 @@ def test_multiple_sub_pages_with_same_path(screen: Screen):
     screen.should_contain('other2 content')
     screen.should_not_contain('main content')
     screen.should_not_contain('main2 content')
+
+
+def test_async_sub_pages(screen: Screen):
+    @ui.page('/')
+    @ui.page('/{_:path}')
+    def index():
+        ui.toggle({'': '/', '0.1': '/0.1', '0.3': '/0.3'}, value='',
+                  on_change=lambda e: ui.navigate.to(f'/{e.value}'))
+        ui.sub_pages({'/': lambda: main(0), '/{delay}': lambda delay: main(float(delay))})
+
+    async def main(delay: float):
+        await asyncio.sleep(delay)
+        ui.label(f'after {delay} sec')
+
+    screen.open('/')
+    screen.should_contain('after 0 sec')
+    screen.click('0.1')
+    screen.should_contain('after 0.1 sec')
+    screen.click('0.3')
+    screen.should_contain('after 0.3 sec')

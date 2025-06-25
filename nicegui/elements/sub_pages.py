@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 import inspect
 import re
 from dataclasses import dataclass
@@ -7,7 +8,7 @@ from typing import Any, Callable, Dict, List, Optional
 
 from typing_extensions import Self
 
-from .. import background_tasks, helpers
+from .. import background_tasks
 from ..context import context
 from ..dataclasses import KWONLY_SLOTS
 from ..element import Element
@@ -180,7 +181,7 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
             result = route_match.builder(**converted_parameters)
         else:
             result = route_match.builder()
-        if helpers.is_coroutine_function(result):
+        if asyncio.iscoroutine(result):
             async def background_task():
                 with self:
                     await result
