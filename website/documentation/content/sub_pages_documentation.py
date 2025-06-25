@@ -76,29 +76,34 @@ def parameters_demo():
     Sub pages also work with async builder functions.
 ''')
 def async_demo():
+    # import asyncio
+    #
     # @ui.page('/')
-    # @ui.page('/{_:path}') # NOTE: our page should catch all paths
+    # @ui.page('/{_:path}')
     # def index():
-    #     title = ui.label()
-    #     ui.sub_pages({'/': lambda: main(title)})
-    #     ui.toggle({'main': '/', 'other': '/other'},
-    #               value='main',
-    #               on_change=lambda e: ui.navigate.to(f'/{e.value}'))
+    #     with ui.row():
+    #         ui.link('main', '/')
+    #         ui.link('other', '/other')
+    #     ui.sub_pages({'/': main, '/other': lambda: other('other page')})
+    #
+    async def main():
+        ui.label('main page').classes('font-bold')
+        await asyncio.sleep(2)
+        ui.label('after 2 sec')
 
-    async def main(delay: int):
-        label = ui.label('delayed...')
-        await asyncio.sleep(delay)
-        label.set_text(f'after {delay} sec')
-
-    async def other():
-        label = ui.label('delayed...')
+    async def other(title: str):
+        ui.label(title).classes('font-bold')
         await asyncio.sleep(1)
-        label.set_text('after 1 sec')
+        ui.label('after 1 sec')
+        print('other page')
 
     # END OF DEMO
-    ui.sub_pages({'/': lambda: main(2), '/other': other}, root_path='/documentation/sub_pages')
-    ui.toggle({'': 'main', 'other': 'other'}, value='',
-              on_change=lambda e: ui.navigate.to(f'/documentation/sub_pages/{e.value}'))
+
+    with ui.row():
+        ui.link('main', '/documentation/sub_pages')
+        ui.link('other', '/documentation/sub_pages/other')
+    ui.sub_pages({'/': main, '/other': lambda: other('other page')},
+                 root_path='/documentation/sub_pages')
 
 
 @doc.demo('Adding Sub Pages', '''
