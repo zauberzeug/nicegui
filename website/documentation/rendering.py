@@ -46,7 +46,9 @@ def render_page(documentation: DocumentationPage, *, with_menu: bool = True) -> 
             if part.title:
                 if part.link_target:
                     ui.link_target(part.link_target)
-                subheading(part.title, link=f'/documentation/{part.link}', major=part.reference is not None)
+                subheading(part.title,
+                           link=f'/documentation/{part.link}' if part.link else None,
+                           major=part.reference is not None)
             if part.description:
                 if part.description_format == 'rst':
                     element = custom_restructured_text(part.description.replace(':param ', ':'))
