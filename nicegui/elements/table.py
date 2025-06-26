@@ -82,7 +82,7 @@ class Table(FilterElement, component='table.js'):
                     self.selected.clear()
                 self.selected.extend(e.args['rows'])
             else:
-                self.selected = [row for row in self.selected if row[row_key] not in e.args['keys']]
+                self.selected = [row for row in self.selected if row[self.row_key] not in e.args['keys']]
             self.update()
             arguments = TableSelectionEventArguments(sender=self, client=self.client, selection=self.selected)
             for handler in self._selection_handlers:
