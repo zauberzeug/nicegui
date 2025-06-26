@@ -31,8 +31,8 @@ class RouteMatch:
 
 
 class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-pages'):
-
-    current_path = BindableProperty(on_change=lambda sender, path: cast(Self, sender)._handle_path_change(path))
+    current_path = BindableProperty(
+        on_change=lambda sender, path: cast(SubPages, sender)._handle_path_change(path))  # pylint: disable=protected-access
 
     def __init__(self, routes: Optional[Dict[str, Callable]] = None, *, root_path: Optional[str] = None) -> None:
         """Sub Pages
@@ -258,11 +258,11 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
         """Bind the current path of this element to the target object's target_name property.
 
         The binding works one way only, from this element to the target.
-        The update happens immediately and whenever a value changes.
+        The update happens immediately and whenever a current path changes.
 
         :param target_object: The object to bind to.
         :param target_name: The name of the property to bind to.
-        :param forward: A function to apply to the value before applying it to the target.
+        :param forward: A function to apply to the current path before applying it to the target.
         """
         bind_to(self, 'current_path', target_object, target_name, forward)
         return self
@@ -275,11 +275,11 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
         """Bind the current path of this element from the target object's target_name property.
 
         The binding works one way only, from the target to this element.
-        The update happens immediately and whenever a value changes.
+        The update happens immediately and whenever a current path changes.
 
         :param target_object: The object to bind from.
         :param target_name: The name of the property to bind from.
-        :param backward: A function to apply to the value before applying it to this element.
+        :param backward: A function to apply to the current path before applying it to this element.
         """
         bind_from(self, 'current_path', target_object, target_name, backward)
         return self
@@ -293,13 +293,13 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
         """Bind the current path of this element to the target object's target_name property.
 
         The binding works both ways, from this element to the target and from the target to this element.
-        The update happens immediately and whenever a value changes.
+        The update happens immediately and whenever a current path changes.
         The backward binding takes precedence for the initial synchronization.
 
         :param target_object: The object to bind to.
         :param target_name: The name of the property to bind to.
-        :param forward: A function to apply to the value before applying it to the target.
-        :param backward: A function to apply to the value before applying it to this element.
+        :param forward: A function to apply to the current path before applying it to the target.
+        :param backward: A function to apply to the current path before applying it to this element.
         """
         bind(self, 'current_path', target_object, target_name, forward=forward, backward=backward)
         return self
@@ -317,4 +317,4 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
         :param path: The new current path.
         """
         if self._is_root:
-            self._show_and_update_history((self._root_path + path) if self._root_path else path)
+            self._show_and_update_history(f'{self._root_path or ""}{path}')

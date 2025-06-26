@@ -18,8 +18,10 @@ def test_switching_between_sub_pages(screen: Screen):
     def index():
         calls['index'] += 1
         ui.label('Index')
-        sub_pages = ui.sub_pages({'/': sub_page_a, '/b': sub_page_b})
-        sub_pages.bind_current_path_to(path_tracker, 'current_path')
+        ui.sub_pages({
+            '/': sub_page_a,
+            '/b': sub_page_b,
+        }).bind_current_path_to(path_tracker, 'current_path')
 
     def sub_page_a():
         calls['a'] += 1
@@ -133,8 +135,11 @@ def test_opening_sub_pages_directly(screen: Screen):
 def test_changing_sub_pages_via_binding(screen: Screen, root: str):
     @ui.page(root)
     def index():
-        path_input = ui.input(value='/', label='Path')
-        ui.sub_pages({'/': main, '/other': other}, root_path=root if root != '/' else None) \
+        path_input = ui.input('Path', value='/')
+        ui.sub_pages({
+            '/': main,
+            '/other': other,
+        }, root_path=root if root != '/' else None) \
             .bind_current_path_from(path_input, 'value')
 
     def main():
