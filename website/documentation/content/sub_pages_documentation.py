@@ -146,8 +146,8 @@ def binding_to_sub_pages_demo():
     # def index():
     #     toggle = ui.toggle(['/', '/other'], value='/')
     #     ui.sub_pages({'/': main, '/{name}': main}) \
-    #         .bind_current_path_from(toggle, 'value')
-    #     ui.label().bind_text_from(pages, 'current_path')
+    #         .bind_path_from(toggle, 'value')
+    #     ui.label().bind_text_from(pages, 'path')
 
     def main(name: str = 'main'):
         ui.label(name).classes('font-bold')
@@ -155,8 +155,8 @@ def binding_to_sub_pages_demo():
     # END OF DEMO
     toggle = ui.toggle(['/', '/other'], value='/')
     pages = ui.sub_pages({'/': main, '/{name}': main}, root_path='/documentation/sub_pages') \
-        .bind_current_path_from(toggle, 'value')
-    ui.label().bind_text_from(pages, 'current_path')
+        .bind_path_from(toggle, 'value')
+    ui.label().bind_text_from(pages, 'path')
 
 
 doc.reference(ui.sub_pages)

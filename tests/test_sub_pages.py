@@ -11,7 +11,7 @@ from nicegui.testing import Screen
 
 def test_switching_between_sub_pages(screen: Screen):
     calls = {'index': 0, 'a': 0, 'b': 0}
-    path_tracker = {'current_path': '/'}
+    path_tracker = {'path': '/'}
 
     @ui.page('/')
     @ui.page('/b')
@@ -21,7 +21,7 @@ def test_switching_between_sub_pages(screen: Screen):
         ui.sub_pages({
             '/': sub_page_a,
             '/b': sub_page_b,
-        }).bind_current_path_to(path_tracker, 'current_path')
+        }).bind_path_to(path_tracker, 'path')
 
     def sub_page_a():
         calls['a'] += 1
@@ -40,39 +40,39 @@ def test_switching_between_sub_pages(screen: Screen):
     screen.should_contain('Page A')
     screen.should_not_contain('Page B')
     assert calls == {'index': 1, 'a': 1, 'b': 0}
-    assert path_tracker['current_path'] == '/'
+    assert path_tracker['path'] == '/'
 
     screen.click('Go to B')
     screen.should_contain('Index')
     screen.should_contain('Page B')
     screen.should_not_contain('Page A')
     assert calls == {'index': 1, 'a': 1, 'b': 1}
-    assert path_tracker['current_path'] == '/b'
+    assert path_tracker['path'] == '/b'
 
     screen.selenium.back()
     screen.should_contain('Index')
     screen.should_contain('Page A')
     screen.should_not_contain('Page B')
     assert calls == {'index': 1, 'a': 2, 'b': 1}
-    assert path_tracker['current_path'] == '/'
+    assert path_tracker['path'] == '/'
 
     screen.selenium.forward()
     screen.should_contain('Index')
     screen.should_contain('Page B')
     screen.should_not_contain('Page A')
     assert calls == {'index': 1, 'a': 2, 'b': 2}
-    assert path_tracker['current_path'] == '/b'
+    assert path_tracker['path'] == '/b'
 
     screen.click('Go to A')
     screen.click('Go to B with slash')
     screen.should_contain('Page B')
     assert calls == {'index': 1, 'a': 3, 'b': 3}
-    assert path_tracker['current_path'] == '/b'
+    assert path_tracker['path'] == '/b'
 
     screen.click('Go to B with slash')
     screen.should_contain('Page B')
     assert calls == {'index': 1, 'a': 3, 'b': 4}
-    assert path_tracker['current_path'] == '/b'
+    assert path_tracker['path'] == '/b'
 
 
 def test_passing_element_to_sub_page(screen: Screen):
@@ -140,7 +140,7 @@ def test_changing_sub_pages_via_binding(screen: Screen, root: str):
             '/': main,
             '/other': other,
         }, root_path=root if root != '/' else None) \
-            .bind_current_path_from(path_input, 'value')
+            .bind_path_from(path_input, 'value')
 
     def main():
         ui.label('main page')

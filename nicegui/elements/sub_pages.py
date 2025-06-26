@@ -31,8 +31,8 @@ class RouteMatch:
 
 
 class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-pages'):
-    current_path = BindableProperty(
-        on_change=lambda sender, path: cast(SubPages, sender)._handle_path_change(path))  # pylint: disable=protected-access
+    path = BindableProperty(on_change=lambda sender,
+                            path: cast(SubPages, sender)._handle_path_change(path))  # pylint: disable=protected-access
 
     def __init__(self, routes: Optional[Dict[str, Callable]] = None, *, root_path: Optional[str] = None) -> None:
         """Sub Pages
@@ -45,7 +45,7 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
         super().__init__()
         self._routes = routes or {}
         self._root_path = root_path
-        self.current_path = '/'
+        self.path = '/'
         self._active_tasks: Set[asyncio.Task] = set()
         self._send_update_on_path_change = True  # Standard pattern like other elements
         self._handle_routes_change()
@@ -73,7 +73,7 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
         self._cancel_active_tasks()
         self.clear()
         self._send_update_on_path_change = False
-        self.current_path = self._normalize_path(full_path)
+        self.path = self._normalize_path(full_path)
         self._send_update_on_path_change = True
         with self:
             match_result = self._match_route(full_path)
@@ -253,71 +253,71 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
         """
         return next((el for el in element.descendants() if isinstance(el, SubPages)), None)
 
-    def bind_current_path_to(self,
-                             target_object: Any,
-                             target_name: str = 'current_path',
-                             forward: Callable[..., Any] = lambda x: x,
-                             ) -> Self:
-        """Bind the current path of this element to the target object's target_name property.
+    def bind_path_to(self,
+                     target_object: Any,
+                     target_name: str = 'path',
+                     forward: Callable[..., Any] = lambda x: x,
+                     ) -> Self:
+        """Bind the path of this element to the target object's target_name property.
 
         The binding works one way only, from this element to the target.
-        The update happens immediately and whenever a current path changes.
+        The update happens immediately and whenever the path changes.
 
         :param target_object: The object to bind to.
         :param target_name: The name of the property to bind to.
-        :param forward: A function to apply to the current path before applying it to the target.
+        :param forward: A function to apply to the path before applying it to the target.
         """
-        bind_to(self, 'current_path', target_object, target_name, forward)
+        bind_to(self, 'path', target_object, target_name, forward)
         return self
 
-    def bind_current_path_from(self,
-                               target_object: Any,
-                               target_name: str = 'current_path',
-                               backward: Callable[..., Any] = lambda x: x,
-                               ) -> Self:
-        """Bind the current path of this element from the target object's target_name property.
+    def bind_path_from(self,
+                       target_object: Any,
+                       target_name: str = 'path',
+                       backward: Callable[..., Any] = lambda x: x,
+                       ) -> Self:
+        """Bind the path of this element from the target object's target_name property.
 
         The binding works one way only, from the target to this element.
-        The update happens immediately and whenever a current path changes.
+        The update happens immediately and whenever the path changes.
 
         :param target_object: The object to bind from.
         :param target_name: The name of the property to bind from.
-        :param backward: A function to apply to the current path before applying it to this element.
+        :param backward: A function to apply to the path before applying it to this element.
         """
-        bind_from(self, 'current_path', target_object, target_name, backward)
+        bind_from(self, 'path', target_object, target_name, backward)
         return self
 
-    def bind_current_path(self,
-                          target_object: Any,
-                          target_name: str = 'current_path', *,
-                          forward: Callable[..., Any] = lambda x: x,
-                          backward: Callable[..., Any] = lambda x: x,
-                          ) -> Self:
-        """Bind the current path of this element to the target object's target_name property.
+    def bind_path(self,
+                  target_object: Any,
+                  target_name: str = 'path', *,
+                  forward: Callable[..., Any] = lambda x: x,
+                  backward: Callable[..., Any] = lambda x: x,
+                  ) -> Self:
+        """Bind the path of this element to the target object's target_name property.
 
         The binding works both ways, from this element to the target and from the target to this element.
-        The update happens immediately and whenever a current path changes.
+        The update happens immediately and whenever the path changes.
         The backward binding takes precedence for the initial synchronization.
 
         :param target_object: The object to bind to.
         :param target_name: The name of the property to bind to.
-        :param forward: A function to apply to the current path before applying it to the target.
-        :param backward: A function to apply to the current path before applying it to this element.
+        :param forward: A function to apply to the path before applying it to the target.
+        :param backward: A function to apply to the path before applying it to this element.
         """
-        bind(self, 'current_path', target_object, target_name, forward=forward, backward=backward)
+        bind(self, 'path', target_object, target_name, forward=forward, backward=backward)
         return self
 
-    def set_current_path(self, path: str) -> None:
-        """Set the current path of this element.
+    def set_path(self, path: str) -> None:
+        """Set the path of this element.
 
-        :param path: The new current path.
+        :param path: The new path.
         """
-        self.current_path = path
+        self.path = path
 
     def _handle_path_change(self, path: str) -> None:
-        """Called when the current path changes.
+        """Called when the path changes.
 
-        :param path: The new current path.
+        :param path: The new path.
         """
         if self._is_root and self._send_update_on_path_change:
             self._show_and_update_history(f'{self._root_path or ""}{path}')
