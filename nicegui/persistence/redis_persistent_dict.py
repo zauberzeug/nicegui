@@ -1,3 +1,5 @@
+import os
+
 from .. import background_tasks, core, json, optional_features
 from ..logging import log
 from .persistent_dict import PersistentDict
@@ -10,6 +12,23 @@ except ImportError:
     pass
 
 
+def str_to_bool(value: str | bool | None, default: bool = True) -> bool:
+    """Convert a string to boolean value.
+
+    Args:
+        value: The value to convert. Can be a string, boolean, or None.
+        default: The default value to return if the input is None or invalid.
+
+    Returns:
+        bool: The converted boolean value.
+    """
+    if isinstance(value, bool):
+        return value
+    if value is None:
+        return default
+    return str(value).lower() in ('true', '1', 'yes', 'y', 'on')
+
+
 class RedisPersistentDict(PersistentDict):
 
     def __init__(self, *, url: str, id: str, key_prefix: str = 'nicegui:') -> None:  # pylint: disable=redefined-builtin
@@ -18,10 +37,10 @@ class RedisPersistentDict(PersistentDict):
         self.url = url
         self.redis_client = redis.from_url(
             url,
-            health_check_interval=10,
-            socket_connect_timeout=5,
-            retry_on_timeout=True,
-            socket_keepalive=True,
+            health_check_interval=int(os.environ.get('NICEGUI_REDIS_HEALTH_CHECK_INTERVAL', 10)),
+            socket_connect_timeout=int(os.environ.get('NICEGUI_REDIS_SOCKET_CONNECT_TIMEOUT', 5)),
+            retry_on_timeout=str_to_bool(os.environ.get('NICEGUI_REDIS_RETRY_ON_TIMEOUT'), True),
+            socket_keepalive=str_to_bool(os.environ.get('NICEGUI_REDIS_SOCKET_KEEPALIVE'), True),
         )
         self.pubsub = self.redis_client.pubsub()
         self.key = key_prefix + id
