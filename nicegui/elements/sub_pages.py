@@ -47,6 +47,7 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
         self._root_path = root_path
         self.current_path = '/'
         self._active_tasks: Set[asyncio.Task] = set()
+        self._send_update_on_path_change = True  # Standard pattern like other elements
         self._handle_routes_change()
         if self._is_root:
             self.on('open', lambda e: self._show_and_update_history(e.args))
@@ -71,7 +72,9 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
         """
         self._cancel_active_tasks()
         self.clear()
+        self._send_update_on_path_change = False
         self.current_path = self._normalize_path(full_path)
+        self._send_update_on_path_change = True
         with self:
             match_result = self._match_route(full_path)
             if match_result is None:
@@ -316,5 +319,5 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
 
         :param path: The new current path.
         """
-        if self._is_root:
+        if self._is_root and self._send_update_on_path_change:
             self._show_and_update_history(f'{self._root_path or ""}{path}')
