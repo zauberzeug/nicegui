@@ -1,20 +1,20 @@
 from collections.abc import Generator, Iterable
 from copy import deepcopy
-from typing import Any, Callable, Dict, Iterator, List, Literal, Optional, Union
+from typing import Any, Callable, Collection, Iterator, List, Literal, Optional, Union, Generic
 
 from ..events import GenericEventArguments, Handler, ValueChangeEventArguments
-from .choice_element import ChoiceElement
+from .choice_element import ChoiceElement, Option, VT, LT, _to_option
 from .mixins.disableable_element import DisableableElement
 from .mixins.label_element import LabelElement
 from .mixins.validation_element import ValidationDict, ValidationElement, ValidationFunction
 
 
-class Select(LabelElement, ValidationElement, ChoiceElement, DisableableElement, component='select.js'):
+class Select(LabelElement, ValidationElement, ChoiceElement, DisableableElement, Generic[LT, VT], component='select.js'):
 
     def __init__(self,
-                 options: Union[List, Dict], *,
+                 options: Collection[Union[Option[LT, VT], VT]], *,
                  label: Optional[str] = None,
-                 value: Any = None,
+                 value: Optional[VT | Collection[VT]] = None,
                  on_change: Optional[Handler[ValueChangeEventArguments]] = None,
                  with_input: bool = False,
                  new_value_mode: Optional[Literal['add', 'add-unique', 'toggle']] = None,
@@ -66,8 +66,6 @@ class Select(LabelElement, ValidationElement, ChoiceElement, DisableableElement,
             next(key_generator)  # prime the key generator, prepare it to receive the first value
         self.key_generator = key_generator
         if new_value_mode is not None:
-            if isinstance(options, dict) and new_value_mode == 'add' and key_generator is None:
-                raise ValueError('new_value_mode "add" is not supported for dict options without key_generator')
             self._props['new-value-mode'] = new_value_mode
             with_input = True
         if with_input:
@@ -84,6 +82,12 @@ class Select(LabelElement, ValidationElement, ChoiceElement, DisableableElement,
         self.on('popup-hide', lambda e: setattr(e.sender, '_is_showing_popup', False))
 
     @property
+    def selected(self) -> List[Optional[Option[LT, VT]]]:
+        if self.multiple:
+            return [self._values_to_option.get(v) for v in self.value]
+        return [self._values_to_option.get(self.value)]
+
+    @property
     def is_showing_popup(self) -> bool:
         """Whether the options popup is currently shown."""
         return self._is_showing_popup
@@ -93,7 +97,7 @@ class Select(LabelElement, ValidationElement, ChoiceElement, DisableableElement,
             if e.args is None:
                 return []
             else:
-                args = [self._values[arg['value']] if isinstance(arg, dict) else arg for arg in e.args]
+                args = [arg["value"] if isinstance(arg, dict) else arg for arg in e.args]
                 for arg in e.args:
                     if isinstance(arg, str):
                         self._handle_new_value(arg)
@@ -103,67 +107,37 @@ class Select(LabelElement, ValidationElement, ChoiceElement, DisableableElement,
                 return None
             else:  # noqa: PLR5501
                 if isinstance(e.args, str):
-                    new_value = self._handle_new_value(e.args)
-                    return new_value if new_value in self._values else None
+                    new_value = self._handle_new_value(_to_option(e.args))
+                    if not new_value:
+                        return None
+                    return new_value["value"] if new_value["value"] in self._values else None
                 else:
-                    return self._values[e.args['value']]
+                    return e.args["value"]
 
-    def _value_to_model_value(self, value: Any) -> Any:
+    def _value_to_model_value(self, value: VT) -> List[dict] | dict | None:
         # pylint: disable=no-else-return
         if self.multiple:
-            result = []
-            for item in value or []:
-                try:
-                    index = self._values.index(item)
-                    result.append({'value': index, 'label': self._labels[index]})
-                except ValueError:
-                    pass
-            return result
-        else:
             try:
-                index = self._values.index(value)
-                return {'value': index, 'label': self._labels[index]}
-            except ValueError:
-                return None
-
-    def _generate_key(self, value: str) -> Any:
-        if isinstance(self.key_generator, Generator):
-            return self.key_generator.send(value)
-        if isinstance(self.key_generator, Iterable):
-            return next(self.key_generator)
-        if callable(self.key_generator):
-            return self.key_generator(value)
-        return value
-
-    def _handle_new_value(self, value: str) -> Any:
-        mode = self._props['new-value-mode']
-        if isinstance(self.options, list):
-            if mode == 'add':
-                self.options.append(value)
-            elif mode == 'add-unique':
-                if value not in self.options:
-                    self.options.append(value)
-            elif mode == 'toggle':
-                if value in self.options:
-                    self.options.remove(value)
-                else:
-                    self.options.append(value)
-            # NOTE: self._labels and self._values are updated via self.options since they share the same references
-            return value
+                return [self._values_to_option[v] for v in value or []]
+            except KeyError as e:
+                raise ValueError(
+                    f"{set(value) - set(self._values_to_option.keys())} are not values in {set(self._values_to_option.keys())}"
+                ) from e
         else:
-            key = value
-            if mode == 'add':
-                key = self._generate_key(value)
-                self.options[key] = value
-            elif mode == 'add-unique':
-                if value not in self.options.values():
-                    key = self._generate_key(value)
-                    self.options[key] = value
-            elif mode == 'toggle':
-                if value in self.options:
-                    self.options.pop(value)
-                else:
-                    key = self._generate_key(value)
-                    self.options.update({key: value})
-            self._update_values_and_labels()
-            return key
+            return self._values_to_option.get(value)
+
+    def _handle_new_value(self, value: VT | Option[LT, VT]) -> Optional[Option[LT, VT]]:
+        mode = self._props['new-value-mode']
+        option = value if isinstance(value, dict) else _to_option(value)
+        if mode == 'add':
+            self.options.append(option)
+        elif mode == 'add-unique':
+            if option["value"] not in self._values_to_option:
+                self.options.append(option)
+        elif mode == 'toggle':
+            if option["value"] in self._values_to_option:
+                self.options = [o for o in self.options if o["value"] != option["value"]]
+            else:
+                self.options.append(option)
+        self._update_values_and_labels()
+        return option
