@@ -107,6 +107,7 @@ __all__ = [
     'step',
     'stepper',
     'stepper_navigation',
+    'sub_pages',
     'switch',
     'tab',
     'tab_panel',
@@ -211,6 +212,7 @@ from .elements.splitter import Splitter as splitter
 from .elements.stepper import Step as step
 from .elements.stepper import Stepper as stepper
 from .elements.stepper import StepperNavigation as stepper_navigation
+from .elements.sub_pages import SubPages as sub_pages
 from .elements.switch import Switch as switch
 from .elements.table import Table as table
 from .elements.tabs import Tab as tab

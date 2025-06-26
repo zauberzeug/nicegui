@@ -23,6 +23,7 @@
 .nicegui-expansion .q-expansion-item__content,
 .nicegui-scroll-area .q-scrollarea__content,
 .nicegui-splitter .q-splitter__panel,
+.nicegui-sub-pages,
 .nicegui-timeline-entry .q-timeline__content,
 .nicegui-row,
 .nicegui-column {
@@ -39,7 +40,8 @@
   flex-direction: row;
 }
 .nicegui-row,
-.nicegui-column {
+.nicegui-column,
+.nicegui-sub-pages {
   padding: 0;
 }
 .nicegui-card-tight {
