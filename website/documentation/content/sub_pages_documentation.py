@@ -137,4 +137,26 @@ def adding_sub_pages_demo() -> None:
     pages.add('/other', lambda: other(footer))
 
 
+@doc.demo('Binding current path', '''
+    The sub pages element has a `current_path` property which can be bound to.
+''')
+def binding_to_sub_pages_demo():
+    # @ui.page('/')
+    # @ui.page('/{_:path}') # NOTE: our page should catch all paths
+    # def index():
+    #     toggle = ui.toggle(['/', '/other'], value='/')
+    #     ui.sub_pages({'/': main, '/{name}': main}) \
+    #         .bind_current_path_from(toggle, 'value')
+    #     ui.label().bind_text_from(pages, 'current_path')
+
+    def main(name: str = 'main'):
+        ui.label(name).classes('font-bold')
+
+    # END OF DEMO
+    toggle = ui.toggle(['/', '/other'], value='/')
+    pages = ui.sub_pages({'/': main, '/{name}': main}, root_path='/documentation/sub_pages') \
+        .bind_current_path_from(toggle, 'value')
+    ui.label().bind_text_from(pages, 'current_path')
+
+
 doc.reference(ui.sub_pages)
