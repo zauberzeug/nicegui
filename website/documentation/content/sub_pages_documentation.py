@@ -137,8 +137,8 @@ def adding_sub_pages_demo() -> None:
     pages.add('/other', lambda: other(footer))
 
 
-@doc.demo('Binding the Current Path', '''
-    The `ui.sub_pages` element has a `current_path` property which can be bound to.
+@doc.demo('Binding the Path', '''
+    The `ui.sub_pages` element has a `path` property which can be bound to.
 ''')
 def binding_to_sub_pages_demo():
     # @ui.page('/')

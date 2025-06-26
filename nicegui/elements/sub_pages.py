@@ -31,8 +31,8 @@ class RouteMatch:
 
 
 class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-pages'):
-    path = BindableProperty(on_change=lambda sender,
-                            path: cast(SubPages, sender)._handle_path_change(path))  # pylint: disable=protected-access
+    path = BindableProperty(
+        on_change=lambda sender, path: cast(SubPages, sender)._handle_path_change(path))  # pylint: disable=protected-access
 
     def __init__(self, routes: Optional[Dict[str, Callable]] = None, *, root_path: Optional[str] = None) -> None:
         """Sub Pages
@@ -47,7 +47,7 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
         self._root_path = root_path
         self.path = '/'
         self._active_tasks: Set[asyncio.Task] = set()
-        self._send_update_on_path_change = True  # Standard pattern like other elements
+        self._send_update_on_path_change = True  # standard pattern like for other elements
         self._handle_routes_change()
         if self._is_root:
             self.on('open', lambda e: self._show_and_update_history(e.args))
