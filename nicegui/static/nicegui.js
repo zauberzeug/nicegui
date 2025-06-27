@@ -110,6 +110,24 @@ function stringifyEventArgs(args, event_args) {
   return result;
 }
 
+const dataStore = JSON.parse(localStorage.getItem("__nicegui_data_store__") || "{}");
+
+function unhash(value) {
+  if (typeof value === "string" && value.startsWith("CACHE_")) {
+    const hashId = value.split("_")[1];
+    if (hashId in dataStore) return dataStore[hashId];
+    const jsonStart = "CACHE_".length + hashId.length + 1; // +1 for the underscore
+    const result = JSON.parse(value.substring(jsonStart));
+    dataStore[hashId] = result;
+    localStorage.setItem("__nicegui_data_store__", JSON.stringify(dataStore));
+    const cookie_value = JSON.stringify(Object.keys(dataStore));
+    const cookie_expiration = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 30 days
+    document.cookie = `__nicegui_hash_keys__=${cookie_value};expires=${cookie_expiration.toUTCString()};path=/`;
+    return result;
+  }
+  return value;
+}
+
 const waitingCallbacks = new Map();
 function throttle(callback, time, leading, trailing, id) {
   if (time <= 0) {
@@ -159,6 +177,7 @@ function renderRecursively(elements, id) {
     style: Object.entries(element.style).reduce((str, [p, val]) => `${str}${p}:${val};`, "") || undefined,
     ...element.props,
   };
+  Object.entries(props).forEach(([key, value]) => (props[key] = unhash(value)));
   Object.entries(props).forEach(([key, value]) => {
     if (key.startsWith(":")) {
       try {
@@ -233,7 +252,7 @@ function renderRecursively(elements, id) {
       }
       const children = data.ids.map((id) => renderRecursively(elements, id));
       if (name === "default" && element.text !== null) {
-        children.unshift(element.text);
+        children.unshift(unhash(element.text));
       }
       return [...rendered, ...children];
     };
