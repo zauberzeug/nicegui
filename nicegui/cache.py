@@ -1,4 +1,7 @@
-from typing import overload
+import hashlib
+from typing import Dict, List, Set, TypeVar, Union, overload
+
+from . import json
 
 
 class Cached:
@@ -22,11 +25,11 @@ def cache(x: str) -> CachedStr: ...
 
 
 @overload
-def cache(x: list) -> CachedList: ...
+def cache(x: List) -> CachedList: ...
 
 
 @overload
-def cache(x: dict) -> CachedDict: ...
+def cache(x: Dict) -> CachedDict: ...
 
 
 def cache(x):
@@ -40,6 +43,18 @@ def cache(x):
     raise ValueError(f'Unsupported type: {type(x)}')
 
 
-def is_cached(obj) -> bool:
-    """Check if an object is marked as cached."""
-    return isinstance(obj, Cached)
+T = TypeVar('T')
+
+
+def add_hash(obj: T, known_hashes: Set[str]) -> Union[T, str]:
+    """Serialize an object to a JSON-compatible format."""
+    if isinstance(obj, Cached):
+        serialized = json.dumps(obj)
+        hash_id = hashlib.sha256(serialized.encode()).hexdigest()[:32]
+        if hash_id in known_hashes:
+            return f'CACHE_{hash_id}'
+        else:
+            known_hashes.add(hash_id)
+            return f'CACHE_{hash_id}_{serialized}'
+    else:
+        return obj

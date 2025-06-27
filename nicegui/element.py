@@ -10,6 +10,7 @@ from typing_extensions import Self
 
 from . import core, events, helpers, json, storage
 from .awaitable_response import AwaitableResponse, NullResponse
+from .cache import add_hash
 from .classes import Classes
 from .context import context
 from .dependencies import (
@@ -209,13 +210,13 @@ class Element(Visibility):
     def _to_dict(self) -> Dict[str, Any]:
         return {
             'tag': self.tag,
-            **({'text': self._text} if self._text is not None else {}),
+            **({'text': add_hash(self._text, self.client.known_hashes)} if self._text is not None else {}),
             **{
                 key: value
                 for key, value in {
                     'class': self._classes,
                     'style': self._style,
-                    'props': self._props,
+                    'props': {key: add_hash(value, self.client.known_hashes) for key, value in self._props.items()},
                     'slots': self._collect_slot_dict(),
                     'children': [child.id for child in self.default_slot.children],
                     'events': [listener.to_dict() for listener in self._event_listeners.values()],
