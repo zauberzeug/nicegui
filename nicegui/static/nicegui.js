@@ -116,6 +116,7 @@ function unhash(value) {
   if (typeof value === "string" && value.startsWith("CACHE_")) {
     const hashId = value.split("_")[1];
     if (hashId in dataStore) return dataStore[hashId];
+    console.log("Cache miss:", hashId);
     const jsonStart = "CACHE_".length + hashId.length + 1; // +1 for the underscore
     const result = JSON.parse(value.substring(jsonStart));
     dataStore[hashId] = result;
