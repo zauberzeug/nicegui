@@ -142,6 +142,7 @@ class Client:
         """Build a FastAPI response for the client."""
         self.outbox.updates.clear()
         prefix = request.headers.get('X-Forwarded-Prefix', request.scope.get('root_path', ''))
+        self.known_hashes.union(json.loads(request.cookies.get('__nicegui_hash_keys__', '[]')))
         elements = json.dumps({
             id: element._to_dict() for id, element in self.elements.items()  # pylint: disable=protected-access
         })
