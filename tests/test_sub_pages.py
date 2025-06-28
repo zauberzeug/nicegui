@@ -568,11 +568,11 @@ def test_async_sub_pages(screen: Screen):
     def index():
         ui.toggle(['/', '/0.1', '/1.0'], value='/', on_change=lambda e: ui.navigate.to(e.value))
         ui.sub_pages({
-            '/': lambda: main(0),
+            '/': main,
             '/{delay}': lambda delay: main(float(delay)),
         })
 
-    async def main(delay: float):
+    async def main(delay: float = 0):
         ui.label(f'waiting for {delay} sec')
         await asyncio.sleep(delay)
         ui.label(f'after {delay} sec')
