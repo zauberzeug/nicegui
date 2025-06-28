@@ -1,25 +1,30 @@
 from __future__ import annotations
 
-from starlette.datastructures import QueryParams
+from typing import TYPE_CHECKING
 
-from .elements.sub_pages import SubPages
+if TYPE_CHECKING:
+    from .elements.sub_pages import SubPages
+
+from starlette.datastructures import QueryParams
 
 
 class PageArgs:
-    """Container for page arguments like query parameters.
+    """Container for page arguments like query parameters and path parameters.
 
     This class provides access to request data for sub-page functions.
     Can be used as a parameter in sub-page functions and will be automatically injected.
     """
 
-    def __init__(self, query_parameters: QueryParams, frame: SubPages) -> None:
-        """Initialize PageArgs with query parameters and frame reference.
+    def __init__(self, query_parameters: QueryParams, frame: SubPages, path_parameters: dict[str, str]) -> None:
+        """Initialize PageArgs with query parameters, frame reference, and path parameters.
 
         :param query_parameters: Query parameters from the request
         :param frame: Reference to the ui.sub_pages element currently executing
+        :param path_parameters: Path parameters extracted from the route pattern
         """
         self._query_parameters = query_parameters
         self._frame = frame
+        self._path_parameters = path_parameters
 
     @property
     def query_parameters(self) -> QueryParams:
@@ -36,3 +41,11 @@ class PageArgs:
         :return: ui.sub_pages element that is rendering this page
         """
         return self._frame
+
+    @property
+    def path_parameters(self) -> dict[str, str]:
+        """Access to path parameters extracted from the route pattern.
+
+        :return: Dictionary containing path parameters as strings
+        """
+        return self._path_parameters

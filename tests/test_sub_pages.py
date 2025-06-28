@@ -563,7 +563,7 @@ def test_async_sub_pages(screen: Screen):
     screen.should_not_contain('after 1.0 sec')
 
 
-def test_sub_pages_with_query_parameters(screen: Screen):
+def test_sub_page_with_query_parameters(screen: Screen):
     @ui.page('/')
     def index():
         ui.link('Link to main', '/?link=works')
@@ -581,3 +581,31 @@ def test_sub_pages_with_query_parameters(screen: Screen):
 
     screen.click('Button to main')
     screen.should_contain('button=works')
+
+
+def test_accessing_path_parameters_via_page_args(screen: Screen):
+    @ui.page('/')
+    @ui.page('/{path:path}')
+    def index():
+        ui.link('Link with parameter', '/link')
+        ui.button('Button with parameter', on_click=lambda: ui.navigate.to('/button'))
+        ui.sub_pages({
+            '/': main_content,
+            '/{parameter}': main_content,
+        })
+
+    def main_content(args: PageArgs):
+        param = args.path_parameters.get('parameter', 'none')
+        ui.label(f'param-{param}')
+
+    screen.open('/')
+    screen.should_contain('param-none')
+
+    screen.open('/test')
+    screen.should_contain('param-test')
+
+    screen.click('Link with parameter')
+    screen.should_contain('param-link')
+
+    screen.click('Button with parameter')
+    screen.should_contain('param-button')
