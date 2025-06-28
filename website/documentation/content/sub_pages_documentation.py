@@ -148,7 +148,7 @@ def binding_to_sub_pages_demo():
     # def index():
     #     toggle = ui.toggle(['/', '/other'], value='/')
     #     ui.sub_pages({'/': main, '/{name}': main}) \
-    #         .bind_path_from(toggle, 'value')
+    #         .bind_path(toggle, 'value')
     #     ui.label().bind_text_from(pages, 'path')
 
     def main(name: str = 'main'):
@@ -157,7 +157,7 @@ def binding_to_sub_pages_demo():
     # END OF DEMO
     toggle = ui.toggle(['/', '/other'], value='/')
     pages = ui.sub_pages({'/': main, '/{name}': main}, root_path='/documentation/sub_pages') \
-        .bind_path_from(toggle, 'value')
+        .bind_path(toggle, 'value')
     ui.label().bind_text_from(pages, 'path')
 
 
@@ -169,7 +169,7 @@ def page_args_demo():
     from nicegui import PageArgs
 
     # @ui.page('/')
-    # @ui.page('/{_:path}')
+    # @ui.page('/{_:path}') # NOTE: our page should catch all paths
     # def index():
     #     ui.link('msg=hello', '/documentation/sub_pages?msg=hello')
     #     ui.link('msg=world', '/documentation/sub_pages?msg=world')
