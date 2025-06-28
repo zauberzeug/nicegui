@@ -75,7 +75,7 @@ def test_switching_between_sub_pages(screen: Screen):
     assert path_tracker['path'] == '/b'
 
 
-def test_passing_element_to_sub_page(screen: Screen):
+def test_passing_data_to_sub_page_via_lambda(screen: Screen):
     @ui.page('/')
     @ui.page('/other')
     def index():
@@ -90,6 +90,35 @@ def test_passing_element_to_sub_page(screen: Screen):
         ui.link('Go to other', '/other')
 
     def other(title: ui.label):
+        title.text = 'other title'
+        ui.link('Go to main', '/')
+
+    screen.open('/')
+    screen.should_contain('main title')
+
+    screen.click('Go to other')
+    screen.should_contain('other title')
+
+    screen.click('Go to main')
+    screen.should_contain('main title')
+
+
+def test_passing_data_to_sub_page_via_dict(screen: Screen):
+    @ui.page('/')
+    @ui.page('/other')
+    def index():
+        title = ui.label()
+        ui.sub_pages({
+            '/': main,
+            '/other': other,
+        }, data={'title': title})
+
+    def main(title: ui.label):
+        title.text = 'main title'
+        ui.link('Go to other', '/other')
+
+    def other(args: PageArgs):
+        title: ui.label = args.data['title']
         title.text = 'other title'
         ui.link('Go to main', '/')
 

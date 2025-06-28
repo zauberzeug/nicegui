@@ -35,17 +35,19 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
     path = BindableProperty(
         on_change=lambda sender, path: cast(SubPages, sender)._handle_path_change(path))  # pylint: disable=protected-access
 
-    def __init__(self, routes: Optional[Dict[str, Callable]] = None, *, root_path: Optional[str] = None) -> None:
+    def __init__(self, routes: Optional[Dict[str, Callable]] = None, *, root_path: Optional[str] = None, data: Optional[Dict[str, Any]] = None) -> None:
         """Sub Pages
 
         Create a sub pages element to handle client-side routing within a page.
 
         :param routes: dictionary mapping sub-page paths to page builder functions
         :param root_path: optional root path to strip from incoming paths (useful for non-root page mounts)
+        :param data: optional dictionary with arbitrary data to be passed to sub-page functions
         """
         super().__init__()
         self._routes = routes or {}
         self._root_path = root_path
+        self._data = data or {}
         self.path = '/'
         self._active_tasks: Set[asyncio.Task] = set()
         self._send_update_on_path_change = True  # standard pattern like for other elements
@@ -198,8 +200,11 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
                 kwargs[name] = PageArgs(
                     context.client.request.query_params,
                     self,
-                    route_match.parameters or {}
+                    route_match.parameters or {},
+                    self._data
                 )
+            elif name in self._data:
+                kwargs[name] = self._data[name]
             elif route_match.parameters and name in route_match.parameters:
                 kwargs[name] = self._convert_parameter(route_match.parameters[name], param.annotation)
 
