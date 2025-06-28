@@ -15,6 +15,7 @@ from ..dataclasses import KWONLY_SLOTS
 from ..element import Element
 from ..elements.label import Label
 from ..functions.javascript import run_javascript
+from ..page_args import PageArgs
 
 
 @dataclass(**KWONLY_SLOTS)
@@ -188,16 +189,17 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
         return True
 
     def _place_content(self, route_match: RouteMatch) -> None:
-        if route_match.parameters:
-            parameters = inspect.signature(route_match.builder).parameters
-            converted_parameters = {
-                name: self._convert_parameter(value, parameters[name].annotation)
-                for name, value in route_match.parameters.items()
-                if name in parameters
-            }
-            result = route_match.builder(**converted_parameters)
-        else:
-            result = route_match.builder()
+        parameters = inspect.signature(route_match.builder).parameters
+        kwargs = {}
+
+        for name, param in parameters.items():
+            if param.annotation is PageArgs:
+                assert context.client.request
+                kwargs[name] = PageArgs(context.client.request.query_params)
+            elif route_match.parameters and name in route_match.parameters:
+                kwargs[name] = self._convert_parameter(route_match.parameters[name], param.annotation)
+
+        result = route_match.builder(**kwargs)
         if asyncio.iscoroutine(result):
             async def background_task():
                 with self:

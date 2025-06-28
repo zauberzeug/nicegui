@@ -3,7 +3,7 @@ import asyncio
 import pytest
 from selenium.webdriver.common.by import By
 
-from nicegui import ui
+from nicegui import PageArgs, ui
 from nicegui.testing import Screen
 
 # pylint: disable=missing-function-docstring
@@ -561,3 +561,23 @@ def test_async_sub_pages(screen: Screen):
     screen.wait(1)
     screen.should_contain('after 0.1 sec')
     screen.should_not_contain('after 1.0 sec')
+
+
+def test_sub_pages_with_query_parameters(screen: Screen):
+    @ui.page('/')
+    def index():
+        ui.link('Link to main', '/?link=works')
+        ui.button('Button to main', on_click=lambda: ui.navigate.to('/?button=works'))
+        ui.sub_pages({'/': main_content})
+
+    def main_content(args: PageArgs):
+        ui.label(str(args.query_parameters))
+
+    screen.open('/?query=test')
+    screen.should_contain('query=test')
+
+    screen.click('Link to main')
+    screen.should_contain('link=works')
+
+    screen.click('Button to main')
+    screen.should_contain('button=works')
