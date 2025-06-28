@@ -1,3 +1,4 @@
+from nicegui import PageArgs
 from nicegui import ui
 
 from . import doc
@@ -181,3 +182,8 @@ def page_args_demo():
     ui.link('msg=hello', '/documentation/sub_pages?msg=hello')
     ui.link('msg=world', '/documentation/sub_pages?msg=world')
     ui.sub_pages({'/': main}, root_path='/documentation/sub_pages')
+
+
+doc.reference(ui.sub_pages, title='Reference for ui.sub_pages')
+
+doc.reference(PageArgs, title='Reference for PageArgs')
