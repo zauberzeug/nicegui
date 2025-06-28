@@ -348,10 +348,10 @@ def test_adding_sub_pages_after_initialization(screen: Screen):
     @ui.page('/sub')
     def index():
         pages = ui.sub_pages()
-        pages.add('/', lambda: main_content(pages))
+        pages.add('/', main_content)
 
-    def main_content(pages: ui.sub_pages):
-        ui.button('Add sub page', on_click=lambda: pages.add('/sub', sub_content))
+    def main_content(args: PageArgs):
+        ui.button('Add sub page', on_click=lambda: args.frame.add('/sub', sub_content))
         ui.button('Go to sub', on_click=lambda: ui.navigate.to('/sub'))
 
     def sub_content():

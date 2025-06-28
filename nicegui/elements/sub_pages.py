@@ -195,7 +195,7 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
         for name, param in parameters.items():
             if param.annotation is PageArgs:
                 assert context.client.request
-                kwargs[name] = PageArgs(context.client.request.query_params)
+                kwargs[name] = PageArgs(context.client.request.query_params, self)
             elif route_match.parameters and name in route_match.parameters:
                 kwargs[name] = self._convert_parameter(route_match.parameters[name], param.annotation)
 
