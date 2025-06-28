@@ -2,7 +2,6 @@ from typing import List
 
 from nicegui import ui
 
-from ..header import add_head_html, add_header
 from ..style import section_heading, subheading
 from .content import DocumentationPage
 from .custom_restructured_text import CustomRestructuredText as custom_restructured_text
@@ -11,31 +10,11 @@ from .reference import generate_class_doc
 from .tree import nodes
 
 
-def render_page(documentation: DocumentationPage, *, with_menu: bool = True) -> None:
+def render_page(documentation: DocumentationPage) -> None:
     """Render the documentation."""
 
-    # menu
-    if with_menu:
-        with ui.left_drawer() \
-                .classes('column no-wrap gap-1 bg-[#eee] dark:bg-[#1b1b1b] mt-[-20px] px-8 py-20') \
-                .style('height: calc(100% + 20px) !important') as menu:
-            tree = ui.tree(nodes, label_key='title').classes('w-full').props('accordion no-connectors')
-            tree.add_slot('default-header', '''
-                <a :href="'/documentation/' + props.node.id" onclick="event.stopPropagation()">{{ props.node.title }}</a>
-            ''')
-            tree.expand(_ancestor_nodes(documentation.name))
-            ui.run_javascript(f'''
-                Array.from(getHtmlElement({tree.id}).getElementsByTagName("a"))
-                    .find(el => el.innerText.trim() === "{(documentation.parts[0].title or '').replace('*', '')}")
-                    .scrollIntoView({{block: "center"}});
-            ''')
-    else:
-        menu = None
+    ui.run_javascript('window.scrollTo({top: 0, left: 0, behavior: "instant"});')
 
-    # header
-    add_head_html()
-    add_header(menu)
-    ui.add_css('html {scroll-behavior: auto}')
     title = (documentation.title or '').replace('*', '')
     ui.page_title('NiceGUI' if not title else title if title.split()[0] == 'NiceGUI' else f'{title} | NiceGUI')
 
