@@ -593,23 +593,30 @@ def test_async_sub_pages(screen: Screen):
 
 
 def test_sub_page_with_query_parameters(screen: Screen):
+    calls = {'index': 0, 'main_content': 0}
+
     @ui.page('/')
     def index():
+        calls['index'] += 1
         ui.link('Link to main', '/?link=works')
         ui.button('Button to main', on_click=lambda: ui.navigate.to('/?button=works'))
         ui.sub_pages({'/': main_content})
 
     def main_content(args: PageArgs):
+        calls['main_content'] += 1
         ui.label(str(args.query_parameters))
 
     screen.open('/?query=test')
     screen.should_contain('query=test')
+    assert calls == {'index': 1, 'main_content': 1}
 
     screen.click('Link to main')
     screen.should_contain('link=works')
+    assert calls == {'index': 1, 'main_content': 2}
 
     screen.click('Button to main')
     screen.should_contain('button=works')
+    assert calls == {'index': 1, 'main_content': 3}
 
 
 def test_accessing_path_parameters_via_page_args(screen: Screen):

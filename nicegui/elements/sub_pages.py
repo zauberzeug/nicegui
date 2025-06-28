@@ -5,7 +5,9 @@ import inspect
 import re
 from dataclasses import dataclass
 from typing import Any, Callable, Dict, List, Optional, Set, cast
+from urllib.parse import urlparse
 
+from starlette.datastructures import QueryParams
 from typing_extensions import Self
 
 from .. import background_tasks
@@ -29,6 +31,8 @@ class RouteMatch:
     '''The function to call to build the page'''
     parameters: Dict[str, str]
     '''The extracted parameters (name -> value) from the path (e.g., ``{"id": "123"}``)'''
+    query_params: QueryParams
+    '''The query parameters from the URL'''
 
 
 class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-pages'):
@@ -75,18 +79,21 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
         """
         self._cancel_active_tasks()
         self.clear()
+
+        match_result = self._match_route(full_path)
+        if match_result is None:
+            with self:
+                Label(f'404: sub page {full_path} not found')
+            return
+
         self._send_update_on_path_change = False
-        self.path = self._normalize_path(full_path)
+        self.path = match_result.path
         self._send_update_on_path_change = True
         with self:
-            match_result = self._match_route(full_path)
-            if match_result is None:
-                Label(f'404: sub page {full_path} not found')
-                return
             self._place_content(match_result)
-            child_sub_pages = SubPages.find_child(self)
-            if child_sub_pages:
-                child_sub_pages.show(full_path[len(match_result.path):])
+        child_sub_pages = SubPages.find_child(self)
+        if child_sub_pages:
+            child_sub_pages.show(full_path[len(match_result.path):])
 
     def _cancel_active_tasks(self) -> None:
         """Cancel all active async tasks for this SubPages instance."""
@@ -110,26 +117,38 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
             }}
         ''')
 
-    def _match_route(self, path: str) -> Optional[RouteMatch]:
-        """Find the first matching route for a path with segment dropping.
+    def _match_route(self, full_path: str) -> Optional[RouteMatch]:
+        """Find the first matching route for a full path (including query params) with segment dropping.
 
         :return: RouteMatch object if found, None otherwise
         """
-        normalized_path = self._normalize_path(path)
+        parsed_url = urlparse(full_path)
+        path_only = parsed_url.path
+        query_params = QueryParams(parsed_url.query) if parsed_url.query else QueryParams()
+
+        normalized_path = self._normalize_path(path_only)
         segments = normalized_path.split('/')
         while segments:
             sub_path = '/'.join(segments)
             for route, builder in self._routes.items():
                 matches = self._match_path(route, sub_path)
                 if matches is not None:
-                    return RouteMatch(path=sub_path, pattern=route, builder=builder, parameters=matches)
+                    return RouteMatch(
+                        path=sub_path,
+                        pattern=route,
+                        builder=builder,
+                        parameters=matches,
+                        query_params=query_params
+                    )
             segments.pop()
         return None
 
     def _handle_routes_change(self) -> None:
         if self._is_root:
             assert context.client.request
-            path = context.client.request.url.path
+            path = str(context.client.request.url.path)
+            if context.client.request.url.query:
+                path += '?' + context.client.request.url.query
             self._show_and_update_history(path)
 
     def _handle_navigate(self, path: str) -> None:
@@ -196,9 +215,9 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
 
         for name, param in parameters.items():
             if param.annotation is PageArgs:
-                assert context.client.request
                 kwargs[name] = PageArgs(
-                    context.client.request.query_params,
+                    route_match.query_params,
+                    route_match.path,
                     self,
                     route_match.parameters or {},
                     self._data
@@ -227,7 +246,7 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
             self.show(path)
             run_javascript(f'''
                 const fullPath = (window.path_prefix || '') + "{path}";
-                if (window.location.pathname !== fullPath) {{
+                if (window.location.pathname + window.location.search !== fullPath) {{
                     history.pushState({{page: "{path}"}}, "", fullPath);
                 }}
             ''')
