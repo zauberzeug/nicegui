@@ -618,6 +618,14 @@ def test_sub_page_with_query_parameters(screen: Screen):
     screen.should_contain('button=works')
     assert calls == {'index': 1, 'main_content': 3}
 
+    screen.selenium.back()
+    screen.should_contain('link=works')
+    assert calls == {'index': 1, 'main_content': 4}
+
+    screen.selenium.forward()
+    screen.should_contain('button=works')
+    assert calls == {'index': 1, 'main_content': 5}
+
 
 def test_accessing_path_parameters_via_page_args(screen: Screen):
     @ui.page('/')

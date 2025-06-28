@@ -112,7 +112,7 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
         self.show(path)
         run_javascript(f'''
             const fullPath = (window.path_prefix || '') + "{path}";
-            if (window.location.pathname !== fullPath) {{
+            if (window.location.pathname + window.location.search !== fullPath) {{
                 history.pushState({{page: "{path}"}}, "", fullPath);
             }}
         ''')
