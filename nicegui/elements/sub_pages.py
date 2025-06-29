@@ -216,11 +216,11 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
         for name, param in parameters.items():
             if param.annotation is PageArgs:
                 kwargs[name] = PageArgs(
-                    route_match.query_params,
-                    route_match.path,
-                    self,
-                    route_match.parameters or {},
-                    self._data
+                    path=route_match.path,
+                    frame=self,
+                    path_parameters=route_match.parameters or {},
+                    query_parameters=route_match.query_params,
+                    data=self._data
                 )
             elif name in self._data:
                 kwargs[name] = self._data[name]
