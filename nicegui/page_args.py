@@ -25,6 +25,8 @@ class RouteMatch:
     '''The extracted parameters (name -> value) from the path (e.g., ``{"id": "123"}``)'''
     query_params: QueryParams
     '''The query parameters from the URL'''
+    fragment: str
+    '''The URL fragment (e.g., "section" from "#section")'''
 
 
 @dataclass(**KWONLY_SLOTS)
