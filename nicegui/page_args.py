@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import inspect
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Callable, Dict
+from typing import TYPE_CHECKING, Any, Callable, Dict, Union, get_args, get_origin
 
 if TYPE_CHECKING:
     from .elements.sub_pages import SubPages
@@ -63,6 +63,13 @@ class PageArgs:
         )
 
     @staticmethod
+    def _unwrap_optional(param_type: type) -> type:
+        """Extract the base type from Optional[T] -> T, or return the type as-is."""
+        if get_origin(param_type) is Union and type(None) in get_args(param_type):
+            return next(arg for arg in get_args(param_type) if arg is not type(None))
+        return param_type
+
+    @staticmethod
     def _convert_parameter(value: str, param_type: type) -> Any:
         """Convert a string parameter to the specified type (``str``, ``int``, or ``float``).
 
@@ -70,6 +77,7 @@ class PageArgs:
         :param param_type: the type to convert to
         :return: the converted value
         """
+        param_type = PageArgs._unwrap_optional(param_type)
         if param_type is str or param_type is inspect.Parameter.empty:
             return value
         elif param_type is int:

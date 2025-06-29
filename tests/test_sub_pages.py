@@ -1,4 +1,5 @@
 import asyncio
+from typing import Optional
 
 import pytest
 from selenium.webdriver.common.by import By
@@ -658,3 +659,52 @@ def test_accessing_path_parameters_via_page_args(screen: Screen):
 
     screen.click('Button with parameter')
     screen.should_contain('param-button')
+
+
+def test_optional_parameters(screen: Screen):
+    @ui.page('/')
+    @ui.page('/{path:path}')
+    def index():
+        ui.link('Required only', '/test')
+        ui.link('With query', '/hello?count=5&active=yes')
+        ui.sub_pages({
+            '/{name}': content_with_mixed_params,
+        }, data={'source': 'data_dict'})
+
+    def content_with_mixed_params(
+        name: str,
+        count: Optional[int] = 1,
+        active: Optional[str] = 'no',
+        source: Optional[str] = None,
+        missing: Optional[str] = 'default'
+    ):
+        ui.label(f'name={name}, count={count}, active={active}, source={source}, missing={missing}')
+
+    screen.open('/test')
+    screen.should_contain('name=test, count=1, active=no, source=data_dict, missing=default')
+
+    screen.click('With query')
+    screen.should_contain('name=hello, count=5, active=yes, source=data_dict, missing=default')
+
+
+def test_page_args_with_optional_parameters(screen: Screen):
+
+    @ui.page('/')
+    @ui.page('/{path:path}')
+    def index():
+        ui.link('Test PageArgs', '/user/123?role=admin')
+        ui.sub_pages({
+            '/user/{user_id}': user_page,
+        }, data={'app_name': 'MyApp'})
+
+    def user_page(
+        args: PageArgs,
+        user_id: str,
+        role: Optional[str] = 'guest',
+        app_name: Optional[str] = None,
+    ):
+        ui.label(f'path={args.path}, user_id={user_id}, role={role}, app={app_name}')
+
+    screen.open('/')
+    screen.click('Test PageArgs')
+    screen.should_contain('path=/user/123, user_id=123, role=admin, app=MyApp')
