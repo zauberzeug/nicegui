@@ -46,6 +46,30 @@ class PageArgs:
     '''Arbitrary data passed to the ui.sub_pages element.'''
 
     @classmethod
+    def build_kwargs(cls, route_match: RouteMatch, frame: SubPages, data: dict[str, Any]) -> dict[str, Any]:
+        """Build keyword arguments for the route builder function.
+
+        :param route_match: The RouteMatch containing path info and parameters
+        :param frame: The SubPages instance currently executing this page
+        :param data: Arbitrary data passed to the sub_pages element
+        :return: Dictionary of keyword arguments for the builder function
+        """
+        parameters = inspect.signature(route_match.builder).parameters
+        kwargs = {}
+
+        for name, param in parameters.items():
+            if param.annotation is cls:
+                kwargs[name] = cls._from_route_match(route_match, frame, data)
+            elif name in data:
+                kwargs[name] = data[name]
+            elif route_match.parameters and name in route_match.parameters:
+                kwargs[name] = cls._convert_parameter(route_match.parameters[name], param.annotation)
+            elif name in route_match.query_params:
+                kwargs[name] = cls._convert_parameter(route_match.query_params[name], param.annotation)
+
+        return kwargs
+
+    @classmethod
     def _from_route_match(cls, route_match: RouteMatch, frame: SubPages, data: dict[str, Any]) -> PageArgs:
         """Create a PageArgs instance from a RouteMatch and SubPages frame.
 
@@ -85,27 +109,3 @@ class PageArgs:
         elif param_type is float:
             return float(value)
         return value
-
-    @classmethod
-    def build_kwargs(cls, route_match: RouteMatch, frame: SubPages, data: dict[str, Any]) -> dict[str, Any]:
-        """Build keyword arguments for the route builder function.
-
-        :param route_match: The RouteMatch containing path info and parameters
-        :param frame: The SubPages instance currently executing this page
-        :param data: Arbitrary data passed to the sub_pages element
-        :return: Dictionary of keyword arguments for the builder function
-        """
-        parameters = inspect.signature(route_match.builder).parameters
-        kwargs = {}
-
-        for name, param in parameters.items():
-            if param.annotation is cls:
-                kwargs[name] = cls._from_route_match(route_match, frame, data)
-            elif name in data:
-                kwargs[name] = data[name]
-            elif route_match.parameters and name in route_match.parameters:
-                kwargs[name] = cls._convert_parameter(route_match.parameters[name], param.annotation)
-            elif name in route_match.query_params:
-                kwargs[name] = cls._convert_parameter(route_match.query_params[name], param.annotation)
-
-        return kwargs
