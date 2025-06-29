@@ -73,6 +73,19 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
         self._send_update_on_path_change = True
         with self:
             self._place_content(match_result)
+
+        if match_result.fragment:
+            run_javascript(f'''
+                setTimeout(() => {{
+                    let target = document.getElementById("{match_result.fragment}");
+                    if (target)
+                        target.scrollIntoView({{ behavior: "smooth" }});
+                    else
+                        if (target = document.querySelector('a[name="{match_result.fragment}"]'))
+                            target.scrollIntoView({{ behavior: "smooth" }});
+                }}, 100);
+            ''')
+
         child_sub_pages = SubPages.find_child(self)
         if child_sub_pages:
             child_sub_pages.show(full_path[len(match_result.path):])
@@ -92,21 +105,26 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
         :param path: the path to navigate to
         """
         self.show(path)
+        parsed = urlparse(path)
+        fragment = f'#{parsed.fragment}' if parsed.fragment else ''
+        path_without_fragment = path.replace(f'#{parsed.fragment}', '') if parsed.fragment else path
+
         run_javascript(f'''
-            const fullPath = (window.path_prefix || '') + "{path}";
-            if (window.location.pathname + window.location.search !== fullPath) {{
+            const fullPath = (window.path_prefix || '') + "{path_without_fragment}" + "{fragment}";
+            if (window.location.pathname + window.location.search + window.location.hash !== fullPath) {{
                 history.pushState({{page: "{path}"}}, "", fullPath);
             }}
         ''')
 
     def _match_route(self, full_path: str) -> Optional[RouteMatch]:
-        """Find the first matching route for a full path (including query params) with segment dropping.
+        """Find the first matching route for a full path (including query params and fragments) with segment dropping.
 
         :return: RouteMatch object if found, None otherwise
         """
         parsed_url = urlparse(full_path)
         path_only = parsed_url.path
         query_params = QueryParams(parsed_url.query) if parsed_url.query else QueryParams()
+        fragment = parsed_url.fragment
 
         normalized_path = self._normalize_path(path_only)
         segments = normalized_path.split('/')
@@ -120,7 +138,8 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
                         pattern=route,
                         builder=builder,
                         parameters=matches,
-                        query_params=query_params
+                        query_params=query_params,
+                        fragment=fragment
                     )
             segments.pop()
         return None
@@ -131,6 +150,8 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
             path = str(context.client.request.url.path)
             if context.client.request.url.query:
                 path += '?' + context.client.request.url.query
+            if context.client.request.url.fragment:
+                path += '#' + context.client.request.url.fragment
             self._show_and_update_history(path)
 
     def _handle_navigate(self, path: str) -> None:
@@ -195,9 +216,13 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
         """
         if self._match_route(path):
             self.show(path)
+            parsed = urlparse(path)
+            fragment = f'#{parsed.fragment}' if parsed.fragment else ''
+            path_without_fragment = path.replace(f'#{parsed.fragment}', '') if parsed.fragment else path
+
             run_javascript(f'''
-                const fullPath = (window.path_prefix || '') + "{path}";
-                if (window.location.pathname + window.location.search !== fullPath) {{
+                const fullPath = (window.path_prefix || '') + "{path_without_fragment}" + "{fragment}";
+                if (window.location.pathname + window.location.search + window.location.hash !== fullPath) {{
                     history.pushState({{page: "{path}"}}, "", fullPath);
                 }}
             ''')
