@@ -4,12 +4,12 @@ import inspect
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Callable, Dict, Union, get_args, get_origin
 
-if TYPE_CHECKING:
-    from .elements.sub_pages import SubPages
-
 from starlette.datastructures import QueryParams
 
 from .dataclasses import KWONLY_SLOTS
+
+if TYPE_CHECKING:
+    from .elements.sub_pages import SubPages
 
 
 @dataclass(**KWONLY_SLOTS)
