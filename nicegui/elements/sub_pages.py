@@ -1,9 +1,7 @@
 from __future__ import annotations
 
 import asyncio
-import inspect
 import re
-from dataclasses import dataclass
 from typing import Any, Callable, Dict, List, Optional, Set, cast
 from urllib.parse import urlparse
 
@@ -13,26 +11,10 @@ from typing_extensions import Self
 from .. import background_tasks
 from ..binding import BindableProperty, bind, bind_from, bind_to
 from ..context import context
-from ..dataclasses import KWONLY_SLOTS
 from ..element import Element
 from ..elements.label import Label
 from ..functions.javascript import run_javascript
-from ..page_args import PageArgs
-
-
-@dataclass(**KWONLY_SLOTS)
-class RouteMatch:
-    """Information about a matched route."""
-    path: str
-    '''The sub-path that actually matched (e.g., "/user/123")'''
-    pattern: str
-    '''The original route pattern (e.g., "/user/{id}")'''
-    builder: Callable
-    '''The function to call to build the page'''
-    parameters: Dict[str, str]
-    '''The extracted parameters (name -> value) from the path (e.g., ``{"id": "123"}``)'''
-    query_params: QueryParams
-    '''The query parameters from the URL'''
+from ..page_args import PageArgs, RouteMatch
 
 
 class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-pages'):
@@ -185,22 +167,6 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
         regex_match = re.match(f'^{regex_pattern}$', path)
         return regex_match.groupdict() if regex_match else None
 
-    @staticmethod
-    def _convert_parameter(value: str, param_type: type) -> Any:
-        """Convert a string parameter to the specified type (``str``, ``int``, or ``float``).
-
-        :param value: the string value to convert
-        :param param_type: the type to convert to
-        :return: the converted value
-        """
-        if param_type is str or param_type is inspect.Parameter.empty:
-            return value
-        elif param_type is int:
-            return int(value)
-        elif param_type is float:
-            return float(value)
-        return value
-
     @property
     def _is_root(self) -> bool:
         """Whether this is a root ``ui.sub_pages`` element."""
@@ -210,26 +176,9 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
         return True
 
     def _place_content(self, route_match: RouteMatch) -> None:
-        parameters = inspect.signature(route_match.builder).parameters
-        kwargs = {}
-
-        for name, param in parameters.items():
-            if param.annotation is PageArgs:
-                kwargs[name] = PageArgs(
-                    path=route_match.path,
-                    frame=self,
-                    path_parameters=route_match.parameters or {},
-                    query_parameters=route_match.query_params,
-                    data=self._data
-                )
-            elif name in self._data:
-                kwargs[name] = self._data[name]
-            elif route_match.parameters and name in route_match.parameters:
-                kwargs[name] = self._convert_parameter(route_match.parameters[name], param.annotation)
-            elif name in route_match.query_params:
-                kwargs[name] = self._convert_parameter(route_match.query_params[name], param.annotation)
-
+        kwargs = PageArgs.build_kwargs(route_match, self, self._data)
         result = route_match.builder(**kwargs)
+
         if asyncio.iscoroutine(result):
             async def background_task():
                 with self:
