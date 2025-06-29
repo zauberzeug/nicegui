@@ -226,6 +226,8 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
                 kwargs[name] = self._data[name]
             elif route_match.parameters and name in route_match.parameters:
                 kwargs[name] = self._convert_parameter(route_match.parameters[name], param.annotation)
+            elif name in route_match.query_params:
+                kwargs[name] = self._convert_parameter(route_match.query_params[name], param.annotation)
 
         result = route_match.builder(**kwargs)
         if asyncio.iscoroutine(result):

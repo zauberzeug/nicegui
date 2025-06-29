@@ -592,38 +592,43 @@ def test_async_sub_pages(screen: Screen):
     screen.should_not_contain('after 1.0 sec')
 
 
-def test_sub_page_with_query_parameters(screen: Screen):
+@pytest.mark.parametrize('use_page_args', [True, False])
+def test_sub_page_with_query_parameters(screen: Screen, use_page_args: bool):
     calls = {'index': 0, 'main_content': 0}
 
     @ui.page('/')
     def index():
         calls['index'] += 1
-        ui.link('Link to main', '/?link=works')
-        ui.button('Button to main', on_click=lambda: ui.navigate.to('/?button=works'))
-        ui.sub_pages({'/': main_content})
+        ui.link('Link to main', '/?access=link')
+        ui.button('Button to main', on_click=lambda: ui.navigate.to('/?access=button'))
+        ui.sub_pages({'/': with_page_args if use_page_args else with_parameter})
 
-    def main_content(args: PageArgs):
+    def with_page_args(args: PageArgs):
         calls['main_content'] += 1
-        ui.label(str(args.query_parameters))
+        ui.label(f'access: {args.query_parameters["access"]}')
 
-    screen.open('/?query=test')
-    screen.should_contain('query=test')
+    def with_parameter(access: str):
+        calls['main_content'] += 1
+        ui.label(f'access: {access}')
+
+    screen.open('/?access=direct')
+    screen.should_contain('access: direct')
     assert calls == {'index': 1, 'main_content': 1}
 
     screen.click('Link to main')
-    screen.should_contain('link=works')
+    screen.should_contain('access: link')
     assert calls == {'index': 1, 'main_content': 2}
 
     screen.click('Button to main')
-    screen.should_contain('button=works')
+    screen.should_contain('access: button')
     assert calls == {'index': 1, 'main_content': 3}
 
     screen.selenium.back()
-    screen.should_contain('link=works')
+    screen.should_contain('access: link')
     assert calls == {'index': 1, 'main_content': 4}
 
     screen.selenium.forward()
-    screen.should_contain('button=works')
+    screen.should_contain('access: button')
     assert calls == {'index': 1, 'main_content': 5}
 
 
