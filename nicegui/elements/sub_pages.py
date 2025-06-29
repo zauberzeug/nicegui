@@ -1,50 +1,39 @@
 from __future__ import annotations
 
 import asyncio
-import inspect
 import re
-from dataclasses import dataclass
 from typing import Any, Callable, Dict, List, Optional, Set, cast
+from urllib.parse import urlparse
 
+from starlette.datastructures import QueryParams
 from typing_extensions import Self
 
 from .. import background_tasks
 from ..binding import BindableProperty, bind, bind_from, bind_to
 from ..context import context
-from ..dataclasses import KWONLY_SLOTS
 from ..element import Element
 from ..elements.label import Label
 from ..functions.javascript import run_javascript
-
-
-@dataclass(**KWONLY_SLOTS)
-class RouteMatch:
-    """Information about a matched route."""
-    path: str
-    '''The sub-path that actually matched (e.g., "/user/123")'''
-    pattern: str
-    '''The original route pattern (e.g., "/user/{id}")'''
-    builder: Callable
-    '''The function to call to build the page'''
-    parameters: Dict[str, str]
-    '''The extracted parameters (name -> value) from the path (e.g., ``{"id": "123"}``)'''
+from ..page_args import PageArgs, RouteMatch
 
 
 class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-pages'):
     path = BindableProperty(
         on_change=lambda sender, path: cast(SubPages, sender)._handle_path_change(path))  # pylint: disable=protected-access
 
-    def __init__(self, routes: Optional[Dict[str, Callable]] = None, *, root_path: Optional[str] = None) -> None:
+    def __init__(self, routes: Optional[Dict[str, Callable]] = None, *, root_path: Optional[str] = None, data: Optional[Dict[str, Any]] = None) -> None:
         """Sub Pages
 
         Create a sub pages element to handle client-side routing within a page.
 
         :param routes: dictionary mapping sub-page paths to page builder functions
         :param root_path: optional root path to strip from incoming paths (useful for non-root page mounts)
+        :param data: optional dictionary with arbitrary data to be passed to sub-page functions
         """
         super().__init__()
         self._routes = routes or {}
         self._root_path = root_path
+        self._data = data or {}
         self.path = '/'
         self._active_tasks: Set[asyncio.Task] = set()
         self._send_update_on_path_change = True  # standard pattern like for other elements
@@ -72,18 +61,34 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
         """
         self._cancel_active_tasks()
         self.clear()
+
+        match_result = self._match_route(full_path)
+        if match_result is None:
+            with self:
+                Label(f'404: sub page {full_path} not found')
+            return
+
         self._send_update_on_path_change = False
-        self.path = self._normalize_path(full_path)
+        self.path = match_result.path
         self._send_update_on_path_change = True
         with self:
-            match_result = self._match_route(full_path)
-            if match_result is None:
-                Label(f'404: sub page {full_path} not found')
-                return
             self._place_content(match_result)
-            child_sub_pages = SubPages.find_child(self)
-            if child_sub_pages:
-                child_sub_pages.show(full_path[len(match_result.path):])
+
+        if match_result.fragment:
+            run_javascript(f'''
+                setTimeout(() => {{
+                    let target = document.getElementById("{match_result.fragment}");
+                    if (target)
+                        target.scrollIntoView({{ behavior: "smooth" }});
+                    else
+                        if (target = document.querySelector('a[name="{match_result.fragment}"]'))
+                            target.scrollIntoView({{ behavior: "smooth" }});
+                }}, 100);
+            ''')
+
+        child_sub_pages = SubPages.find_child(self)
+        if child_sub_pages:
+            child_sub_pages.show(full_path[len(match_result.path):])
 
     def _cancel_active_tasks(self) -> None:
         """Cancel all active async tasks for this SubPages instance."""
@@ -100,33 +105,53 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
         :param path: the path to navigate to
         """
         self.show(path)
+        parsed = urlparse(path)
+        fragment = f'#{parsed.fragment}' if parsed.fragment else ''
+        path_without_fragment = path.replace(f'#{parsed.fragment}', '') if parsed.fragment else path
+
         run_javascript(f'''
-            const fullPath = (window.path_prefix || '') + "{path}";
-            if (window.location.pathname !== fullPath) {{
+            const fullPath = (window.path_prefix || '') + "{path_without_fragment}" + "{fragment}";
+            if (window.location.pathname + window.location.search + window.location.hash !== fullPath) {{
                 history.pushState({{page: "{path}"}}, "", fullPath);
             }}
         ''')
 
-    def _match_route(self, path: str) -> Optional[RouteMatch]:
-        """Find the first matching route for a path with segment dropping.
+    def _match_route(self, full_path: str) -> Optional[RouteMatch]:
+        """Find the first matching route for a full path (including query params and fragments) with segment dropping.
 
         :return: RouteMatch object if found, None otherwise
         """
-        normalized_path = self._normalize_path(path)
+        parsed_url = urlparse(full_path)
+        path_only = parsed_url.path
+        query_params = QueryParams(parsed_url.query) if parsed_url.query else QueryParams()
+        fragment = parsed_url.fragment
+
+        normalized_path = self._normalize_path(path_only)
         segments = normalized_path.split('/')
         while segments:
             sub_path = '/'.join(segments)
             for route, builder in self._routes.items():
                 matches = self._match_path(route, sub_path)
                 if matches is not None:
-                    return RouteMatch(path=sub_path, pattern=route, builder=builder, parameters=matches)
+                    return RouteMatch(
+                        path=sub_path,
+                        pattern=route,
+                        builder=builder,
+                        parameters=matches,
+                        query_params=query_params,
+                        fragment=fragment
+                    )
             segments.pop()
         return None
 
     def _handle_routes_change(self) -> None:
         if self._is_root:
             assert context.client.request
-            path = context.client.request.url.path
+            path = str(context.client.request.url.path)
+            if context.client.request.url.query:
+                path += '?' + context.client.request.url.query
+            if context.client.request.url.fragment:
+                path += '#' + context.client.request.url.fragment
             self._show_and_update_history(path)
 
     def _handle_navigate(self, path: str) -> None:
@@ -163,22 +188,6 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
         regex_match = re.match(f'^{regex_pattern}$', path)
         return regex_match.groupdict() if regex_match else None
 
-    @staticmethod
-    def _convert_parameter(value: str, param_type: type) -> Any:
-        """Convert a string parameter to the specified type (``str``, ``int``, or ``float``).
-
-        :param value: the string value to convert
-        :param param_type: the type to convert to
-        :return: the converted value
-        """
-        if param_type is str or param_type is inspect.Parameter.empty:
-            return value
-        elif param_type is int:
-            return int(value)
-        elif param_type is float:
-            return float(value)
-        return value
-
     @property
     def _is_root(self) -> bool:
         """Whether this is a root ``ui.sub_pages`` element."""
@@ -188,16 +197,9 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
         return True
 
     def _place_content(self, route_match: RouteMatch) -> None:
-        if route_match.parameters:
-            parameters = inspect.signature(route_match.builder).parameters
-            converted_parameters = {
-                name: self._convert_parameter(value, parameters[name].annotation)
-                for name, value in route_match.parameters.items()
-                if name in parameters
-            }
-            result = route_match.builder(**converted_parameters)
-        else:
-            result = route_match.builder()
+        kwargs = PageArgs.build_kwargs(route_match, self, self._data)
+        result = route_match.builder(**kwargs)
+
         if asyncio.iscoroutine(result):
             async def background_task():
                 with self:
@@ -214,9 +216,13 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
         """
         if self._match_route(path):
             self.show(path)
+            parsed = urlparse(path)
+            fragment = f'#{parsed.fragment}' if parsed.fragment else ''
+            path_without_fragment = path.replace(f'#{parsed.fragment}', '') if parsed.fragment else path
+
             run_javascript(f'''
-                const fullPath = (window.path_prefix || '') + "{path}";
-                if (window.location.pathname !== fullPath) {{
+                const fullPath = (window.path_prefix || '') + "{path_without_fragment}" + "{fragment}";
+                if (window.location.pathname + window.location.search + window.location.hash !== fullPath) {{
                     history.pushState({{page: "{path}"}}, "", fullPath);
                 }}
             ''')
