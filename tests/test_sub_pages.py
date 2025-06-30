@@ -708,3 +708,55 @@ def test_page_args_with_optional_parameters(screen: Screen):
     screen.open('/')
     screen.click('Test PageArgs')
     screen.should_contain('path=/user/123, user_id=123, role=admin, app=MyApp')
+
+
+def test_sub_pages_with_url_fragments(screen: Screen):
+    @ui.page('/')
+    @ui.page('/{_:path}')
+    def index():
+        ui.sub_pages({
+            '/': main_page,
+            '/page': page_with_targets,
+        })
+
+    def main_page():
+        ui.label('Main page')
+        ui.link('Go to bottom', '/page#bottom')
+
+    def page_with_targets():
+        ui.link_target('top')
+        ui.label('Top target content')
+        ui.link('Go to bottom', '/page#bottom')
+        for i in range(20):
+            ui.label(f'Line {i}').classes('my-5')
+        ui.link_target('bottom')
+        ui.label('Bottom target content')
+        ui.link('Go to top', '/page#top')
+        ui.link('Back to main', '/')
+
+        # Test 1: Direct navigation with fragment
+    screen.open('/page#bottom')
+    screen.should_contain('Bottom target content')
+    assert screen.current_path == '/page'
+    screen.wait(0.5)
+    scroll_y = screen.selenium.execute_script('return window.scrollY')
+    assert scroll_y > 0, 'Expected scrolling to occur for fragment navigation'
+
+    # Test 2: Same-page fragment navigation (bottom to top)
+    screen.click('Go to top')
+    screen.should_contain('Top target content')
+    screen.wait(0.5)
+    scroll_y_top = screen.selenium.execute_script('return window.scrollY')
+    assert scroll_y_top < scroll_y, 'Expected scrolling to top to have smaller scroll position'
+
+    # Test 3: Cross-page fragment navigation
+    screen.click('Back to main')
+    screen.should_contain('Main page')
+    assert screen.current_path == '/'
+
+    screen.click('Go to bottom')
+    screen.should_contain('Bottom target content')
+    assert screen.current_path == '/page'
+    screen.wait(0.5)
+    scroll_y = screen.selenium.execute_script('return window.scrollY')
+    assert scroll_y > 0, 'Expected scrolling after cross-page fragment navigation'

@@ -39,7 +39,7 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
         self._send_update_on_path_change = True  # standard pattern like for other elements
         self._handle_routes_change()
         if self._is_root:
-            self.on('open', lambda e: self._show_and_update_history(e.args))
+            self.on('open', lambda e: self._show_page_and_update_browser_url(e.args))
             self.on('navigate', lambda e: self._handle_navigate(e.args))
 
     def add(self, path: str, page: Callable) -> Self:
@@ -54,10 +54,11 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
         self._handle_routes_change()
         return self
 
-    def show(self, full_path: str) -> None:
+    def show(self, full_path: str) -> Optional[RouteMatch]:
         """Show the page for the given path.
 
         :param full_path: the path to navigate to (can be empty string for root path; trailing slash is ignored)
+        :return: the RouteMatch object if a route was found and shown, None otherwise
         """
         self._cancel_active_tasks()
         self.clear()
@@ -66,16 +67,31 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
         if match_result is None:
             with self:
                 Label(f'404: sub page {full_path} not found')
-            return
+            return None
 
         self._send_update_on_path_change = False
         self.path = match_result.path
         self._send_update_on_path_change = True
         with self:
             self._place_content(match_result)
+
+        if match_result.fragment:
+            run_javascript(f'''
+                setTimeout(() => {{
+                    let target = document.getElementById("{match_result.fragment}");
+                    if (target)
+                        target.scrollIntoView({{ behavior: "smooth" }});
+                    else
+                        if (target = document.querySelector('a[name="{match_result.fragment}"]'))
+                            target.scrollIntoView({{ behavior: "smooth" }});
+                }}, 100);
+            ''')
+
         child_sub_pages = SubPages.find_child(self)
         if child_sub_pages:
             child_sub_pages.show(full_path[len(match_result.path):])
+
+        return match_result
 
     def _cancel_active_tasks(self) -> None:
         """Cancel all active async tasks for this SubPages instance."""
@@ -84,29 +100,44 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
                 task.cancel()
         self._active_tasks.clear()
 
-    def _show_and_update_history(self, path: str) -> None:
-        """Show the page and update browser history.
-
-        We assume that this method is only called by the root sub pages element.
+    def _show_page_and_update_browser_url(self, path: str) -> Optional[RouteMatch]:
+        """Show the page and update browser URL.
 
         :param path: the path to navigate to
+        :return: the RouteMatch object if successful, None if no route was found
         """
-        self.show(path)
+        match_result = self.show(path)
+        if match_result is None:
+            return None
+
+        # Build full path including root_path
+        if match_result.path == '/' and self._root_path:
+            full_path = self._root_path
+        else:
+            full_path = f'{self._root_path or ""}{match_result.path}'
+
+        if match_result.query_params:
+            full_path += '?' + str(match_result.query_params)
+
+        fragment = f'#{match_result.fragment}' if match_result.fragment else ''
+
         run_javascript(f'''
-            const fullPath = (window.path_prefix || '') + "{path}";
-            if (window.location.pathname + window.location.search !== fullPath) {{
+            const fullPath = (window.path_prefix || '') + "{full_path}" + "{fragment}";
+            if (window.location.pathname + window.location.search + window.location.hash !== fullPath) {{
                 history.pushState({{page: "{path}"}}, "", fullPath);
             }}
         ''')
+        return match_result
 
     def _match_route(self, full_path: str) -> Optional[RouteMatch]:
-        """Find the first matching route for a full path (including query params) with segment dropping.
+        """Find the first matching route for a full path (including query params and fragments) with segment dropping.
 
         :return: RouteMatch object if found, None otherwise
         """
         parsed_url = urlparse(full_path)
         path_only = parsed_url.path
         query_params = QueryParams(parsed_url.query) if parsed_url.query else QueryParams()
+        fragment = parsed_url.fragment
 
         normalized_path = self._normalize_path(path_only)
         segments = normalized_path.split('/')
@@ -120,7 +151,8 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
                         pattern=route,
                         builder=builder,
                         parameters=matches,
-                        query_params=query_params
+                        query_params=query_params,
+                        fragment=fragment
                     )
             segments.pop()
         return None
@@ -131,7 +163,9 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
             path = str(context.client.request.url.path)
             if context.client.request.url.query:
                 path += '?' + context.client.request.url.query
-            self._show_and_update_history(path)
+            if context.client.request.url.fragment:
+                path += '#' + context.client.request.url.fragment
+            self._show_page_and_update_browser_url(path)
 
     def _handle_navigate(self, path: str) -> None:
         """Handle navigate event from link clicks."""
@@ -193,16 +227,7 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
         :param path: the path to navigate to
         :return: ``True`` if handled by ``ui.sub_pages``, ``False`` otherwise
         """
-        if self._match_route(path):
-            self.show(path)
-            run_javascript(f'''
-                const fullPath = (window.path_prefix || '') + "{path}";
-                if (window.location.pathname + window.location.search !== fullPath) {{
-                    history.pushState({{page: "{path}"}}, "", fullPath);
-                }}
-            ''')
-            return True
-        return False
+        return self._show_page_and_update_browser_url(path) is not None
 
     @staticmethod
     def try_navigate_to(path: str) -> bool:
@@ -301,4 +326,4 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
         :param path: The new path.
         """
         if self._is_root and self._send_update_on_path_change:
-            self._show_and_update_history(f'{self._root_path or ""}{path}')
+            self._show_page_and_update_browser_url(f'{self._root_path or ""}{path}')
