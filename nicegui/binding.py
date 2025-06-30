@@ -36,9 +36,9 @@ MAX_PROPAGATION_TIME = 0.01
 
 propagation_visited: ContextVar[Optional[Set[Tuple[int, str]]]] = ContextVar('propagation_visited', default=None)
 
-bindings: DefaultDict[Tuple[int, str], List] = defaultdict(list)
+bindings: DefaultDict[Tuple[int, str], List[Tuple[Any, Any, str, Optional[Callable[[Any], Any]]]]] = defaultdict(list)
 bindable_properties: weakref.WeakValueDictionary[Tuple[int, str], Any] = weakref.WeakValueDictionary()
-active_links: List[Tuple[Any, str, Any, str, Callable[[Any], Any]]] = []
+active_links: List[Tuple[Any, str, Any, str, Optional[Callable[[Any], Any]]]] = []
 
 TC = TypeVar('TC', bound=type)
 T = TypeVar('T')
@@ -93,7 +93,8 @@ def _refresh_step() -> None:
         for link in active_links:
             (source_obj, source_name, target_obj, target_name, transform) = link
             if _has_attribute(source_obj, source_name):
-                value = transform(_get_attribute(source_obj, source_name))
+                source_value = _get_attribute(source_obj, source_name)
+                value = transform(source_value) if transform else source_value
                 if not _has_attribute(target_obj, target_name) or _get_attribute(target_obj, target_name) != value:
                     _set_attribute(target_obj, target_name, value)
                     _propagate(target_obj, target_name)
@@ -117,13 +118,14 @@ def _propagate(source_obj: Any, source_name: str) -> None:
             if (id(target_obj), target_name) in visited:
                 continue
 
-            target_value = transform(source_value)
+            target_value = transform(source_value) if transform else source_value
             if not _has_attribute(target_obj, target_name) or _get_attribute(target_obj, target_name) != target_value:
                 _set_attribute(target_obj, target_name, target_value)
                 _propagate(target_obj, target_name)
 
 
-def bind_to(self_obj: Any, self_name: str, other_obj: Any, other_name: str, forward: Callable[[Any], Any]) -> None:
+def bind_to(self_obj: Any, self_name: str, other_obj: Any, other_name: str,
+            forward: Optional[Callable[[Any], Any]] = None) -> None:
     """Bind the property of one object to the property of another object.
 
     The binding works one way only, from the first object to the second.
@@ -133,7 +135,7 @@ def bind_to(self_obj: Any, self_name: str, other_obj: Any, other_name: str, forw
     :param self_name: The name of the property to bind from.
     :param other_obj: The object to bind to.
     :param other_name: The name of the property to bind to.
-    :param forward: A function to apply to the value before applying it.
+    :param forward: A function to apply to the value before applying it (default: identity).
     """
     bindings[(id(self_obj), self_name)].append((self_obj, other_obj, other_name, forward))
     if (id(self_obj), self_name) not in bindable_properties:
@@ -141,7 +143,8 @@ def bind_to(self_obj: Any, self_name: str, other_obj: Any, other_name: str, forw
     _propagate(self_obj, self_name)
 
 
-def bind_from(self_obj: Any, self_name: str, other_obj: Any, other_name: str, backward: Callable[[Any], Any]) -> None:
+def bind_from(self_obj: Any, self_name: str, other_obj: Any, other_name: str,
+              backward: Optional[Callable[[Any], Any]] = None) -> None:
     """Bind the property of one object from the property of another object.
 
     The binding works one way only, from the second object to the first.
@@ -151,7 +154,7 @@ def bind_from(self_obj: Any, self_name: str, other_obj: Any, other_name: str, ba
     :param self_name: The name of the property to bind to.
     :param other_obj: The object to bind from.
     :param other_name: The name of the property to bind from.
-    :param backward: A function to apply to the value before applying it.
+    :param backward: A function to apply to the value before applying it (default: identity).
     """
     bindings[(id(other_obj), other_name)].append((other_obj, self_obj, self_name, backward))
     if (id(other_obj), other_name) not in bindable_properties:
@@ -160,7 +163,8 @@ def bind_from(self_obj: Any, self_name: str, other_obj: Any, other_name: str, ba
 
 
 def bind(self_obj: Any, self_name: str, other_obj: Any, other_name: str, *,
-         forward: Callable[[Any], Any] = lambda x: x, backward: Callable[[Any], Any] = lambda x: x) -> None:
+         forward: Optional[Callable[[Any], Any]] = None,
+         backward: Optional[Callable[[Any], Any]] = None) -> None:
     """Bind the property of one object to the property of another object.
 
     The binding works both ways, from the first object to the second and from the second to the first.
@@ -171,8 +175,8 @@ def bind(self_obj: Any, self_name: str, other_obj: Any, other_name: str, *,
     :param self_name: The name of the first property to bind.
     :param other_obj: The second object to bind.
     :param other_name: The name of the second property to bind.
-    :param forward: A function to apply to the value before applying it to the second object.
-    :param backward: A function to apply to the value before applying it to the first object.
+    :param forward: A function to apply to the value before applying it to the second object (default: identity).
+    :param backward: A function to apply to the value before applying it to the first object (default: identity).
     """
     bind_from(self_obj, self_name, other_obj, other_name, backward=backward)
     bind_to(self_obj, self_name, other_obj, other_name, forward=forward)

@@ -24,7 +24,7 @@ class SourceElement(Element):
     def bind_source_to(self,
                        target_object: Any,
                        target_name: str = 'source',
-                       forward: Callable[..., Any] = lambda x: x,
+                       forward: Optional[Callable[[Any], Any]] = None,
                        ) -> Self:
         """Bind the source of this element to the target object's target_name property.
 
@@ -33,7 +33,7 @@ class SourceElement(Element):
 
         :param target_object: The object to bind to.
         :param target_name: The name of the property to bind to.
-        :param forward: A function to apply to the value before applying it to the target.
+        :param forward: A function to apply to the value before applying it to the target (default: identity).
         """
         bind_to(self, 'source', target_object, target_name, forward)
         return self
@@ -41,7 +41,7 @@ class SourceElement(Element):
     def bind_source_from(self,
                          target_object: Any,
                          target_name: str = 'source',
-                         backward: Callable[..., Any] = lambda x: x,
+                         backward: Optional[Callable[[Any], Any]] = None,
                          ) -> Self:
         """Bind the source of this element from the target object's target_name property.
 
@@ -50,7 +50,7 @@ class SourceElement(Element):
 
         :param target_object: The object to bind from.
         :param target_name: The name of the property to bind from.
-        :param backward: A function to apply to the value before applying it to this element.
+        :param backward: A function to apply to the value before applying it to this element (default: identity).
         """
         bind_from(self, 'source', target_object, target_name, backward)
         return self
@@ -58,8 +58,8 @@ class SourceElement(Element):
     def bind_source(self,
                     target_object: Any,
                     target_name: str = 'source', *,
-                    forward: Callable[..., Any] = lambda x: x,
-                    backward: Callable[..., Any] = lambda x: x,
+                    forward: Optional[Callable[[Any], Any]] = None,
+                    backward: Optional[Callable[[Any], Any]] = None,
                     ) -> Self:
         """Bind the source of this element to the target object's target_name property.
 
@@ -69,8 +69,8 @@ class SourceElement(Element):
 
         :param target_object: The object to bind to.
         :param target_name: The name of the property to bind to.
-        :param forward: A function to apply to the value before applying it to the target.
-        :param backward: A function to apply to the value before applying it to this element.
+        :param forward: A function to apply to the value before applying it to the target (default: identity).
+        :param backward: A function to apply to the value before applying it to this element (default: identity).
         """
         bind(self, 'source', target_object, target_name, forward=forward, backward=backward)
         return self
