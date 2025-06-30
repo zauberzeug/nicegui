@@ -19,7 +19,7 @@ class IconElement(Element):
     def bind_icon_to(self,
                      target_object: Any,
                      target_name: str = 'icon',
-                     forward: Callable[..., Any] = lambda x: x,
+                     forward: Optional[Callable[[Any], Any]] = None,
                      ) -> Self:
         """Bind the icon of this element to the target object's target_name property.
 
@@ -28,7 +28,7 @@ class IconElement(Element):
 
         :param target_object: The object to bind to.
         :param target_name: The name of the property to bind to.
-        :param forward: A function to apply to the value before applying it to the target.
+        :param forward: A function to apply to the value before applying it to the target (default: identity).
         """
         bind_to(self, 'icon', target_object, target_name, forward)
         return self
@@ -36,7 +36,7 @@ class IconElement(Element):
     def bind_icon_from(self,
                        target_object: Any,
                        target_name: str = 'icon',
-                       backward: Callable[..., Any] = lambda x: x,
+                       backward: Optional[Callable[[Any], Any]] = None,
                        ) -> Self:
         """Bind the icon of this element from the target object's target_name property.
 
@@ -45,7 +45,7 @@ class IconElement(Element):
 
         :param target_object: The object to bind from.
         :param target_name: The name of the property to bind from.
-        :param backward: A function to apply to the value before applying it to this element.
+        :param backward: A function to apply to the value before applying it to this element (default: identity).
         """
         bind_from(self, 'icon', target_object, target_name, backward)
         return self
@@ -53,8 +53,8 @@ class IconElement(Element):
     def bind_icon(self,
                   target_object: Any,
                   target_name: str = 'icon', *,
-                  forward: Callable[..., Any] = lambda x: x,
-                  backward: Callable[..., Any] = lambda x: x,
+                  forward: Optional[Callable[[Any], Any]] = None,
+                  backward: Optional[Callable[[Any], Any]] = None,
                   ) -> Self:
         """Bind the icon of this element to the target object's target_name property.
 
@@ -64,8 +64,8 @@ class IconElement(Element):
 
         :param target_object: The object to bind to.
         :param target_name: The name of the property to bind to.
-        :param forward: A function to apply to the value before applying it to the target.
-        :param backward: A function to apply to the value before applying it to this element.
+        :param forward: A function to apply to the value before applying it to the target (default: identity).
+        :param backward: A function to apply to the value before applying it to this element (default: identity).
         """
         bind(self, 'icon', target_object, target_name, forward=forward, backward=backward)
         return self

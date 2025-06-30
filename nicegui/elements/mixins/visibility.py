@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Callable, cast
+from typing import TYPE_CHECKING, Any, Callable, Optional, cast
 
 from typing_extensions import Self
 
@@ -27,7 +27,7 @@ class Visibility:
     def bind_visibility_to(self,
                            target_object: Any,
                            target_name: str = 'visible',
-                           forward: Callable[..., Any] = lambda x: x,
+                           forward: Optional[Callable[[Any], Any]] = None,
                            ) -> Self:
         """Bind the visibility of this element to the target object's target_name property.
 
@@ -36,7 +36,7 @@ class Visibility:
 
         :param target_object: The object to bind to.
         :param target_name: The name of the property to bind to.
-        :param forward: A function to apply to the value before applying it to the target.
+        :param forward: A function to apply to the value before applying it to the target (default: identity).
         """
         bind_to(self, 'visible', target_object, target_name, forward)
         return self
@@ -44,7 +44,7 @@ class Visibility:
     def bind_visibility_from(self,
                              target_object: Any,
                              target_name: str = 'visible',
-                             backward: Callable[..., Any] = lambda x: x, *,
+                             backward: Optional[Callable[[Any], Any]] = None, *,
                              value: Any = None) -> Self:
         """Bind the visibility of this element from the target object's target_name property.
 
@@ -53,7 +53,7 @@ class Visibility:
 
         :param target_object: The object to bind from.
         :param target_name: The name of the property to bind from.
-        :param backward: A function to apply to the value before applying it to this element.
+        :param backward: A function to apply to the value before applying it to this element (default: identity).
         :param value: If specified, the element will be visible only when the target value is equal to this value.
         """
         if value is not None:
@@ -65,8 +65,8 @@ class Visibility:
     def bind_visibility(self,
                         target_object: Any,
                         target_name: str = 'visible', *,
-                        forward: Callable[..., Any] = lambda x: x,
-                        backward: Callable[..., Any] = lambda x: x,
+                        forward: Optional[Callable[[Any], Any]] = None,
+                        backward: Optional[Callable[[Any], Any]] = None,
                         value: Any = None,
                         ) -> Self:
         """Bind the visibility of this element to the target object's target_name property.
@@ -77,8 +77,8 @@ class Visibility:
 
         :param target_object: The object to bind to.
         :param target_name: The name of the property to bind to.
-        :param forward: A function to apply to the value before applying it to the target.
-        :param backward: A function to apply to the value before applying it to this element.
+        :param forward: A function to apply to the value before applying it to the target (default: identity).
+        :param backward: A function to apply to the value before applying it to this element (default: identity).
         :param value: If specified, the element will be visible only when the target value is equal to this value.
         """
         if value is not None:
