@@ -20,8 +20,14 @@ export default {
         console.error(error);
         this.$emit("error", error);
       }
+      if (this.function_name) {
+        window[this.function_name] = (node, param) => {
+          this.$emit("nodeClicked", {node: node, param: param});
+        }
+      }
     },
     async update(content) {
+      content = content.replace(new RegExp(this.function_placeholder, "g"), this.function_name);
       if (this.last_content === content) return;
       this.last_content = content;
       queue.push({ element: this.$el, content: content });
@@ -48,5 +54,10 @@ export default {
   props: {
     config: Object,
     content: String,
+    function_name: String,
+    function_placeholder: {
+      type: String,
+      default: "NICEGUI_HANDLER",
+    },
   },
 };
