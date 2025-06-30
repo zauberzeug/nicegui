@@ -35,9 +35,16 @@ class Code(ContentElement, default_classes='nicegui-code'):
         self.markdown.on('scroll', self._handle_scroll)
         timer(0.1, self._update_copy_button)
 
-        self.client.on_connect(lambda: self.client.run_javascript(f'''
+        self.client.on_connect(self._hide_copy_button_if_no_clipboard)
+
+    def _hide_copy_button_if_no_clipboard(self) -> None:
+        self.client.run_javascript(f'''
             if (!navigator.clipboard) getHtmlElement({self.copy_button.id}).style.display = 'none';
-        '''))
+        ''')
+
+    def _handle_delete(self) -> None:
+        self.client.connect_handlers.remove(self._hide_copy_button_if_no_clipboard)
+        super()._handle_delete()
 
     async def show_checkmark(self) -> None:
         """Show a checkmark icon for 3 seconds."""
