@@ -105,13 +105,13 @@ def cpu_bound_demo():
     The function returns a future that can be awaited.
 ''')
 def io_bound_demo():
-    import requests
+    import httpx
 
     from nicegui import run
 
     async def handle_click():
         URL = 'https://httpbin.org/delay/1'
-        response = await run.io_bound(requests.get, URL, timeout=3)
+        response = await run.io_bound(httpx.get, URL, timeout=3)
         ui.notify(f'Downloaded {len(response.content)} bytes')
 
     ui.button('Download', on_click=handle_click)
