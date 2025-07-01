@@ -89,6 +89,7 @@ class Select(LabelElement, ValidationElement, ChoiceElement, DisableableElement,
         return self._is_showing_popup
 
     def _event_args_to_value(self, e: GenericEventArguments) -> Any:
+        # pylint: disable=too-many-nested-blocks
         if self.multiple:
             if e.args is None:
                 return []
