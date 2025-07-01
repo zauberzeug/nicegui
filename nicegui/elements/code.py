@@ -10,7 +10,7 @@ from .mixins.content_element import ContentElement
 from .timer import Timer as timer
 
 
-class Code(ContentElement, default_classes='nicegui-code'):
+class Code(ContentElement, component='code.js', default_classes='nicegui-code'):
 
     def __init__(self, content: str = '', *, language: Optional[str] = 'python') -> None:
         """Code
@@ -34,10 +34,6 @@ class Code(ContentElement, default_classes='nicegui-code'):
         self._last_scroll: float = 0.0
         self.markdown.on('scroll', self._handle_scroll)
         timer(0.1, self._update_copy_button)
-
-        self.client.on_connect(lambda: self.client.run_javascript(f'''
-            if (!navigator.clipboard) getHtmlElement({self.copy_button.id}).style.display = 'none';
-        '''))
 
     async def show_checkmark(self) -> None:
         """Show a checkmark icon for 3 seconds."""
