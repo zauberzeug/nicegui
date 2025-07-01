@@ -4,7 +4,6 @@ from pathlib import Path
 
 import httpx
 import pytest
-import requests
 
 from nicegui import __version__, app, ui
 from nicegui.testing import Screen
@@ -111,11 +110,11 @@ def test_auto_serving_file_from_video_source(screen: Screen):
 def test_mimetypes_of_static_files(screen: Screen):
     screen.open('/')
 
-    response = requests.get(f'http://localhost:{Screen.PORT}/_nicegui/{__version__}/static/vue.global.js', timeout=5)
+    response = httpx.get(f'http://localhost:{Screen.PORT}/_nicegui/{__version__}/static/vue.global.js', timeout=5)
     assert response.status_code == 200
     assert response.headers['Content-Type'].startswith('text/javascript')
 
-    response = requests.get(f'http://localhost:{Screen.PORT}/_nicegui/{__version__}/static/nicegui.css', timeout=5)
+    response = httpx.get(f'http://localhost:{Screen.PORT}/_nicegui/{__version__}/static/nicegui.css', timeout=5)
     assert response.status_code == 200
     assert response.headers['Content-Type'].startswith('text/css')
 
@@ -127,14 +126,14 @@ def test_cache_control_header_of_static_files(screen: Screen):
     screen.open('/')
 
     # resources are served with cache-control headers from `ui.run`
-    response1 = requests.get(f'http://localhost:{Screen.PORT}/_nicegui/{__version__}/static/nicegui.css', timeout=5)
+    response1 = httpx.get(f'http://localhost:{Screen.PORT}/_nicegui/{__version__}/static/nicegui.css', timeout=5)
     assert 'immutable' in response1.headers.get('Cache-Control', '')
 
     # dynamic resources are _not_ served with cache-control headers from `ui.run`
-    response2 = requests.get(
+    response2 = httpx.get(
         f'http://localhost:{Screen.PORT}/_nicegui/{__version__}/dynamic_resources/codehilite.css', timeout=5)
     assert 'immutable' not in response2.headers.get('Cache-Control', '')
 
     # static resources are _not_ served with cache-control headers from `ui.run`
-    response3 = requests.get(f'http://localhost:{Screen.PORT}/static/examples/slideshow/slides/slide1.jpg', timeout=5)
+    response3 = httpx.get(f'http://localhost:{Screen.PORT}/static/examples/slideshow/slides/slide1.jpg', timeout=5)
     assert 'immutable' not in response3.headers.get('Cache-Control', '')

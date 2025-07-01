@@ -56,7 +56,6 @@ pytest-selenium = "^4.1.0"
 pytest-asyncio = ">=0.23.0"
 pytest-watcher = "^0.4.2"
 pytest = "^8.2.2"
-requests = ">=2.32.4" # https://github.com/zauberzeug/nicegui/security/dependabot/46
 urllib3 = ">=1.26.18,!=2.0.0,!=2.0.1,!=2.0.2,!=2.0.3,!=2.0.4,!=2.0.5,!=2.0.6,!=2.0.7,!=2.1.0,!=2.2.0,!=2.2.1" # transitive, pinned to address https://github.com/zauberzeug/nicegui/security/dependabot/34
 itsdangerous = "^2.1.2" # required by SessionMiddleware (see https://fastapi.tiangolo.com/?h=itsdangerous#optional-dependencies)
 pandas = [
