@@ -455,5 +455,4 @@ if (!navigator.clipboard) {
   const style = document.createElement("style");
   style.innerHTML = ".nicegui-invisible-if-no-clipboard { display: none; }";
   document.head.appendChild(style);
-  document.documentElement.classList.add("nicegui-invisible-if-no-clipboard");
 }

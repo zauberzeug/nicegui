@@ -25,10 +25,10 @@ class Code(ContentElement, default_classes='nicegui-code'):
         super().__init__(content=remove_indentation(content))
 
         with self:
-            self.markdown = markdown().classes('overflow-auto nicegui-invisible-if-no-clipboard') \
+            self.markdown = markdown().classes('overflow-auto') \
                 .bind_content_from(self, 'content', lambda content: f'```{language}\n{content}\n```')
             self.copy_button = button(icon='content_copy', on_click=self.show_checkmark) \
-                .props('round flat size=sm').classes('absolute right-2 top-2 opacity-20 hover:opacity-80') \
+                .props('round flat size=sm').classes('absolute right-2 top-2 opacity-20 hover:opacity-80 nicegui-invisible-if-no-clipboard') \
                 .on('click', js_handler=f'() => navigator.clipboard.writeText({json.dumps(self.content)})')
 
         self._last_scroll: float = 0.0
