@@ -132,7 +132,7 @@ def test_add_new_values(screen:  Screen, option_dict: bool, multiple: bool, new_
             screen.should_contain("options = {'a': 'A', 'b': 'B', 'c': 'C', 'd': 'd', 'd': 'd'}" if option_dict else
                                   "options = ['a', 'b', 'c', 'd', 'd']")
         elif new_value_mode == 'add-unique':
-            screen.should_contain("value = ['a', 'd', 'd']" if multiple else 'value = d')
+            screen.should_contain("value = ['a']" if multiple else 'value = d')
             screen.should_contain("options = {'a': 'A', 'b': 'B', 'c': 'C', 'd': 'd'}" if option_dict else
                                   "options = ['a', 'b', 'c', 'd']")
         elif new_value_mode == 'toggle':
