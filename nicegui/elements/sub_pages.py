@@ -21,7 +21,7 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
     path = BindableProperty(
         on_change=lambda sender, path: cast(SubPages, sender)._handle_path_change(path))  # pylint: disable=protected-access
 
-    def __init__(self, routes: Optional[Dict[str, Callable]] = None, *, root_path: str = '/', data: Optional[Dict[str, Any]] = None) -> None:
+    def __init__(self, routes: Optional[Dict[str, Callable]] = None, *, root_path: Optional[str] = None, data: Optional[Dict[str, Any]] = None) -> None:
         """Sub Pages
 
         Create a sub pages element to handle client-side routing within a page.
@@ -105,19 +105,9 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
         if match_result is None:
             return None
 
-        # Build full path including root_path
-        if match_result.path == '/' and self._root_path:
-            full_path = self._root_path
-        else:
-            full_path = f'{self._root_path or ""}{match_result.path}'
-
-        if match_result.query_params:
-            full_path += '?' + str(match_result.query_params)
-
-        fragment = f'#{match_result.fragment}' if match_result.fragment else ''
-
+        new_path = f'{self._root_path or ""}{match_result.path}'
         run_javascript(f'''
-            const fullPath = (window.path_prefix || '') + "{full_path}" + "{fragment}";
+            const fullPath = (window.path_prefix || '') + "{new_path}";
             if (window.location.pathname + window.location.search + window.location.hash !== fullPath) {{
                 history.pushState({{page: "{path}"}}, "", fullPath);
             }}
@@ -151,21 +141,67 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
             segments.pop()
         return None
 
-    def _handle_navigate(self, path: str) -> None:
+    def _handle_navigate(self, navigation_data) -> None:
         """Handle navigate event from link clicks."""
-        if not self._try_navigate_to(path):
-            context.client.open(path)
+        old_path = navigation_data.get('from', '')
+        new_path = navigation_data.get('to', navigation_data)
+
+        if self._should_handle_navigation(old_path, new_path):
+            if not self._try_navigate_to(new_path):
+                context.client.open(new_path)
+
+    def _should_handle_navigation(self, old_path: str, new_path: str) -> bool:
+        """Determine if this SubPages should handle the navigation.
+
+        Rule: Handle if the route resolution within this SubPages' own route table changes,
+        OR if paths differ only by query parameters or trailing slashes.
+        """
+        # Check if this element can route both paths
+        old_normalized = self._normalize_path(old_path)
+        new_normalized = self._normalize_path(new_path)
+
+        old_route = self._match_route(old_normalized)
+        new_route = self._match_route(new_normalized)
+
+        # Both paths must be routable by this element
+        if old_route is None or new_route is None:
+            return False
+
+        # Handle if the route resolution changes within our route table
+        if old_route.pattern != new_route.pattern:
+            return True
+
+        # Also handle if paths differ only by query parameters or trailing slashes
+        # (these cases normalize to the same path but should still trigger navigation)
+        old_base = old_path.split('?')[0].rstrip('/')
+        new_base = new_path.split('?')[0].rstrip('/')
+
+        # If base paths are the same but full paths differ, handle it
+        if old_base == new_base and old_path != new_path:
+            return True
+
+        return False
 
     def _normalize_path(self, path: str) -> str:
         """Normalize the path by trimming root path and handling trailing slashes."""
-        if self._root_path is not None:
+        # For nested SubPages, dynamically get the parent's current path
+        if not self._is_root:
+            parent_sub_pages = next((el for el in self.ancestors() if isinstance(el, SubPages)), None)
+            if parent_sub_pages is not None:
+                parent_path = parent_sub_pages.path
+                if parent_path != '/' and path.startswith(parent_path):
+                    path = path[len(parent_path):]
+        elif self._root_path is not None:
+            # For root SubPages, use the static _root_path
             root = self._root_path.rstrip('/')
             if path.startswith(root):
                 path = path[len(root):]
+
         if path.endswith('/') and path != '/':
             path = path[:-1]
         if path == '':
             path = '/'
+
         return path
 
     @staticmethod

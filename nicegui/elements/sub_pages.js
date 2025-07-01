@@ -18,7 +18,7 @@ export default {
         if (href.startsWith("/")) {
           e.preventDefault();
 
-          const currentPath = window.location.pathname + window.location.search;
+          const currentPath = window.location.pathname + window.location.search + window.location.hash;
           const targetUrl = new URL(href, window.location.origin);
           const targetPath = targetUrl.pathname + targetUrl.search;
 
@@ -37,7 +37,7 @@ export default {
             }
           }
 
-          this.$emit("navigate", href);
+          this.$emit("navigate", { from: currentPath, to: href });
         }
       }
     });
