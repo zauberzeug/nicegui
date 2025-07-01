@@ -21,7 +21,7 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
     path = BindableProperty(
         on_change=lambda sender, path: cast(SubPages, sender)._handle_path_change(path))  # pylint: disable=protected-access
 
-    def __init__(self, routes: Optional[Dict[str, Callable]] = None, *, root_path: Optional[str] = None, data: Optional[Dict[str, Any]] = None) -> None:
+    def __init__(self, routes: Optional[Dict[str, Callable]] = None, *, root_path: str = '/', data: Optional[Dict[str, Any]] = None) -> None:
         """Sub Pages
 
         Create a sub pages element to handle client-side routing within a page.
@@ -32,15 +32,15 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
         """
         super().__init__()
         self._routes = routes or {}
-        self._root_path = root_path
+        parent_sub_pages_element = next((el for el in self.ancestors() if isinstance(el, SubPages)), None)
+        self._root_path = parent_sub_pages_element.path if parent_sub_pages_element else root_path
         self._data = data or {}
         self.path = '/'
         self._active_tasks: Set[asyncio.Task] = set()
         self._send_update_on_path_change = True  # standard pattern like for other elements
         self._handle_routes_change()
-        if self._is_root:
-            self.on('open', lambda e: self._show_page_and_update_browser_url(e.args))
-            self.on('navigate', lambda e: self._handle_navigate(e.args))
+        self.on('open', lambda e: self._show_page_and_update_browser_url(e.args))
+        self.on('navigate', lambda e: self._handle_navigate(e.args))
 
     def add(self, path: str, page: Callable) -> Self:
         """Add a new route to the sub pages.
@@ -68,7 +68,6 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
             with self:
                 Label(f'404: sub page {full_path} not found')
             return None
-
         self._send_update_on_path_change = False
         self.path = match_result.path
         self._send_update_on_path_change = True
@@ -86,10 +85,6 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
                             target.scrollIntoView({{ behavior: "smooth" }});
                 }}, 100);
             ''')
-
-        child_sub_pages = SubPages.find_child(self)
-        if child_sub_pages:
-            child_sub_pages.show(full_path[len(match_result.path):])
 
         return match_result
 
@@ -138,7 +133,6 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
         path_only = parsed_url.path
         query_params = QueryParams(parsed_url.query) if parsed_url.query else QueryParams()
         fragment = parsed_url.fragment
-
         normalized_path = self._normalize_path(path_only)
         segments = normalized_path.split('/')
         while segments:
@@ -156,16 +150,6 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
                     )
             segments.pop()
         return None
-
-    def _handle_routes_change(self) -> None:
-        if self._is_root:
-            assert context.client.request
-            path = str(context.client.request.url.path)
-            if context.client.request.url.query:
-                path += '?' + context.client.request.url.query
-            if context.client.request.url.fragment:
-                path += '#' + context.client.request.url.fragment
-            self._show_page_and_update_browser_url(path)
 
     def _handle_navigate(self, path: str) -> None:
         """Handle navigate event from link clicks."""
@@ -320,10 +304,15 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
         """
         self.path = path
 
-    def _handle_path_change(self, path: str) -> None:
-        """Called when the path changes.
+    def _handle_routes_change(self) -> None:
+        assert context.client.request
+        path = str(context.client.request.url.path)
+        if context.client.request.url.query:
+            path += '?' + context.client.request.url.query
+        if context.client.request.url.fragment:
+            path += '#' + context.client.request.url.fragment
+        self._show_page_and_update_browser_url(path)
 
-        :param path: The new path.
-        """
+    def _handle_path_change(self, path: str) -> None:
         if self._is_root and self._send_update_on_path_change:
             self._show_page_and_update_browser_url(f'{self._root_path or ""}{path}')

@@ -4,7 +4,7 @@ from typing import Optional
 import pytest
 from selenium.webdriver.common.by import By
 
-from nicegui import PageArgs, ui
+from nicegui import PageArgs, background_tasks, ui
 from nicegui.testing import Screen
 
 # pylint: disable=missing-function-docstring
@@ -189,7 +189,7 @@ def test_changing_sub_pages_via_binding(screen: Screen, root: str):
     screen.should_contain('other page')
 
 
-def test_sub_page_in_sub_page(screen: Screen):
+def test_nested_sub_pages(screen: Screen):
     @ui.page('/')
     @ui.page('/{_:path}')
     def index(_):
@@ -242,6 +242,66 @@ def test_sub_page_in_sub_page(screen: Screen):
 
     screen.open('/sub/a')
     screen.should_contain('sub A page')
+
+
+def test_async_nested_sub_pages(screen: Screen):
+    calls = {
+        'index': 0,
+        'sleep': 0,
+        'sleep_main': 0,
+        'background': 0,
+        'background_main': 0,
+    }
+
+    @ui.page('/')
+    @ui.page('/{_:path}')
+    def index(_):
+        calls['index'] += 1
+        ui.link('Go to sleep', '/sleep')
+        ui.link('Go to background', '/background')
+        ui.sub_pages({
+            '/sleep': sleep,
+            '/background': background,
+        })
+
+    async def sleep():
+        calls['sleep'] += 1
+        await asyncio.sleep(0.1)
+        ui.sub_pages({'/': sleep_main})
+
+    def background():
+        async def add():
+            await asyncio.sleep(0.05)
+            with content:
+                ui.sub_pages({'/': background_main})
+
+        calls['background'] += 1
+        content = ui.column()
+        background_tasks.create(add(), name='lazy_content')
+
+    def sleep_main():
+        calls['sleep_main'] += 1
+        ui.label('sleep main page')
+
+    def background_main():
+        calls['background_main'] += 1
+        ui.label('background main page')
+
+    screen.open('/sleep')
+    screen.should_contain('sleep main page')
+    assert calls == {'index': 1, 'sleep': 1, 'sleep_main': 1, 'background': 0,  'background_main': 0}
+
+    screen.open('/background')
+    screen.should_contain('background main page')
+    assert calls == {'index': 2, 'sleep': 1, 'sleep_main': 1, 'background': 1, 'background_main': 1}
+
+    screen.click('Go to sleep')
+    screen.should_contain('sleep main page')
+    assert calls == {'index': 2, 'sleep': 2, 'sleep_main': 2, 'background': 1, 'background_main': 1}
+
+    screen.click('Go to background')
+    screen.should_contain('background main page')
+    assert calls == {'index': 2, 'sleep': 2, 'sleep_main': 2, 'background': 2, 'background_main': 2}
 
 
 def test_parameterized_sub_pages(screen: Screen):
