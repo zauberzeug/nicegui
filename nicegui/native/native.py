@@ -2,20 +2,16 @@
 import inspect
 import warnings
 from multiprocessing import Pipe, Queue
-from typing import TYPE_CHECKING, Any, Callable, Optional, Tuple
+from typing import Any, Callable, Optional, Tuple
 
 from .. import run
 from ..logging import log
 
-if TYPE_CHECKING:
-    from multiprocessing.connection import PipeConnection
-
-
 method_queue: Optional[Queue] = None
 response_queue: Optional[Queue] = None
 event_queue: Optional[Queue] = None
-event_receiver: Optional['PipeConnection'] = None
-event_sender: Optional['PipeConnection'] = None
+event_receiver = None
+event_sender = None
 
 
 def create_queues() -> None:
