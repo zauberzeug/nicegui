@@ -8,7 +8,7 @@ import sys
 import tempfile
 import time
 import warnings
-from multiprocessing.connection import PipeConnection
+from multiprocessing.connection import Connection
 from threading import Event, Thread
 from typing import Any, Callable, Dict, List, Tuple
 
@@ -30,7 +30,7 @@ except ModuleNotFoundError:
 
 def _open_window(
     host: str, port: int, title: str, width: int, height: int, fullscreen: bool, frameless: bool,
-    method_queue: mp.Queue, response_queue: mp.Queue, event_sender: PipeConnection,
+    method_queue: mp.Queue, response_queue: mp.Queue, event_sender: Connection,
 ) -> None:
     while not helpers.is_port_open(host, port):
         time.sleep(0.1)
@@ -101,7 +101,7 @@ def _start_window_method_executor(window: webview.Window,
     Thread(target=window_method_executor).start()
 
 
-def _bind_pywebview_events(window: webview.Window, event_sender: PipeConnection) -> None:
+def _bind_pywebview_events(window: webview.Window, event_sender: Connection) -> None:
     def event(name: str) -> Callable:
         def handler(*args) -> None:
             try:
@@ -122,7 +122,7 @@ def _bind_pywebview_events(window: webview.Window, event_sender: PipeConnection)
     window.events.moved += event('moved')
 
 
-def _bind_pywebview_dom_events(window: webview.Window, event_sender: PipeConnection) -> None:
+def _bind_pywebview_dom_events(window: webview.Window, event_sender: Connection) -> None:
     def event(name: str) -> Callable:
         def handler(*args) -> None:
             try:
