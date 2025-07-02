@@ -10,7 +10,6 @@ from . import (
     color_picker_documentation,
     date_documentation,
     doc,
-    drop_zone_documentation,
     input_documentation,
     joystick_documentation,
     knob_documentation,
@@ -53,4 +52,3 @@ doc.intro(color_picker_documentation)
 doc.intro(date_documentation)
 doc.intro(time_documentation)
 doc.intro(upload_documentation)
-doc.intro(drop_zone_documentation)
