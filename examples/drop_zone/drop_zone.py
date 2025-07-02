@@ -1,7 +1,7 @@
 import asyncio
 import time
 from dataclasses import dataclass
-from typing import Any, ClassVar, List, Optional, cast
+from typing import ClassVar, List, Optional, cast
 
 from typing_extensions import Self
 
@@ -9,7 +9,7 @@ from nicegui import background_tasks, core
 from nicegui.classes import Classes
 from nicegui.dataclasses import KWONLY_SLOTS
 from nicegui.element import Element
-from nicegui.events import GenericEventArguments, Handler, KeyboardModifiers, PywebviewEventArguments, handle_event
+from nicegui.events import GenericEventArguments, Handler, KeyboardModifiers, handle_event
 from nicegui.functions.notify import notify
 from nicegui.native import event_manager
 
@@ -39,10 +39,8 @@ class DropZone(Element, component='drop_zone.js'):
         self._hover_overlay_classes = Classes(self._default_hover_overlay_classes, element=cast(Self, self))
 
         self._drop_handlers = [on_drop] if on_drop else []
-        self._drop_data: Any = None
 
         # Get event for the element itself
-        event_manager.on('drop', handler=self._set_drop_data)
         self.on('drag_enter', handler=self._set_hover_style)
         self.on('drag_leave', handler=self._clear_hover_style)
         self.on('file_drop', handler=self._handle_file_drop)
@@ -58,9 +56,6 @@ class DropZone(Element, component='drop_zone.js'):
         """The classes of the element."""
         return self._hover_overlay_classes
 
-    def _set_drop_data(self, e: PywebviewEventArguments) -> None:
-        self._drop_data = e.args[0]['dataTransfer']['files']
-
     def _handle_file_drop(self, event: GenericEventArguments) -> None:
         if core.app.config.reload:
             notify('Drop zones does not work when auto-reloading is enabled')
@@ -73,11 +68,11 @@ class DropZone(Element, component='drop_zone.js'):
     async def _check_queue_loop(self, event: GenericEventArguments) -> None:
         deadline = time.time() + 1.0
         while time.time() < deadline:
-            if self._drop_data is not None:
+            if event_manager.drop_data is not None:
                 args = DropZoneEventArguments(
                     sender=self,
                     client=self.client,
-                    args=self._drop_data,
+                    args=event_manager.drop_data,
                     modifiers=KeyboardModifiers(
                         alt=event.args['altKey'],
                         ctrl=event.args['ctrlKey'],
@@ -85,7 +80,7 @@ class DropZone(Element, component='drop_zone.js'):
                         shift=event.args['shiftKey'],
                     ),
                 )
-                self._drop_data = None
+                event_manager.drop_data = None
                 for drop_handler in self._drop_handlers:
                     handle_event(drop_handler, args)
                 return
