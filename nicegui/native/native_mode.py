@@ -8,6 +8,7 @@ import sys
 import tempfile
 import time
 import warnings
+from multiprocessing.connection import PipeConnection
 from threading import Event, Thread
 from typing import Any, Callable, Dict, List, Tuple
 
@@ -29,7 +30,7 @@ except ModuleNotFoundError:
 
 def _open_window(
     host: str, port: int, title: str, width: int, height: int, fullscreen: bool, frameless: bool,
-    method_queue: mp.Queue, response_queue: mp.Queue, event_queue: mp.Queue,
+    method_queue: mp.Queue, response_queue: mp.Queue, event_sender: PipeConnection,
 ) -> None:
     while not helpers.is_port_open(host, port):
         time.sleep(0.1)
@@ -48,10 +49,10 @@ def _open_window(
     closed = Event()
     window.events.closed += closed.set
     _start_window_method_executor(window, method_queue, response_queue, closed)
-    _bind_pywebview_events(window, event_queue)
+    _bind_pywebview_events(window, event_sender)
     if not core.app.native.start_args.get('private_mode', True) and 'storage_path' not in core.app.native.start_args:
         log.warning('Pass in a `storage_path` to properly disable `private_mode` for the native app.')
-    webview.start(_bind_pywebview_dom_events, (window, event_queue), **
+    webview.start(_bind_pywebview_dom_events, (window, event_sender), **
                   {'storage_path': tempfile.mkdtemp(), **core.app.native.start_args})
 
 
@@ -100,10 +101,13 @@ def _start_window_method_executor(window: webview.Window,
     Thread(target=window_method_executor).start()
 
 
-def _bind_pywebview_events(window: webview.Window, event_queue: mp.Queue) -> None:
+def _bind_pywebview_events(window: webview.Window, event_sender: PipeConnection) -> None:
     def event(name: str) -> Callable:
         def handler(*args) -> None:
-            event_queue.put({'id': name, 'args': args})
+            try:
+                event_sender.send({'id': name, 'args': args})
+            except (BrokenPipeError, OSError):
+                pass  # Pipe might be closed during shutdown
         return handler
 
     window.events.closed += event('closed')
@@ -118,10 +122,13 @@ def _bind_pywebview_events(window: webview.Window, event_queue: mp.Queue) -> Non
     window.events.moved += event('moved')
 
 
-def _bind_pywebview_dom_events(window: webview.Window, event_queue: mp.Queue) -> None:
+def _bind_pywebview_dom_events(window: webview.Window, event_sender: PipeConnection) -> None:
     def event(name: str) -> Callable:
         def handler(*args) -> None:
-            event_queue.put({'id': name, 'args': args})
+            try:
+                event_sender.send({'id': name, 'args': args})
+            except (BrokenPipeError, OSError):
+                pass  # Pipe might be closed during shutdown
         return handler
 
     window.dom.document.events.dragenter += DOMEventHandler(event('dragenter'), True, True)  # type: ignore
@@ -149,7 +156,7 @@ def activate(host: str, port: int, title: str, width: int, height: int, fullscre
     mp.freeze_support()
     native.create_queues()
     event_manager.start()
-    args = host, port, title, width, height, fullscreen, frameless, native.method_queue, native.response_queue, native.event_queue
+    args = host, port, title, width, height, fullscreen, frameless, native.method_queue, native.response_queue, native.event_sender
     process = mp.Process(target=_open_window, args=args, daemon=True)
     process.start()
 

@@ -1,5 +1,3 @@
-
-import queue
 import threading
 from typing import Any, Dict, Optional, Sequence, Tuple, Union
 
@@ -14,6 +12,13 @@ class EventManager:
         self._event_listeners: Dict[str, list[EventListener]] = {}
         self._running = True
         self._window_monitor: Optional[threading.Thread] = None
+        # As the pywebview drop data doesn't show us in what element it was dropped
+        # we'll to store it in the event manager for the correct element to grab it
+        self.drop_data: Any = None
+        self.on('drop', handler=self._set_drop_data)
+
+    def _set_drop_data(self, e: events.PywebviewEventArguments) -> None:
+        self.drop_data = e.args[0]['dataTransfer']['files']
 
     def start(self):
         self._window_monitor = threading.Thread(
@@ -24,15 +29,33 @@ class EventManager:
         self._window_monitor.start()
 
     def _event_loop(self):
-        from .native import event_queue
+        from .native import event_receiver
 
         while self._running:
             try:
-                if event_queue is not None and not event_queue.empty():
-                    data = event_queue.get_nowait()
+                if event_receiver is not None:
+                    data = event_receiver.recv()
+
+                    if data is None:  # Sentinel value to stop the loop
+                        break
+
                     self._handle_event(**data)
-            except queue.Empty:
+            except EOFError:
+                # Pipe was closed, exit the loop
+                break
+            except Exception as e:
+                print(f'Error in event loop: {e}')
                 continue
+
+    def stop(self):
+        """Stop the event loop gracefully."""
+        self._running = False
+        from .native import event_sender
+        if event_sender is not None:
+            try:
+                event_sender.send(None)
+            except (BrokenPipeError, OSError):
+                pass  # Pipe might already be closed
 
     def on(self,
             type: str,  # pylint: disable=redefined-builtin
