@@ -253,31 +253,6 @@ class Sortable(Element,
         """Disable the sortable instance."""
         self.set_option('disabled', True)
 
-    # MultiDrag plugin methods
-    async def get_selected(self) -> List[str]:
-        """Get the currently selected items when using MultiDrag.
-
-        Returns:
-            A list of selected element IDs
-        """
-        return await self.run_method('getSelected')
-
-    def select(self, element_id: str) -> None:
-        """Select an item programmatically when using MultiDrag.
-
-        Args:
-            element_id: ID of the element to select
-        """
-        self.run_method('select', element_id)
-
-    def deselect(self, element_id: str) -> None:
-        """Deselect an item programmatically when using MultiDrag.
-
-        Args:
-            element_id: ID of the element to deselect
-        """
-        self.run_method('deselect', element_id)
-
     def remove_item(self, item: Element | int | str) -> None:
         """Remove an item from this sortable list.
 
@@ -371,3 +346,20 @@ class Sortable(Element,
 
         # Then synchronize the DOM to match the Python order
         self.sort(self.default_slot.children, False)
+
+    # MultiDrag plugin methods
+    def select(self, element_id: str) -> None:
+        """Select an item programmatically when using MultiDrag.
+
+        Args:
+            element_id: ID of the element to select
+        """
+        self.run_method('select', element_id)
+
+    def deselect(self, element_id: str) -> None:
+        """Deselect an item programmatically when using MultiDrag.
+
+        Args:
+            element_id: ID of the element to deselect
+        """
+        self.run_method('deselect', element_id)
