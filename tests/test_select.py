@@ -141,6 +141,37 @@ def test_add_new_values(screen:  Screen, option_dict: bool, multiple: bool, new_
                                   "options = ['a', 'b', 'c']")
 
 
+@pytest.mark.parametrize('option_dict', [False, True])
+@pytest.mark.parametrize('new_value_mode', ['add', 'add-unique'])
+def test_add_new_values_delimited(screen:  Screen, option_dict: bool, new_value_mode: Optional[str]):
+    options = {'a': 'A', 'b': 'B', 'c': 'C'} if option_dict else ['a', 'b', 'c']
+    if option_dict and new_value_mode == 'add':
+        with pytest.raises(ValueError, match='new_value_mode "add" is not supported for dict options'):
+            ui.select(options=options, use_delimiter=True, new_value_mode=new_value_mode)
+        return
+
+    s = ui.select(options=options, use_delimiter=True, new_value_mode=new_value_mode)
+    ui.label().bind_text_from(s, 'value', lambda v: f'value = {v}')
+    ui.label().bind_text_from(s, 'options', lambda v: f'options = {v}')
+
+
+    for _ in range(2):
+        screen.find_by_tag('input').send_keys(Keys.BACKSPACE + 'd, d; f')
+        screen.wait(0.5)
+        screen.find_by_tag('input').click()
+        screen.wait(0.5)
+        screen.find_by_tag('input').send_keys(Keys.ENTER)
+        screen.wait(0.5)
+    if new_value_mode == 'add':
+        screen.should_contain("value = ['a', 'd', 'd', 'f']")
+        screen.should_contain("options = {'a': 'A', 'b': 'B', 'c': 'C', 'd': 'd', 'd': 'd', 'f': 'f'}" if option_dict else
+                                "options = ['a', 'b', 'c', 'd', 'd', 'f']")
+    elif new_value_mode == 'add-unique':
+        screen.should_contain("value = ['a', 'd', 'f']")
+        screen.should_contain("options = {'a': 'A', 'b': 'B', 'c': 'C', 'd': 'd', 'f': 'f'}" if option_dict else
+                                "options = ['a', 'b', 'c', 'd', 'f']")
+
+
 def test_id_generator(screen: Screen):
     options = {'a': 'A', 'b': 'B', 'c': 'C'}
     select = ui.select(options, value='b', new_value_mode='add', key_generator=lambda _: len(options))
