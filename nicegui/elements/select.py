@@ -1,6 +1,6 @@
+import re
 from collections.abc import Generator, Iterable
 from copy import deepcopy
-import re
 from typing import Any, Callable, Dict, Iterator, List, Literal, Optional, Union
 
 from ..events import GenericEventArguments, Handler, ValueChangeEventArguments
@@ -76,7 +76,7 @@ class Select(LabelElement, ValidationElement, ChoiceElement, DisableableElement,
             self._props['new-value-mode'] = new_value_mode
             with_input = True
 
-        self.use_delimiter = use_delimiter if new_value_mode in ("add", "add-unique") else False
+        self.use_delimiter = use_delimiter if new_value_mode in ('add', 'add-unique') else False
 
         if with_input:
             self.original_options = deepcopy(options)
@@ -106,7 +106,7 @@ class Select(LabelElement, ValidationElement, ChoiceElement, DisableableElement,
                     split_args = [value.strip() for value in re.split(r'[,;|、،]+', new_value) if len(value)> 0]
                     e.args.remove(new_value)
                     e.args.extend(split_args)
-                
+
                 if self._props.get('new-value-mode') == 'add-unique':
                     # handle issue #4896: eliminate duplicate arguments
                     for arg1 in [a for a in e.args if isinstance(a, str)]:

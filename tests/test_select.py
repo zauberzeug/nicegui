@@ -132,7 +132,7 @@ def test_add_new_values(screen:  Screen, option_dict: bool, multiple: bool, new_
             screen.should_contain("options = {'a': 'A', 'b': 'B', 'c': 'C', 'd': 'd', 'd': 'd'}" if option_dict else
                                   "options = ['a', 'b', 'c', 'd', 'd']")
         elif new_value_mode == 'add-unique':
-            screen.should_contain("value = ['a', 'd', 'd']" if multiple else 'value = d')
+            screen.should_contain("value = ['a', 'd']" if multiple else 'value = d')
             screen.should_contain("options = {'a': 'A', 'b': 'B', 'c': 'C', 'd': 'd'}" if option_dict else
                                   "options = ['a', 'b', 'c', 'd']")
         elif new_value_mode == 'toggle':
@@ -154,6 +154,9 @@ def test_add_new_values_delimited(screen:  Screen, option_dict: bool, new_value_
     ui.label().bind_text_from(s, 'value', lambda v: f'value = {v}')
     ui.label().bind_text_from(s, 'options', lambda v: f'options = {v}')
 
+    screen.open('/')
+    screen.should_contain('value = []')
+    screen.should_contain("options = {'a': 'A', 'b': 'B', 'c': 'C'}" if option_dict else "options = ['a', 'b', 'c']")
 
     for _ in range(2):
         screen.find_by_tag('input').send_keys(Keys.BACKSPACE + 'd, d; f')
