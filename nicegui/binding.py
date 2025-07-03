@@ -75,53 +75,50 @@ async def refresh_loop() -> None:
 
 @contextmanager
 def _propagation_context():
-    visited = propagation_visited.get()
-    is_root_call = visited is None
-    if is_root_call:
-        visited = set()
-        token = propagation_visited.set(visited)
+    token = propagation_visited.set(set())
     try:
-        yield visited
+        yield
     finally:
-        if is_root_call:
-            propagation_visited.reset(token)
+        propagation_visited.reset(token)
 
 
 def _refresh_step() -> None:
     t = time.time()
-    with _propagation_context():
-        for link in active_links:
-            (source_obj, source_name, target_obj, target_name, transform) = link
-            if _has_attribute(source_obj, source_name):
-                source_value = _get_attribute(source_obj, source_name)
-                value = transform(source_value) if transform else source_value
-                if not _has_attribute(target_obj, target_name) or _get_attribute(target_obj, target_name) != value:
-                    _set_attribute(target_obj, target_name, value)
+    for link in active_links:
+        (source_obj, source_name, target_obj, target_name, transform) = link
+        if _has_attribute(source_obj, source_name):
+            source_value = _get_attribute(source_obj, source_name)
+            value = transform(source_value) if transform else source_value
+            if not _has_attribute(target_obj, target_name) or _get_attribute(target_obj, target_name) != value:
+                _set_attribute(target_obj, target_name, value)
+                with _propagation_context():
                     _propagate(target_obj, target_name)
-            del link, source_obj, target_obj  # pylint: disable=modified-iterating-list
+        del link, source_obj, target_obj  # pylint: disable=modified-iterating-list
     if time.time() - t > MAX_PROPAGATION_TIME:
         log.warning(f'binding propagation for {len(active_links)} active links took {time.time() - t:.3f} s')
 
 
 def _propagate(source_obj: Any, source_name: str) -> None:
-    with _propagation_context() as visited:
-        source_obj_id = id(source_obj)
-        if (source_obj_id, source_name) in visited:
-            return
-        visited.add((source_obj_id, source_name))
+    visited = propagation_visited.get()
+    assert visited is not None, 'propagation_visited is not set'
 
-        if not _has_attribute(source_obj, source_name):
-            return
-        source_value = _get_attribute(source_obj, source_name)
+    source_obj_id = id(source_obj)
+    if (source_obj_id, source_name) in visited:
+        return
+    visited.add((source_obj_id, source_name))
 
-        for _, target_obj, target_name, transform in bindings.get((source_obj_id, source_name), []):
-            if (id(target_obj), target_name) in visited:
-                continue
+    if not _has_attribute(source_obj, source_name):
+        return
+    source_value = _get_attribute(source_obj, source_name)
 
-            target_value = transform(source_value) if transform else source_value
-            if not _has_attribute(target_obj, target_name) or _get_attribute(target_obj, target_name) != target_value:
-                _set_attribute(target_obj, target_name, target_value)
-                _propagate(target_obj, target_name)
+    for _, target_obj, target_name, transform in bindings.get((source_obj_id, source_name), []):
+        if (id(target_obj), target_name) in visited:
+            continue
+
+        target_value = transform(source_value) if transform else source_value
+        if not _has_attribute(target_obj, target_name) or _get_attribute(target_obj, target_name) != target_value:
+            _set_attribute(target_obj, target_name, target_value)
+            _propagate(target_obj, target_name)
 
 
 def bind_to(self_obj: Any, self_name: str, other_obj: Any, other_name: str,
@@ -140,7 +137,8 @@ def bind_to(self_obj: Any, self_name: str, other_obj: Any, other_name: str,
     bindings[(id(self_obj), self_name)].append((self_obj, other_obj, other_name, forward))
     if (id(self_obj), self_name) not in bindable_properties:
         active_links.append((self_obj, self_name, other_obj, other_name, forward))
-    _propagate(self_obj, self_name)
+    with _propagation_context():
+        _propagate(self_obj, self_name)
 
 
 def bind_from(self_obj: Any, self_name: str, other_obj: Any, other_name: str,
@@ -159,7 +157,8 @@ def bind_from(self_obj: Any, self_name: str, other_obj: Any, other_name: str,
     bindings[(id(other_obj), other_name)].append((other_obj, self_obj, self_name, backward))
     if (id(other_obj), other_name) not in bindable_properties:
         active_links.append((other_obj, other_name, self_obj, self_name, backward))
-    _propagate(other_obj, other_name)
+    with _propagation_context():
+        _propagate(other_obj, other_name)
 
 
 def bind(self_obj: Any, self_name: str, other_obj: Any, other_name: str, *,
@@ -203,7 +202,8 @@ class BindableProperty:
         setattr(owner, '___' + self.name, value)
         key = (id(owner), str(self.name))
         bindable_properties[key] = owner
-        _propagate(owner, self.name)
+        with _propagation_context():
+            _propagate(owner, self.name)
         if value_changed and self._change_handler is not None:
             self._change_handler(owner, value)
 
