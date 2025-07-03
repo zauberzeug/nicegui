@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import weakref
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Union
 
 from typing_extensions import Self
 
@@ -253,7 +253,7 @@ class Sortable(Element,
         """Disable the sortable instance."""
         self.set_option('disabled', True)
 
-    def remove_item(self, item: Element | int | str) -> None:
+    def remove_item(self, item: Union[Element, int, str]) -> None:
         """Remove an item from this sortable list.
 
         This removes the item both from the Python object and the DOM object.
@@ -316,7 +316,7 @@ class Sortable(Element,
             for child in reversed(slot.children):
                 self.remove_item(child)
 
-    def get_child_by_id(self, item_id: str | int) -> Element | None:
+    def get_child_by_id(self, item_id: Union[str, int]) -> Optional[Element]:
         """Retrieve a child element by its ID within the default slot.
 
         Args:
@@ -348,7 +348,7 @@ class Sortable(Element,
         self.sort(self.default_slot.children, False)
 
     # MultiDrag plugin methods
-    def select(self, element_id: str) -> None:
+    def select(self, element_id: Union[str, int]) -> None:
         """Select an item programmatically when using MultiDrag.
 
         Args:
@@ -356,7 +356,7 @@ class Sortable(Element,
         """
         self.run_method('select', element_id)
 
-    def deselect(self, element_id: str) -> None:
+    def deselect(self, element_id: Union[str, int]) -> None:
         """Deselect an item programmatically when using MultiDrag.
 
         Args:
