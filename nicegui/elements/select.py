@@ -100,7 +100,6 @@ class Select(LabelElement, ValidationElement, ChoiceElement, DisableableElement,
                         for arg2 in [a for a in e.args if isinstance(a, dict)]:
                             if arg1 == arg2['label']:
                                 e.args.remove(arg1)
-                                e.args.remove(arg2)
                                 break
                 args = [self._values[arg['value']] if isinstance(arg, dict) else arg for arg in e.args]
                 for arg in e.args:
