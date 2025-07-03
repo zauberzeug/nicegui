@@ -110,9 +110,9 @@ class Sortable(Element,
         self._change_handlers.append(callback)
         return self
 
-    def on_move(self, callback: Handler[GenericEventArguments]) -> Self:
-        """ Add a callback to be invoked when an item is moved."""
-        self._move_handlers.append(callback)
+    def on_cancel_clone(self, callback: Handler[GenericEventArguments]) -> Self:
+        """ Add a callback to be invoked when cloning is canceled."""
+        self._cancel_clone_handlers.append(callback)
         return self
 
     def on_filter(self, callback: Handler[GenericEventArguments]) -> Self:
