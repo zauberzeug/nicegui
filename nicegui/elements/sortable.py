@@ -85,7 +85,7 @@ class Sortable(Element,
             for handler in event_handlers:
                 handle_event(handler, e)
 
-        # Register event handlers with explicit try/except
+        # Register event handlers
         self.on('sort_end', lambda e: handle_sortable_event(self._end_handlers, e))
         self.on('sort_add', lambda e: handle_sortable_event(self._add_handlers, e))
         self.on('sort_change', lambda e: handle_sortable_event(self._change_handlers, e))

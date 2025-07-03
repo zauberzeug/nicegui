@@ -164,7 +164,7 @@ def true_cloning() -> None:
             with ui.sortable({
                 'group': {'name': 'true-clone-example', 'pull': 'clone'},
                 'cancelClone': True
-            }, on_remove_on_add=handle_true_clone) as true_clone_list1:
+            }, on_cancel_clone=handle_true_clone) as true_clone_list1:
                 for i in range(1, 7):
                     ClonableCard(f'List1 {i}')
 
@@ -173,7 +173,7 @@ def true_cloning() -> None:
             with ui.sortable({
                 'group': {'name': 'true-clone-example', 'pull': 'clone'},
                 'cancelClone': True
-            }, on_remove_on_add=handle_true_clone) as true_clone_list2:
+            }, on_cancel_clone=handle_true_clone) as true_clone_list2:
                 for i in range(1, 7):
                     ClonableCard(f'List2 {i}', 'bg-amber-500')
 
@@ -222,7 +222,7 @@ def disable_sorting() -> None:
     You can restrict dragging to a specific handle element within each item.
 ''')
 def handle_example() -> None:
-    with ui.sortable({'handle': '.nicegui-sortable-handle'}, on_move=on_move):
+    with ui.sortable({'handle': '.nicegui-sortable-handle'}, on_change=on_change):
         for i in range(1, 7):
             with ui.card():
                 with ui.row().classes('items-center w-full'):
@@ -619,7 +619,6 @@ def event_debugging() -> None:
     def on_end(e): log_event('end', e)
     def on_add(e): log_event('add', e)
     def on_update(e): log_event('update', e)
-    def on_sort(e): log_event('sort', e)
     def on_remove(e): log_event('remove', e)
     def on_move(e): log_event('move', e)
     def on_clone(e): log_event('clone', e)
@@ -642,21 +641,13 @@ def event_debugging() -> None:
                 'multiDragKey': 'ctrl',
                 'cancelSort': True,
             },
-                    on_choose=on_choose,
-                    on_unchoose=on_unchoose,
-                    on_start=on_start,
                     on_end=on_end,
                     on_add=on_add,
-                    on_update=on_update,
-                    on_sort=on_sort,
-                    on_remove=on_remove,
-                    on_move=on_move,
-                    on_clone=on_clone,
                     on_change=on_change,
                     on_filter=on_filter,
                     on_spill=on_spill,
                     on_select=on_select,
-                    on_deselect=on_deselect):
+                    on_deselect=on_deselect) as sortable1:
                 for i in range(1, 6):
                     # Make one item non-draggable to test filtering
                     if i == 3:
@@ -665,6 +656,14 @@ def event_debugging() -> None:
                     else:
                         with ui.card():
                             ui.label(f'Item {i} (hold Ctrl/Cmd to select multiple)')
+            sortable1.on('sort_choose', on_choose)
+            sortable1.on('sort_unchoose', on_unchoose)
+            sortable1.on('sort_start', on_start)
+            sortable1.on('sort_update', on_update)
+            sortable1.on('sort_remove', on_remove)
+            sortable1.on('sort_move', on_move)
+            sortable1.on('sort_clone', on_clone)
+            sortable1.on('sort_change', on_change)
 
         with ui.card():
             ui.label('List 2').classes('text-h6')
@@ -672,24 +671,24 @@ def event_debugging() -> None:
                 'group': {'name': 'event-debugging', 'pull': 'clone'},
                 'cancelSort': True,
             },
-                    on_choose=on_choose,
-                    on_unchoose=on_unchoose,
-                    on_start=on_start,
                     on_end=on_end,
                     on_add=on_add,
-                    on_update=on_update,
-                    on_sort=on_sort,
-                    on_remove=on_remove,
-                    on_move=on_move,
-                    on_clone=on_clone,
                     on_change=on_change,
                     on_filter=on_filter,
                     on_spill=on_spill,
                     on_select=on_select,
-                    on_deselect=on_deselect):
+                    on_deselect=on_deselect) as sortable2:
                 for i in range(1, 4):
                     with ui.card():
                         ui.label(f'Target Item {i}')
+            sortable2.on('sort_choose', on_choose)
+            sortable2.on('sort_unchoose', on_unchoose)
+            sortable2.on('sort_start', on_start)
+            sortable2.on('sort_update', on_update)
+            sortable2.on('sort_remove', on_remove)
+            sortable2.on('sort_move', on_move)
+            sortable2.on('sort_clone', on_clone)
+            sortable2.on('sort_change', on_change)
 
     ui.label('''
         This demo shows all available sortable events. Try:
