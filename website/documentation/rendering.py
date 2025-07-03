@@ -52,7 +52,7 @@ def render_page(documentation: DocumentationPage, *, with_menu: bool = True) -> 
                     element = custom_restructured_text(part.description.replace(':param ', ':'))
                 else:
                     element = ui.markdown(part.description)
-                element.classes('bold-links arrow-links')
+                element.classes('bold-links arrow-links w-full overflow-x-auto')
                 if ':param' in part.description:
                     element.classes('rst-param-tables')
             if part.ui:

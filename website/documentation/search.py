@@ -17,7 +17,9 @@ examples_index: List[Dict[str, str]] = []
 
 @app.get('/static/search_index.json')
 def _get_search_index() -> JSONResponse:
-    return JSONResponse(search_index)
+    response = JSONResponse(search_index)
+    response.headers['Cache-Control'] = 'public, max-age=86400, immutable'
+    return response
 
 
 @app.get('/static/sitewide_index.json')

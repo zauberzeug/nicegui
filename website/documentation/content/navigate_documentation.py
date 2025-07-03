@@ -25,7 +25,7 @@ def open_github() -> None:
     While the `history.push` method pushes a new URL to the history,
     the `history.replace` method replaces the current URL.
 
-    See `JavaScript's History API <https://developer.mozilla.org/en-US/docs/Web/API/History>`_ for more information.
+    See [JavaScript's History API](https://developer.mozilla.org/en-US/docs/Web/API/History) for more information.
 
     *Added in version 2.13.0*
 ''')

@@ -49,19 +49,19 @@ def set_storage_secret(storage_secret: Optional[str] = None) -> None:
 
 class Storage:
     secret: Optional[str] = None
-    """Secret key for session storage."""
+    '''Secret key for session storage.'''
 
     path = Path(os.environ.get('NICEGUI_STORAGE_PATH', '.nicegui')).resolve()
-    """Path to use for local persistence. Defaults to ".nicegui"."""
+    '''Path to use for local persistence. Defaults to ".nicegui".'''
 
     redis_url = os.environ.get('NICEGUI_REDIS_URL', None)
-    """URL to use for shared persistent storage via Redis. Defaults to None, which means local file storage is used."""
+    '''URL to use for shared persistent storage via Redis. Defaults to None, which means local file storage is used.'''
 
     redis_key_prefix = os.environ.get('NICEGUI_REDIS_KEY_PREFIX', 'nicegui:')
-    """Prefix for Redis keys. Defaults to "nicegui:"."""
+    '''Prefix for Redis keys. Defaults to "nicegui:".'''
 
     max_tab_storage_age: float = timedelta(days=30).total_seconds()
-    """Maximum age in seconds before tab storage is automatically purged. Defaults to 30 days."""
+    '''Maximum age in seconds before tab storage is automatically purged. Defaults to 30 days.'''
 
     def __init__(self) -> None:
         self._general = Storage._create_persistent_dict('general')

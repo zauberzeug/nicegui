@@ -4,7 +4,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import List
 
-import requests
+import httpx
 from bs4 import BeautifulSoup
 
 
@@ -55,7 +55,7 @@ def get_soup(url: str) -> BeautifulSoup:
     if path.exists():
         html = path.read_text(encoding='utf-8')
     else:
-        req = requests.get(url, timeout=5)
+        req = httpx.get(url, timeout=5)
         html = req.text
         path.write_text(html, encoding='utf-8')
     return BeautifulSoup(html, 'html.parser')

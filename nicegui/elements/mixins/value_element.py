@@ -9,15 +9,15 @@ from ...events import GenericEventArguments, Handler, ValueChangeEventArguments,
 
 class ValueElement(Element):
     VALUE_PROP: str = 'model-value'
-    """Name of the prop that holds the value of the element"""
+    '''Name of the prop that holds the value of the element'''
 
     LOOPBACK: Optional[bool] = True
-    """Whether to set the new value directly on the client or after getting an update from the server.
+    '''Whether to set the new value directly on the client or after getting an update from the server.
 
     - ``True``: The value is updated by sending a change event to the server which responds with an update.
     - ``False``: The value is updated by setting the VALUE_PROP directly on the client.
     - ``None``: The value is updated automatically by the Vue element.
-    """
+    '''
 
     value = BindableProperty(
         on_change=lambda sender, value: cast(Self, sender)._handle_value_change(value))  # pylint: disable=protected-access
@@ -49,7 +49,7 @@ class ValueElement(Element):
     def bind_value_to(self,
                       target_object: Any,
                       target_name: str = 'value',
-                      forward: Callable[..., Any] = lambda x: x,
+                      forward: Optional[Callable[[Any], Any]] = None,
                       ) -> Self:
         """Bind the value of this element to the target object's target_name property.
 
@@ -58,7 +58,7 @@ class ValueElement(Element):
 
         :param target_object: The object to bind to.
         :param target_name: The name of the property to bind to.
-        :param forward: A function to apply to the value before applying it to the target.
+        :param forward: A function to apply to the value before applying it to the target (default: identity).
         """
         bind_to(self, 'value', target_object, target_name, forward)
         return self
@@ -66,7 +66,7 @@ class ValueElement(Element):
     def bind_value_from(self,
                         target_object: Any,
                         target_name: str = 'value',
-                        backward: Callable[..., Any] = lambda x: x,
+                        backward: Optional[Callable[[Any], Any]] = None,
                         ) -> Self:
         """Bind the value of this element from the target object's target_name property.
 
@@ -75,7 +75,7 @@ class ValueElement(Element):
 
         :param target_object: The object to bind from.
         :param target_name: The name of the property to bind from.
-        :param backward: A function to apply to the value before applying it to this element.
+        :param backward: A function to apply to the value before applying it to this element (default: identity).
         """
         bind_from(self, 'value', target_object, target_name, backward)
         return self
@@ -83,8 +83,8 @@ class ValueElement(Element):
     def bind_value(self,
                    target_object: Any,
                    target_name: str = 'value', *,
-                   forward: Callable[..., Any] = lambda x: x,
-                   backward: Callable[..., Any] = lambda x: x,
+                   forward: Optional[Callable[[Any], Any]] = None,
+                   backward: Optional[Callable[[Any], Any]] = None,
                    ) -> Self:
         """Bind the value of this element to the target object's target_name property.
 
@@ -94,8 +94,8 @@ class ValueElement(Element):
 
         :param target_object: The object to bind to.
         :param target_name: The name of the property to bind to.
-        :param forward: A function to apply to the value before applying it to the target.
-        :param backward: A function to apply to the value before applying it to this element.
+        :param forward: A function to apply to the value before applying it to the target (default: identity).
+        :param backward: A function to apply to the value before applying it to this element (default: identity).
         """
         bind(self, 'value', target_object, target_name, forward=forward, backward=backward)
         return self

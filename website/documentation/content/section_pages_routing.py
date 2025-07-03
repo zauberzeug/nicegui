@@ -18,6 +18,7 @@ doc.title('*Pages* & Routing')
 doc.intro(page_documentation)
 
 
+@doc.auto_execute
 @doc.demo('Auto-index page', '''
     Pages created with the `@ui.page` decorator are "private".
     Their content is re-created for each client.
@@ -45,6 +46,7 @@ def auto_index_page():
 doc.intro(page_layout_documentation)
 
 
+@doc.auto_execute
 @doc.demo('Parameter injection', '''
     Thanks to FastAPI, a page function accepts optional parameters to provide
     [path parameters](https://fastapi.tiangolo.com/tutorial/path-params/),
@@ -90,13 +92,13 @@ def add_static_files_demo():
 def add_media_files_demo():
     from pathlib import Path
 
-    import requests
+    import httpx
 
     from nicegui import app
 
     media = Path('media')
     # media.mkdir(exist_ok=True)
-    # r = requests.get('https://cdn.coverr.co/videos/coverr-cloudy-sky-2765/1080p.mp4')
+    # r = httpx.get('https://cdn.coverr.co/videos/coverr-cloudy-sky-2765/1080p.mp4')
     # (media  / 'clouds.mp4').write_bytes(r.content)
     # app.add_media_files('/my_videos', media)
     # ui.video('/my_videos/clouds.mp4')
@@ -120,6 +122,7 @@ def add_head_html_demo():
     ui.label('RED').classes('my-red-label')
 
 
+@doc.auto_execute
 @doc.demo('API Responses', '''
     NiceGUI is based on [FastAPI](https://fastapi.tiangolo.com/).
     This means you can use all of FastAPI's features.
