@@ -61,8 +61,8 @@ def control_panel() -> None:
                 ui.label(f'Item {i}')
 
     with ui.row():
-        ui.button('Enable', on_click=simple_sortable.enable)
-        ui.button('Disable', on_click=simple_sortable.disable)
+        ui.button('Enable Draggable', on_click=simple_sortable.enable)
+        ui.button('Disable Dragging', on_click=simple_sortable.disable)
         ui.button('Reverse Order', on_click=lambda: simple_sortable.sort(
             list(reversed(simple_sortable.default_slot.children)), True))
 
