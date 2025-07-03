@@ -15,7 +15,7 @@ def on_add():
     ui.notify('Item added from another list')
 
 
-def on_sort():
+def on_change():
     ui.notify('List order changed')
 
 
@@ -74,14 +74,14 @@ def shared_lists() -> None:
     with ui.row():
         with ui.card():
             ui.label('List 1').classes('text-h6')
-            with ui.sortable({'group': 'shared'}, on_add=on_add, on_sort=on_sort):
+            with ui.sortable({'group': 'shared'}, on_add=on_add, on_change=on_change):
                 for i in range(1, 7):
                     with ui.card():
                         ui.label(f'Item {i}')
 
         with ui.card():
             ui.label('List 2').classes('text-h6')
-            with ui.sortable({'group': 'shared'}, on_add=on_add, on_sort=on_sort):
+            with ui.sortable({'group': 'shared'}, on_add=on_add, on_change=on_change):
                 for i in range(1, 7):
                     with ui.card().classes('bg-amber-500'):
                         ui.label(f'Item {i}')
