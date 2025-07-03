@@ -497,10 +497,13 @@ def multi_drag() -> None:
         'multiDrag': True,
         'multiDragKey': 'ctrl',
         'multiDragClass': 'nicegui-sortable-multi-selected'
-    }, on_select=on_select, on_deselect=on_deselect):
+    }, on_select=on_select, on_deselect=on_deselect) as multi_drag_obj:
         for i in range(1, 7):
             with ui.card():
                 ui.label(f'Item {i} (hold Ctrl/Cmd to select multiple)')
+    ui.button('Select first object', on_click=lambda: multi_drag_obj.select(multi_drag_obj.default_slot.children[0].id))
+    ui.button('Deselect first object', on_click=lambda: multi_drag_obj.deselect(
+        multi_drag_obj.default_slot.children[0].id))
 
 
 @doc.demo('Swap Plugin', '''

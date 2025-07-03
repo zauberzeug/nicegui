@@ -295,20 +295,8 @@ export default {
         select(elementId) {
             try {
                 const element = document.getElementById(elementId);
-                if (element && this.sortableInstance) {
-                    const parent = element.parentNode;
-                    if (parent && parent[Sortable.expando]) {
-                        // Get the Sortable instance that manages this element
-                        const sortableInstance = parent[Sortable.expando];
-
-                        // Use the MultiDrag plugin's select utility if available
-                        if (Sortable.utils && Sortable.utils.select) {
-                            Sortable.utils.select(element);
-                        } else if (sortableInstance.multiDrag) {
-                            // Attempt to access the select method via plugin
-                            Sortable.plugins.find(p => p.pluginName === 'multiDrag')?.utils?.select(element);
-                        }
-                    }
+                if (element) {
+                    Sortable.utils.select(element);
                 }
             } catch (error) {
                 console.error("Error in select method:", error);
@@ -317,20 +305,8 @@ export default {
         deselect(elementId) {
             try {
                 const element = document.getElementById(elementId);
-                if (element && this.sortableInstance) {
-                    const parent = element.parentNode;
-                    if (parent && parent[Sortable.expando]) {
-                        // Get the Sortable instance that manages this element
-                        const sortableInstance = parent[Sortable.expando];
-
-                        // Use the MultiDrag plugin's deselect utility if available
-                        if (Sortable.utils && Sortable.utils.deselect) {
-                            Sortable.utils.deselect(element);
-                        } else if (sortableInstance.multiDrag) {
-                            // Attempt to access the deselect method via plugin
-                            Sortable.plugins.find(p => p.pluginName === 'multiDrag')?.utils?.deselect(element);
-                        }
-                    }
+                if (element) {
+                    Sortable.utils.deselect(element);
                 }
             } catch (error) {
                 console.error("Error in deselect method:", error);

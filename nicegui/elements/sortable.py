@@ -354,6 +354,8 @@ class Sortable(Element,
         Args:
             element_id: ID of the element to select
         """
+        if isinstance(element_id, int) or not element_id.startswith('c'):
+            element_id = 'c' + str(element_id)
         self.run_method('select', element_id)
 
     def deselect(self, element_id: Union[str, int]) -> None:
@@ -362,4 +364,6 @@ class Sortable(Element,
         Args:
             element_id: ID of the element to deselect
         """
+        if isinstance(element_id, int) or not element_id.startswith('c'):
+            element_id = 'c' + str(element_id)
         self.run_method('deselect', element_id)
