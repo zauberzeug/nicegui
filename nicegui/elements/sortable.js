@@ -292,18 +292,6 @@ export default {
             return false;
         },
         // MultiDrag plugin methods
-        getSelected() {
-            if (this.sortableInstance) {
-                // Try to get selected items from the MultiDrag plugin
-                const sortable = this.sortableInstance;
-                if (sortable.multiDrag && sortable.multiDrag.selectedItems) {
-                    return sortable.multiDrag.selectedItems.map(item =>
-                        item.id || item.dataset.id || null
-                    );
-                }
-            }
-            return [];
-        },
         select(elementId) {
             try {
                 const element = document.getElementById(elementId);
