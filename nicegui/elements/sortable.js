@@ -107,7 +107,7 @@ export default {
                 ...options,
                 dataIdAttr: 'id', // Explicitly tell SortableJS to use the HTML id attribute
                 onCancelClone: (evt) => {
-                    this.$emit('sort_remove_on_add', {
+                    this.$emit('sort_cancel_clone', {
                         sourceItem: evt.sourceItem || null,
                         newIndex: evt.newIndex,
                         sourceList: evt.sourceList || null,
