@@ -58,6 +58,10 @@ class Select(LabelElement, ValidationElement, ChoiceElement, DisableableElement,
         :param validation: dictionary of validation rules or a callable that returns an optional error message (default: None for no validation)
         :param key_generator: a callback or iterator to generate a dictionary key for new values
         """
+        self.use_delimiter = use_delimiter if new_value_mode in ('add', 'add-unique') else False
+        if use_delimiter:
+            multiple = True
+
         self.multiple = multiple
         if multiple:
             if value is None:
@@ -75,8 +79,6 @@ class Select(LabelElement, ValidationElement, ChoiceElement, DisableableElement,
                 raise ValueError('new_value_mode "add" is not supported for dict options without key_generator')
             self._props['new-value-mode'] = new_value_mode
             with_input = True
-
-        self.use_delimiter = use_delimiter if new_value_mode in ('add', 'add-unique') else False
 
         if with_input:
             self.original_options = deepcopy(options)
