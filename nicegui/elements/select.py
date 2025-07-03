@@ -110,7 +110,7 @@ class Select(LabelElement, ValidationElement, ChoiceElement, DisableableElement,
                 if self._props.get('new-value-mode') == 'add-unique':
                     # handle issue #4896: eliminate duplicate arguments
                     for arg1 in [a for a in e.args if isinstance(a, str)]:
-                        if any([arg1 == a['label'] for a in e.args if isinstance(a, dict)]) or e.args.count(arg1) > 1:
+                        if any(arg1 == a['label'] for a in e.args if isinstance(a, dict)) or e.args.count(arg1) > 1:
                             e.args.remove(arg1)
 
                 args = [self._values[arg['value']] if isinstance(arg, dict) else arg for arg in e.args]
