@@ -142,11 +142,16 @@ def test_add_new_values(screen:  Screen, option_dict: bool, multiple: bool, new_
 
 
 @pytest.mark.parametrize('option_dict', [False, True])
-@pytest.mark.parametrize('new_value_mode', ['add', 'add-unique'])
+@pytest.mark.parametrize('new_value_mode', ['add', 'add-unique', 'toggle', None])
 def test_add_new_values_delimited(screen:  Screen, option_dict: bool, new_value_mode: Optional[str]):
     options = {'a': 'A', 'b': 'B', 'c': 'C'} if option_dict else ['a', 'b', 'c']
     if option_dict and new_value_mode == 'add':
         with pytest.raises(ValueError, match='new_value_mode "add" is not supported for dict options'):
+            ui.select(options=options, use_delimiter=True, new_value_mode=new_value_mode)
+        return
+
+    if new_value_mode not in ('add', 'add-unique'):
+        with pytest.raises(ValueError, match='use_delimiter is only supported for "add" and "add-unique" new_value_mode'):
             ui.select(options=options, use_delimiter=True, new_value_mode=new_value_mode)
         return
 

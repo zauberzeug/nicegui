@@ -58,8 +58,9 @@ class Select(LabelElement, ValidationElement, ChoiceElement, DisableableElement,
         :param validation: dictionary of validation rules or a callable that returns an optional error message (default: None for no validation)
         :param key_generator: a callback or iterator to generate a dictionary key for new values
         """
-        self.use_delimiter = use_delimiter if new_value_mode in ('add', 'add-unique') else False
         if use_delimiter:
+            if new_value_mode not in ('add', 'add-unique'):
+                raise ValueError('use_delimiter is only supported for "add" and "add-unique" new_value_mode')
             multiple = True
 
         self.multiple = multiple
