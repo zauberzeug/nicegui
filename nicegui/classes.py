@@ -38,11 +38,12 @@ class Classes(list, Generic[T]):
         :param replace: whitespace-delimited string of classes to use instead of existing ones
         """
         # DEPRECATED: replace Tailwind v3 link with v4 (throughout the whole codebase!) after upgrading in NiceGUI 3.0
+        element = self.element
         new_classes = self.update_list(self, add, remove, toggle, replace)
         if self != new_classes:
             self[:] = new_classes
-            self.element.update()
-        return self.element
+            element.update()
+        return element
 
     @staticmethod
     def update_list(classes: List[str],

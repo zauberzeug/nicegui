@@ -69,6 +69,7 @@ class Props(dict, Generic[T]):
         :param add: whitespace-delimited list of either boolean values or key=value pair to add
         :param remove: whitespace-delimited list of property keys to remove
         """
+        element = self.element
         needs_update = False
         for key in self.parse(remove):
             if key in self:
@@ -79,12 +80,12 @@ class Props(dict, Generic[T]):
                 needs_update = True
                 self[key] = value
         if needs_update:
-            self.element.update()
+            element.update()
         for name, message in self._warnings.items():
             if name in self:
                 del self[name]
                 helpers.warn_once(message)
-        return self.element
+        return element
 
     @staticmethod
     def parse(text: Optional[str]) -> Dict[str, Any]:

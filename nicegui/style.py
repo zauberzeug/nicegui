@@ -33,6 +33,7 @@ class Style(dict, Generic[T]):
         :param remove: semicolon-separated list of styles to remove from the element
         :param replace: semicolon-separated list of styles to use instead of existing ones
         """
+        element = self.element
         style_dict = {**self} if replace is None else {}
         for key in self.parse(remove):
             style_dict.pop(key, None)
@@ -41,8 +42,8 @@ class Style(dict, Generic[T]):
         if self != style_dict:
             self.clear()
             self.update(style_dict)
-            self.element.update()
-        return self.element
+            element.update()
+        return element
 
     @staticmethod
     def parse(text: Optional[str]) -> Dict[str, str]:
