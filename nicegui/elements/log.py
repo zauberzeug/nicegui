@@ -13,7 +13,7 @@ class Log(Element, default_classes='nicegui-log'):
 
         :param max_lines: maximum number of lines before dropping oldest ones (default: `None`)
         """
-        super().__init__()
+        super().__init__('q-scroll-area')
         self.max_lines = max_lines
 
     def push(self, line: Any, *,
