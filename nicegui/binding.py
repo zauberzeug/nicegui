@@ -6,7 +6,6 @@ import dataclasses
 import time
 import weakref
 from collections import defaultdict
-from contextlib import contextmanager
 from contextvars import ContextVar
 from typing import (
     TYPE_CHECKING,
@@ -73,15 +72,6 @@ async def refresh_loop() -> None:
             break
 
 
-@contextmanager
-def _propagation_context():
-    token = propagation_visited.set(set())
-    try:
-        yield
-    finally:
-        propagation_visited.reset(token)
-
-
 def _refresh_step() -> None:
     t = time.time()
     for link in active_links:
@@ -91,14 +81,21 @@ def _refresh_step() -> None:
             value = transform(source_value) if transform else source_value
             if not _has_attribute(target_obj, target_name) or _get_attribute(target_obj, target_name) != value:
                 _set_attribute(target_obj, target_name, value)
-                with _propagation_context():
-                    _propagate(target_obj, target_name)
+                _propagate(target_obj, target_name)
         del link, source_obj, target_obj  # pylint: disable=modified-iterating-list
     if time.time() - t > MAX_PROPAGATION_TIME:
         log.warning(f'binding propagation for {len(active_links)} active links took {time.time() - t:.3f} s')
 
 
 def _propagate(source_obj: Any, source_name: str) -> None:
+    token = propagation_visited.set(set())
+    try:
+        _propagate_recursively(source_obj, source_name)
+    finally:
+        propagation_visited.reset(token)
+
+
+def _propagate_recursively(source_obj: Any, source_name: str) -> None:
     visited = propagation_visited.get()
     assert visited is not None, 'propagation_visited is not set'
 
@@ -118,7 +115,7 @@ def _propagate(source_obj: Any, source_name: str) -> None:
         target_value = transform(source_value) if transform else source_value
         if not _has_attribute(target_obj, target_name) or _get_attribute(target_obj, target_name) != target_value:
             _set_attribute(target_obj, target_name, target_value)
-            _propagate(target_obj, target_name)
+            _propagate_recursively(target_obj, target_name)
 
 
 def bind_to(self_obj: Any, self_name: str, other_obj: Any, other_name: str,
@@ -137,8 +134,7 @@ def bind_to(self_obj: Any, self_name: str, other_obj: Any, other_name: str,
     bindings[(id(self_obj), self_name)].append((self_obj, other_obj, other_name, forward))
     if (id(self_obj), self_name) not in bindable_properties:
         active_links.append((self_obj, self_name, other_obj, other_name, forward))
-    with _propagation_context():
-        _propagate(self_obj, self_name)
+    _propagate(self_obj, self_name)
 
 
 def bind_from(self_obj: Any, self_name: str, other_obj: Any, other_name: str,
@@ -157,8 +153,7 @@ def bind_from(self_obj: Any, self_name: str, other_obj: Any, other_name: str,
     bindings[(id(other_obj), other_name)].append((other_obj, self_obj, self_name, backward))
     if (id(other_obj), other_name) not in bindable_properties:
         active_links.append((other_obj, other_name, self_obj, self_name, backward))
-    with _propagation_context():
-        _propagate(other_obj, other_name)
+    _propagate(other_obj, other_name)
 
 
 def bind(self_obj: Any, self_name: str, other_obj: Any, other_name: str, *,
@@ -202,8 +197,7 @@ class BindableProperty:
         setattr(owner, '___' + self.name, value)
         key = (id(owner), str(self.name))
         bindable_properties[key] = owner
-        with _propagation_context():
-            _propagate(owner, self.name)
+        _propagate(owner, self.name)
         if value_changed and self._change_handler is not None:
             self._change_handler(owner, value)
 
