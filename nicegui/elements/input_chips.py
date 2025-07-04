@@ -20,12 +20,11 @@ class InputChips(LabelElement, ValidationElement, ValueElement, DisableableEleme
                  use_delimiter: bool = False,
                  validation: Optional[Union[ValidationFunction, ValidationDict]] = None,
                  ) -> None:
-        """Dropdown Selection
+        """Input Chips
 
         This element is based on Quasar's `QSelect <https://quasar.dev/vue-components/select>`_ component.
-
-        The options can be specified as a list of values, or as a dictionary mapping values to labels.
-        After manipulating the options, call `update()` to update the options in the UI.
+        This variant focuses solely on using chips without dropdown menu which is suitable for longer lists.
+        Hence, it acts as an input with list of chips rather than a dropdown of choices.
 
         You can use the `validation` parameter to define a dictionary of validation rules,
         e.g. ``{'Too long!': lambda value: len(value) < 3}``.
@@ -68,7 +67,11 @@ class InputChips(LabelElement, ValidationElement, ValueElement, DisableableEleme
             new_value = next((arg for arg in e.args if isinstance(arg, str)), None)
             split_args = []
             if new_value is not None:
-                split_args = [value.strip() for value in re.split(r'[,;|]+', new_value) if len(value)> 0] if self.use_delimiter else [new_value]
+                split_args = (
+                    [value.strip() for value in re.split(r'[,;|]+', new_value)if len(value)> 0]
+                    if self.use_delimiter
+                    else [new_value]
+                )
 
             args = [arg['label'] for arg in e.args if isinstance(arg, dict)]
             mode = self._props['new-value-mode']
