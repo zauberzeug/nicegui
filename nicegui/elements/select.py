@@ -1,3 +1,4 @@
+import re
 from collections.abc import Generator, Iterable
 from copy import deepcopy
 from typing import Any, Callable, Dict, Iterator, List, Literal, Optional, Union
@@ -20,6 +21,7 @@ class Select(LabelElement, ValidationElement, ChoiceElement, DisableableElement,
                  new_value_mode: Optional[Literal['add', 'add-unique', 'toggle']] = None,
                  multiple: bool = False,
                  clearable: bool = False,
+                 use_delimiter: bool = False,
                  validation: Optional[Union[ValidationFunction, ValidationDict]] = None,
                  key_generator: Optional[Union[Callable[[Any], Any], Iterator[Any]]] = None,
                  ) -> None:
@@ -42,6 +44,8 @@ class Select(LabelElement, ValidationElement, ChoiceElement, DisableableElement,
         Alternatively, you can pass a callable that returns an optional error message.
         To disable the automatic validation on every value change, you can use the `without_auto_validation` method.
 
+        `use_delimiter` only works with new_value_mode `add` and `add-unique`.
+
         :param options: a list ['value1', ...] or dictionary `{'value1':'label1', ...}` specifying the options
         :param label: the label to display above the selection
         :param value: the initial value
@@ -50,9 +54,17 @@ class Select(LabelElement, ValidationElement, ChoiceElement, DisableableElement,
         :param new_value_mode: handle new values from user input (default: None, i.e. no new values)
         :param multiple: whether to allow multiple selections
         :param clearable: whether to add a button to clear the selection
+        :param use_delimiter: whether Separate multiple values by [,;|、،]
         :param validation: dictionary of validation rules or a callable that returns an optional error message (default: None for no validation)
         :param key_generator: a callback or iterator to generate a dictionary key for new values
         """
+
+        self.use_delimiter = use_delimiter
+        if use_delimiter:
+            if new_value_mode not in ('add', 'add-unique'):
+                raise ValueError('use_delimiter is only supported for "add" and "add-unique" new_value_mode')
+            multiple = True
+
         self.multiple = multiple
         if multiple:
             if value is None:
@@ -70,6 +82,7 @@ class Select(LabelElement, ValidationElement, ChoiceElement, DisableableElement,
                 raise ValueError('new_value_mode "add" is not supported for dict options without key_generator')
             self._props['new-value-mode'] = new_value_mode
             with_input = True
+
         if with_input:
             self.original_options = deepcopy(options)
             self._props['use-input'] = True
@@ -93,6 +106,18 @@ class Select(LabelElement, ValidationElement, ChoiceElement, DisableableElement,
             if e.args is None:
                 return []
             else:
+                new_value = next((arg for arg in e.args if isinstance(arg, str)), None)
+                if self.use_delimiter and new_value is not None:
+                    split_args = [value.strip() for value in re.split(r'[,;|、،]+', new_value) if len(value)> 0]
+                    e.args.remove(new_value)
+                    e.args.extend(split_args)
+
+                if self._props.get('new-value-mode') == 'add-unique':
+                    # handle issue #4896: eliminate duplicate arguments
+                    for arg1 in [a for a in e.args if isinstance(a, str)]:
+                        if any(arg1 == a['label'] for a in e.args if isinstance(a, dict)) or e.args.count(arg1) > 1:
+                            e.args.remove(arg1)
+
                 args = [self._values[arg['value']] if isinstance(arg, dict) else arg for arg in e.args]
                 for arg in e.args:
                     if isinstance(arg, str):
