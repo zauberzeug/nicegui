@@ -61,6 +61,7 @@ class Select(LabelElement, ValidationElement, ChoiceElement, DisableableElement,
         if use_delimiter:
             if new_value_mode not in ('add', 'add-unique'):
                 raise ValueError('use_delimiter is only supported for "add" and "add-unique" new_value_mode')
+            self.use_delimiter = use_delimiter
             multiple = True
 
         self.multiple = multiple
