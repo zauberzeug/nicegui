@@ -1,10 +1,9 @@
 from ..context import context
-from ..functions.html import add_body_html
 from ..helpers import require_top_level_layout
 from .mixins.value_element import ValueElement
 
 
-class Header(ValueElement, default_classes='nicegui-header'):
+class Header(ValueElement, component='header.js', default_classes='nicegui-header'):
 
     def __init__(self, *,
                  value: bool = True,
@@ -32,9 +31,10 @@ class Header(ValueElement, default_classes='nicegui-header'):
         """
         require_top_level_layout(self)
         with context.client.layout:
-            super().__init__(tag='q-header', value=value, on_value_change=None)
+            super().__init__(value=value, on_value_change=None)
         self._props['bordered'] = bordered
         self._props['elevated'] = elevated
+        self._props['add_scroll_padding'] = add_scroll_padding
         if wrap:
             self._classes.append('wrap')
         code = list(self.client.layout.props['view'])
@@ -42,18 +42,6 @@ class Header(ValueElement, default_classes='nicegui-header'):
         self.client.layout.props['view'] = ''.join(code)
 
         self.move(target_index=0)
-
-        if add_scroll_padding:
-            add_body_html(f'''
-                <script>
-                    window.onload = () => {{
-                        const header = getHtmlElement({self.id});
-                        new ResizeObserver(() => {{
-                            document.documentElement.style.scrollPaddingTop = `${{header.offsetHeight}}px`;
-                        }}).observe(header);
-                    }};
-                </script>
-            ''')
 
     def toggle(self):
         """Toggle the header"""
