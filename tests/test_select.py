@@ -158,21 +158,25 @@ def test_add_new_values_delimited(screen:  Screen, option_dict: bool, new_value_
     screen.should_contain('value = []')
     screen.should_contain("options = {'a': 'A', 'b': 'B', 'c': 'C'}" if option_dict else "options = ['a', 'b', 'c']")
 
+
+    screen.find_by_class('q-select').click()
+    screen.wait(0.5)
+    screen.find_all('A' if option_dict else 'a')[-1].click()
+    screen.should_contain("value = ['a']")
+
     for _ in range(2):
-        screen.find_by_tag('input').send_keys(Keys.BACKSPACE + 'd, d; f')
+        screen.find_by_tag('input').send_keys('d, d; f')
         screen.wait(0.5)
         screen.find_by_tag('input').click()
         screen.wait(0.5)
         screen.find_by_tag('input').send_keys(Keys.ENTER)
         screen.wait(0.5)
     if new_value_mode == 'add':
-        print(s.value)
-        print(s.options)
-        screen.should_contain("value = ['d', 'd', 'f']")
+        screen.should_contain("value = ['a', 'd', 'd', 'f']")
         screen.should_contain("options = {'a': 'A', 'b': 'B', 'c': 'C', 'd': 'd', 'd': 'd', 'f': 'f'}" if option_dict else
                                 "options = ['a', 'b', 'c', 'd', 'd', 'f']")
     elif new_value_mode == 'add-unique':
-        screen.should_contain("value = ['d', 'f']")
+        screen.should_contain("value = ['a', 'd', 'f']")
         screen.should_contain("options = {'a': 'A', 'b': 'B', 'c': 'C', 'd': 'd', 'f': 'f'}" if option_dict else
                                 "options = ['a', 'b', 'c', 'd', 'f']")
 
