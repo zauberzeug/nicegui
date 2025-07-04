@@ -6,7 +6,6 @@ import dataclasses
 import time
 import weakref
 from collections import defaultdict
-from contextlib import contextmanager
 from contextvars import ContextVar
 from typing import (
     TYPE_CHECKING,
@@ -73,55 +72,50 @@ async def refresh_loop() -> None:
             break
 
 
-@contextmanager
-def _propagation_context():
-    visited = propagation_visited.get()
-    is_root_call = visited is None
-    if is_root_call:
-        visited = set()
-        token = propagation_visited.set(visited)
-    try:
-        yield visited
-    finally:
-        if is_root_call:
-            propagation_visited.reset(token)
-
-
 def _refresh_step() -> None:
     t = time.time()
-    with _propagation_context():
-        for link in active_links:
-            (source_obj, source_name, target_obj, target_name, transform) = link
-            if _has_attribute(source_obj, source_name):
-                source_value = _get_attribute(source_obj, source_name)
-                value = transform(source_value) if transform else source_value
-                if not _has_attribute(target_obj, target_name) or _get_attribute(target_obj, target_name) != value:
-                    _set_attribute(target_obj, target_name, value)
-                    _propagate(target_obj, target_name)
-            del link, source_obj, target_obj  # pylint: disable=modified-iterating-list
+    for link in active_links:
+        (source_obj, source_name, target_obj, target_name, transform) = link
+        if _has_attribute(source_obj, source_name):
+            source_value = _get_attribute(source_obj, source_name)
+            value = transform(source_value) if transform else source_value
+            if not _has_attribute(target_obj, target_name) or _get_attribute(target_obj, target_name) != value:
+                _set_attribute(target_obj, target_name, value)
+                _propagate(target_obj, target_name)
+        del link, source_obj, target_obj  # pylint: disable=modified-iterating-list
     if time.time() - t > MAX_PROPAGATION_TIME:
         log.warning(f'binding propagation for {len(active_links)} active links took {time.time() - t:.3f} s')
 
 
 def _propagate(source_obj: Any, source_name: str) -> None:
-    with _propagation_context() as visited:
-        source_obj_id = id(source_obj)
-        if (source_obj_id, source_name) in visited:
-            return
-        visited.add((source_obj_id, source_name))
+    token = propagation_visited.set(set())
+    try:
+        _propagate_recursively(source_obj, source_name)
+    finally:
+        propagation_visited.reset(token)
 
-        if not _has_attribute(source_obj, source_name):
-            return
-        source_value = _get_attribute(source_obj, source_name)
 
-        for _, target_obj, target_name, transform in bindings.get((source_obj_id, source_name), []):
-            if (id(target_obj), target_name) in visited:
-                continue
+def _propagate_recursively(source_obj: Any, source_name: str) -> None:
+    visited = propagation_visited.get()
+    assert visited is not None, 'propagation_visited is not set'
 
-            target_value = transform(source_value) if transform else source_value
-            if not _has_attribute(target_obj, target_name) or _get_attribute(target_obj, target_name) != target_value:
-                _set_attribute(target_obj, target_name, target_value)
-                _propagate(target_obj, target_name)
+    source_obj_id = id(source_obj)
+    if (source_obj_id, source_name) in visited:
+        return
+    visited.add((source_obj_id, source_name))
+
+    if not _has_attribute(source_obj, source_name):
+        return
+    source_value = _get_attribute(source_obj, source_name)
+
+    for _, target_obj, target_name, transform in bindings.get((source_obj_id, source_name), []):
+        if (id(target_obj), target_name) in visited:
+            continue
+
+        target_value = transform(source_value) if transform else source_value
+        if not _has_attribute(target_obj, target_name) or _get_attribute(target_obj, target_name) != target_value:
+            _set_attribute(target_obj, target_name, target_value)
+            _propagate_recursively(target_obj, target_name)
 
 
 def bind_to(self_obj: Any, self_name: str, other_obj: Any, other_name: str,
