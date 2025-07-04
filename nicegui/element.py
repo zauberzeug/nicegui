@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import inspect
 import re
+import weakref
 from copy import copy
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Callable, ClassVar, Dict, Iterator, List, Optional, Sequence, Union, cast
@@ -56,9 +57,10 @@ class Element(Visibility):
         :param _client: client for this element (for internal use only)
         """
         super().__init__()
-        self.client = _client or context.client
-        self.id = self.client.next_element_id
-        self.client.next_element_id += 1
+        client = _client or context.client
+        self._client = weakref.ref(client)
+        self.id = client.next_element_id
+        client.next_element_id += 1
         self.tag = tag if tag else self.component.tag if self.component else 'div'
         if not TAG_PATTERN.match(self.tag):
             raise ValueError(f'Invalid HTML tag: {self.tag}')
@@ -73,7 +75,7 @@ class Element(Visibility):
         self._update_method: Optional[str] = None
         self._deleted: bool = False
 
-        self.client.elements[self.id] = self
+        client.elements[self.id] = self
         self.parent_slot: Optional[Slot] = None
         slot_stack = context.slot_stack
         if slot_stack:
@@ -82,9 +84,9 @@ class Element(Visibility):
 
         self.tailwind = Tailwind(self)
 
-        self.client.outbox.enqueue_update(self)
+        client.outbox.enqueue_update(self)
         if self.parent_slot:
-            self.client.outbox.enqueue_update(self.parent_slot.parent)
+            client.outbox.enqueue_update(self.parent_slot.parent)
 
     def __init_subclass__(cls, *,
                           component: Union[str, Path, None] = None,
@@ -145,6 +147,14 @@ class Element(Visibility):
         cls.default_classes(default_classes)
         cls.default_style(default_style)
         cls.default_props(default_props)
+
+    @property
+    def client(self) -> Client:
+        """The client this element belongs to."""
+        client = self._client()
+        if client is None:
+            raise RuntimeError('The client this element belongs to has been deleted.')
+        return client
 
     def add_resource(self, path: Union[str, Path]) -> None:
         """Add a resource to the element.

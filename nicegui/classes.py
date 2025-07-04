@@ -1,3 +1,4 @@
+import weakref
 from typing import TYPE_CHECKING, Generic, List, Optional, TypeVar
 
 if TYPE_CHECKING:
@@ -10,7 +11,15 @@ class Classes(list, Generic[T]):
 
     def __init__(self, *args, element: T, **kwargs) -> None:
         super().__init__(*args, **kwargs)
-        self.element = element
+        self._element = weakref.ref(element)
+
+    @property
+    def element(self) -> T:
+        """The element this classes object belongs to."""
+        element = self._element()
+        if element is None:
+            raise RuntimeError('The element this classes object belongs to has been deleted.')
+        return element
 
     def __call__(self,
                  add: Optional[str] = None, *,
@@ -29,11 +38,12 @@ class Classes(list, Generic[T]):
         :param replace: whitespace-delimited string of classes to use instead of existing ones
         """
         # DEPRECATED: replace Tailwind v3 link with v4 (throughout the whole codebase!) after upgrading in NiceGUI 3.0
+        element = self.element
         new_classes = self.update_list(self, add, remove, toggle, replace)
         if self != new_classes:
             self[:] = new_classes
-            self.element.update()
-        return self.element
+            element.update()
+        return element
 
     @staticmethod
     def update_list(classes: List[str],

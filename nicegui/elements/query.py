@@ -1,3 +1,4 @@
+import weakref
 from typing import Optional
 
 from typing_extensions import Self
@@ -32,10 +33,18 @@ class Query:
         """
         for element in context.client.elements.values():
             if isinstance(element, QueryElement) and element.props['selector'] == selector:
-                self.element = element
+                self._element = weakref.ref(element)
                 break
         else:
-            self.element = QueryElement(selector)
+            self._element = weakref.ref(QueryElement(selector))
+
+    @property
+    def element(self) -> QueryElement:
+        """The element this query belongs to."""
+        element = self._element()
+        if element is None:
+            raise RuntimeError('The element this query belongs to has been deleted.')
+        return element
 
     def classes(self,
                 add: Optional[str] = None, *,
@@ -54,14 +63,15 @@ class Query:
         :param toggle: whitespace-delimited string of classes to toggle (*added in version 2.7.0*)
         :param replace: whitespace-delimited string of classes to use instead of existing ones
         """
-        classes = Classes.update_list(self.element.props['classes'], add, remove, toggle, replace)
-        new_classes = [c for c in classes if c not in self.element.props['classes']]
-        old_classes = [c for c in self.element.props['classes'] if c not in classes]
+        element = self.element
+        classes = Classes.update_list(element.props['classes'], add, remove, toggle, replace)
+        new_classes = [c for c in classes if c not in element.props['classes']]
+        old_classes = [c for c in element.props['classes'] if c not in classes]
         if new_classes:
-            self.element.run_method('add_classes', new_classes)
+            element.run_method('add_classes', new_classes)
         if old_classes:
-            self.element.run_method('remove_classes', old_classes)
-        self.element.props['classes'] = classes
+            element.run_method('remove_classes', old_classes)
+        element.props['classes'] = classes
         return self
 
     def style(self, add: Optional[str] = None, *, remove: Optional[str] = None, replace: Optional[str] = None) \
@@ -74,15 +84,16 @@ class Query:
         :param remove: semicolon-separated list of styles to remove from the element
         :param replace: semicolon-separated list of styles to use instead of existing ones
         """
+        element = self.element
         old_style = Style.parse(remove)
         for key in old_style:
-            self.element.props['style'].pop(key, None)
+            element.props['style'].pop(key, None)
         if old_style:
-            self.element.run_method('remove_style', list(old_style))
-        self.element.props['style'].update(Style.parse(add))
-        self.element.props['style'].update(Style.parse(replace))
-        if self.element.props['style']:
-            self.element.run_method('add_style', self.element.props['style'])
+            element.run_method('remove_style', list(old_style))
+        element.props['style'].update(Style.parse(add))
+        element.props['style'].update(Style.parse(replace))
+        if element.props['style']:
+            element.run_method('add_style', element.props['style'])
         return self
 
     def props(self, add: Optional[str] = None, *, remove: Optional[str] = None) -> Self:
@@ -96,13 +107,14 @@ class Query:
         :param add: whitespace-delimited list of either boolean values or key=value pair to add
         :param remove: whitespace-delimited list of property keys to remove
         """
+        element = self.element
         old_props = Props.parse(remove)
         for key in old_props:
-            self.element.props['props'].pop(key, None)
+            element.props['props'].pop(key, None)
         if old_props:
-            self.element.run_method('remove_props', list(old_props))
+            element.run_method('remove_props', list(old_props))
         new_props = Props.parse(add)
-        self.element.props['props'].update(new_props)
-        if self.element.props['props']:
-            self.element.run_method('add_props', self.element.props['props'])
+        element.props['props'].update(new_props)
+        if element.props['props']:
+            element.run_method('add_props', element.props['props'])
         return self

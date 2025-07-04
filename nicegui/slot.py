@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import weakref
 from typing import TYPE_CHECKING, ClassVar, Dict, Iterator, List, Optional
 
 from typing_extensions import Self
@@ -17,9 +18,17 @@ class Slot:
 
     def __init__(self, parent: Element, name: str, template: Optional[str] = None) -> None:
         self.name = name
-        self.parent = parent
+        self._parent = weakref.ref(parent)
         self.template = template
         self.children: List[Element] = []
+
+    @property
+    def parent(self) -> Element:
+        """The parent element this slot belongs to."""
+        parent = self._parent()
+        if parent is None:
+            raise RuntimeError('The parent element this slot belongs to has been deleted.')
+        return parent
 
     def __enter__(self) -> Self:
         self.get_stack().append(self)

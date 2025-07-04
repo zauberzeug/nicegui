@@ -1,3 +1,4 @@
+import weakref
 from typing import List
 
 import numpy as np
@@ -159,3 +160,16 @@ def test_gltf(screen: Screen):
     screen.open('/')
     screen.wait(1.0)
     assert screen.selenium.execute_script(f'return scene_{scene.html_id}.children.length') == 5
+
+
+def test_no_cyclic_references(screen: Screen):
+    objects: weakref.WeakSet = weakref.WeakSet()
+
+    with ui.scene() as scene:
+        for _ in range(10):
+            objects.add(scene.box())
+
+    scene.clear()
+    assert len(objects) == 0
+
+    screen.open('/')
