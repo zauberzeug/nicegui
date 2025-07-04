@@ -50,4 +50,16 @@ def update_selection():
         ui.button('1, 2, 3', on_click=lambda: select.set_options([1, 2, 3], value=1))
 
 
+@doc.demo('Delimit value', '''
+    You can activate `use_delimiter` when `new_value_mode` is set as `add` or `add-unique` to add multiple values at once. 
+    The values are delimited by `,`, `;`, `|`, `、`, `،`.
+''')
+def update_selection():
+    ui.label("Try adding 'one, two, one'")
+    ui.select([],label="Allows all values", new_value_mode="add", use_delimiter=True) \
+        .classes('w-64').props('use-chips')
+    ui.select([],label="Allows unique values", new_value_mode="add-unique", use_delimiter=True) \
+        .classes('w-64').props('use-chips')
+
+
 doc.reference(ui.select)
