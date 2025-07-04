@@ -1,3 +1,4 @@
+import weakref
 from typing import TYPE_CHECKING, Generic, List, Optional, TypeVar
 
 if TYPE_CHECKING:
@@ -10,7 +11,15 @@ class Classes(list, Generic[T]):
 
     def __init__(self, *args, element: T, **kwargs) -> None:
         super().__init__(*args, **kwargs)
-        self.element = element
+        self._element = weakref.ref(element)
+
+    @property
+    def element(self) -> T:
+        """The element this classes object belongs to."""
+        element = self._element()
+        if element is None:
+            raise RuntimeError('The element this classes object belongs to has been deleted.')
+        return element
 
     def __call__(self,
                  add: Optional[str] = None, *,

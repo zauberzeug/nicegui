@@ -1,3 +1,4 @@
+import weakref
 from typing import TYPE_CHECKING, Dict, Generic, Optional, TypeVar
 
 if TYPE_CHECKING:
@@ -10,7 +11,15 @@ class Style(dict, Generic[T]):
 
     def __init__(self, *args, element: T, **kwargs) -> None:
         super().__init__(*args, **kwargs)
-        self.element = element
+        self._element = weakref.ref(element)
+
+    @property
+    def element(self) -> T:
+        """The element this style object belongs to."""
+        element = self._element()
+        if element is None:
+            raise RuntimeError('The element this style object belongs to has been deleted.')
+        return element
 
     def __call__(self,
                  add: Optional[str] = None, *,

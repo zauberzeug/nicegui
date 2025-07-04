@@ -1,3 +1,4 @@
+import weakref
 from typing import Optional
 
 from typing_extensions import Self
@@ -32,10 +33,18 @@ class Query:
         """
         for element in context.client.elements.values():
             if isinstance(element, QueryElement) and element.props['selector'] == selector:
-                self.element = element
+                self._element = weakref.ref(element)
                 break
         else:
-            self.element = QueryElement(selector)
+            self._element = weakref.ref(QueryElement(selector))
+
+    @property
+    def element(self) -> QueryElement:
+        """The element this query belongs to."""
+        element = self._element()
+        if element is None:
+            raise RuntimeError('The element this query belongs to has been deleted.')
+        return element
 
     def classes(self,
                 add: Optional[str] = None, *,

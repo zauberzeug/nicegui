@@ -1,5 +1,6 @@
 import ast
 import re
+import weakref
 from typing import TYPE_CHECKING, Any, Dict, Generic, Optional, TypeVar
 
 from . import helpers
@@ -40,8 +41,16 @@ class Props(dict, Generic[T]):
 
     def __init__(self, *args, element: T, **kwargs) -> None:
         super().__init__(*args, **kwargs)
-        self.element = element
+        self._element = weakref.ref(element)
         self._warnings: Dict[str, str] = {}
+
+    @property
+    def element(self) -> T:
+        """The element this props object belongs to."""
+        element = self._element()
+        if element is None:
+            raise RuntimeError('The element this props object belongs to has been deleted.')
+        return element
 
     def add_warning(self, prop: str, message: str) -> None:
         """Add a warning message for a prop."""
