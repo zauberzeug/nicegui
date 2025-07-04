@@ -166,9 +166,9 @@ def test_add_new_values_delimited(screen:  Screen, option_dict: bool, new_value_
         screen.find_by_tag('input').send_keys(Keys.ENTER)
         screen.wait(0.5)
     if new_value_mode == 'add':
-        screen.should_contain("value = ['d', 'd', 'f']") # Fails for some reason, but works in browser
-        screen.should_contain("options = {'a': 'A', 'b': 'B', 'c': 'C', 'd': 'd', 'd': 'd', 'f': 'f'}" if option_dict else
-                                "options = ['a', 'b', 'c', 'd', 'd', 'f']") # Fails for some reason, but works in browser
+        screen.should_contain("value = ['d', 'd', 'f', 'd', 'd', 'f']")
+        screen.should_contain("options = {'a': 'A', 'b': 'B', 'c': 'C', 'd': 'd', 'd': 'd', 'f': 'f', 'd': 'd', 'd': 'd', 'f': 'f'}" if option_dict else
+                                "options = ['a', 'b', 'c', 'd', 'd', 'f', 'd', 'd', 'f']")
     elif new_value_mode == 'add-unique':
         screen.should_contain("value = ['d', 'f']")
         screen.should_contain("options = {'a': 'A', 'b': 'B', 'c': 'C', 'd': 'd', 'f': 'f'}" if option_dict else
