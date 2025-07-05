@@ -33,11 +33,12 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
         super().__init__()
         self._routes = routes or {}
         parent_sub_pages_element = next((el for el in self.ancestors() if isinstance(el, SubPages)), None)
-        self._root_path = parent_sub_pages_element.path if parent_sub_pages_element else root_path
+        self._root_path = parent_sub_pages_element.full_path \
+            if parent_sub_pages_element else root_path
         self._data = data or {}
         self.path = '/'
         self._active_tasks: Set[asyncio.Task] = set()
-        self._send_update_on_path_change = True  # standard pattern like for other elements
+        self._send_update_on_path_change = True
         self._handle_routes_change()
         self.on('open', lambda e: self._show_page_and_update_browser_url(e.args))
         self.on('navigate', lambda e: self._handle_navigate(e.args))
@@ -71,6 +72,7 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
         self._send_update_on_path_change = False
         self.path = match_result.path
         self._send_update_on_path_change = True
+
         with self:
             self._place_content(match_result)
 
@@ -88,6 +90,11 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
 
         return match_result
 
+    @property
+    def full_path(self) -> str:
+        """Get the full path of this SubPages element."""
+        return f'{self._root_path or ""}{self.path}'
+
     def _cancel_active_tasks(self) -> None:
         """Cancel all active async tasks for this SubPages instance."""
         for task in self._active_tasks:
@@ -102,41 +109,42 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
         :return: the RouteMatch object if successful, None if no route was found
         """
         match_result = self.show(path)
-        if match_result is None:
-            return None
-
-        new_path = f'{self._root_path or ""}{match_result.path}'
-        run_javascript(f'''
-            const fullPath = (window.path_prefix || '') + "{new_path}";
-            if (window.location.pathname + window.location.search + window.location.hash !== fullPath) {{
-                history.pushState({{page: "{path}"}}, "", fullPath);
-            }}
-        ''')
+        if match_result is not None:
+            new_path = f'{self._root_path or ""}{match_result.path}'
+            run_javascript(f'''
+                const fullPath = (window.path_prefix || '') + "{new_path}";
+                if (window.location.pathname + window.location.search + window.location.hash !== fullPath) {{
+                    history.pushState({{page: "{path}"}}, "", fullPath);
+                }}
+            ''')
         return match_result
 
     def _match_route(self, full_path: str) -> Optional[RouteMatch]:
-        """Find the first matching route for a full path (including query params and fragments) with segment dropping.
+        """Find exact matching route for a full path.
 
         :return: RouteMatch object if found, None otherwise
         """
         parsed_url = urlparse(full_path)
-        path_only = parsed_url.path
+        path_only = parsed_url.path.rstrip('/')
         query_params = QueryParams(parsed_url.query) if parsed_url.query else QueryParams()
         fragment = parsed_url.fragment
-        normalized_path = self._normalize_path(path_only)
-        segments = normalized_path.split('/')
+        relative_path = path_only[len(self._root_path or ''):]
+        if relative_path == '':
+            relative_path = '/'
+
+        segments = relative_path.split('/')
         while segments:
             sub_path = '/'.join(segments)
             for route, builder in self._routes.items():
-                matches = self._match_path(route, sub_path)
-                if matches is not None:
+                parameters = self._match_path(route, sub_path)
+                if parameters is not None:
                     return RouteMatch(
                         path=sub_path,
                         pattern=route,
                         builder=builder,
-                        parameters=matches,
+                        parameters=parameters,
                         query_params=query_params,
-                        fragment=fragment
+                        fragment=fragment,
                     )
             segments.pop()
         return None
@@ -145,57 +153,19 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
         """Handle navigate event from link clicks."""
         old_path = navigation_data.get('from', '')
         new_path = navigation_data.get('to', navigation_data)
-
         if self._should_handle_navigation(old_path, new_path):
             if not self._try_navigate_to(new_path):
                 context.client.open(new_path)
 
     def _should_handle_navigation(self, old_path: str, new_path: str) -> bool:
-        """Determine if this SubPages should handle the navigation.
-
-        Rule: Handle if the route resolution within this SubPages' own route table changes,
-        OR if paths differ only by query parameters or trailing slashes.
-        """
-        # Check if this element can route both paths
-        old_normalized = self._normalize_path(old_path)
-        new_normalized = self._normalize_path(new_path)
-
-        old_route = self._match_route(old_normalized)
-        new_route = self._match_route(new_normalized)
-
-        # Both paths must be routable by this element
-        if old_route is None or new_route is None:
-            return False
-
-        # Handle if the route resolution changes within our route table
-        if old_route.pattern != new_route.pattern:
-            return True
-
-        # Also handle if paths differ only by query parameters or trailing slashes
-        # (these cases normalize to the same path but should still trigger navigation)
-        old_base = old_path.split('?')[0].rstrip('/')
-        new_base = new_path.split('?')[0].rstrip('/')
-
-        # If base paths are the same but full paths differ, handle it
-        if old_base == new_base and old_path != new_path:
-            return True
-
-        return False
+        """Determine if this SubPages should handle the navigation."""
+        match = self._match_route(new_path)
+        return match is not None
 
     def _normalize_path(self, path: str) -> str:
         """Normalize the path by trimming root path and handling trailing slashes."""
-        # For nested SubPages, dynamically get the parent's current path
-        if not self._is_root:
-            parent_sub_pages = next((el for el in self.ancestors() if isinstance(el, SubPages)), None)
-            if parent_sub_pages is not None:
-                parent_path = parent_sub_pages.path
-                if parent_path != '/' and path.startswith(parent_path):
-                    path = path[len(parent_path):]
-        elif self._root_path is not None:
-            # For root SubPages, use the static _root_path
-            root = self._root_path.rstrip('/')
-            if path.startswith(root):
-                path = path[len(root):]
+        if self._root_path and path.startswith(self._root_path):
+            path = path[len(self._root_path):]
 
         if path.endswith('/') and path != '/':
             path = path[:-1]
@@ -347,6 +317,7 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
             path += '?' + context.client.request.url.query
         if context.client.request.url.fragment:
             path += '#' + context.client.request.url.fragment
+
         self._show_page_and_update_browser_url(path)
 
     def _handle_path_change(self, path: str) -> None:
