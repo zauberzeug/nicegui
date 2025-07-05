@@ -175,6 +175,13 @@ class Screen:
         action = ActionChains(self.selenium)
         action.move_to_element_with_offset(element, x, y).click().perform()
 
+    def drag_and_drop(self, source_text: str, target_text: str):
+        """Drag the source element to the target element"""
+        source_element = self.find(source_text)
+        target_element = self.find(target_text)
+        action = ActionChains(self.selenium)
+        action.drag_and_drop(source_element, target_element).perform()
+
     def type(self, text: str) -> None:
         """Type the given text into the currently focused element."""
         self.selenium.execute_script('window.focus();')
