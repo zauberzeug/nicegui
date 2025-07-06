@@ -27,23 +27,7 @@ class SubPagesRouter:
             path += '#' + request.url.fragment
         self.current_path = path
 
-    def get_path_for(self, sub_pages: SubPages) -> str:
-        candidates = self._get_sub_pages()
-        segments = self.current_path.split('/')
-        while segments:
-            path = '/'.join(segments)
-            if not path:
-                return 'error'
-            relative_path = path
-            for candidate in candidates:
-                if sub_pages is candidate:
-                    if sub_pages._match_route(relative_path):
-                        return relative_path
-                relative_path = relative_path[len(candidate.path):]
-            segments.pop()
-        raise ValueError(f'No path found for "{"/".join(segments)}"')
-
-    def _get_sub_pages(self) -> Tuple[SubPages, ...]:
+    def get_sub_pages(self) -> Tuple[SubPages, ...]:
         return tuple(el for el in context.client.layout.descendants() if isinstance(el, SubPages))
 
     def _handle_open(self, event: GenericEventArguments) -> None:
@@ -64,9 +48,9 @@ class SubPagesRouter:
     def _update_path(self, path: str) -> bool:
         self.current_path = path
         updated = False
-        for sub_pages in self._get_sub_pages():
+        for sub_pages in self.get_sub_pages():
             try:
-                if sub_pages.show(self.get_path_for(sub_pages)):
+                if sub_pages.show():
                     updated = True
             except ValueError:
                 pass

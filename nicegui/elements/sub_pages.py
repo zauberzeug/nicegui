@@ -37,9 +37,10 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
             if parent_sub_pages_element else root_path
         self._data = data or {}
         self.path = '---'
+        self.router = context.client.sub_pages_router
         self._active_tasks: Set[asyncio.Task] = set()
         self._send_update_on_path_change = True
-        self.show(context.client.sub_pages_router.get_path_for(self))
+        self.show()
 
     def add(self, path: str, page: Callable) -> Self:
         """Add a new route to the sub pages.
@@ -50,24 +51,27 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
         :return: self for method chaining
         """
         self._routes[path] = page
-        self.show(context.client.sub_pages_router.get_path_for(self))
+        self.show()
         return self
 
-    def show(self, full_path: str) -> Optional[RouteMatch]:
+    def show(self) -> Optional[RouteMatch]:
         """Show the page for the given path.
 
         :param full_path: the path to navigate to (can be empty string for root path; trailing slash is ignored)
+                         If None, the path will be calculated automatically from the current router state
         :return: the RouteMatch object if a route was found and shown, None otherwise
         """
-        if full_path == 'error':
+        path = self._calculate_path()
+        if path is None:
             with self:
-                Label(f'404: sub page {full_path} not found')
+                Label(f'404: sub page {self.router.current_path} not found')
             return None
-        if full_path == self.path:
+
+        if path == self.path:
             return None
         self._cancel_active_tasks()
         self.clear()
-        match_result = self._match_route(full_path)
+        match_result = self._match_route(path)
         if match_result is None:
             return None
         self._send_update_on_path_change = False
@@ -90,6 +94,33 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
             ''')
 
         return match_result
+
+    def _calculate_path(self) -> Optional[str]:
+        """Calculate the appropriate path for this SubPages instance based on current router state.
+
+        :return: the calculated path, or None if no valid path found
+        """
+        router = context.client.sub_pages_router
+        candidates = router.get_sub_pages()
+        segments = router.current_path.split('/')
+        found_path = None
+
+        while segments:
+            path = '/'.join(segments)
+            if not path:
+                break
+            relative_path = path
+            for candidate in candidates:
+                if self is candidate:
+                    if self._match_route(relative_path):
+                        found_path = relative_path
+                        break
+                relative_path = relative_path[len(candidate.path):]
+            if found_path:
+                break
+            segments.pop()
+
+        return found_path
 
     @property
     def full_path(self) -> str:
