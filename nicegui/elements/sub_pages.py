@@ -61,7 +61,7 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
         """
         match_result = self._find_matching_path()
         if match_result is not None and match_result.path == self.path:
-            return None
+            return match_result
         self._cancel_active_tasks()
         self.clear()
         if match_result is None:

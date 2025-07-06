@@ -3,7 +3,6 @@ from typing import Any, Callable, Union
 from ..client import Client
 from ..context import context
 from ..element import Element
-from ..events import GenericEventArguments
 from .javascript import run_javascript
 
 
@@ -69,8 +68,8 @@ class Navigate:
             raise TypeError(f'Invalid target type: {type(target)}')
 
         if not new_tab and isinstance(target, str):
-            if context.client.sub_pages_router._handle_navigate(GenericEventArguments(client=context.client, sender=None, args=path)):
-                return
+            context.client.sub_pages_router._handle_navigate(path)
+            return
 
         context.client.open(path, new_tab)
 
