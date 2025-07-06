@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import re
-from typing import Any, Callable, Dict, List, Optional, Set, cast
+from typing import Any, Callable, Dict, Optional, Set, cast
 from urllib.parse import urlparse
 
 from starlette.datastructures import QueryParams
@@ -36,12 +36,10 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
         self._root_path = parent_sub_pages_element.full_path \
             if parent_sub_pages_element else root_path
         self._data = data or {}
-        self.path = '/'
+        self.path = '---'
         self._active_tasks: Set[asyncio.Task] = set()
         self._send_update_on_path_change = True
-        self._handle_routes_change()
-        self.on('open', lambda e: self._show_page_and_update_browser_url(e.args))
-        self.on('navigate', lambda e: self._handle_navigate(e.args))
+        self.show(context.client.sub_pages_router.get_path_for(self))
 
     def add(self, path: str, page: Callable) -> Self:
         """Add a new route to the sub pages.
@@ -51,6 +49,8 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
             ({param} placeholders will be passed to the function parameters with same name)
         :return: self for method chaining
         """
+        # if path != '/' and not path.endswith('/'):
+        #     path += '/'
         self._routes[path] = page
         self._handle_routes_change()
         return self
@@ -61,9 +61,10 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
         :param full_path: the path to navigate to (can be empty string for root path; trailing slash is ignored)
         :return: the RouteMatch object if a route was found and shown, None otherwise
         """
+        if full_path == self.path:
+            return None
         self._cancel_active_tasks()
         self.clear()
-
         match_result = self._match_route(full_path)
         if match_result is None:
             with self:
@@ -102,23 +103,6 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
                 task.cancel()
         self._active_tasks.clear()
 
-    def _show_page_and_update_browser_url(self, path: str) -> Optional[RouteMatch]:
-        """Show the page and update browser URL.
-
-        :param path: the path to navigate to
-        :return: the RouteMatch object if successful, None if no route was found
-        """
-        match_result = self.show(path)
-        if match_result is not None:
-            new_path = f'{self._root_path or ""}{match_result.path}'
-            run_javascript(f'''
-                const fullPath = (window.path_prefix || '') + "{new_path}";
-                if (window.location.pathname + window.location.search + window.location.hash !== fullPath) {{
-                    history.pushState({{page: "{path}"}}, "", fullPath);
-                }}
-            ''')
-        return match_result
-
     def _match_route(self, full_path: str) -> Optional[RouteMatch]:
         """Find exact matching route for a full path.
 
@@ -128,39 +112,21 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
         path_only = parsed_url.path.rstrip('/')
         query_params = QueryParams(parsed_url.query) if parsed_url.query else QueryParams()
         fragment = parsed_url.fragment
-        relative_path = path_only[len(self._root_path or ''):]
-        if relative_path == '':
-            relative_path = '/'
+        if path_only == '':
+            path_only = '/'
 
-        segments = relative_path.split('/')
-        while segments:
-            sub_path = '/'.join(segments)
-            for route, builder in self._routes.items():
-                parameters = self._match_path(route, sub_path)
-                if parameters is not None:
-                    return RouteMatch(
-                        path=sub_path,
-                        pattern=route,
-                        builder=builder,
-                        parameters=parameters,
-                        query_params=query_params,
-                        fragment=fragment,
-                    )
-            segments.pop()
+        for route, builder in self._routes.items():
+            parameters = self._match_path(route, path_only)
+            if parameters is not None:
+                return RouteMatch(
+                    path=path_only,
+                    pattern=route,
+                    builder=builder,
+                    parameters=parameters,
+                    query_params=query_params,
+                    fragment=fragment,
+                )
         return None
-
-    def _handle_navigate(self, navigation_data) -> None:
-        """Handle navigate event from link clicks."""
-        old_path = navigation_data.get('from', '')
-        new_path = navigation_data.get('to', navigation_data)
-        if self._should_handle_navigation(old_path, new_path):
-            if not self._try_navigate_to(new_path):
-                context.client.open(new_path)
-
-    def _should_handle_navigation(self, old_path: str, new_path: str) -> bool:
-        """Determine if this SubPages should handle the navigation."""
-        match = self._match_route(new_path)
-        return match is not None
 
     def _normalize_path(self, path: str) -> str:
         """Normalize the path by trimming root path and handling trailing slashes."""
@@ -210,36 +176,6 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
             task = background_tasks.create(background_task(), name=f'building sub_page {route_match.pattern}')
             self._active_tasks.add(task)
             task.add_done_callback(self._active_tasks.discard)
-
-    def _try_navigate_to(self, path: str) -> bool:
-        """Try to handle navigation through ``ui.sub_pages`` system.
-
-        :param path: the path to navigate to
-        :return: ``True`` if handled by ``ui.sub_pages``, ``False`` otherwise
-        """
-        return self._show_page_and_update_browser_url(path) is not None
-
-    @staticmethod
-    def try_navigate_to(path: str) -> bool:
-        """Try to handle navigation through ``ui.sub_pages`` system.
-
-        :param path: the path to navigate to
-        :return: ``True`` if handled by ``ui.sub_pages``, ``False`` otherwise
-        """
-        handled_by_sub_pages = False
-        for sub_page in SubPages.find_roots(context.client.content):
-            if sub_page._try_navigate_to(path):  # pylint: disable=protected-access
-                handled_by_sub_pages = True
-        return handled_by_sub_pages
-
-    @staticmethod
-    def find_roots(element: Element) -> List[SubPages]:
-        """Find all root ``ui.sub_pages`` elements in an element tree.
-
-        :param element: the element to search from
-        :return: list of all root ``ui.sub_pages`` elements found
-        """
-        return [el for el in element.descendants(include_self=True) if isinstance(el, SubPages) and el._is_root]  # pylint: disable=protected-access
 
     @staticmethod
     def find_child(element: Element) -> Optional[SubPages]:
@@ -310,16 +246,6 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
         """
         self.path = path
 
-    def _handle_routes_change(self) -> None:
-        assert context.client.request
-        path = str(context.client.request.url.path)
-        if context.client.request.url.query:
-            path += '?' + context.client.request.url.query
-        if context.client.request.url.fragment:
-            path += '#' + context.client.request.url.fragment
-
-        self._show_page_and_update_browser_url(path)
-
     def _handle_path_change(self, path: str) -> None:
-        if self._is_root and self._send_update_on_path_change:
-            self._show_page_and_update_browser_url(f'{self._root_path or ""}{path}')
+        pass
+        # raise NotImplementedError('SubPages.set_path is not implemented')
