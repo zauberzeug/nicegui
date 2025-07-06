@@ -68,6 +68,8 @@ def test_switching_between_sub_pages(screen: Screen):
     assert path_tracker['path'] == '/b'
 
     screen.click('Go to A')
+    screen.should_contain('Page A')
+    assert calls == {'index': 1, 'a': 3, 'b': 2}
     screen.click('Go to B with slash')
     screen.should_contain('Page B')
     assert calls == {'index': 1, 'a': 3, 'b': 3}
@@ -75,7 +77,7 @@ def test_switching_between_sub_pages(screen: Screen):
 
     screen.click('Go to B with slash')
     screen.should_contain('Page B')
-    assert calls == {'index': 1, 'a': 3, 'b': 4}
+    assert calls == {'index': 1, 'a': 3, 'b': 3}, 'no rebuilding if path stays the same'
     assert path_tracker['path'] == '/b'
 
 

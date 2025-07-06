@@ -61,19 +61,16 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
                          If None, the path will be calculated automatically from the current router state
         :return: the RouteMatch object if a route was found and shown, None otherwise
         """
-        path = self._calculate_path()
-        if path is None:
+        match_result = self._find_matching_path()
+        if match_result is None:
             with self:
                 Label(f'404: sub page {self.router.current_path} not found')
             return None
 
-        if path == self.path:
+        if match_result.path == self.path:
             return None
         self._cancel_active_tasks()
         self.clear()
-        match_result = self._match_route(path)
-        if match_result is None:
-            return None
         self._send_update_on_path_change = False
         self.path = match_result.path
         self._send_update_on_path_change = True
@@ -95,7 +92,7 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
 
         return match_result
 
-    def _calculate_path(self) -> Optional[str]:
+    def _find_matching_path(self) -> Optional[RouteMatch]:
         """Calculate the appropriate path for this SubPages instance based on current router state.
 
         :return: the calculated path, or None if no valid path found
@@ -103,8 +100,8 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
         router = context.client.sub_pages_router
         candidates = router.get_sub_pages()
         segments = router.current_path.split('/')
-        found_path = None
 
+        match: Optional[RouteMatch] = None
         while segments:
             path = '/'.join(segments)
             if not path:
@@ -112,15 +109,15 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
             relative_path = path
             for candidate in candidates:
                 if self is candidate:
-                    if self._match_route(relative_path):
-                        found_path = relative_path
+                    match = self._match_route(relative_path)
+                    if match is not None:
                         break
                 relative_path = relative_path[len(candidate.path):]
-            if found_path:
+            if match is not None:
                 break
             segments.pop()
 
-        return found_path
+        return match
 
     @property
     def full_path(self) -> str:
