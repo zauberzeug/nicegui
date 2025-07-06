@@ -32,9 +32,7 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
         """
         super().__init__()
         self._routes = routes or {}
-        parent_sub_pages_element = next((el for el in self.ancestors() if isinstance(el, SubPages)), None)
-        self._root_path = parent_sub_pages_element.full_path \
-            if parent_sub_pages_element else root_path
+        self._root_path = root_path
         self._data = data or {}
         self.path = '---'
         self.router = context.client.sub_pages_router
@@ -62,15 +60,14 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
         :return: the RouteMatch object if a route was found and shown, None otherwise
         """
         match_result = self._find_matching_path()
+        if match_result is not None and match_result.path == self.path:
+            return None
+        self._cancel_active_tasks()
+        self.clear()
         if match_result is None:
             with self:
                 Label(f'404: sub page {self.router.current_path} not found')
             return None
-
-        if match_result.path == self.path:
-            return None
-        self._cancel_active_tasks()
-        self.clear()
         self._send_update_on_path_change = False
         self.path = match_result.path
         self._send_update_on_path_change = True
@@ -99,7 +96,7 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
         """
         router = context.client.sub_pages_router
         candidates = router.get_sub_pages()
-        segments = router.current_path.split('/')
+        segments = self._normalize_path(router.current_path).split('/')
 
         match: Optional[RouteMatch] = None
         while segments:
