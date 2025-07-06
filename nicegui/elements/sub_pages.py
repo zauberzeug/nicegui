@@ -49,10 +49,8 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
             ({param} placeholders will be passed to the function parameters with same name)
         :return: self for method chaining
         """
-        # if path != '/' and not path.endswith('/'):
-        #     path += '/'
         self._routes[path] = page
-        self._handle_routes_change()
+        self.show(context.client.sub_pages_router.get_path_for(self))
         return self
 
     def show(self, full_path: str) -> Optional[RouteMatch]:
@@ -61,14 +59,16 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
         :param full_path: the path to navigate to (can be empty string for root path; trailing slash is ignored)
         :return: the RouteMatch object if a route was found and shown, None otherwise
         """
+        if full_path == 'error':
+            with self:
+                Label(f'404: sub page {full_path} not found')
+            return None
         if full_path == self.path:
             return None
         self._cancel_active_tasks()
         self.clear()
         match_result = self._match_route(full_path)
         if match_result is None:
-            with self:
-                Label(f'404: sub page {full_path} not found')
             return None
         self._send_update_on_path_change = False
         self.path = match_result.path

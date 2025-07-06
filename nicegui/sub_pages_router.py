@@ -31,7 +31,9 @@ class SubPagesRouter:
         candidates = self._get_sub_pages()
         segments = self.current_path.split('/')
         while segments:
-            path = '/'.join(segments) or '/'
+            path = '/'.join(segments)
+            if not path:
+                return 'error'
             relative_path = path
             for candidate in candidates:
                 if sub_pages is candidate:
@@ -39,7 +41,7 @@ class SubPagesRouter:
                         return relative_path
                 relative_path = relative_path[len(candidate.path):]
             segments.pop()
-        raise ValueError(f'No path found for {sub_pages}')
+        raise ValueError(f'No path found for "{"/".join(segments)}"')
 
     def _get_sub_pages(self) -> Tuple[SubPages, ...]:
         return tuple(el for el in context.client.layout.descendants() if isinstance(el, SubPages))
@@ -48,23 +50,27 @@ class SubPagesRouter:
         """Handle open event from sub pages element."""
         self._update_path(event.args)
 
-    def _handle_navigate(self, event: GenericEventArguments) -> None:
+    def _handle_navigate(self, event: GenericEventArguments) -> bool:
         """Handle navigate event from sub pages element."""
-        self._update_path(event.args)
+        updated = self._update_path(event.args)
         run_javascript(f'''
             const fullPath = (window.path_prefix || '') + "{self.current_path}";
             if (window.location.pathname + window.location.search + window.location.hash !== fullPath) {{
                 history.pushState({{page: "{self.current_path}"}}, "", fullPath);
             }}
         ''')
+        return updated
 
-    def _update_path(self, path: str) -> None:
+    def _update_path(self, path: str) -> bool:
         self.current_path = path
+        updated = False
         for sub_pages in self._get_sub_pages():
             try:
-                sub_pages.show(self.get_path_for(sub_pages))
+                if sub_pages.show(self.get_path_for(sub_pages)):
+                    updated = True
             except ValueError:
                 pass
+        return updated
 
     def _find_roots(self) -> List[SubPages]:
         """Find all root ``ui.sub_pages`` elements in an element tree.
