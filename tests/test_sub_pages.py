@@ -537,10 +537,10 @@ def test_links_pointing_to_path_which_is_not_a_sub_page(screen: Screen):
         ui.sub_pages({'/': main, '/sub': sub})
 
     def main():
-        ui.label('main')
+        ui.label('main page')
 
     def sub():
-        ui.label('sub')
+        ui.label('sub page')
 
     @ui.page('/other')
     def other():
@@ -548,7 +548,7 @@ def test_links_pointing_to_path_which_is_not_a_sub_page(screen: Screen):
 
     screen.open('/')
     screen.click('Go to sub')
-    screen.should_contain('sub')
+    screen.should_contain('sub page')
     assert screen.current_path == '/sub'
 
     screen.click('Go to other')
