@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import List, Tuple
+from typing import List
 
 from fastapi import Request
 
@@ -26,9 +26,6 @@ class SubPagesRouter:
             path += '#' + request.url.fragment
         self.current_path = path
 
-    def get_sub_pages(self) -> Tuple[SubPages, ...]:
-        return tuple(el for el in context.client.layout.descendants() if isinstance(el, SubPages))
-
     def _handle_open(self, path: str) -> None:
         """Handle open event from sub pages element."""
         self._update_path(path)
@@ -49,7 +46,7 @@ class SubPagesRouter:
     def _update_path(self, path: str) -> bool:
         self.current_path = path
         updated = False
-        for sub_pages in self.get_sub_pages():
+        for sub_pages in tuple(el for el in context.client.layout.descendants() if isinstance(el, SubPages)):
             try:
                 if sub_pages.show() is not None:
                     updated = True
