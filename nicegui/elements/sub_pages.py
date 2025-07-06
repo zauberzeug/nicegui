@@ -60,7 +60,7 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
         :return: the RouteMatch object if a route was found and shown, None otherwise
         """
         match_result = self._find_matching_path()
-        if match_result is not None and match_result.path == self.path:
+        if match_result is not None and match_result.full_url == self.path:
             return match_result
         self._cancel_active_tasks()
         self.clear()
@@ -69,7 +69,7 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
                 Label(f'404: sub page {self.router.current_path} not found')
             return None
         self._send_update_on_path_change = False
-        self.path = match_result.path
+        self.path = match_result.full_url
         self._send_update_on_path_change = True
 
         with self:

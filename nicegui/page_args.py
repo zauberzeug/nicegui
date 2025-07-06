@@ -28,6 +28,16 @@ class RouteMatch:
     fragment: str
     '''The URL fragment (e.g., "section" from "#section")'''
 
+    @property
+    def full_url(self) -> str:
+        """Get the complete URL including path, query parameters, and fragment."""
+        url = self.path
+        if self.query_params:
+            url += '?' + str(self.query_params)
+        if self.fragment:
+            url += '#' + self.fragment
+        return url
+
 
 @dataclass(**KWONLY_SLOTS)
 class PageArgs:
