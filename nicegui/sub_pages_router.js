@@ -30,7 +30,7 @@ document.addEventListener("click", (e) => {
         }
       }
 
-      emitEvent("navigate", { from: currentPath, to: href });
+      emitEvent("navigate", href);
     }
   }
 });

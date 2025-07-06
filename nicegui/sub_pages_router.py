@@ -46,23 +46,25 @@ class SubPagesRouter:
 
     def _handle_open(self, event: GenericEventArguments) -> None:
         """Handle open event from sub pages element."""
+        self._update_path(event.args)
 
     def _handle_navigate(self, event: GenericEventArguments) -> None:
         """Handle navigate event from sub pages element."""
-        target = event.args['to']
-        self.current_path = target
+        self._update_path(event.args)
+        run_javascript(f'''
+            const fullPath = (window.path_prefix || '') + "{self.current_path}";
+            if (window.location.pathname + window.location.search + window.location.hash !== fullPath) {{
+                history.pushState({{page: "{self.current_path}"}}, "", fullPath);
+            }}
+        ''')
+
+    def _update_path(self, path: str) -> None:
+        self.current_path = path
         for sub_pages in self._get_sub_pages():
             try:
                 sub_pages.show(self.get_path_for(sub_pages))
             except ValueError:
                 pass
-
-        run_javascript(f'''
-            const fullPath = (window.path_prefix || '') + "{target}";
-            if (window.location.pathname + window.location.search + window.location.hash !== fullPath) {{
-                history.pushState({{page: "{target}"}}, "", fullPath);
-            }}
-        ''')
 
     def _find_roots(self) -> List[SubPages]:
         """Find all root ``ui.sub_pages`` elements in an element tree.
