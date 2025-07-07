@@ -1,8 +1,14 @@
 window.addEventListener("popstate", (event) =>
-  emitEvent("open", event.state?.page || window.location.pathname + window.location.search + window.location.hash)
+  emitEvent(
+    "sub_pages_open",
+    event.state?.page || window.location.pathname + window.location.search + window.location.hash
+  )
 );
 window.addEventListener("pushstate", (event) =>
-  emitEvent("open", event.state?.page || window.location.pathname + window.location.search + window.location.hash)
+  emitEvent(
+    "sub_pages_open",
+    event.state?.page || window.location.pathname + window.location.search + window.location.hash
+  )
 );
 document.addEventListener("click", (e) => {
   const a = e.target.closest("a[href]");
@@ -30,7 +36,7 @@ document.addEventListener("click", (e) => {
         }
       }
 
-      emitEvent("navigate", href);
+      emitEvent("sub_pages_navigate", href);
     }
   }
 });

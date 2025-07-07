@@ -10,8 +10,8 @@ from .functions.on import on
 
 class SubPagesRouter:
     def __init__(self, request: Optional[Request]) -> None:
-        on('open', lambda event: self._handle_open(event.args))
-        on('navigate', lambda event: self._handle_navigate(event.args))
+        on('sub_pages_open', lambda event: self._handle_open(event.args))
+        on('sub_pages_navigate', lambda event: self._handle_navigate(event.args))
 
         if request is not None:
             path = str(request.url.path)
