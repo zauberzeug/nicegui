@@ -102,11 +102,6 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
 
         return match
 
-    @property
-    def full_path(self) -> str:
-        """Get the full path of this SubPages element."""
-        return f'{self._root_path or ""}{self.path}'
-
     def _cancel_active_tasks(self) -> None:
         """Cancel all active async tasks for this SubPages instance."""
         for task in self._active_tasks:

@@ -1,14 +1,11 @@
 import asyncio
 from typing import Optional
 
-import icecream as ic
 import pytest
 from selenium.webdriver.common.by import By
 
 from nicegui import PageArgs, background_tasks, ui
 from nicegui.testing import Screen
-
-ic.install()
 
 # pylint: disable=missing-function-docstring
 

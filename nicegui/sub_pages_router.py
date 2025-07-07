@@ -1,5 +1,4 @@
 from pathlib import Path
-from typing import List
 
 from fastapi import Request
 
@@ -53,11 +52,3 @@ class SubPagesRouter:
             except ValueError:
                 pass
         return updated
-
-    def _find_roots(self) -> List[SubPages]:
-        """Find all root ``ui.sub_pages`` elements in an element tree.
-
-        :param element: the element to search from
-        :return: list of all root ``ui.sub_pages`` elements found
-        """
-        return [el for el in context.client.layout.descendants(include_self=True) if isinstance(el, SubPages) and el._is_root]  # pylint: disable=protected-access
