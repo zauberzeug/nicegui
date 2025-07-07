@@ -68,19 +68,29 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
             return match_result
         self._cancel_active_tasks()
         self.clear()
-        if match_result is None:
-            self.show_404()
-            return None
-        self._send_update_on_path_change = False
-        self._path = match_result.full_url
-        self._send_update_on_path_change = True
-
         with self:
-            self._place_content(match_result)
-
+            if match_result is None:
+                self._show_404()
+                return None
+            self._send_update_on_path_change = False
+            self._path = match_result.full_url
+            self._send_update_on_path_change = True
+            self._show_page(match_result)
         return match_result
 
-    def show_404(self) -> None:
+    def _show_page(self, match: RouteMatch) -> None:
+        kwargs = PageArgs.build_kwargs(match, self, self._data)
+        result = match.builder(**kwargs)
+        self._scroll_to_fragment(match.fragment)
+        if asyncio.iscoroutine(result):
+            async def background_task():
+                with self:
+                    await result
+            task = background_tasks.create(background_task(), name=f'building sub_page {match.pattern}')
+            self._active_tasks.add(task)
+            task.add_done_callback(self._active_tasks.discard)
+
+    def _show_404(self) -> None:
         """Show a 404 error message."""
         with self:
             Label(f'404: sub page {self._router.current_path} not found')
@@ -166,15 +176,3 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
             if isinstance(parent, SubPages):
                 return False
         return True
-
-    def _place_content(self, route_match: RouteMatch) -> None:
-        kwargs = PageArgs.build_kwargs(route_match, self, self._data)
-        result = route_match.builder(**kwargs)
-        self._scroll_to_fragment(route_match.fragment)
-        if asyncio.iscoroutine(result):
-            async def background_task():
-                with self:
-                    await result
-            task = background_tasks.create(background_task(), name=f'building sub_page {route_match.pattern}')
-            self._active_tasks.add(task)
-            task.add_done_callback(self._active_tasks.discard)
