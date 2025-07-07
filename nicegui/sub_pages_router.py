@@ -1,4 +1,5 @@
 from pathlib import Path
+from typing import Callable, List
 
 from fastapi import Request
 
@@ -16,6 +17,7 @@ class SubPagesRouter:
         add_head_html(f'<script>{js}</script>')
         on('open', lambda event: self._handle_open(event.args))
         on('navigate', lambda event: self._handle_navigate(event.args))
+        self.on_path_changed: List[Callable[[str], None]] = []
 
     def set_request(self, request: Request) -> None:
         path = str(request.url.path)
@@ -44,6 +46,8 @@ class SubPagesRouter:
 
     def _update_path(self, path: str) -> bool:
         self.current_path = path
+        for callback in self.on_path_changed:
+            callback(path)
         updated = False
         for sub_pages in tuple(el for el in context.client.layout.descendants() if isinstance(el, SubPages)):
             try:

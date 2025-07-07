@@ -17,7 +17,13 @@ from ..page_args import PageArgs, RouteMatch
 
 
 class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-pages'):
-    def __init__(self, routes: Optional[Dict[str, Callable]] = None, *, root_path: Optional[str] = None, data: Optional[Dict[str, Any]] = None) -> None:
+    def __init__(
+        self,
+            routes: Optional[Dict[str, Callable]] = None,
+            *,
+            root_path: Optional[str] = None,
+            data: Optional[Dict[str, Any]] = None,
+    ) -> None:
         """Sub Pages
 
         Create a sub pages element to handle client-side routing within a page.
@@ -27,13 +33,13 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
         :param data: optional dictionary with arbitrary data to be passed to sub-page functions
         """
         super().__init__()
+        self._router = context.client.sub_pages_router
         self._routes = routes or {}
         self._root_path = root_path
         self._data = data or {}
-        self.path = '---'
-        self.router = context.client.sub_pages_router
         self._active_tasks: Set[asyncio.Task] = set()
         self._send_update_on_path_change = True
+        self._path = None
         self.show()
 
     def add(self, path: str, page: Callable) -> Self:
@@ -56,23 +62,27 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
         :return: the RouteMatch object if a route was found and shown, None otherwise
         """
         match_result = self._find_matching_path()
-        if match_result is not None and match_result.full_url == self.path:
+        if match_result is not None and match_result.full_url == self._path:
             self._scroll_to_fragment(match_result.fragment)
             return match_result
         self._cancel_active_tasks()
         self.clear()
         if match_result is None:
-            with self:
-                Label(f'404: sub page {self.router.current_path} not found')
+            self.show_404()
             return None
         self._send_update_on_path_change = False
-        self.path = match_result.full_url
+        self._path = match_result.full_url
         self._send_update_on_path_change = True
 
         with self:
             self._place_content(match_result)
 
         return match_result
+
+    def show_404(self) -> None:
+        """Show a 404 error message."""
+        with self:
+            Label(f'404: sub page {self._router.current_path} not found')
 
     def _find_matching_path(self) -> Optional[RouteMatch]:
         """Calculate the appropriate path for this SubPages instance based on current router state.
@@ -90,7 +100,7 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
                 break
             relative_path = path
             for candidate in ancestors:
-                relative_path = relative_path[len(candidate.path):]
+                relative_path = relative_path[len(candidate._path):]  # pylint: disable=protected-access
             match = self._match_route(relative_path)
             if match is not None:
                 break

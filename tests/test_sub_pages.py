@@ -801,3 +801,47 @@ def test_sub_pages_with_url_fragments(screen: Screen):
     screen.click('Go to top')
     screen.wait(1)
     assert calls == {'index': 1, 'main': 1, 'targets': 2}, 'Fragment navigation should not rebuild page'
+
+
+def test_on_path_changed_event(screen: Screen):
+    paths = []
+    calls = {'index': 0, 'main': 0, 'other': 0}
+
+    @ui.page('/')
+    @ui.page('/{_:path}')
+    def index():
+        calls['index'] += 1
+        ui.sub_pages({
+            '/': main,
+            '/other': other,
+        })
+        ui.context.client.sub_pages_router.on_path_changed.append(paths.append)
+        ui.link('Go to other', '/other')
+
+    def main():
+        calls['main'] += 1
+        ui.label('main page')
+
+    def other():
+        calls['other'] += 1
+        ui.label('other page')
+
+    screen.open('/')
+    screen.should_contain('main page')
+    assert paths == []  # NOTE: initial path is not reported, because the path does not "change" on first load
+    assert calls == {'index': 1, 'main': 1, 'other': 0}
+
+    screen.click('Go to other')
+    screen.should_contain('other page')
+    assert paths == ['/other']
+    assert calls == {'index': 1, 'main': 1, 'other': 1}
+
+    screen.open('/other')
+    screen.should_contain('other page')
+    assert paths == ['/other']
+    assert calls == {'index': 2, 'main': 1, 'other': 2}
+
+    screen.open('/bad_path')
+    screen.should_contain('404: sub page /bad_path not found')
+    assert paths == ['/other']
+    assert calls == {'index': 3, 'main': 1, 'other': 2}
