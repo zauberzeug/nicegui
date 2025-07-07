@@ -158,7 +158,7 @@ def test_opening_sub_pages_directly(screen: Screen):
 def test_nested_sub_pages(screen: Screen):
     @ui.page('/')
     @ui.page('/{_:path}')
-    def index(_):
+    def index():
         ui.link('Go to main', '/')
         ui.link('Go to sub', '/sub')
         ui.sub_pages({

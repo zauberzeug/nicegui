@@ -35,7 +35,8 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
         super().__init__()
         self._router = context.client.sub_pages_router
         self._routes = routes or {}
-        self._root_path = root_path
+        parent_sub_pages_element = next((el for el in self.ancestors() if isinstance(el, SubPages)), None)
+        self._root_path = parent_sub_pages_element.full_path if parent_sub_pages_element else root_path
         self._data = data or {}
         self._active_tasks: Set[asyncio.Task] = set()
         self._send_update_on_path_change = True
@@ -84,23 +85,19 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
         with self:
             Label(f'404: sub page {self._router.current_path} not found')
 
+    @property
+    def full_path(self) -> str:
+        """Get the full path of this SubPages element."""
+        return f'{self._root_path or ""}{self._path or ""}'
+
     def _find_matching_path(self) -> Optional[RouteMatch]:
-        """Calculate the appropriate path for this SubPages instance based on current router state.
-
-        :return: the calculated path, or None if no valid path found
-        """
-        ancestors = tuple(el for el in self.ancestors() if isinstance(el, SubPages))
-        segments = self._normalize_path(self._router.current_path).split('/')
-
         match: Optional[RouteMatch] = None
+        segments = self._router.current_path.split('/')
         while segments:
             path = '/'.join(segments)
             if not path:
                 break
-            relative_path = path
-            for ancestor in ancestors:
-                relative_path = relative_path[len(ancestor._path or ''):]  # pylint: disable=protected-access
-            match = self._match_route(relative_path)
+            match = self._match_route(path[len(self._root_path or ''):])
             if match is not None:
                 break
             segments.pop()
@@ -108,18 +105,13 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
         return match
 
     def _cancel_active_tasks(self) -> None:
-        """Cancel all active async tasks for this SubPages instance."""
         for task in self._active_tasks:
             if not task.done() and not task.cancelled():
                 task.cancel()
         self._active_tasks.clear()
 
-    def _match_route(self, full_path: str) -> Optional[RouteMatch]:
-        """Find exact matching route for a full path.
-
-        :return: RouteMatch object if found, None otherwise
-        """
-        parsed_url = urlparse(full_path)
+    def _match_route(self, path: str) -> Optional[RouteMatch]:
+        parsed_url = urlparse(path)
         path_only = parsed_url.path.rstrip('/')
         query_params = QueryParams(parsed_url.query) if parsed_url.query else QueryParams()
         fragment = parsed_url.fragment
@@ -139,18 +131,6 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
                 )
         return None
 
-    def _normalize_path(self, path: str) -> str:
-        """Normalize the path by trimming root path and handling trailing slashes."""
-        if self._root_path and path.startswith(self._root_path):
-            path = path[len(self._root_path):]
-
-        if path.endswith('/') and path != '/':
-            path = path[:-1]
-        if path == '':
-            path = '/'
-
-        return path
-
     def _scroll_to_fragment(self, fragment: str) -> None:
         if fragment:
             run_javascript(f'''
@@ -168,10 +148,6 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
 
     @staticmethod
     def _match_path(pattern: str, path: str) -> Optional[Dict[str, str]]:
-        """Match a path pattern against an actual path and extract parameters noted with {param} placeholders.
-
-        :return: empty dict for exact matches, parameter dict for parameterized matches, None for no match.
-        """
         if '{' not in pattern:
             return {} if pattern == path else None
 
@@ -202,11 +178,3 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
             task = background_tasks.create(background_task(), name=f'building sub_page {route_match.pattern}')
             self._active_tasks.add(task)
             task.add_done_callback(self._active_tasks.discard)
-
-    @staticmethod
-    def find_child(element: Element) -> Optional[SubPages]:
-        """Find child ``ui.sub_pages`` element, ensuring only one exists per level.
-
-        :return: the ``ui.sub_pages`` element if found, ``None`` otherwise
-        """
-        return next((el for el in element.descendants() if isinstance(el, SubPages)), None)
