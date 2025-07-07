@@ -89,9 +89,8 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
 
         :return: the calculated path, or None if no valid path found
         """
-        router = context.client.sub_pages_router
         ancestors = tuple(el for el in self.ancestors() if isinstance(el, SubPages))
-        segments = self._normalize_path(router.current_path).split('/')
+        segments = self._normalize_path(self._router.current_path).split('/')
 
         match: Optional[RouteMatch] = None
         while segments:

@@ -90,7 +90,7 @@ class Client:
         self._temporary_socket_id: Optional[str] = None
 
         with self:
-            self.sub_pages_router = SubPagesRouter()
+            self.sub_pages_router = SubPagesRouter(request)
 
     @property
     def is_auto_index_client(self) -> bool:
