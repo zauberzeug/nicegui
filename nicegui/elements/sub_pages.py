@@ -39,7 +39,7 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
         self._data = data or {}
         self._active_tasks: Set[asyncio.Task] = set()
         self._send_update_on_path_change = True
-        self._path = None
+        self._path: Optional[str] = None
         self.show()
 
     def add(self, path: str, page: Callable) -> Self:
@@ -99,8 +99,8 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
             if not path:
                 break
             relative_path = path
-            for candidate in ancestors:
-                relative_path = relative_path[len(candidate._path):]  # pylint: disable=protected-access
+            for ancestor in ancestors:
+                relative_path = relative_path[len(ancestor._path or ''):]  # pylint: disable=protected-access
             match = self._match_route(relative_path)
             if match is not None:
                 break
