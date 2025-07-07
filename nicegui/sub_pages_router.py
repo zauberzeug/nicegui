@@ -1,4 +1,3 @@
-from pathlib import Path
 from typing import Callable, List, Optional
 
 from fastapi import Request
@@ -11,10 +10,6 @@ from .functions.on import on
 
 class SubPagesRouter:
     def __init__(self, request: Optional[Request]) -> None:
-        from .functions.html import add_head_html
-        self.current_path = '/'
-        js = (Path(__file__).parent / 'sub_pages_router.js').read_text(encoding='utf-8')
-        add_head_html(f'<script>{js}</script>')
         on('open', lambda event: self._handle_open(event.args))
         on('navigate', lambda event: self._handle_navigate(event.args))
 
@@ -27,6 +22,7 @@ class SubPagesRouter:
             self.current_path = path
         else:
             self.current_path = '/'
+
         self.on_path_changed: List[Callable[[str], None]] = []
 
     def _handle_open(self, path: str) -> bool:
