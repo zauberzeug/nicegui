@@ -2,7 +2,6 @@ import asyncio
 from typing import Optional
 
 import pytest
-from selenium.webdriver.common.by import By
 
 from nicegui import PageArgs, background_tasks, ui
 from nicegui.testing import Screen
@@ -12,7 +11,6 @@ from nicegui.testing import Screen
 
 def test_switching_between_sub_pages(screen: Screen):
     calls = {'index': 0, 'a': 0, 'b': 0}
-    path_tracker = {'path': '/'}
 
     @ui.page('/')
     @ui.page('/b')
@@ -22,7 +20,7 @@ def test_switching_between_sub_pages(screen: Screen):
         ui.sub_pages({
             '/': sub_page_a,
             '/b': sub_page_b,
-        }).bind_path_to(path_tracker, 'path')
+        })
 
     def sub_page_a():
         calls['a'] += 1
@@ -41,28 +39,24 @@ def test_switching_between_sub_pages(screen: Screen):
     screen.should_contain('Page A')
     screen.should_not_contain('Page B')
     assert calls == {'index': 1, 'a': 1, 'b': 0}
-    assert path_tracker['path'] == '/'
 
     screen.click('Go to B')
     screen.should_contain('Index')
     screen.should_contain('Page B')
     screen.should_not_contain('Page A')
     assert calls == {'index': 1, 'a': 1, 'b': 1}
-    assert path_tracker['path'] == '/b'
 
     screen.selenium.back()
     screen.should_contain('Index')
     screen.should_contain('Page A')
     screen.should_not_contain('Page B')
     assert calls == {'index': 1, 'a': 2, 'b': 1}
-    assert path_tracker['path'] == '/'
 
     screen.selenium.forward()
     screen.should_contain('Index')
     screen.should_contain('Page B')
     screen.should_not_contain('Page A')
     assert calls == {'index': 1, 'a': 2, 'b': 2}
-    assert path_tracker['path'] == '/b'
 
     screen.click('Go to A')
     screen.should_contain('Page A')
@@ -70,12 +64,10 @@ def test_switching_between_sub_pages(screen: Screen):
     screen.click('Go to B with slash')
     screen.should_contain('Page B')
     assert calls == {'index': 1, 'a': 3, 'b': 3}
-    assert path_tracker['path'] == '/b'
 
     screen.click('Go to B with slash')
     screen.should_contain('Page B')
     assert calls == {'index': 1, 'a': 3, 'b': 3}, 'no rebuilding if path stays the same'
-    assert path_tracker['path'] == '/b'
 
 
 def test_passing_data_to_sub_page_via_lambda(screen: Screen):
@@ -161,34 +153,6 @@ def test_opening_sub_pages_directly(screen: Screen):
     screen.open('/one/')  # NOTE: having a slash at the end of the path should not cause an error
     screen.should_contain('one')
     screen.should_not_contain('two')
-
-
-@pytest.mark.parametrize('root', ['/', '/sub'])
-def test_changing_sub_pages_via_binding(screen: Screen, root: str):
-    @ui.page(root)
-    def index():
-        path_input = ui.input('Path', value='/')
-        ui.sub_pages({
-            '/': main,
-            '/other': other,
-        }, root_path=root if root != '/' else None) \
-            .bind_path_from(path_input, 'value')
-
-    def main():
-        ui.label('main page')
-
-    def other():
-        ui.label('other page')
-
-    screen.open(root)
-    screen.should_contain('main page')
-    element = screen.selenium.find_element(By.XPATH, '//*[@aria-label="Path"]')
-    element.send_keys('othe')
-    screen.wait(0.3)
-    screen.should_contain(f'404: sub page {root if root != "/" else ""}/othe not found')
-    element.send_keys('r')
-    screen.wait(0.3)
-    screen.should_contain('other page')
 
 
 def test_nested_sub_pages(screen: Screen):

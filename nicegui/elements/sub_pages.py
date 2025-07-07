@@ -2,14 +2,13 @@ from __future__ import annotations
 
 import asyncio
 import re
-from typing import Any, Callable, Dict, Optional, Set, cast
+from typing import Any, Callable, Dict, Optional, Set
 from urllib.parse import urlparse
 
 from starlette.datastructures import QueryParams
 from typing_extensions import Self
 
 from .. import background_tasks
-from ..binding import BindableProperty, bind, bind_from, bind_to
 from ..context import context
 from ..element import Element
 from ..elements.label import Label
@@ -18,9 +17,6 @@ from ..page_args import PageArgs, RouteMatch
 
 
 class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-pages'):
-    path = BindableProperty(
-        on_change=lambda sender, path: cast(SubPages, sender)._handle_path_change(path))  # pylint: disable=protected-access
-
     def __init__(self, routes: Optional[Dict[str, Callable]] = None, *, root_path: Optional[str] = None, data: Optional[Dict[str, Any]] = None) -> None:
         """Sub Pages
 
@@ -205,68 +201,3 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
         :return: the ``ui.sub_pages`` element if found, ``None`` otherwise
         """
         return next((el for el in element.descendants() if isinstance(el, SubPages)), None)
-
-    def bind_path_to(self,
-                     target_object: Any,
-                     target_name: str = 'path',
-                     forward: Callable[..., Any] = lambda x: x,
-                     ) -> Self:
-        """Bind the path of this element to the target object's target_name property.
-
-        The binding works one way only, from this element to the target.
-        The update happens immediately and whenever the path changes.
-
-        :param target_object: The object to bind to.
-        :param target_name: The name of the property to bind to.
-        :param forward: A function to apply to the path before applying it to the target.
-        """
-        bind_to(self, 'path', target_object, target_name, forward)
-        return self
-
-    def bind_path_from(self,
-                       target_object: Any,
-                       target_name: str = 'path',
-                       backward: Callable[..., Any] = lambda x: x,
-                       ) -> Self:
-        """Bind the path of this element from the target object's target_name property.
-
-        The binding works one way only, from the target to this element.
-        The update happens immediately and whenever the path changes.
-
-        :param target_object: The object to bind from.
-        :param target_name: The name of the property to bind from.
-        :param backward: A function to apply to the path before applying it to this element.
-        """
-        bind_from(self, 'path', target_object, target_name, backward)
-        return self
-
-    def bind_path(self,
-                  target_object: Any,
-                  target_name: str = 'path', *,
-                  forward: Callable[..., Any] = lambda x: x,
-                  backward: Callable[..., Any] = lambda x: x,
-                  ) -> Self:
-        """Bind the path of this element to the target object's target_name property.
-
-        The binding works both ways, from this element to the target and from the target to this element.
-        The update happens immediately and whenever the path changes.
-        The backward binding takes precedence for the initial synchronization.
-
-        :param target_object: The object to bind to.
-        :param target_name: The name of the property to bind to.
-        :param forward: A function to apply to the path before applying it to the target.
-        :param backward: A function to apply to the path before applying it to this element.
-        """
-        bind(self, 'path', target_object, target_name, forward=forward, backward=backward)
-        return self
-
-    def set_path(self, path: str) -> None:
-        """Set the path of this element.
-
-        :param path: The new path.
-        """
-        self.path = path
-
-    def _handle_path_change(self, path: str) -> None:
-        pass
-        # raise NotImplementedError('SubPages.set_path is not implemented')
