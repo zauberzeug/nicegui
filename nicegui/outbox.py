@@ -93,7 +93,7 @@ class Outbox:
                         continue
 
                 client = self.client
-                if not client or not self.client.has_socket_connection:
+                if not client or not client.has_socket_connection:
                     await asyncio.sleep(0.1)
                     continue
 
