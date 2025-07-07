@@ -61,6 +61,7 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
         """
         match_result = self._find_matching_path()
         if match_result is not None and match_result.full_url == self.path:
+            self._scroll_to_fragment(match_result.fragment)
             return match_result
         self._cancel_active_tasks()
         self.clear()
@@ -74,18 +75,6 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
 
         with self:
             self._place_content(match_result)
-
-        if match_result.fragment:
-            run_javascript(f'''
-                setTimeout(() => {{
-                    let target = document.getElementById("{match_result.fragment}");
-                    if (target)
-                        target.scrollIntoView({{ behavior: "smooth" }});
-                    else
-                        if (target = document.querySelector('a[name="{match_result.fragment}"]'))
-                            target.scrollIntoView({{ behavior: "smooth" }});
-                }}, 100);
-            ''')
 
         return match_result
 
@@ -162,6 +151,21 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
 
         return path
 
+    def _scroll_to_fragment(self, fragment: str) -> None:
+        if fragment:
+            run_javascript(f'''
+                console.log('scrolling to fragment', "{fragment}");
+                setTimeout(() => {{
+                    console.log('scrolled to fragment', "{fragment}");
+                    let target = document.getElementById("{fragment}");
+                    if (target)
+                        target.scrollIntoView({{ behavior: "smooth" }});
+                    else
+                        if (target = document.querySelector('a[name="{fragment}"]'))
+                            target.scrollIntoView({{ behavior: "smooth" }});
+                }}, 100);
+            ''')
+
     @staticmethod
     def _match_path(pattern: str, path: str) -> Optional[Dict[str, str]]:
         """Match a path pattern against an actual path and extract parameters noted with {param} placeholders.
@@ -190,7 +194,7 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
     def _place_content(self, route_match: RouteMatch) -> None:
         kwargs = PageArgs.build_kwargs(route_match, self, self._data)
         result = route_match.builder(**kwargs)
-
+        self._scroll_to_fragment(route_match.fragment)
         if asyncio.iscoroutine(result):
             async def background_task():
                 with self:

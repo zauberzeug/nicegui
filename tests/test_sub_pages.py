@@ -776,19 +776,24 @@ def test_page_args_with_optional_parameters(screen: Screen):
 
 
 def test_sub_pages_with_url_fragments(screen: Screen):
+    calls = {'index': 0, 'main': 0, 'targets': 0}
+
     @ui.page('/')
     @ui.page('/{_:path}')
     def index():
+        calls['index'] += 1
         ui.sub_pages({
-            '/': main_page,
-            '/page': page_with_targets,
+            '/': main,
+            '/page': targets,
         })
 
-    def main_page():
+    def main():
+        calls['main'] += 1
         ui.label('Main page')
         ui.link('Go to bottom', '/page#bottom')
 
-    def page_with_targets():
+    def targets():
+        calls['targets'] += 1
         ui.link_target('top')
         ui.label('Top target content')
         ui.link('Go to bottom', '/page#bottom')
@@ -799,29 +804,39 @@ def test_sub_pages_with_url_fragments(screen: Screen):
         ui.link('Go to top', '/page#top')
         ui.link('Back to main', '/')
 
-        # Test 1: Direct navigation with fragment
+    # Test 1: Direct navigation with fragment should work
     screen.open('/page#bottom')
     screen.should_contain('Bottom target content')
     assert screen.current_path == '/page'
-    screen.wait(0.5)
+    screen.wait(1)
     scroll_y = screen.selenium.execute_script('return window.scrollY')
-    assert scroll_y > 0, 'Expected scrolling to occur for fragment navigation'
+    assert scroll_y > 500, 'Expected scrolling to occur for fragment navigation'
+    assert calls == {'index': 1, 'main': 0, 'targets': 1}
 
-    # Test 2: Same-page fragment navigation (bottom to top)
+    # Test 2: Same-page fragment navigation should not rebuild pages but should work
     screen.click('Go to top')
     screen.should_contain('Top target content')
-    screen.wait(0.5)
+    screen.wait(1)
     scroll_y_top = screen.selenium.execute_script('return window.scrollY')
     assert scroll_y_top < scroll_y, 'Expected scrolling to top to have smaller scroll position'
+    assert calls == {'index': 1, 'main': 0, 'targets': 1}, 'Fragment navigation should not rebuild page'
 
-    # Test 3: Cross-page fragment navigation
+    # Test 3: Cross-page navigation with fragment
     screen.click('Back to main')
     screen.should_contain('Main page')
     assert screen.current_path == '/'
+    assert calls == {'index': 1, 'main': 1, 'targets': 1}
 
+    # Test 4: Cross-page fragment navigation
     screen.click('Go to bottom')
     screen.should_contain('Bottom target content')
     assert screen.current_path == '/page'
-    screen.wait(0.5)
+    screen.wait(1)
     scroll_y = screen.selenium.execute_script('return window.scrollY')
     assert scroll_y > 0, 'Expected scrolling after cross-page fragment navigation'
+    assert calls == {'index': 1, 'main': 1, 'targets': 2}
+
+    # Test 5: Fragment navigation again
+    screen.click('Go to top')
+    screen.wait(1)
+    assert calls == {'index': 1, 'main': 1, 'targets': 2}, 'Fragment navigation should not rebuild page'

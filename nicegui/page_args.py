@@ -30,12 +30,13 @@ class RouteMatch:
 
     @property
     def full_url(self) -> str:
-        """Get the complete URL including path, query parameters, and fragment."""
+        """Get the complete URL including path and query parameters, but excluding fragment.
+
+        Fragments should not trigger page rebuilds, only scrolling behavior.
+        """
         url = self.path
         if self.query_params:
             url += '?' + str(self.query_params)
-        if self.fragment:
-            url += '#' + self.fragment
         return url
 
 
