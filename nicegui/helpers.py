@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import asyncio
 import functools
 import hashlib
@@ -10,9 +12,13 @@ import webbrowser
 from collections.abc import Callable
 from inspect import Parameter, signature
 from pathlib import Path
-from typing import Any, Optional, Set, Tuple, Union
+from typing import TYPE_CHECKING, Any, Optional, Set, Tuple, Union
 
+from .context import context
 from .logging import log
+
+if TYPE_CHECKING:
+    from .element import Element
 
 _shown_warnings: Set[str] = set()
 
@@ -120,3 +126,13 @@ def kebab_to_camel_case(string: str) -> str:
 def event_type_to_camel_case(string: str) -> str:
     """Convert an event type string to camelCase."""
     return '.'.join(kebab_to_camel_case(part) if part != '-' else part for part in string.split('.'))
+
+
+def require_top_level_layout(element: Element) -> None:
+    """Check if the element is a top level layout element."""
+    parent = context.slot.parent
+    if parent != parent.client.content:
+        raise RuntimeError(
+            f'Found top level layout element "{element.__class__.__name__}" inside element "{parent.__class__.__name__}". '
+            'Top level layout elements can not be nested but must be direct children of the page content.',
+        )

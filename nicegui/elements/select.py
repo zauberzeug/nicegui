@@ -89,10 +89,18 @@ class Select(LabelElement, ValidationElement, ChoiceElement, DisableableElement,
         return self._is_showing_popup
 
     def _event_args_to_value(self, e: GenericEventArguments) -> Any:
+        # pylint: disable=too-many-nested-blocks
         if self.multiple:
             if e.args is None:
                 return []
             else:
+                if self._props.get('new-value-mode') == 'add-unique':
+                    # handle issue #4896: eliminate duplicate arguments
+                    for arg1 in [a for a in e.args if isinstance(a, str)]:
+                        for arg2 in [a for a in e.args if isinstance(a, dict)]:
+                            if arg1 == arg2['label']:
+                                e.args.remove(arg1)
+                                break
                 args = [self._values[arg['value']] if isinstance(arg, dict) else arg for arg in e.args]
                 for arg in e.args:
                     if isinstance(arg, str):
