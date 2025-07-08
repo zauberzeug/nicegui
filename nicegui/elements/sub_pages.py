@@ -101,7 +101,7 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
         """Show a 404 error message."""
         Label(f'404: sub page {self._router.current_path} not found')
 
-    def _show_error(self, error: Exception) -> None:
+    def _show_error(self, _: Exception) -> None:  # NOTE: exception is exposed for debugging scenarios via inheritance
         msg = f'sub page {self._router.current_path} produced an error'
         Label(f'500: {msg}')
         log.error(msg, exc_info=True)
