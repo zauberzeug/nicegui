@@ -31,36 +31,19 @@
     <link rel="stylesheet" href="{{ prefix | safe }}/_nicegui/{{version}}/static/unocss_reset/tailwind.css" />
     <script src="{{ prefix | safe }}/_nicegui/{{version}}/static/unocss_runtime/{{unocss_filename}}.global.js"></script>
     <script>
-        window.__unocss = {
-            presets: [
-                {{ unocss_initline | safe }}
-            ],
-            runtime: {
-              ready: () => false,
-            }
-        }
-
-        const UnoCSSLUT = {
-          "False": false,
-          "True": true,
-          "None": null,
-        }
-
-        window.nicegui_unocss_dark = UnoCSSLUT["{{ dark | safe }}"];
-
-        setInterval(() => {
-          if (window.nicegui_unocss_dark === true || (window.nicegui_unocss_dark === null && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-            document.body.classList.add("dark");
-          } else {
-            document.body.classList.remove("dark");
-          }
-        }, 100);
-    </script>
-    <style>
-      .nicegui-prevent-fouc {
-        display: none;
+      window.__unocss = {
+          presets: [{{ unocss_initline | safe }}],
+          runtime: { ready: () => false },
       }
-    </style>
+      window.nicegui_unocss_dark = {"False": false, "True": true, "None": null}["{{ dark | safe }}"];
+      setInterval(() => {
+        if (window.nicegui_unocss_dark === true || (window.nicegui_unocss_dark === null && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+          document.body.classList.add("dark");
+        } else {
+          document.body.classList.remove("dark");
+        }
+      }, 100);
+    </script>
     <script src="{{ prefix | safe }}/_nicegui/{{version}}/static/unocss_runtime/core.global.js"></script>
     {% endif %}
     <!-- prevent Prettier from removing this line -->
@@ -76,7 +59,7 @@
     <script defer src="{{ prefix | safe }}/_nicegui/{{version}}/static/lang/{{ language }}.umd.prod.js"></script>
     {{ body_html | safe }}
 
-    <div id="app" class="nicegui-prevent-fouc"></div>
+    <div id="app" style="display: none"></div>
     <div id="popup" aria-hidden="true">
       <span>{{ translations.connection_lost }}</span>
       <span>{{ translations.trying_to_reconnect }}</span>

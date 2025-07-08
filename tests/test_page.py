@@ -228,25 +228,24 @@ def test_async_connect_handler(screen: Screen):
 
 @pytest.mark.parametrize('use_tailwind', [False, True])
 def test_dark_mode(use_tailwind: bool, screen: Screen):
+    unocss_preset = None if use_tailwind else 'wind3'
+
     @ui.page('/auto', dark=None)
     def page():
         app.config.tailwind = use_tailwind
-        if not use_tailwind:
-            app.config.unocss_preset = 'wind3'
+        app.config.unocss_preset = unocss_preset
         ui.label('A').classes('text-blue-400 dark:text-red-400')
 
     @ui.page('/light', dark=False)
     def light_page():
         app.config.tailwind = use_tailwind
-        if not use_tailwind:
-            app.config.unocss_preset = 'wind3'
+        app.config.unocss_preset = unocss_preset
         ui.label('B').classes('text-blue-400 dark:text-red-400')
 
     @ui.page('/dark', dark=True)
     def dark_page():
         app.config.tailwind = use_tailwind
-        if not use_tailwind:
-            app.config.unocss_preset = 'wind3'
+        app.config.unocss_preset = unocss_preset
         ui.label('C').classes('text-blue-400 dark:text-red-400')
 
     blue = 'rgba(96, 165, 250, 1)'
@@ -254,32 +253,29 @@ def test_dark_mode(use_tailwind: bool, screen: Screen):
     white = 'rgba(0, 0, 0, 0)'
     black = 'rgba(18, 18, 18, 1)'
 
+    def check_page_source():
+        assert (screen.selenium.page_source.find('tailwindcss.min.js') != -1) == use_tailwind, \
+            'tailwindcss.min.js should be loaded when use_tailwind is True, and vice versa'
+        assert (screen.selenium.page_source.find('core.global.js') != -1) != use_tailwind, \
+            'core.global.js should be loaded when use_tailwind is False, and vice versa'
+
     screen.open('/auto')
     screen.wait(1)
-    assert (screen.selenium.page_source.find('tailwindcss.min.js') != -1) == use_tailwind, \
-        'tailwindcss.min.js should be loaded when use_tailwind is True, and vice versa'
-    assert (screen.selenium.page_source.find('core.global.js') != -1) != use_tailwind, \
-        'core.global.js should be loaded when use_tailwind is False, and vice versa'
     assert screen.find('A').value_of_css_property('color') == blue
     assert screen.find_by_tag('body').value_of_css_property('background-color') == white
+    check_page_source()
 
     screen.open('/light')
     screen.wait(1)
-    assert (screen.selenium.page_source.find('tailwindcss.min.js') != -1) == use_tailwind, \
-        'tailwindcss.min.js should be loaded when use_tailwind is True, and vice versa'
-    assert (screen.selenium.page_source.find('core.global.js') != -1) != use_tailwind, \
-        'core.global.js should be loaded when use_tailwind is False, and vice versa'
     assert screen.find('B').value_of_css_property('color') == blue
     assert screen.find_by_tag('body').value_of_css_property('background-color') == white
+    check_page_source()
 
     screen.open('/dark')
     screen.wait(1)
-    assert (screen.selenium.page_source.find('tailwindcss.min.js') != -1) == use_tailwind, \
-        'tailwindcss.min.js should be loaded when use_tailwind is True, and vice versa'
-    assert (screen.selenium.page_source.find('core.global.js') != -1) != use_tailwind, \
-        'core.global.js should be loaded when use_tailwind is False, and vice versa'
     assert screen.find('C').value_of_css_property('color') == red
     assert screen.find_by_tag('body').value_of_css_property('background-color') == black
+    check_page_source()
 
 
 def test_returning_custom_response(screen: Screen):

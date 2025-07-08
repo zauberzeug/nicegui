@@ -19,7 +19,6 @@ from .awaitable_response import AwaitableResponse
 from .dependencies import generate_resources
 from .element import Element
 from .favicon import get_favicon_url
-from .helpers import unocss_filenames, unocss_initlines
 from .javascript_request import JavaScriptRequest
 from .logging import log
 from .observables import ObservableDict
@@ -166,8 +165,16 @@ class Client:
                 'prefix': prefix,
                 'tailwind': core.app.config.tailwind,
                 'unocss': core.app.config.unocss_preset is not None,
-                'unocss_filename': unocss_filenames.get(core.app.config.unocss_preset, '') if core.app.config.unocss_preset is not None else '',
-                'unocss_initline': unocss_initlines.get(core.app.config.unocss_preset, '') if core.app.config.unocss_preset is not None else '',
+                'unocss_filename': {
+                    'mini': 'preset-mini',
+                    'wind3': 'preset-wind',  # until upstream renames this to preset-wind3.css, then update this
+                    'wind4': 'preset-wind4',
+                }.get(core.app.config.unocss_preset),
+                'unocss_initline': {
+                    'mini': '() => window.__unocss_runtime.presets.presetMini()',
+                    'wind3': '() => window.__unocss_runtime.presets.presetWind()',  # until upstream renames this to presetWind3()
+                    'wind4': '() => window.__unocss_runtime.presets.presetWind4()',
+                }.get(core.app.config.unocss_preset),
                 'prod_js': core.app.config.prod_js,
                 'socket_io_js_query_params': socket_io_js_query_params,
                 'socket_io_js_extra_headers': core.app.config.socket_io_js_extra_headers,

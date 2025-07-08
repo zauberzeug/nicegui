@@ -164,21 +164,23 @@ def tailwind_layers():
 
 @doc.demo('Tailwind CSS using UnoCSS engine', '''
     As an alternative to using the [Tailwind CSS Play CDN engine](https://v3.tailwindcss.com/docs/installation/play-cdn),
-    you can also use the [UnoCSS engine](https://unocss.dev/) to generate Tailwind CSS classes by passing `tailwind=False` and `unocss_preset` to be one of the following:
+    you can also use the [UnoCSS engine](https://unocss.dev/)
+    to generate Tailwind CSS classes by passing `tailwind=False` and `unocss_preset` to be one of the following:
 
     - `mini` corresponds to the [UnoCSS Mini preset](https://unocss.dev/presets/mini)
     - `wind3` corresponds to the [UnoCSS Wind3 preset](https://unocss.dev/presets/wind3)
     - `wind4` corresponds to the [UnoCSS Wind4 preset](https://unocss.dev/presets/wind4)
 
-    As it doesn't use the Mutation Observer API and is a smaller library, it is more performant, especially on small pages. However, full compatibility with Tailwind CSS is not guaranteed. The following is known to break:
+    As it doesn't use the Mutation Observer API and is a smaller library, it is more performant, especially on small pages.
+    On "low-tier mobile" CPU throttling profile, load time for this page went from 3.0s down to 1.5s.
+    However, full compatibility with Tailwind CSS is not guaranteed.
+    The following is known to break:
 
-    - Tailwind CSS Layers do not work (see the above)
-    - Adding classes via JavaScript will not be captured by NiceGUI and those classes will not be applied
+    - Tailwind CSS Layers do not work (see the above).
+    - Adding classes via JavaScript will not be captured by NiceGUI and those classes will not be applied.
 ''')
 def unocss_demo():
-    # from nicegui import ui
-
-    ui.label('This page uses UnoCSS. On "low-tier mobile" CPU throttling profile, page load went from to 3.0s to 1.5s').classes('text-green-500')
+    ui.label('This page uses UnoCSS.').classes('text-green-500')
 
     # ui.run(tailwind=False, unocss_preset='mini')
 

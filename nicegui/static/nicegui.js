@@ -322,18 +322,17 @@ window.onbeforeunload = function () {
 };
 
 async function generateStylesFromClasses(classes) {
-  if (window.__unocss_runtime === undefined) return
+  if (window.__unocss_runtime === undefined) return;
   const div = document.createElement("div");
   div.className = Array.from(classes).join(" ");
   const html = div.outerHTML;
   await window.__unocss_runtime.extract(html);
   // Wait until the style elements have been moved
   await new Promise((resolve) => {
-    document.querySelectorAll('style[data-unocss-runtime-layer]:not([data-nicegui-moved])')
-      .forEach(style => {
-        document.head.appendChild(style);
-        style.setAttribute('data-nicegui-moved', 'true');
-      });
+    document.querySelectorAll("style[data-unocss-runtime-layer]:not([data-nicegui-moved])").forEach((style) => {
+      document.head.appendChild(style);
+      style.setAttribute("data-nicegui-moved", "true");
+    });
     resolve();
   });
 }
@@ -341,14 +340,12 @@ async function generateStylesFromClasses(classes) {
 function createApp(elements, options) {
   Object.entries(elements).forEach(([_, element]) => replaceUndefinedAttributes(element));
   setInterval(() => ack(), 3000);
-  Object.values(elements).forEach((element) => {
-    if (element.class) {
-      element.class.forEach((c) => allClassesFromElements.add(c));
-    }
-  });
+  Object.values(elements)
+    .flatMap((element) => element.class)
+    .forEach((c) => allClassesFromElements.add(c));
   generateStylesFromClasses(allClassesFromElements).then(() => {
-    document.querySelector(".nicegui-prevent-fouc").classList.remove("nicegui-prevent-fouc");
-  })
+    document.getElementById("app").style.removeProperty("display");
+  });
   return (app = Vue.createApp({
     data() {
       return {
@@ -412,10 +409,10 @@ function createApp(elements, options) {
             .map(([_, element]) => loadDependencies(element, options.prefix, options.version));
           await Promise.all(loadPromises);
 
-          originalClassesCount = allClassesFromElements.size;
-          Object.entries(msg).forEach(([_, element]) => {
-            (element?.class || []).forEach((c) => allClassesFromElements.add(c));
-          });
+          const originalClassesCount = allClassesFromElements.size;
+          Object.values(msg)
+            .flatMap((element) => element?.class || [])
+            .forEach((c) => allClassesFromElements.add(c));
           if (allClassesFromElements.size > originalClassesCount) {
             await generateStylesFromClasses(allClassesFromElements);
           }

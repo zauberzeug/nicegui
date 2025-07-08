@@ -110,16 +110,3 @@ def kebab_to_camel_case(string: str) -> str:
 def event_type_to_camel_case(string: str) -> str:
     """Convert an event type string to camelCase."""
     return '.'.join(kebab_to_camel_case(part) if part != '-' else part for part in string.split('.'))
-
-
-unocss_filenames = {
-    'mini': 'preset-mini',
-    'wind3': 'preset-wind',  # until upstream renames this to preset-wind3.css, then update this
-    'wind4': 'preset-wind4',
-}
-
-unocss_initlines = {
-    'mini': '() => window.__unocss_runtime.presets.presetMini()',
-    'wind3': '() => window.__unocss_runtime.presets.presetWind()',  # until upstream renames this to presetWind3()
-    'wind4': '() => window.__unocss_runtime.presets.presetWind4()',
-}
