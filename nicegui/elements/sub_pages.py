@@ -13,6 +13,7 @@ from ..context import context
 from ..element import Element
 from ..elements.label import Label
 from ..functions.javascript import run_javascript
+from ..logging import log
 from ..page_args import PageArgs, RouteMatch
 
 
@@ -81,7 +82,12 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
 
     def _show_page(self, match: RouteMatch) -> None:
         kwargs = PageArgs.build_kwargs(match, self, self._data)
-        result = match.builder(**kwargs)
+        try:
+            result = match.builder(**kwargs)
+        except Exception as e:
+            self.clear()
+            self._show_error(e)
+            return
         self._scroll_to_fragment(match.fragment)
         if asyncio.iscoroutine(result):
             async def background_task():
@@ -93,8 +99,12 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
 
     def _show_404(self) -> None:
         """Show a 404 error message."""
-        with self:
-            Label(f'404: sub page {self._router.current_path} not found')
+        Label(f'404: sub page {self._router.current_path} not found')
+
+    def _show_error(self, error: Exception) -> None:
+        msg = f'sub page {self._router.current_path} produced an error'
+        Label(f'500: {msg}')
+        log.error(msg, exc_info=True)
 
     @property
     def full_path(self) -> str:

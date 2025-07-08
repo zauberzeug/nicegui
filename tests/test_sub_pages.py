@@ -853,3 +853,53 @@ def test_shared_client():
 
     with pytest.raises(AssertionError):
         ui.sub_pages({'/': main, })
+
+
+def test_exception_in_page_builder(screen: Screen):
+    @ui.page('/')
+    @ui.page('/{_:path}')
+    def index():
+        ui.link('Go to exception', '/')
+        ui.link('Go to content with exception', '/content_with_exception')
+        ui.link('Go to async exception', '/async')
+        ui.sub_pages({
+            '/': exception,
+            '/content_with_exception': content_with_exception,
+            '/async': async_exception,
+        })
+
+    def exception():
+        raise Exception('test exception')
+
+    def content_with_exception():
+        ui.label('content before exception')
+        raise Exception('content test exception')
+
+    async def async_exception():
+        ui.label('async content before exception')
+        await asyncio.sleep(0.1)
+        raise Exception('async test exception')
+
+    screen.open('/')
+    msg_exception = 'sub page / produced an error'
+    screen.should_contain(f'500: {msg_exception}')
+    screen.assert_py_logger('ERROR', msg_exception)
+
+    screen.click('Go to content with exception')
+    msg_content = 'sub page /content_with_exception produced an error'
+    screen.should_contain(f'500: {msg_content}')
+    screen.assert_py_logger('ERROR', msg_content)
+    # NOTE: the content should not show at all, when an error occurs
+    screen.should_not_contain('content before exception')
+
+    screen.click('Go to async exception')
+    msg_async = 'sub page /async produced an error'
+    screen.should_not_contain(f'500: {msg_async}')
+    screen.assert_py_logger('ERROR', 'async test exception')
+    # NOTE: the content should show, when an error occurs after async task is started
+    screen.should_contain('async content before exception')
+
+    screen.open('/content_with_exception')  # NOTE: directly opening the page produces same error as above
+    screen.should_contain(f'500: {msg_content}')
+    screen.assert_py_logger('ERROR', msg_content)
+    screen.should_not_contain('content before exception')
