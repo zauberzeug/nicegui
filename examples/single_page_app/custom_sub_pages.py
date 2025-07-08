@@ -1,7 +1,7 @@
 from typing import Callable
 
 from nicegui import app, ui
-from nicegui.elements.sub_pages import SubPages
+from nicegui.page_args import RouteMatch
 
 
 def protected(func: Callable) -> Callable:
@@ -13,21 +13,21 @@ def protected(func: Callable) -> Callable:
 class CustomSubPages(ui.sub_pages):
     """Custom ui.sub_pages with built-in authentication and custom 404 handling."""
 
-    def show(self, full_path: str) -> None:
-        self.clear()
-        with self:
-            match_result = self._match_route(full_path)
-            if match_result is not None:
-                if self._is_route_protected(match_result.builder):
-                    if not self._is_authenticated():
-                        self._show_login_form(full_path)
-                        return
-                self._place_content(match_result)
-                child_sub_pages = SubPages.find_child(self)
-                if child_sub_pages:
-                    child_sub_pages.show(full_path[len(match_result.path):])
+    def _show_page(self, match: RouteMatch) -> None:
+        if self._is_route_protected(match.builder):
+            if not self._is_authenticated():
+                self._show_login_form(match.full_url)
                 return
-            self._show_404_page(full_path)
+        super()._show_page(match)
+
+    def _show_404(self) -> None:
+        with ui.column().classes('absolute-center items-center'):
+            ui.icon('error_outline', size='4rem').classes('text-red')
+            ui.label('404 - Page Not Found').classes('text-2xl text-red')
+            ui.label(f'The page "{self._router.current_path}" does not exist.').classes('text-gray-600')
+            with ui.row().classes('mt-4'):
+                ui.button('Go Home', icon='home', on_click=lambda: ui.navigate.to('/')).props('outline')
+                ui.button('Go Back', icon='arrow_back', on_click=ui.navigate.back).props('outline')
 
     def _is_route_protected(self, handler: Callable) -> bool:
         return getattr(handler, '_is_protected', False)
@@ -45,22 +45,14 @@ class CustomSubPages(ui.sub_pages):
             def try_login():
                 if passphrase.value == 'spa':
                     app.storage.user['authenticated'] = True
-                    ui.navigate.to(intended_path)
+                    # NOTE: we change the url by appending a query parameter to force a reload of the page
+                    ui.navigate.to(f'{intended_path}?login=true')
                 else:
                     ui.notify('Incorrect passphrase', color='negative')
                     passphrase.value = ''
 
             passphrase.on('keydown.enter', try_login)
             ui.button('Login', on_click=try_login)
-
-    def _show_404_page(self, path: str) -> None:
-        with ui.column().classes('absolute-center items-center'):
-            ui.icon('error_outline', size='4rem').classes('text-red')
-            ui.label('404 - Page Not Found').classes('text-2xl text-red')
-            ui.label(f'The page "{path}" does not exist.').classes('text-gray-600')
-            with ui.row().classes('mt-4'):
-                ui.button('Go Home', icon='home', on_click=lambda: ui.navigate.to('/')).props('outline')
-                ui.button('Go Back', icon='arrow_back', on_click=ui.navigate.back).props('outline')
 
 
 # Function-like access following NiceGUI convention where classes are callable to feel like functions
