@@ -33,6 +33,7 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
         :param data: optional dictionary with arbitrary data to be passed to sub-page functions
         """
         super().__init__()
+        assert not context.client.shared, 'ui.sub_pages cannot be used with auto-index client or other shared clients. Please use a function with ui.page decorator instead. See https://nicegui.io/documentation/sub_pages'
         self._router = context.client.sub_pages_router
         self._routes = routes or {}
         parent_sub_pages_element = next((el for el in self.ancestors() if isinstance(el, SubPages)), None)
