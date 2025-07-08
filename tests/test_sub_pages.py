@@ -1,9 +1,9 @@
 import asyncio
+from typing import Optional
 
 import pytest
-from selenium.webdriver.common.by import By
 
-from nicegui import ui
+from nicegui import PageArgs, background_tasks, ui
 from nicegui.testing import Screen
 
 # pylint: disable=missing-function-docstring
@@ -11,7 +11,6 @@ from nicegui.testing import Screen
 
 def test_switching_between_sub_pages(screen: Screen):
     calls = {'index': 0, 'a': 0, 'b': 0}
-    path_tracker = {'path': '/'}
 
     @ui.page('/')
     @ui.page('/b')
@@ -21,7 +20,7 @@ def test_switching_between_sub_pages(screen: Screen):
         ui.sub_pages({
             '/': sub_page_a,
             '/b': sub_page_b,
-        }).bind_path_to(path_tracker, 'path')
+        })
 
     def sub_page_a():
         calls['a'] += 1
@@ -40,42 +39,38 @@ def test_switching_between_sub_pages(screen: Screen):
     screen.should_contain('Page A')
     screen.should_not_contain('Page B')
     assert calls == {'index': 1, 'a': 1, 'b': 0}
-    assert path_tracker['path'] == '/'
 
     screen.click('Go to B')
     screen.should_contain('Index')
     screen.should_contain('Page B')
     screen.should_not_contain('Page A')
     assert calls == {'index': 1, 'a': 1, 'b': 1}
-    assert path_tracker['path'] == '/b'
 
     screen.selenium.back()
     screen.should_contain('Index')
     screen.should_contain('Page A')
     screen.should_not_contain('Page B')
     assert calls == {'index': 1, 'a': 2, 'b': 1}
-    assert path_tracker['path'] == '/'
 
     screen.selenium.forward()
     screen.should_contain('Index')
     screen.should_contain('Page B')
     screen.should_not_contain('Page A')
     assert calls == {'index': 1, 'a': 2, 'b': 2}
-    assert path_tracker['path'] == '/b'
 
     screen.click('Go to A')
+    screen.should_contain('Page A')
+    assert calls == {'index': 1, 'a': 3, 'b': 2}
     screen.click('Go to B with slash')
     screen.should_contain('Page B')
     assert calls == {'index': 1, 'a': 3, 'b': 3}
-    assert path_tracker['path'] == '/b'
 
     screen.click('Go to B with slash')
     screen.should_contain('Page B')
-    assert calls == {'index': 1, 'a': 3, 'b': 4}
-    assert path_tracker['path'] == '/b'
+    assert calls == {'index': 1, 'a': 3, 'b': 3}, 'no rebuilding if path stays the same'
 
 
-def test_passing_element_to_sub_page(screen: Screen):
+def test_passing_data_to_sub_page_via_lambda(screen: Screen):
     @ui.page('/')
     @ui.page('/other')
     def index():
@@ -90,6 +85,35 @@ def test_passing_element_to_sub_page(screen: Screen):
         ui.link('Go to other', '/other')
 
     def other(title: ui.label):
+        title.text = 'other title'
+        ui.link('Go to main', '/')
+
+    screen.open('/')
+    screen.should_contain('main title')
+
+    screen.click('Go to other')
+    screen.should_contain('other title')
+
+    screen.click('Go to main')
+    screen.should_contain('main title')
+
+
+def test_passing_data_to_sub_page_via_dict(screen: Screen):
+    @ui.page('/')
+    @ui.page('/other')
+    def index():
+        title = ui.label()
+        ui.sub_pages({
+            '/': main,
+            '/other': other,
+        }, data={'title': title})
+
+    def main(title: ui.label):
+        title.text = 'main title'
+        ui.link('Go to other', '/other')
+
+    def other(args: PageArgs):
+        title: ui.label = args.data['title']
         title.text = 'other title'
         ui.link('Go to main', '/')
 
@@ -131,38 +155,10 @@ def test_opening_sub_pages_directly(screen: Screen):
     screen.should_not_contain('two')
 
 
-@pytest.mark.parametrize('root', ['/', '/sub'])
-def test_changing_sub_pages_via_binding(screen: Screen, root: str):
-    @ui.page(root)
-    def index():
-        path_input = ui.input('Path', value='/')
-        ui.sub_pages({
-            '/': main,
-            '/other': other,
-        }, root_path=root if root != '/' else None) \
-            .bind_path_from(path_input, 'value')
-
-    def main():
-        ui.label('main page')
-
-    def other():
-        ui.label('other page')
-
-    screen.open(root)
-    screen.should_contain('main page')
-    element = screen.selenium.find_element(By.XPATH, '//*[@aria-label="Path"]')
-    element.send_keys('othe')
-    screen.wait(0.3)
-    screen.should_contain(f'404: sub page {root if root != "/" else ""}/othe not found')
-    element.send_keys('r')
-    screen.wait(0.3)
-    screen.should_contain('other page')
-
-
-def test_sub_page_in_sub_page(screen: Screen):
+def test_nested_sub_pages(screen: Screen):
     @ui.page('/')
     @ui.page('/{_:path}')
-    def index(_):
+    def index():
         ui.link('Go to main', '/')
         ui.link('Go to sub', '/sub')
         ui.sub_pages({
@@ -212,6 +208,66 @@ def test_sub_page_in_sub_page(screen: Screen):
 
     screen.open('/sub/a')
     screen.should_contain('sub A page')
+
+
+def test_async_nested_sub_pages(screen: Screen):
+    calls = {
+        'index': 0,
+        'sleep': 0,
+        'sleep_main': 0,
+        'background': 0,
+        'background_main': 0,
+    }
+
+    @ui.page('/')
+    @ui.page('/{_:path}')
+    def index(_):
+        calls['index'] += 1
+        ui.link('Go to sleep', '/sleep')
+        ui.link('Go to background', '/background')
+        ui.sub_pages({
+            '/sleep': sleep,
+            '/background': background,
+        })
+
+    async def sleep():
+        calls['sleep'] += 1
+        await asyncio.sleep(0.1)
+        ui.sub_pages({'/': sleep_main})
+
+    def background():
+        async def add():
+            await asyncio.sleep(0.05)
+            with content:
+                ui.sub_pages({'/': background_main})
+
+        calls['background'] += 1
+        content = ui.column()
+        background_tasks.create(add(), name='lazy_content')
+
+    def sleep_main():
+        calls['sleep_main'] += 1
+        ui.label('sleep main page')
+
+    def background_main():
+        calls['background_main'] += 1
+        ui.label('background main page')
+
+    screen.open('/sleep')
+    screen.should_contain('sleep main page')
+    assert calls == {'index': 1, 'sleep': 1, 'sleep_main': 1, 'background': 0,  'background_main': 0}
+
+    screen.open('/background')
+    screen.should_contain('background main page')
+    assert calls == {'index': 2, 'sleep': 1, 'sleep_main': 1, 'background': 1, 'background_main': 1}
+
+    screen.click('Go to sleep')
+    screen.should_contain('sleep main page')
+    assert calls == {'index': 2, 'sleep': 2, 'sleep_main': 2, 'background': 1, 'background_main': 1}
+
+    screen.click('Go to background')
+    screen.should_contain('background main page')
+    assert calls == {'index': 2, 'sleep': 2, 'sleep_main': 2, 'background': 2, 'background_main': 2}
 
 
 def test_parameterized_sub_pages(screen: Screen):
@@ -348,10 +404,10 @@ def test_adding_sub_pages_after_initialization(screen: Screen):
     @ui.page('/sub')
     def index():
         pages = ui.sub_pages()
-        pages.add('/', lambda: main_content(pages))
+        pages.add('/', main_content)
 
-    def main_content(pages: ui.sub_pages):
-        ui.button('Add sub page', on_click=lambda: pages.add('/sub', sub_content))
+    def main_content(args: PageArgs):
+        ui.button('Add sub page', on_click=lambda: args.frame.add('/sub', sub_content))
         ui.button('Go to sub', on_click=lambda: ui.navigate.to('/sub'))
 
     def sub_content():
@@ -442,10 +498,10 @@ def test_links_pointing_to_path_which_is_not_a_sub_page(screen: Screen):
         ui.sub_pages({'/': main, '/sub': sub})
 
     def main():
-        ui.label('main')
+        ui.label('main page')
 
     def sub():
-        ui.label('sub')
+        ui.label('sub page')
 
     @ui.page('/other')
     def other():
@@ -453,7 +509,7 @@ def test_links_pointing_to_path_which_is_not_a_sub_page(screen: Screen):
 
     screen.open('/')
     screen.click('Go to sub')
-    screen.should_contain('sub')
+    screen.should_contain('sub page')
     assert screen.current_path == '/sub'
 
     screen.click('Go to other')
@@ -539,11 +595,11 @@ def test_async_sub_pages(screen: Screen):
     def index():
         ui.toggle(['/', '/0.1', '/1.0'], value='/', on_change=lambda e: ui.navigate.to(e.value))
         ui.sub_pages({
-            '/': lambda: main(0),
+            '/': main,
             '/{delay}': lambda delay: main(float(delay)),
         })
 
-    async def main(delay: float):
+    async def main(delay: float = 0):
         ui.label(f'waiting for {delay} sec')
         await asyncio.sleep(delay)
         ui.label(f'after {delay} sec')
@@ -561,3 +617,231 @@ def test_async_sub_pages(screen: Screen):
     screen.wait(1)
     screen.should_contain('after 0.1 sec')
     screen.should_not_contain('after 1.0 sec')
+
+
+@pytest.mark.parametrize('use_page_args', [True, False])
+def test_sub_page_with_query_parameters(screen: Screen, use_page_args: bool):
+    calls = {'index': 0, 'main_content': 0}
+
+    @ui.page('/')
+    def index():
+        calls['index'] += 1
+        ui.link('Link to main', '/?access=link')
+        ui.button('Button to main', on_click=lambda: ui.navigate.to('/?access=button'))
+        ui.sub_pages({'/': with_page_args if use_page_args else with_parameter})
+
+    def with_page_args(args: PageArgs):
+        calls['main_content'] += 1
+        ui.label(f'access: {args.query_parameters["access"]}')
+
+    def with_parameter(access: str):
+        calls['main_content'] += 1
+        ui.label(f'access: {access}')
+
+    screen.open('/?access=direct')
+    screen.should_contain('access: direct')
+    assert calls == {'index': 1, 'main_content': 1}
+
+    screen.click('Link to main')
+    screen.should_contain('access: link')
+    assert calls == {'index': 1, 'main_content': 2}
+
+    screen.click('Button to main')
+    screen.should_contain('access: button')
+    assert calls == {'index': 1, 'main_content': 3}
+
+    screen.selenium.back()
+    screen.should_contain('access: link')
+    assert calls == {'index': 1, 'main_content': 4}
+
+    screen.selenium.forward()
+    screen.should_contain('access: button')
+    assert calls == {'index': 1, 'main_content': 5}
+
+
+def test_accessing_path_parameters_via_page_args(screen: Screen):
+    @ui.page('/')
+    @ui.page('/{path:path}')
+    def index():
+        ui.link('Link with parameter', '/link')
+        ui.button('Button with parameter', on_click=lambda: ui.navigate.to('/button'))
+        ui.sub_pages({
+            '/': main_content,
+            '/{parameter}': main_content,
+        })
+
+    def main_content(args: PageArgs):
+        param = args.path_parameters.get('parameter', 'none')
+        ui.label(f'param-{param}')
+
+    screen.open('/')
+    screen.should_contain('param-none')
+
+    screen.open('/test')
+    screen.should_contain('param-test')
+
+    screen.click('Link with parameter')
+    screen.should_contain('param-link')
+
+    screen.click('Button with parameter')
+    screen.should_contain('param-button')
+
+
+def test_optional_parameters(screen: Screen):
+    @ui.page('/')
+    @ui.page('/{path:path}')
+    def index():
+        ui.link('Required only', '/test')
+        ui.link('With query', '/hello?count=5&active=yes')
+        ui.sub_pages({
+            '/{name}': content_with_mixed_params,
+        }, data={'source': 'data_dict'})
+
+    def content_with_mixed_params(
+        name: str,
+        count: Optional[int] = 1,
+        active: Optional[str] = 'no',
+        source: Optional[str] = None,
+        missing: Optional[str] = 'default'
+    ):
+        ui.label(f'name={name}, count={count}, active={active}, source={source}, missing={missing}')
+
+    screen.open('/test')
+    screen.should_contain('name=test, count=1, active=no, source=data_dict, missing=default')
+
+    screen.click('With query')
+    screen.should_contain('name=hello, count=5, active=yes, source=data_dict, missing=default')
+
+
+def test_page_args_with_optional_parameters(screen: Screen):
+
+    @ui.page('/')
+    @ui.page('/{path:path}')
+    def index():
+        ui.link('Test PageArgs', '/user/123?role=admin')
+        ui.sub_pages({
+            '/user/{user_id}': user_page,
+        }, data={'app_name': 'MyApp'})
+
+    def user_page(
+        args: PageArgs,
+        user_id: str,
+        role: Optional[str] = 'guest',
+        app_name: Optional[str] = None,
+    ):
+        ui.label(f'path={args.path}, user_id={user_id}, role={role}, app={app_name}')
+
+    screen.open('/')
+    screen.click('Test PageArgs')
+    screen.should_contain('path=/user/123, user_id=123, role=admin, app=MyApp')
+
+
+def test_sub_pages_with_url_fragments(screen: Screen):
+    calls = {'index': 0, 'main': 0, 'targets': 0}
+
+    @ui.page('/')
+    @ui.page('/{_:path}')
+    def index():
+        calls['index'] += 1
+        ui.sub_pages({
+            '/': main,
+            '/page': targets,
+        })
+
+    def main():
+        calls['main'] += 1
+        ui.label('Main page')
+        ui.link('Go to bottom', '/page#bottom')
+
+    def targets():
+        calls['targets'] += 1
+        ui.link_target('top')
+        ui.label('Top target content')
+        ui.link('Go to bottom', '/page#bottom')
+        for i in range(20):
+            ui.label(f'Line {i}').classes('my-5')
+        ui.link_target('bottom')
+        ui.label('Bottom target content')
+        ui.link('Go to top', '/page#top')
+        ui.link('Back to main', '/')
+
+    # Test 1: Direct navigation with fragment should work
+    screen.open('/page#bottom')
+    screen.should_contain('Bottom target content')
+    assert screen.current_path == '/page'
+    screen.wait(1)
+    scroll_y = screen.selenium.execute_script('return window.scrollY')
+    assert scroll_y > 500, 'Expected scrolling to occur for fragment navigation'
+    assert calls == {'index': 1, 'main': 0, 'targets': 1}
+
+    # Test 2: Same-page fragment navigation should not rebuild pages but should work
+    screen.click('Go to top')
+    screen.should_contain('Top target content')
+    screen.wait(1)
+    scroll_y_top = screen.selenium.execute_script('return window.scrollY')
+    assert scroll_y_top < scroll_y, 'Expected scrolling to top to have smaller scroll position'
+    assert calls == {'index': 1, 'main': 0, 'targets': 1}, 'Fragment navigation should not rebuild page'
+
+    # Test 3: Cross-page navigation with fragment
+    screen.click('Back to main')
+    screen.should_contain('Main page')
+    assert screen.current_path == '/'
+    assert calls == {'index': 1, 'main': 1, 'targets': 1}
+
+    # Test 4: Cross-page fragment navigation
+    screen.click('Go to bottom')
+    screen.should_contain('Bottom target content')
+    assert screen.current_path == '/page'
+    screen.wait(1)
+    scroll_y = screen.selenium.execute_script('return window.scrollY')
+    assert scroll_y > 0, 'Expected scrolling after cross-page fragment navigation'
+    assert calls == {'index': 1, 'main': 1, 'targets': 2}
+
+    # Test 5: Fragment navigation again
+    screen.click('Go to top')
+    screen.wait(1)
+    assert calls == {'index': 1, 'main': 1, 'targets': 2}, 'Fragment navigation should not rebuild page'
+
+
+def test_on_path_changed_event(screen: Screen):
+    paths = []
+    calls = {'index': 0, 'main': 0, 'other': 0}
+
+    @ui.page('/')
+    @ui.page('/{_:path}')
+    def index():
+        calls['index'] += 1
+        ui.sub_pages({
+            '/': main,
+            '/other': other,
+        })
+        ui.context.client.sub_pages_router.on_path_changed.append(paths.append)
+        ui.link('Go to other', '/other')
+
+    def main():
+        calls['main'] += 1
+        ui.label('main page')
+
+    def other():
+        calls['other'] += 1
+        ui.label('other page')
+
+    screen.open('/')
+    screen.should_contain('main page')
+    assert paths == []  # NOTE: initial path is not reported, because the path does not "change" on first load
+    assert calls == {'index': 1, 'main': 1, 'other': 0}
+
+    screen.click('Go to other')
+    screen.should_contain('other page')
+    assert paths == ['/other']
+    assert calls == {'index': 1, 'main': 1, 'other': 1}
+
+    screen.open('/other')
+    screen.should_contain('other page')
+    assert paths == ['/other']
+    assert calls == {'index': 2, 'main': 1, 'other': 2}
+
+    screen.open('/bad_path')
+    screen.should_contain('404: sub page /bad_path not found')
+    assert paths == ['/other']
+    assert calls == {'index': 3, 'main': 1, 'other': 2}

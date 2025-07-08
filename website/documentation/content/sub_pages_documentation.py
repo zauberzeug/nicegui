@@ -1,3 +1,4 @@
+from nicegui import PageArgs
 from nicegui import ui
 
 from . import doc
@@ -38,7 +39,8 @@ def main_demo() -> None:
 
 
 @doc.demo('Passing Parameters to Sub Page', '''
-    If a sub page needs to modify content from its parent, the object can simply be passed in a lambda function.
+    If a sub page needs data from its parent, a dictionary can be passed to the `ui.sub_pages` element.
+    The data will be available as a keyword argument in the sub page function or as `PageArgs` object.
 ''')
 def parameters_demo():
     # @ui.page('/')
@@ -49,9 +51,9 @@ def parameters_demo():
     #         title = ui.label()
     #     ui.separator()
     #     ui.sub_pages({
-    #        '/': lambda: main(title),
-    #        '/other': lambda: other(title),
-    #     })
+    #        '/': main,
+    #        '/other': other,
+    #     }, data={'title': title})
 
     def main(title: ui.label):
         title.text = 'Main page content'
@@ -68,7 +70,7 @@ def parameters_demo():
         ui.label('Title:')
         title = ui.label()
     ui.separator()
-    ui.sub_pages({'/': lambda: main(title), '/other': lambda: other(title)}, root_path='/documentation/sub_pages')
+    ui.sub_pages({'/': main, '/other': other}, root_path='/documentation/sub_pages', data={'title': title})
 
 
 @doc.demo('Async Sub Pages', '''
@@ -137,26 +139,29 @@ def adding_sub_pages_demo() -> None:
     pages.add('/other', lambda: other(footer))
 
 
-@doc.demo('Binding the Path', '''
-    The `ui.sub_pages` element has a `path` property which can be bound to.
+@doc.demo('Using PageArgs', '''
+          By type-hinting the parameter as `PageArgs`, the sub page builder function gets unified access to
+          query parameters, path parameters, and more.
 ''')
-def binding_to_sub_pages_demo():
+def page_args_demo():
+    from nicegui import PageArgs
+
     # @ui.page('/')
     # @ui.page('/{_:path}') # NOTE: our page should catch all paths
     # def index():
-    #     toggle = ui.toggle(['/', '/other'], value='/')
-    #     ui.sub_pages({'/': main, '/{name}': main}) \
-    #         .bind_path_from(toggle, 'value')
-    #     ui.label().bind_text_from(pages, 'path')
+    #     ui.link('msg=hello', '/documentation/sub_pages?msg=hello')
+    #     ui.link('msg=world', '/documentation/sub_pages?msg=world')
+    #     ui.sub_pages({'/': main})
 
-    def main(name: str = 'main'):
-        ui.label(name).classes('font-bold')
+    def main(args: PageArgs):
+        ui.label(args.query_parameters.get('msg', 'no message'))
 
     # END OF DEMO
-    toggle = ui.toggle(['/', '/other'], value='/')
-    pages = ui.sub_pages({'/': main, '/{name}': main}, root_path='/documentation/sub_pages') \
-        .bind_path_from(toggle, 'value')
-    ui.label().bind_text_from(pages, 'path')
+    ui.link('msg=hello', '/documentation/sub_pages?msg=hello')
+    ui.link('msg=world', '/documentation/sub_pages?msg=world')
+    ui.sub_pages({'/': main}, root_path='/documentation/sub_pages')
 
 
-doc.reference(ui.sub_pages)
+doc.reference(ui.sub_pages, title='Reference for ui.sub_pages')
+
+doc.reference(PageArgs, title='Reference for PageArgs')
