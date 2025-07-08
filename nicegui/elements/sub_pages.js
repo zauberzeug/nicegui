@@ -1,15 +1,47 @@
-window.addEventListener("popstate", (event) =>
-  emitEvent(
-    "sub_pages_open",
-    event.state?.page || window.location.pathname + window.location.search + window.location.hash
-  )
-);
-window.addEventListener("pushstate", (event) =>
-  emitEvent(
-    "sub_pages_open",
-    event.state?.page || window.location.pathname + window.location.search + window.location.hash
-  )
-);
+function getPathPrefix() {
+  return window.path_prefix || "";
+}
+
+function getCurrentPath() {
+  return window.location.pathname + window.location.search + window.location.hash;
+}
+
+function stripPathPrefix(path) {
+  const prefix = getPathPrefix();
+  return prefix && path.startsWith(prefix) ? path.substring(prefix.length) : path;
+}
+
+function getCleanCurrentPath() {
+  return stripPathPrefix(getCurrentPath());
+}
+
+function buildFullPath(cleanPath) {
+  return getPathPrefix() + cleanPath;
+}
+
+function handleStateEvent(event) {
+  const cleanPath = event.state?.page || getCleanCurrentPath();
+  emitEvent("sub_pages_open", cleanPath);
+}
+
+function handleFragmentNavigation(href, targetUrl) {
+  const fragmentName = targetUrl.hash.substring(1);
+  let target = document.getElementById(fragmentName);
+  if (!target) {
+    target = document.querySelector(`a[name="${fragmentName}"]`);
+  }
+  if (target) {
+    target.scrollIntoView({ behavior: "smooth" });
+    const cleanHref = stripPathPrefix(href);
+    history.pushState({ page: cleanHref }, "", buildFullPath(cleanHref));
+    return true;
+  }
+  return false;
+}
+
+window.addEventListener("popstate", handleStateEvent);
+window.addEventListener("pushstate", handleStateEvent);
+
 document.addEventListener("click", (e) => {
   const a = e.target.closest("a[href]");
   if (a && a.target !== "_blank" && !a.hasAttribute("download")) {
@@ -17,29 +49,23 @@ document.addEventListener("click", (e) => {
     if (href.startsWith("/")) {
       e.preventDefault();
 
-      const currentPath = window.location.pathname + window.location.search + window.location.hash;
+      const currentPath = getCleanCurrentPath();
       const targetUrl = new URL(href, window.location.origin);
-      const targetPath = targetUrl.pathname + targetUrl.search;
+      const targetPath = stripPathPrefix(targetUrl.pathname + targetUrl.search);
 
+      // Handle same-page fragment navigation
       if (currentPath === targetPath && targetUrl.hash) {
-        // Same page, different fragment - handle directly
-        const fragmentName = targetUrl.hash.substring(1);
-        let target = document.getElementById(fragmentName);
-        if (!target) {
-          target = document.querySelector(`a[name="${fragmentName}"]`);
-        }
-        if (target) {
-          target.scrollIntoView({ behavior: "smooth" });
-          // Update URL without triggering page reload
-          history.pushState({ page: href }, "", (window.path_prefix || "") + href);
+        if (handleFragmentNavigation(href, targetUrl)) {
           return;
         }
       }
 
-      emitEvent("sub_pages_navigate", href);
+      // Regular page navigation
+      emitEvent("sub_pages_navigate", stripPathPrefix(href));
     }
   }
 });
+
 export default {
   template: `
     <div>
