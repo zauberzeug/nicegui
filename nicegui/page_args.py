@@ -25,6 +25,19 @@ class RouteMatch:
     '''The extracted parameters (name -> value) from the path (e.g., ``{"id": "123"}``)'''
     query_params: QueryParams
     '''The query parameters from the URL'''
+    fragment: str
+    '''The URL fragment (e.g., "section" from "#section")'''
+
+    @property
+    def full_url(self) -> str:
+        """Get the complete URL including path and query parameters, but excluding fragment.
+
+        Fragments should not trigger page rebuilds, only scrolling behavior.
+        """
+        url = self.path
+        if self.query_params:
+            url += '?' + str(self.query_params)
+        return url
 
 
 @dataclass(**KWONLY_SLOTS)
