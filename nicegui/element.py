@@ -4,7 +4,21 @@ import inspect
 import re
 from copy import copy
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Callable, ClassVar, Dict, Iterator, List, Optional, Sequence, Union, cast
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Callable,
+    ClassVar,
+    Dict,
+    Iterator,
+    List,
+    Optional,
+    Sequence,
+    Set,
+    Tuple,
+    Union,
+    cast,
+)
 
 from typing_extensions import Self
 
@@ -22,11 +36,14 @@ from .dependencies import (
 )
 from .elements.mixins.visibility import Visibility
 from .event_listener import EventListener
+from .helpers import hash_data_store_entry
 from .props import Props
 from .slot import Slot
 from .style import Style
 from .tailwind import Tailwind
 from .version import __version__
+
+DYNAMIC_KEYS = {'events', 'children'}
 
 if TYPE_CHECKING:
     from .client import Client
@@ -80,11 +97,40 @@ class Element(Visibility):
             self.parent_slot = slot_stack[-1]
             self.parent_slot.children.append(self)
 
+        self.static_cache_name: Optional[str] = None
+        self.hash_based_id: bool = False
+        self.cache_apply_to_child: bool = False
+        self.child_id_per_slot_name: Dict[str, int] = {}
+
+        self.dynamic_keys: Set[str] = DYNAMIC_KEYS.copy()
+        self.static_props_keys: Set[str] = set()
+
         self.tailwind = Tailwind(self)
 
         self.client.outbox.enqueue_update(self)
         if self.parent_slot:
-            self.client.outbox.enqueue_update(self.parent_slot.parent)
+            parent = self.parent_slot.parent
+            self.client.outbox.enqueue_update(parent)
+            if parent.cache_apply_to_child:
+                slot_name = self.parent_slot.name
+                child_id = parent.child_id_per_slot_name.setdefault(slot_name, 0)
+                self.static_cache_name = f'{parent.cache_name}.{slot_name}:{child_id}'
+                parent.child_id_per_slot_name[slot_name] += 1
+                self.hash_based_id = parent.hash_based_id
+                self.cache_apply_to_child = True
+
+    @property
+    def cache_name(self) -> Optional[str]:
+        """The name of the cache for this element.
+
+        It will be the static cache name if set, or the dynamic cache name derived from hash if automatic cache name is used.
+        Otherwise, it will be `None`.
+        """
+        if self.static_cache_name is not None:
+            return self.static_cache_name
+        if self.hash_based_id:
+            return f'auto#{hash_data_store_entry(json.dumps(self._to_dict_internal()[0]))}'
+        return None
 
     def __init_subclass__(cls, *,
                           component: Union[str, Path, None] = None,
@@ -206,8 +252,19 @@ class Element(Visibility):
             if slot != self.default_slot
         }
 
-    def _to_dict(self) -> Dict[str, Any]:
-        return {
+    def _populate_browser_data_store_if_needed(self) -> None:
+        """Populate the browser data store with the element's data if needed."""
+        if self.cache_name is not None:
+            cache_content = json.dumps(self._to_dict_internal()[0])
+            if self.static_cache_name is not None and self.cache_name in self.client.last_element_hashes and \
+                    hash_data_store_entry(cache_content) != self.client.last_element_hashes[self.cache_name]:
+                raise ValueError(f'More than one element, whose content differs, are using the same cache name "{self.cache_name}". '
+                                 'Please use a different cache name for each element or ensure that the content is the same.')
+            core.app.browser_data_store[self.cache_name] = cache_content
+            self.client.last_element_hashes[self.cache_name] = hash_data_store_entry(cache_content)
+
+    def _to_dict_internal(self) -> Tuple[Dict[str, Any], Dict[str, Any]]:
+        element_dict = {
             'tag': self.tag,
             **({'text': self._text} if self._text is not None else {}),
             **{
@@ -235,6 +292,51 @@ class Element(Visibility):
                 if value
             },
         }
+
+        props_dict_static = {
+            key: value
+            for key, value in self._props.items()
+            if key in self.static_props_keys
+        }
+
+        props_dict_dynamic = {
+            key: value
+            for key, value in self._props.items()
+            if key not in self.static_props_keys
+        }
+
+        element_dict_static = {
+            key: value
+            for key, value in element_dict.items()
+            if key not in self.dynamic_keys and key != 'props'
+        }
+        element_dict_static['props'] = props_dict_static
+
+        element_dict_dynamic = {
+            key: value
+            for key, value in element_dict.items()
+            if key in self.dynamic_keys and key != 'props'
+        }
+        element_dict_dynamic['props'] = props_dict_dynamic
+
+        return element_dict_static, element_dict_dynamic
+
+    def _to_dict(self, *, caching: bool = False) -> Dict[str, Any]:
+        element_dict_static, element_dict_dynamic = self._to_dict_internal()
+        if self.cache_name is None or not caching:
+            # return the normal un-filtered dict
+            merged_props = {**element_dict_static.get('props', {}), **element_dict_dynamic.get('props', {})}
+            return {
+                **element_dict_static,
+                **element_dict_dynamic,
+                'props': merged_props,
+            }
+        else:
+            # return the cached format
+            return {
+                'CACHE': self.cache_name,
+                **element_dict_dynamic,
+            }
 
     @property
     def classes(self) -> Classes[Self]:
@@ -516,6 +618,10 @@ class Element(Visibility):
 
         This method can be overridden in subclasses to perform cleanup tasks.
         """
+        # Delete the cache, if the ID is hash-based.
+        # As the hash changes, the old key would be kept in memory otherwise.
+        if self.hash_based_id and self.cache_name is not None and self.cache_name in core.app.browser_data_store:
+            core.app.browser_data_store[self.cache_name] = None
 
     @property
     def is_deleted(self) -> bool:
@@ -560,3 +666,26 @@ class Element(Visibility):
         *Added in version 2.16.0*
         """
         return f'c{self.id}'
+
+    def cache(self, cache_name: Optional[str] = None, *, apply_to_child: bool = False) -> Self:
+        """Cache the element in the browser data store.
+
+        :param cache_name: name of the cache entry (default: None, which uses the element's interal hash automatically)
+        :param apply_to_child: whether to apply the cache to all child elements as well (default: False)
+        """
+        if cache_name is not None and ('@' in cache_name or '#' in cache_name or '.' in cache_name):
+            raise ValueError('Cache names must not contain "@", "#", or "." characters.')
+        self.static_cache_name = cache_name
+        self.hash_based_id = cache_name is None
+        self.cache_apply_to_child = apply_to_child
+        return self
+
+    def disable_cache(self) -> Self:
+        """Disable caching for the element.
+
+        This is useful when if the element is inside a parent element that is cached with apply_to_child is True.
+        """
+        self.static_cache_name = None
+        self.hash_based_id = False
+        self.cache_apply_to_child = False
+        return self

@@ -13,6 +13,7 @@ class ContentElement(Element):
 
     def __init__(self, *, content: str, **kwargs: Any) -> None:
         super().__init__(**kwargs)
+        self.static_props_keys.add(self.CONTENT_PROP)
         self.content = content
         self._handle_content_change(content)
 
