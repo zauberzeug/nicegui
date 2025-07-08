@@ -29,6 +29,17 @@ class CustomSubPages(ui.sub_pages):
                 ui.button('Go Home', icon='home', on_click=lambda: ui.navigate.to('/')).props('outline')
                 ui.button('Go Back', icon='arrow_back', on_click=ui.navigate.back).props('outline')
 
+    def _show_error(self, error: Exception) -> None:
+        with ui.column().classes('absolute-center items-center'):
+            ui.icon('error_outline', size='4rem').classes('text-red')
+            ui.label('500 - Internal Server Error').classes('text-2xl text-red')
+            ui.label(f'The page "{self._router.current_path}" produced an error.').classes('text-gray-600')
+            # NOTE: we do not recommend to show exception messages in production (security risk)
+            ui.label(str(error)).classes('text-gray-600')
+            with ui.row().classes('mt-4'):
+                ui.button('Go Home', icon='home', on_click=lambda: ui.navigate.to('/')).props('outline')
+                ui.button('Go Back', icon='arrow_back', on_click=ui.navigate.back).props('outline')
+
     def _is_route_protected(self, handler: Callable) -> bool:
         return getattr(handler, '_is_protected', False)
 
