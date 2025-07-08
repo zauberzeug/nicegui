@@ -11,6 +11,7 @@ def main_page():
         ui.button('Home', on_click=lambda: ui.navigate.to('/')).props('flat')
         ui.button('Secret', on_click=lambda: ui.navigate.to('/secret')).props('flat')
         ui.button('Invalid', on_click=lambda: ui.navigate.to('/invalid')).props('flat')
+        ui.button('Error', on_click=lambda: ui.navigate.to('/error')).props('flat')
         ui.space()
         ui.button('Logout', icon='logout', on_click=lambda: (
             app.storage.user.update(authenticated=False),
@@ -18,12 +19,13 @@ def main_page():
         )).props('flat').bind_visibility_from(app.storage.user, 'authenticated')
 
     custom_sub_pages({
-        '/': show_home,
-        '/secret': show_secret,
+        '/': home,
+        '/secret': secret,
+        '/error': error,
     }).classes('flex-grow p-4')
 
 
-def show_home():
+def home():
     ui.markdown('''
         This example shows inheritance from `ui.sub_pages` for decorator-based route protection and a custom 404 page.
 
@@ -31,8 +33,12 @@ def show_home():
     ''')
 
 
+def error():
+    raise ValueError('some error message')
+
+
 @protected
-def show_secret():
+def secret():
     ui.markdown('''
         ### Secret Area 🔑
 
