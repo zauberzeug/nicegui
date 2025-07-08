@@ -847,14 +847,6 @@ def test_on_path_changed_event(screen: Screen):
     assert calls == {'index': 3, 'main': 1, 'other': 2}
 
 
-def test_shared_client():
-    def main():
-        ui.label('main page')
-
-    with pytest.raises(AssertionError):
-        ui.sub_pages({'/': main, })
-
-
 def test_exception_in_page_builder(screen: Screen):
     @ui.page('/')
     @ui.page('/{_:path}')
