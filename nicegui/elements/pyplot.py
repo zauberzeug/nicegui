@@ -3,6 +3,7 @@ from __future__ import annotations
 import asyncio
 import io
 import os
+import weakref
 from typing import Any
 
 from typing_extensions import Self
@@ -21,7 +22,15 @@ try:
 
             def __init__(self, element: Matplotlib, *args: Any, **kwargs: Any) -> None:
                 super().__init__(*args, **kwargs)
-                self.element = element
+                self._element = weakref.ref(element)
+
+            @property
+            def element(self) -> Matplotlib:
+                """The element this matplotlib figure belongs to."""
+                element = self._element()
+                if element is None:
+                    raise RuntimeError('The element this matplotlib figure belongs to has been deleted.')
+                return element
 
             def __enter__(self) -> Self:
                 return self

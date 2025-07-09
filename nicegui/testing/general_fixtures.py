@@ -60,6 +60,7 @@ def nicegui_reset_globals() -> Generator[None, None, None]:
     Client.page_routes.clear()
     app.reset()
     Client.auto_index_client = Client(page('/'), request=None).__enter__()  # pylint: disable=unnecessary-dunder-call
+    Client.auto_index_client.layout.parent_slot = None  # NOTE: otherwise the layout is nested in the previous client
     # NOTE we need to re-add the auto index route because we removed all routes above
     app.get('/')(Client.auto_index_client.build_response)
     binding.reset()

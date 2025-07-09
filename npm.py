@@ -20,7 +20,7 @@ from argparse import ArgumentParser
 from pathlib import Path
 from typing import Dict, List
 
-import requests
+import httpx
 
 temp_dir = tempfile.TemporaryDirectory()
 
@@ -49,7 +49,7 @@ def url_to_filename(url: str) -> str:
 def download_buffered(url: str) -> Path:
     filepath = Path(temp_dir.name) / url_to_filename(url)
     if not filepath.exists():
-        response = requests.get(url, headers={'User-Agent': 'Mozilla/5.0'}, timeout=3)
+        response = httpx.get(url, headers={'User-Agent': 'Mozilla/5.0'}, timeout=3)
         filepath.write_bytes(response.content)
     return filepath
 
