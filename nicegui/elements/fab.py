@@ -1,4 +1,6 @@
-from typing import Literal, Optional, Self
+from typing import Literal, Optional
+
+from typing_extensions import Self
 
 from ..events import ClickEventArguments, Handler, handle_event
 from .mixins.color_elements import BackgroundColorElement
