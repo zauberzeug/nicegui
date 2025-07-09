@@ -155,16 +155,18 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
     def _scroll_to_fragment(self, fragment: str) -> None:
         if fragment:
             run_javascript(f'''
-                console.log('scrolling to fragment', "{fragment}");
-                setTimeout(() => {{
-                    console.log('scrolled to fragment', "{fragment}");
+                const scrollToFragment = () => {{
                     let target = document.getElementById("{fragment}");
-                    if (target)
+                    if (!target) {{
+                        target = document.querySelector('a[name="{fragment}"]');
+                    }}
+                    if (target) {{
                         target.scrollIntoView({{ behavior: "smooth" }});
-                    else
-                        if (target = document.querySelector('a[name="{fragment}"]'))
-                            target.scrollIntoView({{ behavior: "smooth" }});
-                }}, 100);
+                    }} else {{
+                        requestAnimationFrame(scrollToFragment);
+                    }}
+                }};
+                requestAnimationFrame(scrollToFragment);
             ''')
 
     @staticmethod
