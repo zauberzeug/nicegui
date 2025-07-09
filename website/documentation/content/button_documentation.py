@@ -100,10 +100,10 @@ def fab() -> None:
             .props('fab color=accent')
 
 
-doc.text('Expandable Floating Action Button', '''We now have `ui.fab` and `ui.fab_action` elements, which are based on the [Quasar FAB (q-fab)](https://quasar.dev/vue-components/floating-action-button).
-
-You can use them to create a Floating Action Button (FAB) with multiple actions that are revealed when the FAB is clicked.
-
-Please see the [documentation for these elements](fab) for more information and migration instructions from the old `ui.element` approach.''')
+doc.text('Expandable Floating Action Button', '''
+    To create a Floating Action Button (FAB) with multiple actions that are revealed when the FAB is clicked,
+    you can use [`ui.fab` and `ui.fab_action`](fab) elements,
+    which are based on [Quasar's QFab component](https://quasar.dev/vue-components/floating-action-button).
+''')
 
 doc.reference(ui.button)
