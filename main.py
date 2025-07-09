@@ -43,7 +43,7 @@ def _main_page() -> None:
         tree.add_slot('default-header', '''
                 <a :href="'/documentation/' + props.node.id" onclick="event.stopPropagation()">{{ props.node.title }}</a>
             ''')
-    header.add_header(menu)
+    menu_button = header.add_header(menu)
 
     window_state = {'is_desktop': None}
     ui.on('is_desktop', lambda v: window_state.update(is_desktop=v.args))
@@ -55,18 +55,23 @@ def _main_page() -> None:
             })
         </script>''')
 
-    def _show_menu(path: str) -> bool:
+    def _update_menu(path: str):
         if path.startswith('/documentation/'):
-            return window_state['is_desktop'] if window_state['is_desktop'] is not None else menu.value
+            menu_button.visible = True
+            if window_state['is_desktop'] is not None:
+                menu.value = window_state['is_desktop']
         else:
-            return False
+            menu_button.visible = False
+            menu.value = False
 
     ui.sub_pages({
         '/': main_page.create,
         '/documentation': _documentation_page,
         '/documentation/{name}': lambda name: _documentation_detail_page(name, menu, tree),
         '/imprint_privacy': imprint_privacy.create,
-    }).classes('mx-auto').bind_path_to(menu, 'value', _show_menu)
+    }).classes('mx-auto')
+    _update_menu(ui.context.client.sub_pages_router.current_path)
+    ui.context.client.sub_pages_router.on_path_changed.append(_update_menu)
 
 
 def _documentation_page() -> None:
