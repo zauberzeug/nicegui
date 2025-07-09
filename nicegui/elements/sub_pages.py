@@ -25,16 +25,23 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
             root_path: Optional[str] = None,
             data: Optional[Dict[str, Any]] = None,
     ) -> None:
-        """Sub Pages
+        """Create a container for client-side routing within a page.
 
-        Create a sub pages element to handle client-side routing within a page.
+        Provides URL-based navigation between different views to build single page applications (SPAs).
+        Routes are defined as path patterns mapping to page builder functions.
+        Path parameters like '/user/{id}' are extracted and passed to the builder function.
 
-        :param routes: dictionary mapping sub-page paths to page builder functions
-        :param root_path: optional root path to strip from incoming paths (useful for non-root page mounts)
-        :param data: optional dictionary with arbitrary data to be passed to sub-page functions
+        **This is an experimental feature, and the API is subject to change.**
+
+        :param routes: dictionary mapping path patterns to page builder functions
+        :param root_path: path prefix to strip from incoming paths (for non-root page mounts)
+        :param data: arbitrary data passed to all page builder functions
         """
         super().__init__()
-        assert not context.client.shared, 'ui.sub_pages cannot be used with auto-index client or other shared clients. Please use a function with ui.page decorator instead. See https://nicegui.io/documentation/sub_pages'
+        assert not context.client.shared, (
+            'ui.sub_pages cannot be used with auto-index client or other shared clients. '
+            'Please use a function with ui.page decorator instead. See https://nicegui.io/documentation/sub_pages'
+        )
         self._router = context.client.sub_pages_router
         self._routes = routes or {}
         parent_sub_pages_element = next((el for el in self.ancestors() if isinstance(el, SubPages)), None)
@@ -46,11 +53,10 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
         self.show()
 
     def add(self, path: str, page: Callable) -> Self:
-        """Add a new route to the sub pages.
+        """Add a new route.
 
-        :param path: the path pattern to match (can include {param} placeholders)
-        :param page: the callable to execute when the path is matched
-            ({param} placeholders will be passed to the function parameters with same name)
+        :param path: path pattern to match (e.g., '/user/{id}' for parameterized routes)
+        :param page: function to call when this path is accessed
         :return: self for method chaining
         """
         self._routes[path] = page
@@ -58,11 +64,9 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
         return self
 
     def show(self) -> Optional[RouteMatch]:
-        """Show the page for the given path.
+        """Display the page matching the current URL path.
 
-        :param full_path: the path to navigate to (can be empty string for root path; trailing slash is ignored)
-                         If None, the path will be calculated automatically from the current router state
-        :return: the RouteMatch object if a route was found and shown, None otherwise
+        :return: RouteMatch if a matching route was found and displayed, None for 404
         """
         match_result = self._find_matching_path()
         if match_result is not None and match_result.full_url == self._path:
@@ -98,7 +102,7 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
             task.add_done_callback(self._active_tasks.discard)
 
     def _show_404(self) -> None:
-        """Show a 404 error message."""
+        """Display a 404 error message for unmatched routes."""
         Label(f'404: sub page {self._router.current_path} not found')
 
     def _show_error(self, _: Exception) -> None:  # NOTE: exception is exposed for debugging scenarios via inheritance
@@ -108,7 +112,7 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
 
     @property
     def full_path(self) -> str:
-        """Get the full path of this SubPages element."""
+        """Get the complete path including root path and current sub-path."""
         return f'{self._root_path or ""}{self._path or ""}'
 
     def _find_matching_path(self) -> Optional[RouteMatch]:
@@ -184,7 +188,7 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
 
     @property
     def _is_root(self) -> bool:
-        """Whether this is a root ``ui.sub_pages`` element."""
+        """Check if this is a root sub_pages element (not nested)."""
         for parent in self.ancestors():
             if isinstance(parent, SubPages):
                 return False

@@ -14,7 +14,7 @@ if TYPE_CHECKING:
 
 @dataclass(**KWONLY_SLOTS)
 class RouteMatch:
-    """Information about a matched route."""
+    """Contains details about a matched route including path parameters and query data."""
     path: str
     '''The sub-path that actually matched (e.g., "/user/123")'''
     pattern: str
@@ -42,10 +42,9 @@ class RouteMatch:
 
 @dataclass(**KWONLY_SLOTS)
 class PageArgs:
-    """Container for page arguments like query parameters and path parameters.
+    """Provides unified access to route data including path parameters and query parameters.
 
-    This class provides access to request data.
-    It will be automatically injected into a sub-page builder function if the parameter is annotated with ``PageArgs``.
+    Automatically injected into sub-page builder functions when the parameter is annotated with ``PageArgs``.
     """
     path: str
     '''Path from the request.'''
@@ -62,10 +61,10 @@ class PageArgs:
     def build_kwargs(cls, route_match: RouteMatch, frame: SubPages, data: dict[str, Any]) -> dict[str, Any]:
         """Build keyword arguments for the route builder function.
 
-        :param route_match: The RouteMatch containing path info and parameters
-        :param frame: The SubPages instance currently executing this page
-        :param data: Arbitrary data passed to the sub_pages element
-        :return: Dictionary of keyword arguments for the builder function
+        :param route_match: matched route containing path info and parameters
+        :param frame: SubPages instance executing this page
+        :param data: arbitrary data passed to the sub_pages element
+        :return: keyword arguments for the builder function
         """
         parameters = inspect.signature(route_match.builder).parameters
         kwargs = {}
@@ -84,12 +83,12 @@ class PageArgs:
 
     @classmethod
     def _from_route_match(cls, route_match: RouteMatch, frame: SubPages, data: dict[str, Any]) -> PageArgs:
-        """Create a PageArgs instance from a RouteMatch and SubPages frame.
+        """Create a PageArgs instance from route match data.
 
-        :param route_match: The RouteMatch containing path info and parameters
-        :param frame: The SubPages instance currently executing this page
-        :param data: Arbitrary data passed to the sub_pages element
-        :return: A new PageArgs instance
+        :param route_match: matched route containing path info and parameters
+        :param frame: SubPages instance executing this page
+        :param data: arbitrary data passed to the sub_pages element
+        :return: new PageArgs instance
         """
         return cls(
             path=route_match.path,
@@ -110,9 +109,9 @@ class PageArgs:
     def _convert_parameter(value: str, param_type: type) -> Any:
         """Convert a string parameter to the specified type (``str``, ``int``, or ``float``).
 
-        :param value: the string value to convert
-        :param param_type: the type to convert to
-        :return: the converted value
+        :param value: string value to convert
+        :param param_type: target type for conversion
+        :return: converted value
         """
         param_type = PageArgs._unwrap_optional(param_type)
         if param_type is str or param_type is inspect.Parameter.empty:
