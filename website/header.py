@@ -1,6 +1,6 @@
 import os
 from pathlib import Path
-from typing import Optional
+from typing import Callable, Optional
 
 from nicegui import app, ui
 
@@ -22,7 +22,7 @@ def add_head_html() -> None:
         )
 
 
-def add_header(menu: Optional[ui.left_drawer] = None) -> None:
+def add_header(menu: Optional[ui.left_drawer] = None, *, tree_expand_callable: Optional[Callable] = None) -> None:
     """Create the page header."""
     menu_items = {
         'Installation': '/#installation',
@@ -43,7 +43,11 @@ def add_header(menu: Optional[ui.left_drawer] = None) -> None:
             .classes('items-center duration-200 p-0 px-4 no-wrap') \
             .style('box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1)'):
         if menu:
-            ui.button(on_click=menu.toggle, icon='menu').props('flat color=white round').classes('lg:hidden')
+            def toggle_menu():
+                if tree_expand_callable is not None:
+                    tree_expand_callable()
+                menu.toggle()
+            ui.button(on_click=toggle_menu, icon='menu').props('flat color=white round').classes('lg:hidden')
         with ui.link(target='/').classes('row gap-4 items-center no-wrap mr-auto'):
             svg.face().classes('w-8 stroke-white stroke-2 max-[610px]:hidden')
             svg.word().classes('w-24')
