@@ -129,12 +129,6 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
 
         return match
 
-    def _cancel_active_tasks(self) -> None:
-        for task in self._active_tasks:
-            if not task.done() and not task.cancelled():
-                task.cancel()
-        self._active_tasks.clear()
-
     def _match_route(self, path: str) -> Optional[RouteMatch]:
         parsed_url = urlparse(path)
         path_only = parsed_url.path.rstrip('/')
@@ -156,6 +150,25 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
                 )
         return None
 
+    @staticmethod
+    def _match_path(pattern: str, path: str) -> Optional[Dict[str, str]]:
+        if '{' not in pattern:
+            return {} if pattern == path else None
+
+        regex_pattern = re.escape(pattern)
+        for match in re.finditer(r'\\{(\w+)\\}', regex_pattern):
+            param_name = match.group(1)
+            regex_pattern = regex_pattern.replace(f'\\{{{param_name}\\}}', f'(?P<{param_name}>[^/]+)')
+
+        regex_match = re.match(f'^{regex_pattern}$', path)
+        return regex_match.groupdict() if regex_match else None
+
+    def _cancel_active_tasks(self) -> None:
+        for task in self._active_tasks:
+            if not task.done() and not task.cancelled():
+                task.cancel()
+        self._active_tasks.clear()
+
     def _scroll_to_fragment(self, fragment: str) -> None:
         if fragment:
             run_javascript(f'''
@@ -172,24 +185,3 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
                 }};
                 requestAnimationFrame(scrollToFragment);
             ''')
-
-    @staticmethod
-    def _match_path(pattern: str, path: str) -> Optional[Dict[str, str]]:
-        if '{' not in pattern:
-            return {} if pattern == path else None
-
-        regex_pattern = re.escape(pattern)
-        for match in re.finditer(r'\\{(\w+)\\}', regex_pattern):
-            param_name = match.group(1)
-            regex_pattern = regex_pattern.replace(f'\\{{{param_name}\\}}', f'(?P<{param_name}>[^/]+)')
-
-        regex_match = re.match(f'^{regex_pattern}$', path)
-        return regex_match.groupdict() if regex_match else None
-
-    @property
-    def _is_root(self) -> bool:
-        """Check if this is a root sub_pages element (not nested)."""
-        for parent in self.ancestors():
-            if isinstance(parent, SubPages):
-                return False
-        return True
