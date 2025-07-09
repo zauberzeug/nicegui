@@ -38,6 +38,8 @@ __all__ = [
     'editor',
     'element',
     'expansion',
+    'fab',
+    'fab_action',
     'footer',
     'fullscreen',
     'grid',
@@ -160,6 +162,8 @@ from .elements.drawer import RightDrawer as right_drawer
 from .elements.echart import EChart as echart
 from .elements.editor import Editor as editor
 from .elements.expansion import Expansion as expansion
+from .elements.fab import Fab as fab
+from .elements.fab import FabAction as fab_action
 from .elements.footer import Footer as footer
 from .elements.fullscreen import Fullscreen as fullscreen
 from .elements.grid import Grid as grid
