@@ -3,7 +3,7 @@ from __future__ import annotations
 import functools
 from dataclasses import dataclass
 from pathlib import Path
-from typing import TYPE_CHECKING, Dict, Iterable, List, Optional, Set, Tuple
+from typing import TYPE_CHECKING, Callable, Dict, Iterable, List, Optional, Set, Tuple
 
 import vbuild
 
@@ -46,6 +46,12 @@ class Resource:
 
 
 @dataclass(**KWONLY_SLOTS)
+class DynamicResource:
+    name: str
+    function: Callable
+
+
+@dataclass(**KWONLY_SLOTS)
 class Library:
     key: str
     name: str
@@ -57,6 +63,7 @@ vue_components: Dict[str, VueComponent] = {}
 js_components: Dict[str, JsComponent] = {}
 libraries: Dict[str, Library] = {}
 resources: Dict[str, Resource] = {}
+dynamic_resources: Dict[str, DynamicResource] = {}
 
 
 def register_vue_component(path: Path, *, max_time: Optional[float]) -> Component:
@@ -105,6 +112,12 @@ def register_resource(path: Path, *, max_time: Optional[float]) -> Resource:
     assert key not in resources, f'Duplicate resource {key}'
     resources[key] = Resource(key=key, path=path)
     return resources[key]
+
+
+def register_dynamic_resource(name: str, function: Callable) -> DynamicResource:
+    """Register a dynamic resource which returns the result of a function."""
+    dynamic_resources[name] = DynamicResource(name=name, function=function)
+    return dynamic_resources[name]
 
 
 @functools.lru_cache(maxsize=None)

@@ -2,9 +2,10 @@ from __future__ import annotations
 
 import inspect
 import re
+import weakref
 from copy import copy
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, ClassVar, Dict, Iterator, List, Optional, Sequence, Union, cast
+from typing import TYPE_CHECKING, Any, Callable, ClassVar, Dict, Iterator, List, Optional, Sequence, Union, cast
 
 from typing_extensions import Self
 
@@ -12,7 +13,14 @@ from . import core, events, helpers, json, storage
 from .awaitable_response import AwaitableResponse, NullResponse
 from .classes import Classes
 from .context import context
-from .dependencies import Component, Library, register_library, register_resource, register_vue_component
+from .dependencies import (
+    Component,
+    Library,
+    register_dynamic_resource,
+    register_library,
+    register_resource,
+    register_vue_component,
+)
 from .elements.mixins.visibility import Visibility
 from .event_listener import EventListener
 from .props import Props
@@ -49,9 +57,10 @@ class Element(Visibility):
         :param _client: client for this element (for internal use only)
         """
         super().__init__()
-        self.client = _client or context.client
-        self.id = self.client.next_element_id
-        self.client.next_element_id += 1
+        client = _client or context.client
+        self._client = weakref.ref(client)
+        self.id = client.next_element_id
+        client.next_element_id += 1
         self.tag = tag if tag else self.component.tag if self.component else 'div'
         if not TAG_PATTERN.match(self.tag):
             raise ValueError(f'Invalid HTML tag: {self.tag}')
@@ -66,7 +75,7 @@ class Element(Visibility):
         self._update_method: Optional[str] = None
         self._deleted: bool = False
 
-        self.client.elements[self.id] = self
+        client.elements[self.id] = self
         self.parent_slot: Optional[Slot] = None
         slot_stack = context.slot_stack
         if slot_stack:
@@ -75,9 +84,9 @@ class Element(Visibility):
 
         self.tailwind = Tailwind(self)
 
-        self.client.outbox.enqueue_update(self)
+        client.outbox.enqueue_update(self)
         if self.parent_slot:
-            self.client.outbox.enqueue_update(self.parent_slot.parent)
+            client.outbox.enqueue_update(self.parent_slot.parent)
 
     def __init_subclass__(cls, *,
                           component: Union[str, Path, None] = None,
@@ -139,6 +148,14 @@ class Element(Visibility):
         cls.default_style(default_style)
         cls.default_props(default_props)
 
+    @property
+    def client(self) -> Client:
+        """The client this element belongs to."""
+        client = self._client()
+        if client is None:
+            raise RuntimeError('The client this element belongs to has been deleted.')
+        return client
+
     def add_resource(self, path: Union[str, Path]) -> None:
         """Add a resource to the element.
 
@@ -147,6 +164,15 @@ class Element(Visibility):
         path_ = Path(path)
         resource = register_resource(path_, max_time=path_.stat().st_mtime)
         self._props['resource_path'] = f'/_nicegui/{__version__}/resources/{resource.key}'
+
+    def add_dynamic_resource(self, name: str, function: Callable) -> None:
+        """Add a dynamic resource to the element which returns the result of a function.
+
+        :param name: name of the resource
+        :param function: function that returns the resource response
+        """
+        register_dynamic_resource(name, function)
+        self._props['dynamic_resource_path'] = f'/_nicegui/{__version__}/dynamic_resources'
 
     def add_slot(self, name: str, template: Optional[str] = None) -> Slot:
         """Add a slot to the element.
@@ -520,7 +546,7 @@ class Element(Visibility):
             additions.append(f'text={shorten(self._text)}')
         if hasattr(self, 'content') and self.content:  # pylint: disable=no-member
             additions.append(f'content={shorten(self.content)}')  # pylint: disable=no-member
-        IGNORED_PROPS = {'loopback', 'color', 'view', 'innerHTML', 'codehilite_css_url'}
+        IGNORED_PROPS = {'loopback', 'color', 'view', 'innerHTML', 'dynamic_resource_path'}
         additions += [
             f'{key}={shorten(value)}'
             for key, value in self._props.items()

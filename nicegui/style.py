@@ -1,3 +1,4 @@
+import weakref
 from typing import TYPE_CHECKING, Dict, Generic, Optional, TypeVar
 
 if TYPE_CHECKING:
@@ -10,7 +11,15 @@ class Style(dict, Generic[T]):
 
     def __init__(self, *args, element: T, **kwargs) -> None:
         super().__init__(*args, **kwargs)
-        self.element = element
+        self._element = weakref.ref(element)
+
+    @property
+    def element(self) -> T:
+        """The element this style object belongs to."""
+        element = self._element()
+        if element is None:
+            raise RuntimeError('The element this style object belongs to has been deleted.')
+        return element
 
     def __call__(self,
                  add: Optional[str] = None, *,
@@ -24,6 +33,7 @@ class Style(dict, Generic[T]):
         :param remove: semicolon-separated list of styles to remove from the element
         :param replace: semicolon-separated list of styles to use instead of existing ones
         """
+        element = self.element
         style_dict = {**self} if replace is None else {}
         for key in self.parse(remove):
             style_dict.pop(key, None)
@@ -32,8 +42,8 @@ class Style(dict, Generic[T]):
         if self != style_dict:
             self.clear()
             self.update(style_dict)
-            self.element.update()
-        return self.element
+            element.update()
+        return element
 
     @staticmethod
     def parse(text: Optional[str]) -> Dict[str, str]:

@@ -94,6 +94,13 @@ class UserInteraction(Generic[T]):
                     else:
                         element._is_showing_popup = True  # pylint: disable=protected-access
                     return self
+                elif isinstance(element, ui.radio):
+                    if isinstance(element.options, dict):
+                        target_value = next((k for k, v in element.options.items() if v == self.target), '')
+                    else:
+                        target_value = self.target
+                    element.value = target_value
+                    return self
 
                 for listener in element._event_listeners.values():  # pylint: disable=protected-access
                     if listener.element_id != element.id:

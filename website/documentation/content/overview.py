@@ -327,6 +327,7 @@ def map_of_nicegui():
             - `app.on_startup()`: called when the app starts
             - `app.on_shutdown()`: called when the app shuts down
             - `app.on_exception()`: called when an exception occurs
+            - `app.on_page_exception()`: called when an exception occurs while building a page
         - [`app.shutdown()`](/documentation/section_action_events#shut_down_nicegui): shut down the app
         - static files:
             - [`app.add_static_files()`](/documentation/section_pages_routing#add_a_directory_of_static_files),

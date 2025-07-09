@@ -22,10 +22,10 @@ RUN python -m pip install --upgrade pip
 RUN python -m pip install \
     nicegui[plotly,matplotlib]==$VERSION \
     docutils \
+    httpx \
     isort \
     itsdangerous \
     pytest \
-    requests \
     latex2mathml \
     selenium \
     redis
