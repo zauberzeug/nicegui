@@ -5,7 +5,6 @@ from nicegui import ui
 
 from . import documentation, example_card, svg
 from .examples import examples
-from .header import add_head_html, add_header
 from .style import example_link, features, heading, link_target, section_heading, subtitle, title
 
 SPONSORS = json.loads((Path(__file__).parent / 'sponsors.json').read_text(encoding='utf-8'))
@@ -13,10 +12,6 @@ SPONSORS = json.loads((Path(__file__).parent / 'sponsors.json').read_text(encodi
 
 def create() -> None:
     """Create the content of the main page."""
-    ui.context.client.content.classes('p-0 gap-0')
-    add_head_html()
-    add_header()
-
     with ui.row().classes('w-full h-screen items-center gap-8 pr-4 no-wrap into-section'):
         svg.face(half=True).classes('stroke-black dark:stroke-white w-[200px] md:w-[230px] lg:w-[300px]')
         with ui.column().classes('gap-4 md:gap-8 pt-32'):
