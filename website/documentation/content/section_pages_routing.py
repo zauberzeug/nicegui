@@ -94,13 +94,13 @@ def add_static_files_demo():
 def add_media_files_demo():
     from pathlib import Path
 
-    import requests
+    import httpx
 
     from nicegui import app
 
     media = Path('media')
     # media.mkdir(exist_ok=True)
-    # r = requests.get('https://cdn.coverr.co/videos/coverr-cloudy-sky-2765/1080p.mp4')
+    # r = httpx.get('https://cdn.coverr.co/videos/coverr-cloudy-sky-2765/1080p.mp4')
     # (media  / 'clouds.mp4').write_bytes(r.content)
     # app.add_media_files('/my_videos', media)
     # ui.video('/my_videos/clouds.mp4')

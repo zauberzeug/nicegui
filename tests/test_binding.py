@@ -184,3 +184,24 @@ def test_automatic_cleanup(screen: Screen):
     binding.remove([label1])
     assert not is_alive(ref1) and not has_bindable_property(model_id1)
     assert is_alive(ref2) and has_bindable_property(model_id2)
+
+
+async def test_nested_propagation(user: User):
+    class Demo:
+        a = binding.BindableProperty()
+        b = binding.BindableProperty(on_change=lambda obj, _: obj.change_a())
+
+        def __init__(self) -> None:
+            self.a = 0
+            self.b = 0
+
+        def change_a(self) -> None:
+            self.a = 1
+            self.a = 2
+
+    demo = Demo()
+    ui.label().bind_text_from(demo, 'a', lambda a: f'a = {a}')
+    ui.number().bind_value_to(demo, 'b')  # should set a to 1 and then 2
+
+    await user.open('/')
+    await user.should_see('a = 2')  # the final value of a should be 2

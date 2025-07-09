@@ -3,7 +3,6 @@ from typing import Any, Callable, Union
 from ..client import Client
 from ..context import context
 from ..element import Element
-from ..elements.sub_pages import SubPages
 from .javascript import run_javascript
 
 
@@ -69,8 +68,8 @@ class Navigate:
             raise TypeError(f'Invalid target type: {type(target)}')
 
         if not new_tab and isinstance(target, str):
-            if SubPages.try_navigate_to(path):
-                return
+            context.client.sub_pages_router._handle_navigate(path)  # pylint: disable=protected-access
+            return
 
         context.client.open(path, new_tab)
 

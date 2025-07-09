@@ -7,19 +7,10 @@ STYLE = '''
           0% { transform: translateX(6em) rotate(432deg); }
         100% { transform: translateX(0)   rotate(0);      }
     }
-    @keyframes star-pulse {
-          0% { scale: 1.0; }
-         60% { scale: 1.0; }
-         70% { scale: 1.2; }
-         80% { scale: 1.0; }
-         90% { scale: 1.2; }
-        100% { scale: 1.0; }
-    }
     .star {
         height: 1.75em;
         fill: white;
-        animation: 1s ease-in-out 6s both star-tumble,
-                   3s ease-in-out 3s infinite star-pulse;
+        animation: 1s ease-in-out 6s both star-tumble;
     }
     .star:hover {
         fill: rgb(250, 204, 21);

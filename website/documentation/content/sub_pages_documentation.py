@@ -10,6 +10,8 @@ from . import doc
     The `ui.sub_pages` element itself functions as the container for the currently active sub page.
     You only need to provide the routes for each view builder function.
     NiceGUI takes care of replacing the content without triggering a full page reload when the URL changes.
+
+    **NOTE: This is an experimental feature, and the API is subject to change.**
 ''')
 def main_demo() -> None:
     from uuid import uuid4
@@ -137,28 +139,6 @@ def adding_sub_pages_demo() -> None:
     footer = ui.label()
     pages.add('/', lambda: main(footer))
     pages.add('/other', lambda: other(footer))
-
-
-@doc.demo('Binding the Path', '''
-    The `ui.sub_pages` element has a `path` property which can be bound to.
-''')
-def binding_to_sub_pages_demo():
-    # @ui.page('/')
-    # @ui.page('/{_:path}') # NOTE: our page should catch all paths
-    # def index():
-    #     toggle = ui.toggle(['/', '/other'], value='/')
-    #     ui.sub_pages({'/': main, '/{name}': main}) \
-    #         .bind_path(toggle, 'value')
-    #     ui.label().bind_text_from(pages, 'path')
-
-    def main(name: str = 'main'):
-        ui.label(name).classes('font-bold')
-
-    # END OF DEMO
-    toggle = ui.toggle(['/', '/other'], value='/')
-    pages = ui.sub_pages({'/': main, '/{name}': main}, root_path='/documentation/sub_pages') \
-        .bind_path(toggle, 'value')
-    ui.label().bind_text_from(pages, 'path')
 
 
 @doc.demo('Using PageArgs', '''

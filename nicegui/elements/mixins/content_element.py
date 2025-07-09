@@ -1,4 +1,4 @@
-from typing import Any, Callable, cast
+from typing import Any, Callable, Optional, cast
 
 from typing_extensions import Self
 
@@ -19,7 +19,7 @@ class ContentElement(Element):
     def bind_content_to(self,
                         target_object: Any,
                         target_name: str = 'content',
-                        forward: Callable[..., Any] = lambda x: x,
+                        forward: Optional[Callable[[Any], Any]] = None,
                         ) -> Self:
         """Bind the content of this element to the target object's target_name property.
 
@@ -28,7 +28,7 @@ class ContentElement(Element):
 
         :param target_object: The object to bind to.
         :param target_name: The name of the property to bind to.
-        :param forward: A function to apply to the value before applying it to the target.
+        :param forward: A function to apply to the value before applying it to the target (default: identity).
         """
         bind_to(self, 'content', target_object, target_name, forward)
         return self
@@ -36,7 +36,7 @@ class ContentElement(Element):
     def bind_content_from(self,
                           target_object: Any,
                           target_name: str = 'content',
-                          backward: Callable[..., Any] = lambda x: x,
+                          backward: Optional[Callable[[Any], Any]] = None,
                           ) -> Self:
         """Bind the content of this element from the target object's target_name property.
 
@@ -45,7 +45,7 @@ class ContentElement(Element):
 
         :param target_object: The object to bind from.
         :param target_name: The name of the property to bind from.
-        :param backward: A function to apply to the value before applying it to this element.
+        :param backward: A function to apply to the value before applying it to this element (default: identity).
         """
         bind_from(self, 'content', target_object, target_name, backward)
         return self
@@ -53,8 +53,8 @@ class ContentElement(Element):
     def bind_content(self,
                      target_object: Any,
                      target_name: str = 'content', *,
-                     forward: Callable[..., Any] = lambda x: x,
-                     backward: Callable[..., Any] = lambda x: x,
+                     forward: Optional[Callable[[Any], Any]] = None,
+                     backward: Optional[Callable[[Any], Any]] = None,
                      ) -> Self:
         """Bind the content of this element to the target object's target_name property.
 
@@ -64,8 +64,8 @@ class ContentElement(Element):
 
         :param target_object: The object to bind to.
         :param target_name: The name of the property to bind to.
-        :param forward: A function to apply to the value before applying it to the target.
-        :param backward: A function to apply to the value before applying it to this element.
+        :param forward: A function to apply to the value before applying it to the target (default: identity).
+        :param backward: A function to apply to the value before applying it to this element (default: identity).
         """
         bind(self, 'content', target_object, target_name, forward=forward, backward=backward)
         return self
