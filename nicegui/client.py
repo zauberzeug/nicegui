@@ -165,6 +165,17 @@ class Client:
                 'translations': translations.get(self.page.resolve_language(), translations['en-US']),
                 'prefix': prefix,
                 'tailwind': core.app.config.tailwind,
+                'unocss': core.app.config.unocss_preset is not None,
+                'unocss_filename': {
+                    'mini': 'preset-mini',
+                    'wind3': 'preset-wind',  # until upstream renames this to preset-wind3.css, then update this
+                    'wind4': 'preset-wind4',
+                }.get(core.app.config.unocss_preset),
+                'unocss_initline': {
+                    'mini': '() => window.__unocss_runtime.presets.presetMini()',
+                    'wind3': '() => window.__unocss_runtime.presets.presetWind()',  # until upstream renames this to presetWind3()
+                    'wind4': '() => window.__unocss_runtime.presets.presetWind4()',
+                }.get(core.app.config.unocss_preset),
                 'prod_js': core.app.config.prod_js,
                 'socket_io_js_query_params': socket_io_js_query_params,
                 'socket_io_js_extra_headers': core.app.config.socket_io_js_extra_headers,
