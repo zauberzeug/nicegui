@@ -365,3 +365,21 @@ def test_columns_from_df(screen: Screen, df_type: str):
     screen.click('Update cars with columns')  # updated columns via parameter
     screen.should_contain('Hyundai')
     screen.should_contain('i30')
+
+
+def test_table_with_list_in_cell(screen: Screen):
+    columns_with_list = [
+        {'name': 'name', 'label': 'Name', 'field': 'name', 'required': True},
+        {'name': 'items', 'label': 'Items', 'field': 'items'},
+    ]
+    rows_with_list = [
+        {'id': 0, 'name': 'Alice', 'items': ['Apple', 'Banana']},
+        {'id': 1, 'name': 'Bob', 'items': ['Cherry', 'Date', 'Elderberry']},
+    ]
+    ui.table(columns=columns_with_list, rows=rows_with_list)
+
+    screen.open('/')
+    screen.should_contain('Alice')
+    screen.should_contain('Apple, Banana')
+    screen.should_contain('Bob')
+    screen.should_contain('Cherry, Date, Elderberry')
