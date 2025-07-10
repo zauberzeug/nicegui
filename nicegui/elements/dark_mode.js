@@ -16,6 +16,7 @@ export default {
       }
       if (window.__unocss) {
         window.nicegui_unocss_dark = this.value;
+        updateDarkMode();
       }
     },
   },

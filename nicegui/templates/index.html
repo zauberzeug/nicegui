@@ -34,15 +34,19 @@
       window.__unocss = {
           presets: [{{ unocss_initline | safe }}],
           runtime: { ready: () => false },
-      }
-      window.nicegui_unocss_dark = {"False": false, "True": true, "None": null}["{{ dark | safe }}"];
-      setInterval(() => {
-        if (window.nicegui_unocss_dark === true || (window.nicegui_unocss_dark === null && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      };
+
+      function updateDarkMode() {
+        const system_prefers_dark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        if (window.nicegui_unocss_dark === true || (window.nicegui_unocss_dark === null && system_prefers_dark)) {
           document.body.classList.add("dark");
         } else {
           document.body.classList.remove("dark");
         }
-      }, 100);
+      }
+      window.nicegui_unocss_dark = {"False": false, "True": true, "None": null}["{{ dark | safe }}"];
+      updateDarkMode();
+      window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', updateDarkMode);
     </script>
     <script src="{{ prefix | safe }}/_nicegui/{{version}}/static/unocss_runtime/core.global.js"></script>
     {% endif %}
