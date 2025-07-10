@@ -108,7 +108,17 @@ class Table(FilterElement, component='table.js'):
         return self
 
     def _normalize_columns(self, columns: List[Dict]) -> List[Dict]:
-        return [{**self._column_defaults, **column} for column in columns] if self._column_defaults else columns
+        normalized_columns = []
+        for column in columns:
+            new_column = {**self._column_defaults, **column} if self._column_defaults else column
+            if not callable(new_column['field']):
+                original_field = new_column['field']
+                new_column['field'] = lambda row, field_name=original_field: (
+                    ', '.join(map(str, row[field_name])) if isinstance(row.get(field_name), list)
+                    else row.get(field_name)
+                )
+            normalized_columns.append(new_column)
+        return normalized_columns
 
     @classmethod
     def from_pandas(cls,
