@@ -9,6 +9,7 @@ from . import (
     color_input_documentation,
     color_picker_documentation,
     date_documentation,
+    date_input_documentation,
     doc,
     fab_documentation,
     input_documentation,
@@ -23,6 +24,7 @@ from . import (
     switch_documentation,
     textarea_documentation,
     time_documentation,
+    time_input_documentation,
     toggle_documentation,
     upload_documentation,
 )
@@ -51,6 +53,8 @@ doc.intro(number_documentation)
 doc.intro(knob_documentation)
 doc.intro(color_input_documentation)
 doc.intro(color_picker_documentation)
+doc.intro(date_input_documentation)
 doc.intro(date_documentation)
+doc.intro(time_input_documentation)
 doc.intro(time_documentation)
 doc.intro(upload_documentation)
