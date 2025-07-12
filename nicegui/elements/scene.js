@@ -4,6 +4,8 @@ import { CSS3DRenderer, CSS3DObject } from "CSS3DRenderer";
 import { DragControls } from "DragControls";
 import { GLTFLoader } from "GLTFLoader";
 import { OrbitControls } from "OrbitControls";
+import { TrackballControls } from "TrackballControls";
+import { MapControls } from "MapControls";
 import { STLLoader } from "STLLoader";
 import "tween";
 
@@ -69,6 +71,7 @@ export default {
 
   mounted() {
     this.scene = new THREE.Scene();
+    this.clock = new THREE.Clock();
     this.objects = new Map();
     this.objects.set("scene", this.scene);
     this.draggable_objects = [];
@@ -152,7 +155,7 @@ export default {
       grid.rotateX(Math.PI / 2);
       this.scene.add(grid);
     }
-    this.controls = new OrbitControls(this.camera, this.renderer.domElement);
+    this.setup_controls();
     this.drag_controls = new DragControls(this.draggable_objects, this.camera, this.renderer.domElement);
     this.drag_controls.transformGroup = true;
     const applyConstraint = (constraint, position) => {
@@ -180,6 +183,7 @@ export default {
     const render = () => {
       requestAnimationFrame(() => setTimeout(() => render(), 1000 / 20));
       this.camera_tween?.update();
+      this.controls.update(this.clock.getDelta());
       this.renderer.render(this.scene, this.camera);
       this.text_renderer.render(this.scene, this.camera);
       this.text3d_renderer.render(this.scene, this.camera);
@@ -227,6 +231,16 @@ export default {
   },
 
   methods: {
+    setup_controls() {
+      if (this.control_type === "trackball") {
+      this.controls = new TrackballControls(this.camera, this.renderer.domElement);
+      } else if (this.control_type === "map") {
+      this.controls = new MapControls(this.camera, this.renderer.domElement);
+      } else {
+      this.controls = new OrbitControls(this.camera, this.renderer.domElement);
+      }
+    },
+
     create(type, id, parent_id, ...args) {
       if (!this.is_initialized) return;
       let mesh;
@@ -467,7 +481,7 @@ export default {
         .onComplete(() => {
           if (camera_up_changed) {
             this.controls.dispose();
-            this.controls = new OrbitControls(this.camera, this.renderer.domElement);
+            this.setup_controls();
             this.controls.target.copy(this.look_at);
             this.camera.lookAt(this.look_at);
           }
@@ -547,5 +561,9 @@ export default {
     click_events: Array,
     drag_constraints: String,
     background_color: String,
+    control_type: {
+      type: String,
+      default: 'orbit',
+    },
   },
 };
