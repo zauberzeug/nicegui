@@ -7,7 +7,20 @@ import uuid
 from collections import defaultdict
 from contextlib import contextmanager
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Awaitable, Callable, ClassVar, Dict, Iterable, Iterator, List, Optional, Union
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Awaitable,
+    Callable,
+    ClassVar,
+    Dict,
+    Iterable,
+    Iterator,
+    List,
+    Optional,
+    Set,
+    Union,
+)
 
 from fastapi import Request
 from fastapi.responses import Response
@@ -56,6 +69,7 @@ class Client:
 
         self.elements: Dict[int, Element] = {}
         self.next_element_id: int = 0
+        self.known_hashes: Set[str] = set()
         self._waiting_for_connection: asyncio.Event = asyncio.Event()
         self.is_waiting_for_connection: bool = False
         self.is_waiting_for_disconnect: bool = False
@@ -128,6 +142,7 @@ class Client:
         """Build a FastAPI response for the client."""
         self.outbox.updates.clear()
         prefix = request.headers.get('X-Forwarded-Prefix', request.scope.get('root_path', ''))
+        self.known_hashes.union(json.loads(request.cookies.get('__nicegui_hash_keys__', '[]')))
         elements = json.dumps({
             id: element._to_dict() for id, element in self.elements.items()  # pylint: disable=protected-access
         })
