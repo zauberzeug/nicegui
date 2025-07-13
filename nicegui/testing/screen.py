@@ -269,4 +269,10 @@ class Screen:
     @property
     def current_path(self) -> str:
         """The current path of the browser."""
-        return urlparse(self.selenium.current_url).path
+        parsed = urlparse(self.selenium.current_url)
+        result = parsed.path
+        if parsed.query:
+            result += '?' + parsed.query
+        if parsed.fragment:
+            result += '#' + parsed.fragment
+        return result

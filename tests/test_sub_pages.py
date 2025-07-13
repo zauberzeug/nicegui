@@ -768,7 +768,7 @@ def test_sub_pages_with_url_fragments(screen: Screen):
     # Test 1: Direct navigation with fragment should work
     screen.open('/page#bottom')
     screen.should_contain('Bottom target content')
-    assert screen.current_path == '/page'
+    assert screen.current_path == '/page#bottom'
     screen.wait(1)
     scroll_y = screen.selenium.execute_script('return window.scrollY')
     assert scroll_y > 500, 'Expected scrolling to occur for fragment navigation'
@@ -791,7 +791,7 @@ def test_sub_pages_with_url_fragments(screen: Screen):
     # Test 4: Cross-page fragment navigation
     screen.click('Go to bottom')
     screen.should_contain('Bottom target content')
-    assert screen.current_path == '/page'
+    assert screen.current_path == '/page#bottom'
     screen.wait(1)
     scroll_y = screen.selenium.execute_script('return window.scrollY')
     assert scroll_y > 0, 'Expected scrolling after cross-page fragment navigation'
@@ -801,6 +801,43 @@ def test_sub_pages_with_url_fragments(screen: Screen):
     screen.click('Go to top')
     screen.wait(1)
     assert calls == {'index': 1, 'main': 1, 'targets': 2}, 'Fragment navigation should not rebuild page'
+
+
+@pytest.mark.parametrize('strategy', ['kwargs', 'page_args'])
+def test_only_rebuild_page_when_builder_depends_on_it(screen: Screen, strategy: str):
+    calls = {'index': 0, 'home': 0, 'sub': 0}
+
+    @ui.page('/')
+    @ui.page('/{_:path}')
+    def index():
+        calls['index'] += 1
+        ui.link('pass parameter', '/?test=value')
+        ui.sub_pages({'/': home})
+
+    def home():
+        calls['home'] += 1
+        ui.label('home')
+        ui.sub_pages({'/': kwargs if strategy == 'kwargs' else page_args})
+
+    def kwargs(test: str = 'none'):
+        calls['sub'] += 1
+        ui.label('param=' + test)
+
+    def page_args(args: PageArgs):
+        calls['sub'] += 1
+        ui.label('param=' + args.query_parameters.get('test', 'none'))
+
+    screen.open('/')
+    assert calls == {'index': 1, 'home': 1, 'sub': 1}
+    screen.should_contain('home')
+    screen.should_contain('param=none')
+    screen.click('pass parameter')
+    screen.wait(1.5)
+    assert screen.current_path == '/?test=value'
+    screen.should_contain('home')
+    screen.should_contain('param=value')
+    assert calls == {'index': 1, 'home': 1, 'sub': 2}, \
+        'home should not rebuild because its builder does not depend on it'
 
 
 def test_on_path_changed_event(screen: Screen):
