@@ -127,6 +127,7 @@ __all__ = [
     'update',
     'upload',
     'video',
+    'xterm',
 ]
 
 from .context import context
@@ -238,6 +239,7 @@ from .elements.tooltip import Tooltip as tooltip
 from .elements.tree import Tree as tree
 from .elements.upload import Upload as upload
 from .elements.video import Video as video
+from .elements.xterm import Xterm as xterm
 from .functions import clipboard
 from .functions.download import download
 from .functions.html import add_body_html, add_head_html

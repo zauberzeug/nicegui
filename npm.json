@@ -182,5 +182,29 @@
       "package/": ""
     },
     "version": "0.23.8"
+  },
+  "xterm": {
+    "package": "@xterm/xterm",
+    "destination": "nicegui/elements/lib/xterm",
+    "keep": ["package/css/xterm\\.css", "package/lib/xterm\\.js", "package/lib/xterm\\.js\\.map"],
+    "rename": {
+      "package/": ""
+    }
+  },
+  "xterm-addon-fit": {
+    "package": "@xterm/addon-fit",
+    "destination": "nicegui/elements/lib/xterm",
+    "keep": ["package/lib/addon-fit\\.js", "package/lib/addon-fit\\.js\\.map"],
+    "rename": {
+      "package/": ""
+    }
+  },
+  "xterm-addon-web-links": {
+    "package": "@xterm/addon-web-links",
+    "destination": "nicegui/elements/lib/xterm",
+    "keep": ["package/lib/addon-web-links\\.js", "package/lib/addon-web-links\\.js\\.map"],
+    "rename": {
+      "package/": ""
+    }
   }
 }
