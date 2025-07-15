@@ -4,7 +4,7 @@ import pytest
 from selenium.webdriver import Keys
 
 from nicegui import ui
-from nicegui.testing import Screen, User
+from nicegui.testing import Screen
 
 
 def test_input_chips(screen: Screen):

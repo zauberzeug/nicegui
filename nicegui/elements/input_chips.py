@@ -40,8 +40,7 @@ class InputChips(LabelElement, ValidationElement, DisableableElement):
             value = []
         elif not isinstance(value, list):
             value = [value]
-        else:
-            value = value[:]  # NOTE: avoid modifying the original list which could be the list of options (#3014)
+
         super().__init__(tag='q-select', label=label, value=value, on_value_change=on_change, validation=validation)
 
         self._props['new-value-mode'] = new_value_mode
