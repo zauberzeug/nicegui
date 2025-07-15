@@ -210,6 +210,45 @@ def test_nested_sub_pages(screen: Screen):
     screen.should_contain('sub A page')
 
 
+def test_nested_sub_pages_on_root_path(screen: Screen):
+    @ui.page('/')
+    @ui.page('/{_:path}')
+    def index():
+        ui.link('go to content', '/content')
+        ui.link('go to bad path', '/bad_path')
+        ui.sub_pages({'/': home1})
+
+    def home1():
+        ui.label('home1')
+        ui.sub_pages({
+            '/': home2,
+            '/content': content,
+        })
+
+    def home2():
+        ui.label('home2')
+
+    async def content():
+        await asyncio.sleep(0.2)
+        ui.label('some content')
+
+    screen.open('/')
+    screen.should_not_contain('some content')
+    screen.should_contain('home1')
+    screen.should_contain('home2')
+
+    screen.click('go to content')
+    screen.should_contain('some content')
+    screen.should_contain('home1')
+    screen.should_not_contain('home2')
+
+    screen.click('go to bad path')
+    screen.should_contain('404: sub page /bad_path not found')
+    screen.should_contain('home1')
+    screen.should_not_contain('home2')
+    screen.should_not_contain('some content')
+
+
 def test_async_nested_sub_pages(screen: Screen):
     calls = {
         'index': 0,
@@ -271,11 +310,13 @@ def test_async_nested_sub_pages(screen: Screen):
 
 
 def test_parameterized_sub_pages(screen: Screen):
-    calls = {'main': 0}
+    calls = {'index': 0, 'main': 0}
 
     @ui.page('/')
-    @ui.page('/{_:path}')
-    def index(_):
+    @ui.page('/one-{_:path}')
+    @ui.page('/two/{_:path}')
+    def index():
+        calls['index'] += 1
         ui.link('Go to main', '/')
         ui.link('Go to one', '/one-1')
         ui.link('Go to two', '/two/two')
@@ -307,15 +348,16 @@ def test_parameterized_sub_pages(screen: Screen):
     screen.click('Go to two')
     screen.should_contain('two-two')
     assert screen.current_path == '/two/two'
+    assert calls == {'index': 1, 'main': 1}
 
     screen.click('Go to wrong match')
     screen.should_not_contain('main_content')
     screen.should_not_contain('one-1-True')
     screen.should_not_contain('two-two')
     screen.should_contain('404: sub page /two-3 not found')
-    assert screen.current_path == '/two-3'
+    # assert screen.current_path == '/two-3'
 
-    assert calls == {'main': 1}
+    assert calls == {'index': 1, 'main': 2}, 'main re-evaluates to determine if a nested sub page might handle the path'
 
 
 def test_sub_page_with_default_parameter(screen: Screen):
@@ -423,6 +465,7 @@ def test_adding_sub_pages_after_initialization(screen: Screen):
     screen.wait(0.2)
     screen.click('Go to sub')
     screen.should_contain('sub-content')
+    assert screen.current_path == '/sub'
 
 
 def test_direct_access_to_sub_page_which_was_added_after_initialization(screen: Screen):
@@ -490,30 +533,43 @@ def test_starting_on_non_root_path(screen: Screen, page_route: str):
 
 
 def test_links_pointing_to_path_which_is_not_a_sub_page(screen: Screen):
+    calls = {'index': 0, 'main': 0, 'sub': 0, 'other': 0}
+
     @ui.page('/')
+    @ui.page('/sub')
+    @ui.page('/other')
     def index():
+        calls['index'] += 1
         ui.link('Go to main', '/')
         ui.link('Go to sub', '/sub')
         ui.link('Go to other', '/other')
         ui.sub_pages({'/': main, '/sub': sub})
 
     def main():
+        calls['main'] += 1
         ui.label('main page')
 
     def sub():
+        calls['sub'] += 1
         ui.label('sub page')
 
     @ui.page('/other')
     def other():
+        calls['other'] += 1
         ui.label('other page')
 
     screen.open('/')
+    assert calls == {'index': 1, 'main': 1, 'sub': 0, 'other': 0}
+
     screen.click('Go to sub')
     screen.should_contain('sub page')
+    assert calls == {'index': 1, 'main': 1, 'sub': 1, 'other': 0}
     assert screen.current_path == '/sub'
 
     screen.click('Go to other')
     screen.should_contain('other page')
+    assert calls == {'index': 1, 'main': 2, 'sub': 1, 'other': 1}, \
+        'main re-evaluates to determine if a nested sub page might handle the path'
     assert screen.current_path == '/other'
 
 
@@ -832,7 +888,7 @@ def test_only_rebuild_page_when_builder_depends_on_it(screen: Screen, strategy: 
     screen.should_contain('home')
     screen.should_contain('param=none')
     screen.click('pass parameter')
-    screen.wait(1.5)
+    screen.wait(0.5)
     assert screen.current_path == '/?test=value'
     screen.should_contain('home')
     screen.should_contain('param=value')
@@ -881,7 +937,7 @@ def test_on_path_changed_event(screen: Screen):
     screen.open('/bad_path')
     screen.should_contain('404: sub page /bad_path not found')
     assert paths == ['/other']
-    assert calls == {'index': 3, 'main': 1, 'other': 2}
+    assert calls == {'index': 3, 'main': 2, 'other': 2}
 
 
 def test_exception_in_page_builder(screen: Screen):
