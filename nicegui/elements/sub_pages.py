@@ -25,6 +25,7 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
             *,
             root_path: Optional[str] = None,
             data: Optional[Dict[str, Any]] = None,
+            show_404: bool = True,
     ) -> None:
         """Create a container for client-side routing within a page.
 
@@ -37,6 +38,7 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
         :param routes: dictionary mapping path patterns to page builder functions
         :param root_path: path prefix to strip from incoming paths (for non-root page mounts)
         :param data: arbitrary data passed to all page builder functions
+        :param show_404: whether to show a 404 error message if the full path could not be consumed; this can be useful for dynamically created nested sub pages
         """
         super().__init__()
         assert not context.client.shared, (
@@ -51,6 +53,7 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
         self._active_tasks: Set[asyncio.Task] = set()
         self._send_update_on_path_change = True
         self._current_match: Optional[RouteMatch] = None
+        self._should_show_404 = show_404
         self.show()
 
     def add(self, path: str, page: Callable) -> Self:
@@ -75,9 +78,12 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
                 self._current_match is not None and \
                 match_result.path == self._current_match.path and \
                 not self._required_query_params_changed(match_result):
+            # NOTE: if the full path could not be consumed, the last sub pages element must handle a possible 404
             if not any(el for el in self.descendants() if isinstance(el, SubPages)) and match_result.remaining_path:
-                self.clear()
-                self._show_404()
+                if self._should_show_404:
+                    self.clear()
+                    with self:
+                        self._show_404()
                 return None
             self._scroll_to_fragment(match_result.fragment)
             return match_result
@@ -85,7 +91,8 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
         self.clear()
         with self:
             if match_result is None:
-                self._show_404()
+                if self._should_show_404:
+                    self._show_404()
                 return None
             self._send_update_on_path_change = False
             self._current_match = match_result
@@ -102,11 +109,14 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
             self.clear()  # NOTE: we do not want to show partial content created by the builder before the exception was raised
             self._show_error(e)
             return True
-        # NOTE: if  the full path could not be consumed, the leaf-sub pages element must handle a possible 404
+        # NOTE: if the full path could not be consumed, the deepest sub pages element must handle a possible 404
         has_children = any(el for el in self.descendants() if isinstance(el, SubPages))
         if match.remaining_path and not has_children:
-            self.clear()
-            self._show_404()
+            if self._should_show_404:
+                self.clear()
+                self._show_404()
+            if asyncio.iscoroutine(result):
+                result.close()
             return False
 
         self._scroll_to_fragment(match.fragment)
@@ -147,7 +157,6 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
                 match.remaining_path = urlparse(relative_path).path.rstrip('/')[len(match.path):]
                 break
             segments.pop()
-
         return match
 
     def _match_route(self, path: str) -> Optional[RouteMatch]:
