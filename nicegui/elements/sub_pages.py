@@ -73,11 +73,13 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
         :return: RouteMatch if a matching route was found and displayed, None for 404
         """
         match_result = self._find_matching_path()
-        # NOTE: if path/query params are the same, we are not re-rendering the page but only updating the fragment
-        if match_result is not None and \
-                self._current_match is not None and \
-                match_result.path == self._current_match.path and \
-                not self._required_query_params_changed(match_result):
+
+        # NOTE: if path/query params are the same, only update fragment without re-rendering
+        if (match_result is not None and
+            self._current_match is not None and
+            match_result.path == self._current_match.path and
+                not self._required_query_params_changed(match_result)):
+
             # NOTE: if the full path could not be consumed, the last sub pages element must handle a possible 404
             if not any(el for el in self.descendants() if isinstance(el, SubPages)) and match_result.remaining_path:
                 if self._should_show_404:
@@ -106,9 +108,10 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
         try:
             result = match.builder(**kwargs)
         except Exception as e:
-            self.clear()  # NOTE: we do not want to show partial content created by the builder before the exception was raised
+            self.clear()  # NOTE: clear partial content created before the exception
             self._show_error(e)
             return True
+
         # NOTE: if the full path could not be consumed, the deepest sub pages element must handle a possible 404
         has_children = any(el for el in self.descendants() if isinstance(el, SubPages))
         if match.remaining_path and not has_children:
