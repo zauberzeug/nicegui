@@ -248,6 +248,18 @@ def test_nested_sub_pages_on_root_path(screen: Screen):
     screen.should_not_contain('home2')
     screen.should_not_contain('some content')
 
+    screen.open('/content')
+    screen.should_contain('some content')
+    screen.should_contain('home1')
+    screen.should_not_contain('home2')
+    screen.should_not_contain('404: sub page')
+
+    screen.open('/bad_path')
+    screen.should_contain('404: sub page /bad_path not found')
+    screen.should_contain('home1')
+    screen.should_not_contain('home2')
+    screen.should_not_contain('some content')
+
 
 def test_async_nested_sub_pages(screen: Screen):
     calls = {
@@ -988,3 +1000,35 @@ def test_exception_in_page_builder(screen: Screen):
     screen.should_contain(f'500: {msg_content}')
     screen.assert_py_logger('ERROR', msg_content)
     screen.should_not_contain('content before exception')
+
+
+def test_disabling_404(screen: Screen):
+
+    @ui.page('/')
+    @ui.page('/{_:path}')
+    def index():
+        ui.link('Link to 404', '/main/404')
+        ui.button('Button to 404', on_click=lambda: ui.navigate.to('/main/404'))
+        ui.sub_pages({
+            '/main': main,
+        }, show_404=False)
+
+    def main():
+        ui.label('main page')
+
+    screen.open('/main')
+    screen.should_contain('main page')
+    screen.click('Link to 404')  # open by link
+    screen.should_not_contain('404: sub page /404 not found')
+    screen.should_contain('main page')
+
+    screen.open('/bad_path')
+    screen.should_not_contain('not found')
+
+    screen.open('/main/bad_path')  # direct access
+    screen.should_not_contain('not found')
+    screen.should_contain('main page')
+
+    screen.click('Button to 404')  # open via navigate.to
+    screen.should_not_contain('not found')
+    screen.should_contain('main page')
