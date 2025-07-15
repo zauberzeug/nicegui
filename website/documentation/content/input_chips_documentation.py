@@ -24,10 +24,10 @@ def new_value_modes():
     chips = ui.input_chips() \
         .classes('w-64')
     ui.toggle(
-        {"add": "add", "add-unique": "add-unique", "toggle": "toggle"},
-        value="toggle",
-    ).on_value_change(lambda e: chips._props.update({"new-value-mode": e.value}))
-    ui.button("Add Random", on_click=add_random)
+        {'add': 'add', 'add-unique': 'add-unique', 'toggle': 'toggle'},
+        value='toggle',
+    ).on_value_change(lambda e: chips._props.update({'new-value-mode': e.value}))
+    ui.button('Add Random', on_click=add_random)
 
 
 @doc.demo('Delimit values', '''
