@@ -69,7 +69,7 @@ def _main_page() -> None:
         '/documentation': _documentation_page,
         '/documentation/{name}': lambda name: _documentation_detail_page(name, menu, tree),
         '/imprint_privacy': imprint_privacy.create,
-    }).classes('mx-auto')
+    }, show_404=False).classes('mx-auto')
     _update_menu(ui.context.client.sub_pages_router.current_path)
     ui.context.client.sub_pages_router.on_path_changed.append(_update_menu)
 
