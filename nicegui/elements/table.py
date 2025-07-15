@@ -65,7 +65,7 @@ class Table(FilterElement, component='table.js'):
         self._column_defaults = column_defaults
         self._use_columns_from_df = False
         self._props['columns'] = self._normalize_columns(columns)
-        self._props['rows'] = rows
+        self._props['rows'] = self._sanitize_rows(rows)
         self._props['row-key'] = row_key
         self._props['title'] = title
         self._props['hide-pagination'] = pagination is None
@@ -109,6 +109,22 @@ class Table(FilterElement, component='table.js'):
 
     def _normalize_columns(self, columns: List[Dict]) -> List[Dict]:
         return [{**self._column_defaults, **column} for column in columns] if self._column_defaults else columns
+
+    @staticmethod
+    def _sanitize_rows(rows: List[Dict]) -> List[Dict]:
+        """Sanitize row data by converting non-JSON-serializable values to strings.
+        This prevents memory build-up and browser crashes when rows contain lists or other
+        complex data types that are not efficiently serializable.
+        """
+        def sanitize_value(value: Any) -> Any:
+            if isinstance(value, (list, tuple, set, dict)):
+                return str(value)
+            # Add other problematic types as needed
+            return value
+        return [
+            {key: sanitize_value(value) for key, value in row.items()}
+            for row in rows
+        ]
 
     @classmethod
     def from_pandas(cls,
@@ -238,7 +254,7 @@ class Table(FilterElement, component='table.js'):
                       columns: Optional[List[Dict]],
                       column_defaults: Optional[Dict]) -> None:
         """Helper function to update the table."""
-        self.rows[:] = rows
+        self.rows[:] = self._sanitize_rows(rows)
         if column_defaults is not None:
             self._column_defaults = column_defaults
         if columns or self._use_columns_from_df:
@@ -280,7 +296,7 @@ class Table(FilterElement, component='table.js'):
 
     @rows.setter
     def rows(self, value: List[Dict]) -> None:
-        self._props['rows'] = value
+        self._props['rows'] = self._sanitize_rows(value)
         self.update()
 
     @property
@@ -379,7 +395,8 @@ class Table(FilterElement, component='table.js'):
                       'This option will be removed in NiceGUI 3.0. '
                       'Pass a list instead or use add_row() for a single row.')
             rows = [rows, *args]
-        self.rows.extend(rows)
+        sanitized_rows = self._sanitize_rows(rows)
+        self.rows.extend(sanitized_rows)
         self.update()
 
     def add_row(self, row: Dict) -> None:
@@ -408,7 +425,7 @@ class Table(FilterElement, component='table.js'):
         :param rows: list of rows to update
         :param clear_selection: whether to clear the selection (default: True)
         """
-        self.rows[:] = rows
+        self.rows[:] = self._sanitize_rows(rows)
         if clear_selection:
             self.selected.clear()
         self.update()

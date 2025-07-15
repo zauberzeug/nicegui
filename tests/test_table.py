@@ -365,3 +365,226 @@ def test_columns_from_df(screen: Screen, df_type: str):
     screen.click('Update cars with columns')  # updated columns via parameter
     screen.should_contain('Hyundai')
     screen.should_contain('i30')
+
+
+def test_table_with_lists_in_rows(screen: Screen):
+    """Test that tables handle lists in row data without causing memory issues."""
+    columns = [
+        {'name': 'name', 'label': 'Name', 'field': 'name'},
+        {'name': 'tags', 'label': 'Tags', 'field': 'tags'},
+        {'name': 'scores', 'label': 'Scores', 'field': 'scores'},
+    ]
+
+    rows = [
+        {'name': 'Alice', 'tags': ['python', 'django'], 'scores': [95, 87, 92]},
+        {'name': 'Bob', 'tags': ['javascript', 'react'], 'scores': [88, 91, 85]},
+        {'name': 'Carol', 'tags': 'single-tag', 'scores': 90},  # Mixed types
+    ]
+
+    table = ui.table(columns=columns, rows=rows, row_key='name')
+
+    screen.open('/')
+
+    # Verify content is displayed (lists converted to strings)
+    screen.should_contain('Alice')
+    screen.should_contain("['python', 'django']")
+    screen.should_contain('[95, 87, 92]')
+    screen.should_contain('Bob')
+    screen.should_contain("['javascript', 'react']")
+    screen.should_contain('Carol')
+    screen.should_contain('single-tag')  # Non-list should remain unchanged
+
+    # Verify that the internal data is sanitized
+    assert isinstance(table.rows[0]['tags'], str)
+    assert isinstance(table.rows[0]['scores'], str)
+    assert table.rows[2]['tags'] == 'single-tag'  # Non-list unchanged
+
+
+def test_table_add_rows_with_lists(screen: Screen):
+    """Test adding rows with lists to existing table."""
+    table = ui.table(columns=columns(), rows=rows())
+
+    def add_row_with_list():
+        table.add_row({'id': 3, 'name': 'Carol', 'age': [25, 26, 27]})  # Age as list
+
+    ui.button('Add row with list', on_click=add_row_with_list)
+
+    screen.open('/')
+    screen.click('Add row with list')
+    screen.should_contain('Carol')
+    screen.should_contain('[25, 26, 27]')
+
+    # Verify internal data is sanitized
+    assert isinstance(table.rows[-1]['age'], str)
+
+
+def test_table_list_sanitization_comprehensive(screen: Screen):
+    """Comprehensive test for list sanitization in tables."""
+
+    # Test 1: Constructor sanitization
+    rows_with_lists = [
+        {'id': 1, 'data': ['a', 'b', 'c']},
+        {'id': 2, 'data': (1, 2, 3)},
+    ]
+    table = ui.table(
+        columns=[{'name': 'id', 'field': 'id'}, {'name': 'data', 'field': 'data'}],
+        rows=rows_with_lists,
+        row_key='id'
+    )
+
+    screen.open('/')
+
+    assert isinstance(table.rows[0]['data'], str)
+    assert isinstance(table.rows[1]['data'], str)
+
+    # Test 2: Property setter sanitization
+    table.rows = [{'id': 3, 'data': {'set', 'data'}}]
+    assert isinstance(table.rows[0]['data'], str)
+
+    # Test 3: add_row sanitization
+    table.add_row({'id': 4, 'data': [1, 2, [3, 4]]})
+    assert isinstance(table.rows[-1]['data'], str)
+
+    # Test 4: add_rows sanitization
+    table.add_rows([
+        {'id': 5, 'data': ('tuple', 'data')},
+        {'id': 6, 'data': ['more', 'list', 'data']}
+    ])
+    assert all(isinstance(row['data'], str) for row in table.rows[-2:])
+
+    # Test 5: update_rows sanitization
+    table.update_rows([
+        {'id': 7, 'data': {'set1', 'set2'}},
+        {'id': 8, 'data': [True, False, None]}
+    ])
+    assert all(isinstance(row['data'], str) for row in table.rows)
+
+
+def test_sanitize_rows_unit():
+    """Unit test for the _sanitize_rows method."""
+    from nicegui.elements.table import Table
+
+    # Test data with various types
+    test_rows = [
+        {'id': 1, 'list_data': [1, 2, 3]},
+        {'id': 2, 'tuple_data': (4, 5, 6)},
+        {'id': 3, 'set_data': {7, 8, 9}},
+        {'id': 4, 'dict_data': {'key': 'value'}},  # Should be converted to string
+        {'id': 5, 'string_data': 'hello'},  # Should remain unchanged
+        {'id': 6, 'int_data': 42},  # Should remain unchanged
+        {'id': 7, 'none_data': None},  # Should remain unchanged
+        {'id': 8, 'nested_list': [1, [2, 3], 4]},  # Nested structures
+    ]
+
+    sanitized = Table._sanitize_rows(test_rows)
+
+    # Lists, tuples, sets, and dicts should be converted to strings
+    assert isinstance(sanitized[0]['list_data'], str)
+    assert sanitized[0]['list_data'] == '[1, 2, 3]'
+
+    assert isinstance(sanitized[1]['tuple_data'], str)
+    assert sanitized[1]['tuple_data'] == '(4, 5, 6)'
+
+    assert isinstance(sanitized[2]['set_data'], str)
+    set_str = sanitized[2]['set_data']
+    assert '7' in set_str and '8' in set_str and '9' in set_str
+
+    # Dictionaries should also be converted to strings
+    assert isinstance(sanitized[3]['dict_data'], str)
+    assert sanitized[3]['dict_data'] == "{'key': 'value'}"
+
+    # Other types should remain unchanged
+    assert isinstance(sanitized[4]['string_data'], str)
+    assert sanitized[4]['string_data'] == 'hello'
+    assert isinstance(sanitized[5]['int_data'], int)
+    assert sanitized[5]['int_data'] == 42
+    assert sanitized[6]['none_data'] is None
+    assert isinstance(sanitized[7]['nested_list'], str)
+
+
+def test_table_nested_complex_data(screen: Screen):
+    """Test handling of deeply nested complex structures."""
+    columns = [
+        {'name': 'id', 'label': 'ID', 'field': 'id'},
+        {'name': 'data', 'label': 'Data', 'field': 'data'},
+    ]
+
+    rows = [
+        {'id': 1, 'data': {'nested': ['list', 'inside', 'dict']}},  # Nested structures
+        {'id': 2, 'data': [{'dict': 'inside'}, {'list': 'here'}]},  # Complex nesting
+    ]
+
+    table = ui.table(columns=columns, rows=rows, row_key='id')
+
+    screen.open('/')  # Establish proper context
+
+    # All complex structures should be stringified
+    assert all(isinstance(row['data'], str) for row in table.rows)
+
+
+def test_table_performance_with_lists(screen: Screen):
+    """Test that large tables with lists perform acceptably."""
+    import time
+
+    columns = [
+        {'name': 'id', 'label': 'ID', 'field': 'id'},
+        {'name': 'tags', 'label': 'Tags', 'field': 'tags'},
+    ]
+
+    # Create many rows with lists
+    rows = []
+    for i in range(1000):
+        rows.append({
+            'id': i,
+            'tags': [f'tag_{j}' for j in range(10)],  # Each row has a list of 10 items
+        })
+
+    start_time = time.time()
+    table = ui.table(columns=columns, rows=rows, row_key='id')
+    creation_time = time.time() - start_time
+
+    screen.open('/')  # Establish proper context
+
+    # Should complete quickly (within reasonable time)
+    assert creation_time < 5.0, f'Table creation took too long: {creation_time:.2f}s'
+
+    # Verify data is sanitized
+    assert all(isinstance(row['tags'], str) for row in table.rows)
+
+    # Test adding more data
+    start_time = time.time()
+    table.add_rows([{'id': i + 1000, 'tags': [f'new_tag_{j}' for j in range(5)]}
+                   for i in range(100)])
+    add_time = time.time() - start_time
+
+    assert add_time < 2.0, f'Adding rows took too long: {add_time:.2f}s'
+
+
+def test_table_lists_no_browser_crash(screen: Screen):
+    """Test the exact scenario from GitHub issue #4837."""
+    columns = [
+        {'name': 'col1', 'label': 'Column 1', 'field': 'col1', 'required': True},
+        {'name': 'col2', 'label': 'Column 2', 'field': 'col2'},
+        {'name': 'col3', 'label': 'Column 3', 'field': 'col3', 'required': True},
+    ]
+
+    # This is the exact data from the GitHub issue that caused crashes
+    rows = [
+        {'col1': '1 Data point', 'col2': '1 Data point', 'col3': '1 Data point'},
+        {'col1': '2 Data point', 'col2': '2 Data point', 'col3': '2 Data point'},
+        {'col1': '3 Data point', 'col2': '3 Data point', 'col3': '3 Data point'},
+        {'col1': '4 Data point', 'col2': '4 Data point', 'col3': ['Point 1', 'Point 2', 'Point 3']},
+    ]
+
+    table = ui.table(columns=columns, rows=rows, row_key='col1')
+
+    screen.open('/')
+
+    # Should render without crashing
+    screen.should_contain('1 Data point')
+    screen.should_contain('4 Data point')
+    screen.should_contain("['Point 1', 'Point 2', 'Point 3']")
+
+    # Verify sanitization occurred
+    assert isinstance(table.rows[3]['col3'], str)
+    assert table.rows[3]['col3'] == "['Point 1', 'Point 2', 'Point 3']"
