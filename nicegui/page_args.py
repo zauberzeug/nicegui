@@ -27,6 +27,8 @@ class RouteMatch:
     '''The query parameters from the URL'''
     fragment: str
     '''The URL fragment (e.g., "section" from "#section")'''
+    remaining_path: str = ''
+    '''The remaining path after the matched path'''
 
     @property
     def full_url(self) -> str:
@@ -38,6 +40,9 @@ class RouteMatch:
         if self.query_params:
             url += '?' + str(self.query_params)
         return url
+
+    def __repr__(self) -> str:
+        return f'{self.path=}, {self.pattern=}, builder={self.builder.__name__}, {self.parameters=}, {self.query_params=}, {self.fragment=}, {self.remaining_path=}'
 
 
 @dataclass(**KWONLY_SLOTS)

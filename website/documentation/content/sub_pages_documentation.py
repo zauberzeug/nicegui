@@ -164,6 +164,56 @@ def page_args_demo():
     ui.sub_pages({'/': main}, root_path='/documentation/sub_pages')
 
 
+@doc.demo('Nested Sub Pages', '''
+    Sub pages elements can be nested to create a hierarchical page structure.
+    Each of these elements determines which part of the path they should handle by:
+
+      1. getting the full url path from `ui.context.client.sub_pages_router`
+      2. removing the leading part which was handled by the parent element
+      3. matching the route with the most specific path
+      4. leaving the remaining part of the path for the next element (or if there is none, show a 404 error)
+''')
+def nested_sub_pages_demo():
+    # @ui.page('/')
+    # @ui.page('/{_:path}')  # NOTE: our page should catch all paths
+    # def index():
+    #     ui.link('Go to main', '/')
+    #     ui.link('Go to other', '/other')
+    #     ui.sub_pages({
+    #         '/': main,
+    #         '/other': other,
+    #     }).classes('border-2 p-2')
+
+    def main():
+        ui.label('main page')
+
+    def other():
+        ui.label('sub page')
+        # ui.link('Go to A', '/sub/a')
+        # ui.link('Go to B', '/sub/b')
+        ui.link('Go to A', '/documentation/sub_pages/other/a')  # HIDE
+        ui.link('Go to B', '/documentation/sub_pages/other/b')  # HIDE
+        ui.sub_pages({
+            '/': sub_main,
+            '/a': sub_page_a,
+            '/b': sub_page_b
+        }).classes('border-2 p-2')
+
+    def sub_main():
+        ui.label('sub main page')
+
+    def sub_page_a():
+        ui.label('sub A page')
+
+    def sub_page_b():
+        ui.label('sub B page')
+
+    # END OF DEMO
+    ui.link('Go to main', '/documentation/sub_pages')
+    ui.link('Go to other', '/documentation/sub_pages/other')
+    ui.sub_pages({'/': main, '/other': other, }, root_path='/documentation/sub_pages').classes('border-2 p-2')
+
+
 doc.reference(ui.sub_pages, title='Reference for ui.sub_pages')
 
 doc.reference(PageArgs, title='Reference for PageArgs')
