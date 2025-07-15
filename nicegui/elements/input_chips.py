@@ -52,8 +52,8 @@ class InputChips(LabelElement, ValidationElement, DisableableElement):
         self._props['hide-dropdown-icon'] = True
         self._props['clearable'] = clearable
 
-        self.new_value = []
-        self._old_values = value
+        self.new_value: List[str] = []
+        self._old_values: List[str] = value
 
     def _event_args_to_value(self, e: GenericEventArguments) -> Any:
         self.new_value = [val for val in e.args if val not in self._old_values]
