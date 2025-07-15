@@ -31,7 +31,7 @@ def new_value_modes():
 
 
 @doc.demo('Delimit values', '''
-    You can delimit values with the help of `on_change`. 
+    You can delimit values with the help of `on_change`.
     If you are binding value from `input_chips`, you will need to manually update the bindings on value change.
     Note that, `on_change` is not only limited to `delimiting values` but can be changed as per your needs.
 
