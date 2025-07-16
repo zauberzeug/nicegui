@@ -82,20 +82,15 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
 
             # NOTE: if the full path could not be consumed, the last sub pages element must handle a possible 404
             if not any(el for el in self.descendants() if isinstance(el, SubPages)) and match_result.remaining_path:
-                if self._should_show_404:
-                    self.clear()
-                    with self:
-                        self._show_404()
-                return None
+                return self._display_404_if_enabled()
             self._scroll_to_fragment(match_result.fragment)
             return match_result
+
         self._cancel_active_tasks()
         self.clear()
         with self:
             if match_result is None:
-                if self._should_show_404:
-                    self._show_404()
-                return None
+                return self._display_404_if_enabled()
             self._send_update_on_path_change = False
             self._current_match = match_result
             self._send_update_on_path_change = True
@@ -111,12 +106,11 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
             self.clear()  # NOTE: clear partial content created before the exception
             self._show_error(e)
             return True
+
         # NOTE: if the full path could not be consumed, the deepest sub pages element must handle the possible 404
         has_children = any(el for el in self.descendants() if isinstance(el, SubPages))
         if match.remaining_path and not has_children:
-            if self._should_show_404:
-                self.clear()
-                self._show_404()
+            self._display_404_if_enabled()
             if asyncio.iscoroutine(result):
                 result.close()
             return False
@@ -130,6 +124,13 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
             self._active_tasks.add(task)
             task.add_done_callback(self._active_tasks.discard)
         return True
+
+    def _display_404_if_enabled(self) -> Optional[RouteMatch]:
+        if self._should_show_404:
+            self.clear()
+            with self:
+                self._show_404()
+        return None
 
     def _show_404(self) -> None:
         """Display a 404 error message for unmatched routes."""
