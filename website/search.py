@@ -71,7 +71,7 @@ class Search:
                             continue
                         with ui.item().props('clickable'):
                             with ui.item_section():
-                                with ui.link(target=result_item['url']):
+                                with ui.link(target=result_item['url']).on('click', self.dialog.close):
                                     ui.item_label(result_item['title'])
                                     with ui.item_label().props('caption'):
                                         intro = result_item['content'].split(':param')[0]
