@@ -111,8 +111,7 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
             self.clear()  # NOTE: clear partial content created before the exception
             self._show_error(e)
             return True
-
-        # NOTE: if the full path could not be consumed, the deepest sub pages element must handle a possible 404
+        # NOTE: if the full path could not be consumed, the deepest sub pages element must handle the possible 404
         has_children = any(el for el in self.descendants() if isinstance(el, SubPages))
         if match.remaining_path and not has_children:
             if self._should_show_404:
