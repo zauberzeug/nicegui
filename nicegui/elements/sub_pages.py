@@ -53,7 +53,7 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
         self._active_tasks: Set[asyncio.Task] = set()
         self._send_update_on_path_change = True
         self._current_match: Optional[RouteMatch] = None
-        self._should_show_404 = show_404
+        self._404_enabled = show_404
         self.show()
 
     def add(self, path: str, page: Callable) -> Self:
@@ -82,7 +82,7 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
 
             # NOTE: if the full path could not be consumed, the last sub pages element must handle a possible 404
             if not any(el for el in self.descendants() if isinstance(el, SubPages)) and match_result.remaining_path:
-                return self._display_404_if_enabled()
+                return self._try_render_404()
             self._scroll_to_fragment(match_result.fragment)
             return match_result
 
@@ -90,27 +90,27 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
         self.clear()
         with self:
             if match_result is None:
-                return self._display_404_if_enabled()
+                return self._try_render_404()
             self._send_update_on_path_change = False
             self._current_match = match_result
             self._send_update_on_path_change = True
-            if not self._show_page(match_result):
+            if not self._render_page(match_result):
                 return None
         return match_result
 
-    def _show_page(self, match: RouteMatch) -> bool:
+    def _render_page(self, match: RouteMatch) -> bool:
         kwargs = PageArgs.build_kwargs(match, self, self._data)
         try:
             result = match.builder(**kwargs)
         except Exception as e:
             self.clear()  # NOTE: clear partial content created before the exception
-            self._show_error(e)
+            self._render_error(e)
             return True
 
         # NOTE: if the full path could not be consumed, the deepest sub pages element must handle the possible 404
         has_children = any(el for el in self.descendants() if isinstance(el, SubPages))
         if match.remaining_path and not has_children:
-            self._display_404_if_enabled()
+            self._try_render_404()
             if asyncio.iscoroutine(result):
                 result.close()
             return False
@@ -125,18 +125,18 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
             task.add_done_callback(self._active_tasks.discard)
         return True
 
-    def _display_404_if_enabled(self) -> Optional[RouteMatch]:
-        if self._should_show_404:
+    def _try_render_404(self) -> Optional[RouteMatch]:
+        if self._404_enabled:
             self.clear()
             with self:
-                self._show_404()
+                self._render_404()
         return None
 
-    def _show_404(self) -> None:
+    def _render_404(self) -> None:
         """Display a 404 error message for unmatched routes."""
         Label(f'404: sub page {self._router.current_path} not found')
 
-    def _show_error(self, _: Exception) -> None:  # NOTE: exception is exposed for debugging scenarios via inheritance
+    def _render_error(self, _: Exception) -> None:  # NOTE: exception is exposed for debugging scenarios via inheritance
         msg = f'sub page {self._router.current_path} produced an error'
         Label(f'500: {msg}')
         log.error(msg, exc_info=True)
