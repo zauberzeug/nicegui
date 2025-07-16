@@ -8,6 +8,7 @@ screenshots/
 venv
 .idea
 .nicegui/
+.tailwind_jit/
 *.sqlite*
 .DS_Store
 .env
