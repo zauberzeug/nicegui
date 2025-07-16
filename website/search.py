@@ -81,13 +81,3 @@ class Search:
                                             element = custom_restructured_text(intro)
                                         element.classes('text-grey line-clamp-1')
         background_tasks.create_lazy(handle_input(), name='handle_search_input')
-
-    def open_url(self, url: str) -> None:
-        ui.run_javascript(f'''
-            const url = "{url}"
-            if (url.startsWith("http"))
-                window.open(url, "_blank");
-            else
-                window.location.href = url;
-        ''')
-        self.dialog.close()
