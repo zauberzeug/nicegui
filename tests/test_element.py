@@ -1,3 +1,4 @@
+import weakref
 from typing import Dict, Optional
 
 import pytest
@@ -342,3 +343,18 @@ def test_update_before_client_connection(screen: Screen):
 
     screen.open('/')
     screen.should_contain('Hello again!')
+
+
+def test_no_cyclic_references(screen: Screen):
+    elements: weakref.WeakSet = weakref.WeakSet()
+
+    with ui.card() as card:
+        for _ in range(10):
+            elements.add(ui.element())
+            elements.add(ui.pyplot())
+            elements.add(ui.query('div'))
+
+    card.clear()
+    assert len(elements) == 0, 'all elements should be deleted immediately'
+
+    screen.open('/')
