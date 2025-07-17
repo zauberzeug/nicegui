@@ -27,6 +27,30 @@
     <script defer src="{{ prefix | safe }}/_nicegui/{{version}}/static/tailwindcss.min.js"></script>
     {% endif %}
     <!-- prevent Prettier from removing this line -->
+    {% if unocss %}
+    <link rel="stylesheet" href="{{ prefix | safe }}/_nicegui/{{version}}/static/unocss_reset/tailwind.css" />
+    <script src="{{ prefix | safe }}/_nicegui/{{version}}/static/unocss_runtime/{{unocss_filename}}.global.js"></script>
+    <script>
+      window.__unocss = {
+          presets: [{{ unocss_initline | safe }}],
+          runtime: { ready: () => false },
+      };
+
+      function updateDarkMode() {
+        const system_prefers_dark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        if (window.nicegui_unocss_dark === true || (window.nicegui_unocss_dark === null && system_prefers_dark)) {
+          document.body.classList.add("dark");
+        } else {
+          document.body.classList.remove("dark");
+        }
+      }
+      window.nicegui_unocss_dark = {"False": false, "True": true, "None": null}["{{ dark | safe }}"];
+      updateDarkMode();
+      window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', updateDarkMode);
+    </script>
+    <script src="{{ prefix | safe }}/_nicegui/{{version}}/static/unocss_runtime/core.global.js"></script>
+    {% endif %}
+    <!-- prevent Prettier from removing this line -->
     {% if prod_js %}
     <script defer src="{{ prefix | safe }}/_nicegui/{{version}}/static/vue.global.prod.js"></script>
     <script defer src="{{ prefix | safe }}/_nicegui/{{version}}/static/quasar.umd.prod.js"></script>
@@ -39,7 +63,7 @@
     <script defer src="{{ prefix | safe }}/_nicegui/{{version}}/static/lang/{{ language }}.umd.prod.js"></script>
     {{ body_html | safe }}
 
-    <div id="app"></div>
+    <div id="app" style="display: none"></div>
     <div id="popup" aria-hidden="true">
       <span>{{ translations.connection_lost }}</span>
       <span>{{ translations.trying_to_reconnect }}</span>
