@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import asyncio
 import functools
 import hashlib
@@ -7,13 +9,16 @@ import struct
 import threading
 import time
 import webbrowser
-from collections.abc import Awaitable
+from collections.abc import Callable
+from inspect import Parameter, signature
 from pathlib import Path
-from typing import Any, Optional, Set, Tuple, Union
+from typing import TYPE_CHECKING, Any, Optional, Set, Tuple, Union
 
-import wait_for2
-
+from .context import context
 from .logging import log
+
+if TYPE_CHECKING:
+    from .element import Element
 
 _shown_warnings: Set[str] = set()
 
@@ -39,6 +44,14 @@ def is_coroutine_function(obj: Any) -> bool:
     while isinstance(obj, functools.partial):
         obj = obj.func
     return asyncio.iscoroutinefunction(obj)
+
+
+def expects_arguments(func: Callable) -> bool:
+    """Check if the function expects non-variable arguments without a default value."""
+    return any(p.default is Parameter.empty and
+               p.kind is not Parameter.VAR_POSITIONAL and
+               p.kind is not Parameter.VAR_KEYWORD
+               for p in signature(func).parameters.values())
 
 
 def is_file(path: Optional[Union[str, Path]]) -> bool:
@@ -115,10 +128,11 @@ def event_type_to_camel_case(string: str) -> str:
     return '.'.join(kebab_to_camel_case(part) if part != '-' else part for part in string.split('.'))
 
 
-async def wait_for(fut: Awaitable, timeout: Optional[float] = None) -> None:
-    """Wait for a future to complete.
-
-    This function is a wrapper around ``wait_for2.wait_for`` which is a drop-in replacement for ``asyncio.wait_for``.
-    It can be removed once we drop support for older versions than Python 3.13 which fixes ``asyncio.wait_for``.
-    """
-    return await wait_for2.wait_for(fut, timeout)
+def require_top_level_layout(element: Element) -> None:
+    """Check if the element is a top level layout element."""
+    parent = context.slot.parent
+    if parent != parent.client.content:
+        raise RuntimeError(
+            f'Found top level layout element "{element.__class__.__name__}" inside element "{parent.__class__.__name__}". '
+            'Top level layout elements can not be nested but must be direct children of the page content.',
+        )

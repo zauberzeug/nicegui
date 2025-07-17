@@ -109,6 +109,31 @@ class page:
             except asyncio.CancelledError:
                 pass
 
+        def create_error_page(e: Exception, request: Request) -> Response:
+            page_exception_handler = core.app._page_exception_handler  # pylint: disable=protected-access
+            if page_exception_handler is None:
+                raise e
+            with Client(page(''), request=request) as error_client:
+                # page exception handler
+                if helpers.expects_arguments(page_exception_handler):
+                    page_exception_handler(e)
+                else:
+                    page_exception_handler()
+
+                # FastAPI exception handlers
+                for key, handler in core.app.exception_handlers.items():
+                    if key == 500 or (isinstance(key, type) and isinstance(e, key)):
+                        result = handler(request, e)
+                        if helpers.is_coroutine_function(handler):
+                            async def await_handler(result: Any) -> None:
+                                await result
+                            background_tasks.create(await_handler(result), name=f'exception handler {handler.__name__}')
+
+                # NiceGUI exception handlers
+                core.app.handle_exception(e)
+
+                return error_client.build_response(request, 500)
+
         @wraps(func)
         async def decorated(*dec_args, **dec_kwargs) -> Response:
             request = dec_kwargs['request']
@@ -117,11 +142,17 @@ class page:
             with Client(self, request=request) as client:
                 if any(p.name == 'client' for p in inspect.signature(func).parameters.values()):
                     dec_kwargs['client'] = client
-                result = func(*dec_args, **dec_kwargs)
+                try:
+                    result = func(*dec_args, **dec_kwargs)
+                except Exception as e:
+                    return create_error_page(e, request)
             if helpers.is_coroutine_function(func):
-                async def wait_for_result() -> None:
+                async def wait_for_result() -> Optional[Response]:
                     with client:
-                        return await result
+                        try:
+                            return await result
+                        except Exception as e:
+                            return create_error_page(e, request)
                 task = background_tasks.create(wait_for_result())
                 task_wait_for_connection = background_tasks.create(
                     client._waiting_for_connection.wait(),  # pylint: disable=protected-access

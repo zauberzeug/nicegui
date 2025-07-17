@@ -1,7 +1,7 @@
 from typing import Set
 
+import httpx
 import pytest
-import requests
 
 from nicegui import __version__, ui
 from nicegui.testing import Screen
@@ -13,7 +13,7 @@ def activate_fastapi_docs(screen: Screen):
 
 
 def get_openapi_paths() -> Set[str]:
-    return set(requests.get(f'http://localhost:{Screen.PORT}/openapi.json', timeout=5).json()['paths'])
+    return set(httpx.get(f'http://localhost:{Screen.PORT}/openapi.json', timeout=5).json()['paths'])
 
 
 def test_endpoint_documentation_default(screen: Screen):

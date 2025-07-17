@@ -38,6 +38,8 @@ __all__ = [
     'editor',
     'element',
     'expansion',
+    'fab',
+    'fab_action',
     'footer',
     'fullscreen',
     'grid',
@@ -154,11 +156,18 @@ from .elements.context_menu import ContextMenu as context_menu
 from .elements.dark_mode import DarkMode as dark_mode
 from .elements.date import Date as date
 from .elements.dialog import Dialog as dialog
+from .elements.drawer import Drawer as drawer
+from .elements.drawer import LeftDrawer as left_drawer
+from .elements.drawer import RightDrawer as right_drawer
 from .elements.echart import EChart as echart
 from .elements.editor import Editor as editor
 from .elements.expansion import Expansion as expansion
+from .elements.fab import Fab as fab
+from .elements.fab import FabAction as fab_action
+from .elements.footer import Footer as footer
 from .elements.fullscreen import Fullscreen as fullscreen
 from .elements.grid import Grid as grid
+from .elements.header import Header as header
 from .elements.highchart import highchart
 from .elements.html import Html as html
 from .elements.icon import Icon as icon
@@ -185,6 +194,7 @@ from .elements.menu import MenuItem as menu_item
 from .elements.mermaid import Mermaid as mermaid
 from .elements.notification import Notification as notification
 from .elements.number import Number as number
+from .elements.page_sticky import PageSticky as page_sticky
 from .elements.pagination import Pagination as pagination
 from .elements.plotly import Plotly as plotly
 from .elements.progress import CircularProgress as circular_progress
@@ -240,11 +250,5 @@ from .functions.refreshable import refreshable, refreshable_method, state
 from .functions.style import add_css, add_sass, add_scss
 from .functions.update import update
 from .page import page
-from .page_layout import Drawer as drawer
-from .page_layout import Footer as footer
-from .page_layout import Header as header
-from .page_layout import LeftDrawer as left_drawer
-from .page_layout import PageSticky as page_sticky
-from .page_layout import RightDrawer as right_drawer
 from .ui_run import run
 from .ui_run_with import run_with

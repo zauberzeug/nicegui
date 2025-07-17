@@ -100,19 +100,10 @@ def fab() -> None:
             .props('fab color=accent')
 
 
-@doc.demo('Expandable Floating Action Button', '''
-    The [Quasar FAB (q-fab)](https://quasar.dev/vue-components/floating-action-button),
-    is a button that reveals multiple actions when clicked.
-    While it is not a separate element in NiceGUI, it can be easily created using the generic `ui.element`.
+doc.text('Expandable Floating Action Button', '''
+    To create a Floating Action Button (FAB) with multiple actions that are revealed when the FAB is clicked,
+    you can use [`ui.fab` and `ui.fab_action`](fab) elements,
+    which are based on [Quasar's QFab component](https://quasar.dev/vue-components/floating-action-button).
 ''')
-def expandable_fab() -> None:
-    with ui.element('q-fab').props('icon=navigation color=green'):
-        ui.element('q-fab-action').props('icon=train color=green-5') \
-            .on('click', lambda: ui.notify('train'))
-        ui.element('q-fab-action').props('icon=sailing color=green-5') \
-            .on('click', lambda: ui.notify('boat'))
-        ui.element('q-fab-action').props('icon=rocket color=green-5') \
-            .on('click', lambda: ui.notify('rocket'))
-
 
 doc.reference(ui.button)
