@@ -1,4 +1,4 @@
-from colorsys import rgb_to_hls
+from colorsys import rgb_to_yiq
 from typing import Any, Optional
 
 from ..events import Handler, ValueChangeEventArguments
@@ -59,7 +59,7 @@ class ColorInput(LabelElement, ValueElement, DisableableElement):
         r = int(color[1:3], 16) / 255
         g = int(color[3:5], 16) / 255
         b = int(color[5:7], 16) / 255
-        luminance = rgb_to_hls(r, g, b)[1]
+        luminance = rgb_to_yiq(r, g, b)[0]
         icon_color = 'grey-10' if luminance > 0.5 else 'grey-3'
 
         self.button.style(f'background-color: {color};') \
