@@ -63,4 +63,4 @@ class ColorInput(LabelElement, ValueElement, DisableableElement):
         icon_color = 'grey-10' if luminance > 0.5 else 'grey-3'
 
         self.button.style(f'background-color: {color};') \
-            .props(f'inline color="{icon_color}"')
+            .props(f'color="{icon_color}"')
