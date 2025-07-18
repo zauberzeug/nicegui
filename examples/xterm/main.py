@@ -11,7 +11,6 @@ import pty
 import signal
 
 from nicegui import context, ui
-from nicegui.elements.xterm import Xterm
 from nicegui.events import XtermDataEventArguments
 from nicegui.logging import log
 
@@ -22,7 +21,7 @@ def _page():
     # We now create the terminal (front-end) element for the client
     client = context.client
     ui.label(f'Terminal ({client.id})').style('font-weight: bold;')
-    terminal = Xterm()
+    terminal = ui.xterm()
 
     # Add bell sound
     bell_sound = ui.audio('https://www.soundjay.com/buttons/beep-07a.mp3', controls=False)

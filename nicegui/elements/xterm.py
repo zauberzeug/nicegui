@@ -22,8 +22,8 @@ class Xterm(Element,
         This element is a wrapper around `xterm.js <https://github.com/xtermjs/xterm.js>`_ to emulate a terminal.
         Note: This element provides only a front-end component without an underlying shell.
 
-        :param options: A dictionary of options to configure the terminal. See the `xterm.js` documentation to see the
-                        list of properties: https://xtermjs.org/docs/api/terminal/classes/terminal/#constructor
+        :param options: A dictionary of options to configure the terminal, see the
+                        `xterm.js documentation <https://xtermjs.org/docs/api/terminal/classes/terminal/#constructor>`_.
         """
         super().__init__()
         self.add_resource(Path(__file__).parent / 'lib' / 'xterm')
@@ -95,7 +95,7 @@ class Xterm(Element,
             return self.run_method('write', data)
 
     def writeln(self, data: Union[bytes, str]) -> AwaitableResponse:
-        """Write data to the terminal, followed by a break line character (\n).
+        """Write data to the terminal, followed by a break line character (\\n).
 
         :param data: The data to write to the terminal. This can either be UTF-8 encoded bytes or a string.
 
