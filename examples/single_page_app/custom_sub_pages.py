@@ -1,7 +1,7 @@
 from typing import Callable
 
 from nicegui import app, ui
-from nicegui.page_args import RouteMatch
+from nicegui.page_arguments import RouteMatch
 
 
 def protected(func: Callable) -> Callable:
