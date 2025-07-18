@@ -41,19 +41,19 @@ def _main_page() -> None:
             .style('height: calc(100% + 20px) !important') as menu:
         tree = ui.tree(documentation.tree.nodes, label_key='title').classes('w-full').props('accordion no-connectors')
         tree.add_slot('default-header', '''
-                <a :href="'/documentation/' + props.node.id" onclick="event.stopPropagation()">{{ props.node.title }}</a>
-            ''')
+            <a :href="'/documentation/' + props.node.id" onclick="event.stopPropagation()">{{ props.node.title }}</a>
+        ''')
     menu_button = header.add_header(menu)
 
     window_state = {'is_desktop': None}
     ui.on('is_desktop', lambda v: window_state.update(is_desktop=v.args))
-    ui.add_head_html('''<script>
-            const mq = window.matchMedia('(min-width: 1024px)')
-            mq.addEventListener('change', e => emitEvent('is_desktop', e.matches))
-            window.addEventListener('load', () => {
-                emitEvent('is_desktop', mq.matches)
-            })
-        </script>''')
+    ui.add_head_html('''
+        <script>
+            const mq = window.matchMedia('(min-width: 1024px)');
+            mq.addEventListener('change', e => emitEvent('is_desktop', e.matches));
+            window.addEventListener('load', () => emitEvent('is_desktop', mq.matches));
+        </script>
+    ''')
 
     def _update_menu(path: str):
         if path.startswith('/documentation/'):
