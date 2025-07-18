@@ -168,10 +168,10 @@ def page_arguments_demo():
     Sub pages elements can be nested to create a hierarchical page structure.
     Each of these elements determines which part of the path they should handle by:
 
-      1. getting the full url path from `ui.context.client.sub_pages_router`
-      2. removing the leading part which was handled by the parent element
-      3. matching the route with the most specific path
-      4. leaving the remaining part of the path for the next element (or if there is none, show a 404 error)
+    1. getting the full URL path from `ui.context.client.sub_pages_router`,
+    2. removing the leading part which was handled by the parent element,
+    3. matching the route with the most specific path, and
+    4. leaving the remaining part of the path for the next element (or if there is none, show a 404 error).
 ''')
 def nested_sub_pages_demo():
     # @ui.page('/')
