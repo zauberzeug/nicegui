@@ -61,11 +61,9 @@ class InputChips(LabelElement, ValidationElement, DisableableElement):
         return e.args or []
 
     def get_new_value(self):
-        """Returns the new value is typed in or None."""
         return None if len(self.new_value) == 0 else self.new_value[0]
 
     def append_values(self, values: Union[List[str], str]):
-        """Appends the value or list of values according to the configured `new_value_mode`."""
         new_value_mode = self._props['new-value-mode']
         if not isinstance(values, list):
             values = [values]
