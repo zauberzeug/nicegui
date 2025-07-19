@@ -46,10 +46,10 @@ class RouteMatch:
 
 
 @dataclass(**KWONLY_SLOTS)
-class PageArgs:
+class PageArguments:
     """Provides unified access to route data including path parameters and query parameters.
 
-    Automatically injected into sub-page builder functions when the parameter is annotated with ``PageArgs``.
+    Automatically injected into sub-page builder functions when the parameter is annotated with ``PageArguments``.
     """
     path: str
     '''Path from the request.'''
@@ -87,13 +87,13 @@ class PageArgs:
         return kwargs
 
     @classmethod
-    def _from_route_match(cls, route_match: RouteMatch, frame: SubPages, data: dict[str, Any]) -> PageArgs:
-        """Create a PageArgs instance from route match data.
+    def _from_route_match(cls, route_match: RouteMatch, frame: SubPages, data: dict[str, Any]) -> PageArguments:
+        """Create a PageArguments instance from route match data.
 
         :param route_match: matched route containing path info and parameters
         :param frame: SubPages instance executing this page
         :param data: arbitrary data passed to the sub_pages element
-        :return: new PageArgs instance
+        :return: new PageArguments instance
         """
         return cls(
             path=route_match.path,
@@ -118,7 +118,7 @@ class PageArgs:
         :param param_type: target type for conversion
         :return: converted value
         """
-        param_type = PageArgs._unwrap_optional(param_type)
+        param_type = PageArguments._unwrap_optional(param_type)
         if param_type is str or param_type is inspect.Parameter.empty:
             return value
         elif param_type is int:

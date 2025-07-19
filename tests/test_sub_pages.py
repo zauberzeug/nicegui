@@ -3,7 +3,7 @@ from typing import Optional
 
 import pytest
 
-from nicegui import PageArgs, background_tasks, ui
+from nicegui import PageArguments, background_tasks, ui
 from nicegui.testing import Screen
 
 # pylint: disable=missing-function-docstring
@@ -112,7 +112,7 @@ def test_passing_data_to_sub_page_via_dict(screen: Screen):
         title.text = 'main title'
         ui.link('Go to other', '/other')
 
-    def other(args: PageArgs):
+    def other(args: PageArguments):
         title: ui.label = args.data['title']
         title.text = 'other title'
         ui.link('Go to main', '/')
@@ -460,7 +460,7 @@ def test_adding_sub_pages_after_initialization(screen: Screen):
         pages = ui.sub_pages()
         pages.add('/', main_content)
 
-    def main_content(args: PageArgs):
+    def main_content(args: PageArguments):
         ui.button('Add sub page', on_click=lambda: args.frame.add('/sub', sub_content))
         ui.button('Go to sub', on_click=lambda: ui.navigate.to('/sub'))
 
@@ -687,8 +687,8 @@ def test_async_sub_pages(screen: Screen):
     screen.should_not_contain('after 1.0 sec')
 
 
-@pytest.mark.parametrize('use_page_args', [True, False])
-def test_sub_page_with_query_parameters(screen: Screen, use_page_args: bool):
+@pytest.mark.parametrize('use_page_arguments', [True, False])
+def test_sub_page_with_query_parameters(screen: Screen, use_page_arguments: bool):
     calls = {'index': 0, 'main_content': 0}
 
     @ui.page('/')
@@ -696,9 +696,9 @@ def test_sub_page_with_query_parameters(screen: Screen, use_page_args: bool):
         calls['index'] += 1
         ui.link('Link to main', '/?access=link')
         ui.button('Button to main', on_click=lambda: ui.navigate.to('/?access=button'))
-        ui.sub_pages({'/': with_page_args if use_page_args else with_parameter})
+        ui.sub_pages({'/': with_page_arguments if use_page_arguments else with_parameter})
 
-    def with_page_args(args: PageArgs):
+    def with_page_arguments(args: PageArguments):
         calls['main_content'] += 1
         ui.label(f'access: {args.query_parameters["access"]}')
 
@@ -727,7 +727,7 @@ def test_sub_page_with_query_parameters(screen: Screen, use_page_args: bool):
     assert calls == {'index': 1, 'main_content': 5}
 
 
-def test_accessing_path_parameters_via_page_args(screen: Screen):
+def test_accessing_path_parameters_via_page_arguments(screen: Screen):
     @ui.page('/')
     @ui.page('/{path:path}')
     def index():
@@ -738,7 +738,7 @@ def test_accessing_path_parameters_via_page_args(screen: Screen):
             '/{parameter}': main_content,
         })
 
-    def main_content(args: PageArgs):
+    def main_content(args: PageArguments):
         param = args.path_parameters.get('parameter', 'none')
         ui.label(f'param-{param}')
 
@@ -781,18 +781,18 @@ def test_optional_parameters(screen: Screen):
     screen.should_contain('name=hello, count=5, active=yes, source=data_dict, missing=default')
 
 
-def test_page_args_with_optional_parameters(screen: Screen):
+def test_page_arguments_with_optional_parameters(screen: Screen):
 
     @ui.page('/')
     @ui.page('/{path:path}')
     def index():
-        ui.link('Test PageArgs', '/user/123?role=admin')
+        ui.link('Test PageArguments', '/user/123?role=admin')
         ui.sub_pages({
             '/user/{user_id}': user_page,
         }, data={'app_name': 'MyApp'})
 
     def user_page(
-        args: PageArgs,
+        args: PageArguments,
         user_id: str,
         role: Optional[str] = 'guest',
         app_name: Optional[str] = None,
@@ -800,7 +800,7 @@ def test_page_args_with_optional_parameters(screen: Screen):
         ui.label(f'path={args.path}, user_id={user_id}, role={role}, app={app_name}')
 
     screen.open('/')
-    screen.click('Test PageArgs')
+    screen.click('Test PageArguments')
     screen.should_contain('path=/user/123, user_id=123, role=admin, app=MyApp')
 
 
@@ -871,7 +871,7 @@ def test_sub_pages_with_url_fragments(screen: Screen):
     assert calls == {'index': 1, 'main': 1, 'targets': 2}, 'Fragment navigation should not rebuild page'
 
 
-@pytest.mark.parametrize('strategy', ['kwargs', 'page_args'])
+@pytest.mark.parametrize('strategy', ['kwargs', 'page_arguments'])
 def test_only_rebuild_page_when_builder_depends_on_it(screen: Screen, strategy: str):
     calls = {'index': 0, 'home': 0, 'sub': 0}
 
@@ -885,13 +885,13 @@ def test_only_rebuild_page_when_builder_depends_on_it(screen: Screen, strategy: 
     def home():
         calls['home'] += 1
         ui.label('home')
-        ui.sub_pages({'/': kwargs if strategy == 'kwargs' else page_args})
+        ui.sub_pages({'/': kwargs if strategy == 'kwargs' else page_arguments})
 
     def kwargs(test: str = 'none'):
         calls['sub'] += 1
         ui.label('param=' + test)
 
-    def page_args(args: PageArgs):
+    def page_arguments(args: PageArguments):
         calls['sub'] += 1
         ui.label('param=' + args.query_parameters.get('test', 'none'))
 

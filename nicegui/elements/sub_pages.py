@@ -15,7 +15,7 @@ from ..element import Element
 from ..elements.label import Label
 from ..functions.javascript import run_javascript
 from ..logging import log
-from ..page_args import PageArgs, RouteMatch
+from ..page_arguments import PageArguments, RouteMatch
 
 
 class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-pages'):
@@ -101,7 +101,7 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
         return match_result
 
     def _render_page(self, match: RouteMatch) -> bool:
-        kwargs = PageArgs.build_kwargs(match, self, self._data)
+        kwargs = PageArguments.build_kwargs(match, self, self._data)
         try:
             result = match.builder(**kwargs)
         except Exception as e:
@@ -225,7 +225,7 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
             return False
         parameters = inspect.signature(route_match.builder).parameters
         for name, param in parameters.items():
-            if param.annotation is PageArgs:
+            if param.annotation is PageArguments:
                 return True
             if name in route_match.query_params:
                 return True

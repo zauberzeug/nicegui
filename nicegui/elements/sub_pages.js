@@ -26,17 +26,13 @@ function handleStateEvent(event) {
 
 function handleFragmentNavigation(href, targetUrl) {
   const fragmentName = targetUrl.hash.substring(1);
-  let target = document.getElementById(fragmentName);
-  if (!target) {
-    target = document.querySelector(`a[name="${fragmentName}"]`);
-  }
-  if (target) {
-    target.scrollIntoView({ behavior: "smooth" });
-    const cleanHref = stripPathPrefix(href);
-    history.pushState({ page: cleanHref }, "", buildFullPath(cleanHref));
-    return true;
-  }
-  return false;
+  const target = document.getElementById(fragmentName) || document.querySelector(`a[name="${fragmentName}"]`);
+  if (!target) return false;
+
+  target.scrollIntoView({ behavior: "smooth" });
+  const cleanHref = stripPathPrefix(href);
+  history.pushState({ page: cleanHref }, "", buildFullPath(cleanHref));
+  return true;
 }
 
 window.addEventListener("popstate", handleStateEvent);
@@ -67,10 +63,5 @@ document.addEventListener("click", (e) => {
 });
 
 export default {
-  template: `
-    <div>
-      <slot></slot>
-    </div>
-  `,
-  mounted() {},
+  template: `<div><slot></slot></div>`,
 };

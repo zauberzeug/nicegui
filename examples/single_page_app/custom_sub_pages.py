@@ -1,7 +1,7 @@
 from typing import Callable
 
 from nicegui import app, ui
-from nicegui.page_args import RouteMatch
+from nicegui.page_arguments import RouteMatch
 
 
 def protected(func: Callable) -> Callable:
@@ -13,14 +13,14 @@ def protected(func: Callable) -> Callable:
 class CustomSubPages(ui.sub_pages):
     """Custom ui.sub_pages with built-in authentication and custom 404 handling."""
 
-    def _show_page(self, match: RouteMatch) -> None:
+    def _render_page(self, match: RouteMatch) -> None:
         if self._is_route_protected(match.builder):
             if not self._is_authenticated():
                 self._show_login_form(match.full_url)
                 return
-        super()._show_page(match)
+        super()._render_page(match)
 
-    def _show_404(self) -> None:
+    def _render_404(self) -> None:
         with ui.column().classes('absolute-center items-center'):
             ui.icon('error_outline', size='4rem').classes('text-red')
             ui.label('404 - Page Not Found').classes('text-2xl text-red')
@@ -29,7 +29,7 @@ class CustomSubPages(ui.sub_pages):
                 ui.button('Go Home', icon='home', on_click=lambda: ui.navigate.to('/')).props('outline')
                 ui.button('Go Back', icon='arrow_back', on_click=ui.navigate.back).props('outline')
 
-    def _show_error(self, error: Exception) -> None:
+    def _render_error(self, error: Exception) -> None:
         with ui.column().classes('absolute-center items-center'):
             ui.icon('error_outline', size='4rem').classes('text-red')
             ui.label('500 - Internal Server Error').classes('text-2xl text-red')
@@ -56,8 +56,8 @@ class CustomSubPages(ui.sub_pages):
             def try_login():
                 if passphrase.value == 'spa':
                     app.storage.user['authenticated'] = True
-                    # NOTE: we change the url by appending a query parameter to force a reload of the page
-                    ui.navigate.to(f'{intended_path}?login=true')
+                    self._current_match = None  # NOTE: reset the current match to allow the page to be rendered again
+                    ui.navigate.to(intended_path)
                 else:
                     ui.notify('Incorrect passphrase', color='negative')
                     passphrase.value = ''
