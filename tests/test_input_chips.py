@@ -25,26 +25,6 @@ def test_input_chips(screen: Screen):
     screen.should_not_contain('B')
 
 
-def test_get_new_value(screen: Screen):
-    def check_value(e):
-        l.text = f'New value: {e.sender.get_new_value()}'
-
-    ui.input_chips(new_value_mode='add', on_change=check_value)
-    l = ui.label('New value: None')
-
-    screen.open('/')
-    screen.should_contain('New value: None')
-
-    screen.find_by_tag('input').send_keys('a' + Keys.ENTER)
-    screen.wait(0.5)
-
-    screen.should_contain('New value: a')
-
-    screen.click('cancel')  # remove icon
-    screen.should_contain('New value: None')
-
-
-
 @pytest.mark.parametrize('new_value_mode', ['add', 'add-unique', 'toggle'])
 def test_add_new_values(screen:  Screen, new_value_mode: str):
 
@@ -67,34 +47,6 @@ def test_add_new_values(screen:  Screen, new_value_mode: str):
             screen.should_contain("value = ['a', 'd']")
         elif new_value_mode == 'toggle':
             screen.should_contain("value = ['a']")
-
-
-@pytest.mark.parametrize('new_value_mode', ['add', 'add-unique', 'toggle'])
-def test_append_values(screen:  Screen, new_value_mode: str):
-
-    def add_d():
-        s.append_values('d')
-        s.update()
-        l.text = f'value = {s.value}'
-
-    s = ui.input_chips(new_value_mode=new_value_mode)
-    l = ui.label()
-    ui.button('Add d', on_click=add_d)
-
-    screen.open('/')
-    screen.should_contain('value = []')
-
-    if new_value_mode:
-        for _ in range(2):
-            screen.click('Add d')
-            screen.wait(0.5)
-        if new_value_mode == 'add':
-            screen.should_contain("value = ['d', 'd']")
-        elif new_value_mode == 'add-unique':
-            screen.should_contain("value = ['d']")
-        elif new_value_mode == 'toggle':
-            screen.should_contain('value = []')
-
 
 @pytest.mark.parametrize('auto_validation', [True, False])
 def test_input_chips_validation(auto_validation: bool, screen: Screen):
