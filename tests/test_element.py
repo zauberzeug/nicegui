@@ -76,6 +76,12 @@ def test_style_parsing(value: Optional[str], expected: Dict[str, str]):
     ("input-style='{ color: #ff0000 }'", {'input-style': '{ color: #ff0000 }'}),
     ("""input-style='{ myquote: "quote" }'""", {'input-style': '{ myquote: "quote" }'}),
     ('filename=foo=bar.txt', {'filename': 'foo=bar.txt'}),
+    ('array=["one"]', {'array': ['one']}),
+    ('array=["one", "two"]', {'array': ['one', 'two']}),
+    ('''object={'one': "foo"} baz''', {'object': {'one': 'foo'}, 'baz': True}),
+    ('''object={'one': "foo", "two": "bar"}''', {'object': {'one': 'foo', 'two': 'bar'}}),
+
+
 ])
 def test_props_parsing(value: Optional[str], expected: Dict[str, str]):
     assert Props.parse(value) == expected
