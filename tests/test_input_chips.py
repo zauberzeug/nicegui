@@ -57,16 +57,16 @@ def test_add_new_values(screen:  Screen, new_value_mode: str):
     screen.find_by_tag('input').send_keys('a' + Keys.ENTER)
     screen.wait(0.5)
 
-    for _ in range(2):
-        screen.find_by_tag('input').send_keys('d' + Keys.ENTER)
-        screen.wait(0.5)
-
-    if new_value_mode == 'add':
-        screen.should_contain("value = ['a', 'd', 'd']")
-    elif new_value_mode == 'add-unique':
-        screen.should_contain("value = ['a', 'd']")
-    elif new_value_mode == 'toggle':
-        screen.should_contain("value = ['a']")
+    if new_value_mode:
+        for _ in range(2):
+            screen.find_by_tag('input').send_keys('d' + Keys.ENTER)
+            screen.wait(0.5)
+        if new_value_mode == 'add':
+            screen.should_contain("value = ['a', 'd', 'd']")
+        elif new_value_mode == 'add-unique':
+            screen.should_contain("value = ['a', 'd']")
+        elif new_value_mode == 'toggle':
+            screen.should_contain("value = ['a']")
 
 
 @pytest.mark.parametrize('new_value_mode', ['add', 'add-unique', 'toggle'])
@@ -82,16 +82,18 @@ def test_append_values(screen:  Screen, new_value_mode: str):
     ui.button('Add d', on_click=add_d)
 
     screen.open('/')
-    for _ in range(2):
-        screen.click('Add d')
-        screen.wait(0.5)
+    screen.should_contain('value = []')
 
-    if new_value_mode == 'add':
-        screen.should_contain("value = ['d', 'd']")
-    elif new_value_mode == 'add-unique':
-        screen.should_contain("value = ['d']")
-    elif new_value_mode == 'toggle':
-        screen.should_contain('value = []')
+    if new_value_mode:
+        for _ in range(2):
+            screen.click('Add d')
+            screen.wait(0.5)
+        if new_value_mode == 'add':
+            screen.should_contain("value = ['d', 'd']")
+        elif new_value_mode == 'add-unique':
+            screen.should_contain("value = ['d']")
+        elif new_value_mode == 'toggle':
+            screen.should_contain('value = []')
 
 
 @pytest.mark.parametrize('auto_validation', [True, False])

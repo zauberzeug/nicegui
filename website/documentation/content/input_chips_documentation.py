@@ -10,7 +10,7 @@ def main_demo() -> None:
 
 @doc.demo('New value modes', '''
     There are three new value modes: add, add-unique and toggle (default).
-    `add` adds all values to the list (allowing duplicates), 'add-unique' adds only unique values to the list,
+    `add` adds all values to the list (allowing duplicates), 'add-unique' adds only unique values to the list, 
     and 'toggle' adds or removes the value (based on if it exists or not in the list).
     If you are updating the values via function, you also need to call `update()` afterwards to let the change take effect.
 ''')
