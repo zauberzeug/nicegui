@@ -27,10 +27,10 @@ def test_input_chips(screen: Screen):
 
 def test_get_new_value(screen: Screen):
     def check_value(e):
-        label.text = f'New value: {e.sender.get_new_value()}'
+        l.text = f'New value: {e.sender.get_new_value()}'
 
     ui.input_chips(new_value_mode='add', on_change=check_value)
-    label = ui.label('New value: None')
+    l = ui.label('New value: None')
 
     screen.open('/')
     screen.should_contain('New value: None')
@@ -73,12 +73,12 @@ def test_add_new_values(screen:  Screen, new_value_mode: str):
 def test_append_values(screen:  Screen, new_value_mode: str):
 
     def add_d():
-        chips.append_values('d')
-        chips.update()
-        label.text = f'value = {chips.value}'
+        s.append_values('d')
+        s.update()
+        l.text = f'value = {s.value}'
 
-    chips = ui.input_chips(new_value_mode=new_value_mode)
-    label = ui.label()
+    s = ui.input_chips(new_value_mode=new_value_mode)
+    l = ui.label()
     ui.button('Add d', on_click=add_d)
 
     screen.open('/')

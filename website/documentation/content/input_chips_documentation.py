@@ -44,10 +44,10 @@ def delimit_values():
         if new_value is not None and ',' in new_value:
             e.value.remove(new_value)
             e.sender.append_values(new_value.split(','))
-        label.text = ', '.join(e.sender.value)
+        l.text = ', '.join(e.sender.value)
 
     c = ui.input_chips(on_change=split_values)
-    label = ui.label().bind_text_from(c, 'value', backward=', '.join)
+    l = ui.label().bind_text_from(c, 'value', backward=', '.join)
 
 
 doc.reference(ui.input_chips)
