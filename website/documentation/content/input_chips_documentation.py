@@ -10,20 +10,21 @@ def main_demo() -> None:
 
 @doc.demo('New value modes', '''
     There are three new value modes: add, add-unique and toggle (default).
-    `add` adds all values to the list (allowing duplicates), 'add-unique' adds only unique values to the list, 
+    `add` adds all values to the list (allowing duplicates), 'add-unique' adds only unique values to the list,
     and 'toggle' adds or removes the value (based on if it exists or not in the list).
 ''')
 def new_value_modes():
-    chips = ui.input_chips(label='toggle') \
+    chips = ui.input_chips() \
         .classes('w-64')
     ui.toggle(
-        {"add": "add", "add-unique": "add-unique", "toggle": "toggle"}, value="toggle"
-    ).on_value_change(lambda e: chips._props.update({"new-value-mode": e.value}))
+        {'add': 'add', 'add-unique': 'add-unique', 'toggle': 'toggle'},
+        value='toggle',
+    ).on_value_change(lambda e: chips.props.update({'new-value-mode': e.value}))
 
 
 @doc.demo('Delimit values', '''
     You can delimit values with the help of `on_change`.
-    Note that, `on_change` is not only limited to `delimiting values` but can be changed as per your needs.
+    Note that, `on_change` is not only limited to `delimiting values` but can be modified as per your needs.
 ''')
 def delimit_values():
     from nicegui import events
