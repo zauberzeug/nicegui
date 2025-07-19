@@ -39,10 +39,8 @@ def _main_page() -> None:
     with ui.left_drawer() \
         .classes('column no-wrap gap-1 bg-[#eee] dark:bg-[#1b1b1b] mt-[-20px] px-8 py-20') \
             .style('height: calc(100% + 20px) !important') as menu:
-        tree = ui.tree(documentation.tree.nodes, label_key='title').classes('w-full').props('accordion no-connectors')
-        tree.add_slot('default-header', '''
-            <a :href="'/documentation/' + props.node.id" onclick="event.stopPropagation()">{{ props.node.title }}</a>
-        ''')
+        tree = ui.tree(documentation.tree.nodes, label_key='title', on_select=lambda e: ui.navigate.to(f'/documentation/{e.value}')) \
+            .classes('w-full').props('accordion no-connectors')
     menu_button = header.add_header(menu)
 
     window_state = {'is_desktop': None}
