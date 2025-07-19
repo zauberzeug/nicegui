@@ -37,16 +37,16 @@ def test_add_new_values(screen:  Screen, new_value_mode: str):
     screen.find_by_tag('input').send_keys('a' + Keys.ENTER)
     screen.wait(0.5)
 
-    if new_value_mode:
-        for _ in range(2):
-            screen.find_by_tag('input').send_keys('d' + Keys.ENTER)
-            screen.wait(0.5)
-        if new_value_mode == 'add':
-            screen.should_contain("value = ['a', 'd', 'd']")
-        elif new_value_mode == 'add-unique':
-            screen.should_contain("value = ['a', 'd']")
-        elif new_value_mode == 'toggle':
-            screen.should_contain("value = ['a']")
+    for _ in range(2):
+        screen.find_by_tag('input').send_keys('d' + Keys.ENTER)
+        screen.wait(0.5)
+
+    if new_value_mode == 'add':
+        screen.should_contain("value = ['a', 'd', 'd']")
+    elif new_value_mode == 'add-unique':
+        screen.should_contain("value = ['a', 'd']")
+    elif new_value_mode == 'toggle':
+        screen.should_contain("value = ['a']")
 
 @pytest.mark.parametrize('auto_validation', [True, False])
 def test_input_chips_validation(auto_validation: bool, screen: Screen):
