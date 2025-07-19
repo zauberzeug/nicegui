@@ -56,8 +56,8 @@ class CustomSubPages(ui.sub_pages):
             def try_login():
                 if passphrase.value == 'spa':
                     app.storage.user['authenticated'] = True
-                    # NOTE: we change the url by appending a query parameter to force a reload of the page
-                    ui.navigate.to(f'{intended_path}?login=true')
+                    self._current_match = None  # NOTE: reset the current match to allow the page to be rendered again
+                    ui.navigate.to(intended_path)
                 else:
                     ui.notify('Incorrect passphrase', color='negative')
                     passphrase.value = ''

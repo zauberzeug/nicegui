@@ -1,4 +1,6 @@
-from typing import Callable, List, Optional
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Callable, List, Optional
 
 from fastapi import Request
 from starlette.routing import Match, Route
@@ -7,6 +9,9 @@ from .context import context
 from .elements.sub_pages import SubPages
 from .functions.javascript import run_javascript
 from .functions.on import on
+
+if TYPE_CHECKING:
+    from .client import Client
 
 
 class SubPagesRouter:
@@ -40,10 +45,12 @@ class SubPagesRouter:
         return updated
 
     def _handle_navigate(self, path: str) -> None:
+        # NOTE: keep a reference to the client because _handle_open clears the slots so that context.client does not work anymore
+        client = context.client
         updated = self._handle_open(path)
         if not updated:
-            if self._is_valid_fastapi_route(path):
-                context.client.open(path, new_tab=False)
+            if self._is_valid_fastapi_route(path, client):
+                client.open(path, new_tab=False)
             return
         run_javascript(f'''
             const fullPath = (window.path_prefix || '') + "{self.current_path}";
@@ -52,8 +59,8 @@ class SubPagesRouter:
             }}
         ''')
 
-    def _is_valid_fastapi_route(self, path: str) -> bool:
-        for route in context.client.page.api_router.routes:
+    def _is_valid_fastapi_route(self, path: str, client: Client) -> bool:
+        for route in client.page.api_router.routes:
             if isinstance(route, Route):
                 match, _ = route.matches({'type': 'http', 'path': path, 'method': 'GET'})
                 if match == Match.FULL:
