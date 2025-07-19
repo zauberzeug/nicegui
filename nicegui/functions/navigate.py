@@ -66,6 +66,11 @@ class Navigate:
             path = Client.page_routes[target]
         else:
             raise TypeError(f'Invalid target type: {type(target)}')
+
+        if not new_tab and isinstance(target, str):
+            context.client.sub_pages_router._handle_navigate(path)  # pylint: disable=protected-access
+            return
+
         context.client.open(path, new_tab)
 
 
