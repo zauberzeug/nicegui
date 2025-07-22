@@ -1,4 +1,4 @@
-from typing import Any, Literal, Optional, Union
+from typing import Any, List, Literal, Optional, Union
 
 from ..events import GenericEventArguments, Handler, ValueChangeEventArguments
 from .mixins.disableable_element import DisableableElement
@@ -11,7 +11,7 @@ class InputChips(LabelElement, ValidationElement, DisableableElement):
     def __init__(self,
                  label: Optional[str] = None,
                  *,
-                 value: Any = None,
+                 value: Optional[List[str]] = None,
                  on_change: Optional[Handler[ValueChangeEventArguments]] = None,
                  new_value_mode: Literal['add', 'add-unique', 'toggle'] = 'toggle',
                  clearable: bool = False,
@@ -41,12 +41,7 @@ class InputChips(LabelElement, ValidationElement, DisableableElement):
         :param clearable: whether to add a button to clear the selection
         :param validation: dictionary of validation rules or a callable that returns an optional error message (default: None for no validation)
         """
-        if value is None:
-            value = []
-        elif not isinstance(value, list):
-            value = [value]
-
-        super().__init__(tag='q-select', label=label, value=value, on_value_change=on_change, validation=validation)
+        super().__init__(tag='q-select', label=label, value=value or [], on_value_change=on_change, validation=validation)
 
         self._props['new-value-mode'] = new_value_mode
         self._props['use-input'] = True
