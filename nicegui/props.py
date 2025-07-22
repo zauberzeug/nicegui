@@ -41,7 +41,7 @@ T = TypeVar('T', bound='Element')
 class Props(ObservableDict, Generic[T]):
 
     def __init__(self, *args, element: T, **kwargs) -> None:
-        super().__init__(*args, on_change=self._handle_change, **kwargs)
+        super().__init__(*args, on_change=self._update, **kwargs)
         self._element = weakref.ref(element)
         self._warnings: Dict[str, str] = {}
 
@@ -53,7 +53,7 @@ class Props(ObservableDict, Generic[T]):
             raise RuntimeError('The element this props object belongs to has been deleted.')
         return element
 
-    def _handle_change(self) -> None:
+    def _update(self) -> None:
         element = self._element()
         if element is not None:
             element.update()

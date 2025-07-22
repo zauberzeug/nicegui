@@ -12,7 +12,7 @@ T = TypeVar('T', bound='Element')
 class Classes(ObservableList, Generic[T]):
 
     def __init__(self, *args, element: T, **kwargs) -> None:
-        super().__init__(*args, on_change=self._handle_change, **kwargs)
+        super().__init__(*args, on_change=self._update, **kwargs)
         self._element = weakref.ref(element)
 
     @property
@@ -23,7 +23,7 @@ class Classes(ObservableList, Generic[T]):
             raise RuntimeError('The element this classes object belongs to has been deleted.')
         return element
 
-    def _handle_change(self) -> None:
+    def _update(self) -> None:
         element = self._element()
         if element is not None:
             element.update()
