@@ -9,9 +9,9 @@ from .mixins.validation_element import ValidationDict, ValidationElement, Valida
 class InputChips(LabelElement, ValidationElement, DisableableElement):
 
     def __init__(self,
-                 value: Any = None,
-                 *,
                  label: Optional[str] = None,
+                 *,
+                 value: Any = None,
                  on_change: Optional[Handler[ValueChangeEventArguments]] = None,
                  new_value_mode: Literal['add', 'add-unique', 'toggle'] = 'toggle',
                  clearable: bool = False,
@@ -19,18 +19,23 @@ class InputChips(LabelElement, ValidationElement, DisableableElement):
                  ) -> None:
         """Input Chips
 
-        This element is based on Quasar's `QSelect <https://quasar.dev/vue-components/select>`_ component.
-        This variant focuses solely on using chips without dropdown menu which is suitable for longer lists.
-        Hence, it acts as an input with list of chips rather than a dropdown of choices.
+        An input field that manages a collection of values as visual "chips" or tags.
+        Users can type to add new chips and remove existing ones by clicking or using keyboard shortcuts.
 
-        You can use the `validation` parameter to define a dictionary of validation rules,
+        This element is based on Quasar's `QSelect <https://quasar.dev/vue-components/select>`_ component.
+        Unlike a traditional dropdown selection, this variant focuses on free-form text input with chips,
+        making it ideal for tags, keywords, or any list of user-defined values.
+
+        You can use the ``validation`` parameter to define a dictionary of validation rules,
         e.g. ``{'Too long!': lambda value: len(value) < 3}``.
         The key of the first rule that fails will be displayed as an error message.
         Alternatively, you can pass a callable that returns an optional error message.
         To disable the automatic validation on every value change, you can use the `without_auto_validation` method.
 
-        :param value: the initial value
+        *Added in version 2.22.0*
+
         :param label: the label to display above the selection
+        :param value: the initial value
         :param on_change: callback to execute when selection changes
         :param new_value_mode: handle new values from user input (default: "toggle")
         :param clearable: whether to add a button to clear the selection

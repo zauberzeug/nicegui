@@ -5,38 +5,35 @@ from . import doc
 
 @doc.demo(ui.input_chips)
 def main_demo() -> None:
-    ui.input_chips(value=['default', 'with', 'chips'])
+    ui.input_chips('My favorite chips', value=['Pringles', 'Doritos', "Lay's"])
 
 
 @doc.demo('New value modes', '''
-    There are three new value modes: add, add-unique and toggle (default).
-    `add` adds all values to the list (allowing duplicates), 'add-unique' adds only unique values to the list,
-    and 'toggle' adds or removes the value (based on if it exists or not in the list).
+    There are three new-value modes: "add", "add-unique", and "toggle" (the default).
+
+    - "add" adds all values to the list (allowing duplicates).
+    - "add-unique" adds only unique values to the list.
+    - "toggle" adds or removes the value (based on if it exists or not in the list).
 ''')
 def new_value_modes():
-    chips = ui.input_chips() \
-        .classes('w-64')
-    ui.toggle(
-        {'add': 'add', 'add-unique': 'add-unique', 'toggle': 'toggle'},
-        value='toggle',
-    ).on_value_change(lambda e: chips.props.update({'new-value-mode': e.value}))
+    ui.input_chips('Add', new_value_mode='add')
+    ui.input_chips('Add unique', new_value_mode='add-unique')
+    ui.input_chips('Toggle', new_value_mode='toggle')
 
 
-@doc.demo('Delimit values', '''
-    You can delimit values with the help of `on_change`.
-    Note that, `on_change` is not only limited to `delimiting values` but can be modified as per your needs.
+@doc.demo('Auto-split values', '''
+    This demo shows how to automatically split values when the user enters comma-separated values.
 ''')
 def delimit_values():
     from nicegui import events
 
     def split_values(e: events.ValueChangeEventArguments):
         for value in e.value[:]:
-            if ',' in value:
-                e.value.remove(value)
-                e.sender.value = e.value + value.split(',')
+            e.value.remove(value)
+            e.value.extend(value.split(','))
 
-    c = ui.input_chips(on_change=split_values)
-    ui.label().bind_text_from(c, 'value', backward=', '.join)
+    ui.input_chips(on_change=split_values)
+    ui.label('Try entering "x,y,z"!')
 
 
 doc.reference(ui.input_chips)
