@@ -8,7 +8,7 @@ def main_demo() -> None:
     ui.input_chips('My favorite chips', value=['Pringles', 'Doritos', "Lay's"])
 
 
-@doc.demo('New value modes', '''
+@doc.demo('New-value modes', '''
     There are three new-value modes: "add", "add-unique", and "toggle" (the default).
 
     - "add" adds all values to the list (allowing duplicates).
