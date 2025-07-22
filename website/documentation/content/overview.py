@@ -223,6 +223,7 @@ def map_of_nicegui():
             - [`ui.echart`](/documentation/echart)
             - [`ui.editor`](/documentation/editor)
             - [`ui.expansion`](/documentation/expansion)
+            - [`ui.fab`](/documentation/fab), `ui.fab_action`
             - [`ui.grid`](/documentation/grid)
             - [`ui.highchart`](/documentation/highchart)
             - [`ui.html`](/documentation/html)
