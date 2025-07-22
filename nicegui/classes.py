@@ -1,16 +1,18 @@
 import weakref
 from typing import TYPE_CHECKING, Generic, List, Optional, TypeVar
 
+from .observables import ObservableList
+
 if TYPE_CHECKING:
     from .element import Element
 
 T = TypeVar('T', bound='Element')
 
 
-class Classes(list, Generic[T]):
+class Classes(ObservableList, Generic[T]):
 
     def __init__(self, *args, element: T, **kwargs) -> None:
-        super().__init__(*args, **kwargs)
+        super().__init__(*args, on_change=self._handle_change, **kwargs)
         self._element = weakref.ref(element)
 
     @property
@@ -20,6 +22,11 @@ class Classes(list, Generic[T]):
         if element is None:
             raise RuntimeError('The element this classes object belongs to has been deleted.')
         return element
+
+    def _handle_change(self) -> None:
+        element = self._element()
+        if element is not None:
+            element.update()
 
     def __call__(self,
                  add: Optional[str] = None, *,
@@ -42,7 +49,6 @@ class Classes(list, Generic[T]):
         new_classes = self.update_list(self, add, remove, toggle, replace)
         if self != new_classes:
             self[:] = new_classes
-            element.update()
         return element
 
     @staticmethod

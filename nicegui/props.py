@@ -4,6 +4,7 @@ import weakref
 from typing import TYPE_CHECKING, Any, Dict, Generic, Optional, TypeVar
 
 from . import helpers
+from .observables import ObservableDict
 
 if TYPE_CHECKING:
     from .element import Element
@@ -37,10 +38,10 @@ PROPS_PATTERN = re.compile(r'''
 T = TypeVar('T', bound='Element')
 
 
-class Props(dict, Generic[T]):
+class Props(ObservableDict, Generic[T]):
 
     def __init__(self, *args, element: T, **kwargs) -> None:
-        super().__init__(*args, **kwargs)
+        super().__init__(*args, on_change=self._handle_change, **kwargs)
         self._element = weakref.ref(element)
         self._warnings: Dict[str, str] = {}
 
@@ -51,6 +52,11 @@ class Props(dict, Generic[T]):
         if element is None:
             raise RuntimeError('The element this props object belongs to has been deleted.')
         return element
+
+    def _handle_change(self) -> None:
+        element = self._element()
+        if element is not None:
+            element.update()
 
     def add_warning(self, prop: str, message: str) -> None:
         """Add a warning message for a prop."""
@@ -70,17 +76,12 @@ class Props(dict, Generic[T]):
         :param remove: whitespace-delimited list of property keys to remove
         """
         element = self.element
-        needs_update = False
         for key in self.parse(remove):
             if key in self:
-                needs_update = True
                 del self[key]
         for key, value in self.parse(add).items():
             if self.get(key) != value:
-                needs_update = True
                 self[key] = value
-        if needs_update:
-            element.update()
         for name, message in self._warnings.items():
             if name in self:
                 del self[name]
