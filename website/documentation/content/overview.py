@@ -230,6 +230,7 @@ def map_of_nicegui():
             - [`ui.icon`](/documentation/icon)
             - [`ui.image`](/documentation/image)
             - [`ui.input`](/documentation/input)
+            - [`ui.input_chips`](/documentation/input_chips)
             - [`ui.interactive_image`](/documentation/interactive_image)
             - `ui.item`, `ui.item_label`, `ui.item_section`
             - [`ui.joystick`](/documentation/joystick)

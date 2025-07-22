@@ -11,6 +11,7 @@ from . import (
     date_documentation,
     doc,
     fab_documentation,
+    input_chips_documentation,
     input_documentation,
     joystick_documentation,
     knob_documentation,
@@ -39,6 +40,7 @@ doc.intro(chip_documentation)
 doc.intro(toggle_documentation)
 doc.intro(radio_documentation)
 doc.intro(select_documentation)
+doc.intro(input_chips_documentation)
 doc.intro(checkbox_documentation)
 doc.intro(switch_documentation)
 doc.intro(slider_documentation)

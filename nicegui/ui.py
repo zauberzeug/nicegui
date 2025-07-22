@@ -49,6 +49,7 @@ __all__ = [
     'icon',
     'image',
     'input',
+    'input_chips',
     'interactive_image',
     'item',
     'item_label',
@@ -174,6 +175,7 @@ from .elements.html import Html as html
 from .elements.icon import Icon as icon
 from .elements.image import Image as image
 from .elements.input import Input as input  # pylint: disable=redefined-builtin
+from .elements.input_chips import InputChips as input_chips
 from .elements.interactive_image import InteractiveImage as interactive_image
 from .elements.item import Item as item
 from .elements.item import ItemLabel as item_label
