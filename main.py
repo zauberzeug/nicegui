@@ -65,7 +65,7 @@ def some_json():
 
 
 @ui.page('/')
-async def root_path():
+async def root_page():
     # use this page to check that app.storage.user behaves as expected '
     ui.label('root page')
     if not app.storage.user.get('root_page_counter'):
@@ -76,7 +76,7 @@ async def root_path():
 
 
 @ui.page('/api/hello')
-async def root_path():
+async def api_hello_page():
     # use this page to that app.storage.user changes are not published to redis
     # check redis before going back to /
     ui.label('api hello page')
