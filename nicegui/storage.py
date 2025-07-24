@@ -72,7 +72,7 @@ class Storage:
     '''Maximum age in seconds before tab storage is automatically purged. Defaults to 30 days.'''
 
     ignore_user_storage_uri_prefixes = [uri.strip().strip('\'"') for uri in
-                                        os.environ.get('NICEGUI_STORAGE_USER_IGNORE_URI_PREFIXES', '').strip(
+                                        os.environ.get('NICEGUI_REDIS_USER_STORAGE_IGNORE_URI_PREFIXES', '').strip(
                                             '\'"').split(',') if uri.strip()]
     '''Prefixes we should ignore user storage on -- only applies if redis_url != None'''
 
