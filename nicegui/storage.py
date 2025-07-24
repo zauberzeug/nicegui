@@ -30,7 +30,15 @@ class RequestTrackingMiddleware(BaseHTTPMiddleware):
         if 'id' not in request.session:
             request.session['id'] = str(uuid.uuid4())
         request.state.responded = False
-        await core.app.storage._create_user_storage(request.session['id'])  # pylint: disable=protected-access
+        skip_redis_publish = False
+        if core.app.storage.redis_url:
+            for ignored_user_prefix in core.app.storage.ignore_user_storage_uri_prefixes:
+                if request.url.path.startswith(ignored_user_prefix):
+                    print(f"⚠️ SKIPPING REDIS PUBLISH ON {request.url.path} -- starts with {ignored_user_prefix}") # TODO: remove before pull request commit
+                    skip_redis_publish = True
+                    break
+        await core.app.storage._create_user_storage(
+            session_id=request.session['id'], skip_redis_publish=skip_redis_publish)  # pylint: disable=protected-access
         response = await call_next(request)
         request.state.responded = True
         return response
@@ -63,15 +71,22 @@ class Storage:
     max_tab_storage_age: float = timedelta(days=30).total_seconds()
     '''Maximum age in seconds before tab storage is automatically purged. Defaults to 30 days.'''
 
+    ignore_user_storage_uri_prefixes = [uri.strip().strip('\'"') for uri in
+                                        os.environ.get('NICEGUI_STORAGE_USER_IGNORE_URI_PREFIXES', '').strip(
+                                            '\'"').split(',') if uri.strip()]
+    '''Prefixes we should ignore user storage on -- only applies if redis_url != None'''
+
     def __init__(self) -> None:
         self._general = Storage._create_persistent_dict('general')
         self._users: Dict[str, PersistentDict] = {}
         self._tabs: Dict[str, ObservableDict] = {}
 
     @staticmethod
-    def _create_persistent_dict(id: str) -> PersistentDict:  # pylint: disable=redefined-builtin
+    def _create_persistent_dict(id: str, skip_redis_publish: Optional[
+        bool] = False) -> PersistentDict:  # pylint: disable=redefined-builtin
         if Storage.redis_url:
-            return RedisPersistentDict(url=Storage.redis_url, id=id, key_prefix=Storage.redis_key_prefix)
+            return RedisPersistentDict(url=Storage.redis_url, id=id, key_prefix=Storage.redis_key_prefix,
+                                       skip_redis_publish=skip_redis_publish)
         else:
             return FilePersistentDict(Storage.path / f'storage-{id}.json', encoding='utf-8')
 
@@ -117,9 +132,10 @@ class Storage:
         assert session_id in self._users, f'user storage for {session_id} should be created before accessing it'
         return self._users[session_id]
 
-    async def _create_user_storage(self, session_id: str) -> None:
+    async def _create_user_storage(self, session_id: str, skip_redis_publish: Optional[bool] = False) -> None:
         if session_id not in self._users:
-            self._users[session_id] = Storage._create_persistent_dict(f'user-{session_id}')
+            self._users[session_id] = Storage._create_persistent_dict(
+                id=f'user-{session_id}', skip_redis_publish=skip_redis_publish)
             await self._users[session_id].initialize()
 
     @staticmethod

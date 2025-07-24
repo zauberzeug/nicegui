@@ -1,65 +1,90 @@
-#!/usr/bin/env python3
-import os
-from pathlib import Path
-from typing import Optional
-
-from fastapi import HTTPException, Request
-from fastapi.responses import RedirectResponse
-from starlette.middleware.sessions import SessionMiddleware
-
+from copy import deepcopy
+import redis
+import time
 from nicegui import app, ui
-from website import anti_scroll_hack, documentation, fly, imprint_privacy, main_page, svg
+from dotenv import load_dotenv
 
-# session middleware is required for demo in documentation
-app.add_middleware(SessionMiddleware, secret_key=os.environ.get('NICEGUI_SECRET_KEY', ''))
+load_dotenv()
 
-on_fly = fly.setup()
-anti_scroll_hack.setup()
-
-app.add_static_files('/favicon', str(Path(__file__).parent / 'website' / 'favicon'))
-app.add_static_files('/fonts', str(Path(__file__).parent / 'website' / 'fonts'))
-app.add_static_files('/static', str(Path(__file__).parent / 'website' / 'static'))
-app.add_static_file(local_file=svg.PATH / 'logo.png', url_path='/logo.png')
-app.add_static_file(local_file=svg.PATH / 'logo_square.png', url_path='/logo_square.png')
-
-documentation.build_search_index()
-documentation.build_tree()
+app.storage.general['counter'] = 0
 
 
-@app.post('/dark_mode')
-async def _post_dark_mode(request: Request) -> None:
-    app.storage.browser['dark_mode'] = (await request.json()).get('value')
+def get_redis_client_info(host='localhost', port=6379, password=None, db=0):
+    try:
+        # Create Redis connection
+        r = redis.Redis(host=host, port=port, password=password, db=db, decode_responses=True)
+        # Get client info
+        info = r.info('clients')
+        return {
+            'connected_clients': int(info.get('connected_clients', 0)),
+            'pubsub_clients': int(info.get('pubsub_clients', 0))
+        }
+    except redis.RedisError as e:
+        print(f'Redis error: {e}')
+        return None
+    except Exception as e:
+        print(f'Error: {e}')
+        return None
+
+
+@app.get('/api')
+def some_json():
+    # use this api endpoint to confirm that NICEGUI_STORAGE_USER_IGNORE_URI_PREFIXES is working as intended
+    print('---------------  START API CALL ---------------  ')
+    counter_before = app.storage.general['counter']
+    if app.storage.general['counter'] % 2 == 0:
+        if app.storage.user:
+            app.storage.user['counter'] = int(deepcopy(app.storage.general['counter']))
+    app.storage.general['counter'] += 1
+    counter_after = deepcopy(app.storage.general['counter'])
+    clients = get_redis_client_info()
+    ret = {
+        'client_count': clients,
+        'counter_before': counter_before,
+        'counter_after': counter_after
+    }
+    return ret
+
+
+@app.get('/other')
+def some_json():
+    # use this api endpoint to confirm the NICEGUI_STORAGE_USER_IGNORE_URI_PREFIXES is not interfering
+    print('------------------------------  ')
+    counter_before = app.storage.general['counter']
+    if app.storage.general['counter'] % 2 == 0:
+        app.storage.user['counter'] = int(deepcopy(app.storage.general['counter']))
+    app.storage.general['counter'] += 1
+    counter_after = deepcopy(app.storage.general['counter'])
+    clients = get_redis_client_info()
+    ret = {
+        'client_count': clients,
+        'counter_before': counter_before,
+        'counter_after': counter_after
+    }
+    return ret
 
 
 @ui.page('/')
-def _main_page() -> None:
-    main_page.create()
+async def root_path():
+    # use this page to check that app.storage.user behaves as expected '
+    ui.label('root page')
+    if not app.storage.user.get('root_page_counter'):
+        app.storage.user['root_page_counter'] = 1
+    else:
+        app.storage.user['root_page_counter'] += 1
+    ui.label(f"You have visited {app.storage.user['root_page_counter']} times")
 
 
-@ui.page('/documentation')
-def _documentation_page() -> None:
-    documentation.render_page(documentation.registry[''], with_menu=False)
+@ui.page('/api/hello')
+async def root_path():
+    # use this page to that app.storage.user changes are not published to redis
+    # check redis before going back to /
+    ui.label('api hello page')
+    if not app.storage.user.get('root_page_counter'):
+        app.storage.user['root_page_counter'] = 1
+    else:
+        app.storage.user['root_page_counter'] += 1
+    ui.label(f"You have visited {app.storage.user['root_page_counter']} times")
 
 
-@ui.page('/documentation/{name}')
-def _documentation_detail_page(name: str) -> Optional[RedirectResponse]:
-    if name in documentation.registry:
-        documentation.render_page(documentation.registry[name])
-        return None
-    if name in documentation.redirects:
-        return RedirectResponse(documentation.redirects[name])
-    raise HTTPException(404, f'documentation for "{name}" could not be found')
-
-
-@ui.page('/imprint_privacy')
-def _imprint_privacy() -> None:
-    imprint_privacy.create()
-
-
-@app.get('/status')
-def _status():
-    return 'Ok'
-
-
-# NOTE: do not reload on fly.io (see https://github.com/zauberzeug/nicegui/discussions/1720#discussioncomment-7288741)
-ui.run(uvicorn_reload_includes='*.py, *.css, *.html', reload=not on_fly, reconnect_timeout=10.0)
+ui.run(storage_secret='my_secret')
