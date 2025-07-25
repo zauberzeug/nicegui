@@ -5,6 +5,7 @@ from .persistent_dict import PersistentDict
 try:
     import redis as redis_sync
     import redis.asyncio as redis
+    import redis.exceptions as redis_exceptions
     optional_features.register('redis')
 except ImportError:
     pass
@@ -25,6 +26,7 @@ class RedisPersistentDict(PersistentDict):
         )
         self.pubsub = self.redis_client.pubsub()
         self.key = key_prefix + id
+        self._should_listen = True
         super().__init__(data={}, on_change=self.publish)
 
     async def initialize(self) -> None:
@@ -54,12 +56,25 @@ class RedisPersistentDict(PersistentDict):
 
     def _start_listening(self) -> None:
         async def listen():
-            await self.pubsub.subscribe(self.key + 'changes')
-            async for message in self.pubsub.listen():
-                if message['type'] == 'message':
-                    new_data = json.loads(message['data'])
-                    if new_data != self:
-                        self.update(new_data)
+            try:
+                if not self._should_listen:
+                    return
+                await self.pubsub.subscribe(self.key + 'changes')
+                if not self._should_listen:
+                    await self.pubsub.unsubscribe()
+                    return
+                async for message in self.pubsub.listen():
+                    t = message['type']
+                    if t == 'message':
+                        new_data = json.loads(message['data'])
+                        if new_data != self:
+                            self.update(new_data)
+                    elif t in ('unsubscribe', 'punsubscribe') and message.get('data') == 0:
+                        break
+            except Exception as e:
+                if isinstance(e, redis_exceptions.ConnectionError) and not self._should_listen:
+                    return  # NOTE: on quick instantiation cycles, unsubscribe event might not be received before the connection is closed
+                log.exception(f'Unexpected error in Redis listener for {self.key}')
 
         if core.loop and core.loop.is_running():
             background_tasks.create(listen(), name=f'redis-listen-{self.key}')
@@ -82,7 +97,9 @@ class RedisPersistentDict(PersistentDict):
 
     async def close(self) -> None:
         """Close Redis connection and subscription."""
-        await self.pubsub.unsubscribe()
+        self._should_listen = False
+        if self.pubsub.subscribed:
+            await self.pubsub.unsubscribe()
         await self.pubsub.close()
         await self.redis_client.close()
 
