@@ -16,19 +16,19 @@ if TYPE_CHECKING:
 class RouteMatch:
     """Contains details about a matched route including path parameters and query data."""
     path: str
-    '''The sub-path that actually matched (e.g., "/user/123")'''
+    '''The sub-path that actually matched (e.g., "/user/123").'''
     pattern: str
-    '''The original route pattern (e.g., "/user/{id}")'''
+    '''The original route pattern (e.g., "/user/{id}").'''
     builder: Callable
-    '''The function to call to build the page'''
+    '''The function to call to build the page.'''
     parameters: Dict[str, str]
-    '''The extracted parameters (name -> value) from the path (e.g., ``{"id": "123"}``)'''
+    '''The extracted parameters (name -> value) from the path (e.g., ``{'id': '123'}``).'''
     query_params: QueryParams
-    '''The query parameters from the URL'''
+    '''The query parameters from the URL.'''
     fragment: str
-    '''The URL fragment (e.g., "section" from "#section")'''
+    '''The URL fragment (e.g., "section" from "#section").'''
     remaining_path: str = ''
-    '''The remaining path after the matched path'''
+    '''The remaining path after the matched path.'''
 
     @property
     def full_url(self) -> str:
@@ -54,21 +54,21 @@ class PageArguments:
     path: str
     '''Path from the request.'''
     frame: SubPages
-    '''Reference to the ui.sub_pages element currently executing this page.'''
+    '''Reference to the ``ui.sub_pages`` element currently executing this page.'''
     path_parameters: dict[str, str]
     '''Path parameters extracted from the route pattern.'''
     query_parameters: QueryParams
     '''Query parameters from the request URL.'''
     data: dict[str, Any]
-    '''Arbitrary data passed to the ui.sub_pages element.'''
+    '''Arbitrary data passed to the ``ui.sub_pages`` element.'''
 
     @classmethod
     def build_kwargs(cls, route_match: RouteMatch, frame: SubPages, data: dict[str, Any]) -> dict[str, Any]:
         """Build keyword arguments for the route builder function.
 
         :param route_match: matched route containing path info and parameters
-        :param frame: SubPages instance executing this page
-        :param data: arbitrary data passed to the sub_pages element
+        :param frame: ``ui.sub_pages`` instance executing this page
+        :param data: arbitrary data passed to the ``ui.sub_pages`` element
         :return: keyword arguments for the builder function
         """
         parameters = inspect.signature(route_match.builder).parameters
@@ -100,15 +100,8 @@ class PageArguments:
             frame=frame,
             path_parameters=route_match.parameters or {},
             query_parameters=route_match.query_params,
-            data=data
+            data=data,
         )
-
-    @staticmethod
-    def _unwrap_optional(param_type: type) -> type:
-        """Extract the base type from Optional[T] -> T, or return the type as-is."""
-        if get_origin(param_type) is Union and type(None) in get_args(param_type):
-            return next(arg for arg in get_args(param_type) if arg is not type(None))
-        return param_type
 
     @staticmethod
     def _convert_parameter(value: str, param_type: type) -> Any:
@@ -126,3 +119,10 @@ class PageArguments:
         elif param_type is float:
             return float(value)
         return value
+
+    @staticmethod
+    def _unwrap_optional(param_type: type) -> type:
+        """Extract the base type from Optional[T] -> T, or return the type as-is."""
+        if get_origin(param_type) is Union and type(None) in get_args(param_type):
+            return next(arg for arg in get_args(param_type) if arg is not type(None))
+        return param_type

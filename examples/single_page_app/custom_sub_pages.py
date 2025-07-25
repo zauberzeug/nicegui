@@ -13,12 +13,11 @@ def protected(func: Callable) -> Callable:
 class CustomSubPages(ui.sub_pages):
     """Custom ui.sub_pages with built-in authentication and custom 404 handling."""
 
-    def _render_page(self, match: RouteMatch) -> None:
-        if self._is_route_protected(match.builder):
-            if not self._is_authenticated():
-                self._show_login_form(match.full_url)
-                return
-        super()._render_page(match)
+    def _render_page(self, match: RouteMatch) -> bool:
+        if self._is_route_protected(match.builder) and not self._is_authenticated():
+            self._show_login_form(match.full_url)
+            return True
+        return super()._render_page(match)
 
     def _render_404(self) -> None:
         with ui.column().classes('absolute-center items-center'):
@@ -60,7 +59,6 @@ class CustomSubPages(ui.sub_pages):
                     ui.navigate.to(intended_path)
                 else:
                     ui.notify('Incorrect passphrase', color='negative')
-                    passphrase.value = ''
 
             passphrase.on('keydown.enter', try_login)
             ui.button('Login', on_click=try_login)

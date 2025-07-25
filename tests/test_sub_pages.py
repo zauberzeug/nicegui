@@ -1,5 +1,5 @@
 import asyncio
-from typing import Optional
+from typing import List, Optional
 
 import pytest
 
@@ -70,50 +70,28 @@ def test_switching_between_sub_pages(screen: Screen):
     assert calls == {'index': 1, 'a': 3, 'b': 3}, 'no rebuilding if path stays the same'
 
 
-def test_passing_data_to_sub_page_via_lambda(screen: Screen):
+@pytest.mark.parametrize('strategy', ['lambda', 'dict'])
+def test_passing_data_to_sub_page(screen: Screen, strategy: str):
     @ui.page('/')
     @ui.page('/other')
     def index():
         title = ui.label()
-        ui.sub_pages({
-            '/': lambda: main(title),
-            '/other': lambda: other(title)
-        })
+        if strategy == 'lambda':
+            ui.sub_pages({
+                '/': lambda: main(title),
+                '/other': lambda: other(title)
+            })
+        else:
+            ui.sub_pages({
+                '/': main,
+                '/other': other
+            }, data={'title': title})
 
     def main(title: ui.label):
         title.text = 'main title'
         ui.link('Go to other', '/other')
 
     def other(title: ui.label):
-        title.text = 'other title'
-        ui.link('Go to main', '/')
-
-    screen.open('/')
-    screen.should_contain('main title')
-
-    screen.click('Go to other')
-    screen.should_contain('other title')
-
-    screen.click('Go to main')
-    screen.should_contain('main title')
-
-
-def test_passing_data_to_sub_page_via_dict(screen: Screen):
-    @ui.page('/')
-    @ui.page('/other')
-    def index():
-        title = ui.label()
-        ui.sub_pages({
-            '/': main,
-            '/other': other,
-        }, data={'title': title})
-
-    def main(title: ui.label):
-        title.text = 'main title'
-        ui.link('Go to other', '/other')
-
-    def other(args: PageArguments):
-        title: ui.label = args.data['title']
         title.text = 'other title'
         ui.link('Go to main', '/')
 
@@ -214,8 +192,8 @@ def test_nested_sub_pages_on_root_path(screen: Screen):
     @ui.page('/')
     @ui.page('/{_:path}')
     def index():
-        ui.link('go to content', '/content')
-        ui.link('go to bad path', '/bad_path')
+        ui.link('Go to content', '/content')
+        ui.link('Go to bad path', '/bad_path')
         ui.sub_pages({'/': home1})
 
     def home1():
@@ -237,12 +215,12 @@ def test_nested_sub_pages_on_root_path(screen: Screen):
     screen.should_contain('home1')
     screen.should_contain('home2')
 
-    screen.click('go to content')
+    screen.click('Go to content')
     screen.should_contain('some content')
     screen.should_contain('home1')
     screen.should_not_contain('home2')
 
-    screen.click('go to bad path')
+    screen.click('Go to bad path')
     screen.should_contain('404: sub page /bad_path not found')
     screen.should_contain('home1')
     screen.should_not_contain('home2')
@@ -272,7 +250,7 @@ def test_async_nested_sub_pages(screen: Screen):
 
     @ui.page('/')
     @ui.page('/{_:path}')
-    def index(_):
+    def index():
         calls['index'] += 1
         ui.link('Go to sleep', '/sleep')
         ui.link('Go to background', '/background')
@@ -306,7 +284,7 @@ def test_async_nested_sub_pages(screen: Screen):
 
     screen.open('/sleep')
     screen.should_contain('sleep main page')
-    assert calls == {'index': 1, 'sleep': 1, 'sleep_main': 1, 'background': 0,  'background_main': 0}
+    assert calls == {'index': 1, 'sleep': 1, 'sleep_main': 1, 'background': 0, 'background_main': 0}
 
     screen.open('/background')
     screen.should_contain('background main page')
@@ -367,7 +345,7 @@ def test_parameterized_sub_pages(screen: Screen):
     screen.should_not_contain('one-1-True')
     screen.should_not_contain('two-two')
     screen.should_contain('404: sub page /two-3 not found')
-    # assert screen.current_path == '/two-3'
+    assert screen.current_path == '/two/two'
 
     assert calls == {'index': 1, 'main': 2}, 'main re-evaluates to determine if a nested sub page might handle the path'
 
@@ -375,7 +353,7 @@ def test_parameterized_sub_pages(screen: Screen):
 def test_sub_page_with_default_parameter(screen: Screen):
     @ui.page('/')
     @ui.page('/{_:path}')
-    def index(_):
+    def index():
         ui.sub_pages({
             '/': item_page,
             '/{item}': item_page,
@@ -398,7 +376,7 @@ def test_sub_page_changing_via_navigate_to(screen: Screen):
 
     @ui.page('/')
     @ui.page('/{_:path}')
-    def index(_):
+    def index():
         calls['index'] += 1
         ui.button('Go', on_click=lambda: ui.navigate.to('/test'))
         ui.sub_pages({
@@ -427,7 +405,7 @@ def test_navigate_to_new_tab_fallback(screen: Screen):
 
     @ui.page('/')
     @ui.page('/{_:path}')
-    def index(_):
+    def index():
         calls['index'] += 1
         ui.button('new tab', on_click=lambda: ui.navigate.to('/internal', new_tab=True))
         ui.sub_pages({
@@ -767,10 +745,10 @@ def test_optional_parameters(screen: Screen):
 
     def content_with_mixed_params(
         name: str,
-        count: Optional[int] = 1,
-        active: Optional[str] = 'no',
+        count: int = 1,
+        active: str = 'no',
         source: Optional[str] = None,
-        missing: Optional[str] = 'default'
+        missing: str = 'default',
     ):
         ui.label(f'name={name}, count={count}, active={active}, source={source}, missing={missing}')
 
@@ -782,7 +760,6 @@ def test_optional_parameters(screen: Screen):
 
 
 def test_page_arguments_with_optional_parameters(screen: Screen):
-
     @ui.page('/')
     @ui.page('/{path:path}')
     def index():
@@ -794,7 +771,7 @@ def test_page_arguments_with_optional_parameters(screen: Screen):
     def user_page(
         args: PageArguments,
         user_id: str,
-        role: Optional[str] = 'guest',
+        role: str = 'guest',
         app_name: Optional[str] = None,
     ):
         ui.label(f'path={args.path}, user_id={user_id}, role={role}, app={app_name}')
@@ -826,8 +803,8 @@ def test_sub_pages_with_url_fragments(screen: Screen):
         ui.link_target('top')
         ui.label('Top target content')
         ui.link('Go to bottom', '/page#bottom')
-        for i in range(20):
-            ui.label(f'Line {i}').classes('my-5')
+        for i in range(100):
+            ui.label(f'Line {i}')
         ui.link_target('bottom')
         ui.label('Bottom target content')
         ui.link('Go to top', '/page#top')
@@ -909,7 +886,7 @@ def test_only_rebuild_page_when_builder_depends_on_it(screen: Screen, strategy: 
 
 
 def test_on_path_changed_event(screen: Screen):
-    paths = []
+    paths: List[str] = []
     calls = {'index': 0, 'main': 0, 'other': 0}
 
     @ui.page('/')
@@ -966,16 +943,16 @@ def test_exception_in_page_builder(screen: Screen):
         })
 
     def exception():
-        raise Exception('test exception')
+        raise Exception('test exception')  # pylint: disable=broad-exception-raised
 
     def content_with_exception():
         ui.label('content before exception')
-        raise Exception('content test exception')
+        raise Exception('content test exception')  # pylint: disable=broad-exception-raised
 
     async def async_exception():
         ui.label('async content before exception')
         await asyncio.sleep(0.1)
-        raise Exception('async test exception')
+        raise Exception('async test exception')  # pylint: disable=broad-exception-raised
 
     screen.open('/')
     msg_exception = 'sub page / produced an error'
@@ -1003,7 +980,6 @@ def test_exception_in_page_builder(screen: Screen):
 
 
 def test_disabling_404(screen: Screen):
-
     @ui.page('/')
     @ui.page('/{_:path}')
     def index():
