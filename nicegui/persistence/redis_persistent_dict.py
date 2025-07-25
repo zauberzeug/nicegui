@@ -69,6 +69,8 @@ class RedisPersistentDict(PersistentDict):
     def publish(self) -> None:
         """Publish the data to Redis and notify other instances."""
         async def backup() -> None:
+            if not await self.redis_client.exists(self.key) and not self:
+                return
             pipeline = self.redis_client.pipeline()
             pipeline.set(self.key, json.dumps(self))
             pipeline.publish(self.key + 'changes', json.dumps(self))
