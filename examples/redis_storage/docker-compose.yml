@@ -20,6 +20,8 @@ services:
 
   redis:
     image: redis:alpine
+    environment:
+      - REDIS_TIMEOUT=10
     ports:
       - "6379:6379"
 
