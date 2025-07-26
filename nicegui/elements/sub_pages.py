@@ -80,6 +80,7 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
             match is not None and
             self._current_match is not None and
             match.path == self._current_match.path and
+            match.remaining_path == self._current_match.remaining_path and
             not self._required_query_params_changed(match)
         ):
             # NOTE: if the full path could not be consumed, the last sub pages element must handle a possible 404

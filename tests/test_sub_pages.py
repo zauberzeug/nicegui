@@ -1008,3 +1008,21 @@ def test_disabling_404(screen: Screen):
     screen.click('Button to 404')  # open via navigate.to
     screen.should_not_contain('not found')
     screen.should_contain('main page')
+
+
+def test_navigate_from_404_to_root_path(screen: Screen):
+    @ui.page('/')
+    @ui.page('/{_:path}')
+    def index():
+        ui.link('HOME', '/')
+        ui.sub_pages({
+            '/': main,
+        })
+
+    def main():
+        ui.label('main page')
+
+    screen.open('/bad_path')
+    screen.should_contain('404: sub page /bad_path not found')
+    screen.click('HOME')
+    screen.should_contain('main page')
