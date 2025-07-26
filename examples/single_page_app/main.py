@@ -13,10 +13,10 @@ def main_page():
         ui.button('Invalid', on_click=lambda: ui.navigate.to('/invalid')).props('flat')
         ui.button('Error', on_click=lambda: ui.navigate.to('/error')).props('flat')
         ui.space()
-        ui.button('Logout', icon='logout', on_click=lambda: (
-            app.storage.user.update(authenticated=False),
-            ui.navigate.to('/'),
-        )).props('flat').bind_visibility_from(app.storage.user, 'authenticated')
+        ui.button('Logout', icon='logout').props('flat') \
+            .bind_visibility_from(app.storage.user, 'authenticated') \
+            .on_click(lambda: app.storage.user.update(authenticated=False)) \
+            .on_click(lambda: ui.navigate.to('/'))
 
     custom_sub_pages({
         '/': home,

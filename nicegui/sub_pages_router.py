@@ -20,7 +20,7 @@ class SubPagesRouter:
         on('sub_pages_navigate', lambda event: self._handle_navigate(event.args))
 
         if request is not None:
-            path = str(request.url.path)
+            path = request.url.path
             if request.url.query:
                 path += '?' + request.url.query
             if request.url.fragment:
@@ -36,12 +36,13 @@ class SubPagesRouter:
         for callback in self.on_path_changed:
             callback(path)
         updated = False
-        for sub_pages in tuple(el for el in context.client.layout.descendants() if isinstance(el, SubPages)):
-            try:
-                if sub_pages.show() is not None:
-                    updated = True
-            except ValueError:
-                pass
+        for child in context.client.layout.descendants():
+            if isinstance(child, SubPages):
+                try:
+                    if child.show() is not None:
+                        updated = True
+                except ValueError:
+                    pass
         return updated
 
     def _handle_navigate(self, path: str) -> None:

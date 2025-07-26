@@ -1,5 +1,4 @@
-from nicegui import PageArguments
-from nicegui import ui
+from nicegui import PageArguments, ui
 
 from . import doc
 
@@ -41,8 +40,8 @@ def main_demo() -> None:
 
 
 @doc.demo('Passing Parameters to Sub Page', '''
-    If a sub page needs data from its parent, a dictionary can be passed to the `ui.sub_pages` element.
-    The data will be available as a keyword argument in the sub page function or as `PageArguments` object.
+    If a sub page needs data from its parent, a `data` dictionary can be passed to the `ui.sub_pages` element.
+    The data will be available as keyword arguments in the sub page function or as `PageArguments.data` object.
 ''')
 def parameters_demo():
     # @ui.page('/')
@@ -142,7 +141,7 @@ def adding_sub_pages_demo() -> None:
 
 
 @doc.demo('Using PageArguments', '''
-    By type-hinting the parameter as `PageArguments`,
+    By type-hinting a parameter as `PageArguments`,
     the sub page builder function gets unified access to query parameters, path parameters, and more.
 ''')
 def page_arguments_demo():
@@ -211,7 +210,7 @@ def nested_sub_pages_demo():
     # END OF DEMO
     ui.link('Go to main', '/documentation/sub_pages')
     ui.link('Go to other', '/documentation/sub_pages/other')
-    ui.sub_pages({'/': main, '/other': other, }, root_path='/documentation/sub_pages').classes('border-2 p-2')
+    ui.sub_pages({'/': main, '/other': other}, root_path='/documentation/sub_pages').classes('border-2 p-2')
 
 
 doc.reference(ui.sub_pages, title='Reference for ui.sub_pages')
