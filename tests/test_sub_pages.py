@@ -156,6 +156,7 @@ def test_nested_sub_pages_basic(screen: Screen):
         ui.label('sub page')
         ui.link('Go to A', '/sub/a')
         ui.link('Go to B', '/sub/b')
+        ui.link('Go to bad path', '/sub/b/bad')
         ui.sub_pages({
             '/': sub_main,
             '/a': sub_page_a,
@@ -185,6 +186,10 @@ def test_nested_sub_pages_basic(screen: Screen):
 
     screen.click('Go to B')
     screen.should_contain('sub B page')
+    assert calls == {'index': 1, 'main': 1, 'sub': 1}
+
+    screen.click('Go to bad path')
+    screen.should_contain('404: sub page /sub/b/bad not found')
     assert calls == {'index': 1, 'main': 1, 'sub': 1}
 
     screen.click('Go to main')
@@ -707,13 +712,25 @@ def test_sub_page_with_query_parameters(screen: Screen, use_page_arguments: bool
     screen.should_contain('access: button')
     assert calls == {'index': 1, 'main_content': 3}
 
-    screen.selenium.back()
-    screen.should_contain('access: link')
-    assert calls == {'index': 1, 'main_content': 4}
+    screen.click('Button to main')
+    screen.should_contain('access: button')
+    assert calls == {'index': 1, 'main_content': 3}, 'Should not rebuild when query param value stays the same'
 
-    screen.selenium.forward()
+    screen.click('Link to main')
+    screen.should_contain('access: link')
+    assert calls == {'index': 1, 'main_content': 4}, 'Should rebuild when query param value changes'
+
+    screen.click('Link to main')
+    screen.should_contain('access: link')
+    assert calls == {'index': 1, 'main_content': 4}, 'Should not rebuild when clicking same link again'
+
+    screen.selenium.back()
     screen.should_contain('access: button')
     assert calls == {'index': 1, 'main_content': 5}
+
+    screen.selenium.forward()
+    screen.should_contain('access: link')
+    assert calls == {'index': 1, 'main_content': 6}
 
 
 def test_accessing_path_parameters_via_page_arguments(screen: Screen):
@@ -908,7 +925,7 @@ def test_on_path_changed_event(screen: Screen):
             '/': main,
             '/other': other,
         })
-        ui.context.client.sub_pages_router.on_path_changed.append(paths.append)
+        ui.context.client.sub_pages_router.on_path_changed(paths.append)
         ui.link('Go to other', '/other')
 
     def main():
