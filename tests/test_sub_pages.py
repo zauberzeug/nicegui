@@ -156,6 +156,7 @@ def test_nested_sub_pages_basic(screen: Screen):
         ui.label('sub page')
         ui.link('Go to A', '/sub/a')
         ui.link('Go to B', '/sub/b')
+        ui.link('Go to bad path', '/sub/b/bad')
         ui.sub_pages({
             '/': sub_main,
             '/a': sub_page_a,
@@ -185,6 +186,10 @@ def test_nested_sub_pages_basic(screen: Screen):
 
     screen.click('Go to B')
     screen.should_contain('sub B page')
+    assert calls == {'index': 1, 'main': 1, 'sub': 1}
+
+    screen.click('Go to bad path')
+    screen.should_contain('404: sub page /sub/b/bad not found')
     assert calls == {'index': 1, 'main': 1, 'sub': 1}
 
     screen.click('Go to main')
