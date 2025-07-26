@@ -214,8 +214,6 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
                     }}
                     if (target) {{
                         target.scrollIntoView({{ behavior: "smooth" }});
-                    }} else {{
-                        requestAnimationFrame(scrollToFragment);
                     }}
                 }};
                 requestAnimationFrame(scrollToFragment);
