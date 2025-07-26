@@ -69,7 +69,7 @@ def _main_page() -> None:
         '/imprint_privacy': imprint_privacy.create,
     }, show_404=False).classes('mx-auto')
     _update_menu(ui.context.client.sub_pages_router.current_path)
-    ui.context.client.sub_pages_router.on_path_changed.append(_update_menu)
+    ui.context.client.sub_pages_router.on_path_changed(_update_menu)
 
 
 def _documentation_page() -> None:
