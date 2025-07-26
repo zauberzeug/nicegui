@@ -133,10 +133,13 @@ def test_opening_sub_pages_directly(screen: Screen):
     screen.should_not_contain('two')
 
 
-def test_nested_sub_pages(screen: Screen):
+def test_nested_sub_pages_basic(screen: Screen):
+    calls = {'index': 0, 'main': 0, 'sub': 0}
+
     @ui.page('/')
     @ui.page('/{_:path}')
     def index():
+        calls['index'] += 1
         ui.link('Go to main', '/')
         ui.link('Go to sub', '/sub')
         ui.sub_pages({
@@ -145,9 +148,11 @@ def test_nested_sub_pages(screen: Screen):
         })
 
     def main():
+        calls['main'] += 1
         ui.label('main page')
 
     def sub():
+        calls['sub'] += 1
         ui.label('sub page')
         ui.link('Go to A', '/sub/a')
         ui.link('Go to B', '/sub/b')
@@ -168,24 +173,30 @@ def test_nested_sub_pages(screen: Screen):
 
     screen.open('/')
     screen.should_contain('main page')
+    assert calls == {'index': 1, 'main': 1, 'sub': 0}
 
     screen.click('Go to sub')
     screen.should_contain('sub main page')
+    assert calls == {'index': 1, 'main': 1, 'sub': 1}
 
     screen.click('Go to A')
     screen.should_contain('sub A page')
+    assert calls == {'index': 1, 'main': 1, 'sub': 1}
 
     screen.click('Go to B')
     screen.should_contain('sub B page')
+    assert calls == {'index': 1, 'main': 1, 'sub': 1}
 
     screen.click('Go to main')
     screen.should_contain('main page')
     screen.should_not_contain('sub main page')
     screen.should_not_contain('sub A page')
     screen.should_not_contain('sub B page')
+    assert calls == {'index': 1, 'main': 2, 'sub': 1}
 
     screen.open('/sub/a')
     screen.should_contain('sub A page')
+    assert calls == {'index': 2, 'main': 2, 'sub': 2}
 
 
 def test_nested_sub_pages_on_root_path(screen: Screen):
@@ -1014,7 +1025,7 @@ def test_navigate_from_404_to_root_path(screen: Screen):
     @ui.page('/')
     @ui.page('/{_:path}')
     def index():
-        ui.link('HOME', '/')
+        ui.link('home', '/')
         ui.sub_pages({
             '/': main,
         })
@@ -1024,5 +1035,5 @@ def test_navigate_from_404_to_root_path(screen: Screen):
 
     screen.open('/bad_path')
     screen.should_contain('404: sub page /bad_path not found')
-    screen.click('HOME')
+    screen.click('home')
     screen.should_contain('main page')
