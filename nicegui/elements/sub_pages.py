@@ -220,11 +220,14 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
             ''')
 
     def _required_query_params_changed(self, route_match: RouteMatch) -> bool:
-        if not route_match.query_params:
-            return False
+        if self._current_match is None:
+            return True
+        current_params = route_match.query_params
+        previous_params = self._current_match.query_params
         for name, param in inspect.signature(route_match.builder).parameters.items():
             if param.annotation is PageArguments:
-                return True
-            if name in route_match.query_params:
-                return True
+                return current_params != previous_params
+            if name in current_params or name in previous_params:
+                if current_params.get(name) != previous_params.get(name):
+                    return True
         return False
