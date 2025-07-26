@@ -925,7 +925,7 @@ def test_on_path_changed_event(screen: Screen):
             '/': main,
             '/other': other,
         })
-        ui.context.client.sub_pages_router.on_path_changed.append(paths.append)
+        ui.context.client.sub_pages_router.on_path_changed(paths.append)
         ui.link('Go to other', '/other')
 
     def main():

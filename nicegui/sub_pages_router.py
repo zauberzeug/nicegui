@@ -29,11 +29,18 @@ class SubPagesRouter:
         else:
             self.current_path = '/'
 
-        self.on_path_changed: List[Callable[[str], None]] = []
+        self._path_changed_handlers: List[Callable[[str], None]] = []
+
+    def on_path_changed(self, handler: Callable[[str], None]) -> None:
+        """Register a callback to be invoked when the path changes.
+
+        :param handler: callback function that receives the new path as its argument
+        """
+        self._path_changed_handlers.append(handler)
 
     def _handle_open(self, path: str) -> bool:
         self.current_path = path
-        for callback in self.on_path_changed:
+        for callback in self._path_changed_handlers:
             callback(path)
         updated = False
         for child in context.client.layout.descendants():
