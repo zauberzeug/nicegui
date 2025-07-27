@@ -8,10 +8,11 @@ from fastapi.responses import RedirectResponse
 from starlette.middleware.sessions import SessionMiddleware
 
 from nicegui import app, ui
-from website import anti_scroll_hack, documentation, fly, imprint_privacy, main_page, svg
+from website import anti_scroll_hack, documentation, fly, imprint_privacy, main_page, rate_limits, svg
 
 # session middleware is required for demo in documentation
 app.add_middleware(SessionMiddleware, secret_key=os.environ.get('NICEGUI_SECRET_KEY', ''))
+rate_limits.setup()
 
 on_fly = fly.setup()
 anti_scroll_hack.setup()
