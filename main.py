@@ -1,10 +1,8 @@
 #!/usr/bin/env python3
 import os
 from pathlib import Path
-from typing import Optional
 
-from fastapi import HTTPException, Request
-from fastapi.responses import RedirectResponse
+from fastapi import Request
 from starlette.middleware.sessions import SessionMiddleware
 
 from nicegui import app, ui
@@ -64,32 +62,23 @@ def _main_page() -> None:
 
     ui.sub_pages({
         '/': main_page.create,
-        '/documentation': _documentation_page,
-        '/documentation/{name}': lambda name: _documentation_detail_page(name, menu, tree),
+        '/documentation': lambda: documentation.render_page(documentation.registry['']),
+        '/documentation/{name}': lambda name: _documentation_detail_page(name, tree),
         '/imprint_privacy': imprint_privacy.create,
     }, show_404=False).classes('mx-auto')
     _update_menu(ui.context.client.sub_pages_router.current_path)
     ui.context.client.sub_pages_router.on_path_changed(_update_menu)
 
 
-def _documentation_page() -> None:
-    documentation.render_page(documentation.registry[''])
-
-
-def _documentation_detail_page(name: str, menu: ui.left_drawer, tree: ui.tree) -> Optional[RedirectResponse]:
-    tree.expand(documentation.rendering._ancestor_nodes(name))
-    ui.run_javascript(f'''
-        Array.from(getHtmlElement({tree.id}).getElementsByTagName("a"))
-            .find(el => el.innerText.trim() === "{(documentation.registry[name].parts[0].title or '').replace('*', '')}")
-            .scrollIntoView({{block: "center"}});
-    ''')
-
+def _documentation_detail_page(name: str, tree: ui.tree) -> None:
+    tree.collapse()
+    tree.expand(documentation.tree.ancestors(name))
     if name in documentation.registry:
         documentation.render_page(documentation.registry[name])
-        return None
-    if name in documentation.redirects:
-        return RedirectResponse(documentation.redirects[name])
-    raise HTTPException(404, f'documentation for "{name}" could not be found')
+    elif name in documentation.redirects:
+        ui.navigate.to(documentation.redirects[name])
+    else:
+        ui.label(f'Documentation for "{name}" could not be found.').classes('absolute-center')
 
 
 @app.get('/status')

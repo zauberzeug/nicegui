@@ -1,5 +1,3 @@
-from typing import List
-
 from nicegui import ui
 
 from ..style import section_heading, subheading
@@ -7,7 +5,6 @@ from .content import DocumentationPage
 from .custom_restructured_text import CustomRestructuredText as custom_restructured_text
 from .demo import demo
 from .reference import generate_class_doc
-from .tree import nodes
 
 
 def render_page(documentation: DocumentationPage) -> None:
@@ -18,7 +15,6 @@ def render_page(documentation: DocumentationPage) -> None:
     title = (documentation.title or '').replace('*', '')
     ui.page_title('NiceGUI' if not title else title if title.split()[0] == 'NiceGUI' else f'{title} | NiceGUI')
 
-    # content
     def render_content():
         section_heading(documentation.subtitle or '', documentation.heading)
         for part in documentation.parts:
@@ -55,8 +51,3 @@ def render_page(documentation: DocumentationPage) -> None:
             render_content()
     with ui.column().classes('w-full p-4 items-end'):
         ui.link('Imprint & Privacy', '/imprint_privacy').classes('text-sm')
-
-
-def _ancestor_nodes(node_id: str) -> List[str]:
-    parent = next((node for node in nodes if any(child['id'] == node_id for child in node.get('children', []))), None)
-    return [node_id] + (_ancestor_nodes(parent['id']) if parent else [])
