@@ -207,16 +207,9 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
     def _scroll_to_fragment(self, fragment: str) -> None:
         if fragment:
             run_javascript(f'''
-                const scrollToFragment = () => {{
-                    let target = document.getElementById("{fragment}");
-                    if (!target) {{
-                        target = document.querySelector('a[name="{fragment}"]');
-                    }}
-                    if (target) {{
-                        target.scrollIntoView({{ behavior: "smooth" }});
-                    }}
-                }};
-                requestAnimationFrame(scrollToFragment);
+                requestAnimationFrame(() => {{
+                    document.querySelector('#{fragment}, a[name="{fragment}"]')?.scrollIntoView({{ behavior: "smooth" }});
+                }});
             ''')
 
     def _required_query_params_changed(self, route_match: RouteMatch) -> bool:
@@ -227,7 +220,6 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
         for name, param in inspect.signature(route_match.builder).parameters.items():
             if param.annotation is PageArguments:
                 return current_params != previous_params
-            if name in current_params or name in previous_params:
-                if current_params.get(name) != previous_params.get(name):
-                    return True
+            if current_params.get(name) != previous_params.get(name):
+                return True
         return False
