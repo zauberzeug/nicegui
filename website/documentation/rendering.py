@@ -12,9 +12,6 @@ from .tree import nodes
 
 def render_page(documentation: DocumentationPage) -> None:
     """Render the documentation."""
-
-    ui.run_javascript('window.scrollTo({top: 0, left: 0, behavior: "instant"});')
-
     title = (documentation.title or '').replace('*', '')
     ui.page_title('NiceGUI' if not title else title if title.split()[0] == 'NiceGUI' else f'{title} | NiceGUI')
 

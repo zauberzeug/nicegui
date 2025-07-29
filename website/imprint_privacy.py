@@ -4,7 +4,6 @@ from website.documentation.rendering import section_heading, subheading
 
 def create():
     ui.page_title('Imprint & Privacy | NiceGUI')
-    ui.run_javascript('window.scrollTo({top: 0, left: 0, behavior: "instant"});')
 
     with ui.column().classes('w-full p-8 lg:p-16 max-w-[1250px] mx-auto'):
         section_heading('', 'Imprint')
