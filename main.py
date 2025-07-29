@@ -34,10 +34,12 @@ async def _post_dark_mode(request: Request) -> None:
 def _main_page() -> None:
     ui.context.client.content.classes('p-0 gap-0')
     header.add_head_html()
+
     with ui.left_drawer() \
-        .classes('column no-wrap gap-1 bg-[#eee] dark:bg-[#1b1b1b] mt-[-20px] px-8 py-20') \
+            .classes('column no-wrap gap-1 bg-[#eee] dark:bg-[#1b1b1b] mt-[-20px] px-8 py-20') \
             .style('height: calc(100% + 20px) !important') as menu:
-        tree = ui.tree(documentation.tree.nodes, label_key='title', on_select=lambda e: ui.navigate.to(f'/documentation/{e.value}')) \
+        tree = ui.tree(documentation.tree.nodes, label_key='title',
+                       on_select=lambda e: ui.navigate.to(f'/documentation/{e.value}')) \
             .classes('w-full').props('accordion no-connectors')
     menu_button = header.add_header(menu)
 
@@ -45,11 +47,18 @@ def _main_page() -> None:
     ui.on('is_desktop', lambda v: window_state.update(is_desktop=v.args))
     ui.add_head_html('''
         <script>
-            const mq = window.matchMedia('(min-width: 1024px)');
-            mq.addEventListener('change', e => emitEvent('is_desktop', e.matches));
-            window.addEventListener('load', () => emitEvent('is_desktop', mq.matches));
+            const mediaQuery = window.matchMedia('(min-width: 1024px)');
+            mediaQuery.addEventListener('change', e => emitEvent('is_desktop', e.matches));
+            window.addEventListener('load', () => emitEvent('is_desktop', mediaQuery.matches));
         </script>
     ''')
+
+    ui.sub_pages({
+        '/': main_page.create,
+        '/documentation': lambda: documentation.render_page(documentation.registry['']),
+        '/documentation/{name}': lambda name: _documentation_detail_page(name, tree),
+        '/imprint_privacy': imprint_privacy.create,
+    }, show_404=False).classes('mx-auto')
 
     def _update_menu(path: str):
         if path.startswith('/documentation/'):
@@ -59,20 +68,13 @@ def _main_page() -> None:
         else:
             menu_button.visible = False
             menu.value = False
-
-    ui.sub_pages({
-        '/': main_page.create,
-        '/documentation': lambda: documentation.render_page(documentation.registry['']),
-        '/documentation/{name}': lambda name: _documentation_detail_page(name, tree),
-        '/imprint_privacy': imprint_privacy.create,
-    }, show_404=False).classes('mx-auto')
-    _update_menu(ui.context.client.sub_pages_router.current_path)
     ui.context.client.sub_pages_router.on_path_changed(_update_menu)
+    _update_menu(ui.context.client.sub_pages_router.current_path)
 
 
 def _documentation_detail_page(name: str, tree: ui.tree) -> None:
-    tree.collapse()
-    tree.expand(documentation.tree.ancestors(name))
+    tree.props.update(expanded=documentation.tree.ancestors(name))
+    tree.update()
     if name in documentation.registry:
         documentation.render_page(documentation.registry[name])
     elif name in documentation.redirects:
