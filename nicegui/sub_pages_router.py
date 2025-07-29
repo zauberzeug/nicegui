@@ -23,11 +23,11 @@ class SubPagesRouter:
             path = request.url.path
             if request.url.query:
                 path += '?' + request.url.query
-            if request.url.fragment:
-                path += '#' + request.url.fragment
+            # NOTE: we do not use request.url.fragment because browsers do not send it to the server
             self.current_path = path
         else:
             self.current_path = '/'
+        self.is_initial_path = True
 
         self._path_changed_handlers: List[Callable[[str], None]] = []
 
@@ -42,6 +42,7 @@ class SubPagesRouter:
 
     def _handle_open(self, path: str) -> bool:
         self.current_path = path
+        self.is_initial_path = False
         for callback in self._path_changed_handlers:
             callback(path)
         updated = False
