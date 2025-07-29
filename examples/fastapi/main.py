@@ -4,14 +4,14 @@ from fastapi import FastAPI
 
 from nicegui import app, ui
 
-# This example deliberately creates a separate FastAPI app and run nicegui on top of it by using ui.run_with.
-# Please note that the `app` object from NiceGUI also is a FastAPI app.
-# Often it is easier to stick to ui.run and use the `@app.get` etc. decorators to add normal FastAPI endpoints.
+# This example deliberately creates a separate FastAPI app and runs NiceGUI on top of it using `ui.run_with`.
+# Please note that the `app` object from NiceGUI is also a FastAPI app.
+# Often it is easier to stick to `ui.run` and use the `@app.get` etc. decorators to add normal FastAPI endpoints.
 fastapi_app = FastAPI()
 
 
 @fastapi_app.get('/')
-def read_root():
+def get_root():
     return {'message': 'Hello, FastAPI! Browse to /gui to see the NiceGUI app.'}
 
 
