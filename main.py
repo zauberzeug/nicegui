@@ -76,7 +76,7 @@ def _documentation_detail_page(name: str, tree: ui.tree) -> None:
     if name in documentation.registry:
         documentation.render_page(documentation.registry[name])
     elif name in documentation.redirects:
-        ui.navigate.to(documentation.redirects[name])
+        ui.navigate.to('/documentation/' + documentation.redirects[name])
     else:
         ui.label(f'Documentation for "{name}" could not be found.').classes('absolute-center')
 
