@@ -58,7 +58,7 @@ def _main_page() -> None:
         '/documentation': lambda: documentation.render_page(documentation.registry['']),
         '/documentation/{name}': lambda name: _documentation_detail_page(name, tree),
         '/imprint_privacy': imprint_privacy.create,
-    }, show_404=False).classes('mx-auto')
+    }, show_404=False).classes('w-full')
 
     def _update_menu(path: str):
         if path.startswith('/documentation/'):
