@@ -87,7 +87,7 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
                 self._render_404_if_enabled()
                 return None
             else:
-                self._scroll_to_fragment(match.fragment)
+                self._handle_scrolling(match, smooth_to_top=True)
                 return match
 
         self._cancel_active_tasks()
@@ -118,11 +118,7 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
                 result.close()
             return False
 
-        # NOTE: the initial path does not have fragment information; to not interfere with later fragment scrolling, we skip scrolling to top
-        if not self._router.is_initial_path and match.fragment:
-            self._scroll_to_fragment(match.fragment)
-        else:
-            self._scroll_to_top()
+        self._handle_scrolling(match, smooth_to_top=False)
         if asyncio.iscoroutine(result):
             async def background_task():
                 with self:
@@ -208,6 +204,12 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
                 task.cancel()
         self._active_tasks.clear()
 
+    def _handle_scrolling(self, match, *, smooth_to_top: bool):
+        if match.fragment:
+            self._scroll_to_fragment(match.fragment)
+        elif not self._router.is_initial_path:  # NOTE: the initial path has no fragment; to not interfere with later fragment scrolling, we skip scrolling to top
+            self._scroll_to_top(smooth=smooth_to_top)
+
     def _scroll_to_fragment(self, fragment: str) -> None:
         run_javascript(f'''
             requestAnimationFrame(() => {{
@@ -215,8 +217,11 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
             }});
         ''')
 
-    def _scroll_to_top(self) -> None:
-        run_javascript('''requestAnimationFrame(() => { window.scrollTo({top: 0, left: 0, behavior: "instant"}); });''')
+    def _scroll_to_top(self, smooth: bool) -> None:
+        behavior = 'smooth' if smooth else 'instant'
+        run_javascript(f'''
+            requestAnimationFrame(() => {{ window.scrollTo({{top: 0, left: 0, behavior: "{behavior}"}}); }});
+        ''')
 
     def _required_query_params_changed(self, route_match: RouteMatch) -> bool:
         if self._current_match is None:
