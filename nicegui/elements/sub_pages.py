@@ -118,7 +118,11 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
                 result.close()
             return False
 
-        self._scroll_to_fragment(match.fragment)
+        # NOTE: the initial path does not have fragment information; to not interfere with later fragment scrolling, we skip scrolling to top
+        if not self._router.is_initial_path and match.fragment:
+            self._scroll_to_fragment(match.fragment)
+        else:
+            self._scroll_to_top()
         if asyncio.iscoroutine(result):
             async def background_task():
                 with self:
@@ -205,12 +209,14 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
         self._active_tasks.clear()
 
     def _scroll_to_fragment(self, fragment: str) -> None:
-        if fragment:
-            run_javascript(f'''
-                requestAnimationFrame(() => {{
-                    document.querySelector('#{fragment}, a[name="{fragment}"]')?.scrollIntoView({{ behavior: "smooth" }});
-                }});
-            ''')
+        run_javascript(f'''
+            requestAnimationFrame(() => {{
+                document.querySelector('#{fragment}, a[name="{fragment}"]')?.scrollIntoView({{ behavior: "smooth" }});
+            }});
+        ''')
+
+    def _scroll_to_top(self) -> None:
+        run_javascript('''requestAnimationFrame(() => { window.scrollTo({top: 0, left: 0, behavior: "instant"}); });''')
 
     def _required_query_params_changed(self, route_match: RouteMatch) -> bool:
         if self._current_match is None:
