@@ -825,6 +825,9 @@ def test_sub_pages_with_url_fragments(screen: Screen):
         calls['main'] += 1
         ui.label('Main page')
         ui.link('Go to bottom', '/page#bottom')
+        # NOTE: extend content of main page so we can verify that scroll positions are resetted when doing cross-page navigation
+        for i in range(100):
+            ui.label(f'Line {i}')
 
     def targets():
         calls['targets'] += 1
@@ -855,11 +858,15 @@ def test_sub_pages_with_url_fragments(screen: Screen):
     assert scroll_y_top < scroll_y, 'Expected scrolling to top to have smaller scroll position'
     assert calls == {'index': 1, 'main': 0, 'targets': 1}, 'Fragment navigation should not rebuild page'
 
-    # Test 3: Cross-page navigation with fragment
+    # Test 3: Cross-page navigation auto-scrolls to top
+    screen.click('Go to bottom')
+    screen.wait(1)
+    assert screen.selenium.execute_script('return window.scrollY') > 500
     screen.click('Back to main')
     screen.should_contain('Main page')
     assert screen.current_path == '/'
     assert calls == {'index': 1, 'main': 1, 'targets': 1}
+    assert screen.selenium.execute_script('return window.scrollY') == 0
 
     # Test 4: Cross-page fragment navigation
     screen.click('Go to bottom')

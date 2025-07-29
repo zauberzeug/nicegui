@@ -87,7 +87,7 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
                 self._render_404_if_enabled()
                 return None
             else:
-                self._scroll_to_fragment(match.fragment)
+                self._handle_scrolling(match, smooth_to_top=True)
                 return match
 
         self._cancel_active_tasks()
@@ -118,7 +118,7 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
                 result.close()
             return False
 
-        self._scroll_to_fragment(match.fragment)
+        self._handle_scrolling(match, smooth_to_top=False)
         if asyncio.iscoroutine(result):
             async def background_task():
                 with self:
@@ -204,20 +204,24 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
                 task.cancel()
         self._active_tasks.clear()
 
+    def _handle_scrolling(self, match, *, smooth_to_top: bool):
+        if match.fragment:
+            self._scroll_to_fragment(match.fragment)
+        elif not self._router.is_initial_path:  # NOTE: the initial path has no fragment; to not interfere with later fragment scrolling, we skip scrolling to top
+            self._scroll_to_top(smooth=smooth_to_top)
+
     def _scroll_to_fragment(self, fragment: str) -> None:
-        if fragment:
-            run_javascript(f'''
-                const scrollToFragment = () => {{
-                    let target = document.getElementById("{fragment}");
-                    if (!target) {{
-                        target = document.querySelector('a[name="{fragment}"]');
-                    }}
-                    if (target) {{
-                        target.scrollIntoView({{ behavior: "smooth" }});
-                    }}
-                }};
-                requestAnimationFrame(scrollToFragment);
-            ''')
+        run_javascript(f'''
+            requestAnimationFrame(() => {{
+                document.querySelector('#{fragment}, a[name="{fragment}"]')?.scrollIntoView({{ behavior: "smooth" }});
+            }});
+        ''')
+
+    def _scroll_to_top(self, smooth: bool) -> None:
+        behavior = 'smooth' if smooth else 'instant'
+        run_javascript(f'''
+            requestAnimationFrame(() => {{ window.scrollTo({{top: 0, left: 0, behavior: "{behavior}"}}); }});
+        ''')
 
     def _required_query_params_changed(self, route_match: RouteMatch) -> bool:
         if self._current_match is None:
@@ -227,7 +231,6 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
         for name, param in inspect.signature(route_match.builder).parameters.items():
             if param.annotation is PageArguments:
                 return current_params != previous_params
-            if name in current_params or name in previous_params:
-                if current_params.get(name) != previous_params.get(name):
-                    return True
+            if current_params.get(name) != previous_params.get(name):
+                return True
         return False
