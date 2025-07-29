@@ -30,7 +30,7 @@ async def _post_dark_mode(request: Request) -> None:
 
 
 @ui.page('/')
-@ui.page('{path:path}')
+@ui.page('/{path:path}')
 def _main_page() -> None:
     ui.context.client.content.classes('p-0 gap-0')
     header.add_head_html()
