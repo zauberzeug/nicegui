@@ -445,7 +445,9 @@ def test_adding_sub_pages_after_initialization(screen: Screen):
     @ui.page('/')
     @ui.page('/sub')
     def index():
-        pages = ui.sub_pages({'/': main_content})
+        pages = ui.sub_pages({
+            '/': main_content,
+        })
         ui.button('Add sub page', on_click=lambda: pages.add('/sub', sub_content))
 
     def main_content():
@@ -458,6 +460,7 @@ def test_adding_sub_pages_after_initialization(screen: Screen):
     screen.click('Go to sub')
     screen.should_contain('404: sub page /sub not found')
     assert screen.current_path == '/sub'
+
     screen.click('Add sub page')
     screen.wait(0.2)
     screen.should_contain('sub-content')  # NOTE: because browser points to /sub we see the sub page content
@@ -1040,8 +1043,8 @@ def test_navigate_from_404_to_root_path(screen: Screen):
     @ui.page('/')
     @ui.page('/{_:path}')
     def index():
-        ui.link('goto home', '/')
-        ui.link('goto bad_path', '/bad_path')
+        ui.link('Go to home', '/')
+        ui.link('Go to bad_path', '/bad_path')
         ui.sub_pages({
             '/': main,
         })
@@ -1050,9 +1053,10 @@ def test_navigate_from_404_to_root_path(screen: Screen):
         ui.label('main page')
 
     screen.open('/')
-    screen.click('goto bad_path')
+    screen.click('Go to bad_path')
     screen.should_contain('404: sub page /bad_path not found')
-    screen.click('goto home')
+
+    screen.click('Go to home')
     screen.should_contain('main page')
 
 

@@ -53,8 +53,8 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
         self._root_path = parent_sub_pages_element._full_path if parent_sub_pages_element else root_path
         self._data = data or {}
         self.has_404 = False
-        self._active_tasks: Set[asyncio.Task] = set()
         self._current_match: Optional[RouteMatch] = None
+        self._active_tasks: Set[asyncio.Task] = set()
         self._404_enabled = show_404
         self.show()
 
@@ -90,6 +90,7 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
             else:
                 self._handle_scrolling(match, behavior='smooth')
                 self.has_404 = False
+                self._current_match = match
                 return match
 
         self._cancel_active_tasks()

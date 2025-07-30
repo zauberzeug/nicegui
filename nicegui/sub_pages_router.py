@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING, Callable, List, Optional
 from fastapi import Request
 from starlette.routing import Match, Route
 
+from . import core
 from .context import context
 from .elements.sub_pages import SubPages
 from .functions.on import on
@@ -58,30 +59,39 @@ class SubPagesRouter:
     def _handle_navigate(self, path: str) -> None:
         # NOTE: keep a reference to the client because _handle_open clears the slots so that context.client does not work anymore
         client = context.client
-        self._handle_open(path)
-
-        if self._is_other_fastapi_page(path, client):
-            client.open(path, new_tab=False)
-        else:
+        if (
+            self._handle_open(path) or  # path is handled by `ui.sub_pages`
+            not self._other_page_builder_matches_path(path, client)  # `ui.sub_pages` is still responsible
+        ):
             client.run_javascript(f'''
                 const fullPath = (window.path_prefix || '') + "{self.current_path}";
                 if (window.location.pathname + window.location.search + window.location.hash !== fullPath) {{
                     history.pushState({{page: "{self.current_path}"}}, "", fullPath);
                 }}
             ''')
+        else:
+            client.open(path, new_tab=False)
 
-    def _is_other_fastapi_page(self, path: str, client: Client) -> bool:
+    def _other_page_builder_matches_path(self, path: str, client: Client) -> bool:
+        """Check if there is any other matching page builder than the one for this client."""
         if client.request is None:
             return True  # NOTE: we will remove this in NiceGUI 3.0 where we plan to drop support for auto-index pages
-        current_route = client.request.scope['route']
-        for route in client.page.api_router.routes:
-            if isinstance(route, Route):
-                match, _ = route.matches({'type': 'http', 'path': path, 'method': 'GET'})
-                if match == Match.FULL:
-                    current_func = getattr(current_route.endpoint, '__func__', current_route.endpoint)
-                    route_func = getattr(route.endpoint, '__func__', route.endpoint)
-                    # NOTE: we must check if they're the same function by comparing name and module, because multiple routes can point to the same page builder
-                    if not (getattr(current_func, '__name__', None) == getattr(route_func, '__name__', None) and
-                            getattr(current_func, '__module__', None) == getattr(route_func, '__module__', None)):
-                        return True
+
+        client_route = client.request.scope['route']
+        client_func = getattr(client_route.endpoint, '__func__', client_route.endpoint)
+
+        other_routes = [route for route in core.app.routes if isinstance(route, Route)]
+        for other_route in other_routes:
+            other_func = getattr(other_route.endpoint, '__func__', other_route.endpoint)
+            if (
+                getattr(client_func, '__name__', None) == getattr(other_func, '__name__', None) and
+                getattr(client_func, '__module__', None) == getattr(other_func, '__module__', None) and
+                getattr(client_func, '__qualname__', None) == getattr(other_func, '__qualname__', None)
+            ):
+                continue  # client route and other route point to the same page builder, so they don't count
+
+            match, _ = other_route.matches({'type': 'http', 'path': path, 'method': 'GET'})
+            if match == Match.FULL:
+                return True
+
         return False

@@ -146,8 +146,9 @@ class page:
                 try:
                     result = func(*dec_args, **dec_kwargs)
                     # NOTE: after building the page, there might be sub pages that have 404 -- and initial requests should send 404 status request in such cases
-                    if any(sub_pages.has_404 for sub_pages in [d for d in client.layout.descendants() if isinstance(d, SubPages)]):
-                        raise HTTPException(status_code=404, detail=f'{client.sub_pages_router.current_path} not found')
+                    sub_pages_elements = [e for e in client.elements.values() if isinstance(e, SubPages)]
+                    if any(sub_pages.has_404 for sub_pages in sub_pages_elements):
+                        raise HTTPException(404, f'{client.sub_pages_router.current_path} not found')
                 except Exception as e:
                     return create_error_page(e, request)
             if helpers.is_coroutine_function(func):
