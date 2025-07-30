@@ -71,7 +71,8 @@ class SubPagesRouter:
             ''')
 
     def _is_other_fastapi_page(self, path: str, client: Client) -> bool:
-        assert client.request is not None
+        if client.request is None:
+            return True  # TODO: remove this in NiceGUI 3.0 if we drop support for auto-index pages
         current_route = client.request.scope['route']
         for route in client.page.api_router.routes:
             if isinstance(route, Route):
