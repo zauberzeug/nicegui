@@ -53,7 +53,7 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
         self._root_path = parent_sub_pages_element._full_path if parent_sub_pages_element else root_path
         self._data = data or {}
         self.has_404 = False
-        self._current_match: Optional[RouteMatch] = None
+        self._current_match_value: Optional[RouteMatch] = None
         self._active_tasks: Set[asyncio.Task] = set()
         self._404_enabled = show_404
         self.show()
@@ -85,11 +85,10 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
         ):
             # NOTE: Even though our matched path is the same, the remaining path might still require us to handle 404 (if we are the last sub pages element)
             if match.remaining_path and not any(isinstance(el, SubPages) for el in self.descendants()):
-                self._render_404_if_enabled()
+                self._current_match = None
                 return None
             else:
                 self._handle_scrolling(match, behavior='smooth')
-                self.has_404 = False
                 self._current_match = match
                 return match
 
@@ -97,11 +96,11 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
         self.clear()
         with self:
             if match is None:
-                self._render_404_if_enabled()
+                self._current_match = None
                 return None
-            self.has_404 = False
             self._current_match = match
             if not self._render_page(match):
+                self._current_match = None
                 return None
         return match
 
@@ -116,8 +115,6 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
 
         # NOTE: if the full path could not be consumed, the deepest sub pages element must handle the possible 404
         if match.remaining_path and not any(isinstance(el, SubPages) for el in self.descendants()):
-            self._current_match = None
-            self._render_404_if_enabled()
             if asyncio.iscoroutine(result):
                 result.close()
             return False
@@ -132,13 +129,6 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
             task.add_done_callback(self._active_tasks.discard)
         return True
 
-    def _render_404_if_enabled(self) -> None:
-        if self._404_enabled:
-            self.has_404 = True
-            self.clear()
-            with self:
-                self._render_404()
-
     def _render_404(self) -> None:
         """Display a 404 error message for unmatched routes."""
         Label(f'404: sub page {self._router.current_path} not found')
@@ -147,6 +137,27 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
         msg = f'sub page {self._router.current_path} produced an error'
         Label(f'500: {msg}')
         log.error(msg, exc_info=True)
+
+    @property
+    def _current_match(self) -> Optional[RouteMatch]:
+        """Get the current route match."""
+        return self._current_match_value
+
+    @_current_match.setter
+    def _current_match(self, match: Optional[RouteMatch]) -> None:
+        """Set the current route match and handle 404 rendering automatically."""
+        self._current_match_value = match
+
+        if match is None:
+            # Setting to None should render 404 if enabled
+            if self._404_enabled:
+                self.has_404 = True
+                self.clear()
+                with self:
+                    self._render_404()
+        else:
+            # Setting to a valid match should clear 404 state
+            self.has_404 = False
 
     @property
     def _full_path(self) -> str:
