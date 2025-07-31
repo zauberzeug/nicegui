@@ -50,10 +50,11 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
         self._router = context.client.sub_pages_router
         self._routes = routes or {}
         parent_sub_pages_element = next((el for el in self.ancestors() if isinstance(el, SubPages)), None)
-        self._root_path = parent_sub_pages_element._full_path if parent_sub_pages_element else root_path
+        self._root_path = parent_sub_pages_element._rendered_path if parent_sub_pages_element else root_path
         self._data = data or {}
         self.has_404 = False
-        self._current_match_value: Optional[RouteMatch] = None
+        self._current_match: Optional[RouteMatch] = None
+        self._rendered_path = ''
         self._active_tasks: Set[asyncio.Task] = set()
         self._404_enabled = show_404
         self.show()
@@ -85,39 +86,31 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
         ):
             # NOTE: Even though our matched path is the same, the remaining path might still require us to handle 404 (if we are the last sub pages element)
             if match.remaining_path and not any(isinstance(el, SubPages) for el in self.descendants()):
-                self._current_match = None
-                return None
+                return self._set_current_match(None)
             else:
                 self._handle_scrolling(match, behavior='smooth')
-                self._current_match = match
-                return match
+                return self._set_current_match(match)
 
         self._cancel_active_tasks()
         self.clear()
         with self:
-            if match is None:
-                self._current_match = None
-                return None
-            self._current_match = match
-            if not self._render_page(match):
-                self._current_match = None
-                return None
-        return match
+            return self._set_current_match(self._render_page(match) if match is not None else None)
 
-    def _render_page(self, match: RouteMatch) -> bool:
+    def _render_page(self, match: RouteMatch) -> Optional[RouteMatch]:
         kwargs = PageArguments.build_kwargs(match, self, self._data)
+        self._rendered_path = f'{self._root_path or ""}{match.path}'
         try:
             result = match.builder(**kwargs)
         except Exception as e:
             self.clear()  # NOTE: clear partial content created before the exception
             self._render_error(e)
-            return True
+            return match
 
         # NOTE: if the full path could not be consumed, the deepest sub pages element must handle the possible 404
         if match.remaining_path and not any(isinstance(el, SubPages) for el in self.descendants()):
             if asyncio.iscoroutine(result):
                 result.close()
-            return False
+            return None
 
         self._handle_scrolling(match, behavior='instant')
         if asyncio.iscoroutine(result):
@@ -127,7 +120,7 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
             task = background_tasks.create(background_task(), name=f'building sub_page {match.pattern}')
             self._active_tasks.add(task)
             task.add_done_callback(self._active_tasks.discard)
-        return True
+        return match
 
     def _render_404(self) -> None:
         """Display a 404 error message for unmatched routes."""
@@ -138,30 +131,17 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
         Label(f'500: {msg}')
         log.error(msg, exc_info=True)
 
-    @property
-    def _current_match(self) -> Optional[RouteMatch]:
-        """Get the current route match."""
-        return self._current_match_value
-
-    @_current_match.setter
-    def _current_match(self, match: Optional[RouteMatch]) -> None:
-        """Set the current route match and handle 404 rendering automatically."""
-        self._current_match_value = match
-
+    def _set_current_match(self, match: Optional[RouteMatch]) -> Optional[RouteMatch]:
+        self._current_match = match
         if match is None:
-            # Setting to None should render 404 if enabled
             if self._404_enabled:
                 self.has_404 = True
                 self.clear()
                 with self:
                     self._render_404()
         else:
-            # Setting to a valid match should clear 404 state
             self.has_404 = False
-
-    @property
-    def _full_path(self) -> str:
-        return f'{self._root_path or ""}{self._current_match.path if self._current_match else ""}'
+        return match
 
     def _find_matching_path(self) -> Optional[RouteMatch]:
         match: Optional[RouteMatch] = None
