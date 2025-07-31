@@ -50,12 +50,14 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
         self._router = context.client.sub_pages_router
         self._routes = routes or {}
         parent_sub_pages_element = next((el for el in self.ancestors() if isinstance(el, SubPages)), None)
-        self._root_path = parent_sub_pages_element._full_path if parent_sub_pages_element else root_path
+        self._rendered_path = ''
+        self._root_path = parent_sub_pages_element._rendered_path if parent_sub_pages_element else root_path
         self._data = data or {}
+        self._match: Optional[RouteMatch] = None
         self._active_tasks: Set[asyncio.Task] = set()
-        self._current_match: Optional[RouteMatch] = None
         self._404_enabled = show_404
-        self.show()
+        self.has_404 = False
+        self._show()
 
     def add(self, path: str, page: Callable) -> Self:
         """Add a new route.
@@ -65,44 +67,39 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
         :return: self for method chaining
         """
         self._routes[path] = page
-        self.show()
+        self._show()
         return self
 
-    def show(self) -> Optional[RouteMatch]:
-        """Display the page matching the current URL path.
-
-        :return: ``RouteMatch`` if a matching route was found and displayed, ``None`` otherwise
-        """
+    def _show(self) -> None:
+        """Display the page matching the current URL path."""
+        self._rendered_path = ''
         match = self._find_matching_path()
-
         # NOTE: if path and query params are the same, only update fragment without re-rendering
         if (
             match is not None and
-            self._current_match is not None and
-            match.path == self._current_match.path and
-            not self._required_query_params_changed(match)
+            self._match is not None and
+            match.path == self._match.path and
+            not self._required_query_params_changed(match) and
+            not (self.has_404 and self._match.remaining_path == match.remaining_path)
         ):
             # NOTE: Even though our matched path is the same, the remaining path might still require us to handle 404 (if we are the last sub pages element)
             if match.remaining_path and not any(isinstance(el, SubPages) for el in self.descendants()):
-                self._render_404_if_enabled()
-                return None
+                self._set_match(None)
             else:
                 self._handle_scrolling(match, behavior='smooth')
-                return match
-
-        self._cancel_active_tasks()
-        self.clear()
-        with self:
-            if match is None:
-                self._render_404_if_enabled()
-                return None
-            self._current_match = match
-            if not self._render_page(match):
-                return None
-        return match
+                self._set_match(match)
+        else:
+            self._cancel_active_tasks()
+            self.clear()
+            with self:
+                if match is not None and self._render_page(match):
+                    self._set_match(match)
+                else:
+                    self._set_match(None)
 
     def _render_page(self, match: RouteMatch) -> bool:
         kwargs = PageArguments.build_kwargs(match, self, self._data)
+        self._rendered_path = f'{self._root_path or ""}{match.path}'
         try:
             result = match.builder(**kwargs)
         except Exception as e:
@@ -112,8 +109,6 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
 
         # NOTE: if the full path could not be consumed, the deepest sub pages element must handle the possible 404
         if match.remaining_path and not any(isinstance(el, SubPages) for el in self.descendants()):
-            self._current_match = None
-            self._render_404_if_enabled()
             if asyncio.iscoroutine(result):
                 result.close()
             return False
@@ -128,12 +123,6 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
             task.add_done_callback(self._active_tasks.discard)
         return True
 
-    def _render_404_if_enabled(self) -> None:
-        if self._404_enabled:
-            self.clear()
-            with self:
-                self._render_404()
-
     def _render_404(self) -> None:
         """Display a 404 error message for unmatched routes."""
         Label(f'404: sub page {self._router.current_path} not found')
@@ -143,9 +132,19 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
         Label(f'500: {msg}')
         log.error(msg, exc_info=True)
 
-    @property
-    def _full_path(self) -> str:
-        return f'{self._root_path or ""}{self._current_match.path if self._current_match else ""}'
+    def _set_match(self, match: Optional[RouteMatch]) -> None:
+        self._match = match
+        if match is None:
+            if self._404_enabled:
+                self.has_404 = True
+                self.clear()
+                with self:
+                    self._render_404()
+        else:
+            self.has_404 = False
+
+    def _reset_match(self) -> None:
+        self._match = None
 
     def _find_matching_path(self) -> Optional[RouteMatch]:
         match: Optional[RouteMatch] = None
@@ -207,7 +206,7 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
     def _handle_scrolling(self, match, *, behavior: str):
         if match.fragment:
             self._scroll_to_fragment(match.fragment, behavior=behavior)
-        elif not self._router.is_initial_path:  # NOTE: the initial path has no fragment; to not interfere with later fragment scrolling, we skip scrolling to top
+        elif not self._router.is_initial_request:  # NOTE: the initial path has no fragment; to not interfere with later fragment scrolling, we skip scrolling to top
             self._scroll_to_top(behavior=behavior)
 
     def _scroll_to_fragment(self, fragment: str, *, behavior: str) -> None:
@@ -223,10 +222,10 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
         ''')
 
     def _required_query_params_changed(self, route_match: RouteMatch) -> bool:
-        if self._current_match is None:
+        if self._match is None:
             return True
         current_params = route_match.query_params
-        previous_params = self._current_match.query_params
+        previous_params = self._match.query_params
         for name, param in inspect.signature(route_match.builder).parameters.items():
             if param.annotation is PageArguments:
                 return current_params != previous_params

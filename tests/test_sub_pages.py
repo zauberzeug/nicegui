@@ -248,12 +248,6 @@ def test_nested_sub_pages_on_root_path(screen: Screen):
     screen.should_not_contain('home2')
     screen.should_not_contain('404: sub page')
 
-    screen.open('/bad_path')
-    screen.should_contain('404: sub page /bad_path not found')
-    screen.should_contain('home1')
-    screen.should_not_contain('home2')
-    screen.should_not_contain('some content')
-
 
 def test_async_nested_sub_pages(screen: Screen):
     calls = {
@@ -361,7 +355,7 @@ def test_parameterized_sub_pages(screen: Screen):
     screen.should_not_contain('one-1-True')
     screen.should_not_contain('two-two')
     screen.should_contain('404: sub page /two-3 not found')
-    assert screen.current_path == '/two/two'
+    assert screen.current_path == '/two-3'
 
     assert calls == {'index': 1, 'main': 2}, 'main re-evaluates to determine if a nested sub page might handle the path'
 
@@ -451,11 +445,12 @@ def test_adding_sub_pages_after_initialization(screen: Screen):
     @ui.page('/')
     @ui.page('/sub')
     def index():
-        pages = ui.sub_pages()
-        pages.add('/', main_content)
+        pages = ui.sub_pages({
+            '/': main_content,
+        })
+        ui.button('Add sub page', on_click=lambda: pages.add('/sub', sub_content))
 
-    def main_content(args: PageArguments):
-        ui.button('Add sub page', on_click=lambda: args.frame.add('/sub', sub_content))
+    def main_content():
         ui.button('Go to sub', on_click=lambda: ui.navigate.to('/sub'))
 
     def sub_content():
@@ -466,11 +461,9 @@ def test_adding_sub_pages_after_initialization(screen: Screen):
     screen.should_contain('404: sub page /sub not found')
     assert screen.current_path == '/sub'
 
-    screen.open('/')
     screen.click('Add sub page')
     screen.wait(0.2)
-    screen.click('Go to sub')
-    screen.should_contain('sub-content')
+    screen.should_contain('sub-content')  # NOTE: because browser points to /sub we see the sub page content
     assert screen.current_path == '/sub'
 
 
@@ -729,6 +722,7 @@ def test_sub_page_with_query_parameters(screen: Screen, use_page_arguments: bool
     assert calls == {'index': 1, 'main_content': 5}
 
     screen.selenium.forward()
+    screen.wait(1)
     screen.should_contain('access: link')
     assert calls == {'index': 1, 'main_content': 6}
 
@@ -793,6 +787,7 @@ def test_page_arguments_with_optional_parameters(screen: Screen):
     def index():
         ui.link('Test PageArguments', '/user/123?role=admin')
         ui.sub_pages({
+            '/': lambda: ui.label('main page'),
             '/user/{user_id}': user_page,
         }, data={'app_name': 'MyApp'})
 
@@ -959,7 +954,7 @@ def test_on_path_changed_event(screen: Screen):
     assert calls == {'index': 2, 'main': 1, 'other': 2}
 
     screen.open('/bad_path')
-    screen.should_contain('404: sub page /bad_path not found')
+    screen.should_contain('HTTPException: 404: /bad_path not found')
     assert paths == ['/other']
     assert calls == {'index': 3, 'main': 2, 'other': 2}
 
@@ -1049,7 +1044,27 @@ def test_navigate_from_404_to_root_path(screen: Screen):
     @ui.page('/')
     @ui.page('/{_:path}')
     def index():
-        ui.link('home', '/')
+        ui.link('Go to home', '/')
+        ui.link('Go to bad_path', '/bad_path')
+        ui.sub_pages({
+            '/': main,
+        })
+
+    def main():
+        ui.label('main page')
+
+    screen.open('/')
+    screen.click('Go to bad_path')
+    screen.should_contain('404: sub page /bad_path not found')
+
+    screen.click('Go to home')
+    screen.should_contain('main page')
+
+
+def test_http_404_on_initial_request(screen: Screen):
+    @ui.page('/')
+    @ui.page('/{_:path}')
+    def index():
         ui.sub_pages({
             '/': main,
         })
@@ -1058,6 +1073,30 @@ def test_navigate_from_404_to_root_path(screen: Screen):
         ui.label('main page')
 
     screen.open('/bad_path')
-    screen.should_contain('404: sub page /bad_path not found')
-    screen.click('home')
+    screen.should_contain('HTTPException: 404: /bad_path not found')
+
+
+def test_clearing_sub_pages_element(screen: Screen):
+    @ui.page('/')
+    @ui.page('/{_:path}')
+    def index():
+        pages = ui.sub_pages({
+            '/': main,
+        })
+        ui.button('Clear', on_click=pages.clear)
+        ui.button('Delete', on_click=pages.delete)
+
+    def main():
+        ui.label('main page')
+
+    screen.open('/')
     screen.should_contain('main page')
+    screen.click('Clear')
+    screen.wait(0.5)
+    screen.should_not_contain('main page')
+
+    screen.open('/')
+    screen.should_contain('main page')
+    screen.click('Delete')
+    screen.wait(0.5)
+    screen.should_not_contain('main page')

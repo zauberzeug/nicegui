@@ -55,7 +55,7 @@ class CustomSubPages(ui.sub_pages):
             def try_login():
                 if passphrase.value == 'spa':
                     app.storage.user['authenticated'] = True
-                    self._current_match = None  # NOTE: reset the current match to allow the page to be rendered again
+                    self._reset_match()  # NOTE: reset the current match to allow the page to be rendered again
                     ui.navigate.to(intended_path)
                 else:
                     ui.notify('Incorrect passphrase', color='negative')
