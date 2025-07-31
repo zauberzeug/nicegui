@@ -50,10 +50,10 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
         self._router = context.client.sub_pages_router
         self._routes = routes or {}
         parent_sub_pages_element = next((el for el in self.ancestors() if isinstance(el, SubPages)), None)
+        self._rendered_path = ''
         self._root_path = parent_sub_pages_element._rendered_path if parent_sub_pages_element else root_path
         self._data = data or {}
         self._current_match: Optional[RouteMatch] = None
-        self._rendered_path = ''
         self._active_tasks: Set[asyncio.Task] = set()
         self._404_enabled = show_404
         self.has_404 = False
