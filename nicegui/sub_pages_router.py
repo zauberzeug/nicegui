@@ -50,7 +50,8 @@ class SubPagesRouter:
         for child in context.client.layout.descendants():
             if isinstance(child, SubPages):
                 try:
-                    if child.show() is not None:
+                    child._show()  # pylint: disable=protected-access
+                    if child._match is not None:  # pylint: disable=protected-access
                         updated = True
                 except ValueError:
                     pass
