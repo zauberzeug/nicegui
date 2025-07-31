@@ -17,3 +17,6 @@
 - three: 0.168.0 ([MIT](https://opensource.org/licenses/MIT))
 - tween: 25.0.0 ([MIT](https://opensource.org/licenses/MIT))
 - vanilla-jsoneditor: 0.23.8 ([ISC](https://opensource.org/licenses/ISC))
+- xterm: 5.5.0 ([MIT](https://opensource.org/licenses/MIT))
+- xterm-addon-fit: 0.10.0 ([MIT](https://opensource.org/licenses/MIT))
+- xterm-addon-web-links: 0.11.0 ([MIT](https://opensource.org/licenses/MIT))
