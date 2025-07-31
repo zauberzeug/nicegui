@@ -52,11 +52,11 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
         parent_sub_pages_element = next((el for el in self.ancestors() if isinstance(el, SubPages)), None)
         self._root_path = parent_sub_pages_element._rendered_path if parent_sub_pages_element else root_path
         self._data = data or {}
-        self.has_404 = False
         self._current_match: Optional[RouteMatch] = None
         self._rendered_path = ''
         self._active_tasks: Set[asyncio.Task] = set()
         self._404_enabled = show_404
+        self.has_404 = False
         self.show()
 
     def add(self, path: str, page: Callable) -> Self:
@@ -75,6 +75,7 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
 
         :return: ``RouteMatch`` if a matching route was found and displayed, ``None`` otherwise
         """
+        self._rendered_path = ''
         match = self._find_matching_path()
         # NOTE: if path and query params are the same, only update fragment without re-rendering
         if (
