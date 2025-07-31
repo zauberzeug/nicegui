@@ -722,6 +722,7 @@ def test_sub_page_with_query_parameters(screen: Screen, use_page_arguments: bool
     assert calls == {'index': 1, 'main_content': 5}
 
     screen.selenium.forward()
+    screen.wait(1)
     screen.should_contain('access: link')
     assert calls == {'index': 1, 'main_content': 6}
 
