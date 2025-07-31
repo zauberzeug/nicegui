@@ -146,12 +146,17 @@ def state(value: Any) -> Tuple[Any, Callable[[Any], None]]:
     """
     target = cast(RefreshableTarget, RefreshableTarget.current_target)
 
-    if target.next_index >= len(target.locals):
+    try:
+        index = target.next_index
+    except AttributeError as e:
+        raise RuntimeError('ui.state() can only be used inside a @ui.refreshable function') from e
+
+    if index >= len(target.locals):
         target.locals.append(value)
     else:
-        value = target.locals[target.next_index]
+        value = target.locals[index]
 
-    def set_value(new_value: Any, index=target.next_index) -> None:
+    def set_value(new_value: Any) -> None:
         if target.locals[index] == new_value:
             return
         target.locals[index] = new_value
