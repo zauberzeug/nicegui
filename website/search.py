@@ -71,7 +71,7 @@ class Search:
                             continue
                         with ui.item().props('clickable'):
                             with ui.item_section():
-                                with ui.link(target=result_item['url']):
+                                with ui.link(target=result_item['url']).on('click', self.dialog.close):
                                     ui.item_label(result_item['title'])
                                     with ui.item_label().props('caption'):
                                         intro = result_item['content'].split(':param')[0]
@@ -81,13 +81,3 @@ class Search:
                                             element = custom_restructured_text(intro)
                                         element.classes('text-grey line-clamp-1')
         background_tasks.create_lazy(handle_input(), name='handle_search_input')
-
-    def open_url(self, url: str) -> None:
-        ui.run_javascript(f'''
-            const url = "{url}"
-            if (url.startsWith("http"))
-                window.open(url, "_blank");
-            else
-                window.location.href = url;
-        ''')
-        self.dialog.close()

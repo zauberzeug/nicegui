@@ -35,3 +35,9 @@ def _children(page: DocumentationPage) -> List[Dict[str, Any]]:
 def _plain(string: Optional[str]) -> str:
     assert string is not None
     return string.replace('*', '')
+
+
+def ancestors(node_id: str) -> List[str]:
+    """Get the ancestors of a node."""
+    parent = next((node for node in nodes if any(child['id'] == node_id for child in node.get('children', []))), None)
+    return [node_id] + (ancestors(parent['id']) if parent else [])
