@@ -128,7 +128,7 @@ try:
             allow_multiple: bool = False,
             save_filename: str = '',
             file_types: Tuple[str, ...] = (),
-        ) -> Tuple[str, ...]:
+        ) -> Optional[Tuple[str, ...]]:
             return await self._request(
                 dialog_type=dialog_type,
                 directory=directory,

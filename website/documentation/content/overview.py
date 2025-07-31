@@ -223,12 +223,14 @@ def map_of_nicegui():
             - [`ui.echart`](/documentation/echart)
             - [`ui.editor`](/documentation/editor)
             - [`ui.expansion`](/documentation/expansion)
+            - [`ui.fab`](/documentation/fab), `ui.fab_action`
             - [`ui.grid`](/documentation/grid)
             - [`ui.highchart`](/documentation/highchart)
             - [`ui.html`](/documentation/html)
             - [`ui.icon`](/documentation/icon)
             - [`ui.image`](/documentation/image)
             - [`ui.input`](/documentation/input)
+            - [`ui.input_chips`](/documentation/input_chips)
             - [`ui.interactive_image`](/documentation/interactive_image)
             - `ui.item`, `ui.item_label`, `ui.item_section`
             - [`ui.joystick`](/documentation/joystick)
