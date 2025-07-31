@@ -1084,6 +1084,7 @@ def test_clearing_sub_pages_element(screen: Screen):
             '/': main,
         })
         ui.button('Clear', on_click=pages.clear)
+        ui.button('Delete', on_click=pages.delete)
 
     def main():
         ui.label('main page')
@@ -1091,4 +1092,11 @@ def test_clearing_sub_pages_element(screen: Screen):
     screen.open('/')
     screen.should_contain('main page')
     screen.click('Clear')
+    screen.wait(0.5)
+    screen.should_not_contain('main page')
+
+    screen.open('/')
+    screen.should_contain('main page')
+    screen.click('Delete')
+    screen.wait(0.5)
     screen.should_not_contain('main page')
