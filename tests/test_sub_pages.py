@@ -1073,3 +1073,21 @@ def test_http_404_on_initial_request(screen: Screen):
 
     screen.open('/bad_path')
     screen.should_contain('HTTPException: 404: /bad_path not found')
+
+
+def test_clearing_sub_pages_element(screen: Screen):
+    @ui.page('/')
+    @ui.page('/{_:path}')
+    def index():
+        pages = ui.sub_pages({
+            '/': main,
+        })
+        ui.button('Clear', on_click=pages.clear)
+
+    def main():
+        ui.label('main page')
+
+    screen.open('/')
+    screen.should_contain('main page')
+    screen.click('Clear')
+    screen.should_not_contain('main page')
