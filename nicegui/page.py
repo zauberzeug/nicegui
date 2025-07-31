@@ -6,10 +6,11 @@ from functools import wraps
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Callable, Optional, Union
 
-from fastapi import Request, Response
+from fastapi import HTTPException, Request, Response
 
 from . import background_tasks, binding, core, helpers
 from .client import Client
+from .elements.sub_pages import SubPages
 from .favicon import create_favicon_route
 from .language import Language
 from .logging import log
@@ -144,6 +145,10 @@ class page:
                     dec_kwargs['client'] = client
                 try:
                     result = func(*dec_args, **dec_kwargs)
+                    # NOTE: after building the page, there might be sub pages that have 404 -- and initial requests should send 404 status request in such cases
+                    sub_pages_elements = [e for e in client.elements.values() if isinstance(e, SubPages)]
+                    if any(sub_pages.has_404 for sub_pages in sub_pages_elements):
+                        raise HTTPException(404, f'{client.sub_pages_router.current_path} not found')
                 except Exception as e:
                     return create_error_page(e, request)
             if helpers.is_coroutine_function(func):

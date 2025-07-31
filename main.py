@@ -42,7 +42,7 @@ def _documentation_page() -> None:
     documentation.render_page(documentation.registry[''], with_menu=False)
 
 
-@ui.page('/documentation/{name}')
+@ui.page('/documentation/{name}/{_:path}')
 def _documentation_detail_page(name: str) -> Optional[RedirectResponse]:
     if name in documentation.registry:
         documentation.render_page(documentation.registry[name])
