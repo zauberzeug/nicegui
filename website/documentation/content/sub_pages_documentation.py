@@ -1,6 +1,33 @@
 from nicegui import PageArguments, ui
+from typing import Callable, Dict, Any
 
 from . import doc
+
+
+class FakeSubPages(ui.column):
+
+    def __init__(self, routes: Dict[str, Callable], *, data: Dict[str, Any] = {}) -> None:
+        super().__init__()
+        self.routes = routes
+        self.data = data
+
+    def init(self) -> None:
+        self._render('/')
+        self.move()  # move to end
+
+    def link(self, text: str, route: str) -> None:
+        ui.label(text).classes('nicegui-link cursor-pointer').on('click', lambda: self._render(route))
+
+    def _render(self, route: str) -> None:
+        self.clear()
+        with self:
+            ui.timer(0, lambda: self.routes[route](**self.data), once=True)  # NOTE: timer for sync and async functions
+
+
+class FakeArguments:
+
+    def __init__(self, **kwargs: Any) -> None:
+        self.query_parameters = kwargs
 
 
 @doc.demo('Sub Pages', '''
@@ -21,22 +48,22 @@ def main_demo() -> None:
     #     ui.label(f'This ID {str(uuid4())[:6]} changes only on reload.')
     #     ui.separator()
     #     ui.sub_pages({'/': main, '/other': other})
-    location = 'section_pages_routing' if 'section_pages_routing' in ui.context.client.request.url.path else 'sub_pages'  # HIDE
 
     def main():
         ui.label('Main page content')
         # ui.link('Go to other page', '/other')
-        ui.link('Go to other page', f'/documentation/{location}/other')  # HIDE
+        sub_pages.link('Go to other page', '/other')  # HIDE
 
     def other():
         ui.label('Another page content')
         # ui.link('Go to main page', '/')
-        ui.link('Go to main page', f'/documentation/{location}')  # HIDE
+        sub_pages.link('Go to main page', '/')  # HIDE
 
     # END OF DEMO
     ui.label(f'This ID {str(uuid4())[:6]} changes only on reload.')
     ui.separator()
-    ui.sub_pages({'/': main, '/other': other}, root_path=f'/documentation/{location}')
+    sub_pages = FakeSubPages({'/': main, '/other': other})
+    sub_pages.init()
 
 
 @doc.demo('Passing Parameters to Sub Page', '''
@@ -59,19 +86,20 @@ def parameters_demo():
     def main(title: ui.label):
         title.text = 'Main page content'
         # ui.button('Go to other page', on_click=lambda: ui.navigate.to('/other'))
-        ui.button('Go to other page', on_click=lambda: ui.navigate.to('/documentation/sub_pages/other'))  # HIDE
+        sub_pages.link('Go to other page', '/other')  # HIDE
 
     def other(title: ui.label):
         title.text = 'Other page content'
         # ui.button('Go to main page', on_click=ui.navigate.to('/'))
-        ui.button('Go to main page', on_click=lambda: ui.navigate.to('/documentation/sub_pages'))  # HIDE
+        sub_pages.link('Go to main page', '/')  # HIDE
 
     # END OF DEMO
     with ui.row():
         ui.label('Title:')
         title = ui.label()
     ui.separator()
-    ui.sub_pages({'/': main, '/other': other}, root_path='/documentation/sub_pages', data={'title': title})
+    sub_pages = FakeSubPages({'/': main, '/other': other}, data={'title': title})
+    sub_pages.init()
 
 
 @doc.demo('Async Sub Pages', '''
@@ -99,12 +127,11 @@ def async_demo():
         ui.label('after 1 sec')
 
     # END OF DEMO
-
+    sub_pages = FakeSubPages({'/': main, '/other': lambda: other('other page')})
     with ui.row():
-        ui.link('main', '/documentation/sub_pages')
-        ui.link('other', '/documentation/sub_pages/other')
-    ui.sub_pages({'/': main, '/other': lambda: other('other page')},
-                 root_path='/documentation/sub_pages')
+        sub_pages.link('main', '/')
+        sub_pages.link('other', '/other')
+    sub_pages.init()
 
 
 @doc.demo('Adding Sub Pages', '''
@@ -125,19 +152,18 @@ def adding_sub_pages_demo() -> None:
     def main(footer: ui.label):
         footer.text = 'normal footer'
         # ui.link('Go to other page', '/other')
-        ui.link('Go to other page', '/documentation/sub_pages/other')  # HIDE
+        sub_pages.link('Go to other page', '/other')  # HIDE
 
     def other(footer: ui.label):
         footer.text = 'other footer'
         # ui.link('Go to main page', '/')
-        ui.link('Go to main page', '/documentation/sub_pages')  # HIDE
+        sub_pages.link('Go to main page', '/')  # HIDE
 
     # END OF DEMO
-    pages = ui.sub_pages(root_path='/documentation/sub_pages')
+    sub_pages = FakeSubPages({'/': lambda: main(footer), '/other': lambda: other(footer)})
+    sub_pages.init()
     ui.separator()
     footer = ui.label()
-    pages.add('/', lambda: main(footer))
-    pages.add('/other', lambda: other(footer))
 
 
 @doc.demo('Using PageArguments', '''
@@ -158,9 +184,14 @@ def page_arguments_demo():
         ui.label(args.query_parameters.get('msg', 'no message'))
 
     # END OF DEMO
-    ui.link('msg=hello', '/documentation/sub_pages?msg=hello')
-    ui.link('msg=world', '/documentation/sub_pages?msg=world')
-    ui.sub_pages({'/': main}, root_path='/documentation/sub_pages')
+    sub_pages = FakeSubPages({
+        '/': lambda: main(FakeArguments()),  # type: ignore
+        '/?msg=hello': lambda: main(FakeArguments(msg='hello')),  # type: ignore
+        '/?msg=world': lambda: main(FakeArguments(msg='world')),  # type: ignore
+    })
+    sub_pages.link('msg=hello', '/?msg=hello')
+    sub_pages.link('msg=world', '/?msg=world')
+    sub_pages.init()
 
 
 @doc.demo('Nested Sub Pages', '''
@@ -190,13 +221,16 @@ def nested_sub_pages_demo():
         ui.label('sub page')
         # ui.link('Go to A', '/sub/a')
         # ui.link('Go to B', '/sub/b')
-        ui.link('Go to A', '/documentation/sub_pages/other/a')  # HIDE
-        ui.link('Go to B', '/documentation/sub_pages/other/b')  # HIDE
-        ui.sub_pages({
-            '/': sub_main,
-            '/a': sub_page_a,
-            '/b': sub_page_b
-        }).classes('border-2 p-2')
+        # ui.sub_pages({
+        #     '/': sub_main,
+        #     '/a': sub_page_a,
+        #     '/b': sub_page_b
+        # }).classes('border-2 p-2')
+        sub_pages = FakeSubPages({'/': sub_main, '/a': sub_page_a, '/b': sub_page_b}).classes('border-2 p-2')  # HIDE
+        sub_pages.link('Go to main', '/')  # HIDE
+        sub_pages.link('Go to A', '/a')  # HIDE
+        sub_pages.link('Go to B', '/b')  # HIDE
+        sub_pages.init()  # HIDE
 
     def sub_main():
         ui.label('sub main page')
@@ -208,9 +242,10 @@ def nested_sub_pages_demo():
         ui.label('sub B page')
 
     # END OF DEMO
-    ui.link('Go to main', '/documentation/sub_pages')
-    ui.link('Go to other', '/documentation/sub_pages/other')
-    ui.sub_pages({'/': main, '/other': other}, root_path='/documentation/sub_pages').classes('border-2 p-2')
+    sub_pages = FakeSubPages({'/': main, '/other': other}).classes('border-2 p-2')
+    sub_pages.link('Go to main', '/')
+    sub_pages.link('Go to other', '/other')
+    sub_pages.init()
 
 
 doc.reference(ui.sub_pages, title='Reference for ui.sub_pages')
