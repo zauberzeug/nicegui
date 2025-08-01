@@ -1,4 +1,5 @@
 from typing import Any, Callable, Union
+from urllib.parse import urlparse
 
 from ..client import Client
 from ..context import context
@@ -67,7 +68,7 @@ class Navigate:
         else:
             raise TypeError(f'Invalid target type: {type(target)}')
 
-        if not new_tab and isinstance(target, str):
+        if not new_tab and isinstance(target, str) and not bool(urlparse(target).netloc):
             context.client.sub_pages_router._handle_navigate(path)  # pylint: disable=protected-access
             return
 
