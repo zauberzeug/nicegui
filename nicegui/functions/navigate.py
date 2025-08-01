@@ -7,10 +7,6 @@ from ..element import Element
 from .javascript import run_javascript
 
 
-def is_absolute_url(url: str) -> bool:
-    return bool(urlparse(url).netloc)
-
-
 class Navigate:
     """Navigation functions
 
@@ -72,7 +68,7 @@ class Navigate:
         else:
             raise TypeError(f'Invalid target type: {type(target)}')
 
-        if not new_tab and isinstance(target, str) and not is_absolute_url(path):
+        if not new_tab and isinstance(target, str) and not bool(urlparse(target).netloc):
             context.client.sub_pages_router._handle_navigate(path)  # pylint: disable=protected-access
             return
 
