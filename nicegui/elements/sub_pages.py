@@ -19,6 +19,7 @@ from ..page_arguments import PageArguments, RouteMatch
 
 
 class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-pages'):
+
     def __init__(self,
                  routes: Optional[Dict[str, Callable]] = None,
                  *,
@@ -203,7 +204,7 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
                 task.cancel()
         self._active_tasks.clear()
 
-    def _handle_scrolling(self, match, *, behavior: str):
+    def _handle_scrolling(self, match: RouteMatch, *, behavior: str) -> None:
         if match.fragment:
             self._scroll_to_fragment(match.fragment, behavior=behavior)
         elif not self._router.is_initial_request:  # NOTE: the initial path has no fragment; to not interfere with later fragment scrolling, we skip scrolling to top
@@ -216,7 +217,7 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
             }});
         ''')
 
-    def _scroll_to_top(self, behavior: str) -> None:
+    def _scroll_to_top(self, *, behavior: str) -> None:
         run_javascript(f'''
             requestAnimationFrame(() => {{ window.scrollTo({{top: 0, left: 0, behavior: "{behavior}"}}); }});
         ''')

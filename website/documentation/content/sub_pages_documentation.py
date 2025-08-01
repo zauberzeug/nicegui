@@ -150,8 +150,8 @@ def page_arguments_demo():
     # @ui.page('/')
     # @ui.page('/{_:path}') # NOTE: our page should catch all paths
     # def index():
-    #     ui.link('msg=hello', '/documentation/sub_pages?msg=hello')
-    #     ui.link('msg=world', '/documentation/sub_pages?msg=world')
+    #     ui.link('msg=hello', '/?msg=hello')
+    #     ui.link('msg=world', '/?msg=world')
     #     ui.sub_pages({'/': main})
 
     def main(args: PageArguments):
