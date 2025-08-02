@@ -2,7 +2,7 @@ import multiprocessing
 import os
 import sys
 from pathlib import Path
-from typing import Any, List, Literal, Optional, Tuple, TypedDict, Union
+from typing import Any, Callable, List, Literal, Optional, Tuple, TypedDict, Union
 
 from fastapi.middleware.gzip import GZipMiddleware
 from starlette.routing import Route
@@ -45,7 +45,7 @@ class DocsConfig(TypedDict):
     license_info: Optional[LicenseInfoDict]
 
 
-def run(*,
+def run(root: Optional[Callable] = None, *,
         host: Optional[str] = None,
         port: Optional[int] = None,
         title: str = 'NiceGUI',
@@ -126,6 +126,7 @@ def run(*,
         prod_js=prod_js,
         show_welcome_message=show_welcome_message,
     )
+    core.spa = root
     core.app.config.endpoint_documentation = endpoint_documentation
     if not helpers.is_pytest():
         core.app.add_middleware(GZipMiddleware)
