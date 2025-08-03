@@ -29,11 +29,12 @@ def test_navigate_to(screen: Screen, new_tab: bool):
 
 def test_navigate_to_absolute_url(screen: Screen):
     external_url = 'https://nicegui.io'
-    ui.button('Go external', on_click=lambda: ui.navigate.to(external_url))
+
+    @ui.page('/')
+    def page():
+        ui.button('Go external', on_click=lambda: ui.navigate.to(external_url))
 
     screen.open('/')
     screen.click('Go external')
     screen.wait(1.0)
-    # After clicking, the page should navigate away from NiceGUI app.
-    # We can check that the URL is now external, or alternatively that NiceGUI UI is gone.
     assert external_url in screen.selenium.current_url
