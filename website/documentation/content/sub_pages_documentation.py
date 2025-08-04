@@ -1,5 +1,5 @@
 from nicegui import PageArguments, ui
-from typing import Callable, Dict, Any
+from typing import Callable, Dict, Any, Optional
 
 from . import doc
 
@@ -10,6 +10,7 @@ class FakeSubPages(ui.column):
         super().__init__()
         self.routes = routes
         self.data = data
+        self.timer: Optional[ui.timer] = None
 
     def init(self) -> None:
         self._render('/')
@@ -19,9 +20,12 @@ class FakeSubPages(ui.column):
         ui.label(text).classes('nicegui-link cursor-pointer').on('click', lambda: self._render(route))
 
     def _render(self, route: str) -> None:
+        if self.timer:
+            self.timer.cancel(with_current_invocation=True)
         self.clear()
         with self:
-            ui.timer(0, lambda: self.routes[route](**self.data), once=True)  # NOTE: timer for sync and async functions
+            # NOTE: timer for sync and async functions
+            self.timer = ui.timer(0, lambda: self.routes[route](**self.data), once=True)
 
 
 class FakeArguments:
