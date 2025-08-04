@@ -37,6 +37,7 @@ class Timer:
         self.active = active
         self._is_canceled = False
         self._immediate = immediate
+        self._current_invocation: Optional[asyncio.Task] = None
 
         coroutine = self._run_once if once else self._run_in_loop
         if core.app.is_started:
@@ -56,9 +57,13 @@ class Timer:
         """Deactivate the timer."""
         self.active = False
 
-    def cancel(self) -> None:
-        """Cancel the timer."""
+    def cancel(self, with_current_invocation=False) -> None:
+        """Cancel the timer.
+        :param with_current_invocation: if True, it will also cancel the currently invoked task of the callback
+        """
         self._is_canceled = True
+        if with_current_invocation and self._current_invocation is not None:
+            self._current_invocation.cancel()
 
     async def _run_once(self) -> None:
         try:
@@ -98,7 +103,14 @@ class Timer:
             assert self.callback is not None
             result = self.callback()
             if isinstance(result, Awaitable) and not isinstance(result, AwaitableResponse):
-                await result
+                async def background_task():
+                    with self._get_context():
+                        await result
+                self._current_invocation = background_tasks.create(background_task(),
+                                                                   name=f'timer callback {self.callback}')
+                await self._current_invocation
+            else:
+                self._current_invocation = None
         except Exception as e:
             core.app.handle_exception(e)
 
