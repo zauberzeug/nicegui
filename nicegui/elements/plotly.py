@@ -45,7 +45,10 @@ class Plotly(Element, component='plotly.vue', dependencies=['lib/plotly/plotly.m
         self.update()
 
     def update(self) -> None:
-        self._props['options'] = self._get_figure_json()
+        if not self._updating:
+            return
+        with self._no_update():
+            self._props['options'] = self._get_figure_json()
         super().update()
 
     def _get_figure_json(self) -> Dict:

@@ -33,8 +33,11 @@ class ChoiceElement(ValueElement):
             self.value = before_value if before_value in self._values else None
 
     def update(self) -> None:
-        self._update_values_and_labels()
-        self._update_options()
+        if not self._updating:
+            return
+        with self._no_update():
+            self._update_values_and_labels()
+            self._update_options()
         super().update()
 
     def set_options(self, options: Union[List, Dict], *, value: Any = ...) -> None:
