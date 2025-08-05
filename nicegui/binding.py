@@ -6,15 +6,14 @@ import dataclasses
 import time
 import weakref
 from collections import defaultdict
+from collections.abc import Iterable, Mapping
 from contextvars import ContextVar
 from typing import (
     TYPE_CHECKING,
     Any,
     Callable,
     DefaultDict,
-    Iterable,
     List,
-    Mapping,
     Optional,
     Set,
     Tuple,

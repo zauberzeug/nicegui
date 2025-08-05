@@ -142,6 +142,7 @@ select = [
 ]
 fixable = [
     "I",  # isort
+    "UP035", # deprecated import
     "RUF022", # `__all__` is not sorted
     "Q000",  # bad quotes inline string
     "Q001",  # bad quotes multiline string

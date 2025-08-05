@@ -2,7 +2,8 @@ from __future__ import annotations
 
 import asyncio
 import weakref
-from typing import TYPE_CHECKING, ClassVar, Dict, Iterator, List, Optional
+from collections.abc import Iterator
+from typing import TYPE_CHECKING, ClassVar, Dict, List, Optional
 
 from typing_extensions import Self
 

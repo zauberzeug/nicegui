@@ -1,16 +1,15 @@
 from __future__ import annotations
 
 import asyncio
+from collections.abc import Awaitable, Iterator
 from contextlib import nullcontext
 from dataclasses import dataclass
 from typing import (
     TYPE_CHECKING,
     Any,
-    Awaitable,
     BinaryIO,
     Callable,
     Dict,
-    Iterator,
     List,
     Literal,
     Optional,

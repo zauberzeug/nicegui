@@ -3,9 +3,10 @@ import os
 import platform
 import signal
 import urllib
+from collections.abc import Awaitable, Iterator
 from enum import Enum
 from pathlib import Path
-from typing import Any, Awaitable, Callable, Iterator, List, Optional, Union
+from typing import Any, Callable, List, Optional, Union
 
 from fastapi import FastAPI, HTTPException, Request, Response
 from fastapi.responses import FileResponse

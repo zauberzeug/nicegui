@@ -1,7 +1,8 @@
 from __future__ import annotations
 
+from collections.abc import Awaitable
 from dataclasses import dataclass, field
-from typing import Any, Awaitable, Callable, ClassVar, Dict, Generic, List, Optional, Tuple, TypeVar, cast
+from typing import Any, Callable, ClassVar, Dict, Generic, List, Optional, Tuple, TypeVar, cast
 
 from typing_extensions import Concatenate, ParamSpec, Self
 

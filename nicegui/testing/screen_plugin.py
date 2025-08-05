@@ -1,7 +1,8 @@
 import os
 import shutil
+from collections.abc import Generator
 from pathlib import Path
-from typing import Dict, Generator
+from typing import Dict
 
 import pytest
 from selenium import webdriver

@@ -1,7 +1,8 @@
 import asyncio
 import time
+from collections.abc import Awaitable
 from contextlib import nullcontext
-from typing import Any, Awaitable, Callable, ContextManager, Optional
+from typing import Any, Callable, ContextManager, Optional
 
 from . import background_tasks, core
 from .awaitable_response import AwaitableResponse

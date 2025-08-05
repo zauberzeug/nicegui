@@ -1,4 +1,5 @@
-from typing import Any, Awaitable, Callable, Dict, Optional, Union
+from collections.abc import Awaitable
+from typing import Any, Callable, Dict, Optional, Union
 
 from typing_extensions import Self
 

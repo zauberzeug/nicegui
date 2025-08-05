@@ -1,5 +1,5 @@
-from collections.abc import MutableMapping
-from typing import Any, Dict, Iterator
+from collections.abc import Iterator, MutableMapping
+from typing import Any, Dict
 
 
 class ReadOnlyDict(MutableMapping):

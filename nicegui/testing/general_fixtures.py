@@ -1,6 +1,7 @@
 import importlib
+from collections.abc import Generator
 from copy import copy
-from typing import Generator, List, Type
+from typing import List, Type
 
 import pytest
 from starlette.routing import Route

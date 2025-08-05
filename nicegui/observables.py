@@ -2,8 +2,9 @@ from __future__ import annotations
 
 import abc
 import time
+from collections.abc import Collection, Iterable
 from copy import deepcopy
-from typing import Any, Callable, Collection, Dict, Iterable, List, Optional, Set, SupportsIndex, Union
+from typing import Any, Callable, Dict, List, Optional, Set, SupportsIndex, Union
 
 from typing_extensions import Self
 

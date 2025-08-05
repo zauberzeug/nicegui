@@ -2,9 +2,10 @@ import os
 import re
 import threading
 import time
+from collections.abc import Generator
 from contextlib import contextmanager
 from pathlib import Path
-from typing import Callable, Generator, List, Optional, Union, overload
+from typing import Callable, List, Optional, Union, overload
 from urllib.parse import urlparse
 
 import pytest

@@ -5,9 +5,10 @@ import inspect
 import time
 import uuid
 from collections import defaultdict
+from collections.abc import Awaitable, Iterable, Iterator
 from contextlib import contextmanager
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Awaitable, Callable, ClassVar, Dict, Iterable, Iterator, List, Optional, Union
+from typing import TYPE_CHECKING, Any, Callable, ClassVar, Dict, List, Optional, Union
 
 from fastapi import Request
 from fastapi.responses import Response

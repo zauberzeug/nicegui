@@ -3,9 +3,10 @@ from __future__ import annotations
 import inspect
 import re
 import weakref
+from collections.abc import Iterator, Sequence
 from copy import copy
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Callable, ClassVar, Dict, Iterator, List, Optional, Sequence, Union, cast
+from typing import TYPE_CHECKING, Any, Callable, ClassVar, Dict, List, Optional, Union, cast
 
 from typing_extensions import Self
 

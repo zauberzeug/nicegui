@@ -3,7 +3,8 @@ from __future__ import annotations
 
 import asyncio
 import weakref
-from typing import Any, Awaitable, Callable, Coroutine, Dict, Set, TypeVar
+from collections.abc import Awaitable, Coroutine
+from typing import Any, Callable, Dict, Set, TypeVar
 
 from . import core
 from .logging import log

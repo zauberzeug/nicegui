@@ -1,4 +1,5 @@
-from typing import Any, Dict, Iterator, List, Literal, Optional, Set
+from collections.abc import Iterator
+from typing import Any, Dict, List, Literal, Optional, Set
 
 from typing_extensions import Self
 

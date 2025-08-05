@@ -1,6 +1,7 @@
 import uuid
+from collections.abc import Sequence
 from dataclasses import dataclass, field
-from typing import Any, Callable, Dict, Optional, Sequence
+from typing import Any, Callable, Dict, Optional
 
 from fastapi import Request
 
