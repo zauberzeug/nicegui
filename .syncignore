@@ -10,6 +10,7 @@ venv
 .idea
 .nicegui/
 *.sqlite*
+.cursor/
 .DS_Store
 .pytest_cache/
 .vscode/
@@ -17,3 +18,5 @@ venv
 tests/
 .git/
 .mypy_cache/
+node_modules/
+package-lock.json

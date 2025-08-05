@@ -45,9 +45,7 @@ class App(FastAPI):
         self._connect_handlers: List[Union[Callable[..., Any], Awaitable]] = []
         self._disconnect_handlers: List[Union[Callable[..., Any], Awaitable]] = []
         self._exception_handlers: List[Callable[..., Any]] = [log.exception]
-
-        self.on_startup(self.storage.general.initialize)
-        self.on_shutdown(self.storage.on_shutdown)
+        self._page_exception_handler: Optional[Callable[..., Any]] = None
 
     @property
     def is_starting(self) -> bool:
@@ -74,13 +72,21 @@ class App(FastAPI):
         self._state = State.STARTING
         for t in self._startup_handlers:
             Client.auto_index_client.safe_invoke(t)
+        self.on_shutdown(self.storage.on_shutdown)
+        self.on_shutdown(background_tasks.teardown)
         self._state = State.STARTED
 
-    def stop(self) -> None:
+    async def stop(self) -> None:
         """Stop NiceGUI. (For internal use only.)"""
         self._state = State.STOPPING
-        for t in self._shutdown_handlers:
-            Client.auto_index_client.safe_invoke(t)
+        with Client.auto_index_client:
+            for t in self._shutdown_handlers:
+                if isinstance(t, Awaitable):
+                    await t
+                else:
+                    result = t(self) if len(inspect.signature(t).parameters) == 1 else t()
+                    if helpers.is_coroutine_function(t):
+                        await result
         self._state = State.STOPPED
 
     def on_connect(self, handler: Union[Callable, Awaitable]) -> None:
@@ -125,7 +131,18 @@ class App(FastAPI):
         for handler in self._exception_handlers:
             result = handler() if not inspect.signature(handler).parameters else handler(exception)
             if helpers.is_coroutine_function(handler):
-                background_tasks.create(result)
+                background_tasks.create(result, name=f'exception {handler.__name__}')
+
+    def on_page_exception(self, handler: Callable) -> None:
+        """Called when an exception occurs in a page and allows to create a custom error page.
+
+        The callback can accept an optional ``Exception`` as argument.
+        All UI elements created in the callback are displayed on the error page.
+        Asynchronous handlers are currently not supported.
+
+        *Added in version 2.20.0*
+        """
+        self._page_exception_handler = handler
 
     def shutdown(self) -> None:
         """Shut down NiceGUI.
@@ -168,7 +185,7 @@ class App(FastAPI):
         handler = CacheControlledStaticFiles(
             directory=local_directory, follow_symlink=follow_symlink, max_cache_age=max_cache_age)
 
-        @self.get(url_path + '/{path:path}')
+        @self.get(url_path.rstrip('/') + '/{path:path}')  # NOTE: prevent double slashes in route pattern
         async def static_file(request: Request, path: str = '') -> Response:
             return await handler.get_response(path, request.scope)
 
@@ -176,6 +193,7 @@ class App(FastAPI):
                         local_file: Union[str, Path],
                         url_path: Optional[str] = None,
                         single_use: bool = False,
+                        strict: bool = True,
                         max_cache_age: int = 3600) -> str:
         """Add a single static file.
 
@@ -185,9 +203,13 @@ class App(FastAPI):
         To make a whole folder of files accessible, use `add_static_files()` instead.
         For media files which should be streamed, you can use `add_media_files()` or `add_media_file()` instead.
 
+        Deprecation warning:
+        Non-existing files will raise a ``FileNotFoundError`` rather than a ``ValueError`` in version 3.0 if ``strict`` is ``True``.
+
         :param local_file: local file to serve as static content
         :param url_path: string that starts with a slash "/" and identifies the path at which the file should be served (default: None -> auto-generated URL path)
         :param single_use: whether to remove the route after the file has been downloaded once (default: False)
+        :param strict: whether to raise a ``ValueError`` if the file does not exist (default: False, *added in version 2.12.0*)
         :param max_cache_age: value for max-age set in Cache-Control header (*added in version 2.8.0*)
         :return: encoded URL which can be used to access the file
         """
@@ -195,8 +217,8 @@ class App(FastAPI):
             raise ValueError('''Value of max_cache_age must be a positive integer or 0.''')
 
         file = Path(local_file).resolve()
-        if not file.is_file():
-            raise ValueError(f'File not found: {file}')
+        if strict and not file.is_file():
+            raise ValueError(f'File not found: {file}')  # DEPRECATED: will raise a ``FileNotFoundError`` in version 3.0
         path = f'/_nicegui/auto/static/{helpers.hash_file_path(file)}/{file.name}' if url_path is None else url_path
 
         @self.get(path)
@@ -221,7 +243,7 @@ class App(FastAPI):
         :param url_path: string that starts with a slash "/" and identifies the path at which the files should be served
         :param local_directory: local folder with files to serve as media content
         """
-        @self.get(url_path + '/{filename:path}')
+        @self.get(url_path.rstrip('/') + '/{filename:path}')  # NOTE: prevent double slashes in route pattern
         def read_item(request: Request, filename: str, nicegui_chunk_size: int = 8192) -> Response:
             filepath = Path(local_directory) / filename
             if not filepath.is_file():
@@ -232,7 +254,7 @@ class App(FastAPI):
                        local_file: Union[str, Path],
                        url_path: Optional[str] = None,
                        single_use: bool = False,
-                       ) -> str:
+                       strict: bool = True) -> str:
         """Add a single media file.
 
         Allows a local file to be streamed.
@@ -241,14 +263,18 @@ class App(FastAPI):
         To make a whole folder of media files accessible via streaming, use `add_media_files()` instead.
         For small static files, you can use `add_static_files()` or `add_static_file()` instead.
 
+        Deprecation warning:
+        Non-existing files will raise a ``FileNotFoundError`` rather than a ``ValueError`` in version 3.0 if ``strict`` is ``True``.
+
         :param local_file: local file to serve as media content
         :param url_path: string that starts with a slash "/" and identifies the path at which the file should be served (default: None -> auto-generated URL path)
         :param single_use: whether to remove the route after the media file has been downloaded once (default: False)
+        :param strict: whether to raise a ``ValueError`` if the file does not exist (default: False, *added in version 2.12.0*)
         :return: encoded URL which can be used to access the file
         """
         file = Path(local_file).resolve()
-        if not file.is_file():
-            raise ValueError(f'File not found: {local_file}')
+        if strict and not file.is_file():
+            raise ValueError(f'File not found: {file}')  # DEPRECATED: will raise a ``FileNotFoundError`` in version 3.0
         path = f'/_nicegui/auto/media/{helpers.hash_file_path(file)}/{file.name}' if url_path is None else url_path
 
         @self.get(path)
@@ -271,6 +297,7 @@ class App(FastAPI):
         self._connect_handlers.clear()
         self._disconnect_handlers.clear()
         self._exception_handlers[:] = [log.exception]
+        self.config = AppConfig()
 
     @staticmethod
     def clients(path: str) -> Iterator[Client]:

@@ -1,3 +1,4 @@
+import weakref
 from typing import Dict, Optional
 
 import pytest
@@ -59,6 +60,7 @@ def test_style_parsing(value: Optional[str], expected: Dict[str, str]):
     ('loading percentage=12.5', {'loading': True, 'percentage': '12.5'}),
     ('size=50%', {'size': '50%'}),
     ('href=http://192.168.42.100/', {'href': 'http://192.168.42.100/'}),
+    ('href=http://192.168.42.100/?foo=bar&baz=qux', {'href': 'http://192.168.42.100/?foo=bar&baz=qux'}),
     ('hint="Your \\"given\\" name"', {'hint': 'Your "given" name'}),
     ('input-style="{ color: #ff0000 }"', {'input-style': '{ color: #ff0000 }'}),
     ('accept=.jpeg,.jpg,.png', {'accept': '.jpeg,.jpg,.png'}),
@@ -341,3 +343,18 @@ def test_update_before_client_connection(screen: Screen):
 
     screen.open('/')
     screen.should_contain('Hello again!')
+
+
+def test_no_cyclic_references(screen: Screen):
+    elements: weakref.WeakSet = weakref.WeakSet()
+
+    with ui.card() as card:
+        for _ in range(10):
+            elements.add(ui.element())
+            elements.add(ui.pyplot())
+            elements.add(ui.query('div'))
+
+    card.clear()
+    assert len(elements) == 0, 'all elements should be deleted immediately'
+
+    screen.open('/')

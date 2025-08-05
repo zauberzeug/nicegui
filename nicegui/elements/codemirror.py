@@ -1,5 +1,6 @@
+from itertools import accumulate, chain, repeat
 from pathlib import Path
-from typing import Callable, List, Literal, Optional, get_args
+from typing import List, Literal, Optional, get_args
 
 from nicegui.elements.mixins.disableable_element import DisableableElement
 from nicegui.elements.mixins.value_element import ValueElement
@@ -280,7 +281,11 @@ class CodeMirror(ValueElement, DisableableElement, component='codemirror.js', de
         :param line_wrapping: whether to wrap lines (default: `False`)
         :param highlight_whitespace: whether to highlight whitespace (default: `False`)
         """
-        super().__init__(value=value, on_value_change=on_change)
+        super().__init__(value=value, on_value_change=self._update_codepoints)
+        self._codepoints = b''
+        self._update_codepoints()
+        if on_change is not None:
+            super().on_value_change(on_change)
         self.add_resource(Path(__file__).parent / 'lib' / 'codemirror')
 
         self._props['language'] = language
@@ -288,6 +293,7 @@ class CodeMirror(ValueElement, DisableableElement, component='codemirror.js', de
         self._props['indent'] = indent
         self._props['lineWrapping'] = line_wrapping
         self._props['highlightWhitespace'] = highlight_whitespace
+        self._update_method = 'setEditorValueFromProps'
 
     @property
     def theme(self) -> str:
@@ -295,11 +301,11 @@ class CodeMirror(ValueElement, DisableableElement, component='codemirror.js', de
         return self._props['theme']
 
     @theme.setter
-    def theme(self, theme: str) -> None:
+    def theme(self, theme: SUPPORTED_THEMES) -> None:
         self._props['theme'] = theme
         self.update()
 
-    def set_theme(self, theme: str) -> None:
+    def set_theme(self, theme: SUPPORTED_THEMES) -> None:
         """Sets the theme of the editor."""
         self._props['theme'] = theme
         self.update()
@@ -315,11 +321,11 @@ class CodeMirror(ValueElement, DisableableElement, component='codemirror.js', de
         return self._props['language']
 
     @language.setter
-    def language(self, language: Optional[str]) -> None:
+    def language(self, language: Optional[SUPPORTED_LANGUAGES] = None) -> None:
         self._props['language'] = language
         self.update()
 
-    def set_language(self, language: Optional[str]) -> None:
+    def set_language(self, language: Optional[SUPPORTED_LANGUAGES] = None) -> None:
         """Sets the language of the editor (case-insensitive)."""
         self._props['language'] = language
         self.update()
@@ -331,80 +337,39 @@ class CodeMirror(ValueElement, DisableableElement, component='codemirror.js', de
 
     def _event_args_to_value(self, e: GenericEventArguments) -> str:
         """The event contains a change set which is applied to the current value."""
-        changeset = _ChangeSet(sections=e.args['sections'], inserted=e.args['inserted'])
-        new_value = changeset.apply(self.value)
-        return new_value
+        return self._apply_change_set(e.args['sections'], e.args['inserted'])
 
+    @staticmethod
+    def _encode_codepoints(doc: str) -> bytes:
+        return b''.join(b'\0\1' if ord(c) > 0xFFFF else b'\1' for c in doc)
 
-# Below is a Python implementation of relevant parts of https://github.com/codemirror/state/blob/main/src/change.ts
-# to apply a ChangeSet to a text document.
+    def _update_codepoints(self) -> None:
+        """Update `self._codepoints` as a concatenation of "1" for code points <=0xFFFF and "01" for code points >0xFFFF.
 
+        This captures how many Unicode code points are encoded by each UTF-16 code unit.
+        This is used to convert JavaScript string indices to Python by summing `self._codepoints` up to the JavaScript index.
+        """
+        if not self._send_update_on_value_change:
+            return  # the update is triggered by the user and codepoints are updated incrementally
+        self._codepoints = self._encode_codepoints(self.value or '')
 
-class _ChangeSet:
-    """A change set represents a group of modifications to a document."""
-
-    def __init__(self, sections: List[int], inserted: List[List[str]]) -> None:
-        # From https://github.com/codemirror/state/blob/main/src/change.ts#L21:
-        # Sections are encoded as pairs of integers. The first is the
-        # length in the current document, and the second is -1 for
-        # unaffected sections, and the length of the replacement content
-        # otherwise. So an insertion would be (0, n>0), a deletion (n>0,
-        # 0), and a replacement two positive numbers.
-        self.sections: List[int] = sections
-        self.inserted: List[str] = ['\n'.join(ins) for ins in inserted]
-
-    def length(self) -> int:
-        """Calculate the length of the document before the change."""
-        return sum(self.sections[::2])
-
-    def apply(self, doc: str) -> str:
-        """Apply the changes to a document, returning the modified document."""
-        if self.length() != len(doc):
-            raise ValueError('Cannot apply change set to a document with the wrong length')
-        return _iter_changes(self, doc, _replacement_func, individual=False)
-
-    def __str__(self) -> str:
-        return f'ChangeSet(sections={self.sections}, inserted={self.inserted})'
-
-
-def _iter_changes(
-    changeset: _ChangeSet, doc: str, func: Callable[[str, int, int, int, int, str], str], individual: bool
-) -> str:
-    inserted = changeset.inserted
-    posA, posB, i = 0, 0, 0
-
-    while i < len(changeset.sections):
-        len_ = changeset.sections[i]
-        i += 1
-        ins = changeset.sections[i]
-        i += 1
-
-        if ins < 0:
-            posA += len_
-            posB += len_
-        else:
-            endA, endB = posA, posB
-            text = ''
-            while True:
-                endA += len_
-                endB += ins
-                if ins and inserted:
-                    text = text + inserted[(i - 2) // 2]
-                if individual or i == len(changeset.sections) or changeset.sections[i + 1] < 0:
-                    break
-                len_ = changeset.sections[i]
-                i += 1
-                ins = changeset.sections[i]
-                i += 1
-            doc = func(doc, posA, endA, posB, endB, text)
-            posA, posB = endA, endB
-
-    return doc
-
-
-def _replace_range(doc: str, from_: int, to: int, new: str) -> str:
-    return doc[:from_] + new + doc[to:]
-
-
-def _replacement_func(doc: str, from_a: int, to_a: int, from_b: int, _to_b: int, text: str) -> str:
-    return _replace_range(doc, from_b, from_b + (to_a - from_a), text)
+    def _apply_change_set(self, sections: List[int], inserted: List[List[str]]) -> str:
+        document = self.value or ''
+        old_lengths = sections[::2]
+        new_lengths = sections[1::2]
+        end_positions = accumulate(old_lengths)
+        document_parts: List[str] = []
+        codepoint_parts: List[bytes] = []
+        for end, old_len, new_len, insert in zip(end_positions, old_lengths, new_lengths, chain(inserted, repeat([]))):
+            if new_len == -1:
+                start = end - old_len
+                py_start = self._codepoints[:start].count(1)
+                py_end = py_start + self._codepoints[start:end].count(1)
+                document_parts.append(document[py_start:py_end])
+                codepoint_parts.append(self._codepoints[start:end])
+            else:
+                joined_insert = '\n'.join(insert)
+                document_parts.append(joined_insert)
+                codepoint_parts.append(self._encode_codepoints(joined_insert))
+        self._codepoints = b''.join(codepoint_parts)
+        return ''.join(document_parts)

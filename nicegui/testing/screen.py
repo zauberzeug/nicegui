@@ -5,6 +5,7 @@ import time
 from contextlib import contextmanager
 from pathlib import Path
 from typing import Callable, Generator, List, Optional, Union, overload
+from urllib.parse import urlparse
 
 import pytest
 from selenium import webdriver
@@ -185,9 +186,9 @@ class Screen:
         """Find the element containing the given text."""
         try:
             query = f'//*[not(self::script) and not(self::style) and text()[contains(., "{text}")]]'
-            element = self.selenium.find_element(By.XPATH, query)
             # HACK: repeat check after a short delay to avoid timing issue on fast machines
             for _ in range(5):
+                element = self.selenium.find_element(By.XPATH, query)
                 try:
                     if element.is_displayed():
                         return element
@@ -205,7 +206,7 @@ class Screen:
 
     def find_element(self, element: ui.element) -> WebElement:
         """Find the given NiceGUI element."""
-        return self.selenium.find_element(By.ID, f'c{element.id}')
+        return self.selenium.find_element(By.ID, element.html_id)
 
     def find_by_class(self, name: str) -> WebElement:
         """Find the element with the given CSS class."""
@@ -264,3 +265,14 @@ class Screen:
         self.selenium.implicitly_wait(t)
         yield
         self.selenium.implicitly_wait(self.IMPLICIT_WAIT)
+
+    @property
+    def current_path(self) -> str:
+        """The current path of the browser."""
+        parsed = urlparse(self.selenium.current_url)
+        result = parsed.path
+        if parsed.query:
+            result += '?' + parsed.query
+        if parsed.fragment:
+            result += '#' + parsed.fragment
+        return result

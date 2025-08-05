@@ -82,7 +82,7 @@ class Table(FilterElement, component='table.js'):
                     self.selected.clear()
                 self.selected.extend(e.args['rows'])
             else:
-                self.selected = [row for row in self.selected if row[row_key] not in e.args['keys']]
+                self.selected = [row for row in self.selected if row[self.row_key] not in e.args['keys']]
             self.update()
             arguments = TableSelectionEventArguments(sender=self, client=self.client, selection=self.selected)
             for handler in self._selection_handlers:
@@ -255,7 +255,8 @@ class Table(FilterElement, component='table.js'):
             return (pd.api.types.is_datetime64_any_dtype(dtype) or
                     pd.api.types.is_timedelta64_dtype(dtype) or
                     pd.api.types.is_complex_dtype(dtype) or
-                    isinstance(dtype, pd.PeriodDtype))
+                    pd.api.types.is_object_dtype(dtype) or
+                    isinstance(dtype, (pd.PeriodDtype, pd.IntervalDtype)))
         special_cols = df.columns[df.dtypes.apply(is_special_dtype)]
         if not special_cols.empty:
             df = df.copy()
@@ -279,7 +280,7 @@ class Table(FilterElement, component='table.js'):
 
     @rows.setter
     def rows(self, value: List[Dict]) -> None:
-        self._props['rows'][:] = value
+        self._props['rows'] = value
         self.update()
 
     @property
@@ -289,7 +290,7 @@ class Table(FilterElement, component='table.js'):
 
     @columns.setter
     def columns(self, value: List[Dict]) -> None:
-        self._props['columns'][:] = self._normalize_columns(value)
+        self._props['columns'] = self._normalize_columns(value)
         self.update()
 
     @property
@@ -319,7 +320,7 @@ class Table(FilterElement, component='table.js'):
 
     @selected.setter
     def selected(self, value: List[Dict]) -> None:
-        self._props['selected'][:] = value
+        self._props['selected'] = value
         self.update()
 
     @property

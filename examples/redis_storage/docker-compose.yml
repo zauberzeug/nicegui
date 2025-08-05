@@ -1,7 +1,6 @@
 services:
   x-nicegui: &nicegui-service
-    build:
-      context: .
+    image: zauberzeug/nicegui:2.11.0
     environment:
       - NICEGUI_REDIS_URL=redis://redis:6379
     volumes:
@@ -21,6 +20,8 @@ services:
 
   redis:
     image: redis:alpine
+    environment:
+      - REDIS_TIMEOUT=10
     ports:
       - "6379:6379"
 

@@ -1,12 +1,11 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Any, Awaitable, Callable, ClassVar, Dict, Generic, List, Optional, Tuple, TypeVar, Union, cast
+from typing import Any, Awaitable, Callable, ClassVar, Dict, Generic, List, Optional, Tuple, TypeVar, cast
 
 from typing_extensions import Concatenate, ParamSpec, Self
 
 from .. import background_tasks, core
-from ..client import Client
 from ..dataclasses import KWONLY_SLOTS
 from ..element import Element
 from ..helpers import is_coroutine_function
@@ -28,7 +27,7 @@ class RefreshableTarget:
     locals: List[Any] = field(default_factory=list)
     next_index: int = 0
 
-    def run(self, func: Callable[..., Union[_T, Awaitable[_T]]]) -> Union[_T, Awaitable[_T]]:
+    def run(self, func: Callable[..., _T]) -> _T:
         """Run the function and return the result."""
         RefreshableTarget.current_target = self
         self.next_index = 0
@@ -42,7 +41,7 @@ class RefreshableTarget:
                         result = func(self.instance, *self.args, **self.kwargs)
                     assert isinstance(result, Awaitable)
                     return await result
-            return wait_for_result()
+            return wait_for_result()  # type: ignore
         else:
             with self.container:
                 if self.instance is None:
@@ -57,11 +56,14 @@ class RefreshableContainer(Element, component='refreshable.js'):
 
 class refreshable(Generic[_P, _T]):
 
-    def __init__(self, func: Callable[_P, Union[_T, Awaitable[_T]]]) -> None:
+    def __init__(self, func: Callable[_P, _T]) -> None:
         """Refreshable UI functions
 
-        The `@ui.refreshable` decorator allows you to create functions that have a `refresh` method.
+        The ``@ui.refreshable`` decorator allows you to create functions that have a ``refresh`` method.
         This method will automatically delete all elements created by the function and recreate them.
+
+        For decorating refreshable methods in classes, there is a ``@ui.refreshable_method`` decorator,
+        which is equivalent but prevents static type checking errors.
         """
         self.func = func
         self.instance = None
@@ -80,7 +82,7 @@ class refreshable(Generic[_P, _T]):
             return refresh
         return attribute
 
-    def __call__(self, *args: _P.args, **kwargs: _P.kwargs) -> Union[_T, Awaitable[_T]]:
+    def __call__(self, *args: _P.args, **kwargs: _P.kwargs) -> _T:
         self.prune()
         target = RefreshableTarget(container=RefreshableContainer(), refreshable=self, instance=self.instance,
                                    args=args, kwargs=kwargs)
@@ -112,7 +114,7 @@ class refreshable(Generic[_P, _T]):
             if is_coroutine_function(self.func):
                 assert isinstance(result, Awaitable)
                 if core.loop and core.loop.is_running():
-                    background_tasks.create(result)
+                    background_tasks.create(result, name=f'refresh {self.func.__name__}')
                 else:
                     core.app.on_startup(result)
 
@@ -121,16 +123,12 @@ class refreshable(Generic[_P, _T]):
 
         This method is called automatically before each refresh.
         """
-        self.targets = [
-            target
-            for target in self.targets
-            if target.container.client.id in Client.instances and target.container.id in target.container.client.elements
-        ]
+        self.targets = [target for target in self.targets if not target.container.is_deleted]
 
 
 class refreshable_method(Generic[_S, _P, _T], refreshable[_P, _T]):
 
-    def __init__(self, func: Callable[Concatenate[_S, _P], Union[_T, Awaitable[_T]]]) -> None:
+    def __init__(self, func: Callable[Concatenate[_S, _P], _T]) -> None:
         """Refreshable UI methods
 
         The `@ui.refreshable_method` decorator allows you to create methods that have a `refresh` method.
@@ -148,16 +146,21 @@ def state(value: Any) -> Tuple[Any, Callable[[Any], None]]:
     """
     target = cast(RefreshableTarget, RefreshableTarget.current_target)
 
-    if target.next_index >= len(target.locals):
+    try:
+        index = target.next_index
+    except AttributeError as e:
+        raise RuntimeError('ui.state() can only be used inside a @ui.refreshable function') from e
+
+    if index >= len(target.locals):
         target.locals.append(value)
     else:
-        value = target.locals[target.next_index]
+        value = target.locals[index]
 
-    def set_value(new_value: Any, index=target.next_index) -> None:
+    def set_value(new_value: Any) -> None:
         if target.locals[index] == new_value:
             return
         target.locals[index] = new_value
-        target.refreshable.refresh()
+        target.refreshable.refresh(_instance=target.instance)
 
     target.next_index += 1
 

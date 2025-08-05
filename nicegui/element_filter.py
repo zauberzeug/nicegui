@@ -6,13 +6,12 @@ from typing_extensions import Self
 
 from .context import context
 from .element import Element
+from .elements.choice_element import ChoiceElement
 from .elements.mixins.content_element import ContentElement
 from .elements.mixins.source_element import SourceElement
 from .elements.mixins.text_element import TextElement
 from .elements.notification import Notification
-from .elements.radio import Radio
 from .elements.select import Select
-from .elements.toggle import Toggle
 
 T = TypeVar('T', bound=Element)
 
@@ -118,11 +117,14 @@ class ElementFilter(Generic[T]):
                 ) if content]
                 if isinstance(element, Notification):
                     element_contents.append(element.message)
-                if isinstance(element, (Select, Radio, Toggle)):
-                    options = {option['value']: option['label'] for option in element.props.get('options', [])}
-                    element_contents.append(options.get(element.value, ''))
+                if isinstance(element, ChoiceElement):
+                    if isinstance(element, Select):
+                        values = element.value if element.multiple else [element.value]
+                        labels = [value if isinstance(element.options, list) else element.options.get(value, '')
+                                  for value in values]
+                        element_contents.extend(labels)
                     if not isinstance(element, Select) or element.is_showing_popup:
-                        element_contents.extend(options.values())
+                        element_contents.extend(element._labels)  # pylint: disable=protected-access
                 if any(all(needle not in str(haystack) for haystack in element_contents) for needle in self._contents):
                     continue
                 if any(needle in str(haystack) for haystack in element_contents for needle in self._exclude_content):
@@ -193,7 +195,7 @@ class ElementFilter(Generic[T]):
     def classes(self, add: Optional[str] = None, *, remove: Optional[str] = None, replace: Optional[str] = None) -> Self:
         """Apply, remove, or replace HTML classes.
 
-        This allows modifying the look of the element or its layout using `Tailwind <https://tailwindcss.com/>`_ or `Quasar <https://quasar.dev/>`_ classes.
+        This allows modifying the look of the element or its layout using `Tailwind <https://v3.tailwindcss.com/>`_ or `Quasar <https://quasar.dev/>`_ classes.
 
         Removing or replacing classes can be helpful if predefined classes are not desired.
 

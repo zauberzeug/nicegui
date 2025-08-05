@@ -223,12 +223,14 @@ def map_of_nicegui():
             - [`ui.echart`](/documentation/echart)
             - [`ui.editor`](/documentation/editor)
             - [`ui.expansion`](/documentation/expansion)
+            - [`ui.fab`](/documentation/fab), `ui.fab_action`
             - [`ui.grid`](/documentation/grid)
             - [`ui.highchart`](/documentation/highchart)
             - [`ui.html`](/documentation/html)
             - [`ui.icon`](/documentation/icon)
             - [`ui.image`](/documentation/image)
             - [`ui.input`](/documentation/input)
+            - [`ui.input_chips`](/documentation/input_chips)
             - [`ui.interactive_image`](/documentation/interactive_image)
             - `ui.item`, `ui.item_label`, `ui.item_section`
             - [`ui.joystick`](/documentation/joystick)
@@ -251,6 +253,7 @@ def map_of_nicegui():
             - [`ui.plotly`](/documentation/plotly)
             - [`ui.pyplot`](/documentation/pyplot)
             - [`ui.radio`](/documentation/radio)
+            - [`ui.rating`](/documentation/rating)
             - [`ui.range`](/documentation/range)
             - [`ui.restructured_text`](/documentation/restructured_text)
             - [`ui.row`](/documentation/row)
@@ -259,11 +262,13 @@ def map_of_nicegui():
             - [`ui.select`](/documentation/select)
             - [`ui.separator`](/documentation/separator)
             - [`ui.skeleton`](/documentation/skeleton)
+            - [`ui.slide_item`](/documentation/slide_item)
             - [`ui.slider`](/documentation/slider)
             - [`ui.space`](/documentation/space)
             - [`ui.spinner`](/documentation/spinner)
             - [`ui.splitter`](/documentation/splitter)
             - [`ui.stepper`](/documentation/stepper), `ui.step`, `ui.stepper_navigation`
+            - [`ui.sub_pages`](/documentation/sub_pages)
             - [`ui.switch`](/documentation/switch)
             - [`ui.tabs`](/documentation/tabs), `ui.tab`, `ui.tab_panels`, `ui.tab_panel`
             - [`ui.table`](/documentation/table)
@@ -324,6 +329,7 @@ def map_of_nicegui():
             - `app.on_startup()`: called when the app starts
             - `app.on_shutdown()`: called when the app shuts down
             - `app.on_exception()`: called when an exception occurs
+            - `app.on_page_exception()`: called when an exception occurs while building a page
         - [`app.shutdown()`](/documentation/section_action_events#shut_down_nicegui): shut down the app
         - static files:
             - [`app.add_static_files()`](/documentation/section_pages_routing#add_a_directory_of_static_files),
@@ -444,6 +450,7 @@ def map_of_nicegui():
 
         - `create()`: create a background task
         - `create_lazy()`: prevent two tasks with the same name from running at the same time
+        - `await_on_shutdown`: mark a coroutine function to be awaited during shutdown (by default all background tasks are cancelled)
 
         #### `run`
 

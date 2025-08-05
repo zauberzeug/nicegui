@@ -2,15 +2,15 @@ from __future__ import annotations
 
 import asyncio
 import inspect
-import time
 from functools import wraps
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Callable, Optional, Union
 
-from fastapi import Request, Response
+from fastapi import HTTPException, Request, Response
 
 from . import background_tasks, binding, core, helpers
 from .client import Client
+from .elements.sub_pages import SubPages
 from .favicon import create_favicon_route
 from .language import Language
 from .logging import log
@@ -90,7 +90,7 @@ class page:
         """Return whether the page should use dark mode."""
         return self.dark if self.dark is not ... else core.app.config.dark
 
-    def resolve_language(self) -> Optional[str]:
+    def resolve_language(self) -> Language:
         """Return the language of the page."""
         return self.language if self.language is not ... else core.app.config.language
 
@@ -110,6 +110,31 @@ class page:
             except asyncio.CancelledError:
                 pass
 
+        def create_error_page(e: Exception, request: Request) -> Response:
+            page_exception_handler = core.app._page_exception_handler  # pylint: disable=protected-access
+            if page_exception_handler is None:
+                raise e
+            with Client(page(''), request=request) as error_client:
+                # page exception handler
+                if helpers.expects_arguments(page_exception_handler):
+                    page_exception_handler(e)
+                else:
+                    page_exception_handler()
+
+                # FastAPI exception handlers
+                for key, handler in core.app.exception_handlers.items():
+                    if key == 500 or (isinstance(key, type) and isinstance(e, key)):
+                        result = handler(request, e)
+                        if helpers.is_coroutine_function(handler):
+                            async def await_handler(result: Any) -> None:
+                                await result
+                            background_tasks.create(await_handler(result), name=f'exception handler {handler.__name__}')
+
+                # NiceGUI exception handlers
+                core.app.handle_exception(e)
+
+                return error_client.build_response(request, 500)
+
         @wraps(func)
         async def decorated(*dec_args, **dec_kwargs) -> Response:
             request = dec_kwargs['request']
@@ -118,17 +143,32 @@ class page:
             with Client(self, request=request) as client:
                 if any(p.name == 'client' for p in inspect.signature(func).parameters.values()):
                     dec_kwargs['client'] = client
-                result = func(*dec_args, **dec_kwargs)
+                try:
+                    result = func(*dec_args, **dec_kwargs)
+                    # NOTE: after building the page, there might be sub pages that have 404 -- and initial requests should send 404 status request in such cases
+                    sub_pages_elements = [e for e in client.elements.values() if isinstance(e, SubPages)]
+                    if any(sub_pages.has_404 for sub_pages in sub_pages_elements):
+                        raise HTTPException(404, f'{client.sub_pages_router.current_path} not found')
+                except Exception as e:
+                    return create_error_page(e, request)
             if helpers.is_coroutine_function(func):
-                async def wait_for_result() -> None:
+                async def wait_for_result() -> Optional[Response]:
                     with client:
-                        return await result
+                        try:
+                            return await result
+                        except Exception as e:
+                            return create_error_page(e, request)
                 task = background_tasks.create(wait_for_result())
-                deadline = time.time() + self.response_timeout
-                while task and not client.is_waiting_for_connection and not task.done():
-                    if time.time() > deadline:
-                        raise TimeoutError(f'Response not ready after {self.response_timeout} seconds')
-                    await asyncio.sleep(0.1)
+                task_wait_for_connection = background_tasks.create(
+                    client._waiting_for_connection.wait(),  # pylint: disable=protected-access
+                )
+                try:
+                    await asyncio.wait([
+                        task,
+                        task_wait_for_connection,
+                    ], timeout=self.response_timeout, return_when=asyncio.FIRST_COMPLETED)
+                except asyncio.TimeoutError as e:
+                    raise TimeoutError(f'Response not ready after {self.response_timeout} seconds') from e
                 if task.done():
                     result = task.result()
                 else:

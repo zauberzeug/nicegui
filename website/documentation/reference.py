@@ -5,6 +5,7 @@ from nicegui import binding, ui
 from nicegui.elements.markdown import remove_indentation
 
 from ..style import create_anchor_name, subheading
+from .custom_restructured_text import CustomRestructuredText as custom_restructured_text
 
 
 def generate_class_doc(class_obj: type, part_title: str) -> None:
@@ -14,7 +15,7 @@ def generate_class_doc(class_obj: type, part_title: str) -> None:
         subheading('Initializer', anchor_name=create_anchor_name(part_title.replace('Reference', 'Initializer')))
         description = remove_indentation(doc.split('\n', 1)[-1])
         lines = [line.replace(':param ', ':') for line in description.splitlines() if ':param' in line]
-        ui.restructured_text('\n'.join(lines)).classes('bold-links arrow-links rst-param-tables')
+        custom_restructured_text('\n'.join(lines)).classes('bold-links arrow-links rst-param-tables')
 
     mro = [base for base in class_obj.__mro__ if base.__module__.startswith('nicegui.')]
     ancestors = mro[1:]
@@ -28,21 +29,22 @@ def generate_class_doc(class_obj: type, part_title: str) -> None:
 
     if properties:
         subheading('Properties', anchor_name=create_anchor_name(part_title.replace('Reference', 'Properties')))
-        with ui.column().classes('gap-2'):
+        with ui.column().classes('gap-2 w-full overflow-x-auto'):
             for name, property_ in sorted(properties.items()):
                 ui.markdown(f'**`{name}`**`{_generate_property_signature_description(property_)}`')
                 if property_.__doc__:
                     _render_docstring(property_.__doc__).classes('ml-8')
     if methods:
         subheading('Methods', anchor_name=create_anchor_name(part_title.replace('Reference', 'Methods')))
-        with ui.column().classes('gap-2'):
+        with ui.column().classes('gap-2 w-full overflow-x-auto'):
             for name, method in sorted(methods.items()):
                 decorator = ''
                 if isinstance(class_obj.__dict__.get(name), staticmethod):
                     decorator += '`@staticmethod`<br />'
                 if isinstance(class_obj.__dict__.get(name), classmethod):
                     decorator += '`@classmethod`<br />'
-                ui.markdown(f'{decorator}**`{name}`**`{_generate_method_signature_description(method)}`')
+                ui.markdown(f'{decorator}**`{name}`**`{_generate_method_signature_description(method)}`') \
+                    .classes('w-full overflow-x-auto')
                 if method.__doc__:
                     _render_docstring(method.__doc__).classes('ml-8')
     if ancestors:
@@ -103,9 +105,9 @@ def _generate_method_signature_description(method: Callable) -> str:
     return description
 
 
-def _render_docstring(doc: str) -> ui.restructured_text:
+def _render_docstring(doc: str) -> custom_restructured_text:
     doc = _remove_indentation_from_docstring(doc)
-    return ui.restructured_text(doc).classes('bold-links arrow-links rst-param-tables')
+    return custom_restructured_text(doc).classes('bold-links arrow-links rst-param-tables')
 
 
 def _remove_indentation_from_docstring(text: str) -> str:

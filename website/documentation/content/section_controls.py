@@ -10,12 +10,15 @@ from . import (
     color_picker_documentation,
     date_documentation,
     doc,
+    fab_documentation,
+    input_chips_documentation,
     input_documentation,
     joystick_documentation,
     knob_documentation,
     number_documentation,
     radio_documentation,
     range_documentation,
+    rating_documentation,
     select_documentation,
     slider_documentation,
     switch_documentation,
@@ -30,15 +33,18 @@ doc.title('*Controls*')
 doc.intro(button_documentation)
 doc.intro(button_group_documentation)
 doc.intro(button_dropdown_documentation)
+doc.intro(fab_documentation)
 doc.intro(badge_documentation)
 doc.intro(chip_documentation)
 doc.intro(toggle_documentation)
 doc.intro(radio_documentation)
 doc.intro(select_documentation)
+doc.intro(input_chips_documentation)
 doc.intro(checkbox_documentation)
 doc.intro(switch_documentation)
 doc.intro(slider_documentation)
 doc.intro(range_documentation)
+doc.intro(rating_documentation)
 doc.intro(joystick_documentation)
 doc.intro(input_documentation)
 doc.intro(textarea_documentation)

@@ -19,6 +19,11 @@ By participating, you agree to abide by its terms.
 We are excited that you want to contribute code to NiceGUI.
 We're always looking for bug fixes, performance improvements, and new features.
 
+### AI Assistant Integration
+
+This project is designed to work well with AI assistants like Cursor, GitHub Copilot, and others.
+The `.cursor/rules/` directory contains guidelines specifically for AI assistants that complement this contributing guide.
+
 ## Setup
 
 ### Dev Container
@@ -46,7 +51,7 @@ Thereby enabling you to use your local version of NiceGUI in other projects.
 To run the tests you need some additional setup which is described in [tests/README.md](https://github.com/zauberzeug/nicegui/blob/main/tests/README.md).
 
 There is no special Python version required for development.
-At Zauberzeug we mainly use 3.11.
+At Zauberzeug we mainly use 3.12.
 This means we sometimes miss some incompatibilities with older versions.
 But these will hopefully be uncovered by the GitHub Actions (see below).
 Also we use the 3.9 Docker container described below to verify compatibility in cases of uncertainty.
@@ -90,6 +95,33 @@ In our point of view, the Black formatter is sometimes a bit too strict.
 There are cases where one or the other arrangement of, e.g., function arguments is more readable than the other.
 Then we like the flexibility to either put all arguments on separate lines or only put the lengthy event handler
 on a second line and leave the other arguments as they are.
+
+### Style Principles
+
+- Always prefer simple solutions
+- Avoid having files over 200-300 lines of code. Refactor at that point
+- Use single quotes for strings in Python, double quotes in JavaScript
+- Use f-strings wherever possible for better readability (except in performance-critical sections which should be marked with "NOTE:" comments)
+- Follow autopep8 formatting with 120 character line length
+- Each sentence in documentation should be on a new line
+- Use ruff for linting and code checks
+
+### Workflow Guidelines
+
+- Always simplify the implementation as much as possible:
+  - Avoid duplication of code whenever possible, which means checking for other areas of the codebase that might already have similar code and functionality
+  - Remove obsolete code
+  - Ensure the code is not too complicated
+  - Strive to have minimal maintenance burden and self explanatory code without the need of additional comments
+- Be careful to only make changes that are requested or are well understood and related to the change being requested
+- When fixing an issue or bug, do not introduce a new pattern or technology without first exhausting all options for the existing implementation. And if you finally do this, make sure to remove the old implementation afterwards so we don't have duplicate logic
+- Keep the codebase very clean and organized
+- Write tests for new features
+- Run tests before submitting any changes
+- Format code using autopep8 before submitting changes
+- Use pre-commit hooks to ensure coding style compliance
+- When adding new features, include corresponding tests
+- For documentation, ensure each sentence is on a new line
 
 ### Linting
 
@@ -193,6 +225,31 @@ We are happy to merge pull requests with new examples which show new concepts, i
 To list your addition on the website itself, you can use the `example_link` function below the
 ["In-depth examples" section heading](https://github.com/zauberzeug/nicegui/blob/8a86d2064f8f4464f3819ac5c6763a2cb2d0e990/main.py#L242).
 The title should match the example folder name when [snake case converted](https://github.com/zauberzeug/nicegui/blob/8a86d2064f8f4464f3819ac5c6763a2cb2d0e990/website/style.py#L31).
+
+## Node dependencies
+
+We use [npm.json](https://github.com/zauberzeug/nicegui/blob/main/npm.json) to pin the versions of the node dependencies.
+They are usually updated by the maintainers during major releases.
+
+To update or add new dependencies, we follow these steps:
+
+1. Use `npm` or other derivative tools, modify the `package.json` file with new versions or add dependencies.
+   - We **never** modify the version in `package.json` or `npm.json` directly, since there may be conflicts between versions.
+   - `npx npm-check-updates -u --target semver` is a good starting point for updating dependencies.
+2. Run `npm install` to install the new dependencies.
+   Any conflicts in installation will be caught at this moment.
+3. Run `pin_versions.py` to update the `npm.json` file.
+4. Run `npm.py` to download dependencies into the `nicegui/static/` and `nicegui/elements/lib/` directories.
+5. Remember to commit `package.json` in addition to the new dependencies and `DEPENDENCIES.md`, such that Dependabot can catch outdated dependencies with security issues.
+
+Apart from updating Node libraries, the following tools are used to update other resources:
+
+- scripts/codemirror/bundle.bash for managing the CodeMirror dependency
+- fetch_google_fonts.py for fetching the Google Fonts
+- fetch_languages.py to update the list of supported languages in language.py
+- fetch_milestone.py to prepare the release notes for a given milestone
+- fetch_sponsors.py to update the list of sponsors on the website and in the README.md file
+- fetch_tailwind.py to update NiceGUI's Tailwind API
 
 ## Pull requests
 

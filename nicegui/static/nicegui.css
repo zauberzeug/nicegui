@@ -23,6 +23,7 @@
 .nicegui-expansion .q-expansion-item__content,
 .nicegui-scroll-area .q-scrollarea__content,
 .nicegui-splitter .q-splitter__panel,
+.nicegui-sub-pages,
 .nicegui-timeline-entry .q-timeline__content,
 .nicegui-row,
 .nicegui-column {
@@ -39,7 +40,8 @@
   flex-direction: row;
 }
 .nicegui-row,
-.nicegui-column {
+.nicegui-column,
+.nicegui-sub-pages {
   padding: 0;
 }
 .nicegui-card-tight {
@@ -193,6 +195,9 @@
 .nicegui-markdown .codehilite pre {
   margin: 0.5rem 0;
 }
+.nicegui-markdown .mermaid-pre > .mermaid {
+  display: none;
+}
 
 /* other NiceGUI elements */
 .nicegui-grid {
@@ -218,6 +223,9 @@
 .nicegui-scroll-area {
   width: 100%;
   height: 16rem;
+}
+.nicegui-leaflet video.leaflet-image-layer {
+  max-width: none; /* HACK: make the video show up */
 }
 .nicegui-log {
   padding: 0.5rem;
@@ -246,6 +254,7 @@ h6.q-timeline__title {
 .nicegui-code .codehilite {
   padding: 0 0.5rem;
 }
+.nicegui-matplotlib > svg,
 .nicegui-pyplot > svg {
   width: 100%;
   height: 100%;
@@ -259,8 +268,14 @@ h6.q-timeline__title {
 .nicegui-scene-view[data-initializing] {
   visibility: hidden;
 }
-
-/* CodeMirror */
+.nicegui-interactive-image-layer {
+  position: absolute !important;
+  inset: 0;
+  pointer-events: none;
+}
+.nicegui-interactive-image-layer img {
+  display: none;
+}
 .nicegui-codemirror .cm-editor.cm-focused {
   outline: none;
 }

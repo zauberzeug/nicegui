@@ -91,6 +91,7 @@ def reactive_state():
         counter('B')
 
 
+@doc.auto_execute
 @doc.demo('Global scope', '''
     When defining a refreshable function in the global scope,
     every refreshable UI that is created by calling this function will share the same state.
@@ -112,8 +113,12 @@ def global_scope():
         ui.button('Refresh', on_click=time.refresh)
 
     ui.link('Open demo', demo)
+    # END OF DEMO
+    ui.label('Note: This demo may not work as expected on nicegui.io due to load balancing across multiple servers. '
+             'For accurate results, please run this example locally on your machine.').classes('text-gray-600')
 
 
+@doc.auto_execute
 @doc.demo('Local scope (variant A)', '''
     When defining a refreshable function in a local scope,
     refreshable UI that is created by calling this function will refresh independently.
@@ -135,6 +140,7 @@ def local_scope_a():
     ui.link('Open demo', demo)
 
 
+@doc.auto_execute
 @doc.demo('Local scope (variant B)', '''
     In order to define refreshable UIs with local state outside of page functions,
     you can, e.g., define a class with a refreshable method.
@@ -145,7 +151,7 @@ def local_scope_b():
     from datetime import datetime
 
     class Clock:
-        @ui.refreshable
+        @ui.refreshable_method
         def time(self):
             ui.label(f'Time: {datetime.now()}')
 
@@ -158,6 +164,7 @@ def local_scope_b():
     ui.link('Open demo', demo)
 
 
+@doc.auto_execute
 @doc.demo('Local scope (variant C)', '''
     As an alternative to the class definition shown above, you can also define the UI function in global scope,
     but apply the `ui.refreshable` decorator inside the page function.

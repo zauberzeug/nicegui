@@ -7,15 +7,14 @@ RUN apt update && apt install -y curl procps
 RUN pip install \
     dnspython \
     docutils \
+    httpx \
     isort \
     itsdangerous \
     matplotlib \
     pandas \
     plotly \
-    prometheus_client \
     pyecharts \
     pytest \
-    requests \
     selenium
 
 RUN curl -sSL https://install.python-poetry.org | python3 - && \
@@ -29,7 +28,7 @@ COPY pyproject.toml poetry.lock*  ./
 
 RUN poetry install --no-root --extras "plotly matplotlib highcharts sass"
 
-RUN pip install latex2mathml
+RUN pip install latex2mathml slowapi
 
 ADD . .
 
@@ -41,12 +40,12 @@ RUN sed -i "/\[tool.poetry\]/,/]/s/version = .*/version = \"$VERSION\"/" pyproje
 RUN pip install .
 
 EXPOSE 8080
-EXPOSE 9062
 
 COPY fly-entrypoint.sh /entrypoint.sh
 
 ENTRYPOINT ["/entrypoint.sh"]
 
 ENV PYTHONUNBUFFERED=1
+ENV ENABLE_ANALYTICS=true
 
 CMD ["python", "main.py"]

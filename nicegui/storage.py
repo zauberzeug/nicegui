@@ -32,6 +32,8 @@ class RequestTrackingMiddleware(BaseHTTPMiddleware):
         request.state.responded = False
         await core.app.storage._create_user_storage(request.session['id'])  # pylint: disable=protected-access
         response = await call_next(request)
+        if response.headers.get('X-NiceGUI-Content') != 'page':
+            await core.app.storage.user.close()
         request.state.responded = True
         return response
 
@@ -49,24 +51,24 @@ def set_storage_secret(storage_secret: Optional[str] = None) -> None:
 
 class Storage:
     secret: Optional[str] = None
-    """Secret key for session storage."""
+    '''Secret key for session storage.'''
 
     path = Path(os.environ.get('NICEGUI_STORAGE_PATH', '.nicegui')).resolve()
-    """Path to use for local persistence. Defaults to ".nicegui"."""
+    '''Path to use for local persistence. Defaults to ".nicegui".'''
 
     redis_url = os.environ.get('NICEGUI_REDIS_URL', None)
-    """URL to use for shared persistent storage via Redis. Defaults to None, which means local file storage is used."""
+    '''URL to use for shared persistent storage via Redis. Defaults to None, which means local file storage is used.'''
 
     redis_key_prefix = os.environ.get('NICEGUI_REDIS_KEY_PREFIX', 'nicegui:')
-    """Prefix for Redis keys. Defaults to "nicegui:"."""
+    '''Prefix for Redis keys. Defaults to "nicegui:".'''
 
     max_tab_storage_age: float = timedelta(days=30).total_seconds()
-    """Maximum age in seconds before tab storage is automatically purged. Defaults to 30 days."""
+    '''Maximum age in seconds before tab storage is automatically purged. Defaults to 30 days.'''
 
     def __init__(self) -> None:
         self._general = Storage._create_persistent_dict('general')
         self._users: Dict[str, PersistentDict] = {}
-        self._tabs: Dict[str, PersistentDict] = {}
+        self._tabs: Dict[str, ObservableDict] = {}
 
     @staticmethod
     def _create_persistent_dict(id: str) -> PersistentDict:  # pylint: disable=redefined-builtin
@@ -163,13 +165,21 @@ class Storage:
     async def _create_tab_storage(self, tab_id: str) -> None:
         """Create tab storage for the given tab ID."""
         if tab_id not in self._tabs:
-            self._tabs[tab_id] = Storage._create_persistent_dict(f'tab-{tab_id}')
-            await self._tabs[tab_id].initialize()
+            if Storage.redis_url:
+                self._tabs[tab_id] = Storage._create_persistent_dict(f'tab-{tab_id}')
+                tab = self._tabs[tab_id]
+                assert isinstance(tab, PersistentDict)
+                await tab.initialize()
+            else:
+                self._tabs[tab_id] = ObservableDict()
 
     def copy_tab(self, old_tab_id: str, tab_id: str) -> None:
         """Copy the tab storage to a new tab. (For internal use only.)"""
         if old_tab_id in self._tabs:
-            self._tabs[tab_id] = Storage._create_persistent_dict(f'tab-{tab_id}')
+            if Storage.redis_url:
+                self._tabs[tab_id] = Storage._create_persistent_dict(f'tab-{tab_id}')
+            else:
+                self._tabs[tab_id] = ObservableDict()
             self._tabs[tab_id].update(self._tabs[old_tab_id])
 
     async def prune_tab_storage(self) -> None:
@@ -178,9 +188,13 @@ class Storage:
             for tab_id, tab in list(self._tabs.items()):
                 if time.time() > tab.last_modified + self.max_tab_storage_age:
                     tab.clear()
-                    await tab.close()
+                    if isinstance(tab, PersistentDict):
+                        await tab.close()
                     del self._tabs[tab_id]
-            await asyncio.sleep(PURGE_INTERVAL)
+            try:
+                await asyncio.sleep(PURGE_INTERVAL)
+            except asyncio.CancelledError:
+                break
 
     def clear(self) -> None:
         """Clears all storage."""
@@ -199,7 +213,7 @@ class Storage:
             self.path.rmdir()
 
     async def on_shutdown(self) -> None:
-        """Close all persistent storage."""
+        """Close all persistent storage. (For internal use only.)"""
         for user in self._users.values():
             await user.close()
         await self._general.close()

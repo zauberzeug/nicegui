@@ -19,6 +19,8 @@ demo.py
 tests/.pytest_cache/**/*
 **/.ruff_cache
 **/*.pyc
+**/.cursor
 **/.DS_Store
 **/.idea
 **/.vscode
+package-lock.json

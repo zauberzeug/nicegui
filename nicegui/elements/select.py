@@ -5,10 +5,11 @@ from typing import Any, Callable, Dict, Iterator, List, Literal, Optional, Union
 from ..events import GenericEventArguments, Handler, ValueChangeEventArguments
 from .choice_element import ChoiceElement
 from .mixins.disableable_element import DisableableElement
+from .mixins.label_element import LabelElement
 from .mixins.validation_element import ValidationDict, ValidationElement, ValidationFunction
 
 
-class Select(ValidationElement, ChoiceElement, DisableableElement, component='select.js'):
+class Select(LabelElement, ValidationElement, ChoiceElement, DisableableElement, component='select.js'):
 
     def __init__(self,
                  options: Union[List, Dict], *,
@@ -60,9 +61,7 @@ class Select(ValidationElement, ChoiceElement, DisableableElement, component='se
                 value = [value]
             else:
                 value = value[:]  # NOTE: avoid modifying the original list which could be the list of options (#3014)
-        super().__init__(options=options, value=value, on_change=on_change, validation=validation)
-        if label is not None:
-            self._props['label'] = label
+        super().__init__(label=label, options=options, value=value, on_change=on_change, validation=validation)
         if isinstance(key_generator, Generator):
             next(key_generator)  # prime the key generator, prepare it to receive the first value
         self.key_generator = key_generator
@@ -90,10 +89,18 @@ class Select(ValidationElement, ChoiceElement, DisableableElement, component='se
         return self._is_showing_popup
 
     def _event_args_to_value(self, e: GenericEventArguments) -> Any:
+        # pylint: disable=too-many-nested-blocks
         if self.multiple:
             if e.args is None:
                 return []
             else:
+                if self._props.get('new-value-mode') == 'add-unique':
+                    # handle issue #4896: eliminate duplicate arguments
+                    for arg1 in [a for a in e.args if isinstance(a, str)]:
+                        for arg2 in [a for a in e.args if isinstance(a, dict)]:
+                            if arg1 == arg2['label']:
+                                e.args.remove(arg1)
+                                break
                 args = [self._values[arg['value']] if isinstance(arg, dict) else arg for arg in e.args]
                 for arg in e.args:
                     if isinstance(arg, str):

@@ -24,17 +24,22 @@ export default {
     async update(content) {
       if (this.last_content === content) return;
       this.last_content = content;
-      this.$el.innerHTML = content;
-      this.$el.removeAttribute("data-processed");
-      queue.push(this.$el);
+      queue.push({ element: this.$el, content: content });
       if (is_running) return;
       is_running = true;
       while (queue.length) {
+        const { element, content } = queue.shift();
         try {
-          await mermaid.run({ nodes: [queue.shift()] });
+          const { svg, bindFunctions } = await mermaid.render(element.id + "_mermaid", content);
+          element.innerHTML = svg;
+          bindFunctions?.(element);
         } catch (error) {
-          console.error(error);
-          this.$emit("error", error);
+          const { svg, bindFunctions } = await mermaid.render(element.id + "_mermaid", "error");
+          element.innerHTML = svg;
+          bindFunctions?.(element);
+          const mermaidErrorFormat = { str: error.message, message: error.message, hash: error.name, error };
+          console.error(mermaidErrorFormat);
+          this.$emit("error", mermaidErrorFormat);
         }
       }
       is_running = false;
