@@ -29,7 +29,7 @@ def auto_execute(function: Callable) -> Callable:
 
 def get_page(documentation: ModuleType) -> DocumentationPage:
     """Return the documentation page for the given documentation module."""
-    target_name = _removesuffix(documentation.__name__.split('.')[-1], '_documentation')
+    target_name = documentation.__name__.split('.')[-1].removesuffix('_documentation')
     assert target_name in registry, f'Documentation page {target_name} does not exist'
     return registry[target_name]
 
@@ -38,7 +38,7 @@ def _get_current_page() -> DocumentationPage:
     frame = sys._getframe(2)  # pylint: disable=protected-access
     module = inspect.getmodule(frame)
     assert module is not None and module.__file__ is not None
-    name = _removesuffix(Path(module.__file__).stem, '_documentation')
+    name = Path(module.__file__).stem.removesuffix('_documentation')
     if name == 'overview':
         name = ''
     if name not in registry:
@@ -172,10 +172,3 @@ def _find_attribute(obj: Any, name: str) -> Optional[str]:
         if attr.lower().replace('_', '') == name.lower().replace('_', ''):
             return attr
     return None
-
-
-def _removesuffix(string: str, suffix: str) -> str:
-    # NOTE: Remove this once we drop Python 3.8 support
-    if string.endswith(suffix):
-        return string[:-len(suffix)]
-    return string

@@ -13,10 +13,7 @@ python = "^3.9"
 typing-extensions = ">=4.0.0"
 markdown2 = ">=2.4.7,!=2.4.11"
 Pygments = ">=2.15.1,<3.0.0"
-starlette = [
-    {version = "<0.42.0", python = "~3.8"},  # https://github.com/zauberzeug/nicegui/issues/4255
-    {version = ">=0.45.3", python = ">=3.9"}
-]
+starlette = ">=0.45.3"
 uvicorn = {extras = ["standard"], version = ">=0.22.0"}
 fastapi = ">=0.109.1"
 python-socketio = {extras = ["asyncio-client"], version = ">=5.10.0"} # version min: see https://github.com/zauberzeug/nicegui/issues/1809
@@ -65,23 +62,15 @@ pandas = [
 ]
 secure = ">=0.3.0"
 webdriver-manager = ">=3.8.6,<5.0.0"
-numpy = [
-    {version = ">=1.26.0", python = ">=3.9,<3.14"}
-]
+numpy = ">=1.26.0"
 selenium = "^4.11.2"
 pyecharts = "^2.0.4"
 ruff = ">=0.8.1"
-pre-commit = [
-    {version = ">=4.0.0", python = ">=3.9,<3.14"}
-]
+pre-commit = ">=4.0.0"
 isort = "^5.11"
-polars = [
-    {version = "^1.12.0", python = ">=3.9,<3.14"}
-]
+polars = "^1.12.0"
 mypy = "^1.13.0"
-pylint = [
-    {version = ">=3.3.1", python = ">=3.9,<3.13"}
-]
+pylint = ">=3.3.1"
 
 [tool.poetry.scripts]
 nicegui-pack = "nicegui.scripts.pack:main"
@@ -128,7 +117,7 @@ ignore_missing_imports = true
 max-line-length = 120
 
 [tool.ruff]
-target-version = "py38"
+target-version = "py39"
 indent-width = 4
 line-length = 120
 

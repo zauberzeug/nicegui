@@ -90,10 +90,8 @@ def _get_component(key: str) -> FileResponse:
 def _get_resource(key: str, path: str) -> FileResponse:
     if key in resources:
         filepath = resources[key].path / path
-        try:
-            filepath.resolve().relative_to(resources[key].path.resolve())  # NOTE: use is_relative_to() in Python 3.9
-        except ValueError as e:
-            raise HTTPException(status_code=403, detail='forbidden') from e
+        if not filepath.resolve().is_relative_to(resources[key].path.resolve()):
+            raise HTTPException(status_code=403, detail='forbidden')
         if filepath.exists():
             media_type, _ = mimetypes.guess_type(filepath)
             return FileResponse(filepath, media_type=media_type)
