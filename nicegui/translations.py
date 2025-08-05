@@ -1,4 +1,3 @@
-
 from .language import Language
 
 translations: dict[Language, dict[str, str]] = {

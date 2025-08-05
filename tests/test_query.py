@@ -1,4 +1,3 @@
-
 from nicegui import ui
 from nicegui.testing import Screen
 

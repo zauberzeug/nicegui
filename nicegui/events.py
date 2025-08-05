@@ -4,16 +4,7 @@ import asyncio
 from collections.abc import Awaitable, Iterator
 from contextlib import nullcontext
 from dataclasses import dataclass
-from typing import (
-    TYPE_CHECKING,
-    Any,
-    BinaryIO,
-    Callable,
-    Literal,
-    TypeVar,
-    Union,
-    cast,
-)
+from typing import TYPE_CHECKING, Any, BinaryIO, Callable, Literal, TypeVar, Union, cast
 
 from . import background_tasks, core, helpers
 from .awaitable_response import AwaitableResponse

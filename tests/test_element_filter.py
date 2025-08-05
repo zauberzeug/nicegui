@@ -1,4 +1,3 @@
-
 import pytest
 
 from nicegui import ElementFilter, ui
