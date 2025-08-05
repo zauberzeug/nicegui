@@ -1,6 +1,6 @@
 import asyncio
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple, Union, cast
+from typing import Any, Optional, Union, cast
 
 from typing_extensions import Self
 
@@ -24,13 +24,13 @@ class Leaflet(Element, component='leaflet.js', default_classes='nicegui-leaflet'
     zoom = binding.BindableProperty(lambda sender, value: cast(Leaflet, sender).set_zoom(value))
 
     def __init__(self,
-                 center: Tuple[float, float] = (0.0, 0.0),
+                 center: tuple[float, float] = (0.0, 0.0),
                  zoom: int = 13,
                  *,
-                 options: Dict = {},  # noqa: B006
-                 draw_control: Union[bool, Dict] = False,
+                 options: dict = {},  # noqa: B006
+                 draw_control: Union[bool, dict] = False,
                  hide_drawn_items: bool = False,
-                 additional_resources: Optional[List[str]] = None,
+                 additional_resources: Optional[list[str]] = None,
                  ) -> None:
         """Leaflet map
 
@@ -46,7 +46,7 @@ class Leaflet(Element, component='leaflet.js', default_classes='nicegui-leaflet'
         super().__init__()
         self.add_resource(Path(__file__).parent / 'lib' / 'leaflet')
 
-        self.layers: List[Layer] = []
+        self.layers: list[Layer] = []
         self.is_initialized = False
 
         self.center = center
@@ -110,7 +110,7 @@ class Leaflet(Element, component='leaflet.js', default_classes='nicegui-leaflet'
             return NullResponse()
         return super().run_method(name, *args, timeout=timeout)
 
-    def set_center(self, center: Tuple[float, float]) -> None:
+    def set_center(self, center: tuple[float, float]) -> None:
         """Set the center location of the map."""
         if self._props['center'] == center:
             return

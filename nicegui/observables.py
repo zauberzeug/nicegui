@@ -4,7 +4,7 @@ import abc
 import time
 from collections.abc import Collection, Iterable
 from copy import deepcopy
-from typing import Any, Callable, Dict, List, Optional, Set, SupportsIndex, Union
+from typing import Any, Callable, SupportsIndex
 
 from typing_extensions import Self
 
@@ -15,17 +15,17 @@ class ObservableCollection(abc.ABC):  # noqa: B024
 
     def __init__(self, *,
                  factory: Callable,
-                 data: Optional[Collection],
-                 on_change: Optional[Callable],
-                 _parent: Optional[ObservableCollection],
+                 data: Collection | None,
+                 on_change: Callable | None,
+                 _parent: ObservableCollection | None,
                  ) -> None:
         super().__init__(factory() if data is None else data)  # type: ignore
         self._parent = _parent
         self.last_modified = time.time()
-        self._change_handlers: List[Callable] = [on_change] if on_change else []
+        self._change_handlers: list[Callable] = [on_change] if on_change else []
 
     @property
-    def change_handlers(self) -> List[Callable]:
+    def change_handlers(self) -> list[Callable]:
         """Return a list of all change handlers registered on this collection and its parents."""
         change_handlers = self._change_handlers[:]
         if self._parent is not None:
@@ -62,7 +62,7 @@ class ObservableCollection(abc.ABC):  # noqa: B024
             return ObservableSet(self, _parent=self._parent)
         raise NotImplementedError(f'ObservableCollection.__copy__ not implemented for {type(self)}')
 
-    def __deepcopy__(self, memo: Dict) -> Self:
+    def __deepcopy__(self, memo: dict) -> Self:
         if isinstance(self, dict):
             return ObservableDict({key: deepcopy(self[key]) for key in self}, _parent=self._parent)
         if isinstance(self, list):
@@ -75,10 +75,10 @@ class ObservableCollection(abc.ABC):  # noqa: B024
 class ObservableDict(ObservableCollection, dict):
 
     def __init__(self,
-                 data: Optional[Dict] = None,
+                 data: dict | None = None,
                  *,
-                 on_change: Optional[Callable] = None,
-                 _parent: Optional[ObservableCollection] = None,
+                 on_change: Callable | None = None,
+                 _parent: ObservableCollection | None = None,
                  ) -> None:
         super().__init__(factory=dict, data=data, on_change=on_change, _parent=_parent)
         for key, value in self.items():
@@ -128,10 +128,10 @@ class ObservableDict(ObservableCollection, dict):
 class ObservableList(ObservableCollection, list):
 
     def __init__(self,
-                 data: Optional[List] = None,
+                 data: list | None = None,
                  *,
-                 on_change: Optional[Callable] = None,
-                 _parent: Optional[ObservableCollection] = None,
+                 on_change: Callable | None = None,
+                 _parent: ObservableCollection | None = None,
                  ) -> None:
         super().__init__(factory=list, data=data, on_change=on_change, _parent=_parent)
         for i, item in enumerate(self):
@@ -170,11 +170,11 @@ class ObservableList(ObservableCollection, list):
         super().reverse()
         self._handle_change()
 
-    def __delitem__(self, key: Union[SupportsIndex, slice]) -> None:
+    def __delitem__(self, key: SupportsIndex | slice) -> None:
         super().__delitem__(key)
         self._handle_change()
 
-    def __setitem__(self, key: Union[SupportsIndex, slice], value: Any) -> None:
+    def __setitem__(self, key: SupportsIndex | slice, value: Any) -> None:
         super().__setitem__(key, self._observe(value))
         self._handle_change()
 
@@ -190,10 +190,10 @@ class ObservableList(ObservableCollection, list):
 class ObservableSet(ObservableCollection, set):
 
     def __init__(self,
-                 data: Optional[Set] = None,
+                 data: set | None = None,
                  *,
-                 on_change: Optional[Callable] = None,
-                 _parent: Optional[ObservableCollection] = None,
+                 on_change: Callable | None = None,
+                 _parent: ObservableCollection | None = None,
                  ) -> None:
         super().__init__(factory=set, data=data, on_change=on_change, _parent=_parent)
         for item in self:

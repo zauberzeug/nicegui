@@ -17,8 +17,8 @@ from nicegui.elements.markdown import remove_indentation
 from .page import DocumentationPage
 from .part import Demo, DocumentationPart
 
-registry: Dict[str, DocumentationPage] = {}
-redirects: Dict[str, str] = {}
+registry: dict[str, DocumentationPage] = {}
+redirects: dict[str, str] = {}
 
 
 def auto_execute(function: Callable) -> Callable:
@@ -46,7 +46,7 @@ def _get_current_page() -> DocumentationPage:
     return registry[name]
 
 
-def title(title_: Optional[str] = None, subtitle: Optional[str] = None) -> None:
+def title(title_: str | None = None, subtitle: str | None = None) -> None:
     """Set the title of the current documentation page."""
     page = _get_current_page()
     page.title = title_
@@ -61,7 +61,7 @@ def text(title_: str, description: str) -> None:
 @overload
 def demo(title_: str,
          description: str, /, *,
-         tab: Optional[Union[str, Callable]] = None,
+         tab: str | Callable | None = None,
          lazy: bool = True,
          ) -> Callable[[Callable], Callable]:
     ...
@@ -69,15 +69,15 @@ def demo(title_: str,
 
 @overload
 def demo(element: type, /,
-         tab: Optional[Union[str, Callable]] = None,
+         tab: str | Callable | None = None,
          lazy: bool = True,
          ) -> Callable[[Callable], Callable]:
     ...
 
 
 @overload
-def demo(function: Union[Callable, Navigate], /,
-         tab: Optional[Union[str, Callable]] = None,
+def demo(function: Callable | Navigate, /,
+         tab: str | Callable | None = None,
          lazy: bool = True,
          ) -> Callable[[Callable], Callable]:
     ...
@@ -167,7 +167,7 @@ def extra_column(function: Callable) -> Callable:
     return function
 
 
-def _find_attribute(obj: Any, name: str) -> Optional[str]:
+def _find_attribute(obj: Any, name: str) -> str | None:
     for attr in dir(obj):
         if attr.lower().replace('_', '') == name.lower().replace('_', ''):
             return attr

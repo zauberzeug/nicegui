@@ -4,7 +4,7 @@ import asyncio
 import inspect
 from functools import wraps
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Callable, Optional, Union
+from typing import TYPE_CHECKING, Any, Callable
 
 from fastapi import HTTPException, Request, Response
 
@@ -23,14 +23,14 @@ class page:
 
     def __init__(self,
                  path: str, *,
-                 title: Optional[str] = None,
-                 viewport: Optional[str] = None,
-                 favicon: Optional[Union[str, Path]] = None,
-                 dark: Optional[bool] = ...,  # type: ignore
+                 title: str | None = None,
+                 viewport: str | None = None,
+                 favicon: str | Path | None = None,
+                 dark: bool | None = ...,  # type: ignore
                  language: Language = ...,  # type: ignore
                  response_timeout: float = 3.0,
-                 reconnect_timeout: Optional[float] = None,
-                 api_router: Optional[APIRouter] = None,
+                 reconnect_timeout: float | None = None,
+                 api_router: APIRouter | None = None,
                  **kwargs: Any,
                  ) -> None:
         """Page
@@ -86,7 +86,7 @@ class page:
         """Return the viewport of the page."""
         return self.viewport if self.viewport is not None else core.app.config.viewport
 
-    def resolve_dark(self) -> Optional[bool]:
+    def resolve_dark(self) -> bool | None:
         """Return whether the page should use dark mode."""
         return self.dark if self.dark is not ... else core.app.config.dark
 
@@ -152,7 +152,7 @@ class page:
                 except Exception as e:
                     return create_error_page(e, request)
             if helpers.is_coroutine_function(func):
-                async def wait_for_result() -> Optional[Response]:
+                async def wait_for_result() -> Response | None:
                     with client:
                         try:
                             return await result

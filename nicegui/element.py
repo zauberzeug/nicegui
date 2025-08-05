@@ -6,7 +6,7 @@ import weakref
 from collections.abc import Iterator, Sequence
 from copy import copy
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Callable, ClassVar, Dict, List, Optional, Union, cast
+from typing import TYPE_CHECKING, Any, Callable, ClassVar, cast
 
 from typing_extensions import Self
 
@@ -40,15 +40,15 @@ TAG_PATTERN = re.compile(fr'^({TAG_START_CHAR})({TAG_CHAR})*$')
 
 
 class Element(Visibility):
-    component: Optional[Component] = None
-    libraries: ClassVar[List[Library]] = []
-    extra_libraries: ClassVar[List[Library]] = []
-    exposed_libraries: ClassVar[List[Library]] = []
-    _default_props: ClassVar[Dict[str, Any]] = {}
-    _default_classes: ClassVar[List[str]] = []
-    _default_style: ClassVar[Dict[str, str]] = {}
+    component: Component | None = None
+    libraries: ClassVar[list[Library]] = []
+    extra_libraries: ClassVar[list[Library]] = []
+    exposed_libraries: ClassVar[list[Library]] = []
+    _default_props: ClassVar[dict[str, Any]] = {}
+    _default_classes: ClassVar[list[str]] = []
+    _default_style: ClassVar[dict[str, str]] = {}
 
-    def __init__(self, tag: Optional[str] = None, *, _client: Optional[Client] = None) -> None:
+    def __init__(self, tag: str | None = None, *, _client: Client | None = None) -> None:
         """Generic Element
 
         This class is the base class for all other UI elements.
@@ -68,16 +68,16 @@ class Element(Visibility):
         self._classes: Classes[Self] = Classes(self._default_classes, element=cast(Self, self))
         self._style: Style[Self] = Style(self._default_style, element=cast(Self, self))
         self._props: Props[Self] = Props(self._default_props, element=cast(Self, self))
-        self._markers: List[str] = []
-        self._event_listeners: Dict[str, EventListener] = {}
-        self._text: Optional[str] = None
-        self.slots: Dict[str, Slot] = {}
+        self._markers: list[str] = []
+        self._event_listeners: dict[str, EventListener] = {}
+        self._text: str | None = None
+        self.slots: dict[str, Slot] = {}
         self.default_slot = self.add_slot('default')
-        self._update_method: Optional[str] = None
+        self._update_method: str | None = None
         self._deleted: bool = False
 
         client.elements[self.id] = self
-        self.parent_slot: Optional[Slot] = None
+        self.parent_slot: Slot | None = None
         slot_stack = context.slot_stack
         if slot_stack:
             self.parent_slot = slot_stack[-1]
@@ -90,19 +90,19 @@ class Element(Visibility):
             client.outbox.enqueue_update(self.parent_slot.parent)
 
     def __init_subclass__(cls, *,
-                          component: Union[str, Path, None] = None,
-                          dependencies: List[Union[str, Path]] = [],  # noqa: B006
-                          libraries: List[Union[str, Path]] = [],  # noqa: B006  # DEPRECATED
-                          exposed_libraries: List[Union[str, Path]] = [],  # noqa: B006  # DEPRECATED
-                          extra_libraries: List[Union[str, Path]] = [],  # noqa: B006  # DEPRECATED
-                          default_classes: Optional[str] = None,
-                          default_style: Optional[str] = None,
-                          default_props: Optional[str] = None,
+                          component: str | Path | None = None,
+                          dependencies: list[str | Path] = [],  # noqa: B006
+                          libraries: list[str | Path] = [],  # noqa: B006  # DEPRECATED
+                          exposed_libraries: list[str | Path] = [],  # noqa: B006  # DEPRECATED
+                          extra_libraries: list[str | Path] = [],  # noqa: B006  # DEPRECATED
+                          default_classes: str | None = None,
+                          default_style: str | None = None,
+                          default_props: str | None = None,
                           ) -> None:
         super().__init_subclass__()
         base = Path(inspect.getfile(cls)).parent
 
-        def glob_absolute_paths(file: Union[str, Path]) -> List[Path]:
+        def glob_absolute_paths(file: str | Path) -> list[Path]:
             path = Path(file)
             if not path.is_absolute():
                 path = base / path
@@ -157,7 +157,7 @@ class Element(Visibility):
             raise RuntimeError('The client this element belongs to has been deleted.')
         return client
 
-    def add_resource(self, path: Union[str, Path]) -> None:
+    def add_resource(self, path: str | Path) -> None:
         """Add a resource to the element.
 
         :param path: path to the resource (e.g. folder with CSS and JavaScript files)
@@ -175,7 +175,7 @@ class Element(Visibility):
         register_dynamic_resource(name, function)
         self._props['dynamic_resource_path'] = f'/_nicegui/{__version__}/dynamic_resources'
 
-    def add_slot(self, name: str, template: Optional[str] = None) -> Slot:
+    def add_slot(self, name: str, template: str | None = None) -> Slot:
         """Add a slot to the element.
 
         NiceGUI is using the slot concept from Vue:
@@ -207,7 +207,7 @@ class Element(Visibility):
         for slot in self.slots.values():
             yield from slot
 
-    def _collect_slot_dict(self) -> Dict[str, Any]:
+    def _collect_slot_dict(self) -> dict[str, Any]:
         return {
             name: {
                 'ids': [child.id for child in slot],
@@ -217,7 +217,7 @@ class Element(Visibility):
             if slot != self.default_slot
         }
 
-    def _to_dict(self) -> Dict[str, Any]:
+    def _to_dict(self) -> dict[str, Any]:
         return {
             'tag': self.tag,
             **({'text': self._text} if self._text is not None else {}),
@@ -254,10 +254,10 @@ class Element(Visibility):
 
     @classmethod
     def default_classes(cls,
-                        add: Optional[str] = None, *,
-                        remove: Optional[str] = None,
-                        toggle: Optional[str] = None,
-                        replace: Optional[str] = None) -> type[Self]:
+                        add: str | None = None, *,
+                        remove: str | None = None,
+                        toggle: str | None = None,
+                        replace: str | None = None) -> type[Self]:
         """Apply, remove, toggle, or replace default HTML classes.
 
         This allows modifying the look of the element or its layout using `Tailwind <https://v3.tailwindcss.com/>`_ or `Quasar <https://quasar.dev/>`_ classes.
@@ -281,9 +281,9 @@ class Element(Visibility):
 
     @classmethod
     def default_style(cls,
-                      add: Optional[str] = None, *,
-                      remove: Optional[str] = None,
-                      replace: Optional[str] = None) -> type[Self]:
+                      add: str | None = None, *,
+                      remove: str | None = None,
+                      replace: str | None = None) -> type[Self]:
         """Apply, remove, or replace default CSS definitions.
 
         Removing or replacing styles can be helpful if the predefined style is not desired.
@@ -309,8 +309,8 @@ class Element(Visibility):
 
     @classmethod
     def default_props(cls,
-                      add: Optional[str] = None, *,
-                      remove: Optional[str] = None) -> type[Self]:
+                      add: str | None = None, *,
+                      remove: str | None = None) -> type[Self]:
         """Add or remove default props.
 
         This allows modifying the look of the element or its layout using `Quasar <https://quasar.dev/>`_ props.
@@ -354,13 +354,13 @@ class Element(Visibility):
 
     def on(self,
            type: str,  # pylint: disable=redefined-builtin
-           handler: Optional[events.Handler[events.GenericEventArguments]] = None,
-           args: Union[None, Sequence[str], Sequence[Optional[Sequence[str]]]] = None,
+           handler: events.Handler[events.GenericEventArguments] | None = None,
+           args: None | Sequence[str] | Sequence[Sequence[str] | None] = None,
            *,
            throttle: float = 0.0,
            leading_events: bool = True,
            trailing_events: bool = True,
-           js_handler: Optional[str] = '(...args) => emit(...args)',  # DEPRECATED: None will be removed in version 3.0
+           js_handler: str | None = '(...args) => emit(...args)',  # DEPRECATED: None will be removed in version 3.0
            ) -> Self:
         """Subscribe to an event.
 
@@ -411,7 +411,7 @@ class Element(Visibility):
             self.update()
         return self
 
-    def _handle_event(self, msg: Dict) -> None:
+    def _handle_event(self, msg: dict) -> None:
         listener = self._event_listeners[msg['listener_id']]
         storage.request_contextvar.set(listener.request)
         args = events.GenericEventArguments(sender=self, client=self.client, args=msg['args'])
@@ -477,9 +477,9 @@ class Element(Visibility):
         self.update()
 
     def move(self,
-             target_container: Optional[Element] = None,
+             target_container: Element | None = None,
              target_index: int = -1, *,
-             target_slot: Optional[str] = None) -> None:
+             target_slot: str | None = None) -> None:
         """Move the element to another container.
 
         :param target_container: container to move the element to (default: the parent container)
@@ -504,7 +504,7 @@ class Element(Visibility):
 
         target_container.update()
 
-    def remove(self, element: Union[Element, int]) -> None:
+    def remove(self, element: Element | int) -> None:
         """Remove a child element.
 
         :param element: either the element instance or its ID

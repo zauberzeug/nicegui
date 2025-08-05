@@ -1,4 +1,4 @@
-from typing import Any, Dict, Optional
+from typing import Any, Optional
 
 from langchain.callbacks.base import BaseCallbackHandler
 from langchain.schema import AgentAction, AgentFinish
@@ -13,11 +13,11 @@ class NiceGuiLogElementCallbackHandler(BaseCallbackHandler):
         """Initialize callback handler."""
         self.log = log_element
 
-    def on_chain_start(self, serialized: Dict[str, Any], inputs: Dict[str, Any], **kwargs: Any) -> None:
+    def on_chain_start(self, serialized: dict[str, Any], inputs: dict[str, Any], **kwargs: Any) -> None:
         """Print out that we are entering a chain."""
         self.log.push(f'\n\n> Entering new {serialized["id"][-1]} chain...')
 
-    def on_chain_end(self, outputs: Dict[str, Any], **kwargs: Any) -> None:
+    def on_chain_end(self, outputs: dict[str, Any], **kwargs: Any) -> None:
         """Print out that we finished a chain."""
         self.log.push('\n> Finished chain.')
         self.log.push(f'\nOutputs: {outputs}')

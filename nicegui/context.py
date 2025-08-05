@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, List
+from typing import TYPE_CHECKING
 
 from .slot import Slot
 
@@ -11,7 +11,7 @@ if TYPE_CHECKING:
 class Context:
 
     @property
-    def slot_stack(self) -> List[Slot]:
+    def slot_stack(self) -> list[Slot]:
         """Return the slot stack of the current asyncio task."""
         return Slot.get_stack()
 

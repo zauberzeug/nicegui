@@ -1,7 +1,6 @@
 import importlib
 from collections.abc import Generator
 from copy import copy
-from typing import List, Type
 
 import pytest
 from starlette.routing import Route
@@ -52,7 +51,7 @@ def nicegui_reset_globals() -> Generator[None, None, None]:
     importlib.reload(run)
 
     # capture initial defaults
-    element_types: List[Type[ui.element]] = [ui.element, *find_all_subclasses(ui.element)]
+    element_types: list[type[ui.element]] = [ui.element, *find_all_subclasses(ui.element)]
     default_classes = {t: copy(t._default_classes) for t in element_types}  # pylint: disable=protected-access
     default_styles = {t: copy(t._default_style) for t in element_types}  # pylint: disable=protected-access
     default_props = {t: copy(t._default_props) for t in element_types}  # pylint: disable=protected-access
@@ -77,7 +76,7 @@ def nicegui_reset_globals() -> Generator[None, None, None]:
         t._default_props = default_props[t]  # pylint: disable=protected-access
 
 
-def find_all_subclasses(cls: Type) -> List[Type]:
+def find_all_subclasses(cls: type) -> list[type]:
     """Find all subclasses of a class."""
     subclasses = []
     for subclass in cls.__subclasses__():

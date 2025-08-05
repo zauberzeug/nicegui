@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 import weakref
-from typing import TYPE_CHECKING, List, Optional, Union, overload
+from typing import TYPE_CHECKING, overload
 
 if TYPE_CHECKING:
     from .element import Element
@@ -173,7 +173,7 @@ if TYPE_CHECKING:
 class PseudoElement:
 
     def __init__(self) -> None:
-        self._classes: List[str] = []
+        self._classes: list[str] = []
 
     def classes(self, add: str) -> None:
         """Add the given classes to the element."""
@@ -182,12 +182,12 @@ class PseudoElement:
 
 class Tailwind:
 
-    def __init__(self, _element: Optional[Element] = None) -> None:
-        self._element: Union[PseudoElement, weakref.ref[Element]] = \
+    def __init__(self, _element: Element | None = None) -> None:
+        self._element: PseudoElement | weakref.ref[Element] = \
             PseudoElement() if _element is None else weakref.ref(_element)
 
     @property
-    def element(self) -> Union[PseudoElement, Element]:
+    def element(self) -> PseudoElement | Element:
         """The element or pseudo element this Tailwind object belongs to."""
         element = self._element if isinstance(self._element, PseudoElement) else self._element()
         if element is None:

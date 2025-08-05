@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-from typing import List
 
 import httpx
 
@@ -15,7 +14,7 @@ class Lightbox:
         with ui.dialog().props('maximized').classes('bg-black') as self.dialog:
             ui.keyboard(self._handle_key)
             self.large_image = ui.image().props('no-spinner fit=scale-down')
-        self.image_list: List[str] = []
+        self.image_list: list[str] = []
 
     def add_image(self, thumb_url: str, orig_url: str) -> ui.image:
         """Place a thumbnail image in the UI and make it clickable to enlarge."""

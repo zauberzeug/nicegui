@@ -8,19 +8,7 @@ import weakref
 from collections import defaultdict
 from collections.abc import Iterable, Mapping
 from contextvars import ContextVar
-from typing import (
-    TYPE_CHECKING,
-    Any,
-    Callable,
-    DefaultDict,
-    List,
-    Optional,
-    Set,
-    Tuple,
-    Type,
-    TypeVar,
-    Union,
-)
+from typing import TYPE_CHECKING, Any, Callable, TypeVar
 
 from typing_extensions import dataclass_transform
 
@@ -32,29 +20,29 @@ if TYPE_CHECKING:
 
 MAX_PROPAGATION_TIME = 0.01
 
-propagation_visited: ContextVar[Optional[Set[Tuple[int, str]]]] = ContextVar('propagation_visited', default=None)
+propagation_visited: ContextVar[set[tuple[int, str]] | None] = ContextVar('propagation_visited', default=None)
 
-bindings: DefaultDict[Tuple[int, str], List[Tuple[Any, Any, str, Optional[Callable[[Any], Any]]]]] = defaultdict(list)
-bindable_properties: weakref.WeakValueDictionary[Tuple[int, str], Any] = weakref.WeakValueDictionary()
-active_links: List[Tuple[Any, str, Any, str, Optional[Callable[[Any], Any]]]] = []
+bindings: defaultdict[tuple[int, str], list[tuple[Any, Any, str, Callable[[Any], Any] | None]]] = defaultdict(list)
+bindable_properties: weakref.WeakValueDictionary[tuple[int, str], Any] = weakref.WeakValueDictionary()
+active_links: list[tuple[Any, str, Any, str, Callable[[Any], Any] | None]] = []
 
 TC = TypeVar('TC', bound=type)
 T = TypeVar('T')
 
 
-def _has_attribute(obj: Union[object, Mapping], name: str) -> Any:
+def _has_attribute(obj: object | Mapping, name: str) -> Any:
     if isinstance(obj, Mapping):
         return name in obj
     return hasattr(obj, name)
 
 
-def _get_attribute(obj: Union[object, Mapping], name: str) -> Any:
+def _get_attribute(obj: object | Mapping, name: str) -> Any:
     if isinstance(obj, Mapping):
         return obj[name]
     return getattr(obj, name)
 
 
-def _set_attribute(obj: Union[object, Mapping], name: str, value: Any) -> None:
+def _set_attribute(obj: object | Mapping, name: str, value: Any) -> None:
     if isinstance(obj, dict):
         obj[name] = value
     else:
@@ -118,7 +106,7 @@ def _propagate_recursively(source_obj: Any, source_name: str) -> None:
 
 
 def bind_to(self_obj: Any, self_name: str, other_obj: Any, other_name: str,
-            forward: Optional[Callable[[Any], Any]] = None) -> None:
+            forward: Callable[[Any], Any] | None = None) -> None:
     """Bind the property of one object to the property of another object.
 
     The binding works one way only, from the first object to the second.
@@ -137,7 +125,7 @@ def bind_to(self_obj: Any, self_name: str, other_obj: Any, other_name: str,
 
 
 def bind_from(self_obj: Any, self_name: str, other_obj: Any, other_name: str,
-              backward: Optional[Callable[[Any], Any]] = None) -> None:
+              backward: Callable[[Any], Any] | None = None) -> None:
     """Bind the property of one object from the property of another object.
 
     The binding works one way only, from the second object to the first.
@@ -156,8 +144,8 @@ def bind_from(self_obj: Any, self_name: str, other_obj: Any, other_name: str,
 
 
 def bind(self_obj: Any, self_name: str, other_obj: Any, other_name: str, *,
-         forward: Optional[Callable[[Any], Any]] = None,
-         backward: Optional[Callable[[Any], Any]] = None) -> None:
+         forward: Callable[[Any], Any] | None = None,
+         backward: Callable[[Any], Any] | None = None) -> None:
     """Bind the property of one object to the property of another object.
 
     The binding works both ways, from the first object to the second and from the second to the first.
@@ -177,7 +165,7 @@ def bind(self_obj: Any, self_name: str, other_obj: Any, other_name: str, *,
 
 class BindableProperty:
 
-    def __init__(self, on_change: Optional[Callable[..., Any]] = None) -> None:
+    def __init__(self, on_change: Callable[..., Any] | None = None) -> None:
         self._change_handler = on_change
 
     def __set_name__(self, _, name: str) -> None:
@@ -236,9 +224,9 @@ def reset() -> None:
 
 
 @dataclass_transform()
-def bindable_dataclass(cls: Optional[TC] = None, /, *,
-                       bindable_fields: Optional[Iterable[str]] = None,
-                       **kwargs: Any) -> Union[Type[DataclassInstance], IdentityFunction]:
+def bindable_dataclass(cls: TC | None = None, /, *,
+                       bindable_fields: Iterable[str] | None = None,
+                       **kwargs: Any) -> type[DataclassInstance] | IdentityFunction:
     """A decorator that transforms a class into a dataclass with bindable fields.
 
     This decorator extends the functionality of ``dataclasses.dataclass`` by making specified fields bindable.
@@ -263,8 +251,8 @@ def bindable_dataclass(cls: Optional[TC] = None, /, *,
         if kwargs.get(unsupported_option):
             raise ValueError(f'`{unsupported_option}=True` is not supported with bindable_dataclass')
 
-    dataclass: Type[DataclassInstance] = dataclasses.dataclass(**kwargs)(cls)
-    field_names = set(field.name for field in dataclasses.fields(dataclass))
+    dataclass: type[DataclassInstance] = dataclasses.dataclass(**kwargs)(cls)
+    field_names = {field.name for field in dataclasses.fields(dataclass)}
     if bindable_fields is None:
         bindable_fields = field_names
     for field_name in bindable_fields:
@@ -276,12 +264,12 @@ def bindable_dataclass(cls: Optional[TC] = None, /, *,
     return dataclass
 
 
-def _make_copyable(cls: Type[T]) -> None:
+def _make_copyable(cls: type[T]) -> None:
     """Tell the copy module to update the ``bindable_properties`` dictionary when an object is copied."""
     if cls in copyreg.dispatch_table:
         return
 
-    def _pickle_function(obj: T) -> Tuple[Callable[..., T], Tuple[Any, ...]]:
+    def _pickle_function(obj: T) -> tuple[Callable[..., T], tuple[Any, ...]]:
         reduced = obj.__reduce__()
         assert isinstance(reduced, tuple)
         creator = reduced[0]

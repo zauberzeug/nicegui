@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Generic, List, Set, Type, TypeVar, Union
+from typing import TYPE_CHECKING, Generic, TypeVar
 
 from typing_extensions import Self
 
@@ -17,7 +17,7 @@ T = TypeVar('T', bound=Element)
 
 class UserInteraction(Generic[T]):
 
-    def __init__(self, user: User, elements: Set[T], target: Union[str, Type[T], None]) -> None:
+    def __init__(self, user: User, elements: set[T], target: str | type[T] | None) -> None:
         """Interaction object of the simulated user.
 
         This will be returned by the ``find`` method of the ``user`` fixture in pytests.
@@ -38,7 +38,7 @@ class UserInteraction(Generic[T]):
         with self.user.client:
             for element in self.elements:
                 if isinstance(element, ui.input) and event == 'keydown.tab':
-                    autocomplete: List[str] = element.props['_autocomplete']
+                    autocomplete: list[str] = element.props['_autocomplete']
                     for option in autocomplete:
                         if option.startswith(element.value):
                             element.value = option

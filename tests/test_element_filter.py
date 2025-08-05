@@ -1,4 +1,3 @@
-from typing import List
 
 import pytest
 
@@ -11,7 +10,7 @@ pytestmark = pytest.mark.usefixtures('user')
 # pylint: disable=missing-function-docstring
 
 
-def texts(element_filter: ElementFilter) -> List[str]:
+def texts(element_filter: ElementFilter) -> list[str]:
     return [element.text for element in element_filter]
 
 
@@ -22,7 +21,7 @@ def test_find_all() -> None:
         ui.button('button B')
         ui.label('label B')
 
-    elements: List[ui.element] = list(ElementFilter())
+    elements: list[ui.element] = list(ElementFilter())
     assert len(elements) == 8
     assert elements[0].tag == 'q-page-container'
     assert elements[1].tag == 'q-page'

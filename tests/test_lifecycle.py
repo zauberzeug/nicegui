@@ -1,5 +1,4 @@
 import asyncio
-from typing import List
 
 from nicegui import app, ui
 from nicegui.testing import Screen
@@ -33,7 +32,7 @@ def test_async_connect_handler(screen: Screen):
 
 
 def test_connect_disconnect_is_called_for_each_client(screen: Screen):
-    events: List[str] = []
+    events: list[str] = []
 
     @ui.page('/', reconnect_timeout=0)
     def page():
@@ -51,7 +50,7 @@ def test_connect_disconnect_is_called_for_each_client(screen: Screen):
 
 
 def test_startup_and_shutdown_handlers(screen: Screen):
-    events: List[str] = []
+    events: list[str] = []
 
     def startup():
         events.append('startup')

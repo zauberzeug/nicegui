@@ -6,7 +6,7 @@ import urllib
 from collections.abc import Awaitable, Iterator
 from enum import Enum
 from pathlib import Path
-from typing import Any, Callable, List, Optional, Union
+from typing import Any, Callable, Optional, Union
 
 from fastapi import FastAPI, HTTPException, Request, Response
 from fastapi.responses import FileResponse
@@ -41,11 +41,11 @@ class App(FastAPI):
         self._state: State = State.STOPPED
         self.config = AppConfig()
 
-        self._startup_handlers: List[Union[Callable[..., Any], Awaitable]] = []
-        self._shutdown_handlers: List[Union[Callable[..., Any], Awaitable]] = []
-        self._connect_handlers: List[Union[Callable[..., Any], Awaitable]] = []
-        self._disconnect_handlers: List[Union[Callable[..., Any], Awaitable]] = []
-        self._exception_handlers: List[Callable[..., Any]] = [log.exception]
+        self._startup_handlers: list[Union[Callable[..., Any], Awaitable]] = []
+        self._shutdown_handlers: list[Union[Callable[..., Any], Awaitable]] = []
+        self._connect_handlers: list[Union[Callable[..., Any], Awaitable]] = []
+        self._disconnect_handlers: list[Union[Callable[..., Any], Awaitable]] = []
+        self._exception_handlers: list[Callable[..., Any]] = [log.exception]
         self._page_exception_handler: Optional[Callable[..., Any]] = None
 
     @property

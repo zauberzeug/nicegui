@@ -1,6 +1,6 @@
 import asyncio
 from dataclasses import dataclass
-from typing import Any, Callable, Dict, List, Literal, Optional, Tuple, Union
+from typing import Any, Callable, Literal, Optional, Union
 
 from typing_extensions import Self
 
@@ -21,7 +21,7 @@ from .scene_object3d import Object3D
 @dataclass(**KWONLY_SLOTS)
 class SceneCamera:
     type: Literal['perspective', 'orthographic']
-    params: Dict[str, float]
+    params: dict[str, float]
     x: float = 0
     y: float = -3
     z: float = 5
@@ -74,10 +74,10 @@ class Scene(Element,
     def __init__(self,
                  width: int = 400,
                  height: int = 300,
-                 grid: Union[bool, Tuple[int, int]] = True,
+                 grid: Union[bool, tuple[int, int]] = True,
                  camera: Optional[SceneCamera] = None,
                  on_click: Optional[Handler[SceneClickEventArguments]] = None,
-                 click_events: List[str] = ['click', 'dblclick'],  # noqa: B006
+                 click_events: list[str] = ['click', 'dblclick'],  # noqa: B006
                  on_drag_start: Optional[Handler[SceneDragEventArguments]] = None,
                  on_drag_end: Optional[Handler[SceneDragEventArguments]] = None,
                  drag_constraints: str = '',
@@ -109,8 +109,8 @@ class Scene(Element,
         self.camera = camera or self.perspective_camera()
         self._props['camera_type'] = self.camera.type
         self._props['camera_params'] = self.camera.params
-        self.objects: Dict[str, Object3D] = {}
-        self.stack: List[Union[Object3D, SceneObject]] = [SceneObject()]
+        self.objects: dict[str, Object3D] = {}
+        self.stack: list[Union[Object3D, SceneObject]] = [SceneObject()]
         self._click_handlers = [on_click] if on_click else []
         self._props['click_events'] = click_events[:]
         self._drag_start_handlers = [on_drag_start] if on_drag_start else []
@@ -261,7 +261,7 @@ class Scene(Element,
                         self.camera.look_at_x, self.camera.look_at_y, self.camera.look_at_z,
                         self.camera.up_x, self.camera.up_y, self.camera.up_z, duration)
 
-    async def get_camera(self) -> Dict[str, Any]:
+    async def get_camera(self) -> dict[str, Any]:
         """Get the current camera parameters.
 
         In contrast to the `camera` property,

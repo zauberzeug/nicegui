@@ -1,6 +1,5 @@
 import os
 from functools import lru_cache
-from typing import List
 
 import markdown2
 from fastapi.responses import PlainTextResponse
@@ -13,7 +12,7 @@ class Markdown(ContentElement, component='markdown.js', default_classes='nicegui
 
     def __init__(self,
                  content: str = '', *,
-                 extras: List[str] = ['fenced-code-blocks', 'tables'],  # noqa: B006
+                 extras: list[str] = ['fenced-code-blocks', 'tables'],  # noqa: B006
                  ) -> None:
         """Markdown Element
 

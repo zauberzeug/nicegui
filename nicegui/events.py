@@ -9,10 +9,7 @@ from typing import (
     Any,
     BinaryIO,
     Callable,
-    Dict,
-    List,
     Literal,
-    Optional,
     TypeVar,
     Union,
     cast,
@@ -69,9 +66,9 @@ class EChartPointClickEventArguments(UiEventArguments):
     series_name: str
     name: str
     data_index: int
-    data: Union[float, int, str]
+    data: float | int | str
     data_type: str
-    value: Union[float, int, list]
+    value: float | int | list
 
 
 @dataclass(**KWONLY_SLOTS)
@@ -91,7 +88,7 @@ class SceneClickEventArguments(ClickEventArguments):
     ctrl: bool
     meta: bool
     shift: bool
-    hits: List[SceneClickHit]
+    hits: list[SceneClickHit]
 
 
 @dataclass(**KWONLY_SLOTS)
@@ -125,8 +122,8 @@ class MouseEventArguments(UiEventArguments):
 @dataclass(**KWONLY_SLOTS)
 class JoystickEventArguments(UiEventArguments):
     action: str
-    x: Optional[float] = None
-    y: Optional[float] = None
+    x: float | None = None
+    y: float | None = None
 
 
 @dataclass(**KWONLY_SLOTS)
@@ -138,9 +135,9 @@ class UploadEventArguments(UiEventArguments):
 
 @dataclass(**KWONLY_SLOTS)
 class MultiUploadEventArguments(UiEventArguments):
-    contents: List[BinaryIO]
-    names: List[str]
-    types: List[str]
+    contents: list[BinaryIO]
+    names: list[str]
+    types: list[str]
 
 
 @dataclass(**KWONLY_SLOTS)
@@ -150,7 +147,7 @@ class ValueChangeEventArguments(UiEventArguments):
 
 @dataclass(**KWONLY_SLOTS)
 class TableSelectionEventArguments(UiEventArguments):
-    selection: List[Any]
+    selection: list[Any]
 
 
 @dataclass(**KWONLY_SLOTS)
@@ -196,7 +193,7 @@ class KeyboardKey:
         return self.code.startswith('Arrow')
 
     @property
-    def number(self) -> Optional[int]:
+    def number(self) -> int | None:
         """Integer value of a number key."""
         return int(self.code[len('Digit'):]) if self.code.startswith('Digit') else None
 
@@ -392,20 +389,20 @@ class ScrollEventArguments(UiEventArguments):
 
 @dataclass(**KWONLY_SLOTS)
 class JsonEditorSelectEventArguments(UiEventArguments):
-    selection: Dict
+    selection: dict
 
 
 @dataclass(**KWONLY_SLOTS)
 class JsonEditorChangeEventArguments(UiEventArguments):
-    content: Dict
-    errors: Dict
+    content: dict
+    errors: dict
 
 
 EventT = TypeVar('EventT', bound=EventArguments)
 Handler = Union[Callable[[EventT], Any], Callable[[], Any]]
 
 
-def handle_event(handler: Optional[Handler[EventT]], arguments: EventT) -> None:
+def handle_event(handler: Handler[EventT] | None, arguments: EventT) -> None:
     """Call the given event handler.
 
     The handler is called within the context of the parent slot of the sender.
@@ -419,7 +416,7 @@ def handle_event(handler: Optional[Handler[EventT]], arguments: EventT) -> None:
     if handler is None:
         return
     try:
-        parent_slot: Union[Slot, nullcontext]
+        parent_slot: Slot | nullcontext
         if isinstance(arguments, UiEventArguments):
             parent_slot = arguments.sender.parent_slot or arguments.sender.client.layout.default_slot
         else:

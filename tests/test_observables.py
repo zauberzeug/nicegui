@@ -1,6 +1,5 @@
 import asyncio
 import copy
-import sys
 
 from nicegui import ui
 from nicegui.observables import ObservableDict, ObservableList, ObservableSet
@@ -43,9 +42,8 @@ def test_observable_dict():
     assert count == 6
     data.setdefault('a', 1)
     assert count == 7
-    if sys.version_info >= (3, 9):
-        data |= {'b': 2}
-        assert count == 8
+    data |= {'b': 2}
+    assert count == 8
 
 
 def test_observable_list():

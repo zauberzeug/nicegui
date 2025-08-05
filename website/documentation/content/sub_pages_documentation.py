@@ -6,7 +6,7 @@ from . import doc
 
 class FakeSubPages(ui.column):
 
-    def __init__(self, routes: Dict[str, Callable], *, data: Dict[str, Any] = {}) -> None:
+    def __init__(self, routes: dict[str, Callable], *, data: dict[str, Any] = {}) -> None:
         super().__init__()
         self.routes = routes
         self.data = data

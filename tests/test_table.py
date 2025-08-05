@@ -1,6 +1,4 @@
-import sys
 from datetime import datetime, timedelta, timezone
-from typing import List
 
 import pandas as pd
 import polars as pl
@@ -11,14 +9,14 @@ from nicegui import ui
 from nicegui.testing import Screen
 
 
-def columns() -> List:
+def columns() -> list:
     return [
         {'name': 'name', 'label': 'Name', 'field': 'name', 'required': True},
         {'name': 'age', 'label': 'Age', 'field': 'age', 'sortable': True},
     ]
 
 
-def rows() -> List:
+def rows() -> list:
     return [
         {'id': 0, 'name': 'Alice', 'age': 18},
         {'id': 1, 'name': 'Bob', 'age': 21},

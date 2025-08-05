@@ -3,7 +3,7 @@ from __future__ import annotations
 import uuid
 from abc import abstractmethod
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, Any, ClassVar, Optional
+from typing import TYPE_CHECKING, Any, ClassVar
 
 from ..awaitable_response import AwaitableResponse
 from ..dataclasses import KWONLY_SLOTS
@@ -14,7 +14,7 @@ if TYPE_CHECKING:
 
 @dataclass(**KWONLY_SLOTS)
 class Layer:
-    current_leaflet: ClassVar[Optional[Leaflet]] = None
+    current_leaflet: ClassVar[Leaflet | None] = None
     leaflet: Leaflet = field(init=False)
     id: str = field(init=False)
 

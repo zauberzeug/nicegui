@@ -2,7 +2,6 @@ import os
 import shutil
 from collections.abc import Generator
 from pathlib import Path
-from typing import Dict
 
 import pytest
 from selenium import webdriver
@@ -40,7 +39,7 @@ def nicegui_chrome_options(chrome_options: webdriver.ChromeOptions) -> webdriver
 
 
 @pytest.fixture
-def capabilities(capabilities: Dict) -> Dict:
+def capabilities(capabilities: dict) -> dict:
     """Configure the Chrome driver capabilities."""
     capabilities['goog:loggingPrefs'] = {'browser': 'ALL'}
     return capabilities

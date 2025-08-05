@@ -1,5 +1,5 @@
 import asyncio
-from typing import List, Optional
+from typing import Optional
 
 import pytest
 
@@ -916,7 +916,7 @@ def test_only_rebuild_page_when_builder_depends_on_it(screen: Screen, strategy: 
 
 
 def test_on_path_changed_event(screen: Screen):
-    paths: List[str] = []
+    paths: list[str] = []
     calls = {'index': 0, 'main': 0, 'other': 0}
 
     @ui.page('/')

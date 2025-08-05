@@ -4,14 +4,14 @@ from __future__ import annotations
 import asyncio
 import weakref
 from collections.abc import Awaitable, Coroutine
-from typing import Any, Callable, Dict, Set, TypeVar
+from typing import Any, Callable, TypeVar
 
 from . import core
 from .logging import log
 
-running_tasks: Set[asyncio.Task] = set()
-lazy_tasks_running: Dict[str, asyncio.Task] = {}
-lazy_coroutines_waiting: Dict[str, Coroutine[Any, Any, Any]] = {}
+running_tasks: set[asyncio.Task] = set()
+lazy_tasks_running: dict[str, asyncio.Task] = {}
+lazy_coroutines_waiting: dict[str, Coroutine[Any, Any, Any]] = {}
 functions_awaited_on_shutdown: weakref.WeakSet[Callable] = weakref.WeakSet()
 
 

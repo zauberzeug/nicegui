@@ -2,15 +2,14 @@
 """Pins version of dependencies in npm.json according to package.json"""
 import json
 from pathlib import Path
-from typing import Dict, Set
 
 PATH = Path(__file__).parent
 NPM_FILE = PATH / 'npm.json'
 PACKAGE_FILE = PATH / 'package.json'
 
-npm: Dict[str, Dict] = json.loads(NPM_FILE.read_text(encoding='utf-8'))
-package: Dict[str, Dict] = json.loads(PACKAGE_FILE.read_text(encoding='utf-8'))
-npm_pinned_entries: Set[str] = set()
+npm: dict[str, dict] = json.loads(NPM_FILE.read_text(encoding='utf-8'))
+package: dict[str, dict] = json.loads(PACKAGE_FILE.read_text(encoding='utf-8'))
+npm_pinned_entries: set[str] = set()
 
 for package_name, package_version in package['dependencies'].items():
     stripped_version = package_version.strip('^~')

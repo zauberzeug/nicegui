@@ -1,4 +1,3 @@
-from typing import List
 
 from nicegui import ui
 from nicegui.testing import Screen
@@ -14,7 +13,7 @@ def test_query_body(screen: Screen):
     ui.button('Data X = 1', on_click=lambda: ui.query('body').props('data-x=1'))
     ui.button('Data X = 2', on_click=lambda: ui.query('body').props('data-x=2'))
 
-    def get_bg_classes() -> List[str]:
+    def get_bg_classes() -> list[str]:
         return [c for c in (screen.find_by_tag('body').get_attribute('class') or '').split() if c.startswith('bg-')]
 
     screen.open('/')

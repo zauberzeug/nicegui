@@ -1,5 +1,5 @@
 import weakref
-from typing import TYPE_CHECKING, Generic, List, Optional, TypeVar
+from typing import TYPE_CHECKING, Generic, Optional, TypeVar
 
 if TYPE_CHECKING:
     from .element import Element
@@ -46,11 +46,11 @@ class Classes(list, Generic[T]):
         return element
 
     @staticmethod
-    def update_list(classes: List[str],
+    def update_list(classes: list[str],
                     add: Optional[str] = None,
                     remove: Optional[str] = None,
                     toggle: Optional[str] = None,
-                    replace: Optional[str] = None) -> List[str]:
+                    replace: Optional[str] = None) -> list[str]:
         """Update a list of classes."""
         class_list = classes if replace is None else []
         class_list = [c for c in class_list if c not in (remove or '').split()]

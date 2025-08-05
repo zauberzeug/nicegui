@@ -2,7 +2,6 @@
 import re
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import List
 
 import httpx
 from bs4 import BeautifulSoup
@@ -12,8 +11,8 @@ from bs4 import BeautifulSoup
 class Property:
     title: str
     description: str
-    members: List[str]
-    short_members: List[str] = field(init=False)
+    members: list[str]
+    short_members: list[str] = field(init=False)
     common_prefix: str = field(init=False)
 
     def __post_init__(self) -> None:
@@ -61,9 +60,9 @@ def get_soup(url: str) -> BeautifulSoup:
     return BeautifulSoup(html, 'html.parser')
 
 
-def collect_properties() -> List[Property]:
+def collect_properties() -> list[Property]:
     """Collect all Tailwind properties from the documentation."""
-    properties: List[Property] = []
+    properties: list[Property] = []
     soup = get_soup('https://tailwindcss.com/docs')
     for li in soup.select('li[class="mt-12 lg:mt-8"]'):
         title = li.select_one('h5').text
@@ -81,7 +80,7 @@ def collect_properties() -> List[Property]:
     return properties
 
 
-def generate_type_files(properties: List[Property]) -> None:
+def generate_type_files(properties: list[Property]) -> None:
     """Generate the type files for the Tailwind properties."""
     for file in (Path(__file__).parent / 'nicegui' / 'tailwind_types').glob('*.py'):
         file.unlink()
@@ -99,7 +98,7 @@ def generate_type_files(properties: List[Property]) -> None:
             f.write(']\n')
 
 
-def generate_tailwind_file(properties: List[Property]) -> None:
+def generate_tailwind_file(properties: list[Property]) -> None:
     """Generate the tailwind.py file."""
     with (Path(__file__).parent / 'nicegui' / 'tailwind.py').open('w', encoding='utf-8') as f:
         f.write('# pylint: disable=too-many-lines\n')

@@ -2,7 +2,7 @@
 import inspect
 import warnings
 from multiprocessing import Queue
-from typing import Any, Callable, Optional, Tuple
+from typing import Any, Callable, Optional
 
 from .. import run
 from ..logging import log
@@ -51,11 +51,11 @@ try:
             """Set whether the window is always on top."""
             self._send(on_top)
 
-        async def get_size(self) -> Tuple[int, int]:
+        async def get_size(self) -> tuple[int, int]:
             """Get the window size as tuple (width, height)."""
             return await self._request()
 
-        async def get_position(self) -> Tuple[int, int]:
+        async def get_position(self) -> tuple[int, int]:
             """Get the window position as tuple (x, y)."""
             return await self._request()
 
@@ -127,8 +127,8 @@ try:
             directory: str = '',
             allow_multiple: bool = False,
             save_filename: str = '',
-            file_types: Tuple[str, ...] = (),
-        ) -> Optional[Tuple[str, ...]]:
+            file_types: tuple[str, ...] = (),
+        ) -> Optional[tuple[str, ...]]:
             return await self._request(
                 dialog_type=dialog_type,
                 directory=directory,

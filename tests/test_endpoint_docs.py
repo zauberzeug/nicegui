@@ -1,4 +1,3 @@
-from typing import Set
 
 import httpx
 import pytest
@@ -12,7 +11,7 @@ def activate_fastapi_docs(screen: Screen):
     screen.ui_run_kwargs['fastapi_docs'] = True
 
 
-def get_openapi_paths() -> Set[str]:
+def get_openapi_paths() -> set[str]:
     return set(httpx.get(f'http://localhost:{Screen.PORT}/openapi.json', timeout=5).json()['paths'])
 
 

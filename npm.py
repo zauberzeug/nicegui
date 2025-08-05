@@ -18,7 +18,6 @@ import tarfile
 import tempfile
 from argparse import ArgumentParser
 from pathlib import Path
-from typing import Dict, List
 
 import httpx
 
@@ -68,7 +67,7 @@ KNOWN_LICENSES = {
 # Create a hidden folder to work in.
 tmp = cleanup(root_path / '.npm')
 
-dependencies: Dict[str, dict] = json.loads((root_path / 'npm.json').read_text(encoding='utf-8'))
+dependencies: dict[str, dict] = json.loads((root_path / 'npm.json').read_text(encoding='utf-8'))
 for key, dependency in dependencies.items():
     if names is not None and key not in names:
         continue
@@ -108,7 +107,7 @@ for key, dependency in dependencies.items():
     tgz_download = download_buffered(npm_tarball)
     shutil.copyfile(tgz_download, tgz_file)
     with tarfile.open(tgz_file) as archive:
-        to_be_extracted: List[tarfile.TarInfo] = []
+        to_be_extracted: list[tarfile.TarInfo] = []
         for tarinfo in archive.getmembers():
             for keep in dependency['keep']:
                 if re.match(f'^{keep}$', tarinfo.name):

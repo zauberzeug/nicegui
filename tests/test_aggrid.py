@@ -1,6 +1,4 @@
-import sys
 from datetime import datetime, timedelta, timezone
-from typing import List
 
 import pandas as pd
 import polars as pl
@@ -257,7 +255,7 @@ def test_run_method_with_function(screen: Screen):
 
 
 def test_get_client_data(screen: Screen):
-    data: List = []
+    data: list = []
 
     @ui.page('/')
     def page():

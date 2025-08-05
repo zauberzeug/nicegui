@@ -3,7 +3,7 @@ import mimetypes
 import urllib.parse
 from contextlib import asynccontextmanager
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any
 
 import socketio
 from fastapi import HTTPException, Request
@@ -162,7 +162,7 @@ async def _exception_handler_500(request: Request, exception: Exception) -> Resp
 
 
 @sio.on('handshake')
-async def _on_handshake(sid: str, data: Dict[str, Any]) -> bool:
+async def _on_handshake(sid: str, data: dict[str, Any]) -> bool:
     client = Client.instances.get(data['client_id'])
     if not client:
         return False
@@ -191,7 +191,7 @@ def _on_disconnect(sid: str) -> None:
 
 
 @sio.on('event')
-def _on_event(_: str, msg: Dict) -> None:
+def _on_event(_: str, msg: dict) -> None:
     client = Client.instances.get(msg['client_id'])
     if not client or not client.has_socket_connection:
         return
@@ -199,7 +199,7 @@ def _on_event(_: str, msg: Dict) -> None:
 
 
 @sio.on('javascript_response')
-def _on_javascript_response(_: str, msg: Dict) -> None:
+def _on_javascript_response(_: str, msg: dict) -> None:
     client = Client.instances.get(msg['client_id'])
     if not client:
         return
@@ -207,7 +207,7 @@ def _on_javascript_response(_: str, msg: Dict) -> None:
 
 
 @sio.on('ack')
-def _on_ack(_: str, msg: Dict) -> None:
+def _on_ack(_: str, msg: dict) -> None:
     client = Client.instances.get(msg['client_id'])
     if not client:
         return

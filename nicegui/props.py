@@ -1,7 +1,7 @@
 import ast
 import re
 import weakref
-from typing import TYPE_CHECKING, Any, Dict, Generic, Optional, TypeVar
+from typing import TYPE_CHECKING, Any, Generic, Optional, TypeVar
 
 from . import helpers
 
@@ -42,7 +42,7 @@ class Props(dict, Generic[T]):
     def __init__(self, *args, element: T, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self._element = weakref.ref(element)
-        self._warnings: Dict[str, str] = {}
+        self._warnings: dict[str, str] = {}
 
     @property
     def element(self) -> T:
@@ -88,7 +88,7 @@ class Props(dict, Generic[T]):
         return element
 
     @staticmethod
-    def parse(text: Optional[str]) -> Dict[str, Any]:
+    def parse(text: Optional[str]) -> dict[str, Any]:
         """Parse a string of props into a dictionary."""
         dictionary = {}
         for match in PROPS_PATTERN.finditer(text or ''):

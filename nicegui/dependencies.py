@@ -4,7 +4,7 @@ import functools
 from collections.abc import Iterable
 from dataclasses import dataclass
 from pathlib import Path
-from typing import TYPE_CHECKING, Callable, Dict, List, Optional, Set, Tuple
+from typing import TYPE_CHECKING, Callable
 
 import vbuild
 
@@ -60,14 +60,14 @@ class Library:
     expose: bool
 
 
-vue_components: Dict[str, VueComponent] = {}
-js_components: Dict[str, JsComponent] = {}
-libraries: Dict[str, Library] = {}
-resources: Dict[str, Resource] = {}
-dynamic_resources: Dict[str, DynamicResource] = {}
+vue_components: dict[str, VueComponent] = {}
+js_components: dict[str, JsComponent] = {}
+libraries: dict[str, Library] = {}
+resources: dict[str, Resource] = {}
+dynamic_resources: dict[str, DynamicResource] = {}
 
 
-def register_vue_component(path: Path, *, max_time: Optional[float]) -> Component:
+def register_vue_component(path: Path, *, max_time: float | None) -> Component:
     """Register a .vue or .js Vue component.
 
     Single-file components (.vue) are built right away
@@ -92,7 +92,7 @@ def register_vue_component(path: Path, *, max_time: Optional[float]) -> Componen
     raise ValueError(f'Unsupported component type "{path.suffix}"')
 
 
-def register_library(path: Path, *, expose: bool = False, max_time: Optional[float]) -> Library:
+def register_library(path: Path, *, expose: bool = False, max_time: float | None) -> Library:
     """Register a *.js library."""
     key = compute_key(path, max_time=max_time)
     name = _get_name(path)
@@ -105,7 +105,7 @@ def register_library(path: Path, *, expose: bool = False, max_time: Optional[flo
     raise ValueError(f'Unsupported library type "{path.suffix}"')
 
 
-def register_resource(path: Path, *, max_time: Optional[float]) -> Resource:
+def register_resource(path: Path, *, max_time: float | None) -> Resource:
     """Register a resource."""
     key = compute_key(path, max_time=max_time)
     if key in resources and resources[key].path == path:
@@ -121,8 +121,8 @@ def register_dynamic_resource(name: str, function: Callable) -> DynamicResource:
     return dynamic_resources[name]
 
 
-@functools.lru_cache(maxsize=None)
-def compute_key(path: Path, *, max_time: Optional[float]) -> str:
+@functools.cache
+def compute_key(path: Path, *, max_time: float | None) -> str:
     """Compute a key for a given path using a hash function.
 
     If the path is relative to the NiceGUI base directory, the key is computed from the relative path.
@@ -141,21 +141,21 @@ def _get_name(path: Path) -> str:
     return path.name.split('.', 1)[0]
 
 
-def generate_resources(prefix: str, elements: Iterable[Element]) -> Tuple[List[str],
-                                                                          List[str],
-                                                                          List[str],
-                                                                          Dict[str, str],
-                                                                          List[str],
-                                                                          List[str]]:
+def generate_resources(prefix: str, elements: Iterable[Element]) -> tuple[list[str],
+                                                                          list[str],
+                                                                          list[str],
+                                                                          dict[str, str],
+                                                                          list[str],
+                                                                          list[str]]:
     """Generate the resources required by the elements to be sent to the client."""
-    done_libraries: Set[str] = set()
-    done_components: Set[str] = set()
-    vue_scripts: List[str] = []
-    vue_html: List[str] = []
-    vue_styles: List[str] = []
-    imports: Dict[str, str] = {}
-    js_imports: List[str] = []
-    js_imports_urls: List[str] = []
+    done_libraries: set[str] = set()
+    done_components: set[str] = set()
+    vue_scripts: list[str] = []
+    vue_html: list[str] = []
+    vue_styles: list[str] = []
+    imports: dict[str, str] = {}
+    js_imports: list[str] = []
+    js_imports_urls: list[str] = []
 
     # build the importmap structure for exposed libraries
     for key, library in libraries.items():

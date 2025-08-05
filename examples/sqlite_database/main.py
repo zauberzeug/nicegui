@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-from typing import List
 
 import models
 from tortoise import Tortoise
@@ -25,7 +24,7 @@ async def list_of_users() -> None:
         await user.delete()
         list_of_users.refresh()
 
-    users: List[models.User] = await models.User.all()
+    users: list[models.User] = await models.User.all()
     for user in reversed(users):
         with ui.card():
             with ui.row().classes('items-center'):

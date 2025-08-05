@@ -5,7 +5,7 @@ import time
 from collections.abc import Generator
 from contextlib import contextmanager
 from pathlib import Path
-from typing import Callable, List, Optional, Union, overload
+from typing import Callable, Optional, Union, overload
 from urllib.parse import urlparse
 
 import pytest
@@ -200,7 +200,7 @@ class Screen:
         except NoSuchElementException as e:
             raise AssertionError(f'Could not find "{text}"') from e
 
-    def find_all(self, text: str) -> List[WebElement]:
+    def find_all(self, text: str) -> list[WebElement]:
         """Find all elements containing the given text."""
         query = f'//*[not(self::script) and not(self::style) and text()[contains(., "{text}")]]'
         return self.selenium.find_elements(By.XPATH, query)
@@ -213,7 +213,7 @@ class Screen:
         """Find the element with the given CSS class."""
         return self.selenium.find_element(By.CLASS_NAME, name)
 
-    def find_all_by_class(self, name: str) -> List[WebElement]:
+    def find_all_by_class(self, name: str) -> list[WebElement]:
         """Find all elements with the given CSS class."""
         return self.selenium.find_elements(By.CLASS_NAME, name)
 
@@ -221,7 +221,7 @@ class Screen:
         """Find the element with the given HTML tag."""
         return self.selenium.find_element(By.TAG_NAME, name)
 
-    def find_all_by_tag(self, name: str) -> List[WebElement]:
+    def find_all_by_tag(self, name: str) -> list[WebElement]:
         """Find all elements with the given HTML tag."""
         return self.selenium.find_elements(By.TAG_NAME, name)
 
