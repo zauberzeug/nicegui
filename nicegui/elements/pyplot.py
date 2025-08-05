@@ -111,4 +111,4 @@ class Matplotlib(Element, default_classes='nicegui-matplotlib'):
             return
         with self._no_update():
             self._convert_to_html()
-        return super().update()
+        super().update()
