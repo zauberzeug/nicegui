@@ -3,23 +3,9 @@ from __future__ import annotations
 import inspect
 import re
 import weakref
-from contextlib import contextmanager
 from copy import copy
 from pathlib import Path
-from typing import (
-    TYPE_CHECKING,
-    Any,
-    Callable,
-    ClassVar,
-    Dict,
-    Generator,
-    Iterator,
-    List,
-    Optional,
-    Sequence,
-    Union,
-    cast,
-)
+from typing import TYPE_CHECKING, Any, Callable, ClassVar, Dict, Iterator, List, Optional, Sequence, Union, cast
 
 from typing_extensions import Self
 
@@ -87,7 +73,6 @@ class Element(Visibility):
         self.slots: Dict[str, Slot] = {}
         self.default_slot = self.add_slot('default')
         self._update_method: Optional[str] = None
-        self._updating: bool = True
         self._deleted: bool = False
 
         client.elements[self.id] = self
@@ -435,19 +420,7 @@ class Element(Visibility):
         """Update the element on the client side."""
         if self.is_deleted:
             return
-        if not self._updating:
-            return
         self.client.outbox.enqueue_update(self)
-
-    @contextmanager
-    def _no_update(self) -> Generator[None, None, None]:
-        """Temporarily disable updates for the element."""
-        was_updating = self._updating
-        self._updating = False
-        try:
-            yield
-        finally:
-            self._updating = was_updating
 
     def run_method(self, name: str, *args: Any, timeout: float = 1) -> AwaitableResponse:
         """Run a method on the client side.
