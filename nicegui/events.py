@@ -181,8 +181,11 @@ class KeyboardKey:
         if isinstance(other, str):
             return other in {self.name, self.code}
         if isinstance(other, KeyboardKey):
-            return self == other
+            return (self.name, self.code, self.location) == (other.name, other.code, other.location)
         return False
+
+    def __hash__(self) -> int:
+        return hash((self.name, self.code, self.location))
 
     def __repr__(self):
         return str(self.name)

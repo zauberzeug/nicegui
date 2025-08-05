@@ -90,7 +90,7 @@ class Props(dict, Generic[T]):
     @staticmethod
     def parse(text: Optional[str]) -> dict[str, Any]:
         """Parse a string of props into a dictionary."""
-        dictionary = {}
+        dictionary: dict[str, Any] = {}
         for match in PROPS_PATTERN.finditer(text or ''):
             key = match.group(1)
             value = match.group(2) or match.group(3) or match.group(4)

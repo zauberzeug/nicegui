@@ -152,8 +152,7 @@ fixable = [
 ]
 ignore = [
     "E501", # line too long
-    "UP006", # use pipe for union type annotation
-    "UP007", # use pipe for union type annotation
+    "PLC0415", # import outside top level
     "PLR0911", # too many return statements
     "PLR0912", # too many branches
     "PLR0913", # too many arguments
@@ -181,6 +180,7 @@ disable = [
     "R0913", # Too many arguments
     "R0914", # Too many local variables
     "R0915", # Too many statements
+    "R0917", # Too many positional arguments
     "R1705", # Unnecessary "else" after "return"
     "W0102", # Dangerous default value as argument
     "W0718", # Catching too general exception
