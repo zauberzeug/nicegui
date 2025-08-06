@@ -206,3 +206,15 @@ def test_delegated_event_with_argument_filtering(screen: Screen) -> None:
     screen.click('Item B')
     screen.click('Item C')
     assert ids == ['A', 'B', 'C']
+
+
+def test_value_change_event_arguments(screen: Screen):
+    events = []
+    ui.checkbox('Checkbox', on_change=lambda e: events.append((e.value, e.previous_value)))
+
+    screen.open('/')
+    screen.click('Checkbox')
+    assert events == [(True, False)]
+
+    screen.click('Checkbox')
+    assert events == [(True, False), (False, True)]
