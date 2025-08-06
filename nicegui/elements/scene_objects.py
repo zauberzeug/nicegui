@@ -1,5 +1,5 @@
 import math
-from typing import List, Optional
+from typing import Optional
 
 from .scene_object3d import Object3D
 
@@ -113,9 +113,9 @@ class Ring(Object3D):
 class QuadraticBezierTube(Object3D):
 
     def __init__(self,
-                 start: List[float],
-                 mid: List[float],
-                 end: List[float],
+                 start: list[float],
+                 mid: list[float],
+                 end: list[float],
                  tubular_segments: int = 64,
                  radius: float = 1.0,
                  radial_segments: int = 8,
@@ -143,7 +143,7 @@ class QuadraticBezierTube(Object3D):
 class Extrusion(Object3D):
 
     def __init__(self,
-                 outline: List[List[float]],
+                 outline: list[list[float]],
                  height: float,
                  wireframe: bool = False,
                  ) -> None:
@@ -192,8 +192,8 @@ class Gltf(Object3D):
 class Line(Object3D):
 
     def __init__(self,
-                 start: List[float],
-                 end: List[float],
+                 start: list[float],
+                 end: list[float],
                  ) -> None:
         """Line
 
@@ -209,10 +209,10 @@ class Line(Object3D):
 class Curve(Object3D):
 
     def __init__(self,
-                 start: List[float],
-                 control1: List[float],
-                 control2: List[float],
-                 end: List[float],
+                 start: list[float],
+                 control1: list[float],
+                 control2: list[float],
+                 end: list[float],
                  num_points: int = 20,
                  ) -> None:
         """Curve
@@ -266,7 +266,7 @@ class Texture(Object3D):
 
     def __init__(self,
                  url: str,
-                 coordinates: List[List[Optional[List[float]]]],
+                 coordinates: list[list[Optional[list[float]]]],
                  ) -> None:
         """Texture
 
@@ -282,7 +282,7 @@ class Texture(Object3D):
         self.args[0] = url
         self.scene.run_method('set_texture_url', self.id, url)
 
-    def set_coordinates(self, coordinates: List[List[Optional[List[float]]]]) -> None:
+    def set_coordinates(self, coordinates: list[list[Optional[list[float]]]]) -> None:
         """Change the texture coordinates."""
         self.args[1] = coordinates
         self.scene.run_method('set_texture_coordinates', self.id, coordinates)
@@ -316,8 +316,8 @@ class SpotLight(Object3D):
 class PointCloud(Object3D):
 
     def __init__(self,
-                 points: List[List[float]],
-                 colors: Optional[List[List[float]]] = None,
+                 points: list[list[float]],
+                 colors: Optional[list[list[float]]] = None,
                  point_size: float = 1.0,
                  ) -> None:
         """Point Cloud
@@ -332,7 +332,7 @@ class PointCloud(Object3D):
         if colors is not None:
             self.material(color=None)
 
-    def set_points(self, points: List[List[float]], colors: Optional[List[List[float]]] = None) -> None:
+    def set_points(self, points: list[list[float]], colors: Optional[list[list[float]]] = None) -> None:
         """Change the points and colors of the point cloud."""
         self.args[0] = points
         self.args[1] = colors

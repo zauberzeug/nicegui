@@ -1,5 +1,5 @@
 import weakref
-from typing import Dict, Optional
+from typing import Optional
 
 import pytest
 from selenium.webdriver.common.by import By
@@ -50,7 +50,7 @@ def test_classes(screen: Screen):
     ('transform: translate(120.0px, 50%)', {'transform': 'translate(120.0px, 50%)'}),
     ('box-shadow: 0 0 0.5em #1976d2', {'box-shadow': '0 0 0.5em #1976d2'}),
 ])
-def test_style_parsing(value: Optional[str], expected: Dict[str, str]):
+def test_style_parsing(value: Optional[str], expected: dict[str, str]):
     assert Style.parse(value) == expected
 
 
@@ -77,7 +77,7 @@ def test_style_parsing(value: Optional[str], expected: Dict[str, str]):
     ("""input-style='{ myquote: "quote" }'""", {'input-style': '{ myquote: "quote" }'}),
     ('filename=foo=bar.txt', {'filename': 'foo=bar.txt'}),
 ])
-def test_props_parsing(value: Optional[str], expected: Dict[str, str]):
+def test_props_parsing(value: Optional[str], expected: dict[str, str]):
     assert Props.parse(value) == expected
 
 

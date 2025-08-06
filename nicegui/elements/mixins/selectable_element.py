@@ -1,4 +1,4 @@
-from typing import Any, Callable, List, Optional, cast
+from typing import Any, Callable, Optional, cast
 
 from typing_extensions import Self
 
@@ -27,7 +27,7 @@ class SelectableElement(Element):
         self.set_selected(selected)
         self.on('update:selected', lambda e: self.set_selected(e.args))
 
-        self._selection_change_handlers: List[Handler[ValueChangeEventArguments]] = []
+        self._selection_change_handlers: list[Handler[ValueChangeEventArguments]] = []
         if on_selection_change:
             self.on_selection_change(on_selection_change)
 

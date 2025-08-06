@@ -2,7 +2,6 @@
 import re
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import List
 
 import httpx
 from bs4 import BeautifulSoup
@@ -12,8 +11,8 @@ from bs4 import BeautifulSoup
 class Property:
     title: str
     description: str
-    members: List[str]
-    short_members: List[str] = field(init=False)
+    members: list[str]
+    short_members: list[str] = field(init=False)
     common_prefix: str = field(init=False)
 
     def __post_init__(self) -> None:
@@ -61,9 +60,9 @@ def get_soup(url: str) -> BeautifulSoup:
     return BeautifulSoup(html, 'html.parser')
 
 
-def collect_properties() -> List[Property]:
+def collect_properties() -> list[Property]:
     """Collect all Tailwind properties from the documentation."""
-    properties: List[Property] = []
+    properties: list[Property] = []
     soup = get_soup('https://tailwindcss.com/docs')
     for li in soup.select('li[class="mt-12 lg:mt-8"]'):
         title = li.select_one('h5').text
@@ -81,7 +80,7 @@ def collect_properties() -> List[Property]:
     return properties
 
 
-def generate_type_files(properties: List[Property]) -> None:
+def generate_type_files(properties: list[Property]) -> None:
     """Generate the type files for the Tailwind properties."""
     for file in (Path(__file__).parent / 'nicegui' / 'tailwind_types').glob('*.py'):
         file.unlink()
@@ -99,14 +98,14 @@ def generate_type_files(properties: List[Property]) -> None:
             f.write(']\n')
 
 
-def generate_tailwind_file(properties: List[Property]) -> None:
+def generate_tailwind_file(properties: list[Property]) -> None:
     """Generate the tailwind.py file."""
     with (Path(__file__).parent / 'nicegui' / 'tailwind.py').open('w', encoding='utf-8') as f:
         f.write('# pylint: disable=too-many-lines\n')
         f.write('from __future__ import annotations\n')
         f.write('\n')
         f.write('import weakref\n')
-        f.write('from typing import TYPE_CHECKING, List, Optional, Union, overload\n')
+        f.write('from typing import TYPE_CHECKING, overload\n')
         f.write('\n')
         f.write('if TYPE_CHECKING:\n')
         f.write('    from .element import Element\n')
@@ -119,7 +118,7 @@ def generate_tailwind_file(properties: List[Property]) -> None:
         f.write('class PseudoElement:\n')
         f.write('\n')
         f.write('    def __init__(self) -> None:\n')
-        f.write('        self._classes: List[str] = []\n')
+        f.write('        self._classes: list[str] = []\n')
         f.write('\n')
         f.write('    def classes(self, add: str) -> None:\n')
         f.write('        """Add the given classes to the element."""\n')
@@ -128,13 +127,13 @@ def generate_tailwind_file(properties: List[Property]) -> None:
         f.write('\n')
         f.write('class Tailwind:\n')
         f.write('\n')
-        f.write('    def __init__(self, _element: Optional[Element] = None) -> None:\n')
+        f.write('    def __init__(self, _element: Element | None = None) -> None:\n')
         f.write(
-            '        self._element: Union[PseudoElement, weakref.ref[Element]] = \\\n')
+            '        self._element: PseudoElement | weakref.ref[Element] = \\\n')
         f.write('            PseudoElement() if _element is None else weakref.ref(_element)\n')
         f.write('\n')
         f.write('    @property\n')
-        f.write('    def element(self) -> Union[PseudoElement, Element]:\n')
+        f.write('    def element(self) -> PseudoElement | Element:\n')
         f.write('        """The element or pseudo element this Tailwind object belongs to."""\n')
         f.write('        element = self._element if isinstance(self._element, PseudoElement) else self._element()\n')
         f.write('        if element is None:\n')

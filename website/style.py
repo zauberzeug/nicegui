@@ -1,5 +1,5 @@
 import re
-from typing import List, Optional
+from typing import Optional
 
 from nicegui import ui
 
@@ -46,7 +46,7 @@ def example_link(example: Example) -> None:
         ui.markdown(example.description).classes(replace='bold-links arrow-links')
 
 
-def features(icon: str, title_: str, items: List[str]) -> None:
+def features(icon: str, title_: str, items: list[str]) -> None:
     """Render a list of features."""
     with ui.column().classes('gap-1'):
         ui.icon(icon).classes('max-sm:hidden text-3xl md:text-5xl mb-3 text-primary opacity-80')

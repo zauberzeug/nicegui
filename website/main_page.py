@@ -133,7 +133,7 @@ def create() -> None:
                 'generic [Vue](https://vuejs.org/) to Python bridge',
                 'dynamic GUI through [Quasar](https://quasar.dev/)',
                 'content is served with [FastAPI](https://fastapi.tiangolo.com/)',
-                'Python 3.8+',
+                'Python 3.9+',
             ])
 
     with ui.column().classes('w-full p-8 lg:p-16 max-w-[1600px] mx-auto'):

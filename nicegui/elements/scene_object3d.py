@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import math
 import uuid
-from typing import TYPE_CHECKING, Any, List, Literal, Optional, Union
+from typing import TYPE_CHECKING, Any, Literal
 
 from typing_extensions import Self
 
@@ -11,18 +11,18 @@ if TYPE_CHECKING:
 
 
 class Object3D:
-    current_scene: Optional[Scene] = None
+    current_scene: Scene | None = None
 
     def __init__(self, type_: str, *args: Any) -> None:
         self.type = type_
         self.id = str(uuid.uuid4())
-        self.name: Optional[str] = None
+        self.name: str | None = None
         assert self.current_scene is not None
         self.scene: Scene = self.current_scene
         self.scene.objects[self.id] = self
-        self.parent: Union[Object3D, SceneObject] = self.scene.stack[-1]
-        self.args: List = list(args)
-        self.color: Optional[str] = '#ffffff'
+        self.parent: Object3D | SceneObject = self.scene.stack[-1]
+        self.args: list = list(args)
+        self.color: str | None = '#ffffff'
         self.opacity: float = 1.0
         self.side_: str = 'front'
         self.visible_: bool = True
@@ -30,7 +30,7 @@ class Object3D:
         self.x: float = 0
         self.y: float = 0
         self.z: float = 0
-        self.R: List[List[float]] = [[1, 0, 0], [0, 1, 0], [0, 0, 1]]
+        self.R: list[list[float]] = [[1, 0, 0], [0, 1, 0], [0, 0, 1]]
         self.sx: float = 1
         self.sy: float = 1
         self.sz: float = 1
@@ -43,7 +43,7 @@ class Object3D:
         return self
 
     @property
-    def data(self) -> List[Any]:
+    def data(self) -> list[Any]:
         """Data to be sent to the frontend."""
         return [
             self.type, self.id, self.parent.id, self.args,
@@ -91,7 +91,7 @@ class Object3D:
         self.scene.run_method('delete', self.id)
 
     def material(self,
-                 color: Optional[str] = '#ffffff',
+                 color: str | None = '#ffffff',
                  opacity: float = 1.0,
                  side: Literal['front', 'back', 'both'] = 'front',
                  ) -> Self:
@@ -123,7 +123,7 @@ class Object3D:
         return self
 
     @staticmethod
-    def rotation_matrix_from_euler(r_x: float, r_y: float, r_z: float) -> List[List[float]]:
+    def rotation_matrix_from_euler(r_x: float, r_y: float, r_z: float) -> list[list[float]]:
         """Create a rotation matrix from Euler angles.
 
         :param r_x: rotation around the x axis in radians
@@ -148,7 +148,7 @@ class Object3D:
         """
         return self.rotate_R(self.rotation_matrix_from_euler(r_x, r_y, r_z))
 
-    def rotate_R(self, R: List[List[float]]) -> Self:
+    def rotate_R(self, R: list[list[float]]) -> Self:
         """Rotate the object.
 
         :param R: 3x3 rotation matrix
@@ -158,7 +158,7 @@ class Object3D:
             self._rotate()
         return self
 
-    def scale(self, sx: float = 1.0, sy: Optional[float] = None, sz: Optional[float] = None) -> Self:
+    def scale(self, sx: float = 1.0, sy: float | None = None, sz: float | None = None) -> Self:
         """Scale the object.
 
         :param sx: scale factor for the x axis
@@ -211,18 +211,18 @@ class Object3D:
         self._move_into_parent(parent)
         self.scene.run_method('attach', self.id, parent.id, self.x, self.y, self.z, self.R)
 
-    def _move_into_parent(self, parent: Union[Object3D, SceneObject]) -> None:
+    def _move_into_parent(self, parent: Object3D | SceneObject) -> None:
         if not isinstance(parent, Object3D):
             return
         if isinstance(parent.parent, Object3D):
             self._move_into_parent(parent.parent)
-        M1: List[List[float]] = [
+        M1: list[list[float]] = [
             [self.R[0][0], self.R[0][1], self.R[0][2], self.x],
             [self.R[1][0], self.R[1][1], self.R[1][2], self.y],
             [self.R[2][0], self.R[2][1], self.R[2][2], self.z],
             [0, 0, 0, 1],
         ]
-        M2_inv: List[List[float]] = [
+        M2_inv: list[list[float]] = [
             [parent.R[0][0], parent.R[1][0], parent.R[2][0],
              - parent.R[0][0] * parent.x
              - parent.R[1][0] * parent.y
@@ -237,7 +237,7 @@ class Object3D:
              - parent.R[2][2] * parent.z],
             [0, 0, 0, 1],
         ]
-        M: List[List[float]] = [
+        M: list[list[float]] = [
             [
                 M2_inv[0][0] * M1[0][0] + M2_inv[0][1] * M1[1][0] + M2_inv[0][2] * M1[2][0],
                 M2_inv[0][0] * M1[0][1] + M2_inv[0][1] * M1[1][1] + M2_inv[0][2] * M1[2][1],
@@ -283,22 +283,22 @@ class Object3D:
         self.parent = self.scene.stack[0]
         self.scene.run_method('detach', self.id, self.x, self.y, self.z, self.R)
 
-    def _move_out_of_parent(self, parent: Union[Object3D, SceneObject]) -> None:
+    def _move_out_of_parent(self, parent: Object3D | SceneObject) -> None:
         if not isinstance(parent, Object3D):
             return
-        M1: List[List[float]] = [
+        M1: list[list[float]] = [
             [self.R[0][0], self.R[0][1], self.R[0][2], self.x],
             [self.R[1][0], self.R[1][1], self.R[1][2], self.y],
             [self.R[2][0], self.R[2][1], self.R[2][2], self.z],
             [0, 0, 0, 1],
         ]
-        M2: List[List[float]] = [
+        M2: list[list[float]] = [
             [parent.R[0][0], parent.R[0][1], parent.R[0][2], parent.x],
             [parent.R[1][0], parent.R[1][1], parent.R[1][2], parent.y],
             [parent.R[2][0], parent.R[2][1], parent.R[2][2], parent.z],
             [0, 0, 0, 1],
         ]
-        M: List[List[float]] = [
+        M: list[list[float]] = [
             [
                 M2[0][0] * M1[0][0] + M2[0][1] * M1[1][0] + M2[0][2] * M1[2][0],
                 M2[0][0] * M1[0][1] + M2[0][1] * M1[1][1] + M2[0][2] * M1[2][1],
@@ -333,7 +333,7 @@ class Object3D:
             self._move_out_of_parent(parent.parent)
 
     @property
-    def children(self) -> List[Object3D]:
+    def children(self) -> list[Object3D]:
         """List of children of the object.
 
         *Added in version 2.4.0*

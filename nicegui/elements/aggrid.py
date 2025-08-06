@@ -1,5 +1,5 @@
 import importlib.util
-from typing import TYPE_CHECKING, Dict, List, Literal, Optional, cast
+from typing import TYPE_CHECKING, Literal, Optional, cast
 
 from typing_extensions import Self
 
@@ -24,8 +24,8 @@ class AgGrid(Element,
              default_classes='nicegui-aggrid'):
 
     def __init__(self,
-                 options: Dict, *,
-                 html_columns: List[int] = [],  # noqa: B006
+                 options: dict, *,
+                 html_columns: list[int] = [],  # noqa: B006
                  theme: Optional[str] = 'balham',
                  auto_size_columns: bool = True,
                  ) -> None:
@@ -51,10 +51,10 @@ class AgGrid(Element,
     @classmethod
     def from_pandas(cls,
                     df: 'pd.DataFrame', *,
-                    html_columns: List[int] = [],  # noqa: B006
+                    html_columns: list[int] = [],  # noqa: B006
                     theme: Optional[str] = 'balham',
                     auto_size_columns: bool = True,
-                    options: Dict = {}) -> Self:  # noqa: B006
+                    options: dict = {}) -> Self:  # noqa: B006
         """Create an AG Grid from a Pandas DataFrame.
 
         Note:
@@ -97,10 +97,10 @@ class AgGrid(Element,
     @classmethod
     def from_polars(cls,
                     df: 'pl.DataFrame', *,
-                    html_columns: List[int] = [],  # noqa: B006
+                    html_columns: list[int] = [],  # noqa: B006
                     theme: Optional[str] = 'balham',
                     auto_size_columns: bool = True,
-                    options: Dict = {}) -> Self:  # noqa: B006
+                    options: dict = {}) -> Self:  # noqa: B006
         """Create an AG Grid from a Polars DataFrame.
 
         If the DataFrame contains non-UTF-8 datatypes, they will be converted to strings.
@@ -123,22 +123,22 @@ class AgGrid(Element,
         }, html_columns=html_columns, theme=theme, auto_size_columns=auto_size_columns)
 
     @property
-    def options(self) -> Dict:
+    def options(self) -> dict:
         """The options dictionary."""
         return self._props['options']
 
     @options.setter
-    def options(self, value: Dict) -> None:
+    def options(self, value: dict) -> None:
         self._props['options'] = value
         self.update()
 
     @property
-    def html_columns(self) -> List[int]:
+    def html_columns(self) -> list[int]:
         """The list of columns that should be rendered as HTML."""
         return self._props['html_columns']
 
     @html_columns.setter
-    def html_columns(self, value: List[int]) -> None:
+    def html_columns(self, value: list[int]) -> None:
         self._props['html_columns'] = value[:]
         self.update()
 
@@ -212,7 +212,7 @@ class AgGrid(Element,
         """
         return self.run_method('run_row_method', row_id, name, *args, timeout=timeout)
 
-    async def get_selected_rows(self) -> List[Dict]:
+    async def get_selected_rows(self) -> list[dict]:
         """Get the currently selected rows.
 
         This method is especially useful when the grid is configured with ``rowSelection: 'multiple'``.
@@ -222,9 +222,9 @@ class AgGrid(Element,
         :return: list of selected row data
         """
         result = await self.run_grid_method('getSelectedRows')
-        return cast(List[Dict], result)
+        return cast(list[dict], result)
 
-    async def get_selected_row(self) -> Optional[Dict]:
+    async def get_selected_row(self) -> Optional[dict]:
         """Get the single currently selected row.
 
         This method is especially useful when the grid is configured with ``rowSelection: 'single'``.
@@ -239,7 +239,7 @@ class AgGrid(Element,
         *,
         timeout: float = 1,
         method: Literal['all_unsorted', 'filtered_unsorted', 'filtered_sorted', 'leaf'] = 'all_unsorted'
-    ) -> List[Dict]:
+    ) -> list[dict]:
         """Get the data from the client including any edits made by the client.
 
         This method is especially useful when the grid is configured with ``'editable': True``.
@@ -265,7 +265,7 @@ class AgGrid(Element,
             getElement({self.id}).api.{API_METHODS[method]}(node => rowData.push(node.data));
             return rowData;
         ''', timeout=timeout)
-        return cast(List[Dict], result)
+        return cast(list[dict], result)
 
     async def load_client_data(self) -> None:
         """Obtain client data and update the element's row data with it.

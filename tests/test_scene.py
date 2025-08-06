@@ -1,5 +1,4 @@
 import weakref
-from typing import List
 
 import numpy as np
 from selenium.common.exceptions import JavascriptException
@@ -47,7 +46,7 @@ def test_no_object_duplication_on_index_client(screen: Screen):
 
 
 def test_no_object_duplication_with_page_builder(screen: Screen):
-    scene_html_ids: List[int] = []
+    scene_html_ids: list[int] = []
 
     @ui.page('/')
     def page():
