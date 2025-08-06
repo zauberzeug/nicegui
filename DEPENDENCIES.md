@@ -6,6 +6,7 @@
 - socket.io: 4.7.5 ([MIT](https://opensource.org/licenses/MIT))
 - es-module-shims: 1.10.0 ([MIT](https://opensource.org/licenses/MIT))
 - aggrid: 32.1.0 ([MIT](https://opensource.org/licenses/MIT))
+- ajv-formats: 3.0.2 ([MIT](https://opensource.org/licenses/MIT))
 - codemirror: 6.0.1 ([MIT](https://opensource.org/licenses/MIT))
 - echarts: 5.5.1 ([Apache-2.0](https://opensource.org/licenses/Apache-2.0))
 - echarts-gl: 2.0.9 ([BSD-3-Clause](https://opensource.org/licenses/BSD-3-Clause))

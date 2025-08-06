@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "@sethvincent/ajv-formats": "^3.0.2",
     "@tweenjs/tween.js": "^25.0.0",
     "ag-grid-community": "^32.1.0",
     "echarts": "^5.5.1",
