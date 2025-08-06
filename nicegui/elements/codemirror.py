@@ -1,6 +1,6 @@
 from itertools import accumulate, chain, repeat
 from pathlib import Path
-from typing import List, Literal, Optional, get_args
+from typing import Literal, Optional, get_args
 
 from nicegui.elements.mixins.disableable_element import DisableableElement
 from nicegui.elements.mixins.value_element import ValueElement
@@ -301,17 +301,17 @@ class CodeMirror(ValueElement, DisableableElement, component='codemirror.js', de
         return self._props['theme']
 
     @theme.setter
-    def theme(self, theme: str) -> None:
+    def theme(self, theme: SUPPORTED_THEMES) -> None:
         self._props['theme'] = theme
         self.update()
 
-    def set_theme(self, theme: str) -> None:
+    def set_theme(self, theme: SUPPORTED_THEMES) -> None:
         """Sets the theme of the editor."""
         self._props['theme'] = theme
         self.update()
 
     @property
-    def supported_themes(self) -> List[str]:
+    def supported_themes(self) -> list[str]:
         """List of supported themes."""
         return list(get_args(SUPPORTED_THEMES))
 
@@ -321,17 +321,17 @@ class CodeMirror(ValueElement, DisableableElement, component='codemirror.js', de
         return self._props['language']
 
     @language.setter
-    def language(self, language: Optional[str]) -> None:
+    def language(self, language: Optional[SUPPORTED_LANGUAGES] = None) -> None:
         self._props['language'] = language
         self.update()
 
-    def set_language(self, language: Optional[str]) -> None:
+    def set_language(self, language: Optional[SUPPORTED_LANGUAGES] = None) -> None:
         """Sets the language of the editor (case-insensitive)."""
         self._props['language'] = language
         self.update()
 
     @property
-    def supported_languages(self) -> List[str]:
+    def supported_languages(self) -> list[str]:
         """List of supported languages."""
         return list(get_args(SUPPORTED_LANGUAGES))
 
@@ -353,13 +353,13 @@ class CodeMirror(ValueElement, DisableableElement, component='codemirror.js', de
             return  # the update is triggered by the user and codepoints are updated incrementally
         self._codepoints = self._encode_codepoints(self.value or '')
 
-    def _apply_change_set(self, sections: List[int], inserted: List[List[str]]) -> str:
+    def _apply_change_set(self, sections: list[int], inserted: list[list[str]]) -> str:
         document = self.value or ''
         old_lengths = sections[::2]
         new_lengths = sections[1::2]
         end_positions = accumulate(old_lengths)
-        document_parts: List[str] = []
-        codepoint_parts: List[bytes] = []
+        document_parts: list[str] = []
+        codepoint_parts: list[bytes] = []
         for end, old_len, new_len, insert in zip(end_positions, old_lengths, new_lengths, chain(inserted, repeat([]))):
             if new_len == -1:
                 start = end - old_len

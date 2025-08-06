@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Callable, Optional, Protocol
+from typing import Callable, Protocol
 
 from nicegui import ui
 
@@ -9,12 +9,12 @@ class Item(Protocol):
     title: str
 
 
-dragged: Optional[card] = None
+dragged: card | None = None
 
 
 class column(ui.column):
 
-    def __init__(self, name: str, on_drop: Optional[Callable[[Item, str], None]] = None) -> None:
+    def __init__(self, name: str, on_drop: Callable[[Item, str], None] | None = None) -> None:
         super().__init__()
         with self.classes('bg-blue-grey-2 w-60 p-4 rounded shadow-2'):
             ui.label(name).classes('text-bold ml-1')

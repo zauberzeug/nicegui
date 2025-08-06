@@ -4,12 +4,13 @@ import asyncio
 import inspect
 from functools import wraps
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Callable, Optional, Union
+from typing import TYPE_CHECKING, Any, Callable
 
-from fastapi import Request, Response
+from fastapi import HTTPException, Request, Response
 
 from . import background_tasks, binding, core, helpers
 from .client import Client
+from .elements.sub_pages import SubPages
 from .favicon import create_favicon_route
 from .language import Language
 from .logging import log
@@ -22,14 +23,14 @@ class page:
 
     def __init__(self,
                  path: str, *,
-                 title: Optional[str] = None,
-                 viewport: Optional[str] = None,
-                 favicon: Optional[Union[str, Path]] = None,
-                 dark: Optional[bool] = ...,  # type: ignore
+                 title: str | None = None,
+                 viewport: str | None = None,
+                 favicon: str | Path | None = None,
+                 dark: bool | None = ...,  # type: ignore
                  language: Language = ...,  # type: ignore
                  response_timeout: float = 3.0,
-                 reconnect_timeout: Optional[float] = None,
-                 api_router: Optional[APIRouter] = None,
+                 reconnect_timeout: float | None = None,
+                 api_router: APIRouter | None = None,
                  **kwargs: Any,
                  ) -> None:
         """Page
@@ -85,7 +86,7 @@ class page:
         """Return the viewport of the page."""
         return self.viewport if self.viewport is not None else core.app.config.viewport
 
-    def resolve_dark(self) -> Optional[bool]:
+    def resolve_dark(self) -> bool | None:
         """Return whether the page should use dark mode."""
         return self.dark if self.dark is not ... else core.app.config.dark
 
@@ -109,6 +110,31 @@ class page:
             except asyncio.CancelledError:
                 pass
 
+        def create_error_page(e: Exception, request: Request) -> Response:
+            page_exception_handler = core.app._page_exception_handler  # pylint: disable=protected-access
+            if page_exception_handler is None:
+                raise e
+            with Client(page(''), request=request) as error_client:
+                # page exception handler
+                if helpers.expects_arguments(page_exception_handler):
+                    page_exception_handler(e)
+                else:
+                    page_exception_handler()
+
+                # FastAPI exception handlers
+                for key, handler in core.app.exception_handlers.items():
+                    if key == 500 or (isinstance(key, type) and isinstance(e, key)):
+                        result = handler(request, e)
+                        if helpers.is_coroutine_function(handler):
+                            async def await_handler(result: Any) -> None:
+                                await result
+                            background_tasks.create(await_handler(result), name=f'exception handler {handler.__name__}')
+
+                # NiceGUI exception handlers
+                core.app.handle_exception(e)
+
+                return error_client.build_response(request, 500)
+
         @wraps(func)
         async def decorated(*dec_args, **dec_kwargs) -> Response:
             request = dec_kwargs['request']
@@ -117,11 +143,21 @@ class page:
             with Client(self, request=request) as client:
                 if any(p.name == 'client' for p in inspect.signature(func).parameters.values()):
                     dec_kwargs['client'] = client
-                result = func(*dec_args, **dec_kwargs)
+                try:
+                    result = func(*dec_args, **dec_kwargs)
+                    # NOTE: after building the page, there might be sub pages that have 404 -- and initial requests should send 404 status request in such cases
+                    sub_pages_elements = [e for e in client.elements.values() if isinstance(e, SubPages)]
+                    if any(sub_pages.has_404 for sub_pages in sub_pages_elements):
+                        raise HTTPException(404, f'{client.sub_pages_router.current_path} not found')
+                except Exception as e:
+                    return create_error_page(e, request)
             if helpers.is_coroutine_function(func):
-                async def wait_for_result() -> None:
+                async def wait_for_result() -> Response | None:
                     with client:
-                        return await result
+                        try:
+                            return await result
+                        except Exception as e:
+                            return create_error_page(e, request)
                 task = background_tasks.create(wait_for_result())
                 task_wait_for_connection = background_tasks.create(
                     client._waiting_for_connection.wait(),  # pylint: disable=protected-access

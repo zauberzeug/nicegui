@@ -1,4 +1,4 @@
-from typing import Callable, Dict, Literal, Optional, Union
+from typing import Callable, Literal, Optional, Union
 
 from typing_extensions import Self
 
@@ -23,11 +23,11 @@ class EChart(Element,
              default_classes='nicegui-echart'):
 
     def __init__(self,
-                 options: Dict,
+                 options: dict,
                  on_point_click: Optional[Handler[EChartPointClickEventArguments]] = None, *,
                  enable_3d: bool = False,
                  renderer: Literal['canvas', 'svg'] = 'canvas',
-                 theme: Optional[Union[str, Dict]] = None,
+                 theme: Optional[Union[str, dict]] = None,
                  ) -> None:
         """Apache EChart
 
@@ -104,7 +104,7 @@ class EChart(Element,
         return cls(options, on_point_click)
 
     @property
-    def options(self) -> Dict:
+    def options(self) -> dict:
         """The options dictionary."""
         return self._props['options']
 

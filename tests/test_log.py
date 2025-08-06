@@ -28,7 +28,7 @@ def test_log_with_newlines(screen: Screen):
 
 
 def test_replace_log(screen: Screen):
-    with ui.row() as container:
+    with ui.row().classes('w-full') as container:
         ui.log().push('A')
 
     def replace():
@@ -53,3 +53,18 @@ def test_special_characters(screen: Screen):
     screen.should_contain('50%')
     screen.click('push')
     screen.should_contain('100%')
+
+
+def test_log_against_defaults(screen: Screen):
+    ui.label.default_classes('text-red')
+    ui.label.default_style('margin: 1rem')
+    ui.label.default_props('my-prop=A')
+
+    log = ui.log()
+    log.push('Log line', classes='text-green', style='margin: 2rem', props='my-prop=B')
+
+    screen.open('/')
+    line = screen.find('Log line')
+    assert line.get_attribute('my-prop') == 'B'
+    assert line.get_attribute('class') == 'text-green'
+    assert line.get_attribute('style') == 'margin: 2rem;'

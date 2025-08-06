@@ -3,14 +3,15 @@ from __future__ import annotations
 
 import asyncio
 import weakref
-from typing import Any, Awaitable, Callable, Coroutine, Dict, Set, TypeVar
+from collections.abc import Awaitable, Coroutine
+from typing import Any, Callable, TypeVar
 
-from . import core, helpers
+from . import core
 from .logging import log
 
-running_tasks: Set[asyncio.Task] = set()
-lazy_tasks_running: Dict[str, asyncio.Task] = {}
-lazy_coroutines_waiting: Dict[str, Coroutine[Any, Any, Any]] = {}
+running_tasks: set[asyncio.Task] = set()
+lazy_tasks_running: dict[str, asyncio.Task] = {}
+lazy_coroutines_waiting: dict[str, Coroutine[Any, Any, Any]] = {}
 functions_awaited_on_shutdown: weakref.WeakSet[Callable] = weakref.WeakSet()
 
 
@@ -22,7 +23,7 @@ def create(coroutine: Awaitable, *, name: str = 'unnamed task') -> asyncio.Task:
     See https://docs.python.org/3/library/asyncio-task.html#asyncio.create_task.
     """
     assert core.loop is not None
-    coroutine = coroutine if asyncio.iscoroutine(coroutine) else helpers.wait_for(coroutine, None)
+    coroutine = coroutine if asyncio.iscoroutine(coroutine) else asyncio.wait_for(coroutine, None)
     task: asyncio.Task = core.loop.create_task(coroutine, name=name)
     task.add_done_callback(_handle_task_result)
     running_tasks.add(task)
@@ -91,7 +92,7 @@ async def teardown() -> None:
         if tasks:
             await asyncio.sleep(0)  # NOTE: ensure the loop can cancel the tasks before it shuts down
             try:
-                await helpers.wait_for(asyncio.gather(*tasks, return_exceptions=True), timeout=2.0)
+                await asyncio.wait_for(asyncio.gather(*tasks, return_exceptions=True), timeout=2.0)
             except asyncio.TimeoutError:
                 log.error('Could not cancel %s tasks within timeout: %s',
                           len(tasks),

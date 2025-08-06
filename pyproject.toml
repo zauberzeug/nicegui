@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "nicegui"
-version = "2.17.0-dev"
+version = "2.22.1-dev"
 description = "Create web-based user interfaces with Python. The nice way."
 authors = ["Zauberzeug GmbH <info@zauberzeug.com>"]
 license = "MIT"
@@ -9,40 +9,34 @@ repository = "https://github.com/zauberzeug/nicegui"
 keywords = ["gui", "ui", "web", "interface", "live"]
 
 [tool.poetry.dependencies]
-python = "^3.8"
+python = "^3.9"
 typing-extensions = ">=4.0.0"
 markdown2 = ">=2.4.7,!=2.4.11"
 Pygments = ">=2.15.1,<3.0.0"
-starlette = [
-    {version = "<0.42.0", python = "~3.8"},  # https://github.com/zauberzeug/nicegui/issues/4255
-    {version = ">=0.45.3", python = ">=3.9"}
-]
+starlette = ">=0.45.3"
 uvicorn = {extras = ["standard"], version = ">=0.22.0"}
 fastapi = ">=0.109.1"
 python-socketio = {extras = ["asyncio-client"], version = ">=5.10.0"} # version min: see https://github.com/zauberzeug/nicegui/issues/1809
-python-engineio = ">=4.12.0"  # https://github.com/zauberzeug/nicegui/issues/4602
 vbuild = ">=0.8.2"
-watchfiles = ">=0.18.1"
 jinja2 = "^3.1.6" # https://github.com/zauberzeug/nicegui/security/dependabot/44
 python-multipart = ">=0.0.18"
 orjson = {version = ">=3.9.15", markers = "platform_machine != 'i386' and platform_machine != 'i686'"} # https://github.com/zauberzeug/nicegui/security/dependabot/29, orjson does not support 32bit
 itsdangerous = "^2.1.2"
 aiofiles = ">=23.1.0"
+httpx = ">=0.24.0"
+ifaddr = ">=0.2.0"
+docutils = ">=0.19.0"
 pywebview = { version = "^5.0.1", optional = true }
 plotly = { version = ">=5.13,<7.0", optional = true }
 matplotlib = { version = "^3.5.0", optional = true }
-httpx = ">=0.24.0"
 nicegui-highcharts = { version = "^2.0.2", optional = true }
-ifaddr = ">=0.2.0"
-aiohttp = ">=3.10.2" # https://github.com/zauberzeug/nicegui/security/dependabot/36
 libsass = { version = "^0.23.0", optional = true }
-docutils = ">=0.19.0"
-requests = ">=2.32.0" # https://github.com/zauberzeug/nicegui/security/dependabot/33
-urllib3 = ">=1.26.18,!=2.0.0,!=2.0.1,!=2.0.2,!=2.0.3,!=2.0.4,!=2.0.5,!=2.0.6,!=2.0.7,!=2.1.0,!=2.2.0,!=2.2.1" # https://github.com/zauberzeug/nicegui/security/dependabot/34
-certifi = ">=2024.07.04" # https://github.com/zauberzeug/nicegui/security/dependabot/35
 redis = { version = ">=4.0.0", optional = true }
-h11 = ">=0.16.0" # https://github.com/zauberzeug/nicegui/security/dependabot/45
-wait_for2 = ">=0.3.2"
+watchfiles = ">=0.18.1" # transitive, used by uvicorn
+h11 = ">=0.16.0" # transitive, pinned to https://github.com/zauberzeug/nicegui/security/dependabot/45
+python-engineio = ">=4.12.0"  # transitive, pinned to address https://github.com/zauberzeug/nicegui/issues/4602
+aiohttp = ">=3.10.2" # transitive, pinned to address https://github.com/zauberzeug/nicegui/security/dependabot/36
+certifi = ">=2024.07.04" # transitive, pinned to address https://github.com/zauberzeug/nicegui/security/dependabot/35
 
 [tool.poetry.extras]
 native = ["pywebview"]
@@ -51,6 +45,7 @@ matplotlib = ["matplotlib"]
 highcharts = ["nicegui-highcharts"]
 sass = ["libsass"]
 redis = ["redis"]
+
 [tool.poetry.group.dev.dependencies]
 autopep8 = ">=1.5.7,<3.0.0"
 debugpy = "^1.3.0"
@@ -58,6 +53,8 @@ pytest-selenium = "^4.1.0"
 pytest-asyncio = ">=0.23.0"
 pytest-watcher = "^0.4.2"
 pytest = "^8.2.2"
+requests = ">=2.32.4" # transitive, pinned to address https://github.com/zauberzeug/nicegui/security/dependabot/46
+urllib3 = ">=1.26.18,!=2.0.0,!=2.0.1,!=2.0.2,!=2.0.3,!=2.0.4,!=2.0.5,!=2.0.6,!=2.0.7,!=2.1.0,!=2.2.0,!=2.2.1" # transitive, pinned to address https://github.com/zauberzeug/nicegui/security/dependabot/34
 itsdangerous = "^2.1.2" # required by SessionMiddleware (see https://fastapi.tiangolo.com/?h=itsdangerous#optional-dependencies)
 pandas = [
     {version = "^2.0.0", python = "<3.13"},
@@ -65,27 +62,15 @@ pandas = [
 ]
 secure = ">=0.3.0"
 webdriver-manager = ">=3.8.6,<5.0.0"
-numpy = [
-    {version = "^1.24.0", python = "~3.8"},
-    {version = ">=1.26.0", python = ">=3.9,<3.14"}
-]
+numpy = ">=1.26.0"
 selenium = "^4.11.2"
 pyecharts = "^2.0.4"
 ruff = ">=0.8.1"
-pre-commit = [
-    {version = "<4.0.0", python = "<3.9"},
-    {version = ">=4.0.0", python = ">=3.9,<3.14"}
-]
+pre-commit = ">=4.0.0"
 isort = "^5.11"
-polars = [
-    {version = "^1.8.0", python = "~3.8"},
-    {version = "^1.12.0", python = ">=3.9,<3.14"}
-]
+polars = "^1.12.0"
 mypy = "^1.13.0"
-pylint = [
-    {version = "^3.1.0", python = "~3.8"},
-    {version = ">=3.3.1", python = ">=3.9,<3.13"}
-]
+pylint = ">=3.3.1"
 
 [tool.poetry.scripts]
 nicegui-pack = "nicegui.scripts.pack:main"
@@ -109,7 +94,7 @@ filterwarnings = [
 ]
 
 [tool.mypy]
-python_version = "3.8"
+python_version = "3.9"
 install_types = true
 check_untyped_defs = true
 
@@ -124,7 +109,6 @@ module = [
     "sass",
     "socketio.*",
     "vbuild",
-    "wait_for2",
     "webview.*", # can be removed with next pywebview release
 ]
 ignore_missing_imports = true
@@ -133,9 +117,15 @@ ignore_missing_imports = true
 max-line-length = 120
 
 [tool.ruff]
-target-version = "py38"
+target-version = "py39"
 indent-width = 4
 line-length = 120
+
+[tool.ruff.lint.flake8-quotes]
+inline-quotes = "single"
+multiline-quotes = "single"
+docstring-quotes = "double"
+avoid-escape = true
 
 [tool.ruff.lint]
 # See complete list: https://docs.astral.sh/ruff/rules/
@@ -148,15 +138,21 @@ select = [
     "UP", # pyupgrade
     "RUF", # ruff
     "PL", # pylint
+    "Q", # flake8-quotes
 ]
 fixable = [
     "I",  # isort
+    "UP035", # deprecated import
     "RUF022", # `__all__` is not sorted
+    "Q000",  # bad quotes inline string
+    "Q001",  # bad quotes multiline string
+    "Q002",  # bad quotes docstring
+    "Q003",  # avoidable escaped quote
+    "Q004",  # unnecessary escaped quote
 ]
 ignore = [
     "E501", # line too long
-    "UP006", # use pipe for union type annotation
-    "UP007", # use pipe for union type annotation
+    "PLC0415", # import outside top level
     "PLR0911", # too many return statements
     "PLR0912", # too many branches
     "PLR0913", # too many arguments
@@ -184,6 +180,7 @@ disable = [
     "R0913", # Too many arguments
     "R0914", # Too many local variables
     "R0915", # Too many statements
+    "R0917", # Too many positional arguments
     "R1705", # Unnecessary "else" after "return"
     "W0102", # Dangerous default value as argument
     "W0718", # Catching too general exception

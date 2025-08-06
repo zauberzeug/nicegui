@@ -1,5 +1,5 @@
 from nicegui import ui
-from nicegui.testing import Screen
+from nicegui.testing import Screen, User
 
 
 def test_radio_click(screen: Screen):
@@ -56,3 +56,18 @@ def test_radio_set_options(screen: Screen):
 
     screen.click('clear')
     screen.should_contain('Value: None')
+
+
+async def test_radio_click_with_user(user: User):
+    radio = ui.radio(['A', 'B', 'C'])
+    ui.label().bind_text_from(radio, 'value', lambda x: f'Value: {x}')
+
+    await user.open('/')
+    user.find('A', kind=ui.radio).click()
+    await user.should_see('Value: A')
+
+    user.find('B', kind=ui.radio).click()
+    await user.should_see('Value: B')
+
+    user.find('B', kind=ui.radio).click()  # already selected, should not change
+    await user.should_see('Value: B')

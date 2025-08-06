@@ -1,7 +1,7 @@
 import csv
 import re
 from io import BytesIO
-from typing import Callable, Dict, Type, Union
+from typing import Callable, Union
 
 import pytest
 from fastapi import UploadFile
@@ -81,7 +81,7 @@ async def test_assertion_raised_when_element_not_found(user: User) -> None:
 
 
 @pytest.mark.parametrize('storage_builder', [lambda: app.storage.browser, lambda: app.storage.user])
-async def test_storage(user: User, storage_builder: Callable[[], Dict]) -> None:
+async def test_storage(user: User, storage_builder: Callable[[], dict]) -> None:
     @ui.page('/')
     def page():
         storage = storage_builder()
@@ -176,7 +176,7 @@ async def test_notification(user: User) -> None:
 
 
 @pytest.mark.parametrize('kind', [ui.checkbox, ui.switch])
-async def test_checkbox_and_switch(user: User, kind: Type) -> None:
+async def test_checkbox_and_switch(user: User, kind: type) -> None:
     element = kind('my element', on_change=lambda e: ui.notify(f'Changed: {e.value}'))
     ui.label().bind_text_from(element, 'value', lambda v: 'enabled' if v else 'disabled')
 
@@ -193,7 +193,7 @@ async def test_checkbox_and_switch(user: User, kind: Type) -> None:
 
 
 @pytest.mark.parametrize('kind', [ui.input, ui.editor, ui.codemirror])
-async def test_input(user: User, kind: Type) -> None:
+async def test_input(user: User, kind: type) -> None:
     element = kind(on_change=lambda e: ui.notify(f'Changed: {e.value}'))
     ui.label().bind_text_from(element, 'value', lambda v: f'Value: {v}')
 
@@ -397,7 +397,6 @@ async def test_select_multiple_from_dict(user: User) -> None:
     user.find('label A').click()
     await user.should_see("Notify: ['value A']")
 
-    user.find(ui.select).click()
     user.find('label B').click()
     await user.should_see("Notify: ['value A', 'value B']")
 
@@ -416,7 +415,6 @@ async def test_select_multiple_values(user: User):
     await user.should_see("value = ['A', 'B']")
     assert select.value == ['A', 'B']
 
-    user.find(ui.select).click()
     user.find('A').click()
     await user.should_see("Notify: ['B']")
     await user.should_see("value = ['B']")

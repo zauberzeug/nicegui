@@ -2,9 +2,11 @@ import os
 import re
 import threading
 import time
+from collections.abc import Generator
 from contextlib import contextmanager
 from pathlib import Path
-from typing import Callable, Generator, List, Optional, Union, overload
+from typing import Callable, Optional, Union, overload
+from urllib.parse import urlparse
 
 import pytest
 from selenium import webdriver
@@ -185,9 +187,9 @@ class Screen:
         """Find the element containing the given text."""
         try:
             query = f'//*[not(self::script) and not(self::style) and text()[contains(., "{text}")]]'
-            element = self.selenium.find_element(By.XPATH, query)
             # HACK: repeat check after a short delay to avoid timing issue on fast machines
             for _ in range(5):
+                element = self.selenium.find_element(By.XPATH, query)
                 try:
                     if element.is_displayed():
                         return element
@@ -198,7 +200,7 @@ class Screen:
         except NoSuchElementException as e:
             raise AssertionError(f'Could not find "{text}"') from e
 
-    def find_all(self, text: str) -> List[WebElement]:
+    def find_all(self, text: str) -> list[WebElement]:
         """Find all elements containing the given text."""
         query = f'//*[not(self::script) and not(self::style) and text()[contains(., "{text}")]]'
         return self.selenium.find_elements(By.XPATH, query)
@@ -211,7 +213,7 @@ class Screen:
         """Find the element with the given CSS class."""
         return self.selenium.find_element(By.CLASS_NAME, name)
 
-    def find_all_by_class(self, name: str) -> List[WebElement]:
+    def find_all_by_class(self, name: str) -> list[WebElement]:
         """Find all elements with the given CSS class."""
         return self.selenium.find_elements(By.CLASS_NAME, name)
 
@@ -219,7 +221,7 @@ class Screen:
         """Find the element with the given HTML tag."""
         return self.selenium.find_element(By.TAG_NAME, name)
 
-    def find_all_by_tag(self, name: str) -> List[WebElement]:
+    def find_all_by_tag(self, name: str) -> list[WebElement]:
         """Find all elements with the given HTML tag."""
         return self.selenium.find_elements(By.TAG_NAME, name)
 
@@ -264,3 +266,14 @@ class Screen:
         self.selenium.implicitly_wait(t)
         yield
         self.selenium.implicitly_wait(self.IMPLICIT_WAIT)
+
+    @property
+    def current_path(self) -> str:
+        """The current path of the browser."""
+        parsed = urlparse(self.selenium.current_url)
+        result = parsed.path
+        if parsed.query:
+            result += '?' + parsed.query
+        if parsed.fragment:
+            result += '#' + parsed.fragment
+        return result

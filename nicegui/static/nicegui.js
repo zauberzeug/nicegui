@@ -177,27 +177,29 @@ function renderRecursively(elements, id) {
     let event_name = "on" + event.type[0].toLocaleUpperCase() + event.type.substring(1);
     event.specials.forEach((s) => (event_name += s[0].toLocaleUpperCase() + s.substring(1)));
 
+    const emit = (...args) => {
+      const emitter = () =>
+        window.socket?.emit("event", {
+          id: id,
+          client_id: window.clientId,
+          listener_id: event.listener_id,
+          args: stringifyEventArgs(args, event.args),
+        });
+      const delayed_emitter = () => {
+        if (window.did_handshake) emitter();
+        else setTimeout(delayed_emitter, 10);
+      };
+      throttle(delayed_emitter, event.throttle, event.leading_events, event.trailing_events, event.listener_id);
+      if (element.props["loopback"] === False && event.type == "update:modelValue") {
+        element.props["model-value"] = args;
+      }
+    };
+
     let handler;
     if (event.js_handler) {
       handler = eval(event.js_handler);
     } else {
-      handler = (...args) => {
-        const emitter = () =>
-          window.socket?.emit("event", {
-            id: id,
-            client_id: window.clientId,
-            listener_id: event.listener_id,
-            args: stringifyEventArgs(args, event.args),
-          });
-        const delayed_emitter = () => {
-          if (window.did_handshake) emitter();
-          else setTimeout(emitter, 10);
-        };
-        throttle(delayed_emitter, event.throttle, event.leading_events, event.trailing_events, event.listener_id);
-        if (element.props["loopback"] === False && event.type == "update:modelValue") {
-          element.props["model-value"] = args;
-        }
-      };
+      handler = emit;
     }
 
     handler = Vue.withModifiers(handler, event.modifiers);
@@ -358,9 +360,9 @@ function createApp(elements, options) {
               console.log("reloading because handshake failed for clientId " + window.clientId);
               window.location.reload();
             }
+            window.did_handshake = true;
             document.getElementById("popup").ariaHidden = true;
           });
-          window.did_handshake = true;
         },
         connect_error: (err) => {
           if (err.message == "timeout") {
@@ -434,8 +436,6 @@ function createApp(elements, options) {
         });
       }
     },
-  }).use(Quasar, {
-    config: options.quasarConfig,
   }));
 }
 

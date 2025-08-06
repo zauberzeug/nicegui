@@ -1,4 +1,5 @@
-from typing import Dict, Optional
+import weakref
+from typing import Optional
 
 import pytest
 from selenium.webdriver.common.by import By
@@ -49,7 +50,7 @@ def test_classes(screen: Screen):
     ('transform: translate(120.0px, 50%)', {'transform': 'translate(120.0px, 50%)'}),
     ('box-shadow: 0 0 0.5em #1976d2', {'box-shadow': '0 0 0.5em #1976d2'}),
 ])
-def test_style_parsing(value: Optional[str], expected: Dict[str, str]):
+def test_style_parsing(value: Optional[str], expected: dict[str, str]):
     assert Style.parse(value) == expected
 
 
@@ -76,7 +77,7 @@ def test_style_parsing(value: Optional[str], expected: Dict[str, str]):
     ("""input-style='{ myquote: "quote" }'""", {'input-style': '{ myquote: "quote" }'}),
     ('filename=foo=bar.txt', {'filename': 'foo=bar.txt'}),
 ])
-def test_props_parsing(value: Optional[str], expected: Dict[str, str]):
+def test_props_parsing(value: Optional[str], expected: dict[str, str]):
     assert Props.parse(value) == expected
 
 
@@ -342,3 +343,18 @@ def test_update_before_client_connection(screen: Screen):
 
     screen.open('/')
     screen.should_contain('Hello again!')
+
+
+def test_no_cyclic_references(screen: Screen):
+    elements: weakref.WeakSet = weakref.WeakSet()
+
+    with ui.card() as card:
+        for _ in range(10):
+            elements.add(ui.element())
+            elements.add(ui.pyplot())
+            elements.add(ui.query('div'))
+
+    card.clear()
+    assert len(elements) == 0, 'all elements should be deleted immediately'
+
+    screen.open('/')

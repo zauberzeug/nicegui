@@ -42,6 +42,7 @@ export default {
         checkboxRenderer: CheckboxRenderer,
       };
 
+      this.gridOptions.onGridReady = (params) => this.handle_event("gridReady", params);
       this.api = agGrid.createGrid(this.$el, this.gridOptions);
       this.api.addGlobalListener(this.handle_event);
     },
@@ -54,7 +55,7 @@ export default {
       return runMethod(this.api.getRowNode(row_id), name, args);
     },
     handle_event(type, args) {
-      if ((type === "gridReady" || type === "gridSizeChanged") && this.auto_size_columns) {
+      if (type === "gridSizeChanged" && this.auto_size_columns) {
         this.api.sizeColumnsToFit();
       }
       this.$emit(type, {

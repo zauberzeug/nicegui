@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, Optional, Union, cast
+from typing import Any, cast
 
 from ..context import context
 from ..events import Handler, ValueChangeEventArguments
@@ -11,8 +11,8 @@ from .mixins.value_element import ValueElement
 class Carousel(ValueElement):
 
     def __init__(self, *,
-                 value: Union[str, CarouselSlide, None] = None,
-                 on_value_change: Optional[Handler[ValueChangeEventArguments]] = None,
+                 value: str | CarouselSlide | None = None,
+                 on_value_change: Handler[ValueChangeEventArguments] | None = None,
                  animated: bool = False,
                  arrows: bool = False,
                  navigation: bool = False,
@@ -54,7 +54,7 @@ class Carousel(ValueElement):
 
 class CarouselSlide(DisableableElement, default_classes='nicegui-carousel-slide'):
 
-    def __init__(self, name: Optional[str] = None) -> None:
+    def __init__(self, name: str | None = None) -> None:
         """Carousel Slide
 
         This element represents `Quasar's QCarouselSlide <https://quasar.dev/vue-components/carousel#qcarouselslide-api>`_ component.

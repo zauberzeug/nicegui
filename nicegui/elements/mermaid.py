@@ -1,4 +1,4 @@
-from typing import Dict, Optional
+from typing import Optional
 
 from .mixins.content_element import ContentElement
 
@@ -11,7 +11,7 @@ class Mermaid(ContentElement,
               ]):
     CONTENT_PROP = 'content'
 
-    def __init__(self, content: str, config: Optional[Dict] = None) -> None:
+    def __init__(self, content: str, config: Optional[dict] = None) -> None:
         """Mermaid Diagrams
 
         Renders diagrams and charts written in the Markdown-inspired `Mermaid <https://mermaid.js.org/>`_ language.

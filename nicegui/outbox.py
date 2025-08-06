@@ -2,10 +2,11 @@ from __future__ import annotations
 
 import asyncio
 import time
+import weakref
 from collections import deque
-from typing import TYPE_CHECKING, Any, Deque, Dict, Optional, Tuple
+from typing import TYPE_CHECKING, Any
 
-from . import background_tasks, core, helpers
+from . import background_tasks, core
 
 if TYPE_CHECKING:
     from .client import Client
@@ -16,29 +17,44 @@ ElementId = int
 ClientId = str
 MessageType = str
 Payload = Any
-Message = Tuple[ClientId, MessageType, Payload]
+Message = tuple[ClientId, MessageType, Payload]
 
 MessageId = int
 MessageTime = float
-HistoryEntry = Tuple[MessageId, MessageTime, Message]
+HistoryEntry = tuple[MessageId, MessageTime, Message]
+
+
+class Deleted:
+    """Class for creating a sentinel value for deleted elements."""
+
+
+deleted = Deleted()
 
 
 class Outbox:
 
     def __init__(self, client: Client) -> None:
-        self.client = client
-        self.updates: Dict[ElementId, Optional[Element]] = {}
-        self.messages: Deque[Message] = deque()
-        self.message_history: Deque[HistoryEntry] = deque()
+        self._client = weakref.ref(client)
+        self.updates: weakref.WeakValueDictionary[ElementId, Element | Deleted] = weakref.WeakValueDictionary()
+        self.messages: deque[Message] = deque()
+        self.message_history: deque[HistoryEntry] = deque()
         self.next_message_id: int = 0
 
         self._should_stop = False
-        self._enqueue_event: Optional[asyncio.Event] = None
+        self._enqueue_event: asyncio.Event | None = None
 
         if core.app.is_started:
             background_tasks.create(self.loop(), name=f'outbox loop {client.id}')
         else:
             core.app.on_startup(self.loop)
+
+    @property
+    def client(self) -> Client:
+        """The client this outbox belongs to."""
+        client = self._client()
+        if client is None:
+            raise RuntimeError('The client this outbox belongs to has been deleted.')
+        return client
 
     def _set_enqueue_event(self) -> None:
         """Set the enqueue event while accounting for lazy initialization."""
@@ -54,7 +70,7 @@ class Outbox:
     def enqueue_delete(self, element: Element) -> None:
         """Enqueue a deletion for the given element."""
         self.client.check_existence()
-        self.updates[element.id] = None
+        self.updates[element.id] = deleted
         self._set_enqueue_event()
 
     def enqueue_message(self, message_type: MessageType, data: Payload, target_id: ClientId) -> None:
@@ -72,11 +88,12 @@ class Outbox:
             try:
                 if not self._enqueue_event.is_set():
                     try:
-                        await helpers.wait_for(self._enqueue_event.wait(), timeout=1.0)
+                        await asyncio.wait_for(self._enqueue_event.wait(), timeout=1.0)
                     except (TimeoutError, asyncio.TimeoutError):
                         continue
 
-                if not self.client.has_socket_connection:
+                client = self.client
+                if not client or not client.has_socket_connection:
                     await asyncio.sleep(0.1)
                     continue
 
@@ -85,10 +102,10 @@ class Outbox:
                 coros = []
                 if self.updates:
                     data = {
-                        element_id: None if element is None else element._to_dict()  # pylint: disable=protected-access
+                        element_id: None if element is deleted else element._to_dict()  # type: ignore  # pylint: disable=protected-access
                         for element_id, element in self.updates.items()
                     }
-                    coros.append(self._emit((self.client.id, 'update', data)))
+                    coros.append(self._emit((client.id, 'update', data)))
                     self.updates.clear()
 
                 if self.messages:
@@ -115,9 +132,10 @@ class Outbox:
         if core.air is not None and core.air.is_air_target(client_id):
             await core.air.emit(message_type, data, room=client_id)
 
-        if not self.client.shared:
+        client = self.client
+        if client and not client.shared:
             self.message_history.append((self.next_message_id, time.time(), message))
-            max_age = core.sio.eio.ping_interval + core.sio.eio.ping_timeout + self.client.page.resolve_reconnect_timeout()
+            max_age = core.sio.eio.ping_interval + core.sio.eio.ping_timeout + client.page.resolve_reconnect_timeout()
             while self.message_history and self.message_history[0][1] < time.time() - max_age:
                 self.message_history.popleft()
             while len(self.message_history) > core.app.config.message_history_length:
@@ -141,8 +159,9 @@ class Outbox:
                 return
 
         # target message ID not found, reload the page
-        if not self.client.shared:
-            self.client.run_javascript('window.location.reload()')
+        client = self.client
+        if not client.shared:
+            client.run_javascript('window.location.reload()')
 
     def prune_history(self, next_message_id: MessageId) -> None:
         """Prune the message history up to the given message ID."""

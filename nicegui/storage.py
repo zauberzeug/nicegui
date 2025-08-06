@@ -5,7 +5,7 @@ import time
 import uuid
 from datetime import timedelta
 from pathlib import Path
-from typing import Dict, Optional, Union
+from typing import Optional, Union
 
 from starlette.middleware import Middleware
 from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
@@ -32,6 +32,8 @@ class RequestTrackingMiddleware(BaseHTTPMiddleware):
         request.state.responded = False
         await core.app.storage._create_user_storage(request.session['id'])  # pylint: disable=protected-access
         response = await call_next(request)
+        if response.headers.get('X-NiceGUI-Content') != 'page':
+            await core.app.storage.user.close()
         request.state.responded = True
         return response
 
@@ -49,24 +51,24 @@ def set_storage_secret(storage_secret: Optional[str] = None) -> None:
 
 class Storage:
     secret: Optional[str] = None
-    """Secret key for session storage."""
+    '''Secret key for session storage.'''
 
     path = Path(os.environ.get('NICEGUI_STORAGE_PATH', '.nicegui')).resolve()
-    """Path to use for local persistence. Defaults to ".nicegui"."""
+    '''Path to use for local persistence. Defaults to ".nicegui".'''
 
     redis_url = os.environ.get('NICEGUI_REDIS_URL', None)
-    """URL to use for shared persistent storage via Redis. Defaults to None, which means local file storage is used."""
+    '''URL to use for shared persistent storage via Redis. Defaults to None, which means local file storage is used.'''
 
     redis_key_prefix = os.environ.get('NICEGUI_REDIS_KEY_PREFIX', 'nicegui:')
-    """Prefix for Redis keys. Defaults to "nicegui:"."""
+    '''Prefix for Redis keys. Defaults to "nicegui:".'''
 
     max_tab_storage_age: float = timedelta(days=30).total_seconds()
-    """Maximum age in seconds before tab storage is automatically purged. Defaults to 30 days."""
+    '''Maximum age in seconds before tab storage is automatically purged. Defaults to 30 days.'''
 
     def __init__(self) -> None:
         self._general = Storage._create_persistent_dict('general')
-        self._users: Dict[str, PersistentDict] = {}
-        self._tabs: Dict[str, ObservableDict] = {}
+        self._users: dict[str, PersistentDict] = {}
+        self._tabs: dict[str, ObservableDict] = {}
 
     @staticmethod
     def _create_persistent_dict(id: str) -> PersistentDict:  # pylint: disable=redefined-builtin
@@ -76,7 +78,7 @@ class Storage:
             return FilePersistentDict(Storage.path / f'storage-{id}.json', encoding='utf-8')
 
     @property
-    def browser(self) -> Union[ReadOnlyDict, Dict]:
+    def browser(self) -> Union[ReadOnlyDict, dict]:
         """Small storage that is saved directly within the user's browser (encrypted cookie).
 
         The data is shared between all browser tabs and can only be modified before the initial request has been submitted.

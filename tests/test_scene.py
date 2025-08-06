@@ -1,4 +1,4 @@
-from typing import List
+import weakref
 
 import numpy as np
 from selenium.common.exceptions import JavascriptException
@@ -46,7 +46,7 @@ def test_no_object_duplication_on_index_client(screen: Screen):
 
 
 def test_no_object_duplication_with_page_builder(screen: Screen):
-    scene_html_ids: List[int] = []
+    scene_html_ids: list[int] = []
 
     @ui.page('/')
     def page():
@@ -159,3 +159,16 @@ def test_gltf(screen: Screen):
     screen.open('/')
     screen.wait(1.0)
     assert screen.selenium.execute_script(f'return scene_{scene.html_id}.children.length') == 5
+
+
+def test_no_cyclic_references(screen: Screen):
+    objects: weakref.WeakSet = weakref.WeakSet()
+
+    with ui.scene() as scene:
+        for _ in range(10):
+            objects.add(scene.box())
+
+    scene.clear()
+    assert len(objects) == 0
+
+    screen.open('/')

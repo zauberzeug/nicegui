@@ -2,7 +2,7 @@ import multiprocessing
 import os
 import sys
 from pathlib import Path
-from typing import Any, List, Literal, Optional, Tuple, TypedDict, Union
+from typing import Any, Literal, Optional, TypedDict, Union
 
 from fastapi.middleware.gzip import GZipMiddleware
 from starlette.routing import Route
@@ -17,7 +17,7 @@ from .air import Air
 from .client import Client
 from .language import Language
 from .logging import log
-from .middlewares import RedirectWithPrefixMiddleware
+from .middlewares import RedirectWithPrefixMiddleware, SetCacheControlMiddleware
 from .server import CustomServerConfig, Server
 
 APP_IMPORT_STRING = 'nicegui:app'
@@ -56,11 +56,12 @@ def run(*,
         binding_refresh_interval: float = 0.1,
         reconnect_timeout: float = 3.0,
         message_history_length: int = 1000,
+        cache_control_directives: str = 'public, max-age=31536000, immutable, stale-while-revalidate=31536000',
         fastapi_docs: Union[bool, DocsConfig] = False,
         show: bool = True,
         on_air: Optional[Union[str, Literal[True]]] = None,
         native: bool = False,
-        window_size: Optional[Tuple[int, int]] = None,
+        window_size: Optional[tuple[int, int]] = None,
         fullscreen: bool = False,
         frameless: bool = False,
         reload: bool = True,
@@ -90,6 +91,7 @@ def run(*,
     :param binding_refresh_interval: time between binding updates (default: `0.1` seconds, bigger is more CPU friendly)
     :param reconnect_timeout: maximum time the server waits for the browser to reconnect (default: 3.0 seconds)
     :param message_history_length: maximum number of messages that will be stored and resent after a connection interruption (default: 1000, use 0 to disable, *added in version 2.9.0*)
+    :param cache_control_directives: cache control directives for internal static files (default: `'public, max-age=31536000, immutable, stale-while-revalidate=31536000'`)
     :param fastapi_docs: enable FastAPI's automatic documentation with Swagger UI, ReDoc, and OpenAPI JSON (bool or dictionary as described `here <https://fastapi.tiangolo.com/tutorial/metadata/>`_, default: `False`, *updated in version 2.9.0*)
     :param show: automatically open the UI in a browser tab (default: `True`)
     :param on_air: tech preview: `allows temporary remote access <https://nicegui.io/documentation/section_configuration_deployment#nicegui_on_air>`_ if set to `True` (default: disabled)
@@ -119,6 +121,7 @@ def run(*,
         binding_refresh_interval=binding_refresh_interval,
         reconnect_timeout=reconnect_timeout,
         message_history_length=message_history_length,
+        cache_control_directives=cache_control_directives,
         tailwind=tailwind,
         prod_js=prod_js,
         show_welcome_message=show_welcome_message,
@@ -127,6 +130,7 @@ def run(*,
     if not helpers.is_pytest():
         core.app.add_middleware(GZipMiddleware)
     core.app.add_middleware(RedirectWithPrefixMiddleware)
+    core.app.add_middleware(SetCacheControlMiddleware)
 
     for route in core.app.routes:
         if not isinstance(route, Route):
@@ -197,7 +201,7 @@ def run(*,
     if show:
         helpers.schedule_browser(protocol, host, port)
 
-    def split_args(args: str) -> List[str]:
+    def split_args(args: str) -> list[str]:
         return [a.strip() for a in args.split(',')]
 
     if kwargs.get('workers', 1) > 1:

@@ -1,6 +1,6 @@
-from collections.abc import Generator, Iterable
+from collections.abc import Generator, Iterable, Iterator
 from copy import deepcopy
-from typing import Any, Callable, Dict, Iterator, List, Literal, Optional, Union
+from typing import Any, Callable, Literal, Optional, Union
 
 from ..events import GenericEventArguments, Handler, ValueChangeEventArguments
 from .choice_element import ChoiceElement
@@ -12,7 +12,7 @@ from .mixins.validation_element import ValidationDict, ValidationElement, Valida
 class Select(LabelElement, ValidationElement, ChoiceElement, DisableableElement, component='select.js'):
 
     def __init__(self,
-                 options: Union[List, Dict], *,
+                 options: Union[list, dict], *,
                  label: Optional[str] = None,
                  value: Any = None,
                  on_change: Optional[Handler[ValueChangeEventArguments]] = None,
@@ -89,10 +89,18 @@ class Select(LabelElement, ValidationElement, ChoiceElement, DisableableElement,
         return self._is_showing_popup
 
     def _event_args_to_value(self, e: GenericEventArguments) -> Any:
+        # pylint: disable=too-many-nested-blocks
         if self.multiple:
             if e.args is None:
                 return []
             else:
+                if self._props.get('new-value-mode') == 'add-unique':
+                    # handle issue #4896: eliminate duplicate arguments
+                    for arg1 in [a for a in e.args if isinstance(a, str)]:
+                        for arg2 in [a for a in e.args if isinstance(a, dict)]:
+                            if arg1 == arg2['label']:
+                                e.args.remove(arg1)
+                                break
                 args = [self._values[arg['value']] if isinstance(arg, dict) else arg for arg in e.args]
                 for arg in e.args:
                     if isinstance(arg, str):

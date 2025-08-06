@@ -1,4 +1,4 @@
-from typing import Dict, Optional
+from typing import Optional
 
 from typing_extensions import Self
 
@@ -16,10 +16,10 @@ from ..events import (
 class JsonEditor(Element, component='json_editor.js', dependencies=['lib/vanilla-jsoneditor/standalone.js']):
 
     def __init__(self,
-                 properties: Dict, *,
+                 properties: dict, *,
                  on_select: Optional[Handler[JsonEditorSelectEventArguments]] = None,
                  on_change: Optional[Handler[JsonEditorChangeEventArguments]] = None,
-                 schema: Optional[Dict] = None,
+                 schema: Optional[dict] = None,
                  ) -> None:
         """JSONEditor
 
@@ -60,7 +60,7 @@ class JsonEditor(Element, component='json_editor.js', dependencies=['lib/vanilla
         return self
 
     @property
-    def properties(self) -> Dict:
+    def properties(self) -> dict:
         """The property dictionary."""
         return self._props['properties']
 
