@@ -137,10 +137,10 @@ class ValueChangeEventArguments(UiEventArguments):
     previous_value: Any = ...
 
     def __post_init__(self):
-        # DEPRECATED: previous_value will be required in NiceGUI 3.0
+        # DEPRECATED: previous_value will be required in NiceGUI 4.0
         if self.previous_value is ...:
             helpers.warn_once('The new event argument `ValueChangeEventArguments.previous_value` is not set. '
-                              'In NiceGUI 3.0 this will raise an error.')
+                              'In NiceGUI 4.0 this will raise an error.')
 
 
 @dataclass(**KWONLY_SLOTS)
