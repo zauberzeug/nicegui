@@ -228,16 +228,19 @@
   max-width: none; /* HACK: make the video show up */
 }
 .nicegui-log {
-  padding: 0.5rem;
+  outline: 1px solid rgba(127, 159, 191, 0.15);
+}
+.nicegui-log .q-scrollarea__container {
   scroll-padding-bottom: 0.5rem;
   scroll-snap-type: y proximity;
-  overflow-y: scroll;
-  outline: 1px solid rgba(127, 159, 191, 0.15);
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-  white-space: pre;
   background-color: rgba(127, 159, 191, 0.05);
 }
-.nicegui-log > :last-child {
+.nicegui-log .q-scrollarea__content {
+  white-space: pre;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  padding: 0.5rem;
+}
+.nicegui-log .q-scrollarea__content > :last-child {
   scroll-snap-align: end;
 }
 h6.q-timeline__title {
