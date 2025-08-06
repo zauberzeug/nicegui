@@ -2,49 +2,48 @@
   "vue": {
     "destination": "nicegui/static",
     "keep": [
-      "package/dist/vue\\.global(\\.prod)?\\.js"
+      "dist/vue\\.global(\\.prod)?\\.js"
     ],
     "rename": {
-      "package/dist": ".."
+      "dist": ".."
     },
     "version": "3.4.38"
   },
   "quasar": {
     "destination": "nicegui/static",
     "keep": [
-      "package/dist/quasar\\.umd(\\.prod)?\\.js",
-      "package/dist/quasar(\\.prod)?\\.css",
-      "package/dist/lang/.*\\.umd\\.prod\\.js"
+      "dist/quasar\\.umd(\\.prod)?\\.js",
+      "dist/quasar(\\.prod)?\\.css",
+      "dist/lang/.*\\.umd\\.prod\\.js"
     ],
     "rename": {
-      "package/dist": ".."
+      "dist": ".."
     },
     "version": "2.16.9"
   },
   "tailwindcss": {
     "destination": "nicegui/static",
     "keep": [],
-    "download": "https://cdn.tailwindcss.com",
     "rename": "../tailwindcss.min.js",
     "version": "3.4.10"
   },
   "socket.io": {
     "destination": "nicegui/static",
     "keep": [
-      "package/client-dist/socket\\.io\\.min\\.js(\\.map)?"
+      "client-dist/socket\\.io\\.min\\.js(\\.map)?"
     ],
     "rename": {
-      "package/client-dist": ".."
+      "client-dist": ".."
     },
     "version": "4.7.5"
   },
   "es-module-shims": {
     "destination": "nicegui/static",
     "keep": [
-      "package/dist/es-module-shims\\.js"
+      "dist/es-module-shims\\.js"
     ],
     "rename": {
-      "package/dist": ".."
+      "dist": ".."
     },
     "version": "1.10.0"
   },
@@ -52,78 +51,78 @@
     "package": "ag-grid-community",
     "destination": "nicegui/elements/lib",
     "keep": [
-      "package/dist/ag-grid-community(\\.min)?\\.js"
+      "dist/ag-grid-community(\\.min)?\\.js"
     ],
     "rename": {
-      "package/dist/": ""
+      "dist/": ""
     },
     "version": "32.1.0"
   },
   "echarts": {
     "destination": "nicegui/elements/lib",
     "keep": [
-      "package/dist/echarts\\.min\\.js",
-      "package/dist/echarts\\.js\\.map"
+      "dist/echarts\\.min\\.js",
+      "dist/echarts\\.js\\.map"
     ],
     "rename": {
-      "package/dist/": ""
+      "dist/": ""
     },
     "version": "5.5.1"
   },
   "echarts-gl": {
     "destination": "nicegui/elements/lib",
     "keep": [
-      "package/dist/echarts-gl\\.min\\.js",
-      "package/dist/echarts-gl\\.js\\.map"
+      "dist/echarts-gl\\.min\\.js",
+      "dist/echarts-gl\\.js\\.map"
     ],
     "rename": {
-      "package/dist/": ""
+      "dist/": ""
     },
     "version": "2.0.9"
   },
   "leaflet": {
     "destination": "nicegui/elements/lib/leaflet",
     "keep": [
-      "package/dist/leaflet\\.css",
-      "package/dist/leaflet\\.js",
-      "package/dist/leaflet\\.js\\.map",
-      "package/dist/images/.*"
+      "dist/leaflet\\.css",
+      "dist/leaflet\\.js",
+      "dist/leaflet\\.js\\.map",
+      "dist/images/.*"
     ],
     "rename": {
-      "package/dist/": ""
+      "dist/": ""
     },
     "version": "1.9.4"
   },
   "leaflet-draw": {
     "destination": "nicegui/elements/lib/leaflet",
     "keep": [
-      "package/dist/leaflet\\.draw\\.css",
-      "package/dist/leaflet\\.draw\\.js",
-      "package/dist/images/.*"
+      "dist/leaflet\\.draw\\.css",
+      "dist/leaflet\\.draw\\.js",
+      "dist/images/.*"
     ],
     "rename": {
-      "package/dist/": ""
+      "dist/": ""
     },
     "version": "1.0.4"
   },
   "mermaid": {
     "destination": "nicegui/elements/lib",
     "keep": [
-      "package/dist/mermaid.esm.min\\.mjs",
-      "package/dist/chunks/mermaid.esm.min/.*\\.mjs"
+      "dist/mermaid.esm.min\\.mjs",
+      "dist/chunks/mermaid.esm.min/.*\\.mjs"
     ],
     "rename": {
-      "package/dist/": ""
+      "dist/": ""
     },
     "version": "11.0.2"
   },
   "nipplejs": {
     "destination": "nicegui/elements/lib",
     "keep": [
-      "package/dist/nipplejs(\\.min)?\\.js"
+      "dist/nipplejs(\\.min)?\\.js"
     ],
     "rename": {
-      "package/dist/": ""
+      "dist/": ""
     },
     "version": "0.10.2"
   },
@@ -131,33 +130,33 @@
     "package": "plotly.js",
     "destination": "nicegui/elements/lib",
     "keep": [
-      "package/dist/plotly(\\.min)?\\.js"
+      "dist/plotly(\\.min)?\\.js"
     ],
     "rename": {
-      "package/dist/": ""
+      "dist/": ""
     },
     "version": "2.35.0"
   },
   "three": {
     "destination": "nicegui/elements/lib",
     "keep": [
-      "package/build/three\\.module\\.js",
-      "package/examples/jsm/renderers/CSS2DRenderer(\\.min)?\\.js",
-      "package/examples/jsm/renderers/CSS3DRenderer(\\.min)?\\.js",
-      "package/examples/jsm/controls/OrbitControls(\\.min)?\\.js",
-      "package/examples/jsm/controls/DragControls(\\.min)?\\.js",
-      "package/examples/jsm/loaders/STLLoader(\\.min)?\\.js",
-      "package/examples/jsm/loaders/GLTFLoader(\\.min)?\\.js",
-      "package/examples/jsm/libs/tween\\.module(\\.min)?\\.js",
-      "package/examples/jsm/utils/BufferGeometryUtils(\\.min)?\\.js"
+      "build/three\\.module\\.js",
+      "examples/jsm/renderers/CSS2DRenderer(\\.min)?\\.js",
+      "examples/jsm/renderers/CSS3DRenderer(\\.min)?\\.js",
+      "examples/jsm/controls/OrbitControls(\\.min)?\\.js",
+      "examples/jsm/controls/DragControls(\\.min)?\\.js",
+      "examples/jsm/loaders/STLLoader(\\.min)?\\.js",
+      "examples/jsm/loaders/GLTFLoader(\\.min)?\\.js",
+      "examples/jsm/libs/tween\\.module(\\.min)?\\.js",
+      "examples/jsm/utils/BufferGeometryUtils(\\.min)?\\.js"
     ],
     "rename": {
-      "package/build/": "",
-      "package/examples/jsm/renderers/": "modules/",
-      "package/examples/jsm/controls/": "modules/",
-      "package/examples/jsm/loaders/": "modules/",
-      "package/examples/jsm/libs/": "modules/",
-      "package/examples/jsm/utils/": "modules/"
+      "build/": "",
+      "examples/jsm/renderers/": "modules/",
+      "examples/jsm/controls/": "modules/",
+      "examples/jsm/loaders/": "modules/",
+      "examples/jsm/libs/": "modules/",
+      "examples/jsm/utils/": "modules/"
     },
     "version": "0.168.0"
   },
@@ -165,22 +164,19 @@
     "package": "@tweenjs/tween.js",
     "destination": "nicegui/elements/lib",
     "keep": [
-      "package/dist/tween\\.umd(\\.min)?\\.js"
+      "dist/tween\\.umd(\\.min)?\\.js"
     ],
     "rename": {
-      "package/dist/": ""
+      "dist/": ""
     },
     "version": "25.0.0"
   },
   "vanilla-jsoneditor": {
     "destination": "nicegui/elements/lib",
     "keep": [
-      "package/standalone\\.js",
-      "package/standalone\\.js\\.map"
+      "standalone\\.js",
+      "standalone\\.js\\.map"
     ],
-    "rename": {
-      "package/": ""
-    },
     "version": "0.23.8"
   }
 }
