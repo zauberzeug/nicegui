@@ -1,12 +1,9 @@
-FROM python:3.8-slim
+FROM python:3.9-slim
 
 RUN apt update && apt install curl build-essential -y
 
-# We use Poetry for dependency management
-RUN curl -sSL https://install.python-poetry.org | python3 - && \
-    cd /usr/local/bin && \
-    ln -s ~/.local/bin/poetry && \
-    poetry config virtualenvs.create false
+RUN python -m pip install --no-cache-dir poetry \
+    && poetry config virtualenvs.create false
 
 WORKDIR /app
 

@@ -6,22 +6,9 @@ import dataclasses
 import time
 import weakref
 from collections import defaultdict
-from typing import (
-    TYPE_CHECKING,
-    Any,
-    Callable,
-    DefaultDict,
-    Dict,
-    Iterable,
-    List,
-    Mapping,
-    Optional,
-    Set,
-    Tuple,
-    Type,
-    TypeVar,
-    Union,
-)
+from collections.abc import Iterable, Mapping
+from contextvars import ContextVar
+from typing import TYPE_CHECKING, Any, Callable, TypeVar
 
 from typing_extensions import dataclass_transform
 
@@ -33,27 +20,29 @@ if TYPE_CHECKING:
 
 MAX_PROPAGATION_TIME = 0.01
 
-bindings: DefaultDict[Tuple[int, str], List] = defaultdict(list)
-bindable_properties: Dict[Tuple[int, str], weakref.finalize] = {}
-active_links: List[Tuple[Any, str, Any, str, Callable[[Any], Any]]] = []
+propagation_visited: ContextVar[set[tuple[int, str]] | None] = ContextVar('propagation_visited', default=None)
+
+bindings: defaultdict[tuple[int, str], list[tuple[Any, Any, str, Callable[[Any], Any] | None]]] = defaultdict(list)
+bindable_properties: weakref.WeakValueDictionary[tuple[int, str], Any] = weakref.WeakValueDictionary()
+active_links: list[tuple[Any, str, Any, str, Callable[[Any], Any] | None]] = []
 
 TC = TypeVar('TC', bound=type)
 T = TypeVar('T')
 
 
-def _has_attribute(obj: Union[object, Mapping], name: str) -> Any:
+def _has_attribute(obj: object | Mapping, name: str) -> Any:
     if isinstance(obj, Mapping):
         return name in obj
     return hasattr(obj, name)
 
 
-def _get_attribute(obj: Union[object, Mapping], name: str) -> Any:
+def _get_attribute(obj: object | Mapping, name: str) -> Any:
     if isinstance(obj, Mapping):
         return obj[name]
     return getattr(obj, name)
 
 
-def _set_attribute(obj: Union[object, Mapping], name: str, value: Any) -> None:
+def _set_attribute(obj: object | Mapping, name: str, value: Any) -> None:
     if isinstance(obj, dict):
         obj[name] = value
     else:
@@ -64,29 +53,41 @@ async def refresh_loop() -> None:
     """Refresh all bindings in an endless loop."""
     while True:
         _refresh_step()
-        await asyncio.sleep(core.app.config.binding_refresh_interval)
+        try:
+            await asyncio.sleep(core.app.config.binding_refresh_interval)
+        except asyncio.CancelledError:
+            break
 
 
 def _refresh_step() -> None:
-    visited: Set[Tuple[int, str]] = set()
     t = time.time()
     for link in active_links:
         (source_obj, source_name, target_obj, target_name, transform) = link
         if _has_attribute(source_obj, source_name):
-            value = transform(_get_attribute(source_obj, source_name))
+            source_value = _get_attribute(source_obj, source_name)
+            value = transform(source_value) if transform else source_value
             if not _has_attribute(target_obj, target_name) or _get_attribute(target_obj, target_name) != value:
                 _set_attribute(target_obj, target_name, value)
-                _propagate(target_obj, target_name, visited)
+                _propagate(target_obj, target_name)
         del link, source_obj, target_obj  # pylint: disable=modified-iterating-list
     if time.time() - t > MAX_PROPAGATION_TIME:
         log.warning(f'binding propagation for {len(active_links)} active links took {time.time() - t:.3f} s')
 
 
-def _propagate(source_obj: Any, source_name: str, visited: Optional[Set[Tuple[int, str]]] = None) -> None:
-    if visited is None:
-        visited = set()
+def _propagate(source_obj: Any, source_name: str) -> None:
+    token = propagation_visited.set(set())
+    try:
+        _propagate_recursively(source_obj, source_name)
+    finally:
+        propagation_visited.reset(token)
+
+
+def _propagate_recursively(source_obj: Any, source_name: str) -> None:
+    visited = propagation_visited.get()
+    assert visited is not None, 'propagation_visited is not set'
+
     source_obj_id = id(source_obj)
-    if source_obj_id in visited:
+    if (source_obj_id, source_name) in visited:
         return
     visited.add((source_obj_id, source_name))
 
@@ -98,13 +99,14 @@ def _propagate(source_obj: Any, source_name: str, visited: Optional[Set[Tuple[in
         if (id(target_obj), target_name) in visited:
             continue
 
-        target_value = transform(source_value)
+        target_value = transform(source_value) if transform else source_value
         if not _has_attribute(target_obj, target_name) or _get_attribute(target_obj, target_name) != target_value:
             _set_attribute(target_obj, target_name, target_value)
-            _propagate(target_obj, target_name, visited)
+            _propagate_recursively(target_obj, target_name)
 
 
-def bind_to(self_obj: Any, self_name: str, other_obj: Any, other_name: str, forward: Callable[[Any], Any]) -> None:
+def bind_to(self_obj: Any, self_name: str, other_obj: Any, other_name: str,
+            forward: Callable[[Any], Any] | None = None) -> None:
     """Bind the property of one object to the property of another object.
 
     The binding works one way only, from the first object to the second.
@@ -114,7 +116,7 @@ def bind_to(self_obj: Any, self_name: str, other_obj: Any, other_name: str, forw
     :param self_name: The name of the property to bind from.
     :param other_obj: The object to bind to.
     :param other_name: The name of the property to bind to.
-    :param forward: A function to apply to the value before applying it.
+    :param forward: A function to apply to the value before applying it (default: identity).
     """
     bindings[(id(self_obj), self_name)].append((self_obj, other_obj, other_name, forward))
     if (id(self_obj), self_name) not in bindable_properties:
@@ -122,7 +124,8 @@ def bind_to(self_obj: Any, self_name: str, other_obj: Any, other_name: str, forw
     _propagate(self_obj, self_name)
 
 
-def bind_from(self_obj: Any, self_name: str, other_obj: Any, other_name: str, backward: Callable[[Any], Any]) -> None:
+def bind_from(self_obj: Any, self_name: str, other_obj: Any, other_name: str,
+              backward: Callable[[Any], Any] | None = None) -> None:
     """Bind the property of one object from the property of another object.
 
     The binding works one way only, from the second object to the first.
@@ -132,7 +135,7 @@ def bind_from(self_obj: Any, self_name: str, other_obj: Any, other_name: str, ba
     :param self_name: The name of the property to bind to.
     :param other_obj: The object to bind from.
     :param other_name: The name of the property to bind from.
-    :param backward: A function to apply to the value before applying it.
+    :param backward: A function to apply to the value before applying it (default: identity).
     """
     bindings[(id(other_obj), other_name)].append((other_obj, self_obj, self_name, backward))
     if (id(other_obj), other_name) not in bindable_properties:
@@ -141,7 +144,8 @@ def bind_from(self_obj: Any, self_name: str, other_obj: Any, other_name: str, ba
 
 
 def bind(self_obj: Any, self_name: str, other_obj: Any, other_name: str, *,
-         forward: Callable[[Any], Any] = lambda x: x, backward: Callable[[Any], Any] = lambda x: x) -> None:
+         forward: Callable[[Any], Any] | None = None,
+         backward: Callable[[Any], Any] | None = None) -> None:
     """Bind the property of one object to the property of another object.
 
     The binding works both ways, from the first object to the second and from the second to the first.
@@ -152,8 +156,8 @@ def bind(self_obj: Any, self_name: str, other_obj: Any, other_name: str, *,
     :param self_name: The name of the first property to bind.
     :param other_obj: The second object to bind.
     :param other_name: The name of the second property to bind.
-    :param forward: A function to apply to the value before applying it to the second object.
-    :param backward: A function to apply to the value before applying it to the first object.
+    :param forward: A function to apply to the value before applying it to the second object (default: identity).
+    :param backward: A function to apply to the value before applying it to the first object (default: identity).
     """
     bind_from(self_obj, self_name, other_obj, other_name, backward=backward)
     bind_to(self_obj, self_name, other_obj, other_name, forward=forward)
@@ -161,7 +165,7 @@ def bind(self_obj: Any, self_name: str, other_obj: Any, other_name: str, *,
 
 class BindableProperty:
 
-    def __init__(self, on_change: Optional[Callable[..., Any]] = None) -> None:
+    def __init__(self, on_change: Callable[..., Any] | None = None) -> None:
         self._change_handler = on_change
 
     def __set_name__(self, _, name: str) -> None:
@@ -179,7 +183,7 @@ class BindableProperty:
             return
         setattr(owner, '___' + self.name, value)
         key = (id(owner), str(self.name))
-        bindable_properties.setdefault(key, weakref.finalize(owner, lambda: bindable_properties.pop(key, None)))
+        bindable_properties[key] = owner
         _propagate(owner, self.name)
         if value_changed and self._change_handler is not None:
             self._change_handler(owner, value)
@@ -204,10 +208,9 @@ def remove(objects: Iterable[Any]) -> None:
         ]
         if not binding_list:
             del bindings[key]
-    for (obj_id, name), finalizer in list(bindable_properties.items()):
+    for obj_id, name in list(bindable_properties):
         if obj_id in object_ids:
             del bindable_properties[(obj_id, name)]
-            finalizer.detach()
 
 
 def reset() -> None:
@@ -221,9 +224,9 @@ def reset() -> None:
 
 
 @dataclass_transform()
-def bindable_dataclass(cls: Optional[TC] = None, /, *,
-                       bindable_fields: Optional[Iterable[str]] = None,
-                       **kwargs: Any) -> Union[Type[DataclassInstance], IdentityFunction]:
+def bindable_dataclass(cls: TC | None = None, /, *,
+                       bindable_fields: Iterable[str] | None = None,
+                       **kwargs: Any) -> type[DataclassInstance] | IdentityFunction:
     """A decorator that transforms a class into a dataclass with bindable fields.
 
     This decorator extends the functionality of ``dataclasses.dataclass`` by making specified fields bindable.
@@ -248,8 +251,8 @@ def bindable_dataclass(cls: Optional[TC] = None, /, *,
         if kwargs.get(unsupported_option):
             raise ValueError(f'`{unsupported_option}=True` is not supported with bindable_dataclass')
 
-    dataclass: Type[DataclassInstance] = dataclasses.dataclass(**kwargs)(cls)
-    field_names = set(field.name for field in dataclasses.fields(dataclass))
+    dataclass: type[DataclassInstance] = dataclasses.dataclass(**kwargs)(cls)
+    field_names = {field.name for field in dataclasses.fields(dataclass)}
     if bindable_fields is None:
         bindable_fields = field_names
     for field_name in bindable_fields:
@@ -261,12 +264,12 @@ def bindable_dataclass(cls: Optional[TC] = None, /, *,
     return dataclass
 
 
-def _make_copyable(cls: Type[T]) -> None:
+def _make_copyable(cls: type[T]) -> None:
     """Tell the copy module to update the ``bindable_properties`` dictionary when an object is copied."""
     if cls in copyreg.dispatch_table:
         return
 
-    def _pickle_function(obj: T) -> Tuple[Callable[..., T], Tuple[Any, ...]]:
+    def _pickle_function(obj: T) -> tuple[Callable[..., T], tuple[Any, ...]]:
         reduced = obj.__reduce__()
         assert isinstance(reduced, tuple)
         creator = reduced[0]

@@ -9,7 +9,7 @@ import tempfile
 import time
 import warnings
 from threading import Event, Thread
-from typing import Any, Callable, Dict, List, Tuple
+from typing import Any, Callable
 
 from .. import core, helpers, optional_features
 from ..logging import log
@@ -47,14 +47,16 @@ def _open_window(
     closed = Event()
     window.events.closed += closed.set
     _start_window_method_executor(window, method_queue, response_queue, closed)
-    webview.start(storage_path=tempfile.mkdtemp(), **core.app.native.start_args)
+    if not core.app.native.start_args.get('private_mode', True) and 'storage_path' not in core.app.native.start_args:
+        log.warning('Pass in a `storage_path` to properly disable `private_mode` for the native app.')
+    webview.start(**{'storage_path': tempfile.mkdtemp(), **core.app.native.start_args})
 
 
 def _start_window_method_executor(window: webview.Window,
                                   method_queue: mp.Queue,
                                   response_queue: mp.Queue,
                                   closed: Event) -> None:
-    def execute(method: Callable, args: Tuple[Any, ...], kwargs: Dict[str, Any]) -> None:
+    def execute(method: Callable, args: tuple[Any, ...], kwargs: dict[str, Any]) -> None:
         try:
             response = method(*args, **kwargs)
             if response is not None or 'dialog' in method.__name__:
@@ -63,7 +65,7 @@ def _start_window_method_executor(window: webview.Window,
             log.exception(f'error in window.{method.__name__}')
 
     def window_method_executor() -> None:
-        pending_executions: List[Thread] = []
+        pending_executions: list[Thread] = []
         while not closed.is_set():
             try:
                 method_name, args, kwargs = method_queue.get(block=False)
@@ -104,6 +106,7 @@ def activate(host: str, port: int, title: str, width: int, height: int, fullscre
         while not core.app.is_stopped:
             time.sleep(0.1)
         _thread.interrupt_main()
+        native.remove_queues()
 
     if not optional_features.has('webview'):
         log.error('Native mode is not supported in this configuration.\n'
@@ -111,6 +114,7 @@ def activate(host: str, port: int, title: str, width: int, height: int, fullscre
         sys.exit(1)
 
     mp.freeze_support()
+    native.create_queues()
     args = host, port, title, width, height, fullscreen, frameless, native.method_queue, native.response_queue
     process = mp.Process(target=_open_window, args=args, daemon=True)
     process.start()

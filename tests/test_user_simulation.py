@@ -1,13 +1,14 @@
 import csv
+import re
 from io import BytesIO
-from typing import Callable, Dict, Type, Union
+from typing import Callable, Union
 
 import pytest
 from fastapi import UploadFile
 from fastapi.datastructures import Headers
 from fastapi.responses import PlainTextResponse
 
-from nicegui import app, events, ui
+from nicegui import ElementFilter, app, events, ui
 from nicegui.testing import User
 
 # pylint: disable=missing-function-docstring
@@ -80,7 +81,7 @@ async def test_assertion_raised_when_element_not_found(user: User) -> None:
 
 
 @pytest.mark.parametrize('storage_builder', [lambda: app.storage.browser, lambda: app.storage.user])
-async def test_storage(user: User, storage_builder: Callable[[], Dict]) -> None:
+async def test_storage(user: User, storage_builder: Callable[[], dict]) -> None:
     @ui.page('/')
     def page():
         storage = storage_builder()
@@ -175,7 +176,7 @@ async def test_notification(user: User) -> None:
 
 
 @pytest.mark.parametrize('kind', [ui.checkbox, ui.switch])
-async def test_checkbox_and_switch(user: User, kind: Type) -> None:
+async def test_checkbox_and_switch(user: User, kind: type) -> None:
     element = kind('my element', on_change=lambda e: ui.notify(f'Changed: {e.value}'))
     ui.label().bind_text_from(element, 'value', lambda v: 'enabled' if v else 'disabled')
 
@@ -192,7 +193,7 @@ async def test_checkbox_and_switch(user: User, kind: Type) -> None:
 
 
 @pytest.mark.parametrize('kind', [ui.input, ui.editor, ui.codemirror])
-async def test_input(user: User, kind: Type) -> None:
+async def test_input(user: User, kind: type) -> None:
     element = kind(on_change=lambda e: ui.notify(f'Changed: {e.value}'))
     ui.label().bind_text_from(element, 'value', lambda v: f'Value: {v}')
 
@@ -361,6 +362,65 @@ async def test_select(user: User) -> None:
     await user.should_not_see('C')
 
 
+async def test_select_from_dict(user: User) -> None:
+    ui.select(options={'value A': 'label A', 'value B': 'label B', 'value C': 'label C'},
+              on_change=lambda e: ui.notify(f'Notify: {e.value}'))
+
+    await user.open('/')
+    await user.should_not_see('label A')
+    await user.should_not_see('label B')
+    await user.should_not_see('label C')
+
+    user.find(ui.select).click()
+    await user.should_see('label A')
+    await user.should_see('label B')
+    await user.should_see('label C')
+
+    user.find('label A').click()
+    await user.should_see('Notify: value A')
+
+
+async def test_select_multiple_from_dict(user: User) -> None:
+    ui.select(options={'value A': 'label A', 'value B': 'label B', 'value C': 'label C'},
+              multiple=True, on_change=lambda e: ui.notify(f'Notify: {e.value}'))
+
+    await user.open('/')
+    await user.should_not_see('label A')
+    await user.should_not_see('label B')
+    await user.should_not_see('label C')
+
+    user.find(ui.select).click()
+    await user.should_see('label A')
+    await user.should_see('label B')
+    await user.should_see('label C')
+
+    user.find('label A').click()
+    await user.should_see("Notify: ['value A']")
+
+    user.find('label B').click()
+    await user.should_see("Notify: ['value A', 'value B']")
+
+
+async def test_select_multiple_values(user: User):
+    select = ui.select(['A', 'B'], value='A',
+                       multiple=True, on_change=lambda e: ui.notify(f'Notify: {e.value}'))
+    ui.label().bind_text_from(select, 'value', backward=lambda v: f'value = {v}')
+
+    await user.open('/')
+    await user.should_see("value = ['A']")
+
+    user.find(ui.select).click()
+    user.find('B').click()
+    await user.should_see("Notify: ['A', 'B']")
+    await user.should_see("value = ['A', 'B']")
+    assert select.value == ['A', 'B']
+
+    user.find('A').click()
+    await user.should_see("Notify: ['B']")
+    await user.should_see("value = ['B']")
+    assert select.value == ['B']
+
+
 async def test_upload_table(user: User) -> None:
     def receive_file(e: events.UploadEventArguments) -> None:
         reader = csv.DictReader(e.content.read().decode('utf-8').splitlines())
@@ -392,7 +452,10 @@ async def test_download_file(user: User, data: Union[str, bytes]) -> None:
 
     @ui.page('/')
     def page():
-        ui.button('Download', on_click=lambda: ui.download(data))
+        if isinstance(data, str):
+            ui.button('Download', on_click=lambda: ui.download.file(data))
+        else:
+            ui.button('Download', on_click=lambda: ui.download.content(data))
 
     await user.open('/')
     assert len(user.download.http_responses) == 0
@@ -479,3 +542,36 @@ async def test_typing_to_disabled_element(user: User) -> None:
     assert target.value == initial_value
     await user.should_see(initial_value)
     await user.should_not_see(given_new_input)
+
+
+async def test_drawer(user: User):
+    @ui.page('/')
+    def test_page():
+        with ui.left_drawer() as drawer:
+            ui.label('Hello')
+        ui.label().bind_text_from(drawer, 'value', lambda v: f'Drawer: {v}')
+
+    await user.open('/')
+    await user.should_see('Hello')
+    await user.should_see('Drawer: True')
+
+
+async def test_run_javascript(user: User):
+    @ui.page('/')
+    async def page():
+        await ui.context.client.connected()
+        date = await ui.run_javascript('Math.sqrt(1764)')
+        ui.label(date)
+
+    user.javascript_rules[re.compile(r'Math.sqrt\((\d+)\)')] = lambda match: int(match.group(1))**0.5
+    await user.open('/')
+    await user.should_see('42')
+
+
+async def test_context_manager(user: User) -> None:
+    ui.button('click me')
+
+    await user.open('/')
+    with user:
+        elements = list(ElementFilter(kind=ui.button))
+    assert len(elements) == 1 and isinstance(elements[0], ui.button)

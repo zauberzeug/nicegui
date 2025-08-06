@@ -1,41 +1,16 @@
-import inspect
-import re
 from typing import Callable, Optional, Union
-
-import isort
 
 from nicegui import helpers, json, ui
 
+from .code_extraction import get_full_code
 from .intersection_observer import IntersectionObserver as intersection_observer
 from .windows import browser_window, python_window
-
-UNCOMMENT_PATTERN = re.compile(r'^(\s*)# ?')
-
-
-def _uncomment(text: str) -> str:
-    return UNCOMMENT_PATTERN.sub(r'\1', text)  # NOTE: non-executed lines should be shown in the code examples
 
 
 def demo(f: Callable, *, lazy: bool = True, tab: Optional[Union[str, Callable]] = None) -> Callable:
     """Render a callable as a demo with Python code and browser window."""
     with ui.column().classes('w-full items-stretch gap-8 no-wrap min-[1500px]:flex-row'):
-        code = inspect.getsource(f).split('# END OF DEMO', 1)[0].strip().splitlines()
-        code = [line for line in code if not line.endswith('# HIDE')]
-        while not code[0].strip().startswith(('def', 'async def')):
-            del code[0]
-        del code[0]
-        if code[0].strip().startswith('"""'):
-            while code[0].strip() != '"""':
-                del code[0]
-            del code[0]
-        indentation = len(code[0]) - len(code[0].lstrip())
-        code = [line[indentation:] for line in code]
-        code = ['from nicegui import ui'] + [_uncomment(line) for line in code]
-        code = ['' if line == '#' else line for line in code]
-        if not code[-1].startswith('ui.run('):
-            code.append('')
-            code.append('ui.run()')
-        full_code = isort.code('\n'.join(code), no_sections=True, lines_after_imports=1)
+        full_code = get_full_code(f)
         with python_window(classes='w-full max-w-[44rem]'):
             ui.markdown(f'````python\n{full_code}\n````')
             ui.icon('content_copy', size='xs') \
@@ -45,7 +20,7 @@ def demo(f: Callable, *, lazy: bool = True, tab: Optional[Union[str, Callable]] 
         with browser_window(title=tab,
                             classes='w-full max-w-[44rem] min-[1500px]:max-w-[20rem] min-h-[10rem] browser-window') as window:
             if lazy:
-                spinner = ui.spinner(size='lg').props('thickness=2')
+                spinner = ui.image('/static/loading.gif').classes('w-8 h-8').props('no-spinner no-transition')
 
                 async def handle_intersection():
                     window.remove(spinner)

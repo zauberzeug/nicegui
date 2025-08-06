@@ -129,7 +129,7 @@ def show_and_hide_columns():
     ]
     table = ui.table(columns=columns, rows=rows, row_key='name')
 
-    def toggle(column: Dict, visible: bool) -> None:
+    def toggle(column: dict, visible: bool) -> None:
         column['classes'] = '' if visible else 'hidden'
         column['headerClasses'] = '' if visible else 'hidden'
         table.update()
@@ -403,6 +403,18 @@ def table_cells_with_links():
             <a :href="props.value">{{ props.value }}</a>
         </q-td>
     ''')
+
+
+@doc.demo('Table cells with HTML', '''
+    This demo shows how to define a named slot to render HTML content.
+    The slot name "body-cell-[name]" can be adjusted to match any column with corresponding name.
+''')
+def table_cells_with_html():
+    ui.table(rows=[
+        {'name': 'bold', 'code': '<b>Bold</b>'},
+        {'name': 'italic', 'code': '<i>Italic</i>'},
+        {'name': 'underline', 'code': '<u>Underline</u>'},
+    ]).add_slot('body-cell-code', '<q-td v-html="props.row.code"></q-td>')
 
 
 @doc.demo('Table with masonry-like grid', '''

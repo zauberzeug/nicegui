@@ -1,5 +1,5 @@
 import re
-from typing import List, Optional
+from typing import Optional
 
 from nicegui import ui
 
@@ -46,7 +46,7 @@ def example_link(example: Example) -> None:
         ui.markdown(example.description).classes(replace='bold-links arrow-links')
 
 
-def features(icon: str, title_: str, items: List[str]) -> None:
+def features(icon: str, title_: str, items: list[str]) -> None:
     """Render a list of features."""
     with ui.column().classes('gap-1'):
         ui.icon(icon).classes('max-sm:hidden text-3xl md:text-5xl mb-3 text-primary opacity-80')
@@ -73,16 +73,6 @@ def subheading(text: str, *, link: Optional[str] = None, major: bool = False, an
             ui.label(text).classes(classes)
         with ui.link(target=f'#{name}').classes('absolute').style('transform: translateX(-150%)'):
             ui.icon('link', size='sm').classes('opacity-10 hover:opacity-80')
-    drawers = [element for element in ui.context.client.elements.values() if isinstance(element, ui.left_drawer)]
-    if drawers:
-        menu = drawers[0]
-        with menu:
-            async def click():
-                if await ui.run_javascript('!!document.querySelector("div.q-drawer__backdrop")', timeout=5.0):
-                    menu.hide()
-                    ui.navigate.to(f'#{name}')
-            ui.link(text, target=f'#{name}').props('data-close-overlay').on('click', click, []) \
-                .classes('font-bold mt-4' if major else '')
 
 
 def create_anchor_name(text: str) -> str:

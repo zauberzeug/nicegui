@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Tuple
+from typing import Any, Union
 
 from typing_extensions import Self
 
@@ -10,9 +10,9 @@ from .leaflet_layer import Layer
 @dataclass(**KWONLY_SLOTS)
 class GenericLayer(Layer):
     name: str
-    args: List[Any] = field(default_factory=list)
+    args: list[Any] = field(default_factory=list)
 
-    def to_dict(self) -> Dict:
+    def to_dict(self) -> dict:
         return {
             'type': self.name,
             'args': self.args,
@@ -22,9 +22,9 @@ class GenericLayer(Layer):
 @dataclass(**KWONLY_SLOTS)
 class TileLayer(Layer):
     url_template: str
-    options: Dict = field(default_factory=dict)
+    options: dict = field(default_factory=dict)
 
-    def to_dict(self) -> Dict:
+    def to_dict(self) -> dict:
         return {
             'type': 'tileLayer',
             'args': [self.url_template, self.options],
@@ -34,9 +34,9 @@ class TileLayer(Layer):
 @dataclass(**KWONLY_SLOTS)
 class WmsLayer(Layer):
     url_template: str
-    options: Dict = field(default_factory=dict)
+    options: dict = field(default_factory=dict)
 
-    def to_dict(self) -> Dict:
+    def to_dict(self) -> dict:
         return {
             'type': 'tileLayer.wms',
             'args': [self.url_template, self.options],
@@ -44,11 +44,37 @@ class WmsLayer(Layer):
 
 
 @dataclass(**KWONLY_SLOTS)
-class Marker(Layer):
-    latlng: Tuple[float, float]
-    options: Dict = field(default_factory=dict)
+class ImageOverlay(Layer):
+    url: str
+    bounds: list[list[float]]
+    options: dict = field(default_factory=dict)
 
-    def to_dict(self) -> Dict:
+    def to_dict(self) -> dict:
+        return {
+            'type': 'imageOverlay',
+            'args': [self.url, self.bounds, self.options],
+        }
+
+
+@dataclass(**KWONLY_SLOTS)
+class VideoOverlay(Layer):
+    url: Union[str, list[str]]
+    bounds: list[list[float]]
+    options: dict = field(default_factory=dict)
+
+    def to_dict(self) -> dict:
+        return {
+            'type': 'videoOverlay',
+            'args': [self.url, self.bounds, self.options],
+        }
+
+
+@dataclass(**KWONLY_SLOTS)
+class Marker(Layer):
+    latlng: tuple[float, float]
+    options: dict = field(default_factory=dict)
+
+    def to_dict(self) -> dict:
         return {
             'type': 'marker',
             'args': [{'lat': self.latlng[0], 'lng': self.latlng[1]}, self.options],

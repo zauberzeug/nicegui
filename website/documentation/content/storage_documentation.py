@@ -189,6 +189,8 @@ doc.text('Redis storage', '''
     and provide the `NICEGUI_REDIS_URL` environment variable to point to your Redis server.
     Our [Redis storage example](https://github.com/zauberzeug/nicegui/tree/main/examples/redis_storage) shows
     how you can setup it up with a reverse proxy or load balancer.
+    To ensure connections are kept to the minimum, you should start the Redis server with `--timeout <seconds>` CLI option
+    or set env variable `REDIS_TIMEOUT`.
 
     Please note that the Redis sync always contains all the data, not only the changed values.
 

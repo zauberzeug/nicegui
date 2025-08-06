@@ -36,8 +36,8 @@ def custom_demo() -> None:
 @doc.demo('Cells spanning multiple columns', '''
     This demo shows how to span cells over multiple columns.
 
-    Note that there is [no Tailwind class for spanning 15 columns](https://tailwindcss.com/docs/grid-column),
-    but we can set [arbitrary values](https://tailwindcss.com/docs/grid-column#arbitrary-values) using square brackets.
+    Note that there is [no Tailwind class for spanning 15 columns](https://v3.tailwindcss.com/docs/grid-column#arbitrary-values),
+    but we can set [arbitrary values](https://v3.tailwindcss.com/docs/grid-column#arbitrary-values) using square brackets.
     Alternatively you could use the corresponding CSS definition: `.style('grid-column: span 15 / span 15')`.
 ''')
 def span_demo() -> None:

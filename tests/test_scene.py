@@ -1,4 +1,4 @@
-from typing import List
+import weakref
 
 import numpy as np
 from selenium.common.exceptions import JavascriptException
@@ -18,7 +18,8 @@ def test_moving_sphere_with_timer(screen: Screen):
     def position() -> float:
         for _ in range(3):
             try:
-                pos = screen.selenium.execute_script(f'return scene_c{scene.id}.getObjectByName("sphere").position.z')
+                pos = screen.selenium.execute_script(
+                    f'return scene_{scene.html_id}.getObjectByName("sphere").position.z')
                 if pos is not None:
                     return pos
             except JavascriptException as e:
@@ -41,18 +42,18 @@ def test_no_object_duplication_on_index_client(screen: Screen):
     screen.open('/')
     screen.switch_to(0)
     screen.wait(0.2)
-    assert screen.selenium.execute_script(f'return scene_c{scene.id}.children.length') == 5
+    assert screen.selenium.execute_script(f'return scene_{scene.html_id}.children.length') == 5
 
 
 def test_no_object_duplication_with_page_builder(screen: Screen):
-    scene_ids: List[int] = []
+    scene_html_ids: list[int] = []
 
     @ui.page('/')
     def page():
         with ui.scene() as scene:
             sphere = scene.sphere().move(0, -4, 0)
             ui.timer(0.1, lambda: sphere.move(0, sphere.y + 0.5, 0))
-        scene_ids.append(scene.id)
+        scene_html_ids.append(scene.html_id)
 
     screen.open('/')
     screen.wait(0.4)
@@ -60,10 +61,10 @@ def test_no_object_duplication_with_page_builder(screen: Screen):
     screen.open('/')
     screen.switch_to(0)
     screen.wait(0.2)
-    assert screen.selenium.execute_script(f'return scene_c{scene_ids[0]}.children.length') == 5
+    assert screen.selenium.execute_script(f'return scene_{scene_html_ids[0]}.children.length') == 5
     screen.switch_to(1)
     screen.wait(0.2)
-    assert screen.selenium.execute_script(f'return scene_c{scene_ids[1]}.children.length') == 5
+    assert screen.selenium.execute_script(f'return scene_{scene_html_ids[1]}.children.length') == 5
 
 
 def test_deleting_group(screen: Screen):
@@ -95,10 +96,10 @@ def test_replace_scene(screen: Screen):
 
     screen.open('/')
     screen.wait(0.5)
-    assert screen.selenium.execute_script(f'return scene_c{scene.id}.children[4].name') == 'sphere'
+    assert screen.selenium.execute_script(f'return scene_{scene.html_id}.children[4].name') == 'sphere'
     screen.click('Replace scene')
     screen.wait(0.5)
-    assert screen.selenium.execute_script(f'return scene_c{scene.id}.children[4].name') == 'box'
+    assert screen.selenium.execute_script(f'return scene_{scene.html_id}.children[4].name') == 'box'
 
 
 def test_create_dynamically(screen: Screen):
@@ -124,7 +125,7 @@ def test_object_creation_via_context(screen: Screen):
 
     screen.open('/')
     screen.wait(0.5)
-    assert screen.selenium.execute_script(f'return scene_c{scene.id}.children[4].name') == 'box'
+    assert screen.selenium.execute_script(f'return scene_{scene.html_id}.children[4].name') == 'box'
 
 
 def test_object_creation_via_attribute(screen: Screen):
@@ -133,18 +134,19 @@ def test_object_creation_via_attribute(screen: Screen):
 
     screen.open('/')
     screen.wait(0.5)
-    assert screen.selenium.execute_script(f'return scene_c{scene.id}.children[4].name') == 'box'
+    assert screen.selenium.execute_script(f'return scene_{scene.html_id}.children[4].name') == 'box'
 
 
 def test_clearing_scene(screen: Screen):
     with ui.scene() as scene:
         scene.box().with_name('box')
-        scene.box().with_name('box2')
+        with scene.group():  # see https://github.com/zauberzeug/nicegui/issues/4560
+            scene.box().with_name('box2')
     ui.button('Clear', on_click=scene.clear)
 
     screen.open('/')
     screen.wait(0.5)
-    assert len(scene.objects) == 2
+    assert len(scene.objects) == 3
     screen.click('Clear')
     screen.wait(0.5)
     assert len(scene.objects) == 0
@@ -156,4 +158,17 @@ def test_gltf(screen: Screen):
 
     screen.open('/')
     screen.wait(1.0)
-    assert screen.selenium.execute_script(f'return scene_c{scene.id}.children.length') == 5
+    assert screen.selenium.execute_script(f'return scene_{scene.html_id}.children.length') == 5
+
+
+def test_no_cyclic_references(screen: Screen):
+    objects: weakref.WeakSet = weakref.WeakSet()
+
+    with ui.scene() as scene:
+        for _ in range(10):
+            objects.add(scene.box())
+
+    scene.clear()
+    assert len(objects) == 0
+
+    screen.open('/')

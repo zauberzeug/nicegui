@@ -1,5 +1,6 @@
 import asyncio
-from typing import AsyncGenerator, Callable
+from collections.abc import AsyncGenerator
+from typing import Callable
 
 import httpx
 import pytest
@@ -38,6 +39,7 @@ def prepare_simulated_auto_index_client(request):
 @pytest.fixture
 async def user(nicegui_reset_globals,  # noqa: F811, pylint: disable=unused-argument
                prepare_simulated_auto_index_client,  # pylint: disable=unused-argument
+               caplog: pytest.LogCaptureFixture,
                request: pytest.FixtureRequest,
                ) -> AsyncGenerator[User, None]:
     """Create a new user fixture."""
@@ -48,6 +50,10 @@ async def user(nicegui_reset_globals,  # noqa: F811, pylint: disable=unused-argu
     ui.navigate = Navigate()
     ui.notify = notify
     ui.download = download
+
+    logs = [record for record in caplog.get_records('call') if record.levelname == 'ERROR']
+    if logs:
+        pytest.fail('There were unexpected ERROR logs.', pytrace=False)
 
 
 @pytest.fixture

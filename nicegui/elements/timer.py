@@ -1,5 +1,4 @@
-from contextlib import nullcontext
-from typing import ContextManager
+from contextlib import AbstractContextManager, nullcontext
 
 from ..client import Client
 from ..element import Element
@@ -9,7 +8,7 @@ from ..timer import Timer as BaseTimer
 
 class Timer(BaseTimer, Element, component='timer.js'):
 
-    def _get_context(self) -> ContextManager:
+    def _get_context(self) -> AbstractContextManager:
         return self.parent_slot or nullcontext()
 
     async def _can_start(self) -> bool:

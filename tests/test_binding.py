@@ -1,6 +1,6 @@
 import copy
 import weakref
-from typing import Dict, Optional, Tuple
+from typing import Optional
 
 from selenium.webdriver.common.keys import Keys
 
@@ -10,7 +10,7 @@ from nicegui.testing import Screen, User
 
 def test_ui_select_with_tuple_as_key(screen: Screen):
     class Model:
-        selection: Optional[Tuple[int, int]] = None
+        selection: Optional[tuple[int, int]] = None
     data = Model()
     options = {
         (2, 1): 'option A',
@@ -101,7 +101,7 @@ def test_binding_refresh_before_page_delivery(screen: Screen):
 
 
 def test_missing_target_attribute(screen: Screen):
-    data: Dict = {}
+    data: dict = {}
     ui.label('Hello').bind_text_to(data)
     ui.label().bind_text_from(data, 'text', lambda text: f'{text=}')
 
@@ -161,7 +161,7 @@ def test_automatic_cleanup(screen: Screen):
         def __init__(self, value: str) -> None:
             self.value = value
 
-    def create_model_and_label(value: str) -> Tuple[Model, weakref.ref, ui.label]:
+    def create_model_and_label(value: str) -> tuple[Model, weakref.ref, ui.label]:
         model = Model(value)
         label = ui.label(value).bind_text(model, 'value')
         return id(model), weakref.ref(model), label
@@ -184,3 +184,24 @@ def test_automatic_cleanup(screen: Screen):
     binding.remove([label1])
     assert not is_alive(ref1) and not has_bindable_property(model_id1)
     assert is_alive(ref2) and has_bindable_property(model_id2)
+
+
+async def test_nested_propagation(user: User):
+    class Demo:
+        a = binding.BindableProperty()
+        b = binding.BindableProperty(on_change=lambda obj, _: obj.change_a())
+
+        def __init__(self) -> None:
+            self.a = 0
+            self.b = 0
+
+        def change_a(self) -> None:
+            self.a = 1
+            self.a = 2
+
+    demo = Demo()
+    ui.label().bind_text_from(demo, 'a', lambda a: f'a = {a}')
+    ui.number().bind_value_to(demo, 'b')  # should set a to 1 and then 2
+
+    await user.open('/')
+    await user.should_see('a = 2')  # the final value of a should be 2

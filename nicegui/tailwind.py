@@ -1,7 +1,8 @@
 # pylint: disable=too-many-lines
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, List, Optional, Union, overload
+import weakref
+from typing import TYPE_CHECKING, overload
 
 if TYPE_CHECKING:
     from .element import Element
@@ -172,7 +173,7 @@ if TYPE_CHECKING:
 class PseudoElement:
 
     def __init__(self) -> None:
-        self._classes: List[str] = []
+        self._classes: list[str] = []
 
     def classes(self, add: str) -> None:
         """Add the given classes to the element."""
@@ -181,8 +182,17 @@ class PseudoElement:
 
 class Tailwind:
 
-    def __init__(self, _element: Optional[Element] = None) -> None:
-        self.element: Union[PseudoElement, Element] = PseudoElement() if _element is None else _element
+    def __init__(self, _element: Element | None = None) -> None:
+        self._element: PseudoElement | weakref.ref[Element] = \
+            PseudoElement() if _element is None else weakref.ref(_element)
+
+    @property
+    def element(self) -> PseudoElement | Element:
+        """The element or pseudo element this Tailwind object belongs to."""
+        element = self._element if isinstance(self._element, PseudoElement) else self._element()
+        if element is None:
+            raise RuntimeError('The element this Tailwind object belongs to has been deleted.')
+        return element
 
     @overload
     def __call__(self, tailwind: Tailwind) -> Tailwind:

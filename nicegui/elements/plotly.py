@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from typing import Dict, Union
-
 from .. import optional_features
 from ..element import Element
 
@@ -14,7 +12,7 @@ except ImportError:
 
 class Plotly(Element, component='plotly.vue', dependencies=['lib/plotly/plotly.min.js']):
 
-    def __init__(self, figure: Union[Dict, go.Figure]) -> None:
+    def __init__(self, figure: dict | go.Figure) -> None:
         """Plotly Element
 
         Renders a Plotly chart.
@@ -37,8 +35,9 @@ class Plotly(Element, component='plotly.vue', dependencies=['lib/plotly/plotly.m
         self.figure = figure
         self.update()
         self._classes.append('js-plotly-plot')
+        self._update_method = 'update'
 
-    def update_figure(self, figure: Union[Dict, go.Figure]):
+    def update_figure(self, figure: dict | go.Figure):
         """Overrides figure instance of this Plotly chart and updates chart on client side."""
         self.figure = figure
         self.update()
@@ -46,9 +45,8 @@ class Plotly(Element, component='plotly.vue', dependencies=['lib/plotly/plotly.m
     def update(self) -> None:
         self._props['options'] = self._get_figure_json()
         super().update()
-        self.run_method('update')
 
-    def _get_figure_json(self) -> Dict:
+    def _get_figure_json(self) -> dict:
         if isinstance(self.figure, go.Figure):
             # convert go.Figure to dict object which is directly JSON serializable
             # orjson supports NumPy array serialization

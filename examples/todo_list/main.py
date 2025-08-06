@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 from dataclasses import dataclass, field
-from typing import Callable, List
+from typing import Callable
 
 from nicegui import ui
 
@@ -15,7 +15,7 @@ class TodoItem:
 class ToDoList:
     title: str
     on_change: Callable
-    items: List[TodoItem] = field(default_factory=list)
+    items: list[TodoItem] = field(default_factory=list)
 
     def add(self, name: str, done: bool = False) -> None:
         self.items.append(TodoItem(name, done))

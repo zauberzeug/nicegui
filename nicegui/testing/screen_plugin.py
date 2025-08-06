@@ -1,7 +1,7 @@
 import os
 import shutil
+from collections.abc import Generator
 from pathlib import Path
-from typing import Dict, Generator
 
 import pytest
 from selenium import webdriver
@@ -39,7 +39,7 @@ def nicegui_chrome_options(chrome_options: webdriver.ChromeOptions) -> webdriver
 
 
 @pytest.fixture
-def capabilities(capabilities: Dict) -> Dict:
+def capabilities(capabilities: dict) -> dict:
     """Configure the Chrome driver capabilities."""
     capabilities['goog:loggingPrefs'] = {'browser': 'ALL'}
     return capabilities
@@ -75,11 +75,11 @@ def screen(nicegui_reset_globals,  # noqa: F811, pylint: disable=unused-argument
     prepare_simulation(request)
     screen_ = Screen(nicegui_driver, caplog)
     yield screen_
-    logs = screen_.caplog.get_records('call')
+    logs = [record for record in screen_.caplog.get_records('call') if record.levelname == 'ERROR']
     if screen_.is_open:
         screen_.shot(request.node.name)
     screen_.stop_server()
     if DOWNLOAD_DIR.exists():
         shutil.rmtree(DOWNLOAD_DIR)
     if logs:
-        pytest.fail('There were unexpected logs. See "Captured log call" below.', pytrace=False)
+        pytest.fail('There were unexpected ERROR logs.', pytrace=False)

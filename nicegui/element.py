@@ -2,9 +2,11 @@ from __future__ import annotations
 
 import inspect
 import re
+import weakref
+from collections.abc import Iterator, Sequence
 from copy import copy
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, ClassVar, Dict, Iterator, List, Optional, Sequence, Union, cast, overload
+from typing import TYPE_CHECKING, Any, Callable, ClassVar, cast
 
 from typing_extensions import Self
 
@@ -12,7 +14,14 @@ from . import core, events, helpers, json, storage
 from .awaitable_response import AwaitableResponse, NullResponse
 from .classes import Classes
 from .context import context
-from .dependencies import Component, Library, register_library, register_resource, register_vue_component
+from .dependencies import (
+    Component,
+    Library,
+    register_dynamic_resource,
+    register_library,
+    register_resource,
+    register_vue_component,
+)
 from .elements.mixins.visibility import Visibility
 from .event_listener import EventListener
 from .props import Props
@@ -31,15 +40,15 @@ TAG_PATTERN = re.compile(fr'^({TAG_START_CHAR})({TAG_CHAR})*$')
 
 
 class Element(Visibility):
-    component: Optional[Component] = None
-    libraries: ClassVar[List[Library]] = []
-    extra_libraries: ClassVar[List[Library]] = []
-    exposed_libraries: ClassVar[List[Library]] = []
-    _default_props: ClassVar[Dict[str, Any]] = {}
-    _default_classes: ClassVar[List[str]] = []
-    _default_style: ClassVar[Dict[str, str]] = {}
+    component: Component | None = None
+    libraries: ClassVar[list[Library]] = []
+    extra_libraries: ClassVar[list[Library]] = []
+    exposed_libraries: ClassVar[list[Library]] = []
+    _default_props: ClassVar[dict[str, Any]] = {}
+    _default_classes: ClassVar[list[str]] = []
+    _default_style: ClassVar[dict[str, str]] = {}
 
-    def __init__(self, tag: Optional[str] = None, *, _client: Optional[Client] = None) -> None:
+    def __init__(self, tag: str | None = None, *, _client: Client | None = None) -> None:
         """Generic Element
 
         This class is the base class for all other UI elements.
@@ -49,24 +58,26 @@ class Element(Visibility):
         :param _client: client for this element (for internal use only)
         """
         super().__init__()
-        self.client = _client or context.client
-        self.id = self.client.next_element_id
-        self.client.next_element_id += 1
+        client = _client or context.client
+        self._client = weakref.ref(client)
+        self.id = client.next_element_id
+        client.next_element_id += 1
         self.tag = tag if tag else self.component.tag if self.component else 'div'
         if not TAG_PATTERN.match(self.tag):
             raise ValueError(f'Invalid HTML tag: {self.tag}')
         self._classes: Classes[Self] = Classes(self._default_classes, element=cast(Self, self))
         self._style: Style[Self] = Style(self._default_style, element=cast(Self, self))
         self._props: Props[Self] = Props(self._default_props, element=cast(Self, self))
-        self._markers: List[str] = []
-        self._event_listeners: Dict[str, EventListener] = {}
-        self._text: Optional[str] = None
-        self.slots: Dict[str, Slot] = {}
+        self._markers: list[str] = []
+        self._event_listeners: dict[str, EventListener] = {}
+        self._text: str | None = None
+        self.slots: dict[str, Slot] = {}
         self.default_slot = self.add_slot('default')
+        self._update_method: str | None = None
         self._deleted: bool = False
 
-        self.client.elements[self.id] = self
-        self.parent_slot: Optional[Slot] = None
+        client.elements[self.id] = self
+        self.parent_slot: Slot | None = None
         slot_stack = context.slot_stack
         if slot_stack:
             self.parent_slot = slot_stack[-1]
@@ -74,24 +85,24 @@ class Element(Visibility):
 
         self.tailwind = Tailwind(self)
 
-        self.client.outbox.enqueue_update(self)
+        client.outbox.enqueue_update(self)
         if self.parent_slot:
-            self.client.outbox.enqueue_update(self.parent_slot.parent)
+            client.outbox.enqueue_update(self.parent_slot.parent)
 
     def __init_subclass__(cls, *,
-                          component: Union[str, Path, None] = None,
-                          dependencies: List[Union[str, Path]] = [],  # noqa: B006
-                          libraries: List[Union[str, Path]] = [],  # noqa: B006  # DEPRECATED
-                          exposed_libraries: List[Union[str, Path]] = [],  # noqa: B006  # DEPRECATED
-                          extra_libraries: List[Union[str, Path]] = [],  # noqa: B006  # DEPRECATED
-                          default_classes: Optional[str] = None,
-                          default_style: Optional[str] = None,
-                          default_props: Optional[str] = None,
+                          component: str | Path | None = None,
+                          dependencies: list[str | Path] = [],  # noqa: B006
+                          libraries: list[str | Path] = [],  # noqa: B006  # DEPRECATED
+                          exposed_libraries: list[str | Path] = [],  # noqa: B006  # DEPRECATED
+                          extra_libraries: list[str | Path] = [],  # noqa: B006  # DEPRECATED
+                          default_classes: str | None = None,
+                          default_style: str | None = None,
+                          default_props: str | None = None,
                           ) -> None:
         super().__init_subclass__()
         base = Path(inspect.getfile(cls)).parent
 
-        def glob_absolute_paths(file: Union[str, Path]) -> List[Path]:
+        def glob_absolute_paths(file: str | Path) -> list[Path]:
             path = Path(file)
             if not path.is_absolute():
                 path = base / path
@@ -115,17 +126,21 @@ class Element(Visibility):
         cls.extra_libraries = copy(cls.extra_libraries)
         cls.exposed_libraries = copy(cls.exposed_libraries)
         if component:
+            max_time = max((path.stat().st_mtime for path in glob_absolute_paths(component)), default=None)
             for path in glob_absolute_paths(component):
-                cls.component = register_vue_component(path)
+                cls.component = register_vue_component(path, max_time=max_time)
         for library in libraries:
+            max_time = max((path.stat().st_mtime for path in glob_absolute_paths(library)), default=None)
             for path in glob_absolute_paths(library):
-                cls.libraries.append(register_library(path))
+                cls.libraries.append(register_library(path, max_time=max_time))
         for library in extra_libraries:
+            max_time = max((path.stat().st_mtime for path in glob_absolute_paths(library)), default=None)
             for path in glob_absolute_paths(library):
-                cls.extra_libraries.append(register_library(path))
+                cls.extra_libraries.append(register_library(path, max_time=max_time))
         for library in exposed_libraries + dependencies:
+            max_time = max((path.stat().st_mtime for path in glob_absolute_paths(library)), default=None)
             for path in glob_absolute_paths(library):
-                cls.exposed_libraries.append(register_library(path, expose=True))
+                cls.exposed_libraries.append(register_library(path, expose=True, max_time=max_time))
 
         cls._default_props = copy(cls._default_props)
         cls._default_classes = copy(cls._default_classes)
@@ -134,15 +149,33 @@ class Element(Visibility):
         cls.default_style(default_style)
         cls.default_props(default_props)
 
-    def add_resource(self, path: Union[str, Path]) -> None:
+    @property
+    def client(self) -> Client:
+        """The client this element belongs to."""
+        client = self._client()
+        if client is None:
+            raise RuntimeError('The client this element belongs to has been deleted.')
+        return client
+
+    def add_resource(self, path: str | Path) -> None:
         """Add a resource to the element.
 
         :param path: path to the resource (e.g. folder with CSS and JavaScript files)
         """
-        resource = register_resource(Path(path))
+        path_ = Path(path)
+        resource = register_resource(path_, max_time=path_.stat().st_mtime)
         self._props['resource_path'] = f'/_nicegui/{__version__}/resources/{resource.key}'
 
-    def add_slot(self, name: str, template: Optional[str] = None) -> Slot:
+    def add_dynamic_resource(self, name: str, function: Callable) -> None:
+        """Add a dynamic resource to the element which returns the result of a function.
+
+        :param name: name of the resource
+        :param function: function that returns the resource response
+        """
+        register_dynamic_resource(name, function)
+        self._props['dynamic_resource_path'] = f'/_nicegui/{__version__}/dynamic_resources'
+
+    def add_slot(self, name: str, template: str | None = None) -> Slot:
         """Add a slot to the element.
 
         NiceGUI is using the slot concept from Vue:
@@ -174,7 +207,7 @@ class Element(Visibility):
         for slot in self.slots.values():
             yield from slot
 
-    def _collect_slot_dict(self) -> Dict[str, Any]:
+    def _collect_slot_dict(self) -> dict[str, Any]:
         return {
             name: {
                 'ids': [child.id for child in slot],
@@ -184,7 +217,7 @@ class Element(Visibility):
             if slot != self.default_slot
         }
 
-    def _to_dict(self) -> Dict[str, Any]:
+    def _to_dict(self) -> dict[str, Any]:
         return {
             'tag': self.tag,
             **({'text': self._text} if self._text is not None else {}),
@@ -197,6 +230,7 @@ class Element(Visibility):
                     'slots': self._collect_slot_dict(),
                     'children': [child.id for child in self.default_slot.children],
                     'events': [listener.to_dict() for listener in self._event_listeners.values()],
+                    'update_method': self._update_method,
                     'component': {
                         'key': self.component.key,
                         'name': self.component.name,
@@ -220,13 +254,13 @@ class Element(Visibility):
 
     @classmethod
     def default_classes(cls,
-                        add: Optional[str] = None, *,
-                        remove: Optional[str] = None,
-                        toggle: Optional[str] = None,
-                        replace: Optional[str] = None) -> type[Self]:
+                        add: str | None = None, *,
+                        remove: str | None = None,
+                        toggle: str | None = None,
+                        replace: str | None = None) -> type[Self]:
         """Apply, remove, toggle, or replace default HTML classes.
 
-        This allows modifying the look of the element or its layout using `Tailwind <https://tailwindcss.com/>`_ or `Quasar <https://quasar.dev/>`_ classes.
+        This allows modifying the look of the element or its layout using `Tailwind <https://v3.tailwindcss.com/>`_ or `Quasar <https://quasar.dev/>`_ classes.
 
         Removing or replacing classes can be helpful if predefined classes are not desired.
         All elements of this class will share these HTML classes.
@@ -247,9 +281,9 @@ class Element(Visibility):
 
     @classmethod
     def default_style(cls,
-                      add: Optional[str] = None, *,
-                      remove: Optional[str] = None,
-                      replace: Optional[str] = None) -> type[Self]:
+                      add: str | None = None, *,
+                      remove: str | None = None,
+                      replace: str | None = None) -> type[Self]:
         """Apply, remove, or replace default CSS definitions.
 
         Removing or replacing styles can be helpful if the predefined style is not desired.
@@ -275,8 +309,8 @@ class Element(Visibility):
 
     @classmethod
     def default_props(cls,
-                      add: Optional[str] = None, *,
-                      remove: Optional[str] = None) -> type[Self]:
+                      add: str | None = None, *,
+                      remove: str | None = None) -> type[Self]:
         """Add or remove default props.
 
         This allows modifying the look of the element or its layout using `Quasar <https://quasar.dev/>`_ props.
@@ -318,48 +352,48 @@ class Element(Visibility):
             Tooltip(text)
         return self
 
-    @overload
     def on(self,
            type: str,  # pylint: disable=redefined-builtin
-           *,
-           js_handler: Optional[str] = None,
-           ) -> Self:
-        ...
-
-    @overload
-    def on(self,
-           type: str,  # pylint: disable=redefined-builtin
-           handler: Optional[events.Handler[events.GenericEventArguments]] = None,
-           args: Union[None, Sequence[str], Sequence[Optional[Sequence[str]]]] = None,
+           handler: events.Handler[events.GenericEventArguments] | None = None,
+           args: None | Sequence[str] | Sequence[Sequence[str] | None] = None,
            *,
            throttle: float = 0.0,
            leading_events: bool = True,
            trailing_events: bool = True,
-           ) -> Self:
-        ...
-
-    def on(self,
-           type: str,  # pylint: disable=redefined-builtin
-           handler: Optional[events.Handler[events.GenericEventArguments]] = None,
-           args: Union[None, Sequence[str], Sequence[Optional[Sequence[str]]]] = None,
-           *,
-           throttle: float = 0.0,
-           leading_events: bool = True,
-           trailing_events: bool = True,
-           js_handler: Optional[str] = None,
+           js_handler: str | None = '(...args) => emit(...args)',  # DEPRECATED: None will be removed in version 3.0
            ) -> Self:
         """Subscribe to an event.
 
+        The event handler can be a Python function, a JavaScript function or a combination of both:
+
+        - If you want to handle the event on the server with all (serializable) event arguments,
+          use a Python ``handler``.
+        - If you want to handle the event on the client side without emitting anything to the server,
+          use ``js_handler`` with a JavaScript function handling the event.
+        - If you want to handle the event on the server with a subset or transformed version of the event arguments,
+          use ``js_handler`` with a JavaScript function emitting the transformed arguments using ``emit()``, and
+          use a Python ``handler`` to handle these arguments on the server side.
+          The ``js_handler`` can also decide to selectively emit arguments to the server,
+          in which case the Python ``handler`` will not always be called.
+
+        Note that the arguments ``throttle``, ``leading_events``, and ``trailing_events`` are only relevant
+        when emitting events to the server.
+
+        *Updated in version 2.18.0: Both handlers can be specified at the same time.*
+
         :param type: name of the event (e.g. "click", "mousedown", or "update:model-value")
         :param handler: callback that is called upon occurrence of the event
-        :param args: arguments included in the event message sent to the event handler (default: `None` meaning all)
+        :param args: arguments included in the event message sent to the event handler (default: ``None`` meaning all)
         :param throttle: minimum time (in seconds) between event occurrences (default: 0.0)
-        :param leading_events: whether to trigger the event handler immediately upon the first event occurrence (default: `True`)
-        :param trailing_events: whether to trigger the event handler after the last event occurrence (default: `True`)
-        :param js_handler: JavaScript code that is executed upon occurrence of the event, e.g. `(evt) => alert(evt)` (default: `None`)
+        :param leading_events: whether to trigger the event handler immediately upon the first event occurrence (default: ``True``)
+        :param trailing_events: whether to trigger the event handler after the last event occurrence (default: ``True``)
+        :param js_handler: JavaScript function that is handling the event on the client (default: "(...args) => emit(...args)")
         """
-        if handler and js_handler:
-            raise ValueError('Either handler or js_handler can be specified, but not both')
+        if js_handler is None:
+            helpers.warn_once('Passing `js_handler=None` to `on()` is deprecated. '
+                              'Use the default "(...args) => emit(...args)" instead or remove the parameter.')
+        if js_handler == '(...args) => emit(...args)':
+            js_handler = None
 
         if handler or js_handler:
             listener = EventListener(
@@ -377,7 +411,7 @@ class Element(Visibility):
             self.update()
         return self
 
-    def _handle_event(self, msg: Dict) -> None:
+    def _handle_event(self, msg: dict) -> None:
         listener = self._event_listeners[msg['listener_id']]
         storage.request_contextvar.set(listener.request)
         args = events.GenericEventArguments(sender=self, client=self.client, args=msg['args'])
@@ -443,9 +477,9 @@ class Element(Visibility):
         self.update()
 
     def move(self,
-             target_container: Optional[Element] = None,
+             target_container: Element | None = None,
              target_index: int = -1, *,
-             target_slot: Optional[str] = None) -> None:
+             target_slot: str | None = None) -> None:
         """Move the element to another container.
 
         :param target_container: container to move the element to (default: the parent container)
@@ -470,7 +504,7 @@ class Element(Visibility):
 
         target_container.update()
 
-    def remove(self, element: Union[Element, int]) -> None:
+    def remove(self, element: Element | int) -> None:
         """Remove a child element.
 
         :param element: either the element instance or its ID
@@ -513,7 +547,7 @@ class Element(Visibility):
             additions.append(f'text={shorten(self._text)}')
         if hasattr(self, 'content') and self.content:  # pylint: disable=no-member
             additions.append(f'content={shorten(self.content)}')  # pylint: disable=no-member
-        IGNORED_PROPS = {'loopback', 'color', 'view', 'innerHTML', 'codehilite_css_url'}
+        IGNORED_PROPS = {'loopback', 'color', 'view', 'innerHTML', 'dynamic_resource_path'}
         additions += [
             f'{key}={shorten(value)}'
             for key, value in self._props.items()
@@ -529,3 +563,11 @@ class Element(Visibility):
                 result += f'\n {line}'
 
         return result
+
+    @property
+    def html_id(self) -> str:
+        """The ID of the element in the HTML DOM.
+
+        *Added in version 2.16.0*
+        """
+        return f'c{self.id}'

@@ -1,6 +1,7 @@
 /* prettier-ignore */
 /* fallback */
 @font-face {
+  font-display: block;
   font-family: "Material Icons";
   font-style: normal;
   font-weight: 400;
@@ -8,6 +9,7 @@
 }
 /* fallback */
 @font-face {
+  font-display: block;
   font-family: "Material Icons Outlined";
   font-style: normal;
   font-weight: 400;
@@ -15,6 +17,7 @@
 }
 /* fallback */
 @font-face {
+  font-display: block;
   font-family: "Material Icons Round";
   font-style: normal;
   font-weight: 400;
@@ -22,6 +25,7 @@
 }
 /* fallback */
 @font-face {
+  font-display: block;
   font-family: "Material Icons Sharp";
   font-style: normal;
   font-weight: 400;
@@ -430,6 +434,7 @@
 
 /* fallback */
 @font-face {
+  font-display: block;
   font-family: "Material Symbols Outlined";
   font-style: normal;
   font-weight: 400;
@@ -437,6 +442,7 @@
 }
 /* fallback */
 @font-face {
+  font-display: block;
   font-family: "Material Symbols Rounded";
   font-style: normal;
   font-weight: 400;
@@ -444,6 +450,7 @@
 }
 /* fallback */
 @font-face {
+  font-display: block;
   font-family: "Material Symbols Sharp";
   font-style: normal;
   font-weight: 400;

@@ -5,9 +5,10 @@ import inspect
 import time
 import uuid
 from collections import defaultdict
+from collections.abc import Awaitable, Iterable, Iterator
 from contextlib import contextmanager
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Awaitable, Callable, ClassVar, Dict, Iterable, Iterator, List, Optional, Union
+from typing import TYPE_CHECKING, Any, Callable, ClassVar
 
 from fastapi import Request
 from fastapi.responses import Response
@@ -23,6 +24,7 @@ from .javascript_request import JavaScriptRequest
 from .logging import log
 from .observables import ObservableDict
 from .outbox import Outbox
+from .sub_pages_router import SubPagesRouter
 from .translations import translations
 from .version import __version__
 
@@ -33,40 +35,40 @@ templates = Jinja2Templates(Path(__file__).parent / 'templates')
 
 
 class Client:
-    page_routes: ClassVar[Dict[Callable[..., Any], str]] = {}
-    """Maps page builders to their routes."""
+    page_routes: ClassVar[dict[Callable[..., Any], str]] = {}
+    '''Maps page builders to their routes.'''
 
-    instances: ClassVar[Dict[str, Client]] = {}
-    """Maps client IDs to clients."""
+    instances: ClassVar[dict[str, Client]] = {}
+    '''Maps client IDs to clients.'''
 
     auto_index_client: Client
-    """The client that is used to render the auto-index page."""
+    '''The client that is used to render the auto-index page.'''
 
     shared_head_html = ''
-    """HTML to be inserted in the <head> of every page template."""
+    '''HTML to be inserted in the <head> of every page template.'''
 
     shared_body_html = ''
-    """HTML to be inserted in the <body> of every page template."""
+    '''HTML to be inserted in the <body> of every page template.'''
 
-    def __init__(self, page: page, *, request: Optional[Request]) -> None:
-        self.request: Optional[Request] = request
+    def __init__(self, page: page, *, request: Request | None) -> None:
+        self.request: Request | None = request
         self.id = str(uuid.uuid4())
         self.created = time.time()
         self.instances[self.id] = self
 
-        self.elements: Dict[int, Element] = {}
+        self.elements: dict[int, Element] = {}
         self.next_element_id: int = 0
         self._waiting_for_connection: asyncio.Event = asyncio.Event()
         self.is_waiting_for_connection: bool = False
         self.is_waiting_for_disconnect: bool = False
-        self.environ: Optional[Dict[str, Any]] = None
+        self.environ: dict[str, Any] | None = None
         self.shared = request is None
         self.on_air = False
         self._num_connections: defaultdict[str, int] = defaultdict(int)
-        self._delete_tasks: Dict[str, asyncio.Task] = {}
+        self._delete_tasks: dict[str, asyncio.Task] = {}
         self._deleted = False
-        self._socket_to_document_id: Dict[str, str] = {}
-        self.tab_id: Optional[str] = None
+        self._socket_to_document_id: dict[str, str] = {}
+        self.tab_id: str | None = None
 
         self.page = page
         self.outbox = Outbox(self)
@@ -76,17 +78,20 @@ class Client:
                 with Element('q-page'):
                     self.content = Element('div').classes('nicegui-content')
 
-        self.title: Optional[str] = None
+        self.title: str | None = None
 
         self._head_html = ''
         self._body_html = ''
 
         self.storage = ObservableDict()
 
-        self.connect_handlers: List[Union[Callable[..., Any], Awaitable]] = []
-        self.disconnect_handlers: List[Union[Callable[..., Any], Awaitable]] = []
+        self.connect_handlers: list[Callable[..., Any] | Awaitable] = []
+        self.disconnect_handlers: list[Callable[..., Any] | Awaitable] = []
 
-        self._temporary_socket_id: Optional[str] = None
+        self._temporary_socket_id: str | None = None
+
+        with self:
+            self.sub_pages_router = SubPagesRouter(request)
 
     @property
     def is_auto_index_client(self) -> bool:
@@ -94,7 +99,7 @@ class Client:
         return self is self.auto_index_client
 
     @property
-    def ip(self) -> Optional[str]:
+    def ip(self) -> str | None:
         """Return the IP address of the client, or None if it is an
         `auto-index page <https://nicegui.io/documentation/section_pages_routing#auto-index_page>`_.
 
@@ -136,7 +141,8 @@ class Client:
             'client_id': self.id,
             'next_message_id': self.outbox.next_message_id,
         }
-        vue_html, vue_styles, vue_scripts, imports, js_imports = generate_resources(prefix, self.elements.values())
+        vue_html, vue_styles, vue_scripts, imports, js_imports, js_imports_urls = \
+            generate_resources(prefix, self.elements.values())
         return templates.TemplateResponse(
             request=request,
             name='index.html',
@@ -153,7 +159,9 @@ class Client:
                 'vue_scripts': '\n'.join(vue_scripts),
                 'imports': json.dumps(imports),
                 'js_imports': '\n'.join(js_imports),
-                'quasar_config': json.dumps(core.app.config.quasar_config),
+                'js_imports_urls': js_imports_urls,
+                'vue_config': json.dumps(core.app.config.quasar_config),
+                'vue_config_script': core.app.config.vue_config_script,
                 'title': self.resolve_title(),
                 'viewport': self.page.resolve_viewport(),
                 'favicon_url': get_favicon_url(self.page, prefix),
@@ -224,24 +232,24 @@ class Client:
 
         return AwaitableResponse(send_and_forget, send_and_wait)
 
-    def open(self, target: Union[Callable[..., Any], str], new_tab: bool = False) -> None:
+    def open(self, target: Callable[..., Any] | str, new_tab: bool = False) -> None:
         """Open a new page in the client."""
         path = target if isinstance(target, str) else self.page_routes[target]
         self.outbox.enqueue_message('open', {'path': path, 'new_tab': new_tab}, self.id)
 
-    def download(self, src: Union[str, bytes], filename: Optional[str] = None, media_type: str = '') -> None:
+    def download(self, src: str | bytes, filename: str | None = None, media_type: str = '') -> None:
         """Download a file from a given URL or raw bytes."""
         self.outbox.enqueue_message('download', {'src': src, 'filename': filename, 'media_type': media_type}, self.id)
 
-    def on_connect(self, handler: Union[Callable[..., Any], Awaitable]) -> None:
+    def on_connect(self, handler: Callable[..., Any] | Awaitable) -> None:
         """Add a callback to be invoked when the client connects."""
         self.connect_handlers.append(handler)
 
-    def on_disconnect(self, handler: Union[Callable[..., Any], Awaitable]) -> None:
+    def on_disconnect(self, handler: Callable[..., Any] | Awaitable) -> None:
         """Add a callback to be invoked when the client disconnects."""
         self.disconnect_handlers.append(handler)
 
-    def handle_handshake(self, socket_id: str, document_id: str, next_message_id: Optional[int]) -> None:
+    def handle_handshake(self, socket_id: str, document_id: str, next_message_id: int | None) -> None:
         """Cancel pending disconnect task and invoke connect handlers."""
         self._socket_to_document_id[socket_id] = document_id
         self._cancel_delete_task(document_id)
@@ -278,13 +286,14 @@ class Client:
                 self._delete_tasks.pop(document_id)
                 if not self.shared:
                     self.delete()
-        self._delete_tasks[document_id] = background_tasks.create(delete_content())
+        self._delete_tasks[document_id] = \
+            background_tasks.create(delete_content(), name=f'delete content {document_id}')
 
     def _cancel_delete_task(self, document_id: str) -> None:
         if document_id in self._delete_tasks:
             self._delete_tasks.pop(document_id).cancel()
 
-    def handle_event(self, msg: Dict) -> None:
+    def handle_event(self, msg: dict) -> None:
         """Forward an event to the corresponding element."""
         with self:
             sender = self.elements.get(msg['id'])
@@ -294,26 +303,27 @@ class Client:
                     msg['args'] = msg['args'][0]
                 sender._handle_event(msg)  # pylint: disable=protected-access
 
-    def handle_javascript_response(self, msg: Dict) -> None:
+    def handle_javascript_response(self, msg: dict) -> None:
         """Store the result of a JavaScript command."""
         JavaScriptRequest.resolve(msg['request_id'], msg.get('result'))
 
-    def safe_invoke(self, func: Union[Callable[..., Any], Awaitable]) -> None:
+    def safe_invoke(self, func: Callable[..., Any] | Awaitable) -> None:
         """Invoke the potentially async function in the client context and catch any exceptions."""
+        func_name = func.__name__ if hasattr(func, '__name__') else str(func)
         try:
             if isinstance(func, Awaitable):
                 async def func_with_client():
                     with self:
                         await func
-                background_tasks.create(func_with_client())
+                background_tasks.create(func_with_client(), name=f'func with client {self.id} {func_name}')
             else:
                 with self:
                     result = func(self) if len(inspect.signature(func).parameters) == 1 else func()
-                if helpers.is_coroutine_function(func):
+                if helpers.is_coroutine_function(func) and not isinstance(result, asyncio.Task):
                     async def result_with_client():
                         with self:
                             await result
-                    background_tasks.create(result_with_client())
+                    background_tasks.create(result_with_client(), name=f'result with client {self.id} {func_name}')
         except Exception as e:
             core.app.handle_exception(e)
 
@@ -375,4 +385,7 @@ class Client:
             except Exception:
                 # NOTE: make sure the loop doesn't crash
                 log.exception('Error while pruning clients')
-            await asyncio.sleep(10)
+            try:
+                await asyncio.sleep(10)
+            except asyncio.CancelledError:
+                break

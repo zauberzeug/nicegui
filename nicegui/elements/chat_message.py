@@ -1,14 +1,14 @@
 import html
-from typing import List, Optional, Union
+from typing import Optional, Union
 
-from ..element import Element
 from .html import Html
+from .mixins.label_element import LabelElement
 
 
-class ChatMessage(Element):
+class ChatMessage(LabelElement):
 
     def __init__(self,
-                 text: Union[str, List[str]] = ..., *,  # type: ignore
+                 text: Union[str, list[str]] = ..., *,  # type: ignore
                  name: Optional[str] = None,
                  label: Optional[str] = None,
                  stamp: Optional[str] = None,
@@ -28,7 +28,7 @@ class ChatMessage(Element):
         :param sent: render as a sent message (so from current user) (default: False)
         :param text_html: render text as HTML (default: False)
         """
-        super().__init__('q-chat-message')
+        super().__init__(tag='q-chat-message', label=label)
 
         if text is ...:
             text = []
@@ -40,8 +40,6 @@ class ChatMessage(Element):
 
         if name is not None:
             self._props['name'] = name
-        if label is not None:
-            self._props['label'] = label
         if stamp is not None:
             self._props['stamp'] = stamp
         if avatar is not None:

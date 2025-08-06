@@ -1,4 +1,5 @@
-from typing import Any, Awaitable, Callable, Dict, Optional, Union
+from collections.abc import Awaitable
+from typing import Any, Callable, Optional, Union
 
 from typing_extensions import Self
 
@@ -6,7 +7,7 @@ from ... import background_tasks, helpers
 from .value_element import ValueElement
 
 ValidationFunction = Callable[[Any], Union[Optional[str], Awaitable[Optional[str]]]]
-ValidationDict = Dict[str, Callable[[Any], bool]]
+ValidationDict = dict[str, Callable[[Any], bool]]
 
 
 class ValidationElement(ValueElement):
@@ -70,7 +71,7 @@ class ValidationElement(ValueElement):
                 self.error = await result
             if return_result:
                 raise NotImplementedError('The validate method cannot return results for async validation functions.')
-            background_tasks.create(await_error())
+            background_tasks.create(await_error(), name=f'validate {self.id}')
             return True
 
         if callable(self._validation):

@@ -16,6 +16,31 @@ def main_demo() -> None:
     ii = ui.interactive_image(src, on_mouse=mouse_handler, events=['mousedown', 'mouseup'], cross=True)
 
 
+@doc.demo('Adding layers', '''
+    In some cases you might want to add different groups of SVG elements to an image.
+    Maybe there is one element that needs frequent updates, while the other elements are rarely changed.
+    Putting all elements in the same SVG can lead to performance issues,
+    because the whole SVG needs to be sent to the client whenever one of the elements changes.
+
+    The solution is to add multiple layers to the image.
+    Each layer is a separate SVG element, which means that each layer can be updated independently.
+
+    The following demo shows this concept in action, even though both layers are changed at the same time.
+
+    *Added in version 2.17.0*
+''')
+def adding_layers():
+    from nicegui import events
+
+    def mouse_handler(e: events.MouseEventArguments):
+        image.content += f'<circle cx="{e.image_x}" cy="{e.image_y}" r="30" fill="none" stroke="red" stroke-width="4" />'
+        highlight.content = f'<circle cx="{e.image_x}" cy="{e.image_y}" r="28" fill="yellow" opacity="0.5" />'
+
+    src = 'https://picsum.photos/id/674/640/360'
+    image = ui.interactive_image(src, on_mouse=mouse_handler, cross=True)
+    highlight = image.add_layer()
+
+
 @doc.demo('Nesting elements', '''
     You can nest elements inside an interactive image.
     Use Tailwind classes like "absolute top-0 left-0" to position the label absolutely with respect to the image.

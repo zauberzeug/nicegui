@@ -11,18 +11,25 @@ from typing import Any, Callable, Dict, Optional, Union, overload
 import nicegui
 from nicegui import app as nicegui_app
 from nicegui import ui as nicegui_ui
+from nicegui.functions.navigate import Navigate
 from nicegui.elements.markdown import remove_indentation
 
 from .page import DocumentationPage
 from .part import Demo, DocumentationPart
 
-registry: Dict[str, DocumentationPage] = {}
-redirects: Dict[str, str] = {}
+registry: dict[str, DocumentationPage] = {}
+redirects: dict[str, str] = {}
+
+
+def auto_execute(function: Callable) -> Callable:
+    """Decorator to automatically execute the function when the module is imported."""
+    function()
+    return function
 
 
 def get_page(documentation: ModuleType) -> DocumentationPage:
     """Return the documentation page for the given documentation module."""
-    target_name = _removesuffix(documentation.__name__.split('.')[-1], '_documentation')
+    target_name = documentation.__name__.split('.')[-1].removesuffix('_documentation')
     assert target_name in registry, f'Documentation page {target_name} does not exist'
     return registry[target_name]
 
@@ -31,7 +38,7 @@ def _get_current_page() -> DocumentationPage:
     frame = sys._getframe(2)  # pylint: disable=protected-access
     module = inspect.getmodule(frame)
     assert module is not None and module.__file__ is not None
-    name = _removesuffix(Path(module.__file__).stem, '_documentation')
+    name = Path(module.__file__).stem.removesuffix('_documentation')
     if name == 'overview':
         name = ''
     if name not in registry:
@@ -39,7 +46,7 @@ def _get_current_page() -> DocumentationPage:
     return registry[name]
 
 
-def title(title_: Optional[str] = None, subtitle: Optional[str] = None) -> None:
+def title(title_: str | None = None, subtitle: str | None = None) -> None:
     """Set the title of the current documentation page."""
     page = _get_current_page()
     page.title = title_
@@ -54,7 +61,7 @@ def text(title_: str, description: str) -> None:
 @overload
 def demo(title_: str,
          description: str, /, *,
-         tab: Optional[Union[str, Callable]] = None,
+         tab: str | Callable | None = None,
          lazy: bool = True,
          ) -> Callable[[Callable], Callable]:
     ...
@@ -62,15 +69,15 @@ def demo(title_: str,
 
 @overload
 def demo(element: type, /,
-         tab: Optional[Union[str, Callable]] = None,
+         tab: str | Callable | None = None,
          lazy: bool = True,
          ) -> Callable[[Callable], Callable]:
     ...
 
 
 @overload
-def demo(function: Callable, /,
-         tab: Optional[Union[str, Callable]] = None,
+def demo(function: Callable | Navigate, /,
+         tab: str | Callable | None = None,
          lazy: bool = True,
          ) -> Callable[[Callable], Callable]:
     ...
@@ -160,15 +167,8 @@ def extra_column(function: Callable) -> Callable:
     return function
 
 
-def _find_attribute(obj: Any, name: str) -> Optional[str]:
+def _find_attribute(obj: Any, name: str) -> str | None:
     for attr in dir(obj):
         if attr.lower().replace('_', '') == name.lower().replace('_', ''):
             return attr
     return None
-
-
-def _removesuffix(string: str, suffix: str) -> str:
-    # NOTE: Remove this once we drop Python 3.8 support
-    if string.endswith(suffix):
-        return string[:-len(suffix)]
-    return string

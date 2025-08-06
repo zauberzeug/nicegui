@@ -1,4 +1,4 @@
-from typing import Dict, Optional
+from typing import Optional
 
 from nicegui import ui
 
@@ -7,7 +7,7 @@ class SignaturePad(ui.element,
                    component='signature_pad.js',
                    dependencies=['node_modules/signature_pad/dist/signature_pad.min.js']):
 
-    def __init__(self, options: Optional[Dict] = None) -> None:
+    def __init__(self, options: Optional[dict] = None) -> None:
         """SignaturePad
 
         An element that integrates the `Signature Pad library <https://szimek.github.io/signature_pad/>`_.

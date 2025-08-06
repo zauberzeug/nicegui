@@ -1,10 +1,13 @@
 {
   "vue": {
     "destination": "nicegui/static",
-    "keep": ["package/dist/vue\\.global(\\.prod)?\\.js"],
+    "keep": [
+      "package/dist/vue\\.global(\\.prod)?\\.js"
+    ],
     "rename": {
       "package/dist": ".."
-    }
+    },
+    "version": "3.4.38"
   },
   "quasar": {
     "destination": "nicegui/static",
@@ -15,49 +18,68 @@
     ],
     "rename": {
       "package/dist": ".."
-    }
+    },
+    "version": "2.16.9"
   },
   "tailwindcss": {
     "destination": "nicegui/static",
     "keep": [],
     "download": "https://cdn.tailwindcss.com",
-    "rename": "../tailwindcss.min.js"
+    "rename": "../tailwindcss.min.js",
+    "version": "3.4.10"
   },
   "socket.io": {
     "destination": "nicegui/static",
-    "keep": ["package/client-dist/socket\\.io\\.min\\.js(\\.map)?"],
+    "keep": [
+      "package/client-dist/socket\\.io\\.min\\.js(\\.map)?"
+    ],
     "rename": {
       "package/client-dist": ".."
-    }
+    },
+    "version": "4.7.5"
   },
   "es-module-shims": {
     "destination": "nicegui/static",
-    "keep": ["package/dist/es-module-shims\\.js"],
+    "keep": [
+      "package/dist/es-module-shims\\.js"
+    ],
     "rename": {
       "package/dist": ".."
-    }
+    },
+    "version": "1.10.0"
   },
   "aggrid": {
     "package": "ag-grid-community",
     "destination": "nicegui/elements/lib",
-    "keep": ["package/dist/ag-grid-community(\\.min)?\\.js"],
+    "keep": [
+      "package/dist/ag-grid-community(\\.min)?\\.js"
+    ],
     "rename": {
       "package/dist/": ""
-    }
+    },
+    "version": "32.1.0"
   },
   "echarts": {
     "destination": "nicegui/elements/lib",
-    "keep": ["package/dist/echarts\\.min\\.js", "package/dist/echarts\\.js\\.map"],
+    "keep": [
+      "package/dist/echarts\\.min\\.js",
+      "package/dist/echarts\\.js\\.map"
+    ],
     "rename": {
       "package/dist/": ""
-    }
+    },
+    "version": "5.5.1"
   },
   "echarts-gl": {
     "destination": "nicegui/elements/lib",
-    "keep": ["package/dist/echarts-gl\\.min\\.js", "package/dist/echarts-gl\\.js\\.map"],
+    "keep": [
+      "package/dist/echarts-gl\\.min\\.js",
+      "package/dist/echarts-gl\\.js\\.map"
+    ],
     "rename": {
       "package/dist/": ""
-    }
+    },
+    "version": "2.0.9"
   },
   "leaflet": {
     "destination": "nicegui/elements/lib/leaflet",
@@ -69,36 +91,52 @@
     ],
     "rename": {
       "package/dist/": ""
-    }
+    },
+    "version": "1.9.4"
   },
   "leaflet-draw": {
     "destination": "nicegui/elements/lib/leaflet",
-    "keep": ["package/dist/leaflet\\.draw\\.css", "package/dist/leaflet\\.draw\\.js", "package/dist/images/.*"],
+    "keep": [
+      "package/dist/leaflet\\.draw\\.css",
+      "package/dist/leaflet\\.draw\\.js",
+      "package/dist/images/.*"
+    ],
     "rename": {
       "package/dist/": ""
-    }
+    },
+    "version": "1.0.4"
   },
   "mermaid": {
     "destination": "nicegui/elements/lib",
-    "keep": ["package/dist/.*\\.m?js"],
+    "keep": [
+      "package/dist/mermaid.esm.min\\.mjs",
+      "package/dist/chunks/mermaid.esm.min/.*\\.mjs"
+    ],
     "rename": {
       "package/dist/": ""
-    }
+    },
+    "version": "11.0.2"
   },
   "nipplejs": {
     "destination": "nicegui/elements/lib",
-    "keep": ["package/dist/nipplejs(\\.min)?\\.js"],
+    "keep": [
+      "package/dist/nipplejs(\\.min)?\\.js"
+    ],
     "rename": {
       "package/dist/": ""
-    }
+    },
+    "version": "0.10.2"
   },
   "plotly": {
     "package": "plotly.js",
     "destination": "nicegui/elements/lib",
-    "keep": ["package/dist/plotly(\\.min)?\\.js"],
+    "keep": [
+      "package/dist/plotly(\\.min)?\\.js"
+    ],
     "rename": {
       "package/dist/": ""
-    }
+    },
+    "version": "2.35.0"
   },
   "three": {
     "destination": "nicegui/elements/lib",
@@ -120,21 +158,29 @@
       "package/examples/jsm/loaders/": "modules/",
       "package/examples/jsm/libs/": "modules/",
       "package/examples/jsm/utils/": "modules/"
-    }
+    },
+    "version": "0.168.0"
   },
   "tween": {
     "package": "@tweenjs/tween.js",
     "destination": "nicegui/elements/lib",
-    "keep": ["package/dist/tween\\.umd(\\.min)?\\.js"],
+    "keep": [
+      "package/dist/tween\\.umd(\\.min)?\\.js"
+    ],
     "rename": {
       "package/dist/": ""
-    }
+    },
+    "version": "25.0.0"
   },
   "vanilla-jsoneditor": {
     "destination": "nicegui/elements/lib",
-    "keep": ["package/standalone\\.js", "package/standalone\\.js\\.map"],
+    "keep": [
+      "package/standalone\\.js",
+      "package/standalone\\.js\\.map"
+    ],
     "rename": {
       "package/": ""
-    }
+    },
+    "version": "0.23.8"
   }
 }

@@ -22,17 +22,17 @@ RUN python -m pip install --upgrade pip
 RUN python -m pip install \
     nicegui[plotly,matplotlib]==$VERSION \
     docutils \
+    httpx \
     isort \
     itsdangerous \
     pytest \
-    requests \
     latex2mathml \
     selenium \
     redis
 
 WORKDIR /app
 
-COPY main.py README.md prometheus.py ./
+COPY main.py README.md ./
 COPY examples ./examples
 COPY website ./website
 RUN mkdir /resources

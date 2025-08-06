@@ -1,11 +1,11 @@
 default_language_version:
-  python: python3.8
+  python: python3.9
 default_install_hook_types: [pre-commit, pre-push]
 default_stages: [commit]
 
 repos:
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.8.1
+    rev: v0.12.7
     hooks:
       - id: ruff
         args: [--fix]

@@ -1,5 +1,5 @@
 import asyncio
-from typing import Any, Dict, Literal, Optional, Union
+from typing import Any, Literal, Optional, Union
 
 from typing_extensions import Self
 
@@ -41,7 +41,7 @@ class Notification(Element, component='notification.js'):
                  spinner: bool = False,
                  timeout: Optional[float] = 5.0,
                  on_dismiss: Optional[Handler[UiEventArguments]] = None,
-                 options: Optional[Dict] = None,
+                 options: Optional[dict] = None,
                  **kwargs: Any,
                  ) -> None:
         """Notification element
@@ -66,6 +66,7 @@ class Notification(Element, component='notification.js'):
         """
         with context.client.layout:
             super().__init__()
+        self._update_method = 'update_notification'
         if options:
             self._props['options'] = options
         else:
@@ -211,7 +212,3 @@ class Notification(Element, component='notification.js'):
 
     def set_visibility(self, visible: bool) -> None:
         raise NotImplementedError('Use `dismiss()` to remove the notification. See #3670 for more information.')
-
-    def update(self) -> None:
-        super().update()
-        self.run_method('update_notification')

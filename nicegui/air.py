@@ -5,18 +5,19 @@ import gzip
 import json
 import logging
 import re
+from collections.abc import AsyncIterator
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, AsyncIterator, Dict, Optional
+from typing import TYPE_CHECKING, Any
 from uuid import uuid4
 
 import socketio
 import socketio.exceptions
 
-from . import background_tasks, core
+from . import background_tasks, core, helpers
 from .client import Client
 from .dataclasses import KWONLY_SLOTS
-from .elements.timer import Timer as timer
 from .logging import log
+from .timer import Timer as timer
 
 if TYPE_CHECKING:
     import httpx
@@ -41,14 +42,15 @@ class Air:
         self.client = httpx.AsyncClient(transport=httpx.ASGITransport(app=core.app))
         self.streaming_client = httpx.AsyncClient()
         self.connecting = False
-        self.streams: Dict[str, Stream] = {}
-        self.remote_url: Optional[str] = None
+        self.streams: dict[str, Stream] = {}
+        self.remote_url: str | None = None
+        self._host_unreachable_warning = f'On Air host "{RELAY_HOST}" is not reachable. Please check your internet connection.'
 
         timer(5, self.connect)  # ensure we stay connected
 
         @self.relay.on('http')
-        async def _handle_http(data: Dict[str, Any]) -> Dict[str, Any]:
-            headers: Dict[str, Any] = data['headers']
+        async def _handle_http(data: dict[str, Any]) -> dict[str, Any]:
+            headers: dict[str, Any] = data['headers']
             headers.update({'Accept-Encoding': 'identity', 'X-Forwarded-Prefix': data['prefix']})
             url = 'http://test' + data['path']
             request = self.client.build_request(
@@ -70,16 +72,31 @@ class Air:
                 new_js_object = match.group(1).decode().rstrip('}') + ", 'fly_instance_id' : '" + instance_id + "'}"
                 content = content.replace(match.group(0), f'const query = {new_js_object}'.encode())
             compressed = gzip.compress(content)
-            response.headers.update({'content-encoding': 'gzip', 'content-length': str(len(compressed))})
-            return {
+            total_size = len(compressed)
+            response.headers.update({'content-encoding': 'gzip', 'content-length': str(total_size)})
+            result = {
                 'status_code': response.status_code,
                 'headers': response.headers.multi_items(),
                 'content': compressed,
             }
 
+            # NOTE: chunk large responses to stay within the SocketIO limit
+            if total_size > 1_000_000:
+                async def chunk_iterator() -> AsyncIterator[bytes]:
+                    chunk_size = 512 * 1024
+                    for i in range(0, total_size, chunk_size):
+                        yield compressed[i:i + chunk_size]
+                stream_id = str(uuid4())
+                self.streams[stream_id] = Stream(data=chunk_iterator(), response=response)
+                result['stream_id'] = stream_id
+                result['total_size'] = total_size
+                del result['content']
+
+            return result
+
         @self.relay.on('range-request')
-        async def _handle_range_request(data: Dict[str, Any]) -> Dict[str, Any]:
-            headers: Dict[str, Any] = data['headers']
+        async def _handle_range_request(data: dict[str, Any]) -> dict[str, Any]:
+            headers: dict[str, Any] = data['headers']
             url = next(iter(u for u in core.app.urls if self.remote_url != u)) + data['path']
             data['params']['nicegui_chunk_size'] = 1024
             request = self.client.build_request(
@@ -98,7 +115,7 @@ class Air:
             }
 
         @self.relay.on('read-stream')
-        async def _handle_read_stream(stream_id: str) -> Optional[bytes]:
+        async def _handle_read_stream(stream_id: str) -> bytes | None:
             try:
                 return await self.streams[stream_id].data.__anext__()
             except StopAsyncIteration:
@@ -114,18 +131,18 @@ class Air:
             del self.streams[stream_id]
 
         @self.relay.on('ready')
-        def _handle_ready(data: Dict[str, Any]) -> None:
+        def _handle_ready(data: dict[str, Any]) -> None:
             core.app.urls.add(data['device_url'])
             self.remote_url = data['device_url']
             if core.app.config.show_welcome_message:
                 print(f'NiceGUI is on air at {data["device_url"]}', flush=True)
 
         @self.relay.on('error')
-        def _handleerror(data: Dict[str, Any]) -> None:
+        def _handleerror(data: dict[str, Any]) -> None:
             print('Error:', data['message'], flush=True)
 
         @self.relay.on('handshake')
-        def _handle_handshake(data: Dict[str, Any]) -> bool:
+        def _handle_handshake(data: dict[str, Any]) -> bool:
             client_id = data['client_id']
             if client_id not in Client.instances:
                 return False
@@ -139,7 +156,7 @@ class Air:
             return True
 
         @self.relay.on('client_disconnect')
-        def _handle_client_disconnect(data: Dict[str, Any]) -> None:
+        def _handle_client_disconnect(data: dict[str, Any]) -> None:
             self.log.debug('client disconnected.')
             client_id = data['client_id']
             if client_id not in Client.instances:
@@ -149,6 +166,8 @@ class Air:
         @self.relay.on('connect')
         async def _handle_connect() -> None:
             self.log.debug('connected.')
+            # NOTE: reset the warning so it can be shown again if connection breaks in the future
+            helpers._shown_warnings.discard(self._host_unreachable_warning)  # pylint: disable=protected-access
 
         @self.relay.on('disconnect')
         async def _handle_disconnect() -> None:
@@ -156,10 +175,15 @@ class Air:
 
         @self.relay.on('connect_error')
         async def _handle_connect_error(data) -> None:
-            self.log.debug(f'Connection error: {data}')
+            message = data.get('message', 'Unknown error') if isinstance(data, dict) else data
+            if message == 'Connection error':
+                helpers.warn_once(self._host_unreachable_warning)
+            else:
+                self.log.warning(f'Connection error: {message}')
+            await self.relay.disconnect()
 
         @self.relay.on('event')
-        def _handle_event(data: Dict[str, Any]) -> None:
+        def _handle_event(data: dict[str, Any]) -> None:
             client_id = data['client_id']
             if client_id not in Client.instances:
                 return
@@ -172,7 +196,7 @@ class Air:
             client.handle_event(data['msg'])
 
         @self.relay.on('javascript_response')
-        def _handle_javascript_response(data: Dict[str, Any]) -> None:
+        def _handle_javascript_response(data: dict[str, Any]) -> None:
             client_id = data['client_id']
             if client_id not in Client.instances:
                 return
@@ -180,7 +204,7 @@ class Air:
             client.handle_javascript_response(data['msg'])
 
         @self.relay.on('ack')
-        def _handle_ack(data: Dict[str, Any]) -> None:
+        def _handle_ack(data: dict[str, Any]) -> None:
             client_id = data['client_id']
             if client_id not in Client.instances:
                 return
@@ -232,7 +256,7 @@ class Air:
         self.streams.clear()
         self.log.debug('Disconnected.')
 
-    async def emit(self, message_type: str, data: Dict[str, Any], room: str) -> None:
+    async def emit(self, message_type: str, data: dict[str, Any], room: str) -> None:
         """Emit a message to the NiceGUI On Air server."""
         if self.relay.connected:
             await self.relay.emit('forward', {'event': message_type, 'data': data, 'room': room})
@@ -248,10 +272,10 @@ class Air:
 def connect() -> None:
     """Connect to the NiceGUI On Air server if there is an air instance."""
     if core.air:
-        background_tasks.create(core.air.connect())
+        background_tasks.create(core.air.connect(), name='On Air connect')
 
 
 def disconnect() -> None:
     """Disconnect from the NiceGUI On Air server if there is an air instance."""
     if core.air:
-        background_tasks.create(core.air.disconnect())
+        background_tasks.create(core.air.disconnect(), name='On Air disconnect')

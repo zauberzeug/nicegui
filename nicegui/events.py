@@ -1,23 +1,10 @@
 from __future__ import annotations
 
+import asyncio
+from collections.abc import Awaitable, Iterator
 from contextlib import nullcontext
 from dataclasses import dataclass
-from inspect import Parameter, signature
-from typing import (
-    TYPE_CHECKING,
-    Any,
-    Awaitable,
-    BinaryIO,
-    Callable,
-    Dict,
-    Iterator,
-    List,
-    Literal,
-    Optional,
-    TypeVar,
-    Union,
-    cast,
-)
+from typing import TYPE_CHECKING, Any, BinaryIO, Callable, Literal, TypeVar, Union, cast
 
 from . import background_tasks, core, helpers
 from .awaitable_response import AwaitableResponse
@@ -70,9 +57,9 @@ class EChartPointClickEventArguments(UiEventArguments):
     series_name: str
     name: str
     data_index: int
-    data: Union[float, int, str]
+    data: float | int | str
     data_type: str
-    value: Union[float, int, list]
+    value: float | int | list
 
 
 @dataclass(**KWONLY_SLOTS)
@@ -92,7 +79,7 @@ class SceneClickEventArguments(ClickEventArguments):
     ctrl: bool
     meta: bool
     shift: bool
-    hits: List[SceneClickHit]
+    hits: list[SceneClickHit]
 
 
 @dataclass(**KWONLY_SLOTS)
@@ -126,8 +113,8 @@ class MouseEventArguments(UiEventArguments):
 @dataclass(**KWONLY_SLOTS)
 class JoystickEventArguments(UiEventArguments):
     action: str
-    x: Optional[float] = None
-    y: Optional[float] = None
+    x: float | None = None
+    y: float | None = None
 
 
 @dataclass(**KWONLY_SLOTS)
@@ -139,9 +126,9 @@ class UploadEventArguments(UiEventArguments):
 
 @dataclass(**KWONLY_SLOTS)
 class MultiUploadEventArguments(UiEventArguments):
-    contents: List[BinaryIO]
-    names: List[str]
-    types: List[str]
+    contents: list[BinaryIO]
+    names: list[str]
+    types: list[str]
 
 
 @dataclass(**KWONLY_SLOTS)
@@ -158,7 +145,7 @@ class ValueChangeEventArguments(UiEventArguments):
 
 @dataclass(**KWONLY_SLOTS)
 class TableSelectionEventArguments(UiEventArguments):
-    selection: List[Any]
+    selection: list[Any]
 
 
 @dataclass(**KWONLY_SLOTS)
@@ -192,8 +179,11 @@ class KeyboardKey:
         if isinstance(other, str):
             return other in {self.name, self.code}
         if isinstance(other, KeyboardKey):
-            return self == other
+            return (self.name, self.code, self.location) == (other.name, other.code, other.location)
         return False
+
+    def __hash__(self) -> int:
+        return hash((self.name, self.code, self.location))
 
     def __repr__(self):
         return str(self.name)
@@ -204,7 +194,7 @@ class KeyboardKey:
         return self.code.startswith('Arrow')
 
     @property
-    def number(self) -> Optional[int]:
+    def number(self) -> int | None:
         """Integer value of a number key."""
         return int(self.code[len('Digit'):]) if self.code.startswith('Digit') else None
 
@@ -256,7 +246,7 @@ class KeyboardKey:
     @property
     def space(self) -> bool:
         """Whether the key is the space key."""
-        return self.name == 'Space'
+        return self.name == ' '
 
     @property
     def page_up(self) -> bool:
@@ -400,20 +390,20 @@ class ScrollEventArguments(UiEventArguments):
 
 @dataclass(**KWONLY_SLOTS)
 class JsonEditorSelectEventArguments(UiEventArguments):
-    selection: Dict
+    selection: dict
 
 
 @dataclass(**KWONLY_SLOTS)
 class JsonEditorChangeEventArguments(UiEventArguments):
-    content: Dict
-    errors: Dict
+    content: dict
+    errors: dict
 
 
 EventT = TypeVar('EventT', bound=EventArguments)
 Handler = Union[Callable[[EventT], Any], Callable[[], Any]]
 
 
-def handle_event(handler: Optional[Handler[EventT]], arguments: EventT) -> None:
+def handle_event(handler: Handler[EventT] | None, arguments: EventT) -> None:
     """Call the given event handler.
 
     The handler is called within the context of the parent slot of the sender.
@@ -427,23 +417,18 @@ def handle_event(handler: Optional[Handler[EventT]], arguments: EventT) -> None:
     if handler is None:
         return
     try:
-        expects_arguments = any(p.default is Parameter.empty and
-                                p.kind is not Parameter.VAR_POSITIONAL and
-                                p.kind is not Parameter.VAR_KEYWORD
-                                for p in signature(handler).parameters.values())
-
-        parent_slot: Union[Slot, nullcontext]
+        parent_slot: Slot | nullcontext
         if isinstance(arguments, UiEventArguments):
             parent_slot = arguments.sender.parent_slot or arguments.sender.client.layout.default_slot
         else:
             parent_slot = nullcontext()
 
         with parent_slot:
-            if expects_arguments:
+            if helpers.expects_arguments(handler):
                 result = cast(Callable[[EventT], Any], handler)(arguments)
             else:
                 result = cast(Callable[[], Any], handler)()
-        if isinstance(result, Awaitable) and not isinstance(result, AwaitableResponse):
+        if isinstance(result, Awaitable) and not isinstance(result, AwaitableResponse) and not isinstance(result, asyncio.Task):
             # NOTE: await an awaitable result even if the handler is not a coroutine (like a lambda statement)
             async def wait_for_result():
                 with parent_slot:

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import asyncio
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 
 from socketio import AsyncServer
 
@@ -11,5 +11,5 @@ if TYPE_CHECKING:
 
 app: App
 sio: AsyncServer
-loop: Optional[asyncio.AbstractEventLoop] = None
-air: Optional[Air] = None
+loop: asyncio.AbstractEventLoop | None = None
+air: Air | None = None
