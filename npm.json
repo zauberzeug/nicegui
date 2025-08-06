@@ -58,6 +58,17 @@
     },
     "version": "32.1.0"
   },
+  "ajv-formats": {
+    "package": "@sethvincent/ajv-formats",
+    "destination": "nicegui/elements/lib",
+    "keep": [
+      "dist/ajv-formats(\\.min)?\\.js"
+    ],
+    "rename": {
+      "dist/": ""
+    },
+    "version": "3.0.2"
+  },
   "echarts": {
     "destination": "nicegui/elements/lib",
     "keep": [
