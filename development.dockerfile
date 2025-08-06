@@ -2,7 +2,7 @@ FROM python:3.9-slim
 
 RUN apt update && apt install curl build-essential -y
 
-RUN python -m pip install --no-cache-dir "poetry~=1.8" \
+RUN python -m pip install --no-cache-dir poetry \
     && poetry config virtualenvs.create false
 
 WORKDIR /app
