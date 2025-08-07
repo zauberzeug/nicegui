@@ -57,7 +57,6 @@ class Library:
     key: str
     name: str
     path: Path
-    expose: bool
 
 
 vue_components: dict[str, VueComponent] = {}
@@ -92,7 +91,7 @@ def register_vue_component(path: Path, *, max_time: float | None) -> Component:
     raise ValueError(f'Unsupported component type "{path.suffix}"')
 
 
-def register_library(path: Path, *, expose: bool = False, max_time: float | None) -> Library:
+def register_library(path: Path, *, max_time: float) -> Library:
     """Register a *.js library."""
     key = compute_key(path, max_time=max_time)
     name = _get_name(path)
@@ -100,7 +99,7 @@ def register_library(path: Path, *, expose: bool = False, max_time: float | None
         if key in libraries and libraries[key].path == path:
             return libraries[key]
         assert key not in libraries, f'Duplicate js library {key}'
-        libraries[key] = Library(key=key, name=name, path=path, expose=expose)
+        libraries[key] = Library(key=key, name=name, path=path)
         return libraries[key]
     raise ValueError(f'Unsupported library type "{path.suffix}"')
 
@@ -157,9 +156,9 @@ def generate_resources(prefix: str, elements: Iterable[Element]) -> tuple[list[s
     js_imports: list[str] = []
     js_imports_urls: list[str] = []
 
-    # build the importmap structure for exposed libraries
+    # build the importmap structure for libraries
     for key, library in libraries.items():
-        if key not in done_libraries and library.expose:
+        if key not in done_libraries:
             imports[library.name] = f'{prefix}/_nicegui/{__version__}/libraries/{key}'
             done_libraries.add(key)
 
@@ -174,13 +173,6 @@ def generate_resources(prefix: str, elements: Iterable[Element]) -> tuple[list[s
 
     # build the resources associated with the elements
     for element in elements:
-        for library in element.libraries:
-            if library.key not in done_libraries:
-                if not library.expose:
-                    url = f'{prefix}/_nicegui/{__version__}/libraries/{library.key}'
-                    js_imports.append(f'import "{url}";')
-                    js_imports_urls.append(url)
-                done_libraries.add(library.key)
         if element.component:
             js_component = element.component
             if js_component.key not in done_components and js_component.path.suffix.lower() == '.js':
