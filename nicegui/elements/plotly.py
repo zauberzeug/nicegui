@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Dict, Union
 
-from .. import optional_features
+from .. import helpers, optional_features
 from ..element import Element
 
 try:
@@ -41,6 +41,7 @@ class Plotly(Element, component='plotly.vue', dependencies=['lib/plotly/plotly.m
         self.figure = figure
         self.update()
 
+    @helpers.prevent_recursion
     def update(self) -> None:
         self._props['options'] = self._get_figure_json()
         super().update()

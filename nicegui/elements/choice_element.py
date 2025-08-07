@@ -1,5 +1,6 @@
 from typing import Any, Dict, List, Optional, Union
 
+from .. import helpers
 from ..events import Handler, ValueChangeEventArguments
 from .mixins.value_element import ValueElement
 
@@ -32,6 +33,7 @@ class ChoiceElement(ValueElement):
         if not isinstance(before_value, list):  # NOTE: no need to update value in case of multi-select
             self.value = before_value if before_value in self._values else None
 
+    @helpers.prevent_recursion
     def update(self) -> None:
         self._update_values_and_labels()
         self._update_options()
