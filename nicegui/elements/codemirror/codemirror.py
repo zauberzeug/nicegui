@@ -1,5 +1,4 @@
 from itertools import accumulate, chain, repeat
-from pathlib import Path
 from typing import Literal, Optional, get_args
 
 from nicegui.elements.mixins.disableable_element import DisableableElement
@@ -246,7 +245,10 @@ SUPPORTED_THEMES = Literal[
 ]
 
 
-class CodeMirror(ValueElement, DisableableElement, component='codemirror.js', default_classes='nicegui-codemirror'):
+class CodeMirror(ValueElement, DisableableElement,
+                 component='codemirror.js',
+                 esm={'codemirror-editor': 'lib'},
+                 default_classes='nicegui-codemirror'):
     VALUE_PROP = 'value'
     LOOPBACK = None
 
@@ -286,7 +288,6 @@ class CodeMirror(ValueElement, DisableableElement, component='codemirror.js', de
         self._update_codepoints()
         if on_change is not None:
             super().on_value_change(on_change)
-        self.add_resource(Path(__file__).parent / 'lib')
 
         self._props['language'] = language
         self._props['theme'] = theme

@@ -59,11 +59,18 @@ class Library:
     path: Path
 
 
+@dataclass(**KWONLY_SLOTS)
+class EsmModule:
+    name: str
+    path: Path
+
+
 vue_components: dict[str, VueComponent] = {}
 js_components: dict[str, JsComponent] = {}
 libraries: dict[str, Library] = {}
 resources: dict[str, Resource] = {}
 dynamic_resources: dict[str, DynamicResource] = {}
+esm_modules: dict[str, EsmModule] = {}
 
 
 def register_vue_component(path: Path, *, max_time: float | None) -> Component:
@@ -120,6 +127,13 @@ def register_dynamic_resource(name: str, function: Callable) -> DynamicResource:
     return dynamic_resources[name]
 
 
+def register_esm(name: str, path: Path, *, max_time: float | None) -> None:
+    """Register an ESM module."""
+    if any(name == esm_module.name for esm_module in esm_modules.values()):
+        raise ValueError(f'Duplicate ESM module name "{name}"')
+    esm_modules[compute_key(path, max_time=max_time)] = EsmModule(name=name, path=path)
+
+
 @functools.cache
 def compute_key(path: Path, *, max_time: float | None) -> str:
     """Compute a key for a given path using a hash function.
@@ -161,6 +175,10 @@ def generate_resources(prefix: str, elements: Iterable[Element]) -> tuple[list[s
         if key not in done_libraries:
             imports[library.name] = f'{prefix}/_nicegui/{__version__}/libraries/{key}'
             done_libraries.add(key)
+
+    # build the importmap structure for ESM modules
+    for key, esm_module in esm_modules.items():
+        imports[f'{esm_module.name}/'] = f'{prefix}/_nicegui/{__version__}/esm/{key}/'
 
     # build the none-optimized component (i.e. the Vue component)
     for key, vue_component in vue_components.items():

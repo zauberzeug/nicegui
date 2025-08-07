@@ -18,6 +18,7 @@ from .dependencies import (
     Component,
     Library,
     register_dynamic_resource,
+    register_esm,
     register_library,
     register_resource,
     register_vue_component,
@@ -90,6 +91,7 @@ class Element(Visibility):
     def __init_subclass__(cls, *,
                           component: str | Path | None = None,
                           dependencies: list[str | Path] = [],  # noqa: B006
+                          esm: dict[str, str] | None = None,
                           default_classes: str | None = None,
                           default_style: str | None = None,
                           default_props: str | None = None,
@@ -113,6 +115,12 @@ class Element(Visibility):
             max_time = max((path.stat().st_mtime for path in glob_absolute_paths(library)), default=None)
             for path in glob_absolute_paths(library):
                 cls.exposed_libraries.append(register_library(path, max_time=max_time))
+        for key, esm_path in (esm or {}).items():
+            path = Path(esm_path)
+            if not path.is_absolute():
+                path = base / path
+            max_time = max((path.stat().st_mtime for path in glob_absolute_paths(path)), default=None)
+            register_esm(key, path, max_time=max_time)
 
         cls._default_props = copy(cls._default_props)
         cls._default_classes = copy(cls._default_classes)

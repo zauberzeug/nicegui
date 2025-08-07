@@ -6,7 +6,6 @@ export default {
     value: String,
     language: String,
     theme: String,
-    resource_path: String,
     lineWrapping: Boolean,
     disable: Boolean,
     indent: String,
@@ -148,7 +147,7 @@ export default {
   },
   async mounted() {
     await this.$nextTick(); // NOTE: wait for window.path_prefix to be set
-    this.CM = await import(window.path_prefix + `${this.resource_path}/editor.js`);
+    this.CM = await import("codemirror-editor/editor.js");
     const CM = this.CM;
 
     // This is used to prevent emitting the value we just received from the server.
