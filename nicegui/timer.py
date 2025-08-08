@@ -59,7 +59,7 @@ class Timer:
 
     def cancel(self, with_current_invocation=False) -> None:
         """Cancel the timer.
-        :param with_current_invocation: if True, it will also cancel the currently invoked task of the callback
+        :param with_current_invocation: if True, it will also cancel the currently invoked task of the callback (*added in version 2.23.0*)
         """
         self._is_canceled = True
         if with_current_invocation and self._current_invocation is not None:
@@ -72,7 +72,11 @@ class Timer:
             with self._get_context():
                 await asyncio.sleep(self.interval)
                 if self.active and not self._should_stop():
-                    await self._invoke_callback()
+                    try:
+                        await self._invoke_callback()
+                    except asyncio.CancelledError:
+                        # expected when cancel(with_current_invocation=True) is used
+                        pass
         finally:
             self._cleanup()
 
@@ -117,6 +121,9 @@ class Timer:
                     self._current_invocation = None
             else:
                 self._current_invocation = None
+        except asyncio.CancelledError:
+            # expected when cancel(with_current_invocation=True) is used
+            pass
         except Exception as e:
             core.app.handle_exception(e)
 
