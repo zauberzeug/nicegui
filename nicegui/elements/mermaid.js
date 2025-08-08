@@ -33,6 +33,10 @@ export default {
           const { svg, bindFunctions } = await mermaid.render(element.id + "_mermaid", content);
           element.innerHTML = svg;
           bindFunctions?.(element);
+          if (this.clickInstance) {
+            await this.$nextTick();
+            this.attachClickHandlers(element);
+          };
         } catch (error) {
           const { svg, bindFunctions } = await mermaid.render(element.id + "_mermaid", "error");
           element.innerHTML = svg;
@@ -44,9 +48,37 @@ export default {
       }
       is_running = false;
     },
+    attachClickHandlers(element) {
+      const clickables = element.querySelectorAll("g.node");
+      console.log(clickables)
+      clickables.forEach(node => {
+        if (node.getAttribute('data-listener-added')) return;
+        node.setAttribute('data-listener-added', 'true');
+        node.style.cursor = "pointer";
+
+        const nodeText = node.textContent.trim();
+        const nodeId = node.id;
+
+        node.addEventListener("click", () => {
+          this.$emit("nodeClick", {
+            node: this.getNodeName(nodeId),
+            nodeId,
+            nodeText,
+          });
+        });
+      });
+    },
+    getNodeName(domId) {
+      if (!domId) return undefined;
+      const parts = domId.split("-");
+      if (parts.length >= 3) return parts.slice(1, -1).join("-");
+      if (parts.length === 2) return parts[1];
+      return domId;
+    },
   },
   props: {
     config: Object,
     content: String,
+    clickInstance: Boolean,
   },
 };
