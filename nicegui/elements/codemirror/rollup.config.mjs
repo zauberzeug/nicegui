@@ -2,9 +2,9 @@ import nodeResolve from "@rollup/plugin-node-resolve";
 import terser from "@rollup/plugin-terser";
 
 export default {
-  input: "./editor.mjs",
+  input: "./src/index.mjs",
   output: {
-    dir: "./lib/",
+    dir: "./dist/",
     format: "es",
   },
   plugins: [

@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "build": "rollup -c rollup.config.mjs --validate",
-    "clean": "rm -rf ./lib/*"
+    "clean": "rimraf ./dist/*"
   },
   "dependencies": {
     "codemirror": "^6.0.2",
@@ -18,6 +18,7 @@
   "devDependencies": {
     "rollup": "^4.46.2",
     "@rollup/plugin-node-resolve": "^16.0.1",
-    "@rollup/plugin-terser": "^0.4.4"
+    "@rollup/plugin-terser": "^0.4.4",
+    "rimraf": "^6.0.1"
   }
 }
