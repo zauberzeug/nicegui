@@ -1,4 +1,4 @@
-import "ag-grid-community";
+import AgGrid from "nicegui-aggrid/index.js";
 import { convertDynamicProperties } from "../../static/utils/dynamic_properties.js";
 
 export default {
@@ -43,7 +43,7 @@ export default {
       };
 
       this.gridOptions.onGridReady = (params) => this.handle_event("gridReady", params);
-      this.api = agGrid.createGrid(this.$el, this.gridOptions);
+      this.api = AgGrid.createGrid(this.$el, this.gridOptions);
       this.api.addGlobalListener(this.handle_event);
     },
     run_grid_method(name, ...args) {

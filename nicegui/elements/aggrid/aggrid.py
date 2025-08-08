@@ -3,9 +3,9 @@ from typing import TYPE_CHECKING, Literal, Optional, cast
 
 from typing_extensions import Self
 
-from .. import helpers, optional_features
-from ..awaitable_response import AwaitableResponse
-from ..element import Element
+from ... import helpers, optional_features
+from ...awaitable_response import AwaitableResponse
+from ...element import Element
 
 if importlib.util.find_spec('pandas'):
     optional_features.register('pandas')
@@ -18,10 +18,7 @@ if importlib.util.find_spec('polars'):
         import polars as pl
 
 
-class AgGrid(Element,
-             component='aggrid.js',
-             dependencies=['lib/aggrid/ag-grid-community.min.js'],
-             default_classes='nicegui-aggrid'):
+class AgGrid(Element, component='aggrid.js', esm={'nicegui-aggrid': 'dist'}, default_classes='nicegui-aggrid'):
 
     def __init__(self,
                  options: dict, *,
