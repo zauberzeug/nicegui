@@ -3,8 +3,8 @@ from typing import Optional
 
 from typing_extensions import Self
 
-from ..element import Element
-from ..events import (
+from ...element import Element
+from ...events import (
     ClickEventArguments,
     GenericEventArguments,
     Handler,
@@ -15,13 +15,8 @@ from ..events import (
 from .scene import Scene, SceneCamera
 
 
-class SceneView(Element,
-                component='scene_view.js',
-                dependencies=[
-                    'lib/tween/tween.umd.js',
-                    'lib/three/three.module.js',
-                ],
-                default_classes='nicegui-scene-view'):
+class SceneView(Element, component='scene_view.js', default_classes='nicegui-scene-view'):
+    # NOTE: The ESM is already registered in scene.py.
 
     def __init__(self,
                  scene: Scene,

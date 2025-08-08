@@ -1,11 +1,16 @@
-import * as THREE from "three";
-import { CSS2DRenderer, CSS2DObject } from "CSS2DRenderer";
-import { CSS3DRenderer, CSS3DObject } from "CSS3DRenderer";
-import { DragControls } from "DragControls";
-import { GLTFLoader } from "GLTFLoader";
-import { OrbitControls } from "OrbitControls";
-import { STLLoader } from "STLLoader";
-import "tween";
+import SceneLib from "nicegui-scene/index.js";
+const {
+  CSS2DObject,
+  CSS2DRenderer,
+  CSS3DObject,
+  CSS3DRenderer,
+  DragControls,
+  GLTFLoader,
+  OrbitControls,
+  STLLoader,
+  THREE,
+  TWEEN,
+} = SceneLib;
 
 function texture_geometry(coords) {
   const geometry = new THREE.BufferGeometry();

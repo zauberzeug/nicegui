@@ -4,10 +4,10 @@ from typing import Any, Callable, Literal, Optional, Union
 
 from typing_extensions import Self
 
-from .. import binding
-from ..dataclasses import KWONLY_SLOTS
-from ..element import Element
-from ..events import (
+from ... import binding
+from ...dataclasses import KWONLY_SLOTS
+from ...element import Element
+from ...events import (
     GenericEventArguments,
     Handler,
     SceneClickEventArguments,
@@ -38,20 +38,7 @@ class SceneObject:
     id: str = 'scene'
 
 
-class Scene(Element,
-            component='scene.js',
-            dependencies=[
-                'lib/three/three.module.js',
-                'lib/three/modules/BufferGeometryUtils.js',
-                'lib/three/modules/CSS2DRenderer.js',
-                'lib/three/modules/CSS3DRenderer.js',
-                'lib/three/modules/DragControls.js',
-                'lib/three/modules/GLTFLoader.js',
-                'lib/three/modules/OrbitControls.js',
-                'lib/three/modules/STLLoader.js',
-                'lib/tween/tween.umd.js',
-            ],
-            default_classes='nicegui-scene'):
+class Scene(Element, component='scene.js', esm={'nicegui-scene': 'dist'}, default_classes='nicegui-scene'):
     # pylint: disable=import-outside-toplevel
     from .scene_objects import AxesHelper as axes_helper
     from .scene_objects import Box as box

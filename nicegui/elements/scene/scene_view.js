@@ -1,5 +1,5 @@
-import * as THREE from "three";
-import "tween";
+import SceneLib from "nicegui-scene/index.js";
+const { THREE, TWEEN } = SceneLib;
 
 export default {
   template: `
