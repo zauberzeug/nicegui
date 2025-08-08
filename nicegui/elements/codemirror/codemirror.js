@@ -1,3 +1,5 @@
+import * as CM from "codemirror-editor/editor.js";
+
 export default {
   template: `
     <div></div>
@@ -103,8 +105,6 @@ export default {
       });
     },
     setupExtensions() {
-      const CM = this.CM;
-
       const self = this;
 
       // Sends a ChangeSet https://codemirror.net/docs/ref/#state.ChangeSet
@@ -112,7 +112,7 @@ export default {
       // This could potentially be optimized further by sending updates
       // periodically instead of on every change and accumulating changesets
       // with ChangeSet.compose.
-      const changeSender = this.CM.ViewPlugin.fromClass(
+      const changeSender = CM.ViewPlugin.fromClass(
         class {
           update(update) {
             if (!update.docChanged) return;
@@ -147,8 +147,6 @@ export default {
   },
   async mounted() {
     await this.$nextTick(); // NOTE: wait for window.path_prefix to be set
-    this.CM = await import("codemirror-editor/editor.js");
-    const CM = this.CM;
 
     // This is used to prevent emitting the value we just received from the server.
     this.emitting = true;
