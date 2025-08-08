@@ -4,14 +4,14 @@ from typing import Any, Optional, Union, cast
 
 from typing_extensions import Self
 
-from .. import binding
-from ..awaitable_response import AwaitableResponse, NullResponse
-from ..element import Element
-from ..events import GenericEventArguments
+from ... import binding
+from ...awaitable_response import AwaitableResponse, NullResponse
+from ...element import Element
+from ...events import GenericEventArguments
 from .leaflet_layer import Layer
 
 
-class Leaflet(Element, component='leaflet.js', default_classes='nicegui-leaflet'):
+class Leaflet(Element, component='leaflet.js', esm={'nicegui-leaflet': 'dist'}, default_classes='nicegui-leaflet'):
     # pylint: disable=import-outside-toplevel
     from .leaflet_layers import GenericLayer as generic_layer
     from .leaflet_layers import ImageOverlay as image_overlay
@@ -44,7 +44,7 @@ class Leaflet(Element, component='leaflet.js', default_classes='nicegui-leaflet'
         :param additional_resources: additional resources like CSS or JS files to load (default: None, *added in version 2.11.0*)
         """
         super().__init__()
-        self.add_resource(Path(__file__).parent / 'lib' / 'leaflet')
+        self.add_resource(Path(__file__).parent / 'dist')
 
         self.layers: list[Layer] = []
         self.is_initialized = False

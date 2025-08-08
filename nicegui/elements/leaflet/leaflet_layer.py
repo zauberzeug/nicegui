@@ -5,8 +5,8 @@ from abc import abstractmethod
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any, ClassVar
 
-from ..awaitable_response import AwaitableResponse
-from ..dataclasses import KWONLY_SLOTS
+from ...awaitable_response import AwaitableResponse
+from ...dataclasses import KWONLY_SLOTS
 
 if TYPE_CHECKING:
     from .leaflet import Leaflet

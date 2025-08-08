@@ -1,3 +1,4 @@
+import { leaflet as L, loadLeafletDraw } from "nicegui-leaflet/index.js";
 import { loadResource } from "../../static/utils/resources.js";
 import { cleanObject } from "../../static/utils/json.js";
 
@@ -14,15 +15,12 @@ export default {
   },
   async mounted() {
     await this.$nextTick(); // NOTE: wait for window.path_prefix to be set
-    await Promise.all([
-      loadResource(window.path_prefix + `${this.resource_path}/leaflet/leaflet.css`),
-      loadResource(window.path_prefix + `${this.resource_path}/leaflet/leaflet.js`),
-    ]);
+    await loadResource(window.path_prefix + `${this.resource_path}/leaflet/leaflet.css`);
     await Promise.all(this.additional_resources.map((resource) => loadResource(resource)));
     if (this.draw_control) {
       await Promise.all([
         loadResource(window.path_prefix + `${this.resource_path}/leaflet-draw/leaflet.draw.css`),
-        loadResource(window.path_prefix + `${this.resource_path}/leaflet-draw/leaflet.draw.js`),
+        loadLeafletDraw(),
       ]);
     }
     this.map = L.map(this.$el, {
@@ -107,10 +105,20 @@ export default {
       }
       const drawnItems = new L.FeatureGroup();
       this.map.addLayer(drawnItems);
+
+      // Normalize draw_control options: allow boolean True -> {}
+      const dc = this.draw_control && typeof this.draw_control === "object" ? this.draw_control : {};
+      const drawOptions = dc.draw === true || dc.draw === undefined ? {} : dc.draw || {};
+      let editOptions = dc.edit === true || dc.edit === undefined ? {} : dc.edit || {};
+      if (typeof editOptions === "object" && "edit" in editOptions) {
+        const { edit: _ignoredEditFlag, ...rest } = editOptions;
+        editOptions = rest;
+      }
+
       const drawControl = new L.Control.Draw({
-        draw: this.draw_control.draw,
+        draw: drawOptions,
         edit: {
-          ...this.draw_control.edit,
+          ...editOptions,
           featureGroup: drawnItems,
         },
       });
