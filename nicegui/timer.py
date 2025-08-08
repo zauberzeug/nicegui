@@ -105,10 +105,16 @@ class Timer:
             if isinstance(result, Awaitable) and not isinstance(result, AwaitableResponse):
                 async def background_task():
                     with self._get_context():
-                        await result
+                        try:
+                            await result
+                        finally:
+                            self._current_invocation = None
                 self._current_invocation = background_tasks.create(background_task(),
                                                                    name=f'timer callback {self.callback}')
-                await self._current_invocation
+                try:
+                    await self._current_invocation
+                finally:
+                    self._current_invocation = None
             else:
                 self._current_invocation = None
         except Exception as e:
