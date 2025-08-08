@@ -5,7 +5,7 @@
 <script>
 export default {
   async mounted() {
-    await import("nipplejs");
+    const { nipplejs } = await import("nicegui-joystick/index.js");
     const joystick = nipplejs.create({
       zone: this.$el.children[0],
       position: { left: "50%", top: "50%" },

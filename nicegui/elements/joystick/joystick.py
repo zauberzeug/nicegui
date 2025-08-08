@@ -2,14 +2,11 @@ from typing import Any, Optional
 
 from typing_extensions import Self
 
-from ..element import Element
-from ..events import GenericEventArguments, Handler, JoystickEventArguments, handle_event
+from ...element import Element
+from ...events import GenericEventArguments, Handler, JoystickEventArguments, handle_event
 
 
-class Joystick(Element,
-               component='joystick.vue',
-               dependencies=['lib/nipplejs/nipplejs.js'],
-               default_classes='nicegui-joystick'):
+class Joystick(Element, component='joystick.vue', esm={'nicegui-joystick': 'dist'}, default_classes='nicegui-joystick'):
 
     def __init__(self, *,
                  on_start: Optional[Handler[JoystickEventArguments]] = None,
