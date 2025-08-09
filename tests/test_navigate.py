@@ -53,7 +53,8 @@ def test_navigate_to_relative_url(screen: Screen):
     screen.open('/')
     screen.click('Go relative')
     screen.wait(0.2)
-    assert '/test_page' in screen.selenium.current_url
+    assert screen.selenium.current_url == f'http://localhost:{Screen.PORT}/test_page'
+
     screen.click('Back')
     screen.wait(0.2)
-    assert '/' in screen.selenium.current_url
+    assert screen.selenium.current_url == f'http://localhost:{Screen.PORT}/'
