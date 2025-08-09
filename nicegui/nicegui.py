@@ -13,6 +13,7 @@ from . import air, background_tasks, binding, core, favicon, helpers, json, run,
 from .app import App
 from .client import Client
 from .dependencies import dynamic_resources, js_components, libraries, resources
+from .elements.sub_pages import SubPages
 from .error import error_content
 from .json import NiceGUIJSONResponse
 from .logging import log
@@ -57,13 +58,6 @@ static_files = CacheControlledStaticFiles(
     follow_symlink=True,
 )
 app.mount(f'/_nicegui/{__version__}/static', static_files, name='static')
-
-Client.auto_index_client = Client(page('/'), request=None).__enter__()  # pylint: disable=unnecessary-dunder-call
-
-
-@app.get('/')
-def _get_index(request: Request) -> Response:
-    return Client.auto_index_client.build_response(request)
 
 
 @app.get(f'/_nicegui/{__version__}' + '/libraries/{key:path}')
@@ -149,6 +143,13 @@ async def _shutdown() -> None:
 
 @app.exception_handler(404)
 async def _exception_handler_404(request: Request, exception: Exception) -> Response:
+    if core.spa is not None:
+        with Client(page(''), request=request) as client:
+            core.spa()
+            # NOTE: after building the page, there might be sub pages that have 404 -- and initial requests should send 404 status request in such cases
+            sub_pages_elements = [e for e in client.elements.values() if isinstance(e, SubPages)]
+            if not any(sub_pages.has_404 for sub_pages in sub_pages_elements):
+                return client.build_response(request)
     log.warning(f'{request.url} not found')
     with Client(page(''), request=request) as client:
         error_content(404, exception)
