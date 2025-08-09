@@ -48,7 +48,7 @@ def test_navigate_to_relative_url(screen: Screen):
     @ui.page('/test_page')
     def test_page():
         ui.label('Test page')
-        ui.button('Back', on_click=ui.navigate.to('/'))
+        ui.button('Back', on_click=ui.navigate.back)
 
     screen.open('/')
     screen.click('Go relative')

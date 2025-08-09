@@ -61,8 +61,11 @@ class SubPagesRouter:
         # NOTE: keep a reference to the client because _handle_open clears the slots so that context.client does not work anymore
         client = context.client
         if (
-            self._handle_open(path) or  # path is handled by `ui.sub_pages`
-            not self._other_page_builder_matches_path(path, client)  # `ui.sub_pages` is still responsible
+            any(isinstance(el, SubPages) for el in client.layout.descendants()) and
+            (
+                self._handle_open(path) or  # path is handled by `ui.sub_pages`
+                not self._other_page_builder_matches_path(path, client)  # `ui.sub_pages` is still responsible
+            )
         ):
             client.run_javascript(f'''
                 const fullPath = (window.path_prefix || '') + "{self.current_path}";
