@@ -1,4 +1,4 @@
-import { JSONEditor, createAjvValidator } from "nicegui-json-editor";
+import { createJSONEditor, createAjvValidator } from "nicegui-json-editor";
 
 export default {
   template: "<div></div>",
@@ -11,7 +11,7 @@ export default {
     };
 
     this.checkValidation();
-    this.editor = new JSONEditor({
+    this.editor = createJSONEditor({
       target: this.$el,
       props: this.properties,
     });

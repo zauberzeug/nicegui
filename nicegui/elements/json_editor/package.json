@@ -9,7 +9,7 @@
     "clean": "rimraf ./dist/*"
   },
   "dependencies": {
-    "vanilla-jsoneditor": "^0.23.8"
+    "vanilla-jsoneditor": "^3.8.0"
   },
   "devDependencies": {
     "rollup": "^4.46.2",

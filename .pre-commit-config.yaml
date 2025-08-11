@@ -24,7 +24,8 @@ repos:
             nicegui/static/tailwindcss\..*|
             nicegui/static/vue\..*|
             website/static/fuse\.js\@.*|
-            examples/fullcalendar/lib/.*
+            examples/fullcalendar/lib/.*|
+            .*\.js\.map
           )$
       - id: end-of-file-fixer
         exclude: *exclusions

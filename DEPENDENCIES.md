@@ -14,7 +14,7 @@
 - echarts: ^5.6.0 ([Apache-2.0](https://opensource.org/licenses/Apache-2.0))
 - echarts-gl: ^2.0.9 ([BSD 3-Clause](https://opensource.org/licenses/BSD-3-Clause))
 - nipplejs: ^0.10.2 ([MIT](https://opensource.org/licenses/MIT))
-- vanilla-jsoneditor: ^0.23.8 ([ISC](https://opensource.org/licenses/ISC))
+- vanilla-jsoneditor: ^3.8.0 ([ISC](https://opensource.org/licenses/ISC))
 - leaflet: ^1.9.4 ([BSD-2-Clause](https://opensource.org/licenses/BSD-2-Clause))
 - leaflet-draw: ^1.0.4 ([MIT](https://opensource.org/licenses/MIT))
 - mermaid: ^11.0.2 ([MIT](https://opensource.org/licenses/MIT))
