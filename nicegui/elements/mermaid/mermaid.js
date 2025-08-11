@@ -1,4 +1,4 @@
-import { mermaid } from "nicegui-mermaid/index.js";
+import { mermaid } from "nicegui-mermaid";
 
 let is_running = false;
 const queue = [];

@@ -1,4 +1,4 @@
-import { JSONEditor, createAjvValidator } from "nicegui-json-editor/index.js";
+import { JSONEditor, createAjvValidator } from "nicegui-json-editor";
 
 export default {
   template: "<div></div>",

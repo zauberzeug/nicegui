@@ -1,4 +1,4 @@
-import SceneLib from "nicegui-scene/index.js";
+import SceneLib from "nicegui-scene";
 const { THREE, TWEEN } = SceneLib;
 
 export default {

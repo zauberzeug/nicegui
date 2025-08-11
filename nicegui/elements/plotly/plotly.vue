@@ -5,7 +5,7 @@
 <script>
 export default {
   async mounted() {
-    const { Plotly } = await import("nicegui-plotly/index.js");
+    const { Plotly } = await import("nicegui-plotly");
     this.Plotly = Plotly;
     this.update();
   },

@@ -1,4 +1,4 @@
-import { leaflet as L, loadLeafletDraw } from "nicegui-leaflet/index.js";
+import { leaflet as L, loadLeafletDraw } from "nicegui-leaflet";
 import { loadResource } from "../../static/utils/resources.js";
 import { cleanObject } from "../../static/utils/json.js";
 

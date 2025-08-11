@@ -1,4 +1,4 @@
-import isOdd from "is-odd/index.js";
+import isOdd from "is-odd";
 
 export default {
   methods: {

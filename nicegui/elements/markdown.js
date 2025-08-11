@@ -6,7 +6,7 @@ export default {
     await this.$nextTick(); // NOTE: wait for window.path_prefix to be set
     await loadResource(window.path_prefix + `${this.dynamic_resource_path}/codehilite.css`);
     if (this.use_mermaid) {
-      this.mermaid = (await import("nicegui-mermaid/index.js")).mermaid;
+      this.mermaid = (await import("nicegui-mermaid")).mermaid;
       this.mermaid.initialize({ startOnLoad: false });
       this.renderMermaid();
     }

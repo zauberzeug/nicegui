@@ -1,4 +1,4 @@
-import * as CM from "nicegui-codemirror/index.js";
+import * as CM from "nicegui-codemirror";
 
 export default {
   template: `

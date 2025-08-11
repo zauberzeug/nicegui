@@ -1,4 +1,4 @@
-import { echarts, loadEchartsGL } from "nicegui-echart/index.js";
+import { echarts, loadEchartsGL } from "nicegui-echart";
 import { convertDynamicProperties } from "../../static/utils/dynamic_properties.js";
 
 export default {

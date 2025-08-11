@@ -178,6 +178,7 @@ def generate_resources(prefix: str, elements: Iterable[Element]) -> tuple[list[s
 
     # build the importmap structure for ESM modules
     for key, esm_module in esm_modules.items():
+        imports[f'{esm_module.name}'] = f'{prefix}/_nicegui/{__version__}/esm/{key}/index.js'
         imports[f'{esm_module.name}/'] = f'{prefix}/_nicegui/{__version__}/esm/{key}/'
 
     # build the none-optimized component (i.e. the Vue component)

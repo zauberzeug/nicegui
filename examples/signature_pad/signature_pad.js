@@ -1,4 +1,4 @@
-import SignaturePad from "signature_pad/index.js";
+import SignaturePad from "signature_pad";
 
 export default {
   template: "<canvas></canvas>",

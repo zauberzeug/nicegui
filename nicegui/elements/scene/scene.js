@@ -1,4 +1,4 @@
-import SceneLib from "nicegui-scene/index.js";
+import SceneLib from "nicegui-scene";
 const {
   CSS2DObject,
   CSS2DRenderer,

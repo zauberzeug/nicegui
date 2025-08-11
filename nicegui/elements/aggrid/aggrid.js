@@ -1,4 +1,4 @@
-import AgGrid from "nicegui-aggrid/index.js";
+import AgGrid from "nicegui-aggrid";
 import { convertDynamicProperties } from "../../static/utils/dynamic_properties.js";
 
 export default {
