@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
 import json
 import subprocess
+from typing import List
 
 
-def run(cmd: list[str], capture: bool = False) -> str:
+def run(cmd: List[str], *, capture: bool = False) -> str:
+    """Run a command and return the output."""
     if capture:
         return subprocess.run(cmd, check=True, capture_output=True, text=True).stdout
     subprocess.run(cmd, check=True)
@@ -11,8 +13,8 @@ def run(cmd: list[str], capture: bool = False) -> str:
 
 
 try:
-    v = run(['git', 'describe', '--abbrev=0', '--tags', '--match', 'v*'], capture=True).strip()
-    version = v.lstrip('v') or '0.0.0'
+    tag = run(['git', 'describe', '--abbrev=0', '--tags', '--match', 'v*'], capture=True).strip()
+    version = tag.lstrip('v') or '0.0.0'
 except Exception:
     version = '0.0.0'
 
@@ -45,13 +47,13 @@ for region, count in instances.items():
 # NOTE: pin first machine per region to avoid cold-start latency
 machines_json = run(['fly', 'machines', 'list', '--json'], capture=True)
 machines = json.loads(machines_json)
-pinned = set()
+pinned_regions = set()
 for m in machines:
-    r = m.get('region', 'unknown')
-    if r in pinned:
+    region = m.get('region', 'unknown')
+    if region in pinned_regions:
         continue
-    mid = m.get('id')
-    if mid:
-        run(['fly', 'machine', 'update', mid, '--autostop=false', '-y'])
-        print(f'pinned {mid} in {r}')
-        pinned.add(r)
+    machine_id = m.get('id')
+    if machine_id:
+        run(['fly', 'machine', 'update', machine_id, '--autostop=false', '-y'])
+        print(f'pinned {machine_id} in {region}')
+        pinned_regions.add(region)

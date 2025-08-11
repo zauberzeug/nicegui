@@ -1,8 +1,3 @@
-# fly.toml app configuration file generated for nicegui on 2023-10-05T05:09:32+02:00
-#
-# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
-#
-
 app = "nicegui"
 primary_region = "lhr"
 kill_signal = "SIGTERM"
