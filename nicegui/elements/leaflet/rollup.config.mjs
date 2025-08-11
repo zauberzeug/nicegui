@@ -10,7 +10,11 @@ const fixWhitespace = (buffer) => {
 
 export default {
   input: "./src/index.mjs",
-  output: { dir: "./dist/", format: "es" },
+  output: {
+    dir: "./dist/",
+    format: "es",
+    sourcemap: true,
+  },
   plugins: [
     nodeResolve(),
     terser({ mangle: true }),

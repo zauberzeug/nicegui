@@ -18,3 +18,4 @@ cytoscape/dist/cytoscape.esm.mjs:
   (*! Runge-Kutta spring physics function generator. Adapted from Framer.js, copyright Koen Bok. MIT License: http://en.wikipedia.org/wiki/MIT_License *)
 */
 export{ng as diagram};
+//# sourceMappingURL=mindmap-definition-KLCIANCF-Cu41cp_O.js.map

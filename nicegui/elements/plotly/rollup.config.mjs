@@ -7,15 +7,11 @@ export default {
   output: {
     dir: "./dist/",
     format: "es",
+    sourcemap: true,
   },
   plugins: [
-    nodeResolve({
-      preferBuiltins: false,
-      browser: true,
-    }),
-    commonjs({
-      include: ["node_modules/**"],
-    }),
+    nodeResolve(),
+    commonjs(),
     terser({
       mangle: true,
     }),
