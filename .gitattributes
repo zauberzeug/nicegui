@@ -14,3 +14,4 @@ website/**                         linguist-documentation
 website/static/fuse.js@*           linguist-vendored
 examples/**                        linguist-documentation
 examples/fullcalendar/lib/**       linguist-vendored
+**/package-lock.json               linguist-vendored
