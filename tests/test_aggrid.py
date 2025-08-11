@@ -182,7 +182,7 @@ def test_create_dynamically(screen: Screen):
 
 
 def test_api_method_after_creation(screen: Screen):
-    options = {'columnDefs': [{'field': 'name'}], 'rowData': [{'name': 'Alice'}]}
+    options = {'columnDefs': [{'field': 'name'}], 'rowData': [{'name': 'Alice'}], 'rowSelection': {'mode': 'multiRow'}}
     ui.button('Create', on_click=lambda: ui.aggrid(options).run_grid_method('selectAll'))
 
     screen.open('/')
