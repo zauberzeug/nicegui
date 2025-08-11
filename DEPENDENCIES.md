@@ -1,10 +1,10 @@
 # Included Web Dependencies
 
-- es-module-shims: 1.10.0 ([MIT](https://opensource.org/licenses/MIT))
-- quasar: 2.16.9 ([MIT](https://opensource.org/licenses/MIT))
-- socket.io: 4.7.5 ([MIT](https://opensource.org/licenses/MIT))
-- tailwindcss: 3.4.10 ([MIT](https://opensource.org/licenses/MIT))
-- vue: 3.4.38 ([MIT](https://opensource.org/licenses/MIT))
+- es-module-shims: 2.6.2 ([MIT](https://opensource.org/licenses/MIT))
+- quasar: 2.18.2 ([MIT](https://opensource.org/licenses/MIT))
+- socket.io: 4.8.1 ([MIT](https://opensource.org/licenses/MIT))
+- tailwindcss: 3.4.17 ([MIT](https://opensource.org/licenses/MIT))
+- vue: 3.5.18 ([MIT](https://opensource.org/licenses/MIT))
 - ag-grid-community: ^34.1.1 ([MIT](https://opensource.org/licenses/MIT))
 - codemirror: ^6.0.2 ([MIT](https://opensource.org/licenses/MIT))
 - @codemirror/language-data: ^6.5.1 ([MIT](https://opensource.org/licenses/MIT))
