@@ -98,7 +98,7 @@ def register_vue_component(path: Path, *, max_time: float | None) -> Component:
     raise ValueError(f'Unsupported component type "{path.suffix}"')
 
 
-def register_library(path: Path, *, max_time: float) -> Library:
+def register_library(path: Path, *, max_time: float | None) -> Library:
     """Register a *.js library."""
     key = compute_key(path, max_time=max_time)
     name = _get_name(path)
