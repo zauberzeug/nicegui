@@ -90,9 +90,11 @@ class Table(FilterElement, component='table.js'):
         self.on('selection', handle_selection, ['added', 'rows', 'keys'])
 
         def handle_pagination_change(e: GenericEventArguments) -> None:
+            previous_value = self.pagination
             self.pagination = e.args
             self.update()
-            arguments = ValueChangeEventArguments(sender=self, client=self.client, value=self.pagination)
+            arguments = ValueChangeEventArguments(sender=self, client=self.client,
+                                                  value=self.pagination, previous_value=previous_value)
             for handler in self._pagination_change_handlers:
                 handle_event(handler, arguments)
         self.on('update:pagination', handle_pagination_change)

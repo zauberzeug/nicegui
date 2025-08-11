@@ -134,6 +134,13 @@ class MultiUploadEventArguments(UiEventArguments):
 @dataclass(**KWONLY_SLOTS)
 class ValueChangeEventArguments(UiEventArguments):
     value: Any
+    previous_value: Any = ...
+
+    def __post_init__(self):
+        # DEPRECATED: previous_value will be required in NiceGUI 4.0
+        if self.previous_value is ...:
+            helpers.warn_once('The new event argument `ValueChangeEventArguments.previous_value` is not set. '
+                              'In NiceGUI 4.0 this will raise an error.')
 
 
 @dataclass(**KWONLY_SLOTS)
