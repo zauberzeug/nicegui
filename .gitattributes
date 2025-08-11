@@ -1,8 +1,6 @@
 nicegui/elements/tailwind.py       linguist-generated
 nicegui/elements/tailwind_types/** linguist-generated
-nicegui/elements/lib/**            linguist-vendored
-nicegui/scripts/codemirror/*.json  linguist-vendored
-nicegui/scripts/codemirror/node_modules linguist-vendored
+nicegui/elements/*/dist/**         linguist-vendored
 nicegui/static/es-module-shims.js  linguist-vendored
 nicegui/static/fonts/**            linguist-vendored
 nicegui/static/fonts.css           linguist-vendored
