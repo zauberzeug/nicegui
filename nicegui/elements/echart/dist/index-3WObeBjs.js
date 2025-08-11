@@ -1,4 +1,4 @@
-import { u as use, i as install$g, a as install$h, b as installLabelLayout, m as map, c as isArray, A as Animator, L as LRU$1, p as parse, R as Rect, g as getECData, r as requestAnimationFrame, e as each, d as indexOf, f as registerPostInit, h as registerPostUpdate, j as registerPreprocessor, Z as ZRImage, C as ComponentModel, k as merge, l as defaults, n as init, o as brushSingle, M as Model, q as ZRText, s as createTextStyle, t as ComponentView, v as getPrecisionSafe, w as Cartesian, x as inherits, y as Axis, z as getLayoutRect, B as createScale, D as mixinAxisModelCommonMethods, E as clone, O as OrdinalMeta, F as curry, G as getMap, H as createDimensions, S as SeriesData, I as lift, J as BoundingRect, K as parseGeoJSON, N as fixTextCoords, P as reduce, Q as parseDate, T as dataStack, U as formatTpl, V as encodeHTML, W as addCommas, X as isObject, Y as getTooltipMarker, _ as formatTime, $ as getCoordinateSystemDimensions, a0 as SeriesModel, a1 as ChartView, a2 as containStroke, a3 as createSymbol, a4 as round, a5 as createList$1, a6 as create$1, a7 as invert, a8 as applyTransform, a9 as Graph$1, aa as linkSeriesData, ab as linearMap, ac as extend$1, ad as concatArray } from "./index-R1KnSjPH.js";
+import { u as use, i as install$g, a as install$h, b as installLabelLayout, m as map, c as isArray, A as Animator, L as LRU$1, p as parse, R as Rect, g as getECData, r as requestAnimationFrame, e as each, d as indexOf, f as registerPostInit, h as registerPostUpdate, j as registerPreprocessor, Z as ZRImage, C as ComponentModel, k as merge, l as defaults, n as init, o as brushSingle, M as Model, q as ZRText, s as createTextStyle, t as ComponentView, v as getPrecisionSafe, w as Cartesian, x as inherits, y as Axis, z as getLayoutRect, B as createScale, D as mixinAxisModelCommonMethods, E as clone, O as OrdinalMeta, F as curry, G as getMap, H as createDimensions, S as SeriesData, I as lift, J as BoundingRect, K as parseGeoJSON, N as fixTextCoords, P as reduce, Q as parseDate, T as dataStack, U as formatTpl, V as encodeHTML, W as addCommas, X as isObject, Y as getTooltipMarker, _ as formatTime, $ as getCoordinateSystemDimensions, a0 as SeriesModel, a1 as ChartView, a2 as containStroke, a3 as createSymbol, a4 as round, a5 as createList$1, a6 as create$1, a7 as invert, a8 as applyTransform, a9 as Graph$1, aa as linkSeriesData, ab as linearMap, ac as extend$1, ad as concatArray } from "./index-1rcpyfZV.js";
 use([install$g, install$h]);
 use(installLabelLayout);
 function derive(makeDefaultOpt, initialize, proto) {
@@ -1107,6 +1107,8 @@ colorUtil.parse = function(colorStr, rgbaArr) {
           return;
         }
         alpha = parseCssFloat(params.pop());
+      // jshint ignore:line
+      // Fall through.
       case "rgb":
         if (params.length !== 3) {
           setRgba(rgbaArr, 0, 0, 0, 1);
@@ -2583,6 +2585,7 @@ var GLProgram = Base.extend({
         case SHADER_STATE_KEEP_ENABLE:
           enabledAttributeListInContext[i] = SHADER_STATE_PENDING;
           break;
+        // Expired
         case SHADER_STATE_PENDING:
           _gl.disableVertexAttribArray(i);
           enabledAttributeListInContext[i] = 0;

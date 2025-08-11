@@ -26298,6 +26298,7 @@ function getIntervalTicks(bottomUnitName, approxInterval, isUTC, extent3) {
           setterName = monthSetterName(isUTC);
           break;
         case "week":
+        // PENDING If week is added. Ignore day.
         case "half-week":
         case "day":
           interval = getDateInterval(approxInterval);
@@ -26733,6 +26734,7 @@ function createScaleByModel$1(model, axisType) {
   axisType = axisType || model.get("type");
   if (axisType) {
     switch (axisType) {
+      // Buildin scale
       case "category":
         return new OrdinalScale({
           ordinalMeta: model.getOrdinalMeta ? model.getOrdinalMeta() : model.getCategories(),
@@ -65153,6 +65155,7 @@ function createScaleByModel(model, axisType) {
   axisType = axisType || model.get("type");
   if (axisType) {
     switch (axisType) {
+      // Buildin scale
       case "category":
         return new OrdinalScale({
           ordinalMeta: model.getCategories(),
@@ -72808,7 +72811,7 @@ const index = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.definePropert
   zrUtil: util$1,
   zrender
 }, Symbol.toStringTag, { value: "Module" }));
-const loadEchartsGL = () => import("./index-Du8t_42T.js");
+const loadEchartsGL = () => import("./index-3WObeBjs.js");
 export {
   getCoordinateSystemDimensions as $,
   Animator as A,
