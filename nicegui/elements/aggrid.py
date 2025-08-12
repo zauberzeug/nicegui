@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING, Literal, Optional, cast
 
 from typing_extensions import Self
 
-from .. import helpers, optional_features
+from .. import optional_features
 from ..awaitable_response import AwaitableResponse
 from ..element import Element
 
@@ -183,16 +183,6 @@ class AgGrid(Element,
 
         :return: AwaitableResponse that can be awaited to get the result of the method call
         """
-        return self.run_method('run_grid_method', name, *args, timeout=timeout)
-
-    def run_column_method(self, name: str, *args, timeout: float = 1) -> AwaitableResponse:  # DEPRECATED
-        """This method is deprecated. Use `run_grid_method` instead.
-
-        See https://www.ag-grid.com/javascript-data-grid/column-api/ for more information
-        """
-        helpers.warn_once('The method `run_column_method` is deprecated. '
-                          'It will be removed in NiceGUI 3.0. '
-                          'Use `run_grid_method` instead.')
         return self.run_method('run_grid_method', name, *args, timeout=timeout)
 
     def run_row_method(self, row_id: str, name: str, *args, timeout: float = 1) -> AwaitableResponse:

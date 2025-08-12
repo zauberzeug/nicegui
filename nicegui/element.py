@@ -360,7 +360,7 @@ class Element(Visibility):
            throttle: float = 0.0,
            leading_events: bool = True,
            trailing_events: bool = True,
-           js_handler: str | None = '(...args) => emit(...args)',  # DEPRECATED: None will be removed in version 3.0
+           js_handler: str = '(...args) => emit(...args)',
            ) -> Self:
         """Subscribe to an event.
 

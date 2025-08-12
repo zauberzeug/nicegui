@@ -69,13 +69,6 @@ def parameter_demo():
 
 doc.intro(page_title_documentation)
 doc.intro(navigate_documentation)
-
-doc.redirects['open'] = 'navigate#ui_navigate_to_(formerly_ui_open)'
-doc.text('ui.open', f'''
-    The `ui.open` function is deprecated.
-    Use [`ui.navigate.to`]({doc.redirects["open"]}) instead.
-''')
-
 doc.intro(download_documentation)
 
 

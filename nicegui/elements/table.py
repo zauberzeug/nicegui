@@ -1,5 +1,5 @@
 import importlib.util
-from typing import TYPE_CHECKING, Any, Literal, Optional, Union
+from typing import TYPE_CHECKING, Literal, Optional, Union
 
 from typing_extensions import Self
 
@@ -12,7 +12,6 @@ from ..events import (
     ValueChangeEventArguments,
     handle_event,
 )
-from ..helpers import warn_once
 from .mixins.filter_element import FilterElement
 
 if importlib.util.find_spec('pandas'):
@@ -374,13 +373,8 @@ class Table(FilterElement, component='table.js'):
         """Toggle fullscreen mode."""
         self.is_fullscreen = not self.is_fullscreen
 
-    def add_rows(self, rows: list[dict], *args: Any) -> None:
+    def add_rows(self, rows: list[dict]) -> None:
         """Add rows to the table."""
-        if isinstance(rows, dict):  # DEPRECATED
-            warn_once('Calling add_rows() with variable-length arguments is deprecated. '
-                      'This option will be removed in NiceGUI 3.0. '
-                      'Pass a list instead or use add_row() for a single row.')
-            rows = [rows, *args]
         self.rows.extend(rows)
         self.update()
 
@@ -388,13 +382,8 @@ class Table(FilterElement, component='table.js'):
         """Add a single row to the table."""
         self.add_rows([row])
 
-    def remove_rows(self, rows: list[dict], *args: Any) -> None:
+    def remove_rows(self, rows: list[dict]) -> None:
         """Remove rows from the table."""
-        if isinstance(rows, dict):  # DEPRECATED
-            warn_once('Calling remove_rows() with variable-length arguments is deprecated. '
-                      'This option will be removed in NiceGUI 3.0. '
-                      'Pass a list instead or use remove_row() for a single row.')
-            rows = [rows, *args]
         keys = [row[self.row_key] for row in rows]
         self.rows[:] = [row for row in self.rows if row[self.row_key] not in keys]
         self.selected[:] = [row for row in self.selected if row[self.row_key] not in keys]
