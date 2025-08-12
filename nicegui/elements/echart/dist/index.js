@@ -1,5 +1,5 @@
-import { af, ae } from "./index-1rcpyfZV.js";
+import { a7, a6 } from "./index-CIyxDY2d.js";
 export {
-  af as echarts,
-  ae as loadEchartsGL
+  a7 as echarts,
+  a6 as loadEchartsGL
 };

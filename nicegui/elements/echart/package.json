@@ -9,11 +9,11 @@
     "clean": "rimraf ./dist/*"
   },
   "dependencies": {
-    "echarts": "^5.6.0",
+    "echarts": "^6.0.0",
     "echarts-gl": "^2.0.9"
   },
   "devDependencies": {
-    "vite": "^7.1.1",
+    "vite": "^7.1.2",
     "terser": "^5.43.1",
     "rimraf": "^6.0.1"
   }

@@ -11,7 +11,7 @@
 - @codemirror/theme-one-dark: ^6.1.3 ([MIT](https://opensource.org/licenses/MIT))
 - @uiw/codemirror-themes-all: ^4.24.2 ([MIT](https://opensource.org/licenses/MIT))
 - @babel/runtime: ^7.28.2 ([MIT](https://opensource.org/licenses/MIT))
-- echarts: ^5.6.0 ([Apache-2.0](https://opensource.org/licenses/Apache-2.0))
+- echarts: ^6.0.0 ([Apache-2.0](https://opensource.org/licenses/Apache-2.0))
 - echarts-gl: ^2.0.9 ([BSD 3-Clause](https://opensource.org/licenses/BSD-3-Clause))
 - nipplejs: ^0.10.2 ([MIT](https://opensource.org/licenses/MIT))
 - vanilla-jsoneditor: ^3.8.0 ([ISC](https://opensource.org/licenses/ISC))
