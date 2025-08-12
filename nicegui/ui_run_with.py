@@ -8,7 +8,7 @@ from fastapi.middleware.gzip import GZipMiddleware
 from . import core, storage
 from .air import Air
 from .language import Language
-from .middlewares import RedirectWithPrefixMiddleware, SetCacheControlMiddleware
+from .middlewares import RedirectWithPrefixMiddleware, RedirectWithPrefixMiddlewareSubApp, SetCacheControlMiddleware
 from .nicegui import _shutdown, _startup
 
 
@@ -66,6 +66,8 @@ def run_with(
     )
     storage.set_storage_secret(storage_secret)
     core.app.add_middleware(GZipMiddleware)
+    if app.root_path != '' and app.root_path != '/':
+        app.add_middleware(RedirectWithPrefixMiddlewareSubApp,root_path=app.root_path,mount_path=mount_path)
     core.app.add_middleware(RedirectWithPrefixMiddleware)
     core.app.add_middleware(SetCacheControlMiddleware)
 
