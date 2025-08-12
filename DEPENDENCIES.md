@@ -19,5 +19,5 @@
 - leaflet-draw: ^1.0.4 ([MIT](https://opensource.org/licenses/MIT))
 - mermaid: ^11.9.0 ([MIT](https://opensource.org/licenses/MIT))
 - plotly.js: ^3.1.0 ([MIT](https://opensource.org/licenses/MIT))
-- three: ^0.168.0 ([MIT](https://opensource.org/licenses/MIT))
+- three: ^0.179.1 ([MIT](https://opensource.org/licenses/MIT))
 - @tweenjs/tween.js: ^25.0.0 ([MIT](https://opensource.org/licenses/MIT))
