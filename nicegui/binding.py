@@ -118,8 +118,14 @@ def _propagate_recursively(source_obj: Any, source_name: str) -> None:
             _propagate_recursively(target_obj, target_name)
 
 
+def _check_exists(self_name: str, other_obj: Any, other_name: str, direction: str) -> None:
+    if not _has_attribute(other_obj, other_name):
+        log.warning(f'binding {self_name} {direction} a non-existing property "{other_name}" of target object of type '
+                    f'{other_obj.__class__.__name__}. proceeding with binding, but value is unset.')
+
+
 def bind_to(self_obj: Any, self_name: str, other_obj: Any, other_name: str,
-            forward: Optional[Callable[[Any], Any]] = None) -> None:
+            forward: Optional[Callable[[Any], Any]] = None, check_exists: Optional[bool] = False) -> None:
     """Bind the property of one object to the property of another object.
 
     The binding works one way only, from the first object to the second.
@@ -130,7 +136,10 @@ def bind_to(self_obj: Any, self_name: str, other_obj: Any, other_name: str,
     :param other_obj: The object to bind to.
     :param other_name: The name of the property to bind to.
     :param forward: A function to apply to the value before applying it (default: identity).
+    :param check_exists: Whether to check (and warn) if the second object has the specified property (default: False).
     """
+    if check_exists:
+        _check_exists(self_name, other_obj, other_name, 'to')
     bindings[(id(self_obj), self_name)].append((self_obj, other_obj, other_name, forward))
     if (id(self_obj), self_name) not in bindable_properties:
         active_links.append((self_obj, self_name, other_obj, other_name, forward))
@@ -138,7 +147,7 @@ def bind_to(self_obj: Any, self_name: str, other_obj: Any, other_name: str,
 
 
 def bind_from(self_obj: Any, self_name: str, other_obj: Any, other_name: str,
-              backward: Optional[Callable[[Any], Any]] = None) -> None:
+              backward: Optional[Callable[[Any], Any]] = None, check_exists: Optional[bool] = False) -> None:
     """Bind the property of one object from the property of another object.
 
     The binding works one way only, from the second object to the first.
@@ -149,7 +158,10 @@ def bind_from(self_obj: Any, self_name: str, other_obj: Any, other_name: str,
     :param other_obj: The object to bind from.
     :param other_name: The name of the property to bind from.
     :param backward: A function to apply to the value before applying it (default: identity).
+    :param check_exists: Whether to check (and warn) if the second object has the specified property (default: False).
     """
+    if check_exists:
+        _check_exists(self_name, other_obj, other_name, 'from')
     bindings[(id(other_obj), other_name)].append((other_obj, self_obj, self_name, backward))
     if (id(other_obj), other_name) not in bindable_properties:
         active_links.append((other_obj, other_name, self_obj, self_name, backward))
@@ -158,7 +170,8 @@ def bind_from(self_obj: Any, self_name: str, other_obj: Any, other_name: str,
 
 def bind(self_obj: Any, self_name: str, other_obj: Any, other_name: str, *,
          forward: Optional[Callable[[Any], Any]] = None,
-         backward: Optional[Callable[[Any], Any]] = None) -> None:
+         backward: Optional[Callable[[Any], Any]] = None,
+         check_exists: Optional[bool] = False) -> None:
     """Bind the property of one object to the property of another object.
 
     The binding works both ways, from the first object to the second and from the second to the first.
@@ -171,9 +184,12 @@ def bind(self_obj: Any, self_name: str, other_obj: Any, other_name: str, *,
     :param other_name: The name of the second property to bind.
     :param forward: A function to apply to the value before applying it to the second object (default: identity).
     :param backward: A function to apply to the value before applying it to the first object (default: identity).
+    :param check_exists: Whether to check (and warn) if the second object has the specified property (default: False).
     """
-    bind_from(self_obj, self_name, other_obj, other_name, backward=backward)
-    bind_to(self_obj, self_name, other_obj, other_name, forward=forward)
+    if check_exists:
+        _check_exists(self_name, other_obj, other_name, 'to & from')
+    bind_from(self_obj, self_name, other_obj, other_name, backward=backward, check_exists=check_exists)
+    bind_to(self_obj, self_name, other_obj, other_name, forward=forward, check_exists=check_exists)
 
 
 class BindableProperty:
