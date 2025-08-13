@@ -40,6 +40,7 @@ class SelectableElement(Element):
                          target_object: Any,
                          target_name: str = 'selected',
                          forward: Optional[Callable[[Any], Any]] = None,
+                         check_exists: Optional[bool] = False,
                          ) -> Self:
         """Bind the selection state of this element to the target object's target_name property.
 
@@ -50,13 +51,14 @@ class SelectableElement(Element):
         :param target_name: The name of the property to bind to.
         :param forward: A function to apply to the value before applying it to the target (default: identity).
         """
-        bind_to(self, 'selected', target_object, target_name, forward)
+        bind_to(self, 'selected', target_object, target_name, forward, check_exists=check_exists)
         return self
 
     def bind_selected_from(self,
                            target_object: Any,
                            target_name: str = 'selected',
                            backward: Optional[Callable[[Any], Any]] = None,
+                           check_exists: Optional[bool] = False,
                            ) -> Self:
         """Bind the selection state of this element from the target object's target_name property.
 
@@ -67,7 +69,7 @@ class SelectableElement(Element):
         :param target_name: The name of the property to bind from.
         :param backward: A function to apply to the value before applying it to this element (default: identity).
         """
-        bind_from(self, 'selected', target_object, target_name, backward)
+        bind_from(self, 'selected', target_object, target_name, backward, check_exists=check_exists)
         return self
 
     def bind_selected(self,
@@ -75,6 +77,7 @@ class SelectableElement(Element):
                       target_name: str = 'selected', *,
                       forward: Optional[Callable[[Any], Any]] = None,
                       backward: Optional[Callable[[Any], Any]] = None,
+                      check_exists: Optional[bool] = False,
                       ) -> Self:
         """Bind the selection state of this element to the target object's target_name property.
 
@@ -87,7 +90,7 @@ class SelectableElement(Element):
         :param forward: A function to apply to the value before applying it to the target (default: identity).
         :param backward: A function to apply to the value before applying it to this element (default: identity).
         """
-        bind(self, 'selected', target_object, target_name, forward=forward, backward=backward)
+        bind(self, 'selected', target_object, target_name, forward=forward, backward=backward, check_exists=check_exists)
         return self
 
     def set_selected(self, selected: bool) -> None:

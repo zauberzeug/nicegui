@@ -28,6 +28,7 @@ class Visibility:
                            target_object: Any,
                            target_name: str = 'visible',
                            forward: Optional[Callable[[Any], Any]] = None,
+                           check_exists: Optional[bool] = False,
                            ) -> Self:
         """Bind the visibility of this element to the target object's target_name property.
 
@@ -38,14 +39,16 @@ class Visibility:
         :param target_name: The name of the property to bind to.
         :param forward: A function to apply to the value before applying it to the target (default: identity).
         """
-        bind_to(self, 'visible', target_object, target_name, forward)
+        bind_to(self, 'visible', target_object, target_name, forward, check_exists=check_exists)
         return self
 
     def bind_visibility_from(self,
                              target_object: Any,
                              target_name: str = 'visible',
                              backward: Optional[Callable[[Any], Any]] = None, *,
-                             value: Any = None) -> Self:
+                             value: Any = None,
+                             check_exists: Optional[bool] = False,
+                             ) -> Self:
         """Bind the visibility of this element from the target object's target_name property.
 
         The binding works one way only, from the target to this element.
@@ -59,7 +62,7 @@ class Visibility:
         if value is not None:
             def backward(x):  # pylint: disable=function-redefined
                 return x == value
-        bind_from(self, 'visible', target_object, target_name, backward)
+        bind_from(self, 'visible', target_object, target_name, backward, check_exists=check_exists)
         return self
 
     def bind_visibility(self,
@@ -68,6 +71,7 @@ class Visibility:
                         forward: Optional[Callable[[Any], Any]] = None,
                         backward: Optional[Callable[[Any], Any]] = None,
                         value: Any = None,
+                        check_exists: Optional[bool] = False,
                         ) -> Self:
         """Bind the visibility of this element to the target object's target_name property.
 
@@ -84,7 +88,7 @@ class Visibility:
         if value is not None:
             def backward(x):  # pylint: disable=function-redefined
                 return x == value
-        bind(self, 'visible', target_object, target_name, forward=forward, backward=backward)
+        bind(self, 'visible', target_object, target_name, forward=forward, backward=backward, check_exists=check_exists)
         return self
 
     def set_visibility(self, visible: bool) -> None:

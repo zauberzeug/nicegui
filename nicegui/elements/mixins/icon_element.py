@@ -20,6 +20,7 @@ class IconElement(Element):
                      target_object: Any,
                      target_name: str = 'icon',
                      forward: Optional[Callable[[Any], Any]] = None,
+                     check_exists: Optional[bool] = False,
                      ) -> Self:
         """Bind the icon of this element to the target object's target_name property.
 
@@ -30,13 +31,14 @@ class IconElement(Element):
         :param target_name: The name of the property to bind to.
         :param forward: A function to apply to the value before applying it to the target (default: identity).
         """
-        bind_to(self, 'icon', target_object, target_name, forward)
+        bind_to(self, 'icon', target_object, target_name, forward, check_exists=check_exists)
         return self
 
     def bind_icon_from(self,
                        target_object: Any,
                        target_name: str = 'icon',
                        backward: Optional[Callable[[Any], Any]] = None,
+                       check_exists: Optional[bool] = False,
                        ) -> Self:
         """Bind the icon of this element from the target object's target_name property.
 
@@ -47,7 +49,7 @@ class IconElement(Element):
         :param target_name: The name of the property to bind from.
         :param backward: A function to apply to the value before applying it to this element (default: identity).
         """
-        bind_from(self, 'icon', target_object, target_name, backward)
+        bind_from(self, 'icon', target_object, target_name, backward, check_exists=check_exists)
         return self
 
     def bind_icon(self,
@@ -55,6 +57,7 @@ class IconElement(Element):
                   target_name: str = 'icon', *,
                   forward: Optional[Callable[[Any], Any]] = None,
                   backward: Optional[Callable[[Any], Any]] = None,
+                  check_exists: Optional[bool] = False,
                   ) -> Self:
         """Bind the icon of this element to the target object's target_name property.
 
@@ -67,7 +70,7 @@ class IconElement(Element):
         :param forward: A function to apply to the value before applying it to the target (default: identity).
         :param backward: A function to apply to the value before applying it to this element (default: identity).
         """
-        bind(self, 'icon', target_object, target_name, forward=forward, backward=backward)
+        bind(self, 'icon', target_object, target_name, forward=forward, backward=backward, check_exists=check_exists)
         return self
 
     def set_icon(self, icon: Optional[str]) -> None:

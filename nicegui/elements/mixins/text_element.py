@@ -19,6 +19,7 @@ class TextElement(Element):
                      target_object: Any,
                      target_name: str = 'text',
                      forward: Optional[Callable[[Any], Any]] = None,
+                     check_exists: Optional[bool] = False,
                      ) -> Self:
         """Bind the text of this element to the target object's target_name property.
 
@@ -29,13 +30,14 @@ class TextElement(Element):
         :param target_name: The name of the property to bind to.
         :param forward: A function to apply to the value before applying it to the target (default: identity).
         """
-        bind_to(self, 'text', target_object, target_name, forward)
+        bind_to(self, 'text', target_object, target_name, forward, check_exists=check_exists)
         return self
 
     def bind_text_from(self,
                        target_object: Any,
                        target_name: str = 'text',
                        backward: Optional[Callable[[Any], Any]] = None,
+                       check_exists: Optional[bool] = False,
                        ) -> Self:
         """Bind the text of this element from the target object's target_name property.
 
@@ -46,7 +48,7 @@ class TextElement(Element):
         :param target_name: The name of the property to bind from.
         :param backward: A function to apply to the value before applying it to this element (default: identity).
         """
-        bind_from(self, 'text', target_object, target_name, backward)
+        bind_from(self, 'text', target_object, target_name, backward, check_exists=check_exists)
         return self
 
     def bind_text(self,
@@ -54,6 +56,7 @@ class TextElement(Element):
                   target_name: str = 'text', *,
                   forward: Optional[Callable[[Any], Any]] = None,
                   backward: Optional[Callable[[Any], Any]] = None,
+                  check_exists: Optional[bool] = False,
                   ) -> Self:
         """Bind the text of this element to the target object's target_name property.
 
@@ -66,7 +69,7 @@ class TextElement(Element):
         :param forward: A function to apply to the value before applying it to the target (default: identity).
         :param backward: A function to apply to the value before applying it to this element (default: identity).
         """
-        bind(self, 'text', target_object, target_name, forward=forward, backward=backward)
+        bind(self, 'text', target_object, target_name, forward=forward, backward=backward, check_exists=check_exists)
         return self
 
     def set_text(self, text: str) -> None:
