@@ -182,5 +182,29 @@
       "package/": ""
     },
     "version": "0.23.8"
+  },
+  "unocss_runtime": {
+    "package": "@unocss/runtime",
+    "destination": "nicegui/static",
+    "keep": [
+      "package/core\\.global\\.js",
+      "package/preset-wind\\.global\\.js",
+      "package/preset-mini\\.global\\.js"
+    ],
+    "rename": {
+      "package/": ""
+    },
+    "version": "66.1.4"
+  },
+  "unocss_reset": {
+    "package": "@unocss/reset",
+    "destination": "nicegui/static",
+    "keep": [
+      "package/tailwind.css"
+    ],
+    "rename": {
+      "package/": ""
+    },
+    "version": "66.1.4"
   }
 }
