@@ -9,7 +9,7 @@
     "clean": "rimraf ./dist/*"
   },
   "dependencies": {
-    "three": "^0.168.0",
+    "three": "^0.179.1",
     "@tweenjs/tween.js": "^25.0.0"
   },
   "devDependencies": {

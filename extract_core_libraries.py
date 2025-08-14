@@ -3,8 +3,9 @@ from __future__ import annotations
 
 import json
 import shutil
-import urllib.request
 from pathlib import Path
+
+import httpx
 
 ROOT = Path(__file__).parent
 STATIC = ROOT / 'nicegui' / 'static'
@@ -25,8 +26,9 @@ for entry in (NODE_MODULES / 'quasar' / 'dist' / 'lang').glob('*.umd.prod.js'):
 
 package_json = json.loads((ROOT / 'package.json').read_text(encoding='utf-8'))
 tailwind_version = package_json.get('dependencies', {}).get('tailwindcss', '').lstrip('^~')
-dest = STATIC / 'tailwindcss.min.js'
-tmp = dest.with_suffix(dest.suffix + '.tmp')
-with urllib.request.urlopen(f'https://cdn.tailwindcss.com/{tailwind_version}') as response, open(tmp, 'wb') as out:
-    shutil.copyfileobj(response, out)
-tmp.replace(dest)
+js_content = httpx.get(f'https://cdn.tailwindcss.com/{tailwind_version}').text
+WARNING = ('console.warn("cdn.tailwindcss.com should not be used in production. '
+           'To use Tailwind CSS in production, install it as a PostCSS plugin or use the Tailwind CLI: '
+           'https://tailwindcss.com/docs/installation");')
+assert WARNING in js_content
+(STATIC / 'tailwindcss.min.js').write_text(js_content.replace(WARNING, ''))

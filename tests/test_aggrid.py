@@ -116,7 +116,7 @@ def test_get_selected_rows(screen: Screen):
         grid = ui.aggrid({
             'columnDefs': [{'field': 'name'}],
             'rowData': [{'name': 'Alice'}, {'name': 'Bob'}, {'name': 'Carol'}],
-            'rowSelection': 'multiple',
+            'rowSelection': {'mode': 'multiRow', 'enableClickSelection': True},
         })
 
         async def get_selected_rows():

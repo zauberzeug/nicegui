@@ -3,10 +3,10 @@
     "build": "python3 extract_core_libraries.py"
   },
   "dependencies": {
-    "es-module-shims": "1.10.0",
-    "quasar": "2.16.9",
-    "socket.io": "4.7.5",
-    "tailwindcss": "3.4.10",
-    "vue": "3.4.38"
+    "es-module-shims": "2.6.2",
+    "quasar": "2.18.2",
+    "socket.io": "4.8.1",
+    "tailwindcss": "3.4.17",
+    "vue": "3.5.18"
   }
 }
