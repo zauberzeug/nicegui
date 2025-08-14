@@ -146,8 +146,6 @@ export default {
     },
   },
   async mounted() {
-    await this.$nextTick(); // NOTE: wait for window.path_prefix to be set
-
     // This is used to prevent emitting the value we just received from the server.
     this.emitting = true;
 
