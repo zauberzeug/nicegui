@@ -3,9 +3,7 @@ from typing import Optional
 from nicegui import ui
 
 
-class SignaturePad(ui.element,
-                   component='signature_pad.js',
-                   dependencies=['node_modules/signature_pad/dist/signature_pad.min.js']):
+class SignaturePad(ui.element, component='signature_pad.js', esm={'signature_pad': 'dist'}):
 
     def __init__(self, options: Optional[dict] = None) -> None:
         """SignaturePad
