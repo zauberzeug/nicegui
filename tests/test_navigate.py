@@ -38,3 +38,23 @@ def test_navigate_to_absolute_url(screen: Screen):
     screen.click('Go external')
     screen.wait(1.0)
     assert external_url in screen.selenium.current_url
+
+
+def test_navigate_to_relative_url(screen: Screen):
+    @ui.page('/')
+    def page():
+        ui.button('Go relative', on_click=lambda: ui.navigate.to('/test_page'))
+
+    @ui.page('/test_page')
+    def test_page():
+        ui.label('Test page')
+        ui.button('Back', on_click=ui.navigate.back)
+
+    screen.open('/')
+    screen.click('Go relative')
+    screen.wait(0.2)
+    assert screen.selenium.current_url == f'http://localhost:{Screen.PORT}/test_page'
+
+    screen.click('Back')
+    screen.wait(0.2)
+    assert screen.selenium.current_url == f'http://localhost:{Screen.PORT}/'

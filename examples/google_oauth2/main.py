@@ -9,6 +9,7 @@ from nicegui import app, ui
 
 # Get the credentials from the Google Cloud Console
 # https://developers.google.com/identity/gsi/web/guides/get-google-api-clientid#get_your_google_api_client_id
+# make sure you include <origin>/auth in "Authorized redirect URIs"
 GOOGLE_CLIENT_ID = '...'
 GOOGLE_CLIENT_SECRET = '...'
 

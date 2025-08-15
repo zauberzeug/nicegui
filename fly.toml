@@ -1,14 +1,8 @@
-# fly.toml app configuration file generated for nicegui on 2023-10-05T05:09:32+02:00
-#
-# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
-#
-
 app = "nicegui"
 primary_region = "lhr"
 kill_signal = "SIGTERM"
 kill_timeout = "5s"
 swap_size_mb = 2048
-
 
 [build]
   dockerfile = "fly.dockerfile"
@@ -23,9 +17,9 @@ swap_size_mb = 2048
   protocol = "tcp"
   internal_port = 8080
   processes = ["app"]
-  auto_stop_machines = false
+  auto_stop_machines = true
   auto_start_machines = true
-  min_machines_running = 18
+  min_machines_running = 1
 
   [[services.ports]]
     port = 80
@@ -35,9 +29,10 @@ swap_size_mb = 2048
   [[services.ports]]
     port = 443
     handlers = ["tls", "http"]
+
   [services.concurrency]
     type = "requests"
-    hard_limit = 2000
+    hard_limit = 200
     soft_limit = 100
 
   [[services.tcp_checks]]
