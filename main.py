@@ -6,6 +6,7 @@ from fastapi import Request
 from starlette.middleware.sessions import SessionMiddleware
 
 from nicegui import app, ui
+from nicegui.page_arguments import RouteMatch
 from website import anti_scroll_hack, documentation, fly, header, imprint_privacy, main_page, rate_limits, svg
 
 # session middleware is required for demo in documentation
@@ -30,8 +31,17 @@ async def _post_dark_mode(request: Request) -> None:
     app.storage.browser['dark_mode'] = (await request.json()).get('value')
 
 
+class custom_sub_pages(ui.sub_pages):
+    def _render_page(self, match: RouteMatch) -> bool:
+        if match.path == '/' and match.remaining_path:
+            return False
+        return super()._render_page(match)
+
+
 @ui.page('/')
-@ui.page('/{path:path}')
+@ui.page('/documentation')
+@ui.page('/documentation/{path:path}')
+@ui.page('/imprint_privacy')
 def _main_page() -> None:
     ui.context.client.content.classes('p-0 gap-0')
     header.add_head_html()
@@ -54,7 +64,7 @@ def _main_page() -> None:
         </script>
     ''')
 
-    ui.sub_pages({
+    custom_sub_pages({
         '/': main_page.create,
         '/documentation': lambda: documentation.render_page(documentation.registry['']),
         '/documentation/{name}': lambda name: _documentation_detail_page(name, tree),

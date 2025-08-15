@@ -29,9 +29,6 @@ class Plotly(Element, component='plotly.vue', dependencies=['lib/plotly/plotly.m
         :param figure: Plotly figure to be rendered. Can be either a `go.Figure` instance, or
                        a `dict` object with keys `data`, `layout`, `config` (optional).
         """
-        if not optional_features.has('plotly'):
-            raise ImportError('Plotly is not installed. Please run "pip install nicegui[plotly]".')
-
         super().__init__()
 
         self.figure = figure
@@ -49,7 +46,7 @@ class Plotly(Element, component='plotly.vue', dependencies=['lib/plotly/plotly.m
         super().update()
 
     def _get_figure_json(self) -> Dict:
-        if isinstance(self.figure, go.Figure):
+        if optional_features.has('plotly') and isinstance(self.figure, go.Figure):
             # convert go.Figure to dict object which is directly JSON serializable
             # orjson supports NumPy array serialization
             return self.figure.to_plotly_json()

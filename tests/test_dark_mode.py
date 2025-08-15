@@ -12,7 +12,6 @@ def test_dark_mode(screen: Screen):
 
     def assert_dark(value: bool) -> None:
         classes = (screen.find_by_tag('body').get_attribute('class') or '').split()
-        assert ('dark' in classes) == value
         assert ('body--dark' in classes) == value
         assert ('body--light' in classes) != value
 

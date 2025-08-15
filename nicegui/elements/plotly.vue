@@ -23,9 +23,9 @@ export default {
 
       // re-use plotly instance if config is the same
       if (JSON.stringify(options.config) == JSON.stringify(this.last_options.config)) {
-        Plotly.react(this.$el.id, this.options.data, this.options.layout);
+        Plotly.react(this.$el.id, this.options, options.config);
       } else {
-        Plotly.newPlot(this.$el.id, this.options.data, this.options.layout, options.config);
+        Plotly.newPlot(this.$el.id, this.options, options.config);
         this.set_handlers();
       }
 
