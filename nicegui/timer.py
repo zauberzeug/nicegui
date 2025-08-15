@@ -57,9 +57,10 @@ class Timer:
         """Deactivate the timer."""
         self.active = False
 
-    def cancel(self, with_current_invocation=False) -> None:
+    def cancel(self, *, with_current_invocation: bool = False) -> None:
         """Cancel the timer.
-        :param with_current_invocation: if True, it will also cancel the currently invoked task of the callback (*added in version 2.23.0*)
+
+        :param with_current_invocation: whether to cancel the currently invoked task of the callback (*added in version 2.23.0*)
         """
         self._is_canceled = True
         if with_current_invocation and self._current_invocation is not None:
@@ -72,11 +73,8 @@ class Timer:
             with self._get_context():
                 await asyncio.sleep(self.interval)
                 if self.active and not self._should_stop():
-                    try:
-                        await self._invoke_callback()
-                    except asyncio.CancelledError:
-                        # expected when cancel(with_current_invocation=True) is used
-                        pass
+                    self._current_invocation = asyncio.create_task(self._invoke_callback())
+                    await self._current_invocation
         finally:
             self._cleanup()
 
@@ -91,7 +89,8 @@ class Timer:
                     try:
                         start = time.time()
                         if self.active:
-                            await self._invoke_callback()
+                            self._current_invocation = asyncio.create_task(self._invoke_callback())
+                            await self._current_invocation
                         dt = time.time() - start
                         await asyncio.sleep(self.interval - dt)
                     except asyncio.CancelledError:
@@ -105,25 +104,10 @@ class Timer:
     async def _invoke_callback(self) -> None:
         try:
             assert self.callback is not None
-            result = self.callback()
-            if isinstance(result, Awaitable) and not isinstance(result, AwaitableResponse):
-                async def background_task():
-                    with self._get_context():
-                        try:
-                            await result
-                        finally:
-                            self._current_invocation = None
-                self._current_invocation = background_tasks.create(background_task(),
-                                                                   name=f'timer callback {self.callback}')
-                try:
-                    await self._current_invocation
-                finally:
-                    self._current_invocation = None
-            else:
-                self._current_invocation = None
-        except asyncio.CancelledError:
-            # expected when cancel(with_current_invocation=True) is used
-            pass
+            with self._get_context():
+                result = self.callback()
+                if isinstance(result, Awaitable) and not isinstance(result, AwaitableResponse):
+                    await result
         except Exception as e:
             core.app.handle_exception(e)
 
