@@ -18,7 +18,7 @@ doc.title('Styling & Appearance')
     Each NiceGUI element provides a `props` method whose content is passed [to the Quasar component](https://justpy.io/quasar_tutorial/introduction/#props-of-quasar-components):
     Have a look at [the Quasar documentation](https://quasar.dev/vue-components/button#design) for all styling props.
     Props with a leading `:` can contain JavaScript expressions that are evaluated on the client.
-    You can also apply [Tailwind CSS](https://v3.tailwindcss.com/) utility classes with the `classes` method.
+    You can also apply [Tailwind CSS](https://tailwindcss.com/) utility classes with the `classes` method.
 
     If you really need to apply CSS, you can use the `style` method. Here the delimiter is `;` instead of a blank space.
 
@@ -32,7 +32,7 @@ def design_demo():
 
 doc.text('Try styling NiceGUI elements!', '''
     Try out how
-    [Tailwind CSS classes](https://v3.tailwindcss.com/),
+    [Tailwind CSS classes](https://tailwindcss.com/),
     [Quasar props](https://justpy.io/quasar_tutorial/introduction/#props-of-quasar-components),
     and CSS styles affect NiceGUI elements.
 ''')
@@ -107,7 +107,7 @@ def styling_demo():
 
 
 @doc.demo('Tailwind CSS', '''
-    [Tailwind CSS](https://v3.tailwindcss.com/) is a CSS framework for rapidly building custom user interfaces.
+    [Tailwind CSS](https://tailwindcss.com/) is a CSS framework for rapidly building custom user interfaces.
     NiceGUI provides a fluent, auto-complete friendly interface for adding Tailwind classes to UI elements.
 
     You can discover available classes by navigating the methods of the `tailwind` property.
