@@ -238,8 +238,8 @@ def test_dark_mode(screen: Screen):
     def dark_page():
         ui.label('C').classes('text-blue-400 dark:text-red-400')
 
-    blue = 'rgba(96, 165, 250, 1)'
-    red = 'rgba(248, 113, 113, 1)'
+    blue = 'oklch(0.707 0.165 254.624)'
+    red = 'oklch(0.704 0.191 22.216)'
     white = 'rgba(0, 0, 0, 0)'
     black = 'rgba(18, 18, 18, 1)'
 
