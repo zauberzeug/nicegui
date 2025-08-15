@@ -161,7 +161,7 @@ def test_automatic_cleanup(screen: Screen):
         def __init__(self, value: str) -> None:
             self.value = value
 
-    def create_model_and_label(value: str) -> Tuple[Model, weakref.ref, ui.label]:
+    def create_model_and_label(value: str) -> Tuple[int, weakref.ref, ui.label]:
         model = Model(value)
         label = ui.label(value).bind_text(model, 'value')
         return id(model), weakref.ref(model), label
