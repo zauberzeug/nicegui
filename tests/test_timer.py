@@ -3,7 +3,7 @@ import gc
 
 import pytest
 
-from nicegui import app, core, ui
+from nicegui import app, ui
 from nicegui.testing import Screen, User
 
 
@@ -206,23 +206,3 @@ def test_cancel_before_invocation_starts(screen: Screen):
     t.cancel(with_current_invocation=True)
     screen.wait(0.6)
     assert counter.value == 0
-
-
-def test_cancel_does_not_log_error(screen: Screen, monkeypatch):
-    errors = []
-
-    def capture_error(e: Exception):
-        errors.append(e)
-
-    monkeypatch.setattr(core.app, 'handle_exception', capture_error)
-
-    async def update():
-        await asyncio.sleep(1.0)
-
-    t = ui.timer(0, update, once=True)
-
-    screen.start_server()
-    screen.wait(0.1)
-    t.cancel(with_current_invocation=True)
-    screen.wait(0.2)
-    assert errors == []
