@@ -20,6 +20,7 @@ class IconElement(Element):
                      target_object: Any,
                      target_name: str = 'icon',
                      forward: Optional[Callable[[Any], Any]] = None,
+                     check_exists: Optional[bool] = None,
                      ) -> Self:
         """Bind the icon of this element to the target object's target_name property.
 
@@ -29,14 +30,17 @@ class IconElement(Element):
         :param target_object: The object to bind to.
         :param target_name: The name of the property to bind to.
         :param forward: A function to apply to the value before applying it to the target (default: identity).
+        :param check_exists: Whether to check (and warn) if the target object has the specified property (default: None,
+            performs a check if the object is not a dictionary).
         """
-        bind_to(self, 'icon', target_object, target_name, forward)
+        bind_to(self, 'icon', target_object, target_name, forward, check_self=False, check_other=check_exists)
         return self
 
     def bind_icon_from(self,
                        target_object: Any,
                        target_name: str = 'icon',
                        backward: Optional[Callable[[Any], Any]] = None,
+                       check_exists: Optional[bool] = None,
                        ) -> Self:
         """Bind the icon of this element from the target object's target_name property.
 
@@ -46,8 +50,10 @@ class IconElement(Element):
         :param target_object: The object to bind from.
         :param target_name: The name of the property to bind from.
         :param backward: A function to apply to the value before applying it to this element (default: identity).
+        :param check_exists: Whether to check (and warn) if the target object has the specified property (default: None,
+            performs a check if the object is not a dictionary).
         """
-        bind_from(self, 'icon', target_object, target_name, backward)
+        bind_from(self, 'icon', target_object, target_name, backward, check_self=False, check_other=check_exists)
         return self
 
     def bind_icon(self,
@@ -55,6 +61,7 @@ class IconElement(Element):
                   target_name: str = 'icon', *,
                   forward: Optional[Callable[[Any], Any]] = None,
                   backward: Optional[Callable[[Any], Any]] = None,
+                  check_exists: Optional[bool] = None,
                   ) -> Self:
         """Bind the icon of this element to the target object's target_name property.
 
@@ -66,8 +73,12 @@ class IconElement(Element):
         :param target_name: The name of the property to bind to.
         :param forward: A function to apply to the value before applying it to the target (default: identity).
         :param backward: A function to apply to the value before applying it to this element (default: identity).
+        :param check_exists: Whether to check (and warn) if the target object has the specified property (default: None,
+            performs a check if the object is not a dictionary).
         """
-        bind(self, 'icon', target_object, target_name, forward=forward, backward=backward)
+        bind(self, 'icon', target_object, target_name,
+             forward=forward, backward=backward,
+             check_self=False, check_other=check_exists)
         return self
 
     def set_icon(self, icon: Optional[str]) -> None:

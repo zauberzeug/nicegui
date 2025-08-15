@@ -161,7 +161,7 @@ def test_automatic_cleanup(screen: Screen):
         def __init__(self, value: str) -> None:
             self.value = value
 
-    def create_model_and_label(value: str) -> Tuple[Model, weakref.ref, ui.label]:
+    def create_model_and_label(value: str) -> Tuple[int, weakref.ref, ui.label]:
         model = Model(value)
         label = ui.label(value).bind_text(model, 'value')
         return id(model), weakref.ref(model), label
@@ -205,3 +205,38 @@ async def test_nested_propagation(user: User):
 
     await user.open('/')
     await user.should_see('a = 2')  # the final value of a should be 2
+
+
+def test_binding_check_exists(caplog):
+    # dictionary is checked if requested
+    data: Dict[str, str] = {}
+    label = ui.label()
+
+    binding.bind(label, 'text', data, 'non_existent_key', check_other=True)
+    assert any(record.levelname == 'WARNING' for record in caplog.records)
+    assert 'non-existing attribute' in caplog.text
+    caplog.clear()
+
+    # object property is checked automatically
+    class Model:
+        attribute = 'existing-attribute'
+    model = Model()
+
+    binding.bind(model, 'no_attribute', label, 'text')
+
+    assert any(record.levelname == 'WARNING' for record in caplog.records)
+    assert 'non-existing attribute' in caplog.text
+    caplog.clear()
+
+    # both objects are checked
+    binding.bind(model, 'does_not_exist', label, 'fantasy')
+
+    assert len([record for record in caplog.records if record.levelname == 'WARNING']) == 2
+    assert 'non-existing attribute' in caplog.text
+    caplog.clear()
+
+    # dictionaries are not checked by default
+    binding.bind(data, 'non_existing_key', label, 'text')
+
+    assert not any(record.levelname == 'WARNING' for record in caplog.records)
+    assert 'non-existing attribute' not in caplog.text
