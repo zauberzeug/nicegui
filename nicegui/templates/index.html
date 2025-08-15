@@ -19,6 +19,12 @@
     {% for url in js_imports_urls %}
     <link rel="modulepreload" href="{{ url }}" />
     {% endfor %}
+    <!-- prevent Prettier from removing this line -->
+    {% if tailwind %}
+    <style type="text/tailwindcss">
+      @custom-variant dark (&:where(body.body--dark, body.body--dark *));
+    </style>
+    {% endif %}
   </head>
   <body>
     <script nomodule src="{{ prefix | safe }}/_nicegui/{{version}}/static/es-module-shims.js"></script>
@@ -59,10 +65,6 @@
 
       {{ js_imports | safe }}
       {{ vue_scripts | safe }}
-
-      {% if tailwind %}
-      tailwind.config.darkMode = ["class", "body.body--dark"];
-      {% endif %}
 
       app.mount("#app");
     </script>
