@@ -20,7 +20,7 @@ class ContentElement(Element):
                         target_object: Any,
                         target_name: str = 'content',
                         forward: Optional[Callable[[Any], Any]] = None,
-                        check_exists: Optional[bool] = False,
+                        check_exists: Optional[bool] = None,
                         ) -> Self:
         """Bind the content of this element to the target object's target_name property.
 
@@ -30,16 +30,17 @@ class ContentElement(Element):
         :param target_object: The object to bind to.
         :param target_name: The name of the property to bind to.
         :param forward: A function to apply to the value before applying it to the target (default: identity).
-        :param check_exists: Whether to check if the target property exists before binding (default: False).
+        :param check_exists: Whether to check (and warn) if the target object has the specified property (default: None,
+            performs a check if the object is not a dictionary).
         """
-        bind_to(self, 'content', target_object, target_name, forward, check_exists=check_exists)
+        bind_to(self, 'content', target_object, target_name, forward, check_self=False, check_other=check_exists)
         return self
 
     def bind_content_from(self,
                           target_object: Any,
                           target_name: str = 'content',
                           backward: Optional[Callable[[Any], Any]] = None,
-                          check_exists: Optional[bool] = False,
+                          check_exists: Optional[bool] = None,
                           ) -> Self:
         """Bind the content of this element from the target object's target_name property.
 
@@ -49,9 +50,10 @@ class ContentElement(Element):
         :param target_object: The object to bind from.
         :param target_name: The name of the property to bind from.
         :param backward: A function to apply to the value before applying it to this element (default: identity).
-        :param check_exists: Whether to check if the target property exists before binding (default: False).
+        :param check_exists: Whether to check (and warn) if the target object has the specified property (default: None,
+            performs a check if the object is not a dictionary).
         """
-        bind_from(self, 'content', target_object, target_name, backward, check_exists=check_exists)
+        bind_from(self, 'content', target_object, target_name, backward, check_self=False, check_other=check_exists)
         return self
 
     def bind_content(self,
@@ -59,7 +61,7 @@ class ContentElement(Element):
                      target_name: str = 'content', *,
                      forward: Optional[Callable[[Any], Any]] = None,
                      backward: Optional[Callable[[Any], Any]] = None,
-                     check_exists: Optional[bool] = False,
+                     check_exists: Optional[bool] = None,
                      ) -> Self:
         """Bind the content of this element to the target object's target_name property.
 
@@ -71,9 +73,12 @@ class ContentElement(Element):
         :param target_name: The name of the property to bind to.
         :param forward: A function to apply to the value before applying it to the target (default: identity).
         :param backward: A function to apply to the value before applying it to this element (default: identity).
-        :param check_exists: Whether to check if the target property exists before binding (default: False).
+        :param check_exists: Whether to check (and warn) if the target object has the specified property (default: None,
+            performs a check if the object is not a dictionary).
         """
-        bind(self, 'content', target_object, target_name, forward=forward, backward=backward, check_exists=check_exists)
+        bind(self, 'content', target_object, target_name,
+             forward=forward, backward=backward,
+             check_self=False, check_other=check_exists)
         return self
 
     def set_content(self, content: str) -> None:
