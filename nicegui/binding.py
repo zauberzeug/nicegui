@@ -126,9 +126,9 @@ def _check_exists(other_obj: Any, other_name: str) -> None:
 
 def _check_self_and_other(self_obj: Any, self_name: str, other_obj: Any, other_name: str,
                           check_self: Optional[bool], check_other: Optional[bool]) -> None:
-    if check_other or (check_other is None and type(other_obj) is not dict):
+    if check_other or (check_other is None and not isinstance(other_obj, dict)):
         _check_exists(other_obj, other_name)
-    if check_self or (check_self is None and type(self_obj) is not dict):
+    if check_self or (check_self is None and not isinstance(self_obj, dict)):
         _check_exists(self_obj, self_name)
 
 
