@@ -47,12 +47,10 @@ def logout() -> None:
 async def google_oauth(request: Request) -> RedirectResponse:
     try:
         user_info = (await oauth.google.authorize_access_token(request)).get('userinfo', {})
+        if _is_valid(user_info):
+            app.storage.user['user_info'] = user_info
     except (OAuthError, Exception):
         logging.exception('could not authorize access token')
-        return RedirectResponse('/')
-    if not _is_valid(user_info):
-        return RedirectResponse('/')
-    app.storage.user['user_info'] = user_info
     return RedirectResponse('/')
 
 
