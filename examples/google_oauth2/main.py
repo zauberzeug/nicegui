@@ -27,6 +27,22 @@ oauth.register(
 )
 
 
+@ui.page('/')
+async def main(request: Request) -> Optional[RedirectResponse]:
+    user_info = app.storage.user.get('user_info', {})
+    if _is_valid(user_info):
+        ui.label(f"Welcome {user_info.get('name') or user_info.get('email', '')}!")
+        ui.button('Logout', on_click=logout)
+        return None
+    app.storage.user.pop('user_info', None)
+    return await oauth.google.authorize_redirect(request, request.url_for('google_oauth'))
+
+
+def logout() -> None:
+    del app.storage.user['user_info']
+    ui.navigate.to('/')
+
+
 @app.get('/auth')
 async def google_oauth(request: Request) -> RedirectResponse:
     try:
@@ -38,22 +54,6 @@ async def google_oauth(request: Request) -> RedirectResponse:
         return RedirectResponse('/')
     app.storage.user['user_info'] = user_info
     return RedirectResponse('/')
-
-
-def logout() -> None:
-    del app.storage.user['user_info']
-    ui.navigate.to('/')
-
-
-@ui.page('/')
-async def main(request: Request) -> Optional[RedirectResponse]:
-    user_info = app.storage.user.get('user_info', {})
-    if _is_valid(user_info):
-        ui.label(f"Welcome {user_info.get('name') or user_info.get('email', '')}!")
-        ui.button('Logout', on_click=logout)
-        return None
-    app.storage.user.pop('user_info', None)
-    return await oauth.google.authorize_redirect(request, request.url_for('google_oauth'))
 
 
 def _is_valid(user_info: dict) -> bool:
