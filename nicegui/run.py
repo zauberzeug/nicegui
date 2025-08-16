@@ -2,7 +2,7 @@ import asyncio
 import logging
 import sys
 import traceback
-from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
+from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor, Executor
 from functools import partial
 from typing import Any, Callable, Optional, TypeVar
 
@@ -10,18 +10,29 @@ from typing_extensions import ParamSpec
 
 from . import core, helpers
 
-process_pool: Optional[ProcessPoolExecutor] = None
+ProcessPoolExecutorType: type = ProcessPoolExecutor
+process_pool: Optional[Executor] = None
 thread_pool = ThreadPoolExecutor()
 
 P = ParamSpec('P')
 R = TypeVar('R')
 
 
+def set_cpu_bound_executor_type(executor_type: type):
+    """Set concurrent.futures.Executor compliant type for cpu_bound execution"""
+    # makes no sense to call this function after ui.run which calls setup
+    assert process_pool is None
+    assert type(executor_type) is type
+
+    global ProcessPoolExecutorType # pylint: disable=global-statement # noqa: PLW0603
+    ProcessPoolExecutorType = executor_type
+
+
 def setup() -> None:
     """Setup the process pool. (For internal use only.)"""
     global process_pool  # pylint: disable=global-statement # noqa: PLW0603
     try:
-        process_pool = ProcessPoolExecutor()
+        process_pool = ProcessPoolExecutorType()
     except NotImplementedError:
         logging.warning('Failed to initialize ProcessPoolExecutor')
 
@@ -94,7 +105,8 @@ def tear_down() -> None:
 
     kwargs = {'cancel_futures': True} if sys.version_info >= (3, 9) else {}
     if process_pool is not None:
-        for p in process_pool._processes.values():  # pylint: disable=protected-access
-            p.kill()
+        if isinstance(process_pool, ProcessPoolExecutor):
+            for p in process_pool._processes.values():  # pylint: disable=protected-access
+                p.kill()
         process_pool.shutdown(wait=True, **kwargs)
     thread_pool.shutdown(wait=False, **kwargs)
