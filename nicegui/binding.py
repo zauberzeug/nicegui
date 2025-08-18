@@ -120,8 +120,8 @@ def _propagate_recursively(source_obj: Any, source_name: str) -> None:
 
 def _check_exists(other_obj: Any, other_name: str) -> None:
     if not _has_attribute(other_obj, other_name):
-        log.warning(f'binding a non-existing attribute "{other_name}" of target object of type '
-                    f'{other_obj.__class__.__name__}. proceeding with binding, but value is unset.')
+        log.warning(f'Binding a non-existing attribute "{other_name}" of target object of type '
+                    f'{other_obj.__class__.__name__}. Proceeding with binding, keeping the value unset.')
 
 
 def _check_self_and_other(self_obj: Any, self_name: str, other_obj: Any, other_name: str,
