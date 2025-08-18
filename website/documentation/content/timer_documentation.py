@@ -23,6 +23,39 @@ def activate_deactivate_demo():
     ui.button('Cancel', on_click=timer.cancel)
 
 
+@doc.demo('Cancel current invocation', '''
+    If you also want to cancel the currently invoked task of the callback,
+    just call the `cancel` method with the `with_current_invocation` parameter set to `True`.
+
+    The following demo shows a timer that runs every 2.5 seconds and displays a progress bar that fills up over 2 seconds.
+    If you cancel the timer by clicking the "Cancel" button, the current cycle continues until completion.
+    The "Cancel with current invocation" button, however, will also cancel the currently running cycle.
+
+    *Added in version 2.23.0*
+''')
+def cancel_timer_demo():
+    import asyncio
+
+    progress = ui.linear_progress().props('instant-feedback')
+
+    async def cycle_once():
+        for i in range(10):
+            progress.value = (i + 1) / 10
+            await asyncio.sleep(0.2)
+
+    def start_progress():
+        timer = ui.timer(2.5, cycle_once, immediate=True)
+        with ui.column() as controls:
+            ui.button('Cancel') \
+                .on('click', lambda: timer.cancel(with_current_invocation=False)) \
+                .on('click', controls.delete)
+            ui.button('Cancel with current invocation') \
+                .on('click', lambda: timer.cancel(with_current_invocation=True)) \
+                .on('click', controls.delete)
+
+    ui.button('Start progress', on_click=start_progress).props('flat')
+
+
 @doc.demo('Call a function after a delay', '''
     You can call a function after a delay using a timer with the `once` parameter.
 ''')
@@ -62,47 +95,6 @@ def app_timer_demo():
     def page():
         ui.label().bind_text_from(counter, 'value', lambda value: f'Count: {value}')
     page()  # HIDE
-
-
-@doc.demo('Cancel a timer', '''
-    You can prevent the callback from being executed again via the `cancel` method.
-    If you also want to cancel the currently invoked task of the callback,
-    just set the `with_current_invocation` parameter to `True`.
-
-    The following demo shows a timer that runs for 5 seconds and displays a notification with progress status.
-    You can cancel the timer by clicking the "cancel" button.
-    The "abort" button will also cancel the currently running progress task.
-
-    *Added in version 2.23.0*
-''')
-def cancel_timer_demo():
-    import asyncio
-
-    async def progress():
-        try:
-            n = ui.notification(timeout=None, spinner=True)
-            for i in range(10):
-                n.message = f'{i/10:.0%}'
-                await asyncio.sleep(0.5)
-            n.message = '100%'
-        except asyncio.CancelledError:
-            n.message = 'aborted'
-            n.color = 'red'
-            await asyncio.sleep(1)
-        finally:
-            n.dismiss()
-
-    def start():
-        timer = ui.timer(6, progress, immediate=True)
-        with ui.column().classes('mt-4') as controls:
-            ui.button('cancel').classes('w-20')\
-                .on('click', timer.cancel) \
-                .on('click', controls.delete)
-            ui.button('abort').classes('w-20')\
-                .on('click', lambda: timer.cancel(with_current_invocation=True)) \
-                .on('click', controls.delete)
-
-    ui.button('start', on_click=start).classes('w-20')
 
 
 doc.reference(ui.timer)
