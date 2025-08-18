@@ -207,36 +207,36 @@ async def test_nested_propagation(user: User):
     await user.should_see('a = 2')  # the final value of a should be 2
 
 
-def test_binding_check_exists(caplog):
-    # dictionary is checked if requested
+def test_binding_check_other_exists_dict(screen: Screen, caplog):
     data: Dict[str, str] = {}
     label = ui.label()
 
     binding.bind(label, 'text', data, 'non_existent_key', check_other=True)
+    screen.open('/')
+
     assert any(record.levelname == 'WARNING' for record in caplog.records)
     assert 'non-existing attribute' in caplog.text
-    caplog.clear()
 
-    # object property is checked automatically
+
+def test_binding_check_exists_object(screen: Screen, caplog):
     class Model:
         attribute = 'existing-attribute'
     model = Model()
+    label = ui.label()
 
-    binding.bind(model, 'no_attribute', label, 'text')
-
-    assert any(record.levelname == 'WARNING' for record in caplog.records)
-    assert 'non-existing attribute' in caplog.text
-    caplog.clear()
-
-    # both objects are checked
-    binding.bind(model, 'does_not_exist', label, 'fantasy')
+    binding.bind(model, 'no_attribute', label, 'no_text')
+    screen.open('/')
 
     assert len([record for record in caplog.records if record.levelname == 'WARNING']) == 2
     assert 'non-existing attribute' in caplog.text
-    caplog.clear()
 
-    # dictionaries are not checked by default
+
+def test_binding_no_check_exists_with_dict(screen: Screen, caplog):
+    data: Dict[str, str] = {}
+    label = ui.label()
+
     binding.bind(data, 'non_existing_key', label, 'text')
+    screen.open('/')
 
     assert not any(record.levelname == 'WARNING' for record in caplog.records)
     assert 'non-existing attribute' not in caplog.text
