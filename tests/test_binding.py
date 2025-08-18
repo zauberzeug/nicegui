@@ -207,36 +207,37 @@ async def test_nested_propagation(user: User):
     await user.should_see('a = 2')  # the final value of a should be 2
 
 
-def test_binding_check_other_exists_dict(screen: Screen, caplog):
+def test_binding_check_other_exists_dict(screen: Screen):
     data: Dict[str, str] = {}
     label = ui.label()
-
     binding.bind(label, 'text', data, 'non_existent_key', check_other=True)
+
     screen.open('/')
+    screen.assert_py_logger('WARNING',
+                            'Binding a non-existing attribute "non_existent_key" of target object of type dict. '
+                            'Proceeding with binding, keeping the value unset.')
 
-    assert any(record.levelname == 'WARNING' for record in caplog.records)
-    assert 'non-existing attribute' in caplog.text
 
-
-def test_binding_check_exists_object(screen: Screen, caplog):
+def test_binding_check_exists_object(screen: Screen):
     class Model:
         attribute = 'existing-attribute'
     model = Model()
     label = ui.label()
-
     binding.bind(model, 'no_attribute', label, 'no_text')
+
     screen.open('/')
+    screen.assert_py_logger('WARNING',
+                            'Binding a non-existing attribute "no_attribute" of target object of type Model. '
+                            'Proceeding with binding, keeping the value unset.')
+    screen.assert_py_logger('WARNING',
+                            'Binding a non-existing attribute "no_text" of target object of type Label. '
+                            'Proceeding with binding, keeping the value unset.')
 
-    assert len([record for record in caplog.records if record.levelname == 'WARNING']) == 2
-    assert 'non-existing attribute' in caplog.text
 
-
-def test_binding_no_check_exists_with_dict(screen: Screen, caplog):
+def test_binding_no_check_exists_with_dict(screen: Screen):
     data: Dict[str, str] = {}
     label = ui.label()
-
     binding.bind(data, 'non_existing_key', label, 'text')
-    screen.open('/')
 
-    assert not any(record.levelname == 'WARNING' for record in caplog.records)
-    assert 'non-existing attribute' not in caplog.text
+    screen.open('/')
+    # no warning
