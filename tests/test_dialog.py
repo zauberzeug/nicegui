@@ -47,27 +47,19 @@ def test_await_dialog(screen: Screen):
 
 
 def test_dialog_scroll_behavior(screen: Screen):
-    def popover():
-        with ui.dialog() as dialog:
-            with ui.card():
-                ui.button('close dialog', on_click=dialog.close)
-        dialog.on('hide', dialog.delete)
-        dialog.open()
-
-    @ui.page('/')
-    def index():
-        ui.link('go to bottom', '#bottom')
-        ui.add_head_html('<style>html { scroll-behavior: smooth; }</style>')
-        ui.link_target('bottom').classes('mt-[2000px]')
-        ui.button('open dialog', on_click=popover)
+    ui.add_css('html { scroll-behavior: smooth }')
+    ui.link('Go to bottom', '#bottom')
+    ui.link_target('bottom').classes('mt-[2000px]')
+    ui.button('dialog', on_click=lambda: ui.dialog(value=True))
 
     screen.open('/')
-    screen.click('go to bottom')
+    screen.click('Go to bottom')
     screen.wait(1)
     position = screen.selenium.execute_script('return window.scrollY')
     assert position > 1000
-    screen.click('open dialog')
+
+    screen.click('dialog')
     screen.wait(0.5)
-    screen.click('close dialog')
+    screen.type(Keys.ESCAPE)
     screen.wait(0.2)
     assert screen.selenium.execute_script('return window.scrollY') == position
