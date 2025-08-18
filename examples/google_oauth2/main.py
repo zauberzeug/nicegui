@@ -31,7 +31,7 @@ oauth.register(
 async def main(request: Request) -> Optional[RedirectResponse]:
     user_info = app.storage.user.get('user_info', {})
     if _is_valid(user_info):
-        ui.label(f"Welcome {user_info.get('name') or user_info.get('email', '')}!")
+        ui.label(f'Welcome {user_info.get("name") or user_info.get("email", "")}!')
         ui.button('Logout', on_click=logout)
         return None
     app.storage.user.pop('user_info', None)
@@ -68,5 +68,5 @@ def _is_valid(user_info: dict) -> bool:
 
 ui.run(
     host='localhost',  # NOTE: this ensures that you can run the app locally, accessing via http://127.0.0.1:8080 is not supported by Google OAuth2
-    storage_secret='random secret goes here'
+    storage_secret='random secret goes here',
 )
