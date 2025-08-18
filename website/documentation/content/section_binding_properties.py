@@ -95,6 +95,23 @@ def ui_state():
     ui.textarea('This note is kept between visits').classes('w-full').bind_value(app.storage.user, 'note')
 
 
+@doc.demo('Check for non-existing bound attributes', '''
+    Before a binding is created, the involved attributes are checked if they exist.
+    Though binding to a non-existing attribute is possible, in our experience it's usually not done on purpose.
+    For example, when code is refactored, the variable name in a binding might easily be missed in a renaming.
+    This behavior can be customized with the `check_exists` parameter.
+    By default, object attributes are checked for existence, but dictionary keys are not.
+    If the attribute is not found, a warning is logged, but the binding is created nonetheless.
+''')
+def check_exists():
+    from nicegui import binding
+
+    data = {'name': 'Alice', 'age': 30}
+    ui.label().bind_text_from(data, 'name', check_exists=True)
+    ui.label().bind_text_from(data, 'surname')  # no warning logged, because data is a dictionary
+    ui.button('add surname', on_click=lambda: data.update(surname='Smith'))
+
+
 @doc.demo('Bindable properties for maximum performance', '''
     There are two types of bindings:
 
