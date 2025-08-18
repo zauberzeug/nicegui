@@ -17,8 +17,8 @@ GOOGLE_CLIENT_ID = '...'
 
 @ui.page('/')
 def main_page() -> None:
-    user_info = app.storage.user.get('user_info')
-    if not user_info or not _is_valid(user_info):
+    user_info = app.storage.user.get('user_info', {})
+    if not _is_valid(user_info):
         ui.add_head_html('<script src="https://accounts.google.com/gsi/client" async defer></script>')
         ui.html(f'''
             <div id="g_id_onload"
@@ -28,7 +28,8 @@ def main_page() -> None:
         ''')
         ui.label('Sign in with Google One Tap')
         return
-    ui.label(f"Welcome {user_info.get('name') or user_info.get('email', '')}!")
+
+    ui.label(f'Welcome {user_info.get("name") or user_info.get("email", "")}!')
     ui.button('Logout', on_click=logout)
 
 
@@ -64,5 +65,5 @@ def _is_valid(user_info: dict) -> bool:
 
 ui.run(
     host='localhost',  # NOTE: this ensures that you can run the app locally, accessing via http://127.0.0.1:8080 is not supported by Google OAuth2
-    storage_secret='random secret goes here'
+    storage_secret='random secret goes here',
 )
