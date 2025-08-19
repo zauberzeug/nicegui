@@ -334,7 +334,7 @@ class Element(Visibility):
            throttle: float = 0.0,
            leading_events: bool = True,
            trailing_events: bool = True,
-           js_handler: str | None = '(...args) => emit(...args)',  # DEPRECATED: None will be removed in version 3.0
+           js_handler: str = '(...args) => emit(...args)',
            ) -> Self:
         """Subscribe to an event.
 
@@ -363,19 +363,13 @@ class Element(Visibility):
         :param trailing_events: whether to trigger the event handler after the last event occurrence (default: ``True``)
         :param js_handler: JavaScript function that is handling the event on the client (default: "(...args) => emit(...args)")
         """
-        if js_handler is None:
-            helpers.warn_once('Passing `js_handler=None` to `on()` is deprecated. '
-                              'Use the default "(...args) => emit(...args)" instead or remove the parameter.')
-        if js_handler == '(...args) => emit(...args)':
-            js_handler = None
-
         if handler or js_handler:
             listener = EventListener(
                 element_id=self.id,
                 type=helpers.event_type_to_camel_case(type),
                 args=[args] if args and isinstance(args[0], str) else args,  # type: ignore
                 handler=handler,
-                js_handler=js_handler,
+                js_handler=None if js_handler == '(...args) => emit(...args)' else js_handler,
                 throttle=throttle,
                 leading_events=leading_events,
                 trailing_events=trailing_events,
