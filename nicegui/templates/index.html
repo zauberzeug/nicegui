@@ -61,8 +61,7 @@
       {{ vue_scripts | safe }}
 
       {% if tailwind %}
-      if (dark !== None) tailwind.config.darkMode = "class";
-      if (dark === True) document.body.classList.add("dark");
+      tailwind.config.darkMode = ["class", "body.body--dark"];
       {% endif %}
 
       app.mount("#app");

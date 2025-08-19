@@ -4,7 +4,7 @@ import numpy as np
 from selenium.common.exceptions import JavascriptException
 
 from nicegui import ui
-from nicegui.elements.scene_object3d import Object3D
+from nicegui.elements.scene import Object3D
 from nicegui.testing import Screen
 
 

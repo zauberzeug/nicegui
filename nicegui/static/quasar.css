@@ -1119,15 +1119,18 @@ body.desktop .q-checkbox--dense:not(.disabled):focus .q-checkbox__inner:before, 
 .q-chip--colored .q-chip__icon, .q-chip--dark .q-chip__icon {
   color: inherit;
 }
-.q-chip--outline {
-  background: transparent !important;
-  border: 1px solid currentColor;
-}
 .q-chip .q-avatar {
   font-size: 2em;
   margin-left: -0.45em;
   margin-right: 0.2em;
   border-radius: 16px;
+}
+.q-chip--outline {
+  background: transparent !important;
+  border: 1px solid currentColor;
+}
+.q-chip--outline .q-avatar {
+  margin-left: calc(-0.45em - 1px);
 }
 .q-chip--selected .q-avatar {
   display: none;
@@ -3190,13 +3193,13 @@ body.platform-ios .q-layout--containerized {
   position: fixed !important;
   display: inline-block;
   max-width: 95vw;
+  max-height: 65vh;
   box-shadow: 0 1px 5px rgba(0, 0, 0, 0.2), 0 2px 2px rgba(0, 0, 0, 0.14), 0 3px 1px -2px rgba(0, 0, 0, 0.12);
   background: #fff;
   border-radius: 4px;
   overflow-y: auto;
   overflow-x: hidden;
   outline: 0;
-  max-height: 65vh;
   z-index: 6000;
 }
 .q-menu--square {
@@ -3384,7 +3387,7 @@ body.desktop .q-radio--dense:not(.disabled):focus .q-radio__inner:before, body.d
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
   position: relative;
   opacity: 0.4;
-  transition: transform 0.2s ease-in, opacity 0.2s ease-in;
+  transition: transform 0.2s ease-in, opacity 0.2s ease-in, color 0.2s ease-in;
 }
 .q-rating__icon--hovered {
   transform: scale(1.3);
@@ -4704,7 +4707,7 @@ body.desktop .q-slider.q-slider--enabled .q-slider__track-container:hover .q-sli
 
 /* * On light background
  * */
-.q-table__bottom {
+.q-table__bottom:not(.q-table__bottom--nodata) {
   border-top: 1px solid rgba(0, 0, 0, 0.12);
 }
 
@@ -5619,6 +5622,8 @@ body.desktop .q-toggle--dense:not(.disabled):focus .q-toggle__thumb:before, body
   overflow-y: auto;
   overflow-x: hidden;
   padding: 6px 10px;
+  max-width: 95vw;
+  max-height: 65vh;
 }
 @media (max-width: 599.98px) {
   .q-tooltip {
@@ -5900,7 +5905,6 @@ body.desktop .q-toggle--dense:not(.disabled):focus .q-toggle__thumb:before, body
   height: 200px;
   min-width: 200px;
   background-position: 50% 50%;
-  background-size: cover;
   background-repeat: no-repeat;
 }
 .q-uploader__file--img:before {
@@ -11314,8 +11318,7 @@ p {
 }
 .text-justify {
   text-align: justify;
-  -webkit-hyphens: auto;
-          hyphens: auto;
+  hyphens: auto;
 }
 .text-italic {
   font-style: italic;

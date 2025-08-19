@@ -12,7 +12,7 @@ from fastapi.responses import FileResponse, Response
 from . import air, background_tasks, binding, core, favicon, helpers, json, run, welcome
 from .app import App
 from .client import Client
-from .dependencies import dynamic_resources, js_components, libraries, resources
+from .dependencies import dynamic_resources, esm_modules, js_components, libraries, resources
 from .error import error_content
 from .json import NiceGUIJSONResponse
 from .logging import log
@@ -103,6 +103,18 @@ def _get_dynamic_resource(name: str) -> Response:
     if name in dynamic_resources:
         return dynamic_resources[name].function()
     raise HTTPException(status_code=404, detail=f'dynamic resource "{name}" not found')
+
+
+@app.get(f'/_nicegui/{__version__}' + '/esm/{key}/{path:path}')
+def _get_esm(key: str, path: str) -> FileResponse:
+    if key in esm_modules:
+        filepath = esm_modules[key].path / path
+        if not filepath.resolve().is_relative_to(esm_modules[key].path.resolve()):
+            raise HTTPException(status_code=403, detail='forbidden')
+        if filepath.exists():
+            media_type, _ = mimetypes.guess_type(filepath)
+            return FileResponse(filepath, media_type=media_type)
+    raise HTTPException(status_code=404, detail=f'ESM module "{key}" not found')
 
 
 async def _startup() -> None:

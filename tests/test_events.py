@@ -205,6 +205,7 @@ def test_delegated_event_with_argument_filtering(screen: Screen) -> None:
     screen.click('Item A')
     screen.click('Item B')
     screen.click('Item C')
+    screen.wait(0.5)
     assert ids == ['A', 'B', 'C']
 
 

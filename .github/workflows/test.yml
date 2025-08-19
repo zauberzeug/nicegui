@@ -10,7 +10,7 @@ jobs:
   code-check:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: set up Poetry
         uses: abatilo/actions-poetry@v4
       - name: set up Python
@@ -33,7 +33,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 40
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: set up Poetry
         uses: abatilo/actions-poetry@v4
       - name: set up Python

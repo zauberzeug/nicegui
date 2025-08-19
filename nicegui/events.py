@@ -3,7 +3,7 @@ from __future__ import annotations
 import asyncio
 from collections.abc import Awaitable, Iterator
 from contextlib import nullcontext
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any, BinaryIO, Callable, Literal, TypeVar, Union, cast
 
 from . import background_tasks, core, helpers
@@ -396,7 +396,7 @@ class JsonEditorSelectEventArguments(UiEventArguments):
 @dataclass(**KWONLY_SLOTS)
 class JsonEditorChangeEventArguments(UiEventArguments):
     content: dict
-    errors: dict
+    errors: dict = field(default_factory=dict)
 
 
 EventT = TypeVar('EventT', bound=EventArguments)

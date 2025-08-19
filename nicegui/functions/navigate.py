@@ -4,6 +4,7 @@ from urllib.parse import urlparse
 from ..client import Client
 from ..context import context
 from ..element import Element
+from ..elements.sub_pages import SubPages
 from .javascript import run_javascript
 
 
@@ -66,7 +67,8 @@ class Navigate:
         else:
             raise TypeError(f'Invalid target type: {type(target)}')
 
-        if not new_tab and isinstance(target, str) and not bool(urlparse(target).netloc):
+        if not new_tab and isinstance(target, str) and not bool(urlparse(target).netloc) and \
+                any(isinstance(el, SubPages) for el in context.client.elements.values()):
             context.client.sub_pages_router._handle_navigate(path)  # pylint: disable=protected-access
             return
 
