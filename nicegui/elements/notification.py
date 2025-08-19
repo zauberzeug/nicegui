@@ -107,7 +107,6 @@ class Notification(Element, component='notification.js'):
     @message.setter
     def message(self, value: Any) -> None:
         self._props['options']['message'] = str(value)
-        self.update()
 
     @property
     def position(self) -> NotificationPosition:
@@ -117,7 +116,6 @@ class Notification(Element, component='notification.js'):
     @position.setter
     def position(self, value: NotificationPosition) -> None:
         self._props['options']['position'] = value
-        self.update()
 
     @property
     def type(self) -> NotificationType:
@@ -130,7 +128,6 @@ class Notification(Element, component='notification.js'):
             self._props['options'].pop('type', None)
         else:
             self._props['options']['type'] = value
-        self.update()
 
     @property
     def color(self) -> Optional[str]:
@@ -143,7 +140,6 @@ class Notification(Element, component='notification.js'):
             self._props['options'].pop('color', None)
         else:
             self._props['options']['color'] = value
-        self.update()
 
     @property
     def multi_line(self) -> bool:
@@ -153,7 +149,6 @@ class Notification(Element, component='notification.js'):
     @multi_line.setter
     def multi_line(self, value: bool) -> None:
         self._props['options']['multiLine'] = value
-        self.update()
 
     @property
     def icon(self) -> Optional[str]:
@@ -166,7 +161,6 @@ class Notification(Element, component='notification.js'):
             self._props['options'].pop('icon', None)
         else:
             self._props['options']['icon'] = value
-        self.update()
 
     @property
     def spinner(self) -> bool:
@@ -176,7 +170,6 @@ class Notification(Element, component='notification.js'):
     @spinner.setter
     def spinner(self, value: bool) -> None:
         self._props['options']['spinner'] = value
-        self.update()
 
     @property
     def timeout(self) -> float:
@@ -189,7 +182,6 @@ class Notification(Element, component='notification.js'):
     @timeout.setter
     def timeout(self, value: Optional[float]) -> None:
         self._props['options']['timeout'] = (value or 0) * 1000
-        self.update()
 
     @property
     def close_button(self) -> Union[bool, str]:
@@ -199,7 +191,6 @@ class Notification(Element, component='notification.js'):
     @close_button.setter
     def close_button(self, value: Union[bool, str]) -> None:
         self._props['options']['closeBtn'] = value
-        self.update()
 
     def on_dismiss(self, callback: Handler[UiEventArguments]) -> Self:
         """Add a callback to be invoked when the notification is dismissed."""

@@ -68,7 +68,6 @@ class Input(LabelElement, ValidationElement, DisableableElement, component='inpu
     def set_autocomplete(self, autocomplete: Optional[List[str]]) -> None:
         """Set the autocomplete list."""
         self._props['_autocomplete'] = autocomplete
-        self.update()
 
     def _handle_value_change(self, value: Any) -> None:
         super()._handle_value_change(value)

@@ -88,7 +88,6 @@ class SourceElement(Element):
         :param source: The new source.
         """
         self._set_props(source)
-        self.update()
 
     def _set_props(self, source: Any) -> None:
         if is_file(source):

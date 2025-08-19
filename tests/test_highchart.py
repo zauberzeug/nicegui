@@ -16,7 +16,6 @@ def test_change_chart_series(screen: Screen):
 
     def update():
         chart.options['series'][0]['data'][:] = [1, 1]
-        chart.update()
 
     ui.button('Update', on_click=update)
 
@@ -42,7 +41,6 @@ def test_adding_chart_series(screen: Screen):
 
     def add():
         chart.options['series'].append({'name': 'X', 'data': [0.1, 0.2]})
-        chart.update()
     ui.button('Add', on_click=add)
 
     screen.open('/')
@@ -63,7 +61,6 @@ def test_removing_chart_series(screen: Screen):
 
     def remove():
         chart.options['series'].pop(0)
-        chart.update()
     ui.button('Remove', on_click=remove)
 
     screen.open('/')
@@ -114,14 +111,8 @@ def test_replace_chart(screen: Screen):
 def test_updating_stock_chart(screen: Screen):
     """https://github.com/zauberzeug/nicegui/discussions/948"""
     chart = ui.highchart({'legend': {'enabled': True}, 'series': []}, type='stockChart', extras=['stock'])
-    ui.button('update', on_click=lambda: (
-        chart.options['series'].extend([{'name': 'alice'}, {'name': 'bob'}]),
-        chart.update(),
-    ))
-    ui.button('clear', on_click=lambda: (
-        chart.options['series'].clear(),
-        chart.update(),
-    ))
+    ui.button('update', on_click=lambda: chart.options['series'].extend([{'name': 'alice'}, {'name': 'bob'}]))
+    ui.button('clear', on_click=chart.options['series'].clear)
 
     screen.open('/')
     screen.click('update')

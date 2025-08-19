@@ -214,7 +214,6 @@ class Tailwind:
     def apply(self, element: Element) -> None:
         """Apply the tailwind classes to the given element."""
         element._classes.extend(self.element._classes)  # pylint: disable=protected-access
-        element.update()
 
     def aspect_ratio(self, value: AspectRatio) -> Tailwind:
         """Utilities for controlling the aspect ratio of an element."""

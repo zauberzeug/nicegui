@@ -35,7 +35,6 @@ def test_update(screen: Screen):
         chart.options['xAxis'] = {'type': 'value'}
         chart.options['yAxis'] = {'type': 'category', 'data': ['A', 'B', 'C']}
         chart.options['series'] = [{'type': 'line', 'data': [0.1, 0.2, 0.3]}]
-        chart.update()
     chart = ui.echart({})
     ui.button('Update', on_click=update)
 

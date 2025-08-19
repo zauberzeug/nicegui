@@ -49,7 +49,6 @@ class ValidationElement(ValueElement):
         self._error = error
         self._props['error'] = new_error_prop
         self._props['error-message'] = error
-        self.update()
 
     def validate(self, *, return_result: bool = True) -> bool:
         """Validate the current value and set the error message if necessary.

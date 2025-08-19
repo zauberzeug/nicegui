@@ -59,7 +59,6 @@ class Tree(FilterElement):
         def update_prop(name: str, value: Any) -> None:
             if self._props[name] != value:
                 self._props[name] = value
-                self.update()
 
         def handle_selected(e: GenericEventArguments) -> None:
             update_prop('selected', e.args)
@@ -93,7 +92,6 @@ class Tree(FilterElement):
         self._props.setdefault('selected', None)
         if self._props['selected'] != node_key:
             self._props['selected'] = node_key
-            self.update()
         return self
 
     def deselect(self) -> Self:
@@ -120,7 +118,6 @@ class Tree(FilterElement):
         """
         self._props.setdefault('ticked', [])
         self._props['ticked'][:] = self._find_node_keys(node_keys).union(self._props['ticked'])
-        self.update()
         return self
 
     def untick(self, node_keys: Optional[List[str]] = None) -> Self:
@@ -130,7 +127,6 @@ class Tree(FilterElement):
         """
         self._props.setdefault('ticked', [])
         self._props['ticked'][:] = set(self._props['ticked']).difference(self._find_node_keys(node_keys))
-        self.update()
         return self
 
     def expand(self, node_keys: Optional[List[str]] = None) -> Self:
@@ -140,7 +136,6 @@ class Tree(FilterElement):
         """
         self._props.setdefault('expanded', [])
         self._props['expanded'][:] = self._find_node_keys(node_keys).union(self._props['expanded'])
-        self.update()
         return self
 
     def collapse(self, node_keys: Optional[List[str]] = None) -> Self:
@@ -150,7 +145,6 @@ class Tree(FilterElement):
         """
         self._props.setdefault('expanded', [])
         self._props['expanded'][:] = set(self._props['expanded']).difference(self._find_node_keys(node_keys))
-        self.update()
         return self
 
     def _find_node_keys(self, node_keys: Optional[List[str]] = None) -> Set[str]:

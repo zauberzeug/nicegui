@@ -303,12 +303,10 @@ class CodeMirror(ValueElement, DisableableElement, component='codemirror.js', de
     @theme.setter
     def theme(self, theme: SUPPORTED_THEMES) -> None:
         self._props['theme'] = theme
-        self.update()
 
     def set_theme(self, theme: SUPPORTED_THEMES) -> None:
         """Sets the theme of the editor."""
         self._props['theme'] = theme
-        self.update()
 
     @property
     def supported_themes(self) -> List[str]:
@@ -323,12 +321,10 @@ class CodeMirror(ValueElement, DisableableElement, component='codemirror.js', de
     @language.setter
     def language(self, language: Optional[SUPPORTED_LANGUAGES] = None) -> None:
         self._props['language'] = language
-        self.update()
 
     def set_language(self, language: Optional[SUPPORTED_LANGUAGES] = None) -> None:
         """Sets the language of the editor (case-insensitive)."""
         self._props['language'] = language
-        self.update()
 
     @property
     def supported_languages(self) -> List[str]:

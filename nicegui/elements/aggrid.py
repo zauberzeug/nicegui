@@ -130,7 +130,6 @@ class AgGrid(Element,
     @options.setter
     def options(self, value: Dict) -> None:
         self._props['options'] = value
-        self.update()
 
     @property
     def html_columns(self) -> List[int]:
@@ -140,7 +139,6 @@ class AgGrid(Element,
     @html_columns.setter
     def html_columns(self, value: List[int]) -> None:
         self._props['html_columns'] = value[:]
-        self.update()
 
     @property
     def theme(self) -> Optional[str]:
@@ -157,7 +155,6 @@ class AgGrid(Element,
                 self._classes.remove(class_name)
         if value:
             self._classes.append(f'ag-theme-{value}')
-        self.update()
 
     @property
     def auto_size_columns(self) -> bool:
@@ -167,7 +164,6 @@ class AgGrid(Element,
     @auto_size_columns.setter
     def auto_size_columns(self, value: bool) -> None:
         self._props['auto_size_columns'] = value
-        self.update()
 
     def run_grid_method(self, name: str, *args, timeout: float = 1) -> AwaitableResponse:
         """Run an AG Grid API method.
@@ -277,4 +273,3 @@ class AgGrid(Element,
         """
         client_row_data = await self.get_client_data()
         self.options['rowData'] = client_row_data
-        self.update()

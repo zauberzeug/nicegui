@@ -86,4 +86,3 @@ class IconElement(Element):
             self._props['icon'] = icon
         else:
             self._props.pop('icon', None)
-        self.update()

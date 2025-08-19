@@ -161,7 +161,6 @@ def generate_tailwind_file(properties: List[Property]) -> None:
         f.write('    def apply(self, element: Element) -> None:\n')
         f.write('        """Apply the tailwind classes to the given element."""\n')
         f.write('        element._classes.extend(self.element._classes)  # pylint: disable=protected-access\n')
-        f.write('        element.update()\n')
         for property_ in properties:
             f.write('\n')
             prefix = property_.common_prefix

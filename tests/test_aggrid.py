@@ -25,9 +25,6 @@ def test_update_table(screen: Screen):
     screen.should_contain('18')
 
     grid.options['rowData'][0]['age'] = 42
-    screen.wait(0.5)  # HACK: try to fix flaky test
-    grid.update()
-    screen.wait(0.5)  # HACK: try to fix flaky test
     screen.should_contain('42')
 
 
