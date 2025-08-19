@@ -1,3 +1,4 @@
+import re
 from colorsys import rgb_to_yiq
 from typing import Any, Optional
 
@@ -7,6 +8,9 @@ from .color_picker import ColorPicker as color_picker
 from .mixins.disableable_element import DisableableElement
 from .mixins.label_element import LabelElement
 from .mixins.value_element import ValueElement
+
+HEX_COLOR_PATTERN_6 = re.compile(r'^#([0-9a-fA-F]{6})$')
+HEX_COLOR_PATTERN_3 = re.compile(r'^#([0-9a-fA-F]{3})$')
 
 
 class ColorInput(LabelElement, ValueElement, DisableableElement):
@@ -55,12 +59,18 @@ class ColorInput(LabelElement, ValueElement, DisableableElement):
         if not self.preview:
             return
 
-        color = (self.value or '#ffffff').split(';', 1)[0]
-        r = int(color[1:3], 16) / 255
-        g = int(color[3:5], 16) / 255
-        b = int(color[5:7], 16) / 255
+        color = self.value.strip()
+        if HEX_COLOR_PATTERN_6.match(color):
+            r = int(color[1:3], 16) / 255
+            g = int(color[3:5], 16) / 255
+            b = int(color[5:7], 16) / 255
+        elif HEX_COLOR_PATTERN_3.match(color):
+            r = int(color[1], 16) / 15
+            g = int(color[2], 16) / 15
+            b = int(color[3], 16) / 15
+        else:
+            self.button.style('background-color: transparent').props(remove='color')
+            return
         luminance = rgb_to_yiq(r, g, b)[0]
         icon_color = 'grey-10' if luminance > 0.5 else 'grey-3'
-
-        self.button.style(f'background-color: {color};') \
-            .props(f'color="{icon_color}"')
+        self.button.style(f'background-color: {color}').props(f'color="{icon_color}"')
