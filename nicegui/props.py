@@ -108,7 +108,7 @@ class Props(dict, Generic[T]):
         if not text:
             return {}
         props = {}
-        for match in PROPS_PATTERN.finditer(text or ''):
+        for match in PROPS_PATTERN.finditer(text):
             match_groups = match.groupdict()
             key = match_groups['key']
 
