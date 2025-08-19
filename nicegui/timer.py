@@ -38,6 +38,7 @@ class Timer:
         self.active = active
         self._is_canceled = False
         self._immediate = immediate
+        self._current_invocation: Optional[asyncio.Task] = None
 
         coroutine = self._run_once if once else self._run_in_loop
         if core.app.is_started:
@@ -57,9 +58,14 @@ class Timer:
         """Deactivate the timer."""
         self.active = False
 
-    def cancel(self) -> None:
-        """Cancel the timer."""
+    def cancel(self, *, with_current_invocation: bool = False) -> None:
+        """Cancel the timer.
+
+        :param with_current_invocation: whether to cancel the currently invoked task of the callback (*added in version 2.23.0*)
+        """
         self._is_canceled = True
+        if with_current_invocation and self._current_invocation is not None:
+            self._current_invocation.cancel()
 
     async def _run_once(self) -> None:
         try:
@@ -68,7 +74,8 @@ class Timer:
             with self._get_context():
                 await asyncio.sleep(self.interval)
                 if self.active and not self._should_stop():
-                    await self._invoke_callback()
+                    self._current_invocation = asyncio.create_task(self._invoke_callback())
+                    await self._current_invocation
         finally:
             self._cleanup()
 
@@ -83,7 +90,8 @@ class Timer:
                     try:
                         start = time.time()
                         if self.active:
-                            await self._invoke_callback()
+                            self._current_invocation = asyncio.create_task(self._invoke_callback())
+                            await self._current_invocation
                         dt = time.time() - start
                         await asyncio.sleep(self.interval - dt)
                     except asyncio.CancelledError:
@@ -97,9 +105,10 @@ class Timer:
     async def _invoke_callback(self) -> None:
         try:
             assert self.callback is not None
-            result = self.callback()
-            if isinstance(result, Awaitable) and not isinstance(result, AwaitableResponse):
-                await result
+            with self._get_context():
+                result = self.callback()
+                if isinstance(result, Awaitable) and not isinstance(result, AwaitableResponse):
+                    await result
         except Exception as e:
             core.app.handle_exception(e)
 

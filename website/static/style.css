@@ -9,7 +9,7 @@ body {
 html:has(.body--dark) {
   background-color: #222;
 }
-html:not(.has-dialog) {
+html {
   scroll-behavior: smooth;
 }
 .browser-window {
