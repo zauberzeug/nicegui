@@ -4,13 +4,23 @@
     <title>{{ title }}</title>
     <meta name="viewport" content="{{ viewport }}" />
     <link href="{{ favicon_url }}" rel="shortcut icon" />
-    <link href="{{ prefix | safe }}/_nicegui/{{version}}/static/nicegui.css" rel="stylesheet" type="text/css" />
-    <link href="{{ prefix | safe }}/_nicegui/{{version}}/static/fonts.css" rel="stylesheet" type="text/css" />
-    {% if prod_js %}
-    <link href="{{ prefix | safe }}/_nicegui/{{version}}/static/quasar.prod.css" rel="stylesheet" type="text/css" />
-    {% else %}
-    <link href="{{ prefix | safe }}/_nicegui/{{version}}/static/quasar.css" rel="stylesheet" type="text/css" />
-    {% endif %}
+    <style>
+      @layer theme, base, quasar, nicegui, components, utilities, overrides;
+      @import url("{{ prefix | safe }}/_nicegui/{{version}}/static/fonts.css") layer(base);
+      {% if prod_js %}
+        @import url("{{ prefix | safe }}/_nicegui/{{version}}/static/quasar.prod.css") layer(quasar);
+      {% else %}
+        @import url("{{ prefix | safe }}/_nicegui/{{version}}/static/quasar.css") layer(quasar);
+      {% endif %}
+      @import url("{{ prefix | safe }}/_nicegui/{{version}}/static/nicegui.css") layer(nicegui);
+      @layer overrides {
+        .q-checkbox.inline,
+        .q-radio.inline,
+        .q-toggle.inline {
+          display: inline-flex;
+        }
+      }
+    </style>
     <!-- prevent Prettier from removing this line -->
     {{ head_html | safe }}
     <script type="importmap">
