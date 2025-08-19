@@ -293,7 +293,6 @@ h6.q-timeline__title {
 #popup {
   position: fixed;
   bottom: 0;
-  left: 0;
   border: 1pt solid rgba(127, 159, 191, 0.25);
   border-radius: 0.25em;
   box-shadow: 0 0 0.5em rgba(127, 159, 191, 0.05);
@@ -305,6 +304,12 @@ h6.q-timeline__title {
   transition-duration: 500ms;
   pointer-events: none;
   z-index: 10000;
+}
+#popup:dir(ltr) {
+  left: 0;
+}
+#popup:dir(rtl) {
+  right: 0;
 }
 .body--dark #popup {
   background-color: black;
@@ -324,8 +329,13 @@ h6.q-timeline__title {
 #popup > span:first-child {
   font-weight: bold;
 }
-#popup > span:first-child::before {
+#popup:dir(ltr) > span:first-child::before {
   content: "⚠️";
   position: absolute;
   left: 1.5em;
+}
+#popup:dir(rtl) > span:first-child::before {
+  content: "⚠️";
+  position: absolute;
+  right: 1.5em;
 }
