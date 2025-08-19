@@ -43,11 +43,11 @@ PROPS_PATTERN = re.compile(r'''
             \}                  # Match the closing }
         )
         |                   # or, as a final alternative ....
-        (?P<unquoted>[\w\-.,%:\/=?&]+)  # a value without quotes
+        (?P<unquoted>[\w\-.,%:\/=?&;+#@~$]+)  # a value without quotes
     )
 )?                          # End of optional non-capturing group for value
 ($|\s)                      # Match end of string or whitespace
-''',re.VERBOSE,)
+''', re.VERBOSE)
 
 T = TypeVar('T', bound='Element')
 
@@ -103,35 +103,23 @@ class Props(dict, Generic[T]):
         return element
 
     @staticmethod
-    def parse(text: Optional[str] = None) -> Dict[str, Any]:
+    def parse(text: Optional[str]) -> Dict[str, Any]:
         """Parse a string of props into a dictionary."""
+        if not text:
+            return {}
         props = {}
         for match in PROPS_PATTERN.finditer(text or ''):
-            # Extract match groups as a dictionary
             match_groups = match.groupdict()
             key = match_groups['key']
 
-            # Check value groups in priority order
-            value_groups = ['single', 'double', 'square', 'curly']
-            value_match = None
-
-            # Find the first non-None value group match
-            for group in value_groups:
+            for group in ['single', 'double', 'square', 'curly']:
                 if match_groups[group] is not None:
-                    value_match = match_groups[group]
+                    props[key] = ast.literal_eval(match_groups[group])
                     break
-
-            # Determine value based on matched content
-            if value_match:
-                # Safely evaluate Python literals (strings, numbers, etc.)
-                value = ast.literal_eval(value_match)
-            elif match_groups['unquoted'] is not None:
-                # Handle unquoted values (e.g., key=value)
-                value = match_groups['unquoted']
             else:
-                # Default for props without explicit values (e.g., key)
-                value = True
-
-            props[key] = value
+                if match_groups['unquoted'] is not None:
+                    props[key] = match_groups['unquoted']
+                else:
+                    props[key] = True
 
         return props
