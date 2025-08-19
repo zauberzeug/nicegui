@@ -345,7 +345,7 @@ def test_update_before_client_connection(screen: Screen):
     screen.should_contain('Hello again!')
 
 
-def test_no_cyclic_references(screen: Screen):
+def test_no_cyclic_references_when_deleting_elements(screen: Screen):
     elements: weakref.WeakSet = weakref.WeakSet()
 
     with ui.card() as card:
@@ -358,3 +358,18 @@ def test_no_cyclic_references(screen: Screen):
     assert len(elements) == 0, 'all elements should be deleted immediately'
 
     screen.open('/')
+
+
+def test_no_cyclic_references_when_deleting_clients(screen: Screen):
+    labels = weakref.WeakSet()
+
+    @ui.page('/')
+    def main():
+        labels.add(ui.label())
+
+    screen.open('/')
+    assert len(labels) == 1
+
+    screen.close()
+    screen.wait(3.0)
+    assert len(labels) == 0
