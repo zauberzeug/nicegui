@@ -159,7 +159,7 @@ def create() -> None:
             for example in examples:
                 example_link(example)
 
-    with ui.column().classes('dark-box p-8 lg:p-16 my-16 bg-transparent border-y-2'):
+    with ui.column().classes('dark-box p-8 lg:p-16 my-16 bg-transparent border-y-2 border-gray-200'):
         with ui.column().classes('mx-auto items-center gap-y-8 gap-x-32 lg:flex-row'):
             with ui.column().classes('max-lg:items-center max-lg:text-center'):
                 link_target('sponsors')
