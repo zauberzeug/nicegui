@@ -17,6 +17,10 @@
         .column.inline, .flex.inline, .row.inline {
           display: inline-flex;  /* HACK: re-apply Quasar's inline styles to override Tailwind */
         }
+        .nicegui-dialog-open,
+        .nicegui-select-popup-open {
+          scroll-behavior: auto !important; /* HACK: avoid smooth-scrolling when dialogs or select popups close */
+        }
       }
     </style>
     <!-- prevent Prettier from removing this line -->
