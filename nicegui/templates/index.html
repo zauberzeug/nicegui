@@ -14,10 +14,8 @@
       {% endif %}
       @import url("{{ prefix | safe }}/_nicegui/{{version}}/static/nicegui.css") layer(nicegui);
       @layer overrides {
-        .q-checkbox.inline,
-        .q-radio.inline,
-        .q-toggle.inline {
-          display: inline-flex;
+        .column.inline, .flex.inline, .row.inline {
+          display: inline-flex;  /* HACK: re-apply Quasar's inline styles to override Tailwind */
         }
       }
     </style>
