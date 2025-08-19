@@ -1,9 +1,10 @@
 from typing import Literal
 
 OutlineStyle = Literal[
-    'none',
-    '',
+    'solid',
     'dashed',
     'dotted',
     'double',
+    'none',
+    'hidden',
 ]

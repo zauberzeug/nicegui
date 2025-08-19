@@ -3,7 +3,9 @@ from typing import Literal
 JustifySelf = Literal[
     'auto',
     'start',
-    'end',
     'center',
+    'center-safe',
+    'end',
+    'end-safe',
     'stretch',
 ]

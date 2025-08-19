@@ -1,11 +1,15 @@
 from typing import Literal
 
 Display = Literal[
+    'inline',
     'block',
     'inline-block',
-    'inline',
+    'flow-root',
     'flex',
     'inline-flex',
+    'grid',
+    'inline-grid',
+    'contents',
     'table',
     'inline-table',
     'table-caption',
@@ -16,10 +20,8 @@ Display = Literal[
     'table-header-group',
     'table-row-group',
     'table-row',
-    'flow-root',
-    'grid',
-    'inline-grid',
-    'contents',
     'list-item',
     'hidden',
+    'sr-only',
+    'not-sr-only',
 ]

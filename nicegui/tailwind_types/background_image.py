@@ -2,12 +2,13 @@ from typing import Literal
 
 BackgroundImage = Literal[
     'none',
-    'gradient-to-t',
-    'gradient-to-tr',
-    'gradient-to-r',
-    'gradient-to-br',
-    'gradient-to-b',
-    'gradient-to-bl',
-    'gradient-to-l',
-    'gradient-to-tl',
+    'linear-to-t',
+    'linear-to-tr',
+    'linear-to-r',
+    'linear-to-br',
+    'linear-to-b',
+    'linear-to-bl',
+    'linear-to-l',
+    'linear-to-tl',
+    'radial',
 ]

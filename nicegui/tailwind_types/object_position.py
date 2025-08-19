@@ -1,13 +1,13 @@
 from typing import Literal
 
 ObjectPosition = Literal[
-    'bottom',
-    'center',
-    'left',
-    'left-bottom',
-    'left-top',
-    'right',
-    'right-bottom',
-    'right-top',
+    'top-left',
     'top',
+    'top-right',
+    'left',
+    'center',
+    'right',
+    'bottom-left',
+    'bottom',
+    'bottom-right',
 ]

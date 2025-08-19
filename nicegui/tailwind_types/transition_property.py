@@ -1,11 +1,11 @@
 from typing import Literal
 
 TransitionProperty = Literal[
-    'none',
-    'all',
     '',
+    'all',
     'colors',
     'opacity',
     'shadow',
     'transform',
+    'none',
 ]

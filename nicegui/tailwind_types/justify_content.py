@@ -1,12 +1,15 @@
 from typing import Literal
 
 JustifyContent = Literal[
-    'normal',
     'start',
     'end',
+    'end-safe',
     'center',
+    'center-safe',
     'between',
     'around',
     'evenly',
     'stretch',
+    'baseline',
+    'normal',
 ]

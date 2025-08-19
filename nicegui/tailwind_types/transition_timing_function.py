@@ -5,4 +5,5 @@ TransitionTimingFunction = Literal[
     'in',
     'out',
     'in-out',
+    'initial',
 ]

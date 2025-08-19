@@ -27,16 +27,6 @@ class Property:
                 break
         self.short_members = ['-'.join(word[len(prefix):]) for word in words]
         self.common_prefix = '-'.join(prefix) + '-' if prefix else ''
-        if len(self.short_members) == 1:
-            if self.title == 'Container':
-                self.members.clear()
-                self.short_members.clear()
-                self.common_prefix = 'container'
-            elif self.title in {'List Style Image', 'Content', 'Appearance'}:
-                self.short_members = ['none']
-                self.common_prefix = self.members[0].removesuffix('-none')
-            else:
-                raise ValueError(f'Unknown single-value property "{self.title}"')
 
     @property
     def pascal_title(self) -> str:
@@ -49,12 +39,12 @@ class Property:
 
 def get_soup(url: str) -> BeautifulSoup:
     """Get the BeautifulSoup object for the given URL."""
-    path = Path('/tmp/nicegui_tailwind') / url.split('/')[-1]
+    path = Path('/tmp/nicegui_tailwind') / url.removesuffix('/').split('/')[-1]
     path.parent.mkdir(parents=True, exist_ok=True)
     if path.exists():
         html = path.read_text(encoding='utf-8')
     else:
-        req = httpx.get(url, timeout=5)
+        req = httpx.get(url, timeout=5, follow_redirects=True)
         html = req.text
         path.write_text(html, encoding='utf-8')
     return BeautifulSoup(html, 'html.parser')
@@ -63,19 +53,20 @@ def get_soup(url: str) -> BeautifulSoup:
 def collect_properties() -> list[Property]:
     """Collect all Tailwind properties from the documentation."""
     properties: list[Property] = []
-    soup = get_soup('https://tailwindcss.com/docs')
-    for li in soup.select('li[class="mt-12 lg:mt-8"]'):
-        title = li.select_one('h5').text
-        links = li.select('li a')
-        if title in {'Getting Started', 'Core Concepts', 'Customization', 'Base Styles', 'Official Plugins'}:
+    soup = get_soup('https://tailwindcss.com/docs/')
+    for h3 in soup.select('nav h3'):
+        title = h3.text
+        links = h3.parent.select('ul li a')
+        if title in {'Getting started', 'Core concepts', 'Customization', 'Base styles', 'Official plugins'}:
             continue
-        print(f'{title}:')
         for a in links:
             soup = get_soup(f'https://tailwindcss.com{a["href"]}')
-            title = soup.select_one('#header h1').text
-            description = soup.select_one('#header .mt-2').text
-            members = soup.select('.mt-10 td[class*=text-sky-400]')
-            properties.append(Property(title, description, [p.text.split(' ')[0] for p in members]))
+            title = soup.select_one('h1[data-title]').text.replace(':', '').replace('()', '')
+            description = soup.select_one('p[data-description]').text
+            members = soup.select('#quick-reference td:first-child code')
+            members = [m for m in members if '<' not in m.text]
+            if members:
+                properties.append(Property(title, description, [m.text.split(' ')[0] for m in members]))
             print(f'\t{title} ({len(members)})')
     return properties
 

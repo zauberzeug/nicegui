@@ -13,15 +13,12 @@ if TYPE_CHECKING:
     from .tailwind_types.animation import Animation
     from .tailwind_types.appearance import Appearance
     from .tailwind_types.aspect_ratio import AspectRatio
-    from .tailwind_types.backdrop_blur import BackdropBlur
-    from .tailwind_types.backdrop_brightness import BackdropBrightness
-    from .tailwind_types.backdrop_contrast import BackdropContrast
-    from .tailwind_types.backdrop_grayscale import BackdropGrayscale
-    from .tailwind_types.backdrop_hue_rotate import BackdropHueRotate
-    from .tailwind_types.backdrop_invert import BackdropInvert
-    from .tailwind_types.backdrop_opacity import BackdropOpacity
-    from .tailwind_types.backdrop_saturate import BackdropSaturate
-    from .tailwind_types.backdrop_sepia import BackdropSepia
+    from .tailwind_types.backdrop_filter import BackdropFilter
+    from .tailwind_types.backdrop_filter_blur import BackdropFilterBlur
+    from .tailwind_types.backdrop_filter_grayscale import BackdropFilterGrayscale
+    from .tailwind_types.backdrop_filter_invert import BackdropFilterInvert
+    from .tailwind_types.backdrop_filter_sepia import BackdropFilterSepia
+    from .tailwind_types.backface_visibility import BackfaceVisibility
     from .tailwind_types.background_attachment import BackgroundAttachment
     from .tailwind_types.background_blend_mode import BackgroundBlendMode
     from .tailwind_types.background_clip import BackgroundClip
@@ -31,62 +28,58 @@ if TYPE_CHECKING:
     from .tailwind_types.background_position import BackgroundPosition
     from .tailwind_types.background_repeat import BackgroundRepeat
     from .tailwind_types.background_size import BackgroundSize
-    from .tailwind_types.blur import Blur
     from .tailwind_types.border_collapse import BorderCollapse
     from .tailwind_types.border_color import BorderColor
     from .tailwind_types.border_radius import BorderRadius
-    from .tailwind_types.border_spacing import BorderSpacing
     from .tailwind_types.border_style import BorderStyle
     from .tailwind_types.border_width import BorderWidth
     from .tailwind_types.box_decoration_break import BoxDecorationBreak
     from .tailwind_types.box_shadow import BoxShadow
-    from .tailwind_types.box_shadow_color import BoxShadowColor
     from .tailwind_types.box_sizing import BoxSizing
     from .tailwind_types.break_after import BreakAfter
     from .tailwind_types.break_before import BreakBefore
     from .tailwind_types.break_inside import BreakInside
-    from .tailwind_types.brightness import Brightness
     from .tailwind_types.caption_side import CaptionSide
     from .tailwind_types.caret_color import CaretColor
     from .tailwind_types.clear import Clear
+    from .tailwind_types.color import Color
+    from .tailwind_types.color_scheme import ColorScheme
     from .tailwind_types.columns import Columns
     from .tailwind_types.content import Content
-    from .tailwind_types.contrast import Contrast
     from .tailwind_types.cursor import Cursor
     from .tailwind_types.display import Display
-    from .tailwind_types.divide_color import DivideColor
-    from .tailwind_types.divide_style import DivideStyle
-    from .tailwind_types.divide_width import DivideWidth
-    from .tailwind_types.drop_shadow import DropShadow
+    from .tailwind_types.field_sizing import FieldSizing
     from .tailwind_types.fill import Fill
+    from .tailwind_types.filter import Filter
+    from .tailwind_types.filter_blur import FilterBlur
+    from .tailwind_types.filter_drop_shadow import FilterDropShadow
+    from .tailwind_types.filter_grayscale import FilterGrayscale
+    from .tailwind_types.filter_invert import FilterInvert
+    from .tailwind_types.filter_sepia import FilterSepia
     from .tailwind_types.flex import Flex
     from .tailwind_types.flex_basis import FlexBasis
     from .tailwind_types.flex_direction import FlexDirection
     from .tailwind_types.flex_grow import FlexGrow
     from .tailwind_types.flex_shrink import FlexShrink
     from .tailwind_types.flex_wrap import FlexWrap
-    from .tailwind_types.floats import Floats
+    from .tailwind_types.float import Float
     from .tailwind_types.font_family import FontFamily
     from .tailwind_types.font_size import FontSize
     from .tailwind_types.font_smoothing import FontSmoothing
+    from .tailwind_types.font_stretch import FontStretch
     from .tailwind_types.font_style import FontStyle
     from .tailwind_types.font_variant_numeric import FontVariantNumeric
     from .tailwind_types.font_weight import FontWeight
     from .tailwind_types.forced_color_adjust import ForcedColorAdjust
-    from .tailwind_types.gap import Gap
-    from .tailwind_types.gradient_color_stops import GradientColorStops
-    from .tailwind_types.grayscale import Grayscale
     from .tailwind_types.grid_auto_columns import GridAutoColumns
     from .tailwind_types.grid_auto_flow import GridAutoFlow
     from .tailwind_types.grid_auto_rows import GridAutoRows
-    from .tailwind_types.grid_column_start_end import GridColumnStartEnd
-    from .tailwind_types.grid_row_start_end import GridRowStartEnd
+    from .tailwind_types.grid_column import GridColumn
+    from .tailwind_types.grid_row import GridRow
     from .tailwind_types.grid_template_columns import GridTemplateColumns
     from .tailwind_types.grid_template_rows import GridTemplateRows
     from .tailwind_types.height import Height
-    from .tailwind_types.hue_rotate import HueRotate
     from .tailwind_types.hyphens import Hyphens
-    from .tailwind_types.invert import Invert
     from .tailwind_types.isolation import Isolation
     from .tailwind_types.justify_content import JustifyContent
     from .tailwind_types.justify_items import JustifyItems
@@ -98,6 +91,15 @@ if TYPE_CHECKING:
     from .tailwind_types.list_style_position import ListStylePosition
     from .tailwind_types.list_style_type import ListStyleType
     from .tailwind_types.margin import Margin
+    from .tailwind_types.mask_clip import MaskClip
+    from .tailwind_types.mask_composite import MaskComposite
+    from .tailwind_types.mask_image import MaskImage
+    from .tailwind_types.mask_mode import MaskMode
+    from .tailwind_types.mask_origin import MaskOrigin
+    from .tailwind_types.mask_position import MaskPosition
+    from .tailwind_types.mask_repeat import MaskRepeat
+    from .tailwind_types.mask_size import MaskSize
+    from .tailwind_types.mask_type import MaskType
     from .tailwind_types.max_height import MaxHeight
     from .tailwind_types.max_width import MaxWidth
     from .tailwind_types.min_height import MinHeight
@@ -105,57 +107,47 @@ if TYPE_CHECKING:
     from .tailwind_types.mix_blend_mode import MixBlendMode
     from .tailwind_types.object_fit import ObjectFit
     from .tailwind_types.object_position import ObjectPosition
-    from .tailwind_types.opacity import Opacity
     from .tailwind_types.order import Order
     from .tailwind_types.outline_color import OutlineColor
-    from .tailwind_types.outline_offset import OutlineOffset
     from .tailwind_types.outline_style import OutlineStyle
     from .tailwind_types.outline_width import OutlineWidth
     from .tailwind_types.overflow import Overflow
+    from .tailwind_types.overflow_wrap import OverflowWrap
     from .tailwind_types.overscroll_behavior import OverscrollBehavior
     from .tailwind_types.padding import Padding
+    from .tailwind_types.perspective import Perspective
+    from .tailwind_types.perspective_origin import PerspectiveOrigin
     from .tailwind_types.place_content import PlaceContent
     from .tailwind_types.place_items import PlaceItems
     from .tailwind_types.place_self import PlaceSelf
     from .tailwind_types.pointer_events import PointerEvents
     from .tailwind_types.position import Position
     from .tailwind_types.resize import Resize
-    from .tailwind_types.ring_color import RingColor
-    from .tailwind_types.ring_offset_color import RingOffsetColor
-    from .tailwind_types.ring_offset_width import RingOffsetWidth
-    from .tailwind_types.ring_width import RingWidth
     from .tailwind_types.rotate import Rotate
-    from .tailwind_types.saturate import Saturate
     from .tailwind_types.scale import Scale
-    from .tailwind_types.screen_readers import ScreenReaders
     from .tailwind_types.scroll_behavior import ScrollBehavior
-    from .tailwind_types.scroll_margin import ScrollMargin
-    from .tailwind_types.scroll_padding import ScrollPadding
     from .tailwind_types.scroll_snap_align import ScrollSnapAlign
     from .tailwind_types.scroll_snap_stop import ScrollSnapStop
     from .tailwind_types.scroll_snap_type import ScrollSnapType
-    from .tailwind_types.sepia import Sepia
-    from .tailwind_types.size import Size
-    from .tailwind_types.skew import Skew
-    from .tailwind_types.space_between import SpaceBetween
     from .tailwind_types.stroke import Stroke
-    from .tailwind_types.stroke_width import StrokeWidth
     from .tailwind_types.table_layout import TableLayout
     from .tailwind_types.text_align import TextAlign
-    from .tailwind_types.text_color import TextColor
-    from .tailwind_types.text_decoration import TextDecoration
     from .tailwind_types.text_decoration_color import TextDecorationColor
+    from .tailwind_types.text_decoration_line import TextDecorationLine
     from .tailwind_types.text_decoration_style import TextDecorationStyle
     from .tailwind_types.text_decoration_thickness import TextDecorationThickness
     from .tailwind_types.text_indent import TextIndent
     from .tailwind_types.text_overflow import TextOverflow
+    from .tailwind_types.text_shadow import TextShadow
     from .tailwind_types.text_transform import TextTransform
     from .tailwind_types.text_underline_offset import TextUnderlineOffset
     from .tailwind_types.text_wrap import TextWrap
     from .tailwind_types.top_right_bottom_left import TopRightBottomLeft
     from .tailwind_types.touch_action import TouchAction
+    from .tailwind_types.transform import Transform
     from .tailwind_types.transform_origin import TransformOrigin
-    from .tailwind_types.transition_delay import TransitionDelay
+    from .tailwind_types.transform_style import TransformStyle
+    from .tailwind_types.transition_behavior import TransitionBehavior
     from .tailwind_types.transition_duration import TransitionDuration
     from .tailwind_types.transition_property import TransitionProperty
     from .tailwind_types.transition_timing_function import TransitionTimingFunction
@@ -163,7 +155,7 @@ if TYPE_CHECKING:
     from .tailwind_types.user_select import UserSelect
     from .tailwind_types.vertical_align import VerticalAlign
     from .tailwind_types.visibility import Visibility
-    from .tailwind_types.whitespace import Whitespace
+    from .tailwind_types.white_space import WhiteSpace
     from .tailwind_types.width import Width
     from .tailwind_types.will_change import WillChange
     from .tailwind_types.word_break import WordBreak
@@ -221,11 +213,6 @@ class Tailwind:
         self.element.classes('aspect-' + value)
         return self
 
-    def container(self) -> Tailwind:
-        """A component for fixing an element's width to the current breakpoint."""
-        self.element.classes('container')
-        return self
-
     def columns(self, value: Columns) -> Tailwind:
         """Utilities for controlling the number of columns within an element."""
         self.element.classes('columns-' + value)
@@ -261,7 +248,7 @@ class Tailwind:
         self.element.classes('' + value)
         return self
 
-    def floats(self, value: Floats) -> Tailwind:
+    def float(self, value: Float) -> Tailwind:
         """Utilities for controlling the wrapping of content around an element."""
         self.element.classes('float-' + value)
         return self
@@ -297,7 +284,7 @@ class Tailwind:
         return self
 
     def position(self, value: Position) -> Tailwind:
-        """Utilities for controlling how an element is positioned in the DOM."""
+        """Utilities for controlling how an element is positioned in the document."""
         self.element.classes('' + value)
         return self
 
@@ -313,7 +300,7 @@ class Tailwind:
 
     def z_index(self, value: ZIndex) -> Tailwind:
         """Utilities for controlling the stack order of an element."""
-        self.element.classes('z-' + value)
+        self.element.classes('z-auto-' + value if value else 'z-auto')
         return self
 
     def flex_basis(self, value: FlexBasis) -> Tailwind:
@@ -356,7 +343,7 @@ class Tailwind:
         self.element.classes('grid-cols-' + value)
         return self
 
-    def grid_column_start_end(self, value: GridColumnStartEnd) -> Tailwind:
+    def grid_column(self, value: GridColumn) -> Tailwind:
         """Utilities for controlling how elements are sized and placed across grid columns."""
         self.element.classes('col-' + value)
         return self
@@ -366,7 +353,7 @@ class Tailwind:
         self.element.classes('grid-rows-' + value)
         return self
 
-    def grid_row_start_end(self, value: GridRowStartEnd) -> Tailwind:
+    def grid_row(self, value: GridRow) -> Tailwind:
         """Utilities for controlling how elements are sized and placed across grid rows."""
         self.element.classes('row-' + value)
         return self
@@ -384,11 +371,6 @@ class Tailwind:
     def grid_auto_rows(self, value: GridAutoRows) -> Tailwind:
         """Utilities for controlling the size of implicitly-created grid rows."""
         self.element.classes('auto-rows-' + value)
-        return self
-
-    def gap(self, value: Gap) -> Tailwind:
-        """Utilities for controlling gutters between grid and flexbox items."""
-        self.element.classes('gap-' + value)
         return self
 
     def justify_content(self, value: JustifyContent) -> Tailwind:
@@ -446,14 +428,9 @@ class Tailwind:
         self.element.classes('' + value)
         return self
 
-    def space_between(self, value: SpaceBetween) -> Tailwind:
-        """Utilities for controlling the space between child elements."""
-        self.element.classes('space-' + value)
-        return self
-
     def width(self, value: Width) -> Tailwind:
         """Utilities for setting the width of an element."""
-        self.element.classes('w-' + value)
+        self.element.classes('' + value)
         return self
 
     def min_width(self, value: MinWidth) -> Tailwind:
@@ -463,12 +440,12 @@ class Tailwind:
 
     def max_width(self, value: MaxWidth) -> Tailwind:
         """Utilities for setting the maximum width of an element."""
-        self.element.classes('max-w-' + value)
+        self.element.classes('' + value)
         return self
 
     def height(self, value: Height) -> Tailwind:
         """Utilities for setting the height of an element."""
-        self.element.classes('h-' + value)
+        self.element.classes('' + value)
         return self
 
     def min_height(self, value: MinHeight) -> Tailwind:
@@ -479,11 +456,6 @@ class Tailwind:
     def max_height(self, value: MaxHeight) -> Tailwind:
         """Utilities for setting the maximum height of an element."""
         self.element.classes('max-h-' + value)
-        return self
-
-    def size(self, value: Size) -> Tailwind:
-        """Utilities for setting the width and height of an element at the same time."""
-        self.element.classes('size-' + value)
         return self
 
     def font_family(self, value: FontFamily) -> Tailwind:
@@ -511,38 +483,43 @@ class Tailwind:
         self.element.classes('font-' + value)
         return self
 
+    def font_stretch(self, value: FontStretch) -> Tailwind:
+        """Utilities for selecting the width of a font face."""
+        self.element.classes('font-stretch-' + value)
+        return self
+
     def font_variant_numeric(self, value: FontVariantNumeric) -> Tailwind:
         """Utilities for controlling the variant of numbers."""
         self.element.classes('' + value)
         return self
 
     def letter_spacing(self, value: LetterSpacing) -> Tailwind:
-        """Utilities for controlling the tracking (letter spacing) of an element."""
+        """Utilities for controlling the tracking, or letter spacing, of an element."""
         self.element.classes('tracking-' + value)
         return self
 
     def line_clamp(self, value: LineClamp) -> Tailwind:
         """Utilities for clamping text to a specific number of lines."""
-        self.element.classes('line-clamp-' + value)
+        self.element.classes('line-clamp-none-' + value if value else 'line-clamp-none')
         return self
 
     def line_height(self, value: LineHeight) -> Tailwind:
-        """Utilities for controlling the leading (line height) of an element."""
-        self.element.classes('leading-' + value)
+        """Utilities for controlling the leading, or line height, of an element."""
+        self.element.classes('leading-none-' + value if value else 'leading-none')
         return self
 
     def list_style_image(self, value: ListStyleImage) -> Tailwind:
         """Utilities for controlling the marker images for list items."""
-        self.element.classes('list-image' + value)
+        self.element.classes('list-image-none-' + value if value else 'list-image-none')
         return self
 
     def list_style_position(self, value: ListStylePosition) -> Tailwind:
-        """Utilities for controlling the position of bullets/numbers in lists."""
+        """Utilities for controlling the position of bullets and numbers in lists."""
         self.element.classes('list-' + value)
         return self
 
     def list_style_type(self, value: ListStyleType) -> Tailwind:
-        """Utilities for controlling the bullet/number style of a list."""
+        """Utilities for controlling the marker style of a list."""
         self.element.classes('list-' + value)
         return self
 
@@ -551,12 +528,12 @@ class Tailwind:
         self.element.classes('text-' + value)
         return self
 
-    def text_color(self, value: TextColor) -> Tailwind:
+    def color(self, value: Color) -> Tailwind:
         """Utilities for controlling the text color of an element."""
         self.element.classes('text-' + value)
         return self
 
-    def text_decoration(self, value: TextDecoration) -> Tailwind:
+    def text_decoration_line(self, value: TextDecorationLine) -> Tailwind:
         """Utilities for controlling the decoration of text."""
         self.element.classes('' + value)
         return self
@@ -578,16 +555,16 @@ class Tailwind:
 
     def text_underline_offset(self, value: TextUnderlineOffset) -> Tailwind:
         """Utilities for controlling the offset of a text underline."""
-        self.element.classes('underline-offset-' + value)
+        self.element.classes('underline-offset-auto-' + value if value else 'underline-offset-auto')
         return self
 
     def text_transform(self, value: TextTransform) -> Tailwind:
-        """Utilities for controlling the transformation of text."""
+        """Utilities for controlling the capitalization of text."""
         self.element.classes('' + value)
         return self
 
     def text_overflow(self, value: TextOverflow) -> Tailwind:
-        """Utilities for controlling text overflow in an element."""
+        """Utilities for controlling how the text of an element overflows."""
         self.element.classes('' + value)
         return self
 
@@ -598,7 +575,7 @@ class Tailwind:
 
     def text_indent(self, value: TextIndent) -> Tailwind:
         """Utilities for controlling the amount of empty space shown before text in a block."""
-        self.element.classes('indent-' + value)
+        self.element.classes('' + value)
         return self
 
     def vertical_align(self, value: VerticalAlign) -> Tailwind:
@@ -606,7 +583,7 @@ class Tailwind:
         self.element.classes('align-' + value)
         return self
 
-    def whitespace(self, value: Whitespace) -> Tailwind:
+    def white_space(self, value: WhiteSpace) -> Tailwind:
         """Utilities for controlling an element's white-space property."""
         self.element.classes('whitespace-' + value)
         return self
@@ -616,6 +593,11 @@ class Tailwind:
         self.element.classes('break-' + value)
         return self
 
+    def overflow_wrap(self, value: OverflowWrap) -> Tailwind:
+        """Utilities for controlling line breaks within words in an overflowing element."""
+        self.element.classes('wrap-' + value)
+        return self
+
     def hyphens(self, value: Hyphens) -> Tailwind:
         """Utilities for controlling how words should be hyphenated."""
         self.element.classes('hyphens-' + value)
@@ -623,7 +605,7 @@ class Tailwind:
 
     def content(self, value: Content) -> Tailwind:
         """Utilities for controlling the content of the before and after pseudo-elements."""
-        self.element.classes('content' + value)
+        self.element.classes('content-none-' + value if value else 'content-none')
         return self
 
     def background_attachment(self, value: BackgroundAttachment) -> Tailwind:
@@ -638,6 +620,11 @@ class Tailwind:
 
     def background_color(self, value: BackgroundColor) -> Tailwind:
         """Utilities for controlling an element's background color."""
+        self.element.classes('bg-' + value)
+        return self
+
+    def background_image(self, value: BackgroundImage) -> Tailwind:
+        """Utilities for controlling an element's background image."""
         self.element.classes('bg-' + value)
         return self
 
@@ -661,54 +648,29 @@ class Tailwind:
         self.element.classes('bg-' + value)
         return self
 
-    def background_image(self, value: BackgroundImage) -> Tailwind:
-        """Utilities for controlling an element's background image."""
-        self.element.classes('bg-' + value)
-        return self
-
-    def gradient_color_stops(self, value: GradientColorStops) -> Tailwind:
-        """Utilities for controlling the color stops in background gradients."""
-        self.element.classes('' + value)
-        return self
-
     def border_radius(self, value: BorderRadius) -> Tailwind:
         """Utilities for controlling the border radius of an element."""
-        self.element.classes('rounded-' + value if value else 'rounded')
+        self.element.classes('rounded-' + value)
         return self
 
     def border_width(self, value: BorderWidth) -> Tailwind:
         """Utilities for controlling the width of an element's borders."""
-        self.element.classes('border-' + value if value else 'border')
+        self.element.classes('' + value)
         return self
 
     def border_color(self, value: BorderColor) -> Tailwind:
         """Utilities for controlling the color of an element's borders."""
-        self.element.classes('border-' + value)
+        self.element.classes('' + value)
         return self
 
     def border_style(self, value: BorderStyle) -> Tailwind:
         """Utilities for controlling the style of an element's borders."""
-        self.element.classes('border-' + value)
-        return self
-
-    def divide_width(self, value: DivideWidth) -> Tailwind:
-        """Utilities for controlling the border width between elements."""
-        self.element.classes('divide-' + value)
-        return self
-
-    def divide_color(self, value: DivideColor) -> Tailwind:
-        """Utilities for controlling the border color between elements."""
-        self.element.classes('divide-' + value)
-        return self
-
-    def divide_style(self, value: DivideStyle) -> Tailwind:
-        """Utilities for controlling the border style between elements."""
-        self.element.classes('divide-' + value)
+        self.element.classes('' + value)
         return self
 
     def outline_width(self, value: OutlineWidth) -> Tailwind:
         """Utilities for controlling the width of an element's outline."""
-        self.element.classes('outline-' + value)
+        self.element.classes('outline-' + value if value else 'outline')
         return self
 
     def outline_color(self, value: OutlineColor) -> Tailwind:
@@ -718,47 +680,17 @@ class Tailwind:
 
     def outline_style(self, value: OutlineStyle) -> Tailwind:
         """Utilities for controlling the style of an element's outline."""
-        self.element.classes('outline-' + value if value else 'outline')
-        return self
-
-    def outline_offset(self, value: OutlineOffset) -> Tailwind:
-        """Utilities for controlling the offset of an element's outline."""
-        self.element.classes('outline-offset-' + value)
-        return self
-
-    def ring_width(self, value: RingWidth) -> Tailwind:
-        """Utilities for creating outline rings with box-shadows."""
-        self.element.classes('ring-' + value if value else 'ring')
-        return self
-
-    def ring_color(self, value: RingColor) -> Tailwind:
-        """Utilities for setting the color of outline rings."""
-        self.element.classes('ring-' + value)
-        return self
-
-    def ring_offset_width(self, value: RingOffsetWidth) -> Tailwind:
-        """Utilities for simulating an offset when adding outline rings."""
-        self.element.classes('ring-offset-' + value)
-        return self
-
-    def ring_offset_color(self, value: RingOffsetColor) -> Tailwind:
-        """Utilities for setting the color of outline ring offsets."""
-        self.element.classes('ring-offset-' + value)
+        self.element.classes('outline-' + value)
         return self
 
     def box_shadow(self, value: BoxShadow) -> Tailwind:
         """Utilities for controlling the box shadow of an element."""
-        self.element.classes('shadow-' + value if value else 'shadow')
+        self.element.classes('' + value)
         return self
 
-    def box_shadow_color(self, value: BoxShadowColor) -> Tailwind:
-        """Utilities for controlling the color of a box shadow."""
-        self.element.classes('shadow-' + value)
-        return self
-
-    def opacity(self, value: Opacity) -> Tailwind:
-        """Utilities for controlling the opacity of an element."""
-        self.element.classes('opacity-' + value)
+    def text_shadow(self, value: TextShadow) -> Tailwind:
+        """Utilities for controlling the shadow of a text element."""
+        self.element.classes('text-shadow-' + value)
         return self
 
     def mix_blend_mode(self, value: MixBlendMode) -> Tailwind:
@@ -771,92 +703,102 @@ class Tailwind:
         self.element.classes('bg-blend-' + value)
         return self
 
-    def blur(self, value: Blur) -> Tailwind:
+    def mask_clip(self, value: MaskClip) -> Tailwind:
+        """Utilities for controlling the bounding box of an element's mask."""
+        self.element.classes('mask-' + value)
+        return self
+
+    def mask_composite(self, value: MaskComposite) -> Tailwind:
+        """Utilities for controlling how multiple masks are combined together."""
+        self.element.classes('mask-' + value)
+        return self
+
+    def mask_image(self, value: MaskImage) -> Tailwind:
+        """Utilities for controlling an element's mask image."""
+        self.element.classes('mask-' + value)
+        return self
+
+    def mask_mode(self, value: MaskMode) -> Tailwind:
+        """Utilities for controlling an element's mask mode."""
+        self.element.classes('mask-' + value)
+        return self
+
+    def mask_origin(self, value: MaskOrigin) -> Tailwind:
+        """Utilities for controlling how an element's mask image is positioned relative to borders, padding, and content."""
+        self.element.classes('mask-origin-' + value)
+        return self
+
+    def mask_position(self, value: MaskPosition) -> Tailwind:
+        """Utilities for controlling the position of an element's mask image."""
+        self.element.classes('mask-' + value)
+        return self
+
+    def mask_repeat(self, value: MaskRepeat) -> Tailwind:
+        """Utilities for controlling the repetition of an element's mask image."""
+        self.element.classes('mask-' + value)
+        return self
+
+    def mask_size(self, value: MaskSize) -> Tailwind:
+        """Utilities for controlling the size of an element's mask image."""
+        self.element.classes('mask-' + value)
+        return self
+
+    def mask_type(self, value: MaskType) -> Tailwind:
+        """Utilities for controlling how an SVG mask is interpreted."""
+        self.element.classes('mask-type-' + value)
+        return self
+
+    def filter(self, value: Filter) -> Tailwind:
+        """Utilities for applying filters to an element."""
+        self.element.classes('filter-none-' + value if value else 'filter-none')
+        return self
+
+    def filter_blur(self, value: FilterBlur) -> Tailwind:
         """Utilities for applying blur filters to an element."""
-        self.element.classes('blur-' + value if value else 'blur')
+        self.element.classes('blur-' + value)
         return self
 
-    def brightness(self, value: Brightness) -> Tailwind:
-        """Utilities for applying brightness filters to an element."""
-        self.element.classes('brightness-' + value)
-        return self
-
-    def contrast(self, value: Contrast) -> Tailwind:
-        """Utilities for applying contrast filters to an element."""
-        self.element.classes('contrast-' + value)
-        return self
-
-    def drop_shadow(self, value: DropShadow) -> Tailwind:
+    def filter_drop_shadow(self, value: FilterDropShadow) -> Tailwind:
         """Utilities for applying drop-shadow filters to an element."""
-        self.element.classes('drop-shadow-' + value if value else 'drop-shadow')
+        self.element.classes('drop-shadow-' + value)
         return self
 
-    def grayscale(self, value: Grayscale) -> Tailwind:
+    def filter_grayscale(self, value: FilterGrayscale) -> Tailwind:
         """Utilities for applying grayscale filters to an element."""
         self.element.classes('grayscale-' + value if value else 'grayscale')
         return self
 
-    def hue_rotate(self, value: HueRotate) -> Tailwind:
-        """Utilities for applying hue-rotate filters to an element."""
-        self.element.classes('hue-rotate-' + value)
-        return self
-
-    def invert(self, value: Invert) -> Tailwind:
+    def filter_invert(self, value: FilterInvert) -> Tailwind:
         """Utilities for applying invert filters to an element."""
         self.element.classes('invert-' + value if value else 'invert')
         return self
 
-    def saturate(self, value: Saturate) -> Tailwind:
-        """Utilities for applying saturation filters to an element."""
-        self.element.classes('saturate-' + value)
-        return self
-
-    def sepia(self, value: Sepia) -> Tailwind:
+    def filter_sepia(self, value: FilterSepia) -> Tailwind:
         """Utilities for applying sepia filters to an element."""
         self.element.classes('sepia-' + value if value else 'sepia')
         return self
 
-    def backdrop_blur(self, value: BackdropBlur) -> Tailwind:
+    def backdrop_filter(self, value: BackdropFilter) -> Tailwind:
+        """Utilities for applying backdrop filters to an element."""
+        self.element.classes('backdrop-filter-none-' + value if value else 'backdrop-filter-none')
+        return self
+
+    def backdrop_filter_blur(self, value: BackdropFilterBlur) -> Tailwind:
         """Utilities for applying backdrop blur filters to an element."""
-        self.element.classes('backdrop-blur-' + value if value else 'backdrop-blur')
+        self.element.classes('backdrop-blur-' + value)
         return self
 
-    def backdrop_brightness(self, value: BackdropBrightness) -> Tailwind:
-        """Utilities for applying backdrop brightness filters to an element."""
-        self.element.classes('backdrop-brightness-' + value)
-        return self
-
-    def backdrop_contrast(self, value: BackdropContrast) -> Tailwind:
-        """Utilities for applying backdrop contrast filters to an element."""
-        self.element.classes('backdrop-contrast-' + value)
-        return self
-
-    def backdrop_grayscale(self, value: BackdropGrayscale) -> Tailwind:
+    def backdrop_filter_grayscale(self, value: BackdropFilterGrayscale) -> Tailwind:
         """Utilities for applying backdrop grayscale filters to an element."""
         self.element.classes('backdrop-grayscale-' + value if value else 'backdrop-grayscale')
         return self
 
-    def backdrop_hue_rotate(self, value: BackdropHueRotate) -> Tailwind:
-        """Utilities for applying backdrop hue-rotate filters to an element."""
-        self.element.classes('backdrop-hue-rotate-' + value)
-        return self
-
-    def backdrop_invert(self, value: BackdropInvert) -> Tailwind:
+    def backdrop_filter_invert(self, value: BackdropFilterInvert) -> Tailwind:
         """Utilities for applying backdrop invert filters to an element."""
         self.element.classes('backdrop-invert-' + value if value else 'backdrop-invert')
         return self
 
-    def backdrop_opacity(self, value: BackdropOpacity) -> Tailwind:
-        """Utilities for applying backdrop opacity filters to an element."""
-        self.element.classes('backdrop-opacity-' + value)
-        return self
-
-    def backdrop_saturate(self, value: BackdropSaturate) -> Tailwind:
-        """Utilities for applying backdrop saturation filters to an element."""
-        self.element.classes('backdrop-saturate-' + value)
-        return self
-
-    def backdrop_sepia(self, value: BackdropSepia) -> Tailwind:
+    def backdrop_filter_sepia(self, value: BackdropFilterSepia) -> Tailwind:
         """Utilities for applying backdrop sepia filters to an element."""
         self.element.classes('backdrop-sepia-' + value if value else 'backdrop-sepia')
         return self
@@ -864,11 +806,6 @@ class Tailwind:
     def border_collapse(self, value: BorderCollapse) -> Tailwind:
         """Utilities for controlling whether table borders should collapse or be separated."""
         self.element.classes('border-' + value)
-        return self
-
-    def border_spacing(self, value: BorderSpacing) -> Tailwind:
-        """Utilities for controlling the spacing between table borders."""
-        self.element.classes('border-spacing-' + value)
         return self
 
     def table_layout(self, value: TableLayout) -> Tailwind:
@@ -886,9 +823,14 @@ class Tailwind:
         self.element.classes('transition-' + value if value else 'transition')
         return self
 
+    def transition_behavior(self, value: TransitionBehavior) -> Tailwind:
+        """Utilities to control the behavior of CSS transitions."""
+        self.element.classes('transition-' + value)
+        return self
+
     def transition_duration(self, value: TransitionDuration) -> Tailwind:
         """Utilities for controlling the duration of CSS transitions."""
-        self.element.classes('duration-' + value)
+        self.element.classes('duration-initial-' + value if value else 'duration-initial')
         return self
 
     def transition_timing_function(self, value: TransitionTimingFunction) -> Tailwind:
@@ -896,39 +838,54 @@ class Tailwind:
         self.element.classes('ease-' + value)
         return self
 
-    def transition_delay(self, value: TransitionDelay) -> Tailwind:
-        """Utilities for controlling the delay of CSS transitions."""
-        self.element.classes('delay-' + value)
-        return self
-
     def animation(self, value: Animation) -> Tailwind:
         """Utilities for animating elements with CSS animations."""
         self.element.classes('animate-' + value)
         return self
 
-    def scale(self, value: Scale) -> Tailwind:
-        """Utilities for scaling elements with transform."""
-        self.element.classes('scale-' + value)
+    def backface_visibility(self, value: BackfaceVisibility) -> Tailwind:
+        """Utilities for controlling if an element's backface is visible."""
+        self.element.classes('backface-' + value)
+        return self
+
+    def perspective(self, value: Perspective) -> Tailwind:
+        """Utilities for controlling an element's perspective when placed in 3D space."""
+        self.element.classes('perspective-' + value)
+        return self
+
+    def perspective_origin(self, value: PerspectiveOrigin) -> Tailwind:
+        """Utilities for controlling an element's perspective origin when placed in 3D space."""
+        self.element.classes('perspective-origin-' + value)
         return self
 
     def rotate(self, value: Rotate) -> Tailwind:
-        """Utilities for rotating elements with transform."""
-        self.element.classes('rotate-' + value)
+        """Utilities for rotating elements."""
+        self.element.classes('rotate-none-' + value if value else 'rotate-none')
         return self
 
-    def translate(self, value: Translate) -> Tailwind:
-        """Utilities for translating elements with transform."""
-        self.element.classes('translate-' + value)
+    def scale(self, value: Scale) -> Tailwind:
+        """Utilities for scaling elements."""
+        self.element.classes('scale-' + value)
         return self
 
-    def skew(self, value: Skew) -> Tailwind:
-        """Utilities for skewing elements with transform."""
-        self.element.classes('skew-' + value)
+    def transform(self, value: Transform) -> Tailwind:
+        """Utilities for transforming elements."""
+        self.element.classes('transform-' + value)
         return self
 
     def transform_origin(self, value: TransformOrigin) -> Tailwind:
         """Utilities for specifying the origin for an element's transformations."""
         self.element.classes('origin-' + value)
+        return self
+
+    def transform_style(self, value: TransformStyle) -> Tailwind:
+        """Utilities for controlling if an elements children are placed in 3D space."""
+        self.element.classes('transform-' + value)
+        return self
+
+    def translate(self, value: Translate) -> Tailwind:
+        """Utilities for translating elements."""
+        self.element.classes('' + value)
         return self
 
     def accent_color(self, value: AccentColor) -> Tailwind:
@@ -941,14 +898,24 @@ class Tailwind:
         self.element.classes('appearance-' + value)
         return self
 
+    def caret_color(self, value: CaretColor) -> Tailwind:
+        """Utilities for controlling the color of the text input cursor."""
+        self.element.classes('caret-' + value)
+        return self
+
+    def color_scheme(self, value: ColorScheme) -> Tailwind:
+        """Utilities for controlling the color scheme of an element."""
+        self.element.classes('scheme-' + value)
+        return self
+
     def cursor(self, value: Cursor) -> Tailwind:
         """Utilities for controlling the cursor style when hovering over an element."""
         self.element.classes('cursor-' + value)
         return self
 
-    def caret_color(self, value: CaretColor) -> Tailwind:
-        """Utilities for controlling the color of the text input cursor."""
-        self.element.classes('caret-' + value)
+    def field_sizing(self, value: FieldSizing) -> Tailwind:
+        """Utilities for controlling the sizing of form controls."""
+        self.element.classes('field-sizing-' + value)
         return self
 
     def pointer_events(self, value: PointerEvents) -> Tailwind:
@@ -963,16 +930,6 @@ class Tailwind:
 
     def scroll_behavior(self, value: ScrollBehavior) -> Tailwind:
         """Utilities for controlling the scroll behavior of an element."""
-        self.element.classes('scroll-' + value)
-        return self
-
-    def scroll_margin(self, value: ScrollMargin) -> Tailwind:
-        """Utilities for controlling the scroll offset around items in a snap container."""
-        self.element.classes('scroll-' + value)
-        return self
-
-    def scroll_padding(self, value: ScrollPadding) -> Tailwind:
-        """Utilities for controlling an element's scroll offset within a snap container."""
         self.element.classes('scroll-' + value)
         return self
 
@@ -1014,16 +971,6 @@ class Tailwind:
     def stroke(self, value: Stroke) -> Tailwind:
         """Utilities for styling the stroke of SVG elements."""
         self.element.classes('stroke-' + value)
-        return self
-
-    def stroke_width(self, value: StrokeWidth) -> Tailwind:
-        """Utilities for styling the stroke width of SVG elements."""
-        self.element.classes('stroke-' + value)
-        return self
-
-    def screen_readers(self, value: ScreenReaders) -> Tailwind:
-        """Utilities for improving accessibility with screen readers."""
-        self.element.classes('' + value)
         return self
 
     def forced_color_adjust(self, value: ForcedColorAdjust) -> Tailwind:

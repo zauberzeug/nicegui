@@ -1,10 +1,10 @@
 from typing import Literal
 
 Clear = Literal[
-    'start',
-    'end',
     'left',
     'right',
     'both',
+    'start',
+    'end',
     'none',
 ]
