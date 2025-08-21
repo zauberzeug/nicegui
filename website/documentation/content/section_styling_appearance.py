@@ -106,33 +106,6 @@ def styling_demo():
     live_demo_ui()
 
 
-@doc.demo('Tailwind CSS', '''
-    [Tailwind CSS](https://tailwindcss.com/) is a CSS framework for rapidly building custom user interfaces.
-    NiceGUI provides a fluent, auto-complete friendly interface for adding Tailwind classes to UI elements.
-
-    You can discover available classes by navigating the methods of the `tailwind` property.
-    The builder pattern allows you to chain multiple classes together (as shown with "Label A").
-    You can also call the `tailwind` property with a list of classes (as shown with "Label B").
-
-    Although this is very similar to using the `classes` method, it is more convenient for Tailwind classes due to auto-completion.
-
-    Last but not least, you can also predefine a style and apply it to multiple elements (labels C and D).
-
-    Note that sometimes Tailwind is overruled by Quasar styles, e.g. when using `ui.button('Button').tailwind('bg-red-500')`.
-    This is a known limitation and not fully in our control.
-    But we try to provide solutions like the `color` parameter: `ui.button('Button', color='red-500')`.
-''')
-def tailwind_demo():
-    from nicegui import Tailwind
-    ui.label('Label A').tailwind.font_weight('extrabold').color('blue-600').background_color('orange-200')
-    ui.label('Label B').tailwind('drop-shadow', 'font-bold', 'text-green-600')
-
-    red_style = Tailwind().color('red-600').font_weight('bold')
-    label_c = ui.label('Label C')
-    red_style.apply(label_c)
-    ui.label('Label D').tailwind(red_style)
-
-
 @doc.demo('Tailwind CSS Layers', '''
     Tailwind CSS' `@layer` directive allows you to define custom classes that can be used in your HTML.
     NiceGUI supports this feature by allowing you to add custom classes to the `components` layer.

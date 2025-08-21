@@ -247,7 +247,6 @@ The following tools are used to update other resources:
 - fetch_languages.py to update the list of supported languages in language.py
 - fetch_milestone.py to prepare the release notes for a given milestone
 - fetch_sponsors.py to update the list of sponsors on the website and in the README.md file
-- fetch_tailwind.py to update NiceGUI's Tailwind API
 - summarize_dependencies.py to update the dependencies in the DEPENDENCIES.md file
 
 ## Pull requests

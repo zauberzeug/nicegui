@@ -28,7 +28,6 @@ from .event_listener import EventListener
 from .props import Props
 from .slot import Slot
 from .style import Style
-from .tailwind import Tailwind
 from .version import __version__
 
 if TYPE_CHECKING:
@@ -82,8 +81,6 @@ class Element(Visibility):
             parent_slot = slot_stack[-1]
             parent_slot.children.append(self)
             self._parent_slot = weakref.ref(parent_slot)
-
-        self.tailwind = Tailwind(self)
 
         client.outbox.enqueue_update(self)
         if self._parent_slot:
