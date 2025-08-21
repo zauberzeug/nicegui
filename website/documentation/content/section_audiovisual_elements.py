@@ -7,6 +7,7 @@ from . import (
     icon_documentation,
     image_documentation,
     interactive_image_documentation,
+    parallax_documentation,
     video_documentation,
 )
 
@@ -34,6 +35,7 @@ def captions_and_overlays_demo():
 
 
 doc.intro(interactive_image_documentation)
+doc.intro(parallax_documentation)
 doc.intro(audio_documentation)
 doc.intro(video_documentation)
 doc.intro(icon_documentation)
