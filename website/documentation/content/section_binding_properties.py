@@ -109,6 +109,8 @@ def ui_state():
     unless `strict` is set to `False`.
     Binding to a possibly empty storage dictionary, does not cause any warnings,
     unless `strict` is set to `True`.
+
+    *Added in version 3.0.0*
 ''')
 def strict():
     from nicegui import app, binding

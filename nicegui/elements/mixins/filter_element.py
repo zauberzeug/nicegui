@@ -31,7 +31,7 @@ class FilterElement(Element):
         :param target_name: The name of the property to bind to.
         :param forward: A function to apply to the value before applying it to the target (default: identity).
         :param strict: Whether to check (and warn) if the target object has the specified property (default: None,
-            performs a check if the object is not a dictionary).
+            performs a check if the object is not a dictionary, *added in version 3.0.0*).
         """
         bind_to(self, 'filter', target_object, target_name, forward, self_strict=False, other_strict=strict)
         return self
@@ -51,7 +51,7 @@ class FilterElement(Element):
         :param target_name: The name of the property to bind from.
         :param backward: A function to apply to the value before applying it to this element (default: identity).
         :param strict: Whether to check (and warn) if the target object has the specified property (default: None,
-            performs a check if the object is not a dictionary).
+            performs a check if the object is not a dictionary, *added in version 3.0.0*).
         """
         bind_from(self, 'filter', target_object, target_name, backward, self_strict=False, other_strict=strict)
         return self
@@ -74,7 +74,7 @@ class FilterElement(Element):
         :param forward: A function to apply to the value before applying it to the target (default: identity).
         :param backward: A function to apply to the value before applying it to this element (default: identity).
         :param strict: Whether to check (and warn) if the target object has the specified property (default: None,
-            performs a check if the object is not a dictionary).
+            performs a check if the object is not a dictionary, *added in version 3.0.0*).
         """
         bind(self, 'filter', target_object, target_name,
              forward=forward, backward=backward,

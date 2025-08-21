@@ -133,9 +133,9 @@ def bind_to(self_obj: Any, self_name: str, other_obj: Any, other_name: str,
     :param other_name: The name of the property to bind to.
     :param forward: A function to apply to the value before applying it (default: identity).
     :param self_strict: Whether to check (and warn) if the first object has the specified property
-        (default: None, performs a check if the object is not a dictionary).
+        (default: None, performs a check if the object is not a dictionary, *added in version 3.0.0*).
     :param other_strict: Whether to check (and warn) if the second object has the specified property
-        (default: None, performs a check if the object is not a dictionary).
+        (default: None, performs a check if the object is not a dictionary, *added in version 3.0.0*).
     """
     _check_self_and_other_attribute(self_obj, self_name, other_obj, other_name, self_strict, other_strict)
     bindings[(id(self_obj), self_name)].append((self_obj, other_obj, other_name, forward))
@@ -158,9 +158,9 @@ def bind_from(self_obj: Any, self_name: str, other_obj: Any, other_name: str,
     :param other_name: The name of the property to bind from.
     :param backward: A function to apply to the value before applying it (default: identity).
     :param self_strict: Whether to check (and warn) if the first object has the specified property (default: None,
-        performs a check if the object is not a dictionary).
+        performs a check if the object is not a dictionary, *added in version 3.0.0*).
     :param other_strict: Whether to check (and warn) if the second object has the specified property (default: None,
-        performs a check if the object is not a dictionary).
+        performs a check if the object is not a dictionary, *added in version 3.0.0*).
     """
     _check_self_and_other_attribute(self_obj, self_name, other_obj, other_name, self_strict, other_strict)
     bindings[(id(other_obj), other_name)].append((other_obj, self_obj, self_name, backward))
@@ -187,9 +187,9 @@ def bind(self_obj: Any, self_name: str, other_obj: Any, other_name: str, *,
     :param forward: A function to apply to the value before applying it to the second object (default: identity).
     :param backward: A function to apply to the value before applying it to the first object (default: identity).
     :param self_strict: Whether to check (and warn) if the first object has the specified property (default: None,
-        performs a check if the object is not a dictionary).
+        performs a check if the object is not a dictionary, *added in version 3.0.0*).
     :param other_strict: Whether to check (and warn) if the second object has the specified property (default: None,
-        performs a check if the object is not a dictionary).
+        performs a check if the object is not a dictionary, *added in version 3.0.0*).
     """
     _check_self_and_other_attribute(self_obj, self_name, other_obj, other_name, self_strict, other_strict)
     bind_from(self_obj, self_name, other_obj, other_name, backward=backward, self_strict=False, other_strict=False)
