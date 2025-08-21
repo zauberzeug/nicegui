@@ -38,7 +38,7 @@ The simplest way to setup a fully functioning development environment is to star
 
 ### Locally
 
-To set up a local development environment for NiceGUI, you'll need to have Python 3.8+ and pip installed.
+To set up a local development environment for NiceGUI, you'll need to have Python 3.9+ and pip installed.
 
 You can then use the following command to install NiceGUI in editable mode:
 
@@ -54,7 +54,7 @@ There is no special Python version required for development.
 At Zauberzeug we mainly use 3.12.
 This means we sometimes miss some incompatibilities with older versions.
 But these will hopefully be uncovered by the GitHub Actions (see below).
-Also we use the 3.8 Docker container described below to verify compatibility in cases of uncertainty.
+Also we use the 3.9 Docker container described below to verify compatibility in cases of uncertainty.
 
 ### Plain Docker
 
@@ -68,7 +68,7 @@ By default, the development server listens to http://localhost:80/.
 
 The configuration is written in the `docker-compose.yml` file and automatically loads the `main.py` which contains the website https://nicegui.io.
 Every code change will result in reloading the content.
-We use Python 3.8 as a base to ensure compatibility (see `development.dockerfile`).
+We use Python 3.9 as a base to ensure compatibility (see `development.dockerfile`).
 
 To view the log output, use the command
 
@@ -142,9 +142,9 @@ pre-commit run --all-files
 > [!TIP]
 > The command may fail with
 >
-> > RuntimeError: failed to find interpreter for Builtin discover of python_spec='python3.8'
+> > RuntimeError: failed to find interpreter for Builtin discover of python_spec='python3.9'
 >
-> You will need to install Python 3.8 and make sure it is available in your `PATH`.
+> You will need to install Python 3.9 and make sure it is available in your `PATH`.
 
 These checks will also run automatically before every commit:
 
@@ -228,28 +228,27 @@ The title should match the example folder name when [snake case converted](https
 
 ## Node dependencies
 
-We use [npm.json](https://github.com/zauberzeug/nicegui/blob/main/npm.json) to pin the versions of the node dependencies.
+We use package.json files to pin the versions of node dependencies.
+There is a `package.json` file in the root directory for core dependencies
+and additional `package.json` files in `nicegui/elements/.../` directories for individual UI elements.
 They are usually updated by the maintainers during major releases.
 
 To update or add new dependencies, we follow these steps:
 
 1. Use `npm` or other derivative tools, modify the `package.json` file with new versions or add dependencies.
-   - We **never** modify the version in `package.json` or `npm.json` directly, since there may be conflicts between versions.
-   - `npx npm-check-updates -u --target semver` is a good starting point for updating dependencies.
 2. Run `npm install` to install the new dependencies.
    Any conflicts in installation will be caught at this moment.
-3. Run `pin_versions.py` to update the `npm.json` file.
-4. Run `npm.py` to download dependencies into the `nicegui/static/` and `nicegui/elements/lib/` directories.
-5. Remember to commit `package.json` in addition to the new dependencies and `DEPENDENCIES.md`, such that Dependabot can catch outdated dependencies with security issues.
+3. Run `npm run build` to copy the dependencies into the `nicegui/static/` directory or
+   to bundle the dependencies in the `nicegui/elements/.../` directories.
 
-Apart from updating Node libraries, the following tools are used to update other resources:
+The following tools are used to update other resources:
 
-- scripts/codemirror/bundle.bash for managing the CodeMirror dependency
 - fetch_google_fonts.py for fetching the Google Fonts
 - fetch_languages.py to update the list of supported languages in language.py
 - fetch_milestone.py to prepare the release notes for a given milestone
 - fetch_sponsors.py to update the list of sponsors on the website and in the README.md file
 - fetch_tailwind.py to update NiceGUI's Tailwind API
+- summarize_dependencies.py to update the dependencies in the DEPENDENCIES.md file
 
 ## Pull requests
 

@@ -1,5 +1,3 @@
-from typing import Set
-
 import httpx
 import pytest
 
@@ -12,7 +10,7 @@ def activate_fastapi_docs(screen: Screen):
     screen.ui_run_kwargs['fastapi_docs'] = True
 
 
-def get_openapi_paths() -> Set[str]:
+def get_openapi_paths() -> set[str]:
     return set(httpx.get(f'http://localhost:{Screen.PORT}/openapi.json', timeout=5).json()['paths'])
 
 
@@ -37,6 +35,7 @@ def test_endpoint_documentation_internal_only(screen: Screen):
         f'/_nicegui/{__version__}/components/{{key}}',
         f'/_nicegui/{__version__}/resources/{{key}}/{{path}}',
         f'/_nicegui/{__version__}/dynamic_resources/{{name}}',
+        f'/_nicegui/{__version__}/esm/{{key}}/{{path}}',
     }
 
 
@@ -51,4 +50,5 @@ def test_endpoint_documentation_all(screen: Screen):
         f'/_nicegui/{__version__}/components/{{key}}',
         f'/_nicegui/{__version__}/resources/{{key}}/{{path}}',
         f'/_nicegui/{__version__}/dynamic_resources/{{name}}',
+        f'/_nicegui/{__version__}/esm/{{key}}/{{path}}',
     }

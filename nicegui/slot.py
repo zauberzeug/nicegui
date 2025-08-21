@@ -2,7 +2,8 @@ from __future__ import annotations
 
 import asyncio
 import weakref
-from typing import TYPE_CHECKING, ClassVar, Dict, Iterator, List, Optional
+from collections.abc import Iterator
+from typing import TYPE_CHECKING, ClassVar
 
 from typing_extensions import Self
 
@@ -13,14 +14,14 @@ if TYPE_CHECKING:
 
 
 class Slot:
-    stacks: ClassVar[Dict[int, List[Slot]]] = {}
+    stacks: ClassVar[dict[int, list[Slot]]] = {}
     '''Maps asyncio task IDs to slot stacks, which keep track of the current slot in each task.'''
 
-    def __init__(self, parent: Element, name: str, template: Optional[str] = None) -> None:
+    def __init__(self, parent: Element, name: str, template: str | None = None) -> None:
         self.name = name
         self._parent = weakref.ref(parent)
         self.template = template
-        self.children: List[Element] = []
+        self.children: list[Element] = []
 
     @property
     def parent(self) -> Element:
@@ -42,7 +43,7 @@ class Slot:
         return iter(self.children)
 
     @classmethod
-    def get_stack(cls) -> List[Slot]:
+    def get_stack(cls) -> list[Slot]:
         """Return the slot stack of the current asyncio task."""
         task_id = get_task_id()
         if task_id not in cls.stacks:

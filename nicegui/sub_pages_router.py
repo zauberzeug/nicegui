@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Callable, List, Optional
+from typing import TYPE_CHECKING, Callable
 
 from fastapi import Request
 from starlette.routing import Match, Route
@@ -16,7 +16,7 @@ if TYPE_CHECKING:
 
 class SubPagesRouter:
 
-    def __init__(self, request: Optional[Request]) -> None:
+    def __init__(self, request: Request | None) -> None:
         on('sub_pages_open', lambda event: self._handle_open(event.args))
         on('sub_pages_navigate', lambda event: self._handle_navigate(event.args))
 
@@ -30,7 +30,7 @@ class SubPagesRouter:
             self.current_path = '/'
         self.is_initial_request = True
 
-        self._path_changed_handlers: List[Callable[[str], None]] = []
+        self._path_changed_handlers: list[Callable[[str], None]] = []
 
     def on_path_changed(self, handler: Callable[[str], None]) -> None:
         """Register a callback to be invoked when the path changes.

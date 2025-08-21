@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Callable, Optional, cast
+from typing import TYPE_CHECKING, Any, Callable, cast
 
 from typing_extensions import Self
 
@@ -27,8 +27,8 @@ class Visibility:
     def bind_visibility_to(self,
                            target_object: Any,
                            target_name: str = 'visible',
-                           forward: Optional[Callable[[Any], Any]] = None,
-                           check_exists: Optional[bool] = None,
+                           forward: Callable[[Any], Any] | None = None, *,
+                           check_exists: bool | None = None,
                            ) -> Self:
         """Bind the visibility of this element to the target object's target_name property.
 
@@ -47,9 +47,9 @@ class Visibility:
     def bind_visibility_from(self,
                              target_object: Any,
                              target_name: str = 'visible',
-                             backward: Optional[Callable[[Any], Any]] = None, *,
+                             backward: Callable[[Any], Any] | None = None, *,
                              value: Any = None,
-                             check_exists: Optional[bool] = None,
+                             check_exists: bool | None = None,
                              ) -> Self:
         """Bind the visibility of this element from the target object's target_name property.
 
@@ -72,10 +72,10 @@ class Visibility:
     def bind_visibility(self,
                         target_object: Any,
                         target_name: str = 'visible', *,
-                        forward: Optional[Callable[[Any], Any]] = None,
-                        backward: Optional[Callable[[Any], Any]] = None,
+                        forward: Callable[[Any], Any] | None = None,
+                        backward: Callable[[Any], Any] | None = None,
                         value: Any = None,
-                        check_exists: Optional[bool] = None,
+                        check_exists: bool | None = None,
                         ) -> Self:
         """Bind the visibility of this element to the target object's target_name property.
 

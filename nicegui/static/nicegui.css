@@ -10,6 +10,12 @@
   outline-offset: 2px;
 }
 
+/* prevent page from smooth-scrolling when dialogs or select popups close */
+.nicegui-dialog-open,
+.nicegui-select-popup-open {
+  scroll-behavior: auto;
+}
+
 /* flex containers */
 .nicegui-content,
 .nicegui-header,
@@ -228,16 +234,19 @@
   max-width: none; /* HACK: make the video show up */
 }
 .nicegui-log {
-  padding: 0.5rem;
+  outline: 1px solid rgba(127, 159, 191, 0.15);
+}
+.nicegui-log .q-scrollarea__container {
   scroll-padding-bottom: 0.5rem;
   scroll-snap-type: y proximity;
-  overflow-y: scroll;
-  outline: 1px solid rgba(127, 159, 191, 0.15);
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-  white-space: pre;
   background-color: rgba(127, 159, 191, 0.05);
 }
-.nicegui-log > :last-child {
+.nicegui-log .q-scrollarea__content {
+  white-space: pre;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  padding: 0.5rem;
+}
+.nicegui-log .q-scrollarea__content > :last-child {
   scroll-snap-align: end;
 }
 h6.q-timeline__title {
@@ -284,7 +293,6 @@ h6.q-timeline__title {
 #popup {
   position: fixed;
   bottom: 0;
-  left: 0;
   border: 1pt solid rgba(127, 159, 191, 0.25);
   border-radius: 0.25em;
   box-shadow: 0 0 0.5em rgba(127, 159, 191, 0.05);
@@ -296,6 +304,12 @@ h6.q-timeline__title {
   transition-duration: 500ms;
   pointer-events: none;
   z-index: 10000;
+}
+#popup:dir(ltr) {
+  left: 0;
+}
+#popup:dir(rtl) {
+  right: 0;
 }
 .body--dark #popup {
   background-color: black;
@@ -315,8 +329,13 @@ h6.q-timeline__title {
 #popup > span:first-child {
   font-weight: bold;
 }
-#popup > span:first-child::before {
+#popup:dir(ltr) > span:first-child::before {
   content: "⚠️";
   position: absolute;
   left: 1.5em;
+}
+#popup:dir(rtl) > span:first-child::before {
+  content: "⚠️";
+  position: absolute;
+  right: 1.5em;
 }

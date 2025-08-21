@@ -3,7 +3,7 @@ import mimetypes
 import urllib.parse
 from contextlib import asynccontextmanager
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any
 
 import socketio
 from fastapi import HTTPException, Request
@@ -12,7 +12,7 @@ from fastapi.responses import FileResponse, Response
 from . import air, background_tasks, binding, core, favicon, helpers, json, run, welcome
 from .app import App
 from .client import Client
-from .dependencies import dynamic_resources, js_components, libraries, resources
+from .dependencies import dynamic_resources, esm_modules, js_components, libraries, resources
 from .error import error_content
 from .json import NiceGUIJSONResponse
 from .logging import log
@@ -90,10 +90,8 @@ def _get_component(key: str) -> FileResponse:
 def _get_resource(key: str, path: str) -> FileResponse:
     if key in resources:
         filepath = resources[key].path / path
-        try:
-            filepath.resolve().relative_to(resources[key].path.resolve())  # NOTE: use is_relative_to() in Python 3.9
-        except ValueError as e:
-            raise HTTPException(status_code=403, detail='forbidden') from e
+        if not filepath.resolve().is_relative_to(resources[key].path.resolve()):
+            raise HTTPException(status_code=403, detail='forbidden')
         if filepath.exists():
             media_type, _ = mimetypes.guess_type(filepath)
             return FileResponse(filepath, media_type=media_type)
@@ -105,6 +103,18 @@ def _get_dynamic_resource(name: str) -> Response:
     if name in dynamic_resources:
         return dynamic_resources[name].function()
     raise HTTPException(status_code=404, detail=f'dynamic resource "{name}" not found')
+
+
+@app.get(f'/_nicegui/{__version__}' + '/esm/{key}/{path:path}')
+def _get_esm(key: str, path: str) -> FileResponse:
+    if key in esm_modules:
+        filepath = esm_modules[key].path / path
+        if not filepath.resolve().is_relative_to(esm_modules[key].path.resolve()):
+            raise HTTPException(status_code=403, detail='forbidden')
+        if filepath.exists():
+            media_type, _ = mimetypes.guess_type(filepath)
+            return FileResponse(filepath, media_type=media_type)
+    raise HTTPException(status_code=404, detail=f'ESM module "{key}" not found')
 
 
 async def _startup() -> None:
@@ -164,7 +174,7 @@ async def _exception_handler_500(request: Request, exception: Exception) -> Resp
 
 
 @sio.on('handshake')
-async def _on_handshake(sid: str, data: Dict[str, Any]) -> bool:
+async def _on_handshake(sid: str, data: dict[str, Any]) -> bool:
     client = Client.instances.get(data['client_id'])
     if not client:
         return False
@@ -193,7 +203,7 @@ def _on_disconnect(sid: str) -> None:
 
 
 @sio.on('event')
-def _on_event(_: str, msg: Dict) -> None:
+def _on_event(_: str, msg: dict) -> None:
     client = Client.instances.get(msg['client_id'])
     if not client or not client.has_socket_connection:
         return
@@ -201,7 +211,7 @@ def _on_event(_: str, msg: Dict) -> None:
 
 
 @sio.on('javascript_response')
-def _on_javascript_response(_: str, msg: Dict) -> None:
+def _on_javascript_response(_: str, msg: dict) -> None:
     client = Client.instances.get(msg['client_id'])
     if not client:
         return
@@ -209,7 +219,7 @@ def _on_javascript_response(_: str, msg: Dict) -> None:
 
 
 @sio.on('ack')
-def _on_ack(_: str, msg: Dict) -> None:
+def _on_ack(_: str, msg: dict) -> None:
     client = Client.instances.get(msg['client_id'])
     if not client:
         return

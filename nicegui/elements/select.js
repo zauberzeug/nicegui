@@ -6,6 +6,8 @@ export default {
       v-bind="$attrs"
       :options="filteredOptions"
       @filter="filterFn"
+      @popup-show="addClass"
+      @popup-hide="removeClass"
     >
       <template v-for="(_, slot) in $slots" v-slot:[slot]="slotProps">
         <slot :name="slot" v-bind="slotProps || {}" />
@@ -28,6 +30,14 @@ export default {
         ? this.initialOptions.filter((v) => String(v.label).toLocaleLowerCase().indexOf(needle) > -1)
         : this.initialOptions;
     },
+    addClass() {
+      // NOTE: prevent the page from scrolling when the select popup is closed (#5031)
+      document.documentElement.classList.add("nicegui-select-popup-open");
+    },
+    async removeClass() {
+      await this.$nextTick();
+      document.documentElement.classList.remove("nicegui-select-popup-open");
+    },
   },
   updated() {
     if (!this.$attrs.multiple) return;
@@ -35,6 +45,9 @@ export default {
     if (newFilteredOptions.length !== this.filteredOptions.length) {
       this.filteredOptions = newFilteredOptions;
     }
+  },
+  unmounted() {
+    this.removeClass();
   },
   watch: {
     options: {

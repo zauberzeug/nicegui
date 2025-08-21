@@ -35,7 +35,7 @@ def page():
     aggrid = ui.aggrid({
         'columnDefs': columns,
         'rowData': rows,
-        'rowSelection': 'multiple',
+        'rowSelection': {'mode': 'multiRow'},
         'stopEditingWhenCellsLoseFocus': True,
     }).on('cellValueChanged', handle_cell_value_change)
 

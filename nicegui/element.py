@@ -3,9 +3,10 @@ from __future__ import annotations
 import inspect
 import re
 import weakref
+from collections.abc import Iterator, Sequence
 from copy import copy
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Callable, ClassVar, Dict, Iterator, List, Optional, Sequence, Union, cast
+from typing import TYPE_CHECKING, Any, Callable, ClassVar, cast
 
 from typing_extensions import Self
 
@@ -17,6 +18,7 @@ from .dependencies import (
     Component,
     Library,
     register_dynamic_resource,
+    register_esm,
     register_library,
     register_resource,
     register_vue_component,
@@ -39,15 +41,13 @@ TAG_PATTERN = re.compile(fr'^({TAG_START_CHAR})({TAG_CHAR})*$')
 
 
 class Element(Visibility):
-    component: Optional[Component] = None
-    libraries: ClassVar[List[Library]] = []
-    extra_libraries: ClassVar[List[Library]] = []
-    exposed_libraries: ClassVar[List[Library]] = []
-    _default_props: ClassVar[Dict[str, Any]] = {}
-    _default_classes: ClassVar[List[str]] = []
-    _default_style: ClassVar[Dict[str, str]] = {}
+    component: Component | None = None
+    exposed_libraries: ClassVar[list[Library]] = []
+    _default_props: ClassVar[dict[str, Any]] = {}
+    _default_classes: ClassVar[list[str]] = []
+    _default_style: ClassVar[dict[str, str]] = {}
 
-    def __init__(self, tag: Optional[str] = None, *, _client: Optional[Client] = None) -> None:
+    def __init__(self, tag: str | None = None, *, _client: Client | None = None) -> None:
         """Generic Element
 
         This class is the base class for all other UI elements.
@@ -67,79 +67,61 @@ class Element(Visibility):
         self._classes: Classes[Self] = Classes(self._default_classes, element=cast(Self, self))
         self._style: Style[Self] = Style(self._default_style, element=cast(Self, self))
         self._props: Props[Self] = Props(self._default_props, element=cast(Self, self))
-        self._markers: List[str] = []
-        self._event_listeners: Dict[str, EventListener] = {}
-        self._text: Optional[str] = None
-        self.slots: Dict[str, Slot] = {}
+        self._markers: list[str] = []
+        self._event_listeners: dict[str, EventListener] = {}
+        self._text: str | None = None
+        self.slots: dict[str, Slot] = {}
         self.default_slot = self.add_slot('default')
-        self._update_method: Optional[str] = None
+        self._update_method: str | None = None
         self._deleted: bool = False
 
         client.elements[self.id] = self
-        self.parent_slot: Optional[Slot] = None
+        self._parent_slot: weakref.ref[Slot] | None = None
         slot_stack = context.slot_stack
         if slot_stack:
-            self.parent_slot = slot_stack[-1]
-            self.parent_slot.children.append(self)
+            parent_slot = slot_stack[-1]
+            parent_slot.children.append(self)
+            self._parent_slot = weakref.ref(parent_slot)
 
         self.tailwind = Tailwind(self)
 
         client.outbox.enqueue_update(self)
-        if self.parent_slot:
-            client.outbox.enqueue_update(self.parent_slot.parent)
+        if self._parent_slot:
+            client.outbox.enqueue_update(parent_slot.parent)
 
     def __init_subclass__(cls, *,
-                          component: Union[str, Path, None] = None,
-                          dependencies: List[Union[str, Path]] = [],  # noqa: B006
-                          libraries: List[Union[str, Path]] = [],  # noqa: B006  # DEPRECATED
-                          exposed_libraries: List[Union[str, Path]] = [],  # noqa: B006  # DEPRECATED
-                          extra_libraries: List[Union[str, Path]] = [],  # noqa: B006  # DEPRECATED
-                          default_classes: Optional[str] = None,
-                          default_style: Optional[str] = None,
-                          default_props: Optional[str] = None,
+                          component: str | Path | None = None,
+                          dependencies: list[str | Path] = [],  # noqa: B006
+                          esm: dict[str, str] | None = None,
+                          default_classes: str | None = None,
+                          default_style: str | None = None,
+                          default_props: str | None = None,
                           ) -> None:
         super().__init_subclass__()
         base = Path(inspect.getfile(cls)).parent
 
-        def glob_absolute_paths(file: Union[str, Path]) -> List[Path]:
+        def glob_absolute_paths(file: str | Path) -> list[Path]:
             path = Path(file)
             if not path.is_absolute():
                 path = base / path
             return sorted(path.parent.glob(path.name), key=lambda p: p.stem)
 
-        if libraries:
-            helpers.warn_once(f'The `libraries` parameter for subclassing "{cls.__name__}" is deprecated. '
-                              'It will be removed in NiceGUI 3.0. '
-                              'Use `dependencies` instead.')
-        if exposed_libraries:
-            helpers.warn_once(f'The `exposed_libraries` parameter for subclassing "{cls.__name__}" is deprecated. '
-                              'It will be removed in NiceGUI 3.0. '
-                              'Use `dependencies` instead.')
-        if extra_libraries:
-            helpers.warn_once(f'The `extra_libraries` parameter for subclassing "{cls.__name__}" is deprecated. '
-                              'It will be removed in NiceGUI 3.0. '
-                              'Use `dependencies` instead.')
-
         cls.component = copy(cls.component)
-        cls.libraries = copy(cls.libraries)
-        cls.extra_libraries = copy(cls.extra_libraries)
         cls.exposed_libraries = copy(cls.exposed_libraries)
         if component:
             max_time = max((path.stat().st_mtime for path in glob_absolute_paths(component)), default=None)
             for path in glob_absolute_paths(component):
                 cls.component = register_vue_component(path, max_time=max_time)
-        for library in libraries:
+        for library in dependencies:
             max_time = max((path.stat().st_mtime for path in glob_absolute_paths(library)), default=None)
             for path in glob_absolute_paths(library):
-                cls.libraries.append(register_library(path, max_time=max_time))
-        for library in extra_libraries:
-            max_time = max((path.stat().st_mtime for path in glob_absolute_paths(library)), default=None)
-            for path in glob_absolute_paths(library):
-                cls.extra_libraries.append(register_library(path, max_time=max_time))
-        for library in exposed_libraries + dependencies:
-            max_time = max((path.stat().st_mtime for path in glob_absolute_paths(library)), default=None)
-            for path in glob_absolute_paths(library):
-                cls.exposed_libraries.append(register_library(path, expose=True, max_time=max_time))
+                cls.exposed_libraries.append(register_library(path, max_time=max_time))
+        for key, esm_path in (esm or {}).items():
+            path = Path(esm_path)
+            if not path.is_absolute():
+                path = base / path
+            max_time = max((path.stat().st_mtime for path in glob_absolute_paths(path)), default=None)
+            register_esm(key, path, max_time=max_time)
 
         cls._default_props = copy(cls._default_props)
         cls._default_classes = copy(cls._default_classes)
@@ -156,7 +138,21 @@ class Element(Visibility):
             raise RuntimeError('The client this element belongs to has been deleted.')
         return client
 
-    def add_resource(self, path: Union[str, Path]) -> None:
+    @property
+    def parent_slot(self) -> Slot | None:
+        """The parent slot of the element."""
+        if self._parent_slot is None:
+            return None
+        parent_slot = self._parent_slot()
+        if parent_slot is None:
+            raise RuntimeError('The parent slot of the element has been deleted.')
+        return parent_slot
+
+    @parent_slot.setter
+    def parent_slot(self, value: Slot | None) -> None:
+        self._parent_slot = weakref.ref(value) if value else None
+
+    def add_resource(self, path: str | Path) -> None:
         """Add a resource to the element.
 
         :param path: path to the resource (e.g. folder with CSS and JavaScript files)
@@ -174,7 +170,7 @@ class Element(Visibility):
         register_dynamic_resource(name, function)
         self._props['dynamic_resource_path'] = f'/_nicegui/{__version__}/dynamic_resources'
 
-    def add_slot(self, name: str, template: Optional[str] = None) -> Slot:
+    def add_slot(self, name: str, template: str | None = None) -> Slot:
         """Add a slot to the element.
 
         NiceGUI is using the slot concept from Vue:
@@ -206,7 +202,7 @@ class Element(Visibility):
         for slot in self.slots.values():
             yield from slot
 
-    def _collect_slot_dict(self) -> Dict[str, Any]:
+    def _collect_slot_dict(self) -> dict[str, Any]:
         return {
             name: {
                 'ids': [child.id for child in slot],
@@ -216,7 +212,7 @@ class Element(Visibility):
             if slot != self.default_slot
         }
 
-    def _to_dict(self) -> Dict[str, Any]:
+    def _to_dict(self) -> dict[str, Any]:
         return {
             'tag': self.tag,
             **({'text': self._text} if self._text is not None else {}),
@@ -235,12 +231,6 @@ class Element(Visibility):
                         'name': self.component.name,
                         'tag': self.component.tag
                     } if self.component else None,
-                    'libraries': [
-                        {
-                            'key': library.key,
-                            'name': library.name,
-                        } for library in self.libraries
-                    ],
                 }.items()
                 if value
             },
@@ -253,10 +243,10 @@ class Element(Visibility):
 
     @classmethod
     def default_classes(cls,
-                        add: Optional[str] = None, *,
-                        remove: Optional[str] = None,
-                        toggle: Optional[str] = None,
-                        replace: Optional[str] = None) -> type[Self]:
+                        add: str | None = None, *,
+                        remove: str | None = None,
+                        toggle: str | None = None,
+                        replace: str | None = None) -> type[Self]:
         """Apply, remove, toggle, or replace default HTML classes.
 
         This allows modifying the look of the element or its layout using `Tailwind <https://v3.tailwindcss.com/>`_ or `Quasar <https://quasar.dev/>`_ classes.
@@ -280,9 +270,9 @@ class Element(Visibility):
 
     @classmethod
     def default_style(cls,
-                      add: Optional[str] = None, *,
-                      remove: Optional[str] = None,
-                      replace: Optional[str] = None) -> type[Self]:
+                      add: str | None = None, *,
+                      remove: str | None = None,
+                      replace: str | None = None) -> type[Self]:
         """Apply, remove, or replace default CSS definitions.
 
         Removing or replacing styles can be helpful if the predefined style is not desired.
@@ -308,8 +298,8 @@ class Element(Visibility):
 
     @classmethod
     def default_props(cls,
-                      add: Optional[str] = None, *,
-                      remove: Optional[str] = None) -> type[Self]:
+                      add: str | None = None, *,
+                      remove: str | None = None) -> type[Self]:
         """Add or remove default props.
 
         This allows modifying the look of the element or its layout using `Quasar <https://quasar.dev/>`_ props.
@@ -353,13 +343,13 @@ class Element(Visibility):
 
     def on(self,
            type: str,  # pylint: disable=redefined-builtin
-           handler: Optional[events.Handler[events.GenericEventArguments]] = None,
-           args: Union[None, Sequence[str], Sequence[Optional[Sequence[str]]]] = None,
+           handler: events.Handler[events.GenericEventArguments] | None = None,
+           args: None | Sequence[str] | Sequence[Sequence[str] | None] = None,
            *,
            throttle: float = 0.0,
            leading_events: bool = True,
            trailing_events: bool = True,
-           js_handler: Optional[str] = '(...args) => emit(...args)',  # DEPRECATED: None will be removed in version 3.0
+           js_handler: str = '(...args) => emit(...args)',
            ) -> Self:
         """Subscribe to an event.
 
@@ -388,19 +378,13 @@ class Element(Visibility):
         :param trailing_events: whether to trigger the event handler after the last event occurrence (default: ``True``)
         :param js_handler: JavaScript function that is handling the event on the client (default: "(...args) => emit(...args)")
         """
-        if js_handler is None:
-            helpers.warn_once('Passing `js_handler=None` to `on()` is deprecated. '
-                              'Use the default "(...args) => emit(...args)" instead or remove the parameter.')
-        if js_handler == '(...args) => emit(...args)':
-            js_handler = None
-
         if handler or js_handler:
             listener = EventListener(
                 element_id=self.id,
                 type=helpers.event_type_to_camel_case(type),
                 args=[args] if args and isinstance(args[0], str) else args,  # type: ignore
                 handler=handler,
-                js_handler=js_handler,
+                js_handler=None if js_handler == '(...args) => emit(...args)' else js_handler,
                 throttle=throttle,
                 leading_events=leading_events,
                 trailing_events=trailing_events,
@@ -410,7 +394,7 @@ class Element(Visibility):
             self.update()
         return self
 
-    def _handle_event(self, msg: Dict) -> None:
+    def _handle_event(self, msg: dict) -> None:
         listener = self._event_listeners[msg['listener_id']]
         storage.request_contextvar.set(listener.request)
         args = events.GenericEventArguments(sender=self, client=self.client, args=msg['args'])
@@ -455,8 +439,9 @@ class Element(Visibility):
         """
         if include_self:
             yield self
-        if self.parent_slot:
-            yield from self.parent_slot.parent.ancestors(include_self=True)
+        parent_slot = self.parent_slot
+        if parent_slot:
+            yield from parent_slot.parent.ancestors(include_self=True)
 
     def descendants(self, *, include_self: bool = False) -> Iterator[Element]:
         """Iterate over the descendants of the element.
@@ -476,34 +461,37 @@ class Element(Visibility):
         self.update()
 
     def move(self,
-             target_container: Optional[Element] = None,
+             target_container: Element | None = None,
              target_index: int = -1, *,
-             target_slot: Optional[str] = None) -> None:
+             target_slot: str | None = None) -> None:
         """Move the element to another container.
 
         :param target_container: container to move the element to (default: the parent container)
         :param target_index: index within the target slot (default: append to the end)
         :param target_slot: slot within the target container (default: default slot)
         """
-        assert self.parent_slot is not None
-        self.parent_slot.children.remove(self)
-        self.parent_slot.parent.update()
-        target_container = target_container or self.parent_slot.parent
+        parent_slot = self.parent_slot
+        assert parent_slot is not None
+        parent_slot.children.remove(self)
+        parent_slot.parent.update()
+        target_container = target_container or parent_slot.parent
 
         if target_slot is None:
-            self.parent_slot = target_container.default_slot
+            parent_slot = target_container.default_slot
+            self.parent_slot = parent_slot
         elif target_slot in target_container.slots:
-            self.parent_slot = target_container.slots[target_slot]
+            parent_slot = target_container.slots[target_slot]
+            self.parent_slot = parent_slot
         else:
             raise ValueError(f'Slot "{target_slot}" does not exist in the target container. '
                              f'Add it first using `add_slot("{target_slot}")`.')
 
-        target_index = target_index if target_index >= 0 else len(self.parent_slot.children)
-        self.parent_slot.children.insert(target_index, self)
+        target_index = target_index if target_index >= 0 else len(parent_slot.children)
+        parent_slot.children.insert(target_index, self)
 
         target_container.update()
 
-    def remove(self, element: Union[Element, int]) -> None:
+    def remove(self, element: Element | int) -> None:
         """Remove a child element.
 
         :param element: either the element instance or its ID
@@ -512,14 +500,16 @@ class Element(Visibility):
             children = list(self)
             element = children[element]
         self.client.remove_elements(element.descendants(include_self=True))
-        assert element.parent_slot is not None
-        element.parent_slot.children.remove(element)
+        parent_slot = element.parent_slot
+        assert parent_slot is not None
+        parent_slot.children.remove(element)
         self.update()
 
     def delete(self) -> None:
         """Delete the element and all its children."""
-        assert self.parent_slot is not None
-        self.parent_slot.parent.remove(self)
+        parent_slot = self.parent_slot
+        assert parent_slot is not None
+        parent_slot.parent.remove(self)
 
     def _handle_delete(self) -> None:
         """Called when the element is deleted.

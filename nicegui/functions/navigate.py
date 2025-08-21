@@ -52,8 +52,6 @@ class Navigate:
         This is a browser setting and cannot be changed by the application.
         You might want to use `ui.link` and its `new_tab` parameter instead.
 
-        This functionality was previously available as `ui.open` which is now deprecated.
-
         Note: When using an `auto-index page </documentation/section_pages_routing#auto-index_page>`_ (e.g. no `@page` decorator),
         all clients (i.e. browsers) connected to the page will open the target URL unless a socket is specified.
 

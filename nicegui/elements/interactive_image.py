@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import time
 from pathlib import Path
-from typing import List, Optional, Tuple, Union, cast
+from typing import cast
 
 from typing_extensions import Self
 
@@ -25,12 +25,12 @@ class InteractiveImage(SourceElement, ContentElement, component='interactive_ima
     PIL_CONVERT_FORMAT = 'PNG'
 
     def __init__(self,
-                 source: Union[str, Path, 'PIL_Image'] = '', *,  # noqa: UP037
+                 source: str | Path | PIL_Image = '', *,
                  content: str = '',
-                 size: Optional[Tuple[float, float]] = None,
-                 on_mouse: Optional[Handler[MouseEventArguments]] = None,
-                 events: List[str] = ['click'],  # noqa: B006
-                 cross: Union[bool, str] = False,
+                 size: tuple[float, float] | None = None,
+                 on_mouse: Handler[MouseEventArguments] | None = None,
+                 events: list[str] = ['click'],  # noqa: B006
+                 cross: bool | str = False,
                  ) -> None:
         """Interactive Image
 
@@ -65,7 +65,7 @@ class InteractiveImage(SourceElement, ContentElement, component='interactive_ima
         if on_mouse:
             self.on_mouse(on_mouse)
 
-    def set_source(self, source: Union[str, Path, 'PIL_Image']) -> None:  # noqa: UP037
+    def set_source(self, source: str | Path | PIL_Image) -> None:
         return super().set_source(source)
 
     def on_mouse(self, on_mouse: Handler[MouseEventArguments]) -> Self:
@@ -89,7 +89,7 @@ class InteractiveImage(SourceElement, ContentElement, component='interactive_ima
         self.on('mouse', handle_mouse)
         return self
 
-    def _set_props(self, source: Union[str, Path, 'PIL_Image']) -> None:  # noqa: UP037
+    def _set_props(self, source: str | Path | PIL_Image) -> None:
         if optional_features.has('pillow') and isinstance(source, PIL_Image):
             source = pil_to_base64(source, self.PIL_CONVERT_FORMAT)
         super()._set_props(source)
@@ -118,7 +118,7 @@ class InteractiveImageLayer(SourceElement, ContentElement, component='interactiv
     CONTENT_PROP = 'content'
     PIL_CONVERT_FORMAT = 'PNG'
 
-    def __init__(self, *, source: str, content: str, size: Optional[Tuple[float, float]]) -> None:
+    def __init__(self, *, source: str, content: str, size: tuple[float, float] | None) -> None:
         """Interactive Image Layer
 
         This element is created when adding a layer to an ``InteractiveImage``.
@@ -128,7 +128,7 @@ class InteractiveImageLayer(SourceElement, ContentElement, component='interactiv
         super().__init__(source=source, content=content)
         self._props['size'] = size
 
-    def _set_props(self, source: Union[str, Path, 'PIL_Image']) -> None:  # noqa: UP037
+    def _set_props(self, source: str | Path | PIL_Image) -> None:
         if optional_features.has('pillow') and isinstance(source, PIL_Image):
             source = pil_to_base64(source, self.PIL_CONVERT_FORMAT)
         super()._set_props(source)
