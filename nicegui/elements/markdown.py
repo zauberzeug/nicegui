@@ -1,6 +1,6 @@
 import os
 from functools import lru_cache
-from typing import List
+from typing import List, Optional
 
 import markdown2
 from fastapi.responses import PlainTextResponse
@@ -13,7 +13,7 @@ class Markdown(ContentElement, component='markdown.js', default_classes='nicegui
 
     def __init__(self,
                  content: str = '', *,
-                 extras: List[str] = ['fenced-code-blocks', 'tables'],  # noqa: B006
+                 extras: Optional[List[str]] = None,
                  ) -> None:
         """Markdown Element
 
@@ -22,6 +22,8 @@ class Markdown(ContentElement, component='markdown.js', default_classes='nicegui
         :param content: the Markdown content to be displayed
         :param extras: list of `markdown2 extensions <https://github.com/trentm/python-markdown2/wiki/Extras#implemented-extras>`_ (default: `['fenced-code-blocks', 'tables']`)
         """
+        if extras is None:
+            extras = ['fenced-code-blocks', 'tables']
         self.extras = extras[:]
         super().__init__(content=content)
         if 'mermaid' in extras:

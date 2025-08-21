@@ -25,7 +25,7 @@ class AgGrid(Element,
 
     def __init__(self,
                  options: Dict, *,
-                 html_columns: List[int] = [],  # noqa: B006
+                 html_columns: Optional[List[int]] = None,
                  theme: Optional[str] = 'balham',
                  auto_size_columns: bool = True,
                  ) -> None:
@@ -40,6 +40,8 @@ class AgGrid(Element,
         :param theme: AG Grid theme (default: "balham")
         :param auto_size_columns: whether to automatically resize columns to fit the grid width (default: ``True``)
         """
+        if html_columns is None:
+            html_columns = []
         super().__init__()
         self._props['options'] = options
         self._props['html_columns'] = html_columns[:]
@@ -51,10 +53,10 @@ class AgGrid(Element,
     @classmethod
     def from_pandas(cls,
                     df: 'pd.DataFrame', *,
-                    html_columns: List[int] = [],  # noqa: B006
+                    html_columns: Optional[List[int]] = None,
                     theme: Optional[str] = 'balham',
                     auto_size_columns: bool = True,
-                    options: Dict = {}) -> Self:  # noqa: B006
+                    options: Optional[Dict] = None) -> Self:
         """Create an AG Grid from a Pandas DataFrame.
 
         Note:
@@ -70,6 +72,10 @@ class AgGrid(Element,
         :param options: dictionary of additional AG Grid options
         :return: AG Grid element
         """
+        if html_columns is None:
+            html_columns = []
+        if options is None:
+            options = {}
         import pandas as pd  # pylint: disable=import-outside-toplevel
 
         def is_special_dtype(dtype):
@@ -97,10 +103,10 @@ class AgGrid(Element,
     @classmethod
     def from_polars(cls,
                     df: 'pl.DataFrame', *,
-                    html_columns: List[int] = [],  # noqa: B006
+                    html_columns: Optional[List[int]] = None,
                     theme: Optional[str] = 'balham',
                     auto_size_columns: bool = True,
-                    options: Dict = {}) -> Self:  # noqa: B006
+                    options: Optional[Dict] = None) -> Self:
         """Create an AG Grid from a Polars DataFrame.
 
         If the DataFrame contains non-UTF-8 datatypes, they will be converted to strings.
@@ -115,6 +121,10 @@ class AgGrid(Element,
         :param options: dictionary of additional AG Grid options
         :return: AG Grid element
         """
+        if html_columns is None:
+            html_columns = []
+        if options is None:
+            options = {}
         return cls({
             'columnDefs': [{'field': str(col)} for col in df.columns],
             'rowData': df.to_dicts(),
