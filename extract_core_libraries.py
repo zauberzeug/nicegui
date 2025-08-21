@@ -13,8 +13,8 @@ shutil.copy2(NODE_MODULES / 'vue' / 'dist' / 'vue.global.prod.js', STATIC / 'vue
 
 shutil.copy2(NODE_MODULES / 'quasar' / 'dist' / 'quasar.umd.js', STATIC / 'quasar.umd.js')
 shutil.copy2(NODE_MODULES / 'quasar' / 'dist' / 'quasar.umd.prod.js', STATIC / 'quasar.umd.prod.js')
-shutil.copy2(NODE_MODULES / 'quasar' / 'dist' / 'quasar.css', STATIC / 'quasar.css')
-shutil.copy2(NODE_MODULES / 'quasar' / 'dist' / 'quasar.prod.css', STATIC / 'quasar.prod.css')
+shutil.copy2(NODE_MODULES / 'quasar' / 'dist' / 'quasar.rtl.css', STATIC / 'quasar.css')
+shutil.copy2(NODE_MODULES / 'quasar' / 'dist' / 'quasar.rtl.prod.css', STATIC / 'quasar.prod.css')
 for entry in (NODE_MODULES / 'quasar' / 'dist' / 'lang').glob('*.umd.prod.js'):
     shutil.copy2(entry, STATIC / 'lang' / entry.name)
 
