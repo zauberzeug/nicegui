@@ -575,3 +575,37 @@ async def test_context_manager(user: User) -> None:
     with user:
         elements = list(ElementFilter(kind=ui.button))
     assert len(elements) == 1 and isinstance(elements[0], ui.button)
+
+
+async def test_tree_with_labels(user: User) -> None:
+    tree = ui.tree([
+        {'id': 'a', 'label': 'A', 'children': [
+            {'label': 'A1'},
+            {'label': 'A2', 'children': [
+                {'label': 'A21'},
+                {'id': 'a22', 'label': 'A22'},
+            ]},
+        ]},
+    ])
+
+    await user.open('/')
+    await user.should_see('A')
+    await user.should_see('a')
+    await user.should_see('A22')
+    await user.should_see('a22')
+    user.find('A2').click()
+    await user.should_not_see('A21')
+    await user.should_not_see('a22')
+    user.find('a').click()
+    await user.should_not_see('A1')
+    user.find('a').click()
+    await user.should_see('A1')
+    await user.should_not_see('A21')
+    await user.should_not_see('a22')
+    tree.expand()
+    await user.should_see('A21')
+    await user.should_see('A22')
+    tree.collapse()
+    await user.should_not_see('A1')
+    await user.should_not_see('A21')
+    await user.should_not_see('A22')
