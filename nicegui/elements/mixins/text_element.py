@@ -30,7 +30,7 @@ class TextElement(Element):
         :param target_name: The name of the property to bind to.
         :param forward: A function to apply to the value before applying it to the target (default: identity).
         :param strict: Whether to check (and warn) if the target object has the specified property (default: None,
-            results in a check if the target object is not a dictionary).
+            performs a check if the object is not a dictionary).
         """
         bind_to(self, 'text', target_object, target_name, forward, self_strict=False, other_strict=strict)
         return self
