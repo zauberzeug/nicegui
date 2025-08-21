@@ -33,7 +33,7 @@ class DisableableElement(Element):
     def bind_enabled_to(self,
                         target_object: Any,
                         target_name: str = 'enabled',
-                        forward: Optional[Callable[[Any], Any]] = None,
+                        forward: Optional[Callable[[Any], Any]] = None, *,
                         strict: Optional[bool] = None,
                         ) -> Self:
         """Bind the enabled state of this element to the target object's target_name property.
@@ -53,7 +53,7 @@ class DisableableElement(Element):
     def bind_enabled_from(self,
                           target_object: Any,
                           target_name: str = 'enabled',
-                          backward: Optional[Callable[[Any], Any]] = None,
+                          backward: Optional[Callable[[Any], Any]] = None, *,
                           strict: Optional[bool] = None,
                           ) -> Self:
         """Bind the enabled state of this element from the target object's target_name property.

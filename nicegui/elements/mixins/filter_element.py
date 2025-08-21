@@ -19,7 +19,7 @@ class FilterElement(Element):
     def bind_filter_to(self,
                        target_object: Any,
                        target_name: str = 'filter',
-                       forward: Optional[Callable[[Any], Any]] = None,
+                       forward: Optional[Callable[[Any], Any]] = None, *,
                        strict: Optional[bool] = None,
                        ) -> Self:
         """Bind the filter of this element to the target object's target_name property.
@@ -39,7 +39,7 @@ class FilterElement(Element):
     def bind_filter_from(self,
                          target_object: Any,
                          target_name: str = 'filter',
-                         backward: Optional[Callable[[Any], Any]] = None,
+                         backward: Optional[Callable[[Any], Any]] = None, *,
                          strict: Optional[bool] = None,
                          ) -> Self:
         """Bind the filter of this element from the target object's target_name property.

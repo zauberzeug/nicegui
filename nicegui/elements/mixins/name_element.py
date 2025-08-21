@@ -18,7 +18,7 @@ class NameElement(Element):
     def bind_name_to(self,
                      target_object: Any,
                      target_name: str = 'name',
-                     forward: Optional[Callable[[Any], Any]] = None,
+                     forward: Optional[Callable[[Any], Any]] = None, *,
                      strict: Optional[bool] = None,
                      ) -> Self:
         """Bind the name of this element to the target object's target_name property.
@@ -38,7 +38,7 @@ class NameElement(Element):
     def bind_name_from(self,
                        target_object: Any,
                        target_name: str = 'name',
-                       backward: Optional[Callable[[Any], Any]] = None,
+                       backward: Optional[Callable[[Any], Any]] = None, *,
                        strict: Optional[bool] = None,
                        ) -> Self:
         """Bind the name of this element from the target object's target_name property.

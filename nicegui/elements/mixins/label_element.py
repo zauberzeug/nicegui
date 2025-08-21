@@ -19,7 +19,7 @@ class LabelElement(Element):
     def bind_label_to(self,
                       target_object: Any,
                       target_name: str = 'label',
-                      forward: Optional[Callable[[Any], Any]] = None,
+                      forward: Optional[Callable[[Any], Any]] = None, *,
                       strict: Optional[bool] = None,
                       ) -> Self:
         """Bind the label of this element to the target object's target_name property.
@@ -39,7 +39,7 @@ class LabelElement(Element):
     def bind_label_from(self,
                         target_object: Any,
                         target_name: str = 'label',
-                        backward: Optional[Callable[[Any], Any]] = None,
+                        backward: Optional[Callable[[Any], Any]] = None, *,
                         strict: Optional[bool] = None,
                         ) -> Self:
         """Bind the label of this element from the target object's target_name property.

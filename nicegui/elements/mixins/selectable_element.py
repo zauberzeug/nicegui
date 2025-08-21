@@ -39,7 +39,7 @@ class SelectableElement(Element):
     def bind_selected_to(self,
                          target_object: Any,
                          target_name: str = 'selected',
-                         forward: Optional[Callable[[Any], Any]] = None,
+                         forward: Optional[Callable[[Any], Any]] = None, *,
                          strict: Optional[bool] = None,
                          ) -> Self:
         """Bind the selection state of this element to the target object's target_name property.
@@ -59,7 +59,7 @@ class SelectableElement(Element):
     def bind_selected_from(self,
                            target_object: Any,
                            target_name: str = 'selected',
-                           backward: Optional[Callable[[Any], Any]] = None,
+                           backward: Optional[Callable[[Any], Any]] = None, *,
                            strict: Optional[bool] = None,
                            ) -> Self:
         """Bind the selection state of this element from the target object's target_name property.

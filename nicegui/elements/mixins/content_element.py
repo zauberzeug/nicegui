@@ -19,7 +19,7 @@ class ContentElement(Element):
     def bind_content_to(self,
                         target_object: Any,
                         target_name: str = 'content',
-                        forward: Optional[Callable[[Any], Any]] = None,
+                        forward: Optional[Callable[[Any], Any]] = None, *,
                         strict: Optional[bool] = None,
                         ) -> Self:
         """Bind the content of this element to the target object's target_name property.
@@ -39,7 +39,7 @@ class ContentElement(Element):
     def bind_content_from(self,
                           target_object: Any,
                           target_name: str = 'content',
-                          backward: Optional[Callable[[Any], Any]] = None,
+                          backward: Optional[Callable[[Any], Any]] = None, *,
                           strict: Optional[bool] = None,
                           ) -> Self:
         """Bind the content of this element from the target object's target_name property.

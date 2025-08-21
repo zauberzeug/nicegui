@@ -24,7 +24,7 @@ class SourceElement(Element):
     def bind_source_to(self,
                        target_object: Any,
                        target_name: str = 'source',
-                       forward: Optional[Callable[[Any], Any]] = None,
+                       forward: Optional[Callable[[Any], Any]] = None, *,
                        strict: Optional[bool] = None,
                        ) -> Self:
         """Bind the source of this element to the target object's target_name property.
@@ -44,7 +44,7 @@ class SourceElement(Element):
     def bind_source_from(self,
                          target_object: Any,
                          target_name: str = 'source',
-                         backward: Optional[Callable[[Any], Any]] = None,
+                         backward: Optional[Callable[[Any], Any]] = None, *,
                          strict: Optional[bool] = None,
                          ) -> Self:
         """Bind the source of this element from the target object's target_name property.

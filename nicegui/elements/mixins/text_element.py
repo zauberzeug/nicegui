@@ -18,7 +18,7 @@ class TextElement(Element):
     def bind_text_to(self,
                      target_object: Any,
                      target_name: str = 'text',
-                     forward: Optional[Callable[[Any], Any]] = None,
+                     forward: Optional[Callable[[Any], Any]] = None, *,
                      strict: Optional[bool] = None,
                      ) -> Self:
         """Bind the text of this element to the target object's target_name property.
@@ -38,7 +38,7 @@ class TextElement(Element):
     def bind_text_from(self,
                        target_object: Any,
                        target_name: str = 'text',
-                       backward: Optional[Callable[[Any], Any]] = None,
+                       backward: Optional[Callable[[Any], Any]] = None, *,
                        strict: Optional[bool] = None,
                        ) -> Self:
         """Bind the text of this element from the target object's target_name property.
