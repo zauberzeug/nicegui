@@ -20,7 +20,7 @@ class LabelElement(Element):
                       target_object: Any,
                       target_name: str = 'label',
                       forward: Optional[Callable[[Any], Any]] = None,
-                      check_exists: Optional[bool] = None,
+                      strict: Optional[bool] = None,
                       ) -> Self:
         """Bind the label of this element to the target object's target_name property.
 
@@ -30,17 +30,17 @@ class LabelElement(Element):
         :param target_object: The object to bind to.
         :param target_name: The name of the property to bind to.
         :param forward: A function to apply to the value before applying it to the target (default: identity).
-        :param check_exists: Whether to check (and warn) if the target object has the specified property (default: None,
+        :param strict: Whether to check (and warn) if the target object has the specified property (default: None,
             performs a check if the object is not a dictionary).
         """
-        bind_to(self, 'label', target_object, target_name, forward, check_self=False, check_other=check_exists)
+        bind_to(self, 'label', target_object, target_name, forward, self_strict=False, other_strict=strict)
         return self
 
     def bind_label_from(self,
                         target_object: Any,
                         target_name: str = 'label',
                         backward: Optional[Callable[[Any], Any]] = None,
-                        check_exists: Optional[bool] = None,
+                        strict: Optional[bool] = None,
                         ) -> Self:
         """Bind the label of this element from the target object's target_name property.
 
@@ -50,10 +50,10 @@ class LabelElement(Element):
         :param target_object: The object to bind from.
         :param target_name: The name of the property to bind from.
         :param backward: A function to apply to the value before applying it to this element (default: identity).
-        :param check_exists: Whether to check (and warn) if the target object has the specified property (default: None,
+        :param strict: Whether to check (and warn) if the target object has the specified property (default: None,
             performs a check if the object is not a dictionary).
         """
-        bind_from(self, 'label', target_object, target_name, backward, check_self=False, check_other=check_exists)
+        bind_from(self, 'label', target_object, target_name, backward, self_strict=False, other_strict=strict)
         return self
 
     def bind_label(self,
@@ -61,7 +61,7 @@ class LabelElement(Element):
                    target_name: str = 'label', *,
                    forward: Optional[Callable[[Any], Any]] = None,
                    backward: Optional[Callable[[Any], Any]] = None,
-                   check_exists: Optional[bool] = None,
+                   strict: Optional[bool] = None,
                    ) -> Self:
         """Bind the label of this element to the target object's target_name property.
 
@@ -73,12 +73,12 @@ class LabelElement(Element):
         :param target_name: The name of the property to bind to.
         :param forward: A function to apply to the value before applying it to the target (default: identity).
         :param backward: A function to apply to the value before applying it to this element (default: identity).
-        :param check_exists: Whether to check (and warn) if the target object has the specified property (default: None,
+        :param strict: Whether to check (and warn) if the target object has the specified property (default: None,
             performs a check if the object is not a dictionary).
         """
         bind(self, 'label', target_object, target_name,
              forward=forward, backward=backward,
-             check_self=False, check_other=check_exists)
+             self_strict=False, other_strict=strict)
         return self
 
     def set_label(self, label: Optional[str]) -> None:

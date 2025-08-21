@@ -207,10 +207,10 @@ async def test_nested_propagation(user: User):
     await user.should_see('a = 2')  # the final value of a should be 2
 
 
-def test_binding_check_other_exists_dict(screen: Screen):
+def test_binding_other_dict_is_strict(screen: Screen):
     data: dict[str, str] = {}
     label = ui.label()
-    binding.bind(label, 'text', data, 'non_existent_key', check_other=True)
+    binding.bind(label, 'text', data, 'non_existent_key', other_strict=True)
 
     screen.open('/')
     screen.assert_py_logger('WARNING',
@@ -218,7 +218,7 @@ def test_binding_check_other_exists_dict(screen: Screen):
                             'Proceeding with binding, keeping the value unset.')
 
 
-def test_binding_check_exists_object(screen: Screen):
+def test_binding_object_is_strict(screen: Screen):
     class Model:
         attribute = 'existing-attribute'
     model = Model()
@@ -234,7 +234,7 @@ def test_binding_check_exists_object(screen: Screen):
                             'Proceeding with binding, keeping the value unset.')
 
 
-def test_binding_no_check_exists_with_dict(screen: Screen):
+def test_binding_dict_is_not_strict(screen: Screen):
     data: dict[str, str] = {}
     label = ui.label()
     binding.bind(data, 'non_existing_key', label, 'text')
