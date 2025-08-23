@@ -260,8 +260,8 @@ def nested_sub_pages_demo():
 
     def other():
         ui.label('sub page')
-        # ui.link('Go to A', '/sub/a')
-        # ui.link('Go to B', '/sub/b')
+        # ui.link('Go to A', '/other/a')
+        # ui.link('Go to B', '/other/b')
         # ui.sub_pages({
         #     '/': sub_main,
         #     '/a': sub_page_a,
