@@ -18,17 +18,17 @@ class FakeSubPages(ui.column):
         self._render('/')
         self.move()  # move to end
 
-    def link(self, text: str, route: str) -> None:
-        ui.label(text).classes('nicegui-link cursor-pointer').on('click', lambda: self._render(route))
+    def link(self, text: str, route: str, **kwargs: Any) -> None:
+        ui.label(text).classes('nicegui-link cursor-pointer').on('click', lambda: self._render(route, **kwargs))
 
-    def _render(self, route: str) -> None:
+    def _render(self, route: str, **kwargs: Any) -> None:
         if self.task and not self.task.done():
             self.task.cancel()
 
         async def render() -> None:
             self.clear()
             with self:
-                result = self.routes[route](**self.data)
+                result = self.routes[route](**self.data, **kwargs)
                 if isinstance(result, Awaitable):
                     await result
         self.task = background_tasks.create(render())
@@ -76,7 +76,7 @@ def main_demo() -> None:
     sub_pages.init()
 
 
-@doc.demo('Passing Parameters to Sub Page', '''
+@doc.demo('Passing Data to Sub Page', '''
     If a sub page needs data from its parent, a `data` dictionary can be passed to the `ui.sub_pages` element.
     The data will be available as keyword arguments in the sub page function or as `PageArguments.data` object.
 ''')
@@ -174,6 +174,37 @@ def adding_sub_pages_demo() -> None:
     sub_pages.init()
     ui.separator()
     footer = ui.label()
+
+
+@doc.demo('URL Parameters', '''
+    You can pass URL parameters to the builder function.
+    A path parameter specified in the route is injected into the functions matching parameter.
+    For query parameters, the name is used for injection.
+    Values are automatically converted if a type hint is provided (int, float, str).
+    If no default value is provided in the builder function, the parameter will be required to match the route.
+''')
+def url_parameters_demo():
+    # @ui.page('/')
+    # @ui.page('/{_:path}')
+    # def index():
+    #     ui.sub_pages({'/': main, '/item/{item_id}': item})
+
+    def main():
+        # ui.link('item 1', '/item/1')
+        # ui.link('item 2', '/item/2')
+        # ui.link('item 3 with param', '/item/3?color=red')
+        sub_pages.link('item 1', '/item/{item_id}', item_id=1)  # HIDE
+        sub_pages.link('item 2', '/item/{item_id}', item_id=2)  # HIDE
+        sub_pages.link('item 3 with param', '/item/{item_id}', item_id=3, color='red')  # HIDE
+
+    def item(item_id: int, color: str = 'blue'):
+        ui.label(f'item {item_id}').classes(f'font-bold text-2xl text-{color}')
+        # ui.link('back', '/')
+        sub_pages.link('back', '/')  # HIDE
+
+    # END OF DEMO
+    sub_pages = FakeSubPages({'/': main, '/item/{item_id}': item})
+    sub_pages.init()
 
 
 @doc.demo('Using PageArguments', '''
