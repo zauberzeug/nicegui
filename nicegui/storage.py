@@ -28,8 +28,6 @@ class RequestTrackingMiddleware(BaseHTTPMiddleware):
         request.state.responded = False
         await core.app.storage._create_user_storage(request.session['id'])  # pylint: disable=protected-access
         response = await call_next(request)
-        if response.headers.get('X-NiceGUI-Content') != 'page':
-            await core.app.storage.user.close()
         request.state.responded = True
         return response
 
