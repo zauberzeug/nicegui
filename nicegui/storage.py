@@ -1,7 +1,5 @@
-import asyncio
 import contextvars
 import os
-import time
 import uuid
 from datetime import timedelta
 from pathlib import Path
@@ -19,8 +17,6 @@ from .observables import ObservableDict
 from .persistence import FilePersistentDict, PersistentDict, ReadOnlyDict, RedisPersistentDict
 
 request_contextvar: contextvars.ContextVar[Optional[Request]] = contextvars.ContextVar('request_var', default=None)
-
-PURGE_INTERVAL = timedelta(minutes=5).total_seconds()
 
 
 class RequestTrackingMiddleware(BaseHTTPMiddleware):
@@ -181,20 +177,6 @@ class Storage:
             else:
                 self._tabs[tab_id] = ObservableDict()
             self._tabs[tab_id].update(self._tabs[old_tab_id])
-
-    async def prune_tab_storage(self) -> None:
-        """Regularly prune tab storage that is older than the configured `max_tab_storage_age`."""
-        while True:
-            for tab_id, tab in list(self._tabs.items()):
-                if time.time() > tab.last_modified + self.max_tab_storage_age:
-                    tab.clear()
-                    if isinstance(tab, PersistentDict):
-                        await tab.close()
-                    del self._tabs[tab_id]
-            try:
-                await asyncio.sleep(PURGE_INTERVAL)
-            except asyncio.CancelledError:
-                break
 
     def clear(self) -> None:
         """Clears all storage."""

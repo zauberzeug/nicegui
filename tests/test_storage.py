@@ -6,8 +6,7 @@ from pathlib import Path
 import httpx
 import pytest
 
-from nicegui import app, background_tasks, context, core, ui
-from nicegui import storage as storage_module
+from nicegui import app, background_tasks, context, core, nicegui, ui
 from nicegui.testing import Screen
 
 
@@ -192,7 +191,7 @@ def test_tab_storage_is_local(screen: Screen):
 
 
 def test_tab_storage_is_auto_removed(screen: Screen):
-    storage_module.PURGE_INTERVAL = 0.1
+    nicegui.TAB_STORAGE_PRUNE_INTERVAL = 0.1
     app.storage.max_tab_storage_age = 0.5
 
     @ui.page('/')
@@ -209,11 +208,10 @@ def test_tab_storage_is_auto_removed(screen: Screen):
     screen.wait(1)
     screen.open('/')
     screen.should_contain('1')
+    nicegui.TAB_STORAGE_PRUNE_INTERVAL = 60
 
 
 def test_clear_tab_storage(screen: Screen):
-    storage_module.PURGE_INTERVAL = 60
-
     @ui.page('/')
     async def page():
         await context.client.connected()

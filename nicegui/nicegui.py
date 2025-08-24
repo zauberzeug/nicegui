@@ -1,7 +1,9 @@
 import asyncio
 import mimetypes
+import time
 import urllib.parse
 from contextlib import asynccontextmanager
+from datetime import timedelta
 from pathlib import Path
 from typing import Any, Dict
 
@@ -17,9 +19,13 @@ from .error import error_content
 from .json import NiceGUIJSONResponse
 from .logging import log
 from .page import page
+from .persistence import PersistentDict
 from .slot import Slot
 from .staticfiles import CacheControlledStaticFiles
 from .version import __version__
+
+TAB_STORAGE_PRUNE_INTERVAL = timedelta(minutes=5).total_seconds()
+USER_STORAGE_PRUNE_INTERVAL = 10.0
 
 
 @asynccontextmanager
@@ -134,7 +140,8 @@ async def _startup() -> None:
     background_tasks.create(binding.refresh_loop(), name='refresh bindings')
     background_tasks.create(Client.prune_instances(), name='prune clients')
     background_tasks.create(Slot.prune_stacks(), name='prune slot stacks')
-    background_tasks.create(core.app.storage.prune_tab_storage(), name='prune tab storage')
+    background_tasks.create(prune_tab_storage(), name='prune tab storage')
+    background_tasks.create(prune_user_storage(), name='prune user storage')
     air.connect()
 
 
@@ -214,3 +221,42 @@ def _on_ack(_: str, msg: Dict) -> None:
     if not client:
         return
     client.outbox.prune_history(msg['next_message_id'])
+
+
+async def prune_tab_storage() -> None:
+    """Regularly prune tab storage that is older than the configured `max_tab_storage_age`."""
+    while True:
+        for tab_id, tab in list(core.app.storage._tabs.items()):  # pylint: disable=protected-access
+            if time.time() > tab.last_modified + core.app.storage.max_tab_storage_age:
+                tab.clear()
+                if isinstance(tab, PersistentDict):
+                    await tab.close()
+                del core.app.storage._tabs[tab_id]  # pylint: disable=protected-access
+        try:
+            await asyncio.sleep(TAB_STORAGE_PRUNE_INTERVAL)
+        except asyncio.CancelledError:
+            break
+
+
+async def prune_user_storage() -> None:
+    """Regularly remove user storage objects without a client session."""
+    while True:
+        client_session_ids = {client.request.session['id']
+                              for client in Client.instances.values()
+                              if client.request is not None}
+        storages_to_close = []
+        now = time.time()
+        user_storages = core.app.storage._users  # pylint: disable=protected-access
+        for session_id in list(user_storages.keys()):
+            if session_id not in client_session_ids:
+                age = now - user_storages[session_id].last_modified
+                if age > 10.0:  # NOTE: do not remove storages created by middleware and still wait for client
+                    storages_to_close.append(user_storages.pop(session_id))
+        results = await asyncio.gather(*[storage.close() for storage in storages_to_close], return_exceptions=True)
+        for result in results:
+            if isinstance(result, Exception):
+                log.exception(result)
+        try:
+            await asyncio.sleep(USER_STORAGE_PRUNE_INTERVAL)
+        except asyncio.CancelledError:
+            break
