@@ -191,9 +191,6 @@ def test_tab_storage_is_local(screen: Screen):
 
 
 def test_tab_storage_is_auto_removed(screen: Screen):
-    nicegui.TAB_STORAGE_PRUNE_INTERVAL = 0.1
-    app.storage.max_tab_storage_age = 0.5
-
     @ui.page('/')
     async def page():
         await context.client.connected()
@@ -205,10 +202,10 @@ def test_tab_storage_is_auto_removed(screen: Screen):
     screen.open('/')
     screen.should_contain('2')
 
-    screen.wait(1)
+    background_tasks.create(nicegui.prune_tab_storage(force=True))
+    screen.wait(0.1)
     screen.open('/')
     screen.should_contain('1')
-    nicegui.TAB_STORAGE_PRUNE_INTERVAL = 60
 
 
 def test_clear_tab_storage(screen: Screen):
