@@ -127,7 +127,7 @@ class ElementFilter(Generic[T]):
                     if not isinstance(element, Select) or element.is_showing_popup:
                         element_contents.extend(element._labels)  # pylint: disable=protected-access
                 if isinstance(element, Tree):
-                    element_contents.extend(_visible_tree_texts(element))
+                    element_contents.extend(element.nodes(visible=True))
                 if any(all(needle not in str(haystack) for haystack in element_contents) for needle in self._contents):
                     continue
                 if any(needle in str(haystack) for haystack in element_contents for needle in self._exclude_content):
@@ -237,29 +237,3 @@ class ElementFilter(Generic[T]):
         for element in self:
             element.props(add, remove=remove)
         return self
-
-
-def _visible_tree_texts(tree: Tree) -> List[str]:
-    nodes = tree.props.get('nodes', [])
-    label_key = tree.props.get('label-key', 'label')
-    children_key = tree.props.get('children-key', 'children')
-    node_key = tree.props.get('node-key', 'id')
-    has_expanded = 'expanded' in tree.props
-    expanded_keys = {str(k) for k in tree.props.get('expanded', [])} if has_expanded else set()
-    result: List[str] = []
-
-    def walk(children: List[dict]) -> None:
-        for node in children:
-            label = node.get(label_key)
-            node_id = node.get(node_key)
-            if label is not None:
-                result.append(str(label))
-            if node_id is not None:
-                result.append(str(node_id))
-            key = node.get(node_key) if node.get(node_key) is not None else node.get(label_key)
-            child_is_expanded = (not has_expanded) or (key is not None and str(key) in expanded_keys)
-            if child_is_expanded:
-                walk(node.get(children_key, []))
-
-    walk(nodes)
-    return result
