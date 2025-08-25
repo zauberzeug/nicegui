@@ -1,7 +1,8 @@
 import ast
 import re
 import weakref
-from typing import TYPE_CHECKING, Any, Dict, Generic, Optional, TypeVar
+from contextlib import contextmanager
+from typing import TYPE_CHECKING, Any, Dict, Generic, Iterator, Optional, TypeVar
 
 from . import helpers
 from .observables import ObservableDict
@@ -44,6 +45,16 @@ class Props(ObservableDict, Generic[T]):
         super().__init__(*args, on_change=self._update, **kwargs)
         self._element = weakref.ref(element)
         self._warnings: Dict[str, str] = {}
+        self._suspend_count = 0
+
+    @contextmanager
+    def suspend_updates(self) -> Iterator[None]:
+        """Suspend updates."""
+        self._suspend_count += 1
+        try:
+            yield
+        finally:
+            self._suspend_count -= 1
 
     @property
     def element(self) -> T:
@@ -54,6 +65,8 @@ class Props(ObservableDict, Generic[T]):
         return element
 
     def _update(self) -> None:
+        if self._suspend_count > 0:
+            return
         element = self._element()
         if element is not None:
             element.update()
