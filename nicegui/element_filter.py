@@ -127,7 +127,8 @@ class ElementFilter(Generic[T]):
                     if not isinstance(element, Select) or element.is_showing_popup:
                         element_contents.extend(element._labels)  # pylint: disable=protected-access
                 if isinstance(element, Tree):
-                    element_contents.extend(element.nodes(visible=True))
+                    LABEL_KEY = element.props.get('label-key')
+                    element_contents.extend(node[LABEL_KEY] for node in element.nodes(visible=True))
                 if any(all(needle not in str(haystack) for haystack in element_contents) for needle in self._contents):
                     continue
                 if any(needle in str(haystack) for haystack in element_contents for needle in self._exclude_content):

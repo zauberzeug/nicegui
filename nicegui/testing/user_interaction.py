@@ -103,27 +103,20 @@ class UserInteraction(Generic[T]):
                     return self
 
                 elif isinstance(element, ui.tree) and isinstance(self.target, str):
-                    label_key = element.props.get('label-key', 'label')
-                    node_key_name = element.props.get('node-key', 'id')
-                    children_key = element.props.get('children-key', 'children')
-                    stack = list(element.props.get('nodes', []))
-                    target_identifier = None
-                    while stack and (node := stack.pop()):
-                        if str(node.get(label_key, '')) == self.target or str(node.get(node_key_name, '')) == self.target:
-                            target_identifier = node.get(node_key_name) or node.get(label_key)
-                            break
-                        stack.extend(node.get(children_key, []))
-                    if target_identifier is None:
+                    LABEL_KEY = element.props.get('label-key', 'label')
+                    NODE_KEY = element.props.get('node-key', 'id')
+                    target_key = next((
+                        node[NODE_KEY]
+                        for node in element.nodes(visible=True)
+                        if self.target == node.get(LABEL_KEY)
+                    ), None)
+                    if target_key is None:
                         return self
-                    if 'expanded' not in element.props:
-                        all_keys = element._find_node_keys(None)  # pylint: disable=protected-access
-                        element.props['expanded'] = list(all_keys)
-                    expanded_set = set(str(k) for k in element.props.get('expanded', []))
-                    key_str = str(target_identifier)
-                    if key_str in expanded_set:
-                        expanded_set.remove(key_str)
+                    expanded_set = set(element.props.get('expanded', [node[NODE_KEY] for node in element.nodes()]))
+                    if target_key in expanded_set:
+                        expanded_set.remove(target_key)
                     else:
-                        expanded_set.add(key_str)
+                        expanded_set.add(target_key)
                     element.props['expanded'] = list(expanded_set)
                     element.update()
                     return self
