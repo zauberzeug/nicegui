@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import asyncio
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING, Callable, Optional
 
 from socketio import AsyncServer
 
@@ -13,3 +13,4 @@ app: App
 sio: AsyncServer
 loop: Optional[asyncio.AbstractEventLoop] = None
 air: Optional[Air] = None
+spa: Optional[Callable] = None
