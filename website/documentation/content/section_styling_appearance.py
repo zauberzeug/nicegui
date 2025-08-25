@@ -159,7 +159,7 @@ def css_variables_demo():
 
 
 @doc.demo("Overwrite Tailwind's Default Style", '''
-    Tailwind resets the default style of HTML elements, like the font size of `h2` elements in this example.
+    Tailwind CSS resets the default style of HTML elements, like the font size of `h2` elements in this example.
     You can overwrite these defaults by adding a style tag with type `text/tailwindcss`.
     Without this type, the style will be evaluated too early and will be overwritten by Tailwind.
 ''')
