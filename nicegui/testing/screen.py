@@ -258,7 +258,7 @@ class Screen:
             else:
                 assert record.message.strip() == message, f'Expected "{message}" but got "{record.message}"'
         finally:
-            self.caplog.records.clear()
+            self.caplog.records.pop(0)
 
     @contextmanager
     def implicitly_wait(self, t: float) -> Generator[None, None, None]:

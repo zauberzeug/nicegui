@@ -95,6 +95,45 @@ def ui_state():
     ui.textarea('This note is kept between visits').classes('w-full').bind_value(app.storage.user, 'note')
 
 
+@doc.demo('Check for non-existing bound attributes', '''
+    Before a binding is created, the involved attributes are checked for existence.
+    Although binding to a non-existing attribute is possible, it is usually not done on purpose.
+    For example, when renaming object attributes during refactoring,
+    the attribute name in a binding definition might easily be missed.
+
+    This behavior can be customized with the `strict` parameter.
+    By default, object attributes are checked for existence, but dictionary keys are not.
+    If the attribute is not found, a warning is logged, but the binding is created nonetheless.
+
+    The following demo shows how binding to a non-existing object attribute causes a warning,
+    unless `strict` is set to `False`.
+    Binding to a possibly empty storage dictionary, does not cause any warnings,
+    unless `strict` is set to `True`.
+
+    *Added in version 3.0.0*
+''')
+def strict():
+    from nicegui import app, binding
+
+    @binding.bindable_dataclass
+    class Data:
+        name: str
+
+    data = Data('Alice')
+
+    ui.input().bind_value(data, 'name')  # no warning
+    # ui.number().bind_value(data, 'age')  # warning
+    ui.number().bind_value(data, 'age', strict=False)  # HIDE
+    ui.input().bind_value(data, 'address', strict=False)  # no warning
+
+    # ui.input().bind_value(app.storage.general, 'name')  # no warning
+    # ui.number().bind_value(app.storage.general, 'age')  # no warning
+    # ui.input().bind_value(app.storage.general, 'address', strict=True)  # warning
+    ui.input().bind_value(app.storage.user, 'name')  # HIDE
+    ui.number().bind_value(app.storage.user, 'age')  # HIDE
+    ui.input().bind_value(app.storage.user, 'address')  # HIDE
+
+
 @doc.demo('Bindable properties for maximum performance', '''
     There are two types of bindings:
 
