@@ -8,7 +8,7 @@ from typing import Any
 
 from typing_extensions import Self
 
-from .. import background_tasks, helpers, optional_features
+from .. import background_tasks, optional_features
 from ..client import Client
 from ..element import Element
 
@@ -106,7 +106,7 @@ class Matplotlib(Element, default_classes='nicegui-matplotlib'):
             self.figure.savefig(output, format='svg')
             self._props['innerHTML'] = output.getvalue()
 
-    @helpers.prevent_recursion
     def update(self) -> None:
-        self._convert_to_html()
+        with self._props.suspend_updates():
+            self._convert_to_html()
         super().update()

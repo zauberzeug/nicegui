@@ -136,18 +136,3 @@ def require_top_level_layout(element: Element) -> None:
             f'Found top level layout element "{element.__class__.__name__}" inside element "{parent.__class__.__name__}". '
             'Top level layout elements can not be nested but must be direct children of the page content.',
         )
-
-
-def prevent_recursion(func: Callable) -> Callable:
-    """Prevent recursion by checking if the function is already being called."""
-
-    def wrapper(self, *args: Any, **kwargs: Any) -> Any:
-        flag_name = f'_in_{func.__name__}'
-        if getattr(self, flag_name, False):
-            return None
-        setattr(self, flag_name, True)
-        try:
-            return func(self, *args, **kwargs)
-        finally:
-            setattr(self, flag_name, False)
-    return wrapper

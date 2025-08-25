@@ -67,8 +67,6 @@ def disable_context_manager() -> None:
     Like this red/green toggle button with an internal boolean state.
 ''')
 def toggle_button() -> None:
-    from nicegui import helpers
-
     class ToggleButton(ui.button):
 
         def __init__(self, *args, **kwargs) -> None:
@@ -81,9 +79,9 @@ def toggle_button() -> None:
             self._state = not self._state
             self.update()
 
-        @helpers.prevent_recursion
         def update(self) -> None:
-            self.props(f'color={"green" if self._state else "red"}')
+            with self.props.suspend_updates():
+                self.props(f'color={"green" if self._state else "red"}')
             super().update()
 
     ToggleButton('Toggle me')
