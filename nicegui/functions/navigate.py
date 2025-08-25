@@ -69,11 +69,12 @@ class Navigate:
         else:
             raise TypeError(f'Invalid target type: {type(target)}')
 
-        parsed = urlparse(path)
-        if not new_tab and isinstance(target, str) and parsed.scheme == '' and parsed.netloc == '' and \
-                any(isinstance(el, SubPages) for el in context.client.elements.values()):
-            context.client.sub_pages_router._handle_navigate(path)  # pylint: disable=protected-access
-            return
+        if not new_tab and isinstance(target, str):
+            parsed = urlparse(path)
+            if not parsed.scheme and not parsed.netloc and \
+                    any(isinstance(el, SubPages) for el in context.client.elements.values()):
+                context.client.sub_pages_router._handle_navigate(path)  # pylint: disable=protected-access
+                return
 
         context.client.open(path, new_tab)
 
