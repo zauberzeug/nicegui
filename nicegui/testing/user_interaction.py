@@ -103,8 +103,8 @@ class UserInteraction(Generic[T]):
                     return self
 
                 elif isinstance(element, ui.tree) and isinstance(self.target, str):
-                    LABEL_KEY = element.props.get('label-key', 'label')
-                    NODE_KEY = element.props.get('node-key', 'id')
+                    NODE_KEY = element.props.get('node-key')
+                    LABEL_KEY = element.props.get('label-key')
                     target_key = next((
                         node[NODE_KEY]
                         for node in element.nodes(visible=True)
