@@ -238,7 +238,7 @@ async def prune_user_storage(*, force: bool = False) -> None:
     storages_to_close: List[PersistentDict] = []
     now = time.time()
     user_storages = core.app.storage._users  # pylint: disable=protected-access
-    for session_id in user_storages:
+    for session_id in list(user_storages):
         if session_id not in client_session_ids:
             age = now - user_storages[session_id].last_modified
             if force or age > 10.0:  # NOTE: do not remove storages created by middleware and still wait for client
