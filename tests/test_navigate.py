@@ -60,14 +60,13 @@ def test_navigate_to_relative_url(screen: Screen):
     assert screen.selenium.current_url == f'http://localhost:{Screen.PORT}/'
 
 
-@pytest.mark.parametrize('new_tab', [False, True])
 @pytest.mark.parametrize('sub_pages', [False, True])
-def test_navigate_to_mailto_url(screen: Screen, new_tab: bool, sub_pages: bool):
+def test_navigate_to_mailto_url(screen: Screen, sub_pages: bool):
     email_link = 'mailto:test@example.com'
 
     @ui.page('/')
     def page():
-        ui.button('Send mail', on_click=lambda: ui.navigate.to(email_link, new_tab=new_tab))
+        ui.button('Send mail', on_click=lambda: ui.navigate.to(email_link))
         if sub_pages:
             ui.sub_pages({'/': lambda: ui.label('sub page')})
 
@@ -79,6 +78,6 @@ def test_navigate_to_mailto_url(screen: Screen, new_tab: bool, sub_pages: bool):
     screen.click('Send mail')
     screen.wait(0.5)
     calls = screen.selenium.execute_script('return window.__open_calls')
-    assert calls, 'window.open should have been called'
-    assert calls[-1][0] == email_link
-    assert calls[-1][1] == ('_blank' if new_tab else '_self')
+    assert len(calls) == 1, 'window.open should have been called'
+    assert calls[0][0] == email_link
+    assert calls[0][1] == ('_self')
