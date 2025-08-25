@@ -5,7 +5,7 @@ from .client import Client
 from .context import context
 from .element_filter import ElementFilter
 from .nicegui import app
-from .tailwind import Tailwind
+from .page_arguments import PageArguments
 from .version import __version__
 
 __all__ = [
@@ -13,7 +13,7 @@ __all__ = [
     'App',
     'Client',
     'ElementFilter',
-    'Tailwind',
+    'PageArguments',
     '__version__',
     'app',
     'binding',

@@ -1,4 +1,4 @@
-from typing import Generator
+from collections.abc import Generator
 
 import pytest
 from pyecharts import options
@@ -107,15 +107,15 @@ def test_create_from_pyecharts(screen: Screen):
             xaxis_opts=options.AxisOpts(axislabel_opts={':formatter': X_AXIS_FORMATTER}),
             yaxis_opts=options.AxisOpts(axislabel_opts={'formatter': utils.JsCode(Y_AXIS_FORMATTER)}),
         )
-    )
+    ).props('renderer=svg')
 
     screen.open('/')
-    assert screen.selenium.execute_script('''
-        const chart = echarts.getInstanceByDom(document.querySelector(".nicegui-echart"));
-        const x = chart.getOption().xAxis[0].axisLabel.formatter;
-        const y = chart.getOption().yAxis[0].axisLabel.formatter;
-        return [typeof x, x.toString(), typeof y, y.toString()];
-    ''') == ['function', X_AXIS_FORMATTER, 'function', Y_AXIS_FORMATTER]
+    screen.should_contain('x for A')
+    screen.should_contain('x for B')
+    screen.should_contain('x for C')
+    screen.should_contain('0.1 kg')
+    screen.should_contain('0.2 kg')
+    screen.should_contain('0.3 kg')
 
 
 def test_chart_events(screen: Screen):

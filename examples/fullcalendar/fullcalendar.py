@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any, Callable, Optional
 
 from nicegui.element import Element
 from nicegui.events import handle_event
@@ -7,7 +7,7 @@ from nicegui.events import handle_event
 
 class FullCalendar(Element, component='fullcalendar.js'):
 
-    def __init__(self, options: Dict[str, Any], on_click: Optional[Callable] = None) -> None:
+    def __init__(self, options: dict[str, Any], on_click: Optional[Callable] = None) -> None:
         """FullCalendar
 
         An element that integrates the FullCalendar library (https://fullcalendar.io/) to create an interactive calendar display.
@@ -47,6 +47,6 @@ class FullCalendar(Element, component='fullcalendar.js'):
                 break
 
     @property
-    def events(self) -> List[Dict]:
+    def events(self) -> list[dict]:
         """List of events currently displayed in the calendar."""
         return self._props['options']['events']

@@ -49,6 +49,7 @@ __all__ = [
     'icon',
     'image',
     'input',
+    'input_chips',
     'interactive_image',
     'item',
     'item_label',
@@ -109,6 +110,7 @@ __all__ = [
     'step',
     'stepper',
     'stepper_navigation',
+    'sub_pages',
     'switch',
     'tab',
     'tab_panel',
@@ -173,6 +175,7 @@ from .elements.html import Html as html
 from .elements.icon import Icon as icon
 from .elements.image import Image as image
 from .elements.input import Input as input  # pylint: disable=redefined-builtin
+from .elements.input_chips import InputChips as input_chips
 from .elements.interactive_image import InteractiveImage as interactive_image
 from .elements.item import Item as item
 from .elements.item import ItemLabel as item_label
@@ -208,7 +211,7 @@ from .elements.rating import Rating as rating
 from .elements.restructured_text import ReStructuredText as restructured_text
 from .elements.row import Row as row
 from .elements.scene import Scene as scene
-from .elements.scene_view import SceneView as scene_view
+from .elements.scene import SceneView as scene_view
 from .elements.scroll_area import ScrollArea as scroll_area
 from .elements.select import Select as select
 from .elements.separator import Separator as separator
@@ -221,6 +224,7 @@ from .elements.splitter import Splitter as splitter
 from .elements.stepper import Step as step
 from .elements.stepper import Stepper as stepper
 from .elements.stepper import StepperNavigation as stepper_navigation
+from .elements.sub_pages import SubPages as sub_pages
 from .elements.switch import Switch as switch
 from .elements.table import Table as table
 from .elements.tabs import Tab as tab

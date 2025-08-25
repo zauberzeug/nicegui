@@ -177,7 +177,6 @@ def map_of_nicegui():
             - customization:
                 - `.props()` and [`.default_props()`](/documentation/element#default_props): add Quasar props and regular HTML attributes
                 - `.classes()` and [`.default_classes()`](/documentation/element#default_classes): add Quasar, Tailwind and custom HTML classes
-                - [`.tailwind`](/documentation/section_styling_appearance#tailwind_css): convenience API for adding Tailwind classes
                 - `.style()` and [`.default_style()`](/documentation/element#default_style): add CSS style definitions
                 - [`.tooltip()`](/documentation/tooltip): add a tooltip to an element
                 - [`.mark()`](/documentation/element_filter#markers): mark an element for querying with an [ElementFilter](/documentation/element_filter)
@@ -230,6 +229,7 @@ def map_of_nicegui():
             - [`ui.icon`](/documentation/icon)
             - [`ui.image`](/documentation/image)
             - [`ui.input`](/documentation/input)
+            - [`ui.input_chips`](/documentation/input_chips)
             - [`ui.interactive_image`](/documentation/interactive_image)
             - `ui.item`, `ui.item_label`, `ui.item_section`
             - [`ui.joystick`](/documentation/joystick)
@@ -267,6 +267,7 @@ def map_of_nicegui():
             - [`ui.spinner`](/documentation/spinner)
             - [`ui.splitter`](/documentation/splitter)
             - [`ui.stepper`](/documentation/stepper), `ui.step`, `ui.stepper_navigation`
+            - [`ui.sub_pages`](/documentation/sub_pages)
             - [`ui.switch`](/documentation/switch)
             - [`ui.tabs`](/documentation/tabs), `ui.tab`, `ui.tab_panels`, `ui.tab_panel`
             - [`ui.table`](/documentation/table)

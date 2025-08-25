@@ -1,8 +1,10 @@
 from typing import Any, Callable, Union
+from urllib.parse import urlparse
 
 from ..client import Client
 from ..context import context
 from ..element import Element
+from ..elements.sub_pages import SubPages
 from .javascript import run_javascript
 
 
@@ -50,8 +52,6 @@ class Navigate:
         This is a browser setting and cannot be changed by the application.
         You might want to use `ui.link` and its `new_tab` parameter instead.
 
-        This functionality was previously available as `ui.open` which is now deprecated.
-
         Note: When using an `auto-index page </documentation/section_pages_routing#auto-index_page>`_ (e.g. no `@page` decorator),
         all clients (i.e. browsers) connected to the page will open the target URL unless a socket is specified.
 
@@ -66,6 +66,12 @@ class Navigate:
             path = Client.page_routes[target]
         else:
             raise TypeError(f'Invalid target type: {type(target)}')
+
+        if not new_tab and isinstance(target, str) and not bool(urlparse(target).netloc) and \
+                any(isinstance(el, SubPages) for el in context.client.elements.values()):
+            context.client.sub_pages_router._handle_navigate(path)  # pylint: disable=protected-access
+            return
+
         context.client.open(path, new_tab)
 
 

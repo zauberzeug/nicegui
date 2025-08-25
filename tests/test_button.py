@@ -13,7 +13,7 @@ def test_quasar_colors(screen: Screen):
     assert screen.find_element(b1).value_of_css_property('background-color') == 'rgba(88, 152, 212, 1)'
     assert screen.find_element(b2).value_of_css_property('background-color') == 'rgba(0, 0, 0, 0)'
     assert screen.find_element(b3).value_of_css_property('background-color') == 'rgba(239, 83, 80, 1)'
-    assert screen.find_element(b4).value_of_css_property('background-color') == 'rgba(239, 68, 68, 1)'
+    assert screen.find_element(b4).value_of_css_property('background-color') == 'oklch(0.637 0.237 25.331)'
     assert screen.find_element(b5).value_of_css_property('background-color') == 'rgba(255, 0, 0, 1)'
 
 

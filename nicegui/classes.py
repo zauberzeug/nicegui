@@ -1,6 +1,7 @@
 import weakref
+from collections.abc import Iterator
 from contextlib import contextmanager
-from typing import TYPE_CHECKING, Generic, Iterator, List, Optional, TypeVar
+from typing import TYPE_CHECKING, Generic, Optional, TypeVar
 
 from .observables import ObservableList
 
@@ -48,7 +49,7 @@ class Classes(ObservableList, Generic[T]):
                  replace: Optional[str] = None) -> T:
         """Apply, remove, toggle, or replace HTML classes.
 
-        This allows modifying the look of the element or its layout using `Tailwind <https://v3.tailwindcss.com/>`_ or `Quasar <https://quasar.dev/>`_ classes.
+        This allows modifying the look of the element or its layout using `Tailwind <https://tailwindcss.com/>`_ or `Quasar <https://quasar.dev/>`_ classes.
 
         Removing or replacing classes can be helpful if predefined classes are not desired.
 
@@ -57,7 +58,6 @@ class Classes(ObservableList, Generic[T]):
         :param toggle: whitespace-delimited string of classes to toggle (*added in version 2.7.0*)
         :param replace: whitespace-delimited string of classes to use instead of existing ones
         """
-        # DEPRECATED: replace Tailwind v3 link with v4 (throughout the whole codebase!) after upgrading in NiceGUI 3.0
         element = self.element
         new_classes = self.update_list(self, add, remove, toggle, replace)
         if self != new_classes:
@@ -65,11 +65,11 @@ class Classes(ObservableList, Generic[T]):
         return element
 
     @staticmethod
-    def update_list(classes: List[str],
+    def update_list(classes: list[str],
                     add: Optional[str] = None,
                     remove: Optional[str] = None,
                     toggle: Optional[str] = None,
-                    replace: Optional[str] = None) -> List[str]:
+                    replace: Optional[str] = None) -> list[str]:
         """Update a list of classes."""
         class_list = classes if replace is None else []
         class_list = [c for c in class_list if c not in (remove or '').split()]

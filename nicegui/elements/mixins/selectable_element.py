@@ -1,4 +1,4 @@
-from typing import Any, Callable, List, Optional, cast
+from typing import Any, Callable, Optional, cast
 
 from typing_extensions import Self
 
@@ -27,7 +27,7 @@ class SelectableElement(Element):
         self.set_selected(selected)
         self.on('update:selected', lambda e: self.set_selected(e.args))
 
-        self._selection_change_handlers: List[Handler[ValueChangeEventArguments]] = []
+        self._selection_change_handlers: list[Handler[ValueChangeEventArguments]] = []
         if on_selection_change:
             self.on_selection_change(on_selection_change)
 
@@ -102,7 +102,8 @@ class SelectableElement(Element):
 
         :param selected: The new selection state.
         """
+        previous_value = self._props.get('selected')
         self._props['selected'] = selected
-        args = ValueChangeEventArguments(sender=self, client=self.client, value=self._props['selected'])
+        args = ValueChangeEventArguments(sender=self, client=self.client, value=selected, previous_value=previous_value)
         for handler in self._selection_change_handlers:
             handle_event(handler, args)

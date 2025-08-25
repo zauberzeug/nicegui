@@ -1,4 +1,5 @@
-from typing import Any, Dict, Iterator, List, Literal, Optional, Set
+from collections.abc import Iterator
+from typing import Any, Literal, Optional
 
 from typing_extensions import Self
 
@@ -9,7 +10,7 @@ from .mixins.filter_element import FilterElement
 class Tree(FilterElement):
 
     def __init__(self,
-                 nodes: List[Dict], *,
+                 nodes: list[dict], *,
                  node_key: str = 'id',
                  label_key: str = 'label',
                  children_key: str = 'children',
@@ -61,21 +62,30 @@ class Tree(FilterElement):
                 self._props[name] = value
 
         def handle_selected(e: GenericEventArguments) -> None:
+            previous_value = self._props.get('selected')
             update_prop('selected', e.args)
+            args = ValueChangeEventArguments(sender=self, client=self.client,
+                                             value=e.args, previous_value=previous_value)
             for handler in self._select_handlers:
-                handle_event(handler, ValueChangeEventArguments(sender=self, client=self.client, value=e.args))
+                handle_event(handler, args)
         self.on('update:selected', handle_selected)
 
         def handle_expanded(e: GenericEventArguments) -> None:
+            previous_value = self._props.get('expanded')
             update_prop('expanded', e.args)
+            args = ValueChangeEventArguments(sender=self, client=self.client,
+                                             value=e.args, previous_value=previous_value)
             for handler in self._expand_handlers:
-                handle_event(handler, ValueChangeEventArguments(sender=self, client=self.client, value=e.args))
+                handle_event(handler, args)
         self.on('update:expanded', handle_expanded)
 
         def handle_ticked(e: GenericEventArguments) -> None:
+            previous_value = self._props.get('ticked')
             update_prop('ticked', e.args)
+            args = ValueChangeEventArguments(sender=self, client=self.client,
+                                             value=e.args, previous_value=previous_value)
             for handler in self._tick_handlers:
-                handle_event(handler, ValueChangeEventArguments(sender=self, client=self.client, value=e.args))
+                handle_event(handler, args)
         self.on('update:ticked', handle_ticked)
 
     def on_select(self, callback: Handler[ValueChangeEventArguments]) -> Self:
@@ -111,7 +121,7 @@ class Tree(FilterElement):
         self._tick_handlers.append(callback)
         return self
 
-    def tick(self, node_keys: Optional[List[str]] = None) -> Self:
+    def tick(self, node_keys: Optional[list[str]] = None) -> Self:
         """Tick the given nodes.
 
         :param node_keys: list of node keys to tick or ``None`` to tick all nodes (default: ``None``)
@@ -120,7 +130,7 @@ class Tree(FilterElement):
         self._props['ticked'][:] = self._find_node_keys(node_keys).union(self._props['ticked'])
         return self
 
-    def untick(self, node_keys: Optional[List[str]] = None) -> Self:
+    def untick(self, node_keys: Optional[list[str]] = None) -> Self:
         """Remove tick from the given nodes.
 
         :param node_keys: list of node keys to untick or ``None`` to untick all nodes (default: ``None``)
@@ -129,7 +139,7 @@ class Tree(FilterElement):
         self._props['ticked'][:] = set(self._props['ticked']).difference(self._find_node_keys(node_keys))
         return self
 
-    def expand(self, node_keys: Optional[List[str]] = None) -> Self:
+    def expand(self, node_keys: Optional[list[str]] = None) -> Self:
         """Expand the given nodes.
 
         :param node_keys: list of node keys to expand (default: all nodes)
@@ -138,7 +148,7 @@ class Tree(FilterElement):
         self._props['expanded'][:] = self._find_node_keys(node_keys).union(self._props['expanded'])
         return self
 
-    def collapse(self, node_keys: Optional[List[str]] = None) -> Self:
+    def collapse(self, node_keys: Optional[list[str]] = None) -> Self:
         """Collapse the given nodes.
 
         :param node_keys: list of node keys to collapse (default: all nodes)
@@ -147,14 +157,14 @@ class Tree(FilterElement):
         self._props['expanded'][:] = set(self._props['expanded']).difference(self._find_node_keys(node_keys))
         return self
 
-    def _find_node_keys(self, node_keys: Optional[List[str]] = None) -> Set[str]:
+    def _find_node_keys(self, node_keys: Optional[list[str]] = None) -> set[str]:
         if node_keys is not None:
             return set(node_keys)
 
         CHILDREN_KEY = self._props['children-key']
         NODE_KEY = self._props['node-key']
 
-        def iterate_nodes(nodes: List[Dict]) -> Iterator[Dict]:
+        def iterate_nodes(nodes: list[dict]) -> Iterator[dict]:
             for node in nodes:
                 yield node
                 yield from iterate_nodes(node.get(CHILDREN_KEY, []))

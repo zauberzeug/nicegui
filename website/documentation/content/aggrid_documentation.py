@@ -1,4 +1,4 @@
-from nicegui import ui, ElementFilter
+from nicegui import ui
 
 from . import doc
 
@@ -17,8 +17,8 @@ def main_demo() -> None:
             {'name': 'Bob', 'age': 21, 'parent': 'Eve'},
             {'name': 'Carol', 'age': 42, 'parent': 'Frank'},
         ],
-        'rowSelection': 'multiple',
-    }).classes('max-h-40')
+        'rowSelection': {'mode': 'multiRow'},
+    })
 
     def update():
         grid.options['rowData'][0]['age'] += 1
@@ -45,7 +45,7 @@ def aggrid_with_selectable_rows():
     def page():
         grid = ui.aggrid({
             'columnDefs': [
-                {'headerName': 'Name', 'field': 'name', 'checkboxSelection': True},
+                {'headerName': 'Name', 'field': 'name'},
                 {'headerName': 'Age', 'field': 'age'},
             ],
             'rowData': [
@@ -53,8 +53,8 @@ def aggrid_with_selectable_rows():
                 {'name': 'Bob', 'age': 21},
                 {'name': 'Carol', 'age': 42},
             ],
-            'rowSelection': 'multiple',
-        }).classes('max-h-40')
+            'rowSelection': {'mode': 'multiRow'},
+        })
 
         async def output_selected_rows():
             rows = await grid.get_selected_rows()
@@ -94,7 +94,7 @@ def aggrid_with_minifilters():
             {'name': 'Bob', 'age': 21},
             {'name': 'Carol', 'age': 42},
         ],
-    }).classes('max-h-40')
+    })
 
 
 @doc.demo('AG Grid with Conditional Cell Formatting', '''
@@ -192,7 +192,7 @@ def aggrid_with_complex_objects():
             {'name': {'first': 'Bob', 'last': 'Brown'}, 'age': 21},
             {'name': {'first': 'Carol', 'last': 'Clark'}, 'age': 42},
         ],
-    }).classes('max-h-40')
+    })
 
 
 @doc.demo('AG Grid with dynamic row height', '''
@@ -207,7 +207,7 @@ def aggrid_with_dynamic_row_height():
             {'name': 'Carol', 'age': '42'},
         ],
         ':getRowHeight': 'params => params.data.age > 35 ? 50 : 25',
-    }).classes('max-h-40')
+    })
 
 
 @doc.demo('Run row methods', '''

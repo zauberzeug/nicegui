@@ -1,4 +1,4 @@
-from typing import Dict, Optional
+from typing import Optional
 
 from ..events import Handler, ValueChangeEventArguments
 from .mixins.disableable_element import DisableableElement
@@ -11,7 +11,7 @@ class Range(ValueElement, DisableableElement):
                  min: float,  # pylint: disable=redefined-builtin
                  max: float,  # pylint: disable=redefined-builtin
                  step: float = 1.0,
-                 value: Optional[Dict[str, int]] = None,
+                 value: Optional[dict[str, int]] = None,
                  on_change: Optional[Handler[ValueChangeEventArguments]] = None,
                  ) -> None:
         """Range

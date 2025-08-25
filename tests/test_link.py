@@ -52,12 +52,17 @@ def test_replace_link(screen: Screen):
 
 
 def test_updating_href_prop(screen: Screen):
-    label = ui.link('nicegui.io', 'https://nicegui.io')
-    ui.button('change href', on_click=lambda: label.props('href="https://github.com/zauberzeug/nicegui"'))
+    link = ui.link('nicegui.io', 'https://nicegui.io')
+    ui.button('change href', on_click=lambda: (
+        link.props('href="https://github.com/zauberzeug/nicegui"'),
+        ui.notify('href changed'),
+    ))
 
     screen.open('/')
     assert screen.find('nicegui.io').get_attribute('href') == 'https://nicegui.io/'
+
     screen.click('change href')
+    screen.should_contain('href changed')
     assert screen.find('nicegui.io').get_attribute('href') == 'https://github.com/zauberzeug/nicegui'
 
 

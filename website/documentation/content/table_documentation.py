@@ -129,7 +129,7 @@ def show_and_hide_columns():
     ]
     table = ui.table(columns=columns, rows=rows, row_key='name')
 
-    def toggle(column: Dict, visible: bool) -> None:
+    def toggle(column: dict, visible: bool) -> None:
         column['classes'] = '' if visible else 'hidden'
         column['headerClasses'] = '' if visible else 'hidden'
         table.update()

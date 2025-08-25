@@ -28,7 +28,7 @@ def test_log_with_newlines(screen: Screen):
 
 
 def test_replace_log(screen: Screen):
-    with ui.row() as container:
+    with ui.row().classes('w-full') as container:
         ui.log().push('A')
 
     def replace():

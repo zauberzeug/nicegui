@@ -2,7 +2,7 @@
 import inspect
 import warnings
 from multiprocessing import Queue
-from typing import Any, Callable, Optional, Tuple
+from typing import Any, Callable, Optional
 
 from .. import run
 from ..logging import log
@@ -51,20 +51,19 @@ try:
             """Set whether the window is always on top."""
             self._send(on_top)
 
-        async def get_size(self) -> Tuple[int, int]:
+        async def get_size(self) -> tuple[int, int]:
             """Get the window size as tuple (width, height)."""
             return await self._request()
 
-        async def get_position(self) -> Tuple[int, int]:
+        async def get_position(self) -> tuple[int, int]:
             """Get the window position as tuple (x, y)."""
             return await self._request()
 
         def load_url(self, url: str) -> None:
             self._send(url)
 
-        def load_html(self, content: str, base_uri: str = ...) -> None:  # type: ignore # pylint: disable=arguments-renamed
-            # DEPRECATED: `content` will be renamed to `html` in NiceGUI 3.0 to match the parameter name in pywebview>=5.4
-            self._send(content, base_uri)
+        def load_html(self, html: str, base_uri: str = ...) -> None:  # type: ignore
+            self._send(html, base_uri)
 
         def load_css(self, stylesheet: str) -> None:
             self._send(stylesheet)
@@ -123,12 +122,12 @@ try:
 
         async def create_file_dialog(  # type: ignore # pylint: disable=invalid-overridden-method
             self,
-            dialog_type: int = webview.OPEN_DIALOG,
+            dialog_type: int = webview.FileDialog.OPEN if hasattr(webview, 'FileDialog') else webview.OPEN_DIALOG,
             directory: str = '',
             allow_multiple: bool = False,
             save_filename: str = '',
-            file_types: Tuple[str, ...] = (),
-        ) -> Optional[Tuple[str, ...]]:
+            file_types: tuple[str, ...] = (),
+        ) -> Optional[tuple[str, ...]]:
             return await self._request(
                 dialog_type=dialog_type,
                 directory=directory,

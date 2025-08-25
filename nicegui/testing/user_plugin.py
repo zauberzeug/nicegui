@@ -1,5 +1,6 @@
 import asyncio
-from typing import AsyncGenerator, Callable
+from collections.abc import AsyncGenerator
+from typing import Callable
 
 import httpx
 import pytest

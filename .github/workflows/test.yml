@@ -10,13 +10,13 @@ jobs:
   code-check:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: set up Poetry
         uses: abatilo/actions-poetry@v4
       - name: set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.8"
+          python-version: "3.9"
           cache: "poetry"
       - name: install dependencies
         run: poetry install --all-extras --with dev
@@ -28,12 +28,12 @@ jobs:
   test:
     strategy:
       matrix:
-        python: ["3.8", "3.9", "3.10", "3.11", "3.12", "3.13"]
+        python: ["3.9", "3.10", "3.11", "3.12", "3.13"]
       fail-fast: false
     runs-on: ubuntu-latest
     timeout-minutes: 40
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: set up Poetry
         uses: abatilo/actions-poetry@v4
       - name: set up Python

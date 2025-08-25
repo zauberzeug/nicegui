@@ -1,6 +1,7 @@
 import weakref
+from collections.abc import Iterator
 from contextlib import contextmanager
-from typing import TYPE_CHECKING, Dict, Generic, Iterator, Optional, TypeVar
+from typing import TYPE_CHECKING, Generic, Optional, TypeVar
 
 from .observables import ObservableDict
 
@@ -65,7 +66,7 @@ class Style(ObservableDict, Generic[T]):
         return element
 
     @staticmethod
-    def parse(text: Optional[str]) -> Dict[str, str]:
+    def parse(text: Optional[str]) -> dict[str, str]:
         """Parse a string of styles into a dictionary."""
         result = {}
         for word in (text or '').split(';'):

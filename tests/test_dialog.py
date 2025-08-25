@@ -44,3 +44,22 @@ def test_await_dialog(screen: Screen):
     screen.click('Open')
     screen.type(Keys.ESCAPE)
     screen.should_contain('Result: None')
+
+
+def test_dialog_scroll_behavior(screen: Screen):
+    ui.add_css('html { scroll-behavior: smooth }')
+    ui.link('Go to bottom', '#bottom')
+    ui.link_target('bottom').classes('mt-[2000px]')
+    ui.button('dialog', on_click=lambda: ui.dialog(value=True))
+
+    screen.open('/')
+    screen.click('Go to bottom')
+    screen.wait(1)
+    position = screen.selenium.execute_script('return window.scrollY')
+    assert position > 1000
+
+    screen.click('dialog')
+    screen.wait(0.5)
+    screen.type(Keys.ESCAPE)
+    screen.wait(0.2)
+    assert screen.selenium.execute_script('return window.scrollY') == position

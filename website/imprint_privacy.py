@@ -1,11 +1,8 @@
 from nicegui import ui
 from website.documentation.rendering import section_heading, subheading
-from website.header import add_head_html, add_header
 
 
 def create():
-    add_head_html()
-    add_header()
     ui.page_title('Imprint & Privacy | NiceGUI')
 
     with ui.column().classes('w-full p-8 lg:p-16 max-w-[1250px] mx-auto'):

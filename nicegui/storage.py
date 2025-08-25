@@ -5,7 +5,7 @@ import time
 import uuid
 from datetime import timedelta
 from pathlib import Path
-from typing import Dict, Optional, Union
+from typing import Optional, Union
 
 from starlette.middleware import Middleware
 from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
@@ -32,6 +32,8 @@ class RequestTrackingMiddleware(BaseHTTPMiddleware):
         request.state.responded = False
         await core.app.storage._create_user_storage(request.session['id'])  # pylint: disable=protected-access
         response = await call_next(request)
+        if response.headers.get('X-NiceGUI-Content') != 'page':
+            await core.app.storage.user.close()
         request.state.responded = True
         return response
 
@@ -65,8 +67,8 @@ class Storage:
 
     def __init__(self) -> None:
         self._general = Storage._create_persistent_dict('general')
-        self._users: Dict[str, PersistentDict] = {}
-        self._tabs: Dict[str, ObservableDict] = {}
+        self._users: dict[str, PersistentDict] = {}
+        self._tabs: dict[str, ObservableDict] = {}
 
     @staticmethod
     def _create_persistent_dict(id: str) -> PersistentDict:  # pylint: disable=redefined-builtin
@@ -76,7 +78,7 @@ class Storage:
             return FilePersistentDict(Storage.path / f'storage-{id}.json', encoding='utf-8')
 
     @property
-    def browser(self) -> Union[ReadOnlyDict, Dict]:
+    def browser(self) -> Union[ReadOnlyDict, dict]:
         """Small storage that is saved directly within the user's browser (encrypted cookie).
 
         The data is shared between all browser tabs and can only be modified before the initial request has been submitted.

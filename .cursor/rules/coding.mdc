@@ -3,6 +3,7 @@ description: writing code
 globs: *.py
 alwaysApply: false
 ---
+
 # Coding Guidelines for AI Assistants
 
 **Primary Reference**: @CONTRIBUTING.md
