@@ -159,17 +159,9 @@ class Tree(FilterElement):
 
         CHILDREN_KEY = self._props['children-key']
         NODE_KEY = self._props['node-key']
-        LABEL_KEY = self._props['label-key']
 
         def iterate_nodes(nodes: List[Dict]) -> Iterator[Dict]:
             for node in nodes:
                 yield node
                 yield from iterate_nodes(node.get(CHILDREN_KEY, []))
-        keys: Set[str] = set()
-        for node in iterate_nodes(self._props['nodes']):
-            key = node.get(NODE_KEY)
-            if key is None:
-                key = node.get(LABEL_KEY)
-            if key is not None:
-                keys.add(str(key))
-        return keys
+        return {node[NODE_KEY] for node in iterate_nodes(self._props['nodes'])}
