@@ -28,7 +28,6 @@ from .event_listener import EventListener
 from .props import Props
 from .slot import Slot
 from .style import Style
-from .tailwind import Tailwind
 from .version import __version__
 
 if TYPE_CHECKING:
@@ -82,8 +81,6 @@ class Element(Visibility):
             parent_slot = slot_stack[-1]
             parent_slot.children.append(self)
             self._parent_slot = weakref.ref(parent_slot)
-
-        self.tailwind = Tailwind(self)
 
         client.outbox.enqueue_update(self)
         if self._parent_slot:
@@ -249,7 +246,7 @@ class Element(Visibility):
                         replace: str | None = None) -> type[Self]:
         """Apply, remove, toggle, or replace default HTML classes.
 
-        This allows modifying the look of the element or its layout using `Tailwind <https://v3.tailwindcss.com/>`_ or `Quasar <https://quasar.dev/>`_ classes.
+        This allows modifying the look of the element or its layout using `Tailwind <https://tailwindcss.com/>`_ or `Quasar <https://quasar.dev/>`_ classes.
 
         Removing or replacing classes can be helpful if predefined classes are not desired.
         All elements of this class will share these HTML classes.

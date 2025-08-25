@@ -10,12 +10,6 @@
   outline-offset: 2px;
 }
 
-/* prevent page from smooth-scrolling when dialogs or select popups close */
-.nicegui-dialog-open,
-.nicegui-select-popup-open {
-  scroll-behavior: auto;
-}
-
 /* flex containers */
 .nicegui-content,
 .nicegui-header,

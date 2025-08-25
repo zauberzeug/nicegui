@@ -222,7 +222,7 @@ def nested_sub_pages_demo():
     #     ui.sub_pages({
     #         '/': main,
     #         '/other': other,
-    #     }).classes('border-2 p-2')
+    #     }).classes('border border-gray-200 p-2')
 
     def main():
         ui.label('main page')
@@ -235,8 +235,9 @@ def nested_sub_pages_demo():
         #     '/': sub_main,
         #     '/a': sub_page_a,
         #     '/b': sub_page_b
-        # }).classes('border-2 p-2')
-        sub_pages = FakeSubPages({'/': sub_main, '/a': sub_page_a, '/b': sub_page_b}).classes('border-2 p-2')  # HIDE
+        # }).classes('border border-gray-200 p-2')
+        routes = {'/': sub_main, '/a': sub_page_a, '/b': sub_page_b}  # HIDE
+        sub_pages = FakeSubPages(routes).classes('border border-gray-200 p-2')  # HIDE
         sub_pages.link('Go to main', '/')  # HIDE
         sub_pages.link('Go to A', '/a')  # HIDE
         sub_pages.link('Go to B', '/b')  # HIDE
@@ -252,7 +253,7 @@ def nested_sub_pages_demo():
         ui.label('sub B page')
 
     # END OF DEMO
-    sub_pages = FakeSubPages({'/': main, '/other': other}).classes('border-2 p-2')
+    sub_pages = FakeSubPages({'/': main, '/other': other}).classes('border border-gray-200 p-2')
     sub_pages.link('Go to main', '/')
     sub_pages.link('Go to other', '/other')
     sub_pages.init()

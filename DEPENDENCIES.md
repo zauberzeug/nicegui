@@ -1,9 +1,9 @@
 # Included Web Dependencies
 
+- @tailwindcss/browser: 4.1.11 ([MIT](https://opensource.org/licenses/MIT))
 - es-module-shims: 2.6.2 ([MIT](https://opensource.org/licenses/MIT))
 - quasar: 2.18.2 ([MIT](https://opensource.org/licenses/MIT))
 - socket.io: 4.8.1 ([MIT](https://opensource.org/licenses/MIT))
-- tailwindcss: 3.4.17 ([MIT](https://opensource.org/licenses/MIT))
 - vue: 3.5.18 ([MIT](https://opensource.org/licenses/MIT))
 - ag-grid-community: ^34.1.1 ([MIT](https://opensource.org/licenses/MIT))
 - codemirror: ^6.0.2 ([MIT](https://opensource.org/licenses/MIT))

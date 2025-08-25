@@ -34,7 +34,7 @@ def title(content: str) -> ui.markdown:
 
 def subtitle(content: str) -> ui.markdown:
     """Render a subtitle."""
-    return ui.markdown(content).classes('text-xl sm:text-2xl md:text-3xl leading-7')
+    return ui.markdown(content).classes('text-xl sm:text-2xl md:text-3xl leading-9')
 
 
 def example_link(example: Example) -> None:
