@@ -13,6 +13,11 @@
         @import url("{{ prefix | safe }}/_nicegui/{{version}}/static/quasar.css") layer(quasar);
       {% endif %}
       @import url("{{ prefix | safe }}/_nicegui/{{version}}/static/nicegui.css") layer(nicegui);
+      @layer quasar {
+        blockquote, dd, dl, figure, h1, h2, h3, h4, h5, h6, hr, p, pre {
+          margin: revert-layer; /* HACK: revert Quasar's margin styles */
+        }
+      }
       @layer overrides {
         .column.inline, .flex.inline, .row.inline {
           display: inline-flex;  /* HACK: re-apply Quasar's inline styles to override Tailwind */
