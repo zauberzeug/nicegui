@@ -86,4 +86,3 @@ class LabelElement(Element):
             del self._props['label']
         else:
             self._props['label'] = label
-        self.update()

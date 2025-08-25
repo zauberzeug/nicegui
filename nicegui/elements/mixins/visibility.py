@@ -103,7 +103,5 @@ class Visibility:
         classes = element.classes  # pylint: disable=no-member
         if visible and 'hidden' in classes:
             classes.remove('hidden')
-            element.update()  # pylint: disable=no-member
         if not visible and 'hidden' not in classes:
             classes.append('hidden')
-            element.update()  # pylint: disable=no-member

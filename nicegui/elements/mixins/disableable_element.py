@@ -94,4 +94,3 @@ class DisableableElement(Element):
         :param enabled: The new state.
         """
         self._props['disable'] = not enabled
-        self.update()

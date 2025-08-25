@@ -19,7 +19,6 @@ def main_demo() -> None:
 
     def update():
         echart.options['series'][0]['data'][0] = random()
-        echart.update()
 
     ui.button('Update', on_click=update)
 

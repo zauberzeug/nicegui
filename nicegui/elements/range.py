@@ -39,7 +39,6 @@ class Range(ValueElement, DisableableElement):
         if self._props['min'] == value:
             return
         self._props['min'] = value
-        self.update()
 
     @property
     def max(self) -> float:
@@ -51,7 +50,6 @@ class Range(ValueElement, DisableableElement):
         if self._props['max'] == value:
             return
         self._props['max'] = value
-        self.update()
 
     @property
     def step(self) -> float:
@@ -63,4 +61,3 @@ class Range(ValueElement, DisableableElement):
         if self._props['step'] == value:
             return
         self._props['step'] = value
-        self.update()

@@ -82,4 +82,3 @@ class NameElement(Element):
         :param name: The new name.
         """
         self._props['name'] = name
-        self.update()

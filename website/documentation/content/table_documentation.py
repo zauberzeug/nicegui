@@ -136,7 +136,7 @@ def show_and_hide_columns():
 
     with ui.button(icon='menu'):
         with ui.menu(), ui.column().classes('gap-0 p-2'):
-            for column in columns:
+            for column in table.columns:
                 ui.switch(column['label'], value=True, on_change=lambda e,
                           column=column: toggle(column, e.value))
 

@@ -83,7 +83,6 @@ def styling_demo():
                                 element.props(e.value)
                             except ValueError:
                                 pass
-                            element.update()
                         ui.markdown("`element.props('`")
                         ui.input(on_change=handle_props).classes('text-mono grow').props('dense hide-bottom-space')
                         ui.markdown("`')`")
