@@ -4,7 +4,7 @@ import time
 import urllib.parse
 from contextlib import asynccontextmanager
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any, Dict, List
 
 import socketio
 from fastapi import HTTPException, Request
@@ -220,7 +220,7 @@ def _on_ack(_: str, msg: Dict) -> None:
 
 
 async def prune_tab_storage(*, force: bool = False) -> None:
-    """Prune tab storage that is older than the configured `max_tab_storage_age`."""
+    """Prune tab storage that is older than the configured ``max_tab_storage_age``."""
     tab_storages = core.app.storage._tabs  # pylint: disable=protected-access
     for tab_id, tab in list(tab_storages.items()):
         if force or time.time() > tab.last_modified + core.app.storage.max_tab_storage_age:
@@ -235,7 +235,7 @@ async def prune_user_storage(*, force: bool = False) -> None:
     client_session_ids = {client.request.session['id']
                           for client in Client.instances.values()
                           if client.request is not None}
-    storages_to_close = []
+    storages_to_close: List[PersistentDict] = []
     now = time.time()
     user_storages = core.app.storage._users  # pylint: disable=protected-access
     for session_id in list(user_storages.keys()):

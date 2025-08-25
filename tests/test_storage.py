@@ -334,29 +334,30 @@ def test_tab_storage_holds_non_serializable_objects(screen: Screen):
     screen.wait(0.5)
 
 
-def test_user_storage_is_pruned(screen: Screen):
+async def test_user_storage_is_pruned(screen: Screen):
     @ui.page('/')
     def page():
-        ui.label(f'persistent dicts: {len(app.storage._users)}')
         ui.label(f'clients: {len(Client.instances)}')
+        ui.label(f'persistent dicts: {len(app.storage._users)}')
 
     @app.get('/status')
     def status():
         return 'ok'
 
     screen.open('/')
-    screen.should_contain('persistent dicts: 1')
     screen.should_contain('clients: 2')
-    assert len(app.storage._users) == 1
+    screen.should_contain('persistent dicts: 1')
     assert len(Client.instances) == 2, 'one for the auto-index client and one for the open() call'
+    assert len(app.storage._users) == 1
+
     response = httpx.get('http://localhost:3392/status')
     assert response.status_code == 200
     assert response.text == '"ok"'
     assert len(Client.instances) == 2
     assert len(app.storage._users) == 2
+
     screen.close()
     Client.prune_instances(client_age_threshold=0)
-    background_tasks.create(nicegui.prune_user_storage(force=True))
-    screen.wait(0.1)
-    Client.prune_instances(client_age_threshold=0)
+    await nicegui.prune_user_storage(force=True)
+    assert len(Client.instances) == 1
     assert len(app.storage._users) == 0
