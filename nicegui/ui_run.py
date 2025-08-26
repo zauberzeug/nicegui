@@ -126,7 +126,7 @@ def run(root: Optional[Callable] = None, *,
         prod_js=prod_js,
         show_welcome_message=show_welcome_message,
     )
-    core.spa = root
+    core.root = root
     core.app.config.endpoint_documentation = endpoint_documentation
     if not helpers.is_pytest():
         core.app.add_middleware(GZipMiddleware)

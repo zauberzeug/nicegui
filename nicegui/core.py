@@ -13,4 +13,4 @@ app: App
 sio: AsyncServer
 loop: asyncio.AbstractEventLoop | None = None
 air: Air | None = None
-spa: Callable | None = None
+root: Callable | None = None

@@ -157,9 +157,10 @@ async def _shutdown() -> None:
 
 @app.exception_handler(404)
 async def _exception_handler_404(request: Request, exception: Exception) -> Response:
-    if core.spa is not None:
+    root = core.root
+    if root is not None:
         with Client(page(''), request=request) as client:
-            core.spa()
+            root()
             # NOTE: after building the page, there might be sub pages that have 404 -- and initial requests should send 404 status request in such cases
             sub_pages_elements = [e for e in client.elements.values() if isinstance(e, SubPages)]
             if not any(sub_pages.has_404 for sub_pages in sub_pages_elements):
