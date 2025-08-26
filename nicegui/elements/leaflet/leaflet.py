@@ -79,11 +79,10 @@ class Leaflet(Element, component='leaflet.js', esm={'nicegui-leaflet': 'dist'}, 
             Layer.current_leaflet = self
         return attribute
 
-    def _handle_init(self, e: GenericEventArguments) -> None:
+    def _handle_init(self) -> None:
         self.is_initialized = True
-        with self.client.individual_target(e.args['socket_id']):
-            for layer in self.layers:
-                self.run_method('add_layer', layer.to_dict(), layer.id)
+        for layer in self.layers:
+            self.run_method('add_layer', layer.to_dict(), layer.id)
 
     async def initialized(self, timeout: float = 3.0) -> None:
         """Wait until the map is initialized.
