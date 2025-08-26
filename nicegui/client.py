@@ -274,6 +274,7 @@ class Client:
         document_id = self._socket_to_document_id.pop(socket_id)
         self._cancel_delete_task(document_id)
         self._num_connections[document_id] -= 1
+        self.tab_id = None
 
         async def delete_content() -> None:
             await asyncio.sleep(self.page.resolve_reconnect_timeout())
@@ -371,21 +372,17 @@ class Client:
         self._temporary_socket_id = None
 
     @classmethod
-    async def prune_instances(cls) -> None:
-        """Prune stale clients in an endless loop."""
-        while True:
-            try:
-                stale_clients = [
-                    client
-                    for client in cls.instances.values()
-                    if not client.shared and not client.has_socket_connection and client.created < time.time() - 60.0
-                ]
-                for client in stale_clients:
-                    client.delete()
-            except Exception:
-                # NOTE: make sure the loop doesn't crash
-                log.exception('Error while pruning clients')
-            try:
-                await asyncio.sleep(10)
-            except asyncio.CancelledError:
-                break
+    def prune_instances(cls, *, client_age_threshold: float = 60.0) -> None:
+        """Prune stale clients."""
+        try:
+            stale_clients = [
+                client
+                for client in cls.instances.values()
+                if not client.shared and not client.has_socket_connection
+                and client.created <= time.time() - client_age_threshold
+            ]
+            for client in stale_clients:
+                client.delete()
+
+        except Exception:
+            log.exception('Error while pruning clients')

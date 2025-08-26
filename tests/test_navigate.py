@@ -58,3 +58,20 @@ def test_navigate_to_relative_url(screen: Screen):
     screen.click('Back')
     screen.wait(0.2)
     assert screen.selenium.current_url == f'http://localhost:{Screen.PORT}/'
+
+
+@pytest.mark.parametrize('sub_pages', [False, True])
+def test_navigate_to_mailto_url(screen: Screen, sub_pages: bool):
+    @ui.page('/')
+    def page():
+        ui.button('Send mail', on_click=lambda: ui.navigate.to('mailto:test@example.com'))
+        if sub_pages:
+            ui.sub_pages({'/': lambda: ui.label('sub page')})
+
+    screen.open('/')
+    # Override window.open to capture calls instead of triggering the system mail client
+    screen.selenium.execute_script('window.__open_calls = [];'
+                                   'window.open = (url, target) => window.__open_calls.push([url, target]);')
+    screen.click('Send mail')
+    screen.wait(0.5)
+    assert screen.selenium.execute_script('return window.__open_calls') == [['mailto:test@example.com', '_self']]

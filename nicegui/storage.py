@@ -1,7 +1,5 @@
-import asyncio
 import contextvars
 import os
-import time
 import uuid
 from datetime import timedelta
 from pathlib import Path
@@ -20,8 +18,6 @@ from .persistence import FilePersistentDict, PersistentDict, ReadOnlyDict, Redis
 
 request_contextvar: contextvars.ContextVar[Optional[Request]] = contextvars.ContextVar('request_var', default=None)
 
-PURGE_INTERVAL = timedelta(minutes=5).total_seconds()
-
 
 class RequestTrackingMiddleware(BaseHTTPMiddleware):
 
@@ -30,10 +26,10 @@ class RequestTrackingMiddleware(BaseHTTPMiddleware):
         if 'id' not in request.session:
             request.session['id'] = str(uuid.uuid4())
         request.state.responded = False
-        await core.app.storage._create_user_storage(request.session['id'])  # pylint: disable=protected-access
+        session_id = request.session['id']
+        if session_id not in core.app.storage._users:  # pylint: disable=protected-access
+            await core.app.storage._create_user_storage(session_id)  # pylint: disable=protected-access
         response = await call_next(request)
-        if response.headers.get('X-NiceGUI-Content') != 'page':
-            await core.app.storage.user.close()
         request.state.responded = True
         return response
 
@@ -120,9 +116,8 @@ class Storage:
         return self._users[session_id]
 
     async def _create_user_storage(self, session_id: str) -> None:
-        if session_id not in self._users:
-            self._users[session_id] = Storage._create_persistent_dict(f'user-{session_id}')
-            await self._users[session_id].initialize()
+        self._users[session_id] = Storage._create_persistent_dict(f'user-{session_id}')
+        await self._users[session_id].initialize()
 
     @staticmethod
     def _is_in_auto_index_context() -> bool:
@@ -181,20 +176,6 @@ class Storage:
             else:
                 self._tabs[tab_id] = ObservableDict()
             self._tabs[tab_id].update(self._tabs[old_tab_id])
-
-    async def prune_tab_storage(self) -> None:
-        """Regularly prune tab storage that is older than the configured `max_tab_storage_age`."""
-        while True:
-            for tab_id, tab in list(self._tabs.items()):
-                if time.time() > tab.last_modified + self.max_tab_storage_age:
-                    tab.clear()
-                    if isinstance(tab, PersistentDict):
-                        await tab.close()
-                    del self._tabs[tab_id]
-            try:
-                await asyncio.sleep(PURGE_INTERVAL)
-            except asyncio.CancelledError:
-                break
 
     def clear(self) -> None:
         """Clears all storage."""
