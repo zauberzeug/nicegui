@@ -177,7 +177,6 @@ def map_of_nicegui():
             - customization:
                 - `.props()` and [`.default_props()`](/documentation/element#default_props): add Quasar props and regular HTML attributes
                 - `.classes()` and [`.default_classes()`](/documentation/element#default_classes): add Quasar, Tailwind and custom HTML classes
-                - [`.tailwind`](/documentation/section_styling_appearance#tailwind_css): convenience API for adding Tailwind classes
                 - `.style()` and [`.default_style()`](/documentation/element#default_style): add CSS style definitions
                 - [`.tooltip()`](/documentation/tooltip): add a tooltip to an element
                 - [`.mark()`](/documentation/element_filter#markers): mark an element for querying with an [ElementFilter](/documentation/element_filter)

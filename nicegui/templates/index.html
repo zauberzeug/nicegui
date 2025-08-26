@@ -4,13 +4,30 @@
     <title>{{ title }}</title>
     <meta name="viewport" content="{{ viewport }}" />
     <link href="{{ favicon_url }}" rel="shortcut icon" />
-    <link href="{{ prefix | safe }}/_nicegui/{{version}}/static/nicegui.css" rel="stylesheet" type="text/css" />
-    <link href="{{ prefix | safe }}/_nicegui/{{version}}/static/fonts.css" rel="stylesheet" type="text/css" />
-    {% if prod_js %}
-    <link href="{{ prefix | safe }}/_nicegui/{{version}}/static/quasar.prod.css" rel="stylesheet" type="text/css" />
-    {% else %}
-    <link href="{{ prefix | safe }}/_nicegui/{{version}}/static/quasar.css" rel="stylesheet" type="text/css" />
-    {% endif %}
+    <style>
+      @layer theme, base, quasar, nicegui, components, utilities, overrides;
+      @import url("{{ prefix | safe }}/_nicegui/{{version}}/static/fonts.css") layer(base);
+      {% if prod_js %}
+        @import url("{{ prefix | safe }}/_nicegui/{{version}}/static/quasar.prod.css") layer(quasar);
+      {% else %}
+        @import url("{{ prefix | safe }}/_nicegui/{{version}}/static/quasar.css") layer(quasar);
+      {% endif %}
+      @import url("{{ prefix | safe }}/_nicegui/{{version}}/static/nicegui.css") layer(nicegui);
+      @layer quasar {
+        blockquote, dd, dl, figure, h1, h2, h3, h4, h5, h6, hr, p, pre {
+          margin: revert-layer; /* HACK: revert Quasar's margin styles */
+        }
+      }
+      @layer overrides {
+        .column.inline, .flex.inline, .row.inline {
+          display: inline-flex;  /* HACK: re-apply Quasar's inline styles to override Tailwind */
+        }
+        .nicegui-dialog-open,
+        .nicegui-select-popup-open {
+          scroll-behavior: auto !important; /* HACK: avoid smooth-scrolling when dialogs or select popups close */
+        }
+      }
+    </style>
     <!-- prevent Prettier from removing this line -->
     {{ head_html | safe }}
     <script type="importmap">
@@ -19,9 +36,15 @@
     {% for url in js_imports_urls %}
     <link rel="modulepreload" href="{{ url }}" />
     {% endfor %}
+    <!-- prevent Prettier from removing this line -->
+    {% if tailwind %}
+    <style type="text/tailwindcss">
+      @custom-variant dark (&:where(body.body--dark, body.body--dark *));
+    </style>
+    {% endif %}
   </head>
   <body>
-    <script nomodule src="{{ prefix | safe }}/_nicegui/{{version}}/static/es-module-shims.js"></script>
+    <script async src="{{ prefix | safe }}/_nicegui/{{version}}/static/es-module-shims.js"></script>
     <script defer src="{{ prefix | safe }}/_nicegui/{{version}}/static/socket.io.min.js"></script>
     {% if tailwind %}
     <script defer src="{{ prefix | safe }}/_nicegui/{{version}}/static/tailwindcss.min.js"></script>
@@ -59,11 +82,6 @@
 
       {{ js_imports | safe }}
       {{ vue_scripts | safe }}
-
-      {% if tailwind %}
-      if (dark !== None) tailwind.config.darkMode = "class";
-      if (dark === True) document.body.classList.add("dark");
-      {% endif %}
 
       app.mount("#app");
     </script>

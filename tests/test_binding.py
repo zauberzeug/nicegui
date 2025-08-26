@@ -1,6 +1,6 @@
 import copy
 import weakref
-from typing import Dict, Optional, Tuple
+from typing import Optional
 
 from selenium.webdriver.common.keys import Keys
 
@@ -10,7 +10,7 @@ from nicegui.testing import Screen, User
 
 def test_ui_select_with_tuple_as_key(screen: Screen):
     class Model:
-        selection: Optional[Tuple[int, int]] = None
+        selection: Optional[tuple[int, int]] = None
     data = Model()
     options = {
         (2, 1): 'option A',
@@ -101,7 +101,7 @@ def test_binding_refresh_before_page_delivery(screen: Screen):
 
 
 def test_missing_target_attribute(screen: Screen):
-    data: Dict = {}
+    data: dict = {}
     ui.label('Hello').bind_text_to(data)
     ui.label().bind_text_from(data, 'text', lambda text: f'{text=}')
 
@@ -161,7 +161,7 @@ def test_automatic_cleanup(screen: Screen):
         def __init__(self, value: str) -> None:
             self.value = value
 
-    def create_model_and_label(value: str) -> Tuple[Model, weakref.ref, ui.label]:
+    def create_model_and_label(value: str) -> tuple[Model, weakref.ref, ui.label]:
         model = Model(value)
         label = ui.label(value).bind_text(model, 'value')
         return id(model), weakref.ref(model), label

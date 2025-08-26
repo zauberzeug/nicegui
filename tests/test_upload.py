@@ -1,5 +1,4 @@
 from pathlib import Path
-from typing import List
 
 from nicegui import events, ui
 from nicegui.testing import Screen
@@ -9,7 +8,7 @@ test_path2 = Path('tests/test_scene.py').resolve()
 
 
 def test_uploading_text_file(screen: Screen):
-    results: List[events.UploadEventArguments] = []
+    results: list[events.UploadEventArguments] = []
     ui.upload(on_upload=results.append, label='Test Title')
 
     screen.open('/')
@@ -25,7 +24,7 @@ def test_uploading_text_file(screen: Screen):
 
 
 def test_two_upload_elements(screen: Screen):
-    results: List[events.UploadEventArguments] = []
+    results: list[events.UploadEventArguments] = []
     ui.upload(on_upload=results.append, auto_upload=True, label='Test Title 1')
     ui.upload(on_upload=results.append, auto_upload=True, label='Test Title 2')
 
@@ -94,7 +93,7 @@ def test_reset_upload(screen: Screen):
 
 
 def test_multi_upload_event(screen: Screen):
-    results: List[events.MultiUploadEventArguments] = []
+    results: list[events.MultiUploadEventArguments] = []
     ui.upload(on_multi_upload=results.append, multiple=True)
 
     screen.open('/')

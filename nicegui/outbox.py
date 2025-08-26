@@ -4,7 +4,7 @@ import asyncio
 import time
 import weakref
 from collections import deque
-from typing import TYPE_CHECKING, Any, Deque, Optional, Tuple, Union
+from typing import TYPE_CHECKING, Any
 
 from . import background_tasks, core
 
@@ -17,11 +17,11 @@ ElementId = int
 ClientId = str
 MessageType = str
 Payload = Any
-Message = Tuple[ClientId, MessageType, Payload]
+Message = tuple[ClientId, MessageType, Payload]
 
 MessageId = int
 MessageTime = float
-HistoryEntry = Tuple[MessageId, MessageTime, Message]
+HistoryEntry = tuple[MessageId, MessageTime, Message]
 
 
 class Deleted:
@@ -35,13 +35,13 @@ class Outbox:
 
     def __init__(self, client: Client) -> None:
         self._client = weakref.ref(client)
-        self.updates: weakref.WeakValueDictionary[ElementId, Union[Element, Deleted]] = weakref.WeakValueDictionary()
-        self.messages: Deque[Message] = deque()
-        self.message_history: Deque[HistoryEntry] = deque()
+        self.updates: weakref.WeakValueDictionary[ElementId, Element | Deleted] = weakref.WeakValueDictionary()
+        self.messages: deque[Message] = deque()
+        self.message_history: deque[HistoryEntry] = deque()
         self.next_message_id: int = 0
 
         self._should_stop = False
-        self._enqueue_event: Optional[asyncio.Event] = None
+        self._enqueue_event: asyncio.Event | None = None
 
         if core.app.is_started:
             background_tasks.create(self.loop(), name=f'outbox loop {client.id}')

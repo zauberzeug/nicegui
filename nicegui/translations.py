@@ -1,8 +1,6 @@
-from typing import Dict
-
 from .language import Language
 
-translations: Dict[Language, Dict[str, str]] = {
+translations: dict[Language, dict[str, str]] = {
     'de': {
         'connection_lost': 'Verbindung verloren',
         'trying_to_reconnect': 'Versuche erneut zu verbinden...'

@@ -3,7 +3,7 @@ from __future__ import annotations
 import asyncio
 import inspect
 import re
-from typing import Any, Callable, Dict, Optional, Set
+from typing import Any, Callable
 from urllib.parse import urlparse
 
 from starlette.datastructures import QueryParams
@@ -21,10 +21,10 @@ from ..page_arguments import PageArguments, RouteMatch
 class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-pages'):
 
     def __init__(self,
-                 routes: Optional[Dict[str, Callable]] = None,
+                 routes: dict[str, Callable] | None = None,
                  *,
-                 root_path: Optional[str] = None,
-                 data: Optional[Dict[str, Any]] = None,
+                 root_path: str | None = None,
+                 data: dict[str, Any] | None = None,
                  show_404: bool = True,
                  ) -> None:
         """Create a container for client-side routing within a page.
@@ -54,8 +54,8 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
         self._rendered_path = ''
         self._root_path = parent_sub_pages_element._rendered_path if parent_sub_pages_element else root_path
         self._data = data or {}
-        self._match: Optional[RouteMatch] = None
-        self._active_tasks: Set[asyncio.Task] = set()
+        self._match: RouteMatch | None = None
+        self._active_tasks: set[asyncio.Task] = set()
         self._404_enabled = show_404
         self.has_404 = False
         self._show()
@@ -133,7 +133,7 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
         Label(f'500: {msg}')
         log.error(msg, exc_info=True)
 
-    def _set_match(self, match: Optional[RouteMatch]) -> None:
+    def _set_match(self, match: RouteMatch | None) -> None:
         self._match = match
         if match is None:
             if self._404_enabled:
@@ -147,8 +147,8 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
     def _reset_match(self) -> None:
         self._match = None
 
-    def _find_matching_path(self) -> Optional[RouteMatch]:
-        match: Optional[RouteMatch] = None
+    def _find_matching_path(self) -> RouteMatch | None:
+        match: RouteMatch | None = None
         relative_path = self._router.current_path[len(self._root_path or ''):]
         if not relative_path.startswith('/'):
             relative_path = '/' + relative_path
@@ -164,7 +164,7 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
             segments.pop()
         return match
 
-    def _match_route(self, path: str) -> Optional[RouteMatch]:
+    def _match_route(self, path: str) -> RouteMatch | None:
         parsed_url = urlparse(path)
         path_only = parsed_url.path.rstrip('/')
         query_params = QueryParams(parsed_url.query) if parsed_url.query else QueryParams()
@@ -186,7 +186,7 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
         return None
 
     @staticmethod
-    def _match_path(pattern: str, path: str) -> Optional[Dict[str, str]]:
+    def _match_path(pattern: str, path: str) -> dict[str, str] | None:
         if '{' not in pattern:
             return {} if pattern == path else None
 

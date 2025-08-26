@@ -1,6 +1,4 @@
-import sys
 from datetime import datetime, timedelta, timezone
-from typing import List
 
 import pandas as pd
 import polars as pl
@@ -118,7 +116,7 @@ def test_get_selected_rows(screen: Screen):
         grid = ui.aggrid({
             'columnDefs': [{'field': 'name'}],
             'rowData': [{'name': 'Alice'}, {'name': 'Bob'}, {'name': 'Carol'}],
-            'rowSelection': 'multiple',
+            'rowSelection': {'mode': 'multiRow', 'enableClickSelection': True},
         })
 
         async def get_selected_rows():
@@ -184,7 +182,7 @@ def test_create_dynamically(screen: Screen):
 
 
 def test_api_method_after_creation(screen: Screen):
-    options = {'columnDefs': [{'field': 'name'}], 'rowData': [{'name': 'Alice'}]}
+    options = {'columnDefs': [{'field': 'name'}], 'rowData': [{'name': 'Alice'}], 'rowSelection': {'mode': 'multiRow'}}
     ui.button('Create', on_click=lambda: ui.aggrid(options).run_grid_method('selectAll'))
 
     screen.open('/')
@@ -193,7 +191,6 @@ def test_api_method_after_creation(screen: Screen):
 
 
 @pytest.mark.parametrize('df_type', ['pandas', 'polars'])
-@pytest.mark.skipif(sys.version_info[:2] == (3, 8), reason='Skipping test for Python 3.8')
 def test_problematic_datatypes(screen: Screen, df_type: str):
     if df_type == 'pandas':
         df = pd.DataFrame({
@@ -258,7 +255,7 @@ def test_run_method_with_function(screen: Screen):
 
 
 def test_get_client_data(screen: Screen):
-    data: List = []
+    data: list = []
 
     @ui.page('/')
     def page():

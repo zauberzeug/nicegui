@@ -2,7 +2,7 @@ import multiprocessing
 import os
 import sys
 from pathlib import Path
-from typing import Any, Callable, List, Literal, Optional, Tuple, TypedDict, Union
+from typing import Any, Callable, Literal, Optional, TypedDict, Union
 
 from fastapi.middleware.gzip import GZipMiddleware
 from starlette.routing import Route
@@ -61,7 +61,7 @@ def run(root: Optional[Callable] = None, *,
         show: bool = True,
         on_air: Optional[Union[str, Literal[True]]] = None,
         native: bool = False,
-        window_size: Optional[Tuple[int, int]] = None,
+        window_size: Optional[tuple[int, int]] = None,
         fullscreen: bool = False,
         frameless: bool = False,
         reload: bool = True,
@@ -202,7 +202,7 @@ def run(root: Optional[Callable] = None, *,
     if show:
         helpers.schedule_browser(protocol, host, port)
 
-    def split_args(args: str) -> List[str]:
+    def split_args(args: str) -> list[str]:
         return [a.strip() for a in args.split(',')]
 
     if kwargs.get('workers', 1) > 1:

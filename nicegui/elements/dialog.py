@@ -4,7 +4,7 @@ from typing import Any, Optional
 from .mixins.value_element import ValueElement
 
 
-class Dialog(ValueElement):
+class Dialog(ValueElement, component='dialog.js'):
 
     def __init__(self, *, value: bool = False) -> None:
         """Dialog
@@ -19,7 +19,7 @@ class Dialog(ValueElement):
 
         :param value: whether the dialog should be opened on creation (default: `False`)
         """
-        super().__init__(tag='q-dialog', value=value, on_value_change=None)
+        super().__init__(value=value, on_value_change=None)
         self._result: Any = None
         self._submitted: Optional[asyncio.Event] = None
 
