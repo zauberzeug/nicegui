@@ -137,7 +137,8 @@ async def _startup() -> None:
     app.timer(10, Client.prune_instances, immediate=False)
     app.timer(10, Slot.prune_stacks, immediate=False)
     app.timer(10, prune_tab_storage, immediate=False)
-    app.timer(10, prune_user_storage, immediate=False)
+    if app.storage.secret is not None:
+        app.timer(10, prune_user_storage, immediate=False)
     air.connect()
 
 
