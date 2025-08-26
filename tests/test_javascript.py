@@ -91,14 +91,3 @@ def test_simultaneous_async_javascript(screen: Screen):
     screen.click('runB')
     screen.should_contain('A: 1')
     screen.should_contain('B: 2')
-
-
-def test_raise_on_auto_index_page(screen: Screen):
-    async def await_answer():
-        await ui.run_javascript('return 42')
-    ui.button('Ask', on_click=await_answer)
-
-    screen.open('/')
-    screen.click('Ask')
-    screen.assert_py_logger('ERROR', 'Cannot await JavaScript responses on the auto-index page. '
-                            'There could be multiple clients connected and it is not clear which one to wait for.')

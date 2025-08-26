@@ -98,8 +98,6 @@ def echart_from_pyecharts_demo():
 
     The colon ":" in front of the method name "setOption" indicates that the argument is a JavaScript expression
     that is evaluated on the client before it is passed to the method.
-
-    Note that requesting data from the client is only supported for page functions, not for the shared auto-index page.
 ''')
 def methods_demo() -> None:
     # @ui.page('/')

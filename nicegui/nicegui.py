@@ -245,9 +245,7 @@ async def prune_tab_storage(*, force: bool = False) -> None:
 
 async def prune_user_storage(*, force: bool = False) -> None:
     """Remove user storage objects without a client session."""
-    client_session_ids = {client.request.session['id']
-                          for client in Client.instances.values()
-                          if client.request is not None}
+    client_session_ids = {client.request.session['id'] for client in Client.instances.values()}
     storages_to_close: list[PersistentDict] = []
     now = time.time()
     user_storages = core.app.storage._users  # pylint: disable=protected-access

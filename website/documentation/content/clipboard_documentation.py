@@ -6,9 +6,6 @@ from . import doc
 @doc.demo('Read and write to the clipboard', '''
     The following demo shows how to use `ui.clipboard.read()`, `ui.clipboard.write()` and `ui.clipboard.read_image()` to interact with the clipboard.
 
-    Because auto-index page can be accessed by multiple browser tabs simultaneously, reading the clipboard is not supported on this page.
-    This is only possible within page-builder functions decorated with `ui.page`, as shown in this demo.
-
     Note that your browser may ask for permission to access the clipboard or may not support this feature at all.
 ''')
 def main_demo() -> None:

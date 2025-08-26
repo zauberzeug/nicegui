@@ -17,33 +17,6 @@ CONSTANT_UUID = str(uuid.uuid4())
 doc.title('*Pages* & Routing')
 
 doc.intro(page_documentation)
-
-
-@doc.auto_execute
-@doc.demo('Auto-index page', '''
-    Pages created with the `@ui.page` decorator are "private".
-    Their content is re-created for each client.
-    Thus, in the demo to the right, the displayed ID on the private page changes when the browser reloads the page.
-
-    UI elements that are not wrapped in a decorated page function are placed on an automatically generated index page at route "/".
-    This auto-index page is created once on startup and *shared* across all clients that might connect.
-    Thus, each connected client will see the *same* elements.
-    In the demo to the right, the displayed ID on the auto-index page remains constant when the browser reloads the page.
-''')
-def auto_index_page():
-    from uuid import uuid4
-
-    @ui.page('/private_page')
-    async def private_page():
-        ui.label(f'private page with ID {uuid4()}')
-
-    # ui.label(f'shared auto-index page with ID {uuid4()}')
-    # ui.link('private page', private_page)
-    # END OF DEMO
-    ui.label(f'shared auto-index page with ID {CONSTANT_UUID}')
-    ui.link('private page', private_page)
-
-
 doc.intro(page_layout_documentation)
 doc.intro(sub_pages_documentation)
 

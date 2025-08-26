@@ -240,8 +240,6 @@ def aggrid_run_row_method():
 @doc.demo('Filter return values', '''
     You can filter the return values of method calls by passing string that defines a JavaScript function.
     This demo runs the grid method "getDisplayedRowAtIndex" and returns the "data" property of the result.
-
-    Note that requesting data from the client is only supported for page functions, not for the shared auto-index page.
 ''')
 def aggrid_filter_return_values():
     # @ui.page('/')

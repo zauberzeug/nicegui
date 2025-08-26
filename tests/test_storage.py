@@ -347,17 +347,17 @@ async def test_user_storage_is_pruned(screen: Screen):
     screen.open('/')
     screen.should_contain('clients: 2')
     screen.should_contain('persistent dicts: 1')
-    assert len(Client.instances) == 2, 'one for the auto-index client and one for the open() call'
+    assert len(Client.instances) == 1
     assert len(app.storage._users) == 1
 
     response = httpx.get('http://localhost:3392/status')
     assert response.status_code == 200
     assert response.text == '"ok"'
-    assert len(Client.instances) == 2
+    assert len(Client.instances) == 1
     assert len(app.storage._users) == 2
 
     screen.close()
     Client.prune_instances(client_age_threshold=0)
     await nicegui.prune_user_storage(force=True)
-    assert len(Client.instances) == 1
+    assert len(Client.instances) == 0
     assert len(app.storage._users) == 0
