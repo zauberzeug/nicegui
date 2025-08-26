@@ -1,3 +1,4 @@
+import asyncio
 import inspect
 import os
 import platform
@@ -72,7 +73,7 @@ class App(FastAPI):
         """Start NiceGUI. (For internal use only.)"""
         self._state = State.STARTING
         for t in self._startup_handlers:
-            Client.auto_index_client.safe_invoke(t)
+            self.safe_invoke(t)
         self.on_shutdown(self.storage.on_shutdown)
         self.on_shutdown(background_tasks.teardown)
         self._state = State.STARTED
@@ -80,15 +81,31 @@ class App(FastAPI):
     async def stop(self) -> None:
         """Stop NiceGUI. (For internal use only.)"""
         self._state = State.STOPPING
-        with Client.auto_index_client:
-            for t in self._shutdown_handlers:
-                if isinstance(t, Awaitable):
-                    await t
-                else:
-                    result = t(self) if len(inspect.signature(t).parameters) == 1 else t()
-                    if helpers.is_coroutine_function(t):
-                        await result
+        for t in self._shutdown_handlers:
+            if isinstance(t, Awaitable):
+                await t
+            else:
+                result = t(self) if len(inspect.signature(t).parameters) == 1 else t()
+                if helpers.is_coroutine_function(t):
+                    await result
         self._state = State.STOPPED
+
+    def safe_invoke(self, func: Callable[..., Any] | Awaitable) -> None:
+        """Invoke the potentially async function and catch any exceptions."""
+        func_name = func.__name__ if hasattr(func, '__name__') else str(func)
+        try:
+            if isinstance(func, Awaitable):
+                async def await_func():
+                    await func
+                background_tasks.create(await_func(), name=f'func {func_name}')
+            else:
+                result = func()
+                if helpers.is_coroutine_function(func) and not isinstance(result, asyncio.Task):
+                    async def await_result():
+                        await result
+                    background_tasks.create(await_result(), name=f'result {func_name}')
+        except Exception as e:
+            self.handle_exception(e)
 
     def on_connect(self, handler: Union[Callable, Awaitable]) -> None:
         """Called every time a new client connects to NiceGUI.
