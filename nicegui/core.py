@@ -14,3 +14,4 @@ sio: AsyncServer
 loop: asyncio.AbstractEventLoop | None = None
 air: Air | None = None
 root: Callable | None = None
+script_mode: bool = False

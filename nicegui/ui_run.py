@@ -112,6 +112,9 @@ def run(root: Optional[Callable] = None, *,
     :param show_welcome_message: whether to show the welcome message (default: `True`)
     :param kwargs: additional keyword arguments are passed to `uvicorn.run`
     """
+    if core.script_mode:
+        return
+
     core.app.config.add_run_config(
         reload=reload,
         title=title,
