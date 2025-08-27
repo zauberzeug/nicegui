@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import inspect
 import re
+import sys
 import weakref
 from collections.abc import Iterator, Sequence
 from copy import copy
@@ -56,7 +57,13 @@ class Element(Visibility):
         :param _client: client for this element (for internal use only)
         """
         super().__init__()
-        client = _client or context.client
+        try:
+            client = _client or context.client
+        except RuntimeError:
+            from .script import run_nicegui_script  # pylint: disable=import-outside-toplevel
+            run_nicegui_script()
+            sys.exit(0)
+
         self._client = weakref.ref(client)
         self.id = client.next_element_id
         client.next_element_id += 1

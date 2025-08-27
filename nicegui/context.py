@@ -2,13 +2,10 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from . import core
 from .slot import Slot
 
 if TYPE_CHECKING:
     from .client import Client
-
-_script_detected: bool = False
 
 
 class Context:
@@ -16,15 +13,7 @@ class Context:
     @property
     def slot_stack(self) -> list[Slot]:
         """Return the slot stack of the current asyncio task."""
-        global _script_detected  # pylint: disable=global-statement  # noqa: PLW0603
-        if not (stack := Slot.get_stack()) and not _script_detected and not core.app.is_started:
-            # create a dummy client to "survive" until reaching `ui.run()`
-            from .client import Client  # pylint: disable=import-outside-toplevel
-            from .page import page  # pylint: disable=import-outside-toplevel
-            _script_detected = True
-            core.script_client = Client(page('/'), request=None).__enter__()  # pylint: disable=unnecessary-dunder-call
-            stack = Slot.get_stack()
-        return stack
+        return Slot.get_stack()
 
     @property
     def slot(self) -> Slot:

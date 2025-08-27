@@ -1,6 +1,5 @@
 import multiprocessing
 import os
-import runpy
 import sys
 from pathlib import Path
 from typing import Any, Callable, Literal, Optional, TypedDict, Union
@@ -113,16 +112,6 @@ def run(root: Optional[Callable] = None, *,
     :param show_welcome_message: whether to show the welcome message (default: `True`)
     :param kwargs: additional keyword arguments are passed to `uvicorn.run`
     """
-    if __name__ == '__nicegui_script__':
-        return
-
-    if core.script_client:
-        def script_root():
-            runpy.run_path(sys.argv[0], run_name='__nicegui_script__')
-        root = script_root
-        core.script_client.delete()
-        core.script_client = None
-
     core.app.config.add_run_config(
         reload=reload,
         title=title,

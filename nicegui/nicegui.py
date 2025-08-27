@@ -14,7 +14,6 @@ from . import air, background_tasks, binding, core, favicon, helpers, json, run,
 from .app import App
 from .client import Client
 from .dependencies import dynamic_resources, esm_modules, js_components, libraries, resources
-from .elements.sub_pages import SubPages
 from .error import error_content
 from .json import NiceGUIJSONResponse
 from .logging import log
@@ -161,10 +160,7 @@ async def _exception_handler_404(request: Request, exception: Exception) -> Resp
     if root is not None:
         with Client(page(''), request=request) as client:
             root()
-            # NOTE: after building the page, there might be sub pages that have 404 -- and initial requests should send 404 status request in such cases
-            sub_pages_elements = [e for e in client.elements.values() if isinstance(e, SubPages)]
-            if not any(sub_pages.has_404 for sub_pages in sub_pages_elements):
-                return client.build_response(request)
+            return client.build_response(request)
     log.warning(f'{request.url} not found')
     with Client(page(''), request=request) as client:
         error_content(404, exception)
