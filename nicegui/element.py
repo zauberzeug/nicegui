@@ -6,6 +6,7 @@ import sys
 import weakref
 from collections.abc import Iterator, Sequence
 from copy import copy
+from multiprocessing import current_process
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Callable, ClassVar, cast
 
@@ -39,6 +40,8 @@ TAG_START_CHAR = r':|[A-Z]|_|[a-z]|[\u00C0-\u00D6]|[\u00D8-\u00F6]|[\u00F8-\u02F
 TAG_CHAR = TAG_START_CHAR + r'|-|\.|[0-9]|\u00B7|[\u0300-\u036F]|[\u203F-\u2040]'
 TAG_PATTERN = re.compile(fr'^({TAG_START_CHAR})({TAG_CHAR})*$')
 
+_script_autorun_triggered = False
+
 
 class Element(Visibility):
     component: Component | None = None
@@ -61,8 +64,15 @@ class Element(Visibility):
             client = _client or context.client
         except RuntimeError:
             from .script import run_nicegui_script  # pylint: disable=import-outside-toplevel
+            global _script_autorun_triggered  # pylint: disable=global-statement  # noqa: PLW0603
+            if _script_autorun_triggered:
+                return  # already triggered once; avoid multiple calls
+            _script_autorun_triggered = True
+            print('Running script')
             run_nicegui_script()
-            sys.exit(0)
+            if current_process().name == 'MainProcess':
+                sys.exit(0)  # stop further execution after the first element in the launcher
+            return  # in reload worker: do not exit; allow server to start
 
         self._client = weakref.ref(client)
         self.id = client.next_element_id

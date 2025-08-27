@@ -11,4 +11,4 @@ def run_nicegui_script() -> None:
     def root():
         runpy.run_path(sys.argv[0])
 
-    run(root, reload=False)
+    run(root)
