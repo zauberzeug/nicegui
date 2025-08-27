@@ -1,5 +1,6 @@
 import multiprocessing
 import os
+import runpy
 import sys
 from pathlib import Path
 from typing import Any, Callable, Literal, Optional, TypedDict, Union
@@ -81,6 +82,7 @@ def run(root: Optional[Callable] = None, *,
     You can call `ui.run()` with optional arguments.
     Most of them only apply after stopping and fully restarting the app and do not apply with auto-reloading.
 
+    :param root: root page function
     :param host: start server with this host (defaults to `'127.0.0.1` in native mode, otherwise `'0.0.0.0'`)
     :param port: use this port (default: 8080 in normal mode, and an automatically determined open port in native mode)
     :param title: page title (default: `'NiceGUI'`, can be overwritten per page)
@@ -111,6 +113,16 @@ def run(root: Optional[Callable] = None, *,
     :param show_welcome_message: whether to show the welcome message (default: `True`)
     :param kwargs: additional keyword arguments are passed to `uvicorn.run`
     """
+    if __name__ == '__nicegui_script__':
+        return
+
+    if core.script_client:
+        def script_root():
+            runpy.run_path(sys.argv[0], run_name='__nicegui_script__')
+        root = script_root
+        core.script_client.delete()
+        core.script_client = None
+
     core.app.config.add_run_config(
         reload=reload,
         title=title,
