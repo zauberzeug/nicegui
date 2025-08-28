@@ -42,39 +42,36 @@ def main_demo() -> None:
     See the [AG Grid documentation](https://www.ag-grid.com/javascript-data-grid/row-selection/#example-single-row-selection) for more information.
 ''')
 def aggrid_with_selectable_rows():
-    # @ui.page('/')
-    def page():
-        grid = ui.aggrid({
-            'columnDefs': [
-                {'headerName': 'Name', 'field': 'name'},
-                {'headerName': 'Age', 'field': 'age'},
-            ],
-            'rowData': [
-                {'name': 'Alice', 'age': 18},
-                {'name': 'Bob', 'age': 21},
-                {'name': 'Carol', 'age': 42},
-            ],
-            'rowSelection': {'mode': 'multiRow'},
-        })
+    grid = ui.aggrid({
+        'columnDefs': [
+            {'headerName': 'Name', 'field': 'name'},
+            {'headerName': 'Age', 'field': 'age'},
+        ],
+        'rowData': [
+            {'name': 'Alice', 'age': 18},
+            {'name': 'Bob', 'age': 21},
+            {'name': 'Carol', 'age': 42},
+        ],
+        'rowSelection': {'mode': 'multiRow'},
+    })
 
-        async def output_selected_rows():
-            rows = await grid.get_selected_rows()
-            if rows:
-                for row in rows:
-                    ui.notify(f"{row['name']}, {row['age']}")
-            else:
-                ui.notify('No rows selected.')
-
-        async def output_selected_row():
-            row = await grid.get_selected_row()
-            if row:
+    async def output_selected_rows():
+        rows = await grid.get_selected_rows()
+        if rows:
+            for row in rows:
                 ui.notify(f"{row['name']}, {row['age']}")
-            else:
-                ui.notify('No row selected!')
+        else:
+            ui.notify('No rows selected.')
 
-        ui.button('Output selected rows', on_click=output_selected_rows)
-        ui.button('Output selected row', on_click=output_selected_row)
-    page()  # HIDE
+    async def output_selected_row():
+        row = await grid.get_selected_row()
+        if row:
+            ui.notify(f"{row['name']}, {row['age']}")
+        else:
+            ui.notify('No row selected!')
+
+    ui.button('Output selected rows', on_click=output_selected_rows)
+    ui.button('Output selected row', on_click=output_selected_row)
 
 
 @doc.demo('Filter Rows using Mini Filters', '''
@@ -242,19 +239,16 @@ def aggrid_run_row_method():
     This demo runs the grid method "getDisplayedRowAtIndex" and returns the "data" property of the result.
 ''')
 def aggrid_filter_return_values():
-    # @ui.page('/')
-    def page():
-        grid = ui.aggrid({
-            'columnDefs': [{'field': 'name'}],
-            'rowData': [{'name': 'Alice'}, {'name': 'Bob'}],
-        })
+    grid = ui.aggrid({
+        'columnDefs': [{'field': 'name'}],
+        'rowData': [{'name': 'Alice'}, {'name': 'Bob'}],
+    })
 
-        async def get_first_name() -> None:
-            row = await grid.run_grid_method('g => g.getDisplayedRowAtIndex(0).data')
-            ui.notify(row['name'])
+    async def get_first_name() -> None:
+        row = await grid.run_grid_method('g => g.getDisplayedRowAtIndex(0).data')
+        ui.notify(row['name'])
 
-        ui.button('Get First Name', on_click=get_first_name)
-    page()  # HIDE
+    ui.button('Get First Name', on_click=get_first_name)
 
 
 @doc.demo('Handle theme change', '''

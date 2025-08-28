@@ -9,23 +9,20 @@ from . import doc
     Note that your browser may ask for permission to access the clipboard or may not support this feature at all.
 ''')
 def main_demo() -> None:
-    # @ui.page('/')
-    # async def index():
-    with ui.column():  # HIDE
-        ui.button('Write Text', on_click=lambda: ui.clipboard.write('Hi!'))
+    ui.button('Write Text', on_click=lambda: ui.clipboard.write('Hi!'))
 
-        async def read() -> None:
-            ui.notify(await ui.clipboard.read())
-        ui.button('Read Text', on_click=read)
+    async def read() -> None:
+        ui.notify(await ui.clipboard.read())
+    ui.button('Read Text', on_click=read)
 
-        async def read_image() -> None:
-            img = await ui.clipboard.read_image()
-            if not img:
-                ui.notify('You must copy an image to clipboard first.')
-            else:
-                image.set_source(img)
-        ui.button('Read Image', on_click=read_image)
-        image = ui.image().classes('w-72')
+    async def read_image() -> None:
+        img = await ui.clipboard.read_image()
+        if not img:
+            ui.notify('You must copy an image to clipboard first.')
+        else:
+            image.set_source(img)
+    ui.button('Read Image', on_click=read_image)
+    image = ui.image().classes('w-72')
 
 
 @doc.demo('Client-side clipboard', '''

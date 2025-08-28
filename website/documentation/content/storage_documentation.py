@@ -52,7 +52,6 @@ doc.title('Storage')
     | Across browsers             | No       | No     | No        | No     | Yes       |
     | Across server restarts      | No       | Yes    | No        | Yes    | Yes       |
     | Across page reloads         | No       | Yes    | Yes       | Yes    | Yes       |
-    | Needs page builder function | Yes      | Yes    | Yes       | Yes    | No        |
     | Needs client connection     | No       | Yes    | No        | No     | No        |
     | Write only before response  | No       | No     | Yes       | No     | No        |
     | Needs serializable data     | No       | No     | Yes       | Yes    | Yes       |
@@ -107,12 +106,8 @@ def page_visits():
 def ui_state():
     from nicegui import app
 
-    # @ui.page('/')
-    # def index():
-    #     ui.textarea('This note is kept between visits') \
-    #         .classes('w-full').bind_value(app.storage.user, 'note')
-    # END OF DEMO
-    ui.textarea('This note is kept between visits').classes('w-full').bind_value(app.storage.user, 'note')
+    ui.textarea('This note is kept between visits').classes('w-full') \
+        .bind_value(app.storage.user, 'note')
 
 
 @doc.demo('Storing data per browser tab', '''

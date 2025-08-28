@@ -100,26 +100,23 @@ def echart_from_pyecharts_demo():
     that is evaluated on the client before it is passed to the method.
 ''')
 def methods_demo() -> None:
-    # @ui.page('/')
-    def page():
-        echart = ui.echart({
-            'xAxis': {'type': 'category', 'data': ['Mon', 'Tue', 'Wed', 'Thu', 'Fri']},
-            'yAxis': {'type': 'value'},
-            'series': [{'type': 'line', 'data': [150, 230, 224, 218, 135]}],
-        })
+    echart = ui.echart({
+        'xAxis': {'type': 'category', 'data': ['Mon', 'Tue', 'Wed', 'Thu', 'Fri']},
+        'yAxis': {'type': 'value'},
+        'series': [{'type': 'line', 'data': [150, 230, 224, 218, 135]}],
+    })
 
-        ui.button('Show Loading', on_click=lambda: echart.run_chart_method('showLoading'))
-        ui.button('Hide Loading', on_click=lambda: echart.run_chart_method('hideLoading'))
+    ui.button('Show Loading', on_click=lambda: echart.run_chart_method('showLoading'))
+    ui.button('Hide Loading', on_click=lambda: echart.run_chart_method('hideLoading'))
 
-        async def get_width():
-            width = await echart.run_chart_method('getWidth')
-            ui.notify(f'Width: {width}')
-        ui.button('Get Width', on_click=get_width)
+    async def get_width():
+        width = await echart.run_chart_method('getWidth')
+        ui.notify(f'Width: {width}')
+    ui.button('Get Width', on_click=get_width)
 
-        ui.button('Set Tooltip', on_click=lambda: echart.run_chart_method(
-            ':setOption', r'{tooltip: {formatter: params => "$" + params.value}}',
-        ))
-    page()  # HIDE
+    ui.button('Set Tooltip', on_click=lambda: echart.run_chart_method(
+        ':setOption', r'{tooltip: {formatter: params => "$" + params.value}}',
+    ))
 
 
 @doc.demo('Arbitrary chart events', '''

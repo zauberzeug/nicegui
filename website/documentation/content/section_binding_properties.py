@@ -87,12 +87,8 @@ def bind_variable():
 def ui_state():
     from nicegui import app
 
-    # @ui.page('/')
-    # def index():
-    #     ui.textarea('This note is kept between visits')
-    #         .classes('w-full').bind_value(app.storage.user, 'note')
-    # END OF DEMO
-    ui.textarea('This note is kept between visits').classes('w-full').bind_value(app.storage.user, 'note')
+    ui.textarea('This note is kept between visits').classes('w-full') \
+        .bind_value(app.storage.user, 'note')
 
 
 @doc.demo('Bindable properties for maximum performance', '''
