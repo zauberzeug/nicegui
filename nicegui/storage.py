@@ -83,9 +83,6 @@ class Storage:
         """
         request: Optional[Request] = request_contextvar.get()
         if request is None:
-            if self._is_in_auto_index_context():
-                raise RuntimeError('app.storage.browser can only be used with page builder functions '
-                                   '(https://nicegui.io/documentation/page)')
             if Storage.secret is None:
                 raise RuntimeError('app.storage.browser needs a storage_secret passed in ui.run()')
             raise RuntimeError('app.storage.browser can only be used within a UI context')
@@ -105,9 +102,6 @@ class Storage:
         """
         request: Optional[Request] = request_contextvar.get()
         if request is None:
-            if self._is_in_auto_index_context():
-                raise RuntimeError('app.storage.user can only be used with page builder functions '
-                                   '(https://nicegui.io/documentation/page)')
             if Storage.secret is None:
                 raise RuntimeError('app.storage.user needs a storage_secret passed in ui.run()')
             raise RuntimeError('app.storage.user can only be used within a UI context')
@@ -118,13 +112,6 @@ class Storage:
     async def _create_user_storage(self, session_id: str) -> None:
         self._users[session_id] = Storage._create_persistent_dict(f'user-{session_id}')
         await self._users[session_id].initialize()
-
-    @staticmethod
-    def _is_in_auto_index_context() -> bool:
-        try:
-            return context.client.is_auto_index_client
-        except RuntimeError:
-            return False  # no client
 
     @property
     def general(self) -> PersistentDict:
@@ -138,17 +125,11 @@ class Storage:
         Like `app.storage.tab` data is unique per browser tab but is even more volatile as it is already discarded
         when the connection to the client is lost through a page reload or a navigation.
         """
-        if self._is_in_auto_index_context():
-            raise RuntimeError('app.storage.client can only be used with page builder functions '
-                               '(https://nicegui.io/documentation/page)')
         return context.client.storage
 
     @property
     def tab(self) -> observables.ObservableDict:
         """A volatile storage that is only kept during the current tab session."""
-        if self._is_in_auto_index_context():
-            raise RuntimeError('app.storage.tab can only be used with page builder functions '
-                               '(https://nicegui.io/documentation/page)')
         client = context.client
         if not client.has_socket_connection:
             raise RuntimeError('app.storage.tab can only be used with a client connection; '
