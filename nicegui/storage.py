@@ -81,6 +81,8 @@ class Storage:
         Therefore it is normally better to use `app.storage.user` instead,
         which can be modified anytime, reduces overall payload, improves security and has larger storage capacity.
         """
+        if core.script_mode and not core.app.is_started:
+            return {}
         request: Optional[Request] = request_contextvar.get()
         if request is None:
             if Storage.secret is None:
@@ -100,6 +102,8 @@ class Storage:
         The data is stored on the server.
         It is shared between all browser tabs by identifying the user via session cookie ID.
         """
+        if core.script_mode and not core.app.is_started:
+            return {}
         request: Optional[Request] = request_contextvar.get()
         if request is None:
             if Storage.secret is None:
