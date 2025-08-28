@@ -20,7 +20,7 @@ class Context:
             from .client import Client  # pylint: disable=import-outside-toplevel
             from .page import page  # pylint: disable=import-outside-toplevel
             core.script_mode = True
-            Client(page('/'), request=None).__enter__()  # pylint: disable=unnecessary-dunder-call
+            core.script_client = Client(page('/')).__enter__()  # pylint: disable=unnecessary-dunder-call
             stack = Slot.get_stack()
         return stack
 

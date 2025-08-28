@@ -46,8 +46,8 @@ class Client:
     shared_body_html = ''
     '''HTML to be inserted in the <body> of every page template.'''
 
-    def __init__(self, page: page, *, request: Request) -> None:
-        self.request: Request = request
+    def __init__(self, page: page, *, request: Request | None = None) -> None:
+        self._request = request
         self.id = str(uuid.uuid4())
         self.created = time.time()
         self.instances[self.id] = self
@@ -89,8 +89,15 @@ class Client:
             self.sub_pages_router = SubPagesRouter(request)
 
     @property
+    def request(self) -> Request:
+        """The request object for the client."""
+        if self._request is None:
+            raise RuntimeError('Request is not set')
+        return self._request
+
+    @property
     def ip(self) -> str:
-        """Return the IP address of the client.
+        """The IP address of the client.
 
         *Updated in version 2.0.0: The IP address is available even before the client connects.*
         *Updated in version 3.0.0: The IP address is always defined (never ``None``).*
@@ -99,17 +106,17 @@ class Client:
 
     @property
     def has_socket_connection(self) -> bool:
-        """Return True if the client is connected, False otherwise."""
+        """Whether the client is connected."""
         return self.tab_id is not None
 
     @property
     def head_html(self) -> str:
-        """Return the HTML code to be inserted in the <head> of the page template."""
+        """The HTML code to be inserted in the <head> of the page template."""
         return self.shared_head_html + self._head_html
 
     @property
     def body_html(self) -> str:
-        """Return the HTML code to be inserted in the <body> of the page template."""
+        """The HTML code to be inserted in the <body> of the page template."""
         return self.shared_body_html + self._body_html
 
     def __enter__(self) -> Self:
