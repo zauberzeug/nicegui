@@ -1,5 +1,6 @@
 import multiprocessing
 import os
+import runpy
 import sys
 from pathlib import Path
 from typing import Any, Callable, Literal, Optional, TypedDict, Union
@@ -113,7 +114,12 @@ def run(root: Optional[Callable] = None, *,
     :param kwargs: additional keyword arguments are passed to `uvicorn.run`
     """
     if core.script_mode:
-        return
+        if core.app.is_started:
+            return
+
+        def run_script() -> None:
+            runpy.run_path(sys.argv[0])
+        root = run_script
 
     core.app.config.add_run_config(
         reload=reload,

@@ -56,13 +56,7 @@ class Element(Visibility):
         :param _client: client for this element (for internal use only)
         """
         super().__init__()
-        try:
-            client = _client or context.client
-        except RuntimeError:
-            from .script import run_nicegui_script  # pylint: disable=import-outside-toplevel
-            run_nicegui_script()
-            return
-
+        client = _client or context.client
         self._client = weakref.ref(client)
         self.id = client.next_element_id
         client.next_element_id += 1
