@@ -215,7 +215,9 @@ def test_value_change_event_arguments(screen: Screen):
 
     screen.open('/')
     screen.click('Checkbox')
+    screen.wait(0.5)
     assert events == [(True, False)]
 
     screen.click('Checkbox')
+    screen.wait(0.5)
     assert events == [(True, False), (False, True)]
