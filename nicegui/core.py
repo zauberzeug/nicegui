@@ -17,3 +17,4 @@ air: Air | None = None
 root: Callable | None = None
 script_mode: bool = False
 script_client: Client | None = None
+test_client: Client | None = None

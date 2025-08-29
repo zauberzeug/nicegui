@@ -5,7 +5,7 @@ from typing import Callable
 import httpx
 import pytest
 
-from nicegui import Client, core, ui
+from nicegui import core, ui
 from nicegui.functions.download import download
 from nicegui.functions.navigate import Navigate
 from nicegui.functions.notify import notify
@@ -26,12 +26,14 @@ def prepare_simulated_auto_index_client(request):
     original_test = request.node._obj  # pylint: disable=protected-access
     if asyncio.iscoroutinefunction(original_test):
         async def wrapped_test(*args, **kwargs):
-            with Client.auto_index_client:
+            assert core.test_client is not None
+            with core.test_client:
                 return await original_test(*args, **kwargs)
         request.node._obj = wrapped_test  # pylint: disable=protected-access
     else:
         def wrapped_test(*args, **kwargs):
-            Client.auto_index_client.__enter__()  # pylint: disable=unnecessary-dunder-call
+            assert core.test_client is not None
+            core.test_client.__enter__()  # pylint: disable=unnecessary-dunder-call
             return original_test(*args, **kwargs)
         request.node._obj = wrapped_test  # pylint: disable=protected-access
 
