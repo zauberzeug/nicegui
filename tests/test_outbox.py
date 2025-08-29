@@ -1,25 +1,28 @@
 import asyncio
 
-from nicegui import ui
+from nicegui import app, ui
 from nicegui.testing import Screen
 
 
 def test_removing_outbox_loops(screen: Screen):
-    @ui.page('/page', reconnect_timeout=0.1)
+    @ui.page('/')
     def page():
+        ui.label('Index page')
+
+    @ui.page('/subpage', reconnect_timeout=0.1)
+    def subpage():
         ui.button('Click me', on_click=lambda: ui.notify('Hello world!'))
 
-    def count_outbox_loop_tasks() -> int:
-        return len([t for t in asyncio.all_tasks() if t.get_name().startswith('outbox loop')])
+    state = {'count': 0}
+    app.timer(0.1, lambda: state.update(count=len([t for t in asyncio.all_tasks()
+                                                   if t.get_name().startswith('outbox loop')])))
 
-    count = ui.label()
-    ui.timer(0.1, lambda: count.set_text(f'{count_outbox_loop_tasks()} tasks'))
-
-    screen.open('/page')
+    screen.open('/subpage')
     screen.click('Click me')
     screen.should_contain('Hello world!')
-    assert count.text == '1 tasks'
+    assert state['count'] == 1
 
     screen.open('/')
-    screen.wait(0.5)
-    assert count.text == '0 tasks'
+    screen.should_contain('Index page')
+    screen.wait(0.5)  # wait for the outbox loop to finish
+    assert state['count'] == 1

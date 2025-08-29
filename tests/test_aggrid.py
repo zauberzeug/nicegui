@@ -11,10 +11,13 @@ from nicegui.testing import Screen
 
 
 def test_update_table(screen: Screen):
-    grid = ui.aggrid({
-        'columnDefs': [{'field': 'name'}, {'field': 'age'}],
-        'rowData': [{'name': 'Alice', 'age': 18}],
-    })
+    @ui.page('/')
+    def page():
+        grid = ui.aggrid({
+            'columnDefs': [{'field': 'name'}, {'field': 'age'}],
+            'rowData': [{'name': 'Alice', 'age': 18}],
+        })
+        ui.button('Change age', on_click=lambda: (grid.options['rowData'][0].update(age=42), grid.update()))
 
     screen.open('/')
     screen.should_contain('Name')
@@ -22,41 +25,41 @@ def test_update_table(screen: Screen):
     screen.should_contain('Alice')
     screen.should_contain('18')
 
-    grid.options['rowData'][0]['age'] = 42
-    screen.wait(0.5)  # HACK: try to fix flaky test
-    grid.update()
-    screen.wait(0.5)  # HACK: try to fix flaky test
+    screen.click('Change age')
     screen.should_contain('42')
 
 
 def test_add_row(screen: Screen):
-    grid = ui.aggrid({
-        'columnDefs': [{'field': 'name'}, {'field': 'age'}],
-        'rowData': [],
-    })
-    ui.button('Update', on_click=grid.update)
+    @ui.page('/')
+    def page():
+        grid = ui.aggrid({
+            'columnDefs': [{'field': 'name'}, {'field': 'age'}],
+            'rowData': [],
+        })
+        ui.button('Update', on_click=grid.update)
+        ui.button('Add Alice', on_click=lambda: grid.options['rowData'].append({'name': 'Alice', 'age': 18}))
+        ui.button('Add Bob', on_click=lambda: grid.options['rowData'].append({'name': 'Bob', 'age': 21}))
 
     screen.open('/')
-    grid.options['rowData'].append({'name': 'Alice', 'age': 18})
+    screen.click('Add Alice')
     screen.click('Update')
-    screen.wait(0.5)
     screen.should_contain('Alice')
     screen.should_contain('18')
-    grid.options['rowData'].append({'name': 'Bob', 'age': 21})
+
+    screen.click('Add Bob')
     screen.click('Update')
-    screen.wait(0.5)
-    screen.should_contain('Alice')
-    screen.should_contain('18')
     screen.should_contain('Bob')
     screen.should_contain('21')
 
 
 def test_click_cell(screen: Screen):
-    grid = ui.aggrid({
-        'columnDefs': [{'field': 'name'}, {'field': 'age'}],
-        'rowData': [{'name': 'Alice', 'age': 18}],
-    })
-    grid.on('cellClicked', lambda e: ui.label(f'{e.args["data"]["name"]} has been clicked!'))
+    @ui.page('/')
+    def page():
+        grid = ui.aggrid({
+            'columnDefs': [{'field': 'name'}, {'field': 'age'}],
+            'rowData': [{'name': 'Alice', 'age': 18}],
+        })
+        grid.on('cellClicked', lambda e: ui.label(f'{e.args["data"]["name"]} has been clicked!'))
 
     screen.open('/')
     screen.click('Alice')
@@ -64,10 +67,12 @@ def test_click_cell(screen: Screen):
 
 
 def test_html_columns(screen: Screen):
-    ui.aggrid({
-        'columnDefs': [{'field': 'name'}, {'field': 'age'}],
-        'rowData': [{'name': '<span class="text-bold">Alice</span>', 'age': 18}],
-    }, html_columns=[0])
+    @ui.page('/')
+    def page():
+        ui.aggrid({
+            'columnDefs': [{'field': 'name'}, {'field': 'age'}],
+            'rowData': [{'name': '<span class="text-bold">Alice</span>', 'age': 18}],
+        }, html_columns=[0])
 
     screen.open('/')
     screen.should_contain('Alice')
@@ -76,11 +81,13 @@ def test_html_columns(screen: Screen):
 
 
 def test_dynamic_method(screen: Screen):
-    ui.aggrid({
-        'columnDefs': [{'field': 'name'}, {'field': 'age'}],
-        'rowData': [{'name': 'Alice', 'age': '18'}, {'name': 'Bob', 'age': '21'}, {'name': 'Carol', 'age': '42'}],
-        ':getRowHeight': 'params => params.data.age > 35 ? 50 : 25',
-    })
+    @ui.page('/')
+    def page():
+        ui.aggrid({
+            'columnDefs': [{'field': 'name'}, {'field': 'age'}],
+            'rowData': [{'name': 'Alice', 'age': '18'}, {'name': 'Bob', 'age': '21'}, {'name': 'Carol', 'age': '42'}],
+            ':getRowHeight': 'params => params.data.age > 35 ? 50 : 25',
+        })
 
     screen.open('/')
     trs = screen.find_all_by_class('ag-row')
@@ -92,17 +99,20 @@ def test_dynamic_method(screen: Screen):
 
 
 def test_run_grid_method_with_argument(screen: Screen):
-    grid = ui.aggrid({
-        'columnDefs': [{'field': 'name', 'filter': True}],
-        'rowData': [{'name': 'Alice'}, {'name': 'Bob'}, {'name': 'Carol'}],
-    })
-    filter_model = {'name': {'filterType': 'text', 'type': 'equals', 'filter': 'Alice'}}
-    ui.button('Filter', on_click=lambda: grid.run_grid_method('setFilterModel', filter_model))
+    @ui.page('/')
+    def page():
+        grid = ui.aggrid({
+            'columnDefs': [{'field': 'name', 'filter': True}],
+            'rowData': [{'name': 'Alice'}, {'name': 'Bob'}, {'name': 'Carol'}],
+        })
+        filter_model = {'name': {'filterType': 'text', 'type': 'equals', 'filter': 'Alice'}}
+        ui.button('Filter', on_click=lambda: grid.run_grid_method('setFilterModel', filter_model))
 
     screen.open('/')
     screen.should_contain('Alice')
     screen.should_contain('Bob')
     screen.should_contain('Carol')
+
     screen.click('Filter')
     screen.wait(0.5)
     screen.should_contain('Alice')
@@ -139,17 +149,20 @@ def test_get_selected_rows(screen: Screen):
 
 
 def test_replace_aggrid(screen: Screen):
-    with ui.row().classes('w-full') as container:
-        ui.aggrid({'columnDefs': [{'field': 'name'}], 'rowData': [{'name': 'Alice'}]})
+    @ui.page('/')
+    def page():
+        with ui.row().classes('w-full') as container:
+            ui.aggrid({'columnDefs': [{'field': 'name'}], 'rowData': [{'name': 'Alice'}]})
 
-    def replace():
-        container.clear()
-        with container:
-            ui.aggrid({'columnDefs': [{'field': 'name'}], 'rowData': [{'name': 'Bob'}]})
-    ui.button('Replace', on_click=replace)
+        def replace():
+            container.clear()
+            with container:
+                ui.aggrid({'columnDefs': [{'field': 'name'}], 'rowData': [{'name': 'Bob'}]})
+        ui.button('Replace', on_click=replace)
 
     screen.open('/')
     screen.should_contain('Alice')
+
     screen.click('Replace')
     screen.should_contain('Bob')
     screen.should_not_contain('Alice')
@@ -157,12 +170,14 @@ def test_replace_aggrid(screen: Screen):
 
 @pytest.mark.parametrize('df_type', ['pandas', 'polars'])
 def test_create_from_dataframe(screen: Screen, df_type: str):
-    if df_type == 'pandas':
-        df = pd.DataFrame({'name': ['Alice', 'Bob'], 'age': [18, 21], 42: 'answer'})
-        ui.aggrid.from_pandas(df)
-    else:
-        df = pl.DataFrame({'name': ['Alice', 'Bob'], 'age': [18, 21], '42': 'answer'})
-        ui.aggrid.from_polars(df)
+    @ui.page('/')
+    def page():
+        if df_type == 'pandas':
+            df = pd.DataFrame({'name': ['Alice', 'Bob'], 'age': [18, 21], 42: 'answer'})
+            ui.aggrid.from_pandas(df)
+        else:
+            df = pl.DataFrame({'name': ['Alice', 'Bob'], 'age': [18, 21], '42': 'answer'})
+            ui.aggrid.from_polars(df)
 
     screen.open('/')
     screen.should_contain('Alice')
@@ -174,7 +189,10 @@ def test_create_from_dataframe(screen: Screen, df_type: str):
 
 
 def test_create_dynamically(screen: Screen):
-    ui.button('Create', on_click=lambda: ui.aggrid({'columnDefs': [{'field': 'name'}], 'rowData': [{'name': 'Alice'}]}))
+    @ui.page('/')
+    def page():
+        ui.button('Create',
+                  on_click=lambda: ui.aggrid({'columnDefs': [{'field': 'name'}], 'rowData': [{'name': 'Alice'}]}))
 
     screen.open('/')
     screen.click('Create')
@@ -182,8 +200,10 @@ def test_create_dynamically(screen: Screen):
 
 
 def test_api_method_after_creation(screen: Screen):
-    options = {'columnDefs': [{'field': 'name'}], 'rowData': [{'name': 'Alice'}], 'rowSelection': {'mode': 'multiRow'}}
-    ui.button('Create', on_click=lambda: ui.aggrid(options).run_grid_method('selectAll'))
+    @ui.page('/')
+    def page():
+        options = {'columnDefs': [{'field': 'name'}], 'rowData': [{'name': 'Ed'}], 'rowSelection': {'mode': 'multiRow'}}
+        ui.button('Create', on_click=lambda: ui.aggrid(options).run_grid_method('selectAll'))
 
     screen.open('/')
     screen.click('Create')
@@ -192,21 +212,23 @@ def test_api_method_after_creation(screen: Screen):
 
 @pytest.mark.parametrize('df_type', ['pandas', 'polars'])
 def test_problematic_datatypes(screen: Screen, df_type: str):
-    if df_type == 'pandas':
-        df = pd.DataFrame({
-            'datetime_col': [datetime(2020, 1, 1)],
-            'datetime_col_tz': [datetime(2020, 1, 2, tzinfo=timezone.utc)],
-            'timedelta_col': [timedelta(days=5)],
-            'complex_col': [1 + 2j],
-            'period_col': pd.Series([pd.Period('2021-01')]),
-        })
-        ui.aggrid.from_pandas(df)
-    else:
-        df = pl.DataFrame({
-            'datetime_col': [datetime(2020, 1, 1)],
-            'datetime_col_tz': [datetime(2020, 1, 2, tzinfo=timezone.utc)],
-        })
-        ui.aggrid.from_polars(df)
+    @ui.page('/')
+    def page():
+        if df_type == 'pandas':
+            df = pd.DataFrame({
+                'datetime_col': [datetime(2020, 1, 1)],
+                'datetime_col_tz': [datetime(2020, 1, 2, tzinfo=timezone.utc)],
+                'timedelta_col': [timedelta(days=5)],
+                'complex_col': [1 + 2j],
+                'period_col': pd.Series([pd.Period('2021-01')]),
+            })
+            ui.aggrid.from_pandas(df)
+        else:
+            df = pl.DataFrame({
+                'datetime_col': [datetime(2020, 1, 1)],
+                'datetime_col_tz': [datetime(2020, 1, 2, tzinfo=timezone.utc)],
+            })
+            ui.aggrid.from_polars(df)
 
     screen.open('/')
     screen.should_contain('Datetime_col')
@@ -223,12 +245,14 @@ def test_problematic_datatypes(screen: Screen, df_type: str):
 
 
 def test_run_row_method(screen: Screen):
-    grid = ui.aggrid({
-        'columnDefs': [{'field': 'name'}, {'field': 'age'}],
-        'rowData': [{'name': 'Alice', 'age': 18}],
-        ':getRowId': '(params) => params.data.name',
-    })
-    ui.button('Update', on_click=lambda: grid.run_row_method('Alice', 'setDataValue', 'age', 42))
+    @ui.page('/')
+    def page():
+        grid = ui.aggrid({
+            'columnDefs': [{'field': 'name'}, {'field': 'age'}],
+            'rowData': [{'name': 'Alice', 'age': 18}],
+            ':getRowId': '(params) => params.data.name',
+        })
+        ui.button('Update', on_click=lambda: grid.run_row_method('Alice', 'setDataValue', 'age', 42))
 
     screen.open('/')
     screen.should_contain('Alice')

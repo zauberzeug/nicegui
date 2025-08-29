@@ -3,7 +3,9 @@ from nicegui.testing import Screen
 
 
 def test_run_javascript_on_button_press(screen: Screen):
-    ui.button('change title', on_click=lambda: ui.run_javascript('document.title = "A New Title"'))
+    @ui.page('/')
+    def page():
+        ui.button('change title', on_click=lambda: ui.run_javascript('document.title = "A New Title"'))
 
     screen.open('/')
     assert screen.selenium.title == 'NiceGUI'

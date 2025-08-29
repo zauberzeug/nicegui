@@ -85,6 +85,10 @@ def test_access_user_storage_from_fastapi(screen: Screen):
         app.storage.user['msg'] = 'yes'
         return 'OK'
 
+    @ui.page('/')
+    def page():
+        ui.label('Hello, world!')
+
     screen.ui_run_kwargs['storage_secret'] = 'just a test'
     screen.open('/')
     with httpx.Client() as http_client:
@@ -157,11 +161,13 @@ def test_user_and_general_storage_is_persisted(screen: Screen):
 
 def test_rapid_storage(screen: Screen):
     # https://github.com/zauberzeug/nicegui/issues/1099
-    ui.button('test', on_click=lambda: (
-        app.storage.general.update(one=1),
-        app.storage.general.update(two=2),
-        app.storage.general.update(three=3),
-    ))
+    @ui.page('/')
+    def page():
+        ui.button('test', on_click=lambda: (
+            app.storage.general.update(one=1),
+            app.storage.general.update(two=2),
+            app.storage.general.update(three=3),
+        ))
 
     screen.open('/')
     screen.click('test')
@@ -345,7 +351,7 @@ async def test_user_storage_is_pruned(screen: Screen):
         return 'ok'
 
     screen.open('/')
-    screen.should_contain('clients: 2')
+    screen.should_contain('clients: 1')
     screen.should_contain('persistent dicts: 1')
     assert len(Client.instances) == 1
     assert len(app.storage._users) == 1
