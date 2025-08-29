@@ -254,6 +254,7 @@ def test_async_nested_sub_pages(screen: Screen):
         'index': 0,
         'sleep': 0,
         'sleep_main': 0,
+        'sleep_sub': 0,
         'background': 0,
         'background_main': 0,
     }
@@ -272,7 +273,10 @@ def test_async_nested_sub_pages(screen: Screen):
     async def sleep():
         calls['sleep'] += 1
         await asyncio.sleep(0.1)
-        ui.sub_pages({'/': sleep_main})
+        ui.sub_pages({
+            '/': sleep_main,
+            '/sub': sleep_sub,
+        })
 
     def background():
         async def add():
@@ -288,25 +292,34 @@ def test_async_nested_sub_pages(screen: Screen):
         calls['sleep_main'] += 1
         ui.label('sleep main page')
 
+    def sleep_sub():
+        calls['sleep_sub'] += 1
+        ui.label('sleep sub page')
+
     def background_main():
         calls['background_main'] += 1
         ui.label('background main page')
 
     screen.open('/sleep')
     screen.should_contain('sleep main page')
-    assert calls == {'index': 1, 'sleep': 1, 'sleep_main': 1, 'background': 0, 'background_main': 0}
+    assert calls == {'index': 1, 'sleep': 1, 'sleep_main': 1, 'sleep_sub': 0, 'background': 0, 'background_main': 0}
 
     screen.open('/background')
     screen.should_contain('background main page')
-    assert calls == {'index': 2, 'sleep': 1, 'sleep_main': 1, 'background': 1, 'background_main': 1}
+    assert calls == {'index': 2, 'sleep': 1, 'sleep_main': 1, 'sleep_sub': 0, 'background': 1, 'background_main': 1}
 
     screen.click('Go to sleep')
     screen.should_contain('sleep main page')
-    assert calls == {'index': 2, 'sleep': 2, 'sleep_main': 2, 'background': 1, 'background_main': 1}
+    assert calls == {'index': 2, 'sleep': 2, 'sleep_main': 2, 'sleep_sub': 0, 'background': 1, 'background_main': 1}
 
     screen.click('Go to background')
     screen.should_contain('background main page')
-    assert calls == {'index': 2, 'sleep': 2, 'sleep_main': 2, 'background': 2, 'background_main': 2}
+    assert calls == {'index': 2, 'sleep': 2, 'sleep_main': 2, 'sleep_sub': 0, 'background': 2, 'background_main': 2}
+
+    # directly opening a nested sub page on an async sub page (see https://github.com/zauberzeug/nicegui/issues/5085)
+    screen.open('/sleep/sub')
+    screen.should_contain('sleep sub page')
+    assert calls == {'index': 3, 'sleep': 3, 'sleep_main': 2, 'sleep_sub': 1, 'background': 2, 'background_main': 2}
 
 
 def test_parameterized_sub_pages(screen: Screen):
