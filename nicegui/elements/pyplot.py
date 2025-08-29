@@ -58,8 +58,6 @@ class Pyplot(Element, default_classes='nicegui-pyplot'):
         self.fig = plt.figure(**kwargs)  # pylint: disable=possibly-used-before-assignment
         self._convert_to_html()
 
-        self.client.on_disconnect(lambda: plt.close(self.fig))
-
     def _convert_to_html(self) -> None:
         with io.StringIO() as output:
             self.fig.savefig(output, format='svg')
@@ -74,6 +72,10 @@ class Pyplot(Element, default_classes='nicegui-pyplot'):
         if self.close:
             plt.close(self.fig)
         self.update()
+
+    def _handle_delete(self) -> None:
+        plt.close(self.fig)
+        super()._handle_delete()
 
 
 class Matplotlib(Element, default_classes='nicegui-matplotlib'):
