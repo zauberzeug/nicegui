@@ -367,7 +367,7 @@ def test_no_cyclic_references_when_deleting_elements(screen: Screen):
 def test_no_cyclic_references_when_deleting_clients(screen: Screen):
     labels = weakref.WeakSet()
 
-    @ui.page('/')
+    @ui.page('/', reconnect_timeout=1.0)
     def main():
         labels.add(ui.label())
 
@@ -375,5 +375,5 @@ def test_no_cyclic_references_when_deleting_clients(screen: Screen):
     assert len(labels) == 1
 
     screen.close()
-    screen.wait(3.0)
+    screen.wait(1.5)
     assert len(labels) == 0
