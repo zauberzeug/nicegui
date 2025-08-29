@@ -1,4 +1,3 @@
-import asyncio
 from typing import Any, Literal, Optional, Union
 
 from typing_extensions import Self
@@ -91,9 +90,6 @@ class Notification(Element, component='notification.js'):
             self.on_dismiss(on_dismiss)
 
         async def handle_dismiss() -> None:
-            if self.client.is_auto_index_client:
-                self.dismiss()
-                await asyncio.sleep(1.0)  # NOTE: sent dismiss message to all browsers before deleting the element
             if not self._deleted:
                 self.clear()
                 self.delete()
