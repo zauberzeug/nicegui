@@ -19,29 +19,25 @@ doc.title('Storage')
     - `app.storage.tab`:
         Stored server-side in memory, this dictionary is unique to each non-duplicated tab session and can hold arbitrary objects.
         Data will be lost when restarting the server until <https://github.com/zauberzeug/nicegui/discussions/2841> is implemented.
-        This storage is only available within [page builder functions](/documentation/page)
-        and requires an established connection, obtainable via [`await client.connected()`](/documentation/page#wait_for_client_connection).
+        This storage requires an established connection, obtainable via [`await client.connected()`](/documentation/page#wait_for_client_connection).
     - `app.storage.client`:
         Also stored server-side in memory, this dictionary is unique to each client connection and can hold arbitrary objects.
         Data will be discarded when the page is reloaded or the user navigates to another page.
         Unlike data stored in `app.storage.tab` which can be persisted on the server even for days,
         `app.storage.client` helps caching resource-hungry objects such as a streaming or database connection you need to keep alive
         for dynamic site updates but would like to discard as soon as the user leaves the page or closes the browser.
-        This storage is only available within [page builder functions](/documentation/page).
     - `app.storage.user`:
         Stored server-side, each dictionary is associated with a unique identifier held in a browser session cookie.
         Unique to each user, this storage is accessible across all their browser tabs.
         `app.storage.browser['id']` is used to identify the user.
-        This storage is only available within [page builder functions](/documentation/page)
-        and requires the `storage_secret` parameter in`ui.run()` to sign the browser session cookie.
+        This storage requires the `storage_secret` parameter in`ui.run()` to sign the browser session cookie.
     - `app.storage.general`:
         Also stored server-side, this dictionary provides a shared storage space accessible to all users.
     - `app.storage.browser`:
         Unlike the previous types, this dictionary is stored directly as the browser session cookie, shared among all browser tabs for the same user.
         However, `app.storage.user` is generally preferred due to its advantages in reducing data payload, enhancing security, and offering larger storage capacity.
         By default, NiceGUI holds a unique identifier for the browser session in `app.storage.browser['id']`.
-        This storage is only available within [page builder functions](/documentation/page)
-        and requires the `storage_secret` parameter in `ui.run()` to sign the browser session cookie.
+        This storage requires the `storage_secret` parameter in `ui.run()` to sign the browser session cookie.
 
     The following table will help you to choose storage.
 
