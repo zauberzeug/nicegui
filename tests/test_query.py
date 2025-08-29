@@ -3,14 +3,16 @@ from nicegui.testing import Screen
 
 
 def test_query_body(screen: Screen):
-    ui.label('Hello')
-    ui.query('body').classes('bg-orange-100')
-    ui.button('Red background', on_click=lambda: ui.query('body').classes(replace='bg-red-100'))
-    ui.button('Blue background', on_click=lambda: ui.query('body').classes(replace='bg-blue-100'))
-    ui.button('Small padding', on_click=lambda: ui.query('body').style('padding: 1px'))
-    ui.button('Large padding', on_click=lambda: ui.query('body').style('padding: 10px'))
-    ui.button('Data X = 1', on_click=lambda: ui.query('body').props('data-x=1'))
-    ui.button('Data X = 2', on_click=lambda: ui.query('body').props('data-x=2'))
+    @ui.page('/')
+    def page():
+        ui.label('Hello')
+        ui.query('body').classes('bg-orange-100')
+        ui.button('Red background', on_click=lambda: ui.query('body').classes(replace='bg-red-100'))
+        ui.button('Blue background', on_click=lambda: ui.query('body').classes(replace='bg-blue-100'))
+        ui.button('Small padding', on_click=lambda: ui.query('body').style('padding: 1px'))
+        ui.button('Large padding', on_click=lambda: ui.query('body').style('padding: 10px'))
+        ui.button('Data X = 1', on_click=lambda: ui.query('body').props('data-x=1'))
+        ui.button('Data X = 2', on_click=lambda: ui.query('body').props('data-x=2'))
 
     def get_bg_classes() -> list[str]:
         return [c for c in (screen.find_by_tag('body').get_attribute('class') or '').split() if c.startswith('bg-')]
@@ -45,9 +47,11 @@ def test_query_body(screen: Screen):
 
 
 def test_query_multiple_divs(screen: Screen):
-    ui.label('A')
-    ui.label('B')
-    ui.button('Add border', on_click=lambda: ui.query('div').style('border: 1px solid black'))
+    @ui.page('/')
+    def page():
+        ui.label('A')
+        ui.label('B')
+        ui.button('Add border', on_click=lambda: ui.query('div').style('border: 1px solid black'))
 
     screen.open('/')
     screen.click('Add border')
@@ -57,8 +61,10 @@ def test_query_multiple_divs(screen: Screen):
 
 
 def test_query_with_css_variables(screen: Screen):
-    ui.add_body_html('<div id="element">Test</div>')
-    ui.query('#element').style('--color: red; color: var(--color)')
+    @ui.page('/')
+    def page():
+        ui.add_body_html('<div id="element">Test</div>')
+        ui.query('#element').style('--color: red; color: var(--color)')
 
     screen.open('/')
     assert screen.find('Test').value_of_css_property('color') == 'rgba(255, 0, 0, 1)'

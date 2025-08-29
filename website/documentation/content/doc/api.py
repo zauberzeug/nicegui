@@ -6,10 +6,12 @@ import types
 from copy import deepcopy
 from pathlib import Path
 from types import ModuleType
-from typing import Any, Callable, Dict, Optional, Union, overload
+from typing import Any, Callable, Generator, overload
+from contextlib import contextmanager
 
 import nicegui
 from nicegui import app as nicegui_app
+from nicegui import Client
 from nicegui import ui as nicegui_ui
 from nicegui.functions.navigate import Navigate
 from nicegui.elements.markdown import remove_indentation
@@ -21,9 +23,20 @@ registry: dict[str, DocumentationPage] = {}
 redirects: dict[str, str] = {}
 
 
+@contextmanager
+def dummy_client() -> Generator[Client, None, None]:
+    """Create a dummy client for pre-rendering UI."""
+    try:
+        with Client(nicegui_ui.page('')) as client:
+            yield client
+    finally:
+        client.delete()
+
+
 def auto_execute(function: Callable) -> Callable:
     """Decorator to automatically execute the function when the module is imported."""
-    function()
+    with dummy_client():
+        function()
     return function
 
 
@@ -128,11 +141,11 @@ def part(title_: str) -> Callable:
     page = _get_current_page()
 
     def decorator(function: Callable) -> Callable:
-        with nicegui_ui.element() as container:
-            function()
-            elements = nicegui.ElementFilter(kind=nicegui.ui.markdown, local_scope=True)
-            description = ''.join(e.content for e in elements if '```' not in e.content)
-        container.delete()
+        with dummy_client():
+            with nicegui_ui.element():
+                function()
+                elements = nicegui.ElementFilter(kind=nicegui.ui.markdown, local_scope=True)
+                description = ''.join(e.content for e in elements if '```' not in e.content)
         page.parts.append(DocumentationPart(title=title_, search_text=description, ui=function))
         return function
     return decorator

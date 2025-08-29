@@ -133,7 +133,7 @@ class Outbox:
             await core.air.emit(message_type, data, room=client_id)
 
         client = self.client
-        if client and not client.shared:
+        if client:
             self.message_history.append((self.next_message_id, time.time(), message))
             max_age = core.sio.eio.ping_interval + core.sio.eio.ping_timeout + client.page.resolve_reconnect_timeout()
             while self.message_history and self.message_history[0][1] < time.time() - max_age:
@@ -159,9 +159,7 @@ class Outbox:
                 return
 
         # target message ID not found, reload the page
-        client = self.client
-        if not client.shared:
-            client.run_javascript('window.location.reload()')
+        self.client.run_javascript('window.location.reload()')
 
     def prune_history(self, next_message_id: MessageId) -> None:
         """Prune the message history up to the given message ID."""

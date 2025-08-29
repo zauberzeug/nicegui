@@ -60,13 +60,6 @@ static_files = CacheControlledStaticFiles(
 )
 app.mount(f'/_nicegui/{__version__}/static', static_files, name='static')
 
-Client.auto_index_client = Client(page('/'), request=None).__enter__()  # pylint: disable=unnecessary-dunder-call
-
-
-@app.get('/')
-def _get_index(request: Request) -> Response:
-    return Client.auto_index_client.build_response(request)
-
 
 @app.get(f'/_nicegui/{__version__}' + '/libraries/{key:path}')
 def _get_library(key: str) -> FileResponse:
@@ -163,6 +156,11 @@ async def _shutdown() -> None:
 
 @app.exception_handler(404)
 async def _exception_handler_404(request: Request, exception: Exception) -> Response:
+    root = core.root
+    if root is not None:
+        with Client(page(''), request=request) as client:
+            root()
+            return client.build_response(request)
     log.warning(f'{request.url} not found')
     with Client(page(''), request=request) as client:
         error_content(404, exception)
@@ -243,9 +241,7 @@ async def prune_tab_storage(*, force: bool = False) -> None:
 
 async def prune_user_storage(*, force: bool = False) -> None:
     """Remove user storage objects without a client session."""
-    client_session_ids = {client.request.session['id']
-                          for client in Client.instances.values()
-                          if client.request is not None}
+    client_session_ids = {client.request.session['id'] for client in Client.instances.values()}
     storages_to_close: list[PersistentDict] = []
     now = time.time()
     user_storages = core.app.storage._users  # pylint: disable=protected-access

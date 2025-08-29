@@ -52,9 +52,6 @@ class Navigate:
         This is a browser setting and cannot be changed by the application.
         You might want to use `ui.link` and its `new_tab` parameter instead.
 
-        Note: When using an `auto-index page </documentation/section_pages_routing#auto-index_page>`_ (e.g. no `@page` decorator),
-        all clients (i.e. browsers) connected to the page will open the target URL unless a socket is specified.
-
         :param target: page function, NiceGUI element on the same page or string that is a an absolute URL or relative path from base URL
         :param new_tab: whether to open the target in a new tab (might be blocked by the browser)
         """

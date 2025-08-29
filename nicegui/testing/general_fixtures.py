@@ -7,7 +7,6 @@ from starlette.routing import Route
 
 import nicegui.storage
 from nicegui import Client, app, binding, core, run, ui
-from nicegui.page import page
 
 # pylint: disable=redefined-outer-name
 
@@ -59,10 +58,6 @@ def nicegui_reset_globals() -> Generator[None, None, None]:
     Client.instances.clear()
     Client.page_routes.clear()
     app.reset()
-    Client.auto_index_client = Client(page('/'), request=None).__enter__()  # pylint: disable=unnecessary-dunder-call
-    Client.auto_index_client.layout.parent_slot = None  # NOTE: otherwise the layout is nested in the previous client
-    # NOTE we need to re-add the auto index route because we removed all routes above
-    app.get('/')(Client.auto_index_client.build_response)
     binding.reset()
 
     yield
@@ -92,8 +87,7 @@ def prepare_simulation(request: pytest.FixtureRequest) -> None:
     """
     marker = request.node.get_closest_marker('module_under_test')
     if marker is not None:
-        with Client.auto_index_client:
-            importlib.reload(marker.args[0])
+        importlib.reload(marker.args[0])
 
     core.app.config.add_run_config(
         reload=False,

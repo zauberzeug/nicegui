@@ -7,7 +7,9 @@ from nicegui.testing import Screen
 
 
 def test_codemirror(screen: Screen):
-    ui.codemirror('Line 1\nLine 2\nLine 3')
+    @ui.page('/')
+    def page():
+        ui.codemirror('Line 1\nLine 2\nLine 3')
 
     screen.open('/')
     screen.should_contain('Line 2')
@@ -49,7 +51,12 @@ def test_supported_values(screen: Screen):
     ('Ha 🙂\nha 🙂', [3, -1, 2, 0, 4, -1, 2, 0], [[], [''], [], ['']], 'Ha \nha '),
 ])
 def test_change_set(screen: Screen, doc: str, sections: list[int], inserted: list[list[str]], expected: str):
-    editor = ui.codemirror(doc)
+    editor = None
+
+    @ui.page('/')
+    def page():
+        nonlocal editor
+        editor = ui.codemirror(doc)
 
     screen.open('/')
     assert editor._apply_change_set(sections, inserted) == expected

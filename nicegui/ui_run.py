@@ -1,8 +1,9 @@
 import multiprocessing
 import os
+import runpy
 import sys
 from pathlib import Path
-from typing import Any, Literal, Optional, TypedDict, Union
+from typing import Any, Callable, Literal, Optional, TypedDict, Union
 
 from fastapi.middleware.gzip import GZipMiddleware
 from starlette.routing import Route
@@ -45,7 +46,7 @@ class DocsConfig(TypedDict):
     license_info: Optional[LicenseInfoDict]
 
 
-def run(*,
+def run(root: Optional[Callable] = None, *,
         host: Optional[str] = None,
         port: Optional[int] = None,
         title: str = 'NiceGUI',
@@ -81,6 +82,7 @@ def run(*,
     You can call `ui.run()` with optional arguments.
     Most of them only apply after stopping and fully restarting the app and do not apply with auto-reloading.
 
+    :param root: root page function
     :param host: start server with this host (defaults to `'127.0.0.1` in native mode, otherwise `'0.0.0.0'`)
     :param port: use this port (default: 8080 in normal mode, and an automatically determined open port in native mode)
     :param title: page title (default: `'NiceGUI'`, can be overwritten per page)
@@ -111,6 +113,15 @@ def run(*,
     :param show_welcome_message: whether to show the welcome message (default: `True`)
     :param kwargs: additional keyword arguments are passed to `uvicorn.run`
     """
+    if core.script_mode:
+        if core.app.is_started:
+            return
+
+        def run_script() -> None:
+            runpy.run_path(sys.argv[0])
+        root = run_script
+        core.script_client.delete()
+
     core.app.config.add_run_config(
         reload=reload,
         title=title,
@@ -126,6 +137,7 @@ def run(*,
         prod_js=prod_js,
         show_welcome_message=show_welcome_message,
     )
+    core.root = root
     core.app.config.endpoint_documentation = endpoint_documentation
     if not helpers.is_pytest():
         core.app.add_middleware(GZipMiddleware)

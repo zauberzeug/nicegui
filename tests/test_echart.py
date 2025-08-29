@@ -17,13 +17,15 @@ def test_route() -> Generator[str, None, None]:
 
 
 def test_create_dynamically(screen: Screen):
-    def create():
-        ui.echart({
-            'xAxis': {'type': 'value'},
-            'yAxis': {'type': 'category', 'data': ['A', 'B', 'C']},
-            'series': [{'type': 'line', 'data': [0.1, 0.2, 0.3]}],
-        })
-    ui.button('Create', on_click=create)
+    @ui.page('/')
+    def page():
+        def create():
+            ui.echart({
+                'xAxis': {'type': 'value'},
+                'yAxis': {'type': 'category', 'data': ['A', 'B', 'C']},
+                'series': [{'type': 'line', 'data': [0.1, 0.2, 0.3]}],
+            })
+        ui.button('Create', on_click=create)
 
     screen.open('/')
     screen.click('Create')
@@ -31,13 +33,15 @@ def test_create_dynamically(screen: Screen):
 
 
 def test_update(screen: Screen):
-    def update():
-        chart.options['xAxis'] = {'type': 'value'}
-        chart.options['yAxis'] = {'type': 'category', 'data': ['A', 'B', 'C']}
-        chart.options['series'] = [{'type': 'line', 'data': [0.1, 0.2, 0.3]}]
-        chart.update()
-    chart = ui.echart({})
-    ui.button('Update', on_click=update)
+    @ui.page('/')
+    def page():
+        def update():
+            chart.options['xAxis'] = {'type': 'value'}
+            chart.options['yAxis'] = {'type': 'category', 'data': ['A', 'B', 'C']}
+            chart.options['series'] = [{'type': 'line', 'data': [0.1, 0.2, 0.3]}]
+            chart.update()
+        chart = ui.echart({})
+        ui.button('Update', on_click=update)
 
     screen.open('/')
     assert not screen.find_all_by_tag('canvas')
@@ -46,12 +50,14 @@ def test_update(screen: Screen):
 
 
 def test_nested_card(screen: Screen):
-    with ui.card().style('height: 200px; width: 600px'):
-        ui.echart({
-            'xAxis': {'type': 'value'},
-            'yAxis': {'type': 'category', 'data': ['A', 'B', 'C']},
-            'series': [{'type': 'line', 'data': [0.1, 0.2, 0.3]}],
-        })
+    @ui.page('/')
+    def page():
+        with ui.card().style('height: 200px; width: 600px'):
+            ui.echart({
+                'xAxis': {'type': 'value'},
+                'yAxis': {'type': 'category', 'data': ['A', 'B', 'C']},
+                'series': [{'type': 'line', 'data': [0.1, 0.2, 0.3]}],
+            })
 
     screen.open('/')
     canvas = screen.find_by_tag('canvas')
@@ -60,15 +66,17 @@ def test_nested_card(screen: Screen):
 
 
 def test_nested_expansion(screen: Screen):
-    with ui.expansion() as expansion:
-        with ui.card().style('height: 200px; width: 600px'):
-            ui.echart({
-                'xAxis': {'type': 'value'},
-                'yAxis': {'type': 'category', 'data': ['A', 'B', 'C']},
-                'series': [{'type': 'line', 'data': [0.1, 0.2, 0.3]}],
-                'animationDuration': 100,
-            })
-    ui.button('Open', on_click=expansion.open)
+    @ui.page('/')
+    def page():
+        with ui.expansion() as expansion:
+            with ui.card().style('height: 200px; width: 600px'):
+                ui.echart({
+                    'xAxis': {'type': 'value'},
+                    'yAxis': {'type': 'category', 'data': ['A', 'B', 'C']},
+                    'series': [{'type': 'line', 'data': [0.1, 0.2, 0.3]}],
+                    'animationDuration': 100,
+                })
+        ui.button('Open', on_click=expansion.open)
 
     screen.open('/')
     screen.click('Open')
@@ -100,15 +108,17 @@ def test_create_from_pyecharts(screen: Screen):
     X_AXIS_FORMATTER = r'(val, idx) => `x for ${val}`'
     Y_AXIS_FORMATTER = r'(val, idx) => `${val} kg`'
 
-    ui.echart.from_pyecharts(
-        Bar()
-        .add_xaxis(['A', 'B', 'C'])
-        .add_yaxis('series A', [0.1, 0.2, 0.3],)
-        .set_global_opts(
-            xaxis_opts=options.AxisOpts(axislabel_opts={':formatter': X_AXIS_FORMATTER}),
-            yaxis_opts=options.AxisOpts(axislabel_opts={'formatter': utils.JsCode(Y_AXIS_FORMATTER)}),
-        )
-    ).props('renderer=svg')
+    @ui.page('/')
+    def page():
+        ui.echart.from_pyecharts(
+            Bar()
+            .add_xaxis(['A', 'B', 'C'])
+            .add_yaxis('series A', [0.1, 0.2, 0.3],)
+            .set_global_opts(
+                xaxis_opts=options.AxisOpts(axislabel_opts={':formatter': X_AXIS_FORMATTER}),
+                yaxis_opts=options.AxisOpts(axislabel_opts={'formatter': utils.JsCode(Y_AXIS_FORMATTER)}),
+            )
+        ).props('renderer=svg')
 
     screen.open('/')
     screen.should_contain('x for A')
@@ -120,22 +130,26 @@ def test_create_from_pyecharts(screen: Screen):
 
 
 def test_chart_events(screen: Screen):
-    ui.echart({
-        'xAxis': {'type': 'category'},
-        'yAxis': {'type': 'value'},
-        'series': [{'type': 'line', 'data': [1, 2, 3]}],
-    }).on('chart:rendered', lambda: ui.label('Chart rendered.'))
+    @ui.page('/')
+    def page():
+        ui.echart({
+            'xAxis': {'type': 'category'},
+            'yAxis': {'type': 'value'},
+            'series': [{'type': 'line', 'data': [1, 2, 3]}],
+        }).on('chart:rendered', lambda: ui.label('Chart rendered.'))
 
     screen.open('/')
     screen.should_contain('Chart rendered.')
 
 
 def test_theme_dictionary(screen: Screen):
-    ui.echart({
-        'xAxis': {'type': 'category'},
-        'yAxis': {'type': 'value'},
-        'series': [{'type': 'line', 'data': [1, 2, 3]}],
-    }, theme={'backgroundColor': 'rgba(254,248,239,1)'}, renderer='svg')
+    @ui.page('/')
+    def page():
+        ui.echart({
+            'xAxis': {'type': 'category'},
+            'yAxis': {'type': 'value'},
+            'series': [{'type': 'line', 'data': [1, 2, 3]}],
+        }, theme={'backgroundColor': 'rgba(254,248,239,1)'}, renderer='svg')
 
     screen.open('/')
     assert screen.find_by_tag('rect').value_of_css_property('fill') == 'rgb(254, 248, 239)'
@@ -146,11 +160,13 @@ def test_theme_url(screen: Screen, test_route: str):  # pylint: disable=redefine
     def theme():
         return {'backgroundColor': 'rgba(254,248,239,1)'}
 
-    ui.echart({
-        'xAxis': {'type': 'category'},
-        'yAxis': {'type': 'value'},
-        'series': [{'type': 'line', 'data': [1, 2, 3]}],
-    }, theme=test_route, renderer='svg')
+    @ui.page('/')
+    def page():
+        ui.echart({
+            'xAxis': {'type': 'category'},
+            'yAxis': {'type': 'value'},
+            'series': [{'type': 'line', 'data': [1, 2, 3]}],
+        }, theme=test_route, renderer='svg')
 
     screen.open('/')
     assert screen.find_by_tag('rect').value_of_css_property('fill') == 'rgb(254, 248, 239)'

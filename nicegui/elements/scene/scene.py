@@ -157,10 +157,9 @@ class Scene(Element, component='scene.js', esm={'nicegui-scene': 'dist'}, defaul
             Object3D.current_scene = self
         return attribute
 
-    def _handle_init(self, e: GenericEventArguments) -> None:
-        with self.client.individual_target(e.args['socket_id']):
-            self.move_camera(duration=0)
-            self.run_method('init_objects', [obj.data for obj in self.objects.values()])
+    def _handle_init(self) -> None:
+        self.move_camera(duration=0)
+        self.run_method('init_objects', [obj.data for obj in self.objects.values()])
 
     async def initialized(self) -> None:
         """Wait until the scene is initialized."""

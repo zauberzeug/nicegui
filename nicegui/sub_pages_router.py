@@ -75,9 +75,6 @@ class SubPagesRouter:
 
     def _other_page_builder_matches_path(self, path: str, client: Client) -> bool:
         """Check if there is any other matching page builder than the one for this client."""
-        if client.request is None:
-            return True  # NOTE: we will remove this in NiceGUI 3.0 where we plan to drop support for auto-index pages
-
         client_route = client.request.scope['route']
         client_func = getattr(client_route.endpoint, '__func__', client_route.endpoint)
 

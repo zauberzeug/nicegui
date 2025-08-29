@@ -17,7 +17,10 @@ def test_ui_select_with_tuple_as_key(screen: Screen):
         (1, 2): 'option B',
     }
     data.selection = next(iter(options))
-    ui.select(options).bind_value(data, 'selection')
+
+    @ui.page('/')
+    def page():
+        ui.select(options).bind_value(data, 'selection')
 
     screen.open('/')
     screen.should_not_contain('option B')
@@ -35,7 +38,10 @@ def test_ui_select_with_list_of_tuples(screen: Screen):
     data = Model()
     options = [(1, 1), (2, 2), (3, 3)]
     data.selection = options[0]
-    ui.select(options).bind_value(data, 'selection')
+
+    @ui.page('/')
+    def page():
+        ui.select(options).bind_value(data, 'selection')
 
     screen.open('/')
     screen.should_not_contain('2,2')
@@ -53,7 +59,10 @@ def test_ui_select_with_list_of_lists(screen: Screen):
     data = Model()
     options = [[1, 1], [2, 2], [3, 3]]
     data.selection = options[0]
-    ui.select(options).bind_value(data, 'selection')
+
+    @ui.page('/')
+    def page():
+        ui.select(options).bind_value(data, 'selection')
 
     screen.open('/')
     screen.should_not_contain('2,2')
@@ -69,7 +78,12 @@ def test_binding_to_input(screen: Screen):
     class Model:
         text = 'one'
     data = Model()
-    element = ui.input().bind_value(data, 'text')
+    element = None
+
+    @ui.page('/')
+    def page():
+        nonlocal element
+        element = ui.input().bind_value(data, 'text')
 
     screen.open('/')
     screen.should_contain_input('one')
@@ -102,8 +116,11 @@ def test_binding_refresh_before_page_delivery(screen: Screen):
 
 def test_missing_target_attribute(screen: Screen):
     data: dict = {}
-    ui.label('Hello').bind_text_to(data)
-    ui.label().bind_text_from(data, 'text', lambda text: f'{text=}')
+
+    @ui.page('/')
+    def page():
+        ui.label('Hello').bind_text_to(data)
+        ui.label().bind_text_from(data, 'text', lambda text: f'{text=}')
 
     screen.open('/')
     screen.should_contain("text='Hello'")
@@ -117,8 +134,10 @@ def test_bindable_dataclass(screen: Screen):
 
     instance = TestClass()
 
-    ui.label().bind_text_from(instance, 'not_bindable')
-    ui.label().bind_text_from(instance, 'bindable')
+    @ui.page('/')
+    def page():
+        ui.label().bind_text_from(instance, 'not_bindable')
+        ui.label().bind_text_from(instance, 'bindable')
 
     screen.open('/')
     screen.should_contain('not_bindable_text')
@@ -137,13 +156,15 @@ async def test_copy_instance_with_bindable_property(user: User):
     x = Number()
     y = copy.copy(x)
 
-    ui.label().bind_text_from(x, 'value', lambda v: f'x={v}')
-    assert len(binding.bindings) == 1
-    assert len(binding.active_links) == 0
+    @ui.page('/')
+    def page():
+        ui.label().bind_text_from(x, 'value', lambda v: f'x={v}')
+        assert len(binding.bindings) == 1
+        assert len(binding.active_links) == 0
 
-    ui.label().bind_text_from(y, 'value', lambda v: f'y={v}')
-    assert len(binding.bindings) == 2
-    assert len(binding.active_links) == 0
+        ui.label().bind_text_from(y, 'value', lambda v: f'y={v}')
+        assert len(binding.bindings) == 2
+        assert len(binding.active_links) == 0
 
     await user.open('/')
     await user.should_see('x=1')
@@ -166,8 +187,13 @@ def test_automatic_cleanup(screen: Screen):
         label = ui.label(value).bind_text(model, 'value')
         return id(model), weakref.ref(model), label
 
-    model_id1, ref1, label1 = create_model_and_label('first label')
-    model_id2, ref2, _label2 = create_model_and_label('second label')
+    model_id1 = ref1 = label1 = model_id2 = ref2 = label2 = None
+
+    @ui.page('/')
+    def page():
+        nonlocal model_id1, ref1, label1, model_id2, ref2, label2
+        model_id1, ref1, label1 = create_model_and_label('first label')
+        model_id2, ref2, label2 = create_model_and_label('second label')
 
     def is_alive(ref: weakref.ref) -> bool:
         return ref() is not None
@@ -200,8 +226,11 @@ async def test_nested_propagation(user: User):
             self.a = 2
 
     demo = Demo()
-    ui.label().bind_text_from(demo, 'a', lambda a: f'a = {a}')
-    ui.number().bind_value_to(demo, 'b')  # should set a to 1 and then 2
+
+    @ui.page('/')
+    def page():
+        ui.label().bind_text_from(demo, 'a', lambda a: f'a = {a}')
+        ui.number().bind_value_to(demo, 'b')  # should set a to 1 and then 2
 
     await user.open('/')
     await user.should_see('a = 2')  # the final value of a should be 2

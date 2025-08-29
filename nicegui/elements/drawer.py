@@ -27,8 +27,7 @@ class Drawer(ValueElement, default_classes='nicegui-drawer'):
         To change the order, use the `move` method.
 
         A value of ``None`` will automatically open or close the drawer depending on the current layout width (breakpoint: >=1024 px).
-        On the auto-index page, the value will remain ``None`` until the drawer is opened, closed or toggled.
-        On other pages, the value will be requested from the client when the websocket connection is established.
+        The value will be requested from the client when the websocket connection is established.
 
         :param side: side of the page where the drawer should be placed (`left` or `right`)
         :param value: whether the drawer is already opened (default: `None`, i.e. if layout width is above threshold)
@@ -54,7 +53,7 @@ class Drawer(ValueElement, default_classes='nicegui-drawer'):
         page_container_index = self.client.layout.default_slot.children.index(self.client.page_container)
         self.move(target_index=page_container_index if side == 'left' else page_container_index + 1)
 
-        if value is None and not self.client.is_auto_index_client:
+        if value is None:
             async def _request_value() -> None:
                 self.value = await context.client.run_javascript(
                     f'!getHtmlElement({self.id}).parentElement.classList.contains("q-layout--prevent-focus")  // __IS_DRAWER_OPEN__'
@@ -100,8 +99,7 @@ class LeftDrawer(Drawer):
         To change the order, use the `move` method.
 
         A value of ``None`` will automatically open or close the drawer depending on the current layout width (breakpoint: >=1024 px).
-        On the auto-index page, the value will remain ``None`` until the drawer is opened, closed or toggled.
-        On other pages, the value will be requested from the client when the websocket connection is established.
+        The value will be requested from the client when the websocket connection is established.
 
         :param value: whether the drawer is already opened (default: `None`, i.e. if layout width is above threshold)
         :param fixed: whether the drawer is fixed or scrolls with the content (default: `True`)
@@ -138,8 +136,7 @@ class RightDrawer(Drawer):
         To change the order, use the `move` method.
 
         A value of ``None`` will automatically open or close the drawer depending on the current layout width (breakpoint: >=1024 px).
-        On the auto-index page, the value will remain ``None`` until the drawer is opened, closed or toggled.
-        On other pages, the value will be requested from the client when the websocket connection is established.
+        The value will be requested from the client when the websocket connection is established.
 
         :param value: whether the drawer is already opened (default: `None`, i.e. if layout width is above threshold)
         :param fixed: whether the drawer is fixed or scrolls with the content (default: `True`)

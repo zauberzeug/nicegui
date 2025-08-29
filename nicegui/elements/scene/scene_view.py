@@ -55,10 +55,9 @@ class SceneView(Element, component='scene_view.js', default_classes='nicegui-sce
         self._click_handlers.append(callback)
         return self
 
-    def _handle_init(self, e: GenericEventArguments) -> None:
-        with self.client.individual_target(e.args['socket_id']):
-            self.move_camera(duration=0)
-            self.run_method('init')
+    def _handle_init(self) -> None:
+        self.move_camera(duration=0)
+        self.run_method('init')
 
     async def initialized(self) -> None:
         """Wait until the scene is initialized."""

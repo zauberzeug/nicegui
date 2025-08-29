@@ -89,7 +89,7 @@ export default {
 
     const connectInterval = setInterval(() => {
       if (window.socket.id === undefined) return;
-      this.$emit("init", { socket_id: window.socket.id });
+      this.$emit("init");
       clearInterval(connectInterval);
     }, 100);
   },

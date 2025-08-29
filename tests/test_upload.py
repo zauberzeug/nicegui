@@ -9,7 +9,10 @@ test_path2 = Path('tests/test_scene.py').resolve()
 
 def test_uploading_text_file(screen: Screen):
     results: list[events.UploadEventArguments] = []
-    ui.upload(on_upload=results.append, label='Test Title')
+
+    @ui.page('/')
+    def page():
+        ui.upload(on_upload=results.append, label='Test Title')
 
     screen.open('/')
     screen.should_contain('Test Title')
@@ -25,8 +28,11 @@ def test_uploading_text_file(screen: Screen):
 
 def test_two_upload_elements(screen: Screen):
     results: list[events.UploadEventArguments] = []
-    ui.upload(on_upload=results.append, auto_upload=True, label='Test Title 1')
-    ui.upload(on_upload=results.append, auto_upload=True, label='Test Title 2')
+
+    @ui.page('/')
+    def page():
+        ui.upload(on_upload=results.append, auto_upload=True, label='Test Title 1')
+        ui.upload(on_upload=results.append, auto_upload=True, label='Test Title 2')
 
     screen.open('/')
     screen.should_contain('Test Title 1')
@@ -55,25 +61,30 @@ def test_uploading_from_two_tabs(screen: Screen):
 
 
 def test_upload_with_header_slot(screen: Screen):
-    with ui.upload().add_slot('header'):
-        ui.label('Header')
+    @ui.page('/')
+    def page():
+        with ui.upload().add_slot('header'):
+            ui.label('Header')
 
     screen.open('/')
     screen.should_contain('Header')
 
 
 def test_replace_upload(screen: Screen):
-    with ui.row() as container:
-        ui.upload(label='A')
+    @ui.page('/')
+    def page():
+        with ui.row() as container:
+            ui.upload(label='A')
 
-    def replace():
-        container.clear()
-        with container:
-            ui.upload(label='B')
-    ui.button('Replace', on_click=replace)
+        def replace():
+            container.clear()
+            with container:
+                ui.upload(label='B')
+        ui.button('Replace', on_click=replace)
 
     screen.open('/')
     screen.should_contain('A')
+
     screen.click('Replace')
     screen.wait(0.5)
     screen.should_contain('B')
@@ -81,8 +92,10 @@ def test_replace_upload(screen: Screen):
 
 
 def test_reset_upload(screen: Screen):
-    upload = ui.upload()
-    ui.button('Reset', on_click=upload.reset)
+    @ui.page('/')
+    def page():
+        upload = ui.upload()
+        ui.button('Reset', on_click=upload.reset)
 
     screen.open('/')
     screen.find_by_class('q-uploader__input').send_keys(str(test_path1))
@@ -94,7 +107,10 @@ def test_reset_upload(screen: Screen):
 
 def test_multi_upload_event(screen: Screen):
     results: list[events.MultiUploadEventArguments] = []
-    ui.upload(on_multi_upload=results.append, multiple=True)
+
+    @ui.page('/')
+    def page():
+        ui.upload(on_multi_upload=results.append, multiple=True)
 
     screen.open('/')
     screen.find_by_class('q-uploader__input').send_keys(f'{test_path1}\n{test_path2}')

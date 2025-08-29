@@ -17,9 +17,6 @@ class Timer(BaseTimer, Element, component='timer.js'):
         See https://github.com/zauberzeug/nicegui/issues/206 for details.
         Returns True if the client is connected, False if the client is not connected and the timer should be cancelled.
         """
-        if self.client.shared:
-            return True
-
         # ignore served pages which do not reconnect to backend (e.g. monitoring requests, scrapers etc.)
         TIMEOUT = 60.0
         try:

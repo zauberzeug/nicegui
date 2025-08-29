@@ -3,7 +3,9 @@ from nicegui.testing import Screen
 
 
 def test_code(screen: Screen):
-    ui.code('x = 42')
+    @ui.page('/')
+    def page():
+        ui.code('x = 42')
 
     screen.open('/')
     assert screen.find_by_class('n').text == 'x'

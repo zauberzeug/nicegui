@@ -5,9 +5,14 @@ from nicegui.testing import Screen
 
 
 def test_slide_item(screen: Screen):
-    label = ui.label('None')
-    with ui.slide_item('slide item', on_slide=lambda e: label.set_text(f'Event: {e.side}')) as slide_item:
-        slide_item.left()
+    slide_item = None
+
+    @ui.page('/')
+    def page():
+        nonlocal slide_item
+        label = ui.label('None')
+        with ui.slide_item('slide item', on_slide=lambda e: label.set_text(f'Event: {e.side}')) as slide_item:
+            slide_item.left()
 
     screen.open('/')
     screen.should_contain('slide item')
@@ -25,10 +30,15 @@ def test_slide_item(screen: Screen):
 
 
 def test_slide_side(screen: Screen):
-    label = ui.label('None')
-    with ui.slide_item('slide item') as slide_item:
-        slide_item.left(on_slide=lambda e: label.set_text(f'Event: {e.side}'))
-        slide_item.right(on_slide=lambda e: label.set_text(f'Event: {e.side}'))
+    slide_item = None
+
+    @ui.page('/')
+    def page():
+        nonlocal slide_item
+        label = ui.label('None')
+        with ui.slide_item('slide item') as slide_item:
+            slide_item.left(on_slide=lambda e: label.set_text(f'Event: {e.side}'))
+            slide_item.right(on_slide=lambda e: label.set_text(f'Event: {e.side}'))
 
     screen.open('/')
     screen.should_contain('None')
