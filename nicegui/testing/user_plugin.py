@@ -1,4 +1,3 @@
-import asyncio
 from collections.abc import AsyncGenerator
 from typing import Callable
 
@@ -20,27 +19,8 @@ from .user import User
 # pylint: disable=redefined-outer-name
 
 
-@pytest.fixture()
-def prepare_simulated_auto_index_client(request):
-    """Prepare the simulated auto index client."""
-    original_test = request.node._obj  # pylint: disable=protected-access
-    if asyncio.iscoroutinefunction(original_test):
-        async def wrapped_test(*args, **kwargs):
-            assert core.test_client is not None
-            with core.test_client:
-                return await original_test(*args, **kwargs)
-        request.node._obj = wrapped_test  # pylint: disable=protected-access
-    else:
-        def wrapped_test(*args, **kwargs):
-            assert core.test_client is not None
-            core.test_client.__enter__()  # pylint: disable=unnecessary-dunder-call
-            return original_test(*args, **kwargs)
-        request.node._obj = wrapped_test  # pylint: disable=protected-access
-
-
 @pytest.fixture
 async def user(nicegui_reset_globals,  # noqa: F811, pylint: disable=unused-argument
-               prepare_simulated_auto_index_client,  # pylint: disable=unused-argument
                caplog: pytest.LogCaptureFixture,
                request: pytest.FixtureRequest,
                ) -> AsyncGenerator[User, None]:
@@ -60,7 +40,6 @@ async def user(nicegui_reset_globals,  # noqa: F811, pylint: disable=unused-argu
 
 @pytest.fixture
 async def create_user(nicegui_reset_globals,  # noqa: F811, pylint: disable=unused-argument
-                      prepare_simulated_auto_index_client,  # pylint: disable=unused-argument
                       request: pytest.FixtureRequest,
                       ) -> AsyncGenerator[Callable[[], User], None]:
     """Create a fixture for building new users."""

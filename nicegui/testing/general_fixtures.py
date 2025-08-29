@@ -3,12 +3,10 @@ from collections.abc import Generator
 from copy import copy
 
 import pytest
-from starlette.requests import Request
 from starlette.routing import Route
 
 import nicegui.storage
 from nicegui import Client, app, binding, core, run, ui
-from nicegui.page import page
 
 # pylint: disable=redefined-outer-name
 
@@ -60,25 +58,6 @@ def nicegui_reset_globals() -> Generator[None, None, None]:
     Client.instances.clear()
     Client.page_routes.clear()
     app.reset()
-    request = Request({
-        'type': 'http',
-        'asgi': {'version': '3.0'},
-        'http_version': '1.1',
-        'scheme': 'http',
-        'method': 'GET',
-        'path': '/',
-        'raw_path': b'/',
-        'query_string': b'',
-        'root_path': '',
-        'headers': [(b'host', b'localhost')],
-        'client': ('127.0.0.1', 0),
-        'server': ('localhost', 80),
-        'session': {'id': ''},
-    })
-    core.test_client = Client(page('/'), request=request).__enter__()  # pylint: disable=unnecessary-dunder-call
-    core.test_client.layout.parent_slot = None  # NOTE: otherwise the layout is nested in the previous client
-    # NOTE we need to re-add the auto index route because we removed all routes above
-    app.get('/')(core.test_client.build_response)
     binding.reset()
 
     yield
@@ -108,9 +87,7 @@ def prepare_simulation(request: pytest.FixtureRequest) -> None:
     """
     marker = request.node.get_closest_marker('module_under_test')
     if marker is not None:
-        assert core.test_client is not None
-        with core.test_client:
-            importlib.reload(marker.args[0])
+        importlib.reload(marker.args[0])
 
     core.app.config.add_run_config(
         reload=False,
