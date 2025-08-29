@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import asyncio
 import io
 import os
 import weakref
@@ -8,8 +7,7 @@ from typing import Any
 
 from typing_extensions import Self
 
-from .. import background_tasks, optional_features
-from ..client import Client
+from .. import optional_features
 from ..element import Element
 
 try:
@@ -60,7 +58,7 @@ class Pyplot(Element, default_classes='nicegui-pyplot'):
         self.fig = plt.figure(**kwargs)  # pylint: disable=possibly-used-before-assignment
         self._convert_to_html()
 
-        background_tasks.create(self._auto_close(), name='auto-close plot figure')
+        self.client.on_disconnect(lambda: plt.close(self.fig))
 
     def _convert_to_html(self) -> None:
         with io.StringIO() as output:
@@ -76,11 +74,6 @@ class Pyplot(Element, default_classes='nicegui-pyplot'):
         if self.close:
             plt.close(self.fig)
         self.update()
-
-    async def _auto_close(self) -> None:
-        while self.client.id in Client.instances:
-            await asyncio.sleep(1.0)
-        plt.close(self.fig)
 
 
 class Matplotlib(Element, default_classes='nicegui-matplotlib'):

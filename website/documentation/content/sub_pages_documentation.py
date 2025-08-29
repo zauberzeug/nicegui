@@ -97,7 +97,7 @@ def parameters_demo():
 
     def other(title: ui.label):
         title.text = 'Other page content'
-        # ui.button('Go to main page', on_click=ui.navigate.to('/'))
+        # ui.button('Go to main page', on_click=lambda: ui.navigate.to('/'))
         sub_pages.link('Go to main page', '/')  # HIDE
 
     # ui.run(root)
