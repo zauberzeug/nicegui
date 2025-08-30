@@ -1,6 +1,7 @@
 import asyncio
 from typing import List, Optional
 
+import httpx
 import pytest
 
 from nicegui import PageArguments, background_tasks, ui
@@ -1087,6 +1088,24 @@ def test_http_404_on_initial_request(screen: Screen):
 
     screen.open('/bad_path')
     screen.should_contain('HTTPException: 404: /bad_path not found')
+    assert httpx.get(f'http://localhost:{Screen.PORT}/bad_path').status_code == 404
+
+
+def test_http_404_on_initial_request_with_async_page_builder(screen: Screen):
+    @ui.page('/')
+    @ui.page('/{_:path}')
+    async def index():
+        ui.sub_pages({
+            '/': main,
+        })
+
+    def main():
+        ui.label('main page')
+
+    screen.open('/bad_path')
+    # NOTE: due to the async page builder, sub pages can not determine 404 status on initial request (see https://github.com/zauberzeug/nicegui/pull/5089)
+    screen.should_contain('404: sub page /bad_path not found')
+    assert httpx.get(f'http://localhost:{Screen.PORT}/bad_path').status_code == 200
 
 
 def test_clearing_sub_pages_element(screen: Screen):
