@@ -145,10 +145,7 @@ class page:
                     dec_kwargs['client'] = client
                 try:
                     result = func(*dec_args, **dec_kwargs)
-                    # NOTE: after building the page, there might be sub pages that have 404 -- and initial requests should send 404 status request in such cases
-                    sub_pages_elements = [e for e in client.elements.values() if isinstance(e, SubPages)]
-                    if any(sub_pages.has_404 for sub_pages in sub_pages_elements):
-                        raise HTTPException(404, f'{client.sub_pages_router.current_path} not found')
+                    await self._await_sub_pages_and_raise_404(client)
                 except Exception as e:
                     return create_error_page(e, request)
             if helpers.is_coroutine_function(func):
@@ -174,6 +171,7 @@ class page:
                 else:
                     result = None
                     task.add_done_callback(check_for_late_return_value)
+                await self._await_sub_pages_and_raise_404(client)
             if isinstance(result, Response):  # NOTE if setup returns a response, we don't need to render the page
                 return result
             binding._refresh_step()  # pylint: disable=protected-access
@@ -192,3 +190,13 @@ class page:
         self.api_router.get(self._path, **self.kwargs)(decorated)
         Client.page_routes[func] = self.path
         return func
+
+    @staticmethod
+    async def _await_sub_pages_and_raise_404(client: Client) -> None:
+        """Some sub pages might finish async and decide 404"""
+        sub_pages_elements = [e for e in client.elements.values() if isinstance(e, SubPages)]
+        if any(sp._active_tasks for sp in sub_pages_elements):  # pylint: disable=protected-access
+            await asyncio.sleep(0)  # NOTE: give background tasks a brief chance to schedule nested sub pages
+        sub_pages_elements = [e for e in client.elements.values() if isinstance(e, SubPages)]
+        if any(sp.has_404 for sp in sub_pages_elements):
+            raise HTTPException(404, f'{client.sub_pages_router.current_path} not found')
