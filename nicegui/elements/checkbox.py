@@ -8,7 +8,7 @@ from .mixins.value_element import ValueElement
 
 class Checkbox(TextElement, ValueElement, DisableableElement):
 
-    def __init__(self, text: str = '', *, value: bool = False, on_change: Optional[Handler[ValueChangeEventArguments]] = None) -> None:
+    def __init__(self, text: str = '', *, value: Optional[bool] = False, on_change: Optional[Handler[ValueChangeEventArguments]] = None) -> None:
         """Checkbox
 
         This element is based on Quasar's `QCheckbox <https://quasar.dev/vue-components/checkbox>`_ component.
