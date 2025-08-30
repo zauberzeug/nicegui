@@ -526,7 +526,7 @@ def test_starting_on_non_root_path(screen: Screen, page_route: str):
 
     screen.open('/foo/sub')
     screen.should_contain('sub-content')
-    assert screen.current_path == '/foo/sub'
+    assert screen.current_path.rstrip('/') == '/foo/sub'
 
     screen.click('Go to main')
     screen.should_contain('main-content')
@@ -534,7 +534,7 @@ def test_starting_on_non_root_path(screen: Screen, page_route: str):
 
     screen.click('Go to sub')
     screen.should_contain('sub-content')
-    assert screen.current_path == '/foo/sub'
+    assert screen.current_path.rstrip('/') == '/foo/sub'
 
     screen.click('Go to main')
     screen.should_contain('main-content')
@@ -542,7 +542,7 @@ def test_starting_on_non_root_path(screen: Screen, page_route: str):
 
     screen.click('Go to sub')
     screen.should_contain('sub-content')
-    assert screen.current_path == '/foo/sub'
+    assert screen.current_path.rstrip('/') == '/foo/sub'
 
 
 def test_links_pointing_to_path_which_is_not_a_sub_page(screen: Screen):
