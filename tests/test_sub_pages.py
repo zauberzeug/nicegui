@@ -1087,8 +1087,12 @@ def test_http_404_on_initial_request(screen: Screen):
         ui.label('main page')
 
     screen.open('/bad_path')
-    screen.should_contain('HTTPException: 404: /bad_path not found')
     assert httpx.get(f'http://localhost:{Screen.PORT}/bad_path').status_code == 404
+    screen.should_contain('HTTPException: 404: /bad_path not found')
+
+    assert httpx.get(f'http://localhost:{Screen.PORT}/').status_code == 200
+    screen.open('/')
+    screen.should_contain('main page')
 
 
 def test_http_404_on_initial_request_with_async_page_builder(screen: Screen):
@@ -1103,9 +1107,38 @@ def test_http_404_on_initial_request_with_async_page_builder(screen: Screen):
         ui.label('main page')
 
     screen.open('/bad_path')
+    assert httpx.get(f'http://localhost:{Screen.PORT}/bad_path').status_code == 404
     # NOTE: due to the async page builder, sub pages can not determine 404 status on initial request (see https://github.com/zauberzeug/nicegui/pull/5089)
-    screen.should_contain('404: sub page /bad_path not found')
-    assert httpx.get(f'http://localhost:{Screen.PORT}/bad_path').status_code == 200
+    screen.should_contain('HTTPException: 404: /bad_path not found')
+
+    assert httpx.get(f'http://localhost:{Screen.PORT}/').status_code == 200
+    screen.open('/')
+    screen.should_contain('main page')
+
+
+def test_http_404_on_initial_request_with_async_sub_page_builder(screen: Screen):
+    @ui.page('/')
+    @ui.page('/{_:path}')
+    def index():
+        ui.sub_pages({
+            '/': main,
+        })
+
+    async def main():
+        ui.label('main page')
+        ui.sub_pages({
+            '/': lambda: ui.label('sub main page'),
+            '/sub': lambda: ui.label('sub sub page'),
+        })
+
+    screen.open('/bad_path')
+    assert httpx.get(f'http://localhost:{Screen.PORT}/bad_path').status_code == 404
+    # NOTE: due to the async page builder, sub pages can not determine 404 status on initial request (see https://github.com/zauberzeug/nicegui/pull/5089)
+    screen.should_contain('HTTPException: 404: /bad_path not found')
+
+    assert httpx.get(f'http://localhost:{Screen.PORT}/sub').status_code == 200
+    screen.open('/sub')
+    screen.should_contain('sub sub page')
 
 
 def test_clearing_sub_pages_element(screen: Screen):
