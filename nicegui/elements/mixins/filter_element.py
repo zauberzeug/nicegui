@@ -83,4 +83,3 @@ class FilterElement(Element):
         :param filter: The new filter.
         """
         self._props[self.FILTER_PROP] = filter_
-        self.update()

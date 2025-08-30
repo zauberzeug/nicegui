@@ -40,7 +40,8 @@ class Plotly(Element, component='plotly.vue', esm={'nicegui-plotly': 'dist'}):
         self.update()
 
     def update(self) -> None:
-        self._props['options'] = self._get_figure_json()
+        with self._props.suspend_updates():
+            self._props['options'] = self._get_figure_json()
         super().update()
 
     def _get_figure_json(self) -> dict:

@@ -82,7 +82,6 @@ class Table(FilterElement, component='table.js'):
                 self.selected.extend(e.args['rows'])
             else:
                 self.selected = [row for row in self.selected if row[self.row_key] not in e.args['keys']]
-            self.update()
             arguments = TableSelectionEventArguments(sender=self, client=self.client, selection=self.selected)
             for handler in self._selection_handlers:
                 handle_event(handler, arguments)
@@ -91,7 +90,6 @@ class Table(FilterElement, component='table.js'):
         def handle_pagination_change(e: GenericEventArguments) -> None:
             previous_value = self.pagination
             self.pagination = e.args
-            self.update()
             arguments = ValueChangeEventArguments(sender=self, client=self.client,
                                                   value=self.pagination, previous_value=previous_value)
             for handler in self._pagination_change_handlers:
@@ -246,7 +244,6 @@ class Table(FilterElement, component='table.js'):
             self.columns[:] = self._normalize_columns(columns or columns_from_df)
         if clear_selection:
             self.selected.clear()
-        self.update()
 
     @staticmethod
     def _pandas_df_to_rows_and_columns(df: 'pd.DataFrame') -> tuple[list[dict], list[dict]]:
@@ -282,7 +279,6 @@ class Table(FilterElement, component='table.js'):
     @rows.setter
     def rows(self, value: list[dict]) -> None:
         self._props['rows'] = value
-        self.update()
 
     @property
     def columns(self) -> list[dict]:
@@ -292,7 +288,6 @@ class Table(FilterElement, component='table.js'):
     @columns.setter
     def columns(self, value: list[dict]) -> None:
         self._props['columns'] = self._normalize_columns(value)
-        self.update()
 
     @property
     def column_defaults(self) -> Optional[dict]:
@@ -312,7 +307,6 @@ class Table(FilterElement, component='table.js'):
     @row_key.setter
     def row_key(self, value: str) -> None:
         self._props['row-key'] = value
-        self.update()
 
     @property
     def selected(self) -> list[dict]:
@@ -322,7 +316,6 @@ class Table(FilterElement, component='table.js'):
     @selected.setter
     def selected(self, value: list[dict]) -> None:
         self._props['selected'] = value
-        self.update()
 
     @property
     def selection(self) -> Literal[None, 'single', 'multiple']:
@@ -335,7 +328,6 @@ class Table(FilterElement, component='table.js'):
     @selection.setter
     def selection(self, value: Literal[None, 'single', 'multiple']) -> None:
         self._props['selection'] = value or 'none'
-        self.update()
 
     def set_selection(self, value: Literal[None, 'single', 'multiple']) -> None:
         """Set the selection type.
@@ -352,7 +344,6 @@ class Table(FilterElement, component='table.js'):
     @pagination.setter
     def pagination(self, value: dict) -> None:
         self._props['pagination'] = value
-        self.update()
 
     @property
     def is_fullscreen(self) -> bool:
@@ -363,7 +354,6 @@ class Table(FilterElement, component='table.js'):
     def is_fullscreen(self, value: bool) -> None:
         """Set fullscreen mode."""
         self._props['fullscreen'] = value
-        self.update()
 
     def set_fullscreen(self, value: bool) -> None:
         """Set fullscreen mode."""
@@ -376,7 +366,6 @@ class Table(FilterElement, component='table.js'):
     def add_rows(self, rows: list[dict]) -> None:
         """Add rows to the table."""
         self.rows.extend(rows)
-        self.update()
 
     def add_row(self, row: dict) -> None:
         """Add a single row to the table."""
@@ -387,7 +376,6 @@ class Table(FilterElement, component='table.js'):
         keys = [row[self.row_key] for row in rows]
         self.rows[:] = [row for row in self.rows if row[self.row_key] not in keys]
         self.selected[:] = [row for row in self.selected if row[self.row_key] not in keys]
-        self.update()
 
     def remove_row(self, row: dict) -> None:
         """Remove a single row from the table."""
@@ -402,7 +390,6 @@ class Table(FilterElement, component='table.js'):
         self.rows[:] = rows
         if clear_selection:
             self.selected.clear()
-        self.update()
 
     async def get_filtered_sorted_rows(self, *, timeout: float = 1) -> list[dict]:
         """Asynchronously return the filtered and sorted rows of the table."""

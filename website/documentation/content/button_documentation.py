@@ -80,7 +80,8 @@ def toggle_button() -> None:
             self.update()
 
         def update(self) -> None:
-            self.props(f'color={"green" if self._state else "red"}')
+            with self.props.suspend_updates():
+                self.props(f'color={"green" if self._state else "red"}')
             super().update()
 
     ToggleButton('Toggle me')

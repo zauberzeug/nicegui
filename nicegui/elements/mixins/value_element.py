@@ -109,7 +109,8 @@ class ValueElement(Element):
 
     def _handle_value_change(self, value: Any) -> None:
         previous_value = self._props.get(self.VALUE_PROP)
-        self._props[self.VALUE_PROP] = self._value_to_model_value(value)
+        with self._props.suspend_updates():
+            self._props[self.VALUE_PROP] = self._value_to_model_value(value)
         if self._send_update_on_value_change:
             self.update()
         args = ValueChangeEventArguments(sender=self, client=self.client,

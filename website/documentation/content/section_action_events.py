@@ -21,28 +21,13 @@ doc.intro(keyboard_documentation)
     NiceGUI tries to automatically synchronize the state of UI elements with the client,
     e.g. when a label text, an input value or style/classes/props of an element have changed.
     In other cases, you can explicitly call `element.update()` or `ui.update(*elements)` to update.
-    The demo code shows both methods for a `ui.echart`, where it is difficult to automatically detect changes in the `options` dictionary.
+    The demo code shows how to update a `ui.radio` after a new option is added.
 ''')
 def ui_updates_demo():
-    from random import random
+    radio = ui.radio(['A', 'B', 'C'])
 
-    chart = ui.echart({
-        'xAxis': {'type': 'value'},
-        'yAxis': {'type': 'value'},
-        'series': [{'type': 'line', 'data': [[0, 0], [1, 1]]}],
-    })
-
-    def add():
-        chart.options['series'][0]['data'].append([random(), random()])
-        chart.update()
-
-    def clear():
-        chart.options['series'][0]['data'].clear()
-        ui.update(chart)
-
-    with ui.row():
-        ui.button('Add', on_click=add)
-        ui.button('Clear', on_click=clear)
+    ui.button('Add option', on_click=lambda: radio.options.append('D'))
+    ui.button('Update', on_click=radio.update)
 
 
 doc.intro(refreshable_documentation)
