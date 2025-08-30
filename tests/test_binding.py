@@ -161,7 +161,7 @@ def test_automatic_cleanup(screen: Screen):
         def __init__(self, value: str) -> None:
             self.value = value
 
-    def create_model_and_label(value: str) -> tuple[Model, weakref.ref, ui.label]:
+    def create_model_and_label(value: str) -> tuple[int, weakref.ref, ui.label]:
         model = Model(value)
         label = ui.label(value).bind_text(model, 'value')
         return id(model), weakref.ref(model), label
@@ -205,3 +205,39 @@ async def test_nested_propagation(user: User):
 
     await user.open('/')
     await user.should_see('a = 2')  # the final value of a should be 2
+
+
+def test_binding_other_dict_is_strict(screen: Screen):
+    data: dict[str, str] = {}
+    label = ui.label()
+    binding.bind(label, 'text', data, 'non_existent_key', other_strict=True)
+
+    screen.open('/')
+    screen.assert_py_logger('WARNING',
+                            'Binding a non-existing attribute "non_existent_key" of target object of type dict. '
+                            'Proceeding with binding, keeping the value unset.')
+
+
+def test_binding_object_is_strict(screen: Screen):
+    class Model:
+        attribute = 'existing-attribute'
+    model = Model()
+    label = ui.label()
+    binding.bind(model, 'no_attribute', label, 'no_text')
+
+    screen.open('/')
+    screen.assert_py_logger('WARNING',
+                            'Binding a non-existing attribute "no_attribute" of target object of type Model. '
+                            'Proceeding with binding, keeping the value unset.')
+    screen.assert_py_logger('WARNING',
+                            'Binding a non-existing attribute "no_text" of target object of type Label. '
+                            'Proceeding with binding, keeping the value unset.')
+
+
+def test_binding_dict_is_not_strict(screen: Screen):
+    data: dict[str, str] = {}
+    label = ui.label()
+    binding.bind(data, 'non_existing_key', label, 'text')
+
+    screen.open('/')
+    # no warning

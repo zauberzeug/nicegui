@@ -192,6 +192,7 @@ def test_exception_after_connected(screen: Screen):
     screen.open('/')
     screen.should_contain('this is shown')
     screen.assert_py_logger('ERROR', 'some exception')
+    screen.assert_py_logger('ERROR', re.compile('Exception in callback'))
 
 
 def test_page_with_args(screen: Screen):
