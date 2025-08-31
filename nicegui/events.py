@@ -96,6 +96,17 @@ class SceneClickEventArguments(ClickEventArguments):
 
 
 @dataclass(**KWONLY_SLOTS)
+class SceneHoverEventArguments(ClickEventArguments):
+    hover_type: str
+    # button: int
+    alt: bool
+    ctrl: bool
+    meta: bool
+    shift: bool
+    hits: List[SceneClickHit]
+
+
+@dataclass(**KWONLY_SLOTS)
 class SceneDragEventArguments(ClickEventArguments):
     type: Literal['dragstart', 'dragend']
     object_id: str
