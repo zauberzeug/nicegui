@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import asyncio
 from typing import TYPE_CHECKING, Callable, List, Optional
 
 from fastapi import Request
@@ -47,22 +46,16 @@ class SubPagesRouter:
         self.is_initial_request = False
         for callback in self._path_changed_handlers:
             callback(path)
-        updated = False
+        has_any_match = False
         for child in context.client.layout.descendants():
             if isinstance(child, SubPages):
                 try:
                     child._show()  # pylint: disable=protected-access
                     if child._match is not None:  # pylint: disable=protected-access
-                        updated = True
+                        has_any_match = True
                 except ValueError:
                     pass
-        await asyncio.sleep(0)
-        sub_pages_elements = [e for e in context.client.layout.descendants() if isinstance(e, SubPages)]
-        for sub_pages in sub_pages_elements:
-            if sub_pages._match is not None and sub_pages._match.remaining_path and not any(isinstance(el, SubPages) for el in sub_pages.descendants()):
-                sub_pages._set_match(None)
-                updated = False
-        return updated
+        return has_any_match and not await SubPages.settle_and_force_terminal_404(context.client, unconditional_sleep=True)
 
     async def _handle_navigate(self, path: str) -> None:
         # NOTE: keep a reference to the client because _handle_open clears the slots so that context.client does not work anymore
