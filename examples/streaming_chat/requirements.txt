@@ -1,0 +1,4 @@
+langchain~=0.3.6
+langchain-core~=0.3.12
+langchain_community~=0.3.4
+langchain-google-genai~=2.0.4

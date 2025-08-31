@@ -74,4 +74,5 @@ examples: List[Example] = [
     Example('Google One-Tap Auth', 'Authenticate users via Google One-Tap'),
     Example('Google OAuth2', 'Authenticate with Google OAuth2'),
     Example('Stripe', 'Use Stripe to process payments'),
+    Example('Streaming Chat', 'Stream AI chat output to the user.'),
 ]
