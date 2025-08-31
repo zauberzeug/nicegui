@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 from typing import TYPE_CHECKING, Callable, List, Optional
 
 from fastapi import Request
@@ -46,16 +47,13 @@ class SubPagesRouter:
         self.is_initial_request = False
         for callback in self._path_changed_handlers:
             callback(path)
-        has_any_match = False
         for child in context.client.layout.descendants():
             if isinstance(child, SubPages):
                 try:
                     child._show()  # pylint: disable=protected-access
-                    if child._match is not None:  # pylint: disable=protected-access
-                        has_any_match = True
                 except ValueError:
                     pass
-        return has_any_match and not await SubPages.settle_and_force_terminal_404(context.client, unconditional_sleep=True)
+        return await self._can_resolve_full_path(context.client)
 
     async def _handle_navigate(self, path: str) -> None:
         # NOTE: keep a reference to the client because _handle_open clears the slots so that context.client does not work anymore
@@ -96,3 +94,22 @@ class SubPagesRouter:
                 return True
 
         return False
+
+    @staticmethod
+    async def _can_resolve_full_path(client: Client) -> bool:
+        sub_pages_elements = [e for e in client.layout.descendants() if isinstance(e, SubPages)]
+        if any(sp._active_tasks for sp in sub_pages_elements):  # pylint: disable=protected-access
+            await asyncio.sleep(0)
+            # NOTE: refresh the list to include newly created nested sub pages in async sub page builders after the event loop tick
+            sub_pages_elements = [e for e in client.layout.descendants() if isinstance(e, SubPages)]
+        has_404 = False
+        for sp in sub_pages_elements:
+            if (
+                sp._match is not None and  # pylint: disable=protected-access
+                sp._404_enabled and  # pylint: disable=protected-access
+                bool(sp._match.remaining_path) and  # pylint: disable=protected-access
+                not any(isinstance(el, SubPages) for el in sp.descendants())
+            ):
+                sp._set_match(None)  # pylint: disable=protected-access
+                has_404 = True
+        return not has_404

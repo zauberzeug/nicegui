@@ -227,25 +227,3 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
             if current_params.get(name) != previous_params.get(name):
                 return True
         return False
-
-    def has_terminal_unconsumed_path(self) -> bool:
-        return (
-            self._match is not None and
-            self._404_enabled and
-            bool(self._match.remaining_path) and
-            not any(isinstance(el, SubPages) for el in self.descendants())
-        )
-
-    @staticmethod
-    async def settle_and_force_terminal_404(client, *, unconditional_sleep: bool = False) -> bool:
-        sub_pages_elements = [e for e in client.layout.descendants() if isinstance(e, SubPages)]
-        if unconditional_sleep or any(sp._active_tasks for sp in sub_pages_elements):  # pylint: disable=protected-access
-            await asyncio.sleep(0)
-            # NOTE: refresh the list to include newly created nested sub pages after the event loop tick
-            sub_pages_elements = [e for e in client.layout.descendants() if isinstance(e, SubPages)]
-        applied = False
-        for sp in sub_pages_elements:
-            if sp.has_terminal_unconsumed_path():
-                sp._set_match(None)
-                applied = True
-        return applied
