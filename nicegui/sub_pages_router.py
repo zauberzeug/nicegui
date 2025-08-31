@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 from typing import TYPE_CHECKING, Callable, List, Optional
 
 from fastapi import Request
@@ -41,7 +42,7 @@ class SubPagesRouter:
         """
         self._path_changed_handlers.append(handler)
 
-    def _handle_open(self, path: str) -> bool:
+    async def _handle_open(self, path: str) -> bool:
         self.current_path = path
         self.is_initial_request = False
         for callback in self._path_changed_handlers:
@@ -55,13 +56,19 @@ class SubPagesRouter:
                         updated = True
                 except ValueError:
                     pass
+        await asyncio.sleep(0)
+        sub_pages_elements = [e for e in context.client.layout.descendants() if isinstance(e, SubPages)]
+        for sub_pages in sub_pages_elements:
+            if sub_pages._match is not None and sub_pages._match.remaining_path and not any(isinstance(el, SubPages) for el in sub_pages.descendants()):
+                sub_pages._set_match(None)
+                updated = False
         return updated
 
-    def _handle_navigate(self, path: str) -> None:
+    async def _handle_navigate(self, path: str) -> None:
         # NOTE: keep a reference to the client because _handle_open clears the slots so that context.client does not work anymore
         client = context.client
         if (
-            self._handle_open(path) or  # path is handled by `ui.sub_pages`
+            await self._handle_open(path) or  # path is handled by `ui.sub_pages`
             not self._other_page_builder_matches_path(path, client)  # `ui.sub_pages` is still responsible
         ):
             client.run_javascript(f'''

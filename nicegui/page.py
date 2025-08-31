@@ -198,5 +198,10 @@ class page:
         if any(sp._active_tasks for sp in sub_pages_elements):  # pylint: disable=protected-access
             await asyncio.sleep(0)  # NOTE: give background tasks a brief chance to schedule nested sub pages
         sub_pages_elements = [e for e in client.elements.values() if isinstance(e, SubPages)]
-        if any(sp.has_404 for sp in sub_pages_elements):
-            raise HTTPException(404, f'{client.sub_pages_router.current_path} not found')
+        for sub_pages in sub_pages_elements:
+            if sub_pages._match is not None and \
+                    sub_pages._404_enabled and \
+                    sub_pages._match.remaining_path and \
+                    not any(isinstance(el, SubPages) for el in sub_pages.descendants()):
+                sub_pages._set_match(None)
+                raise HTTPException(404, f'{client.sub_pages_router.current_path} not found')

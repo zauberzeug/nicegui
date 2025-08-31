@@ -317,11 +317,6 @@ def test_async_nested_sub_pages(screen: Screen):
     screen.should_contain('background main page')
     assert calls == {'index': 2, 'sleep': 2, 'sleep_main': 2, 'sleep_sub': 0, 'background': 2, 'background_main': 2}
 
-    # directly opening a nested sub page on an async sub page (see https://github.com/zauberzeug/nicegui/issues/5085)
-    screen.open('/sleep/sub')
-    screen.should_contain('sleep sub page')
-    assert calls == {'index': 3, 'sleep': 3, 'sleep_main': 2, 'sleep_sub': 1, 'background': 2, 'background_main': 2}
-
 
 def test_parameterized_sub_pages(screen: Screen):
     calls = {'index': 0, 'main': 0}
@@ -1129,16 +1124,23 @@ def test_http_404_on_initial_request_with_async_sub_page_builder(screen: Screen)
         ui.sub_pages({
             '/': lambda: ui.label('sub main page'),
             '/sub': lambda: ui.label('sub sub page'),
+            '/async-sub': async_sub,
         })
+
+    async def async_sub():
+        ui.label('async sub page')
 
     screen.open('/bad_path')
     assert httpx.get(f'http://localhost:{Screen.PORT}/bad_path').status_code == 404
-    # NOTE: due to the async page builder, sub pages can not determine 404 status on initial request (see https://github.com/zauberzeug/nicegui/pull/5089)
     screen.should_contain('HTTPException: 404: /bad_path not found')
 
     assert httpx.get(f'http://localhost:{Screen.PORT}/sub').status_code == 200
     screen.open('/sub')
     screen.should_contain('sub sub page')
+
+    assert httpx.get(f'http://localhost:{Screen.PORT}/sub/bad_path').status_code == 404
+    assert httpx.get(f'http://localhost:{Screen.PORT}/async-sub').status_code == 200
+    assert httpx.get(f'http://localhost:{Screen.PORT}/async-sub/bad_path').status_code == 404
 
 
 def test_clearing_sub_pages_element(screen: Screen):
