@@ -239,9 +239,12 @@ async def test_nested_propagation(user: User):
 
 def test_binding_other_dict_is_strict(screen: Screen):
     data: dict[str, str] = {}
-    label = ui.label()
-    with pytest.raises(KeyError):
-        binding.bind(label, 'text', data, 'non_existent_key', other_strict=True)
+
+    @ui.page('/')
+    def page():
+        label = ui.label()
+        with pytest.raises(KeyError):
+            binding.bind(label, 'text', data, 'non_existent_key', other_strict=True)
 
     screen.open('/')
 
@@ -250,17 +253,22 @@ def test_binding_object_is_strict(screen: Screen):
     class Model:
         attribute = 'existing-attribute'
     model = Model()
-    label = ui.label()
-    with pytest.raises(AttributeError):
-        binding.bind(model, 'no_attribute', label, 'no_text')
+
+    @ui.page('/')
+    def page():
+        label = ui.label()
+        with pytest.raises(AttributeError):
+            binding.bind(model, 'no_attribute', label, 'no_text')
 
     screen.open('/')
 
 
 def test_binding_dict_is_not_strict(screen: Screen):
     data: dict[str, str] = {}
-    label = ui.label()
-    binding.bind(data, 'non_existing_key', label, 'text')
+
+    @ui.page('/')
+    def page():
+        label = ui.label()
+        binding.bind(data, 'non_existing_key', label, 'text')  # no exception
 
     screen.open('/')
-    # no warning
