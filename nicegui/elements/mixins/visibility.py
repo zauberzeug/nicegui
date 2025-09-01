@@ -38,7 +38,7 @@ class Visibility:
         :param target_object: The object to bind to.
         :param target_name: The name of the property to bind to.
         :param forward: A function to apply to the value before applying it to the target (default: identity).
-        :param strict: Whether to check (and warn) if the target object has the specified property (default: None,
+        :param strict: Whether to check (and raise) if the target object has the specified property (default: None,
             performs a check if the object is not a dictionary, *added in version 3.0.0*).
         """
         bind_to(self, 'visible', target_object, target_name, forward, self_strict=False, other_strict=strict)
@@ -60,7 +60,7 @@ class Visibility:
         :param target_name: The name of the property to bind from.
         :param backward: A function to apply to the value before applying it to this element (default: identity).
         :param value: If specified, the element will be visible only when the target value is equal to this value.
-        :param strict: Whether to check (and warn) if the target object has the specified property (default: None,
+        :param strict: Whether to check (and raise) if the target object has the specified property (default: None,
             performs a check if the object is not a dictionary, *added in version 3.0.0*).
         """
         if value is not None:
@@ -88,7 +88,7 @@ class Visibility:
         :param forward: A function to apply to the value before applying it to the target (default: identity).
         :param backward: A function to apply to the value before applying it to this element (default: identity).
         :param value: If specified, the element will be visible only when the target value is equal to this value.
-        :param strict: Whether to check (and warn) if the target object has the specified property (default: None,
+        :param strict: Whether to check (and raise) if the target object has the specified property (default: None,
             performs a check if the object is not a dictionary, *added in version 3.0.0*).
         """
         if value is not None:
