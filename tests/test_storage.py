@@ -129,13 +129,17 @@ def test_access_user_storage_from_button_click_handler(screen: Screen):
 def test_access_user_storage_from_background_task(screen: Screen):
     @ui.page('/')
     def page():
+        label = ui.label('Busy...')
+
         async def subtask():
             await asyncio.sleep(0.1)
             app.storage.user['subtask'] = 'works'
+            label.text = 'Done'
         background_tasks.create(subtask())
 
     screen.ui_run_kwargs['storage_secret'] = 'just a test'
     screen.open('/')
+    screen.should_contain('Done')
     assert next(Path('.nicegui').glob('storage-user-*.json')).read_text(encoding='utf-8') == '{"subtask":"works"}'
 
 
@@ -317,6 +321,7 @@ def test_storage_access_in_binding_function(screen: Screen):
     screen.ui_run_kwargs['storage_secret'] = 'secret'
 
     screen.open('/')
+    screen.should_contain('John')
     screen.assert_py_logger('ERROR', 'app.storage.user can only be used within a UI context')
 
 
