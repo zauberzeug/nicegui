@@ -8,7 +8,7 @@ import weakref
 from collections import defaultdict
 from collections.abc import Iterable, Mapping
 from contextvars import ContextVar
-from typing import TYPE_CHECKING, Any, Callable, TypeVar
+from typing import TYPE_CHECKING, Any, Callable, Literal, TypeVar
 
 from typing_extensions import dataclass_transform
 
@@ -105,8 +105,30 @@ def _propagate_recursively(source_obj: Any, source_name: str) -> None:
             _propagate_recursively(target_obj, target_name)
 
 
+def _check_attribute_exists(other_obj: Any, other_name: str, *, role: Literal['self', 'other']) -> None:
+    if not _has_attribute(other_obj, other_name):
+        if isinstance(other_obj, Mapping):
+            raise KeyError(
+                f'Could not bind non-existing key "{other_name}". '
+                f'To allow missing keys (lazy binding), remove {role}_strict=True or add the key before binding.'
+            )
+        raise AttributeError(
+            f'Could not bind non-existing attribute "{other_name}" on object of type {other_obj.__class__.__name__}. '
+            f'To allow missing attributes (lazy binding), add {role}_strict=False or add the attribute before binding.'
+        )
+
+
+def _check_self_and_other_attribute(self_obj: Any, self_name: str, other_obj: Any, other_name: str,
+                                    self_strict: bool | None, other_strict: bool | None) -> None:
+    if self_strict or (self_strict is None and not isinstance(self_obj, dict)):
+        _check_attribute_exists(self_obj, self_name, role='self')
+    if other_strict or (other_strict is None and not isinstance(other_obj, dict)):
+        _check_attribute_exists(other_obj, other_name, role='other')
+
+
 def bind_to(self_obj: Any, self_name: str, other_obj: Any, other_name: str,
-            forward: Callable[[Any], Any] | None = None) -> None:
+            forward: Callable[[Any], Any] | None = None, *,
+            self_strict: bool | None = None, other_strict: bool | None = None) -> None:
     """Bind the property of one object to the property of another object.
 
     The binding works one way only, from the first object to the second.
@@ -117,7 +139,12 @@ def bind_to(self_obj: Any, self_name: str, other_obj: Any, other_name: str,
     :param other_obj: The object to bind to.
     :param other_name: The name of the property to bind to.
     :param forward: A function to apply to the value before applying it (default: identity).
+    :param self_strict: Whether to check (and raise) if the first object has the specified property
+        (default: None, performs a check if the object is not a dictionary, *added in version 3.0.0*).
+    :param other_strict: Whether to check (and raise) if the second object has the specified property
+        (default: None, performs a check if the object is not a dictionary, *added in version 3.0.0*).
     """
+    _check_self_and_other_attribute(self_obj, self_name, other_obj, other_name, self_strict, other_strict)
     bindings[(id(self_obj), self_name)].append((self_obj, other_obj, other_name, forward))
     if (id(self_obj), self_name) not in bindable_properties:
         active_links.append((self_obj, self_name, other_obj, other_name, forward))
@@ -125,7 +152,8 @@ def bind_to(self_obj: Any, self_name: str, other_obj: Any, other_name: str,
 
 
 def bind_from(self_obj: Any, self_name: str, other_obj: Any, other_name: str,
-              backward: Callable[[Any], Any] | None = None) -> None:
+              backward: Callable[[Any], Any] | None = None, *,
+              self_strict: bool | None = None, other_strict: bool | None = None) -> None:
     """Bind the property of one object from the property of another object.
 
     The binding works one way only, from the second object to the first.
@@ -136,7 +164,12 @@ def bind_from(self_obj: Any, self_name: str, other_obj: Any, other_name: str,
     :param other_obj: The object to bind from.
     :param other_name: The name of the property to bind from.
     :param backward: A function to apply to the value before applying it (default: identity).
+    :param self_strict: Whether to check (and raise) if the first object has the specified property (default: None,
+        performs a check if the object is not a dictionary, *added in version 3.0.0*).
+    :param other_strict: Whether to check (and raise) if the second object has the specified property (default: None,
+        performs a check if the object is not a dictionary, *added in version 3.0.0*).
     """
+    _check_self_and_other_attribute(self_obj, self_name, other_obj, other_name, self_strict, other_strict)
     bindings[(id(other_obj), other_name)].append((other_obj, self_obj, self_name, backward))
     if (id(other_obj), other_name) not in bindable_properties:
         active_links.append((other_obj, other_name, self_obj, self_name, backward))
@@ -145,7 +178,9 @@ def bind_from(self_obj: Any, self_name: str, other_obj: Any, other_name: str,
 
 def bind(self_obj: Any, self_name: str, other_obj: Any, other_name: str, *,
          forward: Callable[[Any], Any] | None = None,
-         backward: Callable[[Any], Any] | None = None) -> None:
+         backward: Callable[[Any], Any] | None = None,
+         self_strict: bool | None = None,
+         other_strict: bool | None = None) -> None:
     """Bind the property of one object to the property of another object.
 
     The binding works both ways, from the first object to the second and from the second to the first.
@@ -158,9 +193,14 @@ def bind(self_obj: Any, self_name: str, other_obj: Any, other_name: str, *,
     :param other_name: The name of the second property to bind.
     :param forward: A function to apply to the value before applying it to the second object (default: identity).
     :param backward: A function to apply to the value before applying it to the first object (default: identity).
+    :param self_strict: Whether to check (and raise) if the first object has the specified property (default: None,
+        performs a check if the object is not a dictionary, *added in version 3.0.0*).
+    :param other_strict: Whether to check (and raise) if the second object has the specified property (default: None,
+        performs a check if the object is not a dictionary, *added in version 3.0.0*).
     """
-    bind_from(self_obj, self_name, other_obj, other_name, backward=backward)
-    bind_to(self_obj, self_name, other_obj, other_name, forward=forward)
+    _check_self_and_other_attribute(self_obj, self_name, other_obj, other_name, self_strict, other_strict)
+    bind_from(self_obj, self_name, other_obj, other_name, backward=backward, self_strict=False, other_strict=False)
+    bind_to(self_obj, self_name, other_obj, other_name, forward=forward, self_strict=False, other_strict=False)
 
 
 class BindableProperty:
