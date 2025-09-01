@@ -42,7 +42,11 @@ export default {
         checkboxRenderer: CheckboxRenderer,
       };
 
-      this.gridOptions.onGridReady = (params) => this.handle_event("gridReady", params);
+      const originalOnGridReady = this.gridOptions.onGridReady;
+      this.gridOptions.onGridReady = (params) => {
+        originalOnGridReady(params);
+        this.handle_event("gridReady", params);
+      };
       this.api = agGrid.createGrid(this.$el, this.gridOptions);
       this.api.addGlobalListener(this.handle_event);
     },
