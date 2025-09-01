@@ -27,9 +27,9 @@ def test_timer(screen: Screen):
     screen.wait(0.5)
     assert counter.value == 0, 'timer is not running'
 
-    screen.start_server()
+    screen.open('/')
     screen.wait(0.5)
-    assert counter.value > 0, 'timer is running after starting the server'
+    assert counter.value > 0, 'timer is running after opening the page'
 
     t.deactivate()
     screen.wait(0.5)
@@ -111,6 +111,7 @@ def test_timer_on_deleted_container(screen: Screen):
         ui.button('delete', on_click=outer_container.clear)
 
     screen.open('/')
+    screen.wait(0.5)
     screen.click('delete')
     screen.wait(0.5)
     count = state['count']
@@ -201,7 +202,7 @@ def test_cancel_current_invocation(screen: Screen):
         t = ui.timer(0, update, once=True)
         ui.button('Cancel with current invocation', on_click=lambda: t.cancel(with_current_invocation=True))
 
-    screen.start_server()
+    screen.open('/')
     screen.wait(0.2)
 
     screen.click('Cancel with current invocation')
@@ -222,7 +223,7 @@ def test_cancel_before_invocation_starts(screen: Screen):
         t = ui.timer(0.5, update, once=True)
         ui.button('Cancel with current invocation', on_click=lambda: t.cancel(with_current_invocation=True))
 
-    screen.start_server()
+    screen.open('/')
     screen.wait(0.1)
 
     screen.click('Cancel with current invocation')
