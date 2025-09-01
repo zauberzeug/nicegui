@@ -157,15 +157,23 @@ class Tree(FilterElement):
         self._props['expanded'][:] = set(self._props['expanded']).difference(self._find_node_keys(node_keys))
         return self
 
+    def nodes(self, *, visible: Optional[bool] = None) -> Iterator[dict]:
+        """Iterate over all nodes.
+
+        :param visible: if ``True``, only visible nodes are returned; if ``False``, only invisible nodes are returned; if ``None``, all nodes are returned (default: ``None``)
+        """
+        def iterate_nodes(nodes: list[dict]) -> Iterator[dict]:
+            expanded = self._props.get('expanded')
+            NODE_KEY = self._props['node-key']
+            CHILDREN_KEY = self._props['children-key']
+            for node in nodes:
+                yield node
+                is_expanded = expanded is None or node[NODE_KEY] in expanded
+                if (is_expanded and visible is not False) or (not is_expanded and visible is not True):
+                    yield from iterate_nodes(node.get(CHILDREN_KEY, []))
+        return iterate_nodes(self._props['nodes'])
+
     def _find_node_keys(self, node_keys: Optional[list[str]] = None) -> set[str]:
         if node_keys is not None:
             return set(node_keys)
-
-        CHILDREN_KEY = self._props['children-key']
-        NODE_KEY = self._props['node-key']
-
-        def iterate_nodes(nodes: list[dict]) -> Iterator[dict]:
-            for node in nodes:
-                yield node
-                yield from iterate_nodes(node.get(CHILDREN_KEY, []))
-        return {node[NODE_KEY] for node in iterate_nodes(self._props['nodes'])}
+        return {node[self._props['node-key']] for node in self.nodes()}

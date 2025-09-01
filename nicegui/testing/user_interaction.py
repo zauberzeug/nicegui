@@ -102,6 +102,25 @@ class UserInteraction(Generic[T]):
                     element.value = target_value
                     return self
 
+                elif isinstance(element, ui.tree) and isinstance(self.target, str):
+                    NODE_KEY = element.props.get('node-key')
+                    LABEL_KEY = element.props.get('label-key')
+                    target_key = next((
+                        node[NODE_KEY]
+                        for node in element.nodes(visible=True)
+                        if self.target == node.get(LABEL_KEY)
+                    ), None)
+                    if target_key is None:
+                        return self
+                    expanded_set = set(element.props.get('expanded', [node[NODE_KEY] for node in element.nodes()]))
+                    if target_key in expanded_set:
+                        expanded_set.remove(target_key)
+                    else:
+                        expanded_set.add(target_key)
+                    element.props['expanded'] = list(expanded_set)
+                    element.update()
+                    return self
+
                 for listener in element._event_listeners.values():  # pylint: disable=protected-access
                     if listener.element_id != element.id:
                         continue

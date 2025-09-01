@@ -10,7 +10,6 @@ from fastapi import HTTPException, Request, Response
 
 from . import background_tasks, binding, core, helpers
 from .client import Client
-from .elements.sub_pages import SubPages
 from .favicon import create_favicon_route
 from .language import Language
 from .logging import log
@@ -145,10 +144,6 @@ class page:
                     dec_kwargs['client'] = client
                 try:
                     result = func(*dec_args, **dec_kwargs)
-                    # NOTE: after building the page, there might be sub pages that have 404 -- and initial requests should send 404 status request in such cases
-                    sub_pages_elements = [e for e in client.elements.values() if isinstance(e, SubPages)]
-                    if any(sub_pages.has_404 for sub_pages in sub_pages_elements):
-                        raise HTTPException(404, f'{client.sub_pages_router.current_path} not found')
                 except Exception as e:
                     return create_error_page(e, request)
             if helpers.is_coroutine_function(func):
@@ -174,6 +169,10 @@ class page:
                 else:
                     result = None
                     task.add_done_callback(check_for_late_return_value)
+
+            if not await client.sub_pages_router._can_resolve_full_path(client):  # pylint: disable=protected-access
+                return create_error_page(HTTPException(404, f'{client.sub_pages_router.current_path} not found'), request)
+
             if isinstance(result, Response):  # NOTE if setup returns a response, we don't need to render the page
                 return result
             binding._refresh_step()  # pylint: disable=protected-access

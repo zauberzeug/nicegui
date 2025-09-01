@@ -11,7 +11,7 @@ URL_PATH2 = '/test2.jpg'
 
 
 @pytest.fixture(autouse=True)
-def provide_image_files():
+def provide_image_files(nicegui_reset_globals):
     app.add_static_file(local_file=Path(__file__).parent / 'media' / 'test1.jpg', url_path=URL_PATH1)
     app.add_static_file(local_file=Path(__file__).parent / 'media' / 'test2.jpg', url_path=URL_PATH2)
 
