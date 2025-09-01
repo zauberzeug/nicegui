@@ -255,7 +255,6 @@ def test_async_nested_sub_pages(screen: Screen):
         'index': 0,
         'sleep': 0,
         'sleep_main': 0,
-        'sleep_sub': 0,
         'background': 0,
         'background_main': 0,
     }
@@ -274,10 +273,7 @@ def test_async_nested_sub_pages(screen: Screen):
     async def sleep():
         calls['sleep'] += 1
         await asyncio.sleep(0.1)
-        ui.sub_pages({
-            '/': sleep_main,
-            '/sub': sleep_sub,
-        })
+        ui.sub_pages({'/': sleep_main})
 
     def background():
         async def add():
@@ -293,29 +289,25 @@ def test_async_nested_sub_pages(screen: Screen):
         calls['sleep_main'] += 1
         ui.label('sleep main page')
 
-    def sleep_sub():
-        calls['sleep_sub'] += 1
-        ui.label('sleep sub page')
-
     def background_main():
         calls['background_main'] += 1
         ui.label('background main page')
 
     screen.open('/sleep')
     screen.should_contain('sleep main page')
-    assert calls == {'index': 1, 'sleep': 1, 'sleep_main': 1, 'sleep_sub': 0, 'background': 0, 'background_main': 0}
+    assert calls == {'index': 1, 'sleep': 1, 'sleep_main': 1, 'background': 0, 'background_main': 0}
 
     screen.open('/background')
     screen.should_contain('background main page')
-    assert calls == {'index': 2, 'sleep': 1, 'sleep_main': 1, 'sleep_sub': 0, 'background': 1, 'background_main': 1}
+    assert calls == {'index': 2, 'sleep': 1, 'sleep_main': 1, 'background': 1, 'background_main': 1}
 
     screen.click('Go to sleep')
     screen.should_contain('sleep main page')
-    assert calls == {'index': 2, 'sleep': 2, 'sleep_main': 2, 'sleep_sub': 0, 'background': 1, 'background_main': 1}
+    assert calls == {'index': 2, 'sleep': 2, 'sleep_main': 2, 'background': 1, 'background_main': 1}
 
     screen.click('Go to background')
     screen.should_contain('background main page')
-    assert calls == {'index': 2, 'sleep': 2, 'sleep_main': 2, 'sleep_sub': 0, 'background': 2, 'background_main': 2}
+    assert calls == {'index': 2, 'sleep': 2, 'sleep_main': 2, 'background': 2, 'background_main': 2}
 
 
 def test_parameterized_sub_pages(screen: Screen):
@@ -1074,50 +1066,47 @@ def test_http_404_on_initial_request(screen: Screen):
     @ui.page('/')
     @ui.page('/{_:path}')
     def index():
-        ui.sub_pages({
-            '/': main,
-        })
+        ui.sub_pages({'/': main})
 
     def main():
         ui.label('main page')
 
-    screen.open('/bad_path')
-    assert httpx.get(f'http://localhost:{Screen.PORT}/bad_path').status_code == 404
-    screen.should_contain('HTTPException: 404: /bad_path not found')
-
+    screen.start_server()
     assert httpx.get(f'http://localhost:{Screen.PORT}/').status_code == 200
+    assert httpx.get(f'http://localhost:{Screen.PORT}/bad_path').status_code == 404
+
     screen.open('/')
     screen.should_contain('main page')
+
+    screen.open('/bad_path')
+    screen.should_contain('HTTPException: 404: /bad_path not found')
 
 
 def test_http_404_on_initial_request_with_async_page_builder(screen: Screen):
     @ui.page('/')
     @ui.page('/{_:path}')
     async def index():
-        ui.sub_pages({
-            '/': main,
-        })
+        ui.sub_pages({'/': main})
 
     def main():
         ui.label('main page')
 
-    screen.open('/bad_path')
-    assert httpx.get(f'http://localhost:{Screen.PORT}/bad_path').status_code == 404
-    # NOTE: due to the async page builder, sub pages can not determine 404 status on initial request (see https://github.com/zauberzeug/nicegui/pull/5089)
-    screen.should_contain('HTTPException: 404: /bad_path not found')
-
+    screen.start_server()
     assert httpx.get(f'http://localhost:{Screen.PORT}/').status_code == 200
+    assert httpx.get(f'http://localhost:{Screen.PORT}/bad_path').status_code == 404
+
     screen.open('/')
     screen.should_contain('main page')
+
+    screen.open('/bad_path')
+    screen.should_contain('HTTPException: 404: /bad_path not found')
 
 
 def test_http_404_on_initial_request_with_async_sub_page_builder(screen: Screen):
     @ui.page('/')
     @ui.page('/{_:path}')
     def index():
-        ui.sub_pages({
-            '/': main,
-        })
+        ui.sub_pages({'/': main})
 
     async def main():
         ui.label('main page')
@@ -1130,17 +1119,18 @@ def test_http_404_on_initial_request_with_async_sub_page_builder(screen: Screen)
     async def async_sub():
         ui.label('async sub page')
 
-    screen.open('/bad_path')
+    screen.start_server()
     assert httpx.get(f'http://localhost:{Screen.PORT}/bad_path').status_code == 404
-    screen.should_contain('HTTPException: 404: /bad_path not found')
-
     assert httpx.get(f'http://localhost:{Screen.PORT}/sub').status_code == 200
-    screen.open('/sub')
-    screen.should_contain('sub sub page')
-
     assert httpx.get(f'http://localhost:{Screen.PORT}/sub/bad_path').status_code == 404
     assert httpx.get(f'http://localhost:{Screen.PORT}/async-sub').status_code == 200
     assert httpx.get(f'http://localhost:{Screen.PORT}/async-sub/bad_path').status_code == 404
+
+    screen.open('/sub')
+    screen.should_contain('sub sub page')
+
+    screen.open('/bad_path')
+    screen.should_contain('HTTPException: 404: /bad_path not found')
 
 
 def test_clearing_sub_pages_element(screen: Screen):
@@ -1148,13 +1138,10 @@ def test_clearing_sub_pages_element(screen: Screen):
     @ui.page('/{_:path}')
     def index():
         pages = ui.sub_pages({
-            '/': main,
+            '/': lambda: ui.label('main page'),
         })
         ui.button('Clear', on_click=pages.clear)
         ui.button('Delete', on_click=pages.delete)
-
-    def main():
-        ui.label('main page')
 
     screen.open('/')
     screen.should_contain('main page')
