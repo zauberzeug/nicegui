@@ -623,15 +623,20 @@ async def test_context_manager(user: User) -> None:
 
 
 async def test_tree_with_labels(user: User) -> None:
-    tree = ui.tree([
-        {'name': 'A', 'children': [
-            {'name': 'A1'},
-            {'name': 'A2', 'children': [
-                {'name': 'A21'},
-                {'name': 'A22'},
+    tree = None
+
+    @ui.page('/')
+    def page():
+        nonlocal tree
+        tree = ui.tree([
+            {'name': 'A', 'children': [
+                {'name': 'A1'},
+                {'name': 'A2', 'children': [
+                    {'name': 'A21'},
+                    {'name': 'A22'},
+                ]},
             ]},
-        ]},
-    ], node_key='name', label_key='name')
+        ], node_key='name', label_key='name')
 
     await user.open('/')
     await user.should_see('A')
