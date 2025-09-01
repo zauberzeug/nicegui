@@ -100,7 +100,6 @@ class InteractiveImage(SourceElement, ContentElement, component='interactive_ima
             log.warning('ui.interactive_image: force_reload() only works with network sources (not base64)')
             return
         self._props['t'] = time.time()
-        self.update()
 
     def add_layer(self, *, content: str = '') -> InteractiveImageLayer:
         """Add a new layer with its own content.

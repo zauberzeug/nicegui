@@ -1,6 +1,7 @@
 import asyncio
 from typing import Optional
 
+import httpx
 import pytest
 
 from nicegui import PageArguments, background_tasks, ui
@@ -512,7 +513,7 @@ def test_starting_on_non_root_path(screen: Screen, page_route: str):
 
     screen.open('/foo/sub')
     screen.should_contain('sub-content')
-    assert screen.current_path == '/foo/sub'
+    assert screen.current_path.rstrip('/') == '/foo/sub'
 
     screen.click('Go to main')
     screen.should_contain('main-content')
@@ -520,7 +521,7 @@ def test_starting_on_non_root_path(screen: Screen, page_route: str):
 
     screen.click('Go to sub')
     screen.should_contain('sub-content')
-    assert screen.current_path == '/foo/sub'
+    assert screen.current_path.rstrip('/') == '/foo/sub'
 
     screen.click('Go to main')
     screen.should_contain('main-content')
@@ -528,7 +529,7 @@ def test_starting_on_non_root_path(screen: Screen, page_route: str):
 
     screen.click('Go to sub')
     screen.should_contain('sub-content')
-    assert screen.current_path == '/foo/sub'
+    assert screen.current_path.rstrip('/') == '/foo/sub'
 
 
 def test_links_pointing_to_path_which_is_not_a_sub_page(screen: Screen):
@@ -1065,12 +1066,68 @@ def test_http_404_on_initial_request(screen: Screen):
     @ui.page('/')
     @ui.page('/{_:path}')
     def index():
-        ui.sub_pages({
-            '/': main,
-        })
+        ui.sub_pages({'/': main})
 
     def main():
         ui.label('main page')
+
+    screen.start_server()
+    assert httpx.get(f'http://localhost:{Screen.PORT}/').status_code == 200
+    assert httpx.get(f'http://localhost:{Screen.PORT}/bad_path').status_code == 404
+
+    screen.open('/')
+    screen.should_contain('main page')
+
+    screen.open('/bad_path')
+    screen.should_contain('HTTPException: 404: /bad_path not found')
+
+
+def test_http_404_on_initial_request_with_async_page_builder(screen: Screen):
+    @ui.page('/')
+    @ui.page('/{_:path}')
+    async def index():
+        ui.sub_pages({'/': main})
+
+    def main():
+        ui.label('main page')
+
+    screen.start_server()
+    assert httpx.get(f'http://localhost:{Screen.PORT}/').status_code == 200
+    assert httpx.get(f'http://localhost:{Screen.PORT}/bad_path').status_code == 404
+
+    screen.open('/')
+    screen.should_contain('main page')
+
+    screen.open('/bad_path')
+    screen.should_contain('HTTPException: 404: /bad_path not found')
+
+
+def test_http_404_on_initial_request_with_async_sub_page_builder(screen: Screen):
+    @ui.page('/')
+    @ui.page('/{_:path}')
+    def index():
+        ui.sub_pages({'/': main})
+
+    async def main():
+        ui.label('main page')
+        ui.sub_pages({
+            '/': lambda: ui.label('sub main page'),
+            '/sub': lambda: ui.label('sub sub page'),
+            '/async-sub': async_sub,
+        })
+
+    async def async_sub():
+        ui.label('async sub page')
+
+    screen.start_server()
+    assert httpx.get(f'http://localhost:{Screen.PORT}/bad_path').status_code == 404
+    assert httpx.get(f'http://localhost:{Screen.PORT}/sub').status_code == 200
+    assert httpx.get(f'http://localhost:{Screen.PORT}/sub/bad_path').status_code == 404
+    assert httpx.get(f'http://localhost:{Screen.PORT}/async-sub').status_code == 200
+    assert httpx.get(f'http://localhost:{Screen.PORT}/async-sub/bad_path').status_code == 404
+
+    screen.open('/sub')
+    screen.should_contain('sub sub page')
 
     screen.open('/bad_path')
     screen.should_contain('HTTPException: 404: /bad_path not found')
@@ -1081,13 +1138,10 @@ def test_clearing_sub_pages_element(screen: Screen):
     @ui.page('/{_:path}')
     def index():
         pages = ui.sub_pages({
-            '/': main,
+            '/': lambda: ui.label('main page'),
         })
         ui.button('Clear', on_click=pages.clear)
         ui.button('Delete', on_click=pages.delete)
-
-    def main():
-        ui.label('main page')
 
     screen.open('/')
     screen.should_contain('main page')

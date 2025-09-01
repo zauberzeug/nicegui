@@ -17,7 +17,7 @@ def test_update_table(screen: Screen):
             'columnDefs': [{'field': 'name'}, {'field': 'age'}],
             'rowData': [{'name': 'Alice', 'age': 18}],
         })
-        ui.button('Change age', on_click=lambda: (grid.options['rowData'][0].update(age=42), grid.update()))
+        ui.button('Change age', on_click=lambda: grid.options['rowData'][0].update(age=42))
 
     screen.open('/')
     screen.should_contain('Name')

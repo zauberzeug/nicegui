@@ -101,5 +101,6 @@ class Matplotlib(Element, default_classes='nicegui-matplotlib'):
             self._props['innerHTML'] = output.getvalue()
 
     def update(self) -> None:
-        self._convert_to_html()
-        return super().update()
+        with self._props.suspend_updates():
+            self._convert_to_html()
+        super().update()

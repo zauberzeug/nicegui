@@ -13,6 +13,7 @@ from .elements.mixins.source_element import SourceElement
 from .elements.mixins.text_element import TextElement
 from .elements.notification import Notification
 from .elements.select import Select
+from .elements.tree import Tree
 
 T = TypeVar('T', bound=Element)
 
@@ -126,6 +127,9 @@ class ElementFilter(Generic[T]):
                         element_contents.extend(labels)
                     if not isinstance(element, Select) or element.is_showing_popup:
                         element_contents.extend(element._labels)  # pylint: disable=protected-access
+                if isinstance(element, Tree):
+                    LABEL_KEY = element.props.get('label-key')
+                    element_contents.extend(node[LABEL_KEY] for node in element.nodes(visible=True))
                 if any(all(needle not in str(haystack) for haystack in element_contents) for needle in self._contents):
                     continue
                 if any(needle in str(haystack) for haystack in element_contents for needle in self._exclude_content):

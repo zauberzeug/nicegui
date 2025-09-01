@@ -21,20 +21,7 @@ def pytest_configure(config: pytest.Config) -> None:
 def nicegui_reset_globals() -> Generator[None, None, None]:
     """Reset the global state of the NiceGUI package."""
     for route in list(app.routes):
-        if isinstance(route, Route) and route.path.startswith('/_nicegui/auto/static/'):
-            app.remove_route(route.path)
-
-    all_page_routes = set(Client.page_routes.values())
-    all_page_routes.add('/')
-    for path in all_page_routes:
-        app.remove_route(path)
-
-    for route in list(app.routes):
-        if (
-            isinstance(route, Route) and
-            '{' in route.path and '}' in route.path and
-            not route.path.startswith('/_nicegui/')
-        ):
+        if isinstance(route, Route) and (not route.path.startswith('/_nicegui/') or route.path.startswith('/_nicegui/auto/static')):
             app.remove_route(route.path)
 
     app.openapi_schema = None
@@ -42,10 +29,6 @@ def nicegui_reset_globals() -> Generator[None, None, None]:
     app.user_middleware.clear()
     app.urls.clear()
     core.air = None
-    # NOTE favicon routes must be removed separately because they are not "pages"
-    for route in list(app.routes):
-        if isinstance(route, Route) and route.path.endswith('/favicon.ico'):
-            app.routes.remove(route)
     importlib.reload(core)
     importlib.reload(run)
 
