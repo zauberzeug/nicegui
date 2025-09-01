@@ -87,7 +87,12 @@ def prepare_simulation(request: pytest.FixtureRequest) -> None:
     """
     marker = request.node.get_closest_marker('module_under_test')
     if marker is not None:
-        importlib.reload(marker.args[0])
+        module = importlib.reload(marker.args[0])
+        try:
+            root = request.getfixturevalue('nicegui_root')
+        except pytest.FixtureLookupError:
+            root = 'root'
+        core.root = getattr(module, root, None)
 
     core.app.config.add_run_config(
         reload=False,

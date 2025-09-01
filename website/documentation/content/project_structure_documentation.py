@@ -28,6 +28,7 @@ doc.text('Simple', '''
     To properly re-initialize your `main.py` in the tests,
     you place an empty `__init__.py` file next to your code to make it a package
     and use the `module_under_test` marker to automatically reload your main file for each test.
+    If a function named "root" is available in the module, it will be used as main entry point.
     Also don't forget the `pytest.ini` file
     to enable the [`asyncio_mode = auto`](/documentation/user#async_execution) option for the user fixture
     and make sure you properly guard the `ui.run()` call in your `main.py`
@@ -46,10 +47,11 @@ def simple_project_code():
                 def hello() -> None:
                     ui.notify('Hello World!')
 
-                ui.button('Click me', on_click=hello)
+                def root() -> None:
+                    ui.button('Click me', on_click=hello))
 
                 if __name__ in {'__main__', '__mp_main__'}:
-                    ui.run()
+                    ui.run(root)
                 ```
             ''')
 
