@@ -120,6 +120,7 @@ def run(root: Optional[Callable] = None, *,
         def run_script() -> None:
             runpy.run_path(sys.argv[0])
         root = run_script
+        assert core.script_client is not None
         core.script_client.delete()
 
     core.app.config.add_run_config(

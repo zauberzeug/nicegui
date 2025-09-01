@@ -90,7 +90,7 @@ class App(FastAPI):
                     await result
         self._state = State.STOPPED
 
-    def safe_invoke(self, func: Callable[..., Any] | Awaitable) -> None:
+    def safe_invoke(self, func: Union[Callable[..., Any], Awaitable]) -> None:
         """Invoke the potentially async function and catch any exceptions."""
         func_name = func.__name__ if hasattr(func, '__name__') else str(func)
         try:

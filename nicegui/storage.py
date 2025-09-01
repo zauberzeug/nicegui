@@ -103,7 +103,7 @@ class Storage:
         It is shared between all browser tabs by identifying the user via session cookie ID.
         """
         if core.script_mode and not core.app.is_started:
-            return {}
+            return PersistentDict()
         request: Optional[Request] = request_contextvar.get()
         if request is None:
             if Storage.secret is None:
