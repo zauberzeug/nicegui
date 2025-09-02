@@ -6,7 +6,7 @@ import time
 from collections.abc import Generator
 from contextlib import contextmanager
 from pathlib import Path
-from typing import Callable, Optional, Union, overload
+from typing import Any, Callable, Optional, Union, overload
 from urllib.parse import urlparse
 
 import pytest
@@ -36,7 +36,7 @@ class Screen:
         self.caplog = caplog
         self.server_thread: Optional[threading.Thread] = None
         self.pytest_request = request
-        self.ui_run_kwargs = {'port': self.PORT, 'show': False, 'reload': False}
+        self.ui_run_kwargs: dict[str, Any] = {'port': self.PORT, 'show': False, 'reload': False}
         self.connected = threading.Event()
         app.on_connect(self.connected.set)
         self.url = f'http://localhost:{self.PORT}'
