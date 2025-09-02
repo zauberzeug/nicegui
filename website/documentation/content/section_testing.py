@@ -26,13 +26,13 @@ doc.text('Running Integration Tests', '''
 ''')
 
 doc.text('Set main file in pytest.ini', '''
-    The trick is to place a `pytest.ini` in the root of your project and configure it to load the NiceGUI testing plugin,
+    The trick is to place a `pytest.ini` file in the root of your project and configure it to load the NiceGUI testing plugin,
     set [`asyncio_mode = auto`](/documentation/user#async_execution)
     and configure `main_file` in the `pytest.ini` (default is `main.py`).
     The `main_file` will automatically be used as an entry point for each integration test (user or screen fixture).
 
     *Added in version 3.0.0.*
-    ''')
+''')
 
 
 @doc.ui
@@ -43,7 +43,7 @@ def project_code():
             from nicegui import ui
 
             def root() -> None:
-                ui.button('Click me', lambda: ui.notify('Hello World!'))
+                ui.button('Click me', on_click=lambda: ui.notify('Hello World!'))
 
             if __name__ in {'__main__', '__mp_main__'}:
                 ui.run(root)
