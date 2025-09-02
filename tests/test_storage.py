@@ -351,6 +351,7 @@ async def test_user_storage_is_pruned(screen: Screen):
     def status():
         return 'ok'
 
+    screen.ui_run_kwargs['storage_secret'] = 'just a test'
     screen.open('/')
     screen.should_contain('clients: 1')
     screen.should_contain('persistent dicts: 1')
