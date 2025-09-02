@@ -17,8 +17,10 @@ export default {
     await Promise.all([
       loadResource(window.path_prefix + `${this.resource_path}/leaflet/leaflet.css`),
       loadResource(window.path_prefix + `${this.resource_path}/leaflet/leaflet.js`),
+      loadResource(window.path_prefix + `${this.resource_path}/leaflet/leaflet-v1-polyfill.js`),
     ]);
     await Promise.all(this.additional_resources.map((resource) => loadResource(resource)));
+    applyAllPolyfills();
     if (this.draw_control) {
       await Promise.all([
         loadResource(window.path_prefix + `${this.resource_path}/leaflet-draw/leaflet.draw.css`),
