@@ -15,7 +15,6 @@ from .general_fixtures import (  # noqa: F401  # pylint: disable=unused-import
     get_path_to_main_file,
     nicegui_reset_globals,
     prepare_simulation,
-    pytest_configure,
 )
 from .user import User
 
@@ -38,6 +37,7 @@ async def user(nicegui_reset_globals,  # noqa: F811, pylint: disable=unused-argu
     async with core.app.router.lifespan_context(core.app):
         async with httpx.AsyncClient(transport=httpx.ASGITransport(core.app), base_url='http://test') as client:
             yield User(client)
+    os.environ.pop('NICEGUI_USER_SIMULATION', None)
     ui.navigate = Navigate()
     ui.notify = notify
     ui.download = download

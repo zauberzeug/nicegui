@@ -14,7 +14,6 @@ from .general_fixtures import (  # noqa: F401  # pylint: disable=unused-import
     get_path_to_main_file,
     nicegui_reset_globals,
     prepare_simulation,
-    pytest_configure,
 )
 from .screen import Screen
 
