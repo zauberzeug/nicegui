@@ -9,15 +9,13 @@ from . import doc
 def user_fixture():
     ui.markdown('''
         We recommend utilizing the `user` fixture instead of the [`screen` fixture](/documentation/screen) wherever possible
-        because execution is as fast as unit tests and it does not need Selenium as a dependency
-        when loaded via `pytest_plugins = ['nicegui.testing.user_plugin']`.
-        The `user` fixture cuts away the browser and replaces it by a lightweight simulation entirely in Python.
-        See [project structure](/documentation/project_structure) for a description of the setup.
+        because execution is as fast as unit tests and it does not need Selenium as a dependency.
+        The `user` fixture cuts away the browser and replaces it by a lightweight simulation.
 
         You can assert to "see" specific elements or content, click buttons, type into inputs and trigger events.
         We aimed for a nice API to write acceptance tests which read like a story and are easy to understand.
         Due to the fast execution, the classical [test pyramid](https://martinfowler.com/bliki/TestPyramid.html),
-        where UI tests are considered slow and expensive, does not apply anymore.
+        where UI tests are considered to be slow, error prone and expensive, does not apply anymore 🚀.
     ''').classes('bold-links arrow-links')
 
     with python_window(classes='w-[600px]', title='example'):
@@ -33,7 +31,7 @@ def user_fixture():
         ''')
 
     ui.markdown('''
-        **NOTE:** The `user` fixture is quite new and still misses some features.
+        **NOTE:** The `user` fixture might still miss some features.
         Please let us know in separate feature requests
         [over on GitHub](https://github.com/zauberzeug/nicegui/discussions/new?category=ideas-feature-requests).
     ''').classes('bold-links arrow-links')
