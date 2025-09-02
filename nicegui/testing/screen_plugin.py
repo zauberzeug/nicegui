@@ -1,7 +1,5 @@
 import os
-import runpy
 import shutil
-import threading
 from collections.abc import Generator
 from pathlib import Path
 
@@ -9,7 +7,6 @@ import pytest
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 
-from ..ui_run import run
 from .general_fixtures import (  # noqa: F401  # pylint: disable=unused-import
     get_path_to_main_file,
     nicegui_reset_globals,
@@ -75,9 +72,7 @@ def screen(nicegui_reset_globals,  # noqa: F811, pylint: disable=unused-argument
            caplog: pytest.LogCaptureFixture,
            ) -> Generator[Screen, None, None]:
     """Create a new SeleniumScreen fixture."""
-    screen_ = Screen(nicegui_driver, caplog)
-    screen_.server_thread = create_server(request)
-    screen_.server_thread.start()
+    screen_ = Screen(nicegui_driver, caplog, request)
     yield screen_
     logs = [record for record in screen_.caplog.get_records('call') if record.levelname == 'ERROR']
     if screen_.is_open:
@@ -87,11 +82,4 @@ def screen(nicegui_reset_globals,  # noqa: F811, pylint: disable=unused-argument
         shutil.rmtree(DOWNLOAD_DIR)
     if logs:
         pytest.fail('There were unexpected ERROR logs.', pytrace=False)
-
-
-def create_server(request: pytest.FixtureRequest) -> threading.Thread:
-    main_path = get_path_to_main_file(request.config)
-    if main_path is None:
-        prepare_simulation()
-        return threading.Thread(target=run)
-    return threading.Thread(target=runpy.run_path, args=(main_path,))
+    # server creation moved into Screen.open

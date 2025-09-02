@@ -1,5 +1,6 @@
 import os
 import re
+import runpy
 import threading
 import time
 from collections.abc import Generator
@@ -21,6 +22,9 @@ from selenium.webdriver.remote.webelement import WebElement
 
 from nicegui import app, core, ui
 from nicegui.server import Server
+from nicegui.ui_run import run
+
+from .general_fixtures import get_path_to_main_file, prepare_simulation
 
 
 class Screen:
@@ -28,14 +32,27 @@ class Screen:
     IMPLICIT_WAIT = 4
     SCREENSHOT_DIR = Path('screenshots')
 
-    def __init__(self, selenium: webdriver.Chrome, caplog: pytest.LogCaptureFixture) -> None:
+    def __init__(self, selenium: webdriver.Chrome, caplog: pytest.LogCaptureFixture, request: Optional[pytest.FixtureRequest] = None) -> None:
         self.selenium = selenium
         self.caplog = caplog
         self.server_thread: Optional[threading.Thread] = None
+        self.pytest_request = request
         self.ui_run_kwargs = {'port': self.PORT, 'show': False, 'reload': False}
         self.connected = threading.Event()
         app.on_connect(self.connected.set)
         self.url = f'http://localhost:{self.PORT}'
+
+    def start_server(self) -> None:
+        """Start the webserver in a separate thread."""
+        main_path = get_path_to_main_file(self.pytest_request.config) if self.pytest_request else None
+        if main_path is None:
+            def _run() -> None:
+                prepare_simulation()
+                run(**self.ui_run_kwargs)
+            self.server_thread = threading.Thread(target=_run)
+        else:
+            self.server_thread = threading.Thread(target=runpy.run_path, args=(main_path,))
+        self.server_thread.start()
 
     @property
     def is_open(self) -> bool:
@@ -63,6 +80,8 @@ class Screen:
 
         If the server is not yet running, start it.
         """
+        if self.server_thread is None:
+            self.start_server()
         deadline = time.time() + timeout
         self.connected.clear()
         while True:
