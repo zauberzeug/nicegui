@@ -10,18 +10,19 @@ from nicegui import ui
 doc.title('*Testing*')
 
 doc.redirects['project_structure_documentation'] = 'section_testing'
-doc.text('Project Structure', '''
+doc.text('Running Integration Tests', '''
     The NiceGUI package provides a [pytest plugin](https://docs.pytest.org/en/stable/how-to/writing_plugins.html)
     which can be activated via `-p nicegui.testing.plugin` parameter.
-    This makes specialized [fixtures](https://docs.pytest.org/en/stable/explanation/fixtures.html) available for testing your NiceGUI user interface.
-    With the [`screen` fixture](/documentation/screen) you can run the tests through a headless browser (slow)
-    and with the [`user` fixture](/documentation/user) fully simulated in Python (fast).
+    This makes specialized [fixtures](https://docs.pytest.org/en/stable/explanation/fixtures.html)
+    available which allows you to write integration tests for your NiceGUI user interface.
+    With the [`screen` fixture](/documentation/screen) you can run integration tests through a headless browser (slow).
+    On the other hand the [`user` fixture](/documentation/user) allows integration tests to be fully simulated in Python (fast).
     If you only want one kind of test fixtures,
     you can also use the plugin `nicegui.testing.user_plugin` or `nicegui.testing.screen_plugin`.
 
     There are a multitude of ways to structure your project and tests.
-    Here we only present our preferred nice but powerful approach which works well for us in small and large projects,
-    You can find more information in the [pytest documentation](https://docs.pytest.org/en/stable/contents.html).
+    Here we only present our preferred approach for small and large projects which is on the one hand very easy but yet super powerful.
+    For other approaches please check the [pytest documentation](https://docs.pytest.org/en/stable/contents.html).
 ''')
 
 doc.text('Set main file in pytest.ini', '''
@@ -29,6 +30,8 @@ doc.text('Set main file in pytest.ini', '''
     set [`asyncio_mode = auto`](/documentation/user#async_execution)
     and configure `main_file` in the `pytest.ini` (default is `main.py`).
     The `main_file` will automatically be used as an entry point for each integration test (user or screen fixture).
+
+    *Added in version 3.0.0.*
     ''')
 
 
