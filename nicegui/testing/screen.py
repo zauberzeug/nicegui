@@ -51,7 +51,7 @@ class Screen:
                 run(**self.ui_run_kwargs)
             self.server_thread = threading.Thread(target=_run)
         else:
-            self.server_thread = threading.Thread(target=runpy.run_path, args=(main_path,))
+            self.server_thread = threading.Thread(target=lambda: runpy.run_path(main_path, run_name='__main__'))
         self.server_thread.start()
 
     @property

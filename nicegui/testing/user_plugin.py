@@ -33,7 +33,7 @@ async def user(nicegui_reset_globals,  # noqa: F811, pylint: disable=unused-argu
         prepare_simulation()
         ui.run()
     else:
-        runpy.run_path(main_path)
+        runpy.run_path(main_path, run_name='__main__')
     async with core.app.router.lifespan_context(core.app):
         async with httpx.AsyncClient(transport=httpx.ASGITransport(core.app), base_url='http://test') as client:
             yield User(client)

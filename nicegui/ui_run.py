@@ -20,6 +20,7 @@ from .language import Language
 from .logging import log
 from .middlewares import RedirectWithPrefixMiddleware, SetCacheControlMiddleware
 from .server import CustomServerConfig, Server
+from .storage import set_storage_secret
 
 APP_IMPORT_STRING = 'nicegui:app'
 
@@ -114,6 +115,9 @@ def run(root: Optional[Callable] = None, *,
     :param kwargs: additional keyword arguments are passed to `uvicorn.run`
     """
     if core.script_mode:
+        if helpers.is_pytest():
+            raise ValueError('Script mode is not supported in pytest. '
+                             'Please pass a root function to ui.run() or use page decorators.')
         if core.app.is_started:
             return
 
@@ -173,6 +177,7 @@ def run(root: Optional[Callable] = None, *,
         core.app.setup()
 
     if helpers.is_user_simulation():
+        set_storage_secret('simulated secret')
         return
 
     if on_air:
@@ -209,6 +214,7 @@ def run(root: Optional[Callable] = None, *,
         show = False
         reload = False
         native = False
+        show_welcome_message = False
 
     if kwargs.get('ssl_certfile') and kwargs.get('ssl_keyfile'):
         protocol = 'https'
