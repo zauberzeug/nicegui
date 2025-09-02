@@ -29,7 +29,12 @@ async def user(nicegui_reset_globals,  # noqa: F811, pylint: disable=unused-argu
                ) -> AsyncGenerator[User, None]:
     """Create a new user fixture."""
     os.environ['NICEGUI_USER_SIMULATION'] = 'true'
-    runpy.run_path(get_path_to_main_file(request.config))
+    main_path = get_path_to_main_file(request.config)
+    if main_path is None:
+        prepare_simulation()
+        ui.run()
+    else:
+        runpy.run_path(main_path)
     async with core.app.router.lifespan_context(core.app):
         async with httpx.AsyncClient(transport=httpx.ASGITransport(core.app), base_url='http://test') as client:
             yield User(client)
