@@ -177,7 +177,7 @@ def run(root: Optional[Callable] = None, *,
         core.app.setup()
 
     if helpers.is_user_simulation():
-        set_storage_secret('simulated secret')
+        set_storage_secret(storage_secret)
         return
 
     if on_air:
@@ -210,7 +210,7 @@ def run(root: Optional[Callable] = None, *,
     assert port is not None
 
     if helpers.is_pytest():
-        port = 3392
+        port = int(os.environ['NICEGUI_SCREEN_TEST_PORT'])
         show = False
         reload = False
         native = False

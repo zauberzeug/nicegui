@@ -1,6 +1,7 @@
 import importlib
 from collections.abc import Generator
 from copy import copy
+from pathlib import Path
 from typing import Optional
 
 import pytest
@@ -13,20 +14,20 @@ from nicegui import Client, app, binding, core, run, ui
 
 
 def pytest_addoption(parser: pytest.Parser) -> None:
-    parser.addini('main_file', 'main file', default=None)
+    """Add pytest option for main file."""
+    parser.addini('main_file', 'main file', default='main.py')
 
 
-def get_path_to_main_file(config: pytest.Config) -> Optional[str]:
+def get_path_to_main_file(config: pytest.Config) -> Optional[Path]:
+    """Get the path to the main file."""
     main_file = config.getini('main_file')
-    if main_file is None:
-        main_file = 'main.py'
     if main_file == '':
         return None
     assert config.inipath is not None
     path = (config.inipath.parent / main_file).resolve()
     if not path.is_file():
-        return None
-    return str(path)
+        raise FileNotFoundError(f'Main file not found: {path}')
+    return path
 
 
 @pytest.fixture
@@ -93,6 +94,7 @@ def find_all_subclasses(cls: type) -> list[type]:
 
 
 def prepare_simulation() -> None:
+    """Prepare the simulation by adding the run config and setting the storage secret."""
     core.app.config.add_run_config(
         reload=False,
         title='Test App',

@@ -33,10 +33,12 @@ async def user(nicegui_reset_globals,  # noqa: F811, pylint: disable=unused-argu
         prepare_simulation()
         ui.run()
     else:
-        runpy.run_path(main_path, run_name='__main__')
+        runpy.run_path(str(main_path), run_name='__main__')
+
     async with core.app.router.lifespan_context(core.app):
         async with httpx.AsyncClient(transport=httpx.ASGITransport(core.app), base_url='http://test') as client:
             yield User(client)
+
     os.environ.pop('NICEGUI_USER_SIMULATION', None)
     ui.navigate = Navigate()
     ui.notify = notify
@@ -48,7 +50,7 @@ async def user(nicegui_reset_globals,  # noqa: F811, pylint: disable=unused-argu
 
 
 @pytest.fixture
-async def create_user(nicegui_reset_globals) -> AsyncGenerator[Callable[[], User], None]:  # noqa: F811, pylint: disable=unused-argument
+async def create_user(user: User) -> AsyncGenerator[Callable[[], User], None]:  # pylint: disable=unused-argument
     """Create a fixture for building new users."""
     prepare_simulation()
     async with core.app.router.lifespan_context(core.app):

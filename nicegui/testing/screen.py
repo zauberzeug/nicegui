@@ -22,7 +22,6 @@ from selenium.webdriver.remote.webelement import WebElement
 
 from nicegui import app, core, ui
 from nicegui.server import Server
-from nicegui.ui_run import run
 
 from .general_fixtures import get_path_to_main_file, prepare_simulation
 
@@ -46,12 +45,10 @@ class Screen:
         """Start the webserver in a separate thread."""
         main_path = get_path_to_main_file(self.pytest_request.config) if self.pytest_request else None
         if main_path is None:
-            def _run() -> None:
-                prepare_simulation()
-                run(**self.ui_run_kwargs)
-            self.server_thread = threading.Thread(target=_run)
+            prepare_simulation()
+            self.server_thread = threading.Thread(target=lambda: ui.run(**self.ui_run_kwargs))
         else:
-            self.server_thread = threading.Thread(target=lambda: runpy.run_path(main_path, run_name='__main__'))
+            self.server_thread = threading.Thread(target=lambda: runpy.run_path(str(main_path), run_name='__main__'))
         self.server_thread.start()
 
     @property
