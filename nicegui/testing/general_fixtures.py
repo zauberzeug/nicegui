@@ -7,7 +7,6 @@ from typing import Optional
 import pytest
 from starlette.routing import Route
 
-import nicegui
 from nicegui import Client, app, binding, core, run, ui
 
 # pylint: disable=redefined-outer-name
@@ -92,4 +91,3 @@ def prepare_simulation() -> None:
         prod_js=True,
         show_welcome_message=False,
     )
-    nicegui.storage.set_storage_secret('simulated secret')

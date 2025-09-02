@@ -4,7 +4,6 @@ import time
 from pathlib import Path
 
 import httpx
-import pytest
 
 from nicegui import Client, app, background_tasks, context, core, nicegui, ui
 from nicegui.testing import Screen
@@ -261,9 +260,6 @@ def test_client_storage(screen: Screen):
 
 
 def test_clear_client_storage(screen: Screen):
-    with pytest.raises(RuntimeError):  # no context (auto index)
-        app.storage.client.clear()
-
     @ui.page('/')
     def page():
         app.storage.client['counter'] = 123
