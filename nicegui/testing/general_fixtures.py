@@ -12,12 +12,6 @@ from nicegui import Client, app, binding, core, run, ui
 # pylint: disable=redefined-outer-name
 
 
-def pytest_configure(config: pytest.Config) -> None:
-    """Add the "module_under_test" marker to the pytest configuration."""
-    config.addinivalue_line('markers',
-                            'module_under_test(module): specify the module under test which then gets automatically reloaded.')
-
-
 def pytest_addoption(parser: pytest.Parser) -> None:
     parser.addini('main_file', 'main file', default=None)
 
