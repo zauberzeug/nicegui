@@ -1,6 +1,7 @@
 import importlib
 from collections.abc import Generator
 from copy import copy
+from pathlib import Path
 
 import pytest
 from starlette.routing import Route
@@ -18,6 +19,20 @@ def pytest_configure(config: pytest.Config) -> None:
 
 def pytest_addoption(parser: pytest.Parser) -> None:
     parser.addini('main_file', 'main file', default='main.py')
+
+
+def resolve_main_path(config: pytest.Config) -> str:
+    main_file = config.getini('main_file')
+    ini_path = config.inipath
+    if ini_path:
+        ini_dir = ini_path.parent
+    else:
+        root = getattr(config, 'rootpath', None)
+        ini_dir = Path(root) if root is not None else Path.cwd()
+    main_path = Path(main_file)
+    if not main_path.is_absolute():
+        main_path = ini_dir / main_path
+    return str(main_path)
 
 
 @pytest.fixture
