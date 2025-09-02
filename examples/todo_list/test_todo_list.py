@@ -1,13 +1,8 @@
-import pytest
-
 from nicegui.testing import User
-
-from . import main
 
 # pylint: disable=missing-function-docstring
 
 
-@pytest.mark.module_under_test(main)
 async def test_checking_items(user: User) -> None:
     await user.open('/')
     await user.should_see('Completed: 1')
@@ -23,7 +18,6 @@ async def test_checking_items(user: User) -> None:
     await user.should_see('Remaining: 2')
 
 
-@pytest.mark.module_under_test(main)
 async def test_adding_items(user: User) -> None:
     await user.open('/')
     user.find('new-item') \

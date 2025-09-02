@@ -120,6 +120,7 @@ def run(root: Optional[Callable] = None, *,
         def run_script() -> None:
             runpy.run_path(sys.argv[0])
         root = run_script
+        assert core.script_client is not None
         core.script_client.delete()
 
     core.app.config.add_run_config(
@@ -171,6 +172,9 @@ def run(root: Optional[Callable] = None, *,
             core.app.license_info = dict(license_info) if license_info else None
         core.app.setup()
 
+    if helpers.is_user_simulation():
+        return
+
     if on_air:
         core.air = Air('' if on_air is True else on_air)
 
@@ -199,6 +203,12 @@ def run(root: Optional[Callable] = None, *,
         host = host or '0.0.0.0'
     assert host is not None
     assert port is not None
+
+    if helpers.is_pytest():
+        port = 3392
+        show = False
+        reload = False
+        native = False
 
     if kwargs.get('ssl_certfile') and kwargs.get('ssl_keyfile'):
         protocol = 'https'

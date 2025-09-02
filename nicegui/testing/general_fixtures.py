@@ -5,7 +5,6 @@ from copy import copy
 import pytest
 from starlette.routing import Route
 
-import nicegui.storage
 from nicegui import Client, app, binding, core, run, ui
 
 # pylint: disable=redefined-outer-name
@@ -15,6 +14,10 @@ def pytest_configure(config: pytest.Config) -> None:
     """Add the "module_under_test" marker to the pytest configuration."""
     config.addinivalue_line('markers',
                             'module_under_test(module): specify the module under test which then gets automatically reloaded.')
+
+
+def pytest_addoption(parser: pytest.Parser) -> None:
+    parser.addini('main_file', 'main file', default='main.py')
 
 
 @pytest.fixture
@@ -78,34 +81,3 @@ def find_all_subclasses(cls: type) -> list[type]:
         subclasses.append(subclass)
         subclasses.extend(find_all_subclasses(subclass))
     return subclasses
-
-
-def prepare_simulation(request: pytest.FixtureRequest) -> None:
-    """Prepare a simulation to be started.
-
-    By using the "module_under_test" marker you can specify the main entry point of the app.
-    """
-    marker = request.node.get_closest_marker('module_under_test')
-    if marker is not None:
-        module = importlib.reload(marker.args[0])
-        try:
-            root = request.getfixturevalue('nicegui_root')
-        except pytest.FixtureLookupError:
-            root = 'root'
-        core.root = getattr(module, root, None)
-
-    core.app.config.add_run_config(
-        reload=False,
-        title='Test App',
-        viewport='',
-        favicon=None,
-        dark=False,
-        language='en-US',
-        binding_refresh_interval=0.1,
-        reconnect_timeout=3.0,
-        message_history_length=1000,
-        tailwind=True,
-        prod_js=True,
-        show_welcome_message=False,
-    )
-    nicegui.storage.set_storage_secret('simulated secret')

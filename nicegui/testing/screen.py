@@ -37,11 +37,6 @@ class Screen:
         app.on_connect(self.connected.set)
         self.url = f'http://localhost:{self.PORT}'
 
-    def start_server(self) -> None:
-        """Start the webserver in a separate thread. This is the equivalent of `ui.run()` in a normal script."""
-        self.server_thread = threading.Thread(target=ui.run, kwargs=self.ui_run_kwargs)
-        self.server_thread.start()
-
     @property
     def is_open(self) -> bool:
         """Check if the browser is open."""
@@ -68,8 +63,6 @@ class Screen:
 
         If the server is not yet running, start it.
         """
-        if self.server_thread is None:
-            self.start_server()
         deadline = time.time() + timeout
         self.connected.clear()
         while True:

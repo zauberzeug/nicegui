@@ -11,7 +11,7 @@ from starlette.middleware.sessions import SessionMiddleware
 from starlette.requests import Request
 from starlette.responses import Response
 
-from . import core, observables
+from . import core, helpers, observables
 from .context import context
 from .observables import ObservableDict
 from .persistence import FilePersistentDict, PersistentDict, ReadOnlyDict, RedisPersistentDict
@@ -166,11 +166,8 @@ class Storage:
         """Clears all storage."""
         self._general.clear()
         self._users.clear()
-        try:
+        if not helpers.is_pytest():
             client = context.client
-        except RuntimeError:
-            pass  # no client, could be a pytest
-        else:
             client.storage.clear()
         self._tabs.clear()
         for filepath in self.path.glob('storage-*.json'):

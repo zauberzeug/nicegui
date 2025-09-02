@@ -1,5 +1,7 @@
 import os
+import runpy
 import shutil
+import threading
 from collections.abc import Generator
 from pathlib import Path
 
@@ -9,7 +11,6 @@ from selenium.webdriver.chrome.service import Service
 
 from .general_fixtures import (  # noqa: F401  # pylint: disable=unused-import
     nicegui_reset_globals,
-    prepare_simulation,
     pytest_configure,
 )
 from .screen import Screen
@@ -72,8 +73,9 @@ def screen(nicegui_reset_globals,  # noqa: F811, pylint: disable=unused-argument
            caplog: pytest.LogCaptureFixture,
            ) -> Generator[Screen, None, None]:
     """Create a new SeleniumScreen fixture."""
-    prepare_simulation(request)
     screen_ = Screen(nicegui_driver, caplog)
+    screen_.server_thread = threading.Thread(target=runpy.run_path, args=(request.config.getini('main_file'),))
+    screen_.server_thread.start()
     yield screen_
     logs = [record for record in screen_.caplog.get_records('call') if record.levelname == 'ERROR']
     if screen_.is_open:
