@@ -1,6 +1,7 @@
 from typing import Any, Callable, Union
 from urllib.parse import urlparse
 
+from .. import background_tasks
 from ..client import Client
 from ..context import context
 from ..element import Element
@@ -68,7 +69,10 @@ class Navigate:
             parsed = urlparse(path)
             if not parsed.scheme and not parsed.netloc and \
                     any(isinstance(el, SubPages) for el in context.client.elements.values()):
-                context.client.sub_pages_router._handle_navigate(path)  # pylint: disable=protected-access
+                async def navigate_sub_pages(client: Client) -> None:
+                    with client:
+                        await client.sub_pages_router._handle_navigate(path)  # pylint: disable=protected-access
+                background_tasks.create(navigate_sub_pages(context.client), name='navigate_sub_pages')
                 return
 
         context.client.open(path, new_tab)

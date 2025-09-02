@@ -15,12 +15,7 @@ def test_change_chart_series(screen: Screen):
                 {'name': 'Beta', 'data': [0.3, 0.4]},
             ],
         }).classes('w-full h-64')
-
-        def update():
-            chart.options['series'][0]['data'][:] = [1, 1]
-            chart.update()
-
-        ui.button('Update', on_click=update)
+        ui.button('Update', on_click=lambda: chart.options['series'][0].update(data=[1, 1]))
 
     def get_series_0():
         return screen.selenium.find_elements(By.CSS_SELECTOR, '.highcharts-series-0 .highcharts-point')
@@ -43,11 +38,7 @@ def test_adding_chart_series(screen: Screen):
             'xAxis': {'categories': ['A', 'B']},
             'series': [],
         }).classes('w-full h-64')
-
-        def add():
-            chart.options['series'].append({'name': 'X', 'data': [0.1, 0.2]})
-            chart.update()
-        ui.button('Add', on_click=add)
+        ui.button('Add', on_click=lambda: chart.options['series'].append({'name': 'X', 'data': [0.1, 0.2]}))
 
     screen.open('/')
     screen.click('Add')
@@ -66,11 +57,7 @@ def test_removing_chart_series(screen: Screen):
                 {'name': 'Beta', 'data': [0.3, 0.4]},
             ],
         }).classes('w-full h-64')
-
-        def remove():
-            chart.options['series'].pop(0)
-            chart.update()
-        ui.button('Remove', on_click=remove)
+        ui.button('Remove', on_click=chart.options['series'].pop)
 
     screen.open('/')
     screen.click('Remove')
@@ -130,14 +117,8 @@ def test_updating_stock_chart(screen: Screen):
     @ui.page('/')
     def page():
         chart = ui.highchart({'legend': {'enabled': True}, 'series': []}, type='stockChart', extras=['stock'])
-        ui.button('update', on_click=lambda: (
-            chart.options['series'].extend([{'name': 'alice'}, {'name': 'bob'}]),
-            chart.update(),
-        ))
-        ui.button('clear', on_click=lambda: (
-            chart.options['series'].clear(),
-            chart.update(),
-        ))
+        ui.button('update', on_click=lambda: chart.options['series'].extend([{'name': 'alice'}, {'name': 'bob'}]))
+        ui.button('clear', on_click=chart.options['series'].clear)
 
     screen.open('/')
     screen.click('update')

@@ -19,6 +19,7 @@ class FullCalendar(Element, component='fullcalendar.js'):
         super().__init__()
         self.add_resource(Path(__file__).parent / 'lib')
         self._props['options'] = options
+        self._update_method = 'update_calendar'
 
         if on_click:
             self.on('click', lambda e: handle_event(on_click, e))
@@ -32,8 +33,6 @@ class FullCalendar(Element, component='fullcalendar.js'):
         """
         event_dict = {'title': title, 'start': start, 'end': end, **kwargs}
         self._props['options']['events'].append(event_dict)
-        self.update()
-        self.run_method('update_calendar')
 
     def remove_event(self, title: str, start: str, end: str) -> None:
         """Remove an event from the calendar.
@@ -46,9 +45,6 @@ class FullCalendar(Element, component='fullcalendar.js'):
             if event['title'] == title and event['start'] == start and event['end'] == end:
                 self._props['options']['events'].remove(event)
                 break
-
-        self.update()
-        self.run_method('update_calendar')
 
     @property
     def events(self) -> list[dict]:

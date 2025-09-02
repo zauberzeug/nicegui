@@ -22,7 +22,6 @@ def main_demo() -> None:
 
     def update():
         grid.options['rowData'][0]['age'] += 1
-        grid.update()
 
     ui.button('Update', on_click=update)
     ui.button('Select all', on_click=lambda: grid.run_grid_method('selectAll'))

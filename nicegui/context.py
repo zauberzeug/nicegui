@@ -17,8 +17,8 @@ class Context:
         stack = Slot.get_stack()
         if not stack and not core.script_mode and not core.app.is_started:
             # create a pseudo client to "survive" until reaching `ui.run()`
-            from .client import Client  # pylint: disable=import-outside-toplevel
-            from .page import page  # pylint: disable=import-outside-toplevel
+            from .client import Client  # pylint: disable=import-outside-toplevel,cyclic-import
+            from .page import page  # pylint: disable=import-outside-toplevel,cyclic-import
             core.script_mode = True
             core.script_client = Client(page('/')).__enter__()  # pylint: disable=unnecessary-dunder-call
             stack = Slot.get_stack()

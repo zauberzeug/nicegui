@@ -104,12 +104,6 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
             self._render_error(e)
             return True
 
-        # NOTE: if the full path could not be consumed, the deepest sub pages element must handle the possible 404
-        if match.remaining_path and not any(isinstance(el, SubPages) for el in self.descendants()):
-            if asyncio.iscoroutine(result):
-                result.close()
-            return False
-
         self._handle_scrolling(match, behavior='instant')
         if asyncio.iscoroutine(result):
             async def background_task():

@@ -102,7 +102,7 @@ class Client:
         *Updated in version 2.0.0: The IP address is available even before the client connects.*
         *Updated in version 3.0.0: The IP address is always defined (never ``None``).*
         """
-        return self.request.client.host
+        return self.request.client.host if self.request.client is not None else ''
 
     @property
     def has_socket_connection(self) -> bool:

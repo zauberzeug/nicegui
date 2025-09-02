@@ -19,7 +19,6 @@ def main_demo() -> None:
 
     def update():
         chart.options['series'][0]['data'][0] = random()
-        chart.update()
 
     ui.button('Update', on_click=update)
 

@@ -47,6 +47,9 @@ def test_classes(screen: Screen):
     label.classes(toggle='bg-red-500')
     assert_classes('four')
 
+    label.classes.append('five')
+    assert_classes('four five')
+
 
 @pytest.mark.parametrize('value,expected', [
     (None, {}),
@@ -126,6 +129,9 @@ def test_style(screen: Screen):
     label.style('color: blue;')
     assert_style('text-decoration: underline; color: blue;')
 
+    label.style.update({'color': 'red'})
+    assert_style('text-decoration: underline; color: red;')
+
 
 def test_props(screen: Screen):
     input_ = None
@@ -151,6 +157,9 @@ def test_props(screen: Screen):
 
     input_.props(remove='dark')
     assert_props('standard')
+
+    input_.props.update({'dark': True})
+    assert_props('standard', 'dark')
 
 
 def test_move(screen: Screen):

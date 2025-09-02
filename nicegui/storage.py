@@ -15,6 +15,7 @@ from . import core, helpers, observables
 from .context import context
 from .observables import ObservableDict
 from .persistence import FilePersistentDict, PersistentDict, ReadOnlyDict, RedisPersistentDict
+from .persistence.peudo_persistent_dict import PseudoPersistentDict
 
 request_contextvar: contextvars.ContextVar[Optional[Request]] = contextvars.ContextVar('request_var', default=None)
 
@@ -103,7 +104,7 @@ class Storage:
         It is shared between all browser tabs by identifying the user via session cookie ID.
         """
         if core.script_mode and not core.app.is_started:
-            return {}
+            return PseudoPersistentDict()
         request: Optional[Request] = request_contextvar.get()
         if request is None:
             if Storage.secret is None:
