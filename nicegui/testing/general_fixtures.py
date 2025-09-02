@@ -1,11 +1,12 @@
 import importlib
 from collections.abc import Generator
 from copy import copy
-from pathlib import Path
+from typing import Optional
 
 import pytest
 from starlette.routing import Route
 
+import nicegui
 from nicegui import Client, app, binding, core, run, ui
 
 # pylint: disable=redefined-outer-name
@@ -18,21 +19,20 @@ def pytest_configure(config: pytest.Config) -> None:
 
 
 def pytest_addoption(parser: pytest.Parser) -> None:
-    parser.addini('main_file', 'main file', default='main.py')
+    parser.addini('main_file', 'main file', default=None)
 
 
-def resolve_main_path(config: pytest.Config) -> str:
+def get_path_to_main_file(config: pytest.Config) -> Optional[str]:
     main_file = config.getini('main_file')
-    ini_path = config.inipath
-    if ini_path:
-        ini_dir = ini_path.parent
-    else:
-        root = getattr(config, 'rootpath', None)
-        ini_dir = Path(root) if root is not None else Path.cwd()
-    main_path = Path(main_file)
-    if not main_path.is_absolute():
-        main_path = ini_dir / main_path
-    return str(main_path)
+    if main_file is None:
+        main_file = 'main.py'
+    if main_file == '':
+        return None
+    assert config.inipath is not None
+    path = (config.inipath.parent / main_file).resolve()
+    if not path.is_file():
+        return None
+    return str(path)
 
 
 @pytest.fixture
@@ -96,3 +96,21 @@ def find_all_subclasses(cls: type) -> list[type]:
         subclasses.append(subclass)
         subclasses.extend(find_all_subclasses(subclass))
     return subclasses
+
+
+def prepare_simulation() -> None:
+    core.app.config.add_run_config(
+        reload=False,
+        title='Test App',
+        viewport='',
+        favicon=None,
+        dark=False,
+        language='en-US',
+        binding_refresh_interval=0.1,
+        reconnect_timeout=3.0,
+        message_history_length=1000,
+        tailwind=True,
+        prod_js=True,
+        show_welcome_message=False,
+    )
+    nicegui.storage.set_storage_secret('simulated secret')
