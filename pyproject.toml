@@ -85,8 +85,8 @@ build-backend = "poetry.core.masonry.api"
 [tool.pytest.ini_options]
 addopts = "--driver Chrome"
 asyncio_mode = "auto"
+main_file = ""
 testpaths = ["tests"]
-asyncio_default_fixture_loop_scope = "function"
 filterwarnings = [
   'ignore::DeprecationWarning:^vbuild(\.|$)',
   'ignore::DeprecationWarning:^websockets\.legacy(\.|$)',
