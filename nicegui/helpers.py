@@ -35,6 +35,11 @@ def is_pytest() -> bool:
     return 'PYTEST_CURRENT_TEST' in os.environ
 
 
+def is_user_simulation() -> bool:
+    """Check if the code is running in with user simulation (see https://nicegui.io/documentation/user)."""
+    return 'NICEGUI_USER_SIMULATION' in os.environ
+
+
 def is_coroutine_function(obj: Any) -> bool:
     """Check if the object is a coroutine function.
 

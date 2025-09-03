@@ -58,5 +58,4 @@ def root():
         add_input.on('keydown.enter', lambda: add_input.set_value(''))
 
 
-if __name__ in {'__main__', '__mp_main__'}:
-    ui.run(root)
+ui.run(root)

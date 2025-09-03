@@ -1,3 +1,5 @@
+import os
+import runpy
 from collections.abc import AsyncGenerator
 from typing import Callable
 
@@ -10,9 +12,9 @@ from nicegui.functions.navigate import Navigate
 from nicegui.functions.notify import notify
 
 from .general_fixtures import (  # noqa: F401  # pylint: disable=unused-import
+    get_path_to_main_file,
     nicegui_reset_globals,
     prepare_simulation,
-    pytest_configure,
 )
 from .user import User
 
@@ -25,10 +27,19 @@ async def user(nicegui_reset_globals,  # noqa: F811, pylint: disable=unused-argu
                request: pytest.FixtureRequest,
                ) -> AsyncGenerator[User, None]:
     """Create a new user fixture."""
-    prepare_simulation(request)
+    os.environ['NICEGUI_USER_SIMULATION'] = 'true'
+    main_path = get_path_to_main_file(request.config)
+    if main_path is None:
+        prepare_simulation()
+        ui.run(storage_secret='simulated secret')
+    else:
+        runpy.run_path(str(main_path), run_name='__main__')
+
     async with core.app.router.lifespan_context(core.app):
         async with httpx.AsyncClient(transport=httpx.ASGITransport(core.app), base_url='http://test') as client:
             yield User(client)
+
+    os.environ.pop('NICEGUI_USER_SIMULATION', None)
     ui.navigate = Navigate()
     ui.notify = notify
     ui.download = download
@@ -39,11 +50,9 @@ async def user(nicegui_reset_globals,  # noqa: F811, pylint: disable=unused-argu
 
 
 @pytest.fixture
-async def create_user(nicegui_reset_globals,  # noqa: F811, pylint: disable=unused-argument
-                      request: pytest.FixtureRequest,
-                      ) -> AsyncGenerator[Callable[[], User], None]:
+async def create_user(user: User) -> AsyncGenerator[Callable[[], User], None]:  # pylint: disable=unused-argument
     """Create a fixture for building new users."""
-    prepare_simulation(request)
+    prepare_simulation()
     async with core.app.router.lifespan_context(core.app):
         yield lambda: User(httpx.AsyncClient(transport=httpx.ASGITransport(core.app), base_url='http://test'))
     ui.navigate = Navigate()

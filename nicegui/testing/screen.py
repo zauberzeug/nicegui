@@ -1,11 +1,12 @@
 import os
 import re
+import runpy
 import threading
 import time
 from collections.abc import Generator
 from contextlib import contextmanager
 from pathlib import Path
-from typing import Callable, Optional, Union, overload
+from typing import Any, Callable, Optional, Union, overload
 from urllib.parse import urlparse
 
 import pytest
@@ -22,24 +23,32 @@ from selenium.webdriver.remote.webelement import WebElement
 from nicegui import app, core, ui
 from nicegui.server import Server
 
+from .general_fixtures import get_path_to_main_file, prepare_simulation
+
 
 class Screen:
     PORT = 3392
     IMPLICIT_WAIT = 4
     SCREENSHOT_DIR = Path('screenshots')
 
-    def __init__(self, selenium: webdriver.Chrome, caplog: pytest.LogCaptureFixture) -> None:
+    def __init__(self, selenium: webdriver.Chrome, caplog: pytest.LogCaptureFixture, request: Optional[pytest.FixtureRequest] = None) -> None:
         self.selenium = selenium
         self.caplog = caplog
         self.server_thread: Optional[threading.Thread] = None
-        self.ui_run_kwargs = {'port': self.PORT, 'show': False, 'reload': False}
+        self.pytest_request = request
+        self.ui_run_kwargs: dict[str, Any] = {'port': self.PORT, 'show': False, 'reload': False}
         self.connected = threading.Event()
         app.on_connect(self.connected.set)
         self.url = f'http://localhost:{self.PORT}'
 
     def start_server(self) -> None:
-        """Start the webserver in a separate thread. This is the equivalent of `ui.run()` in a normal script."""
-        self.server_thread = threading.Thread(target=ui.run, kwargs=self.ui_run_kwargs)
+        """Start the webserver in a separate thread."""
+        main_path = get_path_to_main_file(self.pytest_request.config) if self.pytest_request else None
+        if main_path is None:
+            prepare_simulation()
+            self.server_thread = threading.Thread(target=lambda: ui.run(**self.ui_run_kwargs))
+        else:
+            self.server_thread = threading.Thread(target=lambda: runpy.run_path(str(main_path), run_name='__main__'))
         self.server_thread.start()
 
     @property

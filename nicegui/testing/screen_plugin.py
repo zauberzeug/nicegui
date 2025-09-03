@@ -10,7 +10,6 @@ from selenium.webdriver.chrome.service import Service
 from .general_fixtures import (  # noqa: F401  # pylint: disable=unused-import
     nicegui_reset_globals,
     prepare_simulation,
-    pytest_configure,
 )
 from .screen import Screen
 
@@ -72,9 +71,10 @@ def screen(nicegui_reset_globals,  # noqa: F811, pylint: disable=unused-argument
            caplog: pytest.LogCaptureFixture,
            ) -> Generator[Screen, None, None]:
     """Create a new SeleniumScreen fixture."""
-    prepare_simulation(request)
-    screen_ = Screen(nicegui_driver, caplog)
+    os.environ['NICEGUI_SCREEN_TEST_PORT'] = str(Screen.PORT)
+    screen_ = Screen(nicegui_driver, caplog, request)
     yield screen_
+    os.environ.pop('NICEGUI_SCREEN_TEST_PORT', None)
     logs = [record for record in screen_.caplog.get_records('call') if record.levelname == 'ERROR']
     if screen_.is_open:
         screen_.shot(request.node.name)
