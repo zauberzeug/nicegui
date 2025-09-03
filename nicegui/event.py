@@ -6,15 +6,19 @@ import weakref
 from collections.abc import Awaitable, Callable
 from contextlib import nullcontext
 from dataclasses import dataclass
-from typing import Any, ClassVar, Generic, ParamSpec
+from typing import Any, ClassVar, Generic
 
-from . import background_tasks, context, core, helpers
+from typing_extensions import ParamSpec
+
+from . import background_tasks, core, helpers
 from .awaitable_response import AwaitableResponse
+from .context import context
+from .dataclasses import KWONLY_SLOTS
 from .logging import log
 from .slot import Slot
 
 
-@dataclass(slots=True, kw_only=True)
+@dataclass(**KWONLY_SLOTS)
 class Callback:
     func: Callable
     filepath: str
@@ -23,12 +27,12 @@ class Callback:
 
     def run(self, *args: P.args, **kwargs: P.kwargs) -> Any:
         """Run the callback."""
-        with self.slot() if self.slot else nullcontext():
+        with (self.slot and self.slot()) or nullcontext():
             return self.func(*args, **kwargs) if helpers.expects_arguments(self.func) else self.func()
 
     async def await_result(self, result: Awaitable | AwaitableResponse | asyncio.Task) -> Any:
         """Await the result of the callback."""
-        with self.slot() if self.slot else nullcontext():
+        with (self.slot and self.slot()) or nullcontext():
             return await result
 
 
@@ -83,7 +87,7 @@ class Event(Generic[P]):
         else:
             core.app.on_startup(register_disconnect())
 
-    def unsubscribe(self, callback: Callable[P, Any]) -> None:
+    def unsubscribe(self, callback: Callable[P, Any] | Callable[[], Any]) -> None:
         """Unsubscribe a callback from the event.
 
         :param callback: the callback to unsubscribe from the event
