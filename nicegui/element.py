@@ -523,7 +523,7 @@ class Element(Visibility):
         result = self.tag if type(self) is Element else self.__class__.__name__  # pylint: disable=unidiomatic-typecheck
 
         def shorten(content: Any, length: int = 20) -> str:
-            text = str(content).replace('\n', ' ').replace('\r', ' ')
+            text = str(content).translate({'\n': ' ', '\r': ' '})
             return text[:length].strip() + '...' if len(text) > length else text
 
         additions = []
