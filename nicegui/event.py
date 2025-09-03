@@ -2,17 +2,12 @@ from __future__ import annotations
 
 import asyncio
 import inspect
-import logging
-from collections.abc import Awaitable, Callable
+from collections.abc import Callable
 from dataclasses import dataclass
-from typing import Any, Generic, ParamSpec
+from typing import Any, ClassVar, Generic, ParamSpec
 
-from . import background_tasks, context, core
-
-startup_coroutines: list[Awaitable] = []
-tasks: list[asyncio.Task] = []
-log = logging.getLogger('rosys.event')
-events: list[Event] = []
+from . import background_tasks, context, core, helpers
+from .logging import log
 
 
 @dataclass(slots=True, kw_only=True)
@@ -26,10 +21,11 @@ P = ParamSpec('P')
 
 
 class Event(Generic[P]):
+    instances: ClassVar[list[Event]] = []
 
     def __init__(self) -> None:
         self.callbacks: list[Callback] = []
-        events.append(self)
+        self.instances.append(self)
 
     def subscribe(self, callback: Callable[P, Any]) -> Event[P]:
         """Subscribe to the event.
@@ -74,27 +70,14 @@ class Event(Generic[P]):
         """
         self.callbacks[:] = [c for c in self.callbacks if c.func != callback]
 
-    async def call(self, *args: P.args, **kwargs: P.kwargs) -> None:
-        """Fire the event and wait asynchronously until all subscribed callbacks are completed."""
-        results = asyncio.gather(*[_invoke(callback.func, *args, **kwargs) for callback in self.callbacks],
-                                 return_exceptions=True)
-        for result in results:
-            if isinstance(result, Exception):
-                log.exception('Could not call callback %s', result)
-
     def emit(self, *args: P.args, **kwargs: P.kwargs) -> None:
         """Fire the event without waiting for the subscribed callbacks to complete."""
         for callback in self.callbacks:
-            try:
-                result = callback.func(*args, **kwargs)
-                if isinstance(result, Awaitable):
-                    if core.loop and core.loop.is_running():
-                        name = f'{callback.filepath}:{callback.line}'
-                        tasks.append(background_tasks.create(result, name=name))
-                    else:
-                        startup_coroutines.append(result)
-            except Exception:
-                log.exception('Could not emit callback %s', callback)
+            _invoke_and_forget(callback, *args, **kwargs)
+
+    async def call(self, *args: P.args, **kwargs: P.kwargs) -> None:
+        """Fire the event and wait asynchronously until all subscribed callbacks are completed."""
+        asyncio.gather(*[_invoke_and_await(callback, *args, **kwargs) for callback in self.callbacks])
 
     async def emitted(self, timeout: float | None = None) -> Any:
         """Wait for an event to be fired and return its arguments.
@@ -119,19 +102,30 @@ class Event(Generic[P]):
         return self.emitted().__await__()
 
 
-async def _invoke(handler: Callable[P, Any], *args: P.args, **kwargs: P.kwargs) -> Any:
-    result = handler(*args, **kwargs)
-    if isinstance(result, Awaitable):
-        result = await result
-    return result
+def _invoke_and_forget(callback: Callback, *args: P.args, **kwargs: P.kwargs) -> Any:
+    try:
+        result = callback.func(*args, **kwargs)
+        if helpers.is_coroutine_function(callback.func):
+            if core.loop and core.loop.is_running():
+                background_tasks.create(result, name=f'{callback.filepath}:{callback.line}')
+            else:
+                core.app.on_startup(result)
+    except Exception:
+        log.exception('Could not emit callback %s', callback)
+
+
+async def _invoke_and_await(callback: Callback, *args: P.args, **kwargs: P.kwargs) -> Any:
+    try:
+        result = callback.func(*args, **kwargs)
+        if helpers.is_coroutine_function(callback.func):
+            result = await result
+        return result
+    except Exception as e:
+        core.app.handle_exception(e)
 
 
 def reset() -> None:
     """Reset the event system. (Useful for testing.)"""
-    for event in events:
+    for event in Event.instances:
         event.callbacks.clear()
-    events.clear()
-    for task in tasks:
-        task.cancel()
-    tasks.clear()
-    startup_coroutines.clear()
+    Event.instances.clear()

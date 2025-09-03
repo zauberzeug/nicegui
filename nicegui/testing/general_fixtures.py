@@ -6,7 +6,7 @@ import pytest
 from starlette.routing import Route
 
 import nicegui.storage
-from nicegui import Client, app, binding, core, run, ui
+from nicegui import Client, app, binding, core, event, run, ui
 from nicegui.page import page
 
 # pylint: disable=redefined-outer-name
@@ -51,6 +51,7 @@ def nicegui_reset_globals() -> Generator[None, None, None]:
     yield
 
     app.reset()
+    event.reset()
 
     # restore initial defaults
     for t in element_types:
