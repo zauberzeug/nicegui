@@ -78,7 +78,10 @@ class Event(Generic[P]):
             except TimeoutError:
                 log.warning('Could not register a disconnect handler for callback %s', callback)
                 self.unsubscribe(callback)
-        background_tasks.create(register_disconnect())
+        if core.loop and core.loop.is_running():
+            background_tasks.create(register_disconnect())
+        else:
+            core.app.on_startup(register_disconnect())
 
     def unsubscribe(self, callback: Callable[P, Any]) -> None:
         """Unsubscribe a callback from the event.
@@ -94,7 +97,7 @@ class Event(Generic[P]):
 
     async def call(self, *args: P.args, **kwargs: P.kwargs) -> None:
         """Fire the event and wait asynchronously until all subscribed callbacks are completed."""
-        asyncio.gather(*[_invoke_and_await(callback, *args, **kwargs) for callback in self.callbacks])
+        await asyncio.gather(*[_invoke_and_await(callback, *args, **kwargs) for callback in self.callbacks])
 
     async def emitted(self, timeout: float | None = None) -> Any:
         """Wait for an event to be fired and return its arguments.
