@@ -46,5 +46,20 @@ async def test_event_with_async_handler(user: User):
 
     await user.open('/')
     user.find('Click me').click()
-    await asyncio.sleep(0.2)
     await user.should_see('clicked')
+
+
+async def test_event_handler_in_correct_slot(user: User):
+    event = Event()
+    card = None
+
+    @ui.page('/')
+    def page():
+        nonlocal card
+        ui.button('Click me', on_click=event.emit)
+        with ui.card() as card:
+            event.subscribe_ui(lambda: ui.label('clicked'))
+
+    await user.open('/')
+    user.find('Click me').click()
+    assert len(card.default_slot.children) == 1

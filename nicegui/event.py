@@ -2,12 +2,16 @@ from __future__ import annotations
 
 import asyncio
 import inspect
-from collections.abc import Callable
+import weakref
+from collections.abc import Awaitable, Callable
+from contextlib import nullcontext
 from dataclasses import dataclass
 from typing import Any, ClassVar, Generic, ParamSpec
 
 from . import background_tasks, context, core, helpers
+from .awaitable_response import AwaitableResponse
 from .logging import log
+from .slot import Slot
 
 
 @dataclass(slots=True, kw_only=True)
@@ -15,6 +19,17 @@ class Callback:
     func: Callable
     filepath: str
     line: int
+    slot: weakref.ref[Slot] | None = None
+
+    def run(self, *args: P.args, **kwargs: P.kwargs) -> Any:
+        """Run the callback."""
+        with self.slot() if self.slot else nullcontext():
+            return self.func(*args, **kwargs) if helpers.expects_arguments(self.func) else self.func()
+
+    async def await_result(self, result: Awaitable | AwaitableResponse | asyncio.Task) -> Any:
+        """Await the result of the callback."""
+        with self.slot() if self.slot else nullcontext():
+            return await result
 
 
 P = ParamSpec('P')
@@ -27,7 +42,7 @@ class Event(Generic[P]):
         self.callbacks: list[Callback] = []
         self.instances.append(self)
 
-    def subscribe(self, callback: Callable[P, Any]) -> Event[P]:
+    def subscribe(self, callback: Callable[P, Any] | Callable[[], Any]) -> None:
         """Subscribe to the event.
 
         Note that the callback should not be used to update UI since it would probably cause a memory leak.
@@ -40,9 +55,8 @@ class Event(Generic[P]):
         frame = frame.f_back
         assert frame is not None
         self.callbacks.append(Callback(func=callback, filepath=frame.f_code.co_filename, line=frame.f_lineno))
-        return self
 
-    def subscribe_ui(self, callback: Callable[P, Any]) -> Event[P]:
+    def subscribe_ui(self, callback: Callable[P, Any] | Callable[[], Any]) -> None:
         """Subscribe to the event and automatically unsubscribe when the client disconnects.
 
         This method is particularly useful for UI callbacks since it cleans up unused references to the callback
@@ -51,6 +65,10 @@ class Event(Generic[P]):
         :param callback: the callback which will be called when the event is fired
         """
         self.subscribe(callback)
+        try:
+            self.callbacks[-1].slot = weakref.ref(context.slot)
+        except RuntimeError as e:
+            raise RuntimeError('Calling `subscribe_ui` outside of a UI context is not supported.') from e
         client = context.client
 
         async def register_disconnect() -> None:
@@ -61,7 +79,6 @@ class Event(Generic[P]):
                 log.warning('Could not register a disconnect handler for callback %s', callback)
                 self.unsubscribe(callback)
         background_tasks.create(register_disconnect())
-        return self
 
     def unsubscribe(self, callback: Callable[P, Any]) -> None:
         """Unsubscribe a callback from the event.
@@ -104,24 +121,32 @@ class Event(Generic[P]):
 
 def _invoke_and_forget(callback: Callback, *args: P.args, **kwargs: P.kwargs) -> Any:
     try:
-        result = callback.func(*args, **kwargs) if helpers.expects_arguments(callback.func) else callback.func()
-        if helpers.is_coroutine_function(callback.func):
+        result = callback.run(*args, **kwargs)
+        if _should_await(result):
             if core.loop and core.loop.is_running():
-                background_tasks.create(result, name=f'{callback.filepath}:{callback.line}')
+                background_tasks.create(callback.await_result(result), name=f'{callback.filepath}:{callback.line}')
             else:
-                core.app.on_startup(result)
+                core.app.on_startup(callback.await_result(result))
     except Exception:
         log.exception('Could not emit callback %s', callback)
 
 
 async def _invoke_and_await(callback: Callback, *args: P.args, **kwargs: P.kwargs) -> Any:
     try:
-        result = callback.func(*args, **kwargs) if helpers.expects_arguments(callback.func) else callback.func()
-        if helpers.is_coroutine_function(callback.func):
-            result = await result
+        result = callback.run(*args, **kwargs)
+        if _should_await(result):
+            result = await callback.await_result(result)
         return result
     except Exception as e:
         core.app.handle_exception(e)
+
+
+def _should_await(result: Any) -> bool:
+    """Determine if a result should be awaited.
+
+    Note: We want to await an awaitable result even if the handler is not a coroutine (like a lambda statement).
+    """
+    return isinstance(result, Awaitable) and not isinstance(result, AwaitableResponse) and not isinstance(result, asyncio.Task)
 
 
 def reset() -> None:
