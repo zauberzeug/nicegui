@@ -45,8 +45,7 @@ def project_code():
             def root() -> None:
                 ui.button('Click me', lambda: ui.notify('Hello World!'))
 
-            if __name__ in {'__main__', '__mp_main__'}:
-                ui.run(root)
+            ui.run(root)
             ```
         ''')
 
