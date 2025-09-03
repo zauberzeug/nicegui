@@ -9,10 +9,6 @@ doc.title('Events')
     Events are a powerful tool distribute information between different parts of your code.
     The following demo shows how to define an event, subscribe a callback and emit it.
 
-    Note that there is also a `subscribe` method for non-UI callbacks.
-    But to run the handler in the current UI context and to automatically unsubscribe when the client disconnects,
-    use the `subscribe_ui` method.
-
     Handlers can be synchronous or asynchronous.
     They can also take arguments if the event contains arguments.
 ''')
@@ -20,21 +16,21 @@ def events_demo():
     from nicegui import Event
 
     click = Event()
-    click.subscribe_ui(lambda: ui.notify('clicked'))
+    click.subscribe(lambda: ui.notify('clicked'))
 
     ui.button('Click me', on_click=click.emit)
 
 
 @doc.demo('Events with arguments', '''
     Events can also include arguments.
-    The callback can take use them, but also ignore them if they are not needed.
+    The callback can use them, but also ignore them if they are not needed.
 ''')
 def events_with_arguments():
     from nicegui import Event
 
     answer = Event[int]()
-    answer.subscribe_ui(lambda: ui.notify('Answer found!'))
-    answer.subscribe_ui(lambda x: ui.notify(f'{x = }'))
+    answer.subscribe(lambda: ui.notify('Answer found!'))
+    answer.subscribe(lambda x: ui.notify(f'{x = }'))
 
     ui.button('Answer', on_click=lambda: answer.emit(42))
 
@@ -51,7 +47,7 @@ def emitting_vs_calling_events():
 
     click = Event()
 
-    @click.subscribe_ui
+    @click.subscribe
     async def handler():
         n = ui.notification('Running...')
         await asyncio.sleep(1)

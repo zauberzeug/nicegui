@@ -12,6 +12,7 @@ from typing_extensions import ParamSpec
 
 from . import background_tasks, core, helpers
 from .awaitable_response import AwaitableResponse
+from .client import Client
 from .context import context
 from .dataclasses import KWONLY_SLOTS
 from .logging import log
@@ -46,46 +47,44 @@ class Event(Generic[P]):
         self.callbacks: list[Callback[P]] = []
         self.instances.append(self)
 
-    def subscribe(self, callback: Callable[P, Any] | Callable[[], Any]) -> None:
+    def subscribe(self, callback: Callable[P, Any] | Callable[[], Any], *,
+                  unsubscribe_on_disconnect: bool | None = None) -> None:
         """Subscribe to the event.
 
-        Note that the callback should not be used to update UI since it would probably cause a memory leak.
-        Use the ``subscribe_ui`` method instead.
+        The ``unsubscribe_on_disconnect`` can be used to explicitly define
+        whether the callback should be automatically unsubscribed when the client disconnects.
+        By default, the callback is automatically unsubscribed if subscribed from within a UI context
+        to prevent memory leaks.
 
         :param callback: the callback which will be called when the event is fired
+        :param unsubscribe_on_disconnect: whether to unsubscribe the callback when the client disconnects
+            (default: ``None`` meaning the callback is automatically unsubscribed if subscribed from within a UI context)
         """
         frame = inspect.currentframe()
         assert frame is not None
         frame = frame.f_back
         assert frame is not None
-        self.callbacks.append(Callback(func=callback, filepath=frame.f_code.co_filename, line=frame.f_lineno))
-
-    def subscribe_ui(self, callback: Callable[P, Any] | Callable[[], Any]) -> None:
-        """Subscribe to the event and automatically unsubscribe when the client disconnects.
-
-        This method is particularly useful for UI callbacks since it cleans up unused references to the callback
-        which would otherwise cause a memory leak.
-
-        :param callback: the callback which will be called when the event is fired
-        """
-        self.subscribe(callback)
+        callback_ = Callback[P](func=callback, filepath=frame.f_code.co_filename, line=frame.f_lineno)
         try:
-            self.callbacks[-1].slot = weakref.ref(context.slot)
-        except RuntimeError as e:
-            raise RuntimeError('Calling `subscribe_ui` outside of a UI context is not supported.') from e
-        client = context.client
-
-        async def register_disconnect() -> None:
-            try:
-                await client.connected(timeout=10.0)
-                client.on_disconnect(lambda: self.unsubscribe(callback))
-            except TimeoutError:
-                log.warning('Could not register a disconnect handler for callback %s', callback)
-                self.unsubscribe(callback)
-        if core.loop and core.loop.is_running():
-            background_tasks.create(register_disconnect())
-        else:
-            core.app.on_startup(register_disconnect())
+            callback_.slot = weakref.ref(context.slot)
+            client: Client | None = context.client
+        except RuntimeError:
+            client = None
+        if callback_.slot is None and unsubscribe_on_disconnect is True:
+            raise RuntimeError('Calling `subscribe` with `unsubscribe_on_disconnect=True` outside of a UI context '
+                               'is not supported.')
+        if client is not None and unsubscribe_on_disconnect is not False:
+            async def register_disconnect() -> None:
+                try:
+                    await client.connected(timeout=10.0)
+                    client.on_disconnect(lambda: self.unsubscribe(callback))
+                except TimeoutError:
+                    log.warning('Could not register a disconnect handler for callback %s', callback)
+            if core.loop and core.loop.is_running():
+                background_tasks.create(register_disconnect())
+            else:
+                core.app.on_startup(register_disconnect())
+        self.callbacks.append(callback_)
 
     def unsubscribe(self, callback: Callable[P, Any] | Callable[[], Any]) -> None:
         """Unsubscribe a callback from the event.

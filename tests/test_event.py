@@ -10,7 +10,7 @@ async def test_event(user: User):
     @ui.page('/')
     def page():
         ui.button('Click me', on_click=event.emit)
-        event.subscribe_ui(lambda: ui.notify('clicked'))
+        event.subscribe(lambda: ui.notify('clicked'))
 
     await user.open('/')
     user.find('Click me').click()
@@ -23,8 +23,8 @@ async def test_event_with_args(user: User):
     @ui.page('/')
     def page():
         ui.button('Click me', on_click=lambda: event.emit(42))
-        event.subscribe_ui(lambda: ui.notify('clicked'))
-        event.subscribe_ui(lambda x: ui.notify(f'{x = }'))
+        event.subscribe(lambda: ui.notify('clicked'))
+        event.subscribe(lambda x: ui.notify(f'{x = }'))
 
     await user.open('/')
     user.find('Click me').click()
@@ -39,7 +39,7 @@ async def test_event_with_async_handler(user: User):
     def page():
         ui.button('Click me', on_click=event.emit)
 
-        @event.subscribe_ui
+        @event.subscribe
         async def handler():
             await asyncio.sleep(0.1)
             ui.notify('clicked')
@@ -58,7 +58,7 @@ async def test_event_handler_in_correct_slot(user: User):
         nonlocal card
         ui.button('Click me', on_click=event.emit)
         with ui.card() as card:
-            event.subscribe_ui(lambda: ui.label('clicked'))
+            event.subscribe(lambda: ui.label('clicked'))
 
     await user.open('/')
     user.find('Click me').click()
