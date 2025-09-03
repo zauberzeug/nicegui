@@ -31,11 +31,13 @@ class Event(Generic[P]):
         self.callbacks: list[Callback] = []
         events.append(self)
 
-    def register(self, callback: Callable[P, Any]) -> Event[P]:
-        """Register a callback for the event.
+    def subscribe(self, callback: Callable[P, Any]) -> Event[P]:
+        """Subscribe to the event.
 
         Note that the callback should not be used to update UI since it would probably cause a memory leak.
-        Use the ``register_ui`` method instead.
+        Use the ``subscribe_ui`` method instead.
+
+        :param callback: the callback which will be called when the event is fired
         """
         frame = inspect.currentframe()
         assert frame is not None
@@ -44,27 +46,36 @@ class Event(Generic[P]):
         self.callbacks.append(Callback(func=callback, filepath=frame.f_code.co_filename, line=frame.f_lineno))
         return self
 
-    def register_ui(self, callback: Callable[P, Any]) -> Event[P]:
-        """Register a UI callback for the event which will automatically unregister when the client disconnects."""
-        self.register(callback)
+    def subscribe_ui(self, callback: Callable[P, Any]) -> Event[P]:
+        """Subscribe to the event and automatically unsubscribe when the client disconnects.
+
+        This method is particularly useful for UI callbacks since it cleans up unused references to the callback
+        which would otherwise cause a memory leak.
+
+        :param callback: the callback which will be called when the event is fired
+        """
+        self.subscribe(callback)
         client = context.client
 
         async def register_disconnect() -> None:
             try:
                 await client.connected(timeout=10.0)
-                client.on_disconnect(lambda: self.unregister(callback))
+                client.on_disconnect(lambda: self.unsubscribe(callback))
             except TimeoutError:
                 log.warning('Could not register a disconnect handler for callback %s', callback)
-                self.unregister(callback)
+                self.unsubscribe(callback)
         background_tasks.create(register_disconnect())
         return self
 
-    def unregister(self, callback: Callable[P, Any]) -> None:
-        """Unregister a callback from the event."""
+    def unsubscribe(self, callback: Callable[P, Any]) -> None:
+        """Unsubscribe a callback from the event.
+
+        :param callback: the callback to unsubscribe from the event
+        """
         self.callbacks[:] = [c for c in self.callbacks if c.func != callback]
 
     async def call(self, *args: P.args, **kwargs: P.kwargs) -> None:
-        """Fire the event and waits asynchronously until all registered callbacks are completed."""
+        """Fire the event and wait asynchronously until all subscribed callbacks are completed."""
         results = asyncio.gather(*[_invoke(callback.func, *args, **kwargs) for callback in self.callbacks],
                                  return_exceptions=True)
         for result in results:
@@ -72,7 +83,7 @@ class Event(Generic[P]):
                 log.exception('Could not call callback %s', result)
 
     def emit(self, *args: P.args, **kwargs: P.kwargs) -> None:
-        """Fire event without waiting for the callbacks to complete."""
+        """Fire the event without waiting for the subscribed callbacks to complete."""
         for callback in self.callbacks:
             try:
                 result = callback.func(*args, **kwargs)
@@ -96,13 +107,13 @@ class Event(Generic[P]):
             if not future.done():
                 future.set_result(args[0] if len(args) == 1 else args if args else None)
 
-        self.register(callback)
+        self.subscribe(callback)
         try:
             return await asyncio.wait_for(future, timeout)
         except TimeoutError as error:
             raise TimeoutError(f'Timed out waiting for event after {timeout} seconds') from error
         finally:
-            self.unregister(callback)
+            self.unsubscribe(callback)
 
     def __await__(self):
         return self.emitted().__await__()
