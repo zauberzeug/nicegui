@@ -17,10 +17,12 @@ from .dataclasses import KWONLY_SLOTS
 from .logging import log
 from .slot import Slot
 
+P = ParamSpec('P')
+
 
 @dataclass(**KWONLY_SLOTS)
-class Callback:
-    func: Callable
+class Callback(Generic[P]):
+    func: Callable[P, Any] | Callable[[], Any]
     filepath: str
     line: int
     slot: weakref.ref[Slot] | None = None
@@ -36,14 +38,11 @@ class Callback:
             return await result
 
 
-P = ParamSpec('P')
-
-
 class Event(Generic[P]):
     instances: ClassVar[list[Event]] = []
 
     def __init__(self) -> None:
-        self.callbacks: list[Callback] = []
+        self.callbacks: list[Callback[P]] = []
         self.instances.append(self)
 
     def subscribe(self, callback: Callable[P, Any] | Callable[[], Any]) -> None:
@@ -126,7 +125,7 @@ class Event(Generic[P]):
         return self.emitted().__await__()
 
 
-def _invoke_and_forget(callback: Callback, *args: P.args, **kwargs: P.kwargs) -> Any:
+def _invoke_and_forget(callback: Callback[P], *args: P.args, **kwargs: P.kwargs) -> Any:
     try:
         result = callback.run(*args, **kwargs)
         if _should_await(result):
@@ -138,7 +137,7 @@ def _invoke_and_forget(callback: Callback, *args: P.args, **kwargs: P.kwargs) ->
         log.exception('Could not emit callback %s', callback)
 
 
-async def _invoke_and_await(callback: Callback, *args: P.args, **kwargs: P.kwargs) -> Any:
+async def _invoke_and_await(callback: Callback[P], *args: P.args, **kwargs: P.kwargs) -> Any:
     try:
         result = callback.run(*args, **kwargs)
         if _should_await(result):
