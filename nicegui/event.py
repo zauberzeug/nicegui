@@ -104,7 +104,7 @@ class Event(Generic[P]):
 
 def _invoke_and_forget(callback: Callback, *args: P.args, **kwargs: P.kwargs) -> Any:
     try:
-        result = callback.func(*args, **kwargs)
+        result = callback.func(*args, **kwargs) if helpers.expects_arguments(callback.func) else callback.func()
         if helpers.is_coroutine_function(callback.func):
             if core.loop and core.loop.is_running():
                 background_tasks.create(result, name=f'{callback.filepath}:{callback.line}')
@@ -116,7 +116,7 @@ def _invoke_and_forget(callback: Callback, *args: P.args, **kwargs: P.kwargs) ->
 
 async def _invoke_and_await(callback: Callback, *args: P.args, **kwargs: P.kwargs) -> Any:
     try:
-        result = callback.func(*args, **kwargs)
+        result = callback.func(*args, **kwargs) if helpers.expects_arguments(callback.func) else callback.func()
         if helpers.is_coroutine_function(callback.func):
             result = await result
         return result
