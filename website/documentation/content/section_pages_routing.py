@@ -35,9 +35,13 @@ def parameter_demo():
         ui.label(icon).classes('text-h3')
         with ui.row():
             [ui.icon(icon).classes('text-h3') for _ in range(amount)]
-    ui.link('Star', '/icon/star?amount=5')
-    ui.link('Home', '/icon/home')
-    ui.link('Water', '/icon/water_drop?amount=3')
+
+    # @ui.page('/')
+    def page():
+        ui.link('Star', '/icon/star?amount=5')
+        ui.link('Home', '/icon/home')
+        ui.link('Water', '/icon/water_drop?amount=3')
+    page()  # HIDE
 
 
 doc.intro(page_title_documentation)
@@ -118,6 +122,9 @@ def fastapi_demo():
     def generate_random_number(max: int):
         return {'min': 0, 'max': max, 'value': random.randint(0, max)}
 
-    max = ui.number('max', value=100)
-    ui.button('generate random number',
-              on_click=lambda: ui.navigate.to(f'/random/{max.value:.0f}'))
+    # @ui.page('/')
+    def page():
+        max = ui.number('max', value=100)
+        ui.button('generate random number',
+                  on_click=lambda: ui.navigate.to(f'/random/{max.value:.0f}'))
+    page()  # HIDE

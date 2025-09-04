@@ -174,8 +174,11 @@ def error_page_demo():
     def raise_runtime_error():
         raise RuntimeError('Something is wrong')
 
-    ui.link('Raise timeout error (custom error page)', '/raise_timeout_error')
-    ui.link('Raise runtime error (default error page)', '/raise_runtime_error')
+    # @ui.page('/')
+    def page():
+        ui.link('Raise timeout error (custom error page)', '/raise_timeout_error')
+        ui.link('Raise runtime error (default error page)', '/raise_runtime_error')
+    page()  # HIDE
 
 
 @doc.demo(app.shutdown)

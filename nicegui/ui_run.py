@@ -115,9 +115,13 @@ def run(root: Optional[Callable] = None, *,
     :param kwargs: additional keyword arguments are passed to `uvicorn.run`
     """
     if core.script_mode:
+        if Client.page_routes:
+            raise RuntimeError('ui.page cannot be used in NiceGUI scripts where you define UI in the global scope. '
+                               'To use multiple pages, either move all UI into page functions or use ui.sub_pages.')
+
         if helpers.is_pytest():
-            raise ValueError('Script mode is not supported in pytest. '
-                             'Please pass a root function to ui.run() or use page decorators.')
+            raise RuntimeError('Script mode is not supported in pytest. '
+                               'Please pass a root function to ui.run() or use page decorators.')
         if core.app.is_started:
             return
 
