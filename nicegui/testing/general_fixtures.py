@@ -7,7 +7,7 @@ from typing import Optional
 import pytest
 from starlette.routing import Route
 
-from nicegui import Client, app, binding, core, run, ui
+from nicegui import Client, app, binding, core, event, run, ui
 
 # pylint: disable=redefined-outer-name
 
@@ -58,6 +58,7 @@ def nicegui_reset_globals() -> Generator[None, None, None]:
     yield
 
     app.reset()
+    event.reset()
 
     # restore initial defaults
     for t in element_types:

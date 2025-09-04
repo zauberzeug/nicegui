@@ -3,6 +3,7 @@ from nicegui import app, ui
 from . import (
     clipboard_documentation,
     doc,
+    event_documentation,
     generic_events_documentation,
     keyboard_documentation,
     refreshable_documentation,
@@ -104,10 +105,11 @@ def io_bound_demo():
 
 doc.intro(run_javascript_documentation)
 doc.intro(clipboard_documentation)
+doc.intro(event_documentation)
 
 
-@doc.demo('Events', '''
-    You can register coroutines or functions to be called for the following events:
+@doc.demo('Lifecycle events', '''
+    You can register coroutines or functions to be called for the following lifecycle events:
 
     - `app.on_startup`: called when NiceGUI is started or restarted
     - `app.on_shutdown`: called when NiceGUI is shut down or restarted
