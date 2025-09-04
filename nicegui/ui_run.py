@@ -83,7 +83,7 @@ def run(root: Optional[Callable] = None, *,
     You can call `ui.run()` with optional arguments.
     Most of them only apply after stopping and fully restarting the app and do not apply with auto-reloading.
 
-    :param root: root page function
+    :param root: root page function (*added in version 3.0.0*)
     :param host: start server with this host (defaults to `'127.0.0.1` in native mode, otherwise `'0.0.0.0'`)
     :param port: use this port (default: 8080 in normal mode, and an automatically determined open port in native mode)
     :param title: page title (default: `'NiceGUI'`, can be overwritten per page)
