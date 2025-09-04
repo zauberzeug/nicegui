@@ -1,6 +1,6 @@
 export default {
   template: `
-    <q-dialog v-bind="$attrs" @show="addClass" @hide="removeClass">
+    <q-dialog @show="addClass" @hide="removeClass">
       <slot />
     </q-dialog>
   `,
