@@ -33,6 +33,14 @@ if TYPE_CHECKING:
 
 templates = Jinja2Templates(Path(__file__).parent / 'templates')
 
+HTML_ESCAPE_TABLE = str.maketrans({
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '`': '&#96;',
+    '$': '&#36;',
+})
+
 
 class Client:
     page_routes: ClassVar[dict[Callable[..., Any], str]] = {}
@@ -149,11 +157,7 @@ class Client:
             context={
                 'request': request,
                 'version': __version__,
-                'elements': elements.replace('&', '&amp;')
-                                    .replace('<', '&lt;')
-                                    .replace('>', '&gt;')
-                                    .replace('`', '&#96;')
-                                    .replace('$', '&#36;'),
+                'elements': elements.translate(HTML_ESCAPE_TABLE),
                 'head_html': self.head_html,
                 'body_html': '<style>' + '\n'.join(vue_styles) + '</style>\n' + self.body_html + '\n' + '\n'.join(vue_html),
                 'vue_scripts': '\n'.join(vue_scripts),
