@@ -19,9 +19,10 @@ class Context:
             # create a pseudo client to "survive" until reaching `ui.run()`
             from .client import Client  # pylint: disable=import-outside-toplevel,cyclic-import
             from .page import page  # pylint: disable=import-outside-toplevel,cyclic-import
-            core.script_mode = True
-            core.script_client = Client(page('/')).__enter__()  # pylint: disable=unnecessary-dunder-call
-            stack = Slot.get_stack()
+            if not Client.instances:  # in case some kind of dummy client is already created
+                core.script_mode = True
+                core.script_client = Client(page('/')).__enter__()  # pylint: disable=unnecessary-dunder-call
+                stack = Slot.get_stack()
         return stack
 
     @property
