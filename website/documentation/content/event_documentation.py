@@ -1,17 +1,9 @@
-from nicegui import ui
+from nicegui import ui, Event
 
 from . import doc
 
-doc.title('Events')
 
-
-@doc.demo('Subscribing to events', '''
-    Events are a powerful tool distribute information between different parts of your code.
-    The following demo shows how to define an event, subscribe a callback and emit it.
-
-    Handlers can be synchronous or asynchronous.
-    They can also take arguments if the event contains arguments.
-''')
+@doc.demo(Event)
 def events_demo():
     from nicegui import Event
 
@@ -59,3 +51,6 @@ def emitting_vs_calling_events():
         button.enable()
 
     button = ui.button('Click me', on_click=handle_click)
+
+
+doc.reference(Event)

@@ -466,6 +466,15 @@ def map_of_nicegui():
         - [`binding.bindable_dataclass()`](/documentation/section_binding_properties#bindable_dataclass): create a dataclass with bindable properties
         - `binding.bind()`, `binding.bind_from()`, `binding.bind_to()`: methods to bind two properties
 
+        #### `Event`
+
+        Distribute information between different parts of your code.
+
+        - `Event()`: create an event
+        - `event.subscribe()`: subscribe to an event
+        - `event.emit()`: fire and forget an event
+        - `event.call()`: fire an event and wait for the subscribed callbacks to complete
+
         #### `observables`
 
         Observable collections that notify observers when their contents change.

@@ -44,6 +44,16 @@ class Event(Generic[P]):
     instances: ClassVar[list[Event]] = []
 
     def __init__(self) -> None:
+        """Event
+
+        Events are a powerful tool distribute information between different parts of your code.
+        The following demo shows how to define an event, subscribe a callback and emit it.
+
+        Handlers can be synchronous or asynchronous.
+        They can also take arguments if the event contains arguments.
+
+        *Added in version 3.0.0*
+        """
         self.callbacks: list[Callback[P]] = []
         self.instances.append(self)
 
