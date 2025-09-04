@@ -11,10 +11,11 @@ from starlette.middleware.sessions import SessionMiddleware
 from starlette.requests import Request
 from starlette.responses import Response
 
-from . import core, observables
+from . import core, helpers, observables
 from .context import context
 from .observables import ObservableDict
 from .persistence import FilePersistentDict, PersistentDict, ReadOnlyDict, RedisPersistentDict
+from .persistence.peudo_persistent_dict import PseudoPersistentDict
 
 request_contextvar: contextvars.ContextVar[Optional[Request]] = contextvars.ContextVar('request_var', default=None)
 
@@ -81,11 +82,10 @@ class Storage:
         Therefore it is normally better to use `app.storage.user` instead,
         which can be modified anytime, reduces overall payload, improves security and has larger storage capacity.
         """
+        if core.script_mode and not core.app.is_started:
+            return {}
         request: Optional[Request] = request_contextvar.get()
         if request is None:
-            if self._is_in_auto_index_context():
-                raise RuntimeError('app.storage.browser can only be used with page builder functions '
-                                   '(https://nicegui.io/documentation/page)')
             if Storage.secret is None:
                 raise RuntimeError('app.storage.browser needs a storage_secret passed in ui.run()')
             raise RuntimeError('app.storage.browser can only be used within a UI context')
@@ -103,11 +103,10 @@ class Storage:
         The data is stored on the server.
         It is shared between all browser tabs by identifying the user via session cookie ID.
         """
+        if core.script_mode and not core.app.is_started:
+            return PseudoPersistentDict()
         request: Optional[Request] = request_contextvar.get()
         if request is None:
-            if self._is_in_auto_index_context():
-                raise RuntimeError('app.storage.user can only be used with page builder functions '
-                                   '(https://nicegui.io/documentation/page)')
             if Storage.secret is None:
                 raise RuntimeError('app.storage.user needs a storage_secret passed in ui.run()')
             raise RuntimeError('app.storage.user can only be used within a UI context')
@@ -118,13 +117,6 @@ class Storage:
     async def _create_user_storage(self, session_id: str) -> None:
         self._users[session_id] = Storage._create_persistent_dict(f'user-{session_id}')
         await self._users[session_id].initialize()
-
-    @staticmethod
-    def _is_in_auto_index_context() -> bool:
-        try:
-            return context.client.is_auto_index_client
-        except RuntimeError:
-            return False  # no client
 
     @property
     def general(self) -> PersistentDict:
@@ -138,17 +130,11 @@ class Storage:
         Like `app.storage.tab` data is unique per browser tab but is even more volatile as it is already discarded
         when the connection to the client is lost through a page reload or a navigation.
         """
-        if self._is_in_auto_index_context():
-            raise RuntimeError('app.storage.client can only be used with page builder functions '
-                               '(https://nicegui.io/documentation/page)')
         return context.client.storage
 
     @property
     def tab(self) -> observables.ObservableDict:
         """A volatile storage that is only kept during the current tab session."""
-        if self._is_in_auto_index_context():
-            raise RuntimeError('app.storage.tab can only be used with page builder functions '
-                               '(https://nicegui.io/documentation/page)')
         client = context.client
         if not client.has_socket_connection:
             raise RuntimeError('app.storage.tab can only be used with a client connection; '
@@ -181,12 +167,8 @@ class Storage:
         """Clears all storage."""
         self._general.clear()
         self._users.clear()
-        try:
-            client = context.client
-        except RuntimeError:
-            pass  # no client, could be a pytest
-        else:
-            client.storage.clear()
+        if not helpers.is_pytest():
+            context.client.storage.clear()
         self._tabs.clear()
         for filepath in self.path.glob('storage-*.json'):
             filepath.unlink()

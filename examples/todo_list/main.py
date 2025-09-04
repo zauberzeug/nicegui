@@ -26,35 +26,36 @@ class ToDoList:
         self.on_change()
 
 
-@ui.refreshable
-def todo_ui():
-    if not todos.items:
-        ui.label('List is empty.').classes('mx-auto')
-        return
-    ui.linear_progress(sum(item.done for item in todos.items) / len(todos.items), show_value=False)
-    with ui.row().classes('justify-center w-full'):
-        ui.label(f'Completed: {sum(item.done for item in todos.items)}')
-        ui.label(f'Remaining: {sum(not item.done for item in todos.items)}')
-    for item in todos.items:
-        with ui.row().classes('items-center'):
-            ui.checkbox(value=item.done, on_change=todo_ui.refresh).bind_value(item, 'done') \
-                .mark(f'checkbox-{item.name.lower().replace(" ", "-")}')
-            ui.input(value=item.name).classes('flex-grow').bind_value(item, 'name')
-            ui.button(on_click=lambda item=item: todos.remove(item), icon='delete').props('flat fab-mini color=grey')
+def root():
+    @ui.refreshable
+    def todo_ui():
+        if not todos.items:
+            ui.label('List is empty.').classes('mx-auto')
+            return
+        ui.linear_progress(sum(item.done for item in todos.items) / len(todos.items), show_value=False)
+        with ui.row().classes('justify-center w-full'):
+            ui.label(f'Completed: {sum(item.done for item in todos.items)}')
+            ui.label(f'Remaining: {sum(not item.done for item in todos.items)}')
+        for item in todos.items:
+            with ui.row().classes('items-center'):
+                ui.checkbox(value=item.done, on_change=todo_ui.refresh).bind_value(item, 'done') \
+                    .mark(f'checkbox-{item.name.lower().replace(" ", "-")}')
+                ui.input(value=item.name).classes('flex-grow').bind_value(item, 'name')
+                ui.button(on_click=lambda item=item: todos.remove(item),
+                          icon='delete').props('flat fab-mini color=grey')
+
+    todos = ToDoList('My Weekend', on_change=todo_ui.refresh)
+    todos.add('Order pizza', done=True)
+    todos.add('New NiceGUI Release')
+    todos.add('Clean the house')
+    todos.add('Call mom')
+
+    with ui.card().classes('w-80 items-stretch'):
+        ui.label().bind_text_from(todos, 'title').classes('text-semibold text-2xl')
+        todo_ui()
+        add_input = ui.input('New item').classes('mx-12').mark('new-item')
+        add_input.on('keydown.enter', lambda: todos.add(add_input.value))
+        add_input.on('keydown.enter', lambda: add_input.set_value(''))
 
 
-todos = ToDoList('My Weekend', on_change=todo_ui.refresh)
-todos.add('Order pizza', done=True)
-todos.add('New NiceGUI Release')
-todos.add('Clean the house')
-todos.add('Call mom')
-
-with ui.card().classes('w-80 items-stretch'):
-    ui.label().bind_text_from(todos, 'title').classes('text-semibold text-2xl')
-    todo_ui()
-    add_input = ui.input('New item').classes('mx-12').mark('new-item')
-    add_input.on('keydown.enter', lambda: todos.add(add_input.value))
-    add_input.on('keydown.enter', lambda: add_input.set_value(''))
-
-if __name__ in {'__main__', '__mp_main__'}:
-    ui.run()
+ui.run(root)

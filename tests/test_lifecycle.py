@@ -5,30 +5,52 @@ from nicegui.testing import Screen
 
 
 def test_adding_elements_during_onconnect_on_auto_index_page(screen: Screen):
-    connections = []
-    ui.label('Adding labels on_connect')
-    app.on_connect(lambda _: connections.append(ui.label(f'new connection {len(connections)}')))
+    connections = {'count': 0}
+    app.on_connect(lambda _: connections.update(count=connections['count'] + 1))
+
+    @ui.page('/')
+    def page():
+        ui.label('Hello')
 
     screen.open('/')
-    screen.should_contain('new connection 0')
+    screen.should_contain('Hello')
+    assert connections['count'] == 1
+
     screen.open('/')
-    screen.should_contain('new connection 0')
-    screen.should_contain('new connection 1')
+    screen.should_contain('Hello')
+    assert connections['count'] == 2
+
     screen.open('/')
-    screen.should_contain('new connection 0')
-    screen.should_contain('new connection 1')
-    screen.should_contain('new connection 2')
+    screen.should_contain('Hello')
+    assert connections['count'] == 3
 
 
 def test_async_connect_handler(screen: Screen):
-    async def run_js():
+    connections = {'count': 0}
+
+    @app.on_connect
+    async def handle_connect():
         await asyncio.sleep(0.1)
-        status.text = 'Connected'
-    status = ui.label()
-    app.on_connect(run_js)
+        connections.update(count=connections['count'] + 1)
+
+    @ui.page('/')
+    def page():
+        ui.label('Hello')
 
     screen.open('/')
-    screen.should_contain('Connected')
+    screen.should_contain('Hello')
+    screen.wait(0.5)
+    assert connections['count'] == 1
+
+    screen.open('/')
+    screen.should_contain('Hello')
+    screen.wait(0.5)
+    assert connections['count'] == 2
+
+    screen.open('/')
+    screen.should_contain('Hello')
+    screen.wait(0.5)
+    assert connections['count'] == 3
 
 
 def test_connect_disconnect_is_called_for_each_client(screen: Screen):
@@ -70,6 +92,10 @@ def test_startup_and_shutdown_handlers(screen: Screen):
     app.on_shutdown(shutdown)
     app.on_shutdown(shutdown_async)
     app.on_shutdown(shutdown_async())
+
+    @ui.page('/')
+    def page():
+        ui.label('Hello')
 
     screen.open('/')
     screen.wait(0.5)

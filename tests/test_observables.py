@@ -133,7 +133,10 @@ def test_nested_observables():
 def test_async_handler(screen: Screen):
     reset_counter()
     data = ObservableList(on_change=increment_counter_slowly)
-    ui.button('Append 42', on_click=lambda: data.append(42))
+
+    @ui.page('/')
+    def page():
+        ui.button('Append 42', on_click=lambda: data.append(42))
 
     screen.open('/')
     assert count == 0

@@ -308,7 +308,7 @@ def map_of_nicegui():
             - [`ui.timer`](/documentation/timer): run a function periodically or once after a delay
             - `ui.update`: send updates of multiple elements to the client
         - decorators:
-            - [`ui.page`](/documentation/page): define a page (in contrast to the automatically generated "auto-index page")
+            - [`ui.page`](/documentation/page): define a page
             - [`ui.refreshable`](/documentation/refreshable), `ui.refreshable_method`: define refreshable UI containers
                 (can use [`ui.state`](/documentation/refreshable#refreshable_ui_with_reactive_state))
 

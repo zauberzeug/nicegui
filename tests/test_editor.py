@@ -5,8 +5,13 @@ from nicegui.testing import Screen
 
 
 def test_editor(screen: Screen):
-    editor = ui.editor(placeholder='Type something here')
-    ui.markdown().bind_content_from(editor, 'value', backward=lambda v: f'HTML code:\n```\n{v}\n```')
+    editor = None
+
+    @ui.page('/')
+    def page():
+        nonlocal editor
+        editor = ui.editor(placeholder='Type something here')
+        ui.markdown().bind_content_from(editor, 'value', backward=lambda v: f'HTML code:\n```\n{v}\n```')
 
     screen.open('/')
     screen.find_element(editor).click()
@@ -17,8 +22,13 @@ def test_editor(screen: Screen):
 
 def test_setting_value_twice(screen: Screen):
     # https://github.com/zauberzeug/nicegui/issues/3217
-    editor = ui.editor(value='X')
-    ui.button('Reset').on_click(lambda: editor.set_value('X'))
+    editor = None
+
+    @ui.page('/')
+    def page():
+        nonlocal editor
+        editor = ui.editor(value='X')
+        ui.button('Reset').on_click(lambda: editor.set_value('X'))
 
     screen.open('/')
     screen.should_contain('X')

@@ -5,8 +5,7 @@ import inspect
 import time
 import uuid
 from collections import defaultdict
-from collections.abc import Awaitable, Iterable, Iterator
-from contextlib import contextmanager
+from collections.abc import Awaitable, Iterable
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Callable, ClassVar
 
@@ -49,17 +48,14 @@ class Client:
     instances: ClassVar[dict[str, Client]] = {}
     '''Maps client IDs to clients.'''
 
-    auto_index_client: Client
-    '''The client that is used to render the auto-index page.'''
-
     shared_head_html = ''
     '''HTML to be inserted in the <head> of every page template.'''
 
     shared_body_html = ''
     '''HTML to be inserted in the <body> of every page template.'''
 
-    def __init__(self, page: page, *, request: Request | None) -> None:
-        self.request: Request | None = request
+    def __init__(self, page: page, *, request: Request | None = None) -> None:
+        self._request = request
         self.id = str(uuid.uuid4())
         self.created = time.time()
         self.instances[self.id] = self
@@ -70,7 +66,6 @@ class Client:
         self.is_waiting_for_connection: bool = False
         self.is_waiting_for_disconnect: bool = False
         self.environ: dict[str, Any] | None = None
-        self.shared = request is None
         self.on_air = False
         self._num_connections: defaultdict[str, int] = defaultdict(int)
         self._delete_tasks: dict[str, asyncio.Task] = {}
@@ -102,32 +97,34 @@ class Client:
             self.sub_pages_router = SubPagesRouter(request)
 
     @property
-    def is_auto_index_client(self) -> bool:
-        """Return True if this client is the auto-index client."""
-        return self is self.auto_index_client
+    def request(self) -> Request:
+        """The request object for the client."""
+        if self._request is None:
+            raise RuntimeError('Request is not set')
+        return self._request
 
     @property
-    def ip(self) -> str | None:
-        """Return the IP address of the client, or None if it is an
-        `auto-index page <https://nicegui.io/documentation/section_pages_routing#auto-index_page>`_.
+    def ip(self) -> str:
+        """The IP address of the client.
 
         *Updated in version 2.0.0: The IP address is available even before the client connects.*
+        *Updated in version 3.0.0: The IP address is always defined (never ``None``).*
         """
-        return self.request.client.host if self.request is not None and self.request.client is not None else None
+        return self.request.client.host if self.request.client is not None else ''
 
     @property
     def has_socket_connection(self) -> bool:
-        """Return True if the client is connected, False otherwise."""
+        """Whether the client is connected."""
         return self.tab_id is not None
 
     @property
     def head_html(self) -> str:
-        """Return the HTML code to be inserted in the <head> of the page template."""
+        """The HTML code to be inserted in the <head> of the page template."""
         return self.shared_head_html + self._head_html
 
     @property
     def body_html(self) -> str:
-        """Return the HTML code to be inserted in the <body> of the page template."""
+        """The HTML code to be inserted in the <body> of the page template."""
         return self.shared_body_html + self._body_html
 
     def __enter__(self) -> Self:
@@ -228,9 +225,6 @@ class Client:
             self.outbox.enqueue_message('run_javascript', {'code': code}, target_id)
 
         async def send_and_wait():
-            if self is self.auto_index_client:
-                raise RuntimeError('Cannot await JavaScript responses on the auto-index page. '
-                                   'There could be multiple clients connected and it is not clear which one to wait for.')
             self.outbox.enqueue_message('run_javascript', {'code': code, 'request_id': request_id}, target_id)
             return await JavaScriptRequest(request_id, timeout=timeout)
 
@@ -289,8 +283,7 @@ class Client:
                     self.safe_invoke(t)
                 self._num_connections.pop(document_id)
                 self._delete_tasks.pop(document_id)
-                if not self.shared:
-                    self.delete()
+                self.delete()
         self._delete_tasks[document_id] = \
             background_tasks.create(delete_content(), name=f'delete content {document_id}')
 
@@ -365,16 +358,6 @@ class Client:
                               'See https://github.com/zauberzeug/nicegui/issues/3028 for more information.',
                               stack_info=True)
 
-    @contextmanager
-    def individual_target(self, socket_id: str) -> Iterator[None]:
-        """Use individual socket ID while in this context.
-
-        This context is useful for limiting messages from the shared auto-index page to a single client.
-        """
-        self._temporary_socket_id = socket_id
-        yield
-        self._temporary_socket_id = None
-
     @classmethod
     def prune_instances(cls, *, client_age_threshold: float = 60.0) -> None:
         """Prune stale clients."""
@@ -382,8 +365,7 @@ class Client:
             stale_clients = [
                 client
                 for client in cls.instances.values()
-                if not client.shared and not client.has_socket_connection
-                and client.created <= time.time() - client_age_threshold
+                if not client.has_socket_connection and client.created <= time.time() - client_age_threshold
             ]
             for client in stale_clients:
                 client.delete()

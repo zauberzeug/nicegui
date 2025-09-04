@@ -1,21 +1,32 @@
 import importlib
 from collections.abc import Generator
 from copy import copy
+from pathlib import Path
+from typing import Optional
 
 import pytest
 from starlette.routing import Route
 
-import nicegui.storage
 from nicegui import Client, app, binding, core, event, run, ui
-from nicegui.page import page
 
 # pylint: disable=redefined-outer-name
 
 
-def pytest_configure(config: pytest.Config) -> None:
-    """Add the "module_under_test" marker to the pytest configuration."""
-    config.addinivalue_line('markers',
-                            'module_under_test(module): specify the module under test which then gets automatically reloaded.')
+def pytest_addoption(parser: pytest.Parser) -> None:
+    """Add pytest option for main file."""
+    parser.addini('main_file', 'main file', default='main.py')
+
+
+def get_path_to_main_file(config: pytest.Config) -> Optional[Path]:
+    """Get the path to the main file."""
+    main_file = config.getini('main_file')
+    if main_file == '':
+        return None
+    assert config.inipath is not None
+    path = (config.inipath.parent / main_file).resolve()
+    if not path.is_file():
+        raise FileNotFoundError(f'Main file not found: {path}')
+    return path
 
 
 @pytest.fixture
@@ -42,10 +53,6 @@ def nicegui_reset_globals() -> Generator[None, None, None]:
     Client.instances.clear()
     Client.page_routes.clear()
     app.reset()
-    Client.auto_index_client = Client(page('/'), request=None).__enter__()  # pylint: disable=unnecessary-dunder-call
-    Client.auto_index_client.layout.parent_slot = None  # NOTE: otherwise the layout is nested in the previous client
-    # NOTE we need to re-add the auto index route because we removed all routes above
-    app.get('/')(Client.auto_index_client.build_response)
     binding.reset()
 
     yield
@@ -69,16 +76,8 @@ def find_all_subclasses(cls: type) -> list[type]:
     return subclasses
 
 
-def prepare_simulation(request: pytest.FixtureRequest) -> None:
-    """Prepare a simulation to be started.
-
-    By using the "module_under_test" marker you can specify the main entry point of the app.
-    """
-    marker = request.node.get_closest_marker('module_under_test')
-    if marker is not None:
-        with Client.auto_index_client:
-            importlib.reload(marker.args[0])
-
+def prepare_simulation() -> None:
+    """Prepare the simulation by adding the run config and setting the storage secret."""
     core.app.config.add_run_config(
         reload=False,
         title='Test App',
@@ -93,4 +92,3 @@ def prepare_simulation(request: pytest.FixtureRequest) -> None:
         prod_js=True,
         show_welcome_message=False,
     )
-    nicegui.storage.set_storage_secret('simulated secret')

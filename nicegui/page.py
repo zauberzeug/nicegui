@@ -36,8 +36,7 @@ class page:
 
         This decorator marks a function to be a page builder.
         Each user accessing the given route will see a new instance of the page.
-        This means it is private to the user and not shared with others
-        (as it is done `when placing elements outside of a page decorator <https://nicegui.io/documentation/section_pages_routing#auto-index_page>`_).
+        This means it is private to the user and not shared with others.
 
         Notes:
 
@@ -99,6 +98,15 @@ class page:
 
     def __call__(self, func: Callable[..., Any]) -> Callable[..., Any]:
         core.app.remove_route(self.path)  # NOTE make sure only the latest route definition is used
+
+        if 'include_in_schema' not in self.kwargs:
+            self.kwargs['include_in_schema'] = core.app.config.endpoint_documentation in {'page', 'all'}
+
+        self.api_router.get(self._path, **self.kwargs)(self._wrap(func))
+        Client.page_routes[func] = self.path
+        return func
+
+    def _wrap(self, func: Callable[..., Any]) -> Callable[..., Any]:
         parameters_of_decorated_func = list(inspect.signature(func).parameters.keys())
 
         def check_for_late_return_value(task: asyncio.Task) -> None:
@@ -185,9 +193,4 @@ class page:
             parameters.insert(0, request)
         decorated.__signature__ = inspect.Signature(parameters)  # type: ignore
 
-        if 'include_in_schema' not in self.kwargs:
-            self.kwargs['include_in_schema'] = core.app.config.endpoint_documentation in {'page', 'all'}
-
-        self.api_router.get(self._path, **self.kwargs)(decorated)
-        Client.page_routes[func] = self.path
-        return func
+        return decorated

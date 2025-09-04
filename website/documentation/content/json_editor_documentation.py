@@ -64,31 +64,26 @@ def schema_demo() -> None:
 
     The colon ":" in front of the method name "expand" indicates that the value "path => true" is a JavaScript expression
     that is evaluated on the client before it is passed to the method.
-
-    Note that requesting data from the client is only supported for page functions, not for the shared auto-index page.
 ''')
 def methods_demo() -> None:
-    # @ui.page('/')
-    def page():
-        json = {
-            'Name': 'Alice',
-            'Age': 42,
-            'Address': {
-                'Street': 'Main Street',
-                'City': 'Wonderland',
-            },
-        }
-        editor = ui.json_editor({'content': {'json': json}})
+    json = {
+        'Name': 'Alice',
+        'Age': 42,
+        'Address': {
+            'Street': 'Main Street',
+            'City': 'Wonderland',
+        },
+    }
+    editor = ui.json_editor({'content': {'json': json}})
 
-        ui.button('Expand', on_click=lambda: editor.run_editor_method(':expand', '[]', 'path => true'))
-        ui.button('Collapse', on_click=lambda: editor.run_editor_method('collapse', []))
-        ui.button('Readonly', on_click=lambda: editor.run_editor_method('updateProps', {'readOnly': True}))
+    ui.button('Expand', on_click=lambda: editor.run_editor_method(':expand', '[]', 'path => true'))
+    ui.button('Collapse', on_click=lambda: editor.run_editor_method('collapse', []))
+    ui.button('Readonly', on_click=lambda: editor.run_editor_method('updateProps', {'readOnly': True}))
 
-        async def get_data() -> None:
-            data = await editor.run_editor_method('get')
-            ui.notify(data)
-        ui.button('Get Data', on_click=get_data)
-    page()  # HIDE
+    async def get_data() -> None:
+        data = await editor.run_editor_method('get')
+        ui.notify(data)
+    ui.button('Get Data', on_click=get_data)
 
 
 doc.reference(ui.json_editor)
