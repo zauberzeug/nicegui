@@ -24,7 +24,7 @@ class SubPagesRouter:
         if request is not None:
             forwarded_prefix = request.headers.get('X-Forwarded-Prefix', '')
             root = _normalize(request.scope.get('root_path', ''))
-            combined = _normalize((forwarded_prefix or '') + (root or ''))
+            combined = _normalize(forwarded_prefix or '') + _normalize(root or '')
             path = request.url.path
             for p in (combined, root):
                 if p and (path == p or path.startswith(p + '/')):
