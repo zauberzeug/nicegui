@@ -22,7 +22,14 @@ class SubPagesRouter:
         on('sub_pages_navigate', lambda event: self._handle_navigate(event.args))
 
         if request is not None:
+            forwarded_prefix = request.headers.get('X-Forwarded-Prefix', '')
+            root = _normalize(request.scope.get('root_path', ''))
+            combined = _normalize(forwarded_prefix or '') + _normalize(root or '')
             path = request.url.path
+            for p in (combined, root):
+                if p and (path == p or path.startswith(p + '/')):
+                    path = path[len(p):] or '/'
+                    break
             if request.url.query:
                 path += '?' + request.url.query
             # NOTE: we do not use request.url.fragment because browsers do not send it to the server
@@ -110,3 +117,7 @@ class SubPagesRouter:
                 sub_pages._set_match(None)  # pylint: disable=protected-access
                 has_404 = True
         return not has_404
+
+
+def _normalize(p: str) -> str:
+    return p[:-1] if p and p != '/' and p.endswith('/') else p
