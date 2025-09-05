@@ -17,33 +17,6 @@ CONSTANT_UUID = str(uuid.uuid4())
 doc.title('*Pages* & Routing')
 
 doc.intro(page_documentation)
-
-
-@doc.auto_execute
-@doc.demo('Auto-index page', '''
-    Pages created with the `@ui.page` decorator are "private".
-    Their content is re-created for each client.
-    Thus, in the demo to the right, the displayed ID on the private page changes when the browser reloads the page.
-
-    UI elements that are not wrapped in a decorated page function are placed on an automatically generated index page at route "/".
-    This auto-index page is created once on startup and *shared* across all clients that might connect.
-    Thus, each connected client will see the *same* elements.
-    In the demo to the right, the displayed ID on the auto-index page remains constant when the browser reloads the page.
-''')
-def auto_index_page():
-    from uuid import uuid4
-
-    @ui.page('/private_page')
-    async def private_page():
-        ui.label(f'private page with ID {uuid4()}')
-
-    # ui.label(f'shared auto-index page with ID {uuid4()}')
-    # ui.link('private page', private_page)
-    # END OF DEMO
-    ui.label(f'shared auto-index page with ID {CONSTANT_UUID}')
-    ui.link('private page', private_page)
-
-
 doc.intro(page_layout_documentation)
 doc.intro(sub_pages_documentation)
 
@@ -62,9 +35,13 @@ def parameter_demo():
         ui.label(icon).classes('text-h3')
         with ui.row():
             [ui.icon(icon).classes('text-h3') for _ in range(amount)]
-    ui.link('Star', '/icon/star?amount=5')
-    ui.link('Home', '/icon/home')
-    ui.link('Water', '/icon/water_drop?amount=3')
+
+    # @ui.page('/')
+    def page():
+        ui.link('Star', '/icon/star?amount=5')
+        ui.link('Home', '/icon/home')
+        ui.link('Water', '/icon/water_drop?amount=3')
+    page()  # HIDE
 
 
 doc.intro(page_title_documentation)
@@ -145,6 +122,9 @@ def fastapi_demo():
     def generate_random_number(max: int):
         return {'min': 0, 'max': max, 'value': random.randint(0, max)}
 
-    max = ui.number('max', value=100)
-    ui.button('generate random number',
-              on_click=lambda: ui.navigate.to(f'/random/{max.value:.0f}'))
+    # @ui.page('/')
+    def page():
+        max = ui.number('max', value=100)
+        ui.button('generate random number',
+                  on_click=lambda: ui.navigate.to(f'/random/{max.value:.0f}'))
+    page()  # HIDE

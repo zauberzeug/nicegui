@@ -42,9 +42,12 @@ def link_to_other_page():
     def my_page():
         ui.label('This is another page')
 
-    ui.label('Go to other page')
-    ui.link('... with path', '/some_other_page')
-    ui.link('... with function reference', my_page)
+    # @ui.page('/')
+    def page():
+        ui.label('Go to other page')
+        ui.link('... with path', '/some_other_page')
+        ui.link('... with function reference', my_page)
+    page()  # HIDE
 
 
 @doc.demo('Link from images and other elements', '''

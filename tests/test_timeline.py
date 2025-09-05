@@ -3,10 +3,12 @@ from nicegui.testing import Screen
 
 
 def test_timeline(screen: Screen):
-    with ui.timeline():
-        ui.timeline_entry('Entry 1', title='Title 1', subtitle='Subtitle 1')
+    @ui.page('/')
+    def page():
         with ui.timeline():
-            ui.label('Entry 2')
+            ui.timeline_entry('Entry 1', title='Title 1', subtitle='Subtitle 1')
+            with ui.timeline():
+                ui.label('Entry 2')
 
     screen.open('/')
     screen.should_contain('Entry 1')

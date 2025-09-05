@@ -14,8 +14,11 @@ def main_demo() -> None:
     def dark_page():
         ui.label('Welcome to the dark side')
 
-    ui.link('Visit other page', other_page)
-    ui.link('Visit dark page', dark_page)
+    # @ui.page('/')
+    def page():
+        ui.link('Visit other page', other_page)
+        ui.link('Visit dark page', dark_page)
+    page()  # HIDE
 
 
 @doc.auto_execute
@@ -27,10 +30,13 @@ def main_demo() -> None:
 ''')
 def page_with_path_parameters_demo():
     @ui.page('/repeat/{word}/{count}')
-    def page(word: str, count: int):
+    def repeat(word: str, count: int):
         ui.label(word * count)
 
-    ui.link('Say hi to Santa!', '/repeat/Ho! /3')
+    # @ui.page('/')
+    def page():
+        ui.link('Say hi to Santa!', '/repeat/Ho! /3')
+    page()  # HIDE
 
 
 @doc.auto_execute
@@ -52,7 +58,10 @@ def wait_for_connected_demo():
         await asyncio.sleep(2)
         ui.label('This text is displayed 2 seconds after the page has been fully loaded.')
 
-    ui.link('wait for connection', wait_for_connection)
+    # @ui.page('/')
+    def page():
+        ui.link('wait for connection', wait_for_connection)
+    page()  # HIDE
 
 
 @doc.auto_execute
@@ -67,7 +76,7 @@ def multicasting():
     from nicegui import app
 
     @ui.page('/multicast_receiver')
-    def page():
+    def multicast_receiver():
         ui.label('This page will show messages from the index page.')
 
     def send(message: str):
@@ -75,8 +84,11 @@ def multicasting():
             with client:
                 ui.notify(message)
 
-    ui.button('Send message', on_click=lambda: send('Hi!'))
-    ui.link('Open receiver', '/multicast_receiver', new_tab=True)
+    # @ui.page('/')
+    def page():
+        ui.button('Send message', on_click=lambda: send('Hi!'))
+        ui.link('Open receiver', '/multicast_receiver', new_tab=True)
+    page()  # HIDE
 
 
 @doc.demo('Modularize with APIRouter', '''

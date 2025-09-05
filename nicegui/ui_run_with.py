@@ -1,6 +1,6 @@
 from contextlib import asynccontextmanager
 from pathlib import Path
-from typing import Literal, Optional, Union
+from typing import Callable, Literal, Optional, Union
 
 from fastapi import FastAPI
 from fastapi.middleware.gzip import GZipMiddleware
@@ -14,6 +14,7 @@ from .nicegui import _shutdown, _startup
 
 def run_with(
     app: FastAPI, *,
+    root: Optional[Callable] = None,
     title: str = 'NiceGUI',
     viewport: str = 'width=device-width, initial-scale=1',
     favicon: Optional[Union[str, Path]] = None,
@@ -33,6 +34,7 @@ def run_with(
     """Run NiceGUI with FastAPI.
 
     :param app: FastAPI app
+    :param root: root page function (*added in version 3.0.0*)
     :param title: page title (default: `'NiceGUI'`, can be overwritten per page)
     :param viewport: page meta viewport content (default: `'width=device-width, initial-scale=1'`, can be overwritten per page)
     :param favicon: relative filepath, absolute URL to a favicon (default: `None`, NiceGUI icon will be used) or emoji (e.g. `'🚀'`, works for most browsers)
@@ -64,6 +66,7 @@ def run_with(
         show_welcome_message=show_welcome_message,
         cache_control_directives=cache_control_directives,
     )
+    core.root = root
     storage.set_storage_secret(storage_secret)
     core.app.add_middleware(GZipMiddleware)
     core.app.add_middleware(RedirectWithPrefixMiddleware)

@@ -8,17 +8,23 @@ from nicegui.testing import Screen
 
 @pytest.mark.parametrize('require_escape_hold', [True, False])
 def test_fullscreen_creation(screen: Screen, require_escape_hold: bool):
-    fullscreen = ui.fullscreen(require_escape_hold=require_escape_hold)
-    assert not fullscreen.value
-    assert fullscreen.require_escape_hold == require_escape_hold
+    @ui.page('/')
+    def page():
+        fullscreen = ui.fullscreen(require_escape_hold=require_escape_hold)
+        assert not fullscreen.value
+        assert fullscreen.require_escape_hold == require_escape_hold
 
     screen.open('/')
 
 
 def test_fullscreen_methods(screen: Screen):
     values = []
+    fullscreen = None
 
-    fullscreen = ui.fullscreen(on_value_change=lambda e: values.append(e.value))
+    @ui.page('/')
+    def page():
+        nonlocal fullscreen
+        fullscreen = ui.fullscreen(on_value_change=lambda e: values.append(e.value))
 
     screen.open('/')
 
@@ -54,9 +60,11 @@ def test_fullscreen_button_click(screen: Screen):
     """
     values = []
 
-    fullscreen = ui.fullscreen(on_value_change=lambda e: values.append(e.value))
-    ui.button('Enter Fullscreen', on_click=fullscreen.enter)
-    ui.button('Exit Fullscreen', on_click=fullscreen.exit)
+    @ui.page('/')
+    def page():
+        fullscreen = ui.fullscreen(on_value_change=lambda e: values.append(e.value))
+        ui.button('Enter Fullscreen', on_click=fullscreen.enter)
+        ui.button('Exit Fullscreen', on_click=fullscreen.exit)
 
     screen.open('/')
     screen.click('Enter Fullscreen')

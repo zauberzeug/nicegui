@@ -11,8 +11,10 @@ def test_refreshable(screen: Screen) -> None:
     def number_ui() -> None:
         ui.label('[' + ', '.join(str(n) for n in sorted(numbers)) + ']')
 
-    number_ui()
-    ui.button('Refresh', on_click=number_ui.refresh)
+    @ui.page('/')
+    def page():
+        number_ui()
+        ui.button('Refresh', on_click=number_ui.refresh)
 
     screen.open('/')
     screen.should_contain('[]')
@@ -49,13 +51,13 @@ def test_async_refreshable(screen: Screen) -> None:
 
     numbers.append(1)
     screen.click('Refresh')
-    screen.should_not_contain('[]')  # ensure bug #863 is fixed
     screen.should_contain('[1]')
+    screen.should_not_contain('[]')  # ensure bug #863 is fixed
 
     numbers.append(2)
     screen.click('Refresh')
-    screen.should_not_contain('[]')
     screen.should_contain('[1, 2]')
+    screen.should_not_contain('[]')
 
     numbers.clear()
     screen.click('Refresh')
@@ -82,18 +84,22 @@ def test_multiple_targets(screen: Screen) -> None:
             self.state += 1
             self.create_ui.refresh()
 
-    a = MyClass('A')
-    a.create_ui()
+    @ui.page('/')
+    def page():
+        a = MyClass('A')
+        a.create_ui()
 
-    b = MyClass('B')
-    b.create_ui()
+        b = MyClass('B')
+        b.create_ui()
 
     screen.open('/')
     screen.should_contain('A = 1 (1)')
     screen.should_contain('B = 1 (2)')
+
     screen.click('increment A')
     screen.should_contain('A = 2 (3)')
     screen.should_contain('B = 1 (2)')
+
     screen.click('increment B')
     screen.should_contain('A = 2 (3)')
     screen.should_contain('B = 2 (4)')
@@ -108,12 +114,14 @@ def test_refresh_with_arguments(screen: Screen):
         count += 1
         ui.label(f'{count=}, {value=}')
 
-    some_ui(0)
-    ui.button('refresh', on_click=some_ui.refresh)
-    ui.button('refresh()', on_click=lambda: some_ui.refresh())  # pylint: disable=unnecessary-lambda
-    ui.button('refresh(1)', on_click=lambda: some_ui.refresh(1))
-    ui.button('refresh(2)', on_click=lambda: some_ui.refresh(2))
-    ui.button('refresh(value=3)', on_click=lambda: some_ui.refresh(value=3))
+    @ui.page('/')
+    def page():
+        some_ui(0)
+        ui.button('refresh', on_click=some_ui.refresh)
+        ui.button('refresh()', on_click=lambda: some_ui.refresh())  # pylint: disable=unnecessary-lambda
+        ui.button('refresh(1)', on_click=lambda: some_ui.refresh(1))
+        ui.button('refresh(2)', on_click=lambda: some_ui.refresh(2))
+        ui.button('refresh(value=3)', on_click=lambda: some_ui.refresh(value=3))
 
     screen.open('/')
     screen.should_contain('count=1, value=0')
@@ -141,13 +149,15 @@ def test_refresh_deleted_element(screen: Screen):
     def some_ui():
         ui.label('some text')
 
-    with ui.card() as card:
+    @ui.page('/')
+    def page():
+        with ui.card() as card:
+            some_ui()
+
+        ui.button('Refresh', on_click=some_ui.refresh)
+        ui.button('Clear', on_click=card.clear)
+
         some_ui()
-
-    ui.button('Refresh', on_click=some_ui.refresh)
-    ui.button('Clear', on_click=card.clear)
-
-    some_ui()
 
     screen.open('/')
     screen.should_contain('some text')
@@ -171,8 +181,10 @@ def test_refresh_with_function_reference(screen: Screen):
             self.count += 1
             ui.button(self.name, on_click=self.ui.refresh)
 
-    Test('A')
-    Test('B')
+    @ui.page('/')
+    def page():
+        Test('A')
+        Test('B')
 
     screen.open('/')
     screen.should_contain('Refreshing A (0)')
@@ -190,8 +202,10 @@ def test_refreshable_with_state(screen: Screen):
         ui.label(f'{title}: {count}')
         ui.button(f'Increment {title}', on_click=lambda: set_count(count + 1))
 
-    counter('A')
-    counter('B')
+    @ui.page('/')
+    def page():
+        counter('A')
+        counter('B')
 
     screen.open('/')
     screen.should_contain('A: 0')
@@ -214,8 +228,10 @@ def test_refreshable_with_return_value(screen: Screen):
         ui.label('42')
         return 42
 
-    answer = number_ui()
-    assert answer == 42
+    @ui.page('/')
+    def page():
+        answer = number_ui()
+        assert answer == 42
 
     screen.open('/')
     screen.should_contain('42')

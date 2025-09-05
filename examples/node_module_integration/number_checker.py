@@ -1,7 +1,7 @@
 from nicegui import ui
 
 
-class NumberChecker(ui.element, component='number_checker.js', dependencies=['dist/is-odd.js']):
+class NumberChecker(ui.element, component='number_checker.js', esm={'is-odd': 'dist'}):
 
     def __init__(self) -> None:
         """NumberChecker

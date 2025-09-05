@@ -1,4 +1,4 @@
-from typing import List, Optional, Union
+from typing import Optional, Union
 
 from ..events import Handler, ValueChangeEventArguments
 from .mixins.disableable_element import DisableableElement
@@ -13,7 +13,7 @@ class Rating(ValueElement, DisableableElement):
                  icon: Optional[str] = None,
                  icon_selected: Optional[str] = None,
                  icon_half: Optional[str] = None,
-                 color: Optional[Union[str, List[str]]] = 'primary',
+                 color: Optional[Union[str, list[str]]] = 'primary',
                  size: Optional[str] = None,
                  on_change: Optional[Handler[ValueChangeEventArguments]] = None,
                  ) -> None:

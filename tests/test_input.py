@@ -10,7 +10,9 @@ from nicegui.testing import Screen
 
 
 def test_input(screen: Screen):
-    ui.input('Your name', value='John Doe')
+    @ui.page('/')
+    def page():
+        ui.input('Your name', value='John Doe')
 
     screen.open('/')
     screen.should_contain('Your name')
@@ -23,7 +25,9 @@ def test_input(screen: Screen):
 
 
 def test_password(screen: Screen):
-    ui.input('Your password', value='123456', password=True)
+    @ui.page('/')
+    def page():
+        ui.input('Your password', value='123456', password=True)
 
     screen.open('/')
     screen.should_contain('Your password')
@@ -38,7 +42,9 @@ def test_password(screen: Screen):
 
 
 def test_toggle_button(screen: Screen):
-    ui.input('Your password', value='123456', password=True, password_toggle_button=True)
+    @ui.page('/')
+    def page():
+        ui.input('Your password', value='123456', password=True, password_toggle_button=True)
 
     screen.open('/')
     screen.should_contain('Your password')
@@ -59,15 +65,22 @@ def test_toggle_button(screen: Screen):
 
 @pytest.mark.parametrize('method', ['dict', 'sync', 'async'])
 def test_input_validation(method: Literal['dict', 'sync', 'async'], screen: Screen):
-    if method == 'sync':
-        input_ = ui.input('Name', validation=lambda x: 'Short' if len(x) < 3 else 'Still short' if len(x) < 5 else None)
-    elif method == 'dict':
-        input_ = ui.input('Name', validation={'Short': lambda x: len(x) >= 3, 'Still short': lambda x: len(x) >= 5})
-    else:
-        async def validate(x: str) -> Optional[str]:
-            await asyncio.sleep(0.1)
-            return 'Short' if len(x) < 3 else 'Still short' if len(x) < 5 else None
-        input_ = ui.input('Name', validation=validate)
+    input_ = None
+
+    @ui.page('/')
+    def page():
+        nonlocal input_
+        if method == 'sync':
+            input_ = ui.input('Name',
+                              validation=lambda x: 'Short' if len(x) < 3 else 'Still short' if len(x) < 5 else None)
+        elif method == 'dict':
+            input_ = ui.input('Name',
+                              validation={'Short': lambda x: len(x) >= 3, 'Still short': lambda x: len(x) >= 5})
+        else:
+            async def validate(x: str) -> Optional[str]:
+                await asyncio.sleep(0.1)
+                return 'Short' if len(x) < 3 else 'Still short' if len(x) < 5 else None
+            input_ = ui.input('Name', validation=validate)
 
     def assert_validation(expected: bool):
         if method == 'async':
@@ -100,8 +113,10 @@ def test_input_validation(method: Literal['dict', 'sync', 'async'], screen: Scre
 
 
 def test_input_with_multi_word_error_message(screen: Screen):
-    input_ = ui.input(label='some input')
-    ui.button('set error', on_click=lambda: input_.props('error error-message="Some multi word error message"'))
+    @ui.page('/')
+    def page():
+        input_ = ui.input(label='some input')
+        ui.button('set error', on_click=lambda: input_.props('error error-message="Some multi word error message"'))
 
     screen.open('/')
     screen.should_not_contain('Some multi word error message')
@@ -111,7 +126,12 @@ def test_input_with_multi_word_error_message(screen: Screen):
 
 
 def test_autocompletion(screen: Screen):
-    input_ = ui.input('Input', autocomplete=['foo', 'bar', 'baz'])
+    input_ = None
+
+    @ui.page('/')
+    def page():
+        nonlocal input_
+        input_ = ui.input('Input', autocomplete=['foo', 'bar', 'baz'])
 
     screen.open('/')
     element = screen.selenium.find_element(By.XPATH, '//*[@aria-label="Input"]')
@@ -147,8 +167,10 @@ def test_autocompletion(screen: Screen):
 
 
 def test_clearable_input(screen: Screen):
-    input_ = ui.input(value='foo').props('clearable')
-    ui.label().bind_text_from(input_, 'value', lambda value: f'value: {value}')
+    @ui.page('/')
+    def page():
+        input_ = ui.input(value='foo').props('clearable')
+        ui.label().bind_text_from(input_, 'value', lambda value: f'value: {value}')
 
     screen.open('/')
     screen.should_contain('value: foo')
@@ -157,7 +179,12 @@ def test_clearable_input(screen: Screen):
 
 
 def test_update_input(screen: Screen):
-    input_ = ui.input('Name', value='Pete')
+    input_ = None
+
+    @ui.page('/')
+    def page():
+        nonlocal input_
+        input_ = ui.input('Name', value='Pete')
 
     screen.open('/')
     element = screen.selenium.find_element(By.XPATH, '//*[@aria-label="Name"]')
@@ -173,10 +200,12 @@ def test_update_input(screen: Screen):
 
 
 def test_switching_focus(screen: Screen):
-    input1 = ui.input()
-    input2 = ui.input()
-    ui.button('focus 1', on_click=lambda: input1.run_method('focus'))
-    ui.button('focus 2', on_click=lambda: input2.run_method('focus'))
+    @ui.page('/')
+    def page():
+        input1 = ui.input()
+        input2 = ui.input()
+        ui.button('focus 1', on_click=lambda: input1.run_method('focus'))
+        ui.button('focus 2', on_click=lambda: input2.run_method('focus'))
 
     screen.open('/')
     elements = screen.selenium.find_elements(By.XPATH, '//input')

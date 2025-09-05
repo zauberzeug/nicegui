@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Optional, Union
 
 from ..events import Handler, ValueChangeEventArguments
 from .mixins.value_element import ValueElement
@@ -8,13 +8,13 @@ class ChoiceElement(ValueElement):
 
     def __init__(self, *,
                  tag: Optional[str] = None,
-                 options: Union[List, Dict],
+                 options: Union[list, dict],
                  value: Any,
                  on_change: Optional[Handler[ValueChangeEventArguments]] = None,
                  ) -> None:
         self.options = options
-        self._values: List[str] = []
-        self._labels: List[str] = []
+        self._values: list[str] = []
+        self._labels: list[str] = []
         self._update_values_and_labels()
         if not isinstance(value, list) and value is not None and value not in self._values:
             raise ValueError(f'Invalid value: {value}')
@@ -33,11 +33,12 @@ class ChoiceElement(ValueElement):
             self.value = before_value if before_value in self._values else None
 
     def update(self) -> None:
-        self._update_values_and_labels()
-        self._update_options()
+        with self._props.suspend_updates():
+            self._update_values_and_labels()
+            self._update_options()
         super().update()
 
-    def set_options(self, options: Union[List, Dict], *, value: Any = ...) -> None:
+    def set_options(self, options: Union[list, dict], *, value: Any = ...) -> None:
         """Set the options of this choice element.
 
         :param options: The new options.

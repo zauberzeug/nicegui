@@ -1,7 +1,6 @@
 __pycache__/
 *.egg-info/
 .*.swp
-dist
 /test.py
 *.pickle
 screenshots/
@@ -12,4 +11,3 @@ venv
 .DS_Store
 .env
 node_modules/
-package-lock.json

@@ -1,5 +1,4 @@
-from contextlib import nullcontext
-from typing import ContextManager
+from contextlib import AbstractContextManager, nullcontext
 
 from ..client import Client
 from ..element import Element
@@ -9,7 +8,7 @@ from ..timer import Timer as BaseTimer
 
 class Timer(BaseTimer, Element, component='timer.js'):
 
-    def _get_context(self) -> ContextManager:
+    def _get_context(self) -> AbstractContextManager:
         return self.parent_slot or nullcontext()
 
     async def _can_start(self) -> bool:
@@ -18,9 +17,6 @@ class Timer(BaseTimer, Element, component='timer.js'):
         See https://github.com/zauberzeug/nicegui/issues/206 for details.
         Returns True if the client is connected, False if the client is not connected and the timer should be cancelled.
         """
-        if self.client.shared:
-            return True
-
         # ignore served pages which do not reconnect to backend (e.g. monitoring requests, scrapers etc.)
         TIMEOUT = 60.0
         try:

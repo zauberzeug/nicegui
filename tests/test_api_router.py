@@ -1,4 +1,3 @@
-
 from nicegui import APIRouter, app, ui
 from nicegui.testing import Screen
 

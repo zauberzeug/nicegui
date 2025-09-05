@@ -33,7 +33,8 @@ class DisableableElement(Element):
     def bind_enabled_to(self,
                         target_object: Any,
                         target_name: str = 'enabled',
-                        forward: Optional[Callable[[Any], Any]] = None,
+                        forward: Optional[Callable[[Any], Any]] = None, *,
+                        strict: Optional[bool] = None,
                         ) -> Self:
         """Bind the enabled state of this element to the target object's target_name property.
 
@@ -43,14 +44,17 @@ class DisableableElement(Element):
         :param target_object: The object to bind to.
         :param target_name: The name of the property to bind to.
         :param forward: A function to apply to the value before applying it to the target (default: identity).
+        :param strict: Whether to check (and raise) if the target object has the specified property (default: None,
+            performs a check if the object is not a dictionary, *added in version 3.0.0*).
         """
-        bind_to(self, 'enabled', target_object, target_name, forward)
+        bind_to(self, 'enabled', target_object, target_name, forward, self_strict=False, other_strict=strict)
         return self
 
     def bind_enabled_from(self,
                           target_object: Any,
                           target_name: str = 'enabled',
-                          backward: Optional[Callable[[Any], Any]] = None,
+                          backward: Optional[Callable[[Any], Any]] = None, *,
+                          strict: Optional[bool] = None,
                           ) -> Self:
         """Bind the enabled state of this element from the target object's target_name property.
 
@@ -60,8 +64,10 @@ class DisableableElement(Element):
         :param target_object: The object to bind from.
         :param target_name: The name of the property to bind from.
         :param backward: A function to apply to the value before applying it to this element (default: identity).
+        :param strict: Whether to check (and raise) if the target object has the specified property (default: None,
+            performs a check if the object is not a dictionary, *added in version 3.0.0*).
         """
-        bind_from(self, 'enabled', target_object, target_name, backward)
+        bind_from(self, 'enabled', target_object, target_name, backward, self_strict=False, other_strict=strict)
         return self
 
     def bind_enabled(self,
@@ -69,6 +75,7 @@ class DisableableElement(Element):
                      target_name: str = 'enabled', *,
                      forward: Optional[Callable[[Any], Any]] = None,
                      backward: Optional[Callable[[Any], Any]] = None,
+                     strict: Optional[bool] = None,
                      ) -> Self:
         """Bind the enabled state of this element to the target object's target_name property.
 
@@ -80,8 +87,12 @@ class DisableableElement(Element):
         :param target_name: The name of the property to bind to.
         :param forward: A function to apply to the value before applying it to the target (default: identity).
         :param backward: A function to apply to the value before applying it to this element (default: identity).
+        :param strict: Whether to check (and raise) if the target object has the specified property (default: None,
+            performs a check if the object is not a dictionary, *added in version 3.0.0*).
         """
-        bind(self, 'enabled', target_object, target_name, forward=forward, backward=backward)
+        bind(self, 'enabled', target_object, target_name,
+             forward=forward, backward=backward,
+             self_strict=False, other_strict=strict)
         return self
 
     def set_enabled(self, value: bool) -> None:
@@ -94,4 +105,3 @@ class DisableableElement(Element):
         :param enabled: The new state.
         """
         self._props['disable'] = not enabled
-        self.update()

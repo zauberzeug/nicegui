@@ -1,4 +1,4 @@
-from typing import Dict, List, Optional, cast
+from typing import Optional, cast
 
 from fastapi import Request
 from starlette.datastructures import UploadFile
@@ -71,7 +71,7 @@ class Upload(LabelElement, DisableableElement, component='upload.js'):
         self._multi_upload_handlers = [on_multi_upload] if on_multi_upload else []
 
         @app.post(self._props['url'])
-        async def upload_route(request: Request) -> Dict[str, str]:
+        async def upload_route(request: Request) -> dict[str, str]:
             for begin_upload_handler in self._begin_upload_handlers:
                 handle_event(begin_upload_handler, UiEventArguments(sender=self, client=self.client))
             form = await request.form()
@@ -82,7 +82,7 @@ class Upload(LabelElement, DisableableElement, component='upload.js'):
         if on_rejected:
             self.on_rejected(on_rejected)
 
-    def handle_uploads(self, uploads: List[UploadFile]) -> None:
+    def handle_uploads(self, uploads: list[UploadFile]) -> None:
         """Handle the uploaded files.
 
         This method is primarily intended for internal use and for simulating file uploads in tests.

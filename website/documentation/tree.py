@@ -1,11 +1,11 @@
 from __future__ import annotations
 
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from .content import DocumentationPage, registry
 from .content.overview import tiles
 
-nodes: List[Dict[str, Any]] = []
+nodes: list[dict[str, Any]] = []
 
 
 def build_tree() -> None:
@@ -20,7 +20,7 @@ def build_tree() -> None:
         })
 
 
-def _children(page: DocumentationPage) -> List[Dict[str, Any]]:
+def _children(page: DocumentationPage) -> list[dict[str, Any]]:
     return [
         {
             'id': part.link if part.link else f'{page.name}#{part.link_target}',
@@ -32,12 +32,12 @@ def _children(page: DocumentationPage) -> List[Dict[str, Any]]:
     ]
 
 
-def _plain(string: Optional[str]) -> str:
+def _plain(string: str | None) -> str:
     assert string is not None
     return string.replace('*', '')
 
 
-def ancestors(node_id: str) -> List[str]:
+def ancestors(node_id: str) -> list[str]:
     """Get the ancestors of a node."""
     parent = next((node for node in nodes if any(child['id'] == node_id for child in node.get('children', []))), None)
     return [node_id] + (ancestors(parent['id']) if parent else [])

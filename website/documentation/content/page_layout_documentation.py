@@ -27,7 +27,10 @@ def page_layout_demo():
         with ui.footer().style('background-color: #3874c8'):
             ui.label('FOOTER')
 
-    ui.link('show page with fancy layout', page_layout)
+    # @ui.page('/')
+    def page():
+        ui.link('show page with fancy layout', page_layout)
+    page()  # HIDE
 
 
 doc.reference(ui.header, title='Reference for ui.header')

@@ -1,5 +1,15 @@
 {
   "dependencies": {
-    "signature_pad": "^4.1.7"
+    "signature_pad": "^5.0.10"
+  },
+  "devDependencies": {
+    "rollup": "^4.46.2",
+    "@rollup/plugin-node-resolve": "^16.0.1",
+    "@rollup/plugin-terser": "^0.4.4",
+    "rimraf": "^6.0.1"
+  },
+  "scripts": {
+    "build": "rollup -c rollup.config.mjs --validate",
+    "clean": "rimraf ./dist/*"
   }
 }
