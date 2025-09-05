@@ -1,20 +1,18 @@
 export default {
-    template: `<div class="nicegui-log" ref="logContainer"><slot></slot></div>`,
+    template: `<div><slot></slot></div>`,
     data() {
         return {
             shouldScroll: true,
         };
     },
     beforeUpdate() {
-        const container = this.$refs.logContainer;
-        if (container) {
-            this.shouldScroll = container.scrollTop + container.clientHeight >= container.scrollHeight;
+        if (this.$el) {
+            this.shouldScroll = this.$el.scrollTop + this.$el.clientHeight >= this.$el.scrollHeight;
         }
     },
     updated() {
-        const container = this.$refs.logContainer;
-        if (container && this.shouldScroll) {
-            container.scrollTop = container.scrollHeight;
+        if (this.$el && this.shouldScroll) {
+            this.$el.scrollTop = this.$el.scrollHeight;
         }
     }
 };
