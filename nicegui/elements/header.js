@@ -1,5 +1,5 @@
 export default {
-  template: `<q-header ref="qRef" v-bind="$attrs"><slot></slot></q-header>`,
+  template: `<q-header ref="qRef"><slot></slot></q-header>`,
   mounted() {
     if (this.add_scroll_padding) {
       new ResizeObserver(() => {
