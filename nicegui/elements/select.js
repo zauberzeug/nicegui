@@ -3,7 +3,6 @@ export default {
   template: `
     <q-select
       ref="qRef"
-      v-bind="$attrs"
       :options="filteredOptions"
       @filter="filterFn"
       @popup-show="addClass"
