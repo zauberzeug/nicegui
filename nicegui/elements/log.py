@@ -4,7 +4,7 @@ from ..element import Element
 from .label import Label
 
 
-class Log(Element, default_classes='nicegui-log'):
+class Log(Element, component='log.js'):
 
     def __init__(self, max_lines: Optional[int] = None) -> None:
         """Log View
