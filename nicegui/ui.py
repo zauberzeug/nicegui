@@ -5,6 +5,7 @@ __all__ = [
     'add_sass',
     'add_scss',
     'aggrid',
+    'anywidget',
     'audio',
     'avatar',
     'badge',
@@ -138,6 +139,7 @@ __all__ = [
 from .context import context
 from .element import Element as element
 from .elements.aggrid import AgGrid as aggrid
+from .elements.anywidget import AnyWidget as anywidget
 from .elements.audio import Audio as audio
 from .elements.avatar import Avatar as avatar
 from .elements.badge import Badge as badge
