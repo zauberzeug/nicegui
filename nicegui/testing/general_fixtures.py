@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import Optional
 
 import pytest
-from starlette.routing import Route
+from starlette.routing import Mount, Route
 
 from nicegui import Client, app, binding, core, event, run, ui
 
@@ -33,8 +33,11 @@ def get_path_to_main_file(config: pytest.Config) -> Optional[Path]:
 def nicegui_reset_globals() -> Generator[None, None, None]:
     """Reset the global state of the NiceGUI package."""
     for route in list(app.routes):
-        if isinstance(route, Route) and (not route.path.startswith('/_nicegui/') or route.path.startswith('/_nicegui/auto/static')):
-            app.remove_route(route.path)
+        path = getattr(route, 'path', None)
+        if path is None:
+            continue
+        if isinstance(route, (Route, Mount)) and (not path.startswith('/_nicegui') or path.startswith('/_nicegui/auto/static')):
+            app.remove_route(path)
 
     app.openapi_schema = None
     app.middleware_stack = None
