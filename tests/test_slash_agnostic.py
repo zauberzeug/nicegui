@@ -2,7 +2,9 @@ import httpx
 from fastapi import FastAPI
 
 from nicegui import APIRouter, app, core, ui
+from nicegui.middlewares import SlashAgnosticMiddleware
 from nicegui.testing import Screen
+from nicegui.testing.general_fixtures import prepare_simulation
 
 
 def test_basic_rewriting_for_pages_and_get_requests(screen: Screen):
@@ -58,7 +60,9 @@ def test_api_router_usage(screen: Screen):
     assert r.json() == {'data': 42}
 
 
-async def test_root_path_is_respected(screen: Screen):
+async def test_root_path_is_respected(nicegui_reset_globals):
+    prepare_simulation()
+
     @ui.page('/')
     def index():
         ui.label('root')
@@ -71,7 +75,8 @@ async def test_root_path_is_respected(screen: Screen):
     def rp_api():
         return {'ok': 'api'}
 
-    screen.start_server()
+    # NOTE: ensure slash-agnostic behavior without starting uvicorn
+    core.app.add_middleware(SlashAgnosticMiddleware)
 
     # NOTE simulate reverse proxy mounting by setting root_path in ASGI scope (async transport)
     transport = httpx.ASGITransport(core.app, root_path='/prefix')
