@@ -89,7 +89,8 @@ class Event(Generic[P]):
                     await client.connected(timeout=10.0)
                     client.on_disconnect(lambda: self.unsubscribe(callback))
                 except TimeoutError:
-                    log.warning('Could not register a disconnect handler for callback %s', callback)
+                    log.debug('Could not register a disconnect handler for callback %s', callback)
+                    self.unsubscribe(callback)
             if core.loop and core.loop.is_running():
                 background_tasks.create(register_disconnect())
             else:

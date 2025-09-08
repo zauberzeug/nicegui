@@ -23,7 +23,8 @@ class Timer(BaseTimer, Element, component='timer.js'):
             await self.client.connected(timeout=TIMEOUT)
             return True
         except TimeoutError:
-            log.error(f'Timer cancelled because client is not connected after {TIMEOUT} seconds')
+            self.cancel()
+            log.debug(f'Timer cancelled because client is not connected after {TIMEOUT} seconds')
             return False
 
     def _should_stop(self) -> bool:
