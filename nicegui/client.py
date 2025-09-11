@@ -204,7 +204,7 @@ class Client:
             await asyncio.sleep(check_interval)
         self.is_waiting_for_disconnect = False
 
-    def run_javascript(self, code: str, *, timeout: float = 1.0) -> AwaitableResponse:
+    def run_javascript(self, code: str, *, timeout: float = 3.0) -> AwaitableResponse:
         """Execute JavaScript on the client.
 
         The client connection must be established before this method is called.
@@ -214,7 +214,7 @@ class Client:
         Otherwise, the JavaScript code is executed without waiting for a response.
 
         :param code: JavaScript code to run
-        :param timeout: timeout in seconds (default: `1.0`)
+        :param timeout: timeout in seconds (default: `3.0`)
 
         :return: AwaitableResponse that can be awaited to get the result of the JavaScript code
         """

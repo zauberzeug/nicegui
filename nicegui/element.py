@@ -403,7 +403,7 @@ class Element(Visibility):
             return
         self.client.outbox.enqueue_update(self)
 
-    def run_method(self, name: str, *args: Any, timeout: float = 1) -> AwaitableResponse:
+    def run_method(self, name: str, *args: Any, timeout: float = 3.0) -> AwaitableResponse:
         """Run a method on the client side.
 
         If the function is awaited, the result of the method call is returned.
@@ -411,19 +411,19 @@ class Element(Visibility):
 
         :param name: name of the method
         :param args: arguments to pass to the method
-        :param timeout: maximum time to wait for a response (default: 1 second)
+        :param timeout: maximum time to wait for a response (default: 3 seconds)
         """
         if not core.loop:
             return NullResponse()
         return self.client.run_javascript(f'return runMethod({self.id}, "{name}", {json.dumps(args)})', timeout=timeout)
 
-    def get_computed_prop(self, prop_name: str, *, timeout: float = 1) -> AwaitableResponse:
+    def get_computed_prop(self, prop_name: str, *, timeout: float = 3.0) -> AwaitableResponse:
         """Return a computed property.
 
         This function should be awaited so that the computed property is properly returned.
 
         :param prop_name: name of the computed prop
-        :param timeout: maximum time to wait for a response (default: 1 second)
+        :param timeout: maximum time to wait for a response (default: 3 seconds)
         """
         if not core.loop:
             return NullResponse()

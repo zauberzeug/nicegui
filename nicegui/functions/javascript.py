@@ -2,7 +2,7 @@ from ..awaitable_response import AwaitableResponse
 from ..context import context
 
 
-def run_javascript(code: str, *, timeout: float = 1.0) -> AwaitableResponse:
+def run_javascript(code: str, *, timeout: float = 3.0) -> AwaitableResponse:
     """Run JavaScript
 
     This function runs arbitrary JavaScript code on a page that is executed in the browser.
@@ -14,7 +14,7 @@ def run_javascript(code: str, *, timeout: float = 1.0) -> AwaitableResponse:
     Otherwise, the JavaScript code is executed without waiting for a response.
 
     :param code: JavaScript code to run
-    :param timeout: timeout in seconds (default: `1.0`)
+    :param timeout: timeout in seconds (default: `3.0`)
 
     :return: AwaitableResponse that can be awaited to get the result of the JavaScript code
     """
