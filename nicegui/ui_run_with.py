@@ -8,7 +8,7 @@ from fastapi.middleware.gzip import GZipMiddleware
 from . import core, storage
 from .air import Air
 from .language import Language
-from .middlewares import RedirectWithPrefixMiddleware, SetCacheControlMiddleware
+from .middlewares import RedirectWithPrefixMiddleware, SetCacheControlMiddleware, SlashAgnosticMiddleware
 from .nicegui import _shutdown, _startup
 
 
@@ -28,6 +28,7 @@ def run_with(
     on_air: Optional[Union[str, Literal[True]]] = None,
     tailwind: bool = True,
     prod_js: bool = True,
+    slash_agnostic: bool = True,
     storage_secret: Optional[str] = None,
     show_welcome_message: bool = True,
 ) -> None:
@@ -48,6 +49,7 @@ def run_with(
     :param on_air: tech preview: `allows temporary remote access <https://nicegui.io/documentation/section_configuration_deployment#nicegui_on_air>`_ if set to `True` (default: disabled)
     :param tailwind: whether to use Tailwind CSS (experimental, default: `True`)
     :param prod_js: whether to use the production version of Vue and Quasar dependencies (default: `True`)
+    :param slash_agnostic: rewrite path to add/remove trailing slash when a top-level route matches (to avoid redirects)
     :param storage_secret: secret key for browser-based storage (default: `None`, a value is required to enable ui.storage.individual and ui.storage.browser)
     :param show_welcome_message: whether to show the welcome message (default: `True`)
     """
@@ -69,6 +71,8 @@ def run_with(
     core.root = root
     storage.set_storage_secret(storage_secret)
     core.app.add_middleware(GZipMiddleware)
+    if slash_agnostic:
+        core.app.add_middleware(SlashAgnosticMiddleware)
     core.app.add_middleware(RedirectWithPrefixMiddleware)
     core.app.add_middleware(SetCacheControlMiddleware)
 
