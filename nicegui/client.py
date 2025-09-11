@@ -347,7 +347,8 @@ class Client:
         """
         self.remove_all_elements()
         self.outbox.stop()
-        del Client.instances[self.id]
+        if self.id in Client.instances:
+            del Client.instances[self.id]
         self._deleted = True
 
     def check_existence(self) -> None:
