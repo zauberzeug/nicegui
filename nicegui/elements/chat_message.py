@@ -1,5 +1,5 @@
 import html
-from typing import List, Optional, Union
+from typing import Optional, Union
 
 from .html import Html
 from .mixins.label_element import LabelElement
@@ -8,7 +8,7 @@ from .mixins.label_element import LabelElement
 class ChatMessage(LabelElement):
 
     def __init__(self,
-                 text: Union[str, List[str]] = ..., *,  # type: ignore
+                 text: Union[str, list[str]] = ..., *,  # type: ignore
                  name: Optional[str] = None,
                  label: Optional[str] = None,
                  stamp: Optional[str] = None,

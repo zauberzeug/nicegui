@@ -1,6 +1,6 @@
-from collections.abc import Generator, Iterable
+from collections.abc import Generator, Iterable, Iterator
 from copy import deepcopy
-from typing import Any, Callable, Dict, Iterator, List, Literal, Optional, Union
+from typing import Any, Callable, Literal, Optional, Union
 
 from ..events import GenericEventArguments, Handler, ValueChangeEventArguments
 from .choice_element import ChoiceElement
@@ -12,7 +12,7 @@ from .mixins.validation_element import ValidationDict, ValidationElement, Valida
 class Select(LabelElement, ValidationElement, ChoiceElement, DisableableElement, component='select.js'):
 
     def __init__(self,
-                 options: Union[List, Dict], *,
+                 options: Union[list, dict], *,
                  label: Optional[str] = None,
                  value: Any = None,
                  on_change: Optional[Handler[ValueChangeEventArguments]] = None,

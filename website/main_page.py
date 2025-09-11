@@ -121,7 +121,7 @@ def create() -> None:
                 'customizable [color themes](/documentation/section_styling_appearance#color_theming)',
                 'custom CSS and classes',
                 'modern look with material design',
-                '[Tailwind CSS](https://v3.tailwindcss.com/) auto-completion',
+                '[Tailwind CSS](https://tailwindcss.com/) auto-completion',
             ])
             features('source', 'Coding', [
                 'routing for multiple [pages](/documentation/page)',
@@ -133,7 +133,7 @@ def create() -> None:
                 'generic [Vue](https://vuejs.org/) to Python bridge',
                 'dynamic GUI through [Quasar](https://quasar.dev/)',
                 'content is served with [FastAPI](https://fastapi.tiangolo.com/)',
-                'Python 3.8+',
+                'Python 3.9+',
             ])
 
     with ui.column().classes('w-full p-8 lg:p-16 max-w-[1600px] mx-auto'):
@@ -159,7 +159,7 @@ def create() -> None:
             for example in examples:
                 example_link(example)
 
-    with ui.column().classes('dark-box p-8 lg:p-16 my-16 bg-transparent border-y-2'):
+    with ui.column().classes('dark-box p-8 lg:p-16 my-16 bg-transparent border-y-2 border-gray-200'):
         with ui.column().classes('mx-auto items-center gap-y-8 gap-x-32 lg:flex-row'):
             with ui.column().classes('max-lg:items-center max-lg:text-center'):
                 link_target('sponsors')

@@ -1,4 +1,4 @@
-from typing import Any, List, Literal, Optional, Union
+from typing import Any, Literal, Optional, Union
 
 from ..events import GenericEventArguments, Handler, ValueChangeEventArguments
 from .mixins.disableable_element import DisableableElement
@@ -11,7 +11,7 @@ class InputChips(LabelElement, ValidationElement, DisableableElement):
     def __init__(self,
                  label: Optional[str] = None,
                  *,
-                 value: Optional[List[str]] = None,
+                 value: Optional[list[str]] = None,
                  on_change: Optional[Handler[ValueChangeEventArguments]] = None,
                  new_value_mode: Literal['add', 'add-unique', 'toggle'] = 'toggle',
                  clearable: bool = False,

@@ -69,7 +69,7 @@ def multicasting():
     import time
 
     @ui.page('/log')
-    def page():
+    def log_page():
         ui.log()
 
     def log_time():
@@ -78,8 +78,11 @@ def multicasting():
                 for log in ElementFilter(kind=ui.log):
                     log.push(f'{time.strftime("%H:%M:%S")}')
 
-    ui.button('Log current time', on_click=log_time)
-    ui.link('Open log', '/log', new_tab=True)
+    # @ui.page('/')
+    def page():
+        ui.button('Log current time', on_click=log_time)
+        ui.link('Open log', '/log', new_tab=True)
+    page()  # HIDE
 
 
 doc.reference(ElementFilter)

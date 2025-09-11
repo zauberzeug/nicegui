@@ -18,7 +18,7 @@ def main_demo() -> None:
     Alternatively, you can use Quasar's "flat" and "bordered" props to achieve the same effect.
 ''')
 def card_without_shadow() -> None:
-    with ui.card().classes('no-shadow border-[1px]'):
+    with ui.card().classes('no-shadow border border-gray-200'):
         ui.label('See, no shadow!')
 
     with ui.card().props('flat bordered'):

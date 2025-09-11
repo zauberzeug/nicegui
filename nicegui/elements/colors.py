@@ -42,4 +42,3 @@ class Colors(Element, component='colors.js'):
         self._props['warning'] = warning
         self._props['customColors'] = custom_colors
         QUASAR_COLORS.update({name.replace('_', '-') for name in custom_colors})
-        self.update()

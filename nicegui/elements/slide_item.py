@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Literal, Optional
+from typing import Literal
 
 from typing_extensions import Self
 
@@ -15,7 +15,7 @@ SlideSide = Literal['left', 'right', 'top', 'bottom']
 
 class SlideItem(DisableableElement):
 
-    def __init__(self, text: str = '', *, on_slide: Optional[Handler[SlideEventArguments]] = None) -> None:
+    def __init__(self, text: str = '', *, on_slide: Handler[SlideEventArguments] | None = None) -> None:
         """Slide Item
 
         This element is based on Quasar's `QSlideItem <https://quasar.dev/vue-components/slide-item/>`_ component.
@@ -45,8 +45,8 @@ class SlideItem(DisableableElement):
     def action(self,
                side: SlideSide,
                text: str = '', *,
-               on_slide: Optional[Handler[SlideEventArguments]] = None,
-               color: Optional[str] = 'primary',
+               on_slide: Handler[SlideEventArguments] | None = None,
+               color: str | None = 'primary',
                ) -> Slot:
         """Add a slide action to a specified side.
 
@@ -70,8 +70,8 @@ class SlideItem(DisableableElement):
 
     def left(self,
              text: str = '', *,
-             on_slide: Optional[Handler[SlideEventArguments]] = None,
-             color: Optional[str] = 'primary',
+             on_slide: Handler[SlideEventArguments] | None = None,
+             color: str | None = 'primary',
              ) -> Slot:
         """Add a slide action to the left side.
 
@@ -83,8 +83,8 @@ class SlideItem(DisableableElement):
 
     def right(self,
               text: str = '', *,
-              on_slide: Optional[Handler[SlideEventArguments]] = None,
-              color: Optional[str] = 'primary',
+              on_slide: Handler[SlideEventArguments] | None = None,
+              color: str | None = 'primary',
               ) -> Slot:
         """Add a slide action to the right side.
 
@@ -96,8 +96,8 @@ class SlideItem(DisableableElement):
 
     def top(self,
             text: str = '', *,
-            on_slide: Optional[Handler[SlideEventArguments]] = None,
-            color: Optional[str] = 'primary',
+            on_slide: Handler[SlideEventArguments] | None = None,
+            color: str | None = 'primary',
             ) -> Slot:
         """Add a slide action to the top side.
 
@@ -109,8 +109,8 @@ class SlideItem(DisableableElement):
 
     def bottom(self,
                text: str = '', *,
-               on_slide: Optional[Handler[SlideEventArguments]] = None,
-               color: Optional[str] = 'primary',
+               on_slide: Handler[SlideEventArguments] | None = None,
+               color: str | None = 'primary',
                ) -> Slot:
         """Add a slide action to the bottom side.
 

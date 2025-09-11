@@ -75,7 +75,6 @@ class Number(LabelElement, ValidationElement, DisableableElement):
             return
         self._props['min'] = value
         self.sanitize()
-        self.update()
 
     @property
     def max(self) -> float:
@@ -88,7 +87,6 @@ class Number(LabelElement, ValidationElement, DisableableElement):
             return
         self._props['max'] = value
         self.sanitize()
-        self.update()
 
     @property
     def precision(self) -> Optional[int]:
@@ -114,7 +112,7 @@ class Number(LabelElement, ValidationElement, DisableableElement):
         value = min(value, self.max)
         if self.precision is not None:
             value = float(round(value, self.precision))
-        self.set_value(float(self.format % value) if self.format else value)
+        self.value = float(self.format % value) if self.format else value
         self.update()
 
     def _event_args_to_value(self, e: GenericEventArguments) -> Any:

@@ -4,7 +4,7 @@ import asyncio
 import inspect
 from functools import wraps
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Callable, Optional, Union
+from typing import TYPE_CHECKING, Any, Callable
 
 from fastapi import HTTPException, Request, Response
 
@@ -22,22 +22,21 @@ class page:
 
     def __init__(self,
                  path: str, *,
-                 title: Optional[str] = None,
-                 viewport: Optional[str] = None,
-                 favicon: Optional[Union[str, Path]] = None,
-                 dark: Optional[bool] = ...,  # type: ignore
+                 title: str | None = None,
+                 viewport: str | None = None,
+                 favicon: str | Path | None = None,
+                 dark: bool | None = ...,  # type: ignore
                  language: Language = ...,  # type: ignore
                  response_timeout: float = 3.0,
-                 reconnect_timeout: Optional[float] = None,
-                 api_router: Optional[APIRouter] = None,
+                 reconnect_timeout: float | None = None,
+                 api_router: APIRouter | None = None,
                  **kwargs: Any,
                  ) -> None:
         """Page
 
         This decorator marks a function to be a page builder.
         Each user accessing the given route will see a new instance of the page.
-        This means it is private to the user and not shared with others
-        (as it is done `when placing elements outside of a page decorator <https://nicegui.io/documentation/section_pages_routing#auto-index_page>`_).
+        This means it is private to the user and not shared with others.
 
         Notes:
 
@@ -85,7 +84,7 @@ class page:
         """Return the viewport of the page."""
         return self.viewport if self.viewport is not None else core.app.config.viewport
 
-    def resolve_dark(self) -> Optional[bool]:
+    def resolve_dark(self) -> bool | None:
         """Return whether the page should use dark mode."""
         return self.dark if self.dark is not ... else core.app.config.dark
 
@@ -99,6 +98,15 @@ class page:
 
     def __call__(self, func: Callable[..., Any]) -> Callable[..., Any]:
         core.app.remove_route(self.path)  # NOTE make sure only the latest route definition is used
+
+        if 'include_in_schema' not in self.kwargs:
+            self.kwargs['include_in_schema'] = core.app.config.endpoint_documentation in {'page', 'all'}
+
+        self.api_router.get(self._path, **self.kwargs)(self._wrap(func))
+        Client.page_routes[func] = self.path
+        return func
+
+    def _wrap(self, func: Callable[..., Any]) -> Callable[..., Any]:
         parameters_of_decorated_func = list(inspect.signature(func).parameters.keys())
 
         def check_for_late_return_value(task: asyncio.Task) -> None:
@@ -147,7 +155,7 @@ class page:
                 except Exception as e:
                     return create_error_page(e, request)
             if helpers.is_coroutine_function(func):
-                async def wait_for_result() -> Optional[Response]:
+                async def wait_for_result() -> Response | None:
                     with client:
                         try:
                             return await result
@@ -185,9 +193,4 @@ class page:
             parameters.insert(0, request)
         decorated.__signature__ = inspect.Signature(parameters)  # type: ignore
 
-        if 'include_in_schema' not in self.kwargs:
-            self.kwargs['include_in_schema'] = core.app.config.endpoint_documentation in {'page', 'all'}
-
-        self.api_router.get(self._path, **self.kwargs)(decorated)
-        Client.page_routes[func] = self.path
-        return func
+        return decorated
