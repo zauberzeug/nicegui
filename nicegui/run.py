@@ -3,6 +3,7 @@ import logging
 import sys
 import traceback
 from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
+from concurrent.futures.process import BrokenProcessPool
 from functools import partial
 from typing import Any, Callable, Optional, TypeVar
 
@@ -76,10 +77,20 @@ async def cpu_bound(callback: Callable[P, R], *args: P.args, **kwargs: P.kwargs)
     It is encouraged to create static methods (or free functions) which get all the data as simple parameters (eg. no class/ui logic)
     and return the result (instead of writing it in class properties or global variables).
     """
+    global process_pool  # pylint: disable=global-statement # noqa: PLW0603
+
     if process_pool is None:
         raise RuntimeError('Process pool not set up.')
 
-    return await _run(process_pool, safe_callback, callback, *args, **kwargs)
+    try:
+        return await _run(process_pool, safe_callback, callback, *args, **kwargs)
+    except BrokenProcessPool as e:
+        try:
+            await _run(process_pool, safe_callback, lambda: None)
+        except BrokenProcessPool:
+            process_pool = ProcessPoolExecutor()
+        finally:
+            raise e from None
 
 
 async def io_bound(callback: Callable[P, R], *args: P.args, **kwargs: P.kwargs) -> R:
