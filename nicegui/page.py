@@ -27,7 +27,7 @@ class page:
                  favicon: str | Path | None = None,
                  dark: bool | None = ...,  # type: ignore
                  language: Language = ...,  # type: ignore
-                 response_timeout: float = 3.0,
+                 response_timeout: float = 20.0,
                  reconnect_timeout: float | None = None,
                  api_router: APIRouter | None = None,
                  **kwargs: Any,
@@ -53,7 +53,7 @@ class page:
         :param favicon: optional relative filepath or absolute URL to a favicon (default: `None`, NiceGUI icon will be used)
         :param dark: whether to use Quasar's dark mode (defaults to `dark` argument of `run` command)
         :param language: language of the page (defaults to `language` argument of `run` command)
-        :param response_timeout: maximum time for the decorated function to build the page (default: 3.0 seconds)
+        :param response_timeout: maximum time for the decorated function to build the page (default: 20.0 seconds)
         :param reconnect_timeout: maximum time the server waits for the browser to reconnect (defaults to `reconnect_timeout` argument of `run` command))
         :param api_router: APIRouter instance to use, can be left `None` to use the default
         :param kwargs: additional keyword arguments passed to FastAPI's @app.get method
