@@ -214,11 +214,11 @@ class Client:
     def run_javascript(self, code: str, *, timeout: float = 3.0) -> AwaitableResponse:
         """Execute JavaScript on the client.
 
-        The client connection must be established before this method is called.
-        You can do this by `await client.connected()` or register a callback with `client.on_connect(...)`.
-
         If the function is awaited, the result of the JavaScript code is returned.
         Otherwise, the JavaScript code is executed without waiting for a response.
+
+        Obviously the javascript code is only executed after the client is connected.
+        Internally, `await ui.context.client.connected()` is called before the JavaScript code is executed.
 
         :param code: JavaScript code to run
         :param timeout: timeout in seconds (default: `3.0`)
@@ -233,7 +233,7 @@ class Client:
 
         async def send_and_wait():
             self.outbox.enqueue_message('run_javascript', {'code': code, 'request_id': request_id}, target_id)
-            await self.connected()
+            await self.connected(timeout=timeout)
             return await JavaScriptRequest(request_id, timeout=timeout)
 
         return AwaitableResponse(send_and_forget, send_and_wait)
