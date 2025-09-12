@@ -63,8 +63,9 @@ class Client:
         self.elements: dict[int, Element] = {}
         self.next_element_id: int = 0
         self._waiting_for_connection: asyncio.Event = asyncio.Event()
-        self.is_waiting_for_connection: bool = False
-        self.is_waiting_for_disconnect: bool = False
+        self._waiting_for_disconnect: asyncio.Event = asyncio.Event()
+        self._is_connected: asyncio.Event = asyncio.Event()
+        self._deleted_event: asyncio.Event = asyncio.Event()
         self.environ: dict[str, Any] | None = None
         self.on_air = False
         self._num_connections: defaultdict[str, int] = defaultdict(int)
@@ -116,6 +117,16 @@ class Client:
     def has_socket_connection(self) -> bool:
         """Whether the client is connected."""
         return self.tab_id is not None
+
+    @property
+    def is_waiting_for_connection(self) -> bool:
+        """Whether the client is currently waiting for a connection."""
+        return self._waiting_for_connection.is_set()
+
+    @property
+    def is_waiting_for_disconnect(self) -> bool:
+        """Whether the client is currently waiting for a disconnect."""
+        return self._waiting_for_disconnect.is_set()
 
     @property
     def head_html(self) -> str:
@@ -184,25 +195,21 @@ class Client:
         """Return the title of the page."""
         return self.page.resolve_title() if self.title is None else self.title
 
-    async def connected(self, timeout: float = 3.0, check_interval: float = 0.1) -> None:
+    async def connected(self, timeout: float = 3.0) -> None:
         """Block execution until the client is connected."""
-        self.is_waiting_for_connection = True
-        self._waiting_for_connection.set()
-        deadline = time.time() + timeout
-        while not self.has_socket_connection:
-            if time.time() > deadline:
-                raise TimeoutError(f'No connection after {timeout} seconds')
-            await asyncio.sleep(check_interval)
-        self.is_waiting_for_connection = False
+        if not self.has_socket_connection:
+            self._waiting_for_connection.set()
+            self._is_connected.clear()
+            await asyncio.wait_for(self._is_connected.wait(), timeout=timeout)
 
-    async def disconnected(self, check_interval: float = 0.1) -> None:
+    async def disconnected(self) -> None:
         """Block execution until the client disconnects."""
         if not self.has_socket_connection:
             await self.connected()
-        self.is_waiting_for_disconnect = True
-        while self.id in self.instances:
-            await asyncio.sleep(check_interval)
-        self.is_waiting_for_disconnect = False
+        if self.id in self.instances:
+            self._waiting_for_disconnect.set()
+            self._deleted_event.clear()
+            await self._deleted_event.wait()
 
     def run_javascript(self, code: str, *, timeout: float = 3.0) -> AwaitableResponse:
         """Execute JavaScript on the client.
@@ -249,6 +256,8 @@ class Client:
 
     def handle_handshake(self, socket_id: str, document_id: str, next_message_id: int | None) -> None:
         """Cancel pending disconnect task and invoke connect handlers."""
+        self._waiting_for_connection.clear()
+        self._is_connected.set()
         self._socket_to_document_id[socket_id] = document_id
         self._cancel_delete_task(document_id)
         self._num_connections[document_id] += 1
@@ -345,6 +354,8 @@ class Client:
         If the global clients dictionary does not contain the client, its elements are still removed and a KeyError is raised.
         Normally this should never happen, but has been observed (see #1826).
         """
+        self._waiting_for_disconnect.clear()
+        self._deleted_event.set()
         self.remove_all_elements()
         self.outbox.stop()
         del Client.instances[self.id]
