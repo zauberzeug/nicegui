@@ -10,6 +10,25 @@ export default {
     update_grid() {
       this.$el.textContent = "";
       this.gridOptions = { ...this.options };
+
+      const themeMap = {
+        alpine: AgGrid.themeAlpine,
+        balham: AgGrid.themeBalham,
+        material: AgGrid.themeMaterial,
+        quartz: AgGrid.themeQuartz,
+      };
+      const themePrefix = Object.keys(themeMap).find(
+        (prefix) => this.gridOptions.theme === prefix || this.gridOptions.theme === `${prefix}-dark`
+      );
+      const isDark = this.gridOptions.theme === `${themePrefix}-dark`;
+      if (themePrefix) {
+        if (isDark) {
+          this.gridOptions.theme = themeMap[themePrefix].withPart(AgGrid.colorSchemeDark);
+        } else {
+          this.gridOptions.theme = themeMap[themePrefix].withPart(AgGrid.colorSchemeLight);
+        }
+      }
+
       for (const column of this.html_columns) {
         if (this.gridOptions.columnDefs[column].cellRenderer === undefined) {
           this.gridOptions.columnDefs[column].cellRenderer = (params) => (params.value ? params.value : "");
@@ -44,7 +63,9 @@ export default {
 
       const originalOnGridReady = this.gridOptions.onGridReady;
       this.gridOptions.onGridReady = (params) => {
-        originalOnGridReady(params);
+        if (typeof originalOnGridReady === "function") {
+          originalOnGridReady(params);
+        }
         this.handle_event("gridReady", params);
       };
       this.api = AgGrid.createGrid(this.$el, this.gridOptions);
