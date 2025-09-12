@@ -42,7 +42,7 @@ class AgGrid(Element, component='aggrid.js', esm={'nicegui-aggrid': 'dist'}, def
         self._props['html_columns'] = html_columns[:]
         self._props['auto_size_columns'] = auto_size_columns
         if theme:
-            self._classes.append(f'ag-theme-{theme}')
+            self._props['options']['theme'] = theme
         self._update_method = 'update_grid'
 
     @classmethod
@@ -140,18 +140,11 @@ class AgGrid(Element, component='aggrid.js', esm={'nicegui-aggrid': 'dist'}, def
     @property
     def theme(self) -> Optional[str]:
         """The AG Grid theme."""
-        for class_name in self._classes:
-            if class_name.startswith('ag-theme-'):
-                return class_name[len('ag-theme-'):]
-        return None
+        return self._props['options'].get('theme')
 
     @theme.setter
     def theme(self, value: Optional[str]) -> None:
-        for class_name in self._classes:
-            if class_name.startswith('ag-theme-'):
-                self._classes.remove(class_name)
-        if value:
-            self._classes.append(f'ag-theme-{value}')
+        self._props['options']['theme'] = value
 
     @property
     def auto_size_columns(self) -> bool:
