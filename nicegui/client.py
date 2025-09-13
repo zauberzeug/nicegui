@@ -195,13 +195,14 @@ class Client:
             await asyncio.sleep(check_interval)
         self.is_waiting_for_connection = False
 
-    async def disconnected(self, check_interval: float = 0.1) -> None:
+    async def disconnected(self) -> None:
         """Block execution until the client disconnects."""
         if not self.has_socket_connection:
             await self.connected()
         self.is_waiting_for_disconnect = True
-        while self.id in self.instances:
-            await asyncio.sleep(check_interval)
+        disconnect_event = asyncio.Event()
+        self.on_disconnect(lambda _: disconnect_event.set())
+        await disconnect_event.wait()
         self.is_waiting_for_disconnect = False
 
     def run_javascript(self, code: str, *, timeout: float = 1.0) -> AwaitableResponse:
