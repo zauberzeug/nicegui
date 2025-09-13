@@ -7,12 +7,24 @@ from nicegui import app, ui
 from nicegui.testing import Screen
 
 
-def test_prerender_with_run_javascript(screen: Screen, event_log) -> None:
+class EventLog:
+    def __init__(self, screen: Screen) -> None:
+        self.items: list[str] = []
+        self._screen = screen
+
+    def append(self, entry: str) -> None:
+        self.items.append(entry)
+
+    def wait_for(self, entry: str) -> None:
+        self._screen.wait_for(lambda: entry in self.items)
+
+
+def test_prerender_with_run_javascript(screen: Screen, event_log: EventLog) -> None:
     app.on_connect(lambda c: event_log.append(f'connect:{c.page.path}'))
 
     @ui.page('/')
     def root() -> None:
-        add_speculation_prerender('/test')
+        add_speculation_rule('/test', kind='prerender')
 
     @ui.page('/test')
     async def test() -> None:
@@ -24,12 +36,12 @@ def test_prerender_with_run_javascript(screen: Screen, event_log) -> None:
     event_log.wait_for('js:42')
 
 
-def test_prerender_client_connected(screen: Screen, event_log) -> None:
+def test_prerender_client_connected(screen: Screen, event_log: EventLog) -> None:
     app.on_connect(lambda c: event_log.append(f'connect:{c.page.path}'))
 
     @ui.page('/')
     def root() -> None:
-        add_speculation_prerender('/connected')
+        add_speculation_rule('/connected', kind='prerender')
 
     @ui.page('/connected')
     async def connected() -> None:
@@ -41,12 +53,12 @@ def test_prerender_client_connected(screen: Screen, event_log) -> None:
     event_log.wait_for('connected')
 
 
-def test_prerender_timer(screen: Screen, event_log) -> None:
+def test_prerender_timer(screen: Screen, event_log: EventLog) -> None:
     app.on_connect(lambda c: event_log.append(f'connect:{c.page.path}'))
 
     @ui.page('/')
     def root() -> None:
-        add_speculation_prerender('/timer')
+        add_speculation_rule('/timer', kind='prerender')
 
     @ui.page('/timer')
     async def timer() -> None:
@@ -58,13 +70,13 @@ def test_prerender_timer(screen: Screen, event_log) -> None:
     event_log.wait_for('TIMER')
 
 
-def test_prerender_long_page_build(screen: Screen, event_log) -> None:
+def test_prerender_long_page_build(screen: Screen, event_log: EventLog) -> None:
 
     app.on_connect(lambda c: event_log.append(f'connect:{c.page.path}'))
 
     @ui.page('/')
     def root() -> None:
-        add_speculation_prerender('/longbuild')
+        add_speculation_rule('/longbuild', kind='prerender')
 
     @ui.page('/longbuild')
     async def longbuild() -> None:
@@ -76,9 +88,9 @@ def test_prerender_long_page_build(screen: Screen, event_log) -> None:
     event_log.wait_for('longbuild done')
 
 
-def add_speculation_prerender(url: str, *, eagerness: str = 'eager') -> None:
+def add_speculation_rule(url: str, *, kind: str = 'prerender', eagerness: str = 'eager') -> None:
     rules = {
-        'prerender': [
+        kind: [
             {
                 'source': 'list',
                 'urls': [url],
@@ -88,18 +100,6 @@ def add_speculation_prerender(url: str, *, eagerness: str = 'eager') -> None:
     }
     script = '<script type="speculationrules">' + json.dumps(rules) + '</script>'
     ui.add_head_html(script)
-
-
-class EventLog:
-    def __init__(self, screen: Screen) -> None:
-        self._items: list[str] = []
-        self._screen = screen
-
-    def append(self, entry: str) -> None:
-        self._items.append(entry)
-
-    def wait_for(self, entry: str) -> None:
-        self._screen.wait_for(lambda: entry in self._items)
 
 
 @pytest.fixture(name='event_log')
