@@ -16,9 +16,9 @@ if importlib.util.find_spec('anywidget'):
 
 
 class AnyWidget(ValueElement,
-             component='anywidget.js',
-             dependencies=['lib/anywidget/widget.js'],
-             default_classes='nicegui-anywidget'):
+                component='anywidget.js',
+                dependencies=['lib/anywidget/widget.js'],
+                default_classes='nicegui-anywidget'):
 
     VALUE_PROP: str = 'traits'
 
@@ -40,14 +40,14 @@ class AnyWidget(ValueElement,
         traits = self.get_traits(widget)
         super().__init__(value=traits, **kwargs)
         self._props['esm_content'], self._props['css_content'] = self.get_esm_css(widget)
+        self._props['_debug'] = False  # set to True for console logging
 
         # Observe all widget traits and fire update_trait() JS method when changed in python
         for trait in traits:
             def update_trait(change, trait=trait):
                 self.run_method('update_trait', {'trait': trait, 'new': change['new'], 'old': change['old']})
-                # print('Updated trait:', trait, change['new'])
             self._widget.observe(update_trait, trait)
-        self._update_method = 'update_trait'
+        self._update_method = 'update_traits'
 
     @classmethod
     def get_esm_css(cls, widget_instance: anywidget.AnyWidget) -> Tuple[str, str]:
