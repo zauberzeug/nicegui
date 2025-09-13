@@ -90,7 +90,7 @@ async def cpu_bound(callback: Callable[P, R], *args: P.args, **kwargs: P.kwargs)
         except BrokenProcessPool:
             process_pool = ProcessPoolExecutor()
         finally:
-            raise e from None
+            raise e
 
 
 async def io_bound(callback: Callable[P, R], *args: P.args, **kwargs: P.kwargs) -> R:
