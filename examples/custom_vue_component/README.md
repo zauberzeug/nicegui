@@ -1,6 +1,9 @@
 # Custom Vue Component
 
 This example demonstrates how to create and use custom Vue components in NiceGUI.
+
+![Screenshot](screenshot.webp)
+
 One component is implemented using JavaScript, the other using Vue's Single-File Component (SFC) syntax.
 
 ## Counter Component (counter.js)

@@ -1,6 +1,8 @@
-# Descope Auth Example
+# Descope Auth
 
 Descope is an all-inclusive user authentication and user management platform.
+
+![Screenshot](screenshot.webp)
 
 ## Getting Started
 

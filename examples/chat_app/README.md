@@ -1,6 +1,4 @@
 # Chat App
 A simple chat app
 
-
-![Screenshot](screenshot.png)
-
+![Screenshot](screenshot.webp)
