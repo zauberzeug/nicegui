@@ -6,8 +6,7 @@ from pathlib import Path
 import httpx
 import pytest
 
-from nicegui import app, background_tasks, context, core, ui
-from nicegui import storage as storage_module
+from nicegui import Client, app, background_tasks, context, core, nicegui, ui
 from nicegui.testing import Screen
 
 
@@ -192,9 +191,6 @@ def test_tab_storage_is_local(screen: Screen):
 
 
 def test_tab_storage_is_auto_removed(screen: Screen):
-    storage_module.PURGE_INTERVAL = 0.1
-    app.storage.max_tab_storage_age = 0.5
-
     @ui.page('/')
     async def page():
         await context.client.connected()
@@ -206,14 +202,13 @@ def test_tab_storage_is_auto_removed(screen: Screen):
     screen.open('/')
     screen.should_contain('2')
 
-    screen.wait(1)
+    background_tasks.create(nicegui.prune_tab_storage(force=True))
+    screen.wait(0.1)
     screen.open('/')
     screen.should_contain('1')
 
 
 def test_clear_tab_storage(screen: Screen):
-    storage_module.PURGE_INTERVAL = 60
-
     @ui.page('/')
     async def page():
         await context.client.connected()
@@ -337,3 +332,32 @@ def test_tab_storage_holds_non_serializable_objects(screen: Screen):
     screen.open('/')
     screen.click('Update storage')
     screen.wait(0.5)
+
+
+async def test_user_storage_is_pruned(screen: Screen):
+    @ui.page('/')
+    def page():
+        ui.label(f'clients: {len(Client.instances)}')
+        ui.label(f'persistent dicts: {len(app.storage._users)}')
+
+    @app.get('/status')
+    def status():
+        return 'ok'
+
+    screen.open('/')
+    screen.should_contain('clients: 2')
+    screen.should_contain('persistent dicts: 1')
+    assert len(Client.instances) == 2, 'one for the auto-index client and one for the open() call'
+    assert len(app.storage._users) == 1
+
+    response = httpx.get('http://localhost:3392/status')
+    assert response.status_code == 200
+    assert response.text == '"ok"'
+    assert len(Client.instances) == 2
+    assert len(app.storage._users) == 2
+
+    screen.close()
+    Client.prune_instances(client_age_threshold=0)
+    await nicegui.prune_user_storage(force=True)
+    assert len(Client.instances) == 1
+    assert len(app.storage._users) == 0

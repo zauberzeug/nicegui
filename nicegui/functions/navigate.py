@@ -1,9 +1,11 @@
 from typing import Any, Callable, Union
+from urllib.parse import urlparse
 
+from .. import background_tasks
 from ..client import Client
 from ..context import context
 from ..element import Element
-from ..logging import log
+from ..elements.sub_pages import SubPages
 from .javascript import run_javascript
 
 
@@ -77,6 +79,18 @@ class Navigate:
         if not can_soft_reload and soft_reload:
             log.warning('When navigating to an element, no reload is actually performed, so soft_reload is ignored.')
         context.client.open(path, new_tab, soft_reload=soft_reload and can_soft_reload)
+
+        if not new_tab and isinstance(target, str):
+            parsed = urlparse(path)
+            if not parsed.scheme and not parsed.netloc and \
+                    any(isinstance(el, SubPages) for el in context.client.elements.values()):
+                async def navigate_sub_pages(client: Client) -> None:
+                    with client:
+                        await client.sub_pages_router._handle_navigate(path)  # pylint: disable=protected-access
+                background_tasks.create(navigate_sub_pages(context.client), name='navigate_sub_pages')
+                return
+
+        context.client.open(path, new_tab)
 
 
 class History:

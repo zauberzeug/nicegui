@@ -6,7 +6,6 @@ from typing import Any, Awaitable, Callable, ClassVar, Dict, Generic, List, Opti
 from typing_extensions import Concatenate, ParamSpec, Self
 
 from .. import background_tasks, core
-from ..client import Client
 from ..dataclasses import KWONLY_SLOTS
 from ..element import Element
 from ..helpers import is_coroutine_function
@@ -124,11 +123,7 @@ class refreshable(Generic[_P, _T]):
 
         This method is called automatically before each refresh.
         """
-        self.targets = [
-            target
-            for target in self.targets
-            if target.container.client.id in Client.instances and target.container.id in target.container.client.elements
-        ]
+        self.targets = [target for target in self.targets if not target.container.is_deleted]
 
 
 class refreshable_method(Generic[_S, _P, _T], refreshable[_P, _T]):
@@ -151,12 +146,17 @@ def state(value: Any) -> Tuple[Any, Callable[[Any], None]]:
     """
     target = cast(RefreshableTarget, RefreshableTarget.current_target)
 
-    if target.next_index >= len(target.locals):
+    try:
+        index = target.next_index
+    except AttributeError as e:
+        raise RuntimeError('ui.state() can only be used inside a @ui.refreshable function') from e
+
+    if index >= len(target.locals):
         target.locals.append(value)
     else:
-        value = target.locals[target.next_index]
+        value = target.locals[index]
 
-    def set_value(new_value: Any, index=target.next_index) -> None:
+    def set_value(new_value: Any) -> None:
         if target.locals[index] == new_value:
             return
         target.locals[index] = new_value

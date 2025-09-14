@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import weakref
 from typing import TYPE_CHECKING, ClassVar, Dict, Iterator, List, Optional
 
 from typing_extensions import Self
@@ -17,9 +18,17 @@ class Slot:
 
     def __init__(self, parent: Element, name: str, template: Optional[str] = None) -> None:
         self.name = name
-        self.parent = parent
+        self._parent = weakref.ref(parent)
         self.template = template
         self.children: List[Element] = []
+
+    @property
+    def parent(self) -> Element:
+        """The parent element this slot belongs to."""
+        parent = self._parent()
+        if parent is None:
+            raise RuntimeError('The parent element this slot belongs to has been deleted.')
+        return parent
 
     def __enter__(self) -> Self:
         self.get_stack().append(self)
@@ -49,20 +58,14 @@ class Slot:
 
     @classmethod
     async def prune_stacks(cls) -> None:
-        """Remove stale slot stacks in an endless loop."""
-        while True:
-            try:
-                running = [id(task) for task in asyncio.tasks.all_tasks() if not task.done() and not task.cancelled()]
-                stale_ids = [task_id for task_id in cls.stacks if task_id not in running]
-                for task_id in stale_ids:
-                    del cls.stacks[task_id]
-            except Exception:
-                # NOTE: make sure the loop doesn't crash
-                log.exception('Error while pruning slot stacks')
-            try:
-                await asyncio.sleep(10)
-            except asyncio.CancelledError:
-                break
+        """Remove stale slot stacks."""
+        try:
+            running = [id(task) for task in asyncio.tasks.all_tasks() if not task.done() and not task.cancelled()]
+            stale_ids = [task_id for task_id in cls.stacks if task_id not in running]
+            for task_id in stale_ids:
+                del cls.stacks[task_id]
+        except Exception:
+            log.exception('Error while pruning slot stacks')
 
 
 def get_task_id() -> int:

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import inspect
 import re
+import weakref
 from copy import copy
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Callable, ClassVar, Dict, Iterator, List, Optional, Sequence, Union, cast
@@ -56,9 +57,10 @@ class Element(Visibility):
         :param _client: client for this element (for internal use only)
         """
         super().__init__()
-        self.client = _client or context.client
-        self.id = self.client.next_element_id
-        self.client.next_element_id += 1
+        client = _client or context.client
+        self._client = weakref.ref(client)
+        self.id = client.next_element_id
+        client.next_element_id += 1
         self.tag = tag if tag else self.component.tag if self.component else 'div'
         if not TAG_PATTERN.match(self.tag):
             raise ValueError(f'Invalid HTML tag: {self.tag}')
@@ -73,18 +75,19 @@ class Element(Visibility):
         self._update_method: Optional[str] = None
         self._deleted: bool = False
 
-        self.client.elements[self.id] = self
-        self.parent_slot: Optional[Slot] = None
+        client.elements[self.id] = self
+        self._parent_slot: Optional[weakref.ref[Slot]] = None
         slot_stack = context.slot_stack
         if slot_stack:
-            self.parent_slot = slot_stack[-1]
-            self.parent_slot.children.append(self)
+            parent_slot = slot_stack[-1]
+            parent_slot.children.append(self)
+            self._parent_slot = weakref.ref(parent_slot)
 
         self.tailwind = Tailwind(self)
 
-        self.client.outbox.enqueue_update(self)
-        if self.parent_slot:
-            self.client.outbox.enqueue_update(self.parent_slot.parent)
+        client.outbox.enqueue_update(self)
+        if self._parent_slot:
+            client.outbox.enqueue_update(parent_slot.parent)
 
     def __init_subclass__(cls, *,
                           component: Union[str, Path, None] = None,
@@ -145,6 +148,28 @@ class Element(Visibility):
         cls.default_classes(default_classes)
         cls.default_style(default_style)
         cls.default_props(default_props)
+
+    @property
+    def client(self) -> Client:
+        """The client this element belongs to."""
+        client = self._client()
+        if client is None:
+            raise RuntimeError('The client this element belongs to has been deleted.')
+        return client
+
+    @property
+    def parent_slot(self) -> Optional[Slot]:
+        """The parent slot of the element."""
+        if self._parent_slot is None:
+            return None
+        parent_slot = self._parent_slot()
+        if parent_slot is None:
+            raise RuntimeError('The parent slot of the element has been deleted.')
+        return parent_slot
+
+    @parent_slot.setter
+    def parent_slot(self, value: Optional[Slot]) -> None:
+        self._parent_slot = weakref.ref(value) if value else None
 
     def add_resource(self, path: Union[str, Path]) -> None:
         """Add a resource to the element.
@@ -445,8 +470,9 @@ class Element(Visibility):
         """
         if include_self:
             yield self
-        if self.parent_slot:
-            yield from self.parent_slot.parent.ancestors(include_self=True)
+        parent_slot = self.parent_slot
+        if parent_slot:
+            yield from parent_slot.parent.ancestors(include_self=True)
 
     def descendants(self, *, include_self: bool = False) -> Iterator[Element]:
         """Iterate over the descendants of the element.
@@ -475,21 +501,24 @@ class Element(Visibility):
         :param target_index: index within the target slot (default: append to the end)
         :param target_slot: slot within the target container (default: default slot)
         """
-        assert self.parent_slot is not None
-        self.parent_slot.children.remove(self)
-        self.parent_slot.parent.update()
-        target_container = target_container or self.parent_slot.parent
+        parent_slot = self.parent_slot
+        assert parent_slot is not None
+        parent_slot.children.remove(self)
+        parent_slot.parent.update()
+        target_container = target_container or parent_slot.parent
 
         if target_slot is None:
-            self.parent_slot = target_container.default_slot
+            parent_slot = target_container.default_slot
+            self.parent_slot = parent_slot
         elif target_slot in target_container.slots:
-            self.parent_slot = target_container.slots[target_slot]
+            parent_slot = target_container.slots[target_slot]
+            self.parent_slot = parent_slot
         else:
             raise ValueError(f'Slot "{target_slot}" does not exist in the target container. '
                              f'Add it first using `add_slot("{target_slot}")`.')
 
-        target_index = target_index if target_index >= 0 else len(self.parent_slot.children)
-        self.parent_slot.children.insert(target_index, self)
+        target_index = target_index if target_index >= 0 else len(parent_slot.children)
+        parent_slot.children.insert(target_index, self)
 
         target_container.update()
 
@@ -502,14 +531,16 @@ class Element(Visibility):
             children = list(self)
             element = children[element]
         self.client.remove_elements(element.descendants(include_self=True))
-        assert element.parent_slot is not None
-        element.parent_slot.children.remove(element)
+        parent_slot = element.parent_slot
+        assert parent_slot is not None
+        parent_slot.children.remove(element)
         self.update()
 
     def delete(self) -> None:
         """Delete the element and all its children."""
-        assert self.parent_slot is not None
-        self.parent_slot.parent.remove(self)
+        parent_slot = self.parent_slot
+        assert parent_slot is not None
+        parent_slot.parent.remove(self)
 
     def _handle_delete(self) -> None:
         """Called when the element is deleted.

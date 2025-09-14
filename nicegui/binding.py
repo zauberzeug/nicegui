@@ -6,7 +6,6 @@ import dataclasses
 import time
 import weakref
 from collections import defaultdict
-from contextlib import contextmanager
 from contextvars import ContextVar
 from typing import (
     TYPE_CHECKING,
@@ -36,9 +35,9 @@ MAX_PROPAGATION_TIME = 0.01
 
 propagation_visited: ContextVar[Optional[Set[Tuple[int, str]]]] = ContextVar('propagation_visited', default=None)
 
-bindings: DefaultDict[Tuple[int, str], List] = defaultdict(list)
+bindings: DefaultDict[Tuple[int, str], List[Tuple[Any, Any, str, Optional[Callable[[Any], Any]]]]] = defaultdict(list)
 bindable_properties: weakref.WeakValueDictionary[Tuple[int, str], Any] = weakref.WeakValueDictionary()
-active_links: List[Tuple[Any, str, Any, str, Callable[[Any], Any]]] = []
+active_links: List[Tuple[Any, str, Any, str, Optional[Callable[[Any], Any]]]] = []
 
 TC = TypeVar('TC', bound=type)
 T = TypeVar('T')
@@ -73,57 +72,54 @@ async def refresh_loop() -> None:
             break
 
 
-@contextmanager
-def _propagation_context():
-    visited = propagation_visited.get()
-    is_root_call = visited is None
-    if is_root_call:
-        visited = set()
-        token = propagation_visited.set(visited)
-    try:
-        yield visited
-    finally:
-        if is_root_call:
-            propagation_visited.reset(token)
-
-
 def _refresh_step() -> None:
     t = time.time()
-    with _propagation_context():
-        for link in active_links:
-            (source_obj, source_name, target_obj, target_name, transform) = link
-            if _has_attribute(source_obj, source_name):
-                value = transform(_get_attribute(source_obj, source_name))
-                if not _has_attribute(target_obj, target_name) or _get_attribute(target_obj, target_name) != value:
-                    _set_attribute(target_obj, target_name, value)
-                    _propagate(target_obj, target_name)
-            del link, source_obj, target_obj  # pylint: disable=modified-iterating-list
+    for link in active_links:
+        (source_obj, source_name, target_obj, target_name, transform) = link
+        if _has_attribute(source_obj, source_name):
+            source_value = _get_attribute(source_obj, source_name)
+            value = transform(source_value) if transform else source_value
+            if not _has_attribute(target_obj, target_name) or _get_attribute(target_obj, target_name) != value:
+                _set_attribute(target_obj, target_name, value)
+                _propagate(target_obj, target_name)
+        del link, source_obj, target_obj  # pylint: disable=modified-iterating-list
     if time.time() - t > MAX_PROPAGATION_TIME:
         log.warning(f'binding propagation for {len(active_links)} active links took {time.time() - t:.3f} s')
 
 
 def _propagate(source_obj: Any, source_name: str) -> None:
-    with _propagation_context() as visited:
-        source_obj_id = id(source_obj)
-        if (source_obj_id, source_name) in visited:
-            return
-        visited.add((source_obj_id, source_name))
-
-        if not _has_attribute(source_obj, source_name):
-            return
-        source_value = _get_attribute(source_obj, source_name)
-
-        for _, target_obj, target_name, transform in bindings.get((source_obj_id, source_name), []):
-            if (id(target_obj), target_name) in visited:
-                continue
-
-            target_value = transform(source_value)
-            if not _has_attribute(target_obj, target_name) or _get_attribute(target_obj, target_name) != target_value:
-                _set_attribute(target_obj, target_name, target_value)
-                _propagate(target_obj, target_name)
+    token = propagation_visited.set(set())
+    try:
+        _propagate_recursively(source_obj, source_name)
+    finally:
+        propagation_visited.reset(token)
 
 
-def bind_to(self_obj: Any, self_name: str, other_obj: Any, other_name: str, forward: Callable[[Any], Any]) -> None:
+def _propagate_recursively(source_obj: Any, source_name: str) -> None:
+    visited = propagation_visited.get()
+    assert visited is not None, 'propagation_visited is not set'
+
+    source_obj_id = id(source_obj)
+    if (source_obj_id, source_name) in visited:
+        return
+    visited.add((source_obj_id, source_name))
+
+    if not _has_attribute(source_obj, source_name):
+        return
+    source_value = _get_attribute(source_obj, source_name)
+
+    for _, target_obj, target_name, transform in bindings.get((source_obj_id, source_name), []):
+        if (id(target_obj), target_name) in visited:
+            continue
+
+        target_value = transform(source_value) if transform else source_value
+        if not _has_attribute(target_obj, target_name) or _get_attribute(target_obj, target_name) != target_value:
+            _set_attribute(target_obj, target_name, target_value)
+            _propagate_recursively(target_obj, target_name)
+
+
+def bind_to(self_obj: Any, self_name: str, other_obj: Any, other_name: str,
+            forward: Optional[Callable[[Any], Any]] = None) -> None:
     """Bind the property of one object to the property of another object.
 
     The binding works one way only, from the first object to the second.
@@ -133,7 +129,7 @@ def bind_to(self_obj: Any, self_name: str, other_obj: Any, other_name: str, forw
     :param self_name: The name of the property to bind from.
     :param other_obj: The object to bind to.
     :param other_name: The name of the property to bind to.
-    :param forward: A function to apply to the value before applying it.
+    :param forward: A function to apply to the value before applying it (default: identity).
     """
     bindings[(id(self_obj), self_name)].append((self_obj, other_obj, other_name, forward))
     if (id(self_obj), self_name) not in bindable_properties:
@@ -141,7 +137,8 @@ def bind_to(self_obj: Any, self_name: str, other_obj: Any, other_name: str, forw
     _propagate(self_obj, self_name)
 
 
-def bind_from(self_obj: Any, self_name: str, other_obj: Any, other_name: str, backward: Callable[[Any], Any]) -> None:
+def bind_from(self_obj: Any, self_name: str, other_obj: Any, other_name: str,
+              backward: Optional[Callable[[Any], Any]] = None) -> None:
     """Bind the property of one object from the property of another object.
 
     The binding works one way only, from the second object to the first.
@@ -151,7 +148,7 @@ def bind_from(self_obj: Any, self_name: str, other_obj: Any, other_name: str, ba
     :param self_name: The name of the property to bind to.
     :param other_obj: The object to bind from.
     :param other_name: The name of the property to bind from.
-    :param backward: A function to apply to the value before applying it.
+    :param backward: A function to apply to the value before applying it (default: identity).
     """
     bindings[(id(other_obj), other_name)].append((other_obj, self_obj, self_name, backward))
     if (id(other_obj), other_name) not in bindable_properties:
@@ -160,7 +157,8 @@ def bind_from(self_obj: Any, self_name: str, other_obj: Any, other_name: str, ba
 
 
 def bind(self_obj: Any, self_name: str, other_obj: Any, other_name: str, *,
-         forward: Callable[[Any], Any] = lambda x: x, backward: Callable[[Any], Any] = lambda x: x) -> None:
+         forward: Optional[Callable[[Any], Any]] = None,
+         backward: Optional[Callable[[Any], Any]] = None) -> None:
     """Bind the property of one object to the property of another object.
 
     The binding works both ways, from the first object to the second and from the second to the first.
@@ -171,8 +169,8 @@ def bind(self_obj: Any, self_name: str, other_obj: Any, other_name: str, *,
     :param self_name: The name of the first property to bind.
     :param other_obj: The second object to bind.
     :param other_name: The name of the second property to bind.
-    :param forward: A function to apply to the value before applying it to the second object.
-    :param backward: A function to apply to the value before applying it to the first object.
+    :param forward: A function to apply to the value before applying it to the second object (default: identity).
+    :param backward: A function to apply to the value before applying it to the first object (default: identity).
     """
     bind_from(self_obj, self_name, other_obj, other_name, backward=backward)
     bind_to(self_obj, self_name, other_obj, other_name, forward=forward)

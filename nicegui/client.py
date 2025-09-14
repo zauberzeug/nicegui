@@ -23,6 +23,7 @@ from .javascript_request import JavaScriptRequest
 from .logging import log
 from .observables import ObservableDict
 from .outbox import Outbox
+from .sub_pages_router import SubPagesRouter
 from .translations import translations
 from .version import __version__
 
@@ -30,6 +31,14 @@ if TYPE_CHECKING:
     from .page import page
 
 templates = Jinja2Templates(Path(__file__).parent / 'templates')
+
+HTML_ESCAPE_TABLE = str.maketrans({
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '`': '&#96;',
+    '$': '&#36;',
+})
 
 
 class Client:
@@ -88,6 +97,9 @@ class Client:
 
         self._temporary_socket_id: Optional[str] = None
 
+        with self:
+            self.sub_pages_router = SubPagesRouter(request)
+
     @property
     def is_auto_index_client(self) -> bool:
         """Return True if this client is the auto-index client."""
@@ -127,7 +139,7 @@ class Client:
     def build_response(self, request: Request, status_code: int = 200, *, send_json: bool = False, past_client_id: Optional[str] = None) -> Response:
         """Build a FastAPI response for the client."""
         self.outbox.updates.clear()
-        prefix = request.headers.get('X-Forwarded-Prefix', request.scope.get('root_path', ''))
+        prefix = request.headers.get('X-Forwarded-Prefix', '') + request.scope.get('root_path', '')
         elements_dict = {
             id: element._to_dict() for id, element in self.elements.items()  # pylint: disable=protected-access
         }
@@ -286,6 +298,7 @@ class Client:
         document_id = self._socket_to_document_id.pop(socket_id)
         self._cancel_delete_task(document_id)
         self._num_connections[document_id] -= 1
+        self.tab_id = None
 
         async def delete_content() -> None:
             await asyncio.sleep(self.page.resolve_reconnect_timeout())
@@ -361,7 +374,8 @@ class Client:
         """
         self.remove_all_elements()
         self.outbox.stop()
-        del Client.instances[self.id]
+        if self.id in Client.instances:
+            del Client.instances[self.id]
         self._deleted = True
 
     def check_existence(self) -> None:
@@ -383,21 +397,17 @@ class Client:
         self._temporary_socket_id = None
 
     @classmethod
-    async def prune_instances(cls) -> None:
-        """Prune stale clients in an endless loop."""
-        while True:
-            try:
-                stale_clients = [
-                    client
-                    for client in cls.instances.values()
-                    if not client.shared and not client.has_socket_connection and client.created < time.time() - 60.0
-                ]
-                for client in stale_clients:
-                    client.delete()
-            except Exception:
-                # NOTE: make sure the loop doesn't crash
-                log.exception('Error while pruning clients')
-            try:
-                await asyncio.sleep(10)
-            except asyncio.CancelledError:
-                break
+    def prune_instances(cls, *, client_age_threshold: float = 60.0) -> None:
+        """Prune stale clients."""
+        try:
+            stale_clients = [
+                client
+                for client in cls.instances.values()
+                if not client.shared and not client.has_socket_connection
+                and client.created <= time.time() - client_age_threshold
+            ]
+            for client in stale_clients:
+                client.delete()
+
+        except Exception:
+            log.exception('Error while pruning clients')

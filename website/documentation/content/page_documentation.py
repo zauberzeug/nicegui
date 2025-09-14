@@ -107,4 +107,4 @@ def api_router_demo():
     #
     # app.include_router(router)
     # END OF DEMO
-    ui.label('Shows up on /sub-path')
+    ui.label('This is content on /sub-path')

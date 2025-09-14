@@ -173,3 +173,36 @@ def test_app_timer(screen: Screen):
     screen.open('/')
     screen.wait(0.5)
     assert counter.value > value, 'timer is also incrementing when opening another page'
+
+
+def test_cancel_current_invocation(screen: Screen):
+    counter = Counter()
+
+    async def update():
+        await asyncio.sleep(1.0)
+        counter.increment()
+
+    t = ui.timer(0, update, once=True)
+
+    screen.start_server()
+    screen.wait(0.2)
+    t.cancel(with_current_invocation=True)
+    screen.wait(1.2)
+    assert counter.value == 0
+
+
+def test_cancel_before_invocation_starts(screen: Screen):
+    counter = Counter()
+
+    async def update():
+        await asyncio.sleep(0.2)
+        counter.increment()
+
+    # use a small delay before first invocation to ensure we cancel before it starts
+    t = ui.timer(0.5, update, once=True)
+
+    screen.start_server()
+    screen.wait(0.1)
+    t.cancel(with_current_invocation=True)
+    screen.wait(0.6)
+    assert counter.value == 0
