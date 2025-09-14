@@ -41,7 +41,7 @@ HTML_ESCAPE_TABLE = str.maketrans({
 })
 
 
-class ClientConnectionTimeout(Exception):
+class ClientConnectionTimeout(TimeoutError):
     def __init__(self, client: Client) -> None:
         super().__init__(f'ClientConnectionTimeout: {client.id}')
         self.client = client
