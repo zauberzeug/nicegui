@@ -79,7 +79,6 @@ class Navigate:
             raise TypeError(f'Invalid target type: {type(target)}')
         if not can_soft_reload and soft_reload:
             log.warning('When navigating to an element, no reload is actually performed, so soft_reload is ignored.')
-        context.client.open(path, new_tab, soft_reload=soft_reload and can_soft_reload)
 
         if not new_tab and isinstance(target, str):
             parsed = urlparse(path)
@@ -91,7 +90,7 @@ class Navigate:
                 background_tasks.create(navigate_sub_pages(context.client), name='navigate_sub_pages')
                 return
 
-        context.client.open(path, new_tab)
+        context.client.open(path, new_tab, soft_reload=soft_reload and can_soft_reload)
 
 
 class History:
