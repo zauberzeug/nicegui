@@ -81,14 +81,15 @@ def test_prerender_long_page_build(screen: Screen, event_log: EventLog) -> None:
     def root() -> None:
         add_speculation_rule('/longbuild', kind='prerender')
 
-    @ui.page('/longbuild')
+    @ui.page('/longbuild', response_timeout=3)
     async def longbuild() -> None:
-        await asyncio.sleep(4)
+        await asyncio.sleep(2)
         event_log.append('longbuild done')
 
     screen.open('/')
     event_log.wait_for('connect:/longbuild')
-    event_log.wait_for('longbuild done')
+    assert event_log.items == ['connect:/', 'longbuild done', 'connect:/longbuild'], \
+        'connection only happens after the page builder is evaluated'
 
 
 def test_prefetch_connects_after_navigation(screen: Screen, event_log: EventLog) -> None:
