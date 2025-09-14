@@ -177,7 +177,8 @@ class page:
                 if not task_wait_for_connection.done() and not task.done():
                     task_wait_for_connection.cancel()
                     task.cancel()
-                    log.debug(f'Response not ready after {self.response_timeout} seconds')
+                    log.warning(f'Response for {client.page.path} not ready after {self.response_timeout} seconds')
+                    client.delete()
                 if task.done():
                     result = task.result()
                 else:
