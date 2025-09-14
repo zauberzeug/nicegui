@@ -146,14 +146,15 @@ def test_exception(screen: Screen):
 def test_exception_after_connected(screen: Screen):
     @ui.page('/')
     async def page():
+        ui.label('some content before connected')
         await ui.context.client.connected()
-        ui.label('this is shown')
+        ui.label('some content after connected')
         raise RuntimeError('some exception')
 
     screen.open('/')
-    screen.should_contain('this is shown')
+    screen.should_contain('some content before connected')
+    screen.should_not_contain('some content after connected')
     screen.assert_py_logger('ERROR', 'some exception')
-    screen.assert_py_logger('ERROR', re.compile('Exception in callback'))
 
 
 def test_page_with_args(screen: Screen):
