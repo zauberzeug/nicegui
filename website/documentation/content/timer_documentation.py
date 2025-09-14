@@ -23,6 +23,39 @@ def activate_deactivate_demo():
     ui.button('Cancel', on_click=timer.cancel)
 
 
+@doc.demo('Cancel current invocation', '''
+    If you also want to cancel the currently invoked task of the callback,
+    just call the `cancel` method with the `with_current_invocation` parameter set to `True`.
+
+    The following demo shows a timer that runs every 2.5 seconds and displays a progress bar that fills up over 2 seconds.
+    If you cancel the timer by clicking the "Cancel" button, the current cycle continues until completion.
+    The "Cancel with current invocation" button, however, will also cancel the currently running cycle.
+
+    *Added in version 2.23.0*
+''')
+def cancel_timer_demo():
+    import asyncio
+
+    progress = ui.linear_progress().props('instant-feedback')
+
+    async def cycle_once():
+        for i in range(10):
+            progress.value = (i + 1) / 10
+            await asyncio.sleep(0.2)
+
+    def start_progress():
+        timer = ui.timer(2.5, cycle_once, immediate=True)
+        with ui.column() as controls:
+            ui.button('Cancel') \
+                .on('click', lambda: timer.cancel(with_current_invocation=False)) \
+                .on('click', controls.delete)
+            ui.button('Cancel with current invocation') \
+                .on('click', lambda: timer.cancel(with_current_invocation=True)) \
+                .on('click', controls.delete)
+
+    ui.button('Start progress', on_click=start_progress).props('flat')
+
+
 @doc.demo('Call a function after a delay', '''
     You can call a function after a delay using a timer with the `once` parameter.
 ''')

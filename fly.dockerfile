@@ -7,6 +7,7 @@ RUN apt update && apt install -y curl procps
 RUN pip install \
     dnspython \
     docutils \
+    httpx \
     isort \
     itsdangerous \
     matplotlib \
@@ -14,7 +15,6 @@ RUN pip install \
     plotly \
     pyecharts \
     pytest \
-    requests \
     selenium
 
 RUN curl -sSL https://install.python-poetry.org | python3 - && \
@@ -28,7 +28,7 @@ COPY pyproject.toml poetry.lock*  ./
 
 RUN poetry install --no-root --extras "plotly matplotlib highcharts sass"
 
-RUN pip install latex2mathml
+RUN pip install latex2mathml slowapi
 
 ADD . .
 

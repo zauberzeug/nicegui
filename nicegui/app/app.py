@@ -45,6 +45,7 @@ class App(FastAPI):
         self._connect_handlers: List[Union[Callable[..., Any], Awaitable]] = []
         self._disconnect_handlers: List[Union[Callable[..., Any], Awaitable]] = []
         self._exception_handlers: List[Callable[..., Any]] = [log.exception]
+        self._page_exception_handler: Optional[Callable[..., Any]] = None
 
     @property
     def is_starting(self) -> bool:
@@ -132,6 +133,17 @@ class App(FastAPI):
             if helpers.is_coroutine_function(handler):
                 background_tasks.create(result, name=f'exception {handler.__name__}')
 
+    def on_page_exception(self, handler: Callable) -> None:
+        """Called when an exception occurs in a page and allows to create a custom error page.
+
+        The callback can accept an optional ``Exception`` as argument.
+        All UI elements created in the callback are displayed on the error page.
+        Asynchronous handlers are currently not supported.
+
+        *Added in version 2.20.0*
+        """
+        self._page_exception_handler = handler
+
     def shutdown(self) -> None:
         """Shut down NiceGUI.
 
@@ -173,7 +185,7 @@ class App(FastAPI):
         handler = CacheControlledStaticFiles(
             directory=local_directory, follow_symlink=follow_symlink, max_cache_age=max_cache_age)
 
-        @self.get(url_path + '/{path:path}')
+        @self.get(url_path.rstrip('/') + '/{path:path}')  # NOTE: prevent double slashes in route pattern
         async def static_file(request: Request, path: str = '') -> Response:
             return await handler.get_response(path, request.scope)
 
@@ -231,7 +243,7 @@ class App(FastAPI):
         :param url_path: string that starts with a slash "/" and identifies the path at which the files should be served
         :param local_directory: local folder with files to serve as media content
         """
-        @self.get(url_path + '/{filename:path}')
+        @self.get(url_path.rstrip('/') + '/{filename:path}')  # NOTE: prevent double slashes in route pattern
         def read_item(request: Request, filename: str, nicegui_chunk_size: int = 8192) -> Response:
             filepath = Path(local_directory) / filename
             if not filepath.is_file():
@@ -285,6 +297,7 @@ class App(FastAPI):
         self._connect_handlers.clear()
         self._disconnect_handlers.clear()
         self._exception_handlers[:] = [log.exception]
+        self.config = AppConfig()
 
     @staticmethod
     def clients(path: str) -> Iterator[Client]:

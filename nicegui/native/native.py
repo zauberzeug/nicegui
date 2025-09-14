@@ -123,12 +123,12 @@ try:
 
         async def create_file_dialog(  # type: ignore # pylint: disable=invalid-overridden-method
             self,
-            dialog_type: int = webview.OPEN_DIALOG,
+            dialog_type: int = webview.FileDialog.OPEN if hasattr(webview, 'FileDialog') else webview.OPEN_DIALOG,
             directory: str = '',
             allow_multiple: bool = False,
             save_filename: str = '',
             file_types: Tuple[str, ...] = (),
-        ) -> Tuple[str, ...]:
+        ) -> Optional[Tuple[str, ...]]:
             return await self._request(
                 dialog_type=dialog_type,
                 directory=directory,

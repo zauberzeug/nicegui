@@ -21,20 +21,15 @@ def pytest_configure(config: pytest.Config) -> None:
 @pytest.fixture
 def nicegui_reset_globals() -> Generator[None, None, None]:
     """Reset the global state of the NiceGUI package."""
-    for route in app.routes:
-        if isinstance(route, Route) and route.path.startswith('/_nicegui/auto/static/'):
+    for route in list(app.routes):
+        if isinstance(route, Route) and (not route.path.startswith('/_nicegui/') or route.path.startswith('/_nicegui/auto/static')):
             app.remove_route(route.path)
-    for path in {'/'}.union(Client.page_routes.values()):
-        app.remove_route(path)
+
     app.openapi_schema = None
     app.middleware_stack = None
     app.user_middleware.clear()
     app.urls.clear()
     core.air = None
-    # NOTE favicon routes must be removed separately because they are not "pages"
-    for route in app.routes:
-        if isinstance(route, Route) and route.path.endswith('/favicon.ico'):
-            app.routes.remove(route)
     importlib.reload(core)
     importlib.reload(run)
 
@@ -48,6 +43,7 @@ def nicegui_reset_globals() -> Generator[None, None, None]:
     Client.page_routes.clear()
     app.reset()
     Client.auto_index_client = Client(page('/'), request=None).__enter__()  # pylint: disable=unnecessary-dunder-call
+    Client.auto_index_client.layout.parent_slot = None  # NOTE: otherwise the layout is nested in the previous client
     # NOTE we need to re-add the auto index route because we removed all routes above
     app.get('/')(Client.auto_index_client.build_response)
     binding.reset()

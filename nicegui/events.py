@@ -3,7 +3,6 @@ from __future__ import annotations
 import asyncio
 from contextlib import nullcontext
 from dataclasses import dataclass
-from inspect import Parameter, signature
 from typing import (
     TYPE_CHECKING,
     Any,
@@ -20,7 +19,7 @@ from typing import (
     cast,
 )
 
-from . import background_tasks, core
+from . import background_tasks, core, helpers
 from .awaitable_response import AwaitableResponse
 from .dataclasses import KWONLY_SLOTS
 from .slot import Slot
@@ -250,7 +249,7 @@ class KeyboardKey:
     @property
     def space(self) -> bool:
         """Whether the key is the space key."""
-        return self.name == 'Space'
+        return self.name == ' '
 
     @property
     def page_up(self) -> bool:
@@ -421,11 +420,6 @@ def handle_event(handler: Optional[Handler[EventT]], arguments: EventT) -> None:
     if handler is None:
         return
     try:
-        expects_arguments = any(p.default is Parameter.empty and
-                                p.kind is not Parameter.VAR_POSITIONAL and
-                                p.kind is not Parameter.VAR_KEYWORD
-                                for p in signature(handler).parameters.values())
-
         parent_slot: Union[Slot, nullcontext]
         if isinstance(arguments, UiEventArguments):
             parent_slot = arguments.sender.parent_slot or arguments.sender.client.layout.default_slot
@@ -433,7 +427,7 @@ def handle_event(handler: Optional[Handler[EventT]], arguments: EventT) -> None:
             parent_slot = nullcontext()
 
         with parent_slot:
-            if expects_arguments:
+            if helpers.expects_arguments(handler):
                 result = cast(Callable[[EventT], Any], handler)(arguments)
             else:
                 result = cast(Callable[[], Any], handler)()

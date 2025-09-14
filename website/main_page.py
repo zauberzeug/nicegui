@@ -5,7 +5,6 @@ from nicegui import ui
 
 from . import documentation, example_card, svg
 from .examples import examples
-from .header import add_head_html, add_header
 from .style import example_link, features, heading, link_target, section_heading, subtitle, title
 
 SPONSORS = json.loads((Path(__file__).parent / 'sponsors.json').read_text(encoding='utf-8'))
@@ -13,10 +12,6 @@ SPONSORS = json.loads((Path(__file__).parent / 'sponsors.json').read_text(encodi
 
 def create() -> None:
     """Create the content of the main page."""
-    ui.context.client.content.classes('p-0 gap-0')
-    add_head_html()
-    add_header()
-
     with ui.row().classes('w-full h-screen items-center gap-8 pr-4 no-wrap into-section'):
         svg.face(half=True).classes('stroke-black dark:stroke-white w-[200px] md:w-[230px] lg:w-[300px]')
         with ui.column().classes('gap-4 md:gap-8 pt-32'):
@@ -31,7 +26,7 @@ def create() -> None:
             py-20 px-8 lg:px-16
             gap-8 sm:gap-16 md:gap-8 lg:gap-16
         '''):
-        link_target('about')
+        link_target('about', '70px')
         with ui.column().classes('text-white max-w-4xl'):
             heading('Interact with Python through buttons, dialogs, 3D&nbsp;scenes, plots and much more.')
             with ui.column().classes('gap-2 bold-links arrow-links text-lg'):
@@ -53,7 +48,7 @@ def create() -> None:
         example_card.create()
 
     with ui.column().classes('w-full text-lg p-8 lg:p-16 max-w-[1600px] mx-auto'):
-        link_target('installation', '-50px')
+        link_target('installation')
         section_heading('Installation', 'Get *started*')
         with ui.row().classes('w-full text-lg leading-tight grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-8'):
             with ui.column().classes('w-full max-w-md gap-2'):
@@ -101,7 +96,7 @@ def create() -> None:
                     ''')
 
     with ui.column().classes('w-full p-8 lg:p-16 bold-links arrow-links max-w-[1600px] mx-auto'):
-        link_target('features', '-50px')
+        link_target('features')
         section_heading('Features', 'Code *nicely*')
         with ui.row().classes('w-full text-lg leading-tight grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-8'):
             features('swap_horiz', 'Interaction', [
@@ -142,7 +137,7 @@ def create() -> None:
             ])
 
     with ui.column().classes('w-full p-8 lg:p-16 max-w-[1600px] mx-auto'):
-        link_target('demos', '-50px')
+        link_target('demos')
         section_heading('Demos', 'Try *this*')
         with ui.column().classes('w-full'):
             documentation.create_intro()
@@ -158,7 +153,7 @@ def create() -> None:
                 .classes('rounded-full mx-auto px-12 py-2 bg-white font-medium text-lg md:text-xl')
 
     with ui.column().classes('w-full p-8 lg:p-16 max-w-[1600px] mx-auto'):
-        link_target('examples', '-50px')
+        link_target('examples')
         section_heading('In-depth examples', 'Pick your *solution*')
         with ui.row().classes('w-full text-lg leading-tight grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4'):
             for example in examples:
@@ -196,7 +191,7 @@ def create() -> None:
                     ui.label('Become a sponsor').classes('text-[#3e6a94]')
 
     with ui.row().classes('dark-box min-h-screen mt-16'):
-        link_target('why')
+        link_target('why', '70px')
         with ui.column().classes('''
                 max-w-[1600px] m-auto
                 py-20 px-8 lg:px-16

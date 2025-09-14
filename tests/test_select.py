@@ -132,7 +132,7 @@ def test_add_new_values(screen:  Screen, option_dict: bool, multiple: bool, new_
             screen.should_contain("options = {'a': 'A', 'b': 'B', 'c': 'C', 'd': 'd', 'd': 'd'}" if option_dict else
                                   "options = ['a', 'b', 'c', 'd', 'd']")
         elif new_value_mode == 'add-unique':
-            screen.should_contain("value = ['a', 'd', 'd']" if multiple else 'value = d')
+            screen.should_contain("value = ['a', 'd']" if multiple else 'value = d')
             screen.should_contain("options = {'a': 'A', 'b': 'B', 'c': 'C', 'd': 'd'}" if option_dict else
                                   "options = ['a', 'b', 'c', 'd']")
         elif new_value_mode == 'toggle':
@@ -261,3 +261,22 @@ async def test_opening_and_closing_popup_with_user(multiple: bool, user: User):
         user.find('Banana').click()
         await user.should_see('value = Banana')
         await user.should_see('closed')
+
+
+def test_popup_scroll_behavior(screen: Screen):
+    ui.add_css('html { scroll-behavior: smooth }')
+    ui.link('Go to bottom', '#bottom')
+    ui.link_target('bottom').classes('mt-[2000px]')
+    ui.select(['apple', 'banana', 'cherry'], value='apple').props('behavior=dialog')
+
+    screen.open('/')
+    screen.click('Go to bottom')
+    screen.wait(1)
+    position = screen.selenium.execute_script('return window.scrollY')
+    assert position > 1000
+
+    screen.click('apple')
+    screen.wait(0.5)
+    screen.type(Keys.ESCAPE)
+    screen.wait(0.2)
+    assert screen.selenium.execute_script('return window.scrollY') == position

@@ -105,13 +105,13 @@ def cpu_bound_demo():
     The function returns a future that can be awaited.
 ''')
 def io_bound_demo():
-    import requests
+    import httpx
 
     from nicegui import run
 
     async def handle_click():
         URL = 'https://httpbin.org/delay/1'
-        response = await run.io_bound(requests.get, URL, timeout=3)
+        response = await run.io_bound(httpx.get, URL, timeout=3)
         ui.notify(f'Downloaded {len(response.content)} bytes')
 
     ui.button('Download', on_click=handle_click)
@@ -149,6 +149,46 @@ def lifecycle_demo():
     # END OF DEMO
     global dt
     dt = datetime.now()
+
+
+@doc.auto_execute
+@doc.demo('Custom error page', '''
+    You can use `@app.on_page_exception` to define a custom error page.
+
+    The handler must be a synchronous function that creates a page like a normal page function.
+    It can take the exception as an argument, but it is not required.
+    It overrides the default "sad face" error page, except when the error is re-raised.
+
+    The following example shows how to create a custom error page handler that only handles a specific exception.
+    The default error page handler is still used for all other exceptions.
+
+    Note: Showing the traceback may not be a good idea in production, as it may leak sensitive information.
+
+    *Added in version 2.20.0*
+''')
+def error_page_demo():
+    from nicegui import app
+    import traceback
+
+    @app.on_page_exception
+    def timeout_error_page(exception: Exception) -> None:
+        if not isinstance(exception, TimeoutError):
+            raise exception
+        with ui.column().classes('absolute-center items-center gap-8'):
+            ui.icon('sym_o_timer', size='xl')
+            ui.label(f'{exception}').classes('text-2xl')
+            ui.code(traceback.format_exc(chain=False))
+
+    @ui.page('/raise_timeout_error')
+    def raise_timeout_error():
+        raise TimeoutError('This took too long')
+
+    @ui.page('/raise_runtime_error')
+    def raise_runtime_error():
+        raise RuntimeError('Something is wrong')
+
+    ui.link('Raise timeout error (custom error page)', '/raise_timeout_error')
+    ui.link('Raise runtime error (default error page)', '/raise_runtime_error')
 
 
 @doc.demo(app.shutdown)

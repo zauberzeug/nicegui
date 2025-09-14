@@ -4,7 +4,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import List
 
-import requests
+import httpx
 from bs4 import BeautifulSoup
 
 
@@ -55,7 +55,7 @@ def get_soup(url: str) -> BeautifulSoup:
     if path.exists():
         html = path.read_text(encoding='utf-8')
     else:
-        req = requests.get(url, timeout=5)
+        req = httpx.get(url, timeout=5)
         html = req.text
         path.write_text(html, encoding='utf-8')
     return BeautifulSoup(html, 'html.parser')
@@ -105,6 +105,7 @@ def generate_tailwind_file(properties: List[Property]) -> None:
         f.write('# pylint: disable=too-many-lines\n')
         f.write('from __future__ import annotations\n')
         f.write('\n')
+        f.write('import weakref\n')
         f.write('from typing import TYPE_CHECKING, List, Optional, Union, overload\n')
         f.write('\n')
         f.write('if TYPE_CHECKING:\n')
@@ -129,7 +130,16 @@ def generate_tailwind_file(properties: List[Property]) -> None:
         f.write('\n')
         f.write('    def __init__(self, _element: Optional[Element] = None) -> None:\n')
         f.write(
-            '        self.element: Union[PseudoElement, Element] = PseudoElement() if _element is None else _element\n')
+            '        self._element: Union[PseudoElement, weakref.ref[Element]] = \\\n')
+        f.write('            PseudoElement() if _element is None else weakref.ref(_element)\n')
+        f.write('\n')
+        f.write('    @property\n')
+        f.write('    def element(self) -> Union[PseudoElement, Element]:\n')
+        f.write('        """The element or pseudo element this Tailwind object belongs to."""\n')
+        f.write('        element = self._element if isinstance(self._element, PseudoElement) else self._element()\n')
+        f.write('        if element is None:\n')
+        f.write("            raise RuntimeError('The element this Tailwind object belongs to has been deleted.')\n")
+        f.write('        return element\n')
         f.write('\n')
         f.write('    @overload\n')
         f.write('    def __call__(self, tailwind: Tailwind) -> Tailwind:\n')
