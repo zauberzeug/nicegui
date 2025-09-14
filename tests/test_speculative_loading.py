@@ -16,7 +16,10 @@ class EventLog:
         self.items.append(entry)
 
     def wait_for(self, entry: str) -> None:
-        self._screen.wait_for(lambda: entry in self.items)
+        try:
+            self._screen.wait_for(lambda: entry in self.items)
+        except AssertionError as e:
+            raise AssertionError(f'{entry} not found in {self.items}') from e
 
 
 def test_prerender_with_run_javascript(screen: Screen, event_log: EventLog) -> None:
@@ -88,13 +91,52 @@ def test_prerender_long_page_build(screen: Screen, event_log: EventLog) -> None:
     event_log.wait_for('longbuild done')
 
 
-def add_speculation_rule(url: str, *, kind: str = 'prerender', eagerness: str = 'eager') -> None:
+def test_prefetch_connects_after_navigation(screen: Screen, event_log: EventLog) -> None:
+    app.on_connect(lambda client: event_log.append(f'connect:{client.page.path}'))
+
+    @ui.page('/')
+    def root() -> None:
+        add_speculation_rule('/test', kind='prefetch')
+        ui.link('test', '/test')
+
+    @ui.page('/test', response_timeout=3)
+    async def test() -> None:
+        event_log.append('test()')
+        result = await ui.run_javascript('41 + 1', timeout=1)
+        event_log.append(f'js:{result}')
+        ui.label('all done')
+
+    screen.open('/')
+    event_log.wait_for('connect:/')
+    screen.wait(1)
+    assert event_log.items == ['test()', 'connect:/']
+    screen.click('test')
+    event_log.wait_for('js:42')
+    assert event_log.items == ['test()', 'connect:/', 'connect:/test', 'js:42'], \
+        'test() should not re-evaluated despite small run_javascript timeout because in prefetch the page response timeout is used'
+    screen.should_contain('all done')
+    event_log.items.clear()
+
+    screen.open('/')
+    event_log.wait_for('test()')
+    screen.wait(3)
+    assert event_log.items == ['test()', 'connect:/']
+    screen.click('test')
+    event_log.wait_for('connect:/test')
+    event_log.wait_for('js:42')
+    assert event_log.items == ['test()', 'connect:/', 'test()', 'connect:/test', 'js:42'], \
+        'test() should have been evaluated again after timeout expired'
+    screen.should_contain('all done')
+    event_log.items.clear()
+
+
+def add_speculation_rule(url: str, *, kind: str = 'prerender') -> None:
     rules = {
         kind: [
             {
                 'source': 'list',
                 'urls': [url],
-                'eagerness': eagerness,
+                'eagerness': 'eager',
             }
         ]
     }

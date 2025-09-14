@@ -41,6 +41,12 @@ HTML_ESCAPE_TABLE = str.maketrans({
 })
 
 
+class ClientConnectionTimeout(Exception):
+    def __init__(self, client: Client) -> None:
+        super().__init__(f'ClientConnectionTimeout: {client.id}')
+        self.client = client
+
+
 class Client:
     page_routes: ClassVar[dict[Callable[..., Any], str]] = {}
     '''Maps page builders to their routes.'''
@@ -112,6 +118,29 @@ class Client:
         *Updated in version 3.0.0: The IP address is always defined (never ``None``).*
         """
         return self.request.client.host if self.request.client is not None else ''
+
+    @property
+    def is_speculation_prerender(self) -> bool:
+        """Whether this request was initiated by a prerender (Speculation Rules)."""
+        return 'prerender' in self._sec_purpose
+
+    @property
+    def is_speculation_prefetch(self) -> bool:
+        """Whether this request was initiated by a prefetch (Speculation Rules).
+
+        We consider it prefetch when the header contains 'prefetch' and does not contain 'prerender'.
+        """
+        sp = self._sec_purpose
+        return 'prefetch' in sp and 'prerender' not in sp
+
+    @property
+    def _sec_purpose(self) -> str:
+        """Return the Sec-Purpose or Purpose header value in lower case."""
+        try:
+            header = self.request.headers.get('Sec-Purpose') or self.request.headers.get('Purpose') or ''
+            return header.lower()
+        except Exception:
+            return ''
 
     @property
     def has_socket_connection(self) -> bool:
@@ -200,7 +229,11 @@ class Client:
         if not self.has_socket_connection:
             self._waiting_for_connection.set()
             self._is_connected.clear()
-            await asyncio.wait_for(self._is_connected.wait(), timeout=timeout)
+            timeout = max(timeout, self.page.response_timeout) if self.is_speculation_prefetch else timeout
+            try:
+                await asyncio.wait_for(self._is_connected.wait(), timeout=timeout)
+            except asyncio.TimeoutError as e:
+                raise ClientConnectionTimeout(self) from e
 
     async def disconnected(self) -> None:
         """Block execution until the client disconnects."""
