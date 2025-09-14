@@ -119,6 +119,8 @@ class page:
             except ClientConnectionTimeout as e:
                 log.debug('client connection timed out')
                 e.client.delete()
+            except Exception as e:
+                core.app.handle_exception(e)
 
         def create_error_page(e: Exception, request: Request) -> Response:
             page_exception_handler = core.app._page_exception_handler  # pylint: disable=protected-access
