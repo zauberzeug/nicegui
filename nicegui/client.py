@@ -251,7 +251,7 @@ class Client:
         Otherwise, the JavaScript code is executed without waiting for a response.
 
         Obviously the javascript code is only executed after the client is connected.
-        Internally, `await ui.context.client.connected()` is called before the JavaScript code is executed.
+        Internally, `await ui.context.client.connected(timeout=timeout)` is called before the JavaScript code is executed.
 
         :param code: JavaScript code to run
         :param timeout: timeout in seconds (default: `3.0`)
@@ -413,6 +413,7 @@ class Client:
                 if not client.has_socket_connection and client.created <= time.time() - client_age_threshold
             ]
             for client in stale_clients:
+                log.debug(f'Pruning stale client {client.id}')
                 client.delete()
 
         except Exception:
