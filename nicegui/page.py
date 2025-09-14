@@ -113,6 +113,7 @@ class page:
         def check_for_late_return_value(task: asyncio.Task, client: Client) -> None:
             if task.cancelled():
                 log.debug(f'{task.result()} was cancelled')
+                client.delete()
                 return
             elif (exception := task.exception()) is not None:
                 if isinstance(exception, ClientConnectionTimeout):
