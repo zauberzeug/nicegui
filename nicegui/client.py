@@ -162,15 +162,12 @@ class Client:
             generate_resources(prefix, self.elements.values())
         context = {
             'version': __version__,
-            'elements': elements.replace('&', '&amp;')
-            .replace('<', '&lt;')
-            .replace('>', '&gt;')
-            .replace('`', '&#96;')
-            .replace('$', '&#36;'),
+            'elements': elements.translate(HTML_ESCAPE_TABLE),
             'head_html': self.head_html,
             'body_html': '<style>' + '\n'.join(vue_styles) + '</style>\n' + self.body_html + '\n' + '\n'.join(vue_html),
             'vue_scripts': '\n'.join(vue_scripts),
-            'quasar_config': json.dumps(core.app.config.quasar_config),
+            'vue_config': json.dumps(core.app.config.quasar_config),
+            'vue_config_script': core.app.config.vue_config_script,
             'title': self.resolve_title(),
             'viewport': self.page.resolve_viewport(),
             'favicon_url': get_favicon_url(self.page, prefix),
