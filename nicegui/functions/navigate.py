@@ -6,6 +6,7 @@ from ..client import Client
 from ..context import context
 from ..element import Element
 from ..elements.sub_pages import SubPages
+from ..logging import log
 from .javascript import run_javascript
 
 
