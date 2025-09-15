@@ -166,7 +166,9 @@ class page:
                             return await result
                         except Exception as e:
                             return create_error_page(e, request)
-                task = asyncio.create_task(wait_for_result())
+                task = background_tasks.create(wait_for_result(),
+                                               name=f'wait for result of page "{client.page.path}"',
+                                               handle_exceptions=False)
                 task_wait_for_connection = background_tasks.create(
                     client._waiting_for_connection.wait(),  # pylint: disable=protected-access
                 )
