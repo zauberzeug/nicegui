@@ -167,8 +167,16 @@ class page:
 
                 async def wait_for_result() -> Response:
                     with client:
-                        return await result
-                task = asyncio.create_task(wait_for_result())
+                        try:
+                            return await result
+                        except Exception as e:
+                            return create_error_page(e, request)
+                task = background_tasks.create(wait_for_result(),
+                                               name=f'wait for result of page "{client.page.path}"',
+                                               handle_exceptions=False)
+                task_wait_for_connection = background_tasks.create(
+                    client._waiting_for_connection.wait(),  # pylint: disable=protected-access
+                )
                 await asyncio.wait([
                     task,
                     task_wait_for_connection,
@@ -176,7 +184,8 @@ class page:
                 if not task_wait_for_connection.done() and not task.done():
                     task_wait_for_connection.cancel()
                     task.cancel()
-                    log.debug(f'Response not ready after {self.response_timeout} seconds')
+                    log.warning(f'Response for {client.page.path} not ready after {self.response_timeout} seconds')
+                    client.delete()
                 if task.done():
                     if exception := task.exception():
                         result = create_error_page(exception, request)
