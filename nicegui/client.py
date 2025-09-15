@@ -252,6 +252,7 @@ class Client:
 
         Obviously the javascript code is only executed after the client is connected.
         Internally, `await ui.context.client.connected(timeout=timeout)` is called before the JavaScript code is executed.
+        This might delay the execution of the JavaScript code and is not covered by the `timeout` parameter.
 
         :param code: JavaScript code to run
         :param timeout: timeout in seconds (default: `3.0`)
