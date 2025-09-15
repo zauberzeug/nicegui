@@ -167,10 +167,7 @@ class page:
 
                 async def wait_for_result() -> Response:
                     with client:
-                        try:
-                            return await result
-                        except Exception as e:
-                            return create_error_page(e, request)
+                        return await result
                 task = background_tasks.create(wait_for_result(),
                                                name=f'wait for result of page "{client.page.path}"',
                                                handle_exceptions=False)
