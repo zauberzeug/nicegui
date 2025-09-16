@@ -80,6 +80,7 @@ async def test_assertion_raised_when_element_not_found(user: User) -> None:
         await user.should_see('World')
 
 
+@pytest.mark.filterwarnings('ignore::pytest.PytestUnraisableExceptionWarning')
 @pytest.mark.parametrize('storage_builder', [lambda: app.storage.browser, lambda: app.storage.user])
 async def test_storage(user: User, storage_builder: Callable[[], Dict]) -> None:
     @ui.page('/')
