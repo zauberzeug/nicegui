@@ -1,5 +1,5 @@
 # Custom Vue Component
-This example demonstrates how to create and use custom Vue components in NiceGUI.
+Shows how to write and integrate a custom Vue component
 
 ![Screenshot](screenshot.webp)
 

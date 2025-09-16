@@ -1,6 +1,5 @@
 # Descope Auth
-
-Descope is an all-inclusive user authentication and user management platform.
+Login form and user profile using [Descope](https://descope.com)
 
 ![Screenshot](screenshot.webp)
 
@@ -9,4 +8,4 @@ Descope is an all-inclusive user authentication and user management platform.
 1. Create a [Descope](https://www.descope.com/) account.
 2. Setup a project and configure the "Login Flow" (first step in the Getting Started Wizard).
 3. Instead of following the "Integrate" instructions of the Wizard, use this example.
-4. Provide your Descope Project ID as environment variable: `DESCOPE_PROJECT_ID=<your_project_id> python3 main.py`
+4. Provide your Descope Project ID as environment variable: `DESCOPE_PROJECT_ID=P31sAvsSKptct5u66x0P2UKpiF9h python3 main.py`

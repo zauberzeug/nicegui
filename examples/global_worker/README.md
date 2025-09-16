@@ -1,4 +1,4 @@
 # Global Worker
-Example of a global worker
+Demonstrates a global worker for heavy computations with progress feedback
 
 ![Screenshot](screenshot.webp)

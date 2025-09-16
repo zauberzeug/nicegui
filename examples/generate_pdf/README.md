@@ -1,4 +1,4 @@
 # Generate PDF
-Example of generating a PDF document
+Create an SVG preview and PDF download from input form elements
 
 ![Screenshot](screenshot.webp)

@@ -1,4 +1,4 @@
 # Local File Picker
-Example of using the `local_file_picker` package to pick files from the local filesystem
+Demonstrates a dialog for selecting files locally on the server
 
 ![Screenshot](screenshot.webp)

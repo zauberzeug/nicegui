@@ -1,4 +1,4 @@
-# Google one-tap auth
-Example of using Google one-tap authentication
+# Google One-Tap Auth
+Authenticate users via Google One-Tap
 
 ![Screenshot](screenshot.webp)

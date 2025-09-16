@@ -1,4 +1,4 @@
 # Menu and Tabs
-Example of a menu with tabs
+Uses Quasar to create foldable menu and tabs inside a header bar
 
 ![Screenshot](screenshot.webp)

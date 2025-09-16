@@ -1,5 +1,5 @@
 # Docker Image
-Docker Example with NiceGUI
+Use the official [zauberzeug/nicegui](https://hub.docker.com/r/zauberzeug/nicegui) docker image
 
 ![Screenshot](screenshot.webp)
 

@@ -1,4 +1,4 @@
 # Infinite Scroll
-Example of infinite scrolling
+Presents an infinitely scrolling image gallery
 
 ![Screenshot](screenshot.webp)

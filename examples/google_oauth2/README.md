@@ -1,4 +1,4 @@
 # Google OAuth2
-Example of using Google OAuth2
+Authenticate with Google OAuth2
 
 ![Screenshot](screenshot.webp)

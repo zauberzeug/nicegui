@@ -1,4 +1,4 @@
 # Download Text as File
-Download text content as a file
+Providing in-memory data like strings as file download
 
 ![Screenshot](screenshot.webp)
