@@ -126,7 +126,7 @@ class page:
                 log.error(f'ignoring {task.result()}; '
                           'it was returned after the HTML had been delivered to the client')
 
-        def create_error_page(e: Exception, request: Request) -> Response:
+        def create_error_page(e: BaseException, request: Request) -> Response:
             page_exception_handler = core.app._page_exception_handler  # pylint: disable=protected-access
 
             with Client(page(''), request=request) as error_client:
