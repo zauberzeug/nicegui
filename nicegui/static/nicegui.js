@@ -269,6 +269,7 @@ function download(src, filename, mediaType, prefix) {
 }
 
 function ack() {
+  if (!window.socket || !window.did_handshake) return;
   if (window.ackedMessageId >= window.nextMessageId) return;
   window.socket.emit("ack", {
     client_id: window.clientId,
@@ -333,7 +334,10 @@ function createApp(elements, options) {
         path: `${options.prefix}/_nicegui_ws/socket.io`,
         query: options.query,
         extraHeaders: options.extraHeaders,
-        transports: options.transports,
+        transports:
+          "prerendering" in document && document.prerendering === true
+            ? ["polling", ...options.transports]
+            : options.transports,
       });
       window.did_handshake = false;
       const messageHandlers = {

@@ -12,7 +12,7 @@ from typing_extensions import ParamSpec
 
 from . import background_tasks, core, helpers
 from .awaitable_response import AwaitableResponse
-from .client import Client
+from .client import Client, ClientConnectionTimeout
 from .context import context
 from .dataclasses import KWONLY_SLOTS
 from .logging import log
@@ -88,8 +88,9 @@ class Event(Generic[P]):
                 try:
                     await client.connected(timeout=10.0)
                     client.on_disconnect(lambda: self.unsubscribe(callback))
-                except TimeoutError:
-                    log.warning('Could not register a disconnect handler for callback %s', callback)
+                except ClientConnectionTimeout:
+                    log.debug('Could not register a disconnect handler for callback %s', callback)
+                    self.unsubscribe(callback)
             if core.loop and core.loop.is_running():
                 background_tasks.create(register_disconnect())
             else:

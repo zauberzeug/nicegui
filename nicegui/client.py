@@ -41,6 +41,12 @@ HTML_ESCAPE_TABLE = str.maketrans({
 })
 
 
+class ClientConnectionTimeout(TimeoutError):
+    def __init__(self, client: Client) -> None:
+        super().__init__(f'ClientConnectionTimeout: {client.id}')
+        self.client = client
+
+
 class Client:
     page_routes: ClassVar[dict[Callable[..., Any], str]] = {}
     '''Maps page builders to their routes.'''
@@ -63,8 +69,9 @@ class Client:
         self.elements: dict[int, Element] = {}
         self.next_element_id: int = 0
         self._waiting_for_connection: asyncio.Event = asyncio.Event()
-        self.is_waiting_for_connection: bool = False
-        self.is_waiting_for_disconnect: bool = False
+        self._waiting_for_disconnect: asyncio.Event = asyncio.Event()
+        self._is_connected: asyncio.Event = asyncio.Event()
+        self._deleted_event: asyncio.Event = asyncio.Event()
         self.environ: dict[str, Any] | None = None
         self.on_air = False
         self._num_connections: defaultdict[str, int] = defaultdict(int)
@@ -113,9 +120,42 @@ class Client:
         return self.request.client.host if self.request.client is not None else ''
 
     @property
+    def is_speculation_prerender(self) -> bool:
+        """Whether this request was initiated by a prerender (Speculation Rules)."""
+        return 'prerender' in self._sec_purpose
+
+    @property
+    def is_speculation_prefetch(self) -> bool:
+        """Whether this request was initiated by a prefetch (Speculation Rules).
+
+        We consider it prefetch when the header contains 'prefetch' and does not contain 'prerender'.
+        """
+        sp = self._sec_purpose
+        return 'prefetch' in sp and 'prerender' not in sp
+
+    @property
+    def _sec_purpose(self) -> str:
+        """Return the Sec-Purpose or Purpose header value in lower case."""
+        try:
+            header = self.request.headers.get('Sec-Purpose') or self.request.headers.get('Purpose') or ''
+            return header.lower()
+        except Exception:
+            return ''
+
+    @property
     def has_socket_connection(self) -> bool:
         """Whether the client is connected."""
         return self.tab_id is not None
+
+    @property
+    def is_waiting_for_connection(self) -> bool:
+        """Whether the client is currently waiting for a connection."""
+        return self._waiting_for_connection.is_set()
+
+    @property
+    def is_waiting_for_disconnect(self) -> bool:
+        """Whether the client is currently waiting for a disconnect."""
+        return self._waiting_for_disconnect.is_set()
 
     @property
     def head_html(self) -> str:
@@ -184,37 +224,40 @@ class Client:
         """Return the title of the page."""
         return self.page.resolve_title() if self.title is None else self.title
 
-    async def connected(self, timeout: float = 3.0, check_interval: float = 0.1) -> None:
+    async def connected(self, timeout: float = 3.0) -> None:
         """Block execution until the client is connected."""
-        self.is_waiting_for_connection = True
-        self._waiting_for_connection.set()
-        deadline = time.time() + timeout
-        while not self.has_socket_connection:
-            if time.time() > deadline:
-                raise TimeoutError(f'No connection after {timeout} seconds')
-            await asyncio.sleep(check_interval)
-        self.is_waiting_for_connection = False
+        if not self.has_socket_connection:
+            self._waiting_for_connection.set()
+            self._is_connected.clear()
+            if self.is_speculation_prefetch:
+                await self._is_connected.wait()  # NOTE: wait for connection without timeout until client pruning takes care of cancellation
+            else:
+                try:
+                    await asyncio.wait_for(self._is_connected.wait(), timeout=timeout)
+                except asyncio.TimeoutError as e:
+                    raise ClientConnectionTimeout(self) from e
 
-    async def disconnected(self, check_interval: float = 0.1) -> None:
+    async def disconnected(self) -> None:
         """Block execution until the client disconnects."""
         if not self.has_socket_connection:
             await self.connected()
-        self.is_waiting_for_disconnect = True
-        while self.id in self.instances:
-            await asyncio.sleep(check_interval)
-        self.is_waiting_for_disconnect = False
+        if self.id in self.instances:
+            self._waiting_for_disconnect.set()
+            self._deleted_event.clear()
+            await self._deleted_event.wait()
 
-    def run_javascript(self, code: str, *, timeout: float = 1.0) -> AwaitableResponse:
+    def run_javascript(self, code: str, *, timeout: float = 3.0) -> AwaitableResponse:
         """Execute JavaScript on the client.
-
-        The client connection must be established before this method is called.
-        You can do this by `await client.connected()` or register a callback with `client.on_connect(...)`.
 
         If the function is awaited, the result of the JavaScript code is returned.
         Otherwise, the JavaScript code is executed without waiting for a response.
 
+        Obviously the javascript code is only executed after the client is connected.
+        Internally, `await ui.context.client.connected(timeout=timeout)` is called before the JavaScript code is executed.
+        This might delay the execution of the JavaScript code and is not covered by the `timeout` parameter.
+
         :param code: JavaScript code to run
-        :param timeout: timeout in seconds (default: `1.0`)
+        :param timeout: timeout in seconds (default: `3.0`)
 
         :return: AwaitableResponse that can be awaited to get the result of the JavaScript code
         """
@@ -226,6 +269,7 @@ class Client:
 
         async def send_and_wait():
             self.outbox.enqueue_message('run_javascript', {'code': code, 'request_id': request_id}, target_id)
+            await self.connected(timeout=timeout)
             return await JavaScriptRequest(request_id, timeout=timeout)
 
         return AwaitableResponse(send_and_forget, send_and_wait)
@@ -249,6 +293,8 @@ class Client:
 
     def handle_handshake(self, socket_id: str, document_id: str, next_message_id: int | None) -> None:
         """Cancel pending disconnect task and invoke connect handlers."""
+        self._waiting_for_connection.clear()
+        self._is_connected.set()
         self._socket_to_document_id[socket_id] = document_id
         self._cancel_delete_task(document_id)
         self._num_connections[document_id] += 1
@@ -345,6 +391,8 @@ class Client:
         If the global clients dictionary does not contain the client, its elements are still removed and a KeyError is raised.
         Normally this should never happen, but has been observed (see #1826).
         """
+        self._waiting_for_disconnect.clear()
+        self._deleted_event.set()
         self.remove_all_elements()
         self.outbox.stop()
         if self.id in Client.instances:
@@ -369,6 +417,7 @@ class Client:
                 if not client.has_socket_connection and client.created <= time.time() - client_age_threshold
             ]
             for client in stale_clients:
+                log.debug(f'Pruning stale client {client.id}')
                 client.delete()
 
         except Exception:
