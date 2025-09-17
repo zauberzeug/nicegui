@@ -1,2 +1,25 @@
 pytest-asyncio
 pytest-selenium
+
+# Test runtime dependencies used across the suite
+# Keep versions compatible with Python 3.8 and newer
+
+# Core scientific/plotting libs used in tests
+numpy==1.24.* ; python_version == '3.8'
+numpy>=1.26 ; python_version >= '3.9'
+pandas>=2.0
+polars==1.8.* ; python_version == '3.8'
+polars>=1.12 ; python_version >= '3.9'
+plotly>=5.13,<7.0
+pyecharts>=2.0
+nicegui-highcharts>=2.0.2
+
+# SCSS support used by style tests
+libsass>=0.23.0
+
+# Selenium stack for browser tests
+selenium>=4.11.2
+webdriver-manager>=3.8.6,<5.0.0
+
+# Matplotlib for pyplot tests
+matplotlib>=3.5
