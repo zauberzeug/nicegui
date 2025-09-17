@@ -3,7 +3,7 @@ import json
 
 import pytest
 
-from nicegui import app, ui
+from nicegui import Client, app, ui
 from nicegui.testing import Screen
 
 
@@ -100,7 +100,7 @@ def test_prefetch_connects_after_navigation(screen: Screen, event_log: EventLog)
         add_speculation_rule('/test', kind='prefetch')
         ui.link('test', '/test')
 
-    @ui.page('/test', response_timeout=3)
+    @ui.page('/test')
     async def test() -> None:
         event_log.append('test()')
         result = await ui.run_javascript('41 + 1', timeout=1)
@@ -120,13 +120,13 @@ def test_prefetch_connects_after_navigation(screen: Screen, event_log: EventLog)
 
     screen.open('/')
     event_log.wait_for('test()')
-    screen.wait(3)
+    Client.prune_instances(client_age_threshold=0)
     assert event_log.items == ['test()', 'connect:/']
     screen.click('test')
     event_log.wait_for('connect:/test')
     event_log.wait_for('js:42')
     assert event_log.items == ['test()', 'connect:/', 'test()', 'connect:/test', 'js:42'], \
-        'test() should have been evaluated again after timeout expired'
+        'test() should have been evaluated again after prefetch client was pruned'
     screen.should_contain('all done')
     event_log.items.clear()
 

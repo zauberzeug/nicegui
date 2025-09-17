@@ -229,11 +229,13 @@ class Client:
         if not self.has_socket_connection:
             self._waiting_for_connection.set()
             self._is_connected.clear()
-            timeout = max(timeout, self.page.response_timeout) if self.is_speculation_prefetch else timeout
-            try:
-                await asyncio.wait_for(self._is_connected.wait(), timeout=timeout)
-            except asyncio.TimeoutError as e:
-                raise ClientConnectionTimeout(self) from e
+            if self.is_speculation_prefetch:
+                await self._is_connected.wait()  # NOTE: wait for connection without timeout until client pruning takes care of cancellation
+            else:
+                try:
+                    await asyncio.wait_for(self._is_connected.wait(), timeout=timeout)
+                except asyncio.TimeoutError as e:
+                    raise ClientConnectionTimeout(self) from e
 
     async def disconnected(self) -> None:
         """Block execution until the client disconnects."""

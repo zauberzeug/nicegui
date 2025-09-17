@@ -14,7 +14,7 @@ class APIRouter(fastapi.APIRouter):
              viewport: Optional[str] = None,
              favicon: Optional[Union[str, Path]] = None,
              dark: Optional[bool] = ...,  # type: ignore
-             response_timeout: float = 20.0,
+             response_timeout: float = 3.0,
              **kwargs,
              ) -> Callable:
         """Page
@@ -28,7 +28,7 @@ class APIRouter(fastapi.APIRouter):
         :param viewport: optional viewport meta tag content
         :param favicon: optional relative filepath or absolute URL to a favicon (default: `None`, NiceGUI icon will be used)
         :param dark: whether to use Quasar's dark mode (defaults to `dark` argument of `run` command)
-        :param response_timeout: maximum time for the decorated function to build the page (default: 20.0)
+        :param response_timeout: maximum time for the decorated function to build the page (default: 3.0)
         :param kwargs: additional keyword arguments passed to FastAPI's @app.get method
         """
         return ui_page(
