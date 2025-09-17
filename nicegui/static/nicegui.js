@@ -19,7 +19,8 @@ function parseElements(raw_elements) {
   );
 }
 
-function replaceUndefinedAttributes(element) {
+function replaceUndefinedAttributes(element, id) {
+  if (element && element['='] === true) Object.assign(element, mounted_app.elements[id]);
   element.class ??= [];
   element.style ??= {};
   element.props ??= {};
@@ -320,7 +321,7 @@ window.onbeforeunload = function () {
 };
 
 function createApp(elements, options) {
-  Object.entries(elements).forEach(([_, element]) => replaceUndefinedAttributes(element));
+  Object.entries(elements).forEach(([id, element]) => replaceUndefinedAttributes(element, id));
   setInterval(() => ack(), 3000);
   return (app = Vue.createApp({
     data() {
@@ -358,7 +359,7 @@ function createApp(elements, options) {
           window.socket.emit("handshake", args, (ok) => {
             if (!ok) {
               console.log("reloading because handshake failed for clientId " + window.clientId);
-              window.location.reload();
+              softReload(window.location.href);
             }
             window.did_handshake = true;
             document.getElementById("popup").ariaHidden = true;
@@ -367,14 +368,14 @@ function createApp(elements, options) {
         connect_error: (err) => {
           if (err.message == "timeout") {
             console.log("reloading because connection timed out");
-            window.location.reload(); // see https://github.com/zauberzeug/nicegui/issues/198
+            softReload(window.location.href);
           }
         },
         try_reconnect: async () => {
           document.getElementById("popup").ariaHidden = false;
           await fetch(window.location.href, { headers: { "NiceGUI-Check": "try_reconnect" } });
           console.log("reloading because reconnect was requested");
-          window.location.reload();
+          softReload(window.location.href);
         },
         disconnect: () => {
           document.getElementById("popup").ariaHidden = false;
@@ -390,7 +391,7 @@ function createApp(elements, options) {
               delete this.elements[id];
               continue;
             }
-            replaceUndefinedAttributes(element);
+            replaceUndefinedAttributes(element, id);
             this.elements[id] = element;
           }
 
@@ -405,7 +406,11 @@ function createApp(elements, options) {
         open: (msg) => {
           const url = msg.path.startsWith("/") ? options.prefix + msg.path : msg.path;
           const target = msg.new_tab ? "_blank" : "_self";
-          window.open(url, target);
+          if (msg.soft_reload) {
+            softReload(url);
+          } else {
+            window.open(url, target);
+          }
         },
         download: (msg) => download(msg.src, msg.filename, msg.media_type, options.prefix),
         notify: (msg) => Quasar.Notify.create(msg),
@@ -446,4 +451,98 @@ for (let sheet of document.styleSheets) {
       if (/\.q-card > div/.test(rule.selectorText)) rule.selectorText = ".nicegui-card-tight" + rule.selectorText;
     }
   }
+}
+
+let softReloadInProgress = False;
+
+function softReload(url, x = undefined, y = undefined) {
+  if (softReloadInProgress) {
+    console.warn("Soft reload already in progress, ignoring request.");
+    return;
+  }
+  softReloadInProgress = True;
+  // check if url same origin as current location, if not redirect to that url
+  if (new URL(url, window.location.href).origin !== window.location.origin) {
+    window.location.href = url;
+    return;
+  }
+  // Make the GET request
+  fetch(url, {
+    method: 'GET',
+    headers: new Headers({
+      'X-NiceGUI-Client-ID': window.clientId
+    })
+  })
+    .then(response => {
+      if (!response.ok) {
+        throw new Error('Network response was not ok')
+      }
+      return response.json()
+    })
+    .then(data => {
+      document.title = data.title || document.title;
+      window.history.pushState({ x: window.scrollX, y: window.scrollY }, '', url);
+      window.socket.disconnect();
+      console.log(data);
+      updateElement('nicegui-head', data.head_html);
+      updateElement('nicegui-body', data.body_html);
+      // Handle the response data
+      // clear set loaded_libraries and loaded_components
+      loaded_libraries.clear();
+      loaded_components.clear();
+      createApp(parseElements(data.elements), {
+        version: data.version,
+        prefix: data.prefix,
+        query: data.socket_io_js_query_params,
+        extraHeaders: data.socket_io_js_extra_headers,
+        transports: data.socket_io_js_transports,
+        quasarConfig: JSON.parse(data.quasar_config),
+      });
+      const importPromises = Object.entries(data.js_import_raw).map(([name, value]) => {
+        console.log(`Importing element ${name}`);
+        return import(value.url).then((module) => {
+          console.log(`Imported element ${name} from ${value.url}`, module);
+          app.component(value.tag, module.default);
+        });
+      });
+
+      Promise.all(importPromises).then(() => {
+        eval(data.vue_scripts); // required for plotly and some libraries
+        app.unmount();
+        app.mount("#app");
+        if (x !== undefined && y !== undefined) {
+          window.scrollTo(x, y);
+        }
+        softReloadInProgress = False;
+      });
+    })
+    .catch(error => {
+      console.error('There was a problem with the fetch operation:', error);
+      window.location.href = url;
+    })
+}
+
+function removeAllChildren(element) {
+    while (element.firstChild) {
+        element.removeChild(element.firstChild);
+    }
+}
+
+function updateElement(targetId, htmlString) {
+  const target = document.getElementById(targetId);
+  if (!target) return;
+  removeAllChildren(target);
+  const tempDiv = document.createElement("div");
+  tempDiv.innerHTML = htmlString;
+
+  Array.from(tempDiv.childNodes).forEach(node => {
+    if (node.tagName === "SCRIPT") {
+      const newScript = document.createElement("script");
+      newScript.textContent = node.textContent;
+      newScript.type = node.type;
+      target.appendChild(newScript);
+    } else {
+      target.appendChild(node);
+    }
+  });
 }
