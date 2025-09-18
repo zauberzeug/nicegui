@@ -10,6 +10,7 @@ from fastapi import HTTPException, Request, Response
 
 from . import background_tasks, binding, core, helpers
 from .client import Client, ClientConnectionTimeout
+from .error import error_content
 from .favicon import create_favicon_route
 from .language import Language
 from .logging import log
@@ -109,42 +110,42 @@ class page:
     def _wrap(self, func: Callable[..., Any]) -> Callable[..., Any]:
         parameters_of_decorated_func = list(inspect.signature(func).parameters.keys())
 
-        def check_for_late_return_value(task: asyncio.Task) -> None:
-            try:
-                if task.result() is not None:
-                    log.error(f'ignoring {task.result()}; '
-                              'it was returned after the HTML had been delivered to the client')
-            except asyncio.CancelledError:
-                pass
-            except ClientConnectionTimeout as e:
-                log.debug('client connection timed out')
-                e.client.delete()
-            except Exception as e:
-                core.app.handle_exception(e)
-
-        def create_error_page(e: Exception, request: Request) -> Response:
-            page_exception_handler = core.app._page_exception_handler  # pylint: disable=protected-access
-            if page_exception_handler is None:
-                raise e
-            with Client(page(''), request=request) as error_client:
-                # page exception handler
-                if helpers.expects_arguments(page_exception_handler):
-                    page_exception_handler(e)
+        def check_for_late_return_value(task: asyncio.Task, client: Client) -> None:
+            if task.cancelled():
+                log.debug(f'{task.result()} was cancelled')
+                client.delete()
+                return
+            elif (exception := task.exception()) is not None:
+                if isinstance(exception, ClientConnectionTimeout):
+                    log.debug('client connection timed out')
                 else:
-                    page_exception_handler()
+                    core.app.handle_exception(exception)
+                client.delete()
+                return
+            if task.result() is not None:
+                log.error(f'ignoring {task.result()}; '
+                          'it was returned after the HTML had been delivered to the client')
 
-                # FastAPI exception handlers
-                for key, handler in core.app.exception_handlers.items():
-                    if key == 500 or (isinstance(key, type) and isinstance(e, key)):
-                        result = handler(request, e)
-                        if helpers.is_coroutine_function(handler):
-                            async def await_handler(result: Any) -> None:
-                                await result
-                            background_tasks.create(await_handler(result), name=f'exception handler {handler.__name__}')
+        def create_error_page(e: BaseException, request: Request) -> Response:
+            page_exception_handler = core.app._page_exception_handler  # pylint: disable=protected-access
 
-                # NiceGUI exception handlers
-                core.app.handle_exception(e)
-
+            with Client(page(''), request=request) as error_client:
+                if page_exception_handler is None:
+                    error_content(500, e)
+                else:
+                    if helpers.expects_arguments(page_exception_handler):
+                        page_exception_handler(e)
+                    else:
+                        page_exception_handler()
+                    for key, handler in core.app.exception_handlers.items():
+                        if key == 500 or (isinstance(key, type) and isinstance(e, key)):
+                            result = handler(request, e)
+                            if helpers.is_coroutine_function(handler):
+                                async def await_handler(result: Any) -> None:
+                                    await result
+                                background_tasks.create(await_handler(result),
+                                                        name=f'exception handler {handler.__name__}')
+                    core.app.handle_exception(e)
                 return error_client.build_response(request, 500)
 
         @wraps(func)
@@ -160,12 +161,13 @@ class page:
                 except Exception as e:
                     return create_error_page(e, request)
             if helpers.is_coroutine_function(func):
-                async def wait_for_result() -> Response | None:
+                task_wait_for_connection = asyncio.create_task(
+                    client._waiting_for_connection.wait(),  # pylint: disable=protected-access
+                )
+
+                async def wait_for_result() -> Response:
                     with client:
-                        try:
-                            return await result
-                        except Exception as e:
-                            return create_error_page(e, request)
+                        return await result
                 task = background_tasks.create(wait_for_result(),
                                                name=f'wait for result of page "{client.page.path}"',
                                                handle_exceptions=False)
@@ -182,14 +184,17 @@ class page:
                     log.warning(f'Response for {client.page.path} not ready after {self.response_timeout} seconds')
                     client.delete()
                 if task.done():
-                    result = task.result()
+                    if exception := task.exception():
+                        result = create_error_page(exception, request)
+                    elif not task.cancelled():
+                        result = task.result()
                 else:
                     result = None
-                    task.add_done_callback(check_for_late_return_value)
+                    task.add_done_callback(lambda task: check_for_late_return_value(task, client))
 
             if not await client.sub_pages_router._can_resolve_full_path(client):  # pylint: disable=protected-access
-                return create_error_page(HTTPException(404, f'{client.sub_pages_router.current_path} not found'), request)
-
+                result = create_error_page(HTTPException(404, f'{client.sub_pages_router.current_path} not found'),
+                                           request)
             if isinstance(result, Response):  # NOTE if setup returns a response, we don't need to render the page
                 return result
             binding._refresh_step()  # pylint: disable=protected-access

@@ -46,7 +46,7 @@ class App(FastAPI):
         self._shutdown_handlers: list[Union[Callable[..., Any], Awaitable]] = []
         self._connect_handlers: list[Union[Callable[..., Any], Awaitable]] = []
         self._disconnect_handlers: list[Union[Callable[..., Any], Awaitable]] = []
-        self._exception_handlers: list[Callable[..., Any]] = [log.exception]
+        self._exception_handlers: list[Callable[..., Any]] = [lambda e: log.exception('observed exception', exc_info=e)]
         self._page_exception_handler: Optional[Callable[..., Any]] = None
 
     @property
