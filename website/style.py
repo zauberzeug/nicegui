@@ -39,11 +39,14 @@ def subtitle(content: str) -> ui.markdown:
 
 def example_link(example: Example) -> None:
     """Render a link to an example."""
-    with ui.link(target=example.url) \
+    with ui.link(target=example.url, new_tab=True) \
             .classes('bg-[#5898d420] p-4 self-stretch rounded flex flex-col gap-2') \
             .style('box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1)'):
         ui.label(example.title).classes(replace='font-bold')
         ui.markdown(example.description).classes(replace='bold-links arrow-links')
+        ui.space()
+        ui.image(example.screenshot) \
+            .style('width: 100%; height: auto; object-fit: contain; border: 1px solid #ccc; border-radius: 4px')
 
 
 def features(icon: str, title_: str, items: List[str]) -> None:
