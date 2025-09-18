@@ -1,3 +1,9 @@
+# Signature Pad
+A custom element based on [signature_pad](https://www.npmjs.com/package/signature_pad)
+
+![Screenshot](screenshot.webp)
+
+
 # Use Node Modules as Third-party Dependencies
 
 This example demonstrates how to use third-party node modules as dependencies in a NiceGUI app.
