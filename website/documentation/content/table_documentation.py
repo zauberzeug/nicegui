@@ -111,6 +111,40 @@ def table_with_expandable_rows():
         </q-tr>
     ''')
 
+@doc.demo('Table with Delete button', '''
+    Each row has a Delete button in the Actions column.
+    Clicking the button shows a notification with the row name.
+''')
+def table_with_delete_button():
+    columns = [
+        {'name': 'id', 'label': 'ID', 'field': 'id'},
+        {'name': 'name', 'label': 'Name', 'field': 'name'},
+        {'name': 'age', 'label': 'Age', 'field': 'age'},
+        {'name': 'actions', 'label': 'Actions'},
+    ]
+
+    rows = [{'id': 0, 'name': 'Paul', 'age': 38}]
+
+    table = ui.table(columns=columns, rows=rows, row_key='id').classes('w-full')
+
+    # Quasar template for Actions column
+    table.add_slot(
+        'body-cell-actions',
+        '''
+        <q-td auto-width :props="props">
+            <q-btn 
+                size="sm" 
+                color="red" 
+                label="Delete" 
+                flat 
+                dense 
+                round
+                @click="() => $q.notify({message: 'Deleted ' + props.row.name + '!'})"
+            />
+        </q-td>
+        '''
+    )
+
 
 @doc.demo('Show and hide columns', '''
     Here is an example of how to show and hide columns in a table.
