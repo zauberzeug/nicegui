@@ -1,4 +1,7 @@
-# ROS2 Example
+# ROS2
+Using NiceGUI as web interface for a ROS2 robot
+
+![Screenshot](screenshot.webp)
 
 This example is a basic ROS2 implementation with NiceGUI.
 It starts up a user interface with virtual joystick and pose visualization reachable through http://127.0.0.1:8080.

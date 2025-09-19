@@ -1,4 +1,10 @@
-# Serving an App Behind a Reverse Proxy Subpath
+
+# NGINX Subpath
+Shows the setup to serve an app behind a reverse proxy subpath
+
+![Screenshot](screenshot.webp)
+
+## Serving an App Behind a Reverse Proxy Subpath
 
 This example shows how to serve NiceGUI on a subpath behind a reverse proxy.
 Here we use Nginx.

@@ -1,3 +1,9 @@
+# Node Module Integration
+Use NPM to add dependencies to a NiceGUI app
+
+![Screenshot](screenshot.webp)
+
+
 # Use Bundled Node Modules as Third-party Dependencies
 
 This example demonstrates how to use multiple third-party node modules as dependencies in a NiceGUI app.
