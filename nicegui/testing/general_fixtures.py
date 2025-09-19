@@ -1,4 +1,3 @@
-import asyncio
 import importlib
 from copy import copy
 from typing import Generator, List, Type
@@ -43,11 +42,6 @@ def nicegui_reset_globals() -> Generator[None, None, None]:
     Client.instances.clear()
     Client.page_routes.clear()
     app.reset()
-    # ensure there is a current event loop available (important after asyncio.run on py<3.10)
-    try:
-        asyncio.get_running_loop()
-    except RuntimeError:
-        asyncio.set_event_loop(asyncio.new_event_loop())
     Client.auto_index_client = Client(page('/'), request=None).__enter__()  # pylint: disable=unnecessary-dunder-call
     Client.auto_index_client.layout.parent_slot = None  # NOTE: otherwise the layout is nested in the previous client
     # NOTE we need to re-add the auto index route because we removed all routes above
