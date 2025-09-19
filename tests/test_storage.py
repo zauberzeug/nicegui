@@ -334,7 +334,7 @@ def test_tab_storage_holds_non_serializable_objects(screen: Screen):
     screen.wait(0.5)
 
 
-def test_user_storage_is_pruned(screen: Screen):
+async def test_user_storage_is_pruned(screen: Screen):
     @ui.page('/')
     def page():
         ui.label(f'clients: {len(Client.instances)}')
@@ -358,6 +358,6 @@ def test_user_storage_is_pruned(screen: Screen):
 
     screen.close()
     Client.prune_instances(client_age_threshold=0)
-    asyncio.run(nicegui.prune_user_storage(force=True))
+    await nicegui.prune_user_storage(force=True)
     assert len(Client.instances) == 1
     assert len(app.storage._users) == 0
