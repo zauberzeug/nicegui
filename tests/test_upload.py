@@ -1,8 +1,6 @@
 from pathlib import Path
 from typing import List
 
-import pytest
-
 from nicegui import events, ui
 from nicegui.testing import Screen
 
@@ -42,7 +40,6 @@ def test_two_upload_elements(screen: Screen):
     assert results[1].name == test_path2.name
 
 
-@pytest.mark.filterwarnings('ignore::pytest.PytestUnraisableExceptionWarning')
 def test_uploading_from_two_tabs(screen: Screen):
     @ui.page('/')
     def page():
