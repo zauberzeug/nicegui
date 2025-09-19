@@ -88,6 +88,7 @@ asyncio_mode = "auto"
 main_file = ""
 testpaths = ["tests"]
 filterwarnings = [
+  'error',
   'ignore::DeprecationWarning:^vbuild(\.|$)',
   'ignore::DeprecationWarning:^websockets\.legacy(\.|$)',
   'ignore::DeprecationWarning:^uvicorn\.protocols\.websockets(\.|$)',
