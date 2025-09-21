@@ -24,14 +24,33 @@ class Example:
         self.screenshot = str(screenshot_path) if screenshot_path.exists() else str(placeholder)
 
 
-readme_files_paths: List[Path]  = sorted([ (PATH / f.name / 'README.md') for f in PATH.iterdir() if f.is_dir(follow_symlinks=False)])
+# discover README files for each example directory (no symlink recursion)
+readme_files_paths: List[Path] = sorted(
+    (p / 'README.md' for p in PATH.iterdir() if p.is_dir(follow_symlinks=False)),
+    key=lambda p: p.parent.name.lower(),
+)
+
 examples: List[Example] = []
-for path in readme_files_paths:
-    title = description = path.parent.name.replace('_', ' ').title()
-    if path.exists():
-        lines = [line.strip() for line in path.read_text(encoding="utf-8").splitlines() if line.strip()]
-        if lines:
-            # Use first non-empty line as title, second one as description if available
-            title = lines[0].lstrip('#').strip()
-            description = lines[1] if len(lines) > 1 else description
+for readme in readme_files_paths:
+    # sensible defaults derived from the folder name
+    default_title = readme.parent.name.replace('_', ' ').title()
+    default_description = default_title
+
+    title = default_title
+    description = default_description
+
+    if readme.exists():
+        try:
+            text = readme.read_text(encoding='utf-8')
+            nonempty = [line.strip() for line in text.splitlines() if line.strip()]
+            if nonempty:
+                # first non-empty line is the title (strip any leading markdown header markers)
+                title_candidate = nonempty[0].lstrip('#').strip()
+                title = title_candidate or default_title
+                # second non-empty line (if present) is used as description
+                description = nonempty[1] if len(nonempty) > 1 else default_description
+        except Exception:
+            # keep defaults on read/encoding errors
+            pass
+
     examples.append(Example(title=title, description=description))
