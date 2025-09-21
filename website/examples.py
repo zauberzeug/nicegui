@@ -18,11 +18,13 @@ class Example:
         content = [p for p in (PATH / name).glob('*') if not p.name.startswith(('__pycache__', '.', 'test_'))]
         filename = 'main.py' if len(content) == 1 else ''
         self.url = f'https://github.com/zauberzeug/nicegui/tree/main/examples/{name}/{filename}'
-        self.screenshot = str(PATH / name / 'screenshot.webp') if (PATH / name / 'screenshot.webp').exists() else str(PATH / 'placeholder.webp')
+        # prefer a per-example screenshot if it exists, otherwise use the placeholder
+        screenshot_path = PATH / name / 'screenshot.webp'
+        placeholder = PATH / 'placeholder.webp'
+        self.screenshot = str(screenshot_path) if screenshot_path.exists() else str(placeholder)
 
 
 readme_files_paths: List[Path]  = sorted([ (PATH / f.name / 'README.md') for f in PATH.iterdir() if f.is_dir(follow_symlinks=False)])
-print(readme_files_paths)
 examples: List[Example] = []
 for path in readme_files_paths:
     title = description = path.parent.name.replace('_', ' ').title()
