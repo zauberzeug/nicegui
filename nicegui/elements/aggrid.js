@@ -45,7 +45,7 @@ export default {
       const originalOnGridReady = this.gridOptions.onGridReady;
       this.gridOptions.onGridReady = (params) => {
         try {
-          originalOnGridReady(params);
+          originalOnGridReady?.(params);
         } finally {
           this.handle_event("gridReady", params);
         }
