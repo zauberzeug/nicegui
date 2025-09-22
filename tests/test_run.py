@@ -1,5 +1,7 @@
 import asyncio
+import os
 import time
+from concurrent.futures.process import BrokenProcessPool
 from typing import Awaitable, Generator
 
 import pytest
@@ -70,3 +72,15 @@ async def test_run_cpu_bound_function_which_raises_problematic_exception(user: U
             ui.label(await run.cpu_bound(raise_exception_with_super_parameter))
 
     await user.open('/')
+
+
+async def test_run_cpu_bound_survive_bad_function(user: User):
+    @ui.page('/')
+    async def index():
+        with pytest.raises(BrokenProcessPool):
+            await run.cpu_bound(os.abort)  # bad function kills the process pool
+        assert await run.cpu_bound(os.cpu_count) > 0  # good function returns without error
+        ui.label('excellent')
+
+    await user.open('/')
+    await user.should_see('excellent')
