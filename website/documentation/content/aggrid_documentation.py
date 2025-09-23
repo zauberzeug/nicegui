@@ -251,19 +251,23 @@ def aggrid_filter_return_values():
 
 
 @doc.demo('Handle theme change', '''
-    You can change the theme of the AG Grid by adding or removing classes.
-    This demo shows how to change the theme using a switch.
+    You can change the theme of the AG Grid via the `theme` property.
+    Dark mode is applied automatically depending on the dark mode setting of the page.
 ''')
 def aggrid_handle_theme_change():
-    from nicegui import events
-
-    grid = ui.aggrid({})
-
-    def handle_theme_change(e: events.ValueChangeEventArguments):
-        grid.classes(add='ag-theme-balham-dark' if e.value else 'ag-theme-balham',
-                     remove='ag-theme-balham ag-theme-balham-dark')
-
-    ui.switch('Dark', on_change=handle_theme_change)
+    grid = ui.aggrid({
+        'columnDefs': [
+            {'headerName': 'Make', 'field': 'make'},
+            {'headerName': 'Country', 'field': 'country'},
+        ],
+        'rowData': [
+            {'make': 'Ford', 'country': 'USA'},
+            {'make': 'Toyota', 'country': 'Japan'},
+            {'make': 'Volkswagen', 'country': 'Germany'},
+        ],
+    })
+    ui.toggle(['quartz', 'balham', 'material', 'alpine']) \
+        .bind_value(grid, 'theme').props('flat size="sm"')
 
 
 doc.reference(ui.aggrid)
