@@ -6,7 +6,7 @@ from . import doc
 @doc.demo(ui.color_picker)
 def main_demo() -> None:
     with ui.button(icon='colorize') as button:
-        ui.color_picker(on_pick=lambda e: button.classes(f'!bg-[{e.color}]'))
+        ui.color_picker(on_pick=lambda e: button.classes(f'bg-[{e.color}]'))
 
 
 @doc.demo('Customize the Color Picker', '''
