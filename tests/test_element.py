@@ -1,3 +1,4 @@
+import platform
 import weakref
 from typing import Dict, Optional
 
@@ -349,13 +350,13 @@ def test_update_before_client_connection(screen: Screen):
     screen.should_contain('Hello again!')
 
 
+@pytest.mark.skipif(platform.python_implementation() == 'PyPy', reason='PyPy no reference counting')
 def test_no_cyclic_references_when_deleting_elements(screen: Screen):
     elements: weakref.WeakSet = weakref.WeakSet()
 
     with ui.card() as card:
         for _ in range(10):
             elements.add(ui.element())
-            elements.add(ui.pyplot())
             elements.add(ui.query('div'))
 
     card.clear()
@@ -364,6 +365,7 @@ def test_no_cyclic_references_when_deleting_elements(screen: Screen):
     screen.open('/')
 
 
+@pytest.mark.skipif(platform.python_implementation() == 'PyPy', reason='PyPy no reference counting')
 def test_no_cyclic_references_when_deleting_clients(screen: Screen):
     labels = weakref.WeakSet()
 

@@ -4,10 +4,10 @@ Test our two JSON serializers (orjson, and Python's built-in json module).
 Need to ensure that we get the same output regardless of the serializer used.
 """
 
+import platform
 import sys
 from datetime import date, datetime
 
-import numpy as np
 import pytest
 
 try:
@@ -18,11 +18,14 @@ except ImportError:
 
 
 @pytest.mark.skipif('orjson' not in sys.modules, reason='requires the orjson library.')
+@pytest.mark.skipif(platform.python_implementation() == 'PyPy', reason='PyPy no numpy')
 def test_json():
     # only run test if orjson is available to not break it on 32 bit systems
     # or architectures where orjson is not supported.
 
     # pylint: disable=import-outside-toplevel
+    import numpy as np
+
     from nicegui.json.builtin_wrapper import dumps as builtin_dumps
     from nicegui.json.orjson_wrapper import dumps as orjson_dumps
 
