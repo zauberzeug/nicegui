@@ -64,6 +64,11 @@ do
         continue # because it requires opencv-python and PyPy appears not compatible
     fi
 
+    # skip if path is examples/pandas_dataframe
+    if test $path = "examples/pandas_dataframe"; then
+        continue # because numpy is not available on PyPy, which is required by pandas
+    fi
+
     # install all requirements except nicegui
     if test -f $path/requirements.txt; then
         sed '/^nicegui/d' $path/requirements.txt > $path/requirements.tmp.txt || exit 1 # remove nicegui from requirements.txt
