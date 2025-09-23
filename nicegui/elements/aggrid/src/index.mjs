@@ -6,8 +6,7 @@ import {
   themeBalham,
   themeMaterial,
   themeQuartz,
-  colorSchemeDark,
-  colorSchemeLight,
+  colorSchemeVariable,
 } from "ag-grid-community";
 
 ModuleRegistry.registerModules([AllCommunityModule]);
@@ -20,6 +19,5 @@ export default {
     material: themeMaterial,
     quartz: themeQuartz,
   },
-  colorSchemeDark,
-  colorSchemeLight,
+  colorSchemeVariable,
 };

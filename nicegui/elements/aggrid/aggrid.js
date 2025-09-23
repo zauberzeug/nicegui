@@ -5,15 +5,21 @@ export default {
   template: "<div></div>",
   mounted() {
     this.update_grid();
+
+    this.themeObserver = new MutationObserver(() =>
+      this.$el.setAttribute("data-ag-theme-mode", document.body.classList.contains("body--dark") ? "dark" : "light")
+    );
+    this.themeObserver.observe(document.body, { attributes: true, attributeFilter: ["class"] });
+  },
+  unmounted() {
+    this.themeObserver.disconnect();
   },
   methods: {
     update_grid() {
       this.$el.textContent = "";
       this.gridOptions = {
         ...this.options,
-        theme: AgGrid.themes[this.options.theme.split("-")[0]].withPart(
-          this.options.theme.split("-")[1] === "dark" ? AgGrid.colorSchemeDark : AgGrid.colorSchemeLight
-        ),
+        theme: AgGrid.themes[this.options.theme].withPart(AgGrid.colorSchemeVariable),
       };
 
       for (const column of this.html_columns) {
