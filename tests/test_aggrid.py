@@ -1,9 +1,8 @@
+import platform
 import sys
 from datetime import datetime, timedelta, timezone
 from typing import List
 
-import pandas as pd
-import polars as pl
 import pytest
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.keys import Keys
@@ -158,11 +157,14 @@ def test_replace_aggrid(screen: Screen):
 
 
 @pytest.mark.parametrize('df_type', ['pandas', 'polars'])
+@pytest.mark.skipif(platform.python_implementation() == 'PyPy', reason='PyPy no pandas, assuming no polars either')
 def test_create_from_dataframe(screen: Screen, df_type: str):
     if df_type == 'pandas':
+        import pandas as pd
         df = pd.DataFrame({'name': ['Alice', 'Bob'], 'age': [18, 21], 42: 'answer'})
         ui.aggrid.from_pandas(df)
     else:
+        import polars as pl
         df = pl.DataFrame({'name': ['Alice', 'Bob'], 'age': [18, 21], '42': 'answer'})
         ui.aggrid.from_polars(df)
 
@@ -194,8 +196,10 @@ def test_api_method_after_creation(screen: Screen):
 
 @pytest.mark.parametrize('df_type', ['pandas', 'polars'])
 @pytest.mark.skipif(sys.version_info[:2] == (3, 8), reason='Skipping test for Python 3.8')
+@pytest.mark.skipif(platform.python_implementation() == 'PyPy', reason='PyPy no pandas, assuming no polars either')
 def test_problematic_datatypes(screen: Screen, df_type: str):
     if df_type == 'pandas':
+        import pandas as pd
         df = pd.DataFrame({
             'datetime_col': [datetime(2020, 1, 1)],
             'datetime_col_tz': [datetime(2020, 1, 2, tzinfo=timezone.utc)],
@@ -205,6 +209,7 @@ def test_problematic_datatypes(screen: Screen, df_type: str):
         })
         ui.aggrid.from_pandas(df)
     else:
+        import polars as pl
         df = pl.DataFrame({
             'datetime_col': [datetime(2020, 1, 1)],
             'datetime_col_tz': [datetime(2020, 1, 2, tzinfo=timezone.utc)],

@@ -46,7 +46,7 @@ jobs:
           set -x
           poetry install --all-extras
           # install packages to run the examples
-          poetry run pip install opencv-python opencv-contrib-python-headless httpx isort replicate langchain openai simpy tortoise-orm
+          poetry run pip install httpx isort replicate openai simpy tortoise-orm
           poetry run pip install -r tests/requirements.txt
           # try fix issue with importlib_resources
           poetry run pip install importlib-resources
