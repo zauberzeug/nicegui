@@ -17,6 +17,16 @@ shutil.copy2(NODE_MODULES / 'quasar' / 'dist' / 'quasar.rtl.css', STATIC / 'quas
 shutil.copy2(NODE_MODULES / 'quasar' / 'dist' / 'quasar.rtl.prod.css', STATIC / 'quasar.prod.css')
 for entry in (NODE_MODULES / 'quasar' / 'dist' / 'lang').glob('*.umd.prod.js'):
     shutil.copy2(entry, STATIC / 'lang' / entry.name)
+(STATIC / 'quasar.css').write_text(
+    (STATIC / 'quasar.css').read_text()
+    .replace(' !important', '')  # HACK: remove !important flags (#5156)
+    .replace('.q-card > div', '.nicegui-card-tight.q-card > div')  # HACK: remove rules for divs in QCard (#2265, #2301)
+)
+(STATIC / 'quasar.prod.css').write_text(
+    (STATIC / 'quasar.prod.css').read_text()
+    .replace('!important', '')  # HACK: remove !important flags (#5156)
+    .replace('.q-card>div', '.nicegui-card-tight.q-card>div')  # HACK: remove rules for divs in QCard (#2265, #2301)
+)
 
 shutil.copy2(NODE_MODULES / '@tailwindcss' / 'browser' / 'dist' / 'index.global.js', STATIC / 'tailwindcss.min.js')
 WARNING = (
