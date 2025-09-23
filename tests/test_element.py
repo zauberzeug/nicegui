@@ -365,6 +365,7 @@ def test_no_cyclic_references_when_deleting_elements(screen: Screen):
     screen.open('/')
 
 
+@pytest.mark.skipif(platform.python_implementation() == 'PyPy', reason='PyPy no reference counting')
 def test_no_cyclic_references_when_deleting_clients(screen: Screen):
     labels = weakref.WeakSet()
 

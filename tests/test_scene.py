@@ -165,6 +165,7 @@ def test_gltf(screen: Screen):
     assert screen.selenium.execute_script(f'return scene_{scene.html_id}.children.length') == 5
 
 
+@pytest.mark.skipif(platform.python_implementation() == 'PyPy', reason='PyPy no reference counting')
 def test_no_cyclic_references(screen: Screen):
     objects: weakref.WeakSet = weakref.WeakSet()
 
