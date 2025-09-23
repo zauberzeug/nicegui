@@ -69,6 +69,11 @@ do
         continue # because numpy is not available on PyPy, which is required by pandas
     fi
 
+    # skip if path is examples/zeromq
+    if test $path = "examples/zeromq"; then
+        continue # because it uses ui.line_plot which uses matplotlib which requires numpy which is not available on PyPy
+    fi
+
     # install all requirements except nicegui
     if test -f $path/requirements.txt; then
         sed '/^nicegui/d' $path/requirements.txt > $path/requirements.tmp.txt || exit 1 # remove nicegui from requirements.txt
