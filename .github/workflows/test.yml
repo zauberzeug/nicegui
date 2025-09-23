@@ -51,7 +51,7 @@ jobs:
           # try fix issue with importlib_resources
           poetry run pip install importlib-resources
       - name: ensure pydantic v1 for pypy
-        if: ${{ startsWith(matrix.python-version, 'pypy') }}
+        if: ${{ startsWith(matrix.python, 'pypy') }}
         run: poetry run pip install 'pydantic<2.0.0'
       - name: test startup
         run: poetry run ./test_startup.sh
