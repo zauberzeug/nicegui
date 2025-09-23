@@ -2,12 +2,11 @@ html,
 body {
   max-width: 100%;
   overflow-x: hidden;
-  background-color: #f8f8f8;
   font-family: "Fira Sans", Roboto, -apple-system, "Helvetica Neue", Helvetica, Arial, sans-serif;
   --q-dark-page: #222;
 }
-html:has(.body--dark) {
-  background-color: #222;
+html:has(body.body--light) {
+  background-color: #f8f8f8;
 }
 html {
   scroll-behavior: smooth;

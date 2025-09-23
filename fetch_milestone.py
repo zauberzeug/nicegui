@@ -2,7 +2,6 @@
 import argparse
 import re
 import sys
-from typing import Dict, List
 
 import httpx
 
@@ -34,7 +33,7 @@ def link(number: int) -> str:
 
 
 issues = httpx.get(f'{BASE_URL}/issues?milestone={milestone_number}&state=all', timeout=5).json()
-notes: Dict[str, List[str]] = {
+notes: dict[str, list[str]] = {
     'New features and enhancements': [],
     'Bugfixes': [],
     'Documentation': [],
@@ -46,7 +45,7 @@ for issue in issues:
     title: str = issue['title']
     user: str = issue['user']['login'].replace('[bot]', '')
     body: str = issue['body'] or ''
-    labels: List[str] = [label['name'] for label in issue['labels']]
+    labels: list[str] = [label['name'] for label in issue['labels']]
     if user == 'dependabot':
         number_patterns = []
     else:

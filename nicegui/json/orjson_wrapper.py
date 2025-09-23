@@ -1,6 +1,6 @@
 import importlib.util
 from decimal import Decimal
-from typing import Any, Optional, Tuple
+from typing import Any, Optional
 
 # pylint: disable=no-member
 import orjson
@@ -13,7 +13,7 @@ ORJSON_OPTS = orjson.OPT_SERIALIZE_NUMPY | orjson.OPT_NON_STR_KEYS
 
 def dumps(obj: Any,
           sort_keys: bool = False,
-          separators: Optional[Tuple[str, str]] = None, *,
+          separators: Optional[tuple[str, str]] = None, *,
           indent: bool = False) -> str:
     """Serializes a Python object to a JSON-encoded string.
 

@@ -1,10 +1,10 @@
-from typing import Any, List
+from typing import Any
 
 
 class UserNotify:
 
     def __init__(self) -> None:
-        self.messages: List[str] = []
+        self.messages: list[str] = []
 
     def __call__(self, message: str, **kwargs) -> None:
         self.messages.append(message)

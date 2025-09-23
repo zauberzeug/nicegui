@@ -1,4 +1,4 @@
-from typing import Any, List, Literal, Tuple, Union
+from typing import Any, Literal, Union
 
 from .pyplot import Pyplot
 
@@ -25,14 +25,14 @@ class LinePlot(Pyplot):
         """
         super().__init__(close=close, **kwargs)
 
-        self.x: List[float] = []
-        self.Y: List[List[float]] = [[] for _ in range(n)]
+        self.x: list[float] = []
+        self.Y: list[list[float]] = [[] for _ in range(n)]
         self.lines = [self.fig.gca().plot([], [])[0] for _ in range(n)]
         self.slice = slice(0 if limit is None else -limit, None)
         self.update_every = update_every
         self.push_counter = 0
 
-    def with_legend(self, titles: List[str], **kwargs: Any):
+    def with_legend(self, titles: list[str], **kwargs: Any):
         """Add a legend to the plot.
 
         :param titles: list of titles for the lines
@@ -43,11 +43,11 @@ class LinePlot(Pyplot):
         return self
 
     def push(self,
-             x: List[float],
-             Y: List[List[float]],
+             x: list[float],
+             Y: list[list[float]],
              *,
-             x_limits: Union[None, Literal['auto'], Tuple[float, float]] = 'auto',
-             y_limits: Union[None, Literal['auto'], Tuple[float, float]] = 'auto',
+             x_limits: Union[None, Literal['auto'], tuple[float, float]] = 'auto',
+             y_limits: Union[None, Literal['auto'], tuple[float, float]] = 'auto',
              ) -> None:
         """Push new data to the plot.
 
@@ -89,7 +89,6 @@ class LinePlot(Pyplot):
                 self.fig.gca().set_ylim(min_y - pad_y, max_y + pad_y)
 
         self._convert_to_html()
-        self.update()
 
     def clear(self) -> None:
         """Clear the line plot."""
@@ -100,4 +99,3 @@ class LinePlot(Pyplot):
         for line in self.lines:
             line.set_data([], [])
         self._convert_to_html()
-        self.update()

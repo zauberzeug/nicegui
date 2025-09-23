@@ -5,14 +5,13 @@ NOTE: NiceGUI already handles all the communication for you, so you don't need t
 This example is only for advanced use cases where you want to allow other, non-NiceGUI clients to connect to your server.
 """
 import asyncio
-from typing import Set
 
 import websockets
 from websockets.server import WebSocketServerProtocol
 
 from nicegui import app, ui
 
-CONNECTIONS: Set[WebSocketServerProtocol] = set()
+CONNECTIONS: set[WebSocketServerProtocol] = set()
 
 ui.label('Websockets demo').classes('text-2xl')
 ui.label('Run this in the console to connect:')

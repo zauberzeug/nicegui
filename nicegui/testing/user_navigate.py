@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Callable, Union
+from typing import TYPE_CHECKING, Any, Callable
 
 from nicegui import Client, background_tasks
 from nicegui.element import Element
@@ -16,7 +16,7 @@ class UserNavigate(Navigate):
         super().__init__()
         self.user = user
 
-    def to(self, target: Union[Callable[..., Any], str, Element], new_tab: bool = False) -> None:
+    def to(self, target: Callable[..., Any] | str | Element, new_tab: bool = False) -> None:
         if isinstance(target, Element):
             # NOTE navigation to an element does not do anything in the user simulation (the whole content is always visible)
             return

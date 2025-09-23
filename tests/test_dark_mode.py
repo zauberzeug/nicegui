@@ -3,12 +3,14 @@ from nicegui.testing import Screen
 
 
 def test_dark_mode(screen: Screen):
-    ui.label('Hello')
-    dark = ui.dark_mode()
-    ui.button('Dark', on_click=dark.enable)
-    ui.button('Light', on_click=dark.disable)
-    ui.button('Auto', on_click=dark.auto)
-    ui.button('Toggle', on_click=dark.toggle)
+    @ui.page('/')
+    def page():
+        ui.label('Hello')
+        dark = ui.dark_mode()
+        ui.button('Dark', on_click=dark.enable)
+        ui.button('Light', on_click=dark.disable)
+        ui.button('Auto', on_click=dark.auto)
+        ui.button('Toggle', on_click=dark.toggle)
 
     def assert_dark(value: bool) -> None:
         classes = (screen.find_by_tag('body').get_attribute('class') or '').split()

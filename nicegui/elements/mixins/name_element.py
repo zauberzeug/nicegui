@@ -18,7 +18,8 @@ class NameElement(Element):
     def bind_name_to(self,
                      target_object: Any,
                      target_name: str = 'name',
-                     forward: Optional[Callable[[Any], Any]] = None,
+                     forward: Optional[Callable[[Any], Any]] = None, *,
+                     strict: Optional[bool] = None,
                      ) -> Self:
         """Bind the name of this element to the target object's target_name property.
 
@@ -28,14 +29,17 @@ class NameElement(Element):
         :param target_object: The object to bind to.
         :param target_name: The name of the property to bind to.
         :param forward: A function to apply to the value before applying it to the target (default: identity).
+        :param strict: Whether to check (and raise) if the target object has the specified property (default: None,
+            performs a check if the object is not a dictionary, *added in version 3.0.0*).
         """
-        bind_to(self, 'name', target_object, target_name, forward)
+        bind_to(self, 'name', target_object, target_name, forward, self_strict=False, other_strict=strict)
         return self
 
     def bind_name_from(self,
                        target_object: Any,
                        target_name: str = 'name',
-                       backward: Optional[Callable[[Any], Any]] = None,
+                       backward: Optional[Callable[[Any], Any]] = None, *,
+                       strict: Optional[bool] = None,
                        ) -> Self:
         """Bind the name of this element from the target object's target_name property.
 
@@ -45,8 +49,10 @@ class NameElement(Element):
         :param target_object: The object to bind from.
         :param target_name: The name of the property to bind from.
         :param backward: A function to apply to the value before applying it to this element (default: identity).
+        :param strict: Whether to check (and raise) if the target object has the specified property (default: None,
+            performs a check if the object is not a dictionary, *added in version 3.0.0*).
         """
-        bind_from(self, 'name', target_object, target_name, backward)
+        bind_from(self, 'name', target_object, target_name, backward, self_strict=False, other_strict=strict)
         return self
 
     def bind_name(self,
@@ -54,6 +60,7 @@ class NameElement(Element):
                   target_name: str = 'name', *,
                   forward: Optional[Callable[[Any], Any]] = None,
                   backward: Optional[Callable[[Any], Any]] = None,
+                  strict: Optional[bool] = None,
                   ) -> Self:
         """Bind the name of this element to the target object's target_name property.
 
@@ -65,8 +72,12 @@ class NameElement(Element):
         :param target_name: The name of the property to bind to.
         :param forward: A function to apply to the value before applying it to the target (default: identity).
         :param backward: A function to apply to the value before applying it to this element (default: identity).
+        :param strict: Whether to check (and raise) if the target object has the specified property (default: None,
+            performs a check if the object is not a dictionary, *added in version 3.0.0*).
         """
-        bind(self, 'name', target_object, target_name, forward=forward, backward=backward)
+        bind(self, 'name', target_object, target_name,
+             forward=forward, backward=backward,
+             self_strict=False, other_strict=strict)
         return self
 
     def set_name(self, name: str) -> None:
@@ -82,4 +93,3 @@ class NameElement(Element):
         :param name: The new name.
         """
         self._props['name'] = name
-        self.update()

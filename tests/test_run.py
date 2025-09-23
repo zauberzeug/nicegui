@@ -1,6 +1,6 @@
 import asyncio
 import time
-from typing import Awaitable, Generator
+from collections.abc import Awaitable, Generator
 
 import pytest
 

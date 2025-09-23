@@ -177,7 +177,6 @@ def map_of_nicegui():
             - customization:
                 - `.props()` and [`.default_props()`](/documentation/element#default_props): add Quasar props and regular HTML attributes
                 - `.classes()` and [`.default_classes()`](/documentation/element#default_classes): add Quasar, Tailwind and custom HTML classes
-                - [`.tailwind`](/documentation/section_styling_appearance#tailwind_css): convenience API for adding Tailwind classes
                 - `.style()` and [`.default_style()`](/documentation/element#default_style): add CSS style definitions
                 - [`.tooltip()`](/documentation/tooltip): add a tooltip to an element
                 - [`.mark()`](/documentation/element_filter#markers): mark an element for querying with an [ElementFilter](/documentation/element_filter)
@@ -309,7 +308,7 @@ def map_of_nicegui():
             - [`ui.timer`](/documentation/timer): run a function periodically or once after a delay
             - `ui.update`: send updates of multiple elements to the client
         - decorators:
-            - [`ui.page`](/documentation/page): define a page (in contrast to the automatically generated "auto-index page")
+            - [`ui.page`](/documentation/page): define a page
             - [`ui.refreshable`](/documentation/refreshable), `ui.refreshable_method`: define refreshable UI containers
                 (can use [`ui.state`](/documentation/refreshable#refreshable_ui_with_reactive_state))
 
@@ -466,6 +465,15 @@ def map_of_nicegui():
         - [`binding.BindableProperty`](/documentation/section_binding_properties#bindable_properties_for_maximum_performance): bindable properties for maximum performance
         - [`binding.bindable_dataclass()`](/documentation/section_binding_properties#bindable_dataclass): create a dataclass with bindable properties
         - `binding.bind()`, `binding.bind_from()`, `binding.bind_to()`: methods to bind two properties
+
+        #### `Event`
+
+        Distribute information between different parts of your code.
+
+        - `Event()`: create an event
+        - `event.subscribe()`: subscribe to an event
+        - `event.emit()`: fire and forget an event
+        - `event.call()`: fire an event and wait for the subscribed callbacks to complete
 
         #### `observables`
 

@@ -1,10 +1,9 @@
 #!/usr/bin/env python3
 import json
 import subprocess
-from typing import List
 
 
-def run(cmd: List[str], *, capture: bool = False) -> str:
+def run(cmd: list[str], *, capture: bool = False) -> str:
     """Run a command and return the output."""
     if capture:
         return subprocess.run(cmd, check=True, capture_output=True, text=True).stdout

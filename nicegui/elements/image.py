@@ -42,7 +42,6 @@ class Image(SourceElement, component='image.js'):
             log.warning('ui.image: force_reload() only works with network sources (not base64)')
             return
         self._props['t'] = time.time()
-        self.update()
 
 
 def pil_to_base64(pil_image: 'PIL_Image', image_format: str) -> str:

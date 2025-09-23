@@ -112,7 +112,10 @@ def global_scope():
         time()
         ui.button('Refresh', on_click=time.refresh)
 
-    ui.link('Open demo', demo)
+    # @ui.page('/')
+    def page():
+        ui.link('Open demo', demo)
+    page()  # HIDE
     # END OF DEMO
     ui.label('Note: This demo may not work as expected on nicegui.io due to load balancing across multiple servers. '
              'For accurate results, please run this example locally on your machine.').classes('text-gray-600')
@@ -137,7 +140,10 @@ def local_scope_a():
         time()
         ui.button('Refresh', on_click=time.refresh)
 
-    ui.link('Open demo', demo)
+    # @ui.page('/')
+    def page():
+        ui.link('Open demo', demo)
+    page()  # HIDE
 
 
 @doc.auto_execute
@@ -161,7 +167,10 @@ def local_scope_b():
         clock.time()
         ui.button('Refresh', on_click=clock.time.refresh)
 
-    ui.link('Open demo', demo)
+    # @ui.page('/')
+    def page():
+        ui.link('Open demo', demo)
+    page()  # HIDE
 
 
 @doc.auto_execute
@@ -182,7 +191,10 @@ def local_scope_c():
         refreshable_time()
         ui.button('Refresh', on_click=refreshable_time.refresh)
 
-    ui.link('Open demo', demo)
+    # @ui.page('/')
+    def page():
+        ui.link('Open demo', demo)
+    page()  # HIDE
 
 
 doc.reference(ui.refreshable)

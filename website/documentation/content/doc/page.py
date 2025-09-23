@@ -12,7 +12,7 @@ class DocumentationPage:
     title: Optional[str] = None
     subtitle: Optional[str] = None
     back_link: Optional[str] = None
-    parts: List[DocumentationPart] = field(default_factory=list)
+    parts: list[DocumentationPart] = field(default_factory=list)
     extra_column: Optional[Callable] = None
 
     @property

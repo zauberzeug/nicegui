@@ -4,7 +4,7 @@ import base64
 import io
 import urllib.parse
 from pathlib import Path
-from typing import TYPE_CHECKING, Optional, Tuple, Union
+from typing import TYPE_CHECKING
 
 from fastapi.responses import FileResponse, Response, StreamingResponse
 
@@ -16,7 +16,7 @@ if TYPE_CHECKING:
     from .page import page
 
 
-def create_favicon_route(path: str, favicon: Optional[Union[str, Path]]) -> None:
+def create_favicon_route(path: str, favicon: str | Path | None) -> None:
     """Create a favicon route for the given path."""
     if is_file(favicon):
         core.app.add_route('/favicon.ico' if path == '/' else f'{path}/favicon.ico',
@@ -101,7 +101,7 @@ def _svg_to_data_url(svg: str) -> str:
     return f'data:image/svg+xml,{svg_urlencoded}'
 
 
-def _data_url_to_bytes(data_url: str) -> Tuple[str, bytes]:
+def _data_url_to_bytes(data_url: str) -> tuple[str, bytes]:
     media_type, base64_image = data_url.split(',', 1)
     media_type = media_type.split(':')[1].split(';')[0]
     return media_type, base64.b64decode(base64_image)

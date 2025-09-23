@@ -1,13 +1,12 @@
 import os
-from typing import List
 
 import ifaddr
 
 from . import core, run
 
 
-def _get_all_ips() -> List[str]:
-    ips: List[str] = []
+def _get_all_ips() -> list[str]:
+    ips: list[str] = []
     for adapter in ifaddr.get_adapters():
         ips.extend(str(i.ip) for i in adapter.ips if i.is_IPv4)
     return ips

@@ -6,56 +6,64 @@ from nicegui.testing import Screen
 
 
 def test_mermaid(screen: Screen):
-    m = ui.mermaid('''
-        graph TD;
-            Node_A --> Node_B;
-    ''')
+    @ui.page('/')
+    def page():
+        m = ui.mermaid('''
+            graph TD;
+                Node_A --> Node_B;
+        ''')
+        ui.button('Set new content', on_click=lambda: m.set_content('''
+            graph TD;
+                Node_C --> Node_D;
+        '''))
 
     screen.open('/')
     node_a = screen.selenium.find_element(By.XPATH, '//span[p[contains(text(), "Node_A")]]')
     assert node_a.get_attribute('class') == 'nodeLabel'
 
-    m.set_content('''
-graph TD;
-    Node_C --> Node_D;
-''')
+    screen.click('Set new content')
     node_c = screen.selenium.find_element(By.XPATH, '//span[p[contains(text(), "Node_C")]]')
     assert node_c.get_attribute('class') == 'nodeLabel'
     screen.should_not_contain('Node_A')
 
 
 def test_mermaid_with_line_breaks(screen: Screen):
-    ui.mermaid('''
-        requirementDiagram
+    @ui.page('/')
+    def page():
+        ui.mermaid('''
+            requirementDiagram
 
-        requirement test_req {
-            id: 1
-            text: some test text
-            risk: high
-            verifymethod: test
-        }
-    ''')
+            requirement test_req {
+                id: 1
+                text: some test text
+                risk: high
+                verifymethod: test
+            }
+        ''')
 
     screen.open('/')
     screen.should_contain('<<Requirement>>')
-    screen.should_contain('Id: 1')
+    screen.should_contain('id: 1')
     screen.should_contain('Text: some test text')
     screen.should_contain('Risk: High')
     screen.should_contain('Verification: Test')
 
 
 def test_replace_mermaid(screen: Screen):
-    with ui.row() as container:
-        ui.mermaid('graph LR; Node_A')
+    @ui.page('/')
+    def page():
+        with ui.row() as container:
+            ui.mermaid('graph LR; Node_A')
 
-    def replace():
-        container.clear()
-        with container:
-            ui.mermaid('graph LR; Node_B')
-    ui.button('Replace', on_click=replace)
+        def replace():
+            container.clear()
+            with container:
+                ui.mermaid('graph LR; Node_B')
+        ui.button('Replace', on_click=replace)
 
     screen.open('/')
     screen.should_contain('Node_A')
+
     screen.click('Replace')
     screen.wait(0.5)
     screen.should_contain('Node_B')
@@ -63,7 +71,9 @@ def test_replace_mermaid(screen: Screen):
 
 
 def test_create_dynamically(screen: Screen):
-    ui.button('Create', on_click=lambda: ui.mermaid('graph LR; Node'))
+    @ui.page('/')
+    def page():
+        ui.button('Create', on_click=lambda: ui.mermaid('graph LR; Node'))
 
     screen.open('/')
     screen.click('Create')
@@ -71,11 +81,13 @@ def test_create_dynamically(screen: Screen):
 
 
 def test_error(screen: Screen):
-    ui.mermaid('''
-    graph LR;
-        A --> B;
-        A -> C;
-    ''').on('error', lambda e: ui.label(e.args['message']))
+    @ui.page('/')
+    def page():
+        ui.mermaid('''
+            graph LR;
+                A --> B;
+                A -> C;
+        ''').on('error', lambda e: ui.label(e.args['message']))
 
     screen.open('/')
     screen.should_contain('Syntax error in text')
@@ -84,23 +96,25 @@ def test_error(screen: Screen):
 
 @pytest.mark.parametrize('security_level', ['loose', 'strict'])
 def test_click_mermaid_node(security_level: str, screen: Screen):
-    ui.mermaid('''
-        flowchart TD;
-            X;
-            click X call document.write("Clicked X")
-    ''', config={'securityLevel': security_level})
+    @ui.page('/')
+    def page():
+        ui.mermaid('''
+            flowchart TD;
+                X;
+                click X call document.write("Clicked X")
+        ''', config={'securityLevel': security_level})
 
-    ui.mermaid('''
-        flowchart TD;
-            Y;
-            click Y call document.write("Clicked Y")
-    ''', config={'securityLevel': security_level})
+        ui.mermaid('''
+            flowchart TD;
+                Y;
+                click Y call document.write("Clicked Y")
+        ''', config={'securityLevel': security_level})
 
-    ui.mermaid('''
-        flowchart TD;
-            Z;
-            click Z call document.write("Clicked Z")
-    ''', config={'securityLevel': security_level})
+        ui.mermaid('''
+            flowchart TD;
+                Z;
+                click Z call document.write("Clicked Z")
+        ''', config={'securityLevel': security_level})
 
     screen.open('/')
     screen.click('Y')
