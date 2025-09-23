@@ -1,11 +1,15 @@
-import numpy as np
+import platform
+
 import plotly.graph_objects as go
+import pytest
 
 from nicegui import ui
 from nicegui.testing import Screen
 
 
+@pytest.mark.skipif(platform.python_implementation() == 'PyPy', reason='PyPy no numpy')
 def test_plotly(screen: Screen):
+    import numpy as np
     fig = go.Figure(go.Scatter(x=[1, 2, 3], y=[1, 2, 3], name='Trace 1'))
     fig.update_layout(title='Test Figure')
     plot = ui.plotly(fig)
