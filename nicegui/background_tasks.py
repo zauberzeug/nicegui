@@ -22,8 +22,8 @@ def create(coroutine: Awaitable, *, name: str = 'unnamed task', handle_exception
     See https://docs.python.org/3/library/asyncio-task.html#asyncio.create_task.
 
     :param coroutine: the coroutine or awaitable to wrap
-    :param name: the name of the task which is helpful for debugging (default: 'unnamed task')
-    :param handle_exceptions: if True (default) possible exceptions are forwarded to the global exception handlers
+    :param name: the name of the task which is helpful for debugging (default: "unnamed task")
+    :param handle_exceptions: if ``True`` (default) possible exceptions are forwarded to the global exception handlers
     """
     assert core.loop is not None
     coroutine = coroutine if asyncio.iscoroutine(coroutine) else asyncio.wait_for(coroutine, None)

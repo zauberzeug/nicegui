@@ -220,7 +220,7 @@ class AgGrid(Element, component='aggrid.js', esm={'nicegui-aggrid': 'dist'}, def
     async def get_client_data(
         self,
         *,
-        timeout: float = 3.0,
+        timeout: float = 1,
         method: Literal['all_unsorted', 'filtered_unsorted', 'filtered_sorted', 'leaf'] = 'all_unsorted'
     ) -> list[dict]:
         """Get the data from the client including any edits made by the client.
@@ -232,7 +232,7 @@ class AgGrid(Element, component='aggrid.js', esm={'nicegui-aggrid': 'dist'}, def
         Note that when editing a cell, the row data is not updated until the cell exits the edit mode.
         This does not happen when the cell loses focus, unless ``stopEditingWhenCellsLoseFocus: True`` is set.
 
-        :param timeout: timeout in seconds (default: 3 seconds)
+        :param timeout: timeout in seconds (default: 1 second)
         :param method: method to access the data, "all_unsorted" (default), "filtered_unsorted", "filtered_sorted", "leaf"
 
         :return: list of row data

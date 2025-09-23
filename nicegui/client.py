@@ -68,10 +68,10 @@ class Client:
 
         self.elements: dict[int, Element] = {}
         self.next_element_id: int = 0
-        self._waiting_for_connection: asyncio.Event = asyncio.Event()
-        self._waiting_for_disconnect: asyncio.Event = asyncio.Event()
-        self._is_connected: asyncio.Event = asyncio.Event()
-        self._deleted_event: asyncio.Event = asyncio.Event()
+        self._waiting_for_connection = asyncio.Event()
+        self._waiting_for_disconnect = asyncio.Event()
+        self._connected = asyncio.Event()
+        self._deleted_event = asyncio.Event()
         self.environ: dict[str, Any] | None = None
         self.on_air = False
         self._num_connections: defaultdict[str, int] = defaultdict(int)
@@ -120,42 +120,9 @@ class Client:
         return self.request.client.host if self.request.client is not None else ''
 
     @property
-    def is_speculation_prerender(self) -> bool:
-        """Whether this request was initiated by a prerender (Speculation Rules)."""
-        return 'prerender' in self._sec_purpose
-
-    @property
-    def is_speculation_prefetch(self) -> bool:
-        """Whether this request was initiated by a prefetch (Speculation Rules).
-
-        We consider it prefetch when the header contains 'prefetch' and does not contain 'prerender'.
-        """
-        sp = self._sec_purpose
-        return 'prefetch' in sp and 'prerender' not in sp
-
-    @property
-    def _sec_purpose(self) -> str:
-        """Return the Sec-Purpose or Purpose header value in lower case."""
-        try:
-            header = self.request.headers.get('Sec-Purpose') or self.request.headers.get('Purpose') or ''
-            return header.lower()
-        except Exception:
-            return ''
-
-    @property
     def has_socket_connection(self) -> bool:
         """Whether the client is connected."""
         return self.tab_id is not None
-
-    @property
-    def is_waiting_for_connection(self) -> bool:
-        """Whether the client is currently waiting for a connection."""
-        return self._waiting_for_connection.is_set()
-
-    @property
-    def is_waiting_for_disconnect(self) -> bool:
-        """Whether the client is currently waiting for a disconnect."""
-        return self._waiting_for_disconnect.is_set()
 
     @property
     def head_html(self) -> str:
@@ -226,16 +193,16 @@ class Client:
 
     async def connected(self, timeout: float = 3.0) -> None:
         """Block execution until the client is connected."""
-        if not self.has_socket_connection:
-            self._waiting_for_connection.set()
-            self._is_connected.clear()
-            if self.is_speculation_prefetch:
-                await self._is_connected.wait()  # NOTE: wait for connection without timeout until client pruning takes care of cancellation
-            else:
-                try:
-                    await asyncio.wait_for(self._is_connected.wait(), timeout=timeout)
-                except asyncio.TimeoutError as e:
-                    raise ClientConnectionTimeout(self) from e
+        if self.has_socket_connection:
+            return
+        self._waiting_for_connection.set()
+        self._connected.clear()
+        purpose = (self.request.headers.get('Sec-Purpose') or self.request.headers.get('Purpose') or '').lower()
+        is_prefetch = 'prefetch' in purpose and 'prerender' not in purpose
+        try:
+            await asyncio.wait_for(self._connected.wait(), timeout=None if is_prefetch else timeout)
+        except asyncio.TimeoutError as e:
+            raise ClientConnectionTimeout(self) from e
 
     async def disconnected(self) -> None:
         """Block execution until the client disconnects."""
@@ -246,18 +213,18 @@ class Client:
             self._deleted_event.clear()
             await self._deleted_event.wait()
 
-    def run_javascript(self, code: str, *, timeout: float = 3.0) -> AwaitableResponse:
+    def run_javascript(self, code: str, *, timeout: float = 1.0) -> AwaitableResponse:
         """Execute JavaScript on the client.
 
         If the function is awaited, the result of the JavaScript code is returned.
         Otherwise, the JavaScript code is executed without waiting for a response.
 
-        Obviously the javascript code is only executed after the client is connected.
-        Internally, `await ui.context.client.connected(timeout=timeout)` is called before the JavaScript code is executed.
-        This might delay the execution of the JavaScript code and is not covered by the `timeout` parameter.
+        Obviously the JavaScript code is only executed after the client is connected.
+        Internally, ``await client.connected()`` is called before the JavaScript code is executed (*since version 3.0.0*).
+        This might delay the execution of the JavaScript code and is not covered by the ``timeout`` parameter.
 
         :param code: JavaScript code to run
-        :param timeout: timeout in seconds (default: `3.0`)
+        :param timeout: timeout in seconds (default: 1.0)
 
         :return: AwaitableResponse that can be awaited to get the result of the JavaScript code
         """
@@ -294,7 +261,7 @@ class Client:
     def handle_handshake(self, socket_id: str, document_id: str, next_message_id: int | None) -> None:
         """Cancel pending disconnect task and invoke connect handlers."""
         self._waiting_for_connection.clear()
-        self._is_connected.set()
+        self._connected.set()
         self._socket_to_document_id[socket_id] = document_id
         self._cancel_delete_task(document_id)
         self._num_connections[document_id] += 1

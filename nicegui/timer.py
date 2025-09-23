@@ -43,7 +43,7 @@ class Timer:
         coroutine = self._run_once if once else self._run_in_loop
         if core.script_mode:
             return
-        elif core.app.is_started:
+        if core.app.is_started:
             background_tasks.create(coroutine(), name=str(callback))
         else:
             core.app.on_startup(coroutine)
