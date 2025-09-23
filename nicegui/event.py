@@ -86,7 +86,7 @@ class Event(Generic[P]):
         if client is not None and unsubscribe_on_disconnect is not False:
             async def register_disconnect() -> None:
                 try:
-                    await client.connected(timeout=10.0)
+                    await client.connected()
                     client.on_disconnect(lambda: self.unsubscribe(callback))
                 except ClientConnectionTimeout:
                     log.debug('Could not register a disconnect handler for callback %s', callback)
