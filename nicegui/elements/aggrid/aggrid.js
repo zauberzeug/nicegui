@@ -44,8 +44,11 @@ export default {
 
       const originalOnGridReady = this.gridOptions.onGridReady;
       this.gridOptions.onGridReady = (params) => {
-        originalOnGridReady(params);
-        this.handle_event("gridReady", params);
+        try {
+          originalOnGridReady?.(params);
+        } finally {
+          this.handle_event("gridReady", params);
+        }
       };
       this.api = AgGrid.createGrid(this.$el, this.gridOptions);
       this.api.addGlobalListener(this.handle_event);
