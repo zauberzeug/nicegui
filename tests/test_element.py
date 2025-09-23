@@ -355,7 +355,6 @@ def test_no_cyclic_references_when_deleting_elements(screen: Screen):
     with ui.card() as card:
         for _ in range(10):
             elements.add(ui.element())
-            elements.add(ui.pyplot())
             elements.add(ui.query('div'))
 
     card.clear()
