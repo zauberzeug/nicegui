@@ -12,4 +12,14 @@ import {
 
 ModuleRegistry.registerModules([AllCommunityModule]);
 
-export default { createGrid, themeAlpine, themeBalham, themeMaterial, themeQuartz, colorSchemeDark, colorSchemeLight };
+export default {
+  createGrid,
+  themes: {
+    alpine: themeAlpine,
+    balham: themeBalham,
+    material: themeMaterial,
+    quartz: themeQuartz,
+  },
+  colorSchemeDark,
+  colorSchemeLight,
+};
