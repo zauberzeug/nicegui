@@ -5,12 +5,14 @@
     <meta name="viewport" content="{{ viewport }}" />
     <link href="{{ favicon_url }}" rel="shortcut icon" />
     <style>
-      @layer theme, base, quasar, nicegui, components, utilities, overrides;
+      @layer theme, base, quasar, nicegui, components, utilities, overrides, quasar_importants;
       @import url("{{ prefix | safe }}/_nicegui/{{version}}/static/fonts.css") layer(base);
       {% if prod_js %}
-        @import url("{{ prefix | safe }}/_nicegui/{{version}}/static/quasar.prod.css") layer(quasar);
+        @import url("{{ prefix | safe }}/_nicegui/{{version}}/static/quasar_unimportant.min.css") layer(quasar);
+        @import url("{{ prefix | safe }}/_nicegui/{{version}}/static/quasar_important.min.css") layer(quasar_importants);
       {% else %}
-        @import url("{{ prefix | safe }}/_nicegui/{{version}}/static/quasar.css") layer(quasar);
+        @import url("{{ prefix | safe }}/_nicegui/{{version}}/static/quasar_unimportant.css") layer(quasar);
+        @import url("{{ prefix | safe }}/_nicegui/{{version}}/static/quasar_important.css") layer(quasar_importants);
       {% endif %}
       @import url("{{ prefix | safe }}/_nicegui/{{version}}/static/nicegui.css") layer(nicegui);
       @layer quasar {
