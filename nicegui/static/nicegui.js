@@ -429,60 +429,48 @@ function createApp(elements, options) {
   }));
 }
 
-// HACK: remove Quasar's rules for divs in QCard (#2265, #2301)
-for (const importRule of document.styleSheets[0].cssRules) {
+const t0 = performance.now();
+const NEUTRALIZE_CLASSES = [
+  "cursor-not-allowed",
+  "cursor-pointer",
+  "block",
+  "inline-block",
+  "hidden",
+  "invisible",
+  "overflow-auto",
+  "overflow-hidden",
+];
+const CLS_ALT = NEUTRALIZE_CLASSES.map((s) => s.replace(/[-/\\^$*+?.()|[\]{}]/g, "\\$&")).join("|");
+const NEUTRALIZE_RE = new RegExp(`(^|[^\\w-])\\.(${CLS_ALT})(?![\\w-])`, "g");
+
+const rootSheet = document.styleSheets[0];
+const rules = Array.from(rootSheet.cssRules);
+const source = rules.find((r) => r.layerName === "quasar").styleSheet;
+const target = rules.find((r) => r.name === "quasar_importants");
+rootSheet.ownerNode.disabled = true;
+
+for (const importRule of rootSheet.cssRules) {
   if (importRule instanceof CSSImportRule && /quasar/.test(importRule.styleSheet?.href)) {
     for (const rule of Array.from(importRule.styleSheet.cssRules)) {
-      if (rule instanceof CSSStyleRule && /\.q-card > div/.test(rule.selectorText)) {
+      if (rule instanceof CSSStyleRule) {
+        // HACK: remove Quasar's rules for divs in QCard (#2265, #2301)
         if (/\.q-card > div/.test(rule.selectorText)) rule.selectorText = ".nicegui-card-tight" + rule.selectorText;
+
+        // HACK: neutralize Quasar's utility classes without affecting Tailwind
+        rule.selectorText = rule.selectorText.replace(NEUTRALIZE_RE, "$1._quasar_$2_");
       }
     }
   }
 }
 
-// HACK: Move Tailwind's important rules to a layer before Quasar to make sure they win
-function moveRules() {
-  const rulesInLayer = [];
-  for (const stylesheet of document.styleSheets) {
-    try {
-      for (const rule of stylesheet.cssRules) {
-        if (rule instanceof CSSLayerBlockRule && rule.name === "utilities") {
-          for (const rule2 of rule.cssRules) {
-            if (typeof rule2.selectorText === "string") {
-              const idx = rule2.cssText.indexOf("!important");
-              if (idx !== -1 && rule2.cssText.charAt(idx - 1) !== "\\") {
-                rulesInLayer.push(rule2);
-              }
-            }
-          }
-        }
-      }
-    } catch (e) {
-      console.warn(`Could not access stylesheet: ${stylesheet.href}`, e);
-    }
-  }
-  console.log(`CSS rules in layer "utilities":`, rulesInLayer);
-  for (const stylesheet of document.styleSheets) {
-    try {
-      for (const rule of stylesheet.cssRules) {
-        if (rule instanceof CSSLayerBlockRule && rule.name === "tailwind_importants") {
-          while (rule.cssRules.length > 0) {
-            rule.deleteRule(0);
-          }
-          for (const applyRules of rulesInLayer) {
-            console.log(`Re-inserting rule in layer "tailwind_importants":`, applyRules.cssText);
-            rule.insertRule(applyRules.cssText);
-          }
-          console.log(rule);
-          console.log(rule.cssText);
-        }
-      }
-    } catch (e) {
-      console.warn(`Could not access stylesheet: ${stylesheet.href}`, e);
-    }
+// HACK: Move Quasar's important rules to a layer to control precedence
+for (let i = source.cssRules.length - 1; i >= 0; i--) {
+  const rule = source.cssRules[i];
+  if (rule instanceof CSSStyleRule && /!important/.test(rule.cssText)) {
+    source.deleteRule(i);
+    target.insertRule(rule.cssText);
   }
 }
-const observer = new MutationObserver((mutationsList, observer) => {
-  moveRules();
-});
-observer.observe(document.head, { childList: true, subtree: true });
+
+rootSheet.ownerNode.disabled = false;
+console.log("Done moving Quasar's important rules in", performance.now() - t0, "ms");
