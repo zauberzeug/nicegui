@@ -153,7 +153,6 @@ def test_exception_after_connected(screen: Screen):
     screen.open('/')
     screen.should_contain('this is shown')
     screen.assert_py_logger('ERROR', 'some exception')
-    screen.assert_py_logger('ERROR', re.compile('Exception in callback'))
 
 
 def test_page_with_args(screen: Screen):
@@ -303,3 +302,13 @@ def test_multicast(screen: Screen):
     screen.should_contain('added')
     screen.switch_to(0)
     screen.should_contain('added')
+
+
+def test_warning_if_response_takes_too_long(screen: Screen):
+    @ui.page('/', response_timeout=0.5)
+    async def page():
+        await asyncio.sleep(1)
+        ui.label('all done')
+
+    screen.open('/')
+    screen.assert_py_logger('WARNING', re.compile('Response for / not ready after 0.5 seconds'))

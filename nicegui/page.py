@@ -9,7 +9,7 @@ from typing import TYPE_CHECKING, Any, Callable
 from fastapi import HTTPException, Request, Response
 
 from . import background_tasks, binding, core, helpers
-from .client import Client
+from .client import Client, ClientConnectionTimeout
 from .favicon import create_favicon_route
 from .language import Language
 from .logging import log
@@ -116,6 +116,11 @@ class page:
                               'it was returned after the HTML had been delivered to the client')
             except asyncio.CancelledError:
                 pass
+            except ClientConnectionTimeout as e:
+                log.debug('client connection timed out')
+                e.client.delete()
+            except Exception as e:
+                core.app.handle_exception(e)
 
         def create_error_page(e: Exception, request: Request) -> Response:
             page_exception_handler = core.app._page_exception_handler  # pylint: disable=protected-access
@@ -161,17 +166,21 @@ class page:
                             return await result
                         except Exception as e:
                             return create_error_page(e, request)
-                task = background_tasks.create(wait_for_result())
+                task = background_tasks.create(wait_for_result(),
+                                               name=f'wait for result of page "{client.page.path}"',
+                                               handle_exceptions=False)
                 task_wait_for_connection = background_tasks.create(
                     client._waiting_for_connection.wait(),  # pylint: disable=protected-access
                 )
-                try:
-                    await asyncio.wait([
-                        task,
-                        task_wait_for_connection,
-                    ], timeout=self.response_timeout, return_when=asyncio.FIRST_COMPLETED)
-                except asyncio.TimeoutError as e:
-                    raise TimeoutError(f'Response not ready after {self.response_timeout} seconds') from e
+                await asyncio.wait([
+                    task,
+                    task_wait_for_connection,
+                ], timeout=self.response_timeout, return_when=asyncio.FIRST_COMPLETED)
+                if not task_wait_for_connection.done() and not task.done():
+                    task_wait_for_connection.cancel()
+                    task.cancel()
+                    log.warning(f'Response for {client.page.path} not ready after {self.response_timeout} seconds')
+                    client.delete()
                 if task.done():
                     result = task.result()
                 else:
