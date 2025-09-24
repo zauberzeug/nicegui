@@ -9,7 +9,7 @@ from typing import TYPE_CHECKING, Any, Callable
 from fastapi import HTTPException, Request, Response
 
 from . import background_tasks, binding, core, helpers
-from .client import Client, ClientConnectionTimeout
+from .client import Client
 from .favicon import create_favicon_route
 from .language import Language
 from .logging import log
@@ -116,9 +116,6 @@ class page:
                               'it was returned after the HTML had been delivered to the client')
             except asyncio.CancelledError:
                 pass
-            except ClientConnectionTimeout as e:
-                log.debug('client connection timed out')
-                e.client.delete()
             except Exception as e:
                 core.app.handle_exception(e)
 

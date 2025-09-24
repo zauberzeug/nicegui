@@ -71,8 +71,7 @@ class Timer:
 
     async def _run_once(self) -> None:
         try:
-            if not await self._can_start():
-                return
+            await self._can_start()
             with self._get_context():
                 await asyncio.sleep(self.interval)
                 if self.active and not self._should_stop():
@@ -85,8 +84,7 @@ class Timer:
         try:
             if not self._immediate:
                 await asyncio.sleep(self.interval)
-            if not await self._can_start():
-                return
+            await self._can_start()
             with self._get_context():
                 while not self._should_stop():
                     try:
@@ -114,8 +112,8 @@ class Timer:
         except Exception as e:
             core.app.handle_exception(e)
 
-    async def _can_start(self) -> bool:
-        return True
+    async def _can_start(self) -> None:
+        return
 
     def _should_stop(self) -> bool:
         return (
