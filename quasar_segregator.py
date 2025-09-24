@@ -1,6 +1,9 @@
+import copy
 from pathlib import Path
 
-import tinycss2
+import cssbeautifier  # pip install cssbeautifier
+import rcssmin  # pip install rcssmin
+import tinycss2  # pip install tinycss2
 from tinycss2 import ast
 
 ROOT = Path(__file__).parent
@@ -11,7 +14,6 @@ rules = tinycss2.parse_stylesheet(
 
 rules_unimportant_only = []
 rules_important_only = []
-rules_mixed = []
 
 for rule in rules:
     assert isinstance(rule, (ast.QualifiedRule, ast.AtRule)), f'Unexpected {rule}. Script needs update.'
@@ -24,20 +26,30 @@ for rule in rules:
         if isinstance(declaration, ast.Declaration) and not declaration.important:
             has_unimportant = True
     if has_important and has_unimportant:
-        rules_mixed.append(rule)
+        rule_copy1 = copy.deepcopy(rule)
+        rule_copy2 = copy.deepcopy(rule)
+        rule_copy1.content = [d for d in declarations if isinstance(
+            d, ast.Declaration) and d.important]  # keep only important
+        rule_copy2.content = [d for d in declarations if isinstance(
+            d, ast.Declaration) and not d.important]  # keep only unimportant
+        rules_important_only.append(rule_copy1)
+        rules_unimportant_only.append(rule_copy2)
     elif has_important:
         rules_important_only.append(rule)
     else:
         rules_unimportant_only.append(rule)
 
 print(f'Found {len(rules_unimportant_only)} unimportant-only rules, '
-      f'{len(rules_important_only)} important-only rules, '
-      f'{len(rules_mixed)} mixed rules.')
+      f'{len(rules_important_only)} important-only rules, ')
 
 # serialize them all
 (STATIC / 'quasar_unimportant.css').write_text(
-    tinycss2.serialize(rules_unimportant_only))
+    cssbeautifier.beautify(tinycss2.serialize(rules_unimportant_only)))
 (STATIC / 'quasar_important.css').write_text(
-    tinycss2.serialize(rules_important_only))
-(STATIC / 'quasar_mixed.css').write_text(
-    tinycss2.serialize(rules_mixed))
+    cssbeautifier.beautify(tinycss2.serialize(rules_important_only)))
+
+# minimize with rcssmin
+(STATIC / 'quasar_unimportant.min.css').write_text(
+    rcssmin.cssmin((STATIC / 'quasar_unimportant.css').read_text()))
+(STATIC / 'quasar_important.min.css').write_text(
+    rcssmin.cssmin((STATIC / 'quasar_important.css').read_text()))
