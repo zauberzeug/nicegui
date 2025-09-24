@@ -439,3 +439,50 @@ for (const importRule of document.styleSheets[0].cssRules) {
     }
   }
 }
+
+// HACK: Move Tailwind's important rules to a layer before Quasar to make sure they win
+function moveRules() {
+  const rulesInLayer = [];
+  for (const stylesheet of document.styleSheets) {
+    try {
+      for (const rule of stylesheet.cssRules) {
+        if (rule instanceof CSSLayerBlockRule && rule.name === "utilities") {
+          for (const rule2 of rule.cssRules) {
+            if (typeof rule2.selectorText === "string") {
+              const idx = rule2.cssText.indexOf("!important");
+              if (idx !== -1 && rule2.cssText.charAt(idx - 1) !== "\\") {
+                rulesInLayer.push(rule2);
+              }
+            }
+          }
+        }
+      }
+    } catch (e) {
+      console.warn(`Could not access stylesheet: ${stylesheet.href}`, e);
+    }
+  }
+  console.log(`CSS rules in layer "utilities":`, rulesInLayer);
+  for (const stylesheet of document.styleSheets) {
+    try {
+      for (const rule of stylesheet.cssRules) {
+        if (rule instanceof CSSLayerBlockRule && rule.name === "tailwind_importants") {
+          while (rule.cssRules.length > 0) {
+            rule.deleteRule(0);
+          }
+          for (const applyRules of rulesInLayer) {
+            console.log(`Re-inserting rule in layer "tailwind_importants":`, applyRules.cssText);
+            rule.insertRule(applyRules.cssText);
+          }
+          console.log(rule);
+          console.log(rule.cssText);
+        }
+      }
+    } catch (e) {
+      console.warn(`Could not access stylesheet: ${stylesheet.href}`, e);
+    }
+  }
+}
+const observer = new MutationObserver((mutationsList, observer) => {
+  moveRules();
+});
+observer.observe(document.head, { childList: true, subtree: true });

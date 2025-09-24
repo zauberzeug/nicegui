@@ -5,7 +5,7 @@
     <meta name="viewport" content="{{ viewport }}" />
     <link href="{{ favicon_url }}" rel="shortcut icon" />
     <style>
-      @layer theme, base, quasar, nicegui, components, utilities, overrides;
+      @layer tailwind_importants, theme, base, quasar, nicegui, components, utilities, overrides;
       @import url("{{ prefix | safe }}/_nicegui/{{version}}/static/fonts.css") layer(base);
       {% if prod_js %}
         @import url("{{ prefix | safe }}/_nicegui/{{version}}/static/quasar.prod.css") layer(quasar);
@@ -26,6 +26,9 @@
         .nicegui-select-popup-open {
           scroll-behavior: auto !important; /* HACK: avoid smooth-scrolling when dialogs or select popups close */
         }
+      }
+      @layer tailwind_importants {
+        /* Do not remove this layer, it is used in the JS to move !important rules from the "utilities" layer here */
       }
     </style>
     <!-- prevent Prettier from removing this line -->
