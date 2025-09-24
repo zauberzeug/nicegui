@@ -112,6 +112,39 @@ def table_with_expandable_rows():
     ''')
 
 
+@doc.demo('Table with Say Hello button', '''
+    Each row has a "Say hello" button added to the Actions column.
+    Clicking the button shows a notification greeting the row name.
+    This demonstrates how to add interactive buttons to table cells 
+    in a specific column, with each button working independently for its row.
+''')
+def table_with_say_hello_button():
+    columns = [
+        {'name': 'id', 'label': 'ID', 'field': 'id'},
+        {'name': 'name', 'label': 'Name', 'field': 'name'},
+        {'name': 'age', 'label': 'Age', 'field': 'age'},
+        {'name': 'actions', 'label': 'Actions', 'align': 'center'},
+    ]
+    rows = [
+    {'id': 0, 'name': 'Alice', 'age': 25},
+    {'id': 1, 'name': 'Bob', 'age': 30},
+    ]
+    table = ui.table(columns=columns, rows=rows, row_key='id').classes('w-full')
+    table.add_slot('body-cell-actions', r'''
+        <q-td auto-width :props="props">
+            <q-btn 
+                size="sm" 
+                color="blue" 
+                label="Say hello" 
+                flat 
+                dense 
+                round
+                @click="() => $q.notify({message: 'Hello ' + props.row.name + '!'})"
+            />
+        </q-td>
+    ''')
+
+
 @doc.demo('Show and hide columns', '''
     Here is an example of how to show and hide columns in a table.
 ''')
