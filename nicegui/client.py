@@ -65,6 +65,7 @@ class Client:
         self._waiting_for_connection: asyncio.Event = asyncio.Event()
         self.is_waiting_for_connection: bool = False
         self.is_waiting_for_disconnect: bool = False
+        self._is_waiting_for_first_handshake: bool = True
         self.environ: dict[str, Any] | None = None
         self.on_air = False
         self._num_connections: defaultdict[str, int] = defaultdict(int)
@@ -88,8 +89,10 @@ class Client:
 
         self.storage = ObservableDict()
 
+        self.handshake_handlers: list[Callable[..., Any] | Awaitable] = []
         self.connect_handlers: list[Callable[..., Any] | Awaitable] = []
         self.disconnect_handlers: list[Callable[..., Any] | Awaitable] = []
+        self.deletion_handlers: list[Callable[..., Any] | Awaitable] = []
 
         self._temporary_socket_id: str | None = None
 
@@ -239,6 +242,10 @@ class Client:
         """Download a file from a given URL or raw bytes."""
         self.outbox.enqueue_message('download', {'src': src, 'filename': filename, 'media_type': media_type}, self.id)
 
+    def on_handshake(self, handler: Callable[..., Any] | Awaitable) -> None:
+        """Add a callback to be invoked when the client completes the handshake."""
+        self.handshake_handlers.append(handler)
+
     def on_connect(self, handler: Callable[..., Any] | Awaitable) -> None:
         """Add a callback to be invoked when the client connects."""
         self.connect_handlers.append(handler)
@@ -246,6 +253,10 @@ class Client:
     def on_disconnect(self, handler: Callable[..., Any] | Awaitable) -> None:
         """Add a callback to be invoked when the client disconnects."""
         self.disconnect_handlers.append(handler)
+
+    def on_deletion(self, handler: Callable[..., Any] | Awaitable) -> None:
+        """Add a callback to be invoked when the client is deleted."""
+        self.deletion_handlers.append(handler)
 
     def handle_handshake(self, socket_id: str, document_id: str, next_message_id: int | None) -> None:
         """Cancel pending disconnect task and invoke connect handlers."""
@@ -255,6 +266,12 @@ class Client:
         if next_message_id is not None:
             self.outbox.try_rewind(next_message_id)
         storage.request_contextvar.set(self.request)
+        if self._is_waiting_for_first_handshake:
+            self._is_waiting_for_first_handshake = False
+            for t in self.handshake_handlers:
+                self.safe_invoke(t)
+            for t in core.app._handshake_handlers:  # pylint: disable=protected-access
+                self.safe_invoke(t)
         for t in self.connect_handlers:
             self.safe_invoke(t)
         for t in core.app._connect_handlers:  # pylint: disable=protected-access
@@ -282,6 +299,10 @@ class Client:
         async def delete_content() -> None:
             await asyncio.sleep(self.page.resolve_reconnect_timeout())
             if self._num_connections[document_id] == 0:
+                for t in self.deletion_handlers:
+                    self.safe_invoke(t)
+                for t in core.app._deletion_handlers:  # pylint: disable=protected-access
+                    self.safe_invoke(t)
                 self._num_connections.pop(document_id)
                 self._delete_tasks.pop(document_id)
                 self.delete()
