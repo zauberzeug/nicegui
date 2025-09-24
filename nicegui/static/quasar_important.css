@@ -148,6 +148,14 @@ body.q-ios-padding .q-dialog__inner>div {
     max-height: calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom)) !important;
 }
 
+@media (max-width: 599.98px) {
+
+    .q-dialog__inner--top>div,
+    .q-dialog__inner--bottom>div {
+        width: 100% !important;
+    }
+}
+
 .q-expansion-item__toggle-focus {
     width: 1em !important;
     height: 1em !important;
@@ -490,6 +498,15 @@ body.platform-ios:not(.native-mobile) .q-dialog__inner--top .q-select__dialog--f
 .q-loading {
 
     position: fixed !important;
+}
+
+@media print,
+(prefers-reduced-motion: reduce) {
+    .animated {
+        animation-duration: 1ms !important;
+        transition-duration: 1ms !important;
+        animation-iteration-count: 1 !important;
+    }
 }
 
 .text-dark {
@@ -3153,4 +3170,103 @@ body.platform-ios .platform-ios-hide {
 body:not(.platform-android) .platform-android-only,
 body.platform-android .platform-android-hide {
     display: none !important;
+}
+
+@media all and (orientation: portrait) {
+    .orientation-landscape {
+        display: none !important;
+    }
+}
+
+@media all and (orientation: landscape) {
+    .orientation-portrait {
+        display: none !important;
+    }
+}
+
+@media screen {
+    .print-only {
+        display: none !important;
+    }
+}
+
+@media print {
+    .print-hide {
+        display: none !important;
+    }
+}
+
+@media (max-width: 599.98px) {
+
+    .xs-hide,
+    .gt-xs,
+    .sm,
+    .gt-sm,
+    .md,
+    .gt-md,
+    .lg,
+    .gt-lg,
+    .xl {
+        display: none !important;
+    }
+}
+
+@media (min-width: 600px) and (max-width: 1023.98px) {
+
+    .sm-hide,
+    .xs,
+    .lt-sm,
+    .gt-sm,
+    .md,
+    .gt-md,
+    .lg,
+    .gt-lg,
+    .xl {
+        display: none !important;
+    }
+}
+
+@media (min-width: 1024px) and (max-width: 1439.98px) {
+
+    .md-hide,
+    .xs,
+    .lt-sm,
+    .sm,
+    .lt-md,
+    .gt-md,
+    .lg,
+    .gt-lg,
+    .xl {
+        display: none !important;
+    }
+}
+
+@media (min-width: 1440px) and (max-width: 1919.98px) {
+
+    .lg-hide,
+    .xs,
+    .lt-sm,
+    .sm,
+    .lt-md,
+    .md,
+    .lt-lg,
+    .gt-lg,
+    .xl {
+        display: none !important;
+    }
+}
+
+@media (min-width: 1920px) {
+
+    .xl-hide,
+    .xs,
+    .lt-sm,
+    .sm,
+    .lt-md,
+    .md,
+    .lt-lg,
+    .lg,
+    .lt-xl {
+        display: none !important;
+    }
 }

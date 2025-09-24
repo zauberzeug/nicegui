@@ -2533,11 +2533,6 @@ body.platform-android:not(.native-mobile) .q-dialog__inner--minimized>div {
         padding-left: 0;
         padding-right: 0;
     }
-
-    .q-dialog__inner--top>div,
-    .q-dialog__inner--bottom>div {
-        width: 100% !important;
-    }
 }
 
 @media (min-width: 600px) {
@@ -2748,9 +2743,10 @@ body.platform-android:not(.native-mobile) .q-dialog__inner--minimized>div {
     0% {
         --q-exp-done: 1;
     }
+
+    /* needed for compilation */
 }
 
-/* needed for compilation */
 .z-fab {
     z-index: 990;
 }
@@ -9408,12 +9404,6 @@ body.q-ios-padding .q-notifications__list--bottom {
 
 @media print,
 (prefers-reduced-motion: reduce) {
-    .animated {
-        animation-duration: 1ms !important;
-        transition-duration: 1ms !important;
-        animation-iteration-count: 1 !important;
-    }
-
     .animated[class*=Out] {
         opacity: 0;
     }
@@ -13693,105 +13683,6 @@ sup {
     left: 0
         /* rtl:ignore */
     ;
-}
-
-@media all and (orientation: portrait) {
-    .orientation-landscape {
-        display: none !important;
-    }
-}
-
-@media all and (orientation: landscape) {
-    .orientation-portrait {
-        display: none !important;
-    }
-}
-
-@media screen {
-    .print-only {
-        display: none !important;
-    }
-}
-
-@media print {
-    .print-hide {
-        display: none !important;
-    }
-}
-
-@media (max-width: 599.98px) {
-
-    .xs-hide,
-    .gt-xs,
-    .sm,
-    .gt-sm,
-    .md,
-    .gt-md,
-    .lg,
-    .gt-lg,
-    .xl {
-        display: none !important;
-    }
-}
-
-@media (min-width: 600px) and (max-width: 1023.98px) {
-
-    .sm-hide,
-    .xs,
-    .lt-sm,
-    .gt-sm,
-    .md,
-    .gt-md,
-    .lg,
-    .gt-lg,
-    .xl {
-        display: none !important;
-    }
-}
-
-@media (min-width: 1024px) and (max-width: 1439.98px) {
-
-    .md-hide,
-    .xs,
-    .lt-sm,
-    .sm,
-    .lt-md,
-    .gt-md,
-    .lg,
-    .gt-lg,
-    .xl {
-        display: none !important;
-    }
-}
-
-@media (min-width: 1440px) and (max-width: 1919.98px) {
-
-    .lg-hide,
-    .xs,
-    .lt-sm,
-    .sm,
-    .lt-md,
-    .md,
-    .lt-lg,
-    .gt-lg,
-    .xl {
-        display: none !important;
-    }
-}
-
-@media (min-width: 1920px) {
-
-    .xl-hide,
-    .xs,
-    .lt-sm,
-    .sm,
-    .lt-md,
-    .md,
-    .lt-lg,
-    .lg,
-    .lt-xl {
-        display: none !important;
-    }
 }
 
 .q-focus-helper,
