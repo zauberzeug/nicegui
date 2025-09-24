@@ -1,8 +1,7 @@
 from contextlib import AbstractContextManager, nullcontext
 
-from ..client import Client, ClientConnectionTimeout
+from ..client import Client
 from ..element import Element
-from ..logging import log
 from ..timer import Timer as BaseTimer
 
 
@@ -11,19 +10,12 @@ class Timer(BaseTimer, Element, component='timer.js'):
     def _get_context(self) -> AbstractContextManager:
         return self.parent_slot or nullcontext()
 
-    async def _can_start(self) -> bool:
+    async def _can_start(self) -> None:
         """Wait for the client connection before the timer callback can be allowed to manipulate the state.
 
         See https://github.com/zauberzeug/nicegui/issues/206 for details.
-        Returns True if the client is connected, False if the client is not connected and the timer should be cancelled.
         """
-        try:
-            await self.client.connected()
-            return True
-        except ClientConnectionTimeout:
-            self.cancel()
-            log.debug('Timer cancelled because client connection timed out')
-            return False
+        await self.client.connected()
 
     def _should_stop(self) -> bool:
         return (

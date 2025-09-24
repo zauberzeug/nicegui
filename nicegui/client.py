@@ -41,12 +41,6 @@ HTML_ESCAPE_TABLE = str.maketrans({
 })
 
 
-class ClientConnectionTimeout(TimeoutError):
-    def __init__(self, client: Client) -> None:
-        super().__init__(f'ClientConnectionTimeout: {client.id}')
-        self.client = client
-
-
 class Client:
     page_routes: ClassVar[dict[Callable[..., Any], str]] = {}
     '''Maps page builders to their routes.'''
@@ -191,21 +185,13 @@ class Client:
         """Return the title of the page."""
         return self.page.resolve_title() if self.title is None else self.title
 
-    async def connected(self, timeout: float | None = None) -> None:
-        """Block execution until the client is connected.
-
-        :param timeout: timeout in seconds (default: ``None``)
-        """
+    async def connected(self) -> None:
+        """Block execution until the client is connected."""
         if self.has_socket_connection:
             return
         self._waiting_for_connection.set()
         self._connected.clear()
-        purpose = (self.request.headers.get('Sec-Purpose') or self.request.headers.get('Purpose') or '').lower()
-        is_prefetch = 'prefetch' in purpose and 'prerender' not in purpose
-        try:
-            await asyncio.wait_for(self._connected.wait(), timeout=None if is_prefetch else timeout)
-        except asyncio.TimeoutError as e:
-            raise ClientConnectionTimeout(self) from e
+        await asyncio.wait_for(self._connected.wait(), None)
 
     async def disconnected(self) -> None:
         """Block execution until the client disconnects."""
