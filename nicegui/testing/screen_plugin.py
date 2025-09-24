@@ -75,11 +75,17 @@ def screen(nicegui_reset_globals,  # noqa: F811, pylint: disable=unused-argument
     prepare_simulation(request)
     screen_ = Screen(nicegui_driver, caplog)
     yield screen_
+
+    browser_logs = screen_.selenium.get_log('browser')
+    js_errors = [e for e in browser_logs if str(e.get('level', '')).upper() in ('SEVERE', 'ERROR')]
     logs = [record for record in screen_.caplog.get_records('call') if record.levelname == 'ERROR']
     if screen_.is_open:
         screen_.shot(request.node.name)
     screen_.stop_server()
     if DOWNLOAD_DIR.exists():
         shutil.rmtree(DOWNLOAD_DIR)
+
     if logs:
         pytest.fail('There were unexpected ERROR logs.', pytrace=False)
+    if js_errors:
+        pytest.fail(f'JavaScript console errors:\n{browser_logs}', pytrace=False)
