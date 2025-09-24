@@ -191,8 +191,11 @@ class Client:
         """Return the title of the page."""
         return self.page.resolve_title() if self.title is None else self.title
 
-    async def connected(self, timeout: float = 3.0) -> None:
-        """Block execution until the client is connected."""
+    async def connected(self, timeout: float | None = None) -> None:
+        """Block execution until the client is connected.
+
+        :param timeout: timeout in seconds (default: ``None``)
+        """
         if self.has_socket_connection:
             return
         self._waiting_for_connection.set()
@@ -236,7 +239,7 @@ class Client:
 
         async def send_and_wait():
             self.outbox.enqueue_message('run_javascript', {'code': code, 'request_id': request_id}, target_id)
-            await self.connected(timeout=timeout)
+            await self.connected()
             return await JavaScriptRequest(request_id, timeout=timeout)
 
         return AwaitableResponse(send_and_forget, send_and_wait)
