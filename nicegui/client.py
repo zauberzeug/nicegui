@@ -274,13 +274,14 @@ class Client:
         self._num_connections[document_id] -= 1
         self.tab_id = None
 
+        for t in self.disconnect_handlers:
+            self.safe_invoke(t)
+        for t in core.app._disconnect_handlers:  # pylint: disable=protected-access
+            self.safe_invoke(t)
+
         async def delete_content() -> None:
             await asyncio.sleep(self.page.resolve_reconnect_timeout())
             if self._num_connections[document_id] == 0:
-                for t in self.disconnect_handlers:
-                    self.safe_invoke(t)
-                for t in core.app._disconnect_handlers:  # pylint: disable=protected-access
-                    self.safe_invoke(t)
                 self._num_connections.pop(document_id)
                 self._delete_tasks.pop(document_id)
                 self.delete()
