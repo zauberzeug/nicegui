@@ -16,7 +16,8 @@ rules_unimportant_only = []
 rules_important_only = []
 
 for rule in rules:
-    assert isinstance(rule, (ast.QualifiedRule, ast.AtRule)), f'Unexpected {rule}. Script needs update.'
+    if not isinstance(rule, (ast.QualifiedRule, ast.AtRule)):
+        raise TypeError(f'Unexpected {rule}. Script needs update.')
     declarations = tinycss2.parse_blocks_contents(rule.content or '')
     has_important = False
     has_unimportant = False
