@@ -29,10 +29,14 @@ for rule in rules:
     if has_important and has_unimportant:
         rule_copy1 = copy.deepcopy(rule)
         rule_copy2 = copy.deepcopy(rule)
-        rule_copy1.content = [d for d in declarations if isinstance(
-            d, ast.Declaration) and d.important]  # keep only important
-        rule_copy2.content = [d for d in declarations if isinstance(
-            d, ast.Declaration) and not d.important]  # keep only unimportant
+        rule_copy1.content = [
+            d for d in declarations
+            if not isinstance(d, ast.Declaration) or d.important
+        ]  # keep all non-Declaration nodes and only important Declarations
+        rule_copy2.content = [
+            d for d in declarations
+            if not isinstance(d, ast.Declaration) or not d.important
+        ]  # keep all non-Declaration nodes and only unimportant Declarations
         rules_important_only.append(rule_copy1)
         rules_unimportant_only.append(rule_copy2)
     elif has_important:
