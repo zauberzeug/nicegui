@@ -58,12 +58,12 @@ print(f'Found {len(rules_unimportant_only)} unimportant-only rules, '
 
 # serialize them all
 (STATIC / 'quasar_unimportant.css').write_text(
-    cssbeautifier.beautify(tinycss2.serialize(rules_unimportant_only)))
+    cssbeautifier.beautify(tinycss2.serialize(rules_unimportant_only)) + '\n')
 (STATIC / 'quasar_important.css').write_text(
-    cssbeautifier.beautify(tinycss2.serialize(rules_important_only)))
+    cssbeautifier.beautify(tinycss2.serialize(rules_important_only)) + '\n')
 
 # minimize with rcssmin
 (STATIC / 'quasar_unimportant.min.css').write_text(
-    rcssmin.cssmin((STATIC / 'quasar_unimportant.css').read_text()))
+    rcssmin.cssmin((STATIC / 'quasar_unimportant.css').read_text()) + '\n')
 (STATIC / 'quasar_important.min.css').write_text(
-    rcssmin.cssmin((STATIC / 'quasar_important.css').read_text()))
+    rcssmin.cssmin((STATIC / 'quasar_important.css').read_text()) + '\n')
