@@ -10,12 +10,16 @@ ROOT = Path(__file__).parent
 STATIC = ROOT / 'nicegui' / 'static'
 
 rules = tinycss2.parse_stylesheet(
-    (STATIC / 'quasar.css').read_text(), skip_whitespace=True, skip_comments=True)
+    (STATIC / 'quasar.css').read_text(), skip_whitespace=True)
 
 rules_unimportant_only = []
 rules_important_only = []
+comments_stash = []
 
 for rule in rules:
+    if isinstance(rule, ast.Comment):
+        comments_stash.append(rule)
+        continue
     if not isinstance(rule, (ast.QualifiedRule, ast.AtRule)):
         raise TypeError(f'Unexpected {rule}. Script needs update.')
     declarations = tinycss2.parse_blocks_contents(rule.content or '')
@@ -39,10 +43,15 @@ for rule in rules:
         ]  # keep all non-Declaration nodes and only unimportant Declarations
         rules_important_only.append(rule_copy1)
         rules_unimportant_only.append(rule_copy2)
+        rules_important_only.extend(comments_stash)
+        rules_unimportant_only.extend(comments_stash)
     elif has_important:
         rules_important_only.append(rule)
+        rules_important_only.extend(comments_stash)
     else:
         rules_unimportant_only.append(rule)
+        rules_unimportant_only.extend(comments_stash)
+    comments_stash = []
 
 print(f'Found {len(rules_unimportant_only)} unimportant-only rules, '
       f'{len(rules_important_only)} important-only rules, ')

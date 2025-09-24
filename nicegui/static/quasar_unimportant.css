@@ -6,6 +6,8 @@
     -moz-tap-highlight-color: transparent;
 }
 
+/* * Normalizing -- forked from Normalize.css v8
+ * */
 html,
 body,
 #q-app {
@@ -58,10 +60,16 @@ abbr[title] {
     text-decoration: underline dotted;
 }
 
+/* * line 1: Remove the bottom border in Firefox 39-.
+ * * lines 2,3: Add the correct text decoration in Chrome, Edge, IE, Opera, and Safari.
+ * */
 img {
     border-style: none;
 }
 
+/**
+ * * Remove the border on images inside links in IE 10.
+ * */
 code,
 kbd,
 pre,
@@ -70,12 +78,18 @@ samp {
     font-size: 1em;
 }
 
+/* * line 1: Correct the inheritance and scaling of font size in all browsers.
+ * * line 2: Correct the odd `em` font sizing in all browsers.
+ * */
 hr {
     box-sizing: content-box;
     height: 0;
     overflow: visible;
 }
 
+/* * lines 1,2: Add the correct box sizing in Firefox.
+ * * line 3: Show the overflow in Edge and IE.
+ * */
 button,
 input,
 optgroup,
@@ -86,10 +100,14 @@ textarea {
     margin: 0;
 }
 
+/* * Change font properties to `inherit` in all browsers (opinionated).
+ * */
 optgroup {
     font-weight: bold;
 }
 
+/* * Restore the font weight unset by the previous rule.
+ * */
 button,
 input,
 select {
@@ -97,21 +115,34 @@ select {
     text-transform: none;
 }
 
+/* * Show the overflow in IE.
+ * *  input: Show the overflow in Edge.
+ * *  select: Show the overflow in Edge, Firefox, and IE.
+ * * Remove the inheritance of text transform in Edge, Firefox, and IE.
+ * *  select: Remove the inheritance of text transform in Firefox.
+ * */
 button::-moz-focus-inner,
 input::-moz-focus-inner {
     border: 0;
     padding: 0;
 }
 
+/* * Remove the inner border and padding in Firefox.
+ * */
 button:-moz-focusring,
 input:-moz-focusring {
     outline: 1px dotted ButtonText;
 }
 
+/* * Restore the focus styles unset by the previous rule.
+ * */
 fieldset {
     padding: 0.35em 0.75em 0.625em;
 }
 
+/**
+ * * Correct the padding in Firefox.
+ * */
 legend {
     box-sizing: border-box;
     color: inherit;
@@ -121,19 +152,33 @@ legend {
     white-space: normal;
 }
 
+/**
+ * * lines 1,3,4,6: Correct the text wrapping in Edge and IE.
+ * * line 2: Correct the color inheritance from `fieldset` elements in IE.
+ * * line 5: Remove the padding so developers are not caught out when they zero out
+ * *    `fieldset` elements in all browsers.
+ * */
 progress {
     vertical-align: baseline;
 }
 
+/**
+ * * Add the correct vertical alignment in Chrome, Firefox, and Opera.
+ * */
 textarea {
     overflow: auto;
 }
 
+/* * Remove the default vertical scrollbar in IE 10+.
+ * */
 input[type=search]::-webkit-search-cancel-button,
 input[type=search]::-webkit-search-decoration {
     -webkit-appearance: none;
 }
 
+/* * Remove the inner padding and cancel buttons in Chrome on OS X and
+ * * Safari on OS X.
+ * */
 .q-icon {
     line-height: 1;
     width: 1em;
@@ -199,6 +244,7 @@ input[type=search]::-webkit-search-decoration {
     width: 100%;
 }
 
+/* Composables */
 .q-panel>div {
     height: 100%;
     width: 100%;
@@ -216,16 +262,25 @@ input[type=search]::-webkit-search-decoration {
     background: #f44336;
 }
 
+/* Components */
 .q-loading-bar--top {
-    left: 0;
-    right: 0;
+    left: 0
+        /* rtl:ignore */
+    ;
+    right: 0
+        /* rtl:ignore */
+    ;
     top: 0;
     width: 100%;
 }
 
 .q-loading-bar--bottom {
-    left: 0;
-    right: 0;
+    left: 0
+        /* rtl:ignore */
+    ;
+    right: 0
+        /* rtl:ignore */
+    ;
     bottom: 0;
     width: 100%;
 }
@@ -491,7 +546,9 @@ input[type=search]::-webkit-search-decoration {
 }
 
 [dir=rtl] .q-breadcrumbs__separator .q-icon {
-    transform: scaleX(-1);
+    transform: scaleX(-1)
+        /* rtl:ignore */
+    ;
 }
 
 .q-btn {
@@ -1714,13 +1771,17 @@ body.desktop.body--dark .q-chip--clickable:focus {
 
 .q-circular-progress--indeterminate .q-circular-progress__svg {
     transform-origin: 50% 50%;
-    animation: q-spin 2s linear infinite;
+    animation: q-spin 2s linear infinite
+        /* rtl:ignore */
+    ;
 }
 
 .q-circular-progress--indeterminate .q-circular-progress__circle {
     stroke-dasharray: 1 400;
     stroke-dashoffset: 0;
-    animation: q-circular-progress-circle 1.5s ease-in-out infinite;
+    animation: q-circular-progress-circle 1.5s ease-in-out infinite
+        /* rtl:ignore */
+    ;
 }
 
 @keyframes q-circular-progress-circle {
@@ -1748,10 +1809,10 @@ body.desktop.body--dark .q-chip--clickable:focus {
     min-width: 180px;
     border-radius: 4px;
     box-shadow: 0 1px 5px rgba(0, 0, 0, 0.2), 0 2px 2px rgba(0, 0, 0, 0.14), 0 3px 1px -2px rgba(0, 0, 0, 0.12);
-
-
-
-
+    /* Saturation Tab */
+    /* Tune Tab */
+    /* Palette Tab */
+    /* Generic  */
 }
 
 .q-color-picker--bordered {
@@ -2689,6 +2750,7 @@ body.platform-android:not(.native-mobile) .q-dialog__inner--minimized>div {
     }
 }
 
+/* needed for compilation */
 .z-fab {
     z-index: 990;
 }
@@ -4633,7 +4695,9 @@ body.body--dark .q-layout__shadow:after {
 .q-parallax__media>img,
 .q-parallax__media>video {
     position: absolute;
-    left: 50%;
+    left: 50%
+        /* rtl:ignore */
+    ;
     bottom: 0;
     min-width: 100%;
     min-height: 100%;
@@ -5049,7 +5113,9 @@ body.platform-ios.native-mobile .q-dialog__inner--top>div {
     --q-skeleton-speed: 1500ms;
     background: rgba(0, 0, 0, 0.12);
     border-radius: 4px;
-
+    /* maintain size even with border
+  * for types that have height specified
+  * */
     box-sizing: border-box;
 }
 
@@ -5468,11 +5534,15 @@ body.platform-ios.native-mobile .q-dialog__inner--top>div {
 }
 
 .q-slider__marker-labels--h-ltr {
-    transform: translateX(-50%);
+    transform: translateX(-50%)
+        /* rtl:ignore */
+    ;
 }
 
 .q-slider__marker-labels--h-rtl {
-    transform: translateX(50%);
+    transform: translateX(50%)
+        /* rtl:ignore */
+    ;
 }
 
 [dir="ltr"] .q-slider__marker-labels--v-standard {
@@ -5492,11 +5562,15 @@ body.platform-ios.native-mobile .q-dialog__inner--top>div {
 }
 
 .q-slider__marker-labels--v-ltr {
-    transform: translateY(-50%);
+    transform: translateY(-50%)
+        /* rtl:ignore */
+    ;
 }
 
 .q-slider__marker-labels--v-rtl {
-    transform: translateY(50%);
+    transform: translateY(50%)
+        /* rtl:ignore */
+    ;
 }
 
 .q-slider__thumb {
@@ -5512,24 +5586,34 @@ body.platform-ios.native-mobile .q-dialog__inner--top>div {
 }
 
 .q-slider__thumb--h-ltr {
-    transform: scale(1) translate(-50%, -50%);
+    transform: scale(1) translate(-50%, -50%)
+        /* rtl:ignore */
+    ;
 }
 
 .q-slider__thumb--h-rtl {
-    transform: scale(1) translate(50%, -50%);
+    transform: scale(1) translate(50%, -50%)
+        /* rtl:ignore */
+    ;
 }
 
 .q-slider__thumb--v {
-    left: 50%;
+    left: 50%
+        /* rtl:ignore */
+    ;
     will-change: top;
 }
 
 .q-slider__thumb--v-ltr {
-    transform: scale(1) translate(-50%, -50%);
+    transform: scale(1) translate(-50%, -50%)
+        /* rtl:ignore */
+    ;
 }
 
 .q-slider__thumb--v-rtl {
-    transform: scale(1) translate(-50%, 50%);
+    transform: scale(1) translate(-50%, 50%)
+        /* rtl:ignore */
+    ;
 }
 
 .q-slider__thumb-shape {
@@ -5806,30 +5890,44 @@ body.desktop .q-slider.q-slider--enabled .q-slider__track-container:hover .q-sli
 }
 
 .q-spinner-mat .path {
-    stroke-dasharray: 1, 200;
-    stroke-dashoffset: 0;
+    stroke-dasharray: 1, 200
+        /* rtl:ignore */
+    ;
+    stroke-dashoffset: 0
+        /* rtl:ignore */
+    ;
     animation: q-mat-dash 1.5s ease-in-out infinite;
 }
 
 @keyframes q-spin {
     0% {
-        transform: rotate3d(0, 0, 1, 0deg);
+        transform: rotate3d(0, 0, 1, 0deg)
+            /* rtl:ignore */
+        ;
     }
 
     25% {
-        transform: rotate3d(0, 0, 1, 90deg);
+        transform: rotate3d(0, 0, 1, 90deg)
+            /* rtl:ignore */
+        ;
     }
 
     50% {
-        transform: rotate3d(0, 0, 1, 180deg);
+        transform: rotate3d(0, 0, 1, 180deg)
+            /* rtl:ignore */
+        ;
     }
 
     75% {
-        transform: rotate3d(0, 0, 1, 270deg);
+        transform: rotate3d(0, 0, 1, 270deg)
+            /* rtl:ignore */
+        ;
     }
 
     100% {
-        transform: rotate3d(0, 0, 1, 359deg);
+        transform: rotate3d(0, 0, 1, 359deg)
+            /* rtl:ignore */
+        ;
     }
 }
 
@@ -6596,6 +6694,8 @@ body.desktop .q-slider.q-slider--enabled .q-slider__track-container:hover .q-sli
     border-bottom-width: 1px;
 }
 
+/* * Separators
+ * */
 [dir="ltr"] .q-table--vertical-separator td,
 [dir="ltr"] .q-table--vertical-separator th,
 [dir="ltr"] .q-table--cell-separator td,
@@ -6640,6 +6740,8 @@ body.desktop .q-slider.q-slider--enabled .q-slider__track-container:hover .q-sli
     padding: 6px 16px;
 }
 
+/* * dense size
+ * */
 .q-table--dense .q-table__bottom {
     min-height: 33px;
 }
@@ -6701,6 +6803,8 @@ body.desktop .q-slider.q-slider--enabled .q-slider__track-container:hover .q-sli
     border-top: 1px solid rgba(0, 0, 0, 0.12);
 }
 
+/* * On light background
+ * */
 .q-table thead,
 .q-table tr,
 .q-table th,
@@ -6743,6 +6847,8 @@ body.desktop .q-table>tbody>tr:not(.q-tr--no-hover):hover>td:not(.q-td--no-hover
     border-color: rgba(255, 255, 255, 0.28);
 }
 
+/* * On dark background
+ * */
 .q-table--dark .q-table__bottom,
 .q-table--dark thead,
 .q-table--dark tr,
@@ -6874,7 +6980,9 @@ body.desktop .q-table>tbody>tr:not(.q-tr--no-hover):hover>td:not(.q-td--no-hover
 
 .q-tab--active .q-tab__indicator {
     opacity: 1;
-    transform-origin: left;
+    transform-origin: left
+        /* rtl:ignore */
+    ;
 }
 
 .q-tab--inactive {
@@ -6956,13 +7064,17 @@ body.mobile .q-tabs--scrollable.q-tabs--mobile-without-arrows .q-tabs__content {
 
 .q-tabs--horizontal .q-tabs__arrow--left {
     top: 0;
-    left: 0;
+    left: 0
+        /* rtl:ignore */
+    ;
     bottom: 0;
 }
 
 .q-tabs--horizontal .q-tabs__arrow--right {
     top: 0;
-    right: 0;
+    right: 0
+        /* rtl:ignore */
+    ;
     bottom: 0;
 }
 
@@ -7188,7 +7300,9 @@ body.mobile .q-tabs--scrollable.q-tabs--mobile-without-arrows .q-tabs__content {
     line-height: 32px;
     margin: 0;
     padding: 0;
-    transform: translate(-50%, -50%);
+    transform: translate(-50%, -50%)
+        /* rtl:ignore */
+    ;
     border-radius: 50%;
 }
 
@@ -7203,122 +7317,170 @@ body.mobile .q-tabs--scrollable.q-tabs--mobile-without-arrows .q-tabs__content {
 
 .q-time__clock-pos-0 {
     top: 0%;
-    left: 50%;
+    left: 50%
+        /* rtl:ignore */
+    ;
 }
 
 .q-time__clock-pos-1 {
     top: 6.7%;
-    left: 75%;
+    left: 75%
+        /* rtl:ignore */
+    ;
 }
 
 .q-time__clock-pos-2 {
     top: 25%;
-    left: 93.3%;
+    left: 93.3%
+        /* rtl:ignore */
+    ;
 }
 
 .q-time__clock-pos-3 {
     top: 50%;
-    left: 100%;
+    left: 100%
+        /* rtl:ignore */
+    ;
 }
 
 .q-time__clock-pos-4 {
     top: 75%;
-    left: 93.3%;
+    left: 93.3%
+        /* rtl:ignore */
+    ;
 }
 
 .q-time__clock-pos-5 {
     top: 93.3%;
-    left: 75%;
+    left: 75%
+        /* rtl:ignore */
+    ;
 }
 
 .q-time__clock-pos-6 {
     top: 100%;
-    left: 50%;
+    left: 50%
+        /* rtl:ignore */
+    ;
 }
 
 .q-time__clock-pos-7 {
     top: 93.3%;
-    left: 25%;
+    left: 25%
+        /* rtl:ignore */
+    ;
 }
 
 .q-time__clock-pos-8 {
     top: 75%;
-    left: 6.7%;
+    left: 6.7%
+        /* rtl:ignore */
+    ;
 }
 
 .q-time__clock-pos-9 {
     top: 50%;
-    left: 0%;
+    left: 0%
+        /* rtl:ignore */
+    ;
 }
 
 .q-time__clock-pos-10 {
     top: 25%;
-    left: 6.7%;
+    left: 6.7%
+        /* rtl:ignore */
+    ;
 }
 
 .q-time__clock-pos-11 {
     top: 6.7%;
-    left: 25%;
+    left: 25%
+        /* rtl:ignore */
+    ;
 }
 
 .q-time__clock-pos-12 {
     top: 15%;
-    left: 50%;
+    left: 50%
+        /* rtl:ignore */
+    ;
 }
 
 .q-time__clock-pos-13 {
     top: 19.69%;
-    left: 67.5%;
+    left: 67.5%
+        /* rtl:ignore */
+    ;
 }
 
 .q-time__clock-pos-14 {
     top: 32.5%;
-    left: 80.31%;
+    left: 80.31%
+        /* rtl:ignore */
+    ;
 }
 
 .q-time__clock-pos-15 {
     top: 50%;
-    left: 85%;
+    left: 85%
+        /* rtl:ignore */
+    ;
 }
 
 .q-time__clock-pos-16 {
     top: 67.5%;
-    left: 80.31%;
+    left: 80.31%
+        /* rtl:ignore */
+    ;
 }
 
 .q-time__clock-pos-17 {
     top: 80.31%;
-    left: 67.5%;
+    left: 67.5%
+        /* rtl:ignore */
+    ;
 }
 
 .q-time__clock-pos-18 {
     top: 85%;
-    left: 50%;
+    left: 50%
+        /* rtl:ignore */
+    ;
 }
 
 .q-time__clock-pos-19 {
     top: 80.31%;
-    left: 32.5%;
+    left: 32.5%
+        /* rtl:ignore */
+    ;
 }
 
 .q-time__clock-pos-20 {
     top: 67.5%;
-    left: 19.69%;
+    left: 19.69%
+        /* rtl:ignore */
+    ;
 }
 
 .q-time__clock-pos-21 {
     top: 50%;
-    left: 15%;
+    left: 15%
+        /* rtl:ignore */
+    ;
 }
 
 .q-time__clock-pos-22 {
     top: 32.5%;
-    left: 19.69%;
+    left: 19.69%
+        /* rtl:ignore */
+    ;
 }
 
 .q-time__clock-pos-23 {
     top: 19.69%;
-    left: 32.5%;
+    left: 32.5%
+        /* rtl:ignore */
+    ;
 }
 
 .q-time__now-button {
@@ -8443,11 +8605,15 @@ body.desktop .q-toggle--dense:not(.disabled):hover .q-toggle__thumb:before {
 }
 
 [dir=rtl] .q-tree__arrow {
-    transform: rotate3d(0, 0, 1, 180deg);
+    transform: rotate3d(0, 0, 1, 180deg)
+        /* rtl:ignore */
+    ;
 }
 
 [dir=rtl] .q-tree__arrow--rotate {
-    transform: rotate3d(0, 0, 1, 90deg);
+    transform: rotate3d(0, 0, 1, 90deg)
+        /* rtl:ignore */
+    ;
 }
 
 .q-uploader {
@@ -8691,8 +8857,12 @@ img.responsive {
 }
 
 .q-virtual-scroll__padding {
-    background: linear-gradient(rgba(255, 255, 255, 0), rgba(255, 255, 255, 0) 20%, rgba(128, 128, 128, 0.03) 20%, rgba(128, 128, 128, 0.08) 50%, rgba(128, 128, 128, 0.03) 80%, rgba(255, 255, 255, 0) 80%, rgba(255, 255, 255, 0));
-    background-size: var(--q-virtual-scroll-item-width, 100%) var(--q-virtual-scroll-item-height, 50px);
+    background: linear-gradient(rgba(255, 255, 255, 0), rgba(255, 255, 255, 0) 20%, rgba(128, 128, 128, 0.03) 20%, rgba(128, 128, 128, 0.08) 50%, rgba(128, 128, 128, 0.03) 80%, rgba(255, 255, 255, 0) 80%, rgba(255, 255, 255, 0))
+        /* rtl:ignore */
+    ;
+    background-size: var(--q-virtual-scroll-item-width, 100%) var(--q-virtual-scroll-item-height, 50px)
+        /* rtl:ignore */
+    ;
 }
 
 .q-virtual-scroll--horizontal {
@@ -8715,14 +8885,20 @@ img.responsive {
 }
 
 .q-virtual-scroll--horizontal .q-virtual-scroll__padding {
-    background: linear-gradient(to left, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0) 20%, rgba(128, 128, 128, 0.03) 20%, rgba(128, 128, 128, 0.08) 50%, rgba(128, 128, 128, 0.03) 80%, rgba(255, 255, 255, 0) 80%, rgba(255, 255, 255, 0));
-    background-size: var(--q-virtual-scroll-item-width, 50px) var(--q-virtual-scroll-item-height, 100%);
+    background: linear-gradient(to left, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0) 20%, rgba(128, 128, 128, 0.03) 20%, rgba(128, 128, 128, 0.08) 50%, rgba(128, 128, 128, 0.03) 80%, rgba(255, 255, 255, 0) 80%, rgba(255, 255, 255, 0))
+        /* rtl:ignore */
+    ;
+    background-size: var(--q-virtual-scroll-item-width, 50px) var(--q-virtual-scroll-item-height, 100%)
+        /* rtl:ignore */
+    ;
 }
 
 .q-ripple {
     position: absolute;
     top: 0;
-    left: 0;
+    left: 0
+        /* rtl:ignore */
+    ;
     width: 100%;
     height: 100%;
     color: inherit;
@@ -8733,10 +8909,13 @@ img.responsive {
     contain: strict;
 }
 
+/* Directives */
 .q-ripple__inner {
     position: absolute;
     top: 0;
-    left: 0;
+    left: 0
+        /* rtl:ignore */
+    ;
     opacity: 0;
     color: inherit;
     border-radius: 50%;
@@ -8757,6 +8936,7 @@ img.responsive {
     padding-bottom: 8px;
 }
 
+/* Plugins */
 .q-bottom-sheet__avatar {
     border-radius: 50%;
 }
@@ -9161,6 +9341,10 @@ body.q-ios-padding .q-notifications__list--bottom {
     --animate-repeat: 1;
 }
 
+/* Core */
+/* * Animate.css additions
+ * * Adapted from: https://github.com/animate-css/animate.css/blob/6828621a01e145119db6194dc9b4d37325b48aa5/source/_base.css
+ * */
 .animated {
     animation-duration: var(--animate-duration);
     animation-fill-mode: both;
@@ -9240,6 +9424,8 @@ body.q-ios-padding .q-notifications__list--bottom {
     animation-timing-function: cubic-bezier(0.25, 0.8, 0.25, 1);
 }
 
+/* * Quasar animations
+ * */
 @keyframes q-scale {
     0% {
         transform: scale(1);
@@ -9255,7 +9441,9 @@ body.q-ios-padding .q-notifications__list--bottom {
 }
 
 .q-animate--fade {
-    animation: q-fade 0.2s;
+    animation: q-fade 0.2s
+        /* rtl:ignore */
+    ;
 }
 
 @keyframes q-fade {
@@ -12138,31 +12326,45 @@ body.mobile .scroll--mobile {
 }
 
 .rotate-45 {
-    transform: rotate(45deg);
+    transform: rotate(45deg)
+        /* rtl:ignore */
+    ;
 }
 
 .rotate-90 {
-    transform: rotate(90deg);
+    transform: rotate(90deg)
+        /* rtl:ignore */
+    ;
 }
 
 .rotate-135 {
-    transform: rotate(135deg);
+    transform: rotate(135deg)
+        /* rtl:ignore */
+    ;
 }
 
 .rotate-180 {
-    transform: rotate(180deg);
+    transform: rotate(180deg)
+        /* rtl:ignore */
+    ;
 }
 
 .rotate-225 {
-    transform: rotate(225deg);
+    transform: rotate(225deg)
+        /* rtl:ignore */
+    ;
 }
 
 .rotate-270 {
-    transform: rotate(270deg);
+    transform: rotate(270deg)
+        /* rtl:ignore */
+    ;
 }
 
 .rotate-315 {
-    transform: rotate(315deg);
+    transform: rotate(315deg)
+        /* rtl:ignore */
+    ;
 }
 
 .flip-horizontal {
@@ -12383,6 +12585,7 @@ body.mobile .scroll--mobile {
     visibility: collapse;
 }
 
+/* internal: */
 :root {
     --q-size-xs: 0;
     --q-size-sm: 600px;
@@ -13483,9 +13686,13 @@ sup {
     content: "";
     position: absolute;
     top: 0;
-    right: 0;
+    right: 0
+        /* rtl:ignore */
+    ;
     bottom: 0;
-    left: 0;
+    left: 0
+        /* rtl:ignore */
+    ;
 }
 
 @media all and (orientation: portrait) {
@@ -13597,7 +13804,9 @@ sup {
 body.desktop .q-focus-helper {
     position: absolute;
     top: 0;
-    left: 0;
+    left: 0
+        /* rtl:ignore */
+    ;
     width: 100%;
     height: 100%;
     pointer-events: none;
@@ -13611,7 +13820,9 @@ body.desktop .q-focus-helper:after {
     content: "";
     position: absolute;
     top: 0;
-    left: 0;
+    left: 0
+        /* rtl:ignore */
+    ;
     width: 100%;
     height: 100%;
     opacity: 0;

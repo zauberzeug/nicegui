@@ -2906,6 +2906,7 @@ body.platform-ios:not(.native-mobile) .q-dialog__inner--top .q-select__dialog--f
     position: fixed !important;
 }
 
+/* body */
 .q-no-input-spinner {
     -moz-appearance: textfield !important;
 }
@@ -2976,6 +2977,7 @@ body.q-ios-padding .fullscreen {
 
 }
 
+/* internal: */
 [dir="ltr"] .q-position-engine {
     margin-left: var(--q-pe-left, 0) !important;
 }
