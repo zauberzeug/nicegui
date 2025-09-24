@@ -19,7 +19,7 @@ pending_comments = []
 
 def split_qualified_rule_by_importance(qualified_rule: ast.QualifiedRule):
     """Process a QualifiedRule and return two lists: (important_rules, unimportant_rules)."""
-    parsed_declarations = tinycss2.parse_blocks_contents(qualified_rule.content or '')
+    parsed_declarations = tinycss2.parse_blocks_contents(qualified_rule.content or '', skip_whitespace=True)
     contains_important_declarations = False
     contains_unimportant_declarations = False
     for declaration in parsed_declarations:
@@ -61,7 +61,7 @@ def process_at_rule(at_rule: ast.AtRule):
     """Process an AtRule and return two lists: (important_subrules, unimportant_subrules)."""
     important_subrules = []
     unimportant_subrules = []
-    parsed_subrules = tinycss2.parse_blocks_contents(at_rule.content or '')
+    parsed_subrules = tinycss2.parse_blocks_contents(at_rule.content or '', skip_whitespace=True)
     for parsed_subrule in parsed_subrules:
         if isinstance(parsed_subrule, ast.QualifiedRule):
             imp_parts, unimp_parts = split_qualified_rule_by_importance(parsed_subrule)

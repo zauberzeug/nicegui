@@ -1,10 +1,6 @@
 .q-icon:before,
 .q-icon:after {
-
-
     display: flex !important;
-
-
 }
 
 .q-banner__avatar {
@@ -37,7 +33,6 @@
 
 .q-chip--outline {
     background: transparent !important;
-
 }
 
 .q-color-picker .q-tab {
@@ -50,7 +45,6 @@
 }
 
 .q-color-picker__header-bg {
-
     background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAYAAADED76LAAAAH0lEQVQoU2NkYGAwZkAFZ5G5jPRRgOYEVDeB3EBjBQBOZwTVugIGyAAAAABJRU5ErkJggg==") !important;
 }
 
@@ -76,19 +70,12 @@
 }
 
 .q-color-picker__cube {
-
     width: 10% !important;
 }
 
 .q-date__calendar-item {
-
-
-
-
     width: 14.285% !important;
     height: 12.5% !important;
-
-
 }
 
 .q-date__calendar-days>div {
@@ -100,10 +87,6 @@
 }
 
 .q-dialog__inner--maximized>div {
-
-
-
-
     border-radius: 0 !important;
     top: 0 !important;
 }
@@ -164,11 +147,7 @@ body.q-ios-padding .q-dialog__inner>div {
 
 .q-field__native,
 .q-field__input {
-
-
     outline: 0 !important;
-
-
 }
 
 .q-field--readonly .q-placeholder,
@@ -186,13 +165,7 @@ body.q-ios-padding .q-dialog__inner>div {
 }
 
 .q-field__focusable-action {
-
-
     outline: 0 !important;
-
-
-
-
 }
 
 .q-field--square .q-field__control {
@@ -205,7 +178,6 @@ body.q-ios-padding .q-dialog__inner>div {
 
 .q-item__label {
     line-height: 1.2em !important;
-
 }
 
 .q-drawer-container:not(.q-drawer--mini-animate) .q-drawer--mini {
@@ -214,12 +186,10 @@ body.q-ios-padding .q-dialog__inner>div {
 
 .q-drawer--mini-animate .q-drawer__content {
     overflow-x: hidden !important;
-
 }
 
 .q-drawer__backdrop {
     z-index: 2999 !important;
-
 }
 
 .q-body--layout-animate .q-drawer__backdrop {
@@ -276,16 +246,6 @@ body.platform-ios .q-layout--containerized {
 
 .q-menu {
     position: fixed !important;
-
-
-
-
-
-
-
-
-
-
 }
 
 .q-radio.disabled {
@@ -306,32 +266,21 @@ body.platform-ios .q-layout--containerized {
 .q-scrollarea__bar--invisible,
 .q-scrollarea__thumb--invisible {
     opacity: 0 !important;
-
 }
 
 .q-select .q-field__input {
     min-width: 50px !important;
-
 }
 
 .q-select__focus-target,
 .q-select__autocomplete-input {
-
     outline: 0 !important;
-
-
-
-
-
 }
 
 .q-select__dialog {
     width: 90vw !important;
     max-width: 90vw !important;
     max-height: calc(100vh - 70px) !important;
-
-
-
 }
 
 body.mobile:not(.native-mobile) .q-select__dialog {
@@ -403,12 +352,10 @@ body.platform-ios:not(.native-mobile) .q-dialog__inner--top .q-select__dialog--f
 
 .q-tabs--vertical {
     display: block !important;
-
 }
 
 .q-tabs--vertical .q-tabs__content {
     display: block !important;
-
 }
 
 .q-timeline__entry:last-child {
@@ -424,13 +371,7 @@ body.platform-ios:not(.native-mobile) .q-dialog__inner--top .q-select__dialog--f
 }
 
 .q-tooltip {
-
     position: fixed !important;
-
-
-
-
-
 }
 
 .q-tree__node--disabled .disabled {
@@ -462,11 +403,7 @@ body.platform-ios:not(.native-mobile) .q-dialog__inner--top .q-select__dialog--f
 }
 
 .q-uploader__input {
-
-
-
     cursor: pointer !important;
-
 }
 
 .q-table .q-virtual-scroll__padding tr {
@@ -496,7 +433,6 @@ body.platform-ios:not(.native-mobile) .q-dialog__inner--top .q-select__dialog--f
 }
 
 .q-loading {
-
     position: fixed !important;
 }
 
@@ -2964,10 +2900,7 @@ body.platform-ios:not(.native-mobile) .q-dialog__inner--top .q-select__dialog--f
 }
 
 .fullscreen {
-
     border-radius: 0 !important;
-
-
 }
 
 body.q-ios-padding .fullscreen {
@@ -2990,8 +2923,6 @@ body.q-ios-padding .fullscreen {
 
 .q-position-engine {
     margin-top: var(--q-pe-top, 0) !important;
-
-
 }
 
 /* internal: */
