@@ -278,12 +278,7 @@ class Client:
             self.safe_invoke(t)
 
     def handle_disconnect(self, socket_id: str) -> None:
-        """Wait for the browser to reconnect; invoke disconnect handlers if it doesn't.
-
-        NOTE:
-        In contrast to connect handlers, disconnect handlers are not called during a reconnect.
-        This behavior should be fixed in version 3.0.
-        """
+        """Wait for the browser to reconnect; invoke deletion handlers if it doesn't."""
         if socket_id not in self._socket_to_document_id:
             return
         document_id = self._socket_to_document_id.pop(socket_id)
