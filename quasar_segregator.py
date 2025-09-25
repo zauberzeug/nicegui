@@ -122,5 +122,53 @@ def quasar_segregation():
     (STATIC / 'quasar.important.prod.css').write_text(rcssmin.cssmin((STATIC / 'quasar.important.css').read_text()))
 
 
+def quasar_segregation_checks():
+    """Check that the segregation was successful."""
+    important_css = (STATIC / 'quasar.important.css').read_text()
+    unimportant_css = (STATIC / 'quasar.unimportant.css').read_text()
+    reference_css = (STATIC / 'quasar.reference.css').read_text()
+
+    # Step 1: Ensure unimportant CSS has no !important declarations
+    if '!important' in unimportant_css:
+        raise ValueError('Unimportant CSS contains !important declarations.')
+    print('Step 1: Unimportant CSS does not contain !important declarations.')
+
+    important_lines = important_css.splitlines()
+    unimportant_lines = unimportant_css.splitlines()
+    reference_lines = reference_css.splitlines()
+
+    # Step 2: Find extra lines by comparing reference and unimportant line by line
+    extra_lines = []
+    offset = 0
+    for idx, ref_line in enumerate(reference_lines):
+        unimp_line = unimportant_lines[idx - offset]
+        if ref_line != unimp_line:
+            extra_lines.append(ref_line)
+            offset += 1
+    if offset + len(unimportant_lines) != len(reference_lines):
+        raise ValueError('We did not manage to fully zip unimportant and reference together.')
+    print('Step 2: Unimportant CSS + extra lines = Reference CSS (zip with no extras).')
+
+    # Step 3: Ensure all important lines exist in reference
+    reference_set = set(reference_lines)
+    for imp_line in important_lines:
+        if imp_line not in reference_set:
+            raise ValueError('Important CSS contains a declaration that does not exist in reference CSS.')
+    print('Step 3: Important CSS contains only declarations that exist in reference CSS.')
+
+    # Step 4 & 5: Check !important declarations
+    important_important = {line for line in important_lines if '!important' in line}
+    extra_important = {line for line in extra_lines if '!important' in line}
+    if not extra_important.issubset(important_important):
+        raise ValueError(
+            'Important CSS does not contain an !important declaration found while zipping unimportant with reference.')
+    if not important_important.issubset(extra_important):
+        raise ValueError(
+            'While zipping important with reference, we found an !important declaration that was not found in important CSS.')
+    print('Step 4: Important CSS contains all !important declarations found while zipping unimportant with reference.')
+    print('Step 5: All !important declarations found while zipping important with reference exist in important CSS.')
+
+
 if __name__ == '__main__':
     quasar_segregation()
+    quasar_segregation_checks()
