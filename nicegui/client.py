@@ -74,7 +74,6 @@ class Client:
         self._deleted_event = asyncio.Event()
         self.environ: dict[str, Any] | None = None
         self.on_air = False
-        self._num_connections: defaultdict[str, int] = defaultdict(int)
         self._delete_tasks: dict[str, asyncio.Task] = {}
         self._deleted = False
         self._socket_to_document_id: dict[str, str] = {}
@@ -267,7 +266,6 @@ class Client:
         self._connected.set()
         self._socket_to_document_id[socket_id] = document_id
         self._cancel_delete_task(document_id)
-        self._num_connections[document_id] += 1
         if next_message_id is not None:
             self.outbox.try_rewind(next_message_id)
         storage.request_contextvar.set(self.request)
@@ -287,19 +285,16 @@ class Client:
             return
         document_id = self._socket_to_document_id.pop(socket_id)
         self._cancel_delete_task(document_id)
-        self._num_connections[document_id] -= 1
         self.tab_id = None
 
         async def delete_content() -> None:
             await asyncio.sleep(self.page.resolve_reconnect_timeout())
-            if self._num_connections[document_id] == 0:
-                for t in self.disconnect_handlers:
-                    self.safe_invoke(t)
-                for t in core.app._disconnect_handlers:  # pylint: disable=protected-access
-                    self.safe_invoke(t)
-                self._num_connections.pop(document_id)
-                self._delete_tasks.pop(document_id)
-                self.delete()
+            for t in self.disconnect_handlers:
+                self.safe_invoke(t)
+            for t in core.app._disconnect_handlers:  # pylint: disable=protected-access
+                self.safe_invoke(t)
+            self._delete_tasks.pop(document_id)
+            self.delete()
         self._delete_tasks[document_id] = \
             background_tasks.create(delete_content(), name=f'delete content {document_id}')
 
