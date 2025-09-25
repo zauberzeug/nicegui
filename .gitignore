@@ -11,3 +11,5 @@ venv
 .DS_Store
 .env
 node_modules/
+quasar.reference.css
+quasar.reference.prod.css

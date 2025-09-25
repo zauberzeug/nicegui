@@ -8,7 +8,19 @@ from tinycss2 import ast
 
 from library_path_constants import STATIC
 
+options = {
+    'indent_size': 2,
+    'selector_separator_newline': False,
+}
+
+
 parsed_rules = tinycss2.parse_stylesheet((STATIC / 'quasar.css').read_text(), skip_whitespace=True)
+
+# save quasar.reference.css
+(STATIC / 'quasar.reference.css').write_text(cssbeautifier.beautify(tinycss2.serialize(parsed_rules), options))
+
+# minimize with rcssmin
+(STATIC / 'quasar.reference.prod.css').write_text(rcssmin.cssmin((STATIC / 'quasar.reference.css').read_text()))
 
 unimportant_rules = []
 important_rules = []
@@ -97,10 +109,6 @@ for rule in parsed_rules:
 print(f'Found {len(unimportant_rules)} unimportant and {len(important_rules)} important rules.')
 
 # serialize them all
-options = {
-    'indent_size': 2,
-    'selector_separator_newline': False,
-}
 (STATIC / 'quasar.unimportant.css').write_text(cssbeautifier.beautify(tinycss2.serialize(unimportant_rules), options))
 (STATIC / 'quasar.important.css').write_text(cssbeautifier.beautify(tinycss2.serialize(important_rules), options))
 
