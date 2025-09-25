@@ -71,6 +71,7 @@ def process_at_rule(at_rule: ast.AtRule):
     """Process an AtRule and return two lists: (important_subrules, unimportant_subrules)."""
     important_subrules = []
     unimportant_subrules = []
+    pending_subcomments = []
     parsed_subrules = tinycss2.parse_blocks_contents(at_rule.content or '', skip_whitespace=True)
     for parsed_subrule in parsed_subrules:
         if isinstance(parsed_subrule, ast.QualifiedRule):
@@ -78,7 +79,7 @@ def process_at_rule(at_rule: ast.AtRule):
             important_subrules.extend(imp_parts)
             unimportant_subrules.extend(unimp_parts)
         elif isinstance(parsed_subrule, ast.Comment):
-            pending_comments.append(parsed_subrule)
+            pending_subcomments.append(parsed_subrule)
         elif isinstance(parsed_subrule, ast.WhitespaceToken):
             continue  # ignore whitespace
         else:
@@ -94,15 +95,20 @@ for rule in parsed_rules:
         important_rules.extend(important_parts)
         unimportant_rules.extend(unimportant_parts)
     elif isinstance(rule, ast.AtRule):
+        pre_atrule_comments = pending_comments.copy()
+        pending_comments.clear()
         at_rule_important_subrules, at_rule_unimportant_subrules = process_at_rule(rule)
         if at_rule_important_subrules:
             important_at_rule_copy = copy.deepcopy(rule)
             important_at_rule_copy.content = at_rule_important_subrules
+            important_rules.extend(pre_atrule_comments)
             important_rules.append(important_at_rule_copy)
         if at_rule_unimportant_subrules:
             unimportant_at_rule_copy = copy.deepcopy(rule)
             unimportant_at_rule_copy.content = at_rule_unimportant_subrules
+            unimportant_rules.extend(pre_atrule_comments)
             unimportant_rules.append(unimportant_at_rule_copy)
+        pre_atrule_comments.clear()
     else:
         raise ValueError(f'Unexpected rule type: {type(rule)}')
 

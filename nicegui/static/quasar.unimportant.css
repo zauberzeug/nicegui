@@ -2628,9 +2628,8 @@ body.platform-ios .q-dialog__inner--minimized>div, body.platform-android:not(.na
   animation: q-expansion-done 0s;
 }
 
+/* needed for compilation */
 @keyframes q-expansion-done {
-
-  /* needed for compilation */
   0% {
     --q-exp-done: 1;
   }
