@@ -1,13 +1,12 @@
 #!/usr/bin/env python3
 import copy
-from pathlib import Path
 
 import cssbeautifier  # pip install cssbeautifier
 import rcssmin  # pip install rcssmin
 import tinycss2  # pip install tinycss2
 from tinycss2 import ast
 
-STATIC = Path(__file__).parent / 'nicegui' / 'static'
+from library_path_constants import STATIC
 
 parsed_rules = tinycss2.parse_stylesheet((STATIC / 'quasar.css').read_text(), skip_whitespace=True)
 

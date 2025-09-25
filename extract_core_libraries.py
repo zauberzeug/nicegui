@@ -2,11 +2,8 @@
 from __future__ import annotations
 
 import shutil
-from pathlib import Path
 
-ROOT = Path(__file__).parent
-STATIC = ROOT / 'nicegui' / 'static'
-NODE_MODULES = ROOT / 'node_modules'
+from library_path_constants import NODE_MODULES, STATIC
 
 shutil.copy2(NODE_MODULES / 'vue' / 'dist' / 'vue.global.js', STATIC / 'vue.global.js')
 shutil.copy2(NODE_MODULES / 'vue' / 'dist' / 'vue.global.prod.js', STATIC / 'vue.global.prod.js')
