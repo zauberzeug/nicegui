@@ -113,8 +113,10 @@ doc.intro(event_documentation)
 
     - `app.on_startup`: called when NiceGUI is started or restarted
     - `app.on_shutdown`: called when NiceGUI is shut down or restarted
-    - `app.on_connect`: called for each client which connects (optional argument: nicegui.Client)
-    - `app.on_disconnect`: called for each client which disconnects (optional argument: nicegui.Client)
+    - `app.on_handshake`: called when a client completes the initial handshake (optional argument: `nicegui.Client`, *added in version 3.0.0*)
+    - `app.on_connect`: called for each client which connects (even when reconnecting, optional argument: `nicegui.Client`, *changed in version 3.0.0*)
+    - `app.on_disconnect`: called for each client which disconnects (even when reconnecting, optional argument: `nicegui.Client`, *changed in version 3.0.0*)
+    - `app.on_deletion`: called when a client is deleted (if it does not reconnect, optional argument: `nicegui.Client`, *added in version 3.0.0*)
     - `app.on_exception`: called when an exception occurs (optional argument: exception)
 
     When NiceGUI is shut down or restarted, all tasks still in execution will be automatically canceled.
