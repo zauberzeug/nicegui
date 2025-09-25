@@ -105,5 +105,5 @@ options = {
 (STATIC / 'quasar.important.css').write_text(cssbeautifier.beautify(tinycss2.serialize(important_rules), options))
 
 # minimize with rcssmin
-(STATIC / 'quasar.unimportant.min.css').write_text(rcssmin.cssmin((STATIC / 'quasar.unimportant.css').read_text()))
-(STATIC / 'quasar.important.min.css').write_text(rcssmin.cssmin((STATIC / 'quasar.important.css').read_text()))
+(STATIC / 'quasar.unimportant.prod.css').write_text(rcssmin.cssmin((STATIC / 'quasar.unimportant.css').read_text()))
+(STATIC / 'quasar.important.prod.css').write_text(rcssmin.cssmin((STATIC / 'quasar.important.css').read_text()))
