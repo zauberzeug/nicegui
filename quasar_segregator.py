@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import copy
 from pathlib import Path
 
@@ -6,11 +7,9 @@ import rcssmin  # pip install rcssmin
 import tinycss2  # pip install tinycss2
 from tinycss2 import ast
 
-ROOT = Path(__file__).parent
-STATIC = ROOT / 'nicegui' / 'static'
+STATIC = Path(__file__).parent / 'nicegui' / 'static'
 
-parsed_rules = tinycss2.parse_stylesheet(
-    (STATIC / 'quasar.css').read_text(), skip_whitespace=True)
+parsed_rules = tinycss2.parse_stylesheet((STATIC / 'quasar.css').read_text(), skip_whitespace=True)
 
 unimportant_rules = []
 important_rules = []
@@ -96,17 +95,16 @@ for rule in parsed_rules:
     else:
         raise ValueError(f'Unexpected rule type: {type(rule)}')
 
-print(f'Found {len(unimportant_rules)} unimportant-only rules, '
-      f'{len(important_rules)} important-only rules, ')
+print(f'Found {len(unimportant_rules)} unimportant and {len(important_rules)} important rules.')
 
 # serialize them all
-(STATIC / 'quasar_unimportant.css').write_text(
-    cssbeautifier.beautify(tinycss2.serialize(unimportant_rules)) + '\n')
-(STATIC / 'quasar_important.css').write_text(
-    cssbeautifier.beautify(tinycss2.serialize(important_rules)) + '\n')
+options = {
+    'indent_size': 2,
+    'selector_separator_newline': False,
+}
+(STATIC / 'quasar.unimportant.css').write_text(cssbeautifier.beautify(tinycss2.serialize(unimportant_rules), options))
+(STATIC / 'quasar.important.css').write_text(cssbeautifier.beautify(tinycss2.serialize(important_rules), options))
 
 # minimize with rcssmin
-(STATIC / 'quasar_unimportant.min.css').write_text(
-    rcssmin.cssmin((STATIC / 'quasar_unimportant.css').read_text()) + '\n')
-(STATIC / 'quasar_important.min.css').write_text(
-    rcssmin.cssmin((STATIC / 'quasar_important.css').read_text()) + '\n')
+(STATIC / 'quasar.unimportant.min.css').write_text(rcssmin.cssmin((STATIC / 'quasar.unimportant.css').read_text()))
+(STATIC / 'quasar.important.min.css').write_text(rcssmin.cssmin((STATIC / 'quasar.important.css').read_text()))
