@@ -35,6 +35,13 @@ doc.text('Try styling NiceGUI elements!', '''
     [Tailwind CSS classes](https://tailwindcss.com/),
     [Quasar props](https://justpy.io/quasar_tutorial/introduction/#props-of-quasar-components),
     and CSS styles affect NiceGUI elements.
+
+    Note on Quasar and Tailwind: 
+         
+    By default, some Quasar classes (e.g. `bg-primary`) are very important and even overrules important Tailwind classes.
+    At NiceGUI, we deviate from Quasar's design by moving Quasar's `!important` styles to a less powerful CSS layer. While still important enough to ensure Quasar works in most use cases, you can now overrule Quasar for more customization. 
+
+    Try out class `!bg-red-500` on a `ui.button` to see important Tailwind classes overruling Quasar.
 ''')
 
 
