@@ -104,3 +104,28 @@ def test_startup_and_shutdown_handlers(screen: Screen):
     app.shutdown()
     screen.wait(0.5)
     assert events == ['startup', 'startup_async', 'startup_async', 'shutdown', 'shutdown_async', 'shutdown_async']
+
+
+def test_all_lifecycle_handlers_are_called(screen: Screen):
+    events: list[str] = []
+
+    app.on_handshake(lambda: events.append('app handshake'))
+    app.on_connect(lambda: events.append('app connect'))
+    app.on_disconnect(lambda: events.append('app disconnect'))
+    app.on_deletion(lambda: events.append('app deletion'))
+
+    @ui.page('/')
+    def page():
+        ui.context.client.on_handshake(lambda: events.append('page handshake'))
+        ui.context.client.on_connect(lambda: events.append('page connect'))
+        ui.context.client.on_disconnect(lambda: events.append('page disconnect'))
+        ui.context.client.on_deletion(lambda: events.append('page deletion'))
+
+    screen.open('/')
+    screen.wait(0.5)
+    assert events == ['page handshake', 'app handshake', 'page connect', 'app connect']
+
+    screen.close()
+    screen.wait(0.5)
+    assert events == ['page handshake', 'app handshake', 'page connect', 'app connect',
+                      'page disconnect', 'app disconnect']
