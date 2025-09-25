@@ -40,16 +40,16 @@ def split_qualified_rule_by_importance(qualified_rule: ast.QualifiedRule):
             d for d in parsed_declarations
             if not isinstance(d, ast.Declaration) or not d.important
         ]  # keep all non-Declaration nodes and only unimportant Declarations
+        important_split_rules.extend(pending_comments)
+        unimportant_split_rules.extend(pending_comments)
         important_split_rules.append(important_rule_copy)
         unimportant_split_rules.append(unimportant_rule_copy)
-        important_split_rules.extend(pending_comments)
-        unimportant_split_rules.extend(pending_comments)
     elif contains_important_declarations:
-        important_split_rules.append(qualified_rule)
         important_split_rules.extend(pending_comments)
+        important_split_rules.append(qualified_rule)
     else:
-        unimportant_split_rules.append(qualified_rule)
         unimportant_split_rules.extend(pending_comments)
+        unimportant_split_rules.append(qualified_rule)
 
     pending_comments.clear()
     return important_split_rules, unimportant_split_rules

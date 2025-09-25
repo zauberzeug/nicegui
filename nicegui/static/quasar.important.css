@@ -2841,11 +2841,11 @@ body.platform-ios:not(.native-mobile) .q-dialog__inner--top .q-select__dialog--f
   background-image: linear-gradient(to bottom, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0) 50%, rgba(0, 0, 0, 0.12) 51%, rgba(0, 0, 0, 0.04)) !important;
 }
 
+/* body */
 .q-body--fullscreen-mixin, .q-body--prevent-scroll {
   position: fixed !important;
 }
 
-/* body */
 .q-no-input-spinner {
   -moz-appearance: textfield !important;
 }
@@ -2907,11 +2907,11 @@ body.q-ios-padding .fullscreen {
   vertical-align: bottom !important;
 }
 
+/* internal: */
 .q-position-engine {
   margin-top: var(--q-pe-top, 0) !important;
 }
 
-/* internal: */
 [dir="ltr"] .q-position-engine {
   margin-left: var(--q-pe-left, 0) !important;
 }
