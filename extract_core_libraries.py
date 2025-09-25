@@ -4,6 +4,7 @@ from __future__ import annotations
 import shutil
 
 from library_path_constants import NODE_MODULES, STATIC
+from quasar_segregator import quasar_segregation
 
 shutil.copy2(NODE_MODULES / 'vue' / 'dist' / 'vue.global.js', STATIC / 'vue.global.js')
 shutil.copy2(NODE_MODULES / 'vue' / 'dist' / 'vue.global.prod.js', STATIC / 'vue.global.prod.js')
@@ -27,3 +28,5 @@ shutil.copy2(NODE_MODULES / 'socket.io' / 'client-dist' / 'socket.io.min.js', ST
 shutil.copy2(NODE_MODULES / 'socket.io' / 'client-dist' / 'socket.io.min.js.map', STATIC / 'socket.io.min.js.map')
 
 shutil.copy2(NODE_MODULES / 'es-module-shims' / 'dist' / 'es-module-shims.js', STATIC / 'es-module-shims.js')
+
+quasar_segregation()
