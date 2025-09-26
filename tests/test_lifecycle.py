@@ -109,28 +109,36 @@ def test_startup_and_shutdown_handlers(screen: Screen):
 def test_all_lifecycle_handlers_are_called(screen: Screen):
     events: list[str] = []
 
-    app.on_handshake(lambda: events.append('app handshake'))
     app.on_connect(lambda: events.append('app connect'))
     app.on_disconnect(lambda: events.append('app disconnect'))
-    app.on_deletion(lambda: events.append('app deletion'))
+    app.on_delete(lambda: events.append('app delete'))
 
     @ui.page('/')
     def page():
-        ui.context.client.on_handshake(lambda: events.append('page handshake'))
         ui.context.client.on_connect(lambda: events.append('page connect'))
         ui.context.client.on_disconnect(lambda: events.append('page disconnect'))
-        ui.context.client.on_deletion(lambda: events.append('page deletion'))
+        ui.context.client.on_delete(lambda: events.append('page delete'))
+
+        ui.button('Delete', on_click=ui.context.client.delete)
 
     screen.open('/')
     screen.wait(0.5)
-    assert events == ['page handshake', 'app handshake', 'page connect', 'app connect']
+    assert events == ['page connect', 'app connect']
 
     screen.selenium.execute_script('window.socket.disconnect();')
     screen.wait(0.5)
-    assert events == ['page handshake', 'app handshake', 'page connect', 'app connect',
+    assert events == ['page connect', 'app connect',
                       'page disconnect', 'app disconnect']
 
     screen.selenium.execute_script('window.socket.connect();')
     screen.wait(0.5)
-    assert events == ['page handshake', 'app handshake', 'page connect', 'app connect',
-                      'page disconnect', 'app disconnect', 'page connect', 'app connect']
+    assert events == ['page connect', 'app connect',
+                      'page disconnect', 'app disconnect',
+                      'page connect', 'app connect']
+
+    screen.click('Delete')
+    screen.wait(0.5)
+    assert events == ['page connect', 'app connect',
+                      'page disconnect', 'app disconnect',
+                      'page connect', 'app connect',
+                      'page delete', 'app delete']

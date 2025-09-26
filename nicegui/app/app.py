@@ -44,10 +44,9 @@ class App(FastAPI):
 
         self._startup_handlers: list[Union[Callable[..., Any], Awaitable]] = []
         self._shutdown_handlers: list[Union[Callable[..., Any], Awaitable]] = []
-        self._handshake_handlers: list[Union[Callable[..., Any], Awaitable]] = []
         self._connect_handlers: list[Union[Callable[..., Any], Awaitable]] = []
         self._disconnect_handlers: list[Union[Callable[..., Any], Awaitable]] = []
-        self._deletion_handlers: list[Union[Callable[..., Any], Awaitable]] = []
+        self._delete_handlers: list[Union[Callable[..., Any], Awaitable]] = []
         self._exception_handlers: list[Callable[..., Any]] = [log.exception]
         self._page_exception_handler: Optional[Callable[..., Any]] = None
 
@@ -109,13 +108,6 @@ class App(FastAPI):
         except Exception as e:
             self.handle_exception(e)
 
-    def on_handshake(self, handler: Union[Callable, Awaitable]) -> None:
-        """Called when a client completes the handshake with NiceGUI.
-
-        The callback has an optional parameter of `nicegui.Client`.
-        """
-        self._handshake_handlers.append(handler)
-
     def on_connect(self, handler: Union[Callable, Awaitable]) -> None:
         """Called every time a new client connects to NiceGUI.
 
@@ -127,15 +119,19 @@ class App(FastAPI):
         """Called every time a new client disconnects from NiceGUI.
 
         The callback has an optional parameter of `nicegui.Client`.
+
+        *Updated in version 3.0.0: The handler is also called when a client reconnects.*
         """
         self._disconnect_handlers.append(handler)
 
-    def on_deletion(self, handler: Union[Callable, Awaitable]) -> None:
+    def on_delete(self, handler: Union[Callable, Awaitable]) -> None:
         """Called when a client is deleted.
 
         The callback has an optional parameter of `nicegui.Client`.
+
+        *Added in version 3.0.0*
         """
-        self._deletion_handlers.append(handler)
+        self._delete_handlers.append(handler)
 
     def on_startup(self, handler: Union[Callable, Awaitable]) -> None:
         """Called when NiceGUI is started or restarted.
@@ -322,10 +318,9 @@ class App(FastAPI):
         self.storage.clear()
         self._startup_handlers.clear()
         self._shutdown_handlers.clear()
-        self._handshake_handlers.clear()
         self._connect_handlers.clear()
         self._disconnect_handlers.clear()
-        self._deletion_handlers.clear()
+        self._delete_handlers.clear()
         self._exception_handlers[:] = [log.exception]
         self.config = AppConfig()
 

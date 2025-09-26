@@ -323,10 +323,9 @@ def map_of_nicegui():
             - `app.storage.general`: stored in a file on the server, shared across the entire app
             - `app.storage.browser`: stored in the browser's local storage, unique per browser
         - [lifecycle hooks](/documentation/section_action_events#events):
-            - `app.on_handshake()`: called when a client completes the initial handshake
             - `app.on_connect()`: called when a client connects (even when reconnecting)
             - `app.on_disconnect()`: called when a client disconnects (even when reconnecting)
-            - `app.on_deletion()`: called when a client is deleted (if it does not reconnect)
+            - `app.on_delete()`: called when a client is deleted (if it does not reconnect)
             - `app.on_startup()`: called when the app starts
             - `app.on_shutdown()`: called when the app shuts down
             - `app.on_exception()`: called when an exception occurs
