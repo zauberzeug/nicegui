@@ -1,5 +1,3 @@
-/* * Normalizing -- forked from Normalize.css v8
- * */
 *, *:before, *:after {
   box-sizing: inherit;
   -webkit-tap-highlight-color: transparent;
@@ -43,9 +41,6 @@ summary {
   display: block;
 }
 
-/* * line 1: Remove the bottom border in Firefox 39-.
- * * lines 2,3: Add the correct text decoration in Chrome, Edge, IE, Opera, and Safari.
- * */
 abbr[title] {
   border-bottom: none;
   text-decoration: underline;
@@ -53,16 +48,10 @@ abbr[title] {
   text-decoration: underline dotted;
 }
 
-/**
- * * Remove the border on images inside links in IE 10.
- * */
 img {
   border-style: none;
 }
 
-/* * line 1: Correct the inheritance and scaling of font size in all browsers.
- * * line 2: Correct the odd `em` font sizing in all browsers.
- * */
 code,
 kbd,
 pre,
@@ -71,17 +60,12 @@ samp {
   font-size: 1em;
 }
 
-/* * lines 1,2: Add the correct box sizing in Firefox.
- * * line 3: Show the overflow in Edge and IE.
- * */
 hr {
   box-sizing: content-box;
   height: 0;
   overflow: visible;
 }
 
-/* * Change font properties to `inherit` in all browsers (opinionated).
- * */
 button,
 input,
 optgroup,
@@ -92,18 +76,10 @@ textarea {
   margin: 0;
 }
 
-/* * Restore the font weight unset by the previous rule.
- * */
 optgroup {
   font-weight: bold;
 }
 
-/* * Show the overflow in IE.
- * *  input: Show the overflow in Edge.
- * *  select: Show the overflow in Edge, Firefox, and IE.
- * * Remove the inheritance of text transform in Edge, Firefox, and IE.
- * *  select: Remove the inheritance of text transform in Firefox.
- * */
 button,
 input,
 select {
@@ -111,32 +87,19 @@ select {
   text-transform: none;
 }
 
-/* * Remove the inner border and padding in Firefox.
- * */
 button::-moz-focus-inner, input::-moz-focus-inner {
   border: 0;
   padding: 0;
 }
 
-/* * Restore the focus styles unset by the previous rule.
- * */
 button:-moz-focusring, input:-moz-focusring {
   outline: 1px dotted ButtonText;
 }
 
-/**
- * * Correct the padding in Firefox.
- * */
 fieldset {
   padding: 0.35em 0.75em 0.625em;
 }
 
-/**
- * * lines 1,3,4,6: Correct the text wrapping in Edge and IE.
- * * line 2: Correct the color inheritance from `fieldset` elements in IE.
- * * line 5: Remove the padding so developers are not caught out when they zero out
- * *    `fieldset` elements in all browsers.
- * */
 legend {
   box-sizing: border-box;
   color: inherit;
@@ -146,22 +109,14 @@ legend {
   white-space: normal;
 }
 
-/**
- * * Add the correct vertical alignment in Chrome, Firefox, and Opera.
- * */
 progress {
   vertical-align: baseline;
 }
 
-/* * Remove the default vertical scrollbar in IE 10+.
- * */
 textarea {
   overflow: auto;
 }
 
-/* * Remove the inner padding and cancel buttons in Chrome on OS X and
- * * Safari on OS X.
- * */
 input[type=search]::-webkit-search-cancel-button,
 input[type=search]::-webkit-search-decoration {
   -webkit-appearance: none;
@@ -225,7 +180,6 @@ input[type=search]::-webkit-search-decoration {
   vertical-align: middle;
 }
 
-/* Composables */
 .q-panel {
   height: 100%;
   width: 100%;
@@ -241,7 +195,6 @@ input[type=search]::-webkit-search-decoration {
   position: relative;
 }
 
-/* Components */
 .q-loading-bar {
   position: fixed;
   z-index: 9998;
@@ -1742,10 +1695,6 @@ body.desktop.body--dark .q-chip--clickable:focus {
   min-width: 180px;
   border-radius: 4px;
   box-shadow: 0 1px 5px rgba(0, 0, 0, 0.2), 0 2px 2px rgba(0, 0, 0, 0.14), 0 3px 1px -2px rgba(0, 0, 0, 0.12);
-  /* Saturation Tab */
-  /* Tune Tab */
-  /* Palette Tab */
-  /* Generic  */
 }
 
 .q-color-picker--bordered {
@@ -2628,7 +2577,6 @@ body.platform-ios .q-dialog__inner--minimized>div, body.platform-android:not(.na
   animation: q-expansion-done 0s;
 }
 
-/* needed for compilation */
 @keyframes q-expansion-done {
   0% {
     --q-exp-done: 1;
@@ -3114,14 +3062,6 @@ body.platform-ios .q-dialog__inner--minimized>div, body.platform-android:not(.na
   -webkit-animation-fill-mode: both;
 }
 
-.q-field__native:-webkit-autofill+.q-field__label, .q-field__input:-webkit-autofill+.q-field__label {
-  transform: translateY(-40%) scale(0.75);
-}
-
-.q-field__native[type=color]+.q-field__label, .q-field__native[type=date]+.q-field__label, .q-field__native[type=datetime-local]+.q-field__label, .q-field__native[type=month]+.q-field__label, .q-field__native[type=time]+.q-field__label, .q-field__native[type=week]+.q-field__label, .q-field__input[type=color]+.q-field__label, .q-field__input[type=date]+.q-field__label, .q-field__input[type=datetime-local]+.q-field__label, .q-field__input[type=month]+.q-field__label, .q-field__input[type=time]+.q-field__label, .q-field__input[type=week]+.q-field__label {
-  transform: translateY(-40%) scale(0.75);
-}
-
 .q-field__native:invalid, .q-field__input:invalid {
   box-shadow: none;
 }
@@ -3196,6 +3136,16 @@ body.platform-ios .q-dialog__inner--minimized>div, body.platform-android:not(.na
 [dir="rtl"] .q-field__label {
   right: 0;
   transform-origin: right top;
+}
+
+.q-field__label:has(+ :is(.q-field__native, .q-field__input):is(:-webkit-autofill,
+    [type=color],
+    [type=date],
+    [type=datetime-local],
+    [type=month],
+    [type=time],
+    [type=week])) {
+  transform: translateY(-40%) scale(0.75);
 }
 
 .q-field--float .q-field__label {
@@ -3486,11 +3436,13 @@ body.platform-ios .q-dialog__inner--minimized>div, body.platform-android:not(.na
   transform: translateY(-30%) scale(0.75);
 }
 
-.q-field--dense .q-field__native:-webkit-autofill+.q-field__label, .q-field--dense .q-field__input:-webkit-autofill+.q-field__label {
-  transform: translateY(-30%) scale(0.75);
-}
-
-.q-field--dense .q-field__native[type=color]+.q-field__label, .q-field--dense .q-field__native[type=date]+.q-field__label, .q-field--dense .q-field__native[type=datetime-local]+.q-field__label, .q-field--dense .q-field__native[type=month]+.q-field__label, .q-field--dense .q-field__native[type=time]+.q-field__label, .q-field--dense .q-field__native[type=week]+.q-field__label, .q-field--dense .q-field__input[type=color]+.q-field__label, .q-field--dense .q-field__input[type=date]+.q-field__label, .q-field--dense .q-field__input[type=datetime-local]+.q-field__label, .q-field--dense .q-field__input[type=month]+.q-field__label, .q-field--dense .q-field__input[type=time]+.q-field__label, .q-field--dense .q-field__input[type=week]+.q-field__label {
+.q-field--dense .q-field__label:has(+ :is(.q-field__native, .q-field__input):is(:-webkit-autofill,
+    [type=color],
+    [type=date],
+    [type=datetime-local],
+    [type=month],
+    [type=time],
+    [type=week])) {
   transform: translateY(-30%) scale(0.75);
 }
 
@@ -4831,9 +4783,6 @@ body.platform-ios.native-mobile .q-dialog__inner--top>div {
   --q-skeleton-speed: 1500ms;
   background: rgba(0, 0, 0, 0.12);
   border-radius: 4px;
-  /* maintain size even with border
-  * for types that have height specified
-  * */
   box-sizing: border-box;
 }
 
@@ -6367,8 +6316,6 @@ body.desktop .q-slider.q-slider--enabled .q-slider__track-container:hover .q-sli
   transform: scale(0.95);
 }
 
-/* * Separators
- * */
 .q-table--horizontal-separator thead th, .q-table--horizontal-separator tbody tr:not(:last-child)>td, .q-table--cell-separator thead th, .q-table--cell-separator tbody tr:not(:last-child)>td {
   border-bottom-width: 1px;
 }
@@ -6397,8 +6344,6 @@ body.desktop .q-slider.q-slider--enabled .q-slider__track-container:hover .q-sli
   border-bottom: 1px solid rgba(0, 0, 0, 0.12);
 }
 
-/* * dense size
- * */
 .q-table--dense .q-table__top {
   padding: 6px 16px;
 }
@@ -6452,8 +6397,6 @@ body.desktop .q-slider.q-slider--enabled .q-slider__track-container:hover .q-sli
   height: 24px;
 }
 
-/* * On light background
- * */
 .q-table__bottom:not(.q-table__bottom--nodata) {
   border-top: 1px solid rgba(0, 0, 0, 0.12);
 }
@@ -6491,8 +6434,6 @@ body.desktop .q-table>tbody>tr:not(.q-tr--no-hover):hover>td:not(.q-td--no-hover
   content: "";
 }
 
-/* * On dark background
- * */
 .q-table__card--dark,
 .q-table--dark {
   border-color: rgba(255, 255, 255, 0.28);
@@ -8490,7 +8431,6 @@ img.responsive {
   ;
 }
 
-/* Directives */
 .q-ripple {
   position: absolute;
   top: 0;
@@ -8529,7 +8469,6 @@ img.responsive {
   transition: opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Plugins */
 .q-bottom-sheet {
   padding-bottom: 8px;
 }
@@ -8892,10 +8831,6 @@ body.q-ios-padding .q-notifications__list--center, body.q-ios-padding .q-notific
   }
 }
 
-/* Core */
-/* * Animate.css additions
- * * Adapted from: https://github.com/animate-css/animate.css/blob/6828621a01e145119db6194dc9b4d37325b48aa5/source/_base.css
- * */
 :root {
   --animate-duration: 0.3s;
   --animate-delay: 0.3s;
@@ -8969,8 +8904,6 @@ body.q-ios-padding .q-notifications__list--center, body.q-ios-padding .q-notific
   }
 }
 
-/* * Quasar animations
- * */
 .q-animate--scale {
   animation: q-scale 0.15s;
   animation-timing-function: cubic-bezier(0.25, 0.8, 0.25, 1);
@@ -11484,7 +11417,6 @@ body.mobile .scroll--mobile {
   margin-right: 12px;
 }
 
-/* internal: */
 .q-position-engine {
   will-change: auto;
   visibility: collapse;

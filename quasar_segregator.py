@@ -1,174 +1,56 @@
 #!/usr/bin/env python3
 import copy
+import difflib
 
-import cssbeautifier  # pip install cssbeautifier
-import rcssmin  # pip install rcssmin
-import tinycss2  # pip install tinycss2
+import cssbeautifier
+import rcssmin
+import tinycss2
 from tinycss2 import ast
 
 from library_path_constants import STATIC
 
+FORMAT_OPTIONS = {'indent_size': 2, 'selector_separator_newline': False}
 
-def quasar_segregation():
+
+def segregate() -> None:
     """Segregate quasar.css into important and unimportant CSS files."""
-    options = {
-        'indent_size': 2,
-        'selector_separator_newline': False,
-    }
+    rules = tinycss2.parse_stylesheet((STATIC / 'quasar.css').read_text(), skip_whitespace=True)
+    reference_css = cssbeautifier.beautify(tinycss2.serialize(rules), FORMAT_OPTIONS)
+    important_css = cssbeautifier.beautify(tinycss2.serialize(_extract_all(rules, important=True)), FORMAT_OPTIONS)
+    unimportant_css = cssbeautifier.beautify(tinycss2.serialize(_extract_all(rules, important=False)), FORMAT_OPTIONS)
 
-    parsed_rules = tinycss2.parse_stylesheet((STATIC / 'quasar.css').read_text(), skip_whitespace=True)
+    important_matcher = difflib.SequenceMatcher(None, reference_css.splitlines(), important_css.splitlines())
+    unimportant_matcher = difflib.SequenceMatcher(None, reference_css.splitlines(), unimportant_css.splitlines())
+    assert '!important' not in unimportant_css, 'Unimportant CSS contains !important declarations.'
+    assert all(tag in {'equal', 'delete'} for tag, *_ in important_matcher.get_opcodes()), \
+        'Important CSS contains extra lines that are not in reference CSS.'
+    assert all(tag in {'equal', 'delete'} for tag, *_ in unimportant_matcher.get_opcodes()), \
+        'Unimportant CSS contains extra lines that are not in reference CSS.'
+    assert reference_css.count(';') == important_css.count(';') + unimportant_css.count(';'), \
+        'Reference CSS does not have the same number of declarations as the sum of important and unimportant CSS.'
 
-    # save quasar.reference.css
-    (STATIC / 'quasar.reference.css').write_text(cssbeautifier.beautify(tinycss2.serialize(parsed_rules), options))
-
-    # minimize with rcssmin
-    (STATIC / 'quasar.reference.prod.css').write_text(rcssmin.cssmin((STATIC / 'quasar.reference.css').read_text()))
-
-    unimportant_rules = []
-    important_rules = []
-    pending_comments = []
-
-    def split_qualified_rule_by_importance(qualified_rule: ast.QualifiedRule):
-        """Process a QualifiedRule and return two lists: (important_rules, unimportant_rules)."""
-        parsed_declarations = tinycss2.parse_blocks_contents(qualified_rule.content or '', skip_whitespace=True)
-        contains_important_declarations = False
-        contains_unimportant_declarations = False
-        for declaration in parsed_declarations:
-            if isinstance(declaration, ast.Declaration) and declaration.important:
-                contains_important_declarations = True
-            if isinstance(declaration, ast.Declaration) and not declaration.important:
-                contains_unimportant_declarations = True
-
-        important_split_rules = []
-        unimportant_split_rules = []
-
-        if contains_important_declarations and contains_unimportant_declarations:
-            important_rule_copy = copy.deepcopy(qualified_rule)
-            unimportant_rule_copy = copy.deepcopy(qualified_rule)
-            important_rule_copy.content = [
-                d for d in parsed_declarations
-                if not isinstance(d, ast.Declaration) or d.important
-            ]  # keep all non-Declaration nodes and only important Declarations
-            unimportant_rule_copy.content = [
-                d for d in parsed_declarations
-                if not isinstance(d, ast.Declaration) or not d.important
-            ]  # keep all non-Declaration nodes and only unimportant Declarations
-            important_split_rules.extend(pending_comments)
-            unimportant_split_rules.extend(pending_comments)
-            important_split_rules.append(important_rule_copy)
-            unimportant_split_rules.append(unimportant_rule_copy)
-        elif contains_important_declarations:
-            important_split_rules.extend(pending_comments)
-            important_split_rules.append(qualified_rule)
-        else:
-            unimportant_split_rules.extend(pending_comments)
-            unimportant_split_rules.append(qualified_rule)
-
-        pending_comments.clear()
-        return important_split_rules, unimportant_split_rules
-
-    def process_at_rule(at_rule: ast.AtRule):
-        """Process an AtRule and return two lists: (important_subrules, unimportant_subrules)."""
-        important_subrules = []
-        unimportant_subrules = []
-        pending_subcomments = []
-        parsed_subrules = tinycss2.parse_blocks_contents(at_rule.content or '', skip_whitespace=True)
-        for parsed_subrule in parsed_subrules:
-            if isinstance(parsed_subrule, ast.QualifiedRule):
-                imp_parts, unimp_parts = split_qualified_rule_by_importance(parsed_subrule)
-                important_subrules.extend(imp_parts)
-                unimportant_subrules.extend(unimp_parts)
-            elif isinstance(parsed_subrule, ast.Comment):
-                pending_subcomments.append(parsed_subrule)
-            elif isinstance(parsed_subrule, ast.WhitespaceToken):
-                continue  # ignore whitespace
-            else:
-                raise ValueError(f'Unexpected at-rule subrule: {type(parsed_subrule)}')
-        return important_subrules, unimportant_subrules
-
-    for rule in parsed_rules:
-        if isinstance(rule, ast.Comment):
-            pending_comments.append(rule)
-        elif isinstance(rule, ast.QualifiedRule):
-            important_parts, unimportant_parts = split_qualified_rule_by_importance(rule)
-            important_rules.extend(important_parts)
-            unimportant_rules.extend(unimportant_parts)
-        elif isinstance(rule, ast.AtRule):
-            pre_atrule_comments = pending_comments.copy()
-            pending_comments.clear()
-            at_rule_important_subrules, at_rule_unimportant_subrules = process_at_rule(rule)
-            if at_rule_important_subrules:
-                important_at_rule_copy = copy.deepcopy(rule)
-                important_at_rule_copy.content = at_rule_important_subrules
-                important_rules.extend(pre_atrule_comments)
-                important_rules.append(important_at_rule_copy)
-            if at_rule_unimportant_subrules:
-                unimportant_at_rule_copy = copy.deepcopy(rule)
-                unimportant_at_rule_copy.content = at_rule_unimportant_subrules
-                unimportant_rules.extend(pre_atrule_comments)
-                unimportant_rules.append(unimportant_at_rule_copy)
-            pre_atrule_comments.clear()
-        else:
-            raise ValueError(f'Unexpected rule type: {type(rule)}')
-
-    print(f'Found {len(unimportant_rules)} unimportant and {len(important_rules)} important rules.')
-
-    # serialize them all
-    (STATIC / 'quasar.unimportant.css').write_text(cssbeautifier.beautify(tinycss2.serialize(unimportant_rules), options))
-    (STATIC / 'quasar.important.css').write_text(cssbeautifier.beautify(tinycss2.serialize(important_rules), options))
-
-    # minimize with rcssmin
-    (STATIC / 'quasar.unimportant.prod.css').write_text(rcssmin.cssmin((STATIC / 'quasar.unimportant.css').read_text()))
-    (STATIC / 'quasar.important.prod.css').write_text(rcssmin.cssmin((STATIC / 'quasar.important.css').read_text()))
+    (STATIC / 'quasar.important.css').write_text(important_css)
+    (STATIC / 'quasar.unimportant.css').write_text(unimportant_css)
+    (STATIC / 'quasar.important.prod.css').write_text(rcssmin.cssmin(important_css))
+    (STATIC / 'quasar.unimportant.prod.css').write_text(rcssmin.cssmin(unimportant_css))
 
 
-def quasar_segregation_checks():
-    """Check that the segregation was successful."""
-    important_css = (STATIC / 'quasar.important.css').read_text()
-    unimportant_css = (STATIC / 'quasar.unimportant.css').read_text()
-    reference_css = (STATIC / 'quasar.reference.css').read_text()
+def _extract_all(rules: list[ast.Node], *, important: bool) -> list[ast.QualifiedRule | ast.AtRule]:
+    """Extract all qualified and at-rules with the given importance."""
+    new_rules = [_extract(r, important=important) for r in rules if isinstance(r, (ast.QualifiedRule, ast.AtRule))]
+    return [rule for rule in new_rules if rule.content]
 
-    # Step 1: Ensure unimportant CSS has no !important declarations
-    if '!important' in unimportant_css:
-        raise ValueError('Unimportant CSS contains !important declarations.')
-    print('Step 1: Unimportant CSS does not contain !important declarations.')
 
-    important_lines = important_css.splitlines()
-    unimportant_lines = unimportant_css.splitlines()
-    reference_lines = reference_css.splitlines()
-
-    # Step 2: Find extra lines by comparing reference and unimportant line by line
-    extra_lines = []
-    offset = 0
-    for idx, ref_line in enumerate(reference_lines):
-        unimp_line = unimportant_lines[idx - offset]
-        if ref_line != unimp_line:
-            extra_lines.append(ref_line)
-            offset += 1
-    if offset + len(unimportant_lines) != len(reference_lines):
-        raise ValueError('We did not manage to fully zip unimportant and reference together.')
-    print('Step 2: Unimportant CSS + extra lines = Reference CSS (zip with no extras).')
-
-    # Step 3: Ensure all important lines exist in reference
-    reference_set = set(reference_lines)
-    for imp_line in important_lines:
-        if imp_line not in reference_set:
-            raise ValueError('Important CSS contains a declaration that does not exist in reference CSS.')
-    print('Step 3: Important CSS contains only declarations that exist in reference CSS.')
-
-    # Step 4 & 5: Check !important declarations
-    important_important = {line for line in important_lines if '!important' in line}
-    extra_important = {line for line in extra_lines if '!important' in line}
-    if not extra_important.issubset(important_important):
-        raise ValueError(
-            'Important CSS does not contain an !important declaration found while zipping unimportant with reference.')
-    if not important_important.issubset(extra_important):
-        raise ValueError(
-            'While zipping important with reference, we found an !important declaration that was not found in important CSS.')
-    print('Step 4: Important CSS contains all !important declarations found while zipping unimportant with reference.')
-    print('Step 5: All !important declarations found while zipping important with reference exist in important CSS.')
+def _extract(rule: ast.QualifiedRule | ast.AtRule, *, important: bool) -> ast.QualifiedRule | ast.AtRule:
+    """Extract a qualified or at-rule containing only declarations with the given importance."""
+    new_rule = copy.deepcopy(rule)
+    nodes = tinycss2.parse_blocks_contents(rule.content, skip_whitespace=True)
+    if isinstance(rule, ast.AtRule):
+        new_rule.content = _extract_all(nodes, important=important)
+    else:
+        new_rule.content = [node for node in nodes if isinstance(node, ast.Declaration) and node.important == important]
+    return new_rule
 
 
 if __name__ == '__main__':
-    quasar_segregation()
-    quasar_segregation_checks()
+    segregate()
