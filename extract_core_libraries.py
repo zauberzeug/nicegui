@@ -17,12 +17,6 @@ for entry in (NODE_MODULES / 'quasar' / 'dist' / 'lang').glob('*.umd.prod.js'):
     shutil.copy2(entry, STATIC / 'lang' / entry.name)
 
 shutil.copy2(NODE_MODULES / '@tailwindcss' / 'browser' / 'dist' / 'index.global.js', STATIC / 'tailwindcss.min.js')
-WARNING = (
-    'console.warn("The browser build of Tailwind CSS should not be used in production. '
-    'To use Tailwind CSS in production, use the Tailwind CLI, Vite plugin, or PostCSS plugin: '
-    'https://tailwindcss.com/docs/installation");'
-)
-(STATIC / 'tailwindcss.min.js').write_text((STATIC / 'tailwindcss.min.js').read_text().replace(WARNING, ''))
 
 shutil.copy2(NODE_MODULES / 'socket.io' / 'client-dist' / 'socket.io.min.js', STATIC / 'socket.io.min.js')
 shutil.copy2(NODE_MODULES / 'socket.io' / 'client-dist' / 'socket.io.min.js.map', STATIC / 'socket.io.min.js.map')
