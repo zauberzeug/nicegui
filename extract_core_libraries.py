@@ -11,7 +11,9 @@ import rcssmin
 import tinycss2
 from tinycss2 import ast
 
-from library_path_constants import NODE_MODULES, STATIC
+ROOT = Path(__file__).parent
+STATIC = ROOT / 'nicegui' / 'static'
+NODE_MODULES = ROOT / 'node_modules'
 
 
 def _extract_quasar_css(css_path: Path) -> None:
