@@ -732,6 +732,23 @@ test = ["Pillow", "contourpy[test-no-images]", "matplotlib"]
 test-no-images = ["pytest", "pytest-cov", "pytest-rerunfailures", "pytest-xdist", "wurlitzer"]
 
 [[package]]
+name = "cssbeautifier"
+version = "1.15.4"
+description = "CSS unobfuscator and beautifier."
+optional = false
+python-versions = "*"
+groups = ["dev"]
+files = [
+    {file = "cssbeautifier-1.15.4-py3-none-any.whl", hash = "sha256:78c84d5e5378df7d08622bbd0477a1abdbd209680e95480bf22f12d5701efc98"},
+    {file = "cssbeautifier-1.15.4.tar.gz", hash = "sha256:9bb08dc3f64c101a01677f128acf01905914cf406baf87434dcde05b74c0acf5"},
+]
+
+[package.dependencies]
+editorconfig = ">=0.12.2"
+jsbeautifier = "*"
+six = ">=1.13.0"
+
+[[package]]
 name = "cycler"
 version = "0.12.1"
 description = "Composable style cycles"
@@ -823,6 +840,21 @@ files = [
     {file = "docutils-0.20.1-py3-none-any.whl", hash = "sha256:96f387a2c5562db4476f09f13bbab2192e764cac08ebbf3a34a95d9b1e4a59d6"},
     {file = "docutils-0.20.1.tar.gz", hash = "sha256:f08a4e276c3a1583a86dce3e34aba3fe04d02bba2dd51ed16106244e8a923e3b"},
 ]
+
+[[package]]
+name = "editorconfig"
+version = "0.17.1"
+description = "EditorConfig File Locator and Interpreter for Python"
+optional = false
+python-versions = ">=3.9"
+groups = ["dev"]
+files = [
+    {file = "editorconfig-0.17.1-py3-none-any.whl", hash = "sha256:1eda9c2c0db8c16dbd50111b710572a5e6de934e39772de1959d41f64fc17c82"},
+    {file = "editorconfig-0.17.1.tar.gz", hash = "sha256:23c08b00e8e08cc3adcddb825251c497478df1dada6aefeb01e626ad37303745"},
+]
+
+[package.extras]
+dev = ["mypy (>=1.15)"]
 
 [[package]]
 name = "exceptiongroup"
@@ -1299,6 +1331,22 @@ MarkupSafe = ">=2.0"
 
 [package.extras]
 i18n = ["Babel (>=2.7)"]
+
+[[package]]
+name = "jsbeautifier"
+version = "1.15.4"
+description = "JavaScript unobfuscator and beautifier."
+optional = false
+python-versions = "*"
+groups = ["dev"]
+files = [
+    {file = "jsbeautifier-1.15.4-py3-none-any.whl", hash = "sha256:72f65de312a3f10900d7685557f84cb61a9733c50dcc27271a39f5b0051bf528"},
+    {file = "jsbeautifier-1.15.4.tar.gz", hash = "sha256:5bb18d9efb9331d825735fbc5360ee8f1aac5e52780042803943aa7f854f7592"},
+]
+
+[package.dependencies]
+editorconfig = ">=0.12.2"
+six = ">=1.13.0"
 
 [[package]]
 name = "kiwisolver"
@@ -3587,6 +3635,75 @@ packaging = "*"
 test = ["pytest (>=6,!=7.0.0,!=7.0.1)", "pytest-cov (>=3.0.0)", "pytest-qt"]
 
 [[package]]
+name = "rcssmin"
+version = "1.2.1"
+description = "CSS Minifier"
+optional = false
+python-versions = "*"
+groups = ["dev"]
+files = [
+    {file = "rcssmin-1.2.1-cp27-cp27m-manylinux1_i686.whl", hash = "sha256:df821901ff16c25e8275f6c61a47f0f94e5e8c93ebd94921a3df9131e8b90928"},
+    {file = "rcssmin-1.2.1-cp27-cp27m-manylinux1_x86_64.whl", hash = "sha256:7f2338d58130f9a0635f09c3d1c3d2ec7655850361315665e6fed801e661da2f"},
+    {file = "rcssmin-1.2.1-cp27-cp27mu-manylinux1_i686.whl", hash = "sha256:f279bdb2ec38cee375bb8b335ee0d018906b7a94d9245fff3c8faef853290f15"},
+    {file = "rcssmin-1.2.1-cp27-cp27mu-manylinux1_x86_64.whl", hash = "sha256:cee31d3567db4c742197b5e59ed53f9478a3e97378b51799fd0ac26636224d73"},
+    {file = "rcssmin-1.2.1-cp310-cp310-manylinux1_i686.whl", hash = "sha256:5f60daa642dac666d87c9fd5826d30da58ac921399c6fac2e1307767d7b65151"},
+    {file = "rcssmin-1.2.1-cp310-cp310-manylinux1_x86_64.whl", hash = "sha256:ceaa956c4dba37f10cdb1b6ca76ed4ff02a7ff414a394e2b9375b476256b14e0"},
+    {file = "rcssmin-1.2.1-cp310-cp310-manylinux2014_aarch64.whl", hash = "sha256:2017d1a8ef6577d662c66eea6cd1fc021d32eb635ed358e687a4b795a0244f00"},
+    {file = "rcssmin-1.2.1-cp310-cp310-musllinux_1_1_aarch64.whl", hash = "sha256:cba2898fdc99b74ad1fc0fd7ad6c42af68a6ccecf4b9aa023a80a515b60f468a"},
+    {file = "rcssmin-1.2.1-cp310-cp310-musllinux_1_1_i686.whl", hash = "sha256:c67476c72bc96fdbdb0bee995f7ec19589bb24bc4103bbc94dacb5203075de33"},
+    {file = "rcssmin-1.2.1-cp310-cp310-musllinux_1_1_x86_64.whl", hash = "sha256:334add21328c05cb1590c62ed98ae9a512fb62f918045aa93ddf57d042ab4821"},
+    {file = "rcssmin-1.2.1-cp311-cp311-manylinux1_i686.whl", hash = "sha256:e0cdc0859658e17086c9f8c0bf5846afa3ca7f899f4b83ece5843af40c675384"},
+    {file = "rcssmin-1.2.1-cp311-cp311-manylinux1_x86_64.whl", hash = "sha256:84cc7eba7fe8214c0f5b5ddd57f81bf33e5edae81dadba6a214fc2a79e61dde7"},
+    {file = "rcssmin-1.2.1-cp311-cp311-manylinux2014_aarch64.whl", hash = "sha256:e28e6c740bbdf4c7d649b1eee4a5485091ab64eec2d81e336b25443d61b1a9da"},
+    {file = "rcssmin-1.2.1-cp311-cp311-musllinux_1_1_aarch64.whl", hash = "sha256:ddbd856c1b8a46341b7478f3d4c6cedf1c20b26f99f18bd7ee128850546831d0"},
+    {file = "rcssmin-1.2.1-cp311-cp311-musllinux_1_1_i686.whl", hash = "sha256:8d21eba23c3012cbc5a6eb3af33c331809e854011c5ae3e447a9f5e5b1670675"},
+    {file = "rcssmin-1.2.1-cp311-cp311-musllinux_1_1_x86_64.whl", hash = "sha256:b847e372364fb5321670c834af504c34274c87b919924782000bf11aaeebc4ee"},
+    {file = "rcssmin-1.2.1-cp312-cp312-manylinux1_i686.whl", hash = "sha256:908458ec1106162173506f9a4e77a3ffc46a9bb8a08445e44aa6360889ff9777"},
+    {file = "rcssmin-1.2.1-cp312-cp312-manylinux1_x86_64.whl", hash = "sha256:1209c690e5c1ab781816078d3d7e4dfc8dc024a65c60327441b8d4296d8d750c"},
+    {file = "rcssmin-1.2.1-cp312-cp312-manylinux2014_aarch64.whl", hash = "sha256:9d89acb97605cef0c6f36b2bf2fe942abbfce8a809171258bff6d2f5064fcff0"},
+    {file = "rcssmin-1.2.1-cp312-cp312-musllinux_1_1_aarch64.whl", hash = "sha256:496c17bb565a0e315406d75540f7f464d8c6fce9b584c5aac44511dcbcb7d304"},
+    {file = "rcssmin-1.2.1-cp312-cp312-musllinux_1_1_i686.whl", hash = "sha256:a6f320933e7a5748349328e5bac83a373a17be661d435d3fee179d602e2e1039"},
+    {file = "rcssmin-1.2.1-cp312-cp312-musllinux_1_1_x86_64.whl", hash = "sha256:b7cc33eba8b212b88b9fdcab6ff81bedd155b51adabd707376e7e6ff3be889e7"},
+    {file = "rcssmin-1.2.1-cp313-cp313-manylinux1_i686.whl", hash = "sha256:3cbe222f43d859cbd3751591e4d2fbd0bee1f953e3122a619a7f1aa9809cc5be"},
+    {file = "rcssmin-1.2.1-cp313-cp313-manylinux1_x86_64.whl", hash = "sha256:6e7e7f016fba8b9eaff882fa70c715276328477ec8aa603c4aec71d7cf632eb2"},
+    {file = "rcssmin-1.2.1-cp313-cp313-manylinux2014_aarch64.whl", hash = "sha256:1b9f827c6327bbcede7d5bbb24ca5d603ef573cfd1a68ac12a946f223df4cd8a"},
+    {file = "rcssmin-1.2.1-cp313-cp313-musllinux_1_1_aarch64.whl", hash = "sha256:b5f922aaf17ed61a7fa3861ba6148d9922af137cf0a5573dcd640d3bf2c95713"},
+    {file = "rcssmin-1.2.1-cp313-cp313-musllinux_1_1_i686.whl", hash = "sha256:9fb7b8e7ed5a18bc4ca411ca2ee63216a87cdeefe15b209cc3f39ad17f1ece33"},
+    {file = "rcssmin-1.2.1-cp313-cp313-musllinux_1_1_x86_64.whl", hash = "sha256:d1765069ba678d462d66540caa4fd7a91931a616c62aea703f364722dd93305c"},
+    {file = "rcssmin-1.2.1-cp313-cp313t-manylinux1_i686.whl", hash = "sha256:f4be9bda3484518cb47335180ece7b1f9528e8b6a81c9e84837e7690557eacff"},
+    {file = "rcssmin-1.2.1-cp313-cp313t-manylinux1_x86_64.whl", hash = "sha256:f453e7d02ecd94d41912b01f4d4e1ce2e8d8aef8566e653445e041bde7ccb962"},
+    {file = "rcssmin-1.2.1-cp313-cp313t-manylinux2014_aarch64.whl", hash = "sha256:bbb16cf8c6dbb8c925b98806996e9eddd9373bd5560978021d42876bd58f87cf"},
+    {file = "rcssmin-1.2.1-cp313-cp313t-musllinux_1_1_aarch64.whl", hash = "sha256:daf17953c4ed491f431b49a6177b5b85149cee2155e0d96306000f8a641b0547"},
+    {file = "rcssmin-1.2.1-cp313-cp313t-musllinux_1_1_i686.whl", hash = "sha256:760d4710a0565fc35aaf7928fb82235d647164be4a39ab7836a51655595b7168"},
+    {file = "rcssmin-1.2.1-cp313-cp313t-musllinux_1_1_x86_64.whl", hash = "sha256:7f4b31f89133695e315b290699823f616359f0ff5fe19f911b56e8e3c6a1a27e"},
+    {file = "rcssmin-1.2.1-cp36-cp36m-manylinux1_i686.whl", hash = "sha256:6ce99c96e4aeb09175f5b4891d980b822eb2679df78ca618f9616660094e424e"},
+    {file = "rcssmin-1.2.1-cp36-cp36m-manylinux1_x86_64.whl", hash = "sha256:4b1707efea4cc2a72eb5183552de4d851fc7b6549232ce92175f89c11b837429"},
+    {file = "rcssmin-1.2.1-cp36-cp36m-manylinux2014_aarch64.whl", hash = "sha256:7444697216711e83df333aa6e529986e0644487e4309cbcdfff9917afee53dac"},
+    {file = "rcssmin-1.2.1-cp36-cp36m-musllinux_1_1_aarch64.whl", hash = "sha256:67162c1a8b950f9ff63403abe367b959660c1c2eb3ac0433cbaee6c4f02a1b06"},
+    {file = "rcssmin-1.2.1-cp36-cp36m-musllinux_1_1_i686.whl", hash = "sha256:1104aa69319c7fef1bc991ff08338781f2124fdf5d2b5dda9ce50fa50c1a94e5"},
+    {file = "rcssmin-1.2.1-cp36-cp36m-musllinux_1_1_x86_64.whl", hash = "sha256:4fa8474bca197ec752cc5f3fab4b6969a60c6a2fe1e55a285a4d530f7bbcc860"},
+    {file = "rcssmin-1.2.1-cp37-cp37m-manylinux1_i686.whl", hash = "sha256:e3d1f656e7f9a1692f7611c12ccaad505d6e5d75eb8fe078d6f6ae3465adad6b"},
+    {file = "rcssmin-1.2.1-cp37-cp37m-manylinux1_x86_64.whl", hash = "sha256:d7e2bf2110f65664e8b004322c934e84839ad43fbb94bda231087b64e83114f6"},
+    {file = "rcssmin-1.2.1-cp37-cp37m-manylinux2014_aarch64.whl", hash = "sha256:abec1a2ecc03b6379ad7c490ecda087cfb50910de433c33bc488f98093981ce3"},
+    {file = "rcssmin-1.2.1-cp37-cp37m-musllinux_1_1_aarch64.whl", hash = "sha256:9c00fd706cc16485c3d315d696a030e5ced6ad7ec6dd00c1fb1d13a7ee481d7e"},
+    {file = "rcssmin-1.2.1-cp37-cp37m-musllinux_1_1_i686.whl", hash = "sha256:5337150607bef63c9bf2220da68adad6c9645bccf04b12dff1e254933fc86b77"},
+    {file = "rcssmin-1.2.1-cp37-cp37m-musllinux_1_1_x86_64.whl", hash = "sha256:fe2f1c75ad38518b067e34cfbc38188fec0642df8e726d93c604a8cf3afc74d4"},
+    {file = "rcssmin-1.2.1-cp38-cp38-manylinux1_i686.whl", hash = "sha256:4fd765c6ca4b771da65b72878fbe370e7f96355b8914d229bdcec081f1260e3c"},
+    {file = "rcssmin-1.2.1-cp38-cp38-manylinux1_x86_64.whl", hash = "sha256:e9a5f42fe064bab0b63edfe7c797dd51642934c98fa44d965a4ccd5b43c03e0a"},
+    {file = "rcssmin-1.2.1-cp38-cp38-manylinux2014_aarch64.whl", hash = "sha256:43fb6e4ff06062cdc8fe8ee28e8c8488543f265f8683ee98499779e2c8429099"},
+    {file = "rcssmin-1.2.1-cp38-cp38-musllinux_1_1_aarch64.whl", hash = "sha256:dc1767ad4e1c2f9c76ab35486dcd3901de90de27214a2b53e7401e9c674fd70c"},
+    {file = "rcssmin-1.2.1-cp38-cp38-musllinux_1_1_i686.whl", hash = "sha256:3263a2fba08e21351bdda0e8803faf5fd42a887eddcb9931e26ad5ffb251ad07"},
+    {file = "rcssmin-1.2.1-cp38-cp38-musllinux_1_1_x86_64.whl", hash = "sha256:9ab356d1eb9ba83e7c340f3c70e2ac6a439ce3adbe13ef0c4923bb04a6a92d55"},
+    {file = "rcssmin-1.2.1-cp39-cp39-manylinux1_i686.whl", hash = "sha256:e525ea49ba4ed33eee94251ef432dde4ccda53a061ee6300c144a06851888408"},
+    {file = "rcssmin-1.2.1-cp39-cp39-manylinux1_x86_64.whl", hash = "sha256:b59cee505a4e77e34a033368b008e4ead6b1fd457fb15c106b6e2a434a61c001"},
+    {file = "rcssmin-1.2.1-cp39-cp39-manylinux2014_aarch64.whl", hash = "sha256:9a2cdcd5502482a798198fb3f8ca4ccd877e011c7102c0f92b47e1e42b97295a"},
+    {file = "rcssmin-1.2.1-cp39-cp39-musllinux_1_1_aarch64.whl", hash = "sha256:2f0ffdfef0d0a976514d3f6c49a350e6b6091d847efc312bd6c63249d120e46d"},
+    {file = "rcssmin-1.2.1-cp39-cp39-musllinux_1_1_i686.whl", hash = "sha256:8391ed68fdf1bc6f2093d0b7b48d747815279d84c004a76be078b486223583f7"},
+    {file = "rcssmin-1.2.1-cp39-cp39-musllinux_1_1_x86_64.whl", hash = "sha256:78eab04e9a3efdd158fa7c8363afbbc1d0587453a5a3ed5c9828e1ddeb2aeea7"},
+    {file = "rcssmin-1.2.1.tar.gz", hash = "sha256:b35c0c89cdac8fc356c2b0985f3e534e85cc18d1971d902d1eac7fe6b4ff566c"},
+]
+
+[[package]]
 name = "redis"
 version = "6.3.0"
 description = "Python client for Redis database and key-value store"
@@ -3853,7 +3970,7 @@ files = [
     {file = "six-1.17.0-py2.py3-none-any.whl", hash = "sha256:4721f391ed90541fddacab5acf947aa0d3dc7d27b2e1e8eda2be8970586c3274"},
     {file = "six-1.17.0.tar.gz", hash = "sha256:ff70335d468e7eb6ec65b95b99d3a2836546063f63acc5171de367e834932a81"},
 ]
-markers = {main = "extra == \"matplotlib\"", dev = "python_version <= \"3.13\""}
+markers = {main = "extra == \"matplotlib\""}
 
 [[package]]
 name = "sniffio"
@@ -3913,6 +4030,25 @@ files = [
 [package.extras]
 doc = ["reno", "sphinx"]
 test = ["pytest", "tornado (>=4.5)", "typeguard"]
+
+[[package]]
+name = "tinycss2"
+version = "1.4.0"
+description = "A tiny CSS parser"
+optional = false
+python-versions = ">=3.8"
+groups = ["dev"]
+files = [
+    {file = "tinycss2-1.4.0-py3-none-any.whl", hash = "sha256:3a49cf47b7675da0b15d0c6e1df8df4ebd96e9394bb905a5775adb0d884c5289"},
+    {file = "tinycss2-1.4.0.tar.gz", hash = "sha256:10c0972f6fc0fbee87c3edb76549357415e94548c1ae10ebccdea16fb404a9b7"},
+]
+
+[package.dependencies]
+webencodings = ">=0.4"
+
+[package.extras]
+doc = ["sphinx", "sphinx_rtd_theme"]
+test = ["pytest", "ruff"]
 
 [[package]]
 name = "tomli"
@@ -4377,6 +4513,18 @@ python-dotenv = "*"
 requests = "*"
 
 [[package]]
+name = "webencodings"
+version = "0.5.1"
+description = "Character encoding aliases for legacy web content"
+optional = false
+python-versions = "*"
+groups = ["dev"]
+files = [
+    {file = "webencodings-0.5.1-py2.py3-none-any.whl", hash = "sha256:a0af1213f3c2226497a97e2b3aa01a7e4bee4f403f95be16fc9acd2947514a78"},
+    {file = "webencodings-0.5.1.tar.gz", hash = "sha256:b36a1c245f2d304965eb4e0a82848379241dc04b865afcc4aab16748587e1923"},
+]
+
+[[package]]
 name = "websocket-client"
 version = "1.8.0"
 description = "WebSocket client for Python with low level API options"
@@ -4638,4 +4786,4 @@ sass = ["libsass"]
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.9"
-content-hash = "0dd38ebb7ef576fde531c5b5ec41a9206b31a96a4518a5059190a2803da3f8a6"
+content-hash = "9d6714406fab51728130438e2f87929c18e049904302c9da7edc32848de9f014"
