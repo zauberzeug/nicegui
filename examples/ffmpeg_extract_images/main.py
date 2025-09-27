@@ -27,7 +27,7 @@ async def handle_upload(args: events.UploadEventArguments):
         with results:
             ui.spinner('dots', size='xl')
 
-        run.io_bound(extract(file_path, data_dir))
+        await run.io_bound(extract, file_path, data_dir)
 
         results.clear()
         with results:
