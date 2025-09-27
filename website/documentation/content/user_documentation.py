@@ -220,7 +220,7 @@ def upload_table():
             ui.markdown('''
                 ```python
                 async def receive_file(e: events.UploadEventArguments):
-                    content = await e.data.text()
+                    content = await e.file.text()
                     reader = csv.DictReader(content.splitlines())
                     ui.table(
                         columns=[{
