@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import asyncio
 import os
 import tempfile
 import weakref
@@ -13,6 +12,8 @@ from pathlib import Path
 import anyio
 from fastapi import UploadFile
 from starlette.formparsers import MultiPartParser
+
+from . import run
 
 
 @dataclass
@@ -60,7 +61,7 @@ class SmallFileUpload(FileUpload):
     async def save(self, path: str | Path) -> Path:
         target = Path(path)
         target.parent.mkdir(parents=True, exist_ok=True)
-        await asyncio.to_thread(lambda: target.write_bytes(self._data))
+        await run.io_bound(lambda: target.write_bytes(self._data))
         return target
 
 
@@ -93,11 +94,8 @@ class LargeFileUpload(FileUpload):
     async def save(self, path: str | Path) -> Path:
         target = Path(path)
         target.parent.mkdir(parents=True, exist_ok=True)
-        async with await anyio.open_file(self._path, 'rb') as f_in, await anyio.open_file(target, 'wb') as f_out:
-            while True:
-                chunk = await f_in.read(1024 * 1024)
-                if not chunk:
-                    break
+        async with await anyio.open_file(target, 'wb') as f_out:
+            async for chunk in self.iter_bytes():
                 await f_out.write(chunk)
         return target
 

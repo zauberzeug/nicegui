@@ -5,9 +5,9 @@ from .client import Client
 from .context import context
 from .element_filter import ElementFilter
 from .event import Event
+from .file_upload import FileUpload, LargeFileUpload, SmallFileUpload
 from .nicegui import app
 from .page_arguments import PageArguments
-from .uploaded_file import FileUpload, LargeFileUpload, SmallFileUpload
 from .version import __version__
 
 __all__ = [

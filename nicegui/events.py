@@ -9,8 +9,8 @@ from typing import TYPE_CHECKING, Any, Callable, Literal, TypeVar, Union, cast
 from . import background_tasks, core, helpers
 from .awaitable_response import AwaitableResponse
 from .dataclasses import KWONLY_SLOTS
+from .file_upload import FileUpload
 from .slot import Slot
-from .uploaded_file import FileUpload
 
 if TYPE_CHECKING:
     from .client import Client

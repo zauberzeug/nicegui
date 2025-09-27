@@ -5,8 +5,8 @@ from starlette.datastructures import UploadFile
 from typing_extensions import Self
 
 from ..events import Handler, MultiUploadEventArguments, UiEventArguments, UploadEventArguments, handle_event
+from ..file_upload import FileUpload, create_file_upload
 from ..nicegui import app
-from ..uploaded_file import FileUpload, create_file_upload
 from .mixins.disableable_element import DisableableElement
 from .mixins.label_element import LabelElement
 
