@@ -97,6 +97,7 @@ class Client:
 
         self.connect_handlers: list[Callable[..., Any] | Awaitable] = []
         self.disconnect_handlers: list[Callable[..., Any] | Awaitable] = []
+        self.delete_handlers: list[Callable[..., Any] | Awaitable] = []
 
         self._temporary_socket_id: str | None = None
 
@@ -254,12 +255,29 @@ class Client:
         self.outbox.enqueue_message('download', {'src': src, 'filename': filename, 'media_type': media_type}, self.id)
 
     def on_connect(self, handler: Callable[..., Any] | Awaitable) -> None:
-        """Add a callback to be invoked when the client connects."""
+        """Add a callback to be invoked when the client connects.
+
+        The callback has an optional parameter of `nicegui.Client`.
+        """
         self.connect_handlers.append(handler)
 
     def on_disconnect(self, handler: Callable[..., Any] | Awaitable) -> None:
-        """Add a callback to be invoked when the client disconnects."""
+        """Add a callback to be invoked when the client disconnects.
+
+        The callback has an optional parameter of `nicegui.Client`.
+
+        *Updated in version 3.0.0: The handler is also called when a client reconnects.*
+        """
         self.disconnect_handlers.append(handler)
+
+    def on_delete(self, handler: Callable[..., Any] | Awaitable) -> None:
+        """Add a callback to be invoked when the client is deleted.
+
+        The callback has an optional parameter of `nicegui.Client`.
+
+        *Added in version 3.0.0*
+        """
+        self.delete_handlers.append(handler)
 
     def handle_handshake(self, socket_id: str, document_id: str, next_message_id: int | None) -> None:
         """Cancel pending disconnect task and invoke connect handlers."""
@@ -277,12 +295,7 @@ class Client:
             self.safe_invoke(t)
 
     def handle_disconnect(self, socket_id: str) -> None:
-        """Wait for the browser to reconnect; invoke disconnect handlers if it doesn't.
-
-        NOTE:
-        In contrast to connect handlers, disconnect handlers are not called during a reconnect.
-        This behavior should be fixed in version 3.0.
-        """
+        """Wait for the browser to reconnect; invoke deletion handlers if it doesn't."""
         if socket_id not in self._socket_to_document_id:
             return
         document_id = self._socket_to_document_id.pop(socket_id)
@@ -290,13 +303,14 @@ class Client:
         self._num_connections[document_id] -= 1
         self.tab_id = None
 
+        for t in self.disconnect_handlers:
+            self.safe_invoke(t)
+        for t in core.app._disconnect_handlers:  # pylint: disable=protected-access
+            self.safe_invoke(t)
+
         async def delete_content() -> None:
             await asyncio.sleep(self.page.resolve_reconnect_timeout())
             if self._num_connections[document_id] == 0:
-                for t in self.disconnect_handlers:
-                    self.safe_invoke(t)
-                for t in core.app._disconnect_handlers:  # pylint: disable=protected-access
-                    self.safe_invoke(t)
                 self._num_connections.pop(document_id)
                 self._delete_tasks.pop(document_id)
                 self.delete()
@@ -361,6 +375,10 @@ class Client:
         If the global clients dictionary does not contain the client, its elements are still removed and a KeyError is raised.
         Normally this should never happen, but has been observed (see #1826).
         """
+        for t in self.delete_handlers:
+            self.safe_invoke(t)
+        for t in core.app._delete_handlers:  # pylint: disable=protected-access
+            self.safe_invoke(t)
         self._waiting_for_disconnect.clear()
         self._deleted_event.set()
         self.remove_all_elements()
