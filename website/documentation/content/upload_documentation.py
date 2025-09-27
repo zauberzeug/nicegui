@@ -28,12 +28,11 @@ def show_file_content() -> None:
         with ui.card():
             content = ui.markdown()
 
-    def handle_upload(e: events.UploadEventArguments):
-        text = e.content.read().decode('utf-8')
-        content.set_content(text)
+    async def handle_upload(e: events.UploadEventArguments):
+        content.set_content(await e.file.text())
         dialog.open()
 
-    ui.upload(on_upload=handle_upload).props('accept=.md').classes('max-w-full')
+    ui.upload(on_upload=handle_upload).props('accept=.md max-file-size=1000000').classes('max-w-full')
 
 
 @doc.demo('Uploading large files', '''

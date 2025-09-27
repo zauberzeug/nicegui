@@ -1,14 +1,12 @@
+import asyncio
 import csv
 import re
-from io import BytesIO
 from typing import Callable, Union
 
 import pytest
-from fastapi import UploadFile
-from fastapi.datastructures import Headers
 from fastapi.responses import PlainTextResponse
 
-from nicegui import ElementFilter, app, events, ui
+from nicegui import ElementFilter, SmallUploadedFile, app, events, ui
 from nicegui.testing import User
 
 # pylint: disable=missing-function-docstring
@@ -443,16 +441,16 @@ async def test_select_multiple_values(user: User):
 async def test_upload_table(user: User) -> None:
     @ui.page('/')
     def page():
-        def receive_file(e: events.UploadEventArguments) -> None:
-            reader = csv.DictReader(e.content.read().decode('utf-8').splitlines())
+        async def receive_file(e: events.UploadEventArguments) -> None:
+            reader = csv.DictReader((await e.file.text()).splitlines())
             ui.table(columns=[{'name': h, 'label': h.capitalize(), 'field': h} for h in reader.fieldnames or []],
                      rows=list(reader))
         ui.upload(on_upload=receive_file)
 
     await user.open('/')
     upload = user.find(ui.upload).elements.pop()
-    headers = Headers(raw=[(b'content-type', b'text/csv')])
-    upload.handle_uploads([UploadFile(BytesIO(b'name,age\nAlice,30\nBob,28'), headers=headers)])
+    await upload.handle_uploads([SmallUploadedFile(name='data.csv', content_type='text/csv', _data=b'name,age\nAlice,30\nBob,28')])
+    await asyncio.sleep(0.5)
 
     table = user.find(ui.table).elements.pop()
     assert table.columns == [

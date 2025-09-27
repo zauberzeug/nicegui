@@ -6,6 +6,7 @@ from typing_extensions import Self
 
 from ..events import Handler, MultiUploadEventArguments, UiEventArguments, UploadEventArguments, handle_event
 from ..nicegui import app
+from ..uploaded_file import UploadedFile, build_uploaded_file_from_upload
 from .mixins.disableable_element import DisableableElement
 from .mixins.label_element import LabelElement
 
@@ -74,34 +75,37 @@ class Upload(LabelElement, DisableableElement, component='upload.js'):
         async def upload_route(request: Request) -> dict[str, str]:
             for begin_upload_handler in self._begin_upload_handlers:
                 handle_event(begin_upload_handler, UiEventArguments(sender=self, client=self.client))
-            form = await request.form()
-            uploads = [cast(UploadFile, data) for data in form.values()]
-            self.handle_uploads(uploads)
+            async with request.form() as form:
+                uploads = [cast(UploadFile, data) for data in form.values()]
+                files: list[UploadedFile] = [await build_uploaded_file_from_upload(u) for u in uploads]
+            await self.handle_uploads(files)
             return {'upload': 'success'}
 
         if on_rejected:
             self.on_rejected(on_rejected)
 
-    def handle_uploads(self, uploads: list[UploadFile]) -> None:
+    async def handle_uploads(self, files: list[UploadedFile]) -> None:
         """Handle the uploaded files.
 
         This method is primarily intended for internal use and for simulating file uploads in tests.
         """
-        for upload in uploads:
+        assert all(isinstance(f, UploadedFile) for f in files), \
+            'since NiceGUI 3.0, uploads must be a list of UploadedFile instances'
+        for file in files:
             for upload_handler in self._upload_handlers:
                 handle_event(upload_handler, UploadEventArguments(
                     sender=self,
                     client=self.client,
-                    content=upload.file,
-                    name=upload.filename or '',
-                    type=upload.content_type or '',
+                    name=file.name or '',
+                    type=file.content_type or '',
+                    file=file,
                 ))
         multi_upload_args = MultiUploadEventArguments(
             sender=self,
             client=self.client,
-            contents=[upload.file for upload in uploads],
-            names=[upload.filename or '' for upload in uploads],
-            types=[upload.content_type or '' for upload in uploads],
+            names=[f.name or '' for f in files],
+            types=[f.content_type or '' for f in files],
+            files=files,
         )
         for multi_upload_handler in self._multi_upload_handlers:
             handle_event(multi_upload_handler, multi_upload_args)

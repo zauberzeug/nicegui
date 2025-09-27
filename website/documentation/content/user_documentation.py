@@ -219,8 +219,8 @@ def upload_table():
         with python_window(classes='w-[500px]', title='some UI code'):
             ui.markdown('''
                 ```python
-                def receive_file(e: events.UploadEventArguments):
-                    content = e.content.read().decode('utf-8')
+                async def receive_file(e: events.UploadEventArguments):
+                    content = await e.data.text()
                     reader = csv.DictReader(content.splitlines())
                     ui.table(
                         columns=[{
@@ -238,12 +238,12 @@ def upload_table():
         with python_window(classes='w-[500px]', title='user assertions'):
             ui.markdown('''
                 ```python
+                from nicegui import SmallUploadedFile
+
                 upload = user.find(ui.upload).elements.pop()
-                upload.handle_uploads([UploadFile(
-                    BytesIO(b'name,age\\nAlice,30\\nBob,28'),
-                    filename='data.csv',
-                    headers=Headers(raw=[(b'content-type', b'text/csv')]),
-                )])
+                await upload.handle_uploads([
+                    SmallUploadedFile(name='data.csv', content_type='text/csv', _data=b'name,age\\nAlice,30\\nBob,28')
+                ])
                 table = user.find(ui.table).elements.pop()
                 assert table.columns == [
                     {'name': 'name', 'label': 'Name', 'field': 'name'},
