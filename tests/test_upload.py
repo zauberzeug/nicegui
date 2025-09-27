@@ -1,3 +1,4 @@
+import asyncio
 from pathlib import Path
 
 from nicegui import events, ui
@@ -23,7 +24,7 @@ def test_uploading_text_file(screen: Screen):
     assert len(results) == 1
     assert results[0].name == test_path1.name
     assert results[0].type in {'text/x-python', 'text/x-python-script'}
-    assert results[0].content.read() == test_path1.read_bytes()
+    assert asyncio.run(results[0].file.read()) == test_path1.read_bytes()
 
 
 def test_two_upload_elements(screen: Screen):
@@ -120,5 +121,24 @@ def test_multi_upload_event(screen: Screen):
 
     assert len(results) == 1
     assert results[0].names == [test_path1.name, test_path2.name]
-    assert results[0].contents[0].read() == test_path1.read_bytes()
-    assert results[0].contents[1].read() == test_path2.read_bytes()
+    assert asyncio.run(results[0].files[0].read()) == test_path1.read_bytes()
+    assert asyncio.run(results[0].files[1].read()) == test_path2.read_bytes()
+
+
+def test_two_handlers_can_read_file(screen: Screen):
+    reads: list[events.UploadEventArguments] = []
+
+    @ui.page('/')
+    def page():
+        upload = ui.upload(auto_upload=True, label='A')
+        upload.on_upload(reads.append)
+        upload.on_upload(reads.append)
+
+    screen.open('/')
+    screen.find_by_class('q-uploader__input').send_keys(str(test_path1))
+    screen.wait(0.1)
+
+    assert len(reads) == 2
+    upload_1 = asyncio.run(reads[0].file.text())
+    upload_2 = asyncio.run(reads[1].file.text())
+    assert upload_1 == upload_2 == test_path1.read_text(encoding='utf-8')

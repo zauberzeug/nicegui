@@ -4,11 +4,12 @@ import asyncio
 from collections.abc import Awaitable, Iterator
 from contextlib import nullcontext
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, Any, BinaryIO, Callable, Literal, TypeVar, Union, cast
+from typing import TYPE_CHECKING, Any, Callable, Literal, TypeVar, Union, cast
 
 from . import background_tasks, core, helpers
 from .awaitable_response import AwaitableResponse
 from .dataclasses import KWONLY_SLOTS
+from .file_upload import FileUpload
 from .slot import Slot
 
 if TYPE_CHECKING:
@@ -119,16 +120,16 @@ class JoystickEventArguments(UiEventArguments):
 
 @dataclass(**KWONLY_SLOTS)
 class UploadEventArguments(UiEventArguments):
-    content: BinaryIO
     name: str
     type: str
+    file: FileUpload
 
 
 @dataclass(**KWONLY_SLOTS)
 class MultiUploadEventArguments(UiEventArguments):
-    contents: list[BinaryIO]
     names: list[str]
     types: list[str]
+    files: list[FileUpload]
 
 
 @dataclass(**KWONLY_SLOTS)
