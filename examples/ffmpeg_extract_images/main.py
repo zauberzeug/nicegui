@@ -1,39 +1,43 @@
 #!/usr/bin/env python3
-import asyncio
-import os
-import pathlib
-import shlex
 import shutil
 import subprocess
+from pathlib import Path
 
-from nicegui import app, events, ui
+import aiofiles
+
+from nicegui import app, events, run, ui
 
 
-def extract(source: str):
-    subprocess.call(shlex.split(f'ffmpeg -i "{source}" -vf fps=1 out_%04d.jpg'))
+def extract(source: Path, output_dir: Path):
+    subprocess.call(['ffmpeg', '-i', str(source), '-vf', 'fps=1', str(output_dir / 'out_%04d.jpg')])
 
 
 async def handle_upload(args: events.UploadEventArguments):
     if 'video' in args.type:
-        shutil.rmtree('data', ignore_errors=True)
-        os.makedirs('data', exist_ok=True)
-        os.chdir('data')
-        with open(args.name, 'wb') as f:
-            f.write(args.content.read())
-            results.clear()
-            with results:
-                ui.spinner('dots', size='xl')
-            await asyncio.to_thread(extract, args.name)
-            results.clear()
-            with results:
-                for path in pathlib.Path('.').glob('*.jpg'):
-                    ui.image(f'/data/{path.name}').classes('w-96 drop-shadow-md rounded')
-        os.chdir('..')
+        data_dir = Path('data')
+        shutil.rmtree(data_dir, ignore_errors=True)
+        data_dir.mkdir(exist_ok=True)
+
+        file_path = data_dir / args.name
+        async with aiofiles.open(file_path, 'wb') as f:
+            data = await args.file.read()
+            await f.write(data)
+
+        results.clear()
+        with results:
+            ui.spinner('dots', size='xl')
+
+        run.io_bound(extract(file_path, data_dir))
+
+        results.clear()
+        with results:
+            for path in data_dir.glob('*.jpg'):
+                ui.image(f'/data/{path.name}').classes('w-96 drop-shadow-md rounded')
     else:
         ui.notify('Please upload a video file')
     upload.run_method('reset')
 
-os.makedirs('data', exist_ok=True)
+Path('data').mkdir(exist_ok=True)
 app.add_static_files('/data', 'data')
 
 with ui.column().classes('w-full items-center'):
