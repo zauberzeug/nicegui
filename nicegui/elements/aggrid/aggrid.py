@@ -23,7 +23,7 @@ class AgGrid(Element, component='aggrid.js', esm={'nicegui-aggrid': 'dist'}, def
     def __init__(self,
                  options: dict, *,
                  html_columns: list[int] = [],  # noqa: B006
-                 theme: Optional[str] = 'balham',
+                 theme: Optional[Literal['quartz', 'balham', 'material', 'alpine']] = None,
                  auto_size_columns: bool = True,
                  ) -> None:
         """AG Grid
@@ -34,22 +34,20 @@ class AgGrid(Element, component='aggrid.js', esm={'nicegui-aggrid': 'dist'}, def
 
         :param options: dictionary of AG Grid options
         :param html_columns: list of columns that should be rendered as HTML (default: ``[]``)
-        :param theme: AG Grid theme (default: "balham")
+        :param theme: AG Grid theme "quartz", "balham", "material", or "alpine" (default: ``options['theme']`` or "quartz")
         :param auto_size_columns: whether to automatically resize columns to fit the grid width (default: ``True``)
         """
         super().__init__()
-        self._props['options'] = options
+        self._props['options'] = {'theme': theme or 'quartz', **options}
         self._props['html_columns'] = html_columns[:]
         self._props['auto_size_columns'] = auto_size_columns
-        if theme:
-            self._classes.append(f'ag-theme-{theme}')
         self._update_method = 'update_grid'
 
     @classmethod
     def from_pandas(cls,
                     df: 'pd.DataFrame', *,
                     html_columns: list[int] = [],  # noqa: B006
-                    theme: Optional[str] = 'balham',
+                    theme: Optional[Literal['quartz', 'balham', 'material', 'alpine']] = None,
                     auto_size_columns: bool = True,
                     options: dict = {}) -> Self:  # noqa: B006
         """Create an AG Grid from a Pandas DataFrame.
@@ -62,7 +60,7 @@ class AgGrid(Element, component='aggrid.js', esm={'nicegui-aggrid': 'dist'}, def
 
         :param df: Pandas DataFrame
         :param html_columns: list of columns that should be rendered as HTML (default: ``[]``, *added in version 2.19.0*)
-        :param theme: AG Grid theme (default: "balham")
+        :param theme: AG Grid theme "quartz", "balham", "material", or "alpine" (default: ``options['theme']`` or "quartz")
         :param auto_size_columns: whether to automatically resize columns to fit the grid width (default: ``True``)
         :param options: dictionary of additional AG Grid options
         :return: AG Grid element
@@ -89,13 +87,14 @@ class AgGrid(Element, component='aggrid.js', esm={'nicegui-aggrid': 'dist'}, def
             'rowData': df.to_dict('records'),
             'suppressFieldDotNotation': True,
             **options,
+            'theme': theme or options.get('theme', 'quartz'),
         }, html_columns=html_columns, theme=theme, auto_size_columns=auto_size_columns)
 
     @classmethod
     def from_polars(cls,
                     df: 'pl.DataFrame', *,
                     html_columns: list[int] = [],  # noqa: B006
-                    theme: Optional[str] = 'balham',
+                    theme: Optional[Literal['quartz', 'balham', 'material', 'alpine']] = None,
                     auto_size_columns: bool = True,
                     options: dict = {}) -> Self:  # noqa: B006
         """Create an AG Grid from a Polars DataFrame.
@@ -107,7 +106,7 @@ class AgGrid(Element, component='aggrid.js', esm={'nicegui-aggrid': 'dist'}, def
 
         :param df: Polars DataFrame
         :param html_columns: list of columns that should be rendered as HTML (default: ``[]``, *added in version 2.19.0*)
-        :param theme: AG Grid theme (default: "balham")
+        :param theme: AG Grid theme "quartz", "balham", "material", or "alpine" (default: ``options['theme']`` or "quartz")
         :param auto_size_columns: whether to automatically resize columns to fit the grid width (default: ``True``)
         :param options: dictionary of additional AG Grid options
         :return: AG Grid element
@@ -117,6 +116,7 @@ class AgGrid(Element, component='aggrid.js', esm={'nicegui-aggrid': 'dist'}, def
             'rowData': df.to_dicts(),
             'suppressFieldDotNotation': True,
             **options,
+            'theme': theme or options.get('theme', 'quartz'),
         }, html_columns=html_columns, theme=theme, auto_size_columns=auto_size_columns)
 
     @property
@@ -138,20 +138,13 @@ class AgGrid(Element, component='aggrid.js', esm={'nicegui-aggrid': 'dist'}, def
         self._props['html_columns'] = value[:]
 
     @property
-    def theme(self) -> Optional[str]:
+    def theme(self) -> Optional[Literal['quartz', 'balham', 'material', 'alpine']]:
         """The AG Grid theme."""
-        for class_name in self._classes:
-            if class_name.startswith('ag-theme-'):
-                return class_name[len('ag-theme-'):]
-        return None
+        return self._props['options'].get('theme')
 
     @theme.setter
-    def theme(self, value: Optional[str]) -> None:
-        for class_name in self._classes:
-            if class_name.startswith('ag-theme-'):
-                self._classes.remove(class_name)
-        if value:
-            self._classes.append(f'ag-theme-{value}')
+    def theme(self, value: Optional[Literal['quartz', 'balham', 'material', 'alpine']]) -> None:
+        self._props['options']['theme'] = value
 
     @property
     def auto_size_columns(self) -> bool:

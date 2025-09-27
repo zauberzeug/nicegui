@@ -5,11 +5,23 @@ export default {
   template: "<div></div>",
   mounted() {
     this.update_grid();
+
+    this.themeObserver = new MutationObserver(() =>
+      this.$el.setAttribute("data-ag-theme-mode", document.body.classList.contains("body--dark") ? "dark" : "light")
+    );
+    this.themeObserver.observe(document.body, { attributes: true, attributeFilter: ["class"] });
+  },
+  unmounted() {
+    this.themeObserver.disconnect();
   },
   methods: {
     update_grid() {
       this.$el.textContent = "";
-      this.gridOptions = { ...this.options };
+      this.gridOptions = {
+        ...this.options,
+        theme: AgGrid.themes[this.options.theme].withPart(AgGrid.colorSchemeVariable),
+      };
+
       for (const column of this.html_columns) {
         if (this.gridOptions.columnDefs[column].cellRenderer === undefined) {
           this.gridOptions.columnDefs[column].cellRenderer = (params) => (params.value ? params.value : "");
@@ -44,8 +56,11 @@ export default {
 
       const originalOnGridReady = this.gridOptions.onGridReady;
       this.gridOptions.onGridReady = (params) => {
-        originalOnGridReady(params);
-        this.handle_event("gridReady", params);
+        try {
+          originalOnGridReady?.(params);
+        } finally {
+          this.handle_event("gridReady", params);
+        }
       };
       this.api = AgGrid.createGrid(this.$el, this.gridOptions);
       this.api.addGlobalListener(this.handle_event);

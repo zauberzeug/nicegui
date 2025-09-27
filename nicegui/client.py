@@ -41,6 +41,12 @@ HTML_ESCAPE_TABLE = str.maketrans({
 })
 
 
+class ClientConnectionTimeout(TimeoutError):
+    def __init__(self, client: Client) -> None:
+        super().__init__(f'ClientConnectionTimeout: {client.id}')
+        self.client = client
+
+
 class Client:
     page_routes: ClassVar[dict[Callable[..., Any], str]] = {}
     '''Maps page builders to their routes.'''
@@ -62,9 +68,10 @@ class Client:
 
         self.elements: dict[int, Element] = {}
         self.next_element_id: int = 0
-        self._waiting_for_connection: asyncio.Event = asyncio.Event()
-        self.is_waiting_for_connection: bool = False
-        self.is_waiting_for_disconnect: bool = False
+        self._waiting_for_connection = asyncio.Event()
+        self._waiting_for_disconnect = asyncio.Event()
+        self._connected = asyncio.Event()
+        self._deleted_event = asyncio.Event()
         self.environ: dict[str, Any] | None = None
         self.on_air = False
         self._num_connections: defaultdict[str, int] = defaultdict(int)
@@ -90,6 +97,7 @@ class Client:
 
         self.connect_handlers: list[Callable[..., Any] | Awaitable] = []
         self.disconnect_handlers: list[Callable[..., Any] | Awaitable] = []
+        self.delete_handlers: list[Callable[..., Any] | Awaitable] = []
 
         self._temporary_socket_id: str | None = None
 
@@ -184,37 +192,43 @@ class Client:
         """Return the title of the page."""
         return self.page.resolve_title() if self.title is None else self.title
 
-    async def connected(self, timeout: float = 3.0, check_interval: float = 0.1) -> None:
-        """Block execution until the client is connected."""
-        self.is_waiting_for_connection = True
-        self._waiting_for_connection.set()
-        deadline = time.time() + timeout
-        while not self.has_socket_connection:
-            if time.time() > deadline:
-                raise TimeoutError(f'No connection after {timeout} seconds')
-            await asyncio.sleep(check_interval)
-        self.is_waiting_for_connection = False
+    async def connected(self, timeout: float | None = None) -> None:
+        """Block execution until the client is connected.
 
-    async def disconnected(self, check_interval: float = 0.1) -> None:
+        :param timeout: timeout in seconds (default: ``None``)
+        """
+        if self.has_socket_connection:
+            return
+        self._waiting_for_connection.set()
+        self._connected.clear()
+        purpose = (self.request.headers.get('Sec-Purpose') or self.request.headers.get('Purpose') or '').lower()
+        is_prefetch = 'prefetch' in purpose and 'prerender' not in purpose
+        try:
+            await asyncio.wait_for(self._connected.wait(), timeout=None if is_prefetch else timeout)
+        except asyncio.TimeoutError as e:
+            raise ClientConnectionTimeout(self) from e
+
+    async def disconnected(self) -> None:
         """Block execution until the client disconnects."""
         if not self.has_socket_connection:
             await self.connected()
-        self.is_waiting_for_disconnect = True
-        while self.id in self.instances:
-            await asyncio.sleep(check_interval)
-        self.is_waiting_for_disconnect = False
+        if self.id in self.instances:
+            self._waiting_for_disconnect.set()
+            self._deleted_event.clear()
+            await self._deleted_event.wait()
 
     def run_javascript(self, code: str, *, timeout: float = 1.0) -> AwaitableResponse:
         """Execute JavaScript on the client.
 
-        The client connection must be established before this method is called.
-        You can do this by `await client.connected()` or register a callback with `client.on_connect(...)`.
-
         If the function is awaited, the result of the JavaScript code is returned.
         Otherwise, the JavaScript code is executed without waiting for a response.
 
+        Obviously the JavaScript code is only executed after the client is connected.
+        Internally, ``await client.connected()`` is called before the JavaScript code is executed (*since version 3.0.0*).
+        This might delay the execution of the JavaScript code and is not covered by the ``timeout`` parameter.
+
         :param code: JavaScript code to run
-        :param timeout: timeout in seconds (default: `1.0`)
+        :param timeout: timeout in seconds (default: 1.0)
 
         :return: AwaitableResponse that can be awaited to get the result of the JavaScript code
         """
@@ -226,6 +240,7 @@ class Client:
 
         async def send_and_wait():
             self.outbox.enqueue_message('run_javascript', {'code': code, 'request_id': request_id}, target_id)
+            await self.connected()
             return await JavaScriptRequest(request_id, timeout=timeout)
 
         return AwaitableResponse(send_and_forget, send_and_wait)
@@ -240,15 +255,34 @@ class Client:
         self.outbox.enqueue_message('download', {'src': src, 'filename': filename, 'media_type': media_type}, self.id)
 
     def on_connect(self, handler: Callable[..., Any] | Awaitable) -> None:
-        """Add a callback to be invoked when the client connects."""
+        """Add a callback to be invoked when the client connects.
+
+        The callback has an optional parameter of `nicegui.Client`.
+        """
         self.connect_handlers.append(handler)
 
     def on_disconnect(self, handler: Callable[..., Any] | Awaitable) -> None:
-        """Add a callback to be invoked when the client disconnects."""
+        """Add a callback to be invoked when the client disconnects.
+
+        The callback has an optional parameter of `nicegui.Client`.
+
+        *Updated in version 3.0.0: The handler is also called when a client reconnects.*
+        """
         self.disconnect_handlers.append(handler)
+
+    def on_delete(self, handler: Callable[..., Any] | Awaitable) -> None:
+        """Add a callback to be invoked when the client is deleted.
+
+        The callback has an optional parameter of `nicegui.Client`.
+
+        *Added in version 3.0.0*
+        """
+        self.delete_handlers.append(handler)
 
     def handle_handshake(self, socket_id: str, document_id: str, next_message_id: int | None) -> None:
         """Cancel pending disconnect task and invoke connect handlers."""
+        self._waiting_for_connection.clear()
+        self._connected.set()
         self._socket_to_document_id[socket_id] = document_id
         self._cancel_delete_task(document_id)
         self._num_connections[document_id] += 1
@@ -261,12 +295,7 @@ class Client:
             self.safe_invoke(t)
 
     def handle_disconnect(self, socket_id: str) -> None:
-        """Wait for the browser to reconnect; invoke disconnect handlers if it doesn't.
-
-        NOTE:
-        In contrast to connect handlers, disconnect handlers are not called during a reconnect.
-        This behavior should be fixed in version 3.0.
-        """
+        """Wait for the browser to reconnect; invoke deletion handlers if it doesn't."""
         if socket_id not in self._socket_to_document_id:
             return
         document_id = self._socket_to_document_id.pop(socket_id)
@@ -274,13 +303,14 @@ class Client:
         self._num_connections[document_id] -= 1
         self.tab_id = None
 
+        for t in self.disconnect_handlers:
+            self.safe_invoke(t)
+        for t in core.app._disconnect_handlers:  # pylint: disable=protected-access
+            self.safe_invoke(t)
+
         async def delete_content() -> None:
             await asyncio.sleep(self.page.resolve_reconnect_timeout())
             if self._num_connections[document_id] == 0:
-                for t in self.disconnect_handlers:
-                    self.safe_invoke(t)
-                for t in core.app._disconnect_handlers:  # pylint: disable=protected-access
-                    self.safe_invoke(t)
                 self._num_connections.pop(document_id)
                 self._delete_tasks.pop(document_id)
                 self.delete()
@@ -345,6 +375,12 @@ class Client:
         If the global clients dictionary does not contain the client, its elements are still removed and a KeyError is raised.
         Normally this should never happen, but has been observed (see #1826).
         """
+        for t in self.delete_handlers:
+            self.safe_invoke(t)
+        for t in core.app._delete_handlers:  # pylint: disable=protected-access
+            self.safe_invoke(t)
+        self._waiting_for_disconnect.clear()
+        self._deleted_event.set()
         self.remove_all_elements()
         self.outbox.stop()
         if self.id in Client.instances:
@@ -369,6 +405,7 @@ class Client:
                 if not client.has_socket_connection and client.created <= time.time() - client_age_threshold
             ]
             for client in stale_clients:
+                log.debug(f'Pruning stale client {client.id}')
                 client.delete()
 
         except Exception:

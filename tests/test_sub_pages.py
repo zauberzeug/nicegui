@@ -442,6 +442,21 @@ def test_navigate_to_new_tab_fallback(screen: Screen):
     assert calls == {'index': 2}
 
 
+def test_adding_page_after_async_sub_page(screen: Screen):
+    """reproduction of https://github.com/zauberzeug/nicegui/issues/5142"""
+    @ui.page('/')
+    @ui.page('/{_:path}')
+    def index():
+        pages = ui.sub_pages({'/': main})
+        pages.add('/other', lambda: ui.label('other page'))
+
+    async def main():
+        ui.label('main page')
+
+    screen.open('/other')
+    screen.should_contain('other page')
+
+
 def test_adding_sub_pages_after_initialization(screen: Screen):
     @ui.page('/')
     @ui.page('/sub')

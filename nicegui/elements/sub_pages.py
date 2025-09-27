@@ -109,9 +109,16 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
             async def background_task():
                 with self:
                     await result
+
             task = background_tasks.create(background_task(), name=f'building sub_page {match.pattern}')
             self._active_tasks.add(task)
-            task.add_done_callback(self._active_tasks.discard)
+
+            def _close_if_canceled(t: asyncio.Task) -> None:
+                if t.cancelled():
+                    result.close()
+                self._active_tasks.discard(t)
+
+            task.add_done_callback(_close_if_canceled)
         return True
 
     def _render_404(self) -> None:
