@@ -10,7 +10,7 @@ from . import background_tasks, core, helpers
 from .awaitable_response import AwaitableResponse
 from .dataclasses import KWONLY_SLOTS
 from .slot import Slot
-from .uploaded_file import UploadedFile
+from .uploaded_file import FileUpload
 
 if TYPE_CHECKING:
     from .client import Client
@@ -122,14 +122,14 @@ class JoystickEventArguments(UiEventArguments):
 class UploadEventArguments(UiEventArguments):
     name: str
     type: str
-    file: UploadedFile
+    file: FileUpload
 
 
 @dataclass(**KWONLY_SLOTS)
 class MultiUploadEventArguments(UiEventArguments):
     names: list[str]
     types: list[str]
-    files: list[UploadedFile]
+    files: list[FileUpload]
 
 
 @dataclass(**KWONLY_SLOTS)

@@ -7,7 +7,7 @@ from .element_filter import ElementFilter
 from .event import Event
 from .nicegui import app
 from .page_arguments import PageArguments
-from .uploaded_file import LargeUploadedFile, SmallUploadedFile, UploadedFile
+from .uploaded_file import FileUpload, LargeFileUpload, SmallFileUpload
 from .version import __version__
 
 __all__ = [
@@ -16,10 +16,10 @@ __all__ = [
     'Client',
     'ElementFilter',
     'Event',
-    'LargeUploadedFile',
+    'FileUpload',
+    'LargeFileUpload',
     'PageArguments',
-    'SmallUploadedFile',
-    'UploadedFile',
+    'SmallFileUpload',
     '__version__',
     'app',
     'binding',

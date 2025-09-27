@@ -11,11 +11,12 @@ from io import BytesIO
 from pathlib import Path
 
 import anyio
+from fastapi import UploadFile
 from starlette.formparsers import MultiPartParser
 
 
 @dataclass
-class UploadedFile(ABC):
+class FileUpload(ABC):
     name: str
     content_type: str
 
@@ -41,7 +42,7 @@ class UploadedFile(ABC):
 
 
 @dataclass
-class SmallUploadedFile(UploadedFile):
+class SmallFileUpload(FileUpload):
     _data: bytes
 
     def size(self) -> int:
@@ -64,7 +65,7 @@ class SmallUploadedFile(UploadedFile):
 
 
 @dataclass
-class LargeUploadedFile(UploadedFile):
+class LargeFileUpload(FileUpload):
     _path: Path
 
     def __post_init__(self) -> None:
@@ -108,14 +109,14 @@ def _cleanup_path(path: str) -> None:
         pass
 
 
-async def build_uploaded_file_from_upload(upload, *, max_memory_bytes: int | None = None) -> UploadedFile:
+async def create_file_upload(upload: UploadFile, *, max_memory_bytes: int | None = None) -> FileUpload:
     name = getattr(upload, 'filename', '') or ''
     content_type = getattr(upload, 'content_type', '') or ''
 
     file_obj = getattr(upload, 'file', None)
     if file_obj is None:
         data = b''
-        return SmallUploadedFile(name=name, content_type=content_type, _data=data)
+        return SmallFileUpload(name=name, content_type=content_type, _data=data)
 
     if max_memory_bytes is None:
         max_memory_bytes = int(getattr(MultiPartParser, 'spool_max_size', 1024 * 1024))
@@ -155,7 +156,7 @@ async def build_uploaded_file_from_upload(upload, *, max_memory_bytes: int | Non
             await writer.aclose()
 
     if used_temp and tmp_path is not None:
-        return LargeUploadedFile(name=name, content_type=content_type, _path=tmp_path)
+        return LargeFileUpload(name=name, content_type=content_type, _path=tmp_path)
     else:
         data = buffer.getvalue()
-        return SmallUploadedFile(name=name, content_type=content_type, _data=data)
+        return SmallFileUpload(name=name, content_type=content_type, _data=data)

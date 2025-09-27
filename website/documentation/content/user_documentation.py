@@ -238,11 +238,11 @@ def upload_table():
         with python_window(classes='w-[500px]', title='user assertions'):
             ui.markdown('''
                 ```python
-                from nicegui import SmallUploadedFile
+                from nicegui import SmallFileUpload
 
                 upload = user.find(ui.upload).elements.pop()
                 await upload.handle_uploads([
-                    SmallUploadedFile(name='data.csv', content_type='text/csv', _data=b'name,age\\nAlice,30\\nBob,28')
+                    SmallFileUpload(name='data.csv', content_type='text/csv', _data=b'name,age\\nAlice,30\\nBob,28')
                 ])
                 table = user.find(ui.table).elements.pop()
                 assert table.columns == [

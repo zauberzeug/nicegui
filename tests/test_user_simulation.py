@@ -6,7 +6,7 @@ from typing import Callable, Union
 import pytest
 from fastapi.responses import PlainTextResponse
 
-from nicegui import ElementFilter, SmallUploadedFile, app, events, ui
+from nicegui import ElementFilter, SmallFileUpload, app, events, ui
 from nicegui.testing import User
 
 # pylint: disable=missing-function-docstring
@@ -449,7 +449,7 @@ async def test_upload_table(user: User) -> None:
 
     await user.open('/')
     upload = user.find(ui.upload).elements.pop()
-    await upload.handle_uploads([SmallUploadedFile(name='data.csv', content_type='text/csv', _data=b'name,age\nAlice,30\nBob,28')])
+    await upload.handle_uploads([SmallFileUpload(name='data.csv', content_type='text/csv', _data=b'name,age\nAlice,30\nBob,28')])
     await asyncio.sleep(0.5)
 
     table = user.find(ui.table).elements.pop()

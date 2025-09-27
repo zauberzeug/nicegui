@@ -6,7 +6,7 @@ from typing_extensions import Self
 
 from ..events import Handler, MultiUploadEventArguments, UiEventArguments, UploadEventArguments, handle_event
 from ..nicegui import app
-from ..uploaded_file import UploadedFile, build_uploaded_file_from_upload
+from ..uploaded_file import FileUpload, create_file_upload
 from .mixins.disableable_element import DisableableElement
 from .mixins.label_element import LabelElement
 
@@ -77,20 +77,20 @@ class Upload(LabelElement, DisableableElement, component='upload.js'):
                 handle_event(begin_upload_handler, UiEventArguments(sender=self, client=self.client))
             async with request.form() as form:
                 uploads = [cast(UploadFile, data) for data in form.values()]
-                files: list[UploadedFile] = [await build_uploaded_file_from_upload(u) for u in uploads]
+                files: list[FileUpload] = [await create_file_upload(u) for u in uploads]
             await self.handle_uploads(files)
             return {'upload': 'success'}
 
         if on_rejected:
             self.on_rejected(on_rejected)
 
-    async def handle_uploads(self, files: list[UploadedFile]) -> None:
+    async def handle_uploads(self, files: list[FileUpload]) -> None:
         """Handle the uploaded files.
 
         This method is primarily intended for internal use and for simulating file uploads in tests.
         """
-        assert all(isinstance(f, UploadedFile) for f in files), \
-            'since NiceGUI 3.0, uploads must be a list of UploadedFile instances'
+        assert all(isinstance(f, FileUpload) for f in files), \
+            'since NiceGUI 3.0, uploads must be a list of FileUpload instances'
         for file in files:
             for upload_handler in self._upload_handlers:
                 handle_event(upload_handler, UploadEventArguments(
