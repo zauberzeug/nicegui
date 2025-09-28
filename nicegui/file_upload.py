@@ -10,7 +10,7 @@ from io import BytesIO
 from pathlib import Path
 
 import anyio
-from fastapi import UploadFile
+from starlette.datastructures import UploadFile
 from starlette.formparsers import MultiPartParser
 
 from . import run
@@ -30,7 +30,7 @@ class FileUpload(ABC):
         ...
 
     @abstractmethod
-    async def iter_bytes(self, chunk_size: int = 1024 * 1024) -> AsyncIterator[bytes]:
+    def iter_bytes(self, chunk_size: int = 1024 * 1024) -> AsyncIterator[bytes]:
         ...
 
     @abstractmethod
