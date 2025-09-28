@@ -44,6 +44,7 @@ def _open_window(
     }
     webview.settings.update(**core.app.native.settings)
     window = webview.create_window(**window_kwargs)
+    assert window is not None
     closed = Event()
     window.events.closed += closed.set
     _start_window_method_executor(window, method_queue, response_queue, closed)
