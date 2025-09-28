@@ -53,11 +53,11 @@ def create_lazy(coroutine: Awaitable, *, name: str) -> None:
 
 
 class _AwaitOnShutdown:
-    def __init__(self, awaitable: Awaitable[Any]) -> None:
-        self._awaitable = awaitable
+    def __init__(self, factory: Callable[[], Awaitable[Any]]) -> None:
+        self._factory = factory
 
     def __await__(self) -> Generator[Any, None, Any]:
-        return self._awaitable.__await__()
+        return self._factory().__await__()
 
 
 F = TypeVar('F', bound=Callable[..., Awaitable[Any]])
@@ -69,7 +69,7 @@ def await_on_shutdown(func: F) -> F:
     *Added in version 2.16.0*
     """
     def wrapper(*args: Any, **kwargs: Any) -> Awaitable[Any]:
-        return _AwaitOnShutdown(func(*args, **kwargs))
+        return _AwaitOnShutdown(lambda: func(*args, **kwargs))
     return cast(F, wrapper)
 
 
