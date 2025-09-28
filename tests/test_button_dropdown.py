@@ -3,21 +3,26 @@ from nicegui.testing import Screen
 
 
 def test_dropdown_button(screen: Screen):
-    with ui.dropdown_button('Button', on_click=lambda: ui.label('Button clicked')):
-        ui.item('Item', on_click=lambda: ui.label('Item clicked'))
+    @ui.page('/')
+    def page():
+        with ui.dropdown_button('Button', on_click=lambda: ui.label('Button clicked')):
+            ui.item('Item', on_click=lambda: ui.label('Item clicked'))
 
     screen.open('/')
     screen.click('Button')
     screen.should_contain('Button clicked')
+
     screen.click('Item')
     screen.should_contain('Item clicked')
 
 
 def test_auto_close(screen: Screen):
-    with ui.dropdown_button('Button 1', auto_close=False):
-        ui.label('Item 1')
-    with ui.dropdown_button('Button 2', auto_close=True):
-        ui.label('Item 2')
+    @ui.page('/')
+    def page():
+        with ui.dropdown_button('Button 1', auto_close=False):
+            ui.label('Item 1')
+        with ui.dropdown_button('Button 2', auto_close=True):
+            ui.label('Item 2')
 
     screen.open('/')
     screen.click('Button 1')

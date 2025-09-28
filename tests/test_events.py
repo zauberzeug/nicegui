@@ -33,11 +33,14 @@ async def click_lambda_with_async_and_parameters(msg: str):
 
 
 def test_click_events(screen: Screen):
-    ui.button('click_sync_no_args', on_click=click_sync_no_args)
-    ui.button('click_sync_with_args', on_click=click_sync_with_args)
-    ui.button('click_async_no_args', on_click=click_async_no_args)
-    ui.button('click_async_with_args', on_click=click_async_with_args)
-    ui.button('click_lambda_with_async_and_parameters', on_click=lambda: click_lambda_with_async_and_parameters('works'))
+    @ui.page('/')
+    def page():
+        ui.button('click_sync_no_args', on_click=click_sync_no_args)
+        ui.button('click_sync_with_args', on_click=click_sync_with_args)
+        ui.button('click_async_no_args', on_click=click_async_no_args)
+        ui.button('click_async_with_args', on_click=click_async_with_args)
+        ui.button('click_lambda_with_async_and_parameters',
+                  on_click=lambda: click_lambda_with_async_and_parameters('works'))
 
     screen.open('/')
     screen.click('click_sync_no_args')
@@ -53,10 +56,12 @@ def test_click_events(screen: Screen):
 
 
 def test_generic_events(screen: Screen):
-    ui.label('click_sync_no_args').on('click', click_sync_no_args, [])
-    ui.label('click_sync_with_args').on('click', click_sync_with_args, [])
-    ui.label('click_async_no_args').on('click', click_async_no_args, [])
-    ui.label('click_async_with_args').on('click', click_async_with_args, [])
+    @ui.page('/')
+    def page():
+        ui.label('click_sync_no_args').on('click', click_sync_no_args, [])
+        ui.label('click_sync_with_args').on('click', click_sync_with_args, [])
+        ui.label('click_async_no_args').on('click', click_async_no_args, [])
+        ui.label('click_async_with_args').on('click', click_async_with_args, [])
 
     screen.open('/')
     screen.click('click_sync_no_args')
@@ -88,10 +93,13 @@ def test_event_with_update_before_await(screen: Screen):
 
 def test_event_modifiers(screen: Screen):
     events = []
-    ui.input('A').on('keydown', lambda _: events.append('A'), [])
-    ui.input('B').on('keydown.x', lambda _: events.append('B'), [])
-    ui.input('C').on('keydown.once', lambda _: events.append('C'), [])
-    ui.input('D').on('keydown.shift.x', lambda _: events.append('D'), [])
+
+    @ui.page('/')
+    def page():
+        ui.input('A').on('keydown', lambda _: events.append('A'), [])
+        ui.input('B').on('keydown.x', lambda _: events.append('B'), [])
+        ui.input('C').on('keydown.once', lambda _: events.append('C'), [])
+        ui.input('D').on('keydown.shift.x', lambda _: events.append('D'), [])
 
     screen.open('/')
     screen.selenium.find_element(By.XPATH, '//*[@aria-label="A"]').send_keys('x')
@@ -103,7 +111,10 @@ def test_event_modifiers(screen: Screen):
 
 def test_throttling(screen: Screen):
     events = []
-    ui.button('Test', on_click=lambda: events.append(1)).on('click', lambda: events.append(2), [], throttle=1)
+
+    @ui.page('/')
+    def page():
+        ui.button('Test', on_click=lambda: events.append(1)).on('click', lambda: events.append(2), [], throttle=1)
 
     screen.open('/')
     screen.click('Test')
@@ -123,9 +134,12 @@ def test_throttling(screen: Screen):
 def test_throttling_variants(screen: Screen):
     events = []
     value = 0
-    ui.button('Both').on('click', lambda: events.append(value), [], throttle=1)
-    ui.button('Leading').on('click', lambda: events.append(value), [], throttle=1, trailing_events=False)
-    ui.button('Trailing').on('click', lambda: events.append(value), [], throttle=1, leading_events=False)
+
+    @ui.page('/')
+    def page():
+        ui.button('Both').on('click', lambda: events.append(value), [], throttle=1)
+        ui.button('Leading').on('click', lambda: events.append(value), [], throttle=1, trailing_events=False)
+        ui.button('Trailing').on('click', lambda: events.append(value), [], throttle=1, leading_events=False)
 
     screen.open('/')
     value = 1
@@ -163,18 +177,20 @@ def test_throttling_variants(screen: Screen):
 
 @pytest.mark.parametrize('attribute', ['disabled', 'hidden'])
 def test_server_side_validation(screen: Screen, attribute: Literal['disabled', 'hidden']):
-    b = ui.button('Button', on_click=lambda: ui.label('Button clicked'))
-    n = ui.number('Number', on_change=lambda: ui.label('Number changed'))
-    if attribute == 'disabled':
-        b.disable()
-        n.disable()
-    else:
-        b.set_visibility(False)
-        n.set_visibility(False)
-    ui.button('Forbidden', on_click=lambda: ui.run_javascript(f'''
-        getElement({b.id}).$emit("click", {{"id": {b.id}, "listener_id": "{next(iter(b._event_listeners))}"}});
-    '''))  # pylint: disable=protected-access
-    ui.button('Allowed', on_click=lambda: n.set_value(42))
+    @ui.page('/')
+    def page():
+        b = ui.button('Button', on_click=lambda: ui.label('Button clicked'))
+        n = ui.number('Number', on_change=lambda: ui.label('Number changed'))
+        if attribute == 'disabled':
+            b.disable()
+            n.disable()
+        else:
+            b.set_visibility(False)
+            n.set_visibility(False)
+        ui.button('Forbidden', on_click=lambda: ui.run_javascript(f'''
+            getElement({b.id}).$emit("click", {{"id": {b.id}, "listener_id": "{next(iter(b._event_listeners))}"}});
+        '''))  # pylint: disable=protected-access
+        ui.button('Allowed', on_click=lambda: n.set_value(42))
 
     screen.open('/')
     screen.click('Forbidden')
@@ -186,7 +202,9 @@ def test_server_side_validation(screen: Screen, attribute: Literal['disabled', '
 
 
 def test_js_handler(screen: Screen) -> None:
-    ui.button('Button').on('click', js_handler='() => document.body.appendChild(document.createTextNode("Click!"))')
+    @ui.page('/')
+    def page():
+        ui.button('Button').on('click', js_handler='() => document.body.appendChild(document.createTextNode("Click!"))')
 
     screen.open('/')
     screen.click('Button')
@@ -195,14 +213,35 @@ def test_js_handler(screen: Screen) -> None:
 
 def test_delegated_event_with_argument_filtering(screen: Screen) -> None:
     ids = []
-    ui.html('''
-        <p data-id="A">Item A</p>
-        <p data-id="B">Item B</p>
-        <p data-id="C">Item C</p>
-    ''').on('click', lambda e: ids.append(e.args), js_handler='(e) => emit(e.target.dataset.id)')
+
+    @ui.page('/')
+    def page():
+        ui.html('''
+            <p data-id="A">Item A</p>
+            <p data-id="B">Item B</p>
+            <p data-id="C">Item C</p>
+        ''').on('click', lambda e: ids.append(e.args), js_handler='(e) => emit(e.target.dataset.id)')
 
     screen.open('/')
     screen.click('Item A')
     screen.click('Item B')
     screen.click('Item C')
+    screen.wait(0.5)
     assert ids == ['A', 'B', 'C']
+
+
+def test_value_change_event_arguments(screen: Screen):
+    events = []
+
+    @ui.page('/')
+    def page():
+        ui.checkbox('Checkbox', on_change=lambda e: events.append((e.value, e.previous_value)))
+
+    screen.open('/')
+    screen.click('Checkbox')
+    screen.wait(0.5)
+    assert events == [(True, False)]
+
+    screen.click('Checkbox')
+    screen.wait(0.5)
+    assert events == [(True, False), (False, True)]

@@ -1,7 +1,8 @@
 import asyncio
 import time
-from contextlib import nullcontext
-from typing import Any, Awaitable, Callable, ContextManager, Optional
+from collections.abc import Awaitable
+from contextlib import AbstractContextManager, nullcontext
+from typing import Any, Callable, Optional
 
 from . import background_tasks, core
 from .awaitable_response import AwaitableResponse
@@ -40,12 +41,14 @@ class Timer:
         self._current_invocation: Optional[asyncio.Task] = None
 
         coroutine = self._run_once if once else self._run_in_loop
+        if core.script_mode:
+            return
         if core.app.is_started:
             background_tasks.create(coroutine(), name=str(callback))
         else:
             core.app.on_startup(coroutine)
 
-    def _get_context(self) -> ContextManager:
+    def _get_context(self) -> AbstractContextManager:
         return nullcontext()
 
     def activate(self) -> None:

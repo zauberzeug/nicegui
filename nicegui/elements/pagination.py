@@ -37,7 +37,6 @@ class Pagination(ValueElement, DisableableElement):
     @min.setter
     def min(self, value: int) -> None:
         self._props['min'] = value
-        self.update()
 
     @property
     def max(self) -> int:
@@ -47,7 +46,6 @@ class Pagination(ValueElement, DisableableElement):
     @max.setter
     def max(self, value: int) -> None:
         self._props['max'] = value
-        self.update()
 
     @property
     def direction_links(self) -> bool:
@@ -57,4 +55,3 @@ class Pagination(ValueElement, DisableableElement):
     @direction_links.setter
     def direction_links(self, value: bool) -> None:
         self._props['direction-links'] = value
-        self.update()

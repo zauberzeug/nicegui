@@ -5,7 +5,9 @@ from nicegui.testing import Screen
 
 
 def test_spinner(screen: Screen):
-    ui.spinner(size='3em', thickness=10)
+    @ui.page('/')
+    def page():
+        ui.spinner(size='3em', thickness=10)
 
     screen.open('/')
     element = screen.find_by_tag('svg')

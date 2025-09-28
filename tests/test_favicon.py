@@ -29,7 +29,9 @@ def assert_favicon(content: Union[Path, str, bytes], url_path: str = '/favicon.i
 
 
 def test_default(screen: Screen):
-    ui.label('Hello, world')
+    @ui.page('/')
+    def page():
+        ui.label('Hello, world')
 
     screen.open('/')
     assert_favicon(DEFAULT_FAVICON_PATH)
@@ -37,7 +39,9 @@ def test_default(screen: Screen):
 
 @pytest.mark.parametrize('emoji', ['👋', '⚔️'])
 def test_emoji(emoji: str, screen: Screen):
-    ui.label('Hello, world')
+    @ui.page('/')
+    def page():
+        ui.label('Hello, world')
 
     screen.ui_run_kwargs['favicon'] = emoji
     screen.open('/')
@@ -46,7 +50,9 @@ def test_emoji(emoji: str, screen: Screen):
 
 
 def test_data_url(screen: Screen):
-    ui.label('Hello, world')
+    @ui.page('/')
+    def page():
+        ui.label('Hello, world')
 
     icon = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAHElEQVQI12P4//8/w38GIAXDIBKE0DHxgljNBAAO9TXL0Y4OHwAAAABJRU5ErkJggg=='
     screen.ui_run_kwargs['favicon'] = icon
@@ -57,7 +63,9 @@ def test_data_url(screen: Screen):
 
 
 def test_custom_file(screen: Screen):
-    ui.label('Hello, world')
+    @ui.page('/')
+    def page():
+        ui.label('Hello, world')
 
     screen.ui_run_kwargs['favicon'] = LOGO_FAVICON_PATH
     screen.open('/')
@@ -70,7 +78,9 @@ def test_page_specific_icon(screen: Screen):
     def sub():
         ui.label('Subpage')
 
-    ui.label('Main')
+    @ui.page('/')
+    def page():
+        ui.label('Main')
 
     screen.open('/subpage')
     assert_favicon(LOGO_FAVICON_PATH, url_path='/subpage/favicon.ico')
@@ -82,7 +92,9 @@ def test_page_specific_emoji(screen: Screen):
     def sub():
         ui.label('Subpage')
 
-    ui.label('Main')
+    @ui.page('/')
+    def page():
+        ui.label('Main')
 
     screen.open('/subpage')
     assert get_favicon_url(screen).startswith('data:image/svg+xml')

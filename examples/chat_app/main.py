@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
 from datetime import datetime
-from typing import List, Tuple
 from uuid import uuid4
 
 from nicegui import ui
 
-messages: List[Tuple[str, str, str, str]] = []
+messages: list[tuple[str, str, str, str]] = []
 
 
 @ui.refreshable

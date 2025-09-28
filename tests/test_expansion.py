@@ -3,25 +3,31 @@ from nicegui.testing import Screen
 
 
 def test_open_close_expansion(screen: Screen):
-    with ui.expansion('Expansion') as e:
-        ui.label('Content')
-    ui.button('Open', on_click=e.open)
-    ui.button('Close', on_click=e.close)
+    @ui.page('/')
+    def page():
+        with ui.expansion('Expansion') as e:
+            ui.label('Content')
+        ui.button('Open', on_click=e.open)
+        ui.button('Close', on_click=e.close)
 
     screen.open('/')
     screen.should_contain('Expansion')
     screen.should_not_contain('Content')
+
     screen.click('Open')
     screen.wait(0.5)
     screen.should_contain('Content')
+
     screen.click('Close')
     screen.wait(0.5)
     screen.should_not_contain('Content')
 
 
 def test_caption(screen: Screen):
-    with ui.expansion('Expansion', caption='Caption'):
-        ui.label('Content')
+    @ui.page('/')
+    def page():
+        with ui.expansion('Expansion', caption='Caption'):
+            ui.label('Content')
 
     screen.open('/')
     screen.should_contain('Expansion')
@@ -36,12 +42,14 @@ def test_caption(screen: Screen):
 
 
 def test_group(screen: Screen):
-    with ui.expansion('Expansion A', group='group'):
-        ui.label('Content A')
-    with ui.expansion('Expansion B', group='group'):
-        ui.label('Content B')
-    with ui.expansion('Expansion C', group='group'):
-        ui.label('Content C')
+    @ui.page('/')
+    def page():
+        with ui.expansion('Expansion A', group='group'):
+            ui.label('Content A')
+        with ui.expansion('Expansion B', group='group'):
+            ui.label('Content B')
+        with ui.expansion('Expansion C', group='group'):
+            ui.label('Content C')
 
     screen.open('/')
     screen.should_contain('Expansion A')

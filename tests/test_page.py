@@ -1,7 +1,6 @@
 import asyncio
 import re
 from typing import Optional
-from uuid import uuid4
 
 from fastapi.responses import PlainTextResponse
 from selenium.webdriver.common.by import By
@@ -14,14 +13,6 @@ def test_page(screen: Screen):
     @ui.page('/')
     def page():
         ui.label('Hello, world!')
-
-    screen.open('/')
-    screen.should_contain('NiceGUI')
-    screen.should_contain('Hello, world!')
-
-
-def test_auto_index_page(screen: Screen):
-    ui.label('Hello, world!')
 
     screen.open('/')
     screen.should_contain('NiceGUI')
@@ -47,24 +38,14 @@ def test_route_with_custom_path(screen: Screen):
     screen.should_contain('page with custom path')
 
 
-def test_auto_index_page_with_link_to_subpage(screen: Screen):
-    ui.link('link to subpage', '/subpage')
-
-    @ui.page('/subpage')
-    def page():
-        ui.label('the subpage')
-
-    screen.open('/')
-    screen.click('link to subpage')
-    screen.should_contain('the subpage')
-
-
 def test_link_to_page_by_passing_function(screen: Screen):
     @ui.page('/subpage')
-    def page():
+    def subpage():
         ui.label('the subpage')
 
-    ui.link('link to subpage', page)
+    @ui.page('/')
+    def page():
+        ui.link('link to subpage', subpage)
 
     screen.open('/')
     screen.click('link to subpage')
@@ -80,26 +61,6 @@ def test_creating_new_page_after_startup(screen: Screen):
 
     screen.open('/late_page')
     screen.should_contain('page created after startup')
-
-
-def test_shared_and_private_pages(screen: Screen):
-    @ui.page('/private_page')
-    def private_page():
-        ui.label(f'private page with uuid {uuid4()}')
-
-    ui.label(f'shared page with uuid {uuid4()}')
-
-    screen.open('/private_page')
-    uuid1 = screen.find('private page').text.split()[-1]
-    screen.open('/private_page')
-    uuid2 = screen.find('private page').text.split()[-1]
-    assert uuid1 != uuid2
-
-    screen.open('/')
-    uuid1 = screen.find('shared page').text.split()[-1]
-    screen.open('/')
-    uuid2 = screen.find('shared page').text.split()[-1]
-    assert uuid1 == uuid2
 
 
 def test_wait_for_connected(screen: Screen):
@@ -238,8 +199,8 @@ def test_dark_mode(screen: Screen):
     def dark_page():
         ui.label('C').classes('text-blue-400 dark:text-red-400')
 
-    blue = 'rgba(96, 165, 250, 1)'
-    red = 'rgba(248, 113, 113, 1)'
+    blue = 'oklch(0.707 0.165 254.624)'
+    red = 'oklch(0.704 0.191 22.216)'
     white = 'rgba(0, 0, 0, 0)'
     black = 'rgba(18, 18, 18, 1)'
 
@@ -341,3 +302,13 @@ def test_multicast(screen: Screen):
     screen.should_contain('added')
     screen.switch_to(0)
     screen.should_contain('added')
+
+
+def test_warning_if_response_takes_too_long(screen: Screen):
+    @ui.page('/', response_timeout=0.5)
+    async def page():
+        await asyncio.sleep(1)
+        ui.label('all done')
+
+    screen.open('/')
+    screen.assert_py_logger('WARNING', re.compile('Response for / not ready after 0.5 seconds'))

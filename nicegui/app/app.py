@@ -1,11 +1,13 @@
+import asyncio
 import inspect
 import os
 import platform
 import signal
 import urllib
+from collections.abc import Awaitable, Iterator
 from enum import Enum
 from pathlib import Path
-from typing import Any, Awaitable, Callable, Iterator, List, Optional, Union
+from typing import Any, Callable, Optional, Union
 
 from fastapi import FastAPI, HTTPException, Request, Response
 from fastapi.responses import FileResponse
@@ -40,11 +42,12 @@ class App(FastAPI):
         self._state: State = State.STOPPED
         self.config = AppConfig()
 
-        self._startup_handlers: List[Union[Callable[..., Any], Awaitable]] = []
-        self._shutdown_handlers: List[Union[Callable[..., Any], Awaitable]] = []
-        self._connect_handlers: List[Union[Callable[..., Any], Awaitable]] = []
-        self._disconnect_handlers: List[Union[Callable[..., Any], Awaitable]] = []
-        self._exception_handlers: List[Callable[..., Any]] = [log.exception]
+        self._startup_handlers: list[Union[Callable[..., Any], Awaitable]] = []
+        self._shutdown_handlers: list[Union[Callable[..., Any], Awaitable]] = []
+        self._connect_handlers: list[Union[Callable[..., Any], Awaitable]] = []
+        self._disconnect_handlers: list[Union[Callable[..., Any], Awaitable]] = []
+        self._delete_handlers: list[Union[Callable[..., Any], Awaitable]] = []
+        self._exception_handlers: list[Callable[..., Any]] = [log.exception]
         self._page_exception_handler: Optional[Callable[..., Any]] = None
 
     @property
@@ -71,7 +74,7 @@ class App(FastAPI):
         """Start NiceGUI. (For internal use only.)"""
         self._state = State.STARTING
         for t in self._startup_handlers:
-            Client.auto_index_client.safe_invoke(t)
+            self.safe_invoke(t)
         self.on_shutdown(self.storage.on_shutdown)
         self.on_shutdown(background_tasks.teardown)
         self._state = State.STARTED
@@ -79,15 +82,31 @@ class App(FastAPI):
     async def stop(self) -> None:
         """Stop NiceGUI. (For internal use only.)"""
         self._state = State.STOPPING
-        with Client.auto_index_client:
-            for t in self._shutdown_handlers:
-                if isinstance(t, Awaitable):
-                    await t
-                else:
-                    result = t(self) if len(inspect.signature(t).parameters) == 1 else t()
-                    if helpers.is_coroutine_function(t):
-                        await result
+        for t in self._shutdown_handlers:
+            if isinstance(t, Awaitable):
+                await t
+            else:
+                result = t(self) if len(inspect.signature(t).parameters) == 1 else t()
+                if helpers.is_coroutine_function(t):
+                    await result
         self._state = State.STOPPED
+
+    def safe_invoke(self, func: Union[Callable[..., Any], Awaitable]) -> None:
+        """Invoke the potentially async function and catch any exceptions."""
+        func_name = func.__name__ if hasattr(func, '__name__') else str(func)
+        try:
+            if isinstance(func, Awaitable):
+                async def await_func():
+                    await func
+                background_tasks.create(await_func(), name=f'func {func_name}')
+            else:
+                result = func()
+                if helpers.is_coroutine_function(func) and not isinstance(result, asyncio.Task):
+                    async def await_result():
+                        await result
+                    background_tasks.create(await_result(), name=f'result {func_name}')
+        except Exception as e:
+            self.handle_exception(e)
 
     def on_connect(self, handler: Union[Callable, Awaitable]) -> None:
         """Called every time a new client connects to NiceGUI.
@@ -100,8 +119,19 @@ class App(FastAPI):
         """Called every time a new client disconnects from NiceGUI.
 
         The callback has an optional parameter of `nicegui.Client`.
+
+        *Updated in version 3.0.0: The handler is also called when a client reconnects.*
         """
         self._disconnect_handlers.append(handler)
+
+    def on_delete(self, handler: Union[Callable, Awaitable]) -> None:
+        """Called when a client is deleted.
+
+        The callback has an optional parameter of `nicegui.Client`.
+
+        *Added in version 3.0.0*
+        """
+        self._delete_handlers.append(handler)
 
     def on_startup(self, handler: Union[Callable, Awaitable]) -> None:
         """Called when NiceGUI is started or restarted.
@@ -203,9 +233,6 @@ class App(FastAPI):
         To make a whole folder of files accessible, use `add_static_files()` instead.
         For media files which should be streamed, you can use `add_media_files()` or `add_media_file()` instead.
 
-        Deprecation warning:
-        Non-existing files will raise a ``FileNotFoundError`` rather than a ``ValueError`` in version 3.0 if ``strict`` is ``True``.
-
         :param local_file: local file to serve as static content
         :param url_path: string that starts with a slash "/" and identifies the path at which the file should be served (default: None -> auto-generated URL path)
         :param single_use: whether to remove the route after the file has been downloaded once (default: False)
@@ -218,7 +245,7 @@ class App(FastAPI):
 
         file = Path(local_file).resolve()
         if strict and not file.is_file():
-            raise ValueError(f'File not found: {file}')  # DEPRECATED: will raise a ``FileNotFoundError`` in version 3.0
+            raise FileNotFoundError(f'File not found: {file}')
         path = f'/_nicegui/auto/static/{helpers.hash_file_path(file)}/{file.name}' if url_path is None else url_path
 
         @self.get(path)
@@ -263,9 +290,6 @@ class App(FastAPI):
         To make a whole folder of media files accessible via streaming, use `add_media_files()` instead.
         For small static files, you can use `add_static_files()` or `add_static_file()` instead.
 
-        Deprecation warning:
-        Non-existing files will raise a ``FileNotFoundError`` rather than a ``ValueError`` in version 3.0 if ``strict`` is ``True``.
-
         :param local_file: local file to serve as media content
         :param url_path: string that starts with a slash "/" and identifies the path at which the file should be served (default: None -> auto-generated URL path)
         :param single_use: whether to remove the route after the media file has been downloaded once (default: False)
@@ -274,7 +298,7 @@ class App(FastAPI):
         """
         file = Path(local_file).resolve()
         if strict and not file.is_file():
-            raise ValueError(f'File not found: {file}')  # DEPRECATED: will raise a ``FileNotFoundError`` in version 3.0
+            raise FileNotFoundError(f'File not found: {file}')
         path = f'/_nicegui/auto/media/{helpers.hash_file_path(file)}/{file.name}' if url_path is None else url_path
 
         @self.get(path)
@@ -296,6 +320,7 @@ class App(FastAPI):
         self._shutdown_handlers.clear()
         self._connect_handlers.clear()
         self._disconnect_handlers.clear()
+        self._delete_handlers.clear()
         self._exception_handlers[:] = [log.exception]
         self.config = AppConfig()
 

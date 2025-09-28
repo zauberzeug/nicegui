@@ -1,5 +1,5 @@
 import io
-from typing import Union
+from typing import Optional, Union
 
 from .. import json, optional_features
 from ..logging import log
@@ -12,7 +12,7 @@ except ImportError:
     pass
 
 
-async def read() -> str:
+async def read() -> Optional[str]:
     """Read text from the clipboard.
 
     Note: This function only works in secure contexts (HTTPS or localhost).
@@ -27,7 +27,7 @@ async def read() -> str:
     ''')
     if result is None:
         log.warning('Clipboard API is only available in secure contexts (HTTPS or localhost).')
-    return result or ''
+    return result
 
 
 def write(text: str) -> None:
