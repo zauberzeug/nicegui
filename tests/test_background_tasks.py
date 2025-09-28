@@ -1,5 +1,6 @@
 import asyncio
 import gc
+from typing import Callable
 
 import pytest
 
@@ -71,7 +72,8 @@ async def test_awaiting_background_tasks_on_shutdown(user: User, strategy: str):
     assert run == {'one', 'two', 'four'}
 
 
-async def test_inner_async_function_is_awaited_on_shutdown(user: User):
+@pytest.mark.parametrize('create', [background_tasks.create, background_tasks.create_lazy])
+async def test_inner_async_function_is_awaited_on_shutdown(user: User, create: Callable):
     events: list[str] = []
 
     @ui.page('/')
@@ -83,7 +85,7 @@ async def test_inner_async_function_is_awaited_on_shutdown(user: User):
                 events.append('inner ran')
             except asyncio.CancelledError:
                 events.append('inner cancelled')
-        background_tasks.create(inner(), name='inner')
+        create(inner(), name='inner')
 
     await user.open('/')
 
