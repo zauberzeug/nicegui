@@ -38,7 +38,7 @@ class FileUpload(ABC):
         return json.loads(await self.text(encoding))
 
     @abstractmethod
-    async def iterate(self, *, chunk_size: int = 1024 * 1024) -> AsyncIterator[bytes]:
+    def iterate(self, *, chunk_size: int = 1024 * 1024) -> AsyncIterator[bytes]:
         """Iterate over the file contents as bytes.
 
         :param chunk_size: the size of each chunk to read in bytes (default: 1 MB)
@@ -69,9 +69,11 @@ class SmallFileUpload(FileUpload):
     async def text(self, encoding: str = 'utf-8') -> str:
         return self._data.decode(encoding)
 
-    async def iterate(self, *, chunk_size: int = 1024 * 1024) -> AsyncIterator[bytes]:
-        for i in range(0, len(self._data), chunk_size):
-            yield self._data[i:i + chunk_size]
+    def iterate(self, *, chunk_size: int = 1024 * 1024) -> AsyncIterator[bytes]:
+        async def generator() -> AsyncIterator[bytes]:
+            for i in range(0, len(self._data), chunk_size):
+                yield self._data[i:i + chunk_size]
+        return generator()
 
     async def save(self, path: str | Path) -> None:
         target = Path(path)
@@ -97,10 +99,12 @@ class LargeFileUpload(FileUpload):
         data = await self.read()
         return data.decode(encoding)
 
-    async def iterate(self, *, chunk_size: int = 1024 * 1024) -> AsyncIterator[bytes]:
-        async with await anyio.open_file(self._path, 'rb') as f:
-            while (chunk := await f.read(chunk_size)):
-                yield chunk
+    def iterate(self, *, chunk_size: int = 1024 * 1024) -> AsyncIterator[bytes]:
+        async def generator() -> AsyncIterator[bytes]:
+            async with await anyio.open_file(self._path, 'rb') as f:
+                while (chunk := await f.read(chunk_size)):
+                    yield chunk
+        return generator()
 
     async def save(self, path: str | Path) -> None:
         target = Path(path)
@@ -125,7 +129,7 @@ async def create_file_upload(upload: UploadFile, *,
     """
     buffer = BytesIO()
     buffer_size = 0
-    temp_file: aiofiles.tempfile.NamedTemporaryFile | None = None
+    temp_file: aiofiles.threadpool.binary.AsyncBufferedIOBase | None = None
 
     try:
         while (chunk := await upload.read(chunk_size)):
@@ -144,6 +148,6 @@ async def create_file_upload(upload: UploadFile, *,
             await temp_file.close()
 
     if temp_file:
-        return LargeFileUpload(upload.filename or '', upload.content_type or '', Path(temp_file.name))
+        return LargeFileUpload(upload.filename or '', upload.content_type or '', Path(str(temp_file.name)))
     else:
         return SmallFileUpload(upload.filename or '', upload.content_type or '', buffer.getvalue())
