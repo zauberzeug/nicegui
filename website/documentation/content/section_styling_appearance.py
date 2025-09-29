@@ -105,6 +105,18 @@ def styling_demo():
     live_demo_ui()
 
 
+doc.text('', '''
+    **How to overrule Quasar with Tailwind classes or plain CSS**
+
+    Some Quasar classes (e.g. `bg-primary`) are marked as `!important` and, thus, would even overrule `!important` Tailwind classes.
+    At NiceGUI, we deviate from Quasar's design by moving Quasar's `!important` styles to a less powerful CSS layer.
+    While still important enough to ensure Quasar works as expected, you can now overrule Quasar for more customization.
+
+    Try out class `!bg-red-500` on a `ui.button` to see important Tailwind classes overruling Quasar.
+    Similarly, you can set the style `background-color:red !important` to achieve the same effect.
+''')
+
+
 @doc.demo('Tailwind CSS Layers', '''
     Tailwind CSS' `@layer` directive allows you to define custom classes that can be used in your HTML.
     NiceGUI supports this feature by allowing you to add custom classes to the `components` layer.
