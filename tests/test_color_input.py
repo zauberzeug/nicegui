@@ -5,7 +5,9 @@ from nicegui.testing import Screen
 
 
 def test_entering_color(screen: Screen):
-    ui.color_input(label='Color', on_change=lambda e: ui.label(f'content: {e.value}'), preview=True)
+    @ui.page('/')
+    def page():
+        ui.color_input(label='Color', on_change=lambda e: ui.label(f'content: {e.value}'), preview=True)
 
     screen.open('/')
     screen.type(Keys.TAB)
@@ -16,8 +18,13 @@ def test_entering_color(screen: Screen):
 
 
 def test_picking_color(screen: Screen):
-    ui.color_input(label='Color', on_change=lambda e: output.set_text(e.value))
-    output = ui.label()
+    output = None
+
+    @ui.page('/')
+    def page():
+        nonlocal output
+        ui.color_input(label='Color', on_change=lambda e: output.set_text(e.value))
+        output = ui.label()
 
     screen.open('/')
     screen.click('colorize')

@@ -40,7 +40,6 @@ class Fullscreen(ValueElement, component='fullscreen.js'):
     @require_escape_hold.setter
     def require_escape_hold(self, value: bool) -> None:
         self._props['requireEscapeHold'] = value
-        self.update()
 
     def enter(self) -> None:
         """Enter fullscreen mode."""

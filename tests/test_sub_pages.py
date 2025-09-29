@@ -1,5 +1,5 @@
 import asyncio
-from typing import List, Optional
+from typing import Optional
 
 import httpx
 import pytest
@@ -440,6 +440,21 @@ def test_navigate_to_new_tab_fallback(screen: Screen):
     screen.switch_to(1)
     screen.should_contain('internal-content')
     assert calls == {'index': 2}
+
+
+def test_adding_page_after_async_sub_page(screen: Screen):
+    """reproduction of https://github.com/zauberzeug/nicegui/issues/5142"""
+    @ui.page('/')
+    @ui.page('/{_:path}')
+    def index():
+        pages = ui.sub_pages({'/': main})
+        pages.add('/other', lambda: ui.label('other page'))
+
+    async def main():
+        ui.label('main page')
+
+    screen.open('/other')
+    screen.should_contain('other page')
 
 
 def test_adding_sub_pages_after_initialization(screen: Screen):
@@ -917,7 +932,7 @@ def test_only_rebuild_page_when_builder_depends_on_it(screen: Screen, strategy: 
 
 
 def test_on_path_changed_event(screen: Screen):
-    paths: List[str] = []
+    paths: list[str] = []
     calls = {'index': 0, 'main': 0, 'other': 0}
 
     @ui.page('/')

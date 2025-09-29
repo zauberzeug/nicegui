@@ -1,8 +1,8 @@
 import hashlib
 import mimetypes
+from collections.abc import Generator
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Generator
 
 from fastapi import Request
 from fastapi.responses import Response, StreamingResponse

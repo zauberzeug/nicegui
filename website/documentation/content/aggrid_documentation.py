@@ -1,4 +1,4 @@
-from nicegui import ui, ElementFilter
+from nicegui import ui
 
 from . import doc
 
@@ -17,12 +17,11 @@ def main_demo() -> None:
             {'name': 'Bob', 'age': 21, 'parent': 'Eve'},
             {'name': 'Carol', 'age': 42, 'parent': 'Frank'},
         ],
-        'rowSelection': 'multiple',
-    }).classes('max-h-40')
+        'rowSelection': {'mode': 'multiRow'},
+    })
 
     def update():
         grid.options['rowData'][0]['age'] += 1
-        grid.update()
 
     ui.button('Update', on_click=update)
     ui.button('Select all', on_click=lambda: grid.run_grid_method('selectAll'))
@@ -42,39 +41,36 @@ def main_demo() -> None:
     See the [AG Grid documentation](https://www.ag-grid.com/javascript-data-grid/row-selection/#example-single-row-selection) for more information.
 ''')
 def aggrid_with_selectable_rows():
-    # @ui.page('/')
-    def page():
-        grid = ui.aggrid({
-            'columnDefs': [
-                {'headerName': 'Name', 'field': 'name', 'checkboxSelection': True},
-                {'headerName': 'Age', 'field': 'age'},
-            ],
-            'rowData': [
-                {'name': 'Alice', 'age': 18},
-                {'name': 'Bob', 'age': 21},
-                {'name': 'Carol', 'age': 42},
-            ],
-            'rowSelection': 'multiple',
-        }).classes('max-h-40')
+    grid = ui.aggrid({
+        'columnDefs': [
+            {'headerName': 'Name', 'field': 'name'},
+            {'headerName': 'Age', 'field': 'age'},
+        ],
+        'rowData': [
+            {'name': 'Alice', 'age': 18},
+            {'name': 'Bob', 'age': 21},
+            {'name': 'Carol', 'age': 42},
+        ],
+        'rowSelection': {'mode': 'multiRow'},
+    })
 
-        async def output_selected_rows():
-            rows = await grid.get_selected_rows()
-            if rows:
-                for row in rows:
-                    ui.notify(f"{row['name']}, {row['age']}")
-            else:
-                ui.notify('No rows selected.')
-
-        async def output_selected_row():
-            row = await grid.get_selected_row()
-            if row:
+    async def output_selected_rows():
+        rows = await grid.get_selected_rows()
+        if rows:
+            for row in rows:
                 ui.notify(f"{row['name']}, {row['age']}")
-            else:
-                ui.notify('No row selected!')
+        else:
+            ui.notify('No rows selected.')
 
-        ui.button('Output selected rows', on_click=output_selected_rows)
-        ui.button('Output selected row', on_click=output_selected_row)
-    page()  # HIDE
+    async def output_selected_row():
+        row = await grid.get_selected_row()
+        if row:
+            ui.notify(f"{row['name']}, {row['age']}")
+        else:
+            ui.notify('No row selected!')
+
+    ui.button('Output selected rows', on_click=output_selected_rows)
+    ui.button('Output selected row', on_click=output_selected_row)
 
 
 @doc.demo('Filter Rows using Mini Filters', '''
@@ -95,7 +91,7 @@ def aggrid_with_minifilters():
             {'name': 'Bob', 'age': 21},
             {'name': 'Carol', 'age': 42},
         ],
-    }).classes('max-h-40')
+    })
 
 
 @doc.demo('AG Grid with Conditional Cell Formatting', '''
@@ -193,7 +189,7 @@ def aggrid_with_complex_objects():
             {'name': {'first': 'Bob', 'last': 'Brown'}, 'age': 21},
             {'name': {'first': 'Carol', 'last': 'Clark'}, 'age': 42},
         ],
-    }).classes('max-h-40')
+    })
 
 
 @doc.demo('AG Grid with dynamic row height', '''
@@ -208,7 +204,7 @@ def aggrid_with_dynamic_row_height():
             {'name': 'Carol', 'age': '42'},
         ],
         ':getRowHeight': 'params => params.data.age > 35 ? 50 : 25',
-    }).classes('max-h-40')
+    })
 
 
 @doc.demo('Run row methods', '''
@@ -240,39 +236,38 @@ def aggrid_run_row_method():
 @doc.demo('Filter return values', '''
     You can filter the return values of method calls by passing string that defines a JavaScript function.
     This demo runs the grid method "getDisplayedRowAtIndex" and returns the "data" property of the result.
-
-    Note that requesting data from the client is only supported for page functions, not for the shared auto-index page.
 ''')
 def aggrid_filter_return_values():
-    # @ui.page('/')
-    def page():
-        grid = ui.aggrid({
-            'columnDefs': [{'field': 'name'}],
-            'rowData': [{'name': 'Alice'}, {'name': 'Bob'}],
-        })
+    grid = ui.aggrid({
+        'columnDefs': [{'field': 'name'}],
+        'rowData': [{'name': 'Alice'}, {'name': 'Bob'}],
+    })
 
-        async def get_first_name() -> None:
-            row = await grid.run_grid_method('g => g.getDisplayedRowAtIndex(0).data')
-            ui.notify(row['name'])
+    async def get_first_name() -> None:
+        row = await grid.run_grid_method('g => g.getDisplayedRowAtIndex(0).data')
+        ui.notify(row['name'])
 
-        ui.button('Get First Name', on_click=get_first_name)
-    page()  # HIDE
+    ui.button('Get First Name', on_click=get_first_name)
 
 
 @doc.demo('Handle theme change', '''
-    You can change the theme of the AG Grid by adding or removing classes.
-    This demo shows how to change the theme using a switch.
+    You can change the theme of the AG Grid via the `theme` property.
+    Dark mode is applied automatically depending on the dark mode setting of the page.
 ''')
 def aggrid_handle_theme_change():
-    from nicegui import events
-
-    grid = ui.aggrid({})
-
-    def handle_theme_change(e: events.ValueChangeEventArguments):
-        grid.classes(add='ag-theme-balham-dark' if e.value else 'ag-theme-balham',
-                     remove='ag-theme-balham ag-theme-balham-dark')
-
-    ui.switch('Dark', on_change=handle_theme_change)
+    grid = ui.aggrid({
+        'columnDefs': [
+            {'headerName': 'Make', 'field': 'make'},
+            {'headerName': 'Country', 'field': 'country'},
+        ],
+        'rowData': [
+            {'make': 'Ford', 'country': 'USA'},
+            {'make': 'Toyota', 'country': 'Japan'},
+            {'make': 'Volkswagen', 'country': 'Germany'},
+        ],
+    })
+    ui.toggle(['quartz', 'balham', 'material', 'alpine']) \
+        .bind_value(grid, 'theme').props('flat size="sm"')
 
 
 doc.reference(ui.aggrid)

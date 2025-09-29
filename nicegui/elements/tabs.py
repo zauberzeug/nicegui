@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, Optional, Union
+from typing import Any
 
 from ..context import context
 from ..events import Handler, ValueChangeEventArguments
@@ -13,8 +13,8 @@ from .mixins.value_element import ValueElement
 class Tabs(ValueElement):
 
     def __init__(self, *,
-                 value: Union[Tab, TabPanel, None] = None,
-                 on_change: Optional[Handler[ValueChangeEventArguments]] = None,
+                 value: Tab | TabPanel | None = None,
+                 on_change: Handler[ValueChangeEventArguments] | None = None,
                  ) -> None:
         """Tabs
 
@@ -32,7 +32,7 @@ class Tabs(ValueElement):
 
 class Tab(LabelElement, IconElement, DisableableElement):
 
-    def __init__(self, name: str, label: Optional[str] = None, icon: Optional[str] = None) -> None:
+    def __init__(self, name: str, label: str | None = None, icon: str | None = None) -> None:
         """Tab
 
         This element represents `Quasar's QTab <https://quasar.dev/vue-components/tabs#qtab-api>`_ component.
@@ -52,9 +52,9 @@ class Tab(LabelElement, IconElement, DisableableElement):
 class TabPanels(ValueElement):
 
     def __init__(self,
-                 tabs: Optional[Tabs] = None, *,
-                 value: Union[Tab, TabPanel, str, None] = None,
-                 on_change: Optional[Handler[ValueChangeEventArguments]] = None,
+                 tabs: Tabs | None = None, *,
+                 value: Tab | TabPanel | str | None = None,
+                 on_change: Handler[ValueChangeEventArguments] | None = None,
                  animated: bool = True,
                  keep_alive: bool = True,
                  ) -> None:
@@ -85,7 +85,7 @@ class TabPanels(ValueElement):
 
 class TabPanel(DisableableElement, default_classes='nicegui-tab-panel'):
 
-    def __init__(self, name: Union[Tab, str]) -> None:
+    def __init__(self, name: Tab | str) -> None:
         """Tab Panel
 
         This element represents `Quasar's QTabPanel <https://quasar.dev/vue-components/tab-panels#qtabpanel-api>`_ component.

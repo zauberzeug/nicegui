@@ -1,8 +1,8 @@
 import asyncio
 import os
 import time
+from collections.abc import Awaitable, Generator
 from concurrent.futures.process import BrokenProcessPool
-from typing import Awaitable, Generator
 
 import pytest
 

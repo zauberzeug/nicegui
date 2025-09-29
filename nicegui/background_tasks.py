@@ -3,28 +3,33 @@ from __future__ import annotations
 
 import asyncio
 import weakref
-from typing import Any, Awaitable, Callable, Coroutine, Dict, Set, TypeVar
+from collections.abc import Awaitable, Coroutine
+from typing import Any, Callable, TypeVar
 
 from . import core
 from .logging import log
 
-running_tasks: Set[asyncio.Task] = set()
-lazy_tasks_running: Dict[str, asyncio.Task] = {}
-lazy_coroutines_waiting: Dict[str, Coroutine[Any, Any, Any]] = {}
+running_tasks: set[asyncio.Task] = set()
+lazy_tasks_running: dict[str, asyncio.Task] = {}
+lazy_coroutines_waiting: dict[str, Coroutine[Any, Any, Any]] = {}
 functions_awaited_on_shutdown: weakref.WeakSet[Callable] = weakref.WeakSet()
 
 
-def create(coroutine: Awaitable, *, name: str = 'unnamed task') -> asyncio.Task:
+def create(coroutine: Awaitable, *, name: str = 'unnamed task', handle_exceptions: bool = True) -> asyncio.Task:
     """Wraps a loop.create_task call and ensures there is an exception handler added to the task.
 
-    If the task raises an exception, it is logged and handled by the global exception handlers.
     Also a reference to the task is kept until it is done, so that the task is not garbage collected mid-execution.
     See https://docs.python.org/3/library/asyncio-task.html#asyncio.create_task.
+
+    :param coroutine: the coroutine or awaitable to wrap
+    :param name: the name of the task which is helpful for debugging (default: "unnamed task")
+    :param handle_exceptions: if ``True`` (default) possible exceptions are forwarded to the global exception handlers
     """
     assert core.loop is not None
     coroutine = coroutine if asyncio.iscoroutine(coroutine) else asyncio.wait_for(coroutine, None)
     task: asyncio.Task = core.loop.create_task(coroutine, name=name)
-    task.add_done_callback(_handle_task_result)
+    if handle_exceptions:
+        task.add_done_callback(_handle_exceptions)
     running_tasks.add(task)
     task.add_done_callback(running_tasks.discard)
     return task
@@ -72,7 +77,7 @@ def _ensure_coroutine(awaitable: Awaitable[Any]) -> Coroutine[Any, Any, Any]:
     return wrapper()
 
 
-def _handle_task_result(task: asyncio.Task) -> None:
+def _handle_exceptions(task: asyncio.Task) -> None:
     try:
         task.result()
     except asyncio.CancelledError:
