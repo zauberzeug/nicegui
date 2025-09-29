@@ -1,6 +1,4 @@
 import asyncio
-import os
-import tempfile
 from pathlib import Path
 
 import pytest
@@ -26,8 +24,8 @@ def test_uploading_text_file(screen: Screen):
     screen.click('cloud_upload')
     screen.wait(0.1)
     assert len(results) == 1
-    assert results[0].name == test_path1.name
-    assert results[0].type in {'text/x-python', 'text/x-python-script'}
+    assert results[0].file.name == test_path1.name
+    assert results[0].file.content_type in {'text/x-python', 'text/x-python-script'}
     assert asyncio.run(results[0].file.read()) == test_path1.read_bytes()
 
 
@@ -46,14 +44,14 @@ def test_two_upload_elements(screen: Screen):
     screen.find_all_by_class('q-uploader__input')[1].send_keys(str(test_path2))
     screen.wait(0.1)
     assert len(results) == 2
-    assert results[0].name == test_path1.name
-    assert results[1].name == test_path2.name
+    assert results[0].file.name == test_path1.name
+    assert results[1].file.name == test_path2.name
 
 
 def test_uploading_from_two_tabs(screen: Screen):
     @ui.page('/')
     def page():
-        ui.upload(on_upload=lambda e: ui.label(f'uploaded {e.name}'), auto_upload=True)
+        ui.upload(on_upload=lambda e: ui.label(f'uploaded {e.file.name}'), auto_upload=True)
 
     screen.open('/')
     screen.switch_to(1)
@@ -124,7 +122,9 @@ def test_multi_upload_event(screen: Screen):
     screen.wait(0.1)
 
     assert len(results) == 1
-    assert results[0].names == [test_path1.name, test_path2.name]
+    assert len(results[0].files) == 2
+    assert results[0].files[0].name == test_path1.name
+    assert results[0].files[1].name == test_path2.name
     assert asyncio.run(results[0].files[0].read()) == test_path1.read_bytes()
     assert asyncio.run(results[0].files[1].read()) == test_path2.read_bytes()
 
@@ -149,7 +149,8 @@ def test_two_handlers_can_read_file(screen: Screen):
 
 
 @pytest.mark.parametrize('size', [500, 5_000_000])
-def test_different_file_sizes(screen: Screen, size: int):
+def test_different_file_sizes(screen: Screen, size: int, tmp_path: Path):
+    tmp_file = tmp_path / 'test.txt'
     reads: list[events.UploadEventArguments] = []
 
     @ui.page('/')
@@ -157,14 +158,10 @@ def test_different_file_sizes(screen: Screen, size: int):
         upload = ui.upload(auto_upload=True)
         upload.on_upload(reads.append)
 
-    with tempfile.NamedTemporaryFile(delete=False) as f:
-        f.write(b'x' * size)
+    tmp_file.write_text('x' * size)
 
-    try:
-        screen.open('/')
-        screen.find_by_class('q-uploader__input').send_keys(f.name)
-        screen.wait(0.1)
-        assert reads[0].file.size() == size
-        assert asyncio.run(reads[0].file.read()) == b'x' * size
-    finally:
-        os.remove(f.name)
+    screen.open('/')
+    screen.find_by_class('q-uploader__input').send_keys(str(tmp_file))
+    screen.wait(0.1)
+    assert reads[0].file.size() == size
+    assert asyncio.run(reads[0].file.text()) == tmp_file.read_text()

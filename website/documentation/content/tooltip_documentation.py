@@ -52,7 +52,7 @@ def tooltip_on_html_and_markdown():
 ''')
 def simple_upload_with_tooltip_demo():
     with ui.element():
-        ui.upload(on_upload=lambda e: ui.notify(f'Uploaded {e.name}')).classes('w-72')
+        ui.upload(on_upload=lambda e: ui.notify(f'Uploaded {e.file.name}')).classes('w-72')
         ui.tooltip('Upload files').props('delay=1000 transition-show=rotate')
 
 

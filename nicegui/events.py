@@ -120,15 +120,11 @@ class JoystickEventArguments(UiEventArguments):
 
 @dataclass(**KWONLY_SLOTS)
 class UploadEventArguments(UiEventArguments):
-    name: str
-    type: str
     file: FileUpload
 
 
 @dataclass(**KWONLY_SLOTS)
 class MultiUploadEventArguments(UiEventArguments):
-    names: list[str]
-    types: list[str]
     files: list[FileUpload]
 
 

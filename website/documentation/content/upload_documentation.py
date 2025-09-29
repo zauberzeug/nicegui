@@ -5,7 +5,7 @@ from . import doc
 
 @doc.demo(ui.upload)
 def main_demo() -> None:
-    ui.upload(on_upload=lambda e: ui.notify(f'Uploaded {e.name}')).classes('max-w-full')
+    ui.upload(on_upload=lambda e: ui.notify(f'Uploaded {e.file.name}')).classes('max-w-full')
 
 
 @doc.demo('Upload restrictions', '''
@@ -13,7 +13,7 @@ def main_demo() -> None:
     When a file is rejected, a notification is shown.
 ''')
 def upload_restrictions() -> None:
-    ui.upload(on_upload=lambda e: ui.notify(f'Uploaded {e.name}'),
+    ui.upload(on_upload=lambda e: ui.notify(f'Uploaded {e.file.name}'),
               on_rejected=lambda: ui.notify('Rejected!'),
               max_file_size=1_000_000).classes('max-w-full')
 
@@ -50,7 +50,7 @@ def uploading_large_files() -> None:
 
     MultiPartParser.spool_max_size = 1024 * 1024 * 5  # 5 MB
 
-    ui.upload(on_upload=lambda e: ui.notify(f'Uploaded {e.name}')).classes('max-w-full')
+    ui.upload(on_upload=lambda e: ui.notify(f'Uploaded {e.file.name}')).classes('max-w-full')
 
 
 doc.reference(ui.upload)

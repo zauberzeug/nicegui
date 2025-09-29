@@ -10,14 +10,14 @@ DATA_DIR.mkdir(exist_ok=True)
 
 
 async def handle_upload(args: events.UploadEventArguments):
-    if not args.type.startswith('video/'):
+    if not args.file.content_type.startswith('video/'):
         ui.notify('Please upload a video file')
         return
 
     shutil.rmtree(DATA_DIR, ignore_errors=True)
     DATA_DIR.mkdir(exist_ok=True)
 
-    video_path = DATA_DIR / args.name
+    video_path = DATA_DIR / args.file.name
     video_path.write_bytes(await args.file.read())
 
     results.clear()

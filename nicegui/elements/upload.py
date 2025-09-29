@@ -92,20 +92,8 @@ class Upload(LabelElement, DisableableElement, component='upload.js'):
             'since NiceGUI 3.0, uploads must be a list of FileUpload instances'
         for file in files:
             for upload_handler in self._upload_handlers:
-                handle_event(upload_handler, UploadEventArguments(
-                    sender=self,
-                    client=self.client,
-                    name=file.name,
-                    type=file.content_type,
-                    file=file,
-                ))
-        multi_upload_args = MultiUploadEventArguments(
-            sender=self,
-            client=self.client,
-            names=[f.name for f in files],
-            types=[f.content_type for f in files],
-            files=files,
-        )
+                handle_event(upload_handler, UploadEventArguments(sender=self, client=self.client, file=file))
+        multi_upload_args = MultiUploadEventArguments(sender=self, client=self.client, files=files)
         for multi_upload_handler in self._multi_upload_handlers:
             handle_event(multi_upload_handler, multi_upload_args)
 

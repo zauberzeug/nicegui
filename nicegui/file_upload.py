@@ -10,6 +10,7 @@ from pathlib import Path
 import aiofiles
 import anyio
 from starlette.datastructures import UploadFile
+from starlette.formparsers import MultiPartParser
 
 from . import json, run
 
@@ -119,14 +120,18 @@ def _cleanup_path(path: Path) -> None:
 
 
 async def create_file_upload(upload: UploadFile, *,
-                             chunk_size: int = 1024 * 1024,
-                             memory_limit: int = 1024 * 1024) -> FileUpload:
+                             chunk_size: int = 1024 * 1024) -> FileUpload:
     """Create a file upload from a Starlette UploadFile.
 
     :param upload: the Starlette UploadFile to create a file upload from
     :param chunk_size: the size of each chunk to read in bytes (default: 1 MB)
-    :param memory_limit: the maximum number of bytes to keep in memory (default: 1 MB)
     """
+    memory_limit = (
+        getattr(MultiPartParser, 'spool_max_size', 0) or
+        getattr(MultiPartParser, 'max_part_size', 0) or  # NOTE: for starlette < 0.46.0
+        1024 * 1024
+    )
+
     buffer = BytesIO()
     buffer_size = 0
     temp_file: aiofiles.threadpool.binary.AsyncBufferedIOBase | None = None
