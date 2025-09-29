@@ -6,7 +6,8 @@ from pathlib import Path
 import httpx
 
 from nicegui import Client, app, background_tasks, context, core, nicegui, ui
-from nicegui.testing import Screen
+from nicegui.persistence.file_persistent_dict import FilePersistentDict
+from nicegui.testing import Screen, User
 
 
 def test_browser_data_is_stored_in_the_browser(screen: Screen):
@@ -369,3 +370,18 @@ def test_user_storage_is_pruned(screen: Screen):
     asyncio.run(nicegui.prune_user_storage(force=True))
     assert len(Client.instances) == 0
     assert len(app.storage._users) == 0
+
+
+async def test_awaiting_backup_scheduled_during_teardown(user: User, tmp_path):
+    @ui.page('/')
+    def page():
+        ui.label('ok')
+
+    await user.open('/')  # NOTE: needed to ensure NiceGUI's event loop is running
+    path = tmp_path / 'storage.json'
+    d = FilePersistentDict(path, encoding='utf-8')
+    d['key'] = 'value'  # schedules async backup task tagged with await_on_shutdown
+    await asyncio.sleep(0)  # ensure the task is created
+    await background_tasks.teardown()
+    assert path.exists(), 'backup should be written during teardown'
+    assert path.read_text(encoding='utf-8') == '{"key":"value"}'
