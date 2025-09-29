@@ -2,9 +2,8 @@
 from __future__ import annotations
 
 import asyncio
-import weakref
-from collections.abc import Awaitable, Coroutine
-from typing import Any, Callable, TypeVar
+from collections.abc import Awaitable, Coroutine, Generator
+from typing import Any, Callable, TypeVar, cast
 
 from . import core
 from .logging import log
@@ -12,7 +11,7 @@ from .logging import log
 running_tasks: set[asyncio.Task] = set()
 lazy_tasks_running: dict[str, asyncio.Task] = {}
 lazy_coroutines_waiting: dict[str, Coroutine[Any, Any, Any]] = {}
-functions_awaited_on_shutdown: weakref.WeakSet[Callable] = weakref.WeakSet()
+_await_tasks_on_shutdown: set[asyncio.Task] = set()
 
 
 def create(coroutine: Awaitable, *, name: str = 'unnamed task', handle_exceptions: bool = True) -> asyncio.Task:
@@ -26,12 +25,15 @@ def create(coroutine: Awaitable, *, name: str = 'unnamed task', handle_exception
     :param handle_exceptions: if ``True`` (default) possible exceptions are forwarded to the global exception handlers
     """
     assert core.loop is not None
-    coroutine = coroutine if asyncio.iscoroutine(coroutine) else asyncio.wait_for(coroutine, None)
-    task: asyncio.Task = core.loop.create_task(coroutine, name=name)
+    real_coroutine = coroutine if asyncio.iscoroutine(coroutine) else asyncio.wait_for(coroutine, None)
+    task: asyncio.Task = core.loop.create_task(real_coroutine, name=name)
     if handle_exceptions:
         task.add_done_callback(_handle_exceptions)
     running_tasks.add(task)
     task.add_done_callback(running_tasks.discard)
+    if isinstance(coroutine, _AwaitOnShutdown):
+        _await_tasks_on_shutdown.add(task)
+        task.add_done_callback(_await_tasks_on_shutdown.discard)
     return task
 
 
@@ -55,7 +57,15 @@ def create_lazy(coroutine: Awaitable, *, name: str) -> None:
     task.add_done_callback(lambda _: finalize(name))
 
 
-F = TypeVar('F', bound=Callable)
+class _AwaitOnShutdown:
+    def __init__(self, factory: Callable[[], Awaitable[Any]]) -> None:
+        self._factory = factory
+
+    def __await__(self) -> Generator[Any, None, Any]:
+        return self._factory().__await__()
+
+
+F = TypeVar('F', bound=Callable[..., Awaitable[Any]])
 
 
 def await_on_shutdown(func: F) -> F:
@@ -63,8 +73,9 @@ def await_on_shutdown(func: F) -> F:
 
     *Added in version 2.16.0*
     """
-    functions_awaited_on_shutdown.add(func)
-    return func
+    def wrapper(*args: Any, **kwargs: Any) -> Awaitable[Any]:
+        return _AwaitOnShutdown(lambda: func(*args, **kwargs))
+    return cast(F, wrapper)
 
 
 def _ensure_coroutine(awaitable: Awaitable[Any]) -> Coroutine[Any, Any, Any]:
@@ -91,8 +102,9 @@ async def teardown() -> None:
     while running_tasks or lazy_tasks_running:
         tasks = running_tasks | set(lazy_tasks_running.values())
         for task in tasks:
-            if not task.done() and not task.cancelled() and not _should_await_on_shutdown(task):
-                task.cancel()
+            if task.done() or task.cancelled() or task in _await_tasks_on_shutdown:
+                continue
+            task.cancel()
         if tasks:
             await asyncio.sleep(0)  # NOTE: ensure the loop can cancel the tasks before it shuts down
             try:
@@ -105,11 +117,3 @@ async def teardown() -> None:
                 log.exception('Error while cancelling tasks')
     for coro in lazy_coroutines_waiting.values():
         coro.close()
-
-
-def _should_await_on_shutdown(task: asyncio.Task) -> bool:
-    try:
-        return any(fn.__code__ is task.get_coro().cr_frame.f_code  # type: ignore
-                   for fn in functions_awaited_on_shutdown)
-    except AttributeError:
-        return False
