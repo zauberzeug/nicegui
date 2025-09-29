@@ -214,6 +214,17 @@ async def test_input(user: User, kind: Type) -> None:
     await user.should_see('Changed: Test')
 
 
+async def test_icon(user: User) -> None:
+    @ui.page('/')
+    def page():
+        ui.icon('thumbs-up')
+        ui.icon('thumbs-down')
+
+    await user.open('/')
+    await user.should_see('thumbs-up')
+    await user.should_see('thumbs-down')
+
+
 async def test_should_not_see(user: User) -> None:
     @ui.page('/')
     def page():

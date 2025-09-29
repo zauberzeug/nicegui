@@ -108,6 +108,7 @@ class ElementFilter(Generic[T]):
                 element_contents = [content for content in (
                     element.props.get('text'),
                     element.props.get('label'),
+                    element.props.get('name'),
                     element.props.get('icon'),
                     element.props.get('placeholder'),
                     element.props.get('value'),
