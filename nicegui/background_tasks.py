@@ -25,8 +25,7 @@ def create(coroutine: Awaitable, *, name: str = 'unnamed task', handle_exception
     :param handle_exceptions: if ``True`` (default) possible exceptions are forwarded to the global exception handlers
     """
     assert core.loop is not None
-    real_coroutine = coroutine if asyncio.iscoroutine(
-        coroutine) else asyncio.wait_for(coroutine, None)
+    real_coroutine = coroutine if asyncio.iscoroutine(coroutine) else asyncio.wait_for(coroutine, None)
     task: asyncio.Task = core.loop.create_task(real_coroutine, name=name)
     if handle_exceptions:
         task.add_done_callback(_handle_exceptions)
@@ -103,13 +102,11 @@ async def teardown() -> None:
     while running_tasks or lazy_tasks_running:
         tasks = running_tasks | set(lazy_tasks_running.values())
         for task in tasks:
-            if task.done() or task.cancelled():
+            if task.done() or task.cancelled() or task in _await_tasks_on_shutdown:
                 continue
-            if task not in _await_tasks_on_shutdown:
-                task.cancel()
+            task.cancel()
         if tasks:
-            # NOTE: ensure the loop can cancel the tasks before it shuts down
-            await asyncio.sleep(0)
+            await asyncio.sleep(0)  # NOTE: ensure the loop can cancel the tasks before it shuts down
             try:
                 await asyncio.wait_for(asyncio.gather(*tasks, return_exceptions=True), timeout=2.0)
             except asyncio.TimeoutError:

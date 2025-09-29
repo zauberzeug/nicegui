@@ -380,8 +380,8 @@ async def test_awaiting_backup_scheduled_during_teardown(user: User, tmp_path):
     await user.open('/')  # NOTE: needed to ensure NiceGUI's event loop is running
     path = tmp_path / 'storage.json'
     d = FilePersistentDict(path, encoding='utf-8')
-    d['k'] = 'v'  # schedules async backup task tagged with await_on_shutdown
+    d['key'] = 'value'  # schedules async backup task tagged with await_on_shutdown
     await asyncio.sleep(0)  # ensure the task is created
     await background_tasks.teardown()
-    assert path.exists(), 'backup should be written during shutdown'
-    assert path.read_text(encoding='utf-8') == '{"k":"v"}'
+    assert path.exists(), 'backup should be written during teardown'
+    assert path.read_text(encoding='utf-8') == '{"key":"value"}'
