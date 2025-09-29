@@ -5,13 +5,15 @@ from starlette.datastructures import UploadFile
 from typing_extensions import Self
 
 from ..events import Handler, MultiUploadEventArguments, UiEventArguments, UploadEventArguments, handle_event
-from ..file_upload import FileUpload, create_file_upload
 from ..nicegui import app
 from .mixins.disableable_element import DisableableElement
 from .mixins.label_element import LabelElement
+from .upload_files import create_file_upload
 
 
 class Upload(LabelElement, DisableableElement, component='upload.js'):
+    # pylint: disable=import-outside-toplevel
+    from .upload_files import FileUpload, LargeFileUpload, SmallFileUpload
 
     def __init__(self, *,
                  multiple: bool = False,
@@ -88,7 +90,7 @@ class Upload(LabelElement, DisableableElement, component='upload.js'):
 
         This method is primarily intended for internal use and for simulating file uploads in tests.
         """
-        assert all(isinstance(f, FileUpload) for f in files), \
+        assert all(isinstance(f, Upload.FileUpload) for f in files), \
             'since NiceGUI 3.0, uploads must be a list of FileUpload instances'
         for file in files:
             for upload_handler in self._upload_handlers:

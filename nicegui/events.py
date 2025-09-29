@@ -9,13 +9,13 @@ from typing import TYPE_CHECKING, Any, Callable, Literal, TypeVar, Union, cast
 from . import background_tasks, core, helpers
 from .awaitable_response import AwaitableResponse
 from .dataclasses import KWONLY_SLOTS
-from .file_upload import FileUpload
 from .slot import Slot
 
 if TYPE_CHECKING:
     from .client import Client
     from .element import Element
     from .elements.slide_item import SlideSide
+    from .elements.upload_files import FileUpload
     from .observables import ObservableCollection
 
 
