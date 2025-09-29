@@ -1,5 +1,9 @@
 import asyncio
+import os
+import tempfile
 from pathlib import Path
+
+import pytest
 
 from nicegui import events, ui
 from nicegui.testing import Screen
@@ -130,7 +134,7 @@ def test_two_handlers_can_read_file(screen: Screen):
 
     @ui.page('/')
     def page():
-        upload = ui.upload(auto_upload=True, label='A')
+        upload = ui.upload(auto_upload=True)
         upload.on_upload(reads.append)
         upload.on_upload(reads.append)
 
@@ -142,3 +146,25 @@ def test_two_handlers_can_read_file(screen: Screen):
     upload_1 = asyncio.run(reads[0].file.text())
     upload_2 = asyncio.run(reads[1].file.text())
     assert upload_1 == upload_2 == test_path1.read_text(encoding='utf-8')
+
+
+@pytest.mark.parametrize('size', [500, 5_000_000])
+def test_different_file_sizes(screen: Screen, size: int):
+    reads: list[events.UploadEventArguments] = []
+
+    @ui.page('/')
+    def page():
+        upload = ui.upload(auto_upload=True)
+        upload.on_upload(reads.append)
+
+    with tempfile.NamedTemporaryFile(delete=False) as f:
+        f.write(b'x' * size)
+
+    try:
+        screen.open('/')
+        screen.find_by_class('q-uploader__input').send_keys(f.name)
+        screen.wait(0.1)
+        assert reads[0].file.size() == size
+        assert asyncio.run(reads[0].file.read()) == b'x' * size
+    finally:
+        os.remove(f.name)

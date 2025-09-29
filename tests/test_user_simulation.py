@@ -1,4 +1,3 @@
-import asyncio
 import csv
 import re
 from typing import Callable, Union
@@ -449,9 +448,10 @@ async def test_upload_table(user: User) -> None:
 
     await user.open('/')
     upload = user.find(ui.upload).elements.pop()
-    await upload.handle_uploads([SmallFileUpload(name='data.csv', content_type='text/csv', _data=b'name,age\nAlice,30\nBob,28')])
-    await asyncio.sleep(0.5)
-
+    await upload.handle_uploads([
+        SmallFileUpload(name='data.csv', content_type='text/csv', _data=b'name,age\nAlice,30\nBob,28'),
+    ])
+    await user.should_see(ui.table)
     table = user.find(ui.table).elements.pop()
     assert table.columns == [
         {'name': 'name', 'label': 'Name', 'field': 'name'},

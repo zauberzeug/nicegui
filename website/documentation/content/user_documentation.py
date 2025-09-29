@@ -244,6 +244,7 @@ def upload_table():
                 await upload.handle_uploads([
                     SmallFileUpload(name='data.csv', content_type='text/csv', _data=b'name,age\\nAlice,30\\nBob,28')
                 ])
+                await user.should_see(ui.table)
                 table = user.find(ui.table).elements.pop()
                 assert table.columns == [
                     {'name': 'name', 'label': 'Name', 'field': 'name'},

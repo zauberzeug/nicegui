@@ -76,8 +76,7 @@ class Upload(LabelElement, DisableableElement, component='upload.js'):
             for begin_upload_handler in self._begin_upload_handlers:
                 handle_event(begin_upload_handler, UiEventArguments(sender=self, client=self.client))
             async with request.form() as form:
-                uploads = [cast(UploadFile, data) for data in form.values()]
-                files: list[FileUpload] = [await create_file_upload(u) for u in uploads]
+                files = [await create_file_upload(cast(UploadFile, data)) for data in form.values()]
             await self.handle_uploads(files)
             return {'upload': 'success'}
 
@@ -96,15 +95,15 @@ class Upload(LabelElement, DisableableElement, component='upload.js'):
                 handle_event(upload_handler, UploadEventArguments(
                     sender=self,
                     client=self.client,
-                    name=file.name or '',
-                    type=file.content_type or '',
+                    name=file.name,
+                    type=file.content_type,
                     file=file,
                 ))
         multi_upload_args = MultiUploadEventArguments(
             sender=self,
             client=self.client,
-            names=[f.name or '' for f in files],
-            types=[f.content_type or '' for f in files],
+            names=[f.name for f in files],
+            types=[f.content_type for f in files],
             files=files,
         )
         for multi_upload_handler in self._multi_upload_handlers:

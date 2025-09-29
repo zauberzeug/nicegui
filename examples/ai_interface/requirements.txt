@@ -1,2 +1,2 @@
-nicegui>=1.0
+nicegui
 replicate>=0.25

@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-import os
-import tempfile
 import weakref
 from abc import ABC, abstractmethod
 from collections.abc import AsyncIterator
@@ -9,11 +7,11 @@ from dataclasses import dataclass
 from io import BytesIO
 from pathlib import Path
 
+import aiofiles
 import anyio
 from starlette.datastructures import UploadFile
-from starlette.formparsers import MultiPartParser
 
-from . import run
+from . import json, run
 
 
 @dataclass
@@ -23,23 +21,39 @@ class FileUpload(ABC):
 
     @abstractmethod
     async def read(self) -> bytes:
-        ...
+        """Read the file contents as bytes."""
 
     @abstractmethod
     async def text(self, encoding: str = 'utf-8') -> str:
-        ...
+        """Read the file contents as text.
+
+        :param encoding: the encoding to use for the text (default: "utf-8")
+        """
+
+    async def json(self, encoding: str = 'utf-8') -> dict:
+        """Read the file contents as JSON dictionary.
+
+        :param encoding: the encoding to use for the text (default: "utf-8")
+        """
+        return json.loads(await self.text(encoding))
 
     @abstractmethod
-    def iter_bytes(self, chunk_size: int = 1024 * 1024) -> AsyncIterator[bytes]:
-        ...
+    async def iterate(self, *, chunk_size: int = 1024 * 1024) -> AsyncIterator[bytes]:
+        """Iterate over the file contents as bytes.
+
+        :param chunk_size: the size of each chunk to read in bytes (default: 1 MB)
+        """
 
     @abstractmethod
-    async def save(self, path: str | Path) -> Path:
-        ...
+    async def save(self, path: str | Path) -> None:
+        """Save the file contents to a path.
+
+        :param path: the path to save the file contents to
+        """
 
     @abstractmethod
     def size(self) -> int:
-        ...
+        """Get the file size in bytes."""
 
 
 @dataclass
@@ -55,14 +69,14 @@ class SmallFileUpload(FileUpload):
     async def text(self, encoding: str = 'utf-8') -> str:
         return self._data.decode(encoding)
 
-    async def iter_bytes(self, chunk_size: int = 1024 * 1024) -> AsyncIterator[bytes]:
-        yield self._data
+    async def iterate(self, *, chunk_size: int = 1024 * 1024) -> AsyncIterator[bytes]:
+        for i in range(0, len(self._data), chunk_size):
+            yield self._data[i:i + chunk_size]
 
-    async def save(self, path: str | Path) -> Path:
+    async def save(self, path: str | Path) -> None:
         target = Path(path)
         target.parent.mkdir(parents=True, exist_ok=True)
-        await run.io_bound(lambda: target.write_bytes(self._data))
-        return target
+        await run.io_bound(target.write_bytes, self._data)
 
 
 @dataclass
@@ -70,7 +84,7 @@ class LargeFileUpload(FileUpload):
     _path: Path
 
     def __post_init__(self) -> None:
-        self._finalizer = weakref.finalize(self, _cleanup_path, str(self._path))
+        self._finalizer = weakref.finalize(self, _cleanup_path, self._path)
 
     def size(self) -> int:
         return self._path.stat().st_size
@@ -83,78 +97,53 @@ class LargeFileUpload(FileUpload):
         data = await self.read()
         return data.decode(encoding)
 
-    async def iter_bytes(self, chunk_size: int = 1024 * 1024) -> AsyncIterator[bytes]:
+    async def iterate(self, *, chunk_size: int = 1024 * 1024) -> AsyncIterator[bytes]:
         async with await anyio.open_file(self._path, 'rb') as f:
-            while True:
-                chunk = await f.read(chunk_size)
-                if not chunk:
-                    break
+            while (chunk := await f.read(chunk_size)):
                 yield chunk
 
-    async def save(self, path: str | Path) -> Path:
+    async def save(self, path: str | Path) -> None:
         target = Path(path)
         target.parent.mkdir(parents=True, exist_ok=True)
-        async with await anyio.open_file(target, 'wb') as f_out:
-            async for chunk in self.iter_bytes():
-                await f_out.write(chunk)
-        return target
+        async with await anyio.open_file(target, 'wb') as f:
+            async for chunk in self.iterate():
+                await f.write(chunk)
 
 
-def _cleanup_path(path: str) -> None:
-    try:
-        os.remove(path)
-    except FileNotFoundError:
-        pass
+def _cleanup_path(path: Path) -> None:
+    path.unlink(missing_ok=True)
 
 
-async def create_file_upload(upload: UploadFile, *, max_memory_bytes: int | None = None) -> FileUpload:
-    name = getattr(upload, 'filename', '') or ''
-    content_type = getattr(upload, 'content_type', '') or ''
+async def create_file_upload(upload: UploadFile, *,
+                             chunk_size: int = 1024 * 1024,
+                             memory_limit: int = 1024 * 1024) -> FileUpload:
+    """Create a file upload from a Starlette UploadFile.
 
-    file_obj = getattr(upload, 'file', None)
-    if file_obj is None:
-        data = b''
-        return SmallFileUpload(name=name, content_type=content_type, _data=data)
-
-    if max_memory_bytes is None:
-        max_memory_bytes = int(getattr(MultiPartParser, 'spool_max_size', 1024 * 1024))
-
+    :param upload: the Starlette UploadFile to create a file upload from
+    :param chunk_size: the size of each chunk to read in bytes (default: 1 MB)
+    :param memory_limit: the maximum number of bytes to keep in memory (default: 1 MB)
+    """
     buffer = BytesIO()
-    total = 0
-    used_temp = False
-    tmp_path: Path | None = None
-    writer: anyio.AsyncFile | None = None
-    chunk_size = 1024 * 1024
+    buffer_size = 0
+    temp_file: aiofiles.tempfile.NamedTemporaryFile | None = None
 
     try:
-        while True:
-            chunk = await upload.read(chunk_size)
-            if not chunk:
-                break
-            if not used_temp:
+        while (chunk := await upload.read(chunk_size)):
+            if not temp_file and buffer_size + len(chunk) > memory_limit:
+                temp_file = await aiofiles.tempfile.NamedTemporaryFile('wb', delete=False)
+                await temp_file.write(buffer.getvalue())
+                buffer = BytesIO()  # release memory
+            if not temp_file:
                 buffer.write(chunk)
-                total += len(chunk)
-                if total > max_memory_bytes:
-                    tmp = tempfile.NamedTemporaryFile(delete=False)
-                    tmp_path = Path(tmp.name)
-                    tmp.close()
-                    writer = await anyio.open_file(tmp_path, 'wb')
-                    await writer.write(buffer.getvalue())
-                    buffer = BytesIO()  # NOTE: release memory by assigning a new instance
-                    used_temp = True
+                buffer_size += len(chunk)
             else:
-                assert writer is not None
-                await writer.write(chunk)
+                await temp_file.write(chunk)
     finally:
-        try:
-            await upload.close()
-        except Exception:
-            pass
-        if writer is not None:
-            await writer.aclose()
+        await upload.close()
+        if temp_file:
+            await temp_file.close()
 
-    if used_temp and tmp_path is not None:
-        return LargeFileUpload(name=name, content_type=content_type, _path=tmp_path)
+    if temp_file:
+        return LargeFileUpload(upload.filename or '', upload.content_type or '', Path(temp_file.name))
     else:
-        data = buffer.getvalue()
-        return SmallFileUpload(name=name, content_type=content_type, _data=data)
+        return SmallFileUpload(upload.filename or '', upload.content_type or '', buffer.getvalue())
