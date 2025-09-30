@@ -1,3 +1,4 @@
+html-sanitizer
 langchain>=0.2
 langchain-community
 langchain_openai

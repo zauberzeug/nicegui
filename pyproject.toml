@@ -74,6 +74,7 @@ pylint = ">=3.3.1"
 cssbeautifier = "^1.15.4"
 rcssmin = "^1.2.1"
 tinycss2 = "^1.4.0"
+html-sanitizer = "^2.6.0"
 
 [tool.poetry.scripts]
 nicegui-pack = "nicegui.scripts.pack:main"

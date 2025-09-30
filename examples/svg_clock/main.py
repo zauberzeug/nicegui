@@ -43,7 +43,7 @@ def build_svg() -> str:
     '''
 
 
-clock = ui.html().classes('self-center')
+clock = ui.html(sanitize=False).classes('self-center')
 ui.timer(1, lambda: clock.set_content(build_svg()))
 
 ui.run()
