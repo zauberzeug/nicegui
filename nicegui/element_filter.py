@@ -131,7 +131,7 @@ class ElementFilter(Generic[T]):
                 if isinstance(element, Tree):
                     LABEL_KEY = element.props.get('label-key')
                     element_contents.extend(node[LABEL_KEY] for node in element.nodes(visible=True))
-                if isinstance(element, Icon) or isinstance(element, ChatMessage):
+                if isinstance(element, (Icon, ChatMessage)):
                     element_contents.append(element.props.get('name'))
                 if any(all(needle not in str(haystack) for haystack in element_contents) for needle in self._contents):
                     continue
