@@ -74,12 +74,20 @@ async def test_run_cpu_bound_function_which_raises_problematic_exception(user: U
     await user.open('/')
 
 
+def bad_function() -> None:
+    os._exit(1)  # pylint: disable=protected-access
+
+
+def good_function() -> bool:
+    return True
+
+
 async def test_run_cpu_bound_survive_bad_function(user: User):
     @ui.page('/')
     async def index():
         with pytest.raises(BrokenProcessPool):
-            await run.cpu_bound(lambda: os._exit(1))  # bad function kills the process pool
-        assert isinstance(await run.cpu_bound(time.time), float)  # good function returns without error
+            await run.cpu_bound(bad_function)
+        assert await run.cpu_bound(good_function)
         ui.label('excellent')
 
     await user.open('/')
