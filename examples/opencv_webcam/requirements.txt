@@ -1,2 +1,2 @@
-nicegui
+nicegui>=3.0
 opencv-python>=4.0

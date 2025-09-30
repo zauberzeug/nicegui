@@ -1,4 +1,4 @@
 langchain>=0.2
 langchain-community
 langchain_openai
-nicegui
+nicegui>=3.0

@@ -1,1 +1,2 @@
+nicegui>=3.0
 tortoise-orm
