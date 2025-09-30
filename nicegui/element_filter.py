@@ -6,7 +6,9 @@ from typing_extensions import Self
 
 from .context import context
 from .element import Element
+from .elements.chat_message import ChatMessage
 from .elements.choice_element import ChoiceElement
+from .elements.icon import Icon
 from .elements.mixins.content_element import ContentElement
 from .elements.mixins.source_element import SourceElement
 from .elements.mixins.text_element import TextElement
@@ -108,7 +110,6 @@ class ElementFilter(Generic[T]):
                 element_contents = [content for content in (
                     element.props.get('text'),
                     element.props.get('label'),
-                    element.props.get('name'),
                     element.props.get('icon'),
                     element.props.get('placeholder'),
                     element.props.get('value'),
@@ -130,6 +131,8 @@ class ElementFilter(Generic[T]):
                 if isinstance(element, Tree):
                     LABEL_KEY = element.props.get('label-key')
                     element_contents.extend(node[LABEL_KEY] for node in element.nodes(visible=True))
+                if isinstance(element, Icon) or isinstance(element, ChatMessage):
+                    element_contents.append(element.props.get('name'))
                 if any(all(needle not in str(haystack) for haystack in element_contents) for needle in self._contents):
                     continue
                 if any(needle in str(haystack) for haystack in element_contents for needle in self._exclude_content):
