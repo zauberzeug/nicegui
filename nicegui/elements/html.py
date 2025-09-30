@@ -16,9 +16,9 @@ class Html(ContentElement):
         to add it into the body.
 
         Note that since NiceGUI 3.0, you need to specify how to ``sanitize`` the HTML content.
-        Especially if you are using user input, you should sanitize the content and prevent XSS attacks.
+        Especially if you are displaying user input, you should sanitize the content to prevent XSS attacks.
         We recommend ``Sanitizer().sanitize`` which requires the html-sanitizer package to be installed.
-        If you are not using user input, you can pass ``False`` to disable sanitization.
+        If you are not displaying user input, you can pass ``False`` to disable sanitization.
 
         :param content: the HTML code to be displayed
         :param sanitize: a sanitize function to be applied to the content or ``False`` to deactivate sanitization (*added in version 3.0.0*)
