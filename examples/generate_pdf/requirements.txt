@@ -1,2 +1,2 @@
-nicegui
+nicegui>=3.0
 pycairo
