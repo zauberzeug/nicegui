@@ -139,6 +139,7 @@
     "version": "2.35.0"
   },
   "three": {
+    "version": "0.168.0",
     "destination": "nicegui/elements/lib",
     "keep": [
       "package/build/three\\.module\\.js",
@@ -146,6 +147,8 @@
       "package/examples/jsm/renderers/CSS3DRenderer(\\.min)?\\.js",
       "package/examples/jsm/controls/OrbitControls(\\.min)?\\.js",
       "package/examples/jsm/controls/DragControls(\\.min)?\\.js",
+      "package/examples/jsm/controls/TrackballControls(\\.min)?\\.js",
+      "package/examples/jsm/controls/MapControls(\\.min)?\\.js",
       "package/examples/jsm/loaders/STLLoader(\\.min)?\\.js",
       "package/examples/jsm/loaders/GLTFLoader(\\.min)?\\.js",
       "package/examples/jsm/libs/tween\\.module(\\.min)?\\.js",

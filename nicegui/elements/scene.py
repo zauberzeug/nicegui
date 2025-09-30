@@ -42,13 +42,7 @@ class Scene(Element,
             component='scene.js',
             dependencies=[
                 'lib/three/three.module.js',
-                'lib/three/modules/BufferGeometryUtils.js',
-                'lib/three/modules/CSS2DRenderer.js',
-                'lib/three/modules/CSS3DRenderer.js',
-                'lib/three/modules/DragControls.js',
-                'lib/three/modules/GLTFLoader.js',
-                'lib/three/modules/OrbitControls.js',
-                'lib/three/modules/STLLoader.js',
+                'lib/three/modules/*.js',
                 'lib/tween/tween.umd.js',
             ],
             default_classes='nicegui-scene'):
@@ -82,6 +76,7 @@ class Scene(Element,
                  on_drag_end: Optional[Handler[SceneDragEventArguments]] = None,
                  drag_constraints: str = '',
                  background_color: str = '#eee',
+                 control_type: Literal['orbit', 'trackball', 'map'] = 'orbit',
                  ) -> None:
         """3D Scene
 
@@ -100,6 +95,7 @@ class Scene(Element,
         :param on_drag_end: callback to execute when a 3D object is dropped
         :param drag_constraints: comma-separated JavaScript expression for constraining positions of dragged objects (e.g. ``'x = 0, z = y / 2'``)
         :param background_color: background color of the scene (default: "#eee")
+        :param control_type: type of controls to use for navigating the scene, one of 'orbit', 'trackball', 'map' (default: 'orbit')
         """
         super().__init__()
         self._props['width'] = width
@@ -120,6 +116,7 @@ class Scene(Element,
         self.on('dragstart', self._handle_drag)
         self.on('dragend', self._handle_drag)
         self._props['drag_constraints'] = drag_constraints
+        self._props['control_type'] = control_type
 
     def on_click(self, callback: Handler[SceneClickEventArguments]) -> Self:
         """Add a callback to be invoked when a 3D object is clicked."""
