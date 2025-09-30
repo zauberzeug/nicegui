@@ -78,7 +78,7 @@ async def test_run_cpu_bound_survive_bad_function(user: User):
     @ui.page('/')
     async def index():
         with pytest.raises(BrokenProcessPool):
-            await run.cpu_bound(os.abort)  # bad function kills the process pool
+            await run.cpu_bound(os._exit)  # bad function kills the process pool
         assert isinstance(await run.cpu_bound(time.time), float)  # good function returns without error
         ui.label('excellent')
 
