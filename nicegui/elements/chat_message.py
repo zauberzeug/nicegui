@@ -40,9 +40,6 @@ class ChatMessage(LabelElement):
         """
         super().__init__(tag='q-chat-message', label=label)
 
-        if text_html and sanitize is None:
-            raise ValueError('You must specify a sanitize function or sanitize=False when using text_html=True')
-
         if text is None:
             text = []
         if isinstance(text, str):
@@ -50,6 +47,10 @@ class ChatMessage(LabelElement):
         if not text_html:
             text = [html.escape(part) for part in text]
             text = [part.replace('\n', '<br />') for part in text]
+            sanitize = False
+
+        if sanitize is None:
+            raise ValueError('You must specify a sanitize function or sanitize=False when using text_html=True')
 
         if name is not None:
             self._props['name'] = name
