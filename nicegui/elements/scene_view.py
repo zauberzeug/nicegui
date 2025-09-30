@@ -29,6 +29,8 @@ class SceneView(Element,
                  height: int = 300,
                  camera: Optional[SceneCamera] = None,
                  on_click: Optional[Handler[ClickEventArguments]] = None,
+                 fps: int = 20,
+                 show_stats: bool = False
                  ) -> None:
         """Scene View
 
@@ -43,6 +45,8 @@ class SceneView(Element,
         :param height: height of the canvas
         :param camera: camera definition, either instance of ``ui.scene.perspective_camera`` (default) or ``ui.scene.orthographic_camera``
         :param on_click: callback to execute when a 3D object is clicked
+        :param fps: target frame rate for the scene in frames per second (default: 20)
+        :param show_stats: whether to show the frame rate, frame times and memory usage in the top left corner of the scene (default: False)
         """
         super().__init__()
         self._props['width'] = width
@@ -54,6 +58,8 @@ class SceneView(Element,
         self._click_handlers = [on_click] if on_click else []
         self.on('init', self._handle_init)
         self.on('click3d', self._handle_click)
+        self._props['fps'] = fps
+        self._props['show_stats'] = show_stats
 
     def on_click(self, callback: Handler[ClickEventArguments]) -> Self:
         """Add a callback to be invoked when a 3D object is clicked."""
