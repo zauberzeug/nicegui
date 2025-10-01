@@ -1,6 +1,7 @@
+import platform
 from typing import Optional
 
-import numpy as np
+import pytest
 
 from nicegui import ui
 from nicegui.testing import Screen
@@ -33,7 +34,9 @@ def test_object_creation_via_context(screen: Screen):
     assert screen.selenium.execute_script(f'return getElement({scene_view.id}).scene == getElement({scene.id}).scene')
 
 
+@pytest.mark.skipif(platform.python_implementation() == 'PyPy', reason='PyPy no numpy')
 def test_camera_move(screen: Screen):
+    import numpy as np
     with ui.scene() as scene:
         scene.box()
 
