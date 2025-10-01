@@ -43,7 +43,7 @@ def test_mermaid_with_line_breaks(screen: Screen):
 
     screen.open('/')
     screen.should_contain('<<Requirement>>')
-    screen.should_contain('id: 1')
+    screen.should_contain('ID: 1')
     screen.should_contain('Text: some test text')
     screen.should_contain('Risk: High')
     screen.should_contain('Verification: Test')

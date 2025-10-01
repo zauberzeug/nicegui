@@ -20,6 +20,9 @@ class Mermaid(ContentElement, component='mermaid.js', esm={'nicegui-mermaid': 'd
 
         Refer to the Mermaid documentation for the ``mermaid.initialize()`` method for a full list of options.
 
+        **Note:** When using click handlers with ``securityLevel: 'loose'``,
+        make sure to use unique node IDs across diagrams to avoid click events being bound to the wrong elements.
+
         :param content: the Mermaid content to be displayed
         :param config: configuration dictionary to be passed to ``mermaid.initialize()``
         """
