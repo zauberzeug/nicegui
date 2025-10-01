@@ -182,7 +182,7 @@ def overwrite_tailwind_style_demo():
             }
         </style>
     ''')
-    ui.html('<h2>Hello world!</h2>')
+    ui.html('<h2>Hello world!</h2>', sanitize=False)
 
 
 doc.intro(dark_mode_documentation)
@@ -213,7 +213,7 @@ def other_vue_ui_frameworks_demo():
     # '''
 
     with ui.element('el-button').on('click', lambda: ui.notify('Hi!')):
-        ui.html('Element Plus button')
+        ui.html('Element Plus button', sanitize=False)
 
     ui.button('Quasar button', on_click=lambda: ui.notify('Ho!'))
 

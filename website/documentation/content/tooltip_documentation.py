@@ -25,7 +25,7 @@ def tooltip_method_demo():
 def tooltip_html_demo():
     with ui.label('HTML...'):
         with ui.tooltip():
-            ui.html('<b>b</b>, <em>em</em>, <u>u</u>, <s>s</s>')
+            ui.html('<b>b</b>, <em>em</em>, <u>u</u>, <s>s</s>', sanitize=False)
 
 
 @doc.demo('Tooltip with other content', '''
@@ -43,7 +43,7 @@ def tooltip_with_other_content():
 ''')
 def tooltip_on_html_and_markdown():
     with ui.element().tooltip('...with a tooltip!'):
-        ui.html('This is <u>HTML</u>...')
+        ui.html('This is <u>HTML</u>...', sanitize=False)
 
 
 @doc.demo('Tooltip for the upload element', '''

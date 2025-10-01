@@ -220,7 +220,7 @@ def test_delegated_event_with_argument_filtering(screen: Screen) -> None:
             <p data-id="A">Item A</p>
             <p data-id="B">Item B</p>
             <p data-id="C">Item C</p>
-        ''').on('click', lambda e: ids.append(e.args), js_handler='(e) => emit(e.target.dataset.id)')
+        ''', sanitize=False).on('click', lambda e: ids.append(e.args), js_handler='(e) => emit(e.target.dataset.id)')
 
     screen.open('/')
     screen.click('Item A')

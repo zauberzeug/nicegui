@@ -31,7 +31,7 @@ def text_element() -> None:
         ui.icon('home')
         ui.label('label A')
         ui.label('label B')
-        ui.html('HTML')
+        ui.html('HTML', sanitize=False)
 
     # ui.label(', '.join(b.text for b in ElementFilter(kind=TextElement)))
     # END OF DEMO
