@@ -1169,3 +1169,46 @@ def test_clearing_sub_pages_element(screen: Screen):
     screen.click('Delete')
     screen.wait(0.5)
     screen.should_not_contain('main page')
+
+
+def test_refresh_sub_page(screen: Screen):
+    calls = {'index': 0, 'outer': 0, 'inner_main': 0, 'inner_other': 0}
+
+    @ui.page('/')
+    @ui.page('/{_:path}')
+    def index():
+        calls['index'] += 1
+        sub_pages = ui.sub_pages({'/': outer_page})
+        ui.button('Refresh via Router', on_click=ui.context.client.sub_pages_router.refresh)
+        ui.button('Refresh via SubPages', on_click=sub_pages.refresh)
+
+    def outer_page():
+        calls['outer'] += 1
+        ui.sub_pages({'/': inner_main, '/other': inner_other})
+        ui.link('Go to other', '/other')
+
+    def inner_main(args: PageArguments):
+        calls['inner_main'] += 1
+        ui.button('Refresh inner', on_click=args.frame.refresh)
+
+    def inner_other(args: PageArguments):
+        calls['inner_other'] += 1
+        ui.button('Refresh inner', on_click=args.frame.refresh)
+
+    screen.open('/')
+    assert calls == {'index': 1, 'outer': 1, 'inner_main': 1, 'inner_other': 0}
+
+    screen.click('Refresh inner')
+    assert calls == {'index': 1, 'outer': 1, 'inner_main': 2, 'inner_other': 0}
+
+    screen.click('Go to other')
+    assert calls == {'index': 1, 'outer': 1, 'inner_main': 2, 'inner_other': 1}
+
+    screen.click('Refresh inner')
+    assert calls == {'index': 1, 'outer': 1, 'inner_main': 2, 'inner_other': 2}
+
+    screen.click('Refresh via Router')
+    assert calls == {'index': 1, 'outer': 2, 'inner_main': 2, 'inner_other': 3}
+
+    screen.click('Refresh via SubPages')
+    assert calls == {'index': 1, 'outer': 3, 'inner_main': 2, 'inner_other': 4}

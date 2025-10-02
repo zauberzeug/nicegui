@@ -67,6 +67,14 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
         self._show()
         return self
 
+    def refresh(self) -> None:
+        """Rebuild this sub pages element.
+
+        *Added in version 3.XX.X*
+        """
+        self._reset_match()
+        self._show()
+
     def _show(self) -> None:
         """Display the page matching the current URL path."""
         self._rendered_path = ''
