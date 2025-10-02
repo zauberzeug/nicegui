@@ -218,7 +218,7 @@ def aggrid_with_dynamic_row_height():
 def aggrid_run_row_method():
     grid = ui.aggrid({
         'columnDefs': [
-            {'field': 'name', 'checkboxSelection': True},
+            {'field': 'name'},
             {'field': 'age'},
         ],
         'rowData': [
