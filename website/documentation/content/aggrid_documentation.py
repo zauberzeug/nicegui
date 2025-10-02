@@ -6,7 +6,6 @@ from . import doc
 @doc.demo(ui.aggrid)
 def main_demo() -> None:
     grid = ui.aggrid({
-        'defaultColDef': {'flex': 1},
         'columnDefs': [
             {'headerName': 'Name', 'field': 'name'},
             {'headerName': 'Age', 'field': 'age'},
