@@ -661,3 +661,99 @@ async def test_tree_with_labels(user: User) -> None:
     await user.should_not_see('A1')
     await user.should_not_see('A21')
     await user.should_not_see('A22')
+
+
+async def test_switching_between_sub_pages(user: User) -> None:
+    calls = {'index': 0, 'a': 0, 'b': 0}
+
+    @ui.page('/')
+    @ui.page('/b')
+    def index():
+        calls['index'] += 1
+        ui.label('Index')
+        ui.button('back', on_click=ui.navigate.back)
+        ui.button('forward', on_click=ui.navigate.forward)
+        ui.sub_pages({
+            '/': sub_page_a,
+            '/b': sub_page_b,
+        })
+
+    def sub_page_a():
+        calls['a'] += 1
+        ui.label('Page A')
+        ui.link('Go to B', '/b')
+        ui.link('Go to B with slash', '/b/')
+
+    def sub_page_b():
+        calls['b'] += 1
+        ui.label('Page B')
+        ui.link('Go to A', '/')
+        ui.link('Go to B with slash', '/b/')
+
+    await user.open('/')
+    await user.should_see('Index')
+    await user.should_see('Page A')
+    await user.should_not_see('Page B')
+    assert calls == {'index': 1, 'a': 1, 'b': 0}
+
+    user.find('Go to B').click()
+    await user.should_see('Index')
+    await user.should_see('Page B')
+    await user.should_not_see('Page A')
+    assert calls == {'index': 1, 'a': 1, 'b': 1}
+
+    user.find('back').click()
+    await user.should_see('Index')
+    await user.should_see('Page A')
+    await user.should_not_see('Page B')
+    assert calls == {'index': 1, 'a': 2, 'b': 1}
+
+    user.find('forward').click()
+    await user.should_see('Index')
+    await user.should_see('Page B')
+    await user.should_not_see('Page A')
+    assert calls == {'index': 1, 'a': 2, 'b': 2}
+
+    user.find('Go to A').click()
+    await user.should_see('Page A')
+    assert calls == {'index': 1, 'a': 3, 'b': 2}
+    user.find('Go to B with slash').click()
+    await user.should_see('Page B')
+    assert calls == {'index': 1, 'a': 3, 'b': 3}
+
+    user.find('Go to B with slash').click()
+    await user.should_see('Page B')
+    assert calls == {'index': 1, 'a': 3, 'b': 3}, 'no rebuilding if path stays the same'
+
+
+async def test_sub_pages_with_fragments(user: User) -> None:
+    calls = {'index': 0, 'page': 0}
+
+    @ui.page('/')
+    @ui.page('/{_:path}')
+    def index():
+        calls['index'] += 1
+        ui.sub_pages({
+            '/': main_page,
+            '/page': content_page,
+        })
+
+    def main_page():
+        ui.label('Main')
+
+    def content_page():
+        calls['page'] += 1
+        ui.link_target('top')
+        ui.label('Top content')
+        ui.link('Go to bottom', '/page#bottom')
+        ui.link_target('bottom')
+        ui.label('Bottom content')
+        ui.link('Go to top', '/page#top')
+
+    await user.open('/page#bottom')
+    await user.should_see('Bottom content')
+    assert calls == {'index': 1, 'page': 1}
+
+    user.find('Go to top').click()
+    await user.should_see('Top content')
+    assert calls == {'index': 1, 'page': 1}, 'same-page fragment navigation should not rebuild'

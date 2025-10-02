@@ -8,6 +8,7 @@ from nicegui import background_tasks, events, ui
 from nicegui.element import Element
 from nicegui.elements.mixins.disableable_element import DisableableElement
 from nicegui.elements.mixins.value_element import ValueElement
+from nicegui.elements.sub_pages import SubPages
 
 if TYPE_CHECKING:
     from .user import User
@@ -72,6 +73,21 @@ class UserInteraction(Generic[T]):
             for element in self.elements:
                 if isinstance(element, ui.link):
                     href = element.props.get('href', '#')
+                    target = element.props.get('target', '_self')
+                    if target == '_blank':
+                        background_tasks.create(self.user.open(href), name=f'open {href}')
+                        return self
+                    if href.startswith('/'):
+                        sub_pages_elements = [el for el in self.user.client.layout.descendants()
+                                              if isinstance(el, SubPages)]
+                        if sub_pages_elements:
+                            async def navigate_with_history(path: str = href):
+                                with self.user.client:
+                                    await self.user.client.sub_pages_router._handle_navigate(path)  # pylint: disable=protected-access
+                                    self.user.back_history.append(path)
+                                    self.user.forward_history.clear()
+                            background_tasks.create(navigate_with_history(), name=f'navigate to {href}')
+                            return self
                     background_tasks.create(self.user.open(href), name=f'open {href}')
                     return self
 
