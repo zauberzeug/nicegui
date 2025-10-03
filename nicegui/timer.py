@@ -41,7 +41,7 @@ class Timer:
         self._current_invocation: Optional[asyncio.Task] = None
 
         coroutine = self._run_once if once else self._run_in_loop
-        if core.script_mode:
+        if core.script_mode and not core.app.is_started:
             return
         if core.app.is_started:
             background_tasks.create(coroutine(), name=str(callback))

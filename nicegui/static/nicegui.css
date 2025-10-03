@@ -54,6 +54,9 @@
   padding: 8px 0 0 0;
   gap: 8px;
 }
+.nicegui-step .q-stepper__step-inner {
+  padding: 0 24px 32px 60px;
+}
 .nicegui-timeline-entry .q-timeline__content {
   padding: 0 0 24px 0;
 }

@@ -6,7 +6,6 @@ from . import doc
 @doc.demo(ui.aggrid)
 def main_demo() -> None:
     grid = ui.aggrid({
-        'defaultColDef': {'flex': 1},
         'columnDefs': [
             {'headerName': 'Name', 'field': 'name'},
             {'headerName': 'Age', 'field': 'age'},
@@ -219,7 +218,7 @@ def aggrid_with_dynamic_row_height():
 def aggrid_run_row_method():
     grid = ui.aggrid({
         'columnDefs': [
-            {'field': 'name', 'checkboxSelection': True},
+            {'field': 'name'},
             {'field': 'age'},
         ],
         'rowData': [
