@@ -2,7 +2,8 @@
 
 > **For**: AI assistants (Cursor, GitHub Copilot, etc.) working on NiceGUI codebase
 > **Standards**: All coding standards are in [CONTRIBUTING.md](CONTRIBUTING.md) – follow those rules
-> **Review**: For PR reviews, see [.github/copilot-instructions.md](.github/copilot-instructions.md) > **Purpose**: Provide context and patterns specific to NiceGUI architecture
+> **Review**: For PR reviews, see [.github/copilot-instructions.md](.github/copilot-instructions.md)
+> **Purpose**: Provide context and patterns specific to NiceGUI architecture
 
 ## Project Context
 
