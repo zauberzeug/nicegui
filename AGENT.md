@@ -2,7 +2,7 @@
 
 > **For**: AI assistants (Cursor, GitHub Copilot, etc.) working on NiceGUI codebase
 > **Standards**: All coding standards are in [CONTRIBUTING.md](CONTRIBUTING.md) – follow those rules
-> **Purpose**: Provide context and patterns specific to NiceGUI architecture
+> **Review**: For PR reviews, see [.github/copilot-instructions.md](.github/copilot-instructions.md) > **Purpose**: Provide context and patterns specific to NiceGUI architecture
 
 ## Project Context
 
@@ -26,7 +26,7 @@ Key architectural decisions:
 ### Code Organization
 
 - **High-level code first**: Put interesting logic at the top of files
-- **Helpers below usage**: Functions called from high-level code should be below their usage
+- **Helpers below usage**: Functions called from high-level code should be close to, but below, their usage
 
 ## Critical Architecture Patterns
 

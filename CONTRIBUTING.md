@@ -27,18 +27,12 @@ See [AGENT.md](AGENT.md) for guidelines specifically for AI assistants that comp
 We provide review instructions for PR reviews in [.github/copilot-instructions.md](.github/copilot-instructions.md).
 You should review your changes with an AI assistant before committing/pushing:
 
-**In Cursor:**
+In Cursor or VS Code with GitHub Copilot Chat:
 
-Use Agent Mode with claude-4.5-sonnet and ƒwrite:
-`Review my current branch according to @.github/copilot-instructions.md`
-
-**In VS Code with GitHub Copilot:**
-
-- Install the **GitHub Copilot Chat** extension
-- Open Copilot Chat (`Ctrl+Shift+I` / `Cmd+Shift+I`) and ask: `@workspace review my changes`
+Select Agent Mode with claude-4.5-sonnet and write: `Review my current branch according to @.github/copilot-instructions.md`
 
 Ensure to address any valid feedback.
-That will make your life and that of the maintainers easier.
+That will make your life and that of the maintainers much easier.
 
 ## Setup
 

@@ -25,11 +25,10 @@ This file defines review-specific automation rules only.
 3. **Public API stability**: for example breaking changes in `nicegui.*` without explicit deprecation path. New params must be backward compatible with sensible defaults.
 4. **Performance regressions on hot paths**: O(n²) additions, synchronous I/O, unnecessary per-request heavyweight objects etc.
 5. **Docs/Examples mismatch**: code diverges from documented behavior, examples stop working, ...
-6. **Tests & CI**: missing/failed tests for bug fixes or new features; ignoring configured linters/type checks (see CONTRIBUTING.md for test requirements).
+6. **Tests & CI**: missing or incomplete tests; ignoring configured linters/type checks (see CONTRIBUTING.md for test requirements).
 7. **PR description quality**: missing/vague problem statement, motivation per PR template requirements etc.
 8. **Formatting & placement**: unformatted files (violates CONTRIBUTING.md pre-commit requirements), surprising file placement without rationale etc.
 9. **Explanation of the change**: missing/vague explanation of motivations behind the change, why it is needed, what is the impact, ...
-10. **Testing**: missing/incomplete testing; ignoring configured linters/type checks (see CONTRIBUTING.md for test requirements).
 
 ### MAJOR (should be fixed before merge)
 
