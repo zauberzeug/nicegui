@@ -31,6 +31,12 @@ In Cursor or VS Code with GitHub Copilot Chat:
 
 Select Agent Mode with claude-4.5-sonnet and write: `Review my current branch according to @.github/copilot-instructions.md`
 
+> [!TIP]
+> In Cursor, you can use these custom commands for easy access:
+>
+> - `/review-uncommitted` - Review your local uncommitted changes
+> - `/review-changes` - Review your current branch vs main
+
 Ensure to address any valid feedback.
 That will make your life and that of the maintainers much easier.
 
