@@ -134,7 +134,7 @@ on a second line and leave the other arguments as they are.
 - Be careful to only make changes that are requested or are well understood and related to the change being requested
 - When fixing an issue or bug, do not introduce a new pattern or technology without first exhausting all options for the existing implementation. And if you finally do this, make sure to remove the old implementation afterwards so we don't have duplicate logic
 - Keep the codebase very clean and organized
-- Write tests for new features: use Screen fixture only when browser is involved (javascript etc.), otherwise use User fixture is much faster and simpler to use (test runs in same async context as NiceGUI)
+- Create tests for new features and bugfixes: use Screen fixture only when browser is involved (javascript etc.), otherwise the `User` fixture should be preferred as it is much faster and simpler to use (test runs in same async context as NiceGUI)
 - Run tests before submitting any changes
 - Format code using autopep8 before submitting changes
 - Use pre-commit hooks to ensure coding style compliance
