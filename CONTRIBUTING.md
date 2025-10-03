@@ -115,6 +115,8 @@ on a second line and leave the other arguments as they are.
 - Follow autopep8 formatting with 120 character line length
 - Each sentence in documentation should be on a new line
 - Use ruff for linting and code checks
+- Ensure proper use of async (no blocking operations)
+- Never use `asyncio.create_task`, because garbage collector might remove unfinished tasks. `background_tasks.create` takes better care of this.
 
 ### Workflow Guidelines
 

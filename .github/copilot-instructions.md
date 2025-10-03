@@ -74,10 +74,9 @@ This file defines review-specific automation rules only.
 Use GitHub's suggestion blocks (apply only if trivial and safe):
 
 ```diff
-- # anti-pattern example
-- loop.run_until_complete(expensive())
-+ # use non-blocking offload in async context
-+ await asyncio.to_thread(expensive)
+- data = Path('config.json').read_text()
++ async with aiofiles.open('config.json') as f:
++     data = await f.read()
 ```
 
 ## Copilot Behavior Controls
