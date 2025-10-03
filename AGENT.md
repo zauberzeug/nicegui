@@ -1,48 +1,27 @@
 # AI Agent Guidelines for NiceGUI
 
 > **For**: AI assistants (Cursor, GitHub Copilot, etc.) working on NiceGUI codebase
+> **About**: The project, examples and architecture is described in [README.md](README.md)
 > **Standards**: All coding standards are in [CONTRIBUTING.md](CONTRIBUTING.md) – follow those rules
 > **Review**: For PR reviews, see [.github/copilot-instructions.md](.github/copilot-instructions.md)
-> **Purpose**: Provide context and patterns specific to NiceGUI architecture
-
-## Project Context
-
-NiceGUI is a Python framework for building web UIs with a **backend-first philosophy**.
-Key architectural decisions:
-
-- **Backend-first**: All UI logic lives in Python; the framework handles web details
-- **Tech stack**: Python/FastAPI backend, Vue/Quasar frontend, socket.io for communication
-- **Single worker**: Uses one uvicorn worker (no multi-process synchronization needed)
-- **Real-time communication**: WebSocket connection established after initial page load, kept open for client-server communication
-- **User interactions**: All UI events are sent to backend and invoke Python functions
-
-## AI-Specific Working Principles
-
-### Pair Programming Approach
-
-- **Discuss before implementing**: If approach is unclear, present options and trade-offs
-- **Step-by-step for large changes**: Get confirmation before drastic refactorings
-- **Think from first principles**: Question assumptions to find the true nature of problems
 
 ### Code Organization
 
 - **High-level code first**: Put interesting logic at the top of files
 - **Helpers below usage**: Functions called from high-level code should be close to, but below, their usage
 
-## Critical Architecture Patterns
-
 ### Async/Event Loop
 
 - **Never block the event loop**: All async handlers must stay non-blocking
-- Use `asyncio.to_thread()` or executors for CPU-bound operations
+- Use `run.cpu_bound`, `run.io_bound` or `background_tasks.create` depending on the type of operation
 - Clean up tasks on teardown
-- Handle WebSocket resource cleanup properly
+- Handle resource cleanup properly
 
 ### API Stability
 
 - `nicegui.*` is **public API** – breaking changes need deprecation paths
 - New parameters must have sensible defaults for backward compatibility
-- Validate user inputs at API boundaries
+- Validate user inputs at API boundaries for critical operations
 
 ## Common Patterns
 
@@ -88,4 +67,5 @@ Before claiming a task complete, verify:
 
 ---
 
-> This file complements [CONTRIBUTING.md](CONTRIBUTING.md). For style rules, formatting, and detailed contribution workflow, see CONTRIBUTING.md.
+> This file complements [CONTRIBUTING.md](CONTRIBUTING.md).
+> For style rules, formatting, and detailed contribution workflow, see CONTRIBUTING.md.

@@ -140,6 +140,9 @@ on a second line and leave the other arguments as they are.
 - Use pre-commit hooks to ensure coding style compliance
 - When adding new features, include corresponding tests
 - For documentation, ensure each sentence is on a new line
+- Discuss before implementing and if an approach is unclear, present options and trade-offs
+- Approach large changes Step-by-step and get confirmation before drastic refactorings
+- Think from first principles: Always question your assumptions to find the true nature of problems
 
 ### Linting
 
