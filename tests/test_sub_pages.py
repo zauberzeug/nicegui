@@ -547,7 +547,8 @@ def test_starting_on_non_root_path(screen: Screen, page_route: str):
     assert screen.current_path.rstrip('/') == '/foo/sub'
 
 
-def test_links_pointing_to_path_which_is_not_a_sub_page(screen: Screen):
+@pytest.mark.parametrize('show_404', [True, False])
+def test_links_pointing_to_path_which_is_not_a_sub_page(screen: Screen, show_404: bool):
     calls = {'index': 0, 'main': 0, 'sub': 0, 'other': 0}
 
     @ui.page('/')
@@ -558,7 +559,7 @@ def test_links_pointing_to_path_which_is_not_a_sub_page(screen: Screen):
         ui.link('Go to main', '/')
         ui.link('Go to sub', '/sub')
         ui.link('Go to other', '/other')
-        ui.sub_pages({'/': main, '/sub': sub})
+        ui.sub_pages({'/': main, '/sub': sub}, show_404=show_404)
 
     def main():
         calls['main'] += 1

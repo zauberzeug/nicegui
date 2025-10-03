@@ -62,8 +62,9 @@ class SubPagesRouter:
     async def _handle_navigate(self, path: str) -> None:
         # NOTE: keep a reference to the client because _handle_open clears the slots so that context.client does not work anymore
         client = context.client
+        await self._handle_open(path)
         if (
-            await self._handle_open(path) or  # path is handled by `ui.sub_pages`
+            not self._has_any_unresolved_path(client) or  # path is handled by `ui.sub_pages`
             not self._other_page_builder_matches_path(path, client)  # `ui.sub_pages` is still responsible
         ):
             client.run_javascript(f'''
@@ -103,17 +104,27 @@ class SubPagesRouter:
             await asyncio.sleep(0)
             # NOTE: refresh the list to include newly created nested sub pages in async sub page builders after the event loop tick
             sub_pages_elements = [el for el in client.layout.descendants() if isinstance(el, SubPages)]
-        has_404 = False
         for sub_pages in sub_pages_elements:
             if (
                 sub_pages._match is not None and  # pylint: disable=protected-access
-                sub_pages._404_enabled and  # pylint: disable=protected-access
                 sub_pages._match.remaining_path and  # pylint: disable=protected-access
                 not any(isinstance(el, SubPages) for el in sub_pages.descendants())
             ):
                 sub_pages._set_match(None)  # pylint: disable=protected-access
-                has_404 = True
-        return not has_404
+        return not any(
+            sub_pages.has_404
+            for sub_pages in client.layout.descendants()
+            if isinstance(sub_pages, SubPages) and sub_pages._404_enabled  # pylint: disable=protected-access
+        )
+
+    @staticmethod
+    def _has_any_unresolved_path(client: Client) -> bool:
+        """Check if any sub_pages has an unresolved path, regardless of show_404 setting."""
+        return any(
+            sub_pages.has_404  # pylint: disable=protected-access
+            for sub_pages in client.layout.descendants()
+            if isinstance(sub_pages, SubPages)
+        )
 
 
 def _normalize(p: str) -> str:
