@@ -7,42 +7,51 @@ This example is only for advanced use cases where you want to allow other, non-N
 import asyncio
 
 import websockets
-from websockets.server import WebSocketServerProtocol
+from websockets.server import ServerConnection
 
-from nicegui import app, ui
+from nicegui import Event, app, ui
 
-CONNECTIONS: set[WebSocketServerProtocol] = set()
+CONNECTIONS: set[ServerConnection] = set()
 
-ui.label('Websockets demo').classes('text-2xl')
-ui.label('Run this in the console to connect:')
-ui.code('python -m websockets ws://localhost:8765/').classes('pr-8 pt-1 h-12')
-with ui.row().classes('items-center'):
-    connections_label = ui.label('0')
-    ui.label('connections')
-    ui.button('send hello', on_click=lambda: websockets.broadcast(CONNECTIONS, 'Hello!')).props('flat')
-ui.separator().classes('mt-6')
-ui.label('incoming messages:')
-messages = ui.column().classes('ml-4')
+connections_updated = Event()
+message_received = Event()
 
 
-async def handle_connect(websocket: WebSocketServerProtocol):
-    """Register the new websocket connection, handle incoming messages and remove the connection when it is closed."""
-    try:
-        CONNECTIONS.add(websocket)
-        connections_label.text = len(CONNECTIONS)
-        async for data in websocket:
-            with messages:
-                ui.label(str(data))
-    finally:
-        CONNECTIONS.remove(websocket)
-        connections_label.text = len(CONNECTIONS)
+@ui.page('/')
+def page():
+    ui.markdown('''
+        # Websockets Example
+
+        Run this in the console to connect:
+        ```bash
+        python -m websockets ws://localhost:8765/
+        ```
+    ''')
+    count = ui.number(value=len(CONNECTIONS), suffix='connections').props('readonly').classes('w-32')
+    connections_updated.subscribe(lambda: count.set_value(len(CONNECTIONS)))
+
+    ui.label('Incoming messages:')
+    messages = ui.log()
+    message_received.subscribe(messages.push)
+
+    ui.button('Send hello', on_click=lambda: websockets.broadcast(CONNECTIONS, 'Hello!'))
 
 
+@app.on_startup
 async def start_websocket_server():
     async with websockets.serve(handle_connect, 'localhost', 8765):
         await asyncio.Future()
 
-# start the websocket server when NiceGUI server starts
-app.on_startup(start_websocket_server)
+
+async def handle_connect(websocket: ServerConnection):
+    """Register the new websocket connection, handle incoming messages and remove the connection when it is closed."""
+    try:
+        CONNECTIONS.add(websocket)
+        connections_updated.emit()
+        async for message in websocket:
+            message_received.emit(str(message))
+    finally:
+        CONNECTIONS.remove(websocket)
+        connections_updated.emit()
 
 ui.run()
