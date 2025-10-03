@@ -23,7 +23,6 @@ class colorful_label(ui.label):
         """Update the classes of the label when the background property changes."""
         self._classes = [c for c in self._classes if not c.startswith('bg-')]
         self._classes.append(bg_class)
-        self.update()
 
 
 temperatures = {'Berlin': 5, 'New York': 15, 'Tokio': 25}

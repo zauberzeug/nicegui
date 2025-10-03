@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import asyncio
-from typing import TYPE_CHECKING, Callable, List, Optional
+from typing import TYPE_CHECKING, Callable
 
 from fastapi import Request
 from starlette.routing import Match, Route
@@ -17,7 +17,7 @@ if TYPE_CHECKING:
 
 class SubPagesRouter:
 
-    def __init__(self, request: Optional[Request]) -> None:
+    def __init__(self, request: Request | None) -> None:
         on('sub_pages_open', lambda event: self._handle_open(event.args))
         on('sub_pages_navigate', lambda event: self._handle_navigate(event.args))
 
@@ -38,7 +38,7 @@ class SubPagesRouter:
             self.current_path = '/'
         self.is_initial_request = True
 
-        self._path_changed_handlers: List[Callable[[str], None]] = []
+        self._path_changed_handlers: list[Callable[[str], None]] = []
 
     def on_path_changed(self, handler: Callable[[str], None]) -> None:
         """Register a callback to be invoked when the path changes.
@@ -77,9 +77,6 @@ class SubPagesRouter:
 
     def _other_page_builder_matches_path(self, path: str, client: Client) -> bool:
         """Check if there is any other matching page builder than the one for this client."""
-        if client.request is None:
-            return True  # NOTE: we will remove this in NiceGUI 3.0 where we plan to drop support for auto-index pages
-
         client_route = client.request.scope['route']
         client_func = getattr(client_route.endpoint, '__func__', client_route.endpoint)
 

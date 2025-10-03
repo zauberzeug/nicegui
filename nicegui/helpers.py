@@ -12,7 +12,7 @@ import webbrowser
 from collections.abc import Callable
 from inspect import Parameter, signature
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Optional, Set, Tuple, Union
+from typing import TYPE_CHECKING, Any
 
 from .context import context
 from .logging import log
@@ -20,7 +20,7 @@ from .logging import log
 if TYPE_CHECKING:
     from .element import Element
 
-_shown_warnings: Set[str] = set()
+_shown_warnings: set[str] = set()
 
 
 def warn_once(message: str, *, stack_info: bool = False) -> None:
@@ -33,6 +33,11 @@ def warn_once(message: str, *, stack_info: bool = False) -> None:
 def is_pytest() -> bool:
     """Check if the code is running in pytest."""
     return 'PYTEST_CURRENT_TEST' in os.environ
+
+
+def is_user_simulation() -> bool:
+    """Check if the code is running in with user simulation (see https://nicegui.io/documentation/user)."""
+    return 'NICEGUI_USER_SIMULATION' in os.environ
 
 
 def is_coroutine_function(obj: Any) -> bool:
@@ -54,7 +59,7 @@ def expects_arguments(func: Callable) -> bool:
                for p in signature(func).parameters.values())
 
 
-def is_file(path: Optional[Union[str, Path]]) -> bool:
+def is_file(path: str | Path | None) -> bool:
     """Check if the path is a file that exists."""
     if not path:
         return False
@@ -66,7 +71,7 @@ def is_file(path: Optional[Union[str, Path]]) -> bool:
         return False
 
 
-def hash_file_path(path: Path, *, max_time: Optional[float] = None) -> str:
+def hash_file_path(path: Path, *, max_time: float | None = None) -> str:
     """Hash the given path based on its string representation and optionally the last modification time of given files."""
     hasher = hashlib.sha256(path.as_posix().encode())
     if max_time is not None:
@@ -89,7 +94,7 @@ def is_port_open(host: str, port: int) -> bool:
         sock.close()
 
 
-def schedule_browser(protocol: str, host: str, port: int) -> Tuple[threading.Thread, threading.Event]:
+def schedule_browser(protocol: str, host: str, port: int) -> tuple[threading.Thread, threading.Event]:
     """Wait non-blockingly for the port to be open, then start a webbrowser.
 
     This function launches a thread in order to be non-blocking.

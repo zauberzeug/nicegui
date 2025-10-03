@@ -10,7 +10,7 @@ if __name__ == '__main__':
     lines = path.read_text(encoding='utf-8').splitlines()
     for i, line in enumerate(lines):
         if line.startswith('version = '):
-            lines[i] = f'version = "{version}-dev"'
+            lines[i] = f'version = "{version}.dev0"'
             break
     path.write_text('\n'.join(lines) + '\n', encoding='utf-8')
 

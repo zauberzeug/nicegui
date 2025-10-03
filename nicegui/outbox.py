@@ -4,7 +4,7 @@ import asyncio
 import time
 import weakref
 from collections import deque
-from typing import TYPE_CHECKING, Any, Deque, Optional, Tuple, Union
+from typing import TYPE_CHECKING, Any
 
 from . import background_tasks, core
 
@@ -17,11 +17,11 @@ ElementId = int
 ClientId = str
 MessageType = str
 Payload = Any
-Message = Tuple[ClientId, MessageType, Payload]
+Message = tuple[ClientId, MessageType, Payload]
 
 MessageId = int
 MessageTime = float
-HistoryEntry = Tuple[MessageId, MessageTime, Message]
+HistoryEntry = tuple[MessageId, MessageTime, Message]
 
 
 class Deleted:
@@ -35,13 +35,13 @@ class Outbox:
 
     def __init__(self, client: Client) -> None:
         self._client = weakref.ref(client)
-        self.updates: weakref.WeakValueDictionary[ElementId, Union[Element, Deleted]] = weakref.WeakValueDictionary()
-        self.messages: Deque[Message] = deque()
-        self.message_history: Deque[HistoryEntry] = deque()
+        self.updates: weakref.WeakValueDictionary[ElementId, Element | Deleted] = weakref.WeakValueDictionary()
+        self.messages: deque[Message] = deque()
+        self.message_history: deque[HistoryEntry] = deque()
         self.next_message_id: int = 0
 
         self._should_stop = False
-        self._enqueue_event: Optional[asyncio.Event] = None
+        self._enqueue_event: asyncio.Event | None = None
 
         if core.app.is_started:
             background_tasks.create(self.loop(), name=f'outbox loop {client.id}')
@@ -133,7 +133,7 @@ class Outbox:
             await core.air.emit(message_type, data, room=client_id)
 
         client = self.client
-        if client and not client.shared:
+        if client:
             self.message_history.append((self.next_message_id, time.time(), message))
             max_age = core.sio.eio.ping_interval + core.sio.eio.ping_timeout + client.page.resolve_reconnect_timeout()
             while self.message_history and self.message_history[0][1] < time.time() - max_age:
@@ -159,9 +159,7 @@ class Outbox:
                 return
 
         # target message ID not found, reload the page
-        client = self.client
-        if not client.shared:
-            client.run_javascript('window.location.reload()')
+        self.client.run_javascript('window.location.reload()')
 
     def prune_history(self, next_message_id: MessageId) -> None:
         """Prune the message history up to the given message ID."""

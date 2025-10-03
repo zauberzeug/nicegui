@@ -25,7 +25,7 @@ def main_page() -> None:
                 data-client_id="{GOOGLE_CLIENT_ID}"
                 data-login_uri="http://localhost:8080/auth">
             </div>
-        ''')
+        ''', sanitize=False)
         ui.label('Sign in with Google One Tap')
         return
 

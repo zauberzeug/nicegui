@@ -1,6 +1,7 @@
 import uuid
+from collections.abc import Sequence
 from dataclasses import dataclass, field
-from typing import Any, Callable, Dict, Optional, Sequence
+from typing import Any, Callable, Optional
 
 from fastapi import Request
 
@@ -23,7 +24,7 @@ class EventListener:
     def __post_init__(self) -> None:
         self.id = str(uuid.uuid4())
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Return a dictionary representation of the event listener."""
         words = self.type.split('.')
         type_ = words.pop(0)

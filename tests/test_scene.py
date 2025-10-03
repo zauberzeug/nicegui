@@ -1,18 +1,22 @@
 import weakref
-from typing import List
 
 import numpy as np
 from selenium.common.exceptions import JavascriptException
 
 from nicegui import ui
-from nicegui.elements.scene_object3d import Object3D
+from nicegui.elements.scene import Object3D
 from nicegui.testing import Screen
 
 
 def test_moving_sphere_with_timer(screen: Screen):
-    with ui.scene() as scene:
-        sphere = scene.sphere().with_name('sphere')
-        ui.timer(0.1, lambda: sphere.move(0, 0, sphere.z + 0.01))
+    scene = None
+
+    @ui.page('/')
+    def page():
+        nonlocal scene
+        with ui.scene() as scene:
+            sphere = scene.sphere().with_name('sphere')
+            ui.timer(0.1, lambda: sphere.move(0, 0, sphere.z + 0.01))
 
     screen.open('/')
 
@@ -33,9 +37,14 @@ def test_moving_sphere_with_timer(screen: Screen):
 
 
 def test_no_object_duplication_on_index_client(screen: Screen):
-    with ui.scene() as scene:
-        sphere = scene.sphere().move(0, -4, 0)
-        ui.timer(0.1, lambda: sphere.move(0, sphere.y + 0.5, 0))
+    scene = None
+
+    @ui.page('/')
+    def page():
+        nonlocal scene
+        with ui.scene() as scene:
+            sphere = scene.sphere().move(0, -4, 0)
+            ui.timer(0.1, lambda: sphere.move(0, sphere.y + 0.5, 0))
 
     screen.open('/')
     screen.wait(0.4)
@@ -47,7 +56,7 @@ def test_no_object_duplication_on_index_client(screen: Screen):
 
 
 def test_no_object_duplication_with_page_builder(screen: Screen):
-    scene_html_ids: List[int] = []
+    scene_html_ids: list[int] = []
 
     @ui.page('/')
     def page():
@@ -69,10 +78,15 @@ def test_no_object_duplication_with_page_builder(screen: Screen):
 
 
 def test_deleting_group(screen: Screen):
-    with ui.scene() as scene:
-        with scene.group() as group:
-            scene.sphere()
-    ui.button('Delete group', on_click=group.delete)
+    scene = None
+
+    @ui.page('/')
+    def page():
+        nonlocal scene
+        with ui.scene() as scene:
+            with scene.group() as group:
+                scene.sphere()
+        ui.button('Delete group', on_click=group.delete)
 
     screen.open('/')
     screen.wait(0.5)
@@ -83,28 +97,36 @@ def test_deleting_group(screen: Screen):
 
 
 def test_replace_scene(screen: Screen):
-    with ui.row() as container:
-        with ui.scene() as scene:
-            scene.sphere().with_name('sphere')
+    scene = None
 
-    def replace():
-        container.clear()
-        with container:
-            nonlocal scene
+    @ui.page('/')
+    def page():
+        nonlocal scene
+        with ui.row() as container:
             with ui.scene() as scene:
-                scene.box().with_name('box')
-    ui.button('Replace scene', on_click=replace)
+                scene.sphere().with_name('sphere')
+
+        def replace():
+            container.clear()
+            with container:
+                nonlocal scene
+                with ui.scene() as scene:
+                    scene.box().with_name('box')
+        ui.button('Replace scene', on_click=replace)
 
     screen.open('/')
     screen.wait(0.5)
     assert screen.selenium.execute_script(f'return scene_{scene.html_id}.children[4].name') == 'sphere'
+
     screen.click('Replace scene')
     screen.wait(0.5)
     assert screen.selenium.execute_script(f'return scene_{scene.html_id}.children[4].name') == 'box'
 
 
 def test_create_dynamically(screen: Screen):
-    ui.button('Create', on_click=ui.scene)
+    @ui.page('/')
+    def page():
+        ui.button('Create', on_click=ui.scene)
 
     screen.open('/')
     screen.click('Create')
@@ -121,8 +143,13 @@ def test_rotation_matrix_from_euler():
 
 
 def test_object_creation_via_context(screen: Screen):
-    with ui.scene() as scene:
-        scene.box().with_name('box')
+    scene = None
+
+    @ui.page('/')
+    def page():
+        nonlocal scene
+        with ui.scene() as scene:
+            scene.box().with_name('box')
 
     screen.open('/')
     screen.wait(0.5)
@@ -130,8 +157,13 @@ def test_object_creation_via_context(screen: Screen):
 
 
 def test_object_creation_via_attribute(screen: Screen):
-    scene = ui.scene()
-    scene.box().with_name('box')
+    scene = None
+
+    @ui.page('/')
+    def page():
+        nonlocal scene
+        scene = ui.scene()
+        scene.box().with_name('box')
 
     screen.open('/')
     screen.wait(0.5)
@@ -139,11 +171,16 @@ def test_object_creation_via_attribute(screen: Screen):
 
 
 def test_clearing_scene(screen: Screen):
-    with ui.scene() as scene:
-        scene.box().with_name('box')
-        with scene.group():  # see https://github.com/zauberzeug/nicegui/issues/4560
-            scene.box().with_name('box2')
-    ui.button('Clear', on_click=scene.clear)
+    scene = None
+
+    @ui.page('/')
+    def page():
+        nonlocal scene
+        with ui.scene() as scene:
+            scene.box().with_name('box')
+            with scene.group():  # see https://github.com/zauberzeug/nicegui/issues/4560
+                scene.box().with_name('box2')
+        ui.button('Clear', on_click=scene.clear)
 
     screen.open('/')
     screen.wait(0.5)
@@ -154,8 +191,13 @@ def test_clearing_scene(screen: Screen):
 
 
 def test_gltf(screen: Screen):
-    with ui.scene() as scene:
-        scene.gltf('https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/main/Models/Box/glTF-Binary/Box.glb')
+    scene = None
+
+    @ui.page('/')
+    def page():
+        nonlocal scene
+        with ui.scene() as scene:
+            scene.gltf('https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/main/Models/Box/glTF-Binary/Box.glb')
 
     screen.open('/')
     screen.wait(1.0)
@@ -164,12 +206,17 @@ def test_gltf(screen: Screen):
 
 def test_no_cyclic_references(screen: Screen):
     objects: weakref.WeakSet = weakref.WeakSet()
+    scene = None
 
-    with ui.scene() as scene:
-        for _ in range(10):
-            objects.add(scene.box())
+    @ui.page('/')
+    def page():
+        nonlocal scene
+        with ui.scene() as scene:
+            for _ in range(10):
+                objects.add(scene.box())
 
-    scene.clear()
-    assert len(objects) == 0
+        ui.button('Clear', on_click=scene.clear)
 
     screen.open('/')
+    screen.click('Clear')
+    assert len(objects) == 0

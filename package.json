@@ -1,20 +1,12 @@
 {
+  "scripts": {
+    "build": "python3 extract_core_libraries.py"
+  },
   "dependencies": {
-    "@tweenjs/tween.js": "^25.0.0",
-    "ag-grid-community": "^32.1.0",
-    "echarts": "^5.5.1",
-    "echarts-gl": "^2.0.9",
-    "es-module-shims": "^1.10.0",
-    "leaflet": "^1.9.4",
-    "leaflet-draw": "^1.0.4",
-    "mermaid": "^11.0.2",
-    "nipplejs": "^0.10.2",
-    "plotly.js": "^2.35.0",
-    "quasar": "^2.16.9",
-    "socket.io": "^4.7.5",
-    "tailwindcss": "^3.4.10",
-    "three": "^0.168.0",
-    "vanilla-jsoneditor": "^0.23.8",
-    "vue": "^3.4.38"
+    "@tailwindcss/browser": "4.1.13",
+    "es-module-shims": "2.6.2",
+    "quasar": "2.18.5",
+    "socket.io": "4.8.1",
+    "vue": "3.5.22"
   }
 }
