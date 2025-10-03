@@ -22,7 +22,23 @@ We're always looking for bug fixes, performance improvements, and new features.
 ### AI Assistant Integration
 
 This project is designed to work well with AI assistants like Cursor, GitHub Copilot, and others.
-The `.cursor/rules/` directory contains guidelines specifically for AI assistants that complement this contributing guide.
+See [AGENT.md](AGENT.md) for guidelines specifically for AI assistants that complement this contributing guide.
+
+We provide review instructions for PR reviews in [.github/copilot-instructions.md](.github/copilot-instructions.md).
+You should review your changes with an AI assistant before committing/pushing:
+
+**In Cursor:**
+
+Use Agent Mode with claude-4.5-sonnet and ƒwrite:
+`Review my current branch according to @.github/copilot-instructions.md`
+
+**In VS Code with GitHub Copilot:**
+
+- Install the **GitHub Copilot Chat** extension
+- Open Copilot Chat (`Ctrl+Shift+I` / `Cmd+Shift+I`) and ask: `@workspace review my changes`
+
+Ensure to address any valid feedback.
+That will make your life and that of the maintainers easier.
 
 ## Setup
 
@@ -116,7 +132,7 @@ on a second line and leave the other arguments as they are.
 - Be careful to only make changes that are requested or are well understood and related to the change being requested
 - When fixing an issue or bug, do not introduce a new pattern or technology without first exhausting all options for the existing implementation. And if you finally do this, make sure to remove the old implementation afterwards so we don't have duplicate logic
 - Keep the codebase very clean and organized
-- Write tests for new features
+- Write tests for new features: use Screen fixture only when browser is involved (javascript etc.), otherwise use User fixture is much faster and simpler to use (test runs in same async context as NiceGUI)
 - Run tests before submitting any changes
 - Format code using autopep8 before submitting changes
 - Use pre-commit hooks to ensure coding style compliance
