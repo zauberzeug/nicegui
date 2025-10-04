@@ -28,9 +28,7 @@ def delimit_values():
     from nicegui import events
 
     def split_values(e: events.ValueChangeEventArguments):
-        for value in e.value[:]:
-            e.value.remove(value)
-            e.value.extend(value.split(','))
+        e.sender.value = [word for part in e.value for word in part.split(',')]
 
     ui.input_chips(on_change=split_values)
     ui.label('Try entering "x,y,z"!')

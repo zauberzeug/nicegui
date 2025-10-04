@@ -259,8 +259,8 @@ def upload_table():
 
 
 doc.text('Test Downloads', '''
-    You can verify that a download was triggered by checking `user.downloads.http_responses`.
-    By awaiting `user.downloads.next()` you can get the next download response.
+    You can verify that a download was triggered by checking `user.download.http_responses`.
+    By awaiting `user.download.next()` you can get the next download response.
 
     *Added in version 2.1.0*
 ''')

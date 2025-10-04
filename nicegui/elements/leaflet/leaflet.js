@@ -103,7 +103,12 @@ export default {
           });
         });
       }
+
+      // HACK: set window.type to avoid a bug in leaflet-draw (https://github.com/Leaflet/Leaflet.draw/issues/1026)
+      const originalType = window.type;
+      window.type = "Feature";
       const drawnItems = new L.FeatureGroup();
+      window.type = originalType;
       this.map.addLayer(drawnItems);
 
       // Normalize draw_control options: allow boolean True -> {}

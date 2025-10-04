@@ -116,8 +116,6 @@ def table_with_expandable_rows():
     Here is an example of how to show and hide columns in a table.
 ''')
 def show_and_hide_columns():
-    from typing import Dict
-
     columns = [
         {'name': 'name', 'label': 'Name', 'field': 'name', 'required': True, 'align': 'left'},
         {'name': 'age', 'label': 'Age', 'field': 'age', 'sortable': True},

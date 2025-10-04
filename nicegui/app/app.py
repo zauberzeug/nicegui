@@ -12,7 +12,7 @@ from typing import Any, Callable, Optional, Union
 from fastapi import FastAPI, HTTPException, Request, Response
 from fastapi.responses import FileResponse
 
-from .. import background_tasks, helpers
+from .. import background_tasks, core, helpers
 from ..client import Client
 from ..logging import log
 from ..native import NativeConfig
@@ -139,6 +139,8 @@ class App(FastAPI):
         Needs to be called before `ui.run()`.
         """
         if self.is_started:
+            if core.script_mode:
+                raise RuntimeError('Unable to register a startup in script mode. Use a `@ui.page` function instead.')
             raise RuntimeError('Unable to register another startup handler. NiceGUI has already been started.')
         self._startup_handlers.append(handler)
 
