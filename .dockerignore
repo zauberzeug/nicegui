@@ -3,6 +3,7 @@
 **/*.egg-info
 **/.*.swp
 **/dist
+!nicegui/elements/*/dist
 test.py
 demo.py
 **/*.pickle
