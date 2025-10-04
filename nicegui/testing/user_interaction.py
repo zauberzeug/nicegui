@@ -70,6 +70,8 @@ class UserInteraction(Generic[T]):
         assert self.user.client
         with self.user.client:
             for element in self.elements:
+                if isinstance(element, DisableableElement) and not element.enabled:
+                    continue
                 if isinstance(element, ui.link):
                     href = element.props.get('href', '#')
                     background_tasks.create(self.user.open(href), name=f'open {href}')

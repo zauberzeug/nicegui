@@ -60,6 +60,17 @@ async def test_button_click(user: User) -> None:
     await user.should_see('clicked')
 
 
+async def test_clicking_disabled_button(user: User) -> None:
+    @ui.page('/')
+    def page():
+        button = ui.button('My Button', on_click=lambda: ui.notify('Button clicked'))
+        button.disable()
+
+    await user.open('/')
+    user.find('My Button').click()
+    await user.should_not_see('Button clicked')
+
+
 async def test_assertion_raised_when_no_nicegui_page_is_returned(user: User) -> None:
     @app.get('/plain')
     def index() -> PlainTextResponse:
