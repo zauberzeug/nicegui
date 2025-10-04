@@ -1,5 +1,9 @@
 ## [Unreleased]
 
+### Bugfixes
+
+- Fix docker builds by not excluding dist/ directories from the build context (#5200, #5202 by @Yuerchu, @rodja, @falkoschindler)
+
 ### Documentation
 
 - Fix menu by disabling the deselection of tree elements (#5207, #5208 by @python-and-novella, @rodja)
