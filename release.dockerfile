@@ -12,7 +12,7 @@ RUN python -m pip install --upgrade pip
 RUN python -m pip install --upgrade libsass
 
 FROM python:3.12-slim AS release
-COPY --from=builder /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
+COPY --from=builder /usr/local/lib/python3.12/site-packages /usr/local/lib/python3.12/site-packages
 ARG VERSION
 
 LABEL maintainer="Zauberzeug GmbH <info@zauberzeug.com>"
