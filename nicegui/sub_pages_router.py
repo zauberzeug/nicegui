@@ -64,7 +64,7 @@ class SubPagesRouter:
         client = context.client
         await self._handle_open(path)
         if (
-            not self._has_any_unresolved_path(client) or  # path is handled by `ui.sub_pages`
+            not has_any_unresolved_path(client) or  # path is handled by `ui.sub_pages`
             not self._other_page_builder_matches_path(path, client)  # `ui.sub_pages` is still responsible
         ):
             client.run_javascript(f'''
@@ -111,20 +111,19 @@ class SubPagesRouter:
                 not any(isinstance(el, SubPages) for el in sub_pages.descendants())
             ):
                 sub_pages._set_match(None)  # pylint: disable=protected-access
-        return not any(
-            sub_pages.has_404
-            for sub_pages in client.layout.descendants()
-            if isinstance(sub_pages, SubPages) and sub_pages._404_enabled  # pylint: disable=protected-access
-        )
+        return not has_any_unresolved_path(client, with_404_enabled_only=True)
 
-    @staticmethod
-    def _has_any_unresolved_path(client: Client) -> bool:
-        """Check if any sub_pages has an unresolved path, regardless of show_404 setting."""
-        return any(
-            sub_pages.has_404  # pylint: disable=protected-access
-            for sub_pages in client.layout.descendants()
-            if isinstance(sub_pages, SubPages)
-        )
+
+def has_any_unresolved_path(client: Client, *, with_404_enabled_only: bool = False) -> bool:
+    """Check if any sub_pages has an unresolved path.
+
+    :param with_404_enabled_only: whether to only consider sub_pages with show_404 enabled
+    """
+    return any(
+        sub_pages.has_404 and (sub_pages._404_enabled or not with_404_enabled_only)  # pylint: disable=protected-access
+        for sub_pages in client.layout.descendants()
+        if isinstance(sub_pages, SubPages)
+    )
 
 
 def _normalize(p: str) -> str:

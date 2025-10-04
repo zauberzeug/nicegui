@@ -132,14 +132,11 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
 
     def _set_match(self, match: RouteMatch | None) -> None:
         self._match = match
-        if match is None:
-            self.has_404 = True
-            if self._404_enabled:
-                self.clear()
-                with self:
-                    self._render_404()
-        else:
-            self.has_404 = False
+        self.has_404 = match is None
+        if self.has_404 and self._404_enabled:
+            self.clear()
+            with self:
+                self._render_404()
 
     def _reset_match(self) -> None:
         self._match = None
