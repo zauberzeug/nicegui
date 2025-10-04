@@ -116,8 +116,6 @@ def table_with_expandable_rows():
     Here is an example of how to show and hide columns in a table.
 ''')
 def show_and_hide_columns():
-    from typing import Dict
-
     columns = [
         {'name': 'name', 'label': 'Name', 'field': 'name', 'required': True, 'align': 'left'},
         {'name': 'age', 'label': 'Age', 'field': 'age', 'sortable': True},
@@ -129,14 +127,14 @@ def show_and_hide_columns():
     ]
     table = ui.table(columns=columns, rows=rows, row_key='name')
 
-    def toggle(column: Dict, visible: bool) -> None:
+    def toggle(column: dict, visible: bool) -> None:
         column['classes'] = '' if visible else 'hidden'
         column['headerClasses'] = '' if visible else 'hidden'
         table.update()
 
     with ui.button(icon='menu'):
         with ui.menu(), ui.column().classes('gap-0 p-2'):
-            for column in columns:
+            for column in table.columns:
                 ui.switch(column['label'], value=True, on_change=lambda e,
                           column=column: toggle(column, e.value))
 

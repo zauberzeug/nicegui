@@ -1,23 +1,10 @@
 from __future__ import annotations
 
 import asyncio
+from collections.abc import Awaitable, Iterator
 from contextlib import nullcontext
-from dataclasses import dataclass
-from typing import (
-    TYPE_CHECKING,
-    Any,
-    Awaitable,
-    BinaryIO,
-    Callable,
-    Dict,
-    Iterator,
-    List,
-    Literal,
-    Optional,
-    TypeVar,
-    Union,
-    cast,
-)
+from dataclasses import dataclass, field
+from typing import TYPE_CHECKING, Any, Callable, Literal, TypeVar, Union, cast
 
 from . import background_tasks, core, helpers
 from .awaitable_response import AwaitableResponse
@@ -28,6 +15,7 @@ if TYPE_CHECKING:
     from .client import Client
     from .element import Element
     from .elements.slide_item import SlideSide
+    from .elements.upload_files import FileUpload
     from .observables import ObservableCollection
 
 
@@ -70,9 +58,9 @@ class EChartPointClickEventArguments(UiEventArguments):
     series_name: str
     name: str
     data_index: int
-    data: Union[float, int, str]
+    data: float | int | str
     data_type: str
-    value: Union[float, int, list]
+    value: float | int | list
 
 
 @dataclass(**KWONLY_SLOTS)
@@ -92,7 +80,7 @@ class SceneClickEventArguments(ClickEventArguments):
     ctrl: bool
     meta: bool
     shift: bool
-    hits: List[SceneClickHit]
+    hits: list[SceneClickHit]
 
 
 @dataclass(**KWONLY_SLOTS)
@@ -126,32 +114,35 @@ class MouseEventArguments(UiEventArguments):
 @dataclass(**KWONLY_SLOTS)
 class JoystickEventArguments(UiEventArguments):
     action: str
-    x: Optional[float] = None
-    y: Optional[float] = None
+    x: float | None = None
+    y: float | None = None
 
 
 @dataclass(**KWONLY_SLOTS)
 class UploadEventArguments(UiEventArguments):
-    content: BinaryIO
-    name: str
-    type: str
+    file: FileUpload
 
 
 @dataclass(**KWONLY_SLOTS)
 class MultiUploadEventArguments(UiEventArguments):
-    contents: List[BinaryIO]
-    names: List[str]
-    types: List[str]
+    files: list[FileUpload]
 
 
 @dataclass(**KWONLY_SLOTS)
 class ValueChangeEventArguments(UiEventArguments):
     value: Any
+    previous_value: Any = ...
+
+    def __post_init__(self):
+        # DEPRECATED: previous_value will be required in NiceGUI 4.0
+        if self.previous_value is ...:
+            helpers.warn_once('The new event argument `ValueChangeEventArguments.previous_value` is not set. '
+                              'In NiceGUI 4.0 this will raise an error.')
 
 
 @dataclass(**KWONLY_SLOTS)
 class TableSelectionEventArguments(UiEventArguments):
-    selection: List[Any]
+    selection: list[Any]
 
 
 @dataclass(**KWONLY_SLOTS)
@@ -185,8 +176,11 @@ class KeyboardKey:
         if isinstance(other, str):
             return other in {self.name, self.code}
         if isinstance(other, KeyboardKey):
-            return self == other
+            return (self.name, self.code, self.location) == (other.name, other.code, other.location)
         return False
+
+    def __hash__(self) -> int:
+        return hash((self.name, self.code, self.location))
 
     def __repr__(self):
         return str(self.name)
@@ -197,7 +191,7 @@ class KeyboardKey:
         return self.code.startswith('Arrow')
 
     @property
-    def number(self) -> Optional[int]:
+    def number(self) -> int | None:
         """Integer value of a number key."""
         return int(self.code[len('Digit'):]) if self.code.startswith('Digit') else None
 
@@ -393,20 +387,20 @@ class ScrollEventArguments(UiEventArguments):
 
 @dataclass(**KWONLY_SLOTS)
 class JsonEditorSelectEventArguments(UiEventArguments):
-    selection: Dict
+    selection: dict
 
 
 @dataclass(**KWONLY_SLOTS)
 class JsonEditorChangeEventArguments(UiEventArguments):
-    content: Dict
-    errors: Dict
+    content: dict
+    errors: dict = field(default_factory=dict)
 
 
 EventT = TypeVar('EventT', bound=EventArguments)
 Handler = Union[Callable[[EventT], Any], Callable[[], Any]]
 
 
-def handle_event(handler: Optional[Handler[EventT]], arguments: EventT) -> None:
+def handle_event(handler: Handler[EventT] | None, arguments: EventT) -> None:
     """Call the given event handler.
 
     The handler is called within the context of the parent slot of the sender.
@@ -420,7 +414,7 @@ def handle_event(handler: Optional[Handler[EventT]], arguments: EventT) -> None:
     if handler is None:
         return
     try:
-        parent_slot: Union[Slot, nullcontext]
+        parent_slot: Slot | nullcontext
         if isinstance(arguments, UiEventArguments):
             parent_slot = arguments.sender.parent_slot or arguments.sender.client.layout.default_slot
         else:

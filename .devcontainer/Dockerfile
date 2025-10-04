@@ -1,6 +1,6 @@
-FROM --platform=linux/amd64 python:3.8
+FROM --platform=linux/amd64 python:3.9
 
-ENV POETRY_VERSION=1.6.1 \
+ENV POETRY_VERSION=2.1.2 \
     POETRY_NO_INTERACTION=1 \
     POETRY_VIRTUALENVS_IN_PROJECT=false \
     POETRY_VIRTUALENVS_CREATE=false \

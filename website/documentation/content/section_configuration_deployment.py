@@ -153,12 +153,12 @@ doc.text('Custom Vue Components', '''
     The ["Custom Vue components" example](https://github.com/zauberzeug/nicegui/tree/main/examples/custom_vue_component)
     demonstrates how to create a custom counter component which emits events and receives updates from the server.
 
-    The ["Signature pad" example](https://github.com/zauberzeug/nicegui/blob/main/examples/signature_pad)
-    shows how to define dependencies for a custom component using a `package.json` file.
-    This allows you to use third-party libraries via NPM in your component.
-
-    Last but not least, the ["Node module integration" example](https://github.com/zauberzeug/nicegui/blob/main/examples/node_module_integration)
-    demonstrates how to create a package.json file and a webpack.config.js file to bundle a custom Vue component with its dependencies.
+    The ["Signature pad" example](https://github.com/zauberzeug/nicegui/blob/main/examples/signature_pad) and
+    the ["Node module integration" example](https://github.com/zauberzeug/nicegui/blob/main/examples/node_module_integration)
+    demonstrate how to bundle a custom Vue component with its dependencies defined in a `package.json` file.
+    In Python we can use the `esm` parameter when subclassing `ui.element`
+    to specify the ESM module name and the path to the bundled component.
+    This adds the ESM module to the import map of the page and makes it available in the Vue component.
 ''')
 
 doc.text('Server Hosting', '''

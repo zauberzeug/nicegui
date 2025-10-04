@@ -1,44 +1,41 @@
 #!/usr/bin/env python3
-import asyncio
-import os
-import pathlib
-import shlex
 import shutil
 import subprocess
+from pathlib import Path
 
-from nicegui import app, events, ui
+from nicegui import events, run, ui
 
-
-def extract(source: str):
-    subprocess.call(shlex.split(f'ffmpeg -i "{source}" -vf fps=1 out_%04d.jpg'))
+DATA_DIR = Path('data')
+DATA_DIR.mkdir(exist_ok=True)
 
 
 async def handle_upload(args: events.UploadEventArguments):
-    if 'video' in args.type:
-        shutil.rmtree('data', ignore_errors=True)
-        os.makedirs('data', exist_ok=True)
-        os.chdir('data')
-        with open(args.name, 'wb') as f:
-            f.write(args.content.read())
-            results.clear()
-            with results:
-                ui.spinner('dots', size='xl')
-            await asyncio.to_thread(extract, args.name)
-            results.clear()
-            with results:
-                for path in pathlib.Path('.').glob('*.jpg'):
-                    ui.image(f'/data/{path.name}').classes('w-96 drop-shadow-md rounded')
-        os.chdir('..')
-    else:
+    if not args.file.content_type.startswith('video/'):
         ui.notify('Please upload a video file')
-    upload.run_method('reset')
+        return
 
-os.makedirs('data', exist_ok=True)
-app.add_static_files('/data', 'data')
+    shutil.rmtree(DATA_DIR, ignore_errors=True)
+    DATA_DIR.mkdir(exist_ok=True)
+
+    video_path = DATA_DIR / args.file.name
+    video_path.write_bytes(await args.file.read())
+
+    results.clear()
+    with results:
+        ui.spinner('dots', size='xl')
+
+    await run.io_bound(subprocess.call, ['ffmpeg', '-i', video_path, '-vf', 'fps=1', str(DATA_DIR / 'out_%04d.jpg')])
+
+    results.clear()
+    with results:
+        for image_path in DATA_DIR.glob('*.jpg'):
+            ui.image(image_path).classes('w-96 drop-shadow-md rounded')
+
+    upload.run_method('reset')
 
 with ui.column().classes('w-full items-center'):
     ui.label('Extract images from video').classes('text-3xl m-3')
-    upload = ui.upload(label='pick a video file', auto_upload=True, on_upload=handle_upload)
+    upload = ui.upload(label='Pick a video file', auto_upload=True, on_upload=handle_upload)
     results = ui.row().classes('w-full justify-center mt-6')
 
 ui.run()

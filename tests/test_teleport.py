@@ -5,13 +5,15 @@ from nicegui.testing import Screen
 
 
 def test_teleport(screen: Screen):
-    ui.card().classes('card')
+    @ui.page('/')
+    def page():
+        ui.card().classes('card')
 
-    def create_teleport():
-        with ui.teleport('.card'):
-            ui.label('Hello')
+        def create_teleport():
+            with ui.teleport('.card'):
+                ui.label('Hello')
 
-    ui.button('create', on_click=create_teleport)
+        ui.button('create', on_click=create_teleport)
 
     screen.open('/')
     screen.click('create')
@@ -19,13 +21,15 @@ def test_teleport(screen: Screen):
 
 
 def test_teleport_with_element(screen: Screen):
-    card = ui.card().classes('card')
+    @ui.page('/')
+    def page():
+        card = ui.card().classes('card')
 
-    def create_teleport():
-        with ui.teleport(card):
-            ui.label('Hello')
+        def create_teleport():
+            with ui.teleport(card):
+                ui.label('Hello')
 
-    ui.button('create', on_click=create_teleport)
+        ui.button('create', on_click=create_teleport)
 
     screen.open('/')
     screen.click('create')
@@ -33,25 +37,27 @@ def test_teleport_with_element(screen: Screen):
 
 
 def test_update(screen: Screen):
-    teleport: Optional[ui.teleport] = None
+    @ui.page('/')
+    def page():
+        teleport: Optional[ui.teleport] = None
 
-    card = ui.card().classes('card')
+        card = ui.card().classes('card')
 
-    def create_teleport():
-        nonlocal teleport
-        with ui.teleport('.card') as teleport:
-            ui.label('Hello')
+        def create_teleport():
+            nonlocal teleport
+            with ui.teleport('.card') as teleport:
+                ui.label('Hello')
 
-    ui.button('create', on_click=create_teleport)
+        ui.button('create', on_click=create_teleport)
 
-    def rebuild_card():
-        card.delete()
-        ui.card().classes('card')
-        assert teleport is not None
-        teleport.update()
-        ui.notify('Card rebuilt')
+        def rebuild_card():
+            card.delete()
+            ui.card().classes('card')
+            assert teleport is not None
+            teleport.update()
+            ui.notify('Card rebuilt')
 
-    ui.button('rebuild card', on_click=rebuild_card)
+        ui.button('rebuild card', on_click=rebuild_card)
 
     screen.open('/')
     screen.click('create')

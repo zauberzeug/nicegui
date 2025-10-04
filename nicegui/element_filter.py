@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from typing import Generic, Iterator, List, Optional, Type, TypeVar, Union, overload
+from collections.abc import Iterator
+from typing import Generic, TypeVar, overload
 
 from typing_extensions import Self
 
@@ -24,25 +25,25 @@ class ElementFilter(Generic[T]):
 
     @overload
     def __init__(self: ElementFilter[Element], *,
-                 marker: Union[str, List[str], None] = None,
-                 content: Union[str, List[str], None] = None,
+                 marker: str | list[str] | None = None,
+                 content: str | list[str] | None = None,
                  local_scope: bool = DEFAULT_LOCAL_SCOPE,
                  ) -> None:
         ...
 
     @overload
     def __init__(self, *,
-                 kind: Type[T],
-                 marker: Union[str, List[str], None] = None,
-                 content: Union[str, List[str], None] = None,
+                 kind: type[T],
+                 marker: str | list[str] | None = None,
+                 content: str | list[str] | None = None,
                  local_scope: bool = DEFAULT_LOCAL_SCOPE,
                  ) -> None:
         ...
 
     def __init__(self, *,
-                 kind: Optional[Type[T]] = None,
-                 marker: Union[str, List[str], None] = None,
-                 content: Union[str, List[str], None] = None,
+                 kind: type[T] | None = None,
+                 marker: str | list[str] | None = None,
+                 content: str | list[str] | None = None,
                  local_scope: bool = DEFAULT_LOCAL_SCOPE,
                  ) -> None:
         """ElementFilter
@@ -80,17 +81,17 @@ class ElementFilter(Generic[T]):
         self._markers = marker.split() if isinstance(marker, str) else marker or []
         self._contents = [content] if isinstance(content, str) else content or []
 
-        self._within_kinds: List[Type[Element]] = []
-        self._within_instances: List[Element] = []
-        self._within_markers: List[str] = []
+        self._within_kinds: list[type[Element]] = []
+        self._within_instances: list[Element] = []
+        self._within_markers: list[str] = []
 
-        self._not_within_kinds: List[Type[Element]] = []
-        self._not_within_instances: List[Element] = []
-        self._not_within_markers: List[str] = []
+        self._not_within_kinds: list[type[Element]] = []
+        self._not_within_instances: list[Element] = []
+        self._not_within_markers: list[str] = []
 
-        self._exclude_kinds: List[Type[Element]] = []
-        self._exclude_markers: List[str] = []
-        self._exclude_content: List[str] = []
+        self._exclude_kinds: list[type[Element]] = []
+        self._exclude_markers: list[str] = []
+        self._exclude_content: list[str] = []
 
         self._scope = context.slot.parent if local_scope else context.client.layout
 
@@ -156,9 +157,9 @@ class ElementFilter(Generic[T]):
             yield element  # type: ignore
 
     def within(self, *,
-               kind: Optional[Type[Element]] = None,
-               marker: Optional[str] = None,
-               instance: Union[Element, List[Element], None] = None,
+               kind: type[Element] | None = None,
+               marker: str | None = None,
+               instance: Element | list[Element] | None = None,
                ) -> Self:
         """Filter elements which have a specific match in the parent hierarchy."""
         if kind is not None:
@@ -171,9 +172,9 @@ class ElementFilter(Generic[T]):
         return self
 
     def exclude(self, *,
-                kind: Optional[Type[Element]] = None,
-                marker: Optional[str] = None,
-                content: Optional[str] = None,
+                kind: type[Element] | None = None,
+                marker: str | None = None,
+                content: str | None = None,
                 ) -> Self:
         """Exclude elements with specific element type, marker or content."""
         if kind is not None:
@@ -186,9 +187,9 @@ class ElementFilter(Generic[T]):
         return self
 
     def not_within(self, *,
-                   kind: Optional[Type[Element]] = None,
-                   marker: Optional[str] = None,
-                   instance: Union[Element, List[Element], None] = None,
+                   kind: type[Element] | None = None,
+                   marker: str | None = None,
+                   instance: Element | list[Element] | None = None,
                    ) -> Self:
         """Exclude elements which have a parent of a specific type or marker."""
         if kind is not None:
@@ -200,10 +201,10 @@ class ElementFilter(Generic[T]):
             self._not_within_instances.extend(instance if isinstance(instance, list) else [instance])
         return self
 
-    def classes(self, add: Optional[str] = None, *, remove: Optional[str] = None, replace: Optional[str] = None) -> Self:
+    def classes(self, add: str | None = None, *, remove: str | None = None, replace: str | None = None) -> Self:
         """Apply, remove, or replace HTML classes.
 
-        This allows modifying the look of the element or its layout using `Tailwind <https://v3.tailwindcss.com/>`_ or `Quasar <https://quasar.dev/>`_ classes.
+        This allows modifying the look of the element or its layout using `Tailwind <https://tailwindcss.com/>`_ or `Quasar <https://quasar.dev/>`_ classes.
 
         Removing or replacing classes can be helpful if predefined classes are not desired.
 
@@ -215,7 +216,7 @@ class ElementFilter(Generic[T]):
             element.classes(add, remove=remove, replace=replace)
         return self
 
-    def style(self, add: Optional[str] = None, *, remove: Optional[str] = None, replace: Optional[str] = None) -> Self:
+    def style(self, add: str | None = None, *, remove: str | None = None, replace: str | None = None) -> Self:
         """Apply, remove, or replace CSS definitions.
 
         Removing or replacing styles can be helpful if the predefined style is not desired.
@@ -228,7 +229,7 @@ class ElementFilter(Generic[T]):
             element.style(add, remove=remove, replace=replace)
         return self
 
-    def props(self, add: Optional[str] = None, *, remove: Optional[str] = None) -> Self:
+    def props(self, add: str | None = None, *, remove: str | None = None) -> Self:
         """Add or remove props.
 
         This allows modifying the look of the element or its layout using `Quasar <https://quasar.dev/>`_ props.

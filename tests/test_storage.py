@@ -4,10 +4,10 @@ import time
 from pathlib import Path
 
 import httpx
-import pytest
 
 from nicegui import Client, app, background_tasks, context, core, nicegui, ui
-from nicegui.testing import Screen
+from nicegui.persistence.file_persistent_dict import FilePersistentDict
+from nicegui.testing import Screen, User
 
 
 def test_browser_data_is_stored_in_the_browser(screen: Screen):
@@ -85,6 +85,10 @@ def test_access_user_storage_from_fastapi(screen: Screen):
         app.storage.user['msg'] = 'yes'
         return 'OK'
 
+    @ui.page('/')
+    def page():
+        ui.label('Hello, world!')
+
     screen.ui_run_kwargs['storage_secret'] = 'just a test'
     screen.open('/')
     with httpx.Client() as http_client:
@@ -125,13 +129,17 @@ def test_access_user_storage_from_button_click_handler(screen: Screen):
 def test_access_user_storage_from_background_task(screen: Screen):
     @ui.page('/')
     def page():
+        label = ui.label('Busy...')
+
         async def subtask():
             await asyncio.sleep(0.1)
             app.storage.user['subtask'] = 'works'
+            label.text = 'Done'
         background_tasks.create(subtask())
 
     screen.ui_run_kwargs['storage_secret'] = 'just a test'
     screen.open('/')
+    screen.should_contain('Done')
     assert next(Path('.nicegui').glob('storage-user-*.json')).read_text(encoding='utf-8') == '{"subtask":"works"}'
 
 
@@ -157,11 +165,13 @@ def test_user_and_general_storage_is_persisted(screen: Screen):
 
 def test_rapid_storage(screen: Screen):
     # https://github.com/zauberzeug/nicegui/issues/1099
-    ui.button('test', on_click=lambda: (
-        app.storage.general.update(one=1),
-        app.storage.general.update(two=2),
-        app.storage.general.update(three=3),
-    ))
+    @ui.page('/')
+    def page():
+        ui.button('test', on_click=lambda: (
+            app.storage.general.update(one=1),
+            app.storage.general.update(two=2),
+            app.storage.general.update(three=3),
+        ))
 
     screen.open('/')
     screen.click('test')
@@ -251,9 +261,6 @@ def test_client_storage(screen: Screen):
 
 
 def test_clear_client_storage(screen: Screen):
-    with pytest.raises(RuntimeError):  # no context (auto index)
-        app.storage.client.clear()
-
     @ui.page('/')
     def page():
         app.storage.client['counter'] = 123
@@ -311,6 +318,7 @@ def test_storage_access_in_binding_function(screen: Screen):
     screen.ui_run_kwargs['storage_secret'] = 'secret'
 
     screen.open('/')
+    screen.should_contain('John')
     screen.assert_py_logger('ERROR', 'app.storage.user can only be used within a UI context')
 
 
@@ -334,7 +342,7 @@ def test_tab_storage_holds_non_serializable_objects(screen: Screen):
     screen.wait(0.5)
 
 
-async def test_user_storage_is_pruned(screen: Screen):
+def test_user_storage_is_pruned(screen: Screen):
     @ui.page('/')
     def page():
         ui.label(f'clients: {len(Client.instances)}')
@@ -344,20 +352,36 @@ async def test_user_storage_is_pruned(screen: Screen):
     def status():
         return 'ok'
 
+    screen.ui_run_kwargs['storage_secret'] = 'just a test'
     screen.open('/')
-    screen.should_contain('clients: 2')
+    screen.should_contain('clients: 1')
     screen.should_contain('persistent dicts: 1')
-    assert len(Client.instances) == 2, 'one for the auto-index client and one for the open() call'
+    assert len(Client.instances) == 1
     assert len(app.storage._users) == 1
 
     response = httpx.get('http://localhost:3392/status')
     assert response.status_code == 200
     assert response.text == '"ok"'
-    assert len(Client.instances) == 2
+    assert len(Client.instances) == 1
     assert len(app.storage._users) == 2
 
     screen.close()
     Client.prune_instances(client_age_threshold=0)
-    await nicegui.prune_user_storage(force=True)
-    assert len(Client.instances) == 1
+    asyncio.run(nicegui.prune_user_storage(force=True))
+    assert len(Client.instances) == 0
     assert len(app.storage._users) == 0
+
+
+async def test_awaiting_backup_scheduled_during_teardown(user: User, tmp_path):
+    @ui.page('/')
+    def page():
+        ui.label('ok')
+
+    await user.open('/')  # NOTE: needed to ensure NiceGUI's event loop is running
+    path = tmp_path / 'storage.json'
+    d = FilePersistentDict(path, encoding='utf-8')
+    d['key'] = 'value'  # schedules async backup task tagged with await_on_shutdown
+    await asyncio.sleep(0)  # ensure the task is created
+    await background_tasks.teardown()
+    assert path.exists(), 'backup should be written during teardown'
+    assert path.read_text(encoding='utf-8') == '{"key":"value"}'

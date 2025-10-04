@@ -1,6 +1,5 @@
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import List
 
 PATH = Path(__file__).parent.parent / 'examples'
 
@@ -19,7 +18,7 @@ class Example:
         self.url = f'https://github.com/zauberzeug/nicegui/tree/main/examples/{name}/{filename}'
 
 
-examples: List[Example] = [
+examples: list[Example] = [
     Example('Slideshow', 'implements a keyboard-controlled image slideshow'),
     Example('Authentication', 'shows how to use sessions to build a login screen'),
     Example('Modularization', 'provides an example of how to modularize your application into multiple files and reuse code'),

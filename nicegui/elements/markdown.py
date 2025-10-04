@@ -1,6 +1,5 @@
 import os
 from functools import lru_cache
-from typing import List
 
 import markdown2
 from fastapi.responses import PlainTextResponse
@@ -10,10 +9,11 @@ from .mixins.content_element import ContentElement
 
 
 class Markdown(ContentElement, component='markdown.js', default_classes='nicegui-markdown'):
+    # NOTE: The Mermaid ESM is already registered in mermaid.py.
 
     def __init__(self,
                  content: str = '', *,
-                 extras: List[str] = ['fenced-code-blocks', 'tables'],  # noqa: B006
+                 extras: list[str] = ['fenced-code-blocks', 'tables'],  # noqa: B006
                  ) -> None:
         """Markdown Element
 
@@ -40,7 +40,6 @@ class Markdown(ContentElement, component='markdown.js', default_classes='nicegui
         html = prepare_content(content, extras=' '.join(self.extras))
         if self._props.get('innerHTML') != html:
             self._props['innerHTML'] = html
-            self.update()
 
 
 @lru_cache(maxsize=int(os.environ.get('MARKDOWN_CONTENT_CACHE_SIZE', '1000')))

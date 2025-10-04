@@ -1,11 +1,8 @@
 import csv
 import re
-from io import BytesIO
-from typing import Callable, Dict, Type, Union
+from typing import Callable, Union
 
 import pytest
-from fastapi import UploadFile
-from fastapi.datastructures import Headers
 from fastapi.responses import PlainTextResponse
 
 from nicegui import ElementFilter, app, events, ui
@@ -15,7 +12,9 @@ from nicegui.testing import User
 
 
 async def test_auto_index_page(user: User) -> None:
-    ui.label('Main page')
+    @ui.page('/')
+    def page():
+        ui.label('Main page')
 
     await user.open('/')
     await user.should_see('Main page')
@@ -61,6 +60,17 @@ async def test_button_click(user: User) -> None:
     await user.should_see('clicked')
 
 
+async def test_clicking_disabled_button(user: User) -> None:
+    @ui.page('/')
+    def page():
+        button = ui.button('My Button', on_click=lambda: ui.notify('Button clicked'))
+        button.disable()
+
+    await user.open('/')
+    user.find('My Button').click()
+    await user.should_not_see('Button clicked')
+
+
 async def test_assertion_raised_when_no_nicegui_page_is_returned(user: User) -> None:
     @app.get('/plain')
     def index() -> PlainTextResponse:
@@ -81,7 +91,7 @@ async def test_assertion_raised_when_element_not_found(user: User) -> None:
 
 
 @pytest.mark.parametrize('storage_builder', [lambda: app.storage.browser, lambda: app.storage.user])
-async def test_storage(user: User, storage_builder: Callable[[], Dict]) -> None:
+async def test_storage(user: User, storage_builder: Callable[[], dict]) -> None:
     @ui.page('/')
     def page():
         storage = storage_builder()
@@ -176,9 +186,11 @@ async def test_notification(user: User) -> None:
 
 
 @pytest.mark.parametrize('kind', [ui.checkbox, ui.switch])
-async def test_checkbox_and_switch(user: User, kind: Type) -> None:
-    element = kind('my element', on_change=lambda e: ui.notify(f'Changed: {e.value}'))
-    ui.label().bind_text_from(element, 'value', lambda v: 'enabled' if v else 'disabled')
+async def test_checkbox_and_switch(user: User, kind: type) -> None:
+    @ui.page('/')
+    def page():
+        element = kind('my element', on_change=lambda e: ui.notify(f'Changed: {e.value}'))
+        ui.label().bind_text_from(element, 'value', lambda v: 'enabled' if v else 'disabled')
 
     await user.open('/')
     await user.should_see('disabled')
@@ -193,9 +205,11 @@ async def test_checkbox_and_switch(user: User, kind: Type) -> None:
 
 
 @pytest.mark.parametrize('kind', [ui.input, ui.editor, ui.codemirror])
-async def test_input(user: User, kind: Type) -> None:
-    element = kind(on_change=lambda e: ui.notify(f'Changed: {e.value}'))
-    ui.label().bind_text_from(element, 'value', lambda v: f'Value: {v}')
+async def test_input(user: User, kind: type) -> None:
+    @ui.page('/')
+    def page():
+        element = kind(on_change=lambda e: ui.notify(f'Changed: {e.value}'))
+        ui.label().bind_text_from(element, 'value', lambda v: f'Value: {v}')
 
     await user.open('/')
     await user.should_see('Value: ')
@@ -355,7 +369,9 @@ q-layout
 
 
 async def test_combined_filter_parameters(user: User) -> None:
-    ui.input(placeholder='x', value='y')
+    @ui.page('/')
+    def page():
+        ui.input(placeholder='x', value='y')
 
     await user.open('/')
     await user.should_see('x')
@@ -380,7 +396,9 @@ async def test_typing(user: User) -> None:
 
 
 async def test_select(user: User) -> None:
-    ui.select(options=['A', 'B', 'C'], on_change=lambda e: ui.notify(f'Value: {e.value}'))
+    @ui.page('/')
+    def page():
+        ui.select(options=['A', 'B', 'C'], on_change=lambda e: ui.notify(f'Value: {e.value}'))
 
     await user.open('/')
     await user.should_not_see('A')
@@ -397,8 +415,10 @@ async def test_select(user: User) -> None:
 
 
 async def test_select_from_dict(user: User) -> None:
-    ui.select(options={'value A': 'label A', 'value B': 'label B', 'value C': 'label C'},
-              on_change=lambda e: ui.notify(f'Notify: {e.value}'))
+    @ui.page('/')
+    def page():
+        ui.select(options={'value A': 'label A', 'value B': 'label B', 'value C': 'label C'},
+                  on_change=lambda e: ui.notify(f'Notify: {e.value}'))
 
     await user.open('/')
     await user.should_not_see('label A')
@@ -415,8 +435,10 @@ async def test_select_from_dict(user: User) -> None:
 
 
 async def test_select_multiple_from_dict(user: User) -> None:
-    ui.select(options={'value A': 'label A', 'value B': 'label B', 'value C': 'label C'},
-              multiple=True, on_change=lambda e: ui.notify(f'Notify: {e.value}'))
+    @ui.page('/')
+    def page():
+        ui.select(options={'value A': 'label A', 'value B': 'label B', 'value C': 'label C'},
+                  multiple=True, on_change=lambda e: ui.notify(f'Notify: {e.value}'))
 
     await user.open('/')
     await user.should_not_see('label A')
@@ -436,9 +458,14 @@ async def test_select_multiple_from_dict(user: User) -> None:
 
 
 async def test_select_multiple_values(user: User):
-    select = ui.select(['A', 'B'], value='A',
-                       multiple=True, on_change=lambda e: ui.notify(f'Notify: {e.value}'))
-    ui.label().bind_text_from(select, 'value', backward=lambda v: f'value = {v}')
+    select = None
+
+    @ui.page('/')
+    def page():
+        nonlocal select
+        select = ui.select(['A', 'B'], value='A',
+                           multiple=True, on_change=lambda e: ui.notify(f'Notify: {e.value}'))
+        ui.label().bind_text_from(select, 'value', backward=lambda v: f'value = {v}')
 
     await user.open('/')
     await user.should_see("value = ['A']")
@@ -456,17 +483,18 @@ async def test_select_multiple_values(user: User):
 
 
 async def test_upload_table(user: User) -> None:
-    def receive_file(e: events.UploadEventArguments) -> None:
-        reader = csv.DictReader(e.content.read().decode('utf-8').splitlines())
-        ui.table(columns=[{'name': h, 'label': h.capitalize(), 'field': h} for h in reader.fieldnames or []],
-                 rows=list(reader))
-    ui.upload(on_upload=receive_file)
+    @ui.page('/')
+    def page():
+        async def receive_file(e: events.UploadEventArguments) -> None:
+            reader = csv.DictReader((await e.file.text()).splitlines())
+            ui.table(columns=[{'name': h, 'label': h.capitalize(), 'field': h} for h in reader.fieldnames or []],
+                     rows=list(reader))
+        ui.upload(on_upload=receive_file)
 
     await user.open('/')
     upload = user.find(ui.upload).elements.pop()
-    headers = Headers(raw=[(b'content-type', b'text/csv')])
-    upload.handle_uploads([UploadFile(BytesIO(b'name,age\nAlice,30\nBob,28'), headers=headers)])
-
+    await upload.handle_uploads([ui.upload.SmallFileUpload('data.csv', 'text/csv', b'name,age\nAlice,30\nBob,28')])
+    await user.should_see(ui.table)
     table = user.find(ui.table).elements.pop()
     assert table.columns == [
         {'name': 'name', 'label': 'Name', 'field': 'name'},
@@ -501,7 +529,9 @@ async def test_download_file(user: User, data: Union[str, bytes]) -> None:
 
 
 async def test_validation(user: User) -> None:
-    ui.input('Number', validation={'Not a number': lambda value: value.isnumeric()})
+    @ui.page('/')
+    def page():
+        ui.input('Number', validation={'Not a number': lambda value: value.isnumeric()})
 
     await user.open('/')
     await user.should_not_see('Not a number')
@@ -510,7 +540,9 @@ async def test_validation(user: User) -> None:
 
 
 async def test_trigger_autocomplete(user: User) -> None:
-    ui.input(label='fruit', autocomplete=['apple', 'banana', 'cherry'])
+    @ui.page('/')
+    def page():
+        ui.input(label='fruit', autocomplete=['apple', 'banana', 'cherry'])
 
     await user.open('/')
     await user.should_not_see('apple')
@@ -519,9 +551,14 @@ async def test_trigger_autocomplete(user: User) -> None:
 
 
 async def test_seeing_invisible_elements(user: User) -> None:
-    visible_label = ui.label('Visible')
-    hidden_label = ui.label('Hidden')
-    hidden_label.visible = False
+    visible_label = hidden_label = None
+
+    @ui.page('/')
+    def page():
+        nonlocal visible_label, hidden_label
+        visible_label = ui.label('Visible')
+        hidden_label = ui.label('Hidden')
+        hidden_label.visible = False
 
     await user.open('/')
     with pytest.raises(AssertionError):
@@ -536,8 +573,13 @@ async def test_seeing_invisible_elements(user: User) -> None:
 
 
 async def test_finding_invisible_elements(user: User) -> None:
-    button = ui.button('click me', on_click=lambda: ui.label('clicked'))
-    button.visible = False
+    button = None
+
+    @ui.page('/')
+    def page():
+        nonlocal button
+        button = ui.button('click me', on_click=lambda: ui.label('clicked'))
+        button.visible = False
 
     await user.open('/')
     with pytest.raises(AssertionError):
@@ -549,8 +591,10 @@ async def test_finding_invisible_elements(user: User) -> None:
 
 
 async def test_page_to_string_output_for_invisible_elements(user: User) -> None:
-    ui.label('Visible')
-    ui.label('Hidden').set_visibility(False)
+    @ui.page('/')
+    def page():
+        ui.label('Visible')
+        ui.label('Hidden').set_visibility(False)
 
     await user.open('/')
     output = str(user.current_layout)
@@ -567,8 +611,14 @@ q-layout
 async def test_typing_to_disabled_element(user: User) -> None:
     initial_value = 'Hello first'
     given_new_input = 'Hello second'
-    target = ui.input(value=initial_value)
-    target.disable()
+
+    target = None
+
+    @ui.page('/')
+    def page():
+        nonlocal target
+        target = ui.input(value=initial_value)
+        target.disable()
 
     await user.open('/')
     user.find(initial_value).type(given_new_input)
@@ -576,6 +626,23 @@ async def test_typing_to_disabled_element(user: User) -> None:
     assert target.value == initial_value
     await user.should_see(initial_value)
     await user.should_not_see(given_new_input)
+
+
+async def test_clearing_disabled_element(user: User) -> None:
+    initial_value = 'Cannot clear this'
+    target = None
+
+    @ui.page('/')
+    def page():
+        nonlocal target
+        target = ui.input(value=initial_value)
+        target.disable()
+
+    await user.open('/')
+    user.find(ui.input).clear()
+
+    assert target.value == initial_value
+    await user.should_see(initial_value)
 
 
 async def test_drawer(user: User):
@@ -603,7 +670,9 @@ async def test_run_javascript(user: User):
 
 
 async def test_context_manager(user: User) -> None:
-    ui.button('click me')
+    @ui.page('/')
+    def page():
+        ui.button('click me')
 
     await user.open('/')
     with user:
@@ -612,15 +681,20 @@ async def test_context_manager(user: User) -> None:
 
 
 async def test_tree_with_labels(user: User) -> None:
-    tree = ui.tree([
-        {'name': 'A', 'children': [
-            {'name': 'A1'},
-            {'name': 'A2', 'children': [
-                {'name': 'A21'},
-                {'name': 'A22'},
+    tree = None
+
+    @ui.page('/')
+    def page():
+        nonlocal tree
+        tree = ui.tree([
+            {'name': 'A', 'children': [
+                {'name': 'A1'},
+                {'name': 'A2', 'children': [
+                    {'name': 'A21'},
+                    {'name': 'A22'},
+                ]},
             ]},
-        ]},
-    ], node_key='name', label_key='name')
+        ], node_key='name', label_key='name')
 
     await user.open('/')
     await user.should_see('A')
