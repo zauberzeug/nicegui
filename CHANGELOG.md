@@ -3,6 +3,7 @@
 ### Documentation
 
 - Fix menu by disabling the deselection of tree elements (#5207, #5208 by @python-and-novella, @rodja)
+- Fix custom toggle button demo (#5203 by @rodja)
 
 ### Infrastructure
 
