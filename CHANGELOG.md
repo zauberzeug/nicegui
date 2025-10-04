@@ -2,6 +2,7 @@
 
 ### Bugfixes
 
+- Respect `show_404=False` in `ui.sub_pages` navigation (#5199 by @rodja, @falkoschindler)
 - Fix docker builds by not excluding dist/ directories from the build context (#5200, #5202 by @Yuerchu, @rodja, @falkoschindler)
 
 ### Testing
