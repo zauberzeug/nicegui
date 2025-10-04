@@ -2264,20 +2264,20 @@ sqlframe = ["sqlframe (>=3.22.0)"]
 
 [[package]]
 name = "nicegui-highcharts"
-version = "2.1.0"
+version = "2.2.0"
 description = "Add Highcharts elements to your NiceGUI app."
 optional = true
 python-versions = "<4.0,>=3.8"
 groups = ["main"]
 markers = "extra == \"highcharts\""
 files = [
-    {file = "nicegui_highcharts-2.1.0-py3-none-any.whl", hash = "sha256:09e437caa31a434497b6b82cd0d9c1100982fca87549182a4b853f0e98c9c95b"},
-    {file = "nicegui_highcharts-2.1.0.tar.gz", hash = "sha256:343833f508304cd5df938cffc35fc6f2340d4250b50f2a7be5161469f5429a58"},
+    {file = "nicegui_highcharts-2.2.0-py3-none-any.whl", hash = "sha256:9f5123f0f2321a557755b37424e3c03b0c9fa3722d618e6db1e94834dfa8a0dd"},
+    {file = "nicegui_highcharts-2.2.0.tar.gz", hash = "sha256:c1094abfe860e3c3a4fbf25018ca120bef0a13dd3fdb785a85b19fc9a306d075"},
 ]
 
 [package.dependencies]
 docutils = "0.20.1"
-nicegui = "==2.*"
+nicegui = ">=2.0.0,<4.0.0"
 
 [[package]]
 name = "nodeenv"
