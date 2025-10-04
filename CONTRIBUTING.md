@@ -122,7 +122,8 @@ on a second line and leave the other arguments as they are.
 - Each sentence in documentation should be on a new line
 - Use ruff for linting and code checks
 - Ensure proper use of async (no blocking operations)
-- Never use `asyncio.create_task`, because garbage collector might remove unfinished tasks. `background_tasks.create` takes better care of this.
+- Never use `asyncio.create_task`, because garbage collector might remove unfinished tasks.
+  `background_tasks.create` takes better care of this.
 
 ### Workflow Guidelines
 
@@ -132,16 +133,18 @@ on a second line and leave the other arguments as they are.
   - Ensure the code is not too complicated
   - Strive to have minimal maintenance burden and self explanatory code without the need of additional comments
 - Be careful to only make changes that are requested or are well understood and related to the change being requested
-- When fixing an issue or bug, do not introduce a new pattern or technology without first exhausting all options for the existing implementation. And if you finally do this, make sure to remove the old implementation afterwards so we don't have duplicate logic
+- When fixing an issue or bug, do not introduce a new pattern or technology without first exhausting all options for the existing implementation.
+  And if you finally do this, make sure to remove the old implementation afterwards so we don't have duplicate logic
 - Keep the codebase very clean and organized
-- Create tests for new features and bugfixes: use Screen fixture only when browser is involved (javascript etc.), otherwise the `User` fixture should be preferred as it is much faster and simpler to use (test runs in same async context as NiceGUI)
+- Create tests for new features and bugfixes: use `Screen` fixture only when browser is involved (JavaScript etc.),
+  otherwise the `User` fixture should be preferred as it is much faster and simpler to use (test runs in same async context as NiceGUI)
 - Run tests before submitting any changes
 - Format code using autopep8 before submitting changes
 - Use pre-commit hooks to ensure coding style compliance
 - When adding new features, include corresponding tests
 - For documentation, ensure each sentence is on a new line
 - Discuss before implementing and if an approach is unclear, present options and trade-offs
-- Approach large changes Step-by-step and get confirmation before drastic refactorings
+- Approach large changes step-by-step and get confirmation before drastic refactorings
 - Think from first principles: Always question your assumptions to find the true nature of problems
 
 ### Linting
