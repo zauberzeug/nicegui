@@ -22,7 +22,23 @@ We're always looking for bug fixes, performance improvements, and new features.
 ### AI Assistant Integration
 
 This project is designed to work well with AI assistants like Cursor, GitHub Copilot, and others.
-The `.cursor/rules/` directory contains guidelines specifically for AI assistants that complement this contributing guide.
+See [AGENT.md](AGENT.md) for guidelines specifically for AI assistants that complement this contributing guide.
+
+We provide review instructions for PR reviews in [.github/copilot-instructions.md](.github/copilot-instructions.md).
+You should review your changes with an AI assistant before committing/pushing:
+
+In Cursor or VS Code with GitHub Copilot Chat:
+
+Select Agent Mode with claude-4.5-sonnet and write: `Review my current branch according to @.github/copilot-instructions.md`
+
+> [!TIP]
+> In Cursor, you can use these custom commands for easy access:
+>
+> - `/review-uncommitted` - Review your local uncommitted changes
+> - `/review-changes` - Review your current branch vs main
+
+Ensure to address any valid feedback.
+That will make your life and that of the maintainers much easier.
 
 ## Setup
 
@@ -105,6 +121,9 @@ on a second line and leave the other arguments as they are.
 - Follow autopep8 formatting with 120 character line length
 - Each sentence in documentation should be on a new line
 - Use ruff for linting and code checks
+- Ensure proper use of async (no blocking operations)
+- Never use `asyncio.create_task`, because garbage collector might remove unfinished tasks.
+  `background_tasks.create` takes better care of this.
 
 ### Workflow Guidelines
 
@@ -114,14 +133,19 @@ on a second line and leave the other arguments as they are.
   - Ensure the code is not too complicated
   - Strive to have minimal maintenance burden and self explanatory code without the need of additional comments
 - Be careful to only make changes that are requested or are well understood and related to the change being requested
-- When fixing an issue or bug, do not introduce a new pattern or technology without first exhausting all options for the existing implementation. And if you finally do this, make sure to remove the old implementation afterwards so we don't have duplicate logic
+- When fixing an issue or bug, do not introduce a new pattern or technology without first exhausting all options for the existing implementation.
+  And if you finally do this, make sure to remove the old implementation afterwards so we don't have duplicate logic
 - Keep the codebase very clean and organized
-- Write tests for new features
+- Create tests for new features and bugfixes: use `Screen` fixture only when browser is involved (JavaScript etc.),
+  otherwise the `User` fixture should be preferred as it is much faster and simpler to use (test runs in same async context as NiceGUI)
 - Run tests before submitting any changes
 - Format code using autopep8 before submitting changes
 - Use pre-commit hooks to ensure coding style compliance
 - When adding new features, include corresponding tests
 - For documentation, ensure each sentence is on a new line
+- Discuss before implementing and if an approach is unclear, present options and trade-offs
+- Approach large changes step-by-step and get confirmation before drastic refactorings
+- Think from first principles: Always question your assumptions to find the true nature of problems
 
 ### Linting
 

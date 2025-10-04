@@ -19,3 +19,4 @@
 - Re-run poetry lock to fix nicegui-highcharts incompatibility (#5204 by @evnchn)
 - Use poetry 2.1.2 in the devcontainer (#5205 by @evnchn)
 - Fix fly docker build (#5210 by @rodja)
+- Overhaul AI instructions (#5197 by @rodja, @evnchn)
