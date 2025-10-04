@@ -134,7 +134,7 @@ class UserInteraction(Generic[T]):
     def clear(self) -> Self:
         """Clear the selected elements.
 
-        Note: All elements must have a ``value`` attribute).
+        Note: All elements must have a ``value`` attribute.
         """
         assert self.user.client
         with self.user.client:
