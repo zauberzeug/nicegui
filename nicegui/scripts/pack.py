@@ -38,6 +38,11 @@ def main() -> None:
         'Create a single executable file.\n'
         'Whilst convenient for distribution, it will be slower to start up.'
     ))
+    parser.add_argument('--onedir', action='store_true', default=False, help=(
+        'Create an executable, but store the program scripts in a separate directory.\n'
+        'This has a performance increase over "--onefile" because there is no unpack step.'
+        'For distribution, pack it for instance into a .7z file.'
+    ))
     parser.add_argument('--add-data', type=str, action='append', default=[
         f'{Path(nicegui.__file__).parent}{os.pathsep}nicegui',
     ], help='Include additional data.')
@@ -57,6 +62,8 @@ def main() -> None:
         command.append('--windowed')
     if args.onefile:
         command.append('--onefile')
+    if args.onedir:
+        command.append('--onedir')
     for data in args.add_data:
         command.extend(['--add-data', data])
     if args.icon:
