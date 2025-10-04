@@ -70,8 +70,8 @@ def toggle_button() -> None:
     class ToggleButton(ui.button):
 
         def __init__(self, *args, **kwargs) -> None:
-            super().__init__(*args, **kwargs)
             self._state = False
+            super().__init__(*args, **kwargs)
             self.on('click', self.toggle)
 
         def toggle(self) -> None:

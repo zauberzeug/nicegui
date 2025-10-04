@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import json
 import subprocess
+import time
 
 
 def run(cmd: list[str], *, capture: bool = False) -> str:
@@ -17,16 +18,16 @@ try:
 except Exception:
     version = '0.0.0'
 
-run(['fly', 'deploy', '--wait-timeout', '360', '--build-arg', f'VERSION={version}'])
+run(['fly', 'deploy', '--wait-timeout', '600', '--lease-timeout', '30s', '--build-arg', f'VERSION={version}'])
 
 instances = {
     'yul': 2,  # Montreal, Quebec (Canada)
-    'iad': 4,  # Washington DC, Virginia (US)
+    'iad': 3,  # Washington DC, Virginia (US)
     'sjc': 2,  # San Jose, California (US)
     'lax': 2,  # Los Angeles, California (US)
-    'mia': 3,  # Miami, Florida (US)
+    'mia': 2,  # Miami, Florida (US)
     'sea': 2,  # Seattle, Washington (US)
-    'fra': 5,  # Frankfurt, Germany
+    'fra': 3,  # Frankfurt, Germany
     'ams': 2,  # Amsterdam, Netherlands
     'mad': 1,  # Madrid, Spain
     'cdg': 2,  # Paris, France
@@ -34,16 +35,20 @@ instances = {
     'otp': 1,  # Bucharest, Romania
     'jnb': 1,  # Johannesburg, South Africa
     'bom': 1,  # Mumbai, India
-    'nrt': 4,  # Tokyo, Japan
+    'nrt': 3,  # Tokyo, Japan
     'sin': 2,  # Singapore
-    'hkg': 4,  # Hong Kong
+    'hkg': 3,  # Hong Kong
     'syd': 1,  # Sydney, Australia
     'gru': 1,  # Sao Paulo, Brazil
 }
+
+print('scaling regions...')
 for region, count in instances.items():
     run(['fly', 'scale', 'count', f'app={count}', '--region', region, '-y'])
+    time.sleep(2)
 
 # NOTE: pin first machine per region to avoid cold-start latency
+print('pinning machines...')
 machines_json = run(['fly', 'machines', 'list', '--json'], capture=True)
 machines = json.loads(machines_json)
 pinned_regions = set()
@@ -56,3 +61,4 @@ for m in machines:
         run(['fly', 'machine', 'update', machine_id, '--autostop=false', '-y'])
         print(f'pinned {machine_id} in {region}')
         pinned_regions.add(region)
+        time.sleep(2)
