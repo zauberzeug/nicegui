@@ -139,6 +139,8 @@ class UserInteraction(Generic[T]):
         assert self.user.client
         with self.user.client:
             for element in self.elements:
+                if isinstance(element, DisableableElement) and not element.enabled:
+                    continue
                 assert isinstance(element, ValueElement)
                 element.value = None
         return self

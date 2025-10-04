@@ -594,6 +594,23 @@ async def test_typing_to_disabled_element(user: User) -> None:
     await user.should_not_see(given_new_input)
 
 
+async def test_clearing_disabled_element(user: User) -> None:
+    initial_value = 'Cannot clear this'
+    target = None
+
+    @ui.page('/')
+    def page():
+        nonlocal target
+        target = ui.input(value=initial_value)
+        target.disable()
+
+    await user.open('/')
+    user.find(ui.input).clear()
+
+    assert target.value == initial_value
+    await user.should_see(initial_value)
+
+
 async def test_drawer(user: User):
     @ui.page('/')
     def test_page():
