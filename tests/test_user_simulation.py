@@ -60,6 +60,17 @@ async def test_button_click(user: User) -> None:
     await user.should_see('clicked')
 
 
+async def test_clicking_disabled_button(user: User) -> None:
+    @ui.page('/')
+    def page():
+        button = ui.button('My Button', on_click=lambda: ui.notify('Button clicked'))
+        button.disable()
+
+    await user.open('/')
+    user.find('My Button').click()
+    await user.should_not_see('Button clicked')
+
+
 async def test_assertion_raised_when_no_nicegui_page_is_returned(user: User) -> None:
     @app.get('/plain')
     def index() -> PlainTextResponse:
@@ -581,6 +592,23 @@ async def test_typing_to_disabled_element(user: User) -> None:
     assert target.value == initial_value
     await user.should_see(initial_value)
     await user.should_not_see(given_new_input)
+
+
+async def test_clearing_disabled_element(user: User) -> None:
+    initial_value = 'Cannot clear this'
+    target = None
+
+    @ui.page('/')
+    def page():
+        nonlocal target
+        target = ui.input(value=initial_value)
+        target.disable()
+
+    await user.open('/')
+    user.find(ui.input).clear()
+
+    assert target.value == initial_value
+    await user.should_see(initial_value)
 
 
 async def test_drawer(user: User):

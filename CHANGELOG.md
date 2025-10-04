@@ -4,6 +4,10 @@
 
 - Fix docker builds by not excluding dist/ directories from the build context (#5200, #5202 by @Yuerchu, @rodja, @falkoschindler)
 
+### Testing
+
+- Check disabled state before clicking or clearing via user simulated interaction (#5191, #5209 by @igro-marczak, @rodja)
+
 ### Documentation
 
 - Fix menu by disabling the deselection of tree elements (#5207, #5208 by @python-and-novella, @rodja)
