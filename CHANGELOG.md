@@ -1,8 +1,8 @@
 ## [Unreleased]
 
-### Bugfixes
+### Testing
 
-- Check disabled state before clicking or clearing via user simulated interaction in pytests (#5209 by @igro-marczak, @rodja)
+- Check disabled state before clicking or clearing via user simulated interaction (#5191, #5209 by @igro-marczak, @rodja)
 
 ### Infrastructure
 
