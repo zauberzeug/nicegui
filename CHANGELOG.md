@@ -1,5 +1,9 @@
 ## [Unreleased]
 
+### Bugfixes
+
+- Check disabled state before clicking or clearing via user simulated interaction in pytests (#5209 by @igro-marczak, @rodja)
+
 ### Infrastructure
 
 - Re-run poetry lock to fix nicegui-highcharts incompatibility (#5204 by @evnchn)
