@@ -1,8 +1,8 @@
 ## [Unreleased]
 
-### Bugfixes
+### Documentation
 
-- Fix documentation menu by disabling the deselection of tree elements (#5208 by @python-and-novella, @rodja)
+- Fix menu by disabling the deselection of tree elements (#5207, #5208 by @python-and-novella, @rodja)
 
 ### Infrastructure
 
