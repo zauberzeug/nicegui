@@ -7,6 +7,7 @@
 ### Testing
 
 - Check disabled state before clicking or clearing via user simulated interaction (#5191, #5209 by @igro-marczak, @rodja)
+- Make `user.should_see` work with icon and chat message names (#5183, #5184 by @phifuh, @rodja)
 
 ### Documentation
 

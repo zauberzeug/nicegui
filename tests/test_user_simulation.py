@@ -228,6 +228,40 @@ async def test_input(user: User, kind: type) -> None:
     await user.should_see('Changed: Test')
 
 
+async def test_name_property(user: User) -> None:
+    @ui.page('/')
+    def page():
+        ui.icon('sym-o-home')
+        ui.chat_message('Hello NiceGUI!', name='my chat partner')
+
+        with ui.carousel():
+            with ui.carousel_slide(name='first slide'):
+                ui.label('one')
+            with ui.carousel_slide(name='second slide'):
+                ui.label('two')
+
+        with ui.tabs():
+            ui.tab(name='home tab', label='Home', icon='home')
+            ui.tab(name='about tab', label='About', icon='info')
+
+        with ui.stepper():
+            with ui.step(name='step 1'):
+                ui.label('Make a plan')
+
+    await user.open('/')
+
+    # name is visible for icon and chat message
+    await user.should_see('sym-o-home')
+    await user.should_see('my chat partner')
+
+    # name is purely internal to the carousel, tabs and stepper
+    await user.should_not_see('first slide')
+    await user.should_not_see('second slide')
+    await user.should_not_see('home tab')
+    await user.should_not_see('about tab')
+    await user.should_not_see('step 1')
+
+
 async def test_should_not_see(user: User) -> None:
     @ui.page('/')
     def page():
