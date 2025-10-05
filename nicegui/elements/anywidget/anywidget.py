@@ -6,8 +6,8 @@ import os
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Tuple
 
-from .. import optional_features
-from .mixins.value_element import ValueElement
+from ... import optional_features
+from ..mixins.value_element import ValueElement
 
 if importlib.util.find_spec('anywidget'):
     optional_features.register('anywidget')
@@ -17,7 +17,7 @@ if importlib.util.find_spec('anywidget'):
 
 class AnyWidget(ValueElement,
                 component='anywidget.js',
-                dependencies=['lib/anywidget/widget.js'],
+                dependencies=['widget.js'],
                 default_classes='nicegui-anywidget'):
 
     VALUE_PROP: str = 'traits'
@@ -26,10 +26,18 @@ class AnyWidget(ValueElement,
                  widget: anywidget.AnyWidget,
                  **kwargs: Any,
                  ) -> None:
-        """Embed an `anywidget.AnyWidget` in NiceGUI
+        """Anywidget
 
-        This element will observe all `sync` traits of the widget and trigger JS
-        updates when they change.
+        `anywidget <https://anywidget.dev/en/getting-started/>`_ is a library that allows you to
+        embed arbitrary JavaScript widgets in a cross-frontend friendly manner.
+
+        There are many publicly available examples of `anywidget` widgets
+        in the `anywidget gallery <https://try.anywidget.dev/>`_, including
+        `altair.JupyterChart <https://altair-viz.github.io/user_guide/interactions/jupyter_chart.html>`_,
+        and `quak <https://github.com/manzt/quak>`_.
+
+        Implementation: The `nicegui.anywidget` element takes an `Anywidget` and observes all `sync=True` traits
+        of the widget, trigger JS updates when the traits change.
         Conversely, changes on the frontend will be synced back to the widget,
         using `ValueElement`'s handling to listen to changes on `traits`.
 
