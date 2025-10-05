@@ -385,3 +385,38 @@ async def test_awaiting_backup_scheduled_during_teardown(user: User, tmp_path):
     await background_tasks.teardown()
     assert path.exists(), 'backup should be written during teardown'
     assert path.read_text(encoding='utf-8') == '{"key":"value"}'
+
+
+def test_storage_default_cookie_headers(screen: Screen):
+    @ui.page('/')
+    def page():
+        ui.label('Hello, world!')
+
+    screen.ui_run_kwargs['storage_secret'] = 'just a test'
+    screen.open('/')
+    with httpx.Client() as http_client:
+        response = http_client.get(f'http://localhost:{Screen.PORT}/')
+        assert response.status_code == 200
+        assert 'set-cookie' in response.headers
+        cookie_settings = response.headers['set-cookie'].split('; ')
+        assert 'httponly' in cookie_settings
+        assert 'samesite=lax' in cookie_settings
+        assert 'secure' not in cookie_settings
+
+
+def test_storage_custom_cookie_headers(screen: Screen):
+    @ui.page('/')
+    def page():
+        ui.label('Hello, world!')
+
+    screen.ui_run_kwargs['storage_secret'] = 'just a test'
+    screen.ui_run_kwargs['session_middleware_kwargs'] = {'same_site': 'none', 'https_only': True}
+    screen.open('/')
+    with httpx.Client() as http_client:
+        response = http_client.get(f'http://localhost:{Screen.PORT}/')
+        assert response.status_code == 200
+        assert 'set-cookie' in response.headers
+        cookie_settings = response.headers['set-cookie'].split('; ')
+        assert 'httponly' in cookie_settings
+        assert 'samesite=none' in cookie_settings
+        assert 'secure' in cookie_settings
