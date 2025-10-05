@@ -78,6 +78,8 @@ rcssmin = "^1.2.1"
 tinycss2 = "^1.4.0"
 html-sanitizer = "^2.6.0"
 poetry-dynamic-versioning = "^1.8.0"
+anywidget = ">=0.9.0"
+altair = ">=6.0.0"
 
 [tool.poetry.scripts]
 nicegui-pack = "nicegui.scripts.pack:main"
