@@ -17,13 +17,14 @@ class RedisPersistentDict(PersistentDict):
         if not optional_features.has('redis'):
             raise ImportError('Redis is not installed. Please run "pip install nicegui[redis]".')
         self.url = url
-        self.redis_client = redis.from_url(
-            url,
-            health_check_interval=10,
-            socket_connect_timeout=5,
-            retry_on_timeout=True,
-            socket_keepalive=True,
-        )
+        self.redis_client_params = {
+            'health_check_interval': 10,
+            'socket_connect_timeout': 5,
+            'retry_on_timeout': True,
+        }
+        if not url.startswith('unix://'):
+            self.redis_client_params['socket_keepalive'] = True
+        self.redis_client = redis.from_url(url, **self.redis_client_params)
         self.pubsub = self.redis_client.pubsub()
         self.key = key_prefix + id
         self._should_listen = True
@@ -40,13 +41,7 @@ class RedisPersistentDict(PersistentDict):
 
     def initialize_sync(self) -> None:
         """Load initial data from Redis and start listening for changes in a synchronous context."""
-        with redis_sync.from_url(
-            self.url,
-            health_check_interval=10,
-            socket_connect_timeout=5,
-            retry_on_timeout=True,
-            socket_keepalive=True,
-        ) as redis_client_sync:
+        with redis_sync.from_url(self.url, **self.redis_client_params) as redis_client_sync:
             try:
                 data = redis_client_sync.get(self.key)
                 self.update(json.loads(data) if data else {})
