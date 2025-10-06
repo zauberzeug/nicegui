@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import multiprocessing
 import socket
-from typing import List, Optional
 
 import uvicorn
 
@@ -11,9 +10,9 @@ from .native import native
 
 
 class CustomServerConfig(uvicorn.Config):
-    storage_secret: Optional[str] = None
-    method_queue: Optional[multiprocessing.Queue] = None
-    response_queue: Optional[multiprocessing.Queue] = None
+    storage_secret: str | None = None
+    method_queue: multiprocessing.Queue | None = None
+    response_queue: multiprocessing.Queue | None = None
 
 
 class Server(uvicorn.Server):
@@ -24,7 +23,7 @@ class Server(uvicorn.Server):
         """Create a singleton instance of the server."""
         cls.instance = cls(config=config)
 
-    def run(self, sockets: Optional[List[socket.socket]] = None) -> None:
+    def run(self, sockets: list[socket.socket] | None = None) -> None:
         self.instance = self
         assert isinstance(self.config, CustomServerConfig)
         if self.config.method_queue is not None and self.config.response_queue is not None:

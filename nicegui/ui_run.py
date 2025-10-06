@@ -1,8 +1,9 @@
 import multiprocessing
 import os
+import runpy
 import sys
 from pathlib import Path
-from typing import Any, List, Literal, Optional, Tuple, TypedDict, Union
+from typing import Any, Callable, Literal, Optional, TypedDict, Union
 
 from fastapi.middleware.gzip import GZipMiddleware
 from starlette.routing import Route
@@ -19,6 +20,7 @@ from .language import Language
 from .logging import log
 from .middlewares import RedirectWithPrefixMiddleware, SetCacheControlMiddleware
 from .server import CustomServerConfig, Server
+from .storage import set_storage_secret
 
 APP_IMPORT_STRING = 'nicegui:app'
 
@@ -45,7 +47,7 @@ class DocsConfig(TypedDict):
     license_info: Optional[LicenseInfoDict]
 
 
-def run(*,
+def run(root: Optional[Callable] = None, *,
         host: Optional[str] = None,
         port: Optional[int] = None,
         title: str = 'NiceGUI',
@@ -61,7 +63,7 @@ def run(*,
         show: bool = True,
         on_air: Optional[Union[str, Literal[True]]] = None,
         native: bool = False,
-        window_size: Optional[Tuple[int, int]] = None,
+        window_size: Optional[tuple[int, int]] = None,
         fullscreen: bool = False,
         frameless: bool = False,
         reload: bool = True,
@@ -81,6 +83,7 @@ def run(*,
     You can call `ui.run()` with optional arguments.
     Most of them only apply after stopping and fully restarting the app and do not apply with auto-reloading.
 
+    :param root: root page function (*added in version 3.0.0*)
     :param host: start server with this host (defaults to `'127.0.0.1` in native mode, otherwise `'0.0.0.0'`)
     :param port: use this port (default: 8080 in normal mode, and an automatically determined open port in native mode)
     :param title: page title (default: `'NiceGUI'`, can be overwritten per page)
@@ -111,6 +114,23 @@ def run(*,
     :param show_welcome_message: whether to show the welcome message (default: `True`)
     :param kwargs: additional keyword arguments are passed to `uvicorn.run`
     """
+    if core.script_mode:
+        if Client.page_routes:
+            raise RuntimeError('ui.page cannot be used in NiceGUI scripts where you define UI in the global scope. '
+                               'To use multiple pages, either move all UI into page functions or use ui.sub_pages.')
+
+        if helpers.is_pytest():
+            raise RuntimeError('Script mode is not supported in pytest. '
+                               'Please pass a root function to ui.run() or use page decorators.')
+        if core.app.is_started:
+            return
+
+        def run_script() -> None:
+            runpy.run_path(sys.argv[0])
+        root = run_script
+        assert core.script_client is not None
+        core.script_client.delete()
+
     core.app.config.add_run_config(
         reload=reload,
         title=title,
@@ -126,6 +146,7 @@ def run(*,
         prod_js=prod_js,
         show_welcome_message=show_welcome_message,
     )
+    core.root = root
     core.app.config.endpoint_documentation = endpoint_documentation
     if not helpers.is_pytest():
         core.app.add_middleware(GZipMiddleware)
@@ -159,6 +180,10 @@ def run(*,
             core.app.license_info = dict(license_info) if license_info else None
         core.app.setup()
 
+    if helpers.is_user_simulation():
+        set_storage_secret(storage_secret)
+        return
+
     if on_air:
         core.air = Air('' if on_air is True else on_air)
 
@@ -188,6 +213,13 @@ def run(*,
     assert host is not None
     assert port is not None
 
+    if helpers.is_pytest():
+        port = int(os.environ['NICEGUI_SCREEN_TEST_PORT'])
+        show = False
+        reload = False
+        native = False
+        show_welcome_message = False
+
     if kwargs.get('ssl_certfile') and kwargs.get('ssl_keyfile'):
         protocol = 'https'
     else:
@@ -201,7 +233,7 @@ def run(*,
     if show:
         helpers.schedule_browser(protocol, host, port)
 
-    def split_args(args: str) -> List[str]:
+    def split_args(args: str) -> list[str]:
         return [a.strip() for a in args.split(',')]
 
     if kwargs.get('workers', 1) > 1:

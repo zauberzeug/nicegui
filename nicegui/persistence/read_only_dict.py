@@ -1,11 +1,11 @@
-from collections.abc import MutableMapping
-from typing import Any, Dict, Iterator
+from collections.abc import Iterator, MutableMapping
+from typing import Any
 
 
 class ReadOnlyDict(MutableMapping):
 
-    def __init__(self, data: Dict[Any, Any], write_error_message: str = 'Read-only dict') -> None:
-        self._data: Dict[Any, Any] = data
+    def __init__(self, data: dict[Any, Any], write_error_message: str = 'Read-only dict') -> None:
+        self._data: dict[Any, Any] = data
         self._write_error_message: str = write_error_message
 
     def __getitem__(self, item: Any) -> Any:

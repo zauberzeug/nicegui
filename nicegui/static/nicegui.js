@@ -5,7 +5,6 @@ const None = undefined;
 let app = undefined;
 let mounted_app = undefined;
 
-const loaded_libraries = new Set();
 const loaded_components = new Set();
 
 function parseElements(raw_elements) {
@@ -27,7 +26,6 @@ function replaceUndefinedAttributes(element) {
   element.events ??= [];
   element.update_method ??= null;
   element.component ??= null;
-  element.libraries ??= [];
   element.slots = {
     default: { ids: element.children || [] },
     ...(element.slots ?? {}),
@@ -149,7 +147,6 @@ function renderRecursively(elements, id) {
 
   // @todo: Try avoid this with better handling of initial page load.
   if (element.component) loaded_components.add(element.component.name);
-  element.libraries.forEach((library) => loaded_libraries.add(library.name));
 
   const props = {
     id: "c" + id,
@@ -272,6 +269,7 @@ function download(src, filename, mediaType, prefix) {
 }
 
 function ack() {
+  if (!window.socket || !window.did_handshake) return;
   if (window.ackedMessageId >= window.nextMessageId) return;
   window.socket.emit("ack", {
     client_id: window.clientId,
@@ -287,13 +285,6 @@ async function loadDependencies(element, prefix, version) {
       const component = await import(`${prefix}/_nicegui/${version}/components/${key}`);
       app.component(tag, component.default);
       loaded_components.add(name);
-    }
-  }
-  if (element.libraries) {
-    for (const { name, key } of element.libraries) {
-      if (loaded_libraries.has(name)) continue;
-      await import(`${prefix}/_nicegui/${version}/libraries/${key}`);
-      loaded_libraries.add(name);
     }
   }
 }
@@ -343,7 +334,10 @@ function createApp(elements, options) {
         path: `${options.prefix}/_nicegui_ws/socket.io`,
         query: options.query,
         extraHeaders: options.extraHeaders,
-        transports: options.transports,
+        transports:
+          "prerendering" in document && document.prerendering === true
+            ? ["polling", ...options.transports]
+            : options.transports,
       });
       window.did_handshake = false;
       const messageHandlers = {
@@ -381,7 +375,7 @@ function createApp(elements, options) {
         },
         update: async (msg) => {
           const loadPromises = Object.entries(msg)
-            .filter(([_, element]) => element && (element.component || element.libraries))
+            .filter(([_, element]) => element && element.component)
             .map(([_, element]) => loadDependencies(element, options.prefix, options.version));
           await Promise.all(loadPromises);
 
@@ -440,10 +434,12 @@ function createApp(elements, options) {
 }
 
 // HACK: remove Quasar's rules for divs in QCard (#2265, #2301)
-for (let sheet of document.styleSheets) {
-  if (/\/quasar(?:\.prod)?\.css$/.test(sheet.href)) {
-    for (let rule of sheet.cssRules) {
-      if (/\.q-card > div/.test(rule.selectorText)) rule.selectorText = ".nicegui-card-tight" + rule.selectorText;
+for (const importRule of document.styleSheets[0].cssRules) {
+  if (importRule instanceof CSSImportRule && /quasar/.test(importRule.styleSheet?.href)) {
+    for (const rule of Array.from(importRule.styleSheet.cssRules)) {
+      if (rule instanceof CSSStyleRule && /\.q-card > div/.test(rule.selectorText)) {
+        if (/\.q-card > div/.test(rule.selectorText)) rule.selectorText = ".nicegui-card-tight" + rule.selectorText;
+      }
     }
   }
 }

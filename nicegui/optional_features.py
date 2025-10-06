@@ -1,6 +1,6 @@
-from typing import Literal, Set
+from typing import Literal
 
-_optional_features: Set[str] = set()
+_optional_features: set[str] = set()
 
 FEATURE = Literal[
     'highcharts',

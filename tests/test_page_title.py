@@ -3,11 +3,13 @@ from nicegui.testing import Screen
 
 
 def test_page_title(screen: Screen):
-    ui.page_title('Initial title')
-    ui.button('Change title', on_click=lambda: ui.page_title('"New title"'))
+    @ui.page('/')
+    def page():
+        ui.page_title('Initial title')
+        ui.button('Change title', on_click=lambda: ui.page_title('"New title"'))
 
     @ui.page('/{title}')
-    def page(title: str):
+    def page_with_title(title: str):
         ui.page_title(f'Title: {title}')
 
     screen.open('/')
