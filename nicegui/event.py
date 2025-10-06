@@ -82,7 +82,7 @@ class Event(Generic[P]):
         if callback_.slot is None and unsubscribe_on_disconnect is True:
             raise RuntimeError('Calling `subscribe` with `unsubscribe_on_disconnect=True` outside of a UI context '
                                'is not supported.')
-        if client is not None and unsubscribe_on_disconnect is not False:
+        if client is not None and unsubscribe_on_disconnect is not False and not core.is_script_mode_preflight():
             async def register_disconnect() -> None:
                 try:
                     await client.connected()
