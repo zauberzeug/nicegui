@@ -1,4 +1,19 @@
-## [Unreleased]
+## 3.0.3
+
+### Bugfixes
+
+- Improve `Event` demos and fix bugs related to script mode (#5216, #5221 by @v479038280, @python-and-novella, @falkoschindler)
+- Fix support for Redis Unix-Domainsocket-connections (#5214 by @senfomat, @falkoschindler, @evnchn)
+
+### Documentation
+
+- Fix `ui.notify` documentation link (#5212 by @samuller)
+
+### Infrastructure
+
+- Consolidate AI instructions into AGENTS.md (#5217 by @rodja, @evnchn)
+
+## 3.0.1
 
 ### Bugfixes
 
