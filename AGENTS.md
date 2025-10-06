@@ -1,7 +1,8 @@
 # AI Agent Guidelines for NiceGUI
 
 > **For**: AI assistants (Cursor, GitHub Copilot, Codex, etc.) working on NiceGUI codebase
-> **About**: The project, examples and architecture is described in [README.md](README.md) > **Standards**: All coding standards are in [CONTRIBUTING.md](CONTRIBUTING.md) – follow those rules
+> **About**: The project, examples and architecture is described in [README.md](README.md)
+> **Standards**: All coding standards are in [CONTRIBUTING.md](CONTRIBUTING.md) – follow those rules
 
 ## Core Principles
 
