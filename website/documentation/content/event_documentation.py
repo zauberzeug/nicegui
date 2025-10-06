@@ -7,24 +7,15 @@ from . import doc
 def events_demo():
     from nicegui import Event
 
-    click = Event()
-    click.subscribe(lambda: ui.notify('clicked'))
+    tweet = Event[str]()
 
-    ui.button('Click me', on_click=click.emit)
+    @ui.page('/')
+    def page():
+        with ui.row(align_items='center'):
+            message = ui.input('Tweet')
+            ui.button(icon='send', on_click=lambda: tweet.emit(message.value)).props('flat')
 
-
-@doc.demo('Events with arguments', '''
-    Events can also include arguments.
-    The callback can use them, but also ignore them if they are not needed.
-''')
-def events_with_arguments():
-    from nicegui import Event
-
-    answer = Event[int]()
-    answer.subscribe(lambda: ui.notify('Answer found!'))
-    answer.subscribe(lambda x: ui.notify(f'{x = }'))
-
-    ui.button('Answer', on_click=lambda: answer.emit(42))
+        tweet.subscribe(lambda m: ui.notify(f'Someone tweeted: "{m}"'))
 
 
 @doc.demo('Emitting vs. calling events', '''
@@ -32,25 +23,36 @@ def events_with_arguments():
     If you want to wait for the subscribed callbacks to complete, use the `call` method.
 
     The following demo shows how to use `call` to reset the button state after the event has been called.
+
+    Note that in this particular case, `submit` could also call `backup` directly.
+    But in some situations an event can help to decouple the code.
 ''')
 def emitting_vs_calling_events():
-    import asyncio
     from nicegui import Event
+    import asyncio
 
-    click = Event()
+    data_submitted = Event[str]()
 
-    @click.subscribe
-    async def handler():
-        n = ui.notification('Running...')
-        await asyncio.sleep(1)
-        n.message = 'Done!'
+    @data_submitted.subscribe
+    async def backup(data: str):
+        print(f'Saving "{data}"...')
+        await asyncio.sleep(1)  # simulate writing to database
 
-    async def handle_click():
-        button.disable()
-        await click.call()
-        button.enable()
+    @ui.page('/')
+    def page():
+        async def submit():
+            button.disable()
+            try:
+                await data_submitted.call(data.value)
+                data.value = None
+            except Exception as e:
+                ui.notify(f'Error: {e}', color='negative')
+            finally:
+                button.enable()
 
-    button = ui.button('Click me', on_click=handle_click)
+        with ui.row(align_items='center'):
+            data = ui.input('Data')
+            button = ui.button('Submit', on_click=submit).props('flat')
 
 
 doc.reference(Event)

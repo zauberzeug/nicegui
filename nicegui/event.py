@@ -46,8 +46,8 @@ class Event(Generic[P]):
     def __init__(self) -> None:
         """Event
 
-        Events are a powerful tool distribute information between different parts of your code.
-        The following demo shows how to define an event, subscribe a callback and emit it.
+        Events are a powerful tool distribute information between different parts of your code,
+        especially from long-living objects like data models to the short-living UI.
 
         Handlers can be synchronous or asynchronous.
         They can also take arguments if the event contains arguments.
@@ -75,11 +75,10 @@ class Event(Generic[P]):
         frame = frame.f_back
         assert frame is not None
         callback_ = Callback[P](func=callback, filepath=frame.f_code.co_filename, line=frame.f_lineno)
-        try:
+        client: Client | None = None
+        if Slot.get_stack():  # NOTE: additional check before accessing `context.slot` which would enter script mode
             callback_.slot = weakref.ref(context.slot)
-            client: Client | None = context.client
-        except RuntimeError:
-            client = None
+            client = context.client
         if callback_.slot is None and unsubscribe_on_disconnect is True:
             raise RuntimeError('Calling `subscribe` with `unsubscribe_on_disconnect=True` outside of a UI context '
                                'is not supported.')
