@@ -3,6 +3,30 @@
 We're thrilled that you're interested in contributing to NiceGUI!
 Here are some guidelines that will help you get started.
 
+## About This Project
+
+NiceGUI is a Python library for building web-based user interfaces with minimal code.
+It's designed to be simple, powerful, and fun to use.
+
+### Project Structure
+
+- `nicegui/` - Core library code (public API)
+- `nicegui/elements/` - Built-in UI elements
+- `nicegui/functions/` - Utility functions
+- `examples/` - Standalone example applications
+- `website/` - Documentation site (nicegui.io)
+- `tests/` - Test suite
+- `main.py` - Runs the documentation website locally
+
+### Tech Stack
+
+- **Python 3.9+** - Core language
+- **FastAPI/Starlette** - Web framework
+- **Vue 3** - Frontend framework
+- **Quasar** - UI component framework
+- **Tailwind CSS 4** - Styling
+- **pytest** - Testing framework
+
 ## Reporting issues
 
 If you encounter a bug or other issue with NiceGUI, the best way to report it is by opening a new issue on our [GitHub repository](https://github.com/zauberzeug/nicegui).
@@ -22,7 +46,7 @@ We're always looking for bug fixes, performance improvements, and new features.
 ### AI Assistant Integration
 
 This project is designed to work well with AI assistants like Cursor, GitHub Copilot, and others.
-See [AGENT.md](AGENT.md) for guidelines specifically for AI assistants that complement this contributing guide.
+See [AGENTS.md](AGENTS.md) for guidelines specifically for AI assistants that complement this contributing guide.
 
 We provide review instructions for PR reviews in [.github/copilot-instructions.md](.github/copilot-instructions.md).
 You should review your changes with an AI assistant before committing/pushing:
