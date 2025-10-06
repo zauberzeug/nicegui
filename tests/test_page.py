@@ -133,11 +133,11 @@ def test_adding_elements_after_connected(screen: Screen):
 
 
 def test_exception(screen: Screen):
-    @ui.page('/')
+    @ui.page('/intentional_error')
     def page():
         raise RuntimeError('some exception')
 
-    screen.open('/')
+    screen.open('/intentional_error')
     screen.should_contain('500')
     screen.should_contain('Server error')
     screen.assert_py_logger('ERROR', 'some exception')

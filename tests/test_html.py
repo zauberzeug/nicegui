@@ -27,7 +27,7 @@ def test_html_button(screen: Screen):
 def test_sanitize(screen: Screen):
     @ui.page('/x')
     def intentional_error_page():
-        return HTTPException(500, 'Intentional error')
+        return HTTPException(500, 'Intentional Error (just like /intentional_error')
 
     @ui.page('/')
     def page():
