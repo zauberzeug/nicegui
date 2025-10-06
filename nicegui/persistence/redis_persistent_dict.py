@@ -21,10 +21,9 @@ class RedisPersistentDict(PersistentDict):
             'health_check_interval': 10,
             'socket_connect_timeout': 5,
             'retry_on_timeout': True,
+            **({'socket_keepalive': True} if not url.startswith('unix://') else {}),
         }
-        if not url.startswith('unix://'):
-            self._redis_client_params['socket_keepalive'] = True
-        self.redis_client = redis.from_url(url, **self._redis_client_params)
+        self.redis_client = redis.from_url(self.url, **self._redis_client_params)
         self.pubsub = self.redis_client.pubsub()
         self.key = key_prefix + id
         self._should_listen = True
