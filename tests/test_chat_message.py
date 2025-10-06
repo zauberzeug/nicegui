@@ -1,4 +1,5 @@
 import pytest
+from fastapi import HTTPException
 from html_sanitizer import Sanitizer
 from selenium.webdriver.common.by import By
 
@@ -7,6 +8,10 @@ from nicegui.testing import Screen
 
 
 def test_text_vs_html(screen: Screen):
+    @ui.page('/x')
+    def intentional_error_page():
+        return HTTPException(500, 'Intentional error')
+
     @ui.page('/')
     def page():
         ui.chat_message('10&euro;')

@@ -1,3 +1,4 @@
+from fastapi import HTTPException
 from html_sanitizer import Sanitizer
 
 from nicegui import html, ui
@@ -24,6 +25,10 @@ def test_html_button(screen: Screen):
 
 
 def test_sanitize(screen: Screen):
+    @ui.page('/x')
+    def intentional_error_page():
+        return HTTPException(500, 'Intentional error')
+
     @ui.page('/')
     def page():
         ui.html('<img src=x onerror=Quasar.Notify.create({message:"A"})>', sanitize=False)
