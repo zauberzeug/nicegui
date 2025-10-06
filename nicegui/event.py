@@ -7,6 +7,7 @@ from collections.abc import Awaitable, Callable
 from contextlib import nullcontext
 from dataclasses import dataclass
 from typing import Any, ClassVar, Generic
+from weakref import WeakSet
 
 from typing_extensions import ParamSpec
 
@@ -41,7 +42,7 @@ class Callback(Generic[P]):
 
 
 class Event(Generic[P]):
-    instances: ClassVar[list[Event]] = []
+    instances: ClassVar[WeakSet[Event]] = WeakSet()
 
     def __init__(self) -> None:
         """Event
@@ -55,7 +56,7 @@ class Event(Generic[P]):
         *Added in version 3.0.0*
         """
         self.callbacks: list[Callback[P]] = []
-        self.instances.append(self)
+        self.instances.add(self)
 
     def subscribe(self, callback: Callable[P, Any] | Callable[[], Any], *,
                   unsubscribe_on_disconnect: bool | None = None) -> None:
