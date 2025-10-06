@@ -9,13 +9,14 @@ def events_demo():
 
     tweet = Event[str]()
 
-    @ui.page('/')
+    # @ui.page('/')
     def page():
         with ui.row(align_items='center'):
             message = ui.input('Tweet')
             ui.button(icon='send', on_click=lambda: tweet.emit(message.value)).props('flat')
 
         tweet.subscribe(lambda m: ui.notify(f'Someone tweeted: "{m}"'))
+    page()  # HIDE
 
 
 @doc.demo('Emitting vs. calling events', '''
@@ -38,7 +39,7 @@ def emitting_vs_calling_events():
         print(f'Saving "{data}"...')
         await asyncio.sleep(1)  # simulate writing to database
 
-    @ui.page('/')
+    # @ui.page('/')
     def page():
         async def submit():
             button.disable()
@@ -53,6 +54,7 @@ def emitting_vs_calling_events():
         with ui.row(align_items='center'):
             data = ui.input('Data')
             button = ui.button('Submit', on_click=submit).props('flat')
+    page()  # HIDE
 
 
 doc.reference(Event)
