@@ -6,8 +6,10 @@ export default {
     };
   },
   beforeUpdate() {
-    if (this.$refs.qRef) {
-      this.shouldScroll = this.$refs.qRef.getScroll().verticalPercentage == 1.0;
+    if (this.$refs.qRef && document.body.contains(this.$refs.qRef.$el)) {
+      this.shouldScroll =
+        this.$refs.qRef.$el.childNodes[0].scrollTop + this.$refs.qRef.$el.childNodes[0].clientHeight >=
+        this.$refs.qRef.$el.childNodes[0].scrollHeight;
     }
   },
   updated() {
