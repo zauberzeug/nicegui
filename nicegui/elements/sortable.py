@@ -147,32 +147,32 @@ class Sortable(Element,
                 await self._synchronize_order_js_to_py()
                 return
 
-            moved_dom_id = e.args.get('item')
-
             # Extract actual element ID (remove 'c' prefix if present)
-            moved_id = moved_dom_id[1:] if moved_dom_id.startswith('c') else moved_dom_id
-
-            # Get the index where the item should be inserted
-            new_index = e.args.get('newIndex', 0)
+            element_id = e.args['item'][1:] if e.args['item'].startswith('c') else e.args['item']
+            to_id = e.args['to'][1:] if e.args['to'].startswith('c') else e.args['to']
 
             # Search all other sortable instances for the element
-            found_element = None
+            element = None
+            to_instance = None
 
+            # Find the to-instance and the moved element
             for instance in Sortable._instances.values():
                 if instance == self:
-                    continue
+                    for child in self.default_slot.children:
+                        if str(child.id) == element_id:
+                            element = child
+                            continue
 
                 if instance.default_slot and instance.default_slot.children:
-                    for child in instance.default_slot.children:
-                        if str(child.id) == moved_id:
-                            found_element = child
-                            break
+                    if str(instance.id) == to_id:
+                        to_instance = instance
 
-            if found_element:
-                found_element.move(self, new_index)
+            if element and to_instance:
+                element.move(to_instance, e.args.get('newIndex', 0))
 
         except Exception as err:
             print(f'Error handling cross-element add: {err}')
+
         await self._synchronize_order_js_to_py()
 
     async def _synchronize_order_js_to_py(self) -> None:
