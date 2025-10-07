@@ -37,17 +37,16 @@ class Sortable(Element,
     ) -> None:
         """Initialize the sortable element.
 
-        Args:
-            options: Dictionary of options to pass to SortableJS. See https://github.com/SortableJS/Sortable#options for available options.
-            on_change: Callback when the list order changes
-            on_end: Callback when element dragging ends
-            on_add: Callback when element is dropped into the list from another list
-            on_move: Callback when you move an item
-            on_filter: Callback when filtered item is clicked
-            on_spill: Callback when an item is spilled outside a list
-            on_select: Callback when an item is selected (MultiDrag)
-            on_deselect: Callback when an item is deselected (MultiDrag)
-            on_cancel_clone: Callback when an item is removed from the list into another list
+        :param options: Dictionary of options to pass to SortableJS. See https://github.com/SortableJS/Sortable#options for available options.
+        :param on_change: Callback when the list order changes
+        :param on_end: Callback when element dragging ends
+        :param on_add: Callback when element is dropped into the list from another list
+        :param on_move: Callback when you move an item
+        :param on_filter: Callback when filtered item is clicked
+        :param on_spill: Callback when an item is spilled outside a list
+        :param on_select: Callback when an item is selected (MultiDrag)
+        :param on_deselect: Callback when an item is deselected (MultiDrag)
+        :param on_cancel_clone: Callback when an item is removed from the list into another list
         """
         super().__init__()
 
