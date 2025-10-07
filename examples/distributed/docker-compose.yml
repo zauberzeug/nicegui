@@ -2,9 +2,12 @@ version: "3.8"
 
 services:
   app:
-    image: nicegui-distributed:latest
+    image: zauberzeug/nicegui:3.0.2
     volumes:
-      - ./main.py:/app/main.py:ro
+      - ../../nicegui:/app/nicegui
+      - ./main.py:/app/main.py
+    entrypoint: ["/bin/sh", "-c"]
+    command: ["pip3 install eclipse-zenoh && python3 main.py"] # TODO: remove pip3 after this PR is released and nicegui is upgraded
     networks:
       - distributed
     deploy:

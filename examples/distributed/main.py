@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import random
+import socket
 
 from nicegui import Event, ui
 
@@ -30,18 +31,16 @@ def index():
         </style>
     ''')
 
-    with ui.column().classes('items-center justify-center h-screen gap-8'):
-        ui.label('Distributed Events Demo').classes('text-3xl font-bold')
-        ui.label('Click an emoji - watch it appear on all instances!').classes('text-gray-600')
+    with ui.column().classes('items-center justify-center h-screen w-screen gap-8'):
+        ui.label(f'This is instance {socket.gethostname()}').classes('text-3xl font-bold')
+        ui.label('Click an emoji - watch it appear on all instances (open multiple tabs)!').classes('text-gray-600')
 
-        # Emoji buttons
         emojis = ['🎉', '❤️', '👍', '😂', '🔥', '✨', '🚀', '👏']
         with ui.row().classes('gap-4'):
             for emoji in emojis:
                 ui.button(emoji, on_click=lambda e=emoji: reaction_event.emit(e)).props('flat size=lg')
 
     def show_reaction(emoji: str):
-        # Random position at bottom of screen
         left = random.randint(10, 90)
         ui.run_javascript(f'''
             const div = document.createElement('div');

@@ -62,7 +62,16 @@ class Event(Generic[P]):
         """
         self.callbacks: list[Callback[P]] = []
         self.local = local
-        self.topic = f'event_{id(self)}'
+        # NOTE: Use creation location for topic to ensure same Event in different processes shares the same topic
+        frame = inspect.currentframe()
+        assert frame is not None
+        frame = frame.f_back
+        assert frame is not None
+        # NOTE: Skip frames from typing module (when using Event[T]() syntax)
+        while frame and 'typing.py' in frame.f_code.co_filename:
+            frame = frame.f_back
+        assert frame is not None
+        self.topic = f'event_{frame.f_code.co_filename}:{frame.f_lineno}'
         self._zenoh_setup_done = False
         self.instances.add(self)
         self._setup_distributed()

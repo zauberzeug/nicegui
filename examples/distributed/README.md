@@ -13,21 +13,12 @@ Run on multiple machines/terminals to see events propagate.
 
 ## Docker Swarm Demo
 
-Test with multiple instances behind a load balancer (run from repo root):
-
 ```bash
-# Build once (only dependencies, not code)
-docker build -f examples/distributed/Dockerfile -t nicegui-distributed:latest .
-
-# Deploy with mounted source (hot reload enabled!)
 docker swarm init
-docker stack deploy -c examples/distributed/docker-compose.yml distributed
+docker stack deploy -c docker-compose.yml distributed
 ```
 
-Open http://localhost:8080 in multiple browser tabs/windows. Click an emoji button and watch it float up on **all tabs** simultaneously!
-
-**Hot Reload**: Edit `main.py` → changes auto-reload instantly! 🔥
-(NiceGUI core changes require rebuild)
+Open http://localhost:8080 in multiple browser tabs/windows.
 
 Clean up:
 
