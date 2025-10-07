@@ -1,5 +1,4 @@
 import pytest
-from fastapi import HTTPException
 from html_sanitizer import Sanitizer
 from selenium.webdriver.common.by import By
 
@@ -8,10 +7,6 @@ from nicegui.testing import Screen
 
 
 def test_text_vs_html(screen: Screen):
-    @ui.page('/x')
-    def intentional_error_page():
-        return HTTPException(500, 'Intentional Error (just like /intentional_error')
-
     @ui.page('/')
     def page():
         ui.chat_message('10&euro;')
@@ -27,6 +22,7 @@ def test_text_vs_html(screen: Screen):
         with pytest.raises(ValueError):
             ui.chat_message('80&euro;', text_html=True)
 
+    screen.allow_js_errors = True  # Reason: accessing /x will trigger JS errors
     screen.open('/')
     screen.should_contain('10&euro;')
     screen.should_contain('20€')

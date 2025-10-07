@@ -285,12 +285,9 @@ def test_deepcopy(screen: Screen):
 
 
 def test_missing_storage_secret(screen: Screen):
-    @ui.page('/intentional_error')
-    def page():
-        ui.label(app.storage.user.get('message', 'no message'))
-
     core.app.user_middleware.clear()  # remove the session middlewares added by prepare_simulation by default
-    screen.open('/intentional_error')
+    screen.allow_js_errors = True  # Reason: accessing / will trigger JS errors (it is missing)
+    screen.open('/')
     screen.assert_py_logger('ERROR', 'app.storage.user needs a storage_secret passed in ui.run()')
 
 

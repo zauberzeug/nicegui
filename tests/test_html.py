@@ -1,4 +1,3 @@
-from fastapi import HTTPException
 from html_sanitizer import Sanitizer
 
 from nicegui import html, ui
@@ -25,10 +24,6 @@ def test_html_button(screen: Screen):
 
 
 def test_sanitize(screen: Screen):
-    @ui.page('/x')
-    def intentional_error_page():
-        return HTTPException(500, 'Intentional Error (just like /intentional_error')
-
     @ui.page('/')
     def page():
         ui.html('<img src=x onerror=Quasar.Notify.create({message:"A"})>', sanitize=False)
@@ -36,6 +31,7 @@ def test_sanitize(screen: Screen):
         ui.html('<img src=x onerror=Quasar.Notify.create({message:"C"})>', sanitize=lambda x: x.replace('C', 'C!'))
         ui.html('<img src=x onerror=Quasar.Notify.create({message:"D"})>', sanitize=Sanitizer().sanitize)
 
+    screen.allow_js_errors = True  # Reason: accessing /x will trigger JS errors
     screen.open('/')
     screen.should_contain('A')
     screen.should_contain('B')

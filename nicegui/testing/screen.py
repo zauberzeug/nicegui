@@ -40,6 +40,7 @@ class Screen:
         self.connected = threading.Event()
         app.on_connect(self.connected.set)
         self.url = f'http://localhost:{self.PORT}'
+        self.allow_js_errors: bool = False
 
     def start_server(self) -> None:
         """Start the webserver in a separate thread."""
