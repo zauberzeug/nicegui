@@ -151,8 +151,9 @@ def test_sortable_drag_between_containers(screen: Screen):
 
     screen.drag_and_drop('Source Item 2', 'Target Item B')
 
-    # Wait for the sorting to complete
-    screen.wait(0.5)
+    # Wait to make sure the sorting is complete
+    # Lower than 5 seconds sometimes makes the test fail
+    screen.wait(5)
 
     screen.click('Show Source Order')
     screen.should_contain('Source order: Source Item 1, Source Item 3')
