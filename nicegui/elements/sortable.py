@@ -1,12 +1,12 @@
 from __future__ import annotations
 
 import weakref
-from typing import Any, Dict, List, Optional, Union
+from typing import Any
 
 from typing_extensions import Self
 
 from nicegui.element import Element
-from nicegui.events import GenericEventArguments, Handler, handle_event
+from nicegui.events import EventT, GenericEventArguments, Handler, handle_event
 
 
 class Sortable(Element,
@@ -25,15 +25,15 @@ class Sortable(Element,
 
     def __init__(
         self,
-        options: Optional[Dict] = None, *,
-        on_change: Optional[Handler[GenericEventArguments]] = None,
-        on_end: Optional[Handler[GenericEventArguments]] = None,
-        on_add: Optional[Handler[GenericEventArguments]] = None,
-        on_filter: Optional[Handler[GenericEventArguments]] = None,
-        on_spill: Optional[Handler[GenericEventArguments]] = None,
-        on_select: Optional[Handler[GenericEventArguments]] = None,
-        on_deselect: Optional[Handler[GenericEventArguments]] = None,
-        on_cancel_clone: Optional[Handler[GenericEventArguments]] = None,
+        options: dict[str, Any] | None = None, *,
+        on_change: Handler[GenericEventArguments] | None = None,
+        on_end: Handler[GenericEventArguments] | None = None,
+        on_add: Handler[GenericEventArguments] | None = None,
+        on_filter: Handler[GenericEventArguments] | None = None,
+        on_spill: Handler[GenericEventArguments] | None = None,
+        on_select: Handler[GenericEventArguments] | None = None,
+        on_deselect: Handler[GenericEventArguments] | None = None,
+        on_cancel_clone: Handler[GenericEventArguments] | None = None,
     ) -> None:
         """Initialize the sortable element.
 
@@ -81,7 +81,7 @@ class Sortable(Element,
         self._deselect_handlers = [on_deselect] if on_deselect else []
 
         # Set up event handling wrapper function
-        def handle_sortable_event(event_handlers, e):
+        def handle_sortable_event(event_handlers: list[Handler[EventT]], e: EventT):
             for handler in event_handlers:
                 handle_event(handler, e)
 
@@ -234,7 +234,7 @@ class Sortable(Element,
         """
         return self._props['options'].get(name)
 
-    def sort(self, order: List[Element], use_animation: bool = False) -> None:
+    def sort(self, order: list[Element], use_animation: bool = False) -> None:
         """Sort the elements according to the specified order.
 
         Args:
@@ -253,7 +253,7 @@ class Sortable(Element,
         """Disable the sortable instance."""
         self.set_option('disabled', True)
 
-    def remove_item(self, item: Union[Element, int, str]) -> None:
+    def remove_item(self, item: Element | int | str) -> None:
         """Remove an item from this sortable list.
 
         This removes the item both from the Python object and the DOM object.
@@ -283,7 +283,7 @@ class Sortable(Element,
                     if str(child.id) == raw_id:
                         element_to_remove = child
                         break
-        elif isinstance(item, int):
+        elif isinstance(item, int):  # pyright: ignore[reportUnnecessaryIsInstance]
             dom_id = f'c{item}'
 
             # Try to find the element in our children
@@ -316,7 +316,7 @@ class Sortable(Element,
             for child in reversed(slot.children):
                 self.remove_item(child)
 
-    def get_child_by_id(self, item_id: Union[str, int]) -> Optional[Element]:
+    def get_child_by_id(self, item_id: str | int) -> Element | None:
         """Retrieve a child element by its ID within the default slot.
 
         Args:
@@ -348,7 +348,7 @@ class Sortable(Element,
         self.sort(self.default_slot.children, False)
 
     # MultiDrag plugin methods
-    def select(self, element_id: Union[str, int]) -> None:
+    def select(self, element_id: str | int) -> None:
         """Select an item programmatically when using MultiDrag.
 
         Args:
@@ -358,7 +358,7 @@ class Sortable(Element,
             element_id = 'c' + str(element_id)
         self.run_method('select', element_id)
 
-    def deselect(self, element_id: Union[str, int]) -> None:
+    def deselect(self, element_id: str | int) -> None:
         """Deselect an item programmatically when using MultiDrag.
 
         Args:
