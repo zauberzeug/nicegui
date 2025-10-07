@@ -76,9 +76,6 @@ def screen(nicegui_reset_globals,  # noqa: F811, pylint: disable=unused-argument
     yield screen_
     os.environ.pop('NICEGUI_SCREEN_TEST_PORT', None)
 
-    browser_logs = screen_.selenium.get_log('browser')
-    js_errors = [e for e in browser_logs if str(e.get('level', '')).upper() in (
-        'SEVERE', 'ERROR') and '/intentional_error' not in e.get('message', '')]
     logs = [record for record in screen_.caplog.get_records('call') if record.levelname == 'ERROR']
     if screen_.is_open:
         screen_.shot(request.node.name)
@@ -88,5 +85,10 @@ def screen(nicegui_reset_globals,  # noqa: F811, pylint: disable=unused-argument
 
     if logs:
         pytest.fail('There were unexpected ERROR logs.', pytrace=False)
-    if js_errors:
-        pytest.fail(f'JavaScript console errors:\n{js_errors}', pytrace=False)
+
+    if screen_.is_open:
+        browser_logs = screen_.selenium.get_log('browser')
+        js_errors = [e for e in browser_logs if str(e.get('level', '')).upper() in (
+            'SEVERE', 'ERROR') and '/intentional_error' not in e.get('message', '')]
+        if js_errors:
+            pytest.fail(f'JavaScript console errors:\n{js_errors}', pytrace=False)
