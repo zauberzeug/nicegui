@@ -5,7 +5,7 @@ from typing import Any, Callable, Union
 from .logging import log
 
 try:
-    import zenoh  # from eclipse-zenoh package
+    import zenoh
     ZENOH_AVAILABLE = True
 except ImportError:
     ZENOH_AVAILABLE = False

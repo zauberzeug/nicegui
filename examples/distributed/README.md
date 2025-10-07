@@ -20,22 +20,15 @@ docker stack deploy -c docker-compose.yml distributed
 
 Open http://localhost:8080 in multiple browser tabs/windows.
 
+Update:
+
+```bash
+docker stack deploy -c docker-compose.yml distributed
+```
+
 Clean up:
 
 ```bash
 docker stack rm distributed
 docker swarm leave --force
 ```
-
-## How it Works
-
-- Click emoji → `reaction_event.emit(emoji)` fires
-- Event propagates via Zenoh P2P to all instances
-- Each instance runs the animation independently
-- Events are ephemeral - no storage, just pure messaging!
-
-API:
-
-- `Event()` - distributed across all instances
-- `Event(local=True)` - stays on current instance
-- `ui.run(distributed=True)` - enables distributed mode
