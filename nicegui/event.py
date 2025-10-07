@@ -44,7 +44,7 @@ class Callback(Generic[P]):
 class Event(Generic[P]):
     instances: ClassVar[WeakSet[Event]] = WeakSet()
 
-    def __init__(self) -> None:
+    def __init__(self, local: bool = False) -> None:
         """Event
 
         Events are a powerful tool distribute information between different parts of your code,
@@ -53,10 +53,19 @@ class Event(Generic[P]):
         Handlers can be synchronous or asynchronous.
         They can also take arguments if the event contains arguments.
 
+        When distributed mode is enabled via `ui.run(distributed=True)`, events are automatically shared
+        across all instances in the network unless `local=True` is specified.
+
         *Added in version 3.0.0*
+
+        :param local: if True, event will not be distributed even when distributed mode is active (default: False)
         """
         self.callbacks: list[Callback[P]] = []
+        self.local = local
+        self.topic = f'event_{id(self)}'
+        self._zenoh_setup_done = False
         self.instances.add(self)
+        self._setup_distributed()
 
     def subscribe(self, callback: Callable[P, Any] | Callable[[], Any], *,
                   unsubscribe_on_disconnect: bool | None = None) -> None:
@@ -104,14 +113,44 @@ class Event(Generic[P]):
         """
         self.callbacks[:] = [c for c in self.callbacks if c.func != callback]
 
+    def _setup_distributed(self) -> None:
+        """Set up distributed event handling if enabled."""
+        if self.local or self._zenoh_setup_done:
+            return
+
+        from .distributed import DistributedSession
+        session = DistributedSession.get()
+        if session is None:
+            return
+
+        def remote_handler(data: dict) -> None:
+            """Handle events received from remote instances."""
+            for callback in self.callbacks:
+                _invoke_and_forget(callback, *data.get('args', ()), **data.get('kwargs', {}))
+
+        session.subscribe(self.topic, remote_handler)
+        self._zenoh_setup_done = True
+
     def emit(self, *args: P.args, **kwargs: P.kwargs) -> None:
         """Fire the event without waiting for the subscribed callbacks to complete."""
         for callback in self.callbacks:
             _invoke_and_forget(callback, *args, **kwargs)
 
+        if not self.local:
+            from .distributed import DistributedSession
+            session = DistributedSession.get()
+            if session is not None:
+                session.publish(self.topic, {'args': args, 'kwargs': kwargs})
+
     async def call(self, *args: P.args, **kwargs: P.kwargs) -> None:
         """Fire the event and wait asynchronously until all subscribed callbacks are completed."""
         await asyncio.gather(*[_invoke_and_await(callback, *args, **kwargs) for callback in self.callbacks])
+
+        if not self.local:
+            from .distributed import DistributedSession
+            session = DistributedSession.get()
+            if session is not None:
+                session.publish(self.topic, {'args': args, 'kwargs': kwargs})
 
     async def emitted(self, timeout: float | None = None) -> Any:
         """Wait for an event to be fired and return its arguments.
