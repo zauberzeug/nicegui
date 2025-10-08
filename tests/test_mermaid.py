@@ -125,3 +125,5 @@ def test_click_mermaid_node(security_level: str, screen: Screen):
         screen.should_contain('Clicked Y')
     else:
         screen.should_not_contain('Clicked Y')
+
+    raise ValueError('This is a test error to check screenshot capturing')
