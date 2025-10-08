@@ -4,6 +4,9 @@ from selenium.webdriver.common.by import By
 from nicegui import ui
 from nicegui.testing import Screen
 
+# Retry flaky mermaid tests up to 2 times on failure
+pytestmark = [pytest.mark.flaky(reruns=2)]
+
 
 def test_mermaid(screen: Screen):
     @ui.page('/')

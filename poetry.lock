@@ -3527,6 +3527,22 @@ pytest = ">=7.0.0"
 test = ["black (>=22.1.0)", "flake8 (>=4.0.1)", "pre-commit (>=2.17.0)", "tox (>=3.24.5)"]
 
 [[package]]
+name = "pytest-rerunfailures"
+version = "16.0.1"
+description = "pytest plugin to re-run tests to eliminate flaky failures"
+optional = false
+python-versions = ">=3.9"
+groups = ["dev"]
+files = [
+    {file = "pytest_rerunfailures-16.0.1-py3-none-any.whl", hash = "sha256:0bccc0e3b0e3388275c25a100f7077081318196569a121217688ed05e58984b9"},
+    {file = "pytest_rerunfailures-16.0.1.tar.gz", hash = "sha256:ed4b3a6e7badb0a720ddd93f9de1e124ba99a0cb13bc88561b3c168c16062559"},
+]
+
+[package.dependencies]
+packaging = ">=17.1"
+pytest = ">=7.4,<8.2.2 || >8.2.2"
+
+[[package]]
 name = "pytest-selenium"
 version = "4.1.0"
 description = "pytest plugin for Selenium"
@@ -5009,4 +5025,4 @@ sass = ["libsass"]
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.9"
-content-hash = "c99cd95b80b7fb7daaba96d60beddc490f32fcde14118fa23840c90eba90a28c"
+content-hash = "dff88f88ad29278e666131bb9f1ddb5c49951fb0f22c48202cfde58522689a4d"

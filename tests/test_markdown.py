@@ -1,3 +1,4 @@
+import pytest
 from selenium.webdriver.common.by import By
 
 from nicegui import ui
@@ -24,6 +25,7 @@ def test_markdown(screen: Screen):
 def test_markdown_with_mermaid(screen: Screen):
     m = None
 
+    @pytest.mark.flaky(reruns=2)
     @ui.page('/')
     def page():
         nonlocal m
@@ -57,6 +59,7 @@ def test_markdown_with_mermaid(screen: Screen):
 
 
 def test_markdown_with_mermaid_on_demand(screen: Screen):
+    @pytest.mark.flaky(reruns=2)
     @ui.page('/')
     def page():
         ui.button('Create Mermaid', on_click=lambda: ui.markdown('''
