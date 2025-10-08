@@ -17,7 +17,8 @@ def main() -> int:
     junit = Path('reports/junit.xml')
     screenshots = Path('screenshots')
     out = Path('failed-screenshots')
-    shutil.rmtree(out)
+    if out.exists():
+        shutil.rmtree(out)
     out.mkdir(parents=True, exist_ok=True)
 
     if not junit.exists():
