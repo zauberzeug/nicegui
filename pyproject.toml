@@ -37,6 +37,7 @@ h11 = ">=0.16.0" # transitive, pinned to https://github.com/zauberzeug/nicegui/s
 python-engineio = ">=4.12.0"  # transitive, pinned to address https://github.com/zauberzeug/nicegui/issues/4602
 aiohttp = ">=3.10.2" # transitive, pinned to address https://github.com/zauberzeug/nicegui/security/dependabot/36
 certifi = ">=2024.07.04" # transitive, pinned to address https://github.com/zauberzeug/nicegui/security/dependabot/35
+propcache = "!=0.4.0" # transitive, used by aiohttp, it's yanked but no replacement as of writing.
 
 [tool.poetry.extras]
 native = ["pywebview"]
