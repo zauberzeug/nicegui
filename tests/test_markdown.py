@@ -45,14 +45,14 @@ def test_markdown_with_mermaid(screen: Screen):
         '''))
 
     screen.open('/')
-    screen.wait(1.0)  # wait for Mermaid to render
     screen.should_contain('Mermaid')
     assert screen.find_by_tag('svg').get_attribute('id') == f'{m.html_id}_mermaid_0'
+    screen.should_contain('Node_A')
     assert screen.selenium.find_element(By.XPATH, '//span[p[contains(text(), "Node_A")]]').is_displayed()
 
     screen.click('Set new content')
-    screen.wait(1.0)  # wait for Mermaid to render
     screen.should_contain('New')
+    screen.should_contain('Node_C')
     assert screen.selenium.find_element(By.XPATH, '//span[p[contains(text(), "Node_C")]]').is_displayed()
     screen.should_not_contain('Node_A')
 
@@ -69,6 +69,8 @@ def test_markdown_with_mermaid_on_demand(screen: Screen):
 
     screen.open('/')
     screen.click('Create Mermaid')
+    screen.should_contain('Node_A')
+    screen.should_contain('Node_B')
     assert screen.selenium.find_element(By.XPATH, '//span[p[contains(text(), "Node_A")]]').is_displayed()
     assert screen.selenium.find_element(By.XPATH, '//span[p[contains(text(), "Node_B")]]').is_displayed()
 
