@@ -3653,14 +3653,14 @@ files = [
 
 [[package]]
 name = "python-socketio"
-version = "5.13.0"
+version = "5.14.1"
 description = "Socket.IO server and client for Python"
 optional = false
 python-versions = ">=3.8"
 groups = ["main"]
 files = [
-    {file = "python_socketio-5.13.0-py3-none-any.whl", hash = "sha256:51f68d6499f2df8524668c24bcec13ba1414117cfb3a90115c559b601ab10caf"},
-    {file = "python_socketio-5.13.0.tar.gz", hash = "sha256:ac4e19a0302ae812e23b712ec8b6427ca0521f7c582d6abb096e36e24a263029"},
+    {file = "python_socketio-5.14.1-py3-none-any.whl", hash = "sha256:3419f5917f0e3942317836a77146cb4caa23ad804c8fd1a7e3f44a6657a8406e"},
+    {file = "python_socketio-5.14.1.tar.gz", hash = "sha256:bf49657073b90ee09e4cbd6651044b46bb526694276621e807a1b8fcc0c1b25b"},
 ]
 
 [package.dependencies]
@@ -5009,4 +5009,4 @@ sass = ["libsass"]
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.9"
-content-hash = "d5b4d17b0eb04d21e1eee5ddc8802c5e54191d205e65af12269c212b5f7fdcdd"
+content-hash = "c99cd95b80b7fb7daaba96d60beddc490f32fcde14118fa23840c90eba90a28c"
