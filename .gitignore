@@ -4,6 +4,8 @@ __pycache__/
 /test.py
 *.pickle
 screenshots/
+failed-screenshots/
+reports/
 venv
 .idea
 .nicegui/
