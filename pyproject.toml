@@ -37,6 +37,10 @@ h11 = ">=0.16.0" # transitive, pinned to https://github.com/zauberzeug/nicegui/s
 python-engineio = ">=4.12.0"  # transitive, pinned to address https://github.com/zauberzeug/nicegui/issues/4602
 aiohttp = ">=3.10.2" # transitive, pinned to address https://github.com/zauberzeug/nicegui/security/dependabot/36
 certifi = ">=2024.07.04" # transitive, pinned to address https://github.com/zauberzeug/nicegui/security/dependabot/35
+pydantic = [
+    {version = ">=1.0", python = "<3.14"}, # For Python <3.14 we don't care, unless you're still using V0.X (which you shouldn't).
+    {version = ">=1.0,<2.0 || >=2.12.0", python = ">=3.14"} # For Python 3.14 or above, either use V1 (no pydantic-core), or V2.12+.
+]
 
 [tool.poetry.extras]
 native = ["pywebview"]
