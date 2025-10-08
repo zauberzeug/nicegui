@@ -1,17 +1,10 @@
 # Distributed Events
 
-Events are automatically shared across all NiceGUI instances when you enable distributed mode.
+Events are automatically shared across all NiceGUI instances when you enable distributed mode (`ui.run(distributed=True)`).
 
-## Quick Start
+## Demo
 
-```bash
-pip install "nicegui[distributed]"
-python main.py
-```
-
-Run on multiple machines/terminals to see events propagate.
-
-## Docker Swarm Demo
+This demo uses docker swarm to deploy multiple NiceGUI instances with a Traefik load balancer in front.
 
 ```bash
 docker swarm init
