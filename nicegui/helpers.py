@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-import asyncio
 import functools
 import hashlib
+import inspect
 import os
 import socket
 import struct
@@ -48,7 +48,7 @@ def is_coroutine_function(obj: Any) -> bool:
     """
     while isinstance(obj, functools.partial):
         obj = obj.func
-    return asyncio.iscoroutinefunction(obj)
+    return inspect.iscoroutinefunction(obj)
 
 
 def expects_arguments(func: Callable) -> bool:
