@@ -3284,7 +3284,7 @@ files = [
     {file = "pycparser-2.23-py3-none-any.whl", hash = "sha256:e5c6e8d3fbad53479cab09ac03729e0a9faf2bee3db8208a550daf5af81a5934"},
     {file = "pycparser-2.23.tar.gz", hash = "sha256:78816d4f24add8f10a06d6f05b4d424ad9e96cfebf68a4ddc99c65c0720d00c2"},
 ]
-markers = {main = "extra == \"native\" and sys_platform == \"win32\" and (implementation_name != \"PyPy\" or python_version > \"3.13\")", dev = "os_name == \"nt\" and implementation_name != \"pypy\" and implementation_name != \"PyPy\""}
+markers = {main = "extra == \"native\" and sys_platform == \"win32\" and (implementation_name != \"PyPy\" or python_version >= \"3.14\")", dev = "os_name == \"nt\" and implementation_name != \"pypy\" and implementation_name != \"PyPy\""}
 
 [[package]]
 name = "pydantic"
@@ -3904,7 +3904,7 @@ description = ".Net and Mono integration for Python"
 optional = true
 python-versions = "*"
 groups = ["main"]
-markers = "extra == \"native\" and sys_platform == \"win32\" and python_version > \"3.13\""
+markers = "extra == \"native\" and sys_platform == \"win32\" and python_version >= \"3.14\""
 files = [
     {file = "pythonnet-2.5.2-cp27-cp27m-win32.whl", hash = "sha256:d519bbc7b1cd3999651efc594d91cb67c46d1d8466dad3d83b578102e58d05bd"},
     {file = "pythonnet-2.5.2-cp27-cp27m-win_amd64.whl", hash = "sha256:c02f53d0e61b202cddf3198fac9553d5b4ee0ea0cc4fe658c2ed69ab24def276"},
@@ -4755,11 +4755,32 @@ test = ["aiohttp (>=3.10.5)", "flake8 (>=5.0,<6.0)", "mypy (>=0.800)", "psutil",
 
 [[package]]
 name = "vbuild"
+version = "0.0.0"
+description = "A simple module to extract html/script/style from a vuejs '.vue' file (can minimize/es2015 compliant js) ... just python3, NO nodejs !"
+optional = false
+python-versions = "^3.7"
+groups = ["main"]
+markers = "python_version >= \"3.14\""
+files = []
+develop = false
+
+[package.dependencies]
+pscript = "^0.7.7"
+
+[package.source]
+type = "git"
+url = "https://github.com/manatlan/vbuild.git"
+reference = "31157af79eeb8ef86e37f6f4965fcc8a1391d6a1"
+resolved_reference = "31157af79eeb8ef86e37f6f4965fcc8a1391d6a1"
+
+[[package]]
+name = "vbuild"
 version = "0.8.2"
 description = "A simple module to extract html/script/style from a vuejs '.vue' file (can minimize/es2015 compliant js) ... just py2 or py3, NO nodejs !"
 optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*, !=3.5.*"
 groups = ["main"]
+markers = "python_version <= \"3.13\""
 files = [
     {file = "vbuild-0.8.2-py2.py3-none-any.whl", hash = "sha256:d76bcc976a1c53b6a5776ac947606f9e7786c25df33a587ebe33ed09dd8a1076"},
     {file = "vbuild-0.8.2.tar.gz", hash = "sha256:270cd9078349d907dfae6c0e6364a5a5e74cb86183bb5093613f12a18b435fa9"},
@@ -5281,4 +5302,4 @@ sass = ["libsass"]
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.9"
-content-hash = "c99cd95b80b7fb7daaba96d60beddc490f32fcde14118fa23840c90eba90a28c"
+content-hash = "01e5cad6be950184399a2d69a33a525631025370130f25b141d7a799e54862f6"
