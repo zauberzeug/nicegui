@@ -47,13 +47,11 @@ def test_markdown_with_mermaid(screen: Screen):
     screen.open('/')
     screen.should_contain('Mermaid')
     assert screen.find_by_tag('svg').get_attribute('id') == f'{m.html_id}_mermaid_0'
-    screen.should_contain('Node_A')
-    assert screen.selenium.find_element(By.XPATH, '//span[p[contains(text(), "Node_A")]]').is_displayed()
+    _wait_for_xpath_displayed(screen, '//span[p[contains(text(), "Node_A")]]')
 
     screen.click('Set new content')
     screen.should_contain('New')
-    screen.should_contain('Node_C')
-    assert screen.selenium.find_element(By.XPATH, '//span[p[contains(text(), "Node_C")]]').is_displayed()
+    _wait_for_xpath_displayed(screen, '//span[p[contains(text(), "Node_C")]]')
     screen.should_not_contain('Node_A')
 
 
@@ -69,10 +67,8 @@ def test_markdown_with_mermaid_on_demand(screen: Screen):
 
     screen.open('/')
     screen.click('Create Mermaid')
-    screen.should_contain('Node_A')
-    screen.should_contain('Node_B')
-    assert screen.selenium.find_element(By.XPATH, '//span[p[contains(text(), "Node_A")]]').is_displayed()
-    assert screen.selenium.find_element(By.XPATH, '//span[p[contains(text(), "Node_B")]]').is_displayed()
+    _wait_for_xpath_displayed(screen, '//span[p[contains(text(), "Node_A")]]')
+    _wait_for_xpath_displayed(screen, '//span[p[contains(text(), "Node_B")]]')
 
 
 def test_strip_indentation(screen: Screen):
@@ -105,3 +101,15 @@ def test_replace_markdown(screen: Screen):
     screen.click('Replace')
     screen.should_contain('B')
     screen.should_not_contain('A')
+
+
+def _wait_for_xpath_displayed(screen: Screen, xpath: str, attempts: int = 5, delay: float = 0.2):
+    for _ in range(attempts):
+        try:
+            el = screen.selenium.find_element(By.XPATH, xpath)
+            if el.is_displayed():
+                return el
+        except Exception:
+            pass
+        screen.wait(delay)
+    raise AssertionError(f'{xpath} not displayed')
