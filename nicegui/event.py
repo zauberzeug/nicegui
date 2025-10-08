@@ -16,6 +16,7 @@ from .awaitable_response import AwaitableResponse
 from .client import Client, ClientConnectionTimeout
 from .context import context
 from .dataclasses import KWONLY_SLOTS
+from .distributed import DistributedSession
 from .logging import log
 from .slot import Slot
 
@@ -126,8 +127,6 @@ class Event(Generic[P]):
         """Set up distributed event handling if enabled."""
         if self.local or self._zenoh_setup_done:
             return
-
-        from .distributed import DistributedSession
         session = DistributedSession.get()
         if session is None:
             return
@@ -146,7 +145,6 @@ class Event(Generic[P]):
             _invoke_and_forget(callback, *args, **kwargs)
 
         if not self.local:
-            from .distributed import DistributedSession
             session = DistributedSession.get()
             if session is not None:
                 session.publish(self.topic, {'args': args, 'kwargs': kwargs})
@@ -156,7 +154,6 @@ class Event(Generic[P]):
         await asyncio.gather(*[_invoke_and_await(callback, *args, **kwargs) for callback in self.callbacks])
 
         if not self.local:
-            from .distributed import DistributedSession
             session = DistributedSession.get()
             if session is not None:
                 session.publish(self.topic, {'args': args, 'kwargs': kwargs})
