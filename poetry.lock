@@ -865,6 +865,26 @@ files = [
 ]
 
 [[package]]
+name = "eclipse-zenoh"
+version = "1.5.1"
+description = "The python API for Eclipse zenoh"
+optional = true
+python-versions = ">=3.8"
+groups = ["main"]
+markers = "extra == \"distributed\""
+files = [
+    {file = "eclipse_zenoh-1.5.1-cp38-abi3-linux_armv6l.whl", hash = "sha256:c1d494012ef3c693a92980129857a73a4c3f3f0e2af0d0c0274c3615cd48ffda"},
+    {file = "eclipse_zenoh-1.5.1-cp38-abi3-macosx_10_12_x86_64.macosx_11_0_arm64.macosx_10_12_universal2.whl", hash = "sha256:7f124d00868a03640afaa63fdddbf9befc2ea385c83e8944ea62e029363941c4"},
+    {file = "eclipse_zenoh-1.5.1-cp38-abi3-macosx_10_12_x86_64.whl", hash = "sha256:5dcaa3a16dd0e8d517c7879f4b1dd6147ba48a15ffd12cc41ecb9b89e618f50b"},
+    {file = "eclipse_zenoh-1.5.1-cp38-abi3-manylinux_2_17_armv7l.manylinux2014_armv7l.whl", hash = "sha256:8e9f2fc126fce777e12842c4cb62235e854fa6df73afea71c04a28d7471e0b0a"},
+    {file = "eclipse_zenoh-1.5.1-cp38-abi3-manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:21239d912c758a0fe3dd8a76454d48f493b169de7795f050cf8045c5d8ea335f"},
+    {file = "eclipse_zenoh-1.5.1-cp38-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:76781bbfa61fdc1e9626a03202c7dd8fd103f34761dc7b94b5a2d99f5aae629e"},
+    {file = "eclipse_zenoh-1.5.1-cp38-abi3-manylinux_2_28_aarch64.whl", hash = "sha256:0f142a36241e50eb3b86f9c3b0149138d2d1d7b6dd2038589fe4c62e12e776ea"},
+    {file = "eclipse_zenoh-1.5.1-cp38-abi3-win_amd64.whl", hash = "sha256:eab374670fa9054e2500060ce33c8248f079208476defa5bb9f9a4b8317d6aac"},
+    {file = "eclipse_zenoh-1.5.1.tar.gz", hash = "sha256:5525adfe368e548e9a80947dbb930eedb4ae3df139bafc70358306483949b591"},
+]
+
+[[package]]
 name = "editorconfig"
 version = "0.17.1"
 description = "EditorConfig File Locator and Interpreter for Python"
@@ -4999,6 +5019,7 @@ test = ["big-O", "jaraco.functools", "jaraco.itertools", "jaraco.test", "more_it
 type = ["pytest-mypy"]
 
 [extras]
+distributed = ["eclipse-zenoh"]
 highcharts = ["nicegui-highcharts"]
 matplotlib = ["matplotlib"]
 native = ["pywebview"]
@@ -5009,4 +5030,4 @@ sass = ["libsass"]
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.9"
-content-hash = "d5b4d17b0eb04d21e1eee5ddc8802c5e54191d205e65af12269c212b5f7fdcdd"
+content-hash = "6e55185181245bd755373e6d93f59354bf3305fcb69b527d879e8ab5faedfd8c"
