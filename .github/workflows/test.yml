@@ -58,15 +58,18 @@ jobs:
         id: pytest
         run: poetry run pytest --junitxml=reports/junit.xml
       - name: Collect failed screenshots
+        if: always()
         run: |
           set -e
           python3 .github/scripts/collect_failed_screenshots.py
       - name: Upload failed screenshots
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: failed-test-screenshots-${{ matrix.python }}
           path: failed-screenshots/**
       - name: Upload JUnit XML
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: junit-xml-${{ matrix.python }}
