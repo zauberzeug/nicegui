@@ -1,7 +1,7 @@
 import asyncio
 
 from nicegui import Event, ui
-from nicegui.testing import User
+from nicegui.testing import Screen, User
 
 
 async def test_event(user: User):
@@ -63,3 +63,25 @@ async def test_event_handler_in_correct_slot(user: User):
     await user.open('/')
     user.find('Click me').click()
     assert len(card.default_slot.children) == 1
+
+
+def test_reconnect(screen: Screen):
+    event = Event()
+
+    @ui.page('/')
+    def page():
+        button = ui.button('Click me', on_click=event.emit)
+        event.subscribe(lambda: button.set_text(button.text + '!'))
+
+    screen.open('/')
+    screen.click('Click me')
+    screen.should_contain('Click me!')
+
+    screen.selenium.execute_script('window.socket.disconnect();')
+    screen.wait(0.5)
+
+    screen.selenium.execute_script('window.socket.connect();')
+    screen.wait(0.5)
+
+    screen.click('Click me!')
+    screen.should_contain('Click me!!')

@@ -63,12 +63,13 @@ class Event(Generic[P]):
         """Subscribe to the event.
 
         The ``unsubscribe_on_disconnect`` can be used to explicitly define
-        whether the callback should be automatically unsubscribed when the client disconnects.
+        whether the callback should be automatically unsubscribed when the client disconnects
+        (to be more exact: when it is deleted after it did not reconnect).
         By default, the callback is automatically unsubscribed if subscribed from within a UI context
         to prevent memory leaks.
 
         :param callback: the callback which will be called when the event is fired
-        :param unsubscribe_on_disconnect: whether to unsubscribe the callback when the client disconnects
+        :param unsubscribe_on_disconnect: whether to unsubscribe the callback when the client finally disconnects
             (default: ``None`` meaning the callback is automatically unsubscribed if subscribed from within a UI context)
         """
         frame = inspect.currentframe()
@@ -87,7 +88,7 @@ class Event(Generic[P]):
             async def register_disconnect() -> None:
                 try:
                     await client.connected()
-                    client.on_disconnect(lambda: self.unsubscribe(callback))
+                    client.on_delete(lambda: self.unsubscribe(callback))
                 except ClientConnectionTimeout:
                     log.debug('Could not register a disconnect handler for callback %s', callback)
                     self.unsubscribe(callback)
