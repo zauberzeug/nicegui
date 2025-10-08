@@ -1,4 +1,4 @@
-import pickle
+import json
 import uuid
 from typing import Any, Callable, Union
 
@@ -6,14 +6,22 @@ from .logging import log
 
 try:
     import zenoh
+    from zenoh import Sample
     ZENOH_AVAILABLE = True
 except ImportError:
     ZENOH_AVAILABLE = False
     zenoh = None  # type: ignore
+    Sample = Any  # type: ignore
 
 
 class DistributedSession:
-    """Manages distributed event communication via Zenoh pub/sub."""
+    """Manages distributed event communication via Zenoh pub/sub.
+
+    This is an internal class used by the Event system to handle distributed messaging.
+    Publishers and subscribers are kept alive for the lifetime of the session.
+    Event instances are expected to be long-lived (typically module-level),
+    so no automatic cleanup of unused topics is performed.
+    """
 
     _instance: Union['DistributedSession', None] = None
 
@@ -59,16 +67,20 @@ class DistributedSession:
         """Publish data to a topic.
 
         :param topic: topic name
-        :param data: data to publish (will be pickled)
+        :param data: data to publish (must be JSON-serializable)
         """
         try:
-            payload = pickle.dumps({
+            payload = json.dumps({
                 'instance_id': self.instance_id,
                 'data': data,
-            })
+            }).encode('utf-8')
             if topic not in self.publishers:
                 self.publishers[topic] = self.session.declare_publisher(f'nicegui/events/{topic}')
             self.publishers[topic].put(payload)
+        except (TypeError, ValueError) as e:
+            log.error(f'Failed to serialize event data for topic {topic}: {e}. '
+                      'Event data must be JSON-serializable (str, int, float, bool, list, dict, None).')
+            raise
         except Exception as e:
             log.exception(f'Failed to publish event to topic {topic}: {e}')
             raise
@@ -79,16 +91,17 @@ class DistributedSession:
         :param topic: topic name
         :param callback: function to call when data arrives
         """
-        def handler(sample: Any) -> None:
+        def handler(sample: Sample) -> None:
             try:
-                payload = pickle.loads(bytes(sample.payload))
+                payload = json.loads(bytes(sample.payload).decode('utf-8'))
                 # NOTE: Ignore events from our own instance (deduplication)
                 if payload['instance_id'] == self.instance_id:
                     return
                 callback(payload['data'])
+            except (json.JSONDecodeError, UnicodeDecodeError) as e:
+                log.error(f'Failed to deserialize event from topic {topic}: {e}')
             except Exception as e:
-                log.exception(f'Failed to deserialize event from topic {topic}: {e}')
-                raise
+                log.exception(f'Failed to handle event from topic {topic}: {e}')
 
         if topic not in self.subscribers:
             self.subscribers[topic] = self.session.declare_subscriber(

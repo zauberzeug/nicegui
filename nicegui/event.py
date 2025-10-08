@@ -72,7 +72,9 @@ class Event(Generic[P]):
         while frame and 'typing.py' in frame.f_code.co_filename:
             frame = frame.f_back
         assert frame is not None
-        self.topic = f'event_{frame.f_code.co_filename}:{frame.f_lineno}'
+        module = inspect.getmodule(frame)
+        module_name = module.__name__ if module else 'unknown'
+        self.topic = f'event_{module_name}:{frame.f_code.co_filename}:{frame.f_lineno}'
         self._zenoh_setup_done = False
         self.instances.add(self)
         self._setup_distributed()
@@ -124,7 +126,12 @@ class Event(Generic[P]):
         self.callbacks[:] = [c for c in self.callbacks if c.func != callback]
 
     def _setup_distributed(self) -> None:
-        """Set up distributed event handling if enabled."""
+        """Set up distributed event handling if enabled.
+
+        This method is safe to call multiple times due to the _zenoh_setup_done guard.
+        It's called during Event initialization and retroactively when DistributedSession.initialize() is called.
+        Events emitted before distributed mode is initialized will only be local.
+        """
         if self.local or self._zenoh_setup_done:
             return
         session = DistributedSession.get()
@@ -141,6 +148,9 @@ class Event(Generic[P]):
 
     def emit(self, *args: P.args, **kwargs: P.kwargs) -> None:
         """Fire the event without waiting for the subscribed callbacks to complete."""
+        if not self.local and not self._zenoh_setup_done:
+            self._setup_distributed()
+
         for callback in self.callbacks:
             _invoke_and_forget(callback, *args, **kwargs)
 
@@ -151,6 +161,9 @@ class Event(Generic[P]):
 
     async def call(self, *args: P.args, **kwargs: P.kwargs) -> None:
         """Fire the event and wait asynchronously until all subscribed callbacks are completed."""
+        if not self.local and not self._zenoh_setup_done:
+            self._setup_distributed()
+
         await asyncio.gather(*[_invoke_and_await(callback, *args, **kwargs) for callback in self.callbacks])
 
         if not self.local:
