@@ -62,7 +62,8 @@ urllib3 = ">=1.26.18,!=2.0.0,!=2.0.1,!=2.0.2,!=2.0.3,!=2.0.4,!=2.0.5,!=2.0.6,!=2
 itsdangerous = "^2.1.2" # required by SessionMiddleware (see https://fastapi.tiangolo.com/?h=itsdangerous#optional-dependencies)
 pandas = [
     {version = "^2.0.0", python = "<3.13"},
-    {version = "^2.2.3", python = ">=3.13,<3.14"}
+    {version = "^2.2.3", python = ">=3.13,<3.14"},
+    {version = "^2.3.3", python = ">=3.14"}
 ]
 secure = ">=0.3.0"
 webdriver-manager = ">=3.8.6,<5.0.0"
