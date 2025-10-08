@@ -51,6 +51,7 @@ def test_markdown_with_mermaid(screen: Screen):
     assert screen.selenium.find_element(By.XPATH, '//span[p[contains(text(), "Node_A")]]').is_displayed()
 
     screen.click('Set new content')
+    screen.wait(1.0)  # wait for Mermaid to render
     screen.should_contain('New')
     assert screen.selenium.find_element(By.XPATH, '//span[p[contains(text(), "Node_C")]]').is_displayed()
     screen.should_not_contain('Node_A')
