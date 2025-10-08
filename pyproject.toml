@@ -17,7 +17,10 @@ starlette = ">=0.45.3"
 uvicorn = {extras = ["standard"], version = ">=0.22.0"}
 fastapi = ">=0.109.1"
 python-socketio = {extras = ["asyncio-client"], version = ">=5.14.0"} # https://github.com/zauberzeug/nicegui/security/dependabot/52
-vbuild = ">=0.8.2"
+vbuild = [
+    {version = ">=0.8.2", python = "<3.14"},
+    {git = "https://github.com/manatlan/vbuild.git", rev = "31157af79eeb8ef86e37f6f4965fcc8a1391d6a1", python = ">=3.14" } # Until released
+]
 jinja2 = "^3.1.6" # https://github.com/zauberzeug/nicegui/security/dependabot/44
 python-multipart = ">=0.0.18"
 orjson = {version = ">=3.9.15", markers = "platform_machine != 'i386' and platform_machine != 'i686'"} # https://github.com/zauberzeug/nicegui/security/dependabot/29, orjson does not support 32bit
@@ -37,6 +40,9 @@ h11 = ">=0.16.0" # transitive, pinned to https://github.com/zauberzeug/nicegui/s
 python-engineio = ">=4.12.0"  # transitive, pinned to address https://github.com/zauberzeug/nicegui/issues/4602
 aiohttp = ">=3.10.2" # transitive, pinned to address https://github.com/zauberzeug/nicegui/security/dependabot/36
 certifi = ">=2024.07.04" # transitive, pinned to address https://github.com/zauberzeug/nicegui/security/dependabot/35
+pydantic = [
+    {version = "!=2.0,!=2.1,!=2.2,!=2.3,!=2.4,!=2.5,!=2.6,!=2.7,!=2.8,!=2.9,!=2.10,!=2.11", python = ">=3.14"} # Pydantic 2.0-2.11 incompatible with Python 3.14 or above.
+]
 
 [tool.poetry.extras]
 native = ["pywebview"]
