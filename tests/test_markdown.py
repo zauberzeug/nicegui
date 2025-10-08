@@ -46,6 +46,7 @@ def test_markdown_with_mermaid(screen: Screen):
 
     screen.open('/')
     screen.should_contain('Mermaid')
+    screen.wait(1.0)  # wait for Mermaid to render
     assert screen.find_by_tag('svg').get_attribute('id') == f'{m.html_id}_mermaid_0'
     _wait_for_xpath_displayed(screen, '//span[p[contains(text(), "Node_A")]]')
 
