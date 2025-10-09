@@ -135,7 +135,7 @@ def true_cloning() -> None:
 
     def handle_true_clone(e):
         # Get info about the added item
-        item_id = e.args.get('sourceItem')
+        html_id = e.args.get('sourceItem')
         target_index = e.args.get('newIndex')
 
         # Find the original item in the source list
@@ -148,7 +148,7 @@ def true_cloning() -> None:
             dest_list = true_clone_list1
 
         # Find the source element by its ID
-        source_element = source_list.get_child_by_id(item_id)
+        source_element = source_list.get_child_by_id(html_id)
 
         if source_element:
             with dest_list:
@@ -501,9 +501,10 @@ def multi_drag() -> None:
         for i in range(1, 7):
             with ui.card():
                 ui.label(f'Item {i} (hold Ctrl/Cmd to select multiple)')
-    ui.button('Select first object', on_click=lambda: multi_drag_obj.select(multi_drag_obj.default_slot.children[0].id))
+    ui.button('Select first object', on_click=lambda: multi_drag_obj.select(
+        multi_drag_obj.default_slot.children[0].html_id))
     ui.button('Deselect first object', on_click=lambda: multi_drag_obj.deselect(
-        multi_drag_obj.default_slot.children[0].id))
+        multi_drag_obj.default_slot.children[0].html_id))
 
 
 @doc.demo('Swap Plugin', '''
