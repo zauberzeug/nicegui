@@ -51,7 +51,7 @@ async def test_run_unpickable_exception_in_cpu_bound_callback(user: User):
 
     @ui.page('/')
     async def index():
-        with pytest.raises((AttributeError, PicklingError), match="Can't pickle\\|Can't get local object"):
+        with pytest.raises((AttributeError, PicklingError), match=r"Can't pickle|Can't get local object"):
             ui.label(await run.cpu_bound(raise_unpicklable_exception))
 
     await user.open('/')
