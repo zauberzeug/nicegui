@@ -25,6 +25,26 @@ from nicegui.server import Server
 
 from .general_fixtures import get_path_to_main_file, prepare_simulation
 
+DOWNLOAD_DIR_BASE = Path(__file__).parent / 'download'
+
+
+def _get_download_dir() -> Path:
+    """Return a Path for the worker-specific download directory."""
+    return DOWNLOAD_DIR_BASE.with_name(f'{DOWNLOAD_DIR_BASE.name}-{_get_worker_id()}')
+
+
+def _get_worker_id() -> int:
+    """Get the worker ID for pytest-xdist."""
+    worker_id = os.environ.get('PYTEST_XDIST_WORKER') or os.environ.get('PYTEST_WORKER_ID')
+    try:
+        if worker_id and worker_id.startswith('gw'):
+            return int(worker_id[2:])
+        elif worker_id and worker_id.isdigit():
+            return int(worker_id)
+    except Exception:
+        pass
+    return 0
+
 
 class Screen:
     PORT = 3392
@@ -42,6 +62,7 @@ class Screen:
         self.connected = threading.Event()
         app.on_connect(self.connected.set)
         self.url = f'http://localhost:{self.port}'
+        self.download_dir = _get_download_dir()
 
     def start_server(self) -> None:
         """Start the webserver in a separate thread."""

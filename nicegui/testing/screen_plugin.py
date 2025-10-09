@@ -1,7 +1,6 @@
 import os
 import shutil
 from collections.abc import Generator
-from pathlib import Path
 
 import pytest
 from selenium import webdriver
@@ -11,24 +10,9 @@ from .general_fixtures import (  # noqa: F401  # pylint: disable=unused-import
     nicegui_reset_globals,
     prepare_simulation,
 )
-from .screen import Screen
+from .screen import Screen, _get_download_dir, _get_worker_id
 
 # pylint: disable=redefined-outer-name
-
-DOWNLOAD_DIR = Path(__file__).parent / 'download'
-
-
-def _get_worker_id() -> int:
-    """Get the worker ID for pytest-xdist."""
-    worker_id = os.environ.get('PYTEST_XDIST_WORKER') or os.environ.get('PYTEST_WORKER_ID')
-    try:
-        if worker_id and worker_id.startswith('gw'):
-            return int(worker_id[2:])
-        elif worker_id and worker_id.isdigit():
-            return int(worker_id)
-    except Exception:
-        pass
-    return 0
 
 
 @pytest.fixture
@@ -40,8 +24,11 @@ def nicegui_chrome_options(chrome_options: webdriver.ChromeOptions) -> webdriver
     chrome_options.add_argument('headless')
     chrome_options.add_argument('disable-gpu' if 'GITHUB_ACTIONS' in os.environ else '--use-gl=angle')
     chrome_options.add_argument('window-size=600x600')
+    # ensure the directory exists for Chrome to use as download folder
+    download_dir = _get_download_dir()
+    download_dir.mkdir(parents=True, exist_ok=True)
     chrome_options.add_experimental_option('prefs', {
-        'download.default_directory': str(DOWNLOAD_DIR),
+        'download.default_directory': str(download_dir),
         'download.prompt_for_download': False,  # To auto download the file
         'download.directory_upgrade': True,
     })
@@ -92,7 +79,7 @@ def screen(nicegui_reset_globals,  # noqa: F811, pylint: disable=unused-argument
     if screen_.is_open:
         screen_.shot(request.node.name)
     screen_.stop_server()
-    if DOWNLOAD_DIR.exists():
-        shutil.rmtree(DOWNLOAD_DIR)
+    if screen_.download_dir.exists():
+        shutil.rmtree(screen_.download_dir)
     if logs:
         pytest.fail('There were unexpected ERROR logs.', pytrace=False)
