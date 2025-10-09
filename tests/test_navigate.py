@@ -56,11 +56,11 @@ def test_navigate_to_relative_url(screen: Screen):
     screen.open('/')
     screen.click('Go relative')
     screen.wait(0.2)
-    assert screen.selenium.current_url == f'http://localhost:{Screen.PORT}/test_page'
+    assert screen.selenium.current_url == f'http://localhost:{screen.port}/test_page'
 
     screen.click('Back')
     screen.wait(0.2)
-    assert screen.selenium.current_url == f'http://localhost:{Screen.PORT}/'
+    assert screen.selenium.current_url == f'http://localhost:{screen.port}/'
 
 
 @pytest.mark.parametrize('sub_pages', [False, True])

@@ -15,8 +15,10 @@ def get_favicon_url(screen: Screen) -> str:
     return screen.find_by_css('link[rel="shortcut icon"]').get_attribute('href')
 
 
-def assert_favicon(content: Union[Path, str, bytes], url_path: str = '/favicon.ico'):
-    response = httpx.get(f'http://localhost:{Screen.PORT}{url_path}', timeout=5)
+def assert_favicon(content: Union[Path, str, bytes], url_path: str = '/favicon.ico', port: int = 0) -> None:
+    if port == 0:
+        raise ValueError('Port must be specified')
+    response = httpx.get(f'http://localhost:{port}{url_path}', timeout=5)
     assert response.status_code == 200
     if isinstance(content, Path):
         assert content.read_bytes() == response.content
@@ -34,7 +36,7 @@ def test_default(screen: Screen):
         ui.label('Hello, world')
 
     screen.open('/')
-    assert_favicon(DEFAULT_FAVICON_PATH)
+    assert_favicon(DEFAULT_FAVICON_PATH, screen.port)
 
 
 @pytest.mark.parametrize('emoji', ['👋', '⚔️'])
@@ -46,7 +48,7 @@ def test_emoji(emoji: str, screen: Screen):
     screen.ui_run_kwargs['favicon'] = emoji
     screen.open('/')
     assert get_favicon_url(screen).startswith('data:image/svg+xml')
-    assert_favicon(favicon._char_to_svg(emoji))
+    assert_favicon(favicon._char_to_svg(emoji), screen.port)
 
 
 def test_data_url(screen: Screen):
@@ -59,7 +61,7 @@ def test_data_url(screen: Screen):
     screen.open('/')
     assert get_favicon_url(screen).startswith('data:image/png;base64')
     _, bytes_ = favicon._data_url_to_bytes(icon)
-    assert_favicon(bytes_)
+    assert_favicon(bytes_, screen.port)
 
 
 def test_custom_file(screen: Screen):
@@ -70,7 +72,7 @@ def test_custom_file(screen: Screen):
     screen.ui_run_kwargs['favicon'] = LOGO_FAVICON_PATH
     screen.open('/')
     assert get_favicon_url(screen).endswith('/favicon.ico')
-    assert_favicon(screen.ui_run_kwargs['favicon'])
+    assert_favicon(screen.ui_run_kwargs['favicon'], screen.port)
 
 
 def test_page_specific_icon(screen: Screen):
@@ -83,7 +85,7 @@ def test_page_specific_icon(screen: Screen):
         ui.label('Main')
 
     screen.open('/subpage')
-    assert_favicon(LOGO_FAVICON_PATH, url_path='/subpage/favicon.ico')
+    assert_favicon(LOGO_FAVICON_PATH, '/subpage/favicon.ico', screen.port)
     screen.open('/')
 
 
@@ -99,4 +101,4 @@ def test_page_specific_emoji(screen: Screen):
     screen.open('/subpage')
     assert get_favicon_url(screen).startswith('data:image/svg+xml')
     screen.open('/')
-    assert_favicon(DEFAULT_FAVICON_PATH)
+    assert_favicon(DEFAULT_FAVICON_PATH, screen.port)

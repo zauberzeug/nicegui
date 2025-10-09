@@ -37,11 +37,11 @@ class Screen:
         self.server_thread: Optional[threading.Thread] = None
         self.pytest_request = request
         # Respect NICEGUI_SCREEN_TEST_PORT if set (e.g. by pytest-xdist)
-        port = int(os.environ.get('NICEGUI_SCREEN_TEST_PORT', self.PORT))
-        self.ui_run_kwargs: dict[str, Any] = {'port': port, 'show': False, 'reload': False}
+        self.port = int(os.environ.get('NICEGUI_SCREEN_TEST_PORT', self.PORT))
+        self.ui_run_kwargs: dict[str, Any] = {'port': self.port, 'show': False, 'reload': False}
         self.connected = threading.Event()
         app.on_connect(self.connected.set)
-        self.url = f'http://localhost:{port}'
+        self.url = f'http://localhost:{self.port}'
 
     def start_server(self) -> None:
         """Start the webserver in a separate thread."""

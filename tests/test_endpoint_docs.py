@@ -10,19 +10,19 @@ def activate_fastapi_docs(screen: Screen):
     screen.ui_run_kwargs['fastapi_docs'] = True
 
 
-def get_openapi_paths() -> set[str]:
-    return set(httpx.get(f'http://localhost:{Screen.PORT}/openapi.json', timeout=5).json()['paths'])
+def get_openapi_paths(port: int) -> set[str]:
+    return set(httpx.get(f'http://localhost:{port}/openapi.json', timeout=5).json()['paths'])
 
 
 def test_endpoint_documentation_default(screen: Screen):
     screen.open('/')
-    assert get_openapi_paths() == set()
+    assert get_openapi_paths(screen.port) == set()
 
 
 def test_endpoint_documentation_page_only(screen: Screen):
     screen.ui_run_kwargs['endpoint_documentation'] = 'page'
     screen.open('/')
-    assert get_openapi_paths() == set()
+    assert get_openapi_paths(screen.port) == set()
 
 
 def test_endpoint_documentation_internal_only(screen: Screen):
@@ -33,7 +33,7 @@ def test_endpoint_documentation_internal_only(screen: Screen):
         ui.markdown('Hey!')
 
     screen.open('/')
-    assert get_openapi_paths() == {
+    assert get_openapi_paths(screen.port) == {
         f'/_nicegui/{__version__}/libraries/{{key}}',
         f'/_nicegui/{__version__}/components/{{key}}',
         f'/_nicegui/{__version__}/resources/{{key}}/{{path}}',
@@ -50,7 +50,7 @@ def test_endpoint_documentation_all(screen: Screen):
         ui.markdown('Hey!')
 
     screen.open('/')
-    assert get_openapi_paths() == {
+    assert get_openapi_paths(screen.port) == {
         '/',
         f'/_nicegui/{__version__}/libraries/{{key}}',
         f'/_nicegui/{__version__}/components/{{key}}',

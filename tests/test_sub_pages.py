@@ -1088,8 +1088,8 @@ def test_http_404_on_initial_request(screen: Screen):
         ui.label('main page')
 
     screen.start_server()
-    assert httpx.get(f'http://localhost:{Screen.PORT}/').status_code == 200
-    assert httpx.get(f'http://localhost:{Screen.PORT}/bad_path').status_code == 404
+    assert httpx.get(f'http://localhost:{screen.port}/').status_code == 200
+    assert httpx.get(f'http://localhost:{screen.port}/bad_path').status_code == 404
 
     screen.open('/')
     screen.should_contain('main page')
@@ -1108,8 +1108,8 @@ def test_http_404_on_initial_request_with_async_page_builder(screen: Screen):
         ui.label('main page')
 
     screen.start_server()
-    assert httpx.get(f'http://localhost:{Screen.PORT}/').status_code == 200
-    assert httpx.get(f'http://localhost:{Screen.PORT}/bad_path').status_code == 404
+    assert httpx.get(f'http://localhost:{screen.port}/').status_code == 200
+    assert httpx.get(f'http://localhost:{screen.port}/bad_path').status_code == 404
 
     screen.open('/')
     screen.should_contain('main page')
@@ -1136,11 +1136,11 @@ def test_http_404_on_initial_request_with_async_sub_page_builder(screen: Screen)
         ui.label('async sub page')
 
     screen.start_server()
-    assert httpx.get(f'http://localhost:{Screen.PORT}/bad_path').status_code == 404
-    assert httpx.get(f'http://localhost:{Screen.PORT}/sub').status_code == 200
-    assert httpx.get(f'http://localhost:{Screen.PORT}/sub/bad_path').status_code == 404
-    assert httpx.get(f'http://localhost:{Screen.PORT}/async-sub').status_code == 200
-    assert httpx.get(f'http://localhost:{Screen.PORT}/async-sub/bad_path').status_code == 404
+    assert httpx.get(f'http://localhost:{screen.port}/bad_path').status_code == 404
+    assert httpx.get(f'http://localhost:{screen.port}/sub').status_code == 200
+    assert httpx.get(f'http://localhost:{screen.port}/sub/bad_path').status_code == 404
+    assert httpx.get(f'http://localhost:{screen.port}/async-sub').status_code == 200
+    assert httpx.get(f'http://localhost:{screen.port}/async-sub/bad_path').status_code == 404
 
     screen.open('/sub')
     screen.should_contain('sub sub page')
