@@ -24,7 +24,7 @@ def provide_media_files():
                     file.write(chunk)
 
 
-def assert_video_file_streaming(path: str, port: int = 0) -> None:
+def assert_video_file_streaming(path: str, *, port: int = 0) -> None:
     if port == 0:
         raise ValueError('Port must be specified')
     with httpx.Client() as http_client:
@@ -47,7 +47,7 @@ def test_media_files_can_be_streamed(screen: Screen):
         ui.label('Hello, world!')
 
     screen.open('/')
-    assert_video_file_streaming('/media/test.mp4', screen.port)
+    assert_video_file_streaming('/media/test.mp4', port=screen.port)
 
 
 def test_adding_single_media_file(screen: Screen):
@@ -58,7 +58,7 @@ def test_adding_single_media_file(screen: Screen):
         ui.label('Hello, world!')
 
     screen.open('/')
-    assert_video_file_streaming(url_path, screen.port)
+    assert_video_file_streaming(url_path, port=screen.port)
 
 
 @pytest.mark.parametrize('url_path', ['/static', '/static/'])
@@ -129,7 +129,7 @@ def test_auto_serving_file_from_video_source(screen: Screen):
     screen.open('/')
     video = screen.find_by_tag('video')
     assert '/_nicegui/auto/media/' in video.get_attribute('src')
-    assert_video_file_streaming(video.get_attribute('src'), screen.port)
+    assert_video_file_streaming(video.get_attribute('src'), port=screen.port)
 
 
 def test_mimetypes_of_static_files(screen: Screen):
