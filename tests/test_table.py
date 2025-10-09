@@ -228,7 +228,7 @@ def test_create_and_update_from_df(screen: Screen, df_type: str):
             table = ui.table.from_polars(df)
             update_from_df = table.update_from_polars
 
-        ui.button('Update', on_click=lambda: update_from_df(DataFrame({'name': ['Lionel'], 'age': [19]})))  
+        ui.button('Update', on_click=lambda: update_from_df(DataFrame({'name': ['Lionel'], 'age': [19]})))
 
     screen.open('/')
     screen.should_contain('Alice')

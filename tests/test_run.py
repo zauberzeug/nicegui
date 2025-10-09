@@ -1,9 +1,6 @@
 import asyncio
-import platform
-import time
-from pickle import PicklingError
-from typing import Awaitable, Generator
 import os
+import time
 from collections.abc import Awaitable, Generator
 from concurrent.futures.process import BrokenProcessPool
 from pickle import PicklingError
@@ -54,7 +51,7 @@ async def test_run_unpickable_exception_in_cpu_bound_callback(user: User):
 
     @ui.page('/')
     async def index():
-        with pytest.raises((AttributeError, PicklingError), match="Can't pickle|Can't get local object"):
+        with pytest.raises((AttributeError, PicklingError), match="Can't pickle\\|Can't get local object"):
             ui.label(await run.cpu_bound(raise_unpicklable_exception))
 
     await user.open('/')

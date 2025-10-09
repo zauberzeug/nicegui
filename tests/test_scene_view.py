@@ -1,5 +1,4 @@
 import platform
-from typing import Optional
 
 import pytest
 
@@ -46,6 +45,8 @@ def test_object_creation_via_context(screen: Screen):
 @pytest.mark.skipif(platform.python_implementation() == 'PyPy', reason='PyPy no numpy')
 def test_camera_move(screen: Screen):
     import numpy as np
+    scene = scene_view = None
+
     @ui.page('/')
     def page():
         nonlocal scene, scene_view
