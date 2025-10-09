@@ -1,7 +1,8 @@
 from __future__ import annotations
 
+from collections.abc import Awaitable
 from dataclasses import dataclass, field
-from typing import Any, Awaitable, Callable, ClassVar, Dict, Generic, List, Optional, Tuple, TypeVar, cast
+from typing import Any, Callable, ClassVar, Generic, TypeVar, cast
 
 from typing_extensions import Concatenate, ParamSpec, Self
 
@@ -20,11 +21,11 @@ class RefreshableTarget:
     container: RefreshableContainer
     refreshable: refreshable
     instance: Any
-    args: Tuple[Any, ...]
-    kwargs: Dict[str, Any]
+    args: tuple[Any, ...]
+    kwargs: dict[str, Any]
 
-    current_target: ClassVar[Optional[RefreshableTarget]] = None
-    locals: List[Any] = field(default_factory=list)
+    current_target: ClassVar[RefreshableTarget | None] = None
+    locals: list[Any] = field(default_factory=list)
     next_index: int = 0
 
     def run(self, func: Callable[..., _T]) -> _T:
@@ -67,7 +68,7 @@ class refreshable(Generic[_P, _T]):
         """
         self.func = func
         self.instance = None
-        self.targets: List[RefreshableTarget] = []
+        self.targets: list[RefreshableTarget] = []
 
     def __get__(self, instance, _) -> Self:
         self.instance = instance
@@ -137,7 +138,7 @@ class refreshable_method(Generic[_S, _P, _T], refreshable[_P, _T]):
         super().__init__(func)  # type: ignore
 
 
-def state(value: Any) -> Tuple[Any, Callable[[Any], None]]:
+def state(value: Any) -> tuple[Any, Callable[[Any], None]]:
     """Create a state variable that automatically updates its refreshable UI container.
 
     :param value: The initial value of the state variable.
@@ -146,12 +147,17 @@ def state(value: Any) -> Tuple[Any, Callable[[Any], None]]:
     """
     target = cast(RefreshableTarget, RefreshableTarget.current_target)
 
-    if target.next_index >= len(target.locals):
+    try:
+        index = target.next_index
+    except AttributeError as e:
+        raise RuntimeError('ui.state() can only be used inside a @ui.refreshable function') from e
+
+    if index >= len(target.locals):
         target.locals.append(value)
     else:
-        value = target.locals[target.next_index]
+        value = target.locals[index]
 
-    def set_value(new_value: Any, index=target.next_index) -> None:
+    def set_value(new_value: Any) -> None:
         if target.locals[index] == new_value:
             return
         target.locals[index] = new_value

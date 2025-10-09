@@ -1,4 +1,4 @@
-from typing import Callable, Dict, Optional, Union
+from typing import Callable, Optional, Union
 
 from ..events import Handler, ValueChangeEventArguments
 from .input import Input
@@ -11,7 +11,7 @@ class Textarea(Input, component='input.js'):
                  placeholder: Optional[str] = None,
                  value: str = '',
                  on_change: Optional[Handler[ValueChangeEventArguments]] = None,
-                 validation: Optional[Union[Callable[..., Optional[str]], Dict[str, Callable[..., bool]]]] = None,
+                 validation: Optional[Union[Callable[..., Optional[str]], dict[str, Callable[..., bool]]]] = None,
                  ) -> None:
         """Textarea
 

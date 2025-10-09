@@ -1,5 +1,7 @@
 from typing import Optional
 
+from typing_extensions import Self
+
 from ..events import ClickEventArguments, Handler, ValueChangeEventArguments, handle_event
 from .mixins.color_elements import BackgroundColorElement
 from .mixins.disableable_element import DisableableElement
@@ -48,7 +50,15 @@ class DropdownButton(IconElement, TextElement, DisableableElement, BackgroundCol
             self._props['split'] = True
 
         if on_click:
-            self.on('click', lambda _: handle_event(on_click, ClickEventArguments(sender=self, client=self.client)), [])
+            self.on_click(on_click)
+
+    def on_click(self, callback: Handler[ClickEventArguments]) -> Self:
+        """Add a callback to be invoked when the dropdown button is clicked.
+
+        **Added in version 2.22.0**
+        """
+        self.on('click', lambda _: handle_event(callback, ClickEventArguments(sender=self, client=self.client)), [])
+        return self
 
     def _text_to_model_text(self, text: str) -> None:
         self._props['label'] = text

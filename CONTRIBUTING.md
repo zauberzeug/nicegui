@@ -3,6 +3,30 @@
 We're thrilled that you're interested in contributing to NiceGUI!
 Here are some guidelines that will help you get started.
 
+## About This Project
+
+NiceGUI is a Python library for building web-based user interfaces with minimal code.
+It's designed to be simple, powerful, and fun to use.
+
+### Project Structure
+
+- `nicegui/` - Core library code (public API)
+- `nicegui/elements/` - Built-in UI elements
+- `nicegui/functions/` - Utility functions
+- `examples/` - Standalone example applications
+- `website/` - Documentation site (nicegui.io)
+- `tests/` - Test suite
+- `main.py` - Runs the documentation website locally
+
+### Tech Stack
+
+- **Python 3.9+** - Core language
+- **FastAPI/Starlette** - Web framework
+- **Vue 3** - Frontend framework
+- **Quasar** - UI component framework
+- **Tailwind CSS 4** - Styling
+- **pytest** - Testing framework
+
 ## Reporting issues
 
 If you encounter a bug or other issue with NiceGUI, the best way to report it is by opening a new issue on our [GitHub repository](https://github.com/zauberzeug/nicegui).
@@ -22,7 +46,23 @@ We're always looking for bug fixes, performance improvements, and new features.
 ### AI Assistant Integration
 
 This project is designed to work well with AI assistants like Cursor, GitHub Copilot, and others.
-The `.cursor/rules/` directory contains guidelines specifically for AI assistants that complement this contributing guide.
+See [AGENTS.md](AGENTS.md) for guidelines specifically for AI assistants that complement this contributing guide.
+
+We provide review instructions for PR reviews in [.github/copilot-instructions.md](.github/copilot-instructions.md).
+You should review your changes with an AI assistant before committing/pushing:
+
+In Cursor or VS Code with GitHub Copilot Chat:
+
+Select Agent Mode with claude-4.5-sonnet and write: `Review my current branch according to @.github/copilot-instructions.md`
+
+> [!TIP]
+> In Cursor, you can use these custom commands for easy access:
+>
+> - `/review-uncommitted` - Review your local uncommitted changes
+> - `/review-changes` - Review your current branch vs main
+
+Ensure to address any valid feedback.
+That will make your life and that of the maintainers much easier.
 
 ## Setup
 
@@ -38,7 +78,7 @@ The simplest way to setup a fully functioning development environment is to star
 
 ### Locally
 
-To set up a local development environment for NiceGUI, you'll need to have Python 3.8+ and pip installed.
+To set up a local development environment for NiceGUI, you'll need to have Python 3.9+ and pip installed.
 
 You can then use the following command to install NiceGUI in editable mode:
 
@@ -54,7 +94,7 @@ There is no special Python version required for development.
 At Zauberzeug we mainly use 3.12.
 This means we sometimes miss some incompatibilities with older versions.
 But these will hopefully be uncovered by the GitHub Actions (see below).
-Also we use the 3.8 Docker container described below to verify compatibility in cases of uncertainty.
+Also we use the 3.9 Docker container described below to verify compatibility in cases of uncertainty.
 
 ### Plain Docker
 
@@ -68,7 +108,7 @@ By default, the development server listens to http://localhost:80/.
 
 The configuration is written in the `docker-compose.yml` file and automatically loads the `main.py` which contains the website https://nicegui.io.
 Every code change will result in reloading the content.
-We use Python 3.8 as a base to ensure compatibility (see `development.dockerfile`).
+We use Python 3.9 as a base to ensure compatibility (see `development.dockerfile`).
 
 To view the log output, use the command
 
@@ -105,6 +145,9 @@ on a second line and leave the other arguments as they are.
 - Follow autopep8 formatting with 120 character line length
 - Each sentence in documentation should be on a new line
 - Use ruff for linting and code checks
+- Ensure proper use of async (no blocking operations)
+- Never use `asyncio.create_task`, because garbage collector might remove unfinished tasks.
+  `background_tasks.create` takes better care of this.
 
 ### Workflow Guidelines
 
@@ -114,14 +157,19 @@ on a second line and leave the other arguments as they are.
   - Ensure the code is not too complicated
   - Strive to have minimal maintenance burden and self explanatory code without the need of additional comments
 - Be careful to only make changes that are requested or are well understood and related to the change being requested
-- When fixing an issue or bug, do not introduce a new pattern or technology without first exhausting all options for the existing implementation. And if you finally do this, make sure to remove the old implementation afterwards so we don't have duplicate logic
+- When fixing an issue or bug, do not introduce a new pattern or technology without first exhausting all options for the existing implementation.
+  And if you finally do this, make sure to remove the old implementation afterwards so we don't have duplicate logic
 - Keep the codebase very clean and organized
-- Write tests for new features
+- Create tests for new features and bugfixes: use `Screen` fixture only when browser is involved (JavaScript etc.),
+  otherwise the `User` fixture should be preferred as it is much faster and simpler to use (test runs in same async context as NiceGUI)
 - Run tests before submitting any changes
 - Format code using autopep8 before submitting changes
 - Use pre-commit hooks to ensure coding style compliance
 - When adding new features, include corresponding tests
 - For documentation, ensure each sentence is on a new line
+- Discuss before implementing and if an approach is unclear, present options and trade-offs
+- Approach large changes step-by-step and get confirmation before drastic refactorings
+- Think from first principles: Always question your assumptions to find the true nature of problems
 
 ### Linting
 
@@ -142,9 +190,9 @@ pre-commit run --all-files
 > [!TIP]
 > The command may fail with
 >
-> > RuntimeError: failed to find interpreter for Builtin discover of python_spec='python3.8'
+> > RuntimeError: failed to find interpreter for Builtin discover of python_spec='python3.9'
 >
-> You will need to install Python 3.8 and make sure it is available in your `PATH`.
+> You will need to install Python 3.9 and make sure it is available in your `PATH`.
 
 These checks will also run automatically before every commit:
 
@@ -228,28 +276,26 @@ The title should match the example folder name when [snake case converted](https
 
 ## Node dependencies
 
-We use [npm.json](https://github.com/zauberzeug/nicegui/blob/main/npm.json) to pin the versions of the node dependencies.
+We use package.json files to pin the versions of node dependencies.
+There is a `package.json` file in the root directory for core dependencies
+and additional `package.json` files in `nicegui/elements/.../` directories for individual UI elements.
 They are usually updated by the maintainers during major releases.
 
 To update or add new dependencies, we follow these steps:
 
 1. Use `npm` or other derivative tools, modify the `package.json` file with new versions or add dependencies.
-   - We **never** modify the version in `package.json` or `npm.json` directly, since there may be conflicts between versions.
-   - `npx npm-check-updates -u --target semver` is a good starting point for updating dependencies.
 2. Run `npm install` to install the new dependencies.
    Any conflicts in installation will be caught at this moment.
-3. Run `pin_versions.py` to update the `npm.json` file.
-4. Run `npm.py` to download dependencies into the `nicegui/static/` and `nicegui/elements/lib/` directories.
-5. Remember to commit `package.json` in addition to the new dependencies and `DEPENDENCIES.md`, such that Dependabot can catch outdated dependencies with security issues.
+3. Run `npm run build` to copy the dependencies into the `nicegui/static/` directory or
+   to bundle the dependencies in the `nicegui/elements/.../` directories.
 
-Apart from updating Node libraries, the following tools are used to update other resources:
+The following tools are used to update other resources:
 
-- scripts/codemirror/bundle.bash for managing the CodeMirror dependency
 - fetch_google_fonts.py for fetching the Google Fonts
 - fetch_languages.py to update the list of supported languages in language.py
 - fetch_milestone.py to prepare the release notes for a given milestone
 - fetch_sponsors.py to update the list of sponsors on the website and in the README.md file
-- fetch_tailwind.py to update NiceGUI's Tailwind API
+- summarize_dependencies.py to update the dependencies in the DEPENDENCIES.md file
 
 ## Pull requests
 
