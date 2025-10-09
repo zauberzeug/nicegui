@@ -84,9 +84,6 @@ class Sortable(Element,
             for handler in event_handlers:
                 handle_event(handler, e)
 
-        # Add handlers for cross-element operations
-        self.on('sort_end', self._handle_cross_container_add)
-
         # Register event handlers
         self.on('sort_end', lambda e: handle_sortable_event(self._end_handlers, e))
         self.on('sort_add', lambda e: handle_sortable_event(self._add_handlers, e))
@@ -96,6 +93,9 @@ class Sortable(Element,
         self.on('sort_spill', lambda e: handle_sortable_event(self._spill_handlers, e))
         self.on('sort_select', lambda e: handle_sortable_event(self._select_handlers, e))
         self.on('sort_deselect', lambda e: handle_sortable_event(self._deselect_handlers, e))
+
+        # Add handlers for cross-element operations
+        self.on('sort_end', self._handle_cross_container_add)
 
     def on_end(self, callback: Handler[GenericEventArguments]) -> Self:
         """ Add a callback to be invoked when the sorting is finished."""
