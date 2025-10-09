@@ -314,6 +314,16 @@ def dynamic_list_management() -> None:
     information about them when they're triggered.
 ''')
 def event_debugging() -> None:
+    ui.markdown('''
+        This demo shows all available sortable events. Try:
+
+        - Use the handle to move items in List 2
+        - Dragging items between lists
+        - Clicking the filtered (red) item
+        - Holding Ctrl/Cmd and clicking multiple items
+        - Rearranging items within a list
+    ''').classes('mt-4 text-sm')
+
     # Create a log panel to display event information
     log_panel = ui.log().classes('w-full h-64 overflow-auto bg-gray-800 text-white p-2')
 
@@ -425,15 +435,6 @@ def event_debugging() -> None:
             sortable2.on('sort_move', on_move)
             sortable2.on('sort_clone', on_clone)
             sortable2.on('sort_change', on_change)
-
-    ui.label('''
-        This demo shows all available sortable events. Try:
-        - Use the handle to move items in List 2
-        - Dragging items between lists
-        - Clicking the filtered (red) item
-        - Holding Ctrl/Cmd and clicking multiple items
-        - Rearranging items within a list
-    ''').classes('mt-4 text-sm')
 
 
 doc.reference(ui.sortable)
