@@ -58,6 +58,7 @@ jobs:
         run: |
           poetry run pytest -n auto --ignore=tests/test_storage.py
       - name: pytest (storage only, non-parallelized)
+        if: always()
         run: |
           poetry run pytest tests/test_storage.py
 
