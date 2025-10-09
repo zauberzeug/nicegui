@@ -112,39 +112,6 @@ def table_with_expandable_rows():
     ''')
 
 
-@doc.demo('Table with Say Hello button', '''
-    Each row has a "Say hello" button added to the Actions column.
-    Clicking the button shows a notification greeting the row name.
-    This demonstrates how to add interactive buttons to table cells 
-    in a specific column, with each button working independently for its row.
-''')
-def table_with_say_hello_button():
-    columns = [
-        {'name': 'id', 'label': 'ID', 'field': 'id'},
-        {'name': 'name', 'label': 'Name', 'field': 'name'},
-        {'name': 'age', 'label': 'Age', 'field': 'age'},
-        {'name': 'actions', 'label': 'Actions', 'align': 'center'},
-    ]
-    rows = [
-    {'id': 0, 'name': 'Alice', 'age': 25},
-    {'id': 1, 'name': 'Bob', 'age': 30},
-    ]
-    table = ui.table(columns=columns, rows=rows, row_key='id').classes('w-full')
-    table.add_slot('body-cell-actions', r'''
-        <q-td auto-width :props="props">
-            <q-btn 
-                size="sm" 
-                color="blue" 
-                label="Say hello" 
-                flat 
-                dense 
-                round
-                @click="() => $q.notify({message: 'Hello ' + props.row.name + '!'})"
-            />
-        </q-td>
-    ''')
-
-
 @doc.demo('Show and hide columns', '''
     Here is an example of how to show and hide columns in a table.
 ''')
@@ -174,9 +141,33 @@ def show_and_hide_columns():
                           column=column: toggle(column, e.value))
 
 
+@doc.demo('Table with buttons', '''
+    You can add buttons to the table cells using a named slot "body-cell-[name]".
+    In this example, we add a button to the "action" column.
+    When the button is clicked, a custom "notify" event is emitted with the row as argument.
+    The "notify" event is handled by a lambda function, which emits a notification with the name of the row.
+''')
+def table_with_buttons():
+    columns = [
+        {'name': 'name', 'label': 'Name', 'field': 'name'},
+        {'name': 'action', 'label': 'Action', 'align': 'center'},
+    ]
+    rows = [
+        {'name': 'Alice'},
+        {'name': 'Bob'},
+    ]
+    table = ui.table(columns=columns, rows=rows)
+    table.add_slot('body-cell-action', '''
+        <q-td :props="props">
+            <q-btn label="Notify" @click="() => $parent.$emit('notify', props.row)" flat />
+        </q-td>
+    ''')
+    table.on('notify', lambda e: ui.notify(f'Hi {e.args["name"]}!'))
+
+
 @doc.demo('Table with drop down selection', '''
     Here is an example of how to use a drop down selection in a table.
-    After emitting a `rename` event from the scoped slot, the `rename` function updates the table rows.
+    After emitting a "rename" event from the scoped slot, the `rename` function updates the table rows.
 ''')
 def table_with_drop_down_selection():
     from nicegui import events
