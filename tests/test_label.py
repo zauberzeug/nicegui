@@ -18,3 +18,13 @@ def test_text_0(screen: Screen):
 
     screen.open('/')
     screen.should_contain('0')
+
+
+def test_failure(screen: Screen):
+    """This test should fail. We will remove it later."""
+    @ui.page('/')
+    def page():
+        ui.label('Hi!')
+
+    screen.open('/')
+    screen.should_contain('This text does not exist')

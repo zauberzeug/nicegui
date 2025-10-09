@@ -56,6 +56,12 @@ jobs:
         uses: nanasess/setup-chromedriver@v2.3.0
       - name: pytest
         run: poetry run pytest
+      - name: Upload failed screenshots
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: screenshots-red-${{ matrix.python }}
+          path: screenshots-red/**
 
   slack:
     needs:

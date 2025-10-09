@@ -1,4 +1,3 @@
-import os
 import re
 import runpy
 import threading
@@ -29,7 +28,8 @@ from .general_fixtures import get_path_to_main_file, prepare_simulation
 class Screen:
     PORT = 3392
     IMPLICIT_WAIT = 4
-    SCREENSHOT_DIR = Path('screenshots')
+    SCREENSHOTS_GREEN = Path('screenshots-green')
+    SCREENSHOTS_RED = Path('screenshots-red')
 
     def __init__(self, selenium: webdriver.Chrome, caplog: pytest.LogCaptureFixture, request: Optional[pytest.FixtureRequest] = None) -> None:
         self.selenium = selenium
@@ -247,12 +247,13 @@ class Screen:
         """Wait for the given number of seconds."""
         time.sleep(t)
 
-    def shot(self, name: str) -> None:
+    def shot(self, name: str, *, failed: bool) -> None:
         """Take a screenshot and store it in the screenshots directory."""
-        os.makedirs(self.SCREENSHOT_DIR, exist_ok=True)
-        filename = f'{self.SCREENSHOT_DIR}/{name}.png'
+        path = self.SCREENSHOTS_RED if failed else self.SCREENSHOTS_GREEN
+        path.mkdir(parents=True, exist_ok=True)
+        filename = path / f'{name}.png'
         print(f'Storing screenshot to {filename}')
-        self.selenium.get_screenshot_as_file(filename)
+        self.selenium.get_screenshot_as_file(str(filename))
 
     def assert_py_logger(self, level: str, message: Union[str, re.Pattern]) -> None:
         """Assert that the Python logger has received a message with the given level and text or regex pattern."""
