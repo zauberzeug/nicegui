@@ -10,7 +10,9 @@ def test_local_target_linking_on_sub_pages(screen: Screen):
         ui.link_target('target')
         ui.label('the target')
 
-    ui.label('main page')
+    @ui.page('/')
+    def page():
+        ui.label('main page')
 
     screen.open('/sub')
     screen.click('goto target')
@@ -23,7 +25,9 @@ def test_opening_link_in_new_tab(screen: Screen):
     def subpage():
         ui.label('the sub-page')
 
-    ui.link('open sub-page in new tab', '/sub', new_tab=True)
+    @ui.page('/')
+    def page():
+        ui.link('open sub-page in new tab', '/sub', new_tab=True)
 
     screen.open('/')
     screen.click('open sub-page')
@@ -36,27 +40,32 @@ def test_opening_link_in_new_tab(screen: Screen):
 
 
 def test_replace_link(screen: Screen):
-    with ui.row() as container:
-        ui.link('nicegui.io', 'https://nicegui.io/')
+    @ui.page('/')
+    def page():
+        with ui.row() as container:
+            ui.link('nicegui.io', 'https://nicegui.io/')
 
-    def replace():
-        container.clear()
-        with container:
-            ui.link('zauberzeug', 'https://zauberzeug.com/')
-    ui.button('Replace', on_click=replace)
+        def replace():
+            container.clear()
+            with container:
+                ui.link('zauberzeug', 'https://zauberzeug.com/')
+        ui.button('Replace', on_click=replace)
 
     screen.open('/')
     assert screen.find('nicegui.io').get_attribute('href') == 'https://nicegui.io/'
+
     screen.click('Replace')
     assert screen.find('zauberzeug').get_attribute('href') == 'https://zauberzeug.com/'
 
 
 def test_updating_href_prop(screen: Screen):
-    link = ui.link('nicegui.io', 'https://nicegui.io')
-    ui.button('change href', on_click=lambda: (
-        link.props('href="https://github.com/zauberzeug/nicegui"'),
-        ui.notify('href changed'),
-    ))
+    @ui.page('/')
+    def page():
+        link = ui.link('nicegui.io', 'https://nicegui.io')
+        ui.button('change href', on_click=lambda: (
+            link.props('href="https://github.com/zauberzeug/nicegui"'),
+            ui.notify('href changed'),
+        ))
 
     screen.open('/')
     assert screen.find('nicegui.io').get_attribute('href') == 'https://nicegui.io/'
@@ -67,18 +76,22 @@ def test_updating_href_prop(screen: Screen):
 
 
 def test_link_to_elements(screen: Screen):
-    navigation = ui.row()
-    for i in range(100):
-        ui.label(f'label {i}')
-    link = ui.link('goto top', navigation)
-    with navigation:
-        ui.link('goto bottom', link)
+    @ui.page('/')
+    def page():
+        navigation = ui.row()
+        for i in range(100):
+            ui.label(f'label {i}')
+        link = ui.link('goto top', navigation)
+        with navigation:
+            ui.link('goto bottom', link)
 
     screen.open('/')
     assert screen.selenium.execute_script('return window.scrollY') == 0
+
     screen.click('goto bottom')
     screen.wait(0.5)
     assert screen.selenium.execute_script('return window.scrollY') > 100
+
     screen.click('goto top')
     screen.wait(0.5)
     assert screen.selenium.execute_script('return window.scrollY') < 100

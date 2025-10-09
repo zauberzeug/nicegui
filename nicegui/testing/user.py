@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import re
-from typing import Any, Callable, Dict, List, Optional, Set, Type, TypeVar, Union, overload
+from typing import Any, Callable, TypeVar, overload
 from uuid import uuid4
 
 import httpx
@@ -25,18 +25,18 @@ T = TypeVar('T', bound=Element)
 
 
 class User:
-    current_user: Optional[User] = None
+    current_user: User | None = None
 
     def __init__(self, client: httpx.AsyncClient) -> None:
         self.http_client = client
         self.sio = socketio.AsyncClient()
-        self.client: Optional[Client] = None
-        self.back_history: List[str] = []
-        self.forward_history: List[str] = []
+        self.client: Client | None = None
+        self.back_history: list[str] = []
+        self.forward_history: list[str] = []
         self.navigate = UserNavigate(self)
         self.notify = UserNotify()
         self.download = UserDownload(self)
-        self.javascript_rules: Dict[re.Pattern, Callable[[re.Match], Any]] = {
+        self.javascript_rules: dict[re.Pattern, Callable[[re.Match], Any]] = {
             re.compile('.*__IS_DRAWER_OPEN__'): lambda _: True,  # see https://github.com/zauberzeug/nicegui/issues/4508
         }
 
@@ -101,7 +101,7 @@ class User:
 
     @overload
     async def should_see(self,
-                         target: Union[str, Type[T]],
+                         target: str | type[T],
                          *,
                          retries: int = 3,
                          ) -> None:
@@ -110,19 +110,19 @@ class User:
     @overload
     async def should_see(self,
                          *,
-                         kind: Optional[Type[T]] = None,
-                         marker: Union[str, List[str], None] = None,
-                         content: Union[str, List[str], None] = None,
+                         kind: type[T] | None = None,
+                         marker: str | list[str] | None = None,
+                         content: str | list[str] | None = None,
                          retries: int = 3,
                          ) -> None:
         ...
 
     async def should_see(self,
-                         target: Union[str, Type[T], None] = None,
+                         target: str | type[T] | None = None,
                          *,
-                         kind: Optional[Type[T]] = None,
-                         marker: Union[str, List[str], None] = None,
-                         content: Union[str, List[str], None] = None,
+                         kind: type[T] | None = None,
+                         marker: str | list[str] | None = None,
+                         content: str | list[str] | None = None,
                          retries: int = 3,
                          ) -> None:
         """Assert that the page contains an element fulfilling certain filter rules.
@@ -142,7 +142,7 @@ class User:
 
     @overload
     async def should_not_see(self,
-                             target: Union[str, Type[T]],
+                             target: str | type[T],
                              *,
                              retries: int = 3,
                              ) -> None:
@@ -151,19 +151,19 @@ class User:
     @overload
     async def should_not_see(self,
                              *,
-                             kind: Optional[Type[T]] = None,
-                             marker: Union[str, List[str], None] = None,
-                             content: Union[str, List[str], None] = None,
+                             kind: type[T] | None = None,
+                             marker: str | list[str] | None = None,
+                             content: str | list[str] | None = None,
                              retries: int = 3,
                              ) -> None:
         ...
 
     async def should_not_see(self,
-                             target: Union[str, Type[T], None] = None,
+                             target: str | type[T] | None = None,
                              *,
-                             kind: Optional[Type[T]] = None,
-                             marker: Union[str, List[str], None] = None,
-                             content: Union[str, List[str], None] = None,
+                             kind: type[T] | None = None,
+                             marker: str | list[str] | None = None,
+                             content: str | list[str] | None = None,
                              retries: int = 3,
                              ) -> None:
         """Assert that the page does not contain an input with the given value."""
@@ -182,33 +182,33 @@ class User:
 
     @overload
     def find(self,
-             target: Type[T],
+             target: type[T],
              ) -> UserInteraction[T]:
         ...
 
     @overload
     def find(self: User,
              *,
-             marker: Union[str, List[str], None] = None,
-             content: Union[str, List[str], None] = None,
+             marker: str | list[str] | None = None,
+             content: str | list[str] | None = None,
              ) -> UserInteraction[Element]:
         ...
 
     @overload
     def find(self,
              *,
-             kind: Type[T],
-             marker: Union[str, List[str], None] = None,
-             content: Union[str, List[str], None] = None,
+             kind: type[T],
+             marker: str | list[str] | None = None,
+             content: str | list[str] | None = None,
              ) -> UserInteraction[T]:
         ...
 
     def find(self,
-             target: Union[str, Type[T], None] = None,
+             target: str | type[T] | None = None,
              *,
-             kind: Optional[Type[T]] = None,
-             marker: Union[str, List[str], None] = None,
-             content: Union[str, List[str], None] = None,
+             kind: type[T] | None = None,
+             marker: str | list[str] | None = None,
+             content: str | list[str] | None = None,
              ) -> UserInteraction[T]:
         """Select elements for interaction."""
         with self._client:
@@ -225,11 +225,11 @@ class User:
 
     def _gather_elements(
         self,
-        target: Union[str, Type[T], None] = None,
-        kind: Optional[Type[T]] = None,
-        marker: Union[str, List[str], None] = None,
-        content: Union[str, List[str], None] = None,
-    ) -> Set[T]:
+        target: str | type[T] | None = None,
+        kind: type[T] | None = None,
+        marker: str | list[str] | None = None,
+        content: str | list[str] | None = None,
+    ) -> set[T]:
         if target is None:
             if kind is None:
                 elements = set(ElementFilter(marker=marker, content=content))
@@ -242,10 +242,10 @@ class User:
         return {e for e in elements if e.visible}  # type: ignore
 
     def _build_error_message(self,
-                             target: Union[str, Type[T], None] = None,
-                             kind: Optional[Type[T]] = None,
-                             marker: Union[str, List[str], None] = None,
-                             content: Union[str, List[str], None] = None,
+                             target: str | type[T] | None = None,
+                             kind: type[T] | None = None,
+                             marker: str | list[str] | None = None,
+                             content: str | list[str] | None = None,
                              ) -> str:
         if isinstance(target, str):
             return f'element with marker={target} or content={target} on the page:\n{self.current_layout}'

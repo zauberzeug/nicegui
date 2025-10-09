@@ -12,7 +12,7 @@ jobs:
     steps:
       - uses: actions/checkout@v5
       - name: set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: "3.x"
       - name: set up Poetry
@@ -29,7 +29,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           draft: true
-          prerelease: false
+          prerelease: ${{ contains(env.VERSION, 'rc') }}
           name: ${{ env.VERSION }}
           tag_name: ${{ env.VERSION }}
         env:
@@ -121,13 +121,14 @@ jobs:
           short_description: "Web Based User Interface for Python with Buttons, Dialogs, Markdown, 3D Scenes and Plots"
 
   update_version:
+    if: ${{ !contains(github.ref_name, 'rc') }}
     needs: docker
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
         with:
           ref: main
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: "3.11"
       - name: Install httpx

@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+from html_sanitizer import Sanitizer
 from langchain_openai import ChatOpenAI
 from log_callback_handler import NiceGuiLogElementCallbackHandler
 
@@ -25,7 +26,7 @@ def main():
             response += chunk.content
             response_message.clear()
             with response_message:
-                ui.html(response)
+                ui.html(response, sanitize=Sanitizer().sanitize)
             ui.run_javascript('window.scrollTo(0, document.body.scrollHeight)')
         message_container.remove(spinner)
 

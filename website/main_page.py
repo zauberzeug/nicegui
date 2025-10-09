@@ -52,7 +52,7 @@ def create() -> None:
         section_heading('Installation', 'Get *started*')
         with ui.row().classes('w-full text-lg leading-tight grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-8'):
             with ui.column().classes('w-full max-w-md gap-2'):
-                ui.html('<em>1.</em>').classes('text-3xl font-bold fancy-em')
+                ui.html('<em>1.</em>', sanitize=False).classes('text-3xl font-bold fancy-em')
                 ui.markdown('Create __main.py__').classes('text-lg')
                 with documentation.python_window(classes='w-full h-52'):
                     ui.markdown('''
@@ -65,7 +65,7 @@ def create() -> None:
                         ```
                     ''')
             with ui.column().classes('w-full max-w-md gap-2'):
-                ui.html('<em>2.</em>').classes('text-3xl font-bold fancy-em')
+                ui.html('<em>2.</em>', sanitize=False).classes('text-3xl font-bold fancy-em')
                 ui.markdown('Install and launch').classes('text-lg')
                 with documentation.bash_window(classes='w-full h-52'):
                     ui.markdown('''
@@ -75,7 +75,7 @@ def create() -> None:
                         ```
                     ''')
             with ui.column().classes('w-full max-w-md gap-2'):
-                ui.html('<em>3.</em>').classes('text-3xl font-bold fancy-em')
+                ui.html('<em>3.</em>', sanitize=False).classes('text-3xl font-bold fancy-em')
                 ui.markdown('Enjoy!').classes('text-lg')
                 with documentation.browser_window(classes='w-full h-52'):
                     ui.label('Hello NiceGUI!')
@@ -121,7 +121,7 @@ def create() -> None:
                 'customizable [color themes](/documentation/section_styling_appearance#color_theming)',
                 'custom CSS and classes',
                 'modern look with material design',
-                '[Tailwind CSS](https://v3.tailwindcss.com/) auto-completion',
+                '[Tailwind CSS](https://tailwindcss.com/) auto-completion',
             ])
             features('source', 'Coding', [
                 'routing for multiple [pages](/documentation/page)',
@@ -133,7 +133,7 @@ def create() -> None:
                 'generic [Vue](https://vuejs.org/) to Python bridge',
                 'dynamic GUI through [Quasar](https://quasar.dev/)',
                 'content is served with [FastAPI](https://fastapi.tiangolo.com/)',
-                'Python 3.8+',
+                'Python 3.9+',
             ])
 
     with ui.column().classes('w-full p-8 lg:p-16 max-w-[1600px] mx-auto'):
@@ -147,7 +147,7 @@ def create() -> None:
             with ui.column().classes('gap-1 max-lg:items-center max-lg:text-center'):
                 ui.markdown('Browse through plenty of live demos.') \
                     .classes('text-white text-2xl md:text-3xl font-medium')
-                ui.html('Fun-Fact: This whole website is also coded with NiceGUI.') \
+                ui.label('Fun-Fact: This whole website is also coded with NiceGUI.') \
                     .classes('text-white text-lg md:text-xl')
             ui.link('Documentation', '/documentation').style('color: black !important') \
                 .classes('rounded-full mx-auto px-12 py-2 bg-white font-medium text-lg md:text-xl')
@@ -159,7 +159,7 @@ def create() -> None:
             for example in examples:
                 example_link(example)
 
-    with ui.column().classes('dark-box p-8 lg:p-16 my-16 bg-transparent border-y-2'):
+    with ui.column().classes('dark-box p-8 lg:p-16 my-16 bg-transparent border-y-2 border-gray-200'):
         with ui.column().classes('mx-auto items-center gap-y-8 gap-x-32 lg:flex-row'):
             with ui.column().classes('max-lg:items-center max-lg:text-center'):
                 link_target('sponsors')

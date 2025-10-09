@@ -1,4 +1,4 @@
-from typing import Any, Callable, List, Optional, cast
+from typing import Any, Callable, Optional, cast
 
 from typing_extensions import Self
 
@@ -27,7 +27,7 @@ class SelectableElement(Element):
         self.set_selected(selected)
         self.on('update:selected', lambda e: self.set_selected(e.args))
 
-        self._selection_change_handlers: List[Handler[ValueChangeEventArguments]] = []
+        self._selection_change_handlers: list[Handler[ValueChangeEventArguments]] = []
         if on_selection_change:
             self.on_selection_change(on_selection_change)
 
@@ -39,7 +39,8 @@ class SelectableElement(Element):
     def bind_selected_to(self,
                          target_object: Any,
                          target_name: str = 'selected',
-                         forward: Optional[Callable[[Any], Any]] = None,
+                         forward: Optional[Callable[[Any], Any]] = None, *,
+                         strict: Optional[bool] = None,
                          ) -> Self:
         """Bind the selection state of this element to the target object's target_name property.
 
@@ -49,14 +50,17 @@ class SelectableElement(Element):
         :param target_object: The object to bind to.
         :param target_name: The name of the property to bind to.
         :param forward: A function to apply to the value before applying it to the target (default: identity).
+        :param strict: Whether to check (and raise) if the target object has the specified property (default: None,
+            performs a check if the object is not a dictionary, *added in version 3.0.0*).
         """
-        bind_to(self, 'selected', target_object, target_name, forward)
+        bind_to(self, 'selected', target_object, target_name, forward, self_strict=False, other_strict=strict)
         return self
 
     def bind_selected_from(self,
                            target_object: Any,
                            target_name: str = 'selected',
-                           backward: Optional[Callable[[Any], Any]] = None,
+                           backward: Optional[Callable[[Any], Any]] = None, *,
+                           strict: Optional[bool] = None,
                            ) -> Self:
         """Bind the selection state of this element from the target object's target_name property.
 
@@ -66,8 +70,10 @@ class SelectableElement(Element):
         :param target_object: The object to bind from.
         :param target_name: The name of the property to bind from.
         :param backward: A function to apply to the value before applying it to this element (default: identity).
+        :param strict: Whether to check (and raise) if the target object has the specified property (default: None,
+            performs a check if the object is not a dictionary, *added in version 3.0.0*).
         """
-        bind_from(self, 'selected', target_object, target_name, backward)
+        bind_from(self, 'selected', target_object, target_name, backward, self_strict=False, other_strict=strict)
         return self
 
     def bind_selected(self,
@@ -75,6 +81,7 @@ class SelectableElement(Element):
                       target_name: str = 'selected', *,
                       forward: Optional[Callable[[Any], Any]] = None,
                       backward: Optional[Callable[[Any], Any]] = None,
+                      strict: Optional[bool] = None,
                       ) -> Self:
         """Bind the selection state of this element to the target object's target_name property.
 
@@ -86,8 +93,12 @@ class SelectableElement(Element):
         :param target_name: The name of the property to bind to.
         :param forward: A function to apply to the value before applying it to the target (default: identity).
         :param backward: A function to apply to the value before applying it to this element (default: identity).
+        :param strict: Whether to check (and raise) if the target object has the specified property (default: None,
+            performs a check if the object is not a dictionary, *added in version 3.0.0*).
         """
-        bind(self, 'selected', target_object, target_name, forward=forward, backward=backward)
+        bind(self, 'selected', target_object, target_name,
+             forward=forward, backward=backward,
+             self_strict=False, other_strict=strict)
         return self
 
     def set_selected(self, selected: bool) -> None:
@@ -102,8 +113,8 @@ class SelectableElement(Element):
 
         :param selected: The new selection state.
         """
+        previous_value = self._props.get('selected')
         self._props['selected'] = selected
-        self.update()
-        args = ValueChangeEventArguments(sender=self, client=self.client, value=self._props['selected'])
+        args = ValueChangeEventArguments(sender=self, client=self.client, value=selected, previous_value=previous_value)
         for handler in self._selection_change_handlers:
             handle_event(handler, args)

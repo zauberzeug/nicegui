@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import asyncio
-from typing import TYPE_CHECKING, Callable, List, Optional
+from typing import TYPE_CHECKING, Callable
 
 from fastapi import Request
 from starlette.routing import Match, Route
@@ -17,7 +17,7 @@ if TYPE_CHECKING:
 
 class SubPagesRouter:
 
-    def __init__(self, request: Optional[Request]) -> None:
+    def __init__(self, request: Request | None) -> None:
         on('sub_pages_open', lambda event: self._handle_open(event.args))
         on('sub_pages_navigate', lambda event: self._handle_navigate(event.args))
 
@@ -38,7 +38,7 @@ class SubPagesRouter:
             self.current_path = '/'
         self.is_initial_request = True
 
-        self._path_changed_handlers: List[Callable[[str], None]] = []
+        self._path_changed_handlers: list[Callable[[str], None]] = []
 
     def on_path_changed(self, handler: Callable[[str], None]) -> None:
         """Register a callback to be invoked when the path changes.
@@ -62,8 +62,9 @@ class SubPagesRouter:
     async def _handle_navigate(self, path: str) -> None:
         # NOTE: keep a reference to the client because _handle_open clears the slots so that context.client does not work anymore
         client = context.client
+        await self._handle_open(path)
         if (
-            await self._handle_open(path) or  # path is handled by `ui.sub_pages`
+            not has_any_unresolved_path(client) or  # path is handled by `ui.sub_pages`
             not self._other_page_builder_matches_path(path, client)  # `ui.sub_pages` is still responsible
         ):
             client.run_javascript(f'''
@@ -77,9 +78,6 @@ class SubPagesRouter:
 
     def _other_page_builder_matches_path(self, path: str, client: Client) -> bool:
         """Check if there is any other matching page builder than the one for this client."""
-        if client.request is None:
-            return True  # NOTE: we will remove this in NiceGUI 3.0 where we plan to drop support for auto-index pages
-
         client_route = client.request.scope['route']
         client_func = getattr(client_route.endpoint, '__func__', client_route.endpoint)
 
@@ -106,17 +104,26 @@ class SubPagesRouter:
             await asyncio.sleep(0)
             # NOTE: refresh the list to include newly created nested sub pages in async sub page builders after the event loop tick
             sub_pages_elements = [el for el in client.layout.descendants() if isinstance(el, SubPages)]
-        has_404 = False
         for sub_pages in sub_pages_elements:
             if (
                 sub_pages._match is not None and  # pylint: disable=protected-access
-                sub_pages._404_enabled and  # pylint: disable=protected-access
                 sub_pages._match.remaining_path and  # pylint: disable=protected-access
                 not any(isinstance(el, SubPages) for el in sub_pages.descendants())
             ):
                 sub_pages._set_match(None)  # pylint: disable=protected-access
-                has_404 = True
-        return not has_404
+        return not has_any_unresolved_path(client, with_404_enabled_only=True)
+
+
+def has_any_unresolved_path(client: Client, *, with_404_enabled_only: bool = False) -> bool:
+    """Check if any sub_pages has an unresolved path.
+
+    :param with_404_enabled_only: whether to only consider sub_pages with show_404 enabled
+    """
+    return any(
+        sub_pages.has_404 and (sub_pages._404_enabled or not with_404_enabled_only)  # pylint: disable=protected-access
+        for sub_pages in client.layout.descendants()
+        if isinstance(sub_pages, SubPages)
+    )
 
 
 def _normalize(p: str) -> str:

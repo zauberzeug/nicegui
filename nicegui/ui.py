@@ -211,7 +211,7 @@ from .elements.rating import Rating as rating
 from .elements.restructured_text import ReStructuredText as restructured_text
 from .elements.row import Row as row
 from .elements.scene import Scene as scene
-from .elements.scene_view import SceneView as scene_view
+from .elements.scene import SceneView as scene_view
 from .elements.scroll_area import ScrollArea as scroll_area
 from .elements.select import Select as select
 from .elements.separator import Separator as separator

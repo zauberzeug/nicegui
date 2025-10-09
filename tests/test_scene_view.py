@@ -8,13 +8,17 @@ from nicegui.testing import Screen
 
 
 def test_create_dynamically(screen: Screen):
-    scene = ui.scene()
-    scene_view: Optional[ui.scene_view] = None
+    scene = scene_view = None
 
-    def create():
-        nonlocal scene_view
-        scene_view = ui.scene_view(scene)
-    ui.button('Create', on_click=create)
+    @ui.page('/')
+    def page():
+        nonlocal scene
+        scene = ui.scene()
+
+        def create():
+            nonlocal scene_view
+            scene_view = ui.scene_view(scene)
+        ui.button('Create', on_click=create)
 
     screen.open('/')
     screen.click('Create')
@@ -24,10 +28,15 @@ def test_create_dynamically(screen: Screen):
 
 
 def test_object_creation_via_context(screen: Screen):
-    with ui.scene() as scene:
-        scene.box()
+    scene = scene_view = None
 
-    scene_view = ui.scene_view(scene)
+    @ui.page('/')
+    def page():
+        nonlocal scene, scene_view
+        with ui.scene() as scene:
+            scene.box()
+
+        scene_view = ui.scene_view(scene)
 
     screen.open('/')
     screen.wait(1)
@@ -37,10 +46,13 @@ def test_object_creation_via_context(screen: Screen):
 @pytest.mark.skipif(platform.python_implementation() == 'PyPy', reason='PyPy no numpy')
 def test_camera_move(screen: Screen):
     import numpy as np
-    with ui.scene() as scene:
-        scene.box()
+    @ui.page('/')
+    def page():
+        nonlocal scene, scene_view
+        with ui.scene() as scene:
+            scene.box()
 
-    scene_view = ui.scene_view(scene)
+        scene_view = ui.scene_view(scene)
 
     screen.open('/')
 

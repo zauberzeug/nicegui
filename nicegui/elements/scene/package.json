@@ -1,0 +1,21 @@
+{
+  "name": "nicegui-scene-bundle",
+  "version": "1.0.0",
+  "description": "Scene bundling for NiceGUI",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "rollup -c rollup.config.mjs --validate",
+    "clean": "rimraf ./dist/*"
+  },
+  "dependencies": {
+    "three": "^0.180.0",
+    "@tweenjs/tween.js": "^25.0.0"
+  },
+  "devDependencies": {
+    "rollup": "^4.52.3",
+    "@rollup/plugin-node-resolve": "^16.0.1",
+    "@rollup/plugin-terser": "^0.4.4",
+    "rimraf": "^6.0.1"
+  }
+}

@@ -1,5 +1,5 @@
 import asyncio
-from typing import List, Optional
+from typing import Optional
 
 import httpx
 import pytest
@@ -442,6 +442,21 @@ def test_navigate_to_new_tab_fallback(screen: Screen):
     assert calls == {'index': 2}
 
 
+def test_adding_page_after_async_sub_page(screen: Screen):
+    """reproduction of https://github.com/zauberzeug/nicegui/issues/5142"""
+    @ui.page('/')
+    @ui.page('/{_:path}')
+    def index():
+        pages = ui.sub_pages({'/': main})
+        pages.add('/other', lambda: ui.label('other page'))
+
+    async def main():
+        ui.label('main page')
+
+    screen.open('/other')
+    screen.should_contain('other page')
+
+
 def test_adding_sub_pages_after_initialization(screen: Screen):
     @ui.page('/')
     @ui.page('/sub')
@@ -532,7 +547,8 @@ def test_starting_on_non_root_path(screen: Screen, page_route: str):
     assert screen.current_path.rstrip('/') == '/foo/sub'
 
 
-def test_links_pointing_to_path_which_is_not_a_sub_page(screen: Screen):
+@pytest.mark.parametrize('show_404', [True, False])
+def test_links_pointing_to_path_which_is_not_a_sub_page(screen: Screen, show_404: bool):
     calls = {'index': 0, 'main': 0, 'sub': 0, 'other': 0}
 
     @ui.page('/')
@@ -543,7 +559,7 @@ def test_links_pointing_to_path_which_is_not_a_sub_page(screen: Screen):
         ui.link('Go to main', '/')
         ui.link('Go to sub', '/sub')
         ui.link('Go to other', '/other')
-        ui.sub_pages({'/': main, '/sub': sub})
+        ui.sub_pages({'/': main, '/sub': sub}, show_404=show_404)
 
     def main():
         calls['main'] += 1
@@ -917,7 +933,7 @@ def test_only_rebuild_page_when_builder_depends_on_it(screen: Screen, strategy: 
 
 
 def test_on_path_changed_event(screen: Screen):
-    paths: List[str] = []
+    paths: list[str] = []
     calls = {'index': 0, 'main': 0, 'other': 0}
 
     @ui.page('/')

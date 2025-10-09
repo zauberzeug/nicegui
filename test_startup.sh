@@ -49,6 +49,11 @@ do
         continue # until https://github.com/omnilib/aiosqlite/issues/241 is fixed
     fi
 
+    # Skip examples/ai_interface for Python 3.14
+    if [[ $(python3 --version | cut -d' ' -f2 | cut -d'.' -f1,2) =~ ^3.14$ ]] && [[ $path == "examples/ai_interface" ]]; then
+        continue # It still uses Pydantic V1, which breaks horribly with Python 3.14
+    fi
+
     # skip if path is examples/pyserial
     if test $path = "examples/pyserial"; then
         continue # because there is no serial port in github actions

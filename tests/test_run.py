@@ -3,6 +3,10 @@ import platform
 import time
 from pickle import PicklingError
 from typing import Awaitable, Generator
+import os
+from collections.abc import Awaitable, Generator
+from concurrent.futures.process import BrokenProcessPool
+from pickle import PicklingError
 
 import pytest
 
@@ -50,12 +54,8 @@ async def test_run_unpickable_exception_in_cpu_bound_callback(user: User):
 
     @ui.page('/')
     async def index():
-        if platform.python_implementation() == 'PyPy':
-            with pytest.raises(PicklingError, match="Can't pickle"):
-                ui.label(await run.cpu_bound(raise_unpicklable_exception))
-        else:
-            with pytest.raises(AttributeError, match="Can't pickle local object|Can't get local object"):
-                ui.label(await run.cpu_bound(raise_unpicklable_exception))
+        with pytest.raises((AttributeError, PicklingError), match="Can't pickle|Can't get local object"):
+            ui.label(await run.cpu_bound(raise_unpicklable_exception))
 
     await user.open('/')
 
@@ -76,3 +76,23 @@ async def test_run_cpu_bound_function_which_raises_problematic_exception(user: U
             ui.label(await run.cpu_bound(raise_exception_with_super_parameter))
 
     await user.open('/')
+
+
+def bad_function() -> None:
+    os._exit(1)  # pylint: disable=protected-access
+
+
+def good_function() -> bool:
+    return True
+
+
+async def test_run_cpu_bound_survive_bad_function(user: User):
+    @ui.page('/')
+    async def index():
+        with pytest.raises(BrokenProcessPool):
+            await run.cpu_bound(bad_function)
+        assert await run.cpu_bound(good_function)
+        ui.label('excellent')
+
+    await user.open('/')
+    await user.should_see('excellent')
