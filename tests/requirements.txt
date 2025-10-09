@@ -1,3 +1,4 @@
 pytest-asyncio
 pytest-selenium
 pytest-xdist
+pytest-rerunfailures
