@@ -9,7 +9,7 @@ ENV POETRY_VERSION=2.1.2 \
 
 # Install packages
 RUN apt-get update && apt-get install --no-install-recommends -y \
-    sudo git build-essential chromium chromium-driver chromium-sandbox \
+    sudo git build-essential chromium chromium-driver \
     && rm -rf /var/lib/apt/lists/*
 
 # Create remote user
