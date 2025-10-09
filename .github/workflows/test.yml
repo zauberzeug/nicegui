@@ -28,10 +28,10 @@ jobs:
   test:
     strategy:
       matrix:
-        python: ["3.9", "3.10", "3.11", "3.12", "3.13", "3.14"]
+        python: ["3.9", "3.10", "3.11", "3.12", "3.13", "3.14", "pypy3.10", "pypy3.11"]
       fail-fast: false
     runs-on: ubuntu-latest
-    timeout-minutes: 40
+    timeout-minutes: 120
     steps:
       - uses: actions/checkout@v5
       - name: set up Poetry
@@ -46,10 +46,13 @@ jobs:
           set -x
           poetry install --all-extras
           # install packages to run the examples
-          poetry run pip install opencv-python opencv-contrib-python-headless httpx isort replicate langchain openai simpy tortoise-orm
+          poetry run pip install httpx isort replicate openai simpy tortoise-orm
           poetry run pip install -r tests/requirements.txt
           # try fix issue with importlib_resources
           poetry run pip install importlib-resources
+      - name: ensure pydantic v1 for pypy
+        if: ${{ startsWith(matrix.python, 'pypy') }}
+        run: poetry run pip install 'pydantic<2.0.0'
       - name: test startup
         run: poetry run ./test_startup.sh
       - name: setup chromedriver

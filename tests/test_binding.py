@@ -1,4 +1,5 @@
 import copy
+import platform
 import weakref
 from typing import Optional
 
@@ -176,6 +177,7 @@ async def test_copy_instance_with_bindable_property(user: User):
     await user.should_see('y=2')
 
 
+@pytest.mark.skipif(platform.python_implementation() == 'PyPy', reason='PyPy no reference counting')
 def test_automatic_cleanup(screen: Screen):
     class Model:
         value = binding.BindableProperty()

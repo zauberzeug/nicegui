@@ -1,6 +1,7 @@
+import platform
 import weakref
 
-import numpy as np
+import pytest
 from selenium.common.exceptions import JavascriptException
 
 from nicegui import ui
@@ -133,7 +134,9 @@ def test_create_dynamically(screen: Screen):
     assert screen.find_by_tag('canvas')
 
 
+@pytest.mark.skipif(platform.python_implementation() == 'PyPy', reason='PyPy no numpy')
 def test_rotation_matrix_from_euler():
+    import numpy as np
     omega, phi, kappa = 0.1, 0.2, 0.3
     Rx = np.array([[1, 0, 0], [0, np.cos(omega), -np.sin(omega)], [0, np.sin(omega), np.cos(omega)]])
     Ry = np.array([[np.cos(phi), 0, np.sin(phi)], [0, 1, 0], [-np.sin(phi), 0, np.cos(phi)]])
@@ -204,6 +207,7 @@ def test_gltf(screen: Screen):
     assert screen.selenium.execute_script(f'return scene_{scene.html_id}.children.length') == 5
 
 
+@pytest.mark.skipif(platform.python_implementation() == 'PyPy', reason='PyPy no reference counting')
 def test_no_cyclic_references(screen: Screen):
     objects: weakref.WeakSet = weakref.WeakSet()
     scene = None
