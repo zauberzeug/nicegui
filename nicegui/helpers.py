@@ -2,10 +2,10 @@ from __future__ import annotations
 
 import functools
 import hashlib
-import inspect
 import os
 import socket
 import struct
+import sys
 import threading
 import time
 import webbrowser
@@ -21,6 +21,11 @@ if TYPE_CHECKING:
     from .element import Element
 
 _shown_warnings: set[str] = set()
+
+if sys.version_info < (3, 13):
+    from asyncio import iscoroutinefunction
+else:
+    from inspect import iscoroutinefunction
 
 
 def warn_once(message: str, *, stack_info: bool = False) -> None:
@@ -48,7 +53,7 @@ def is_coroutine_function(obj: Any) -> bool:
     """
     while isinstance(obj, functools.partial):
         obj = obj.func
-    return inspect.iscoroutinefunction(obj)
+    return iscoroutinefunction(obj)
 
 
 def expects_arguments(func: Callable) -> bool:
