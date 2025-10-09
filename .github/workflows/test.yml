@@ -54,13 +54,13 @@ jobs:
         run: poetry run ./test_startup.sh
       - name: setup chromedriver
         uses: nanasess/setup-chromedriver@v2.3.0
-      - name: pytest (exclude storage, parallelized)
+      - name: pytest (parallelized)
         run: |
-          poetry run pytest -n auto --ignore=tests/test_storage.py
-      - name: pytest (storage only, non-parallelized)
+          poetry run pytest -n auto --ignore=tests/test_storage.py --ignore=tests/test_download.py
+      - name: pytest (non-parallelized)
         if: always()
         run: |
-          poetry run pytest tests/test_storage.py
+          poetry run pytest tests/test_storage.py tests/test_download.py
 
   slack:
     needs:
