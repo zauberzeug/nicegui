@@ -612,38 +612,60 @@ def event_debugging() -> None:
     # Create a log panel to display event information
     log_panel = ui.log().classes('w-full h-64 overflow-auto bg-gray-800 text-white p-2')
 
-    def log_event(name, e):
-        """Log an event to the panel with its name and arguments"""
+    def log_event(name: str, e: GenericEventArguments):
+        '''Log an event to the panel with its name and arguments'''
         log_panel.push(f'{name}: {e.args}')
 
     # Create handlers for all events
-    def on_choose(e): log_event('choose', e)
-    def on_unchoose(e): log_event('unchoose', e)
-    def on_start(e): log_event('start', e)
-    def on_end(e): log_event('end', e)
-    def on_add(e): log_event('add', e)
-    def on_update(e): log_event('update', e)
-    def on_remove(e): log_event('remove', e)
-    def on_move(e): log_event('move', e)
-    def on_clone(e): log_event('clone', e)
-    def on_change(e): log_event('change', e)
-    def on_filter(e): log_event('filter', e)
-    def on_spill(e): log_event('spill', e)
-    def on_select(e): log_event('select', e)
-    def on_deselect(e): log_event('deselect', e)
+    def on_choose(e: GenericEventArguments): log_event('choose', e)
+    def on_unchoose(e: GenericEventArguments): log_event('unchoose', e)
+    def on_start(e: GenericEventArguments): log_event('start', e)
+    def on_end(e: GenericEventArguments): log_event('end', e)
+    def on_add(e: GenericEventArguments): log_event('add', e)
+    def on_update(e: GenericEventArguments): log_event('update', e)
+    def on_remove(e: GenericEventArguments): log_event('remove', e)
+    def on_move(e: GenericEventArguments): log_event('move', e)
+    def on_clone(e: GenericEventArguments): log_event('clone', e)
+    def on_change(e: GenericEventArguments): log_event('change', e)
+    def on_filter(e: GenericEventArguments): log_event('filter', e)
+    def on_spill(e: GenericEventArguments): log_event('spill', e)
+    def on_select(e: GenericEventArguments): log_event('select', e)
+    def on_deselect(e: GenericEventArguments): log_event('deselect', e)
 
     # Clear the log
     ui.button('Clear Log', on_click=lambda: log_panel.clear()).classes('mb-4')
+
+    def add_remove_handle(e: GenericEventArguments):
+        # If moved within its own list, ignore
+        if e.args['from'] == e.args['to']:
+            return
+
+        if e.args['to'] == sortable2.html_id:  # Add handle
+            element = sortable2.get_child_by_id(e.args['item'])
+            if element is None:
+                assert 'Element should not be None'
+                return
+
+            with element.default_slot.children[0].default_slot:
+                ui.icon('drag_handle').classes('nicegui-sortable-handle')
+            # Reverse to have the handle first
+            element.default_slot.children[0].default_slot.children.reverse()
+        else:  # Remove handle
+            element = sortable1.get_child_by_id(e.args['item'])
+            if element is None:
+                assert 'Element should not be None'
+                return
+
+            element.default_slot.children[0].remove(element.default_slot.children[0].default_slot.children[0])
 
     with ui.row():
         with ui.card():
             ui.label('List 1').classes('text-h6')
             with ui.sortable({
-                'group': {'name': 'event-debugging', 'pull': 'clone'},
+                'group': {'name': 'event-debugging'},
                 'filter': '.nicegui-sortable-filtered',  # Items with this class won't be draggable
                 'multiDrag': True,  # Enable multiple selection with Ctrl/Cmd
                 'multiDragKey': 'ctrl',
-                'cancelSort': True,
             },
                     on_end=on_end,
                     on_add=on_add,
@@ -659,7 +681,9 @@ def event_debugging() -> None:
                             ui.label(f'Filtered Item {i} (non-draggable)')
                     else:
                         with ui.card():
-                            ui.label(f'Item {i} (hold Ctrl/Cmd to select multiple)')
+                            with ui.row().classes('flex flex-row flex-nowrap items-center'):
+                                ui.label(f'Item {i} (hold Ctrl/Cmd to select multiple)')
+            sortable1.on('sort_end', add_remove_handle)
             sortable1.on('sort_choose', on_choose)
             sortable1.on('sort_unchoose', on_unchoose)
             sortable1.on('sort_start', on_start)
@@ -672,8 +696,8 @@ def event_debugging() -> None:
         with ui.card():
             ui.label('List 2').classes('text-h6')
             with ui.sortable({
-                'group': {'name': 'event-debugging', 'pull': 'clone'},
-                'cancelSort': True,
+                'handle': '.nicegui-sortable-handle',
+                'group': {'name': 'event-debugging'},
             },
                     on_end=on_end,
                     on_add=on_add,
@@ -684,7 +708,10 @@ def event_debugging() -> None:
                     on_deselect=on_deselect) as sortable2:
                 for i in range(1, 4):
                     with ui.card():
-                        ui.label(f'Target Item {i}')
+                        with ui.row().classes('flex flex-row flex-nowrap items-center'):
+                            ui.icon('drag_handle').classes('nicegui-sortable-handle')
+                            ui.label(f'Item {i}')
+            sortable2.on('sort_end', add_remove_handle)
             sortable2.on('sort_choose', on_choose)
             sortable2.on('sort_unchoose', on_unchoose)
             sortable2.on('sort_start', on_start)
@@ -696,6 +723,7 @@ def event_debugging() -> None:
 
     ui.label('''
         This demo shows all available sortable events. Try:
+        - Use the handle to move items in List 2
         - Dragging items between lists
         - Clicking the filtered (red) item
         - Holding Ctrl/Cmd and clicking multiple items
