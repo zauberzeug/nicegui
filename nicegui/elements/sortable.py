@@ -146,10 +146,6 @@ class Sortable(Element,
                 await self._synchronize_order_js_to_py()
                 return
 
-            # Extract actual element ID (remove 'c' prefix if present)
-            element_id = e.args['item'][1:] if e.args['item'].startswith('c') else e.args['item']
-            to_id = e.args['to'][1:] if e.args['to'].startswith('c') else e.args['to']
-
             # Search all other sortable instances for the element
             element = None
             to_instance = None
@@ -158,12 +154,12 @@ class Sortable(Element,
             for instance in Sortable._instances.values():
                 if instance == self:
                     for child in self.default_slot.children:
-                        if str(child.id) == element_id:
+                        if str(child.id) == e.args['item'] or child.html_id == e.args['item']:
                             element = child
                             continue
 
                 if instance.default_slot and instance.default_slot.children:
-                    if str(instance.id) == to_id:
+                    if str(instance.id) == e.args['to'] or instance.html_id == e.args['to']:
                         to_instance = instance
 
             if element and to_instance:
@@ -255,7 +251,7 @@ class Sortable(Element,
         """Disable the sortable instance."""
         self.set_option('disabled', True)
 
-    def remove_item(self, item: Element | int | str) -> None:
+    def remove_item(self, item: Element) -> None:
         """Remove an item from this sortable list.
 
         This removes the item both from the Python object and the DOM object.
@@ -266,48 +262,17 @@ class Sortable(Element,
                 - A string ID (with or without 'c' prefix)
                 - An integer ID
         """
-        # Get the element and its DOM ID
-        element_to_remove = None
-        dom_id = None
-
-        # Handle different item types
-        if isinstance(item, Element):
-            element_to_remove = item
-            dom_id = f'c{item.id}'
-        elif isinstance(item, str):
-            dom_id = item if item.startswith('c') else f'c{item}'
-
-            # Try to find the element in our children
-            if self.default_slot and self.default_slot.children:
-                # Get the ID without the 'c' prefix
-                raw_id = dom_id[1:] if dom_id.startswith('c') else dom_id
-                for child in self.default_slot.children:
-                    if str(child.id) == raw_id:
-                        element_to_remove = child
-                        break
-        elif isinstance(item, int):  # pyright: ignore[reportUnnecessaryIsInstance]
-            dom_id = f'c{item}'
-
-            # Try to find the element in our children
-            if self.default_slot and self.default_slot.children:
-                for child in self.default_slot.children:
-                    if child.id == item:
-                        element_to_remove = child
-                        break
-        else:
-            raise TypeError(f'Expected Element, str, or int, got {type(item).__name__}')
-
         # Remove from DOM
-        self.run_method('remove', dom_id)
+        self.run_method('remove', item.html_id)
 
         # Remove from Python data structure and delete the element
-        if element_to_remove:
+        if item:
             # Remove from parent slot's children list if present
-            if self.default_slot and element_to_remove in self.default_slot.children:
-                self.default_slot.children.remove(element_to_remove)
+            if self.default_slot and item in self.default_slot.children:
+                self.default_slot.children.remove(item)
 
             # Delete the element
-            element_to_remove.delete()
+            item.delete()
 
     def clear(self) -> None:
         """Remove all child elements.
@@ -318,7 +283,7 @@ class Sortable(Element,
             for child in reversed(slot.children):
                 self.remove_item(child)
 
-    def get_child_by_id(self, item_id: str | int) -> Element | None:
+    def get_child_by_id(self, html_id: str) -> Element | None:
         """Retrieve a child element by its ID within the default slot.
 
         Args:
@@ -327,9 +292,8 @@ class Sortable(Element,
         Returns:
             The matching child Element if found, otherwise None.
         """
-        id_number = int(str(item_id)[1:] if str(item_id).startswith('c') else item_id)
         for item in self.default_slot.children:
-            if item.id == id_number:
+            if item.html_id == html_id:
                 return item
 
         return None
@@ -350,22 +314,18 @@ class Sortable(Element,
         self.sort(self.default_slot.children, False)
 
     # MultiDrag plugin methods
-    def select(self, element_id: str | int) -> None:
+    def select(self, element_id: str) -> None:
         """Select an item programmatically when using MultiDrag.
 
         Args:
             element_id: ID of the element to select
         """
-        if isinstance(element_id, int) or not element_id.startswith('c'):
-            element_id = 'c' + str(element_id)
         self.run_method('select', element_id)
 
-    def deselect(self, element_id: str | int) -> None:
+    def deselect(self, element_id: str) -> None:
         """Deselect an item programmatically when using MultiDrag.
 
         Args:
             element_id: ID of the element to deselect
         """
-        if isinstance(element_id, int) or not element_id.startswith('c'):
-            element_id = 'c' + str(element_id)
         self.run_method('deselect', element_id)
