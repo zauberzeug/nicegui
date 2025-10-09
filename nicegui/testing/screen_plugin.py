@@ -18,6 +18,19 @@ from .screen import Screen
 DOWNLOAD_DIR = Path(__file__).parent / 'download'
 
 
+def _get_worker_id() -> int:
+    """Get the worker ID for pytest-xdist."""
+    worker_id = os.environ.get('PYTEST_XDIST_WORKER') or os.environ.get('PYTEST_WORKER_ID')
+    try:
+        if worker_id and worker_id.startswith('gw'):
+            return int(worker_id[2:])
+        elif worker_id and worker_id.isdigit():
+            return int(worker_id)
+    except Exception:
+        pass
+    return 0
+
+
 @pytest.fixture
 def nicegui_chrome_options(chrome_options: webdriver.ChromeOptions) -> webdriver.ChromeOptions:
     """Configure the Chrome options for the NiceGUI tests."""
@@ -47,7 +60,7 @@ def capabilities(capabilities: dict) -> dict:
 @pytest.fixture(scope='session')
 def nicegui_remove_all_screenshots() -> None:
     """Remove all screenshots from the screenshot directory before the test session."""
-    if os.path.exists(Screen.SCREENSHOT_DIR):
+    if _get_worker_id() == 0 and os.path.exists(Screen.SCREENSHOT_DIR):
         for name in os.listdir(Screen.SCREENSHOT_DIR):
             os.remove(os.path.join(Screen.SCREENSHOT_DIR, name))
 
@@ -71,7 +84,7 @@ def screen(nicegui_reset_globals,  # noqa: F811, pylint: disable=unused-argument
            caplog: pytest.LogCaptureFixture,
            ) -> Generator[Screen, None, None]:
     """Create a new SeleniumScreen fixture."""
-    os.environ['NICEGUI_SCREEN_TEST_PORT'] = str(Screen.PORT)
+    os.environ['NICEGUI_SCREEN_TEST_PORT'] = str(Screen.PORT + _get_worker_id())
     screen_ = Screen(nicegui_driver, caplog, request)
     yield screen_
     os.environ.pop('NICEGUI_SCREEN_TEST_PORT', None)
