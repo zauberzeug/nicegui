@@ -5,7 +5,7 @@ import pytest
 from fastapi.responses import PlainTextResponse
 
 from nicegui import app, ui
-from nicegui.testing import Screen
+from nicegui.testing import Screen, screen_plugin
 
 
 @pytest.fixture
@@ -28,11 +28,11 @@ def test_download_text_file(screen: Screen, test_route: str):  # pylint: disable
     screen.open('/')
     screen.click('Download 1')
     screen.wait(0.5)
-    assert (screen.download_dir / 'test1.txt').read_text(encoding='utf-8') == 'test 1'
+    assert (screen_plugin.DOWNLOAD_DIR / 'test1.txt').read_text(encoding='utf-8') == 'test 1'
 
     screen.click('Download 2')
     screen.wait(0.5)
-    assert (screen.download_dir / 'test2.txt').read_text(encoding='utf-8') == 'test 2'
+    assert (screen_plugin.DOWNLOAD_DIR / 'test2.txt').read_text(encoding='utf-8') == 'test 2'
 
 
 def test_downloading_local_file_as_src(screen: Screen):
@@ -48,12 +48,12 @@ def test_downloading_local_file_as_src(screen: Screen):
     route_count_before_download = len(app.routes)
     screen.click('Download 1')
     screen.wait(0.5)
-    assert (screen.download_dir / 'slide1.jpg').exists()
+    assert (screen_plugin.DOWNLOAD_DIR / 'slide1.jpg').exists()
     assert len(app.routes) == route_count_before_download
 
     screen.click('Download 2')
     screen.wait(0.5)
-    assert (screen.download_dir / 'slide2.jpg').exists()
+    assert (screen_plugin.DOWNLOAD_DIR / 'slide2.jpg').exists()
     assert len(app.routes) == route_count_before_download
 
 
@@ -67,12 +67,12 @@ def test_download_raw_data(screen: Screen):
     screen.open('/')
     screen.click('Download 1')
     screen.wait(0.5)
-    assert (screen.download_dir / 'test1.txt').read_text(encoding='utf-8') == 'test 1'
+    assert (screen_plugin.DOWNLOAD_DIR / 'test1.txt').read_text(encoding='utf-8') == 'test 1'
 
     screen.click('Download 2')
     screen.wait(0.5)
-    assert (screen.download_dir / 'test2.txt').read_text(encoding='utf-8') == 'test 2'
+    assert (screen_plugin.DOWNLOAD_DIR / 'test2.txt').read_text(encoding='utf-8') == 'test 2'
 
     screen.click('Download 3')
     screen.wait(0.5)
-    assert (screen.download_dir / 'test3.txt').read_text(encoding='utf-8') == 'test 3'
+    assert (screen_plugin.DOWNLOAD_DIR / 'test3.txt').read_text(encoding='utf-8') == 'test 3'
