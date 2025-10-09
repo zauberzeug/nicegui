@@ -214,9 +214,8 @@ class Sortable(Element,
     def set_option(self, name: str, value: Any) -> None:
         """Set a specific SortableJS option.
 
-        Args:
-            name: Option name
-            value: Option value
+        :param name: Option name
+        :param value: Option value
         """
         self._props['options'][name] = value
         self.run_method('setOption', name, value)
@@ -224,8 +223,7 @@ class Sortable(Element,
     def get_option(self, name: str) -> Any:
         """Get a specific SortableJS option.
 
-        Args:
-            name: Option name
+        :param name: Option name
 
         Returns:
             The current value of the option
@@ -235,9 +233,8 @@ class Sortable(Element,
     def sort(self, order: list[Element], use_animation: bool = False) -> None:
         """Sort the elements according to the specified order.
 
-        Args:
-            order: List of element IDs in the desired order
-            use_animation: Whether to animate the sorting
+        :param order: List of element IDs in the desired order
+        :param use_animation: Whether to animate the sorting
         """
         self.default_slot.children = order
         # Add "c" in front of ID to match DOMs ID
@@ -256,11 +253,7 @@ class Sortable(Element,
 
         This removes the item both from the Python object and the DOM object.
 
-        Args:
-            item: The element to remove. Can be:
-                - An Element object
-                - A string ID (with or without 'c' prefix)
-                - An integer ID
+        :param item: The element to remove.
         """
         # Remove from DOM
         self.run_method('remove', item.html_id)
@@ -286,8 +279,7 @@ class Sortable(Element,
     def get_child_by_id(self, html_id: str) -> Element | None:
         """Retrieve a child element by its ID within the default slot.
 
-        Args:
-            item_id: The ID of the child element to find, with optional 'c' prefix.
+        :param html_id: The ID of the child element to find
 
         Returns:
             The matching child Element if found, otherwise None.
@@ -303,9 +295,8 @@ class Sortable(Element,
 
         This method ensures both Python and JavaScript stay in sync.
 
-        Args:
-            item: The element to move
-            target_index: The target index where to move the element
+        :param item: The element to move
+        :param target_index: The target index where to move the element
         """
         # First perform the standard move operation in Python
         item.move(self, target_index=target_index)
@@ -317,15 +308,13 @@ class Sortable(Element,
     def select(self, element_id: str) -> None:
         """Select an item programmatically when using MultiDrag.
 
-        Args:
-            element_id: ID of the element to select
+        :param element_id: HTML ID of the element to select
         """
         self.run_method('select', element_id)
 
     def deselect(self, element_id: str) -> None:
         """Deselect an item programmatically when using MultiDrag.
 
-        Args:
-            element_id: ID of the element to deselect
+        :param element_id: HTML ID of the element to deselect
         """
         self.run_method('deselect', element_id)
