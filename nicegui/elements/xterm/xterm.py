@@ -59,7 +59,7 @@ class Xterm(Element, component='xterm.js', esm={'nicegui-xterm': 'dist'}):
         self.on('data', handle_data)
         return self
 
-    def input(self, data: str, was_user_input: bool = True) -> AwaitableResponse:
+    def input(self, data: str, *, was_user_input: bool = True) -> AwaitableResponse:
         """Input data to application side.
 
         The data is treated the same way input typed into the terminal would (i.e. the ``data`` event will fire).
@@ -85,11 +85,8 @@ class Xterm(Element, component='xterm.js', esm={'nicegui-xterm': 'dist'}):
         :return: AwaitableResponse that, if awaited, returns ``None`` once the method call is finished.
                  Otherwise, the method is executed without waiting for it to finish.
         """
-        if isinstance(data, bytes):
-            # Xterm.js accepts an `Uint8Array`, which we can get by converting `bytes` to a `list`
-            return self.run_method('write', list(data))
-        else:
-            return self.run_method('write', data)
+        # Xterm.js accepts an `Uint8Array`, which we can get by converting `bytes` to a `list`
+        return self.run_method('write', list(data) if isinstance(data, bytes) else data)
 
     def writeln(self, data: bytes | str) -> AwaitableResponse:
         """Write data to the terminal, followed by a break line character (``\\n``).
@@ -100,11 +97,8 @@ class Xterm(Element, component='xterm.js', esm={'nicegui-xterm': 'dist'}):
         :return: AwaitableResponse that, if awaited, returns ``None`` once the method call is finished.
                  Otherwise, the method is executed without waiting for it to finish.
         """
-        if isinstance(data, bytes):
-            # Xterm.js accepts an `Uint8Array`, which we can get by converting `bytes` to a `list`
-            return self.run_method('writeln', list(data))
-        else:
-            return self.run_method('writeln', data)
+        # Xterm.js accepts an `Uint8Array`, which we can get by converting `bytes` to a `list`
+        return self.run_method('writeln', list(data) if isinstance(data, bytes) else data)
 
     def run_terminal_method(self, name: str, *args, timeout: float = 1) -> AwaitableResponse:
         """Run a method of the Xterm.js terminal instance.
