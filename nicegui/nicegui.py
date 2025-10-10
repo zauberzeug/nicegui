@@ -77,7 +77,7 @@ def _get_library(key: str) -> FileResponse:
 
 
 @app.get(f'/_nicegui/{__version__}' + '/components/{key:path}')
-def _get_component(key: str) -> FileResponse:
+def _get_component(key: str) -> Response:
     if key in js_components and js_components[key].path.exists():
         return FileResponse(js_components[key].path, media_type='text/javascript')
     elif key in vue_components:
