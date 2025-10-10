@@ -101,3 +101,18 @@ async def test_exception_during_call(user: User):
     await user.open('/')
     user.find('Click me').click()
     await user.should_see('There was an exception')
+
+
+async def test_chaining_events(user: User):
+    event1 = Event[str]()
+    event2 = Event[str]()
+
+    @ui.page('/')
+    def page():
+        ui.button('Click me', on_click=lambda: event1.emit('Hello'))
+        event1.subscribe(event2.emit)
+        event2.subscribe(ui.notify)
+
+    await user.open('/')
+    user.find('Click me').click()
+    await user.should_see('Hello')

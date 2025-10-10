@@ -33,6 +33,10 @@ class Callback(Generic[P]):
         """Run the callback."""
         with (self.slot and self.slot()) or nullcontext():
             expect_args = helpers.expects_arguments(self.func)
+            expect_args |= (
+                isinstance(getattr(self.func, '__self__', None), Event) and
+                getattr(self.func, '__name__', None) in {'emit', 'call'}
+            )
             return self.func(*args, **kwargs) if expect_args else self.func()  # type: ignore[call-arg]
 
     async def await_result(self, result: Awaitable | AwaitableResponse | asyncio.Task) -> Any:
