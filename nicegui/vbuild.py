@@ -8,10 +8,6 @@ import traceback
 from html.parser import HTMLParser
 
 partial = ''
-fullPyComp = True  # 3 states ;-)
-# None  : minimal py comp, it's up to u to include "pscript.get_full_std_lib()"
-# False : minimal py comp, vbuild will include the std lib
-# True  : each component generate its needs (default)
 
 hasLess = bool(importlib.util.find_spec('lesscpy'))
 hasSass = bool(importlib.util.find_spec('scss'))
@@ -219,7 +215,7 @@ class VBuild:
                 try:
                     self._script = [
                         mkPythonVueComponent(
-                            name, '#' + tplId, vp.script.value, fullPyComp
+                            name, '#' + tplId, vp.script.value
                         )
                     ]
                 except Exception as e:
@@ -254,15 +250,7 @@ class VBuild:
     @property
     def script(self):
         """ Return JS (js of embbeded components)"""
-        js = '\n'.join(self._script)
-        isPyComp = '_pyfunc_op_instantiate(' in js  # in fact : contains
-        isLibInside = 'var _pyfunc_op_instantiate' in js
-
-        if (fullPyComp is False) and isPyComp and not isLibInside:
-            import pscript
-            return pscript.get_full_std_lib() + '\n' + js
-        else:
-            return js
+        return '\n'.join(self._script)
 
     @property
     def style(self):
@@ -329,13 +317,10 @@ def mkClassicVueComponent(name, template, code):
     )
 
 
-def mkPythonVueComponent(name, template, code, genStdLibMethods=True):
+def mkPythonVueComponent(name, template, code):
     """ Transpile the component 'name', which have the template 'template',
         and the code 'code' (which should contains a valid Component class)
         to a valid Vue.component js statement.
-
-        genStdLibMethods : generate own std lib method inline (with the js)
-                (if False: use pscript.get_full_std_lib() to get them)
     """
     import pscript
     code = code.replace(
@@ -390,9 +375,7 @@ def mkPythonVueComponent(name, template, code, genStdLibMethods=True):
     watchs = '\n'.join(watchs)
     lifecycles = '\n'.join(lifecycles)
 
-    pyjs = pscript.py2js(
-        code, inline_stdlib=genStdLibMethods
-    )  # https://pscript.readthedocs.io/en/latest/api.html
+    pyjs = pscript.py2js(code)  # https://pscript.readthedocs.io/en/latest/api.html
 
     return (
         '''
