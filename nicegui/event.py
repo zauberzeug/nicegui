@@ -33,6 +33,10 @@ class Callback(Generic[P]):
         """Run the callback."""
         with (self.slot and self.slot()) or nullcontext():
             expect_args = helpers.expects_arguments(self.func)
+            expect_args |= (
+                isinstance(getattr(self.func, '__self__', None), Event) and
+                getattr(self.func, '__name__', None) in {'emit', 'call'}
+            )
             return self.func(*args, **kwargs) if expect_args else self.func()  # type: ignore[call-arg]
 
     async def await_result(self, result: Awaitable | AwaitableResponse | asyncio.Task) -> Any:
@@ -145,18 +149,15 @@ def _invoke_and_forget(callback: Callback[P], *args: P.args, **kwargs: P.kwargs)
                 background_tasks.create(callback.await_result(result), name=f'{callback.filepath}:{callback.line}')
             else:
                 core.app.on_startup(callback.await_result(result))
-    except Exception:
-        log.exception('Could not emit callback %s', callback)
+    except Exception as e:
+        core.app.handle_exception(e)
 
 
 async def _invoke_and_await(callback: Callback[P], *args: P.args, **kwargs: P.kwargs) -> Any:
-    try:
-        result = callback.run(*args, **kwargs)
-        if _should_await(result):
-            result = await callback.await_result(result)
-        return result
-    except Exception as e:
-        core.app.handle_exception(e)
+    result = callback.run(*args, **kwargs)
+    if _should_await(result):
+        result = await callback.await_result(result)
+    return result
 
 
 def _should_await(result: Any) -> bool:
