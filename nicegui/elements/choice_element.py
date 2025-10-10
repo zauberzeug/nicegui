@@ -55,14 +55,14 @@ class ChoiceElement(ValueElement[Optional[Union[list[T], T]]], Generic[T]):
             self._update_options()
         super().update()
 
-    def set_options(self, options: Collection[T], *, selected: Collection[T] = ()) -> None:
+    def set_options(self, options: list[T], *, value: Optional[Union[list[T], T]] = None) -> None:
         """Set the options of this choice element.
 
         :param options: The new options.
         :param value: The new value. If not given, the current value is kept.
         """
         self.options = list(options)
-        if selected:
-            self.value = list(selected)
+        if value:
+            self.value = value
         self.update()
 
