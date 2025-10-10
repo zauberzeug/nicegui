@@ -18,10 +18,12 @@ def test_mermaid(screen: Screen):
         '''))
 
     screen.open('/')
+    screen.should_contain('Node_A')
     node_a = screen.selenium.find_element(By.XPATH, '//span[p[contains(text(), "Node_A")]]')
     assert node_a.get_attribute('class') == 'nodeLabel'
 
     screen.click('Set new content')
+    screen.should_contain('Node_C')
     node_c = screen.selenium.find_element(By.XPATH, '//span[p[contains(text(), "Node_C")]]')
     assert node_c.get_attribute('class') == 'nodeLabel'
     screen.should_not_contain('Node_A')
