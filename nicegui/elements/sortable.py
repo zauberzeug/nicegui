@@ -6,7 +6,7 @@ from typing import Any
 from typing_extensions import Self
 
 from nicegui.element import Element
-from nicegui.events import EventT, GenericEventArguments, Handler, handle_event
+from nicegui.events import GenericEventArguments, Handler
 
 
 class Sortable(Element,
@@ -18,6 +18,9 @@ class Sortable(Element,
     This element creates a draggable and sortable element based on `SortableJS <https://github.com/SortableJS/Sortable>`_.
 
     Child elements can be reordered by dragging.
+
+    For all events that aren't directly listed in this element, simply use <this_object>.on('sort_<event name>', function) to access it.
+    Eg. sortable.on('sort_change', function)
     """
 
     # Class-level registry to track all sortable instances
@@ -29,8 +32,6 @@ class Sortable(Element,
         on_change: Handler[GenericEventArguments] | None = None,
         on_end: Handler[GenericEventArguments] | None = None,
         on_add: Handler[GenericEventArguments] | None = None,
-        on_filter: Handler[GenericEventArguments] | None = None,
-        on_spill: Handler[GenericEventArguments] | None = None,
         on_select: Handler[GenericEventArguments] | None = None,
         on_deselect: Handler[GenericEventArguments] | None = None,
         on_cancel_clone: Handler[GenericEventArguments] | None = None,
@@ -41,9 +42,6 @@ class Sortable(Element,
         :param on_change: Callback when the list order changes
         :param on_end: Callback when element dragging ends
         :param on_add: Callback when element is dropped into the list from another list
-        :param on_move: Callback when you move an item
-        :param on_filter: Callback when filtered item is clicked
-        :param on_spill: Callback when an item is spilled outside a list
         :param on_select: Callback when an item is selected (MultiDrag)
         :param on_deselect: Callback when an item is deselected (MultiDrag)
         :param on_cancel_clone: Callback when an item is removed from the list into another list
@@ -70,71 +68,51 @@ class Sortable(Element,
         # Register this instance in the class registry
         Sortable._instances[self.id] = self
 
-        self._end_handlers = [on_end] if on_end else []
-        self._add_handlers = [on_add] if on_add else []
-        self._change_handlers = [on_change] if on_change else []
-        self._cancel_clone_handlers = [on_cancel_clone] if on_cancel_clone else []
-        self._filter_handlers = [on_filter] if on_filter else []
-        self._spill_handlers = [on_spill] if on_spill else []
-        self._select_handlers = [on_select] if on_select else []
-        self._deselect_handlers = [on_deselect] if on_deselect else []
-
-        # Set up event handling wrapper function
-        def handle_sortable_event(event_handlers: list[Handler[EventT]], e: EventT):
-            for handler in event_handlers:
-                handle_event(handler, e)
-
         # Register event handlers
-        self.on('sort_end', lambda e: handle_sortable_event(self._end_handlers, e))
-        self.on('sort_add', lambda e: handle_sortable_event(self._add_handlers, e))
-        self.on('sort_change', lambda e: handle_sortable_event(self._change_handlers, e))
-        self.on('sort_cancel_clone', lambda e: handle_sortable_event(self._cancel_clone_handlers, e))
-        self.on('sort_filter', lambda e: handle_sortable_event(self._filter_handlers, e))
-        self.on('sort_spill', lambda e: handle_sortable_event(self._spill_handlers, e))
-        self.on('sort_select', lambda e: handle_sortable_event(self._select_handlers, e))
-        self.on('sort_deselect', lambda e: handle_sortable_event(self._deselect_handlers, e))
+        if on_end:
+            self.on('sort_end', on_end)
+        if on_add:
+            self.on('sort_add', on_add)
+        if on_change:
+            self.on('sort_change', on_change)
+        if on_cancel_clone:
+            self.on('sort_cancel_clone', on_cancel_clone)
+        if on_select:
+            self.on('sort_select', on_select)
+        if on_deselect:
+            self.on('sort_deselect', on_deselect)
 
         # Add handlers for cross-element operations
         self.on('sort_end', self._handle_cross_container_add)
 
     def on_end(self, callback: Handler[GenericEventArguments]) -> Self:
         """ Add a callback to be invoked when the sorting is finished."""
-        self._end_handlers.append(callback)
+        self.on('sort_end', callback)
         return self
 
     def on_add(self, callback: Handler[GenericEventArguments]) -> Self:
         """ Add a callback to be invoked when an item is added to the sortable."""
-        self._add_handlers.append(callback)
+        self.on('sort_add', callback)
         return self
 
     def on_change(self, callback: Handler[GenericEventArguments]) -> Self:
         """ Add a callback to be invoked when the order of items changes."""
-        self._change_handlers.append(callback)
+        self.on('sort_change', callback)
         return self
 
     def on_cancel_clone(self, callback: Handler[GenericEventArguments]) -> Self:
         """ Add a callback to be invoked when cloning is canceled."""
-        self._cancel_clone_handlers.append(callback)
-        return self
-
-    def on_filter(self, callback: Handler[GenericEventArguments]) -> Self:
-        """ Add a callback to be invoked when the sortable is filtered."""
-        self._filter_handlers.append(callback)
-        return self
-
-    def on_spill(self, callback: Handler[GenericEventArguments]) -> Self:
-        """ Add a callback to be invoked when an item spills out of the sortable."""
-        self._spill_handlers.append(callback)
+        self.on('sort_cancel_clone', callback)
         return self
 
     def on_select(self, callback: Handler[GenericEventArguments]) -> Self:
         """ Add a callback to be invoked when an item is selected."""
-        self._select_handlers.append(callback)
+        self.on('sort_select', callback)
         return self
 
     def on_deselect(self, callback: Handler[GenericEventArguments]) -> Self:
         """ Add a callback to be invoked when an item is deselected."""
-        self._deselect_handlers.append(callback)
+        self.on('sort_deselect', callback)
         return self
 
     async def _handle_cross_container_add(self, e: GenericEventArguments) -> None:

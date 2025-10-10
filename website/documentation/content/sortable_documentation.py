@@ -373,8 +373,6 @@ def event_debugging() -> None:
                     on_end=on_end,
                     on_add=on_add,
                     on_change=on_change,
-                    on_filter=on_filter,
-                    on_spill=on_spill,
                     on_select=on_select,
                     on_deselect=on_deselect) as sortable1:
                 for i in range(1, 6):
@@ -389,6 +387,8 @@ def event_debugging() -> None:
             sortable1.on('sort_end', add_remove_handle)
             sortable1.on('sort_choose', on_choose)
             sortable1.on('sort_unchoose', on_unchoose)
+            sortable1.on('sort_filter', on_filter)
+            sortable1.on('sort_spill', on_spill)
             sortable1.on('sort_start', on_start)
             sortable1.on('sort_update', on_update)
             sortable1.on('sort_remove', on_remove)
@@ -405,8 +405,6 @@ def event_debugging() -> None:
                     on_end=on_end,
                     on_add=on_add,
                     on_change=on_change,
-                    on_filter=on_filter,
-                    on_spill=on_spill,
                     on_select=on_select,
                     on_deselect=on_deselect) as sortable2:
                 for i in range(1, 4):
@@ -417,6 +415,8 @@ def event_debugging() -> None:
             sortable2.on('sort_end', add_remove_handle)
             sortable2.on('sort_choose', on_choose)
             sortable2.on('sort_unchoose', on_unchoose)
+            sortable2.on('sort_filter', on_filter)
+            sortable2.on('sort_spill', on_spill)
             sortable2.on('sort_start', on_start)
             sortable2.on('sort_update', on_update)
             sortable2.on('sort_remove', on_remove)
