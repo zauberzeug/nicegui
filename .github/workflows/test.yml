@@ -61,6 +61,13 @@ jobs:
         if: always()
         run: |
           poetry run pytest tests/test_storage.py tests/test_download.py tests/test_run.py
+      - name: Upload failed screenshots
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: screenshots-${{ matrix.python }}
+          path: screenshots/*.failed.png
+          retention-days: 14
 
   slack:
     needs:
