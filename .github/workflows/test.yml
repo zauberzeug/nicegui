@@ -68,8 +68,8 @@ jobs:
               echo "" >> $GITHUB_STEP_SUMMARY
               echo "<details><summary>Click to view screenshot</summary>" >> $GITHUB_STEP_SUMMARY
               echo "" >> $GITHUB_STEP_SUMMARY
-              base64_img=$(base64 -i "$screenshot")
-              echo "<img src=\"data:image/png;base64,$base64_img\" alt=\"$test_name\" width=\"800\"/>" >> $GITHUB_STEP_SUMMARY
+              base64_img=$(base64 -w 0 "$screenshot" 2>/dev/null || base64 "$screenshot" | tr -d '\n')
+              echo "<img src=\"data:image/png;base64,$base64_img\" alt=\"$test_name\" style=\"max-width:100%;\"/>" >> $GITHUB_STEP_SUMMARY
               echo "" >> $GITHUB_STEP_SUMMARY
               echo "</details>" >> $GITHUB_STEP_SUMMARY
               echo "" >> $GITHUB_STEP_SUMMARY
