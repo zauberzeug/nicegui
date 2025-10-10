@@ -55,9 +55,7 @@ def capabilities(capabilities: dict) -> dict:
 @pytest.fixture(scope='session')
 def nicegui_remove_all_screenshots() -> None:
     """Remove all screenshots from the screenshot directory before the test session."""
-    for name in Screen.SCREENSHOTS_GREEN.glob('*.png'):
-        name.unlink()
-    for name in Screen.SCREENSHOTS_RED.glob('*.png'):
+    for name in Screen.SCREENSHOT_DIR.glob('*.png'):
         name.unlink()
 
 

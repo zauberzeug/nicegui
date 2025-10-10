@@ -60,8 +60,8 @@ jobs:
         if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: screenshots-red-${{ matrix.python }}
-          path: screenshots-red/**
+          name: screenshots-${{ matrix.python }}
+          path: screenshots/*.failed.png
           retention-days: 14
 
   slack:

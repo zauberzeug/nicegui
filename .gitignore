@@ -3,8 +3,7 @@ __pycache__/
 .*.swp
 /test.py
 *.pickle
-screenshots-green/
-screenshots-red/
+screenshots/
 venv
 .idea
 .nicegui/

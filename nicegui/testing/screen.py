@@ -28,8 +28,7 @@ from .general_fixtures import get_path_to_main_file, prepare_simulation
 class Screen:
     PORT = 3392
     IMPLICIT_WAIT = 4
-    SCREENSHOTS_GREEN = Path('screenshots-green')
-    SCREENSHOTS_RED = Path('screenshots-red')
+    SCREENSHOT_DIR = Path('screenshots')
 
     def __init__(self, selenium: webdriver.Chrome, caplog: pytest.LogCaptureFixture, request: Optional[pytest.FixtureRequest] = None) -> None:
         self.selenium = selenium
@@ -248,12 +247,13 @@ class Screen:
         time.sleep(t)
 
     def shot(self, name: str, *, failed: bool) -> None:
-        """Take a screenshot and store it in screenshots-green/ or screenshots-red/ depending on test status."""
-        path = self.SCREENSHOTS_RED if failed else self.SCREENSHOTS_GREEN
-        path.mkdir(parents=True, exist_ok=True)
-        filename = path / f'{name}.png'
+        """Take a screenshot and store it in the screenshots directory."""
+        self.SCREENSHOT_DIR.mkdir(parents=True, exist_ok=True)
+        if failed:
+            name = f'{name}.failed'
+        filename = self.SCREENSHOT_DIR / f'{name}.png'
         print(f'Storing screenshot to {filename}')
-        self.selenium.get_screenshot_as_file(str(filename))
+        self.selenium.get_screenshot_as_file(filename)
 
     def assert_py_logger(self, level: str, message: Union[str, re.Pattern]) -> None:
         """Assert that the Python logger has received a message with the given level and text or regex pattern."""
