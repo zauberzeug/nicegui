@@ -192,9 +192,9 @@ def nested_sortables() -> None:
             'swapThreshold': 0.4,
             'invertSwap': True,
             'emptyInsertThreshold': 10,
-        }).classes(f'nicegui-sortable-nested level-{level}'):
+        }).classes(f'nicegui-sortable-nested'):
             for item in items:
-                with ui.card().classes(f'p-3 mb-2 nested-item level-{level}'):
+                with ui.card().classes(f'p-3 mb-2 nested-item'):
                     ui.label(item['text']).classes('font-bold')
                     # Create a container for children regardless of whether they exist
                     with ui.element('div').classes('pl-4 border-l-2 border-gray-300 nested-children'):
@@ -233,24 +233,12 @@ def nested_sortables() -> None:
     # Add improved supporting styles for the nested sortables
     ui.add_css('''
     .nested-item {
-        background-color: #2d3748;
+        background-color: rgba(59, 130, 246, 0.1);
         transition: background-color 0.2s;
     }
 
-    .level-1 {
-        background-color: #2d3748;
-    }
-
-    .level-2 {
-        background-color: #1e2a3b;
-    }
-
-    .level-3 {
-        background-color: #171f2e;
-    }
-
     .nested-item:hover {
-        background-color: #3a4a5e;
+        background-color: rgba(59, 130, 246, 0.2);
     }
 
     .nicegui-sortable-nested:empty {
@@ -325,7 +313,7 @@ def event_debugging() -> None:
     ''').classes('mt-4 text-sm')
 
     # Create a log panel to display event information
-    log_panel = ui.log().classes('w-full h-64 overflow-auto bg-gray-800 text-white p-2')
+    log_panel = ui.log().classes('w-full h-64 overflow-auto')
 
     def log_event(name: str, e: GenericEventArguments):
         '''Log an event to the panel with its name and arguments'''
