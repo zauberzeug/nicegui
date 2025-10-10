@@ -1,4 +1,4 @@
-from typing import Any, Collection, Generic, Optional
+from typing import Any, Collection, Generic, Optional, Union
 
 from packaging.version import Version
 from typing_extensions import TypeVar
@@ -23,19 +23,21 @@ class Option(TypedDict, Generic[LT, VT]):
     value: VT
 
 
-class ChoiceElement(ValueElement[Collection[T]], Generic[T]):
+class ChoiceElement(ValueElement[Optional[Union[list[T], T]]], Generic[T]):
 
     def __init__(self, *,
                  tag: Optional[str] = None,
-                 options: Collection[T],
-                 value: Collection[T] = (),
+                 options: list[T],
+                 value: Optional[Union[list[T], T]] = None,
                  on_change: Optional[Handler[ValueChangeEventArguments]] = None,
                  ) -> None:
-        self.options = list(options)
+        self.options = options
         self._update_values_and_labels()
-        if (invalid_values := set(o["value"] for o in value) - set(o["value"] for o in options)):
+        if value and not isinstance(value, list) and value["value"] not in [o["value"] for o in options]:
+            raise ValueError(f'Invalid values: {value}')
+        if value and isinstance(value, list) and (invalid_values := set(o["value"] for o in value) - set(o["value"] for o in options)):
             raise ValueError(f'Invalid values: {invalid_values}')
-        super().__init__(tag=tag, value=list(value), on_value_change=on_change)
+        super().__init__(tag=tag, value=value, on_value_change=on_change)
         self._update_options()
 
     def _update_values_and_labels(self) -> None:
@@ -46,7 +48,6 @@ class ChoiceElement(ValueElement[Collection[T]], Generic[T]):
         before_value = self.value
         self._props['options'] = self.options
         self._props[self.VALUE_PROP] = self._value_to_model_value(before_value)
-        self.value = [o for o in before_value if o["value"] in self._values]
 
     def update(self) -> None:
         with self._props.suspend_updates():

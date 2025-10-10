@@ -1,7 +1,7 @@
 from collections.abc import Generator, Iterator
 from copy import deepcopy
 from typing import (Any, Callable, Collection, Generic, Iterator,
-                    Literal, Optional, Union)
+                    Literal, Optional, Union, overload)
 
 from ..events import GenericEventArguments, Handler, ValueChangeEventArguments
 from .choice_element import T, ChoiceElement, Option
@@ -14,10 +14,10 @@ from .mixins.validation_element import (ValidationDict, ValidationElement,
 class Select(LabelElement, ValidationElement, ChoiceElement[T], DisableableElement, Generic[T], component='select.js'):
 
     def __init__(self,
-                 options: Collection[T], *,
+                 options: Union[list[T], T], *,
                  new_value_to_option: Callable[["Select[T]", str], T],
                  label: Optional[str] = None,
-                 value: Collection[T] = (),
+                 value: Union[list[T], Optional[T]] = None,
                  on_change: Optional[Handler[ValueChangeEventArguments]] = None,
                  with_input: bool = False,
                  new_value_mode: Optional[Literal['add', 'add-unique', 'toggle']] = None,
@@ -83,14 +83,21 @@ class Select(LabelElement, ValidationElement, ChoiceElement[T], DisableableEleme
         """Whether the options popup is currently shown."""
         return self._is_showing_popup
 
-    def _event_args_to_value(self, e: GenericEventArguments[Collection[Union[Option[Any, Any], str]]]) -> Any:
+    def _event_args_to_value(self, e: GenericEventArguments[Optional[Union[list[Union[Option[Any, Any], str]], Option[Any, Any]]]]) -> Any:
         # pylint: disable=too-many-nested-blocks
-        args = [self._handle_new_value(self.new_value_to_option(self, a)) if isinstance(a, str) else a for a in e.args]
+        if isinstance(e.args, dict) and not self.multiple:
+            return e.args
+        if isinstance(e.args, str) and not self.multiple:
+            new_value = self._handle_new_value(self.new_value_to_option(self, e.args))
+            return new_value if new_value in self._values else None
+        if e.args is None:
+            return None
         if self.multiple:
+            args = [self._handle_new_value(self.new_value_to_option(self, a)) if isinstance(a, str) else a for a in e.args]
             if self._props.get('new-value-mode') == 'add-unique':
                 args = list({o["value"]: o for o in args}.values())
                 # ^ handle issue #4896: eliminate duplicate arguments
-        return args
+            return args
 
     def _handle_new_value(self, value: T) -> T:
         mode = self._props['new-value-mode']
