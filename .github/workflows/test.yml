@@ -54,8 +54,8 @@ jobs:
       #   run: poetry run ./test_startup.sh
       - name: setup chromedriver
         uses: nanasess/setup-chromedriver@v2.3.0
-      - name: pytest
-        run: poetry run pytest -k test_label
+      - name: pytest -k test_label
+        run: poetry run pytest
       - name: Generate screenshot report
         if: failure()
         run: |
