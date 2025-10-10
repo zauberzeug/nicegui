@@ -229,3 +229,15 @@ def test_cancel_before_invocation_starts(screen: Screen):
     screen.click('Cancel with current invocation')
     screen.wait(0.6)
     assert counter.value == 0
+
+
+def test_error_in_callback(screen: Screen):
+    @ui.page('/')
+    def index():
+        ui.timer(0, callback=lambda: print(1 / 0), once=True)
+
+    app.on_exception(lambda e: ui.notification(f'Exception: {e}'))
+
+    screen.open('/')
+    screen.should_contain('Exception: division by zero')
+    screen.assert_py_logger('ERROR', 'division by zero')
