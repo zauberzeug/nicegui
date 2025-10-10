@@ -2,21 +2,10 @@
 import glob
 import importlib
 import itertools
-import json
 import os
 import re
-import subprocess
 import traceback
-
-try:
-    import urllib as urlparse
-
-    import urllib2 as urlrequest
-    from HTMLParser import HTMLParser
-except ImportError:
-    import urllib.parse as urlparse
-    import urllib.request as urlrequest
-    from html.parser import HTMLParser
+from html.parser import HTMLParser
 
 
 def transHtml(x): return x  # override them to use your own transformer/minifier
@@ -37,66 +26,6 @@ hasClosure = bool(importlib.util.find_spec('closure'))
 
 class VBuildException(Exception):
     pass
-
-
-def minimize(code):
-    if hasClosure:
-        return jsmin(code)
-    else:
-        return jsminOnline(code)
-
-
-def jsminOnline(code):
-    """ JS-minimize (transpile to ES5 JS compliant) thru a online service
-        (https://closure-compiler.appspot.com/compile)
-    """
-    data = [
-        ('js_code', code),
-        ('compilation_level', 'SIMPLE_OPTIMIZATIONS'),
-        ('output_format', 'json'),
-        ('output_info', 'compiled_code'),
-        ('output_info', 'errors'),
-    ]
-    try:
-        req = urlrequest.Request(
-            'https://closure-compiler.appspot.com/compile',
-            urlparse.urlencode(data).encode('utf8'),
-            {'Content-type': 'application/x-www-form-urlencoded; charset=UTF-8'},
-        )
-        response = urlrequest.urlopen(req)
-        r = json.loads(response.read())
-        response.close()
-        code = r.get('compiledCode', None)
-    except Exception as e:
-        raise VBuildException('minimize error: %s' % e)
-    if code:
-        return code
-    else:
-        raise VBuildException('minimize error: %s' % r.get('errors', None))
-
-
-def jsmin(code):  # need java & pip/closure
-    """ JS-minimize (transpile to ES5 JS compliant) with closure-compiler
-        (pip package 'closure', need java !)
-    """
-    if hasClosure:
-        import closure  # py2 or py3
-    else:
-        raise VBuildException(
-            'jsmin error: closure is not installed (sudo pip closure)'
-        )
-    cmd = ['java', '-jar', closure.get_jar_filename()]
-    try:
-        p = subprocess.Popen(
-            cmd, stdout=subprocess.PIPE, stdin=subprocess.PIPE, stderr=subprocess.PIPE
-        )
-    except Exception as e:
-        raise VBuildException('jsmin error: %s' % e)
-    out, err = p.communicate(code.encode('utf8'))
-    if p.returncode == 0:
-        return out.decode('utf8')
-    else:
-        raise VBuildException('jsmin error:' + err.decode('utf8'))
 
 
 def preProcessCSS(cnt, partial=''):
