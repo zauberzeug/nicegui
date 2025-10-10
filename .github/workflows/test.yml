@@ -54,7 +54,7 @@ jobs:
         uses: nanasess/setup-chromedriver@v2.3.0
       - name: pytest (parallelized)
         run: |
-          poetry run pytest -n auto --reruns 5 --ignore=tests/test_storage.py --ignore=tests/test_download.py --ignore=tests/test_run.py
+          poetry run pytest -n auto --reruns 5 -r fER --ignore=tests/test_storage.py --ignore=tests/test_download.py --ignore=tests/test_run.py
       - name: pytest (non-parallelized)
         if: always()
         run: |
