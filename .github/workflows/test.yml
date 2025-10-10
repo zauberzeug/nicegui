@@ -56,29 +56,6 @@ jobs:
         uses: nanasess/setup-chromedriver@v2.3.0
       - name: pytest
         run: poetry run pytest
-      - name: Generate screenshot report
-        if: failure()
-        run: |
-          echo "## 📸 Failed Test Screenshots (Python ${{ matrix.python }})" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          if [ -d "screenshots-red" ] && [ "$(ls -A screenshots-red)" ]; then
-            for screenshot in screenshots-red/*.png; do
-              test_name=$(basename "$screenshot" .png)
-              echo "### ❌ $test_name" >> $GITHUB_STEP_SUMMARY
-              echo "" >> $GITHUB_STEP_SUMMARY
-              echo "<details><summary>Click to view screenshot</summary>" >> $GITHUB_STEP_SUMMARY
-              echo "" >> $GITHUB_STEP_SUMMARY
-              base64_img=$(base64 -i "$screenshot")
-              echo "<img src=\"data:image/png;base64,$base64_img\" alt=\"$test_name\" width=\"800\"/>" >> $GITHUB_STEP_SUMMARY
-              echo "" >> $GITHUB_STEP_SUMMARY
-              echo "</details>" >> $GITHUB_STEP_SUMMARY
-              echo "" >> $GITHUB_STEP_SUMMARY
-            done
-          else
-            echo "No failed screenshots found." >> $GITHUB_STEP_SUMMARY
-          fi
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "💾 Full-size screenshots are also available in the artifacts (see bottom of this page)." >> $GITHUB_STEP_SUMMARY
       - name: Upload failed screenshots
         if: failure()
         uses: actions/upload-artifact@v4
