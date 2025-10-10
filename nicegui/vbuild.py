@@ -36,7 +36,7 @@ class VueParser(HTMLParser):
         self._tag = ''
         self.feed(filepath.read_text(encoding='utf-8').strip('\n\r\t '))
 
-    def handle_starttag(self, tag: str, attrs: list[tuple[str, str]]) -> None:
+    def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
         self._tag = tag
 
         if tag in VOID_TAGS:
@@ -46,7 +46,7 @@ class VueParser(HTMLParser):
         if self._level == 1 and tag == 'template':
             if self._p1 is not None:
                 raise ValueError('File contains more than one template')
-            self._p1 = self.get_offset() + len(self.get_starttag_text())
+            self._p1 = self._get_offset() + len(self._start_tag_text)
         if self._level == 2 and self._p1:  # test p1, to be sure to be in a template
             if self.rootTag is not None:
                 raise ValueError('File has more than one top level tag')
@@ -55,7 +55,7 @@ class VueParser(HTMLParser):
     def handle_endtag(self, tag: str) -> None:
         if tag not in VOID_TAGS:
             if tag == 'template' and self._p1:  # don't watch the level (so it can accept malformed HTML)
-                self.html = self.rawdata[self._p1:self.get_offset()].strip()
+                self.html = self.rawdata[self._p1:self._get_offset()].strip()
             self._level -= 1
 
     def handle_data(self, data: str) -> None:
@@ -63,17 +63,22 @@ class VueParser(HTMLParser):
             if self._tag == 'script':
                 self.script = data
             if self._tag == 'style':
-                if 'scoped' in self.get_starttag_text().lower():
+                if 'scoped' in self._start_tag_text.lower():
                     self.scopedStyles.append(data)
                 else:
                     self.styles.append(data)
 
-    def get_offset(self) -> int:
-        """Get the offset of the current position."""
-        result = 0
+    def _get_offset(self) -> int:
+        pos = 0
         for _ in range(self.lineno - 1):
-            result = self.rawdata.find('\n', result) + 1
-        return result + self.offset
+            pos = self.rawdata.find('\n', pos) + 1
+        return pos + self.offset
+
+    @property
+    def _start_tag_text(self) -> str:
+        text = self.get_starttag_text()
+        assert text is not None
+        return text
 
 
 def create_vue_component(name: str, template: str, code: str | None) -> str:
