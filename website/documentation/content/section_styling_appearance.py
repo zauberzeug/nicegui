@@ -117,6 +117,24 @@ doc.text('', '''
 ''')
 
 
+@doc.demo('CSS Layers', '''
+    Since NiceGUI v3.0, you can override Quasar's rules by defining your css rules in a layer that takes precedence over Quasar's.
+    The layers in order of priority from high to low are: `theme`, `base`, `quasar`, `nicegui`, `components`, `utilities`, `overrides`, `quasar_importants`.
+    Layers allow you to control the priority of whole groups of styles, independent of selector specificity or `!important`.
+
+    So to override a button's color, for example, you could simply do the following:
+''')
+def css_layers():
+    ui.add_css('''
+        @layer base {
+           .my-custom-button {
+               background-color: red;
+            }
+        }
+    ''')
+    ui.button('Red Button').classes('my-custom-button')
+
+
 @doc.demo('Tailwind CSS Layers', '''
     Tailwind CSS' `@layer` directive allows you to define custom classes that can be used in your HTML.
     NiceGUI supports this feature by allowing you to add custom classes to the `components` layer.
