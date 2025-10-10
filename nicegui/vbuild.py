@@ -22,7 +22,7 @@ class VBuild:
         self.script = create_vue_component(filepath.stem, f'#tpl-{name}', parser.script)
 
 
-class VueParser(HTMLParser):
+class VueParser(HTMLParser):  # pylint: disable=abstract-method  # pylint assumes there is an abstract ``error`` method
 
     def __init__(self, filepath: Path):
         HTMLParser.__init__(self)
