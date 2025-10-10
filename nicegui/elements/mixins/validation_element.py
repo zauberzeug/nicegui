@@ -10,7 +10,7 @@ ValidationFunction = Callable[[Any], Union[Optional[str], Awaitable[Optional[str
 ValidationDict = dict[str, Callable[[Any], bool]]
 
 
-class ValidationElement(ValueElement):
+class ValidationElement(ValueElement[Any]):
 
     def __init__(self, validation: Optional[Union[ValidationFunction, ValidationDict]], **kwargs: Any) -> None:
         self._validation = validation

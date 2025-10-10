@@ -12,7 +12,9 @@ import webbrowser
 from collections.abc import Callable
 from inspect import Parameter, signature
 from pathlib import Path
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Final
+
+from packaging.version import Version
 
 from .context import context
 from .logging import log
@@ -20,12 +22,16 @@ from .logging import log
 if TYPE_CHECKING:
     from .element import Element
 
-_shown_warnings: set[str] = set()
+_v = sys.version_info
+PYTHON_VERSION: Final = Version(f"{_v.major}.{_v.minor}.{_v.micro}")
 
-if sys.version_info < (3, 13):
+if PYTHON_VERSION < Version("3.13"):
     from asyncio import iscoroutinefunction
 else:
     from inspect import iscoroutinefunction
+
+
+_shown_warnings: set[str] = set()
 
 
 def warn_once(message: str, *, stack_info: bool = False) -> None:
