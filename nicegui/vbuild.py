@@ -7,12 +7,6 @@ import re
 import traceback
 from html.parser import HTMLParser
 
-
-def transHtml(x): return x  # override them to use your own transformer/minifier
-def transStyle(x): return x
-def transScript(x): return x
-
-
 partial = ''
 fullPyComp = True  # 3 states ;-)
 # None  : minimal py comp, it's up to u to include "pscript.get_full_std_lib()"
@@ -210,7 +204,7 @@ class VBuild:
             html = re.sub(r'^<([\w-]+)', r'<\1 %s' % dataId, vp.html.value)
 
             self.tags = [name]
-            # self.html="""<script type="text/x-template" id="%s">%s</script>""" % (tplId, transHtml(html) )
+            # self.html="""<script type="text/x-template" id="%s">%s</script>""" % (tplId, html )
             self._html = [(tplId, html)]
 
             self._styles = []
@@ -248,31 +242,31 @@ class VBuild:
 
     @property
     def html(self):
-        """ Return HTML (script tags of embbeded components), after transHtml"""
+        """ Return HTML (script tags of embbeded components)"""
         l = []
         for tplId, html in self._html:
             l.append(
                 '''<script type="text/x-template" id="%s">%s</script>'''
-                % (tplId, transHtml(html))
+                % (tplId, html)
             )
         return '\n'.join(l)
 
     @property
     def script(self):
-        """ Return JS (js of embbeded components), after transScript"""
+        """ Return JS (js of embbeded components)"""
         js = '\n'.join(self._script)
         isPyComp = '_pyfunc_op_instantiate(' in js  # in fact : contains
         isLibInside = 'var _pyfunc_op_instantiate' in js
 
         if (fullPyComp is False) and isPyComp and not isLibInside:
             import pscript
-            return transScript(pscript.get_full_std_lib() + '\n' + js)
+            return pscript.get_full_std_lib() + '\n' + js
         else:
-            return transScript(js)
+            return js
 
     @property
     def style(self):
-        """ Return CSS (styles of embbeded components), after preprocess css & transStyle"""
+        """ Return CSS (styles of embbeded components), after preprocess css"""
         style = ''
         try:
             for prefix, s, filename in self._styles:
@@ -281,7 +275,7 @@ class VBuild:
             raise VBuildException(
                 "Component '%s' got a CSS-PreProcessor trouble : %s" % (filename, e)
             )
-        return transStyle(style).strip()
+        return style.strip()
 
     def __add__(self, o):
         same = set(self.tags).intersection(set(o.tags))
