@@ -197,15 +197,14 @@ export default {
           });
         },
         onMove: (evt, originalEvent) => {
-          const result = this.$emit('sort_move', {
+          this.$emit('sort_move', {
             dragged: evt.dragged.id || evt.dragged.dataset.id || null,
             draggedRect: evt.draggedRect,
             related: evt.related.id || evt.related.dataset.id || null,
             relatedRect: evt.relatedRect,
             willInsertAfter: evt.willInsertAfter,
-
+            clientY: originalEvent.clientY,
           });
-          return result !== false;
         },
         onClone: (evt) => {
           // Assign a new unique id to the clone in the source list
