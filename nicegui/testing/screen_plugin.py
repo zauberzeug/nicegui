@@ -85,7 +85,7 @@ def screen(nicegui_reset_globals,  # noqa: F811, pylint: disable=unused-argument
     logs = [record for record in screen_.caplog.get_records('call') if record.levelname == 'ERROR']
     if screen_.is_open:
         test_failed = hasattr(request.node, 'rep_call') and request.node.rep_call.failed
-        screen_.shot(request.node.name, failed=test_failed or logs)
+        screen_.shot(request.node.name, failed=test_failed or bool(logs))
     screen_.stop_server()
     if DOWNLOAD_DIR.exists():
         shutil.rmtree(DOWNLOAD_DIR)
