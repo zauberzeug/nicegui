@@ -1,6 +1,5 @@
 # https://github.com/manatlan/vbuild/blob/master/vbuild/__init__.py
 import glob
-import importlib
 import itertools
 import os
 import re
@@ -9,40 +8,9 @@ from html.parser import HTMLParser
 
 partial = ''
 
-hasLess = bool(importlib.util.find_spec('lesscpy'))
-hasSass = bool(importlib.util.find_spec('scss'))
-hasClosure = bool(importlib.util.find_spec('closure'))
-
 
 class VBuildException(Exception):
     pass
-
-
-def preProcessCSS(cnt, partial=''):
-    """ Apply css-preprocessing on css rules (according css.type) using a partial or not
-        return the css pre-processed
-    """
-    if cnt.type in ['scss', 'sass']:
-        if hasSass:
-            from scss.compiler import compile_string  # lang="scss"
-
-            return compile_string(partial + '\n' + cnt.value)
-        else:
-            print("***WARNING*** : miss 'sass' preprocessor : sudo pip install pyscss")
-            return cnt.value
-    elif cnt.type in ['less']:
-        if hasLess:
-            import lesscpy
-            import six
-
-            return lesscpy.compile(
-                six.StringIO(partial + '\n' + cnt.value), minify=True
-            )
-        else:
-            print("***WARNING*** : miss 'less' preprocessor : sudo pip install lesscpy")
-            return cnt.value
-    else:
-        return cnt.value
 
 
 class Content:
@@ -258,7 +226,7 @@ class VBuild:
         style = ''
         try:
             for prefix, s, filename in self._styles:
-                style += mkPrefixCss(preProcessCSS(s, partial), prefix) + '\n'
+                style += mkPrefixCss(s.value, prefix) + '\n'
         except Exception as e:
             raise VBuildException(
                 "Component '%s' got a CSS-PreProcessor trouble : %s" % (filename, e)
@@ -441,12 +409,3 @@ def render(*filenames):
         ll.append(VBuild(f, content))
 
     return sum(ll)
-
-
-if __name__ == '__main__':
-    print('Less installed (lesscpy)    :', hasLess)
-    print('Sass installed (pyScss)     :', hasSass)
-    print('Closure installed (closure) :', hasClosure)
-    if os.path.isfile('tests.py'):
-        exec(open('tests.py').read())
-    # ~ if(os.path.isfile("test_py_comp.py")): exec(open("test_py_comp.py").read())
