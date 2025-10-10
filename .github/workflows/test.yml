@@ -50,8 +50,6 @@ jobs:
           poetry run pip install -r tests/requirements.txt
           # try fix issue with importlib_resources
           poetry run pip install importlib-resources
-      - name: test startup
-        run: poetry run ./test_startup.sh
       - name: setup chromedriver
         uses: nanasess/setup-chromedriver@v2.3.0
       - name: pytest
@@ -63,6 +61,8 @@ jobs:
           name: screenshots-${{ matrix.python }}
           path: screenshots/*.failed.png
           retention-days: 14
+      - name: test startup
+        run: poetry run ./test_startup.sh
 
   slack:
     needs:
