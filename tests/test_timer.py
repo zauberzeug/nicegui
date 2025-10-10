@@ -234,7 +234,7 @@ def test_cancel_before_invocation_starts(screen: Screen):
 def test_error_in_callback(screen: Screen):
     @ui.page('/')
     def index():
-        ui.timer(0, callback=lambda: print(1 / 0), once=True)
+        ui.timer(0, lambda: print(1 / 0), once=True)
 
     app.on_exception(lambda e: ui.notification(f'Exception: {e}'))
 
