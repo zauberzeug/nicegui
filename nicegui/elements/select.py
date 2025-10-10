@@ -57,6 +57,10 @@ class Select(LabelElement, ValidationElement, ChoiceElement[T], DisableableEleme
         :param key_generator: a callback or iterator to generate a dictionary key for new values
         """
         self.multiple = multiple
+        if multiple and isinstance(value, list):
+            value = value[:]. # Note: avoid modifying the original list which could be the list of options (#3014)
+        if multiple and value is None:
+            value = []
         self.new_value_to_option = new_value_to_option
         super().__init__(label=label, options=options, value=value, on_change=on_change, validation=validation)
         if isinstance(key_generator, Generator):
