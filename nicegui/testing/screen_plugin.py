@@ -18,6 +18,19 @@ from .screen import Screen
 DOWNLOAD_DIR = Path(__file__).parent / 'download'
 
 
+def _get_worker_id() -> int:
+    """Get the worker ID for pytest-xdist."""
+    worker_id = os.environ.get('PYTEST_XDIST_WORKER') or os.environ.get('PYTEST_WORKER_ID')
+    try:
+        if worker_id and worker_id.startswith('gw'):
+            return int(worker_id[2:])
+        elif worker_id and worker_id.isdigit():
+            return int(worker_id)
+    except Exception:
+        pass
+    return 0
+
+
 @pytest.hookimpl(tryfirst=True, hookwrapper=True)
 def pytest_runtest_makereport(item, call):  # pylint: disable=unused-argument
     """Store test outcome in the node for fixture access."""
@@ -55,8 +68,9 @@ def capabilities(capabilities: dict) -> dict:
 @pytest.fixture(scope='session')
 def nicegui_remove_all_screenshots() -> None:
     """Remove all screenshots from the screenshot directory before the test session."""
-    for name in Screen.SCREENSHOT_DIR.glob('*.png'):
-        name.unlink()
+    if _get_worker_id() == 0:
+        for name in Screen.SCREENSHOT_DIR.glob('*.png'):
+            name.unlink()
 
 
 @pytest.fixture()
@@ -78,7 +92,7 @@ def screen(nicegui_reset_globals,  # noqa: F811, pylint: disable=unused-argument
            caplog: pytest.LogCaptureFixture,
            ) -> Generator[Screen, None, None]:
     """Create a new SeleniumScreen fixture."""
-    os.environ['NICEGUI_SCREEN_TEST_PORT'] = str(Screen.PORT)
+    os.environ['NICEGUI_SCREEN_TEST_PORT'] = str(Screen.PORT + _get_worker_id())
     screen_ = Screen(nicegui_driver, caplog, request)
     yield screen_
     os.environ.pop('NICEGUI_SCREEN_TEST_PORT', None)

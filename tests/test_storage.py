@@ -92,7 +92,7 @@ def test_access_user_storage_from_fastapi(screen: Screen):
     screen.ui_run_kwargs['storage_secret'] = 'just a test'
     screen.open('/')
     with httpx.Client() as http_client:
-        response = http_client.get(f'http://localhost:{Screen.PORT}/api')
+        response = http_client.get(f'http://localhost:{screen.port}/api')
         assert response.status_code == 200
         assert response.text == '"OK"'
         time.sleep(0.5)  # wait for storage to be written
@@ -359,7 +359,7 @@ def test_user_storage_is_pruned(screen: Screen):
     assert len(Client.instances) == 1
     assert len(app.storage._users) == 1
 
-    response = httpx.get('http://localhost:3392/status')
+    response = httpx.get(f'http://localhost:{screen.port}/status')
     assert response.status_code == 200
     assert response.text == '"ok"'
     assert len(Client.instances) == 1
