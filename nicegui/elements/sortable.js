@@ -106,25 +106,6 @@ export default {
       this.sortableInstance = Sortable.create(el, {
         ...options,
         dataIdAttr: 'id', // Explicitly tell SortableJS to use the HTML id attribute
-        onCancelClone: (evt) => {
-          this.$emit('sort_cancel_clone', {
-            sourceItem: evt.sourceItem || null,
-            newIndex: evt.newIndex,
-            sourceList: evt.sourceList || null,
-            targetList: evt.targetList || null
-          });
-        },
-        onClone: (evt) => {
-          // Assign a new unique id to the clone in the source list
-          if (evt.clone && !evt.clone.id) {
-            evt.clone.id = evt.item.id;
-          }
-          this.$emit('sort_clone', {
-            item: evt.item.id || evt.item.dataset.id || null,
-            origEl: evt.item ? (evt.item.id || evt.item.dataset.id || null) : null,
-            clone: evt.clone ? (evt.clone.id || evt.clone.dataset.id || null) : null,
-          });
-        },
         onChoose: (evt) => {
           this.$emit('sort_choose', {
             item: evt.item.id || evt.item.dataset.id || null,
@@ -141,28 +122,6 @@ export default {
           this.$emit('sort_start', {
             item: evt.item.id || evt.item.dataset.id || null,
             oldIndex: evt.oldIndex
-          });
-        },
-        onChange: (evt) => {
-          this.$emit('sort_change', {
-            item: evt.item.id || evt.item.dataset.id || null,
-            newIndex: evt.newIndex,
-            oldIndex: evt.oldIndex
-          });
-        },
-        onUpdate: (evt) => {
-          this.$emit('sort_update', {
-            item: evt.item.id || evt.item.dataset.id || null,
-            newIndex: evt.newIndex,
-            oldIndex: evt.oldIndex
-          });
-        },
-        onRemove: (evt) => {
-          this.$emit('sort_remove', {
-            item: evt.item.id || evt.item.dataset.id || null,
-            oldIndex: evt.oldIndex,
-            from: evt.from ? (evt.from.id || null) : null,
-            to: evt.to ? (evt.to.id || null) : null
           });
         },
         onEnd: (evt) => {
@@ -195,6 +154,13 @@ export default {
             to: evt.to ? (evt.to.id || null) : null,
           });
         },
+        onUpdate: (evt) => {
+          this.$emit('sort_update', {
+            item: evt.item.id || evt.item.dataset.id || null,
+            newIndex: evt.newIndex,
+            oldIndex: evt.oldIndex
+          });
+        },
         onSort: (evt) => {
           // Get the complete current order of all elements to synchronize with Python
           const currentOrder = this.sortableInstance.toArray();
@@ -217,6 +183,19 @@ export default {
             childrenData: childrenData
           });
         },
+        onRemove: (evt) => {
+          this.$emit('sort_remove', {
+            item: evt.item.id || evt.item.dataset.id || null,
+            oldIndex: evt.oldIndex,
+            from: evt.from ? (evt.from.id || null) : null,
+            to: evt.to ? (evt.to.id || null) : null
+          });
+        },
+        onFilter: (evt) => {
+          this.$emit('sort_filter', {
+            item: evt.item.id || evt.item.dataset.id || null
+          });
+        },
         onMove: (evt, originalEvent) => {
           const result = this.$emit('sort_move', {
             dragged: evt.dragged.id || evt.dragged.dataset.id || null,
@@ -228,9 +207,30 @@ export default {
           });
           return result !== false;
         },
-        onFilter: (evt) => {
-          this.$emit('sort_filter', {
-            item: evt.item.id || evt.item.dataset.id || null
+        onClone: (evt) => {
+          // Assign a new unique id to the clone in the source list
+          if (evt.clone && !evt.clone.id) {
+            evt.clone.id = evt.item.id;
+          }
+          this.$emit('sort_clone', {
+            item: evt.item.id || evt.item.dataset.id || null,
+            origEl: evt.item ? (evt.item.id || evt.item.dataset.id || null) : null,
+            clone: evt.clone ? (evt.clone.id || evt.clone.dataset.id || null) : null,
+          });
+        },
+        onCancelClone: (evt) => {
+          this.$emit('sort_cancel_clone', {
+            sourceItem: evt.sourceItem || null,
+            newIndex: evt.newIndex,
+            sourceList: evt.sourceList || null,
+            targetList: evt.targetList || null
+          });
+        },
+        onChange: (evt) => {
+          this.$emit('sort_change', {
+            item: evt.item.id || evt.item.dataset.id || null,
+            newIndex: evt.newIndex,
+            oldIndex: evt.oldIndex
           });
         },
         // Plugin event handlers
