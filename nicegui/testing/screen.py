@@ -248,7 +248,7 @@ class Screen:
         time.sleep(t)
 
     def shot(self, name: str, *, failed: bool) -> None:
-        """Take a screenshot and store it in the screenshots directory."""
+        """Take a screenshot and store it in screenshots-green/ or screenshots-red/ depending on test status."""
         path = self.SCREENSHOTS_RED if failed else self.SCREENSHOTS_GREEN
         path.mkdir(parents=True, exist_ok=True)
         filename = path / f'{name}.png'
