@@ -72,7 +72,7 @@ def project_pytest():
                 [pytest]
                 asyncio_mode = auto
                 main_file = main.py
-                addopts = -p nicegui.testing.plugin
+                addopts = -p nicegui.testing.user_plugin
                 ```
             ''')
 
