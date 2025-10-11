@@ -160,13 +160,14 @@ async def _shutdown() -> None:
 async def _exception_handler_404(request: Request, exception: Exception) -> Response:
     root = core.root
     if root is not None:
+        signature = inspect.signature(root)
         kwargs = {
             name: PageArguments._convert_parameter(  # pylint: disable=protected-access
                 request.query_params[name],
                 param.annotation,
             )
-            for name, param in inspect.signature(root).parameters.items()
-            if name in request.query_params
+            for name, param in signature.parameters.items()
+            if name in request.query_params and name != 'request'
         }
         return await page('')._wrap(root)(request=request, **kwargs)  # pylint: disable=protected-access
     log.warning(f'{request.url} not found')
