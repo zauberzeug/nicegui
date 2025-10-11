@@ -1,6 +1,6 @@
 from contextlib import asynccontextmanager
 from pathlib import Path
-from typing import Callable, Literal, Optional, Union
+from typing import Any, Callable, Literal, Optional, Union
 
 from fastapi import FastAPI
 from fastapi.middleware.gzip import GZipMiddleware
@@ -29,6 +29,7 @@ def run_with(
     tailwind: bool = True,
     prod_js: bool = True,
     storage_secret: Optional[str] = None,
+    session_middleware_kwargs: Optional[dict[str, Any]] = None,
     show_welcome_message: bool = True,
 ) -> None:
     """Run NiceGUI with FastAPI.
@@ -49,6 +50,7 @@ def run_with(
     :param tailwind: whether to use Tailwind CSS (experimental, default: `True`)
     :param prod_js: whether to use the production version of Vue and Quasar dependencies (default: `True`)
     :param storage_secret: secret key for browser-based storage (default: `None`, a value is required to enable ui.storage.individual and ui.storage.browser)
+    :param session_middleware_kwargs: additional keyword arguments passed to SessionMiddleware that creates the session cookies used for browser-based storage.
     :param show_welcome_message: whether to show the welcome message (default: `True`)
     """
     core.app.config.add_run_config(
@@ -67,7 +69,7 @@ def run_with(
         cache_control_directives=cache_control_directives,
     )
     core.root = root
-    storage.set_storage_secret(storage_secret)
+    storage.set_storage_secret(storage_secret, session_middleware_kwargs)
     core.app.add_middleware(GZipMiddleware)
     core.app.add_middleware(RedirectWithPrefixMiddleware)
     core.app.add_middleware(SetCacheControlMiddleware)
