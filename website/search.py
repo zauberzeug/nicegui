@@ -39,19 +39,17 @@ class Search:
                     .props('padding="2px 8px" outline size=sm color=grey-5').classes('shadow')
             ui.separator()
             self.results = ui.element('q-list').classes('w-full').props('separator')
-        ui.keyboard(self.handle_keypress)
+        ui.keyboard().on('key', self.dialog.open, js_handler='''(e) => {
+            if (e.action !== 'keydown') return;
+            if (e.key === '/' || (e.key === 'k' && (e.ctrlKey || e.metaKey))) {
+                emit(e);
+                e.event.preventDefault();
+            }
+        }''')
 
     def create_button(self) -> ui.button:
         return ui.button(on_click=self.dialog.open, icon='search').props('flat color=white') \
             .tooltip('Press Ctrl+K or / to search the documentation')
-
-    def handle_keypress(self, e: events.KeyEventArguments) -> None:
-        if not e.action.keydown:
-            return
-        if e.key == '/':
-            self.dialog.open()
-        if e.key == 'k' and (e.modifiers.ctrl or e.modifiers.meta):
-            self.dialog.open()
 
     def handle_input(self, e: events.ValueChangeEventArguments) -> None:
         async def handle_input() -> None:
