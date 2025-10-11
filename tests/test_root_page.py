@@ -25,7 +25,7 @@ def test_async_root_page(screen: Screen):
 
 def test_root_page_with_query_parameters(screen: Screen):
     def root(x: int = 0):
-        ui.label(f'{x=}')
+        ui.label(f'{x = }')
 
     screen.ui_run_kwargs['root'] = root
     screen.open('/')
