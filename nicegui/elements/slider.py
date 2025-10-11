@@ -13,6 +13,7 @@ class Slider(ValueElement, DisableableElement):
                  step: float = 1.0,
                  value: Optional[float] = None,
                  on_change: Optional[Handler[ValueChangeEventArguments]] = None,
+                 throttle: float = 0.05,
                  ) -> None:
         """Slider
 
@@ -24,7 +25,7 @@ class Slider(ValueElement, DisableableElement):
         :param value: initial value to set position of the slider
         :param on_change: callback which is invoked when the user releases the slider
         """
-        super().__init__(tag='q-slider', value=value, on_value_change=on_change, throttle=0.05)
+        super().__init__(tag='q-slider', value=value, on_value_change=on_change, throttle=throttle)
         self._props['min'] = min
         self._props['max'] = max
         self._props['step'] = step
