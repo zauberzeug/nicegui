@@ -33,6 +33,10 @@ class Callback(Generic[P]):
         """Run the callback."""
         with (self.slot and self.slot()) or nullcontext():
             expect_args = helpers.expects_arguments(self.func)
+            expect_args |= (
+                isinstance(getattr(self.func, '__self__', None), Event) and
+                getattr(self.func, '__name__', None) in {'emit', 'call'}
+            )
             return self.func(*args, **kwargs) if expect_args else self.func()  # type: ignore[call-arg]
 
     async def await_result(self, result: Awaitable | AwaitableResponse | asyncio.Task) -> Any:
@@ -59,16 +63,16 @@ class Event(Generic[P]):
         self.instances.add(self)
 
     def subscribe(self, callback: Callable[P, Any] | Callable[[], Any], *,
-                  unsubscribe_on_disconnect: bool | None = None) -> None:
+                  unsubscribe_on_delete: bool | None = None) -> None:
         """Subscribe to the event.
 
-        The ``unsubscribe_on_disconnect`` can be used to explicitly define
-        whether the callback should be automatically unsubscribed when the client disconnects.
+        The ``unsubscribe_on_delete`` can be used to explicitly define
+        whether the callback should be automatically unsubscribed when the current client is deleted.
         By default, the callback is automatically unsubscribed if subscribed from within a UI context
         to prevent memory leaks.
 
         :param callback: the callback which will be called when the event is fired
-        :param unsubscribe_on_disconnect: whether to unsubscribe the callback when the client disconnects
+        :param unsubscribe_on_delete: whether to unsubscribe the callback when the current client is deleted
             (default: ``None`` meaning the callback is automatically unsubscribed if subscribed from within a UI context)
         """
         frame = inspect.currentframe()
@@ -80,21 +84,21 @@ class Event(Generic[P]):
         if Slot.get_stack():  # NOTE: additional check before accessing `context.slot` which would enter script mode
             callback_.slot = weakref.ref(context.slot)
             client = context.client
-        if callback_.slot is None and unsubscribe_on_disconnect is True:
-            raise RuntimeError('Calling `subscribe` with `unsubscribe_on_disconnect=True` outside of a UI context '
+        if callback_.slot is None and unsubscribe_on_delete is True:
+            raise RuntimeError('Calling `subscribe` with `unsubscribe_on_delete=True` outside of a UI context '
                                'is not supported.')
-        if client is not None and unsubscribe_on_disconnect is not False and not core.is_script_mode_preflight():
-            async def register_disconnect() -> None:
+        if client is not None and unsubscribe_on_delete is not False and not core.is_script_mode_preflight():
+            async def register_unsubscribe() -> None:
                 try:
                     await client.connected()
-                    client.on_disconnect(lambda: self.unsubscribe(callback))
+                    client.on_delete(lambda: self.unsubscribe(callback))
                 except ClientConnectionTimeout:
                     log.debug('Could not register a disconnect handler for callback %s', callback)
                     self.unsubscribe(callback)
             if core.loop and core.loop.is_running():
-                background_tasks.create(register_disconnect())
+                background_tasks.create(register_unsubscribe())
             else:
-                core.app.on_startup(register_disconnect())
+                core.app.on_startup(register_unsubscribe())
         self.callbacks.append(callback_)
 
     def unsubscribe(self, callback: Callable[P, Any] | Callable[[], Any]) -> None:

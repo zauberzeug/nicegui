@@ -3052,18 +3052,6 @@ files = [
 ]
 
 [[package]]
-name = "pscript"
-version = "0.7.7"
-description = "Python to JavaScript compiler."
-optional = false
-python-versions = "*"
-groups = ["main"]
-files = [
-    {file = "pscript-0.7.7-py3-none-any.whl", hash = "sha256:b0fdac0df0393a4d7497153fea6a82e6429f32327c4c0a4817f1cd68adc08083"},
-    {file = "pscript-0.7.7.tar.gz", hash = "sha256:8632f7a4483f235514aadee110edee82eb6d67336bf68744a7b18d76e50442f8"},
-]
-
-[[package]]
 name = "pycodestyle"
 version = "2.14.0"
 description = "Python style guide checker"
@@ -4533,42 +4521,6 @@ docs = ["Sphinx (>=4.1.2,<4.2.0)", "sphinx-rtd-theme (>=0.5.2,<0.6.0)", "sphinxc
 test = ["aiohttp (>=3.10.5)", "flake8 (>=5.0,<6.0)", "mypy (>=0.800)", "psutil", "pyOpenSSL (>=23.0.0,<23.1.0)", "pycodestyle (>=2.9.0,<2.10.0)"]
 
 [[package]]
-name = "vbuild"
-version = "0.0.0"
-description = "A simple module to extract html/script/style from a vuejs '.vue' file (can minimize/es2015 compliant js) ... just python3, NO nodejs !"
-optional = false
-python-versions = "^3.7"
-groups = ["main"]
-markers = "python_version >= \"3.14\""
-files = []
-develop = false
-
-[package.dependencies]
-pscript = "^0.7.7"
-
-[package.source]
-type = "git"
-url = "https://github.com/manatlan/vbuild.git"
-reference = "31157af79eeb8ef86e37f6f4965fcc8a1391d6a1"
-resolved_reference = "31157af79eeb8ef86e37f6f4965fcc8a1391d6a1"
-
-[[package]]
-name = "vbuild"
-version = "0.8.2"
-description = "A simple module to extract html/script/style from a vuejs '.vue' file (can minimize/es2015 compliant js) ... just py2 or py3, NO nodejs !"
-optional = false
-python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*, !=3.5.*"
-groups = ["main"]
-markers = "python_version <= \"3.13\""
-files = [
-    {file = "vbuild-0.8.2-py2.py3-none-any.whl", hash = "sha256:d76bcc976a1c53b6a5776ac947606f9e7786c25df33a587ebe33ed09dd8a1076"},
-    {file = "vbuild-0.8.2.tar.gz", hash = "sha256:270cd9078349d907dfae6c0e6364a5a5e74cb86183bb5093613f12a18b435fa9"},
-]
-
-[package.dependencies]
-pscript = ">=0.7.0,<0.8.0"
-
-[[package]]
 name = "virtualenv"
 version = "20.33.0"
 description = "Virtual Python Environment builder"
@@ -5054,4 +5006,4 @@ sass = ["libsass"]
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.9"
-content-hash = "69123f1664b4630f229b7d62d94a53dad96b4fbd6a41d06312344a758e0e46e7"
+content-hash = "ee860aeeea4d440970dff5282a0148a3a704b3c6e2301d3b2a75883849ded114"
