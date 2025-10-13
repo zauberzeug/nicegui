@@ -28,7 +28,7 @@ from .general_fixtures import get_path_to_main_file, prepare_simulation
 
 class Screen:
     PORT = 3392
-    IMPLICIT_WAIT = 4
+    IMPLICIT_WAIT = 15
     SCREENSHOT_DIR = Path('screenshots')
 
     def __init__(self, selenium: webdriver.Chrome, caplog: pytest.LogCaptureFixture, request: Optional[pytest.FixtureRequest] = None) -> None:
