@@ -61,8 +61,6 @@ jobs:
           set -x
           # install packages to run the examples
           poetry run pip install opencv-python opencv-contrib-python-headless httpx isort replicate langchain openai simpy tortoise-orm
-          # try fix issue with importlib_resources
-          poetry run pip install importlib-resources
       - name: test startup
         run: poetry run ./test_startup.sh
       - name: restore dependencies for effective caching
