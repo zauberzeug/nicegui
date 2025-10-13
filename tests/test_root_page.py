@@ -40,13 +40,13 @@ def test_root_page_with_request_injection(screen: Screen):
 
     def root(request: Request):
         ui.label(f'path: {request.url.path}')
-        ui.label(f'query: {request.query_params.get("name", "unknown")}')
+        ui.label(f'name: {request.query_params.get("name", "unknown")}')
 
     screen.ui_run_kwargs['root'] = root
     screen.open('/')
     screen.should_contain('path: /')
-    screen.should_contain('query: unknown')
+    screen.should_contain('name: unknown')
 
     screen.open('/?name=test')
     screen.should_contain('path: /')
-    screen.should_contain('query: test')
+    screen.should_contain('name: test')
