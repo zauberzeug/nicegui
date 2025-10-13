@@ -1,12 +1,13 @@
-FROM python:3.11-slim
+FROM python:3.12-slim
 
 LABEL maintainer="Zauberzeug GmbH <nicegui@zauberzeug.com>"
 
-RUN apt update && apt install -y curl procps
+RUN apt update && apt install -y curl procps build-essential
 
 RUN pip install \
     dnspython \
     docutils \
+    httpx \
     isort \
     itsdangerous \
     matplotlib \
@@ -14,7 +15,6 @@ RUN pip install \
     plotly \
     pyecharts \
     pytest \
-    requests \
     selenium
 
 RUN curl -sSL https://install.python-poetry.org | python3 - && \
@@ -28,7 +28,7 @@ COPY pyproject.toml poetry.lock*  ./
 
 RUN poetry install --no-root --extras "plotly matplotlib highcharts sass"
 
-RUN pip install latex2mathml
+RUN pip install latex2mathml slowapi
 
 ADD . .
 

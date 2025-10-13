@@ -4,12 +4,17 @@ from nicegui.testing import Screen
 
 def test_remove_element_by_reference(screen: Screen):
     texts = {'a': 'Label A', 'b': 'Label B', 'c': 'Label C'}
-    with ui.row() as row:
-        ui.label().bind_text_from(texts, 'a')
-        b = ui.label().bind_text_from(texts, 'b')
-        ui.label().bind_text_from(texts, 'c')
+    b = row = None
 
-    ui.button('Remove', on_click=lambda: row.remove(b))
+    @ui.page('/')
+    def page():
+        nonlocal b, row
+        with ui.row() as row:
+            ui.label().bind_text_from(texts, 'a')
+            b = ui.label().bind_text_from(texts, 'b')
+            ui.label().bind_text_from(texts, 'c')
+
+        ui.button('Remove', on_click=lambda: row.remove(b))
 
     screen.open('/')
     screen.click('Remove')
@@ -25,12 +30,17 @@ def test_remove_element_by_reference(screen: Screen):
 
 def test_remove_element_by_index(screen: Screen):
     texts = {'a': 'Label A', 'b': 'Label B', 'c': 'Label C'}
-    with ui.row() as row:
-        ui.label().bind_text_from(texts, 'a')
-        b = ui.label().bind_text_from(texts, 'b')
-        ui.label().bind_text_from(texts, 'c')
+    b = row = None
 
-    ui.button('Remove', on_click=lambda: row.remove(1))
+    @ui.page('/')
+    def page():
+        nonlocal b, row
+        with ui.row() as row:
+            ui.label().bind_text_from(texts, 'a')
+            b = ui.label().bind_text_from(texts, 'b')
+            ui.label().bind_text_from(texts, 'c')
+
+        ui.button('Remove', on_click=lambda: row.remove(1))
 
     screen.open('/')
     screen.click('Remove')
@@ -46,12 +56,17 @@ def test_remove_element_by_index(screen: Screen):
 
 def test_clear(screen: Screen):
     texts = {'a': 'Label A', 'b': 'Label B', 'c': 'Label C'}
-    with ui.row() as row:
-        a = ui.label().bind_text_from(texts, 'a')
-        b = ui.label().bind_text_from(texts, 'b')
-        c = ui.label().bind_text_from(texts, 'c')
+    a = b = c = row = None
 
-    ui.button('Clear', on_click=row.clear)
+    @ui.page('/')
+    def page():
+        nonlocal a, b, c, row
+        with ui.row() as row:
+            a = ui.label().bind_text_from(texts, 'a')
+            b = ui.label().bind_text_from(texts, 'b')
+            c = ui.label().bind_text_from(texts, 'c')
+
+        ui.button('Clear', on_click=row.clear)
 
     screen.open('/')
     screen.click('Clear')
@@ -69,13 +84,18 @@ def test_clear(screen: Screen):
 
 def test_remove_parent(screen: Screen):
     texts = {'a': 'Label A', 'b': 'Label B', 'c': 'Label C'}
-    with ui.element() as container:
-        with ui.row() as row:
-            a = ui.label().bind_text_from(texts, 'a')
-            b = ui.label().bind_text_from(texts, 'b')
-            c = ui.label().bind_text_from(texts, 'c')
+    a = b = c = row = container = None
 
-    ui.button('Remove parent', on_click=lambda: container.remove(row))
+    @ui.page('/')
+    def page():
+        nonlocal a, b, c, row, container
+        with ui.element() as container:
+            with ui.row() as row:
+                a = ui.label().bind_text_from(texts, 'a')
+                b = ui.label().bind_text_from(texts, 'b')
+                c = ui.label().bind_text_from(texts, 'c')
+
+        ui.button('Remove parent', on_click=lambda: container.remove(row))
 
     screen.open('/')
     screen.click('Remove parent')
@@ -96,12 +116,17 @@ def test_remove_parent(screen: Screen):
 
 def test_delete_element(screen: Screen):
     texts = {'a': 'Label A', 'b': 'Label B', 'c': 'Label C'}
-    with ui.row() as row:
-        ui.label().bind_text_from(texts, 'a')
-        b = ui.label().bind_text_from(texts, 'b')
-        ui.label().bind_text_from(texts, 'c')
+    b = row = None
 
-    ui.button('Delete', on_click=b.delete)
+    @ui.page('/')
+    def page():
+        nonlocal b, row
+        with ui.row() as row:
+            ui.label().bind_text_from(texts, 'a')
+            b = ui.label().bind_text_from(texts, 'b')
+            ui.label().bind_text_from(texts, 'c')
+
+        ui.button('Delete', on_click=b.delete)
 
     screen.open('/')
     screen.click('Delete')
@@ -127,14 +152,19 @@ def test_on_delete(screen: Screen):
             deleted_labels.append(self.text)
             super()._handle_delete()
 
-    with ui.row() as row:
-        CustomLabel('Label A')
-        b = CustomLabel('Label B')
-        CustomLabel('Label C')
+    b = row = None
 
-    ui.button('Delete C', on_click=lambda: row.remove(2))
-    ui.button('Delete B', on_click=lambda: row.remove(b))
-    ui.button('Clear row', on_click=row.clear)
+    @ui.page('/')
+    def page():
+        nonlocal b, row
+        with ui.row() as row:
+            CustomLabel('Label A')
+            b = CustomLabel('Label B')
+            CustomLabel('Label C')
+
+        ui.button('Delete C', on_click=lambda: row.remove(2))
+        ui.button('Delete B', on_click=lambda: row.remove(b))
+        ui.button('Clear row', on_click=row.clear)
 
     screen.open('/')
     screen.click('Delete C')

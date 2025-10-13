@@ -3,7 +3,9 @@ from nicegui.testing import Screen
 
 
 def test_date(screen: Screen):
-    ui.date(value='2023-01-01')
+    @ui.page('/')
+    def page():
+        ui.date(value='2023-01-01')
 
     screen.open('/')
     screen.should_contain('Sun, Jan 1')
@@ -13,7 +15,9 @@ def test_date(screen: Screen):
 
 
 def test_date_with_range(screen: Screen):
-    ui.date().props('range default-year-month=2023/01')
+    @ui.page('/')
+    def page():
+        ui.date().props('range default-year-month=2023/01')
 
     screen.open('/')
     screen.click('16')
@@ -26,7 +30,9 @@ def test_date_with_range(screen: Screen):
 
 
 def test_date_with_multi_selection(screen: Screen):
-    ui.date().props('multiple default-year-month=2023/01')
+    @ui.page('/')
+    def page():
+        ui.date().props('multiple default-year-month=2023/01')
 
     screen.open('/')
     screen.click('16')
@@ -39,7 +45,9 @@ def test_date_with_multi_selection(screen: Screen):
 
 
 def test_date_with_range_and_multi_selection(screen: Screen):
-    ui.date().props('range multiple default-year-month=2023/01')
+    @ui.page('/')
+    def page():
+        ui.date().props('range multiple default-year-month=2023/01')
 
     screen.open('/')
     screen.click('16')
@@ -52,8 +60,10 @@ def test_date_with_range_and_multi_selection(screen: Screen):
 
 
 def test_date_with_filter(screen: Screen):
-    d = ui.date().props('''default-year-month=2023/01 :options="date => date <= '2023/01/15'"''')
-    ui.label().bind_text_from(d, 'value')
+    @ui.page('/')
+    def page():
+        d = ui.date().props('''default-year-month=2023/01 :options="date => date <= '2023/01/15'"''')
+        ui.label().bind_text_from(d, 'value')
 
     screen.open('/')
     screen.click('14')

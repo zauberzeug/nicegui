@@ -2,6 +2,7 @@
 from io import BytesIO
 
 import cairo
+from html_sanitizer import Sanitizer
 
 from nicegui import ui
 
@@ -40,7 +41,7 @@ with ui.row():
     with ui.column():
         name = ui.input('Name', placeholder='Enter your name', on_change=update)
         email = ui.input('E-Mail', placeholder='Enter your E-Mail address', on_change=update)
-    preview = ui.html().classes('border-2 border-gray-500')
+    preview = ui.html(sanitize=Sanitizer().sanitize).classes('border-2 border-gray-500')
     update()
     ui.button('PDF', on_click=lambda: ui.download(generate_pdf(), 'output.pdf')).bind_visibility_from(name, 'value')
 

@@ -1,7 +1,7 @@
 import importlib.util
 import json
 from datetime import date, datetime
-from typing import Any, Optional, Tuple
+from typing import Any, Optional
 
 from fastapi import Response
 
@@ -10,7 +10,7 @@ HAS_NUMPY = importlib.util.find_spec('numpy') is not None
 
 def dumps(obj: Any,
           sort_keys: bool = False,
-          separators: Optional[Tuple[str, str]] = None, *,
+          separators: Optional[tuple[str, str]] = None, *,
           indent: bool = False) -> str:
     """Serializes a Python object to a JSON-encoded string.
 

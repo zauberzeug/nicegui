@@ -1,6 +1,5 @@
-from typing import Optional, Union
+from typing import Optional
 
-from ..element import Element
 from ..events import ClickEventArguments, Handler
 from .context_menu import ContextMenu
 from .item import Item
@@ -60,14 +59,6 @@ class MenuItem(Item):
 
         self._props['clickable'] = True
 
-        self.menu = self._find_menu()
+        self.menu = next((e for e in self.ancestors() if isinstance(e, (Menu, ContextMenu))), None)
         if self.menu and auto_close:
             self.on_click(self.menu.close)
-
-    def _find_menu(self) -> Optional[Union[Menu, ContextMenu]]:
-        element: Element = self
-        while element.parent_slot:
-            element = element.parent_slot.parent
-            if isinstance(element, (Menu, ContextMenu)):
-                return element
-        return None

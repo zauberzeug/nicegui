@@ -29,14 +29,14 @@ doc.intro(run_documentation)
     You can enable native mode for NiceGUI by specifying `native=True` in the `ui.run` function.
     To customize the initial window size and display mode, use the `window_size` and `fullscreen` parameters respectively.
     Additionally, you can provide extra keyword arguments via `app.native.window_args` and `app.native.start_args`.
-    Pick any parameter as it is defined by the internally used [pywebview module](https://pywebview.flowrl.com/guide/api.html)
+    Pick any parameter as it is defined by the internally used [pywebview module](https://pywebview.flowrl.com/api)
     for the `webview.create_window` and `webview.start` functions.
     Note that these keyword arguments will take precedence over the parameters defined in `ui.run`.
 
     Additionally, you can change `webview.settings` via `app.native.settings`.
 
     In native mode the `app.native.main_window` object allows you to access the underlying window.
-    It is an async version of [`Window` from pywebview](https://pywebview.flowrl.com/guide/api.html#window-object).
+    It is an async version of [`Window` from pywebview](https://pywebview.flowrl.com/api/#webview-window).
 ''', tab=lambda: ui.label('NiceGUI'))
 def native_mode_demo():
     from nicegui import app
@@ -153,12 +153,12 @@ doc.text('Custom Vue Components', '''
     The ["Custom Vue components" example](https://github.com/zauberzeug/nicegui/tree/main/examples/custom_vue_component)
     demonstrates how to create a custom counter component which emits events and receives updates from the server.
 
-    The ["Signature pad" example](https://github.com/zauberzeug/nicegui/blob/main/examples/signature_pad)
-    shows how to define dependencies for a custom component using a `package.json` file.
-    This allows you to use third-party libraries via NPM in your component.
-
-    Last but not least, the ["Node module integration" example](https://github.com/zauberzeug/nicegui/blob/main/examples/node_module_integration)
-    demonstrates how to create a package.json file and a webpack.config.js file to bundle a custom Vue component with its dependencies.
+    The ["Signature pad" example](https://github.com/zauberzeug/nicegui/blob/main/examples/signature_pad) and
+    the ["Node module integration" example](https://github.com/zauberzeug/nicegui/blob/main/examples/node_module_integration)
+    demonstrate how to bundle a custom Vue component with its dependencies defined in a `package.json` file.
+    In Python we can use the `esm` parameter when subclassing `ui.element`
+    to specify the ESM module name and the path to the bundled component.
+    This adds the ESM module to the import map of the page and makes it available in the Vue component.
 ''')
 
 doc.text('Server Hosting', '''

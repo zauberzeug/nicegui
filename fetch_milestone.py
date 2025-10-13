@@ -2,9 +2,8 @@
 import argparse
 import re
 import sys
-from typing import Dict, List
 
-import requests
+import httpx
 
 BASE_URL = 'https://api.github.com/repos/zauberzeug/nicegui'
 
@@ -16,7 +15,7 @@ milestone_title: str = args.milestone_title
 page = 0
 while True:
     page += 1
-    response = requests.get(f'{BASE_URL}/milestones?state=all&page={page}&per_page=100', timeout=5)
+    response = httpx.get(f'{BASE_URL}/milestones?state=all&page={page}&per_page=100', timeout=5)
     milestones = response.json()
     if not milestones:
         print(f'Milestone "{milestone_title}" not found!')
@@ -33,8 +32,8 @@ def link(number: int) -> str:
     return escape_mask.format('', f'https://github.com/zauberzeug/nicegui/issues/{number}', f'#{number}')
 
 
-issues = requests.get(f'{BASE_URL}/issues?milestone={milestone_number}&state=all', timeout=5).json()
-notes: Dict[str, List[str]] = {
+issues = httpx.get(f'{BASE_URL}/issues?milestone={milestone_number}&state=all', timeout=5).json()
+notes: dict[str, list[str]] = {
     'New features and enhancements': [],
     'Bugfixes': [],
     'Documentation': [],
@@ -46,7 +45,7 @@ for issue in issues:
     title: str = issue['title']
     user: str = issue['user']['login'].replace('[bot]', '')
     body: str = issue['body'] or ''
-    labels: List[str] = [label['name'] for label in issue['labels']]
+    labels: list[str] = [label['name'] for label in issue['labels']]
     if user == 'dependabot':
         number_patterns = []
     else:

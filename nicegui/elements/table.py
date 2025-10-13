@@ -1,5 +1,5 @@
 import importlib.util
-from typing import TYPE_CHECKING, Any, Dict, List, Literal, Optional, Tuple, Union
+from typing import TYPE_CHECKING, Literal, Optional, Union
 
 from typing_extensions import Self
 
@@ -12,7 +12,6 @@ from ..events import (
     ValueChangeEventArguments,
     handle_event,
 )
-from ..helpers import warn_once
 from .mixins.filter_element import FilterElement
 
 if importlib.util.find_spec('pandas'):
@@ -30,9 +29,9 @@ class Table(FilterElement, component='table.js'):
 
     def __init__(self,
                  *,
-                 rows: List[Dict],
-                 columns: Optional[List[Dict]] = None,
-                 column_defaults: Optional[Dict] = None,
+                 rows: list[dict],
+                 columns: Optional[list[dict]] = None,
+                 column_defaults: Optional[dict] = None,
                  row_key: str = 'id',
                  title: Optional[str] = None,
                  selection: Literal[None, 'single', 'multiple'] = None,
@@ -44,6 +43,12 @@ class Table(FilterElement, component='table.js'):
 
         A table based on Quasar's `QTable <https://quasar.dev/vue-components/table>`_ component.
 
+        If ``selection`` is "single" or "multiple", then a ``selected`` property is accessible containing the selected rows.
+
+        Note:
+        Cells in ``rows`` must not contain lists because they can cause the browser to crash.
+        To display complex data structures, convert them to strings first (e.g., using ``str()`` or custom formatting).
+
         :param rows: list of row objects
         :param columns: list of column objects (defaults to the columns of the first row *since version 2.0.0*)
         :param column_defaults: optional default column properties, *added in version 2.0.0*
@@ -53,8 +58,6 @@ class Table(FilterElement, component='table.js'):
         :param pagination: a dictionary correlating to a pagination object or number of rows per page (`None` hides the pagination, 0 means "infinite"; default: `None`).
         :param on_select: callback which is invoked when the selection changes
         :param on_pagination_change: callback which is invoked when the pagination changes
-
-        If selection is 'single' or 'multiple', then a `selected` property is accessible containing the selected rows.
         """
         super().__init__()
 
@@ -82,17 +85,17 @@ class Table(FilterElement, component='table.js'):
                     self.selected.clear()
                 self.selected.extend(e.args['rows'])
             else:
-                self.selected = [row for row in self.selected if row[row_key] not in e.args['keys']]
-            self.update()
+                self.selected = [row for row in self.selected if row[self.row_key] not in e.args['keys']]
             arguments = TableSelectionEventArguments(sender=self, client=self.client, selection=self.selected)
             for handler in self._selection_handlers:
                 handle_event(handler, arguments)
         self.on('selection', handle_selection, ['added', 'rows', 'keys'])
 
         def handle_pagination_change(e: GenericEventArguments) -> None:
+            previous_value = self.pagination
             self.pagination = e.args
-            self.update()
-            arguments = ValueChangeEventArguments(sender=self, client=self.client, value=self.pagination)
+            arguments = ValueChangeEventArguments(sender=self, client=self.client,
+                                                  value=self.pagination, previous_value=previous_value)
             for handler in self._pagination_change_handlers:
                 handle_event(handler, arguments)
         self.on('update:pagination', handle_pagination_change)
@@ -107,14 +110,14 @@ class Table(FilterElement, component='table.js'):
         self._pagination_change_handlers.append(callback)
         return self
 
-    def _normalize_columns(self, columns: List[Dict]) -> List[Dict]:
+    def _normalize_columns(self, columns: list[dict]) -> list[dict]:
         return [{**self._column_defaults, **column} for column in columns] if self._column_defaults else columns
 
     @classmethod
     def from_pandas(cls,
                     df: 'pd.DataFrame', *,
-                    columns: Optional[List[Dict]] = None,
-                    column_defaults: Optional[Dict] = None,
+                    columns: Optional[list[dict]] = None,
+                    column_defaults: Optional[dict] = None,
                     row_key: str = 'id',
                     title: Optional[str] = None,
                     selection: Optional[Literal['single', 'multiple']] = None,
@@ -157,8 +160,8 @@ class Table(FilterElement, component='table.js'):
     @classmethod
     def from_polars(cls,
                     df: 'pl.DataFrame', *,
-                    columns: Optional[List[Dict]] = None,
-                    column_defaults: Optional[Dict] = None,
+                    columns: Optional[list[dict]] = None,
+                    column_defaults: Optional[dict] = None,
                     row_key: str = 'id',
                     title: Optional[str] = None,
                     selection: Optional[Literal['single', 'multiple']] = None,
@@ -199,8 +202,8 @@ class Table(FilterElement, component='table.js'):
     def update_from_pandas(self,
                            df: 'pd.DataFrame', *,
                            clear_selection: bool = True,
-                           columns: Optional[List[Dict]] = None,
-                           column_defaults: Optional[Dict] = None) -> None:
+                           columns: Optional[list[dict]] = None,
+                           column_defaults: Optional[dict] = None) -> None:
         """Update the table from a Pandas DataFrame.
 
         See `from_pandas()` for more information about the conversion of non-serializable columns.
@@ -219,8 +222,8 @@ class Table(FilterElement, component='table.js'):
     def update_from_polars(self,
                            df: 'pl.DataFrame', *,
                            clear_selection: bool = True,
-                           columns: Optional[List[Dict]] = None,
-                           column_defaults: Optional[Dict] = None) -> None:
+                           columns: Optional[list[dict]] = None,
+                           column_defaults: Optional[dict] = None) -> None:
         """Update the table from a Polars DataFrame.
 
         :param df: Polars DataFrame
@@ -232,11 +235,11 @@ class Table(FilterElement, component='table.js'):
         self._update_table(rows, columns_from_df, clear_selection, columns, column_defaults)
 
     def _update_table(self,
-                      rows: List[Dict],
-                      columns_from_df: List[Dict],
+                      rows: list[dict],
+                      columns_from_df: list[dict],
                       clear_selection: bool,
-                      columns: Optional[List[Dict]],
-                      column_defaults: Optional[Dict]) -> None:
+                      columns: Optional[list[dict]],
+                      column_defaults: Optional[dict]) -> None:
         """Helper function to update the table."""
         self.rows[:] = rows
         if column_defaults is not None:
@@ -245,10 +248,9 @@ class Table(FilterElement, component='table.js'):
             self.columns[:] = self._normalize_columns(columns or columns_from_df)
         if clear_selection:
             self.selected.clear()
-        self.update()
 
     @staticmethod
-    def _pandas_df_to_rows_and_columns(df: 'pd.DataFrame') -> Tuple[List[Dict], List[Dict]]:
+    def _pandas_df_to_rows_and_columns(df: 'pd.DataFrame') -> tuple[list[dict], list[dict]]:
         import pandas as pd  # pylint: disable=import-outside-toplevel
 
         def is_special_dtype(dtype):
@@ -270,36 +272,34 @@ class Table(FilterElement, component='table.js'):
         return df.to_dict('records'), [{'name': col, 'label': col, 'field': col} for col in df.columns]
 
     @staticmethod
-    def _polars_df_to_rows_and_columns(df: 'pl.DataFrame') -> Tuple[List[Dict], List[Dict]]:
+    def _polars_df_to_rows_and_columns(df: 'pl.DataFrame') -> tuple[list[dict], list[dict]]:
         return df.to_dicts(), [{'name': col, 'label': col, 'field': col} for col in df.columns]
 
     @property
-    def rows(self) -> List[Dict]:
+    def rows(self) -> list[dict]:
         """List of rows."""
         return self._props['rows']
 
     @rows.setter
-    def rows(self, value: List[Dict]) -> None:
+    def rows(self, value: list[dict]) -> None:
         self._props['rows'] = value
-        self.update()
 
     @property
-    def columns(self) -> List[Dict]:
+    def columns(self) -> list[dict]:
         """List of columns."""
         return self._props['columns']
 
     @columns.setter
-    def columns(self, value: List[Dict]) -> None:
+    def columns(self, value: list[dict]) -> None:
         self._props['columns'] = self._normalize_columns(value)
-        self.update()
 
     @property
-    def column_defaults(self) -> Optional[Dict]:
+    def column_defaults(self) -> Optional[dict]:
         """Default column properties."""
         return self._column_defaults
 
     @column_defaults.setter
-    def column_defaults(self, value: Optional[Dict]) -> None:
+    def column_defaults(self, value: Optional[dict]) -> None:
         self._column_defaults = value
         self.columns = self.columns  # re-normalize columns
 
@@ -311,17 +311,15 @@ class Table(FilterElement, component='table.js'):
     @row_key.setter
     def row_key(self, value: str) -> None:
         self._props['row-key'] = value
-        self.update()
 
     @property
-    def selected(self) -> List[Dict]:
+    def selected(self) -> list[dict]:
         """List of selected rows."""
         return self._props['selected']
 
     @selected.setter
-    def selected(self, value: List[Dict]) -> None:
+    def selected(self, value: list[dict]) -> None:
         self._props['selected'] = value
-        self.update()
 
     @property
     def selection(self) -> Literal[None, 'single', 'multiple']:
@@ -334,7 +332,6 @@ class Table(FilterElement, component='table.js'):
     @selection.setter
     def selection(self, value: Literal[None, 'single', 'multiple']) -> None:
         self._props['selection'] = value or 'none'
-        self.update()
 
     def set_selection(self, value: Literal[None, 'single', 'multiple']) -> None:
         """Set the selection type.
@@ -351,7 +348,6 @@ class Table(FilterElement, component='table.js'):
     @pagination.setter
     def pagination(self, value: dict) -> None:
         self._props['pagination'] = value
-        self.update()
 
     @property
     def is_fullscreen(self) -> bool:
@@ -362,7 +358,6 @@ class Table(FilterElement, component='table.js'):
     def is_fullscreen(self, value: bool) -> None:
         """Set fullscreen mode."""
         self._props['fullscreen'] = value
-        self.update()
 
     def set_fullscreen(self, value: bool) -> None:
         """Set fullscreen mode."""
@@ -372,37 +367,25 @@ class Table(FilterElement, component='table.js'):
         """Toggle fullscreen mode."""
         self.is_fullscreen = not self.is_fullscreen
 
-    def add_rows(self, rows: List[Dict], *args: Any) -> None:
+    def add_rows(self, rows: list[dict]) -> None:
         """Add rows to the table."""
-        if isinstance(rows, dict):  # DEPRECATED
-            warn_once('Calling add_rows() with variable-length arguments is deprecated. '
-                      'This option will be removed in NiceGUI 3.0. '
-                      'Pass a list instead or use add_row() for a single row.')
-            rows = [rows, *args]
         self.rows.extend(rows)
-        self.update()
 
-    def add_row(self, row: Dict) -> None:
+    def add_row(self, row: dict) -> None:
         """Add a single row to the table."""
         self.add_rows([row])
 
-    def remove_rows(self, rows: List[Dict], *args: Any) -> None:
+    def remove_rows(self, rows: list[dict]) -> None:
         """Remove rows from the table."""
-        if isinstance(rows, dict):  # DEPRECATED
-            warn_once('Calling remove_rows() with variable-length arguments is deprecated. '
-                      'This option will be removed in NiceGUI 3.0. '
-                      'Pass a list instead or use remove_row() for a single row.')
-            rows = [rows, *args]
         keys = [row[self.row_key] for row in rows]
         self.rows[:] = [row for row in self.rows if row[self.row_key] not in keys]
         self.selected[:] = [row for row in self.selected if row[self.row_key] not in keys]
-        self.update()
 
-    def remove_row(self, row: Dict) -> None:
+    def remove_row(self, row: dict) -> None:
         """Remove a single row from the table."""
         self.remove_rows([row])
 
-    def update_rows(self, rows: List[Dict], *, clear_selection: bool = True) -> None:
+    def update_rows(self, rows: list[dict], *, clear_selection: bool = True) -> None:
         """Update rows in the table.
 
         :param rows: list of rows to update
@@ -411,13 +394,12 @@ class Table(FilterElement, component='table.js'):
         self.rows[:] = rows
         if clear_selection:
             self.selected.clear()
-        self.update()
 
-    async def get_filtered_sorted_rows(self, *, timeout: float = 1) -> List[Dict]:
+    async def get_filtered_sorted_rows(self, *, timeout: float = 1) -> list[dict]:
         """Asynchronously return the filtered and sorted rows of the table."""
         return await self.get_computed_prop('filteredSortedRows', timeout=timeout)
 
-    async def get_computed_rows(self, *, timeout: float = 1) -> List[Dict]:
+    async def get_computed_rows(self, *, timeout: float = 1) -> list[dict]:
         """Asynchronously return the computed rows of the table."""
         return await self.get_computed_prop('computedRows', timeout=timeout)
 
