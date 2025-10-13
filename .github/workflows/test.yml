@@ -60,7 +60,7 @@ jobs:
         run: |
           set -x
           # install packages to run the examples
-          poetry run pip install $(printf -- '-r %s ' examples/*/requirements.txt)
+          poetry run pip install opencv-python opencv-contrib-python-headless httpx isort replicate langchain openai simpy tortoise-orm
       - name: test startup
         run: poetry run ./test_startup.sh
       - name: restore dependencies for effective caching
