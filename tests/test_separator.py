@@ -4,13 +4,13 @@ from nicegui.testing import Screen
 
 def test_separator(screen: Screen):
     @ui.page('/column')
-    def index():
+    def page_column():
         with ui.column():
             ui.button('1')
             ui.separator()
             ui.button('2')
     @ui.page('/row')
-    def index():
+    def page_row():
         with ui.row():
             ui.button('1')
             ui.separator().props('vertical')
@@ -23,3 +23,4 @@ def test_separator(screen: Screen):
     screen.wait(0.5)
     screen.open('/row')
     assert screen.find_by_tag('hr').value_of_css_property('width') == '1px'
+
