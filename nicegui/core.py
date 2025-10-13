@@ -17,3 +17,8 @@ air: Air | None = None
 root: Callable | None = None
 script_mode: bool = False
 script_client: Client | None = None
+
+
+def is_script_mode_preflight() -> bool:
+    """Return whether this is the preflight run of the script mode."""
+    return script_mode and not app.is_started  # pylint: disable=undefined-variable # noqa: F821
