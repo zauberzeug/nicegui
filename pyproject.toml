@@ -77,7 +77,6 @@ rcssmin = "^1.2.1"
 tinycss2 = "^1.4.0"
 html-sanitizer = "^2.6.0"
 pytest-xdist = "^3.8.0"
-pytest-rerunfailures = "^16.0.1"
 
 [tool.poetry.scripts]
 nicegui-pack = "nicegui.scripts.pack:main"
