@@ -44,12 +44,7 @@ jobs:
       - name: install dependencies
         run: |
           set -x
-          poetry install --all-extras
-          # install packages to run the examples
-          poetry run pip install opencv-python opencv-contrib-python-headless httpx isort replicate langchain openai simpy tortoise-orm
-          poetry run pip install -r tests/requirements.txt
-          # try fix issue with importlib_resources
-          poetry run pip install importlib-resources
+          poetry install --all-extras --with dev
       - name: setup chromedriver
         uses: nanasess/setup-chromedriver@v2.3.0
       - name: pytest (parallelized)
@@ -66,8 +61,18 @@ jobs:
           name: screenshots-${{ matrix.python }}
           path: screenshots/*.failed.png
           retention-days: 14
+      - name: install test startup dependencies
+        run: |
+          set -x
+          # install packages to run the examples
+          poetry run pip install opencv-python opencv-contrib-python-headless httpx isort replicate langchain openai simpy tortoise-orm
       - name: test startup
         run: poetry run ./test_startup.sh
+      - name: restore dependencies for effective caching
+        if: always()
+        run: |
+          set -x
+          poetry install --all-extras --with dev
 
   slack:
     needs:
