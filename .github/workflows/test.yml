@@ -54,11 +54,11 @@ jobs:
         uses: nanasess/setup-chromedriver@v2.3.0
       - name: pytest (parallelized)
         run: |
-          poetry run pytest -n auto --ignore=tests/test_storage.py --ignore=tests/test_download.py --ignore=tests/test_run.py
+          poetry run pytest -n auto --ignore=tests/test_storage.py --ignore=tests/test_download.py --ignore=tests/test_run.py --ignore=tests/test_binding.py
       - name: pytest (non-parallelized)
         if: always()
         run: |
-          poetry run pytest tests/test_storage.py tests/test_download.py tests/test_run.py
+          poetry run pytest tests/test_storage.py tests/test_download.py tests/test_run.py tests/test_binding.py
       - name: Upload failed screenshots
         if: failure()
         uses: actions/upload-artifact@v4
