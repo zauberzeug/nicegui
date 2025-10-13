@@ -28,7 +28,7 @@ async def user(nicegui_reset_globals,  # noqa: F811, pylint: disable=unused-argu
                ) -> AsyncGenerator[User, None]:
     """Create a new user fixture."""
     os.environ['NICEGUI_USER_SIMULATION'] = 'true'
-    main_path = get_path_to_main_file(request.config)
+    main_path = get_path_to_main_file(request)
     if main_path is None:
         prepare_simulation()
         ui.run(storage_secret='simulated secret')

@@ -42,7 +42,7 @@ class Screen:
 
     def start_server(self) -> None:
         """Start the webserver in a separate thread."""
-        main_path = get_path_to_main_file(self.pytest_request.config) if self.pytest_request else None
+        main_path = get_path_to_main_file(self.pytest_request) if self.pytest_request else None
         if main_path is None:
             prepare_simulation()
             self.server_thread = threading.Thread(target=lambda: ui.run(**self.ui_run_kwargs))
