@@ -1,4 +1,4 @@
-from typing import Any, Callable, Optional, cast, Generic, TypeVar
+from typing import Any, Callable, Optional, TypeVar, cast
 
 from typing_extensions import Self
 
@@ -10,7 +10,7 @@ from ...events import (GenericEventArguments, Handler,
 T = TypeVar("T")
 
 
-class ValueElement(Element, Generic[T]):
+class ValueElement(Element[T]):
     VALUE_PROP: str = 'model-value'
     '''Name of the prop that holds the value of the element'''
 
@@ -36,15 +36,16 @@ class ValueElement(Element, Generic[T]):
         self.set_value(value)
         self._props[self.VALUE_PROP] = self._value_to_model_value(value)
         self._props['loopback'] = self.LOOPBACK
-        self._change_handlers: list[Handler[ValueChangeEventArguments]] = [on_value_change] if on_value_change else []
+        self._change_handlers: list[Handler[ValueChangeEventArguments[T]]] = [on_value_change] if on_value_change else []
 
         def handle_change(e: GenericEventArguments[T]) -> None:
             self._send_update_on_value_change = self.LOOPBACK is True
             self.set_value(self._event_args_to_value(e))
             self._send_update_on_value_change = True
+
         self.on(f'update:{self.VALUE_PROP}', handle_change, [None], throttle=throttle)
 
-    def on_value_change(self, callback: Handler[ValueChangeEventArguments]) -> Self:
+    def on_value_change(self, callback: Handler[ValueChangeEventArguments[T]]) -> Self:
         """Add a callback to be invoked when the value changes."""
         self._change_handlers.append(callback)
         return self
@@ -136,8 +137,8 @@ class ValueElement(Element, Generic[T]):
     def _event_args_to_value(self, e: GenericEventArguments[T]) -> T:
         return e.args
 
-    def _value_to_model_value(self, value: T) -> T:
+    def _value_to_model_value(self, value: T) -> Any:
         return value
 
-    def _value_to_event_value(self, value: T) -> T:
+    def _value_to_event_value(self, value: T) -> Any:
         return value

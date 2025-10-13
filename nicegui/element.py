@@ -6,7 +6,8 @@ import weakref
 from collections.abc import Iterator, Sequence
 from copy import copy
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Callable, ClassVar, cast
+from typing import (TYPE_CHECKING, Any, Callable, ClassVar, Generic, TypeVar,
+                    cast)
 
 from typing_extensions import Self
 
@@ -14,15 +15,9 @@ from . import core, events, helpers, json, storage
 from .awaitable_response import AwaitableResponse, NullResponse
 from .classes import Classes
 from .context import context
-from .dependencies import (
-    Component,
-    Library,
-    register_dynamic_resource,
-    register_esm,
-    register_library,
-    register_resource,
-    register_vue_component,
-)
+from .dependencies import (Component, Library, register_dynamic_resource,
+                           register_esm, register_library, register_resource,
+                           register_vue_component)
 from .elements.mixins.visibility import Visibility
 from .event_listener import EventListener
 from .props import Props
@@ -39,7 +34,10 @@ TAG_CHAR = TAG_START_CHAR + r'|-|\.|[0-9]|\u00B7|[\u0300-\u036F]|[\u203F-\u2040]
 TAG_PATTERN = re.compile(fr'^({TAG_START_CHAR})({TAG_CHAR})*$')
 
 
-class Element(Visibility):
+T = TypeVar("T", default=Any)
+
+
+class Element(Visibility, Generic[T]):
     component: Component | None = None
     exposed_libraries: ClassVar[list[Library]] = []
     _default_props: ClassVar[dict[str, Any]] = {}
@@ -333,14 +331,15 @@ class Element(Visibility):
 
         :param text: text of the tooltip
         """
-        from .elements.tooltip import Tooltip  # pylint: disable=import-outside-toplevel, cyclic-import
+        from .elements.tooltip import \
+            Tooltip  # pylint: disable=import-outside-toplevel, cyclic-import
         with self:
             Tooltip(text)
         return self
 
     def on(self,
            type: str,  # pylint: disable=redefined-builtin
-           handler: events.Handler[events.GenericEventArguments] | None = None,
+           handler: events.Handler[events.GenericEventArguments[T]] | None = None,
            args: None | Sequence[str] | Sequence[Sequence[str] | None] = None,
            *,
            throttle: float = 0.0,
