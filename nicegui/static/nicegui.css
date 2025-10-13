@@ -215,7 +215,10 @@
 .nicegui-link:active {
   opacity: 0.8;
 }
-.nicegui-separator {
+.q-separator--vertical.nicegui-separator {
+  width: 1px;
+}
+.q-separator--horizontal.nicegui-separator {
   width: 100%;
 }
 .nicegui-aggrid,
