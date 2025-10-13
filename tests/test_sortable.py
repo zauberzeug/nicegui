@@ -160,3 +160,41 @@ def test_sortable_drag_between_containers(screen: Screen):
 
     screen.click('Show Target Order')
     screen.should_contain('Target order: Target Item A, Source Item 2, Target Item B, Target Item C')
+
+
+def test_remove_element(screen: Screen) -> None:
+    @ui.page('/')
+    def page():
+        def add_deletable_object(label: str, sortable_object: ui.sortable):
+            with ui.card() as card:
+                ui.button(
+                    text=label,
+                    icon='delete',
+                    color='red',
+                    on_click=lambda e: sortable_object.remove_item(card),
+                ).classes('flex-grow')
+
+        with ui.sortable({'fallbackOnBody': True}) as dynamic_sortable:
+            for i in range(1, 5):
+                add_deletable_object(f'Sortable Item {i}', dynamic_sortable)
+
+        # Action buttons
+        with ui.row().classes('mt-4'):
+            def show_current_order():
+                items_text = ', '.join(
+                    item.default_slot.children[0].text for item in dynamic_sortable.default_slot.children)
+                ui.notify(f'Current order: {items_text}')
+
+            ui.button('Show Current Order', on_click=show_current_order)
+
+    screen.open('/')
+
+    screen.should_contain('Sortable Item 1')
+    screen.should_contain('Sortable Item 2')
+    screen.should_contain('Sortable Item 3')
+    screen.should_contain('Sortable Item 4')
+
+    screen.click('Sortable Item 3')
+    screen.should_not_contain('Sortable Item 3', wait=5)
+    screen.click('Show Current Order')
+    screen.should_contain('Current order: Sortable Item 1, Sortable Item 2, Sortable Item 4')
