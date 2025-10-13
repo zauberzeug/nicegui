@@ -236,13 +236,8 @@ class Sortable(Element,
         # Remove from DOM
         self.run_method('remove', item.html_id)
 
-        # Remove from Python data structure and delete the element
+        # Remove from Python data structure
         if item:
-            # Remove from parent slot's children list if present
-            if self.default_slot and item in self.default_slot.children:
-                self.default_slot.children.remove(item)
-
-            # Delete the element
             item.delete()
 
     def clear(self) -> None:
