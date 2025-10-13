@@ -49,11 +49,11 @@ jobs:
         uses: nanasess/setup-chromedriver@v2.3.0
       - name: pytest (parallelized)
         run: |
-          poetry run pytest -n 2 --ignore=tests/test_download.py
+          poetry run pytest -n 2 --ignore=tests/test_download.py --ignore=tests/test_storage.py
       - name: pytest (non-parallelized)
         if: always()
         run: |
-          poetry run pytest tests/test_download.py
+          poetry run pytest tests/test_download.py tests/test_storage.py
       - name: Upload failed screenshots
         if: failure()
         uses: actions/upload-artifact@v4
