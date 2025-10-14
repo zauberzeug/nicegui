@@ -23,6 +23,8 @@ doc.text('Upload event arguments', '''
     - `iterate()` - iterate over the file contents as bytes,
     - `save()` - save the file contents to a path,
     - `size()` - get the file size in bytes.
+
+    *Added in NiceGUI 3.0.0*
 ''')
 
 
