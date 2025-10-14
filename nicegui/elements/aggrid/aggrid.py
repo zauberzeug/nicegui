@@ -32,6 +32,8 @@ class AgGrid(Element, component='aggrid.js', esm={'nicegui-aggrid': 'dist'}, def
 
         The methods ``run_grid_method`` and ``run_row_method`` can be used to interact with the AG Grid instance on the client.
 
+        **Updated in NiceGUI 3.1.0:** The ``auto_size_columns`` option is only respected if no column has a ``flex`` option set.
+
         :param options: dictionary of AG Grid options
         :param html_columns: list of columns that should be rendered as HTML (default: ``[]``)
         :param theme: AG Grid theme "quartz", "balham", "material", or "alpine" (default: ``options['theme']`` or "quartz")
