@@ -117,6 +117,33 @@ doc.text('', '''
 ''')
 
 
+@doc.demo('CSS Layers', '''
+    NiceGUI defines the following CSS layers (in order of increasing priority):
+    "theme", "base", "quasar", "nicegui", "components", "utilities", "overrides", and "quasar_importants".
+
+    You don't need to put your custom CSS into layers for basic styling.
+    However, to override Quasar's `!important` rules, you should define your CSS in an appropriate layer:
+    use "components" for component-specific styles or "utilities" for utility classes,
+    depending on the purpose of your custom styles.
+    Note that you need to use `!important` in your custom styles
+    because Quasar defines most of its CSS with `!important`,
+    which would otherwise take precedence.
+
+    In the example below, we override a button's background color using the "utilities" layer.
+
+    *Updated in NiceGUI 3.0.0: CSS layers have been introduced.*
+''')
+def css_layers():
+    ui.add_css('''
+        @layer utilities {
+           .red-background {
+               background-color: red !important;
+            }
+        }
+    ''')
+    ui.button('Red Button').classes('red-background')
+
+
 @doc.demo('Tailwind CSS Layers', '''
     Tailwind CSS' `@layer` directive allows you to define custom classes that can be used in your HTML.
     NiceGUI supports this feature by allowing you to add custom classes to the `components` layer.
