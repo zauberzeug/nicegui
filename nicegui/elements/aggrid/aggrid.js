@@ -74,13 +74,6 @@ export default {
       return runMethod(this.api.getRowNode(row_id), name, args);
     },
     handle_event(type, args) {
-      if (
-        type === "gridSizeChanged" &&
-        this.auto_size_columns &&
-        !this.gridOptions.columnDefs?.some((col) => col.flex !== undefined)
-      ) {
-        this.api.sizeColumnsToFit();
-      }
       this.$emit(type, {
         value: args.value,
         oldValue: args.oldValue,
@@ -118,6 +111,5 @@ export default {
   props: {
     options: Object,
     html_columns: Array,
-    auto_size_columns: Boolean,
   },
 };

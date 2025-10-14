@@ -32,17 +32,18 @@ class AgGrid(Element, component='aggrid.js', esm={'nicegui-aggrid': 'dist'}, def
 
         The methods ``run_grid_method`` and ``run_row_method`` can be used to interact with the AG Grid instance on the client.
 
-        **Updated in NiceGUI 3.1.0:** The ``auto_size_columns`` option is only respected if no column has a ``flex`` option set.
-
         :param options: dictionary of AG Grid options
         :param html_columns: list of columns that should be rendered as HTML (default: ``[]``)
         :param theme: AG Grid theme "quartz", "balham", "material", or "alpine" (default: ``options['theme']`` or "quartz")
         :param auto_size_columns: whether to automatically resize columns to fit the grid width (default: ``True``)
         """
         super().__init__()
-        self._props['options'] = {'theme': theme or 'quartz', **options}
+        self._props['options'] = {
+            'theme': theme or 'quartz',
+            **({'autoSizeStrategy': {'type': 'fitGridWidth'}} if auto_size_columns else {}),
+            **options,
+        }
         self._props['html_columns'] = html_columns[:]
-        self._props['auto_size_columns'] = auto_size_columns
         self._update_method = 'update_grid'
 
     @classmethod
@@ -151,11 +152,14 @@ class AgGrid(Element, component='aggrid.js', esm={'nicegui-aggrid': 'dist'}, def
     @property
     def auto_size_columns(self) -> bool:
         """Whether to automatically resize columns to fit the grid width."""
-        return self._props['auto_size_columns']
+        return self._props['options'].get('autoSizeStrategy', {}).get('type') == 'fitGridWidth'
 
     @auto_size_columns.setter
     def auto_size_columns(self, value: bool) -> None:
-        self._props['auto_size_columns'] = value
+        if value and not self.auto_size_columns:
+            self._props['options']['autoSizeStrategy'] = {'type': 'fitGridWidth'}
+        if not value and self.auto_size_columns:
+            self._props['options'].pop('autoSizeStrategy')
 
     def run_grid_method(self, name: str, *args, timeout: float = 1) -> AwaitableResponse:
         """Run an AG Grid API method.
