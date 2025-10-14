@@ -23,9 +23,9 @@ if TYPE_CHECKING:
     from .element import Element
 
 _v = sys.version_info
-PYTHON_VERSION: Final = Version(f"{_v.major}.{_v.minor}.{_v.micro}")
+PYTHON_VERSION: Final = Version(f'{_v.major}.{_v.minor}.{_v.micro}')
 
-if PYTHON_VERSION < Version("3.13"):
+if PYTHON_VERSION < Version('3.13'):
     from asyncio import iscoroutinefunction
 else:
     from inspect import iscoroutinefunction

@@ -1,15 +1,15 @@
+from collections.abc import Collection
 from dataclasses import dataclass
-from typing import Any, Collection, Generic, Optional
+from typing import Any, Generic, Optional
 
 from typing_extensions import TypeVar
 
 from ..events import Handler, ValueChangeEventArguments
-from .mixins.value_element import ValueElement
+from .mixins.value_element import A, ValueElement
 
-LT = TypeVar("LT")
-VT = TypeVar("VT")
-T = TypeVar("T", bound="Option[Any, Any]")
-V = TypeVar("V")
+LT = TypeVar('LT')
+VT = TypeVar('VT')
+T = TypeVar('T', bound='Option[Any, Any]')
 
 
 @dataclass
@@ -17,12 +17,16 @@ class Option(Generic[LT, VT]):
     label: LT
     value: VT
 
+    def set_index(self, i: int):
+        self.index = i
+        return self
 
-def as_option(val: V) -> Option[V, V]:
+
+def as_option(val: str) -> Option[str, str]:
     return Option(label=val, value=val)
 
 
-class ChoiceElement(ValueElement[tuple[T, ...]]):
+class ChoiceElement(ValueElement[tuple[T, ...], A]):
 
     def __init__(self, *,
                  tag: Optional[str] = None,
@@ -31,8 +35,11 @@ class ChoiceElement(ValueElement[tuple[T, ...]]):
                  on_change: Optional[Handler[ValueChangeEventArguments[tuple[T, ...]]]] = None,
                  ) -> None:
         self.options = list(options)
-        self._update_values_and_labels()
-        if (invalid_values := set(o.value for o in value) - set(o.value for o in options)):
+        invalid_values: list[Any] = []
+        for v in value:
+            if v.value not in self._values:
+                invalid_values.append(v)
+        if invalid_values:
             raise ValueError(f'Invalid values: {",".join(map(lambda o: o.value, invalid_values))}')
         super().__init__(tag=tag, value=value, on_value_change=on_change)
         self._update_options()
@@ -40,6 +47,7 @@ class ChoiceElement(ValueElement[tuple[T, ...]]):
     def _update_values_and_labels(self) -> None:
         self._values = [o.value for o in self.options]
         self._labels = [o.label for o in self.options]
+        self._index_to_option: dict[int, T] = {i: o.set_index(i) for i, o in enumerate(self.options)}
 
     def _update_options(self) -> None:
         before_value = self.value
@@ -69,4 +77,3 @@ class ChoiceElement(ValueElement[tuple[T, ...]]):
         :param value: The value to set.
         """
         self.value = value
-

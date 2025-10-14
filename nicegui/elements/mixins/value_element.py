@@ -1,16 +1,16 @@
-from typing import Any, Callable, Optional, TypeVar, cast, Generic
+from typing import Any, Callable, Generic, Optional, cast
 
-from typing_extensions import Self
+from typing_extensions import Self, TypeVar
 
 from ...binding import BindableProperty, bind, bind_from, bind_to
 from ...element import Element
-from ...events import (GenericEventArguments, Handler,
-                       ValueChangeEventArguments, handle_event)
+from ...events import GenericEventArguments, Handler, ValueChangeEventArguments, handle_event
 
-T = TypeVar("T")
+T = TypeVar('T')
+A = TypeVar('A', default=Any)
 
 
-class ValueElement(Element, Generic[T]):
+class ValueElement(Element, Generic[T, A]):
     VALUE_PROP: str = 'model-value'
     '''Name of the prop that holds the value of the element'''
 
@@ -38,12 +38,12 @@ class ValueElement(Element, Generic[T]):
         self._props['loopback'] = self.LOOPBACK
         self._change_handlers: list[Handler[ValueChangeEventArguments[T]]] = [on_value_change] if on_value_change else []
 
-        def handle_change(e: GenericEventArguments[T]) -> None:
+        def handle_change(e: GenericEventArguments[A]) -> None:
             self._send_update_on_value_change = self.LOOPBACK is True
             self.set_value(self._event_args_to_value(e))
             self._send_update_on_value_change = True
 
-        self.on(f'update:{self.VALUE_PROP}', handle_change, [None], throttle=throttle)
+        self.on(f'update:{self.VALUE_PROP}', handle_change, [None], throttle=throttle, js_handler='(...args) => {console.log(args); return emit(...args);}')
 
     def on_value_change(self, callback: Handler[ValueChangeEventArguments[T]]) -> Self:
         """Add a callback to be invoked when the value changes."""
@@ -134,8 +134,8 @@ class ValueElement(Element, Generic[T]):
         for handler in self._change_handlers:
             handle_event(handler, args)
 
-    def _event_args_to_value(self, e: GenericEventArguments[T]) -> T:
-        return e.args
+    def _event_args_to_value(self, e: GenericEventArguments[A]) -> T:
+        return cast(T, e.args)
 
     def _value_to_model_value(self, value: T) -> Any:
         return value

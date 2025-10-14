@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Literal, Optional
 
 import pytest
 from selenium.webdriver import Keys
@@ -108,7 +108,7 @@ def test_changing_options(screen: Screen):
 def test_set_options(screen:  Screen):
     options = [ui.as_option(v) for v in (1, 2, 3)]
     new_options = [ui.as_option(v) for v in (4, 5, 6)]
-    
+
     @ui.page('/')
     def page():
         s = ui.select(options, selected=(options[0],))
@@ -121,30 +121,26 @@ def test_set_options(screen:  Screen):
     screen.should_contain('6')
 
 
-# TODO: update this test
-@pytest.mark.parametrize('option_dict', [False, True])
 @pytest.mark.parametrize('multiple', [False, True])
 @pytest.mark.parametrize('new_value_mode', ['add', 'add-unique', 'toggle', None])
-def test_add_new_values(screen:  Screen, option_dict: bool, multiple: bool, new_value_mode: Optional[str]):
+def test_add_new_values(screen:  Screen, multiple: bool, new_value_mode: Optional[Literal['add', 'add-unique', 'toggle']]):
+    options = [ui.as_option(v) for v in ('a', 'b', 'c')]
+
     @ui.page('/')
     def page():
-        options = {'a': 'A', 'b': 'B', 'c': 'C'} if option_dict else ['a', 'b', 'c']
         s = ui.select(options=options, multiple=multiple, new_value_mode=new_value_mode)
-        ui.label().bind_text_from(s, 'value', lambda v: f'value = {v}')
-        ui.label().bind_text_from(s, 'options', lambda v: f'options = {v}')
+        ui.label().bind_text_from(s, 'value', lambda v: f'value = {tuple(sorted(o.value for o in v))}')
+        ui.label().bind_text_from(s, 'options', lambda v: f'options = {tuple(sorted(o.value for o in v))}')
 
     screen.open('/')
-    if option_dict and new_value_mode == 'add':
-        screen.assert_py_logger('ERROR', 'new_value_mode "add" is not supported for dict options without key_generator')
-        return
 
-    screen.should_contain('value = []' if multiple else 'value = None')
-    screen.should_contain("options = {'a': 'A', 'b': 'B', 'c': 'C'}" if option_dict else "options = ['a', 'b', 'c']")
+    screen.should_contain('value = ()')
+    screen.should_contain("options = ('a', 'b', 'c')")
 
     screen.find_by_class('q-select').click()
     screen.wait(0.5)
-    screen.find_all('A' if option_dict else 'a')[-1].click()
-    screen.should_contain("value = ['a']" if multiple else 'value = a')
+    screen.find_all('a')[-1].click()
+    screen.should_contain("value = ('a',)")
 
     if new_value_mode:
         for _ in range(2):
@@ -155,17 +151,14 @@ def test_add_new_values(screen:  Screen, option_dict: bool, multiple: bool, new_
             screen.find_by_tag('input').send_keys(Keys.ENTER)
             screen.wait(0.5)
         if new_value_mode == 'add':
-            screen.should_contain("value = ['a', 'd', 'd']" if multiple else 'value = d')
-            screen.should_contain("options = {'a': 'A', 'b': 'B', 'c': 'C', 'd': 'd', 'd': 'd'}" if option_dict else
-                                  "options = ['a', 'b', 'c', 'd', 'd']")
+            screen.should_contain("value = ('a', 'd', 'd')" if multiple else "value = ('d',)")
+            screen.should_contain("options = ('a', 'b', 'c', 'd', 'd')")
         elif new_value_mode == 'add-unique':
-            screen.should_contain("value = ['a', 'd']" if multiple else 'value = d')
-            screen.should_contain("options = {'a': 'A', 'b': 'B', 'c': 'C', 'd': 'd'}" if option_dict else
-                                  "options = ['a', 'b', 'c', 'd']")
+            screen.should_contain("value = ('a', 'd')" if multiple else "value = ('d',)")
+            screen.should_contain("options = ('a', 'b', 'c', 'd')")
         elif new_value_mode == 'toggle':
-            screen.should_contain("value = ['a']" if multiple else 'value = None')
-            screen.should_contain("options = {'a': 'A', 'b': 'B', 'c': 'C'}" if option_dict else
-                                  "options = ['a', 'b', 'c']")
+            screen.should_contain("value = ('a',)")
+            screen.should_contain("options = ('a', 'b', 'c')")
 
 
 # TODO: come up with similar test for new functionality

@@ -1,19 +1,19 @@
+from collections.abc import Collection
 from copy import deepcopy
-from typing import Any, Callable, Collection, Literal, Optional, Union
+from typing import Any, Callable, Literal, Optional, Union
 
 from ..events import GenericEventArguments, Handler, ValueChangeEventArguments
 from .choice_element import ChoiceElement, T, as_option
 from .mixins.disableable_element import DisableableElement
 from .mixins.label_element import LabelElement
-from .mixins.validation_element import (ValidationDict, ValidationElement,
-                                        ValidationFunction)
+from .mixins.validation_element import ValidationDict, ValidationElement, ValidationFunction
 
 
-class Select(LabelElement, ValidationElement[T], ChoiceElement[T], DisableableElement, component='select.js'):
+class Select(LabelElement, ValidationElement[tuple[T, ...]], ChoiceElement[T, Union[dict[str, Any], str, list[Union[dict[str, Any], str]]]], DisableableElement, component='select.js'):
 
     def __init__(self,
                  options: Collection[T], *,
-                 to_option: Callable[["Select[T]", Union[str, dict[Any, Any]]], T] = lambda _, v: as_option(v),
+                 new_val_to_option: Callable[['Select[T]', str], T] = lambda _, v: as_option(v),
                  label: Optional[str] = None,
                  selected: tuple[T, ...] = (),
                  on_change: Optional[Handler[ValueChangeEventArguments[tuple[T, ...]]]] = None,
@@ -53,9 +53,9 @@ class Select(LabelElement, ValidationElement[T], ChoiceElement[T], DisableableEl
         :param validation: dictionary of validation rules or a callable that returns an optional error message (default: None for no validation)
         """
         if not multiple and len(selected) > 1:
-            raise ValueError(f"Too many values passed to selected. You passed {selected} and multiple is False.")
+            raise ValueError(f'Too many values passed to selected. You passed {selected} and multiple is False.')
         self.multiple = multiple
-        self.to_option = to_option
+        self.new_val_to_option = new_val_to_option
         super().__init__(label=label, options=options, value=selected, on_change=on_change, validation=validation)
         if new_value_mode is not None:
             self._props['new-value-mode'] = new_value_mode
@@ -78,14 +78,15 @@ class Select(LabelElement, ValidationElement[T], ChoiceElement[T], DisableableEl
         """Whether the options popup is currently shown."""
         return self._is_showing_popup
 
-    def _event_args_to_value(self, e: GenericEventArguments[Union[dict[str, Any], str, list[Union[dict[str, Any], str]]]]) -> Union[T, tuple[T, ...]]:
+    def _event_args_to_value(self, e: GenericEventArguments[Union[dict[str, Any], str, list[Union[dict[str, Any], str]]]]) -> tuple[T, ...]:
         # pylint: disable=too-many-nested-blocks
         if isinstance(e.args, dict):
-            return self.to_option(self, e.args)
+            return (self._index_to_option[e.args['index']],)
         if isinstance(e.args, str):
-            return self._handle_new_value(self.to_option(self, e.args))
+            new_value = self._handle_new_value(self.new_val_to_option(self, e.args))
+            return (new_value,)
         else:
-            args = tuple(self._handle_new_value(self.to_option(self, a)) if isinstance(a, str) else self.to_option(self, a) for a in e.args)
+            args = tuple(self._handle_new_value(self.new_val_to_option(self, a)) if isinstance(a, str) else self._index_to_option[a['index']] for a in e.args)
             if self._props.get('new-value-mode') == 'add-unique':
                 args = tuple({o.value: o for o in args}.values())
                 # ^ handle issue #4896: eliminate duplicate arguments
@@ -103,13 +104,11 @@ class Select(LabelElement, ValidationElement[T], ChoiceElement[T], DisableableEl
                 self.options = [o for o in self.options if o.value != value.value]
             else:
                 self.options.append(value)
+        value.set_index(len(self.options))
         self._update_values_and_labels()
         return value
 
-    def _value_to_model_value(self, value: Union[tuple[T, ...], T]) -> Union[tuple[T, ...], T]:
-        if value and isinstance(value, tuple) and not self.multiple:
-            print("returning first value")
+    def _value_to_model_value(self, value: tuple[T, ...]) -> Union[tuple[T, ...], T]:
+        if value and not self.multiple:
             return value[0]
         return value
-    
-

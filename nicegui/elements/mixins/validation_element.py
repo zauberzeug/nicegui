@@ -1,12 +1,12 @@
 from collections.abc import Awaitable
-from typing import Any, Callable, Optional, Union, TypeVar
+from typing import Any, Callable, Optional, TypeVar, Union
 
 from typing_extensions import Self
 
 from ... import background_tasks, helpers
 from .value_element import ValueElement
 
-T = TypeVar("T")
+T = TypeVar('T')
 ValidationFunction = Callable[[T], Union[Optional[str], Awaitable[Optional[str]]]]
 ValidationDict = dict[str, Callable[[T], bool]]
 
@@ -94,7 +94,7 @@ class ValidationElement(ValueElement[T]):
         self._auto_validation = False
         return self
 
-    def _handle_value_change(self, value: Any) -> None:
+    def _handle_value_change(self, value: T) -> None:
         super()._handle_value_change(value)
         if self._auto_validation:
             self.validate(return_result=False)
