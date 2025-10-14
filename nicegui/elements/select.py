@@ -122,5 +122,5 @@ class Select(LabelElement, ValidationElement[tuple[T, ...]], ChoiceElement[T, Un
         before_value = self.value
         self._props['options'] = self.options
         new_val = self._value_to_model_value(before_value)
-        self._props[self.VALUE_PROP] = new_val if self.multiple else (new_val[0] if len(new_val) > 0 else new_val)
         self.value = new_val
+        self._props[self.VALUE_PROP] = new_val if self.multiple else (new_val[0] if len(new_val) > 0 else new_val)
