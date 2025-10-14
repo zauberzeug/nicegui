@@ -32,12 +32,12 @@ python main.py
 
 ### Results
 
-Once both the publisher and GUI server are running, you will see an updating plot on the UI. 
+Once both the publisher and GUI server are running, you will see an updating plot on the UI.
 
 ![plot](images/plot.png)
 
 To kill zmq-server.py running in the background, execute the following command after main.py ends.
 
 ```bash
-kill -9 %% 
+kill -9 %%
 ```
