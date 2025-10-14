@@ -15,10 +15,10 @@ In addition to the normal NiceGUI dependencies, the zmq library must be installe
 ### Running the publisher
 
 The publisher is a simple Python script that sends random data to a ZeroMQ socket.
-To run it, simply execute the following command:
+To run the publisher in the background, simply execute the following command:
 
 ```bash
-python zmq-server.py
+python zmq-server.py &
 ```
 
 ### Running the NiceGUI server
@@ -35,3 +35,9 @@ python main.py
 Once both the publisher and GUI server are running, you will see an updating plot on the UI.
 
 ![plot](images/plot.png)
+
+To kill zmq-server.py running in the background, execute the following command after main.py ends.
+
+```bash
+kill -9 %%
+```
