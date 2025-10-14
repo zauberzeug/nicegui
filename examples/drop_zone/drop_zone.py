@@ -1,7 +1,7 @@
 import asyncio
 import time
 from dataclasses import dataclass
-from typing import ClassVar, List, Optional, cast
+from typing import Any, ClassVar, Optional
 
 from typing_extensions import Self
 
@@ -20,10 +20,10 @@ class DropZoneEventArguments(GenericEventArguments):
 
 
 class DropZone(Element, component='drop_zone.js'):
-    _default_hover_classes: ClassVar[List[str]] = []
-    _default_hover_overlay_classes: ClassVar[List[str]] = []
+    _default_hover_classes: ClassVar[list[str]] = []
+    _default_hover_overlay_classes: ClassVar[list[str]] = []
 
-    def __init__(self, on_drop: Optional[Handler] = None) -> None:
+    def __init__(self, on_drop: Optional[Handler[DropZoneEventArguments]] = None) -> None:
         """Drop Zone
 
         Uses PyWebview's `Drag Drop <https://pywebview.flowrl.com/examples/drag_drop.html>`_ functionality.
@@ -35,8 +35,8 @@ class DropZone(Element, component='drop_zone.js'):
         """
         super().__init__()
 
-        self._hover_classes = Classes(self._default_hover_classes, element=cast(Self, self))
-        self._hover_overlay_classes = Classes(self._default_hover_overlay_classes, element=cast(Self, self))
+        self._hover_classes = Classes(self._default_hover_classes, element=self)
+        self._hover_overlay_classes = Classes(self._default_hover_overlay_classes, element=self)
 
         self._drop_handlers = [on_drop] if on_drop else []
 
@@ -44,7 +44,7 @@ class DropZone(Element, component='drop_zone.js'):
         self.on('drag_enter', handler=self._set_hover_style)
         self.on('drag_leave', handler=self._clear_hover_style)
         self.on('file_drop', handler=self._handle_file_drop)
-        self.check_task: Optional[asyncio.Task] = None
+        self.check_task: Optional[asyncio.Task[Any]] = None
 
     @property
     def hover_classes(self) -> Classes[Self]:
@@ -101,5 +101,5 @@ class DropZone(Element, component='drop_zone.js'):
         self.classes(remove=self._get_class_string(self.hover_classes))
         self.update()
 
-    def _get_class_string(self, classes: List[str]) -> str:
+    def _get_class_string(self, classes: list[str]) -> str:
         return ' '.join(classes)

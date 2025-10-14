@@ -1,5 +1,6 @@
 import threading
-from typing import Any, Dict, List, Optional, Sequence, Tuple, Union
+from collections.abc import Sequence
+from typing import Any, Optional, Union
 
 from typing_extensions import Self
 
@@ -9,7 +10,7 @@ from ..event_listener import EventListener
 
 class EventManager:
     def __init__(self) -> None:
-        self._event_listeners: Dict[str, List[EventListener]] = {}
+        self._event_listeners: dict[str, list[EventListener]] = {}
         self._running = True
         self._window_monitor: Optional[threading.Thread] = None
         # As the pywebview drop data doesn't show us in what element it was dropped
@@ -119,7 +120,7 @@ class EventManager:
                 self._event_listeners[listener.type] = [listener]
         return self
 
-    def _handle_event(self, id: str, args: Tuple[Any, ...]) -> None:
+    def _handle_event(self, id: str, args: tuple[Any, ...]) -> None:
         listeners = self._event_listeners.get(id)
         if listeners is None:
             return
