@@ -1,18 +1,19 @@
 from collections.abc import Awaitable
-from typing import Any, Callable, Optional, Union
+from typing import Any, Callable, Optional, Union, TypeVar
 
 from typing_extensions import Self
 
 from ... import background_tasks, helpers
 from .value_element import ValueElement
 
-ValidationFunction = Callable[[Any], Union[Optional[str], Awaitable[Optional[str]]]]
-ValidationDict = dict[str, Callable[[Any], bool]]
+T = TypeVar("T")
+ValidationFunction = Callable[[T], Union[Optional[str], Awaitable[Optional[str]]]]
+ValidationDict = dict[str, Callable[[T], bool]]
 
 
-class ValidationElement(ValueElement[Any]):
+class ValidationElement(ValueElement[T]):
 
-    def __init__(self, validation: Optional[Union[ValidationFunction, ValidationDict]], **kwargs: Any) -> None:
+    def __init__(self, validation: Optional[Union[ValidationFunction[T], ValidationDict[T]]], **kwargs: Any) -> None:
         self._validation = validation
         self._auto_validation = True
         self._error: Optional[str] = None
@@ -20,12 +21,12 @@ class ValidationElement(ValueElement[Any]):
         self._props['error'] = None if validation is None else False  # NOTE: reserve bottom space for error message
 
     @property
-    def validation(self) -> Optional[Union[ValidationFunction, ValidationDict]]:
+    def validation(self) -> Optional[Union[ValidationFunction[T], ValidationDict[T]]]:
         """The validation function or dictionary of validation functions."""
         return self._validation
 
     @validation.setter
-    def validation(self, validation: Optional[Union[ValidationFunction, ValidationDict]]) -> None:
+    def validation(self, validation: Optional[Union[ValidationFunction[T], ValidationDict[T]]]) -> None:
         """Sets the validation function or dictionary of validation functions.
 
         :param validation: validation function or dictionary of validation functions (``None`` to disable validation)

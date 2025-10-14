@@ -1,16 +1,18 @@
 from typing import Optional
 
 import pytest
-from nicegui import ui
-from nicegui.elements.choice_element import Option
-from nicegui.testing import Screen, User
 from selenium.webdriver import Keys
+
+from nicegui import ui
+from nicegui.testing import Screen, User
 
 
 def test_select(screen: Screen):
+    options = [ui.as_option(val=v) for v in ('A', 'B', 'C')]
+
     @ui.page('/')
     def page():
-        ui.select(['A', 'B', 'C'], value='A')
+        ui.select(options, selected=(options[0],))
 
     screen.open('/')
     screen.should_contain('A')
@@ -28,7 +30,10 @@ def test_select(screen: Screen):
 def test_select_with_input(screen: Screen):
     @ui.page('/')
     def page():
-        ui.select(['A', 'AB', 'XYZ'], with_input=True)
+        ui.select(
+            [ui.as_option(val=v) for v in ('A', 'AB', 'XYZ')],
+            with_input=True
+        )
 
     screen.open('/')
     screen.find_by_tag('input').click()
@@ -49,12 +54,12 @@ def test_replace_select(screen: Screen):
     @ui.page('/')
     def page():
         with ui.row() as container:
-            ui.select(['A'], value='A')
+            ui.select([ui.as_option('A')], selected=(ui.as_option('A'),))
 
         def replace():
             container.clear()
             with container:
-                ui.select(['B'], value='B')
+                ui.select([ui.as_option('B')], selected=(ui.as_option('B'),))
         ui.button('Replace', on_click=replace)
 
     screen.open('/')
@@ -66,9 +71,11 @@ def test_replace_select(screen: Screen):
 
 
 def test_multi_select(screen: Screen):
+    options = [ui.as_option(v) for v in ('Alice', 'Bob', 'Carol')]
+
     @ui.page('/')
     def page():
-        s = ui.select(['Alice', 'Bob', 'Carol'], value='Alice', multiple=True).props('use-chips')
+        s = ui.select(options, selected=(options[0],), multiple=True).props('use-chips')
         ui.label().bind_text_from(s, 'value', backward=str)
 
     screen.open('/')
@@ -82,9 +89,11 @@ def test_multi_select(screen: Screen):
 
 
 def test_changing_options(screen: Screen):
+    options = [ui.as_option(v) for v in (10, 20, 30)]
+
     @ui.page('/')
     def page():
-        s = ui.select([10, 20, 30], value=10)
+        s = ui.select(options, selected=(options[0],))
         ui.label().bind_text_from(s, 'value', lambda v: f'value = {v}')
         ui.button('reverse', on_click=lambda: (s.options.reverse(), s.update()))
         ui.button('clear', on_click=lambda: (s.options.clear(), s.update()))
@@ -97,10 +106,13 @@ def test_changing_options(screen: Screen):
 
 
 def test_set_options(screen:  Screen):
+    options = [ui.as_option(v) for v in (1, 2, 3)]
+    new_options = [ui.as_option(v) for v in (4, 5, 6)]
+    
     @ui.page('/')
     def page():
-        s = ui.select([1, 2, 3], value=1)
-        ui.button('Set new options', on_click=lambda: s.set_options([4, 5, 6], value=4))
+        s = ui.select(options, selected=(options[0],))
+        ui.button('Set new options', on_click=lambda: s.set_options(new_options, value=(new_options[0],)))
 
     screen.open('/')
     screen.click('Set new options')
@@ -109,28 +121,17 @@ def test_set_options(screen:  Screen):
     screen.should_contain('6')
 
 
+# TODO: update this test
 @pytest.mark.parametrize('option_dict', [False, True])
 @pytest.mark.parametrize('multiple', [False, True])
 @pytest.mark.parametrize('new_value_mode', ['add', 'add-unique', 'toggle', None])
 def test_add_new_values(screen:  Screen, option_dict: bool, multiple: bool, new_value_mode: Optional[str]):
-
-    def to_options(options, as_str = True):
-        option_vals = []
-        for o in options:
-            if isinstance(o, tuple):
-                value, label = o
-            else:
-                value, label = o, o
-            option_vals.append(Option(label=label, value=value))
-        if as_str:
-            return "[" + ", ".join([f"{{'label': '{o['label']}', 'value': '{o['value']}'}}" for o in option_vals]) + "]"
-        return option_vals
-    
-    options = [('a', 'A'), ('b', 'B'), ('c', 'C')] if option_dict else ['a', 'b', 'c']
-
-    s = ui.select(options=to_options(options, False) if option_dict else options, multiple=multiple, new_value_mode=new_value_mode)
-    ui.label().bind_text_from(s, 'value', lambda v: f'value = {v}')
-    ui.label().bind_text_from(s, 'options', lambda v: f'options = {v}')
+    @ui.page('/')
+    def page():
+        options = {'a': 'A', 'b': 'B', 'c': 'C'} if option_dict else ['a', 'b', 'c']
+        s = ui.select(options=options, multiple=multiple, new_value_mode=new_value_mode)
+        ui.label().bind_text_from(s, 'value', lambda v: f'value = {v}')
+        ui.label().bind_text_from(s, 'options', lambda v: f'options = {v}')
 
     screen.open('/')
     if option_dict and new_value_mode == 'add':
@@ -138,7 +139,7 @@ def test_add_new_values(screen:  Screen, option_dict: bool, multiple: bool, new_
         return
 
     screen.should_contain('value = []' if multiple else 'value = None')
-    screen.should_contain(f"options = {to_options(options)}")
+    screen.should_contain("options = {'a': 'A', 'b': 'B', 'c': 'C'}" if option_dict else "options = ['a', 'b', 'c']")
 
     screen.find_by_class('q-select').click()
     screen.wait(0.5)
@@ -155,15 +156,19 @@ def test_add_new_values(screen:  Screen, option_dict: bool, multiple: bool, new_
             screen.wait(0.5)
         if new_value_mode == 'add':
             screen.should_contain("value = ['a', 'd', 'd']" if multiple else 'value = d')
-            screen.should_contain("options = " + to_options([('a', 'A'), ('b', 'B'), ('c', 'C'), ('d', 'd'), ('d', 'd')] if option_dict else ['a', 'b', 'c', 'd', 'd']))
+            screen.should_contain("options = {'a': 'A', 'b': 'B', 'c': 'C', 'd': 'd', 'd': 'd'}" if option_dict else
+                                  "options = ['a', 'b', 'c', 'd', 'd']")
         elif new_value_mode == 'add-unique':
             screen.should_contain("value = ['a', 'd']" if multiple else 'value = d')
-            screen.should_contain("options = " + to_options([('a', 'A'), ('b', 'B'), ('c', 'C'), ('d', 'd')] if option_dict else ['a', 'b', 'c', 'd']))
+            screen.should_contain("options = {'a': 'A', 'b': 'B', 'c': 'C', 'd': 'd'}" if option_dict else
+                                  "options = ['a', 'b', 'c', 'd']")
         elif new_value_mode == 'toggle':
             screen.should_contain("value = ['a']" if multiple else 'value = None')
-            screen.should_contain("options = " + to_options([('a', 'A'), ('b', 'B'), ('c', 'C')]))
+            screen.should_contain("options = {'a': 'A', 'b': 'B', 'c': 'C'}" if option_dict else
+                                  "options = ['a', 'b', 'c']")
 
 
+# TODO: come up with similar test for new functionality
 def test_id_generator(screen: Screen):
     @ui.page('/')
     def page():
@@ -182,7 +187,7 @@ def test_id_generator(screen: Screen):
 def test_keep_filtered_options(multiple: bool, screen: Screen):
     @ui.page('/')
     def page():
-        ui.select(options=['A1', 'A2', 'B1', 'B2'], with_input=True, multiple=multiple)
+        ui.select(options=[ui.as_option(v) for v in ('A1', 'A2', 'B1', 'B2')], with_input=True, multiple=multiple)
 
     screen.open('/')
     screen.find_by_tag('input').click()
@@ -213,9 +218,11 @@ def test_keep_filtered_options(multiple: bool, screen: Screen):
 
 @pytest.mark.parametrize('auto_validation', [True, False])
 def test_select_validation(auto_validation: bool, screen: Screen):
+    options = [ui.as_option(v) for v in ('A', 'BC', 'DEF')]
+
     @ui.page('/')
     def page():
-        select = ui.select(['A', 'BC', 'DEF'], value='A', validation={'Too long': lambda v: len(v) < 3})
+        select = ui.select(options, selected=(options[0],), validation={'Too long': lambda v: len(v.value) < 3})
         if not auto_validation:
             select.without_auto_validation()
 
@@ -233,7 +240,7 @@ def test_invalid_value(screen: Screen):
     @ui.page('/')
     def page():
         with pytest.raises(ValueError, match='Invalid value: X'):
-            ui.select(['A', 'B', 'C'], value='X')
+            ui.select([ui.as_option(v) for v in ('A', 'B', 'C')], selected=(ui.as_option('X'),))
 
     screen.open('/')
 

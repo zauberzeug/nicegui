@@ -77,6 +77,7 @@ __all__ = [
     'notify',
     'number',
     'on',
+    'option',
     'page',
     'page_sticky',
     'page_title',
@@ -125,6 +126,7 @@ __all__ = [
     'timer',
     'toggle',
     'tooltip',
+    'as_option',
     'tree',
     'update',
     'upload',
@@ -214,6 +216,8 @@ from .elements.scene import Scene as scene
 from .elements.scene import SceneView as scene_view
 from .elements.scroll_area import ScrollArea as scroll_area
 from .elements.select import Select as select
+from .elements.choice_element import Option as option
+from .elements.choice_element import as_option
 from .elements.separator import Separator as separator
 from .elements.skeleton import Skeleton as skeleton
 from .elements.slide_item import SlideItem as slide_item

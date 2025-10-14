@@ -2,18 +2,18 @@ from copy import deepcopy
 from typing import Any, Callable, Collection, Literal, Optional, Union
 
 from ..events import GenericEventArguments, Handler, ValueChangeEventArguments
-from .choice_element import ChoiceElement, T
+from .choice_element import ChoiceElement, T, as_option
 from .mixins.disableable_element import DisableableElement
 from .mixins.label_element import LabelElement
 from .mixins.validation_element import (ValidationDict, ValidationElement,
                                         ValidationFunction)
 
 
-class Select(LabelElement, ValidationElement, ChoiceElement[T], DisableableElement, component='select.js'):
+class Select(LabelElement, ValidationElement[T], ChoiceElement[T], DisableableElement, component='select.js'):
 
     def __init__(self,
                  options: Collection[T], *,
-                 to_option: Callable[["Select[T]", Union[str, dict[Any, Any]]], T],
+                 to_option: Callable[["Select[T]", Union[str, dict[Any, Any]]], T] = lambda _, v: as_option(v),
                  label: Optional[str] = None,
                  selected: tuple[T, ...] = (),
                  on_change: Optional[Handler[ValueChangeEventArguments[tuple[T, ...]]]] = None,
@@ -21,7 +21,7 @@ class Select(LabelElement, ValidationElement, ChoiceElement[T], DisableableEleme
                  new_value_mode: Optional[Literal['add', 'add-unique', 'toggle']] = None,
                  multiple: bool = False,
                  clearable: bool = False,
-                 validation: Optional[Union[ValidationFunction, ValidationDict]] = None,
+                 validation: Optional[Union[ValidationFunction[T], ValidationDict[T]]] = None,
                  ) -> None:
         """Dropdown Selection
 

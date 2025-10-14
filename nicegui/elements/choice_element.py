@@ -9,12 +9,17 @@ from .mixins.value_element import ValueElement
 LT = TypeVar("LT")
 VT = TypeVar("VT")
 T = TypeVar("T", bound="Option[Any, Any]")
+V = TypeVar("V")
 
 
 @dataclass
 class Option(Generic[LT, VT]):
     label: LT
     value: VT
+
+
+def as_option(val: V) -> Option[V, V]:
+    return Option(label=val, value=val)
 
 
 class ChoiceElement(ValueElement[tuple[T, ...]]):
@@ -28,7 +33,7 @@ class ChoiceElement(ValueElement[tuple[T, ...]]):
         self.options = list(options)
         self._update_values_and_labels()
         if (invalid_values := set(o.value for o in value) - set(o.value for o in options)):
-            raise ValueError(f'Invalid values: {invalid_values}')
+            raise ValueError(f'Invalid values: {",".join(map(lambda o: o.value, invalid_values))}')
         super().__init__(tag=tag, value=value, on_value_change=on_change)
         self._update_options()
 
