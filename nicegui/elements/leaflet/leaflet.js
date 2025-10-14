@@ -1,4 +1,4 @@
-import { leaflet as L, loadLeafletDraw } from "nicegui-leaflet";
+import { leaflet as L, loadLeafletDraw, exposeLeaflet } from "nicegui-leaflet";
 import { loadResource } from "../../static/utils/resources.js";
 import { cleanObject } from "../../static/utils/json.js";
 
@@ -12,11 +12,15 @@ export default {
     resource_path: String,
     hide_drawn_items: Boolean,
     additional_resources: Array,
+    no_conflict: Boolean,
   },
   async mounted() {
     await this.$nextTick(); // NOTE: wait for window.path_prefix to be set
     await loadResource(window.path_prefix + `${this.resource_path}/leaflet/leaflet.css`);
     await Promise.all(this.additional_resources.map((resource) => loadResource(resource)));
+    if (this.draw_control || !this.no_conflict) {
+      exposeLeaflet();
+    }
     if (this.draw_control) {
       await Promise.all([
         loadResource(window.path_prefix + `${this.resource_path}/leaflet-draw/leaflet.draw.css`),

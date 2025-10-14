@@ -8,6 +8,7 @@ from ... import binding
 from ...awaitable_response import AwaitableResponse, NullResponse
 from ...element import Element
 from ...events import GenericEventArguments
+from ...logging import log
 from .leaflet_layer import Layer
 
 
@@ -31,6 +32,7 @@ class Leaflet(Element, component='leaflet.js', esm={'nicegui-leaflet': 'dist'}, 
                  draw_control: Union[bool, dict] = False,
                  hide_drawn_items: bool = False,
                  additional_resources: Optional[list[str]] = None,
+                 no_conflict: bool = False,
                  ) -> None:
         """Leaflet map
 
@@ -42,12 +44,18 @@ class Leaflet(Element, component='leaflet.js', esm={'nicegui-leaflet': 'dist'}, 
         :param options: additional options passed to the Leaflet map (default: {})
         :param hide_drawn_items: whether to hide drawn items on the map (default: False, *added in version 2.0.0*)
         :param additional_resources: additional resources like CSS or JS files to load (default: None, *added in version 2.11.0*)
+        :param no_conflict: set True to avoid exposing Leaflet via window.L (default: False, *added in version 3.0.0*)
         """
         super().__init__()
         self.add_resource(Path(__file__).parent / 'dist')
 
         self.layers: list[Layer] = []
         self.is_initialized = False
+
+        if no_conflict and draw_control is not False:
+            log.warning('leaflet-draw plugin requires window.L, '
+                        'so no_conflict=True is ignored when draw_control is enabled.')
+            no_conflict = False
 
         self.center = center
         self.zoom = zoom
@@ -57,6 +65,7 @@ class Leaflet(Element, component='leaflet.js', esm={'nicegui-leaflet': 'dist'}, 
         self._props['draw_control'] = draw_control
         self._props['hide_drawn_items'] = hide_drawn_items
         self._props['additional_resources'] = additional_resources or []
+        self._props['no_conflict'] = no_conflict
 
         self.on('init', self._handle_init)
         self.on('map-moveend', self._handle_moveend)
