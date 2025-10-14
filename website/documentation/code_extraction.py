@@ -26,7 +26,11 @@ def get_full_code(f: Callable) -> str:
     code = [line[indentation:] for line in code]
     code = ['from nicegui import ui'] + [_uncomment(line) for line in code]
     code = ['' if line == '#' else line for line in code]
-    if not code[-1].startswith('ui.run('):
+
+    if any(line.strip().startswith('def root(') for line in code):
+        code = [line for line in code if line.strip() != 'return root']
+        code.append('ui.run(root)')
+    elif not code[-1].startswith('ui.run('):
         code.append('')
         code.append('ui.run()')
     full_code = isort.code('\n'.join(code), no_sections=True, lines_after_imports=1)

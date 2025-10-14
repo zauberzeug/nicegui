@@ -18,8 +18,8 @@ class FakeSubPages(ui.column):
         self._render('/')
         self.move()  # move to end
 
-    def link(self, text: str, route: str, **kwargs: Any) -> None:
-        ui.label(text).classes('nicegui-link cursor-pointer').on('click', lambda: self._render(route, **kwargs))
+    def link(self, text: str, route: str, **kwargs: Any) -> ui.label:
+        return ui.label(text).classes('nicegui-link cursor-pointer').on('click', lambda: self._render(route, **kwargs))
 
     def _render(self, route: str, **kwargs: Any) -> None:
         if self.task and not self.task.done():

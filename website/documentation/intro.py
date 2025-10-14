@@ -3,57 +3,58 @@ from typing import Callable
 from nicegui import ui
 
 from ..style import subheading
+from .content.sub_pages_documentation import FakeSubPages
 from .demo import demo
 
 
 def create_intro() -> None:
-    @_main_page_demo('Styling', '''
-        While having reasonable defaults, you can still modify the look of your app with CSS as well as Tailwind and Quasar classes.
+    @_main_page_demo('Single Page App', '''
+        Build applications with fast client-side routing using [`ui.sub_pages`](/documentation/sub_pages) and a `root` function as single entry point.
+        For each visitor, the `root` function is executed and generates the interface.
+        [`ui.link`](/documentation/link) and [`ui.navigate`](/documentation/navigate) can be used to navigate to other sub pages.
+
+        If you do not want a Single Page App, you can also use [`@ui.page('/your/path')`](/documentation/page) to define standalone content available at a specific path.
     ''')
-    def formatting_demo():
-        ui.icon('thumb_up')
-        ui.markdown('This is **Markdown**.')
-        ui.html('This is <strong>HTML</strong>.', sanitize=False)
-        with ui.row():
-            ui.label('CSS').style('color: #888; font-weight: bold')
-            ui.label('Tailwind').classes('font-serif')
-            ui.label('Quasar').classes('q-ml-xl')
-        ui.link('NiceGUI on GitHub', 'https://github.com/zauberzeug/nicegui')
+    def spa_demo():
+        def root():
+            # ui.link.default_classes('no-underline text-white')
+            # with ui.header():
+            #     ui.link('Home', '/')
+            #     ui.link('About', '/about')
+            # ui.sub_pages({
+            #     '/': home_page,
+            #     '/about': about_page,
+            # })
+            ui.context.slot_stack[-1].parent.classes(remove='p-4')  # HIDE
+            sub_pages = FakeSubPages({'/': home_page, '/about': about_page}).classes('mx-4')  # HIDE
+            with ui.row().classes('bg-primary w-full p-4'):  # HIDE
+                sub_pages.link('Home', '/').classes('no-underline text-white')  # HIDE
+                sub_pages.link('About', '/about').classes('no-underline text-white')  # HIDE
+            sub_pages.init()  # HIDE
 
-    @_main_page_demo('Common UI Elements', '''
-        NiceGUI comes with a collection of commonly used UI elements.
-    ''')
-    def common_elements_demo():
-        from nicegui.events import ValueChangeEventArguments
+        def home_page():
+            ui.label('Home page').classes('text-2xl')
 
-        def show(event: ValueChangeEventArguments):
-            name = type(event.sender).__name__
-            ui.notify(f'{name}: {event.value}')
+        def about_page():
+            ui.label('About page').classes('text-2xl')
 
-        ui.button('Button', on_click=lambda: ui.notify('Click'))
-        with ui.row():
-            ui.checkbox('Checkbox', on_change=show)
-            ui.switch('Switch', on_change=show)
-        ui.radio(['A', 'B', 'C'], value='A', on_change=show).props('inline')
-        with ui.row():
-            ui.input('Text input', on_change=show)
-            ui.select(['One', 'Two'], value='One', on_change=show)
-        ui.link('And many more...', '/documentation').classes('mt-8')
+        return root
 
-    @_main_page_demo('Value Binding', '''
-        Binding values between UI elements and data models is built into NiceGUI.
+    @_main_page_demo('Reactive Transformations', '''
+        Create real-time interfaces with automatic updates.
+        Type and watch text flow in both directions.
+        When input changes, the [binding](/documentation/section_binding_properties) transforms the text with a custom python function and updates the label.
     ''')
     def binding_demo():
-        class Demo:
-            def __init__(self):
-                self.number = 1
+        def root():
+            with ui.column():
+                user_input = ui.input(value='Hello')
+                ui.label().bind_text_from(user_input, 'value', reverse)
 
-        demo = Demo()
-        v = ui.checkbox('visible', value=True)
-        with ui.column().bind_visibility_from(v, 'value'):
-            ui.slider(min=1, max=3).bind_value(demo, 'number')
-            ui.toggle({1: 'A', 2: 'B', 3: 'C'}).bind_value(demo, 'number')
-            ui.number().bind_value(demo, 'number')
+        def reverse(text: str) -> str:
+            return text[::-1]
+
+        return root
 
 
 def _main_page_demo(title: str, explanation: str) -> Callable:
