@@ -123,7 +123,7 @@ class ValueElement(Element, Generic[T, A]):
         self.value = value
 
     def _handle_value_change(self, value: T) -> None:
-        previous_value = self._props.get(self.VALUE_PROP)
+        previous_value = cast(T, self._props[self.VALUE_PROP])
         with self._props.suspend_updates():
             self._props[self.VALUE_PROP] = self._value_to_model_value(value)
         if self._send_update_on_value_change:

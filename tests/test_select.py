@@ -76,16 +76,16 @@ def test_multi_select(screen: Screen):
     @ui.page('/')
     def page():
         s = ui.select(options, selected=(options[0],), multiple=True).props('use-chips')
-        ui.label().bind_text_from(s, 'value', backward=str)
+        ui.label().bind_text_from(s, 'value', lambda v: str(tuple(sorted(o.value for o in v))))
 
     screen.open('/')
-    screen.should_contain("['Alice']")
+    screen.should_contain("('Alice',)")
     screen.click('Alice')
     screen.click('Bob')
-    screen.should_contain("['Alice', 'Bob']")
+    screen.should_contain("('Alice', 'Bob')")
 
     screen.click('cancel')  # remove icon
-    screen.should_contain("['Bob']")
+    screen.should_contain("('Bob',)")
 
 
 def test_changing_options(screen: Screen):
@@ -94,15 +94,15 @@ def test_changing_options(screen: Screen):
     @ui.page('/')
     def page():
         s = ui.select(options, selected=(options[0],))
-        ui.label().bind_text_from(s, 'value', lambda v: f'value = {v}')
+        ui.label().bind_text_from(s, 'value', backward=lambda v: f'value = {tuple(sorted(o.value for o in v))}')
         ui.button('reverse', on_click=lambda: (s.options.reverse(), s.update()))
         ui.button('clear', on_click=lambda: (s.options.clear(), s.update()))
 
     screen.open('/')
     screen.click('reverse')
-    screen.should_contain('value = 10')
+    screen.should_contain('value = (10,)')
     screen.click('clear')
-    screen.should_contain('value = None')
+    screen.should_contain('value = ()')
 
 
 def test_set_options(screen:  Screen):
@@ -128,7 +128,12 @@ def test_add_new_values(screen:  Screen, multiple: bool, new_value_mode: Optiona
 
     @ui.page('/')
     def page():
-        s = ui.select(options=options, multiple=multiple, new_value_mode=new_value_mode)
+        s = ui.select(
+            options=options,
+            multiple=multiple,
+            new_value_mode=new_value_mode,
+            new_val_to_option=lambda _, v: ui.as_option(v)
+        )
         ui.label().bind_text_from(s, 'value', lambda v: f'value = {tuple(sorted(o.value for o in v))}')
         ui.label().bind_text_from(s, 'options', lambda v: f'options = {tuple(sorted(o.value for o in v))}')
 
@@ -161,19 +166,25 @@ def test_add_new_values(screen:  Screen, multiple: bool, new_value_mode: Optiona
             screen.should_contain("options = ('a', 'b', 'c')")
 
 
-# TODO: come up with similar test for new functionality
-def test_id_generator(screen: Screen):
+def test_new_value_to_option(screen: Screen):
+    options: list[ui.option[str, str]] = [
+        ui.option(label='A', value='a'), ui.option(label='B', value='b'), ui.option(label='C', value='c')
+    ]
     @ui.page('/')
     def page():
-        options = {'a': 'A', 'b': 'B', 'c': 'C'}
-        select = ui.select(options, value='b', new_value_mode='add', key_generator=lambda _: len(options))
-        ui.label().bind_text_from(select, 'options', lambda v: f'options = {v}')
+        select = ui.select(
+            options,
+            selected=(options[1],),
+            new_value_mode='add',
+            new_val_to_option=lambda s, v: ui.option(label=v.capitalize(), value=len(s.options))
+        )
+        ui.label().bind_text_from(select, 'options', lambda v: f'options = {dict((o.value, o.label) for o in v)}')
 
     screen.open('/')
     screen.find_by_tag('input').send_keys(Keys.BACKSPACE + 'd')
     screen.wait(0.5)
     screen.find_by_tag('input').send_keys(Keys.ENTER)
-    screen.should_contain("options = {'a': 'A', 'b': 'B', 'c': 'C', 3: 'd'}")
+    screen.should_contain("options = {'a': 'A', 'b': 'B', 'c': 'C', 3: 'D'}")
 
 
 @pytest.mark.parametrize('multiple', [False, True])
@@ -215,7 +226,7 @@ def test_select_validation(auto_validation: bool, screen: Screen):
 
     @ui.page('/')
     def page():
-        select = ui.select(options, selected=(options[0],), validation={'Too long': lambda v: len(v.value) < 3})
+        select = ui.select(options, selected=(options[0],), validation={'Too long': lambda v: len(v[0].value) < 3})
         if not auto_validation:
             select.without_auto_validation()
 
@@ -232,7 +243,7 @@ def test_select_validation(auto_validation: bool, screen: Screen):
 def test_invalid_value(screen: Screen):
     @ui.page('/')
     def page():
-        with pytest.raises(ValueError, match='Invalid value: X'):
+        with pytest.raises(ValueError, match='Invalid values: X'):
             ui.select([ui.as_option(v) for v in ('A', 'B', 'C')], selected=(ui.as_option('X'),))
 
     screen.open('/')
@@ -241,13 +252,14 @@ def test_invalid_value(screen: Screen):
 @pytest.mark.parametrize('multiple', [False, True])
 def test_opening_and_closing_popup_with_screen(multiple: bool, screen: Screen):
     select = None
+    options = [ui.as_option(v) for v in ('Apple', 'Banana', 'Cherry')]
 
     @ui.page('/')
     def page():
         nonlocal select
-        select = ui.select(options=['Apple', 'Banana', 'Cherry'], label='Fruits', multiple=multiple).classes('w-24')
+        select = ui.select(options=options, label='Fruits', multiple=multiple).classes('w-24')
         ui.label().bind_text_from(select, 'is_showing_popup', lambda v: 'open' if v else 'closed')
-        ui.label().bind_text_from(select, 'value', lambda v: f'value = {v}')
+        ui.label().bind_text_from(select, 'value', lambda v: f'value = {tuple(sorted(o.value for o in v))}')
 
     screen.open('/')
     fruits = screen.find_element(select)
@@ -262,20 +274,22 @@ def test_opening_and_closing_popup_with_screen(multiple: bool, screen: Screen):
     screen.click('Apple')
     if multiple:
         screen.click('Banana')
-        screen.should_contain("value = ['Apple', 'Banana']")
+        screen.should_contain("value = ('Apple', 'Banana')")
         screen.should_contain('open')
     else:
         fruits.click()
         screen.click('Banana')
-        screen.should_contain('value = Banana')
+        screen.should_contain("value = ('Banana',)")
         screen.should_contain('closed')
 
 
 @pytest.mark.parametrize('multiple', [False, True])
 async def test_opening_and_closing_popup_with_user(multiple: bool, user: User):
+    options = [ui.as_option(v) for v in ('Apple', 'Banana', 'Cherry')]
+
     @ui.page('/')
     def page():
-        select = ui.select(options=['Apple', 'Banana', 'Cherry'], label='Fruits', multiple=multiple)
+        select = ui.select(options=options, label='Fruits', multiple=multiple)
         ui.label().bind_text_from(select, 'is_showing_popup', lambda v: 'open' if v else 'closed')
         ui.label().bind_text_from(select, 'value', lambda v: f'value = {v}')
 
@@ -292,12 +306,12 @@ async def test_opening_and_closing_popup_with_user(multiple: bool, user: User):
     user.find('Apple').click()
     if multiple:
         user.find('Banana').click()
-        await user.should_see("value = ['Apple', 'Banana']")
+        await user.should_see("value = ('Apple', 'Banana')")
         await user.should_see('open')
     else:
         fruits.click()
         user.find('Banana').click()
-        await user.should_see('value = Banana')
+        await user.should_see("value = ('Banana',)")
         await user.should_see('closed')
 
 

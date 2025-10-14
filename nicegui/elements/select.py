@@ -3,7 +3,7 @@ from copy import deepcopy
 from typing import Any, Callable, Literal, Optional, Union
 
 from ..events import GenericEventArguments, Handler, ValueChangeEventArguments
-from .choice_element import ChoiceElement, T, as_option
+from .choice_element import ChoiceElement, T
 from .mixins.disableable_element import DisableableElement
 from .mixins.label_element import LabelElement
 from .mixins.validation_element import ValidationDict, ValidationElement, ValidationFunction
@@ -13,15 +13,15 @@ class Select(LabelElement, ValidationElement[tuple[T, ...]], ChoiceElement[T, Un
 
     def __init__(self,
                  options: Collection[T], *,
-                 new_val_to_option: Callable[['Select[T]', str], T] = lambda _, v: as_option(v),
                  label: Optional[str] = None,
                  selected: tuple[T, ...] = (),
                  on_change: Optional[Handler[ValueChangeEventArguments[tuple[T, ...]]]] = None,
                  with_input: bool = False,
                  new_value_mode: Optional[Literal['add', 'add-unique', 'toggle']] = None,
+                 new_val_to_option: Optional[Callable[['Select[T]', str], T]] = None,
                  multiple: bool = False,
                  clearable: bool = False,
-                 validation: Optional[Union[ValidationFunction[T], ValidationDict[T]]] = None,
+                 validation: Optional[Union[ValidationFunction[tuple[T, ...]], ValidationDict[tuple[T, ...]]]] = None,
                  ) -> None:
         """Dropdown Selection
 
@@ -55,11 +55,13 @@ class Select(LabelElement, ValidationElement[tuple[T, ...]], ChoiceElement[T, Un
         if not multiple and len(selected) > 1:
             raise ValueError(f'Too many values passed to selected. You passed {selected} and multiple is False.')
         self.multiple = multiple
-        self.new_val_to_option = new_val_to_option
+        self.new_value_mode = new_value_mode
         super().__init__(label=label, options=options, value=selected, on_change=on_change, validation=validation)
-        if new_value_mode is not None:
+        if self.new_value_mode is not None:
             self._props['new-value-mode'] = new_value_mode
             with_input = True
+            assert new_val_to_option is not None, 'new_val_to_option must be passed when new_value_mode is not None.'
+            self._new_val_to_option = new_val_to_option
         if with_input:
             self.original_options = deepcopy(options)
             self._props['use-input'] = True
@@ -82,18 +84,23 @@ class Select(LabelElement, ValidationElement[tuple[T, ...]], ChoiceElement[T, Un
         # pylint: disable=too-many-nested-blocks
         if isinstance(e.args, dict):
             return (self._index_to_option[e.args['index']],)
-        if isinstance(e.args, str):
-            new_value = self._handle_new_value(self.new_val_to_option(self, e.args))
+        if isinstance(e.args, str) and self.new_value_mode:
+            new_value = self._handle_new_value(self._new_val_to_option(self, e.args))
             return (new_value,)
         else:
-            args = tuple(self._handle_new_value(self.new_val_to_option(self, a)) if isinstance(a, str) else self._index_to_option[a['index']] for a in e.args)
-            if self._props.get('new-value-mode') == 'add-unique':
-                args = tuple({o.value: o for o in args}.values())
+            args: list[T] = []
+            for a in e.args:
+                if isinstance(a, str) and self.new_value_mode:
+                    args.append(self._handle_new_value(self._new_val_to_option(self, a)))
+                elif isinstance(a, dict):
+                    args.append(self._index_to_option[a['index']])
+            if self.new_value_mode == 'add-unique':
+                args = list({o.value: o for o in args}.values())
                 # ^ handle issue #4896: eliminate duplicate arguments
-            return args
+            return tuple(args)
 
     def _handle_new_value(self, value: T) -> T:
-        mode = self._props['new-value-mode']
+        mode = self.new_value_mode
         if mode == 'add':
             self.options.append(value)
         elif mode == 'add-unique':
@@ -108,7 +115,12 @@ class Select(LabelElement, ValidationElement[tuple[T, ...]], ChoiceElement[T, Un
         self._update_values_and_labels()
         return value
 
-    def _value_to_model_value(self, value: tuple[T, ...]) -> Union[tuple[T, ...], T]:
-        if value and not self.multiple:
-            return value[0]
-        return value
+    def _value_to_model_value(self, value: tuple[T, ...]) -> tuple[T, ...]:
+        return tuple(v for v in value if v in self.options)
+
+    def _update_options(self) -> None:
+        before_value = self.value
+        self._props['options'] = self.options
+        new_val = self._value_to_model_value(before_value)
+        self._props[self.VALUE_PROP] = new_val if self.multiple else (new_val[0] if len(new_val) > 0 else new_val)
+        self.value = new_val

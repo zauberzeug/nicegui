@@ -133,7 +133,7 @@ class MultiUploadEventArguments(UiEventArguments):
 @dataclass(**KWONLY_SLOTS)
 class ValueChangeEventArguments(UiEventArguments, Generic[T]):
     value: T
-    previous_value: Any = ...
+    previous_value: T | None = None
 
     def __post_init__(self):
         # DEPRECATED: previous_value will be required in NiceGUI 4.0

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Generic, TypeVar
+from typing import TYPE_CHECKING, Any, Generic, TypeVar
 
 from typing_extensions import Self
 
@@ -47,7 +47,7 @@ class UserInteraction(Generic[T]):
                 for listener in element._event_listeners.values():  # pylint: disable=protected-access
                     if listener.type != event:
                         continue
-                    event_arguments = events.GenericEventArguments(sender=element, client=self.user.client, args={})
+                    event_arguments: events.GenericEventArguments[dict[Any, Any]] = events.GenericEventArguments(sender=element, client=self.user.client, args={})
                     events.handle_event(listener.handler, event_arguments)
         return self
 

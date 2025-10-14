@@ -9,7 +9,7 @@ from .mixins.value_element import A, ValueElement
 
 LT = TypeVar('LT')
 VT = TypeVar('VT')
-T = TypeVar('T', bound='Option[Any, Any]')
+T = TypeVar('T', bound='Option[Any, Any]', default='Option[str, str]')
 
 
 @dataclass
@@ -22,7 +22,7 @@ class Option(Generic[LT, VT]):
         return self
 
 
-def as_option(val: str) -> Option[str, str]:
+def as_option(val: VT) -> Option[VT, VT]:
     return Option(label=val, value=val)
 
 
@@ -35,13 +35,13 @@ class ChoiceElement(ValueElement[tuple[T, ...], A]):
                  on_change: Optional[Handler[ValueChangeEventArguments[tuple[T, ...]]]] = None,
                  ) -> None:
         self.options = list(options)
-        super().__init__(tag=tag, value=value, on_value_change=on_change)
         invalid_values: list[Any] = []
         for v in value:
-            if v.value not in self._values:
+            if v.value not in [o.value for o in self.options]:
                 invalid_values.append(v)
         if invalid_values:
             raise ValueError(f'Invalid values: {",".join(map(lambda o: o.value, invalid_values))}')
+        super().__init__(tag=tag, value=value, on_value_change=on_change)
         self._update_options()
 
     def _update_values_and_labels(self) -> None:
@@ -52,7 +52,9 @@ class ChoiceElement(ValueElement[tuple[T, ...], A]):
     def _update_options(self) -> None:
         before_value = self.value
         self._props['options'] = self.options
-        self._props[self.VALUE_PROP] = self._value_to_model_value(before_value)
+        new_val = self._value_to_model_value(before_value)
+        self._props[self.VALUE_PROP] = new_val
+        self.value = new_val
 
     def update(self) -> None:
         with self._props.suspend_updates():
