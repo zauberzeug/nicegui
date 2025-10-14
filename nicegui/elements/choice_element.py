@@ -35,13 +35,13 @@ class ChoiceElement(ValueElement[tuple[T, ...], A]):
                  on_change: Optional[Handler[ValueChangeEventArguments[tuple[T, ...]]]] = None,
                  ) -> None:
         self.options = list(options)
+        super().__init__(tag=tag, value=value, on_value_change=on_change)
         invalid_values: list[Any] = []
         for v in value:
             if v.value not in self._values:
                 invalid_values.append(v)
         if invalid_values:
             raise ValueError(f'Invalid values: {",".join(map(lambda o: o.value, invalid_values))}')
-        super().__init__(tag=tag, value=value, on_value_change=on_change)
         self._update_options()
 
     def _update_values_and_labels(self) -> None:
