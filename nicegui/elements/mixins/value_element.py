@@ -1,4 +1,4 @@
-from typing import Any, Callable, Optional, TypeVar, cast
+from typing import Any, Callable, Optional, TypeVar, cast, Generic
 
 from typing_extensions import Self
 
@@ -10,7 +10,7 @@ from ...events import (GenericEventArguments, Handler,
 T = TypeVar("T")
 
 
-class ValueElement(Element[T]):
+class ValueElement(Element, Generic[T]):
     VALUE_PROP: str = 'model-value'
     '''Name of the prop that holds the value of the element'''
 
@@ -27,7 +27,7 @@ class ValueElement(Element[T]):
 
     def __init__(self, *,
                  value: T,
-                 on_value_change: Optional[Handler[ValueChangeEventArguments]] = None,
+                 on_value_change: Optional[Handler[ValueChangeEventArguments[T]]] = None,
                  throttle: float = 0,
                  **kwargs: Any,
                  ) -> None:

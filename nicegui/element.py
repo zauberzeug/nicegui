@@ -6,7 +6,7 @@ import weakref
 from collections.abc import Iterator, Sequence
 from copy import copy
 from pathlib import Path
-from typing import (TYPE_CHECKING, Any, Callable, ClassVar, Generic, TypeVar,
+from typing import (TYPE_CHECKING, Any, Callable, ClassVar, TypeVar,
                     cast)
 
 from typing_extensions import Self
@@ -34,10 +34,7 @@ TAG_CHAR = TAG_START_CHAR + r'|-|\.|[0-9]|\u00B7|[\u0300-\u036F]|[\u203F-\u2040]
 TAG_PATTERN = re.compile(fr'^({TAG_START_CHAR})({TAG_CHAR})*$')
 
 
-T = TypeVar("T", default=Any)
-
-
-class Element(Visibility, Generic[T]):
+class Element(Visibility):
     component: Component | None = None
     exposed_libraries: ClassVar[list[Library]] = []
     _default_props: ClassVar[dict[str, Any]] = {}
