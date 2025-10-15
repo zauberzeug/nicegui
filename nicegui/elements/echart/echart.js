@@ -94,7 +94,9 @@ export default {
         return;
       }
       convertDynamicProperties(this.options, true);
-      this.chart.setOption(this.options, { notMerge: this.chart.options?.series.length != this.options.series.length });
+      this.chart.setOption(this.options, {
+        notMerge: this.chart.options?.series?.length != this.options.series?.length,
+      });
     },
     run_chart_method(name, ...args) {
       if (name.startsWith(":")) {
