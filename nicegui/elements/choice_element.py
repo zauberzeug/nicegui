@@ -2,6 +2,7 @@ import uuid
 from collections.abc import Collection
 from dataclasses import dataclass
 from typing import Any, Generic, Optional
+from functools import lru_cache
 
 from typing_extensions import TypeVar
 
@@ -21,7 +22,8 @@ class Option(Generic[LT, VT]):
     def __post_init__(self):
         self.id = str(uuid.uuid4())
 
-
+# NOTE: we're caching this function since we want multiple calls with the same value to have the same id
+@lru_cache
 def as_option(val: VT) -> Option[VT, VT]:
     return Option(label=val, value=val)
 
@@ -43,11 +45,12 @@ class ChoiceElement(ValueElement[tuple[T, ...], A]):
                  options: Collection[T],
                  value: tuple[T, ...] = (),
                  on_change: Optional[Handler[ValueChangeEventArguments[tuple[T, ...]]]] = None,
+                 js_handler: str = ""
                  ) -> None:
         self.options = list(options)
-        super().__init__(tag=tag, value=_check_values(options, value), on_value_change=on_change)
-        self._update_options()
+        super().__init__(tag=tag, value=_check_values(options, value), on_value_change=on_change, js_handler=js_handler)
         self._do_updates()
+        self._update_options()
 
     def _do_updates(self) -> None:
         self._values = [o.value for o in self.options]
@@ -59,7 +62,7 @@ class ChoiceElement(ValueElement[tuple[T, ...], A]):
         self._props['options'] = self.options
         new_val = self._value_to_model_value(before_value)
         self._props[self.VALUE_PROP] = new_val
-        self.value = new_val
+        self.value = tuple(v for v in before_value if v.id in self._index_to_option)
 
     def update(self) -> None:
         with self._props.suspend_updates():

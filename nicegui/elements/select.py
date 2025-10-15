@@ -1,5 +1,4 @@
 from collections.abc import Collection
-from copy import deepcopy
 from typing import Any, Callable, Literal, Optional, Union
 
 from ..events import GenericEventArguments, Handler, ValueChangeEventArguments
@@ -63,7 +62,6 @@ class Select(LabelElement, ValidationElement[tuple[T, ...]], ChoiceElement[T, Un
             assert new_val_to_option is not None, 'new_val_to_option must be passed when new_value_mode is not None.'
             self._new_val_to_option = new_val_to_option
         if with_input:
-            self.original_options = deepcopy(options)
             self._props['use-input'] = True
             self._props['hide-selected'] = not multiple
             self._props['fill-input'] = True
@@ -114,12 +112,8 @@ class Select(LabelElement, ValidationElement[tuple[T, ...]], ChoiceElement[T, Un
         self._do_updates()
         return value
 
-    def _value_to_model_value(self, value: tuple[T, ...]) -> tuple[T, ...]:
-        return tuple(v for v in value if v in self.options)
+    def _value_to_model_value(self, value: tuple[T, ...]) -> Union[tuple[T, ...], T]:
+        if self.multiple:
+            return tuple(v for v in value if v in self.options)
+        return value[0] if len(value) > 0 else value
 
-    def _update_options(self) -> None:
-        before_value = self.value
-        self._props['options'] = self.options
-        new_val = self._value_to_model_value(before_value)
-        self.value = new_val
-        self._props[self.VALUE_PROP] = new_val if self.multiple else (new_val[0] if len(new_val) > 0 else new_val)
