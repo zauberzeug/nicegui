@@ -1,3 +1,4 @@
+import gc
 import importlib
 from collections.abc import Generator
 from copy import copy
@@ -61,7 +62,11 @@ def nicegui_reset_globals() -> Generator[None, None, None]:
     app.reset()
     binding.reset()
 
+    gc.collect()
+
     yield
+
+    gc.collect()
 
     app.reset()
     event.reset()
