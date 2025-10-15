@@ -306,6 +306,10 @@ doc.text('', '''
     and your end users can unzip once and be good to go,
     without the constant expansion of files due to the `--onefile` flag.
 
+    - Specifying `--onedir` to `nicegui-pack` will create an executable with all supporting files in a directory.
+    This starts faster than "--onefile" because it skips the unpacking step.
+    For distribution, package the directory into an archive file (e.g., .zip or .7z).
+
     - Summary of user experience for different options:
 
         | `nicegui-pack`           | `ui.run(...)`  | Explanation |
