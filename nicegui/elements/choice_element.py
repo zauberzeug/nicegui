@@ -10,7 +10,6 @@ from .mixins.value_element import A, ValueElement
 LT = TypeVar('LT', bound=Hashable)
 VT = TypeVar('VT', bound=Hashable)
 T = TypeVar('T', bound='Option[Any, Any]')
-V = TypeVar('V')
 
 
 @dataclass
