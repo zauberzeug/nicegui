@@ -1,7 +1,7 @@
+import uuid
 from collections.abc import Collection
 from dataclasses import dataclass
 from typing import Any, Generic, Optional
-import uuid
 
 from typing_extensions import TypeVar
 
