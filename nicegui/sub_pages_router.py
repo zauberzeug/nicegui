@@ -55,7 +55,7 @@ class SubPagesRouter:
         This will clear and rebuild the current sub page as if navigating to it again.
         Useful when you want to update the page content based on changes in data or state.
 
-        *Added in version 3.XX.X*
+        *Added in version 3.1.0*
         """
         for el in context.client.layout.descendants():
             if isinstance(el, SubPages):

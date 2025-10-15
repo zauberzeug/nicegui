@@ -70,7 +70,7 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
     def refresh(self) -> None:
         """Rebuild this sub pages element.
 
-        *Added in version 3.XX.X*
+        *Added in version 3.1.0*
         """
         self._reset_match()
         self._show()
