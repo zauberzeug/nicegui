@@ -12,6 +12,7 @@ from ..events import (
     ValueChangeEventArguments,
     handle_event,
 )
+from ..logging import log
 from .mixins.filter_element import FilterElement
 
 if importlib.util.find_spec('pandas'):
@@ -79,6 +80,8 @@ class Table(FilterElement, component='table.js'):
         self._selection_handlers = [on_select] if on_select else []
         self._pagination_change_handlers = [on_pagination_change] if on_pagination_change else []
 
+        self._scan_rows_for_lists()
+
         def handle_selection(e: GenericEventArguments) -> None:
             if e.args['added']:
                 if self.selection == 'single':
@@ -99,6 +102,23 @@ class Table(FilterElement, component='table.js'):
             for handler in self._pagination_change_handlers:
                 handle_event(handler, arguments)
         self.on('update:pagination', handle_pagination_change)
+
+    def _scan_rows_for_lists(self) -> None:
+        """Check if any cell in the rows contains a list."""
+        for row in self._props['rows']:
+            for key, value in row.items():
+                if isinstance(value, list) and f'body-cell-{key}' not in self.slots:
+                    log.warning(f'Found list in row in column "{key}": {value}.\n'
+                                'Unless there is slot template, '
+                                'table rows must not contain lists. '
+                                'or the browser will crash.\n'
+                                'NiceGUI is intervening by adding a slot template to display the list as comma-separated values.\n'
+                                )
+                    self.add_slot(f'body-cell-{key}', '''
+                        <td class="text-right" :props="props">
+                            {{ Array.isArray(props.value) ? props.value.join(', ') : props.value }}
+                        </td>
+                    ''')
 
     def on_select(self, callback: Handler[TableSelectionEventArguments]) -> Self:
         """Add a callback to be invoked when the selection changes."""
@@ -283,6 +303,7 @@ class Table(FilterElement, component='table.js'):
     @rows.setter
     def rows(self, value: list[dict]) -> None:
         self._props['rows'] = value
+        self._scan_rows_for_lists()
 
     @property
     def columns(self) -> list[dict]:
