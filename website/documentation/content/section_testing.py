@@ -30,14 +30,14 @@ doc.text('Set main file', '''
     This can be done in two ways:
 
     1. By setting the `main_file` option in the `pytest.ini` configuration file in the root of your project.
-    2. By marking your test functions with the `@pytest.mark.nicegui_test(main_file='main.py')` decorator.
+    2. By marking your test functions with the `@pytest.mark.nicegui_main_file('main.py')` decorator.
        This is useful if you maintain multiple apps in the same code base.
-      
+
     The `main_file` will automatically be used as an entry point for each integration test (user or screen fixture).
     You also need to set the [`asyncio_mode = auto`](/documentation/user#async_execution) option
     and the plugin to be used  (`nicegui.testing.plugin`, `nicegui.testing.user_plugin` or `nicegui.testing.screen_plugin`)
     in the `pytest.ini` file.
-    
+
     *Added in version 3.0.0.*
 ''')
 
@@ -83,12 +83,14 @@ def project_pytest():
                 ```
             ''')
 
+
 doc.text('', '''
-    Alternatively, if you prefer the `@pytest.mark.nicegui_test` decorator approach,
+    Alternatively, if you prefer the `@pytest.mark.nicegui_main_file` decorator approach,
 ''')
 
+
 @doc.ui
-def project_pytest():
+def project_pytest_with_marker():
     with ui.row(wrap=False).classes('gap-4 items-stretch'):
         with python_window(classes='w-[400px]', title='test_app.py'):
             ui.markdown('''
@@ -96,7 +98,7 @@ def project_pytest():
                 from nicegui import ui
                 from nicegui.testing import User
 
-                @pytest.mark.nicegui_test(main_file='main.py')
+                @pytest.mark.nicegui_main_file('main.py')
                 async def test_click(user: User) -> None:
                     await user.open('/')
                     await user.should_see('Click me')
@@ -112,6 +114,7 @@ def project_pytest():
                 addopts = -p nicegui.testing.plugin
                 ```
             ''')
+
 
 doc.text('', '''
     Please also have a look at the examples
