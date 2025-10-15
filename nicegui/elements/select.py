@@ -17,7 +17,7 @@ class Select(LabelElement, ValidationElement[tuple[T, ...]], ChoiceElement[T, Un
                  on_change: Optional[Handler[ValueChangeEventArguments[tuple[T, ...]]]] = None,
                  with_input: bool = False,
                  new_value_mode: Optional[Literal['add', 'add-unique', 'toggle']] = None,
-                 new_val_to_option: Optional[Callable[['Select[T]', str], T]] = None,
+                 new_val_to_option: Optional[Callable[['Select[T]', str], Optional[T]]] = None,
                  multiple: bool = False,
                  clearable: bool = False,
                  validation: Optional[Union[ValidationFunction[tuple[T, ...]], ValidationDict[tuple[T, ...]]]] = None,
@@ -83,13 +83,14 @@ class Select(LabelElement, ValidationElement[tuple[T, ...]], ChoiceElement[T, Un
         if isinstance(e.args, dict):
             return (self._index_to_option[e.args['id']],)
         if isinstance(e.args, str) and self.new_value_mode:
-            new_value = self._handle_new_value(self._new_val_to_option(self, e.args))
-            return (new_value,)
+            if (new_option := self._new_val_to_option(self, e.args)):
+                return (self._handle_new_value(new_option),)
+            return ()
         else:
             args: list[T] = []
             for a in e.args:
-                if isinstance(a, str) and self.new_value_mode:
-                    args.append(self._handle_new_value(self._new_val_to_option(self, a)))
+                if isinstance(a, str) and self.new_value_mode and (new_option := self._new_val_to_option(self, a)):
+                    args.append(self._handle_new_value(new_option))
                 elif isinstance(a, dict):
                     args.append(self._index_to_option[a['id']])
             if self.new_value_mode == 'add-unique':

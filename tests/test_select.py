@@ -289,9 +289,9 @@ async def test_opening_and_closing_popup_with_user(multiple: bool, user: User):
 
     @ui.page('/')
     def page():
-        select = ui.select(options=options, label='Fruits', multiple=multiple)
+        select = ui.select(options, label='Fruits', multiple=multiple)
         ui.label().bind_text_from(select, 'is_showing_popup', lambda v: 'open' if v else 'closed')
-        ui.label().bind_text_from(select, 'value', lambda v: f'value = {v}')
+        ui.label().bind_text_from(select, 'value', lambda v: f'value = {tuple(sorted(o.value for o in v))}')
 
     await user.open('/')
     fruits = user.find('Fruits')
