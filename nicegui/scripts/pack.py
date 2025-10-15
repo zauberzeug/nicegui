@@ -39,9 +39,9 @@ def main() -> None:
         'Whilst convenient for distribution, it will be slower to start up.'
     ))
     parser.add_argument('--onedir', action='store_true', default=False, help=(
-        'Create an executable, but store the program scripts in a separate directory.\n'
-        'This has a performance increase over "--onefile" because there is no unpack step.'
-        'For distribution, pack it for instance into a .7z file.'
+        'Create an executable with all supporting files in a directory.\n'
+        'This starts faster than "--onefile" because it skips the unpacking step.\n'
+        'For distribution, package the directory into an archive file (e.g., .zip or .7z).'
     ))
     parser.add_argument('--add-data', type=str, action='append', default=[
         f'{Path(nicegui.__file__).parent}{os.pathsep}nicegui',
