@@ -53,7 +53,7 @@ class Select(LabelElement, ValidationElement[tuple[T, ...]], ChoiceElement[T, Un
         :param validation: dictionary of validation rules or a callable that returns an optional error message (default: None for no validation)
         """
         if not multiple and len(selected) > 1:
-            raise ValueError(f'Too many values passed to selected. You passed {selected} and multiple is False.')
+            raise ValueError(f'Too many values passed to selected. You passed {selected} and multiple is {multiple}.')
         self.multiple = multiple
         self.new_value_mode = new_value_mode
         super().__init__(label=label, options=options, value=selected, on_change=on_change, validation=validation)
@@ -83,7 +83,7 @@ class Select(LabelElement, ValidationElement[tuple[T, ...]], ChoiceElement[T, Un
     def _event_args_to_value(self, e: GenericEventArguments[Union[dict[str, Any], str, list[Union[dict[str, Any], str]]]]) -> tuple[T, ...]:
         # pylint: disable=too-many-nested-blocks
         if isinstance(e.args, dict):
-            return (self._index_to_option[e.args['index']],)
+            return (self._index_to_option[e.args['id']],)
         if isinstance(e.args, str) and self.new_value_mode:
             new_value = self._handle_new_value(self._new_val_to_option(self, e.args))
             return (new_value,)
@@ -93,7 +93,7 @@ class Select(LabelElement, ValidationElement[tuple[T, ...]], ChoiceElement[T, Un
                 if isinstance(a, str) and self.new_value_mode:
                     args.append(self._handle_new_value(self._new_val_to_option(self, a)))
                 elif isinstance(a, dict):
-                    args.append(self._index_to_option[a['index']])
+                    args.append(self._index_to_option[a['id']])
             if self.new_value_mode == 'add-unique':
                 args = list({o.value: o for o in args}.values())
                 # ^ handle issue #4896: eliminate duplicate arguments
@@ -111,8 +111,7 @@ class Select(LabelElement, ValidationElement[tuple[T, ...]], ChoiceElement[T, Un
                 self.options = [o for o in self.options if o.value != value.value]
             else:
                 self.options.append(value)
-        value.set_index(len(self.options))
-        self._update_values_and_labels()
+        self._do_updates()
         return value
 
     def _value_to_model_value(self, value: tuple[T, ...]) -> tuple[T, ...]:

@@ -1,6 +1,7 @@
 from collections.abc import Collection
 from dataclasses import dataclass
 from typing import Any, Generic, Optional
+import uuid
 
 from typing_extensions import TypeVar
 
@@ -17,13 +18,22 @@ class Option(Generic[LT, VT]):
     label: LT
     value: VT
 
-    def set_index(self, i: int):
-        self.index = i
-        return self
+    def __post_init__(self):
+        self.id = str(uuid.uuid4())
 
 
 def as_option(val: VT) -> Option[VT, VT]:
     return Option(label=val, value=val)
+
+
+def _check_values(options: Collection[T], value: tuple[T, ...]) -> tuple[T, ...]:
+    invalid_values: list[Any] = []
+    for v in value:
+        if v.value not in [o.value for o in options]:
+            invalid_values.append(v)
+    if invalid_values:
+        raise ValueError(f'Invalid values: {",".join(map(lambda o: o.value, invalid_values))}')
+    return value
 
 
 class ChoiceElement(ValueElement[tuple[T, ...], A]):
@@ -35,19 +45,14 @@ class ChoiceElement(ValueElement[tuple[T, ...], A]):
                  on_change: Optional[Handler[ValueChangeEventArguments[tuple[T, ...]]]] = None,
                  ) -> None:
         self.options = list(options)
-        invalid_values: list[Any] = []
-        for v in value:
-            if v.value not in [o.value for o in self.options]:
-                invalid_values.append(v)
-        if invalid_values:
-            raise ValueError(f'Invalid values: {",".join(map(lambda o: o.value, invalid_values))}')
-        super().__init__(tag=tag, value=value, on_value_change=on_change)
+        super().__init__(tag=tag, value=_check_values(options, value), on_value_change=on_change)
         self._update_options()
+        self._do_updates()
 
-    def _update_values_and_labels(self) -> None:
+    def _do_updates(self) -> None:
         self._values = [o.value for o in self.options]
         self._labels = [o.label for o in self.options]
-        self._index_to_option: dict[int, T] = {i: o.set_index(i) for i, o in enumerate(self.options)}
+        self._index_to_option: dict[str, T] = {o.id: o for o in self.options}
 
     def _update_options(self) -> None:
         before_value = self.value
@@ -58,7 +63,7 @@ class ChoiceElement(ValueElement[tuple[T, ...], A]):
 
     def update(self) -> None:
         with self._props.suspend_updates():
-            self._update_values_and_labels()
+            self._do_updates()
             self._update_options()
         super().update()
 
