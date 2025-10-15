@@ -547,7 +547,8 @@ def test_starting_on_non_root_path(screen: Screen, page_route: str):
     assert screen.current_path.rstrip('/') == '/foo/sub'
 
 
-def test_links_pointing_to_path_which_is_not_a_sub_page(screen: Screen):
+@pytest.mark.parametrize('show_404', [True, False])
+def test_links_pointing_to_path_which_is_not_a_sub_page(screen: Screen, show_404: bool):
     calls = {'index': 0, 'main': 0, 'sub': 0, 'other': 0}
 
     @ui.page('/')
@@ -558,7 +559,7 @@ def test_links_pointing_to_path_which_is_not_a_sub_page(screen: Screen):
         ui.link('Go to main', '/')
         ui.link('Go to sub', '/sub')
         ui.link('Go to other', '/other')
-        ui.sub_pages({'/': main, '/sub': sub})
+        ui.sub_pages({'/': main, '/sub': sub}, show_404=show_404)
 
     def main():
         calls['main'] += 1
@@ -1169,3 +1170,46 @@ def test_clearing_sub_pages_element(screen: Screen):
     screen.click('Delete')
     screen.wait(0.5)
     screen.should_not_contain('main page')
+
+
+def test_refresh_sub_page(screen: Screen):
+    calls = {'index': 0, 'outer': 0, 'inner_main': 0, 'inner_other': 0}
+
+    @ui.page('/')
+    @ui.page('/{_:path}')
+    def index():
+        calls['index'] += 1
+        sub_pages = ui.sub_pages({'/': outer_page})
+        ui.button('Refresh via Router', on_click=ui.context.client.sub_pages_router.refresh)
+        ui.button('Refresh via SubPages', on_click=sub_pages.refresh)
+
+    def outer_page():
+        calls['outer'] += 1
+        ui.sub_pages({'/': inner_main, '/other': inner_other})
+        ui.link('Go to other', '/other')
+
+    def inner_main(args: PageArguments):
+        calls['inner_main'] += 1
+        ui.button('Refresh inner main', on_click=args.frame.refresh)
+
+    def inner_other(args: PageArguments):
+        calls['inner_other'] += 1
+        ui.button('Refresh inner other', on_click=args.frame.refresh)
+
+    screen.open('/')
+    assert calls == {'index': 1, 'outer': 1, 'inner_main': 1, 'inner_other': 0}
+
+    screen.click('Refresh inner main')
+    assert calls == {'index': 1, 'outer': 1, 'inner_main': 2, 'inner_other': 0}
+
+    screen.click('Go to other')
+    assert calls == {'index': 1, 'outer': 1, 'inner_main': 2, 'inner_other': 1}
+
+    screen.click('Refresh inner other')
+    assert calls == {'index': 1, 'outer': 1, 'inner_main': 2, 'inner_other': 2}
+
+    screen.click('Refresh via Router')
+    assert calls == {'index': 1, 'outer': 2, 'inner_main': 2, 'inner_other': 3}
+
+    screen.click('Refresh via SubPages')
+    assert calls == {'index': 1, 'outer': 3, 'inner_main': 2, 'inner_other': 4}

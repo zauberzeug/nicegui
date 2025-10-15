@@ -138,3 +138,15 @@ If you have any questions or need help with anything, please don't hesitate to r
 ## Included Web Dependencies
 
 See [DEPENDENCIES.md](https://github.com/zauberzeug/nicegui/blob/main/DEPENDENCIES.md) for a list of web frameworks NiceGUI depends on.
+
+## Architecture
+
+NiceGUI is a Python framework for building web UIs with a **backend-first philosophy**.
+Key architectural decisions:
+
+- **Backend-first**: All UI logic lives in Python; the framework handles web details
+- **Tech stack**: Python/FastAPI backend, Vue/Quasar frontend, socket.io for communication
+- **Single worker**: Uses one uvicorn worker (thanks to full async support, no multi-process synchronization needed)
+- **Real-time communication**: WebSocket connection is established after initial page load, kept open for client-server communication
+- **User interactions**: All UI events are sent to backend and invoke Python functions, which can then generate UI updates
+- **Outbox**: Accumulates UI updates and sends them in batches to the client

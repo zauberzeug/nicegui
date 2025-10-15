@@ -60,6 +60,17 @@ async def test_button_click(user: User) -> None:
     await user.should_see('clicked')
 
 
+async def test_clicking_disabled_button(user: User) -> None:
+    @ui.page('/')
+    def page():
+        button = ui.button('My Button', on_click=lambda: ui.notify('Button clicked'))
+        button.disable()
+
+    await user.open('/')
+    user.find('My Button').click()
+    await user.should_not_see('Button clicked')
+
+
 async def test_assertion_raised_when_no_nicegui_page_is_returned(user: User) -> None:
     @app.get('/plain')
     def index() -> PlainTextResponse:
@@ -215,6 +226,40 @@ async def test_input(user: User, kind: type) -> None:
     user.find(kind).type('Test')
     await user.should_see('Value: Test')
     await user.should_see('Changed: Test')
+
+
+async def test_name_property(user: User) -> None:
+    @ui.page('/')
+    def page():
+        ui.icon('sym-o-home')
+        ui.chat_message('Hello NiceGUI!', name='my chat partner')
+
+        with ui.carousel():
+            with ui.carousel_slide(name='first slide'):
+                ui.label('one')
+            with ui.carousel_slide(name='second slide'):
+                ui.label('two')
+
+        with ui.tabs():
+            ui.tab(name='home tab', label='Home', icon='home')
+            ui.tab(name='about tab', label='About', icon='info')
+
+        with ui.stepper():
+            with ui.step(name='step 1'):
+                ui.label('Make a plan')
+
+    await user.open('/')
+
+    # name is visible for icon and chat message
+    await user.should_see('sym-o-home')
+    await user.should_see('my chat partner')
+
+    # name is purely internal to the carousel, tabs and stepper
+    await user.should_not_see('first slide')
+    await user.should_not_see('second slide')
+    await user.should_not_see('home tab')
+    await user.should_not_see('about tab')
+    await user.should_not_see('step 1')
 
 
 async def test_should_not_see(user: User) -> None:
@@ -581,6 +626,23 @@ async def test_typing_to_disabled_element(user: User) -> None:
     assert target.value == initial_value
     await user.should_see(initial_value)
     await user.should_not_see(given_new_input)
+
+
+async def test_clearing_disabled_element(user: User) -> None:
+    initial_value = 'Cannot clear this'
+    target = None
+
+    @ui.page('/')
+    def page():
+        nonlocal target
+        target = ui.input(value=initial_value)
+        target.disable()
+
+    await user.open('/')
+    user.find(ui.input).clear()
+
+    assert target.value == initial_value
+    await user.should_see(initial_value)
 
 
 async def test_drawer(user: User):

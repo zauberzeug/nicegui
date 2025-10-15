@@ -298,7 +298,7 @@ def map_of_nicegui():
             - [`ui.fullscreen`](/documentation/fullscreen): enter, exit and toggle fullscreen mode
             - [`ui.keyboard`](/documentation/keyboard): define keyboard event handlers
             - [`ui.navigate`](/documentation/navigate): let the browser navigate to another location
-            - [`ui.notify`](/documentation/notification): show a notification
+            - [`ui.notify`](/documentation/notify): show a notification
             - [`ui.on`](/documentation/generic_events#custom_events): register an event handler
             - [`ui.page_title`](/documentation/page_title): change the current page title
             - [`ui.query`](/documentation/query): query HTML elements on the client side to modify props, classes and style definitions

@@ -50,7 +50,7 @@ def _main_page() -> None:
             .style('height: calc(100% + 20px) !important') as menu:
         tree = ui.tree(documentation.tree.nodes, label_key='title',
                        on_select=lambda e: ui.navigate.to(f'/documentation/{e.value}')) \
-            .classes('w-full').props('accordion no-connectors')
+            .classes('w-full').props('accordion no-connectors no-selection-unset')
     menu_button = header.add_header(menu)
 
     window_state = {'is_desktop': None}

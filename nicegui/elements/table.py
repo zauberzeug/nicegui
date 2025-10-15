@@ -43,6 +43,12 @@ class Table(FilterElement, component='table.js'):
 
         A table based on Quasar's `QTable <https://quasar.dev/vue-components/table>`_ component.
 
+        If ``selection`` is "single" or "multiple", then a ``selected`` property is accessible containing the selected rows.
+
+        Note:
+        Cells in ``rows`` must not contain lists because they can cause the browser to crash.
+        To display complex data structures, convert them to strings first (e.g., using ``str()`` or custom formatting).
+
         :param rows: list of row objects
         :param columns: list of column objects (defaults to the columns of the first row *since version 2.0.0*)
         :param column_defaults: optional default column properties, *added in version 2.0.0*
@@ -52,8 +58,6 @@ class Table(FilterElement, component='table.js'):
         :param pagination: a dictionary correlating to a pagination object or number of rows per page (`None` hides the pagination, 0 means "infinite"; default: `None`).
         :param on_select: callback which is invoked when the selection changes
         :param on_pagination_change: callback which is invoked when the pagination changes
-
-        If selection is 'single' or 'multiple', then a `selected` property is accessible containing the selected rows.
         """
         super().__init__()
 
