@@ -1,17 +1,16 @@
-import uuid
-from collections.abc import Collection
+from collections.abc import Hashable, Iterable
 from dataclasses import dataclass
 from typing import Any, Generic, Optional
-from functools import lru_cache
 
 from typing_extensions import TypeVar
 
 from ..events import Handler, ValueChangeEventArguments
 from .mixins.value_element import A, ValueElement
 
-LT = TypeVar('LT')
-VT = TypeVar('VT')
-T = TypeVar('T', bound='Option[Any, Any]', default='Option[str, str]')
+LT = TypeVar('LT', bound=Hashable)
+VT = TypeVar('VT', bound=Hashable)
+T = TypeVar('T', bound='Option[Any, Any]')
+V = TypeVar('V')
 
 
 @dataclass
@@ -20,15 +19,14 @@ class Option(Generic[LT, VT]):
     value: VT
 
     def __post_init__(self):
-        self.id = str(uuid.uuid4())
+        self.id = f'{hash(self.label)}{hash(self.value)}'
 
-# NOTE: we're caching this function since we want multiple calls with the same value to have the same id
-@lru_cache
+
 def as_option(val: VT) -> Option[VT, VT]:
     return Option(label=val, value=val)
 
 
-def _check_values(options: Collection[T], value: tuple[T, ...]) -> tuple[T, ...]:
+def _check_values(options: Iterable[T], value: tuple[T, ...]) -> tuple[T, ...]:
     invalid_values: list[Any] = []
     for v in value:
         if v.value not in [o.value for o in options]:
@@ -42,10 +40,10 @@ class ChoiceElement(ValueElement[tuple[T, ...], A]):
 
     def __init__(self, *,
                  tag: Optional[str] = None,
-                 options: Collection[T],
+                 options: Iterable[T],
                  value: tuple[T, ...] = (),
                  on_change: Optional[Handler[ValueChangeEventArguments[tuple[T, ...]]]] = None,
-                 js_handler: str = ""
+                 js_handler: str = ''
                  ) -> None:
         self.options = list(options)
         super().__init__(tag=tag, value=_check_values(options, value), on_value_change=on_change, js_handler=js_handler)
@@ -70,13 +68,13 @@ class ChoiceElement(ValueElement[tuple[T, ...], A]):
             self._update_options()
         super().update()
 
-    def set_options(self, options: list[T], *, value: Optional[tuple[T, ...]] = None) -> None:
+    def set_options(self, options: Iterable[T], *, value: Optional[tuple[T, ...]] = None) -> None:
         """Set the options of this choice element.
 
         :param options: The new options.
         :param value: The new value. If not given, the current value is kept.
         """
-        self.options = options
+        self.options = list(options)
         if value is not None:
             self.value = value
         self.update()

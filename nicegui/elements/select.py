@@ -1,4 +1,4 @@
-from collections.abc import Collection
+from collections.abc import Iterable
 from typing import Any, Callable, Literal, Optional, Union
 
 from ..events import GenericEventArguments, Handler, ValueChangeEventArguments
@@ -11,7 +11,7 @@ from .mixins.validation_element import ValidationDict, ValidationElement, Valida
 class Select(LabelElement, ValidationElement[tuple[T, ...]], ChoiceElement[T, Union[dict[str, Any], str, list[Union[dict[str, Any], str]]]], DisableableElement, component='select.js'):
 
     def __init__(self,
-                 options: Collection[T], *,
+                 options: Iterable[T], *,
                  label: Optional[str] = None,
                  selected: tuple[T, ...] = (),
                  on_change: Optional[Handler[ValueChangeEventArguments[tuple[T, ...]]]] = None,
@@ -117,4 +117,3 @@ class Select(LabelElement, ValidationElement[tuple[T, ...]], ChoiceElement[T, Un
         if self.multiple:
             return tuple(v for v in value if v in self.options)
         return value[0] if len(value) > 0 else value
-

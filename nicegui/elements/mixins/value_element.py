@@ -29,7 +29,7 @@ class ValueElement(Element, Generic[T, A]):
                  value: T,
                  on_value_change: Optional[Handler[ValueChangeEventArguments[T]]] = None,
                  throttle: float = 0,
-                 js_handler: str = "",
+                 js_handler: str = '',
                  **kwargs: Any,
                  ) -> None:
         super().__init__(**kwargs)
