@@ -73,4 +73,5 @@ def uploading_large_files() -> None:
     ui.upload(on_upload=lambda e: ui.notify(f'Uploaded {e.file.name}')).classes('max-w-full')
 
 
-doc.reference(ui.upload)
+doc.reference(ui.upload, title='Reference for ui.upload')
+doc.reference(ui.upload.FileUpload, title='Reference for ui.upload.FileUpload')
