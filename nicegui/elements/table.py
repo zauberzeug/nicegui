@@ -104,10 +104,12 @@ class Table(FilterElement, component='table.js'):
         self.on('update:pagination', handle_pagination_change)
 
     def _scan_rows_for_lists(self) -> None:
-        """Check if any cell in the rows contains a list."""
+        """Check if any cell in the rows contains a list.
+
+        Also catches anything that is eventually converted to a list in the conversion to JSON."""
         for row in self._props['rows']:
             for key, value in row.items():
-                if isinstance(value, list) and f'body-cell-{key}' not in self.slots:
+                if isinstance(value, (list, set, tuple)) and f'body-cell-{key}' not in self.slots:
                     log.warning(f'Found list in row in column "{key}": {value}.\n'
                                 'Unless there is slot template, '
                                 'table rows must not contain lists. '
