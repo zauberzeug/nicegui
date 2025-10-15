@@ -65,7 +65,8 @@ class Screen:
         """Stop the webserver."""
         self.close()
         self.caplog.clear()
-        Server.instance.should_exit = True
+        if hasattr(Server, 'instance'):
+            Server.instance.should_exit = True
         if self.server_thread:
             self.server_thread.join()
         if core.loop:

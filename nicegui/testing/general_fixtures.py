@@ -19,7 +19,7 @@ def pytest_addoption(parser: pytest.Parser) -> None:
 
 
 def pytest_configure(config: pytest.Config) -> None:
-    """Register the nicegui_main_file marker."""
+    """Register the "nicegui_main_file" marker."""
     config.addinivalue_line('markers', 'nicegui_main_file: specify the main file for the test')
 
 
@@ -27,7 +27,7 @@ def get_path_to_main_file(request: pytest.FixtureRequest) -> Optional[Path]:
     """Get the path to the main file from the test marker or global config."""
     marker = next((m for m in request.node.iter_markers('nicegui_main_file')), None)
     main_file = marker.args[0] if marker else request.config.getini('main_file')
-    if main_file == '':
+    if not main_file:
         return None
     assert request.config.inipath is not None
     path = (request.config.inipath.parent / main_file).resolve()
