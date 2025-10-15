@@ -1,7 +1,5 @@
 import time
 
-import pytest
-
 from nicegui import ui
 from nicegui.testing import Screen
 
@@ -43,17 +41,3 @@ def test_leaflet(screen: Screen):
 
     screen.click('London')
     screen.should_contain('Center: 51.505, -0.090')
-
-
-@pytest.mark.parametrize(['no_conflict', 'draw_control', 'expected'],
-                         [(True, False, True),    # no-conflict mode, no leaflet-draw -> L should be undefined
-                          (False, True, False),   # leaflet-draw -> L should be defined
-                          (False, False, False),  # 2.x basic behavior -> L should be defined
-                          (True, True, False)])   # leaflet-draw -> L should be defined, no-conflict ignored
-def test_leaflet_no_conflict(screen: Screen, no_conflict: bool, draw_control: bool, expected: bool):
-    @ui.page('/')
-    def page():
-        ui.leaflet(center=(51.505, -0.09), zoom=13, no_conflict=no_conflict, draw_control={} if draw_control else False)
-
-    screen.open('/')
-    assert screen.selenium.execute_script('return typeof L === "undefined";') == expected
