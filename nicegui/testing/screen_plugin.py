@@ -82,14 +82,17 @@ def screen(nicegui_reset_globals,  # noqa: F811, pylint: disable=unused-argument
     """Create a new SeleniumScreen fixture."""
     os.environ['NICEGUI_SCREEN_TEST_PORT'] = str(Screen.PORT)
     screen_ = Screen(nicegui_driver, caplog, request)
-    yield screen_
-    os.environ.pop('NICEGUI_SCREEN_TEST_PORT', None)
-    logs = [record for record in screen_.caplog.get_records('call') if record.levelname == 'ERROR']
-    if screen_.is_open:
-        test_failed = hasattr(request.node, 'rep_call') and request.node.rep_call.failed
-        screen_.shot(request.node.name, failed=test_failed or bool(logs))
-    screen_.stop_server()
-    if DOWNLOAD_DIR.exists():
-        shutil.rmtree(DOWNLOAD_DIR)
-    if logs:
-        pytest.fail('There were unexpected ERROR logs.', pytrace=False)
+    try:
+        yield screen_
+
+        logs = [record for record in screen_.caplog.get_records('call') if record.levelname == 'ERROR']
+        if screen_.is_open:
+            test_failed = hasattr(request.node, 'rep_call') and request.node.rep_call.failed
+            screen_.shot(request.node.name, failed=test_failed or bool(logs))
+        if logs:
+            pytest.fail('There were unexpected ERROR logs.', pytrace=False)
+    finally:
+        os.environ.pop('NICEGUI_SCREEN_TEST_PORT', None)
+        screen_.stop_server()
+        if DOWNLOAD_DIR.exists():
+            shutil.rmtree(DOWNLOAD_DIR)
