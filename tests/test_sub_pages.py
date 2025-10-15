@@ -1189,22 +1189,22 @@ def test_refresh_sub_page(screen: Screen):
 
     def inner_main(args: PageArguments):
         calls['inner_main'] += 1
-        ui.button('Refresh inner', on_click=args.frame.refresh)
+        ui.button('Refresh inner main', on_click=args.frame.refresh)
 
     def inner_other(args: PageArguments):
         calls['inner_other'] += 1
-        ui.button('Refresh inner', on_click=args.frame.refresh)
+        ui.button('Refresh inner other', on_click=args.frame.refresh)
 
     screen.open('/')
     assert calls == {'index': 1, 'outer': 1, 'inner_main': 1, 'inner_other': 0}
 
-    screen.click('Refresh inner')
+    screen.click('Refresh inner main')
     assert calls == {'index': 1, 'outer': 1, 'inner_main': 2, 'inner_other': 0}
 
     screen.click('Go to other')
     assert calls == {'index': 1, 'outer': 1, 'inner_main': 2, 'inner_other': 1}
 
-    screen.click('Refresh inner')
+    screen.click('Refresh inner other')
     assert calls == {'index': 1, 'outer': 1, 'inner_main': 2, 'inner_other': 2}
 
     screen.click('Refresh via Router')
