@@ -26,25 +26,26 @@ doc.text('Running Integration Tests', '''
 ''')
 
 doc.text('Set main file', '''
-    You need to tell the pytest plugin which of your files is the main entry point for your NiceGUI application.
-    This can be done in two ways:
+    You need to tell the pytest plugin which of your files is the main entry point for your NiceGUI application (containing the `ui.run` call).
+    This can be done in three ways:
 
-    1. By setting the `main_file` option in the `pytest.ini` configuration file in the root of your project.
-    2. By marking your test functions with the `@pytest.mark.nicegui_main_file('main.py')` decorator.
-       This is useful if you maintain multiple apps in the same code base.
+    1. Name your main file `main.py` -- if you do nothing else, the test plugin will look for this file and load it.
+    2. Set the `main_file` option in the `pytest.ini` configuration file in the root of your project.
+    3. Mark your test functions with the `@pytest.mark.nicegui_main_file` decorator (if you maintain multiple apps in the same code base).
 
-    The `main_file` will automatically be used as an entry point for each integration test (user or screen fixture).
+    The main file will automatically be used as an entry point for each integration test (user or screen fixture).
     You also need to set the [`asyncio_mode = auto`](/documentation/user#async_execution) option
     and the plugin to be used  (`nicegui.testing.plugin`, `nicegui.testing.user_plugin` or `nicegui.testing.screen_plugin`)
     in the `pytest.ini` file.
 
-    *Added in version 3.0.0.*
+    *Added in version 3.0.0*
+    *Marker added in version 3.1.0*
 ''')
 
 
 @doc.ui
 def project_code():
-    with python_window(classes='max-w-[820px] w-full h-48'):
+    with python_window(classes='max-w-[820px] w-full h-48', title='app.py'):
         ui.markdown('''
             ```python
             from nicegui import ui
@@ -78,7 +79,7 @@ def project_pytest():
                 ```ini
                 [pytest]
                 asyncio_mode = auto
-                main_file = main.py
+                main_file = app.py
                 addopts = -p nicegui.testing.plugin
                 ```
             ''')
@@ -98,7 +99,7 @@ def project_pytest_with_marker():
                 from nicegui import ui
                 from nicegui.testing import User
 
-                @pytest.mark.nicegui_main_file('main.py')
+                @pytest.mark.nicegui_main_file('app.py')
                 async def test_click(user: User) -> None:
                     await user.open('/')
                     await user.should_see('Click me')
@@ -111,7 +112,7 @@ def project_pytest_with_marker():
                 ```ini
                 [pytest]
                 asyncio_mode = auto
-                addopts = -p nicegui.testing.plugin
+                addopts = -p nicegui.testing.user_plugin
                 ```
             ''')
 
