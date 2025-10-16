@@ -16,7 +16,7 @@ from ..events import (
 
 
 class Keyboard(Element, component='keyboard.js'):
-    active = BindableProperty()
+    active = BindableProperty["Keyboard", bool]()
 
     def __init__(self,
                  on_key: Optional[Handler[KeyEventArguments]] = None, *,

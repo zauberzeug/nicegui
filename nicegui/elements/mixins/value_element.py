@@ -22,8 +22,8 @@ class ValueElement(Element, Generic[T, A]):
     - ``None``: The value is updated automatically by the Vue element.
     '''
 
-    value = BindableProperty(
-        on_change=lambda sender, value: cast(Self, sender)._handle_value_change(value))  # pylint: disable=protected-access
+    value = BindableProperty["ValueElement[T]", T](
+        on_change=lambda sender, value: sender._handle_value_change(value))  # pylint: disable=protected-access
 
     def __init__(self, *,
                  value: T,
@@ -38,6 +38,7 @@ class ValueElement(Element, Generic[T, A]):
         self._props[self.VALUE_PROP] = self._value_to_model_value(value)
         self._props['loopback'] = self.LOOPBACK
         self._change_handlers: list[Handler[ValueChangeEventArguments[T]]] = [on_value_change] if on_value_change else []
+        self._previous_value: T | None = None
 
         def handle_change(e: GenericEventArguments[A]) -> None:
             self._send_update_on_value_change = self.LOOPBACK is True
@@ -124,14 +125,15 @@ class ValueElement(Element, Generic[T, A]):
         self.value = value
 
     def _handle_value_change(self, value: T) -> None:
-        previous_value = cast(T, self._props[self.VALUE_PROP])
+        previous_value = self._previous_value
         with self._props.suspend_updates():
             self._props[self.VALUE_PROP] = self._value_to_model_value(value)
+            self._previous_value = value
         if self._send_update_on_value_change:
             self.update()
-        args = ValueChangeEventArguments(sender=self, client=self.client,
+        args = ValueChangeEventArguments[T](sender=self, client=self.client,
                                          value=self._value_to_event_value(value),
-                                         previous_value=self._value_to_event_value(previous_value))
+                                         previous_value=self._value_to_event_value(previous_value) if previous_value else None)
         for handler in self._change_handlers:
             handle_event(handler, args)
 

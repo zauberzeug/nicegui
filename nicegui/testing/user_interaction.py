@@ -79,19 +79,17 @@ class UserInteraction(Generic[T]):
 
                 if isinstance(element, ui.select):
                     if element.is_showing_popup:
-                        if isinstance(element.options, dict):
-                            target_value = next((k for k, v in element.options.items() if v == self.target), '')
-                        else:
-                            target_value = self.target
+                        target_value = ui.as_option(self.target)
+                        print("target value", target_value)
                         if element.multiple:
                             if target_value in element.value:
-                                element.value = [v for v in element.value if v != target_value]
+                                element.value = tuple(v for v in element.value if v != target_value)
                             elif target_value in element._values:  # pylint: disable=protected-access
-                                element.value = [*element.value, target_value]
+                                element.value = tuple([*element.value, target_value])
                             else:
                                 element._is_showing_popup = False  # pylint: disable=protected-access
                         else:
-                            element.value = target_value
+                            element.value = (target_value,)
                             element._is_showing_popup = False  # pylint: disable=protected-access
                     else:
                         element._is_showing_popup = True  # pylint: disable=protected-access
@@ -101,7 +99,7 @@ class UserInteraction(Generic[T]):
                         target_value = next((k for k, v in element.options.items() if v == self.target), '')
                     else:
                         target_value = self.target
-                    element.value = target_value
+                    element.value = (target_value,)
                     return self
 
                 elif isinstance(element, ui.tree) and isinstance(self.target, str):

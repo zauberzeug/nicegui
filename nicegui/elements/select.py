@@ -108,6 +108,7 @@ class Select(LabelElement, ValidationElement[tuple[T, ...]], ChoiceElement[T, Un
         elif mode == 'toggle':
             if value.value in [o.value for o in self.options]:
                 self.options = [o for o in self.options if o.value != value.value]
+                self._do_updates()
             else:
                 self.options.append(value)
         self._do_updates()

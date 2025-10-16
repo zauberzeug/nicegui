@@ -321,7 +321,7 @@ def test_popup_scroll_behavior(screen: Screen):
         ui.add_css('html { scroll-behavior: smooth }')
         ui.link('Go to bottom', '#bottom')
         ui.link_target('bottom').classes('mt-[2000px]')
-        ui.select(['apple', 'banana', 'cherry'], value='apple').props('behavior=dialog')
+        ui.select([ui.as_option('apple'), ui.as_option('banana'), ui.as_option('cherry')], selected=(ui.as_option('apple'),)).props('behavior=dialog')
 
     screen.open('/')
     screen.click('Go to bottom')

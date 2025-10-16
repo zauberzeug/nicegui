@@ -10,8 +10,8 @@ from .binding import BindableProperty
 
 
 class Timer:
-    active = BindableProperty()
-    interval = BindableProperty()
+    active = BindableProperty["Timer", bool]()
+    interval = BindableProperty["Timer", float]()
 
     def __init__(self,
                  interval: float,

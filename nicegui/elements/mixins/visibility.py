@@ -11,8 +11,8 @@ if TYPE_CHECKING:
 
 
 class Visibility:
-    visible = BindableProperty(
-        on_change=lambda sender, visible: cast(Self, sender)._handle_visibility_change(visible))  # pylint: disable=protected-access
+    visible = BindableProperty["Visibility", bool](
+        on_change=lambda sender, visible: sender._handle_visibility_change(visible))  # pylint: disable=protected-access
 
     def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
@@ -106,7 +106,7 @@ class Visibility:
         """
         self.visible = visible
 
-    def _handle_visibility_change(self, visible: str) -> None:
+    def _handle_visibility_change(self, visible: bool) -> None:
         """Called when the visibility of this element changes.
 
         :param visible: Whether the element should be visible.
