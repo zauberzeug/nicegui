@@ -8,9 +8,9 @@ import weakref
 from collections import defaultdict
 from collections.abc import Iterable, Mapping
 from contextvars import ContextVar
-from typing import TYPE_CHECKING, Any, Callable, Literal, Generic
+from typing import TYPE_CHECKING, Any, Callable, Generic, Literal
 
-from typing_extensions import dataclass_transform, TypeVar
+from typing_extensions import TypeVar, dataclass_transform
 
 from . import core
 from .logging import log

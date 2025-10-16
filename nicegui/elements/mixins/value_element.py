@@ -22,7 +22,7 @@ class ValueElement(Element, Generic[T, A]):
     - ``None``: The value is updated automatically by the Vue element.
     '''
 
-    value = BindableProperty["ValueElement[T]", T](
+    value = BindableProperty['ValueElement[T]', T](
         on_change=lambda sender, value: sender._handle_value_change(value))  # pylint: disable=protected-access
 
     def __init__(self, *,
@@ -38,7 +38,7 @@ class ValueElement(Element, Generic[T, A]):
         self._props[self.VALUE_PROP] = self._value_to_model_value(value)
         self._props['loopback'] = self.LOOPBACK
         self._change_handlers: list[Handler[ValueChangeEventArguments[T]]] = [on_value_change] if on_value_change else []
-        self._previous_value: T | None = None
+        self._previous_value: Optional[T] = None
 
         def handle_change(e: GenericEventArguments[A]) -> None:
             self._send_update_on_value_change = self.LOOPBACK is True

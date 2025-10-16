@@ -34,4 +34,4 @@ class Toggle(ChoiceElement[T], DisableableElement):
 
     def _value_to_model_value(self, value: tuple[T, ...]) -> str:
         vals = tuple(v for v in value if v in self.options)
-        return vals[0].value if vals else ""
+        return vals[0].value if vals else ''

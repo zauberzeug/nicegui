@@ -79,8 +79,8 @@ class UserInteraction(Generic[T]):
 
                 if isinstance(element, ui.select):
                     if element.is_showing_popup:
-                        target_value = ui.as_option(self.target)
-                        print("target value", target_value)
+                        # TODO: fix this and remove the type ignore
+                        target_value = ui.as_option(self.target)  # type: ignore
                         if element.multiple:
                             if target_value in element.value:
                                 element.value = tuple(v for v in element.value if v != target_value)
@@ -98,7 +98,8 @@ class UserInteraction(Generic[T]):
                     if isinstance(element.options, dict):
                         target_value = next((k for k, v in element.options.items() if v == self.target), '')
                     else:
-                        target_value = self.target
+                        # TODO: fix this and fix the type ignore
+                        target_value = self.target  # type: ignore
                     element.value = (target_value,)
                     return self
 
