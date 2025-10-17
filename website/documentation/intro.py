@@ -1,3 +1,4 @@
+import random
 from typing import Callable
 
 from nicegui import ui
@@ -55,6 +56,32 @@ def create_intro() -> None:
             return text[::-1]
 
         return root
+
+    @_main_page_demo('Event System', '''
+        Use an [Event](/documentation/event) to trigger actions and pass data.
+        Here we have an IoT temperature sensor submitting its readings to a [FastAPI endpoint](/documentation/section_pages_routing#api_responses),
+        which emits an event, and the log is updated with the new value.
+    ''')
+    def event_system_demo():
+        # from nicegui import Event, app, ui
+
+        # sensor_event = Event[int]()
+
+        # @app.get('/sensor')
+        # def sensor_webhook(temperature: float):
+        #     sensor_event.emit(temperature)
+
+        # @ui.page('/')
+        # def sensor_dashboard():
+        #     sensor_log = ui.log()
+        #     sensor_event.subscribe(
+        #         lambda t: sensor_log.push(f'Temperature: {t:.1f} °C'))
+
+        # ui.run()
+
+        # END OF DEMO
+        sensor_log = ui.log()
+        ui.timer(5.0, lambda: sensor_log.push(f'Temperature: {20 + random.random() * 10:.1f} °C'), immediate=True)
 
 
 def _main_page_demo(title: str, explanation: str) -> Callable:
