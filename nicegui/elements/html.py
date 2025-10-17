@@ -7,7 +7,7 @@ from .mixins.content_element import ContentElement
 
 class Html(ContentElement):
 
-    def __init__(self, content: str = '', *, sanitize: Callable[[str], str] | Literal[False], tag: str = 'div') -> None:
+    def __init__(self, content: str = '', *, sanitize: Callable[[str], str] | Literal[False] = False, tag: str = 'div') -> None:
         """HTML Element
 
         Renders arbitrary HTML onto the page, wrapped in the specified tag.
