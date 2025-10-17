@@ -3,4 +3,7 @@ export default {
   mounted() {
     if (!navigator.clipboard) this.$el.querySelector(".q-btn").style.display = "none";
   },
+  props: {
+    content: String,
+  },
 };
