@@ -257,7 +257,7 @@ doc.text('Package for Installation', '''
     Just make sure
 
     - to call `ui.run` with `reload=False` in your main script to disable the auto-reload feature, and
-    - to use either a `root` page function in `ui.run` or decorated `@page` functions. The script mode is not supported.
+    - to pass a `root` page function to `ui.run` or define at least one decorated `@page` function.
 
     Running the `nicegui-pack` command below will create an executable `myapp` in the `dist` folder:
 ''')
