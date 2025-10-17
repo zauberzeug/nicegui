@@ -46,12 +46,14 @@ class ChoiceElement(ValueElement[tuple[T, ...], A]):
                  ) -> None:
         self.options = list(options)
         super().__init__(tag=tag, value=_check_values(options, value), on_value_change=on_change, js_handler=js_handler)
-        self._do_updates()
+        self._update_options()
 
-    def _do_updates(self) -> None:
+    def _update_values_and_labels(self) -> None:
         self._values = [o.value for o in self.options]
         self._labels = [o.label for o in self.options]
         self._index_to_option: dict[str, T] = {o.id: o for o in self.options}
+
+    def _update_options(self) -> None:
         before_value = self.value
         self._props['options'] = self.options
         new_val = self._value_to_model_value(before_value)
@@ -60,7 +62,8 @@ class ChoiceElement(ValueElement[tuple[T, ...], A]):
 
     def update(self) -> None:
         with self._props.suspend_updates():
-            self._do_updates()
+            self._update_values_and_labels()
+            self._update_options()
         super().update()
 
     def set_options(self, options: Iterable[T], *, value: Optional[tuple[T, ...]] = None) -> None:

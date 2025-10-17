@@ -45,7 +45,7 @@ class ValueElement(Element, Generic[T, A]):
             self.set_value(self._event_args_to_value(e))
             self._send_update_on_value_change = True
 
-        self.on(f'update:{self.VALUE_PROP}', handle_change, [None], throttle=throttle, js_handler=js_handler or '(...args) => emit(...args)')
+        self.on(f'update:{self.VALUE_PROP}', handle_change, [None], throttle=throttle, js_handler=js_handler)
 
     def on_value_change(self, callback: Handler[ValueChangeEventArguments[T]]) -> Self:
         """Add a callback to be invoked when the value changes."""

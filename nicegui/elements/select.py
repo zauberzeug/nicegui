@@ -83,14 +83,16 @@ class Select(LabelElement, ValidationElement[tuple[T, ...]], ChoiceElement[T, Un
         if isinstance(e.args, dict):
             return (self._index_to_option[e.args['id']],)
         if isinstance(e.args, str) and self.new_value_mode:
-            if (new_option := self._new_val_to_option(self, e.args)):
-                return (self._handle_new_value(new_option),)
+            new_option = self._new_val_to_option(self, e.args)
+            if new_option and (new_val := self._handle_new_value(new_option)):
+                return (new_val,)
             return ()
         else:
             args: list[T] = []
             for a in e.args:
                 if isinstance(a, str) and self.new_value_mode and (new_option := self._new_val_to_option(self, a)):
-                    args.append(self._handle_new_value(new_option))
+                    if (new_val := self._handle_new_value(new_option)):
+                        args.append(new_val)
                 elif isinstance(a, dict):
                     args.append(self._index_to_option[a['id']])
             if self.new_value_mode == 'add-unique':
@@ -98,7 +100,7 @@ class Select(LabelElement, ValidationElement[tuple[T, ...]], ChoiceElement[T, Un
                 # ^ handle issue #4896: eliminate duplicate arguments
             return tuple(args)
 
-    def _handle_new_value(self, value: T) -> T:
+    def _handle_new_value(self, value: T) -> Optional[T]:
         mode = self.new_value_mode
         if mode == 'add':
             self.options.append(value)
@@ -108,11 +110,11 @@ class Select(LabelElement, ValidationElement[tuple[T, ...]], ChoiceElement[T, Un
         elif mode == 'toggle':
             if value.value in [o.value for o in self.options]:
                 self.options = [o for o in self.options if o.value != value.value]
-                self._do_updates()
             else:
                 self.options.append(value)
-        self._do_updates()
-        return value
+        self._update_values_and_labels()
+        self._update_options()
+        return value if value.value in self._values else None
 
     def _value_to_model_value(self, value: tuple[T, ...]) -> Union[tuple[T, ...], T]:
         if self.multiple:

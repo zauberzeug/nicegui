@@ -162,7 +162,7 @@ def test_add_new_values(screen:  Screen, multiple: bool, new_value_mode: Optiona
             screen.should_contain("value = ('a', 'd')" if multiple else "value = ('d',)")
             screen.should_contain("options = ('a', 'b', 'c', 'd')")
         elif new_value_mode == 'toggle':
-            screen.should_contain("value = ('a',)")
+            screen.should_contain("value = ('a',)" if multiple else "value = ()")
             screen.should_contain("options = ('a', 'b', 'c')")
 
 
