@@ -196,7 +196,7 @@
   border: 1px solid #8884;
 }
 .nicegui-markdown pre {
-  margin: 0.5rem 0.5rem;
+  margin: 0.5rem 0;
 }
 .nicegui-markdown .mermaid-pre > .mermaid {
   display: none;
@@ -256,6 +256,9 @@ h6.q-timeline__title {
   border: 1pt solid rgba(127, 159, 191, 0.15);
   box-shadow: 0 0 0.5em rgba(127, 159, 191, 0.05);
   border-radius: 0.25rem;
+}
+.nicegui-code pre {
+  padding: 0 0.5rem;
 }
 .nicegui-matplotlib > svg,
 .nicegui-pyplot > svg {
