@@ -13,6 +13,7 @@ class CustomServerConfig(uvicorn.Config):
     storage_secret: str | None = None
     method_queue: multiprocessing.Queue | None = None
     response_queue: multiprocessing.Queue | None = None
+    event_queue: multiprocessing.Queue | None = None
 
 
 class Server(uvicorn.Server):
@@ -26,10 +27,15 @@ class Server(uvicorn.Server):
     def run(self, sockets: list[socket.socket] | None = None) -> None:
         self.instance = self
         assert isinstance(self.config, CustomServerConfig)
-        if self.config.method_queue is not None and self.config.response_queue is not None:
+        if (
+            self.config.method_queue is not None and
+            self.config.response_queue is not None and
+            self.config.event_queue is not None
+        ):
             core.app.native.main_window = native.WindowProxy()
             native.method_queue = self.config.method_queue
             native.response_queue = self.config.response_queue
+            native.event_queue = self.config.event_queue
 
         storage.set_storage_secret(self.config.storage_secret)
         super().run(sockets=sockets)

@@ -396,6 +396,12 @@ class JsonEditorChangeEventArguments(UiEventArguments):
     errors: dict = field(default_factory=dict)
 
 
+@dataclass(**KWONLY_SLOTS)
+class PywebviewEventArguments(EventArguments):
+    id: str
+    args: tuple[Any, ...]
+
+
 EventT = TypeVar('EventT', bound=EventArguments)
 Handler = Union[Callable[[EventT], Any], Callable[[], Any]]
 
