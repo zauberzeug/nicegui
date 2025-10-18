@@ -7,4 +7,4 @@ from .screen_plugin import (  # noqa: F401
     pytest_runtest_makereport,
     screen,
 )
-from .user_plugin import create_user, user  # noqa: F401
+from .user_plugin import create_user, user_startup_func, user  # noqa: F401
