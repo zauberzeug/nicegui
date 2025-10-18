@@ -59,29 +59,42 @@ def create_intro() -> None:
 
     @_main_page_demo('Event System', '''
         Use an [Event](/documentation/event) to trigger actions and pass data.
-        Here we have an IoT temperature sensor submitting its readings to a [FastAPI endpoint](/documentation/section_pages_routing#api_responses),
-        which emits an event, and the log is updated with the new value.
+        Here we have an IoT temperature sensor submitting its readings to a [FastAPI endpoint](/documentation/section_pages_routing#api_responses) with path `/sensor`.
+        If a new value arrives, it emits an event for the chart to be updated.
     ''')
     def event_system_demo():
-        # from nicegui import Event, app, ui
+        from datetime import datetime
 
-        # sensor_event = Event[int]()
+        from nicegui import Event, app, ui
+
+        sensor = Event[float]()
 
         # @app.get('/sensor')
-        # def sensor_webhook(temperature: float):
-        #     sensor_event.emit(temperature)
+        def sensor_webhook(temperature: float):
+            sensor.emit(temperature)
 
-        # @ui.page('/')
-        # def sensor_dashboard():
-        #     sensor_log = ui.log()
-        #     sensor_event.subscribe(
-        #         lambda t: sensor_log.push(f'Temperature: {t:.1f} °C'))
+        def root():
+            chart = ui.echart({
+                'xAxis': {'type': 'time', 'axisLabel': {'hideOverlap': True}},
+                'yAxis': {'type': 'value', 'min': 'dataMin'},
+                'series': [{'type': 'line', 'data': [], 'smooth': True}],
+            })
+            data = chart.options['series'][0]['data']
 
-        # ui.run()
+            def update_chart(temperature: float):
+                data.append([datetime.now().timestamp() * 1000, temperature])
+                if len(data) > 10:
+                    data.pop(0)
 
-        # END OF DEMO
-        sensor_log = ui.log()
-        ui.timer(5.0, lambda: sensor_log.push(f'Temperature: {20 + random.random() * 10:.1f} °C'), immediate=True)
+            sensor.subscribe(update_chart)
+            #
+            # END OF DEMO
+
+            data.append([datetime.now().timestamp() * 1000, 24.0])
+            ui.timer(1.0, lambda: update_chart(round(data[-1][1] + (random.random() - 0.5), 1)), immediate=False)
+        app  # noqa: B018 to avoid unused import warning
+
+        return root
 
 
 def _main_page_demo(title: str, explanation: str) -> Callable:
