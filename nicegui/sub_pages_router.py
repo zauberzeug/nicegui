@@ -43,8 +43,6 @@ class SubPagesRouter:
     def on_path_changed(self, handler: Callable[[str], None]) -> None:
         """Register a callback to be invoked when the path changes.
 
-        **This is an experimental feature, and the API is subject to change.**
-
         :param handler: callback function that receives the new path as its argument
         """
         self._path_changed_handlers.append(handler)

@@ -33,8 +33,6 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
         Routes are defined as path patterns mapping to page builder functions.
         Path parameters like "/user/{id}" are extracted and passed to the builder function.
 
-        **This is an experimental feature, and the API is subject to change.**
-
         *Added in version 2.22.0*
 
         :param routes: dictionary mapping path patterns to page builder functions
