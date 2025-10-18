@@ -17,6 +17,7 @@ export default {
     await this.$nextTick(); // NOTE: wait for window.path_prefix to be set
     await loadResource(window.path_prefix + `${this.resource_path}/leaflet/leaflet.css`);
     await Promise.all(this.additional_resources.map((resource) => loadResource(resource)));
+    window.L = L;
     if (this.draw_control) {
       await Promise.all([
         loadResource(window.path_prefix + `${this.resource_path}/leaflet-draw/leaflet.draw.css`),
