@@ -250,6 +250,7 @@ def run(root: Optional[Callable] = None, *,
         reload_excludes=split_args(uvicorn_reload_excludes) if reload else None,
         reload_dirs=split_args(uvicorn_reload_dirs) if reload else None,
         log_level=uvicorn_logging_level,
+        ws='wsproto',
         **kwargs,
     )
     config.storage_secret = storage_secret
