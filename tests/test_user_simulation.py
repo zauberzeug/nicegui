@@ -1,5 +1,6 @@
 import csv
 import re
+import sys
 from typing import Callable, Union
 
 import pytest
@@ -723,3 +724,23 @@ async def test_tree_with_labels(user: User) -> None:
     await user.should_not_see('A1')
     await user.should_not_see('A21')
     await user.should_not_see('A22')
+
+
+@pytest.mark.order(1)
+async def test_module_import_isolation_first_test(user: User) -> None:  # pylint: disable=unused-argument
+    """First test that imports a module - should not leak into the next test."""
+    assert 'test_isolation_module' not in sys.modules, \
+        'test_isolation_module should not be in sys.modules at start of first test'
+
+    sys.modules['test_isolation_module'] = type(sys)('test_isolation_module')
+    sys.modules['test_isolation_module'].value = 'from_first_test'  # type: ignore
+
+    assert 'test_isolation_module' in sys.modules
+
+
+@pytest.mark.order(2)
+async def test_module_import_isolation_second_test(user: User) -> None:  # pylint: disable=unused-argument
+    """Second test that should have a clean sys.modules without imports from previous test."""
+
+    assert 'test_isolation_module' not in sys.modules, \
+        'test_isolation_module from previous test is still in sys.modules - test isolation broken!'

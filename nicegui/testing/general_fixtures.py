@@ -1,5 +1,6 @@
 import gc
 import importlib
+import sys
 from collections.abc import Generator
 from copy import copy
 from pathlib import Path
@@ -57,6 +58,8 @@ def nicegui_reset_globals() -> Generator[None, None, None]:
     default_styles = {t: copy(t._default_style) for t in element_types}  # pylint: disable=protected-access
     default_props = {t: copy(t._default_props) for t in element_types}  # pylint: disable=protected-access
 
+    modules_before = set(sys.modules.keys())
+
     Client.instances.clear()
     Client.page_routes.clear()
     app.reset()
@@ -76,6 +79,10 @@ def nicegui_reset_globals() -> Generator[None, None, None]:
         t._default_classes = default_classes[t]  # pylint: disable=protected-access
         t._default_style = default_styles[t]  # pylint: disable=protected-access
         t._default_props = default_props[t]  # pylint: disable=protected-access
+
+    modules_after = set(sys.modules.keys())
+    for module_name in modules_after - modules_before:
+        del sys.modules[module_name]
 
 
 def find_all_subclasses(cls: type) -> list[type]:
