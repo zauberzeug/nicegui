@@ -58,8 +58,6 @@ def nicegui_reset_globals() -> Generator[None, None, None]:
     default_styles = {t: copy(t._default_style) for t in element_types}  # pylint: disable=protected-access
     default_props = {t: copy(t._default_props) for t in element_types}  # pylint: disable=protected-access
 
-    modules_before = set(sys.modules.keys())
-
     Client.instances.clear()
     Client.page_routes.clear()
     app.reset()
@@ -80,19 +78,10 @@ def nicegui_reset_globals() -> Generator[None, None, None]:
         t._default_style = default_styles[t]  # pylint: disable=protected-access
         t._default_props = default_props[t]  # pylint: disable=protected-access
 
-    modules_after = set(sys.modules.keys())
-    # NOTE: remove project modules to ensure @ui.page() decorators run again when main file is re-executed
-    for module_name in modules_after - modules_before:
-        module = sys.modules.get(module_name)
-        if module is None:
-            continue
-        module_file = getattr(module, '__file__', None)
-        if not module_file:
-            continue  # NOTE: keep built-in modules like _ast, errno, ...
-        module_path = Path(module_file).resolve()
-        is_in_site_packages = any(part == 'site-packages' for part in module_path.parts)
-        is_in_stdlib = 'lib/python' in str(module_path) and 'site-packages' not in str(module_path)
-        if not is_in_site_packages and not is_in_stdlib:
+    # NOTE: remove only modules that registered pages to ensure they are imported again when the main file is re-executed so that @ui.page() decorators run again
+    modules_with_page_registrations = {func.__module__ for func in Client.page_routes}
+    for module_name in modules_with_page_registrations:
+        if module_name in sys.modules:
             del sys.modules[module_name]
 
 
