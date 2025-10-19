@@ -727,20 +727,36 @@ async def test_tree_with_labels(user: User) -> None:
 
 
 @pytest.mark.order(1)
-async def test_module_import_isolation_first_test(user: User) -> None:  # pylint: disable=unused-argument
-    """First test that imports a module - should not leak into the next test."""
-    assert 'test_isolation_module' not in sys.modules, \
-        'test_isolation_module should not be in sys.modules at start of first test'
+async def test_module_import_isolation_first_test(user: User, tmp_path) -> None:  # pylint: disable=unused-argument
+    """First test that imports a module - should not leak into the next test. See https://github.com/zauberzeug/nicegui/pull/5300"""
 
-    sys.modules['test_isolation_module'] = type(sys)('test_isolation_module')
-    sys.modules['test_isolation_module'].value = 'from_first_test'  # type: ignore
+    test_module = tmp_path / 'test_isolation_module.py'
+    test_module.write_text('value = "from_first_test"')
 
-    assert 'test_isolation_module' in sys.modules
+    sys.path.insert(0, str(tmp_path))
+    try:
+        import test_isolation_module  # type: ignore  # noqa: F401
+        assert 'test_isolation_module' in sys.modules
+        assert sys.modules['test_isolation_module'].value == 'from_first_test'  # type: ignore
+    finally:
+        if str(tmp_path) in sys.path:
+            sys.path.remove(str(tmp_path))
 
 
 @pytest.mark.order(2)
-async def test_module_import_isolation_second_test(user: User) -> None:  # pylint: disable=unused-argument
-    """Second test that should have a clean sys.modules without imports from previous test."""
+async def test_module_import_isolation_second_test(user: User, tmp_path) -> None:  # pylint: disable=unused-argument
+    """Second test that should have a clean sys.modules without imports from previous test. See https://github.com/zauberzeug/nicegui/pull/5300"""
 
     assert 'test_isolation_module' not in sys.modules, \
         'test_isolation_module from previous test is still in sys.modules - test isolation broken!'
+
+    test_module = tmp_path / 'test_isolation_module.py'
+    test_module.write_text('value = "from_second_test"')
+
+    sys.path.insert(0, str(tmp_path))
+    try:
+        import test_isolation_module  # type: ignore  # noqa: F401
+        assert sys.modules['test_isolation_module'].value == 'from_second_test'  # type: ignore
+    finally:
+        if str(tmp_path) in sys.path:
+            sys.path.remove(str(tmp_path))

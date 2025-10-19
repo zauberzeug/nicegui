@@ -81,8 +81,19 @@ def nicegui_reset_globals() -> Generator[None, None, None]:
         t._default_props = default_props[t]  # pylint: disable=protected-access
 
     modules_after = set(sys.modules.keys())
+    # NOTE: remove project modules to ensure @ui.page() decorators run again when main file is re-executed
     for module_name in modules_after - modules_before:
-        del sys.modules[module_name]
+        module = sys.modules.get(module_name)
+        if module is None:
+            continue
+        module_file = getattr(module, '__file__', None)
+        if not module_file:
+            continue  # NOTE: keep built-in modules like _ast, errno, ...
+        module_path = Path(module_file).resolve()
+        is_in_site_packages = any(part == 'site-packages' for part in module_path.parts)
+        is_in_stdlib = 'lib/python' in str(module_path) and 'site-packages' not in str(module_path)
+        if not is_in_site_packages and not is_in_stdlib:
+            del sys.modules[module_name]
 
 
 def find_all_subclasses(cls: type) -> list[type]:
