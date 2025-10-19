@@ -1,7 +1,7 @@
 """UI module with lazy imports for improved startup performance."""
 from typing import TYPE_CHECKING
 
-from lazy_imports import LazyModule
+from lazy_imports import LazyModule, load
 
 __all__ = [
     'add_body_html',
@@ -139,7 +139,7 @@ __all__ = [
 # Create lazy module outside TYPE_CHECKING to ensure it's always available
 _mod = LazyModule(
     # String with all import statements - using absolute imports
-    """
+    '''
 from nicegui.context import context
 from nicegui.element import Element as element
 from nicegui.elements.aggrid import AgGrid as aggrid
@@ -265,7 +265,7 @@ from nicegui.functions.update import update
 from nicegui.page import page
 from nicegui.ui_run import run
 from nicegui.ui_run_with import run_with
-    """,
+    ''',
     name=__name__,
     doc=__doc__,
 )
@@ -397,6 +397,5 @@ if TYPE_CHECKING:
     from .ui_run import run
     from .ui_run_with import run_with
 else:
-    # Use the __getattr__ pattern to make lazy loading work
-    __getattr__, __dir__ = _mod.__getattr__, _mod.__dir__
-
+    # Register the lazy module in sys.modules to enable proper caching
+    load(_mod)
