@@ -728,7 +728,7 @@ async def test_tree_with_labels(user: User) -> None:
 
 @pytest.mark.order(1)
 async def test_module_import_isolation_first_test(user: User, tmp_path) -> None:  # pylint: disable=unused-argument
-    """First test that imports a module with @ui.page() - should not leak be there in the next test. See https://github.com/zauberzeug/nicegui/pull/5300"""
+    """First test that imports a module with @ui.page() - should not be there in the next test. See https://github.com/zauberzeug/nicegui/pull/5300"""
 
     test_module = tmp_path / 'test_isolation_module.py'
     test_module.write_text('''
