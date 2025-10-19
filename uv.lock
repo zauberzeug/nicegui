@@ -1844,6 +1844,34 @@ wheels = [
 ]
 
 [[package]]
+name = "lazy-imports"
+version = "1.1.0"
+source = { registry = "https://pypi.org/simple" }
+resolution-markers = [
+    "python_full_version < '3.10'",
+]
+sdist = { url = "https://files.pythonhosted.org/packages/ec/cd/94bf4a69be8f2ffe5584562bb4f2adcbae8004ffe1803dba118750ae17d5/lazy_imports-1.1.0.tar.gz", hash = "sha256:e6ea5a1e4f09a861357e670b7aa61efcbce6fe29361785dd253df66f8ddbc36b", size = 24601, upload-time = "2025-10-31T19:06:41.948Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/74/9d/70a2d902d0d9530f36e60d6ef2f97a47363d2f20cac02999e29cc97b0756/lazy_imports-1.1.0-py3-none-any.whl", hash = "sha256:49fb1034ffe325fbec6e1f0e1e5b47eaaf43989b17be6c090added97c2b3ec24", size = 18964, upload-time = "2025-10-31T19:06:40.707Z" },
+]
+
+[[package]]
+name = "lazy-imports"
+version = "1.2.0"
+source = { registry = "https://pypi.org/simple" }
+resolution-markers = [
+    "python_full_version >= '3.14'",
+    "python_full_version == '3.13.*'",
+    "python_full_version == '3.12.*'",
+    "python_full_version == '3.11.*'",
+    "python_full_version == '3.10.*'",
+]
+sdist = { url = "https://files.pythonhosted.org/packages/25/67/04432aae0c1e2729bff14e1841f4a3fb63a9e354318e66622251487760c3/lazy_imports-1.2.0.tar.gz", hash = "sha256:3c546b3c1e7c4bf62a07f897f6179d9feda6118e71ef6ecc47a339cab3d2e2d9", size = 24470, upload-time = "2025-12-28T13:51:51.218Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/cd/62/60ed24fa8707f10c1c5aef94791252b820be3dd6bdfc6e2fcdb08bc8912f/lazy_imports-1.2.0-py3-none-any.whl", hash = "sha256:97134d6552e2ba16f1a278e316f05313ab73b360e848e40d593d08a5c2406fdf", size = 18681, upload-time = "2025-12-28T13:51:49.802Z" },
+]
+
+[[package]]
 name = "limits"
 version = "4.2"
 source = { registry = "https://pypi.org/simple" }
@@ -2543,6 +2571,8 @@ dependencies = [
     { name = "ifaddr" },
     { name = "itsdangerous" },
     { name = "jinja2" },
+    { name = "lazy-imports", version = "1.1.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.10'" },
+    { name = "lazy-imports", version = "1.2.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.10'" },
     { name = "markdown2" },
     { name = "orjson", marker = "platform_machine != 'i386' and platform_machine != 'i686' and platform_python_implementation != 'PyPy'" },
     { name = "pydantic-core" },
@@ -2667,6 +2697,7 @@ requires-dist = [
     { name = "ifaddr", specifier = ">=0.2.0" },
     { name = "itsdangerous", specifier = ">=2.1.2,<3" },
     { name = "jinja2", specifier = ">=3.1.6,<4" },
+    { name = "lazy-imports", specifier = ">=1.1.0" },
     { name = "markdown2", specifier = ">=2.4.7,!=2.4.11" },
     { name = "matplotlib", marker = "extra == 'matplotlib'", specifier = ">=3.5.0,<4" },
     { name = "nicegui-highcharts", marker = "extra == 'highcharts'", specifier = ">=2.0.2,<3" },
