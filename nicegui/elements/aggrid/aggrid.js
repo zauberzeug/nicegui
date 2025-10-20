@@ -6,10 +6,11 @@ export default {
   mounted() {
     this.update_grid();
 
-    this.themeObserver = new MutationObserver(() =>
-      this.$el.setAttribute("data-ag-theme-mode", document.body.classList.contains("body--dark") ? "dark" : "light")
-    );
+    const updateTheme = () =>
+      this.$el.setAttribute("data-ag-theme-mode", document.body.classList.contains("body--dark") ? "dark" : "light");
+    this.themeObserver = new MutationObserver(updateTheme);
     this.themeObserver.observe(document.body, { attributes: true, attributeFilter: ["class"] });
+    updateTheme();
   },
   unmounted() {
     this.themeObserver.disconnect();

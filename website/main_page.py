@@ -121,13 +121,13 @@ def create() -> None:
                 'customizable [color themes](/documentation/section_styling_appearance#color_theming)',
                 'custom CSS and classes',
                 'modern look with material design',
-                '[Tailwind CSS](https://tailwindcss.com/) auto-completion',
+                '[Tailwind CSS](https://tailwindcss.com/)',
             ])
             features('source', 'Coding', [
-                'routing for multiple [pages](/documentation/page)',
+                'single page apps with [ui.sub_pages](/documentation/sub_pages)',
                 'auto-reload on code change',
                 'persistent [user sessions](/documentation/storage)',
-                'super nice [testing framework](/documentation/section_testing)',
+                'super powerful [testing framework](/documentation/section_testing)',
             ])
             features('anchor', 'Foundation', [
                 'generic [Vue](https://vuejs.org/) to Python bridge',

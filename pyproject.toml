@@ -96,8 +96,6 @@ main_file = ""
 testpaths = ["tests"]
 filterwarnings = [
   'error',
-  'ignore::DeprecationWarning:^websockets\.legacy(\.|$)',
-  'ignore::DeprecationWarning:^uvicorn\.protocols\.websockets(\.|$)',
   "ignore:'asyncio\\.iscoroutinefunction' is deprecated and slated for removal:DeprecationWarning",
 ]
 
