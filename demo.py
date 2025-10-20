@@ -14,10 +14,10 @@ if __name__ in {"__main__", "__mp_main__"}:
 
     @ui.page("/")
     def page():
-        s = select(
+        select(
             options=[1,2,3], 
-            value=1, 
-            on_change=lambda e: print(e.value),
+            value=None, 
+            on_change=lambda e: print(e.value, e.previous_value),
         )
 
         select_people = (
@@ -27,7 +27,8 @@ if __name__ in {"__main__", "__mp_main__"}:
                     Person(label="Falko", value=1, icon="person-outline", caption="Company: Trilliant Health"),
                     Person(label="Zauberzeug", value=2, icon="people-outline", caption="Company"),
                 ],
-                value=()
+                value=(),
+                on_change=lambda e: print(e.value)
             )
             .props("use-chips")
             .classes("w-64")
