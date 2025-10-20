@@ -1,10 +1,11 @@
-from typing import Optional
+from typing import Optional, Literal
 
 import pytest
 from selenium.webdriver import Keys
 
 from nicegui import ui
 from nicegui.testing import Screen, User
+from nicegui.elements.choice_element import Option
 
 
 def test_select(screen: Screen):
@@ -68,7 +69,7 @@ def test_replace_select(screen: Screen):
 def test_multi_select(screen: Screen):
     @ui.page('/')
     def page():
-        s = ui.select(['Alice', 'Bob', 'Carol'], value='Alice', multiple=True).props('use-chips')
+        s = ui.select(['Alice', 'Bob', 'Carol'], value=('Alice',)).props('use-chips')
         ui.label().bind_text_from(s, 'value', backward=str)
 
     screen.open('/')
@@ -112,11 +113,14 @@ def test_set_options(screen:  Screen):
 @pytest.mark.parametrize('option_dict', [False, True])
 @pytest.mark.parametrize('multiple', [False, True])
 @pytest.mark.parametrize('new_value_mode', ['add', 'add-unique', 'toggle', None])
-def test_add_new_values(screen:  Screen, option_dict: bool, multiple: bool, new_value_mode: Optional[str]):
+def test_add_new_values(screen:  Screen, option_dict: bool, multiple: bool, new_value_mode: Optional[Literal['add', 'add-unique', 'toggle']]):
     @ui.page('/')
     def page():
-        options = {'a': 'A', 'b': 'B', 'c': 'C'} if option_dict else ['a', 'b', 'c']
-        s = ui.select(options=options, multiple=multiple, new_value_mode=new_value_mode)
+        options = [Option(label=v, value=k) for k, v in {'a': 'A', 'b': 'B', 'c': 'C'}.items()] if option_dict else ['a', 'b', 'c']
+        if multiple:
+            s = ui.select(options=options, value=(), new_value_mode=new_value_mode)
+        else:
+            s = ui.select(options=options, new_value_mode=new_value_mode)
         ui.label().bind_text_from(s, 'value', lambda v: f'value = {v}')
         ui.label().bind_text_from(s, 'options', lambda v: f'options = {v}')
 
