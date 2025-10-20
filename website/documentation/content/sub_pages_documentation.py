@@ -1,5 +1,5 @@
 import asyncio
-from typing import Any, Awaitable, Callable, Dict, Optional
+from typing import Any, Awaitable, Callable, Optional
 
 from nicegui import PageArguments, background_tasks, ui
 
@@ -18,8 +18,8 @@ class FakeSubPages(ui.column):
         self._render('/')
         self.move()  # move to end
 
-    def link(self, text: str, route: str, **kwargs: Any) -> None:
-        ui.label(text).classes('nicegui-link cursor-pointer').on('click', lambda: self._render(route, **kwargs))
+    def link(self, text: str, route: str, **kwargs: Any) -> ui.label:
+        return ui.label(text).classes('nicegui-link cursor-pointer').on('click', lambda: self._render(route, **kwargs))
 
     def _render(self, route: str, **kwargs: Any) -> None:
         if self.task and not self.task.done():
@@ -46,8 +46,6 @@ class FakeArguments:
     The `ui.sub_pages` element itself functions as the container for the currently active sub page.
     You only need to provide the routes for each view builder function.
     NiceGUI takes care of replacing the content without triggering a full page reload when the URL changes.
-
-    **NOTE: This is an experimental feature, and the API is subject to change.**
 ''')
 def main_demo() -> None:
     from uuid import uuid4
