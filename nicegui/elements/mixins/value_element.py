@@ -133,7 +133,7 @@ class ValueElement(Element, Generic[V]):
         for handler in self._change_handlers:
             handle_event(handler, args)
 
-    def _event_args_to_value(self, e: GenericEventArguments) -> V:
+    def _event_args_to_value(self, e: GenericEventArguments[Any]) -> V:
         return e.args
 
     def _value_to_model_value(self, value: V) -> Any:

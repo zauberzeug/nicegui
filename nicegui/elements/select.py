@@ -9,11 +9,11 @@ from .mixins.validation_element import ValidationDict, ValidationElement, Valida
 from dataclasses import dataclass
 
 
-class Select(LabelElement, ValidationElement, ChoiceElement[VAL, T], DisableableElement, Generic[VAL, T], component='select.js'):
+class Select(LabelElement, ValidationElement, ChoiceElement[Union[tuple[T, ...], Optional[T]], T], DisableableElement, Generic[VAL, T], component='select.js'):
 
     def __init__(self,
                  options: Union[Iterable[P], Iterable[T]], *,
-                 label: Optional[str] = None,
+                 label: str = "",
                  value: Union[tuple[Option[P, P], ...], tuple[T, ...], tuple[P, ...], Optional[P], Optional[Option[P, P]]] = None,
                  on_change: Optional[Union[
                     Handler[ValueChangeEventArguments[tuple[T, ...]]], 
@@ -65,9 +65,9 @@ class Select(LabelElement, ValidationElement, ChoiceElement[VAL, T], Disableable
         if isinstance(value, JsonPrimitive):
             value = to_option(value)
         if all(isinstance(v, JsonPrimitive) for v in options):
-            super().__init__(label=label, options=[to_option(v) for v in options], value=value, on_change=on_change, validation=validation)
+            super().__init__(label=label or None, options=[to_option(v) for v in options], value=value, on_change=on_change, validation=validation)
         else:
-            super().__init__(label=label, options=options, value=value, on_change=on_change, validation=validation)
+            super().__init__(label=label or None, options=options, value=value, on_change=on_change, validation=validation)
         if new_value_mode is not None:
             self._props['new-value-mode'] = new_value_mode
             with_input = True
@@ -89,7 +89,7 @@ class Select(LabelElement, ValidationElement, ChoiceElement[VAL, T], Disableable
         """Whether the options popup is currently shown."""
         return self._is_showing_popup
 
-    def _event_args_to_value(self, e: GenericEventArguments[Union[list[Union[OptionDict[Any, Any], str]], Optional[Union[OptionDict[Any, Any], str]]]]) -> Any:
+    def _event_args_to_value(self, e: GenericEventArguments[Union[list[Union[OptionDict[Any, Any], str]], Optional[Union[OptionDict[Any, Any], str]]]]) -> Union[tuple[T, ...], Optional[T]]:
         # pylint: disable=too-many-nested-blocks
         if isinstance(e.args, list):
             if self.new_value_mode == 'add-unique':
@@ -101,7 +101,7 @@ class Select(LabelElement, ValidationElement, ChoiceElement[VAL, T], Disableable
                             break
             args = [self._id_to_option[arg['id']] if isinstance(arg, dict) else self._handle_new_value(arg) for arg in e.args]
             args = [v for v in args if v is not None]
-            return [arg for arg in args if arg.value in self._values]
+            return tuple(arg for arg in args if arg.value in self._values)
         else:  # noqa: PLR5501
             if e.args is None:
                 return None
@@ -135,61 +135,70 @@ class Select(LabelElement, ValidationElement, ChoiceElement[VAL, T], Disableable
 
 @overload
 def select(
-    options: Iterable[T], value: tuple[T, ...], on_change: Optional[Handler[ValueChangeEventArguments[tuple[T, ...]]]] = ...
+    options: Iterable[T], label: str = ..., value: tuple[T, ...] = ..., on_change: Optional[Handler[ValueChangeEventArguments[tuple[T, ...]]]] = ...
     ) -> Select[tuple[T, ...], T]:
     ...
 
 @overload
 def select(
-    options: Iterable[T], value: Literal[None] = ..., on_change: Optional[Handler[ValueChangeEventArguments[Optional[T]]]] = ...
+    options: Iterable[T], label: str, value: Literal[None] = ..., on_change: Optional[Handler[ValueChangeEventArguments[Optional[T]]]] = ...
     ) -> Select[Optional[T], T]:
     ...
 
 @overload
 def select(
-    options: Iterable[P], value: Optional[P], on_change: Optional[Handler[ValueChangeEventArguments[Optional[Option[P, P]]]]] = ...
+    options: Iterable[P], label: str = ..., value: Optional[P] = ..., on_change: Optional[Handler[ValueChangeEventArguments[Optional[Option[P, P]]]]] = ...
     ) -> Select[Optional[Option[P, P]], Option[P, P]]:
     ...
 
+
 @overload
 def select(
-    options: Iterable[T], value: Optional[T], on_change: Optional[Handler[ValueChangeEventArguments[Optional[T]]]] = ...
+    options: Iterable[P], label: str, value: Optional[P], on_change: Optional[Handler[ValueChangeEventArguments[Optional[Option[P, P]]]]] = ...
+    ) -> Select[Optional[Option[P, P]], Option[P, P]]:
+    ...
+
+
+@overload
+def select(
+    options: Iterable[T], label: str, value: Optional[T], on_change: Optional[Handler[ValueChangeEventArguments[Optional[T]]]] = ...
     ) -> Select[Optional[T], T]:
     ...
 
 @overload
 def select(
-    options: Iterable[T], value: tuple[P, ...], on_change: Literal[None] = ...
+    options: Iterable[T], label: str, value: tuple[P, ...], on_change: Literal[None] = ...
     ) -> Select[tuple[Option[P, P], ...], T]:
     ...
 
 @overload
 def select(
-    options: Iterable[Option[P, P]], value: P, on_change: Literal[None] = ...
+    options: Iterable[Option[P, P]], label: str, value: P, on_change: Literal[None] = ...
     ) -> Select[tuple[Option[P, P], ...], Option[P, P]]:
     ...
 
 @overload
 def select(
-    options: Iterable[P], value: tuple[Option[P, P], ...], on_change: Optional[Handler[ValueChangeEventArguments[Optional[Option[P, P]]]]] = ...
+    options: Iterable[P], label: str, value: tuple[Option[P, P], ...], on_change: Optional[Handler[ValueChangeEventArguments[Optional[Option[P, P]]]]] = ...
     ) -> Select[tuple[Option[P, P], ...], Option[P, P]]:
     ...
 
 @overload
 def select(
-    options: Iterable[P], value: Literal[None] = ..., on_change: Optional[Handler[ValueChangeEventArguments[Optional[Option[P, P]]]]] = ...
+    options: Iterable[P], label: str, value: Literal[None] = ..., on_change: Optional[Handler[ValueChangeEventArguments[Optional[Option[P, P]]]]] = ...
     ) -> Select[tuple[Option[P, P], ...], Option[P, P]]:
     ...
 
 @overload
 def select(
-    options: Iterable[P], value: tuple[P, ...], on_change: Optional[Handler[ValueChangeEventArguments[tuple[Option[P, P], ...]]]] = ...
+    options: Iterable[P], label: str, value: tuple[P, ...], on_change: Optional[Handler[ValueChangeEventArguments[tuple[Option[P, P], ...]]]] = ...
     ) -> Select[Optional[Option[P, P]], Option[P, P]]:
     ...
 
 
 def select(
         options: Union[Iterable[T], Iterable[P]], 
+        label: str = "",
         value: Union[tuple[T, ...], tuple[Option[P, P], ...], tuple[P, ...], Optional[T], Optional[P]] = None, 
         on_change: Optional[Union[
             Handler[ValueChangeEventArguments[tuple[T, ...]]], 
@@ -205,7 +214,7 @@ def select(
             Select[tuple[Option[P, P], ...], Option[P, P]],
             Select[tuple[Option[P, P], ...], T]
         ]:
-    return Select(options=options, value=value, on_change=on_change)
+    return Select(options=options, label=label, value=value, on_change=on_change)
 
 
 if __name__ == "__main__":
