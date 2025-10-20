@@ -29,6 +29,7 @@ jobs:
     strategy:
       matrix:
         python: ["3.9", "3.10", "3.11", "3.12", "3.13", "3.14"]
+        scope: ["pytest", "startup"]
       fail-fast: false
     runs-on: ubuntu-latest
     timeout-minutes: 40
@@ -48,8 +49,10 @@ jobs:
       - name: setup chromedriver
         uses: nanasess/setup-chromedriver@v2.3.0
       - name: pytest
+        if: matrix.scope == 'pytest'
         run: poetry run pytest
       - name: Upload failed screenshots
+        if: matrix.scope == 'pytest'
         if: failure()
         uses: actions/upload-artifact@v4
         with:
@@ -57,11 +60,13 @@ jobs:
           path: screenshots/*.failed.png
           retention-days: 14
       - name: install test startup dependencies
+        if: matrix.scope == 'startup'
         run: |
           set -x
           # install packages to run the examples
           poetry run pip install opencv-python opencv-contrib-python-headless httpx isort replicate openai simpy tortoise-orm
       - name: test startup
+        if: matrix.scope == 'startup'
         run: poetry run ./test_startup.sh
       - name: restore dependencies for effective caching
         if: always()
