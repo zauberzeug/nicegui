@@ -59,7 +59,7 @@ class FabAction(LabelElement, IconElement, BackgroundColorElement, DisableableEl
         An action that can be added to a floating action button (FAB).
         This element is based on Quasar's `QFabAction <https://quasar.dev/vue-components/floating-action-button#qfabaction-api>`_ component.
 
-        **Added in version 2.22.0**
+        *Added in version 2.22.0*
 
         :param icon: icon to be displayed on the action button
         :param label: optional label for the action button

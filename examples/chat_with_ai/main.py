@@ -1,15 +1,13 @@
 #!/usr/bin/env python3
 from html_sanitizer import Sanitizer
 from langchain_openai import ChatOpenAI
-from log_callback_handler import NiceGuiLogElementCallbackHandler
 
 from nicegui import ui
 
 OPENAI_API_KEY = 'not-set'  # TODO: set your OpenAI API key here
 
 
-@ui.page('/')
-def main():
+def root():
     llm = ChatOpenAI(model_name='gpt-4o-mini', streaming=True, openai_api_key=OPENAI_API_KEY)
 
     async def send() -> None:
@@ -22,7 +20,7 @@ def main():
             spinner = ui.spinner(type='dots')
 
         response = ''
-        async for chunk in llm.astream(question, config={'callbacks': [NiceGuiLogElementCallbackHandler(log)]}):
+        async for chunk in llm.astream(question):
             response += chunk.content
             response_message.clear()
             with response_message:
@@ -30,19 +28,7 @@ def main():
             ui.run_javascript('window.scrollTo(0, document.body.scrollHeight)')
         message_container.remove(spinner)
 
-    ui.add_css(r'a:link, a:visited {color: inherit !important; text-decoration: none; font-weight: 500}')
-
-    # the queries below are used to expand the contend down to the footer (content can then use flex-grow to expand)
-    ui.query('.q-page').classes('flex')
-    ui.query('.nicegui-content').classes('w-full')
-
-    with ui.tabs().classes('w-full') as tabs:
-        chat_tab = ui.tab('Chat')
-        logs_tab = ui.tab('Logs')
-    with ui.tab_panels(tabs, value=chat_tab).classes('w-full max-w-2xl mx-auto flex-grow items-stretch'):
-        message_container = ui.tab_panel(chat_tab).classes('items-stretch')
-        with ui.tab_panel(logs_tab):
-            log = ui.log().classes('w-full h-full')
+    message_container = ui.column().classes('w-full max-w-2xl mx-auto flex-grow items-stretch')
 
     with ui.footer().classes('bg-white'), ui.column().classes('w-full max-w-3xl mx-auto my-6'):
         with ui.row().classes('w-full no-wrap items-center'):
@@ -51,7 +37,8 @@ def main():
             text = ui.input(placeholder=placeholder).props('rounded outlined input-class=mx-3') \
                 .classes('w-full self-center').on('keydown.enter', send)
         ui.markdown('simple chat app built with [NiceGUI](https://nicegui.io)') \
-            .classes('text-xs self-end mr-8 m-[-1em] text-primary')
+            .classes('text-xs self-end mr-8 m-[-1em] text-primary') \
+            .classes('[&_a]:text-inherit [&_a]:no-underline [&_a]:font-medium')
 
 
-ui.run(title='Chat with GPT-3 (example)')
+ui.run(root, title='Chat with GPT-4o-mini')

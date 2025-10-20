@@ -1,5 +1,3 @@
 html-sanitizer>=2.6.0
-langchain>=0.2
-langchain-community
-langchain_openai
+langchain_openai>=0.3
 nicegui>=3.0
