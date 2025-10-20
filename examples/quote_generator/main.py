@@ -3,15 +3,16 @@ from zen_api import quote_generator
 
 
 #helper function to call on next quote button
-def show_new_quote():
-    quote_label.text = f'“{quote_generator()}”'
+async def show_new_quote():
+    quote_text = await quote_generator()
+    quote_label.text = f'“{quote_text}”'
 
 
 with ui.card().classes(
     'max-w-md mx-auto mt-20 p-6 bg-white rounded-2xl shadow-lg border border-gray-100 flex flex-col items-center'
 ):
     with ui.card_section():
-        quote_label = ui.label(f'“{quote_generator()}”').classes(
+        quote_label = ui.label(f'Click on Next Quote to Get Quote').classes(
             'text-gray-700 italic text-lg leading-relaxed text-center font-serif'
         )
 

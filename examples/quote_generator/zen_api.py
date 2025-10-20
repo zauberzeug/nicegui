@@ -1,11 +1,14 @@
-import requests
+import httpx
 import random
 
-api_url = "https://zenquotes.io/api/quotes/"
-def quote_generator():
+api_url = "https://zenquotes.io/api/quotes"
 
-    response = requests.get(api_url)
-    data = response.json()
+async def quote_generator():
 
-    random_quote = random.choice(data)["q"]
-    return random_quote
+    async with httpx.AsyncClient() as client:
+        
+        response = await client.get(api_url)
+        data = response.json()
+        
+        random_quote = random.choice(data)["q"]
+        return random_quote
