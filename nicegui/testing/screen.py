@@ -1,4 +1,3 @@
-import os
 import re
 import runpy
 import threading
@@ -44,7 +43,7 @@ class Screen:
 
     def start_server(self) -> None:
         """Start the webserver in a separate thread."""
-        main_path = get_path_to_main_file(self.pytest_request.config) if self.pytest_request else None
+        main_path = get_path_to_main_file(self.pytest_request) if self.pytest_request else None
         if main_path is None:
             prepare_simulation()
             self.server_thread = threading.Thread(target=lambda: ui.run(**self.ui_run_kwargs))
@@ -67,7 +66,8 @@ class Screen:
         """Stop the webserver."""
         self.close()
         self.caplog.clear()
-        Server.instance.should_exit = True
+        if hasattr(Server, 'instance'):
+            Server.instance.should_exit = True
         if self.server_thread:
             self.server_thread.join()
         if core.loop:
@@ -248,10 +248,12 @@ class Screen:
         """Wait for the given number of seconds."""
         time.sleep(t)
 
-    def shot(self, name: str) -> None:
+    def shot(self, name: str, *, failed: bool) -> None:
         """Take a screenshot and store it in the screenshots directory."""
-        os.makedirs(self.SCREENSHOT_DIR, exist_ok=True)
-        filename = f'{self.SCREENSHOT_DIR}/{name}.png'
+        self.SCREENSHOT_DIR.mkdir(parents=True, exist_ok=True)
+        if failed:
+            name = f'{name}.failed'
+        filename = self.SCREENSHOT_DIR / f'{name}.png'
         print(f'Storing screenshot to {filename}')
         self.selenium.get_screenshot_as_file(filename)
 

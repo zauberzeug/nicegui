@@ -2,7 +2,6 @@ import asyncio
 import time
 from typing import Optional
 
-from .. import json
 from .button import Button as button
 from .markdown import Markdown as markdown
 from .markdown import remove_indentation
@@ -29,8 +28,9 @@ class Code(ContentElement, component='code.js', default_classes='nicegui-code'):
                 .bind_content_from(self, 'content', lambda content: f'```{language}\n{content}\n```')
             self.copy_button = button(icon='content_copy', on_click=self.show_checkmark) \
                 .props('round flat size=sm').classes('absolute right-2 top-2 opacity-20 hover:opacity-80') \
-                .on('click', js_handler=f'() => navigator.clipboard.writeText({json.dumps(self.content)})')
+                .on('click', js_handler=f'() => navigator.clipboard.writeText(getElement("{self.id}").content)')
 
+        self._props['content'] = self.content
         self._last_scroll: float = 0.0
         self.markdown.on('scroll', self._handle_scroll)
         with self:
@@ -49,4 +49,4 @@ class Code(ContentElement, component='code.js', default_classes='nicegui-code'):
         self.copy_button.set_visibility(time.time() > self._last_scroll + 1.0)
 
     def _handle_content_change(self, content: str) -> None:
-        pass  # handled by markdown element
+        self._props['content'] = content

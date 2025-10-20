@@ -1,4 +1,3 @@
-import asyncio
 from pathlib import Path
 
 import pytest
@@ -10,7 +9,7 @@ test_path1 = Path('tests/test_upload.py').resolve()
 test_path2 = Path('tests/test_scene.py').resolve()
 
 
-def test_uploading_text_file(screen: Screen):
+async def test_uploading_text_file(screen: Screen):
     results: list[events.UploadEventArguments] = []
 
     @ui.page('/')
@@ -26,7 +25,7 @@ def test_uploading_text_file(screen: Screen):
     assert len(results) == 1
     assert results[0].file.name == test_path1.name
     assert results[0].file.content_type in {'text/x-python', 'text/x-python-script'}
-    assert asyncio.run(results[0].file.read()) == test_path1.read_bytes()
+    assert await results[0].file.read() == test_path1.read_bytes()
 
 
 def test_two_upload_elements(screen: Screen):
@@ -108,7 +107,7 @@ def test_reset_upload(screen: Screen):
     screen.should_not_contain(test_path1.name)
 
 
-def test_multi_upload_event(screen: Screen):
+async def test_multi_upload_event(screen: Screen):
     results: list[events.MultiUploadEventArguments] = []
 
     @ui.page('/')
@@ -125,11 +124,11 @@ def test_multi_upload_event(screen: Screen):
     assert len(results[0].files) == 2
     assert results[0].files[0].name == test_path1.name
     assert results[0].files[1].name == test_path2.name
-    assert asyncio.run(results[0].files[0].read()) == test_path1.read_bytes()
-    assert asyncio.run(results[0].files[1].read()) == test_path2.read_bytes()
+    assert await results[0].files[0].read() == test_path1.read_bytes()
+    assert await results[0].files[1].read() == test_path2.read_bytes()
 
 
-def test_two_handlers_can_read_file(screen: Screen):
+async def test_two_handlers_can_read_file(screen: Screen):
     reads: list[events.UploadEventArguments] = []
 
     @ui.page('/')
@@ -143,13 +142,13 @@ def test_two_handlers_can_read_file(screen: Screen):
     screen.wait(0.1)
 
     assert len(reads) == 2
-    upload_1 = asyncio.run(reads[0].file.text())
-    upload_2 = asyncio.run(reads[1].file.text())
+    upload_1 = await reads[0].file.text()
+    upload_2 = await reads[1].file.text()
     assert upload_1 == upload_2 == test_path1.read_text(encoding='utf-8')
 
 
 @pytest.mark.parametrize('size', [500, 5_000_000])
-def test_different_file_sizes(screen: Screen, size: int, tmp_path: Path):
+async def test_different_file_sizes(screen: Screen, size: int, tmp_path: Path):
     tmp_file = tmp_path / 'test.txt'
     reads: list[events.UploadEventArguments] = []
 
@@ -164,4 +163,4 @@ def test_different_file_sizes(screen: Screen, size: int, tmp_path: Path):
     screen.find_by_class('q-uploader__input').send_keys(str(tmp_file))
     screen.wait(0.1)
     assert reads[0].file.size() == size
-    assert asyncio.run(reads[0].file.text()) == tmp_file.read_text()
+    assert await reads[0].file.text() == tmp_file.read_text()
