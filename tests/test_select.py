@@ -2,6 +2,7 @@ from typing import Optional, Literal
 
 import pytest
 from selenium.webdriver import Keys
+import re
 
 from nicegui import ui
 from nicegui.testing import Screen, User
@@ -206,7 +207,7 @@ def test_select_validation(auto_validation: bool, screen: Screen):
 def test_invalid_value(screen: Screen):
     @ui.page('/')
     def page():
-        with pytest.raises(ValueError, match='Invalid value: X'):
+        with pytest.raises(ValueError, match=re.escape("Invalid value: Option(label='X', value='X')")):
             ui.select(['A', 'B', 'C'], value='X')
 
     screen.open('/')
@@ -221,7 +222,7 @@ def test_opening_and_closing_popup_with_screen(multiple: bool, screen: Screen):
         nonlocal select
         select = ui.select(options=['Apple', 'Banana', 'Cherry'], label='Fruits', value=() if multiple else None).classes('w-24')
         ui.label().bind_text_from(select, 'is_showing_popup', lambda v: 'open' if v else 'closed')
-        ui.label().bind_text_from(select, 'value', backward=lambda value: str([v.value for v in value]))
+        ui.label().bind_text_from(select, 'value', backward=lambda value: f"value = {[v.value for v in value] if multiple else (value.value if value else value)}")
 
     screen.open('/')
     fruits = screen.find_element(select)
