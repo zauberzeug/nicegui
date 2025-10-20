@@ -3,13 +3,36 @@ from nicegui import ui
 from ..seo_constants import NICEGUI_TAGLINE
 from ..style import section_heading, subheading
 from .content import DocumentationPage
+from .content.overview import tiles
 from .custom_restructured_text import CustomRestructuredText as custom_restructured_text
 from .demo import demo
 from .reference import generate_class_doc
 
+TILES_DICT = {a.__name__.rpartition('.')[-1]: b for a, b in tiles}
+
+
+def _drop_after_params(text: str) -> str:
+    """Drop everything after the first occurrence of ':param' in the given text."""
+    param_index = text.find(':param')
+    return text[:param_index] if param_index != -1 else text
+
 
 def render_page(documentation: DocumentationPage) -> None:
     """Render the documentation."""
+    description = NICEGUI_TAGLINE
+    print(documentation.name)
+    print(TILES_DICT)
+    if documentation.name in TILES_DICT:
+        description = TILES_DICT[documentation.name]
+    elif documentation.parts and documentation.parts[0].description:
+        description = _drop_after_params(documentation.parts[0].description)
+    else:
+        description = NICEGUI_TAGLINE
+
+    if not ui.context.client.has_socket_connection:
+        ui.add_head_html(f'''
+        <meta name="description" content="{(description)}">
+            ''')
     title = (documentation.title or '').replace('*', '')
     ui.page_title(NICEGUI_TAGLINE if not title else title if title.split()[0] == 'NiceGUI' else f'{title} | NiceGUI')
 
