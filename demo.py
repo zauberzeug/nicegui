@@ -1,5 +1,5 @@
 from nicegui import ui
-from nicegui.elements.select import select, Option
+from nicegui.elements.select import to_option, Option
 from dataclasses import dataclass
 
 
@@ -20,7 +20,9 @@ if __name__ in {"__main__", "__mp_main__"}:
             on_change=lambda e: print(e.value, e.previous_value),
         )
 
-        ui.select(options=[Option(label='A', value='a')], value=(), new_value_mode="add")
+        s = ui.select(options=[Option(label=v, value=k) for k, v in {'a': 'A', 'b': 'B', 'c': 'C'}.items()], new_value_mode="toggle", new_value_to_option=to_option)
+        ui.label().bind_text_from(s, 'value', lambda v: f'value = {v.value if v else v}')
+        ui.label().bind_text_from(s, 'options', lambda options: f'options = {options}')
 
         select_people = (
             ui.select(
