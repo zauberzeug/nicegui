@@ -70,7 +70,7 @@ def test_multi_select(screen: Screen):
     @ui.page('/')
     def page():
         s = ui.select(['Alice', 'Bob', 'Carol'], value=('Alice',)).props('use-chips')
-        ui.label().bind_text_from(s, 'value', backward=str)
+        ui.label().bind_text_from(s, 'value', backward=lambda value: str([v.value for v in value]))
 
     screen.open('/')
     screen.should_contain("['Alice']")
@@ -86,7 +86,7 @@ def test_changing_options(screen: Screen):
     @ui.page('/')
     def page():
         s = ui.select([10, 20, 30], value=10)
-        ui.label().bind_text_from(s, 'value', lambda v: f'value = {v}')
+        ui.label().bind_text_from(s, 'value', lambda v: f'value = {v.value if v else None}')
         ui.button('reverse', on_click=lambda: (s.options.reverse(), s.update()))
         ui.button('clear', on_click=lambda: (s.options.clear(), s.update()))
 
@@ -101,7 +101,7 @@ def test_set_options(screen:  Screen):
     @ui.page('/')
     def page():
         s = ui.select([1, 2, 3], value=1)
-        ui.button('Set new options', on_click=lambda: s.set_options([4, 5, 6], value=4))
+        ui.button('Set new options', on_click=lambda: s.set_options([to_option(v) for v in (4, 5, 6)], value=to_option(4)))
 
     screen.open('/')
     screen.click('Set new options')
@@ -152,25 +152,11 @@ def test_add_new_values(screen:  Screen, multiple: bool, new_value_mode: Optiona
             screen.should_contain("options = [Option(label='A', value='a'), Option(label='B', value='b'), Option(label='C', value='c')]")
 
 
-def test_id_generator(screen: Screen):
-    @ui.page('/')
-    def page():
-        options = {'a': 'A', 'b': 'B', 'c': 'C'}
-        select = ui.select(options, value='b', new_value_mode='add', key_generator=lambda _: len(options))
-        ui.label().bind_text_from(select, 'options', lambda v: f'options = {v}')
-
-    screen.open('/')
-    screen.find_by_tag('input').send_keys(Keys.BACKSPACE + 'd')
-    screen.wait(0.5)
-    screen.find_by_tag('input').send_keys(Keys.ENTER)
-    screen.should_contain("options = {'a': 'A', 'b': 'B', 'c': 'C', 3: 'd'}")
-
-
 @pytest.mark.parametrize('multiple', [False, True])
 def test_keep_filtered_options(multiple: bool, screen: Screen):
     @ui.page('/')
     def page():
-        ui.select(options=['A1', 'A2', 'B1', 'B2'], with_input=True, multiple=multiple)
+        ui.select(options=['A1', 'A2', 'B1', 'B2'], with_input=True, value=() if multiple else None)
 
     screen.open('/')
     screen.find_by_tag('input').click()
@@ -203,7 +189,7 @@ def test_keep_filtered_options(multiple: bool, screen: Screen):
 def test_select_validation(auto_validation: bool, screen: Screen):
     @ui.page('/')
     def page():
-        select = ui.select(['A', 'BC', 'DEF'], value='A', validation={'Too long': lambda v: len(v) < 3})
+        select = ui.select(['A', 'BC', 'DEF'], value='A', validation={'Too long': lambda v: len(v.value) < 3 if v else True})
         if not auto_validation:
             select.without_auto_validation()
 
@@ -233,9 +219,9 @@ def test_opening_and_closing_popup_with_screen(multiple: bool, screen: Screen):
     @ui.page('/')
     def page():
         nonlocal select
-        select = ui.select(options=['Apple', 'Banana', 'Cherry'], label='Fruits', multiple=multiple).classes('w-24')
+        select = ui.select(options=['Apple', 'Banana', 'Cherry'], label='Fruits', value=() if multiple else None).classes('w-24')
         ui.label().bind_text_from(select, 'is_showing_popup', lambda v: 'open' if v else 'closed')
-        ui.label().bind_text_from(select, 'value', lambda v: f'value = {v}')
+        ui.label().bind_text_from(select, 'value', backward=lambda value: str([v.value for v in value]))
 
     screen.open('/')
     fruits = screen.find_element(select)
@@ -263,7 +249,7 @@ def test_opening_and_closing_popup_with_screen(multiple: bool, screen: Screen):
 async def test_opening_and_closing_popup_with_user(multiple: bool, user: User):
     @ui.page('/')
     def page():
-        select = ui.select(options=['Apple', 'Banana', 'Cherry'], label='Fruits', multiple=multiple)
+        select = ui.select(options=['Apple', 'Banana', 'Cherry'], label='Fruits', value=() if multiple else None)
         ui.label().bind_text_from(select, 'is_showing_popup', lambda v: 'open' if v else 'closed')
         ui.label().bind_text_from(select, 'value', lambda v: f'value = {v}')
 

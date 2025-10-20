@@ -17,8 +17,8 @@ L = TypeVar('L', bound=JsonPrimitive)
 V = TypeVar('V', bound=JsonValue)
 V2 = TypeVar('V2', bound=JsonValue)
 T = TypeVar('T', bound='Option[Any, Any]')
-P = TypeVar('P', bound=JsonPrimitive)
-VAL = TypeVar('VAL', bound='Union[tuple[Option[Any, Any], ...], Optional[Option[Any, Any]]]')
+P = TypeVar('P', str, int, float, bool)
+VAL = TypeVar('VAL', bound='Union[tuple[Option[Any, Any], ...], tuple[JsonPrimitive, ...], Optional[JsonPrimitive], Optional[Option[Any, Any]]]')
 class DEFAULT: pass
 
 
@@ -87,8 +87,9 @@ class ChoiceElement(ValueElement[VAL], Generic[VAL, T]):
     def _update_options(self) -> None:
         before_value = self.value
         self._props['options'] = self.options
-        self._props[self.VALUE_PROP] = self._value_to_model_value(before_value)
-        #self.value = before_value if before_value in self._values else None
+        new_value = self._value_to_model_value(before_value)
+        self._props[self.VALUE_PROP] = new_value
+        self.value = new_value
 
     def update(self) -> None:
         with self._props.suspend_updates():
