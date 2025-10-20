@@ -83,8 +83,8 @@ def nicegui_reset_globals() -> Generator[None, None, None]:
     # NOTE: remove only modules that registered pages to ensure they are imported again when the main file is re-executed so that @ui.page() decorators run again
     modules_with_page_registrations = {func.__module__ for func in Client.page_routes}
     for module_name in modules_with_page_registrations:
-        # NOTE: skip test modules (they shouldn't be deleted as they don't need re-registration and it breaks pickling)
-        if module_name.startswith('test_') or '.test_' in module_name or module_name.startswith('tests.'):
+        # NOTE: skip pytest test modules from the tests/ directory (they shouldn't be deleted as it breaks pickling and class identity)
+        if module_name.startswith('tests.'):
             continue
         if module_name in sys.modules:
             del sys.modules[module_name]
