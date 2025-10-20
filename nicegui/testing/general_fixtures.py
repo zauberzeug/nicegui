@@ -1,5 +1,4 @@
 import gc
-import importlib
 import sys
 from collections.abc import Generator
 from copy import copy
@@ -9,7 +8,7 @@ from typing import Optional
 import pytest
 from starlette.routing import Route
 
-from nicegui import Client, app, binding, core, event, run, ui
+from nicegui import Client, app, binding, core, event, ui
 
 # pylint: disable=redefined-outer-name
 
@@ -49,8 +48,10 @@ def nicegui_reset_globals() -> Generator[None, None, None]:
     app.user_middleware.clear()
     app.urls.clear()
     core.air = None
-    importlib.reload(core)
-    importlib.reload(run)
+    core.loop = None
+    core.root = None
+    core.script_mode = False
+    core.script_client = None
 
     # capture initial defaults
     element_types: list[type[ui.element]] = [ui.element, *find_all_subclasses(ui.element)]
