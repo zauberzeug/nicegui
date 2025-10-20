@@ -75,7 +75,7 @@ class ChoiceElement(ValueElement[VAL], Generic[VAL, T]):
             if (invalid_values := set(to_option(v).value for v in self.value) - set(o.value for o in self.options)):
                 raise ValueError(f'Invalid values: {invalid_values}')
         elif self.value and to_option(self.value).value not in [o.value for o in self.options]:
-            raise ValueError(f'Invalid value: {self.value} {self.options}')
+            raise ValueError(f'Invalid value: {value}')
         super().__init__(tag=tag, value=value, on_value_change=on_change)
         self._update_options()
 
