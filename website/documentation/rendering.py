@@ -1,5 +1,6 @@
 from nicegui import ui
 
+from ..seo_constants import NICEGUI_TAGLINE
 from ..style import section_heading, subheading
 from .content import DocumentationPage
 from .custom_restructured_text import CustomRestructuredText as custom_restructured_text
@@ -10,7 +11,7 @@ from .reference import generate_class_doc
 def render_page(documentation: DocumentationPage) -> None:
     """Render the documentation."""
     title = (documentation.title or '').replace('*', '')
-    ui.page_title('NiceGUI' if not title else title if title.split()[0] == 'NiceGUI' else f'{title} | NiceGUI')
+    ui.page_title(NICEGUI_TAGLINE if not title else title if title.split()[0] == 'NiceGUI' else f'{title} | NiceGUI')
 
     def render_content():
         section_heading(documentation.subtitle or '', documentation.heading)
