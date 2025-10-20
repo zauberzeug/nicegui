@@ -15,7 +15,6 @@ JsonValue = Union[
 
 L = TypeVar('L', bound=JsonPrimitive)
 V = TypeVar('V', bound=JsonValue)
-V2 = TypeVar('V2', bound=JsonValue)
 T = TypeVar('T', bound='Option[Any, Any]')
 P = TypeVar('P', str, int, float, bool)
 VAL = TypeVar('VAL', bound='Union[tuple[Option[Any, Any], ...], tuple[JsonPrimitive, ...], Optional[JsonPrimitive], Optional[Option[Any, Any]]]')
@@ -48,11 +47,11 @@ def to_option(v: L) -> Option[L, L]:
     ...
 
 @overload
-def to_option(v: Option[L, V2]) -> Option[L, V2]:
+def to_option(v: Option[L, V]) -> Option[L, V]:
     ...
 
 
-def to_option(v: Union[L, Option[L, V2]]) -> Union[Option[L, V2], Option[L, L]]:
+def to_option(v: Union[L, Option[L, V]]) -> Union[Option[L, V], Option[L, L]]:
     if isinstance(v, Option):
         return v
     return Option(label=v, value=v)
