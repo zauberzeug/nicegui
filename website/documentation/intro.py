@@ -19,27 +19,29 @@ def create_intro() -> None:
         to define standalone content available at a specific path.
     ''')
     def spa_demo():
+        sub_pages = None  # HIDE
+
         def root():
-            # ui.link.default_classes('no-underline text-white')
-            # with ui.header():
-            #     ui.link('Home', '/')
-            #     ui.link('About', '/about')
             # ui.sub_pages({
-            #     '/': home_page,
-            #     '/about': about_page,
-            # })
-            ui.context.slot_stack[-1].parent.classes(remove='p-4')  # HIDE
-            sub_pages = FakeSubPages({'/': home_page, '/about': about_page}).classes('mx-4')  # HIDE
-            with ui.row().classes('bg-primary w-full p-4'):  # HIDE
-                sub_pages.link('Home', '/').classes('no-underline text-white')  # HIDE
-                sub_pages.link('About', '/about').classes('no-underline text-white')  # HIDE
+            #     '/': table_page,
+            #     '/map/{lat}/{lon}': map_page,
+            # }).classes('w-full')
+            nonlocal sub_pages  # HIDE
+            sub_pages = FakeSubPages({'/': table_page, '/map/{lat}/{lon}': map_page}).classes('w-full')  # HIDE
             sub_pages.init()  # HIDE
 
-        def home_page():
-            ui.label('Home page').classes('text-2xl')
+        def table_page():
+            ui.table(rows=[
+                {'name': 'New York', 'lat': 40.7119, 'lon': -74.0027},
+                {'name': 'London', 'lat': 51.5074, 'lon': -0.1278},
+                {'name': 'Tokio', 'lat': 35.6863, 'lon': 139.7722},
+            ]).on('row-click', lambda e: sub_pages._render('/map/{lat}/{lon}', lat=e.args[1]['lat'], lon=e.args[1]['lon']))  # HIDE
+            # ]).on('row-click', lambda e: ui.navigate.to(f'/map/{e.args[1]["lat"]}/{e.args[1]["lon"]}'))
 
-        def about_page():
-            ui.label('About page').classes('text-2xl')
+        def map_page(lat: float, lon: float):
+            ui.leaflet(center=(lat, lon), zoom=10)
+            # ui.link('Back to table', '/')
+            sub_pages.link('Back to table', '/')  # HIDE
 
         return root
 

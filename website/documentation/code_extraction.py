@@ -22,7 +22,8 @@ def get_full_code(f: Callable) -> str:
         while code[0].strip() != '"""':
             del code[0]
         del code[0]
-    indentation = len(code[0]) - len(code[0].lstrip())
+    non_empty_lines = [line for line in code if line.strip()]
+    indentation = len(non_empty_lines[0]) - len(non_empty_lines[0].lstrip())
     code = [line[indentation:] for line in code]
     code = ['from nicegui import ui'] + [_uncomment(line) for line in code]
     code = ['' if line == '#' else line for line in code]
