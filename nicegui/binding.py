@@ -27,7 +27,7 @@ bindable_properties: weakref.WeakValueDictionary[tuple[int, str], Any] = weakref
 active_links: list[tuple[Any, str, Any, str, Callable[[Any], Any] | None]] = []
 
 TC = TypeVar('TC', bound=type)
-T = TypeVar('T')
+T = TypeVar('T', default=Any)
 O = TypeVar('O', default=Any)
 
 
