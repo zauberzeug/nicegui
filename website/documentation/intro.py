@@ -68,7 +68,7 @@ def create_intro() -> None:
         When a new value arrives, it emits an event for the chart to be updated.
     ''')
     def event_system_demo():
-        from datetime import datetime
+        import time
 
         from nicegui import Event, app
 
@@ -87,7 +87,7 @@ def create_intro() -> None:
 
             def update_chart(temperature: float):
                 data = chart.options['series'][0]['data']
-                data.append([datetime.now().timestamp() * 1000, temperature])
+                data.append([time.time(), temperature])
                 if len(data) > 10:
                     data.pop(0)
 
@@ -95,7 +95,7 @@ def create_intro() -> None:
             # END OF DEMO
 
             data = chart.options['series'][0]['data']
-            data.append([datetime.now().timestamp() * 1000, 24.0])
+            data.append([time.time(), 24.0])
             ui.timer(1.0, lambda: update_chart(round(data[-1][1] + (random.random() - 0.5), 1)), immediate=False)
         app  # noqa: B018 to avoid unused import warning
 
