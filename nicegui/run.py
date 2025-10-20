@@ -130,5 +130,6 @@ def tear_down() -> None:
 
 
 def _kill_processes() -> None:
+    assert process_pool._processes is not None  # type: ignore  # pylint: disable=protected-access
     for p in process_pool._processes.values():  # pylint: disable=protected-access
         p.kill()
