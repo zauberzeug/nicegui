@@ -52,8 +52,7 @@ jobs:
         if: matrix.scope == 'pytest'
         run: poetry run pytest
       - name: Upload failed screenshots
-        if: matrix.scope == 'pytest'
-        if: failure()
+        if: matrix.scope == 'pytest' && failure()
         uses: actions/upload-artifact@v4
         with:
           name: screenshots-${{ matrix.python }}
@@ -69,7 +68,7 @@ jobs:
         if: matrix.scope == 'startup'
         run: poetry run ./test_startup.sh
       - name: restore dependencies for effective caching
-        if: always()
+        if: matrix.scope == 'startup' && always()
         run: |
           set -x
           poetry install --all-extras --with dev
