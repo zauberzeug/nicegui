@@ -251,7 +251,7 @@ from nicegui.elements.tooltip import Tooltip as tooltip
 from nicegui.elements.tree import Tree as tree
 from nicegui.elements.upload import Upload as upload
 from nicegui.elements.video import Video as video
-from nicegui.functions import clipboard
+from nicegui.functions.clipboard import clipboard
 from nicegui.functions.download import download
 from nicegui.functions.html import add_body_html, add_head_html
 from nicegui.functions.javascript import run_javascript
@@ -382,7 +382,7 @@ if TYPE_CHECKING:
     from .elements.tree import Tree as tree
     from .elements.upload import Upload as upload
     from .elements.video import Video as video
-    from .functions import clipboard
+    from .functions.clipboard import clipboard
     from .functions.download import download
     from .functions.html import add_body_html, add_head_html
     from .functions.javascript import run_javascript
