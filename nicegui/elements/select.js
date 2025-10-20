@@ -7,6 +7,7 @@ export default {
       @filter="filterFn"
       @popup-show="addClass"
       @popup-hide="removeClass"
+      option-value="id"
     >
       <template v-for="(_, slot) in $slots" v-slot:[slot]="slotProps">
         <slot :name="slot" v-bind="slotProps || {}" />

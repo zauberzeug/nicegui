@@ -90,7 +90,7 @@ class Select(LabelElement, ValidationElement, ChoiceElement[Union[tuple[T, ...],
         return self._is_showing_popup
 
     def _event_args_to_value(self, e: GenericEventArguments[Union[list[Union[OptionDict[Any, Any], str]], Optional[Union[OptionDict[Any, Any], str]]]]) -> Union[tuple[T, ...], Optional[T]]:
-        # pylint: disable=too-many-nested-blocks
+        print("e.args =", e.args)
         if isinstance(e.args, list):
             if self.new_value_mode == 'add-unique':
                 # handle issue #4896: eliminate duplicate arguments
@@ -108,7 +108,7 @@ class Select(LabelElement, ValidationElement, ChoiceElement[Union[tuple[T, ...],
             else:  # noqa: PLR5501
                 if isinstance(e.args, str):
                     new_value = self._handle_new_value(e.args)
-                    return new_value if new_value in self._values else None
+                    return new_value if new_value and new_value.value in self._values else None
                 else:
                     return self._id_to_option[e.args['id']]
 
@@ -119,6 +119,7 @@ class Select(LabelElement, ValidationElement, ChoiceElement[Union[tuple[T, ...],
         assert self.new_value_to_option
         mode = self.new_value_mode
         new_option = self.new_value_to_option(value)
+        print("new_option =", new_option)
         if mode == 'add' and new_option:
             self.options.append(new_option)
         elif mode == 'add-unique' and new_option:
@@ -129,7 +130,7 @@ class Select(LabelElement, ValidationElement, ChoiceElement[Union[tuple[T, ...],
                 self.options.remove(new_option)
             else:
                 self.options.append(new_option)
-        # NOTE: self._labels and self._values are updated via self.options since they share the same references
+        self._update_values_and_labels()
         return new_option
         
 
@@ -247,6 +248,19 @@ def select(
 
 @overload
 def select(
+    options: Iterable[P], label: str = ..., value: P = ..., 
+    on_change: Optional[Handler[ValueChangeEventArguments[Optional[Option[P, P]]]]] = ..., 
+    with_input: bool = ...,
+    new_value_mode: Optional[Literal['add', 'add-unique', 'toggle']] = ...,
+    new_value_to_option: Optional[Callable[[str], Optional[T]]] = ...,
+    clearable: bool = ...,
+    validation: Optional[Union[ValidationFunction, ValidationDict]] = ...,
+    ) -> Select[tuple[Option[P, P], ...], Option[P, P]]:
+    ...
+
+
+@overload
+def select(
     options: Iterable[P], label: str, value: P,
     on_change: Optional[Handler[ValueChangeEventArguments[tuple[Option[P, P], ...]]]] = ..., 
     with_input: bool = ...,
@@ -289,8 +303,7 @@ def select(
 
 
 if __name__ == "__main__":
-    options = [Option(label=1, value=2)]
-    s = select(options=["A", "B"], value=2, on_change=None, new_value_mode="add")
+    s = select(options=["A", "B"], value=2)
     s.value
 
     @dataclass
