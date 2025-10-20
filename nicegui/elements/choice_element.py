@@ -82,6 +82,7 @@ class ChoiceElement(ValueElement[VAL], Generic[VAL, T]):
     def _update_values_and_labels(self) -> None:
         self._values = [o.value for o in self.options]
         self._labels = [o.label for o in self.options]
+        self._id_to_option = {o.id: o for o in self.options}
 
     def _update_options(self) -> None:
         before_value = self.value

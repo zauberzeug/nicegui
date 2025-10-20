@@ -14,14 +14,16 @@ if __name__ in {"__main__", "__mp_main__"}:
 
     @ui.page("/")
     def page():
-        select(
+        ui.select(
             options=[1,2,3], 
             value=None, 
             on_change=lambda e: print(e.value, e.previous_value),
         )
 
+        ui.select(options=[Option(label='A', value='a')], value=(), new_value_mode="add")
+
         select_people = (
-            select(
+            ui.select(
                 options=[
                     Person(label="Joe", value=0, icon="person-outline", caption="Company: Trilliant Health"),
                     Person(label="Falko", value=1, icon="person-outline", caption="Company: Trilliant Health"),

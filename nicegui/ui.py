@@ -214,7 +214,7 @@ from .elements.row import Row as row
 from .elements.scene import Scene as scene
 from .elements.scene import SceneView as scene_view
 from .elements.scroll_area import ScrollArea as scroll_area
-from .elements.select import Select as select
+from .elements.select import select
 from .elements.separator import Separator as separator
 from .elements.skeleton import Skeleton as skeleton
 from .elements.slide_item import SlideItem as slide_item
