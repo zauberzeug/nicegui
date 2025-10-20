@@ -24,13 +24,18 @@ def demo(f: Callable, *, lazy: bool = True, tab: Optional[Union[str, Callable]] 
 
                 async def handle_intersection():
                     window.remove(spinner)
-                    if helpers.is_coroutine_function(f):
-                        await f()
-                    else:
-                        f()
+                    result = f()
+                    if callable(result):
+                        if helpers.is_coroutine_function(result):
+                            await result()
+                        else:
+                            result()
                 intersection_observer(on_intersection=handle_intersection)
             else:
-                assert not helpers.is_coroutine_function(f), 'async functions are not supported in non-lazy demos'
-                f()
+                result = f()
+                if callable(result):
+                    assert not helpers.is_coroutine_function(result), \
+                        'async functions are not supported in non-lazy demos'
+                    result()
 
     return f
