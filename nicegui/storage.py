@@ -38,13 +38,12 @@ class RequestTrackingMiddleware(BaseHTTPMiddleware):
 def set_storage_secret(storage_secret: Optional[str] = None,
                        session_middleware_kwargs: Optional[dict[str, Any]] = None) -> None:
     """Set storage_secret and add request tracking middleware."""
-    session_middleware_kwargs = session_middleware_kwargs or {}
     if any(m.cls == SessionMiddleware for m in core.app.user_middleware):
         # NOTE not using "add_middleware" because it would be the wrong order
         core.app.user_middleware.append(Middleware(RequestTrackingMiddleware))
     elif storage_secret is not None:
         core.app.add_middleware(RequestTrackingMiddleware)
-        core.app.add_middleware(SessionMiddleware, secret_key=storage_secret, **session_middleware_kwargs)
+        core.app.add_middleware(SessionMiddleware, secret_key=storage_secret, **(session_middleware_kwargs or {}))
     Storage.secret = storage_secret
 
 
