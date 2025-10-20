@@ -25,7 +25,6 @@ class JsonEditor(Element, component='json_editor.js', esm={'nicegui-json-editor'
 
         An element to create a JSON editor using `JSONEditor <https://github.com/josdejong/svelte-jsoneditor>`_.
         Updates can be pushed to the editor by changing the `properties` property.
-        After data has changed, call the `update` method to refresh the editor.
 
         :param properties: dictionary of JSONEditor properties
         :param on_select: callback which is invoked when some of the content has been selected

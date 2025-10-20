@@ -55,7 +55,7 @@ class DropdownButton(IconElement, TextElement, DisableableElement, BackgroundCol
     def on_click(self, callback: Handler[ClickEventArguments]) -> Self:
         """Add a callback to be invoked when the dropdown button is clicked.
 
-        **Added in version 2.22.0**
+        *Added in version 2.22.0*
         """
         self.on('click', lambda _: handle_event(callback, ClickEventArguments(sender=self, client=self.client)), [])
         return self
