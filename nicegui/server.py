@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import multiprocessing
 import socket
+from typing import Any
 
 import uvicorn
 
@@ -14,6 +15,7 @@ class CustomServerConfig(uvicorn.Config):
     method_queue: multiprocessing.Queue | None = None
     response_queue: multiprocessing.Queue | None = None
     event_queue: multiprocessing.Queue | None = None
+    session_middleware_kwargs: dict[str, Any] | None = None
 
 
 class Server(uvicorn.Server):
@@ -37,5 +39,5 @@ class Server(uvicorn.Server):
             native.response_queue = self.config.response_queue
             native.event_queue = self.config.event_queue
 
-        storage.set_storage_secret(self.config.storage_secret)
+        storage.set_storage_secret(self.config.storage_secret, self.config.session_middleware_kwargs)
         super().run(sockets=sockets)
