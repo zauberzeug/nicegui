@@ -10,7 +10,6 @@ keywords = ["gui", "ui", "web", "interface", "live"]
 
 [tool.poetry.dependencies]
 python = "^3.9"
-poetry-dynamic-versioning = "^1.8.0"
 typing-extensions = ">=4.0.0"
 markdown2 = ">=2.4.7,!=2.4.11"
 Pygments = ">=2.15.1,<3.0.0"
@@ -77,6 +76,7 @@ cssbeautifier = "^1.15.4"
 rcssmin = "^1.2.1"
 tinycss2 = "^1.4.0"
 html-sanitizer = "^2.6.0"
+poetry-dynamic-versioning = "^1.8.0"
 
 [tool.poetry.scripts]
 nicegui-pack = "nicegui.scripts.pack:main"
