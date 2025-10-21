@@ -9,7 +9,14 @@ from .mixins.validation_element import ValidationDict, ValidationElement, Valida
 from dataclasses import dataclass
 
 
-class Select(LabelElement, ValidationElement[VAL], ChoiceElement[VAL, T], DisableableElement, Generic[VAL, T], component='select.js'):
+class Select(
+    LabelElement, 
+    ValidationElement[VAL], 
+    ChoiceElement[VAL, T], 
+    DisableableElement,
+    Generic[VAL, T],
+    component='select.js'
+    ):
 
     def __init__(self,
                  options: Union[Iterable[P], Iterable[T]], *,
@@ -24,10 +31,7 @@ class Select(LabelElement, ValidationElement[VAL], ChoiceElement[VAL, T], Disabl
                 ]] = None,
                 with_input: bool = False,
                 new_value_mode: Optional[Literal['add', 'add-unique', 'toggle']] = None,
-                new_value_to_option: Union[
-                    Optional[Callable[[str], Optional[T]]],
-                    Optional[Callable[[str], Optional[Option[P, P]]]],
-                ] = None,
+                new_value_to_option: Optional[Callable[[str], Optional[T]]] = None,
                 clearable: bool = False,
                 validation: Union[
                     Optional[Union[ValidationFunction[tuple[T, ...]], ValidationDict[tuple[T, ...]]]],
@@ -67,12 +71,12 @@ class Select(LabelElement, ValidationElement[VAL], ChoiceElement[VAL, T], Disabl
         """
         self.multiple = isinstance(value, tuple)
         self.new_value_mode = new_value_mode
-        self.new_value_to_option = new_value_to_option
-        if isinstance(value, tuple) and all(isinstance(v, JsonPrimitive) for v in value):
+        self.new_value_to_option: Optional[Callable[[str], Optional[T]]] = new_value_to_option
+        if isinstance(value, tuple) and all(isinstance(v, (str, int, float, bool)) for v in value):
             value = tuple(to_option(v) for v in value)
-        if isinstance(value, JsonPrimitive):
+        if isinstance(value, (str, int, float, bool)):
             value = to_option(value)
-        if all(isinstance(v, JsonPrimitive) for v in options):
+        if all(isinstance(v, (str, int, float, bool)) for v in options):
             super().__init__(label=label or None, options=[to_option(v) for v in options], value=value, on_change=on_change, validation=validation)
         else:
             super().__init__(label=label or None, options=options, value=value, on_change=on_change, validation=validation)
@@ -108,8 +112,8 @@ class Select(LabelElement, ValidationElement[VAL], ChoiceElement[VAL, T], Disabl
                             e.args.remove(arg1)
                             break
             args = [self._id_to_option[arg['id']] if isinstance(arg, dict) else self._handle_new_value(arg) for arg in e.args]
-            args = [v for v in args if v is not None]
-            return tuple(arg for arg in args if arg.value in self._values)
+            args_without_nones = [v for v in args if v is not None]
+            return tuple(arg for arg in args_without_nones if arg.value in self._values)
         else:  # noqa: PLR5501
             if e.args is None:
                 return None
@@ -120,15 +124,15 @@ class Select(LabelElement, ValidationElement[VAL], ChoiceElement[VAL, T], Disabl
                 else:
                     return self._id_to_option[e.args['id']]
 
-    def _value_to_model_value(self, value: VAL) -> VAL:
-        if self.multiple and isinstance(value, tuple):
+    def _value_to_model_value(self, value: VAL) -> Any:
+        if isinstance(value, tuple):
             return tuple(v for v in value if v.value in self._values)
-        return value if value and value.value in self._values else None
+        return value if value is not None and value.value in self._values else None
 
     def _handle_new_value(self, value: str) -> Optional[T]:
         assert self.new_value_to_option
         mode = self.new_value_mode
-        new_option = self.new_value_to_option(value)
+        new_option: Optional[T] = self.new_value_to_option(value)
         print("new_option =", new_option)
         if mode == 'add' and new_option:
             self.options.append(new_option)
@@ -143,11 +147,46 @@ class Select(LabelElement, ValidationElement[VAL], ChoiceElement[VAL, T], Disabl
         self._update_values_and_labels()
         return new_option
 
+@overload
+def select(
+    options: Iterable[P], *, label: str = ..., value: P = ...,
+    on_change: Optional[Handler[ValueChangeEventArguments[Optional[T]]]] = ..., 
+    with_input: bool = ...,
+    new_value_mode: Optional[Literal['add', 'add-unique', 'toggle']] = ...,
+    new_value_to_option: Optional[Callable[[str], Optional[T]]] = ...,
+    clearable: bool = ...,
+    validation: Optional[Union[ValidationFunction[Optional[T]], ValidationDict[Optional[T]]]] = ...,
+    ) -> Select[Optional[Option[P, P]], Option[P, P]]:
+    ...
 
 @overload
 def select(
-    options: Iterable[T], *, label: str = ..., value: tuple[T, ...] = ...,
-    on_change: Optional[Handler[ValueChangeEventArguments[tuple[T, ...]]]] = ..., 
+    options: Iterable[P], *, label: str = ..., value: P = ...,
+    on_change: Optional[Handler[ValueChangeEventArguments[Optional[T]]]] = ..., 
+    with_input: bool = ...,
+    new_value_mode: Optional[Literal['add', 'add-unique', 'toggle']] = ...,
+    new_value_to_option: Optional[Callable[[str], Optional[T]]] = ...,
+    clearable: bool = ...,
+    validation: Optional[Union[ValidationFunction[Optional[T]], ValidationDict[Optional[T]]]] = ...,
+    ) -> Select[Optional[Option[P, P]], Option[P, P]]:
+    ...
+
+@overload
+def select(
+    options: Iterable[P], *, label: str = ..., value: Literal[None] = ...,
+    on_change: Optional[Handler[ValueChangeEventArguments[Optional[T]]]] = ..., 
+    with_input: bool = ...,
+    new_value_mode: Optional[Literal['add', 'add-unique', 'toggle']] = ...,
+    new_value_to_option: Optional[Callable[[str], Optional[T]]] = ...,
+    clearable: bool = ...,
+    validation: Optional[Union[ValidationFunction[Optional[T]], ValidationDict[Optional[T]]]] = ...,
+    ) -> Select[Optional[Option[P, P]], Option[P, P]]:
+    ...
+
+@overload
+def select(
+    options: Iterable[T], *, label: str = ..., value: tuple[T, ...] = ..., 
+    on_change: Literal[None] = ..., 
     with_input: bool = ...,
     new_value_mode: Optional[Literal['add', 'add-unique', 'toggle']] = ...,
     new_value_to_option: Optional[Callable[[str], Optional[T]]] = ...,
@@ -158,98 +197,48 @@ def select(
 
 @overload
 def select(
-    options: Iterable[P], *, label: str = ..., value: P = ...,
-    on_change: Optional[Handler[ValueChangeEventArguments[Optional[Option[P, P]]]]] = ..., 
-    with_input: bool = ...,
-    new_value_mode: Optional[Literal['add', 'add-unique', 'toggle']] = ...,
-    new_value_to_option: Optional[Callable[[str], Optional[Option[P, P]]]] = ...,
-    clearable: bool = ...,
-    validation: Optional[Union[ValidationFunction[Optional[Option[P, P]]], ValidationDict[Optional[Option[P, P]]]]] = ...,
-    ) -> Select[Optional[Option[P, P]], Option[P, P]]:
-    ...
-
-@overload
-def select(
-    options: Iterable[P], *, label: str = ..., value: P = ..., 
-    on_change: Optional[Handler[ValueChangeEventArguments[Optional[Option[P, P]]]]] = ..., 
-    with_input: bool = ...,
-    new_value_mode: Optional[Literal['add', 'add-unique', 'toggle']] = ...,
-    new_value_to_option: Optional[Callable[[str], Optional[Option[P, P]]]] = ...,
-    clearable: bool = ...,
-    validation: Optional[Union[ValidationFunction[Optional[Option[P, P]]], ValidationDict[Optional[Option[P, P]]]]] = ...,
-    ) -> Select[Optional[Option[P, P]], Option[P, P]]:
-    ...
-
-@overload
-def select(
-    options: Iterable[P], *, label: str = ..., value: Literal[None] = ...,
-    on_change: Optional[Handler[ValueChangeEventArguments[Optional[Option[P, P]]]]] = ..., 
-    with_input: bool = ...,
-    new_value_mode: Optional[Literal['add', 'add-unique', 'toggle']] = ...,
-    new_value_to_option: Optional[Callable[[str], Optional[Option[P, P]]]] = ...,
-    clearable: bool = ...,
-    validation: Optional[Union[ValidationFunction[Optional[Option[P, P]]], ValidationDict[Optional[Option[P, P]]]]] = ...,
-    ) -> Select[Optional[Option[P, P]], Option[P, P]]:
-    ...
-
-@overload
-def select(
-    options: Iterable[Option[P, P]], *, label: str = ..., value: P = ..., on_change: Literal[None] = ..., 
-    with_input: bool = ...,
-    new_value_mode: Optional[Literal['add', 'add-unique', 'toggle']] = ...,
-    new_value_to_option: Optional[Callable[[str], Optional[Optional[Option[P, P]]]]] = ...,
-    clearable: bool = ...,
-    validation: Optional[Union[ValidationFunction[Optional[Option[P, P]]], ValidationDict[Optional[Option[P, P]]]]] = ...,
-    ) -> Select[tuple[Option[P, P], ...], Option[P, P]]:
-    ...
-
-@overload
-def select(
     options: Iterable[P], *, label: str = ..., value: tuple[P, ...],
-    on_change: Optional[Handler[ValueChangeEventArguments[Optional[Option[P, P]]]]] = ..., 
+    on_change: Optional[Handler[ValueChangeEventArguments[tuple[T, ...]]]] = ..., 
     with_input: bool = ...,
     new_value_mode: Optional[Literal['add', 'add-unique', 'toggle']] = ...,
     new_value_to_option: Optional[Callable[[str], Optional[T]]] = ...,
     clearable: bool = ...,
-    validation: Optional[Union[ValidationFunction[tuple[Option[P, P], ...]], ValidationDict[tuple[Option[P, P], ...]]]] = ...,
+    validation: Optional[Union[ValidationFunction[tuple[T, ...]], ValidationDict[tuple[T, ...]]]] = ...,
     ) -> Select[tuple[Option[P, P], ...], Option[P, P]]:
     ...
 
 @overload
 def select(
-    options: Iterable[P], *, label: str = ..., value: P = ...,
-    on_change: Optional[Handler[ValueChangeEventArguments[tuple[Option[P, P], ...]]]] = ..., 
+    options: Iterable[P], *, label: str = ..., value: Optional[P] = ...,
+    on_change: Optional[Handler[ValueChangeEventArguments[Optional[T]]]] = ..., 
     with_input: bool = ...,
     new_value_mode: Optional[Literal['add', 'add-unique', 'toggle']] = ...,
-    new_value_to_option: Optional[Callable[[str], Optional[Option[P, P]]]] = ...,
+    new_value_to_option: Optional[Callable[[str], Optional[T]]] = ...,
     clearable: bool = ...,
-    validation: Optional[Union[ValidationFunction[Optional[Option[P, P]]], ValidationDict[Optional[Option[P, P]]]]] = ...,
+    validation: Optional[Union[ValidationFunction[Optional[T]], ValidationDict[Optional[T]]]] = ...,
     ) -> Select[Optional[Option[P, P]], Option[P, P]]:
     ...
 
 def select(
         options: Union[Iterable[T], Iterable[P]], *,
         label: str = "",
-        value: Union[tuple[T, ...], tuple[Option[P, P], ...], tuple[P, ...], Optional[T], Optional[P]] = None, 
-        on_change: Optional[Union[
-            Handler[ValueChangeEventArguments[tuple[T, ...]]], 
-            Handler[ValueChangeEventArguments[tuple[Option[P, P], ...]]], 
-            Handler[ValueChangeEventArguments[tuple[P, ...]]], 
-            Handler[ValueChangeEventArguments[Optional[T]]], 
-            Handler[ValueChangeEventArguments[Optional[P]]]
+        value: Union[
+            tuple[T, ...],
+            tuple[P, ...],
+            Optional[T],
+            Optional[P]
+        ] = None, 
+        on_change: Union[
+            Optional[Handler[ValueChangeEventArguments[tuple[T, ...]]]], 
+            Optional[Handler[ValueChangeEventArguments[Optional[T]]], 
         ]] = None,
         with_input: bool = False,
         new_value_mode: Optional[Literal['add', 'add-unique', 'toggle']] = None,
-        new_value_to_option: Union[
-            Optional[Callable[[str], Optional[T]]],
-            Optional[Callable[[str], Optional[Option[P, P]]]],
-         ] = None,
+        new_value_to_option: Optional[Callable[[str], Optional[T]]] = None,
         clearable: bool = False,
         validation: Union[
             Optional[Union[ValidationFunction[tuple[T, ...]], ValidationDict[tuple[T, ...]]]],
             Optional[Union[ValidationFunction[Optional[T]], ValidationDict[Optional[T]]]],
-            Optional[Union[ValidationFunction[Optional[Option[P, P]]], ValidationDict[Optional[Option[P, P]]]]],
-            Optional[Union[ValidationFunction[tuple[Option[P, P], ...]], ValidationDict[tuple[Option[P, P], ...]]]],
         ] = None,
         ) -> Union[
             Select[tuple[T, ...], T],
@@ -265,7 +254,10 @@ def select(
 
 
 if __name__ == "__main__":
-    s = select(options=["A", "B"], value="A")
+    def v(val: str) -> Option[int, int]:
+        return Option(label=int(val), value=int(val))
+
+    s = select(options=[1, 2], value=2, new_value_mode="add", new_value_to_option=v)
     s.value
 
     o = (Option(label="a", value=1),)

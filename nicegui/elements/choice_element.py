@@ -17,7 +17,7 @@ L = TypeVar('L', bound=JsonPrimitive)
 V = TypeVar('V', bound=JsonValue)
 T = TypeVar('T', bound='Option[Any, Any]')
 P = TypeVar('P', str, int, float, bool)
-VAL = TypeVar('VAL', bound='Union[tuple[Option[Any, Any], ...], tuple[JsonPrimitive, ...], Optional[JsonPrimitive], Optional[Option[Any, Any]]]')
+VAL = TypeVar('VAL', bound='Union[tuple[Option[Any, Any], ...], Optional[Option[Any, Any]]]')
 class DEFAULT: pass
 
 
@@ -73,7 +73,7 @@ class ChoiceElement(ValueElement[VAL], Generic[VAL, T]):
         if isinstance(self.value, tuple):
             if (invalid_values := set(to_option(v).value for v in self.value) - set(o.value for o in self.options)):
                 raise ValueError(f'Invalid values: {invalid_values}')
-        elif self.value and to_option(self.value).value not in [o.value for o in self.options]:
+        elif self.value is not None and to_option(self.value).value not in [o.value for o in self.options]:
             raise ValueError(f'Invalid value: {value}')
         super().__init__(tag=tag, value=value, on_value_change=on_change)
         self._update_options()
