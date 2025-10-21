@@ -13,6 +13,8 @@ FEATURE = Literal[
     'redis',
     'sass',
     'webview',
+    'anywidget',
+    'altair',
 ]
 
 
