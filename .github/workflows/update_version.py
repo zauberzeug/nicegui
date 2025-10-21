@@ -5,15 +5,6 @@ from pathlib import Path
 
 if __name__ == '__main__':
     version = sys.argv[1].lstrip('v')
-
-    path = Path('pyproject.toml')
-    lines = path.read_text(encoding='utf-8').splitlines()
-    for i, line in enumerate(lines):
-        if line.startswith('version = '):
-            lines[i] = f'version = "{version}.dev0"'
-            break
-    path.write_text('\n'.join(lines) + '\n', encoding='utf-8')
-
     path = Path('CITATION.cff')
     lines = path.read_text(encoding='utf-8').splitlines()
     for i, line in enumerate(lines):
