@@ -14,22 +14,11 @@ export default {
     this.terminal.open(this.$el);
 
     // Register events that are re-emitted by the vue component
-    for (const event of [
-      "Bell",
-      "Binary",
-      "CursorMove",
-      "Data",
-      "Key",
-      "LineFeed",
-      "Render",
-      "WriteParsed",
-      "Resize",
-      "Scroll",
-      "SelectionChange",
-      "TitleChange",
-    ]) {
-      this.terminal[`on${event}`]((e) => this.$emit(event.toLowerCase(), e));
-    }
+    Object.getOwnPropertyNames(Object.getPrototypeOf(this.terminal))
+      .filter((key) => key.startsWith("on") && typeof this.terminal[key] === "function")
+      .forEach((key) => {
+        this.terminal[key]((e) => this.$emit(key.slice(2).toLowerCase(), e));
+      });
   },
   methods: {
     getRows() {
