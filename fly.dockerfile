@@ -17,16 +17,14 @@ RUN pip install \
     pytest \
     selenium
 
-RUN curl -sSL https://install.python-poetry.org | python3 - && \
-    cd /usr/local/bin && \
-    ln -s ~/.local/bin/poetry && \
-    poetry config virtualenvs.create false
+# Install uv
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
 
 WORKDIR /app
 
-COPY pyproject.toml poetry.lock*  ./
+COPY pyproject.toml uv.lock* ./
 
-RUN poetry install --no-root --extras "plotly matplotlib highcharts sass"
+RUN uv sync --no-dev --extra plotly --extra matplotlib --extra highcharts --extra sass
 
 RUN pip install latex2mathml slowapi
 
@@ -35,9 +33,9 @@ ADD . .
 # ensure unique version to not serve cached and hence potentially wrong static files
 ARG VERSION=unknown
 RUN if [ "$VERSION" = "unknown" ]; then echo "Error: VERSION build argument is required. Use: fly deploy --build-arg VERSION=$(git describe --abbrev=0 --tags --match 'v*' 2>/dev/null | sed 's/^v//' || echo '0.0.0')" && exit 1; fi
-RUN sed -i "/\[tool.poetry\]/,/]/s/version = .*/version = \"$VERSION\"/" pyproject.toml
+RUN sed -i "/^\[project\]/,/^version = /s/version = .*/version = \"$VERSION\"/" pyproject.toml
 
-RUN pip install .
+RUN uv pip install --system .
 
 EXPOSE 8080
 

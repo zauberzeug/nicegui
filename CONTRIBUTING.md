@@ -78,12 +78,18 @@ The simplest way to setup a fully functioning development environment is to star
 
 ### Locally
 
-To set up a local development environment for NiceGUI, you'll need to have Python 3.9+ and pip installed.
+To set up a local development environment for NiceGUI, you'll need to have Python 3.9+ and [uv](https://docs.astral.sh/uv/) installed.
 
-You can then use the following command to install NiceGUI in editable mode:
+You can install uv using:
 
 ```bash
-python3 -m pip install -e .
+curl -LsSf https://astral.sh/uv/install.sh | sh
+```
+
+Then use the following command to install NiceGUI in editable mode with all dependencies:
+
+```bash
+uv sync --all-extras --group dev
 ```
 
 This will install the `nicegui` package and all its dependencies, and link it to your local development environment so that changes you make to the code will be immediately reflected.

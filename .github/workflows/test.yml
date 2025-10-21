@@ -11,20 +11,19 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
-      - name: set up Poetry
-        uses: abatilo/actions-poetry@v4
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
       - name: set up Python
         uses: actions/setup-python@v6
         with:
           python-version: "3.9"
-          cache: "poetry"
       - name: install dependencies
-        run: poetry install --all-extras --with dev
+        run: uv sync --all-extras --group dev
       - name: pre-commit, mypy & pylint
         run: |
-          poetry run pre-commit run --all-files
-          poetry run mypy ./nicegui --non-interactive
-          poetry run pylint ./nicegui
+          uv run pre-commit run --all-files
+          uv run mypy ./nicegui --non-interactive
+          uv run pylint ./nicegui
   test:
     strategy:
       matrix:
@@ -34,21 +33,20 @@ jobs:
     timeout-minutes: 40
     steps:
       - uses: actions/checkout@v5
-      - name: set up Poetry
-        uses: abatilo/actions-poetry@v4
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
       - name: set up Python
         uses: actions/setup-python@v6
         with:
           python-version: ${{ matrix.python }}
-          cache: "poetry"
       - name: install dependencies
         run: |
           set -x
-          poetry install --all-extras --with dev
+          uv sync --all-extras --group dev
       - name: setup chromedriver
         uses: nanasess/setup-chromedriver@v2.3.0
       - name: pytest
-        run: poetry run pytest
+        run: uv run pytest
       - name: Upload failed screenshots
         if: failure()
         uses: actions/upload-artifact@v4
@@ -57,12 +55,12 @@ jobs:
           path: screenshots/*.failed.png
           retention-days: 14
       - name: test startup
-        run: poetry run ./test_startup.sh
+        run: uv run ./test_startup.sh
       - name: restore dependencies for effective caching
         if: always()
         run: |
           set -x
-          poetry install --all-extras --with dev
+          uv sync --all-extras --group dev
 
   slack:
     needs:
