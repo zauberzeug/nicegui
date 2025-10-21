@@ -1708,6 +1708,23 @@ files = [
 ]
 
 [[package]]
+name = "lazy-imports"
+version = "1.0.1"
+description = "Tool to support lazy imports"
+optional = false
+python-versions = ">=3.9"
+groups = ["main"]
+files = [
+    {file = "lazy_imports-1.0.1-py3-none-any.whl", hash = "sha256:eb5accc33bf9987e5197e79476bbeb960b74a2c16619bdf41281b3240f730846"},
+    {file = "lazy_imports-1.0.1.tar.gz", hash = "sha256:7d3e4b1547cb574ec7ef3c47a074673e2612330b2b50bf7eec939f2c393fc261"},
+]
+
+[package.extras]
+all = ["black", "flake8", "isort", "mdformat", "mypy", "packaging", "pydocstyle", "pylint", "pylintfileheader", "pytest"]
+checking = ["black", "flake8", "isort", "mdformat", "mypy", "pydocstyle", "pylint", "pylintfileheader"]
+testing = ["packaging", "pytest"]
+
+[[package]]
 name = "libsass"
 version = "0.23.0"
 description = "Sass for Python: A straightforward binding of libsass for Python."
@@ -5291,4 +5308,4 @@ sass = ["libsass"]
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.9"
-content-hash = "ee860aeeea4d440970dff5282a0148a3a704b3c6e2301d3b2a75883849ded114"
+content-hash = "b74ba3ff93b7f1ea22673dadb1b4fe067507f00dcedf272374894b86c72be904"
