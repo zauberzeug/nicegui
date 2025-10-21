@@ -56,11 +56,6 @@ jobs:
           name: screenshots-${{ matrix.python }}
           path: screenshots/*.failed.png
           retention-days: 14
-      - name: install test startup dependencies
-        run: |
-          set -x
-          # install packages to run the examples
-          poetry run pip install opencv-python opencv-contrib-python-headless httpx isort replicate openai simpy tortoise-orm
       - name: test startup
         run: poetry run ./test_startup.sh
       - name: restore dependencies for effective caching
