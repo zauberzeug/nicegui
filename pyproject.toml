@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "nicegui"
-version = "3.0.4.dev0"
+version = "0.0.0"
 description = "Create web-based user interfaces with Python. The nice way."
 authors = ["Zauberzeug GmbH <info@zauberzeug.com>"]
 license = "MIT"
@@ -10,6 +10,7 @@ keywords = ["gui", "ui", "web", "interface", "live"]
 
 [tool.poetry.dependencies]
 python = "^3.9"
+poetry-dynamic-versioning = "^1.8.0"
 typing-extensions = ">=4.0.0"
 markdown2 = ">=2.4.7,!=2.4.11"
 Pygments = ">=2.15.1,<3.0.0"
@@ -82,10 +83,15 @@ nicegui-pack = "nicegui.scripts.pack:main"
 
 [build-system]
 requires = [
-    "setuptools>=30.3.0",
-    "poetry-core>=1.0.0"
+    "poetry-core>=1.0.0",
+    "poetry-dynamic-versioning>=1.0.0,<2.0.0",
 ]
-build-backend = "poetry.core.masonry.api"
+build-backend = "poetry_dynamic_versioning.backend"
+
+[tool.poetry-dynamic-versioning]
+enable = true
+vcs = "git"
+style = "pep440"
 
 [tool.pytest.ini_options]
 addopts = "--driver Chrome"
