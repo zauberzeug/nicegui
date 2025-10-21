@@ -1,4 +1,4 @@
-FROM --platform=linux/amd64 python:3.9
+FROM python:3.9
 
 ENV POETRY_VERSION=2.1.2 \
     POETRY_NO_INTERACTION=1 \

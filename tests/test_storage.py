@@ -4,6 +4,7 @@ import time
 from pathlib import Path
 
 import httpx
+import pytest
 
 from nicegui import Client, app, background_tasks, context, core, nicegui, ui
 from nicegui.persistence.file_persistent_dict import FilePersistentDict
@@ -385,3 +386,23 @@ async def test_awaiting_backup_scheduled_during_teardown(user: User, tmp_path):
     await background_tasks.teardown()
     assert path.exists(), 'backup should be written during teardown'
     assert path.read_text(encoding='utf-8') == '{"key":"value"}'
+
+
+@pytest.mark.parametrize('custom_cookie_headers', [False, True])
+def test_storage_cookie_headers(screen: Screen, custom_cookie_headers: bool):
+    @ui.page('/')
+    def page():
+        ui.label('Hello, world!')
+
+    screen.ui_run_kwargs['storage_secret'] = 'just a test'
+    if custom_cookie_headers:
+        screen.ui_run_kwargs['session_middleware_kwargs'] = {'same_site': 'none', 'https_only': True}
+    screen.open('/')
+    with httpx.Client() as http_client:
+        response = http_client.get(f'http://localhost:{Screen.PORT}/')
+        assert response.status_code == 200
+        cookie_settings = str(response.headers.get('set-cookie')).lower()
+        if custom_cookie_headers:
+            assert cookie_settings.endswith('httponly; samesite=none; secure')
+        else:
+            assert cookie_settings.endswith('httponly; samesite=lax')

@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "nicegui"
-version = "3.0.4.dev0"
+version = "3.0.0"
 description = "Create web-based user interfaces with Python. The nice way."
 authors = ["Zauberzeug GmbH <info@zauberzeug.com>"]
 license = "MIT"
@@ -76,16 +76,22 @@ cssbeautifier = "^1.15.4"
 rcssmin = "^1.2.1"
 tinycss2 = "^1.4.0"
 html-sanitizer = "^2.6.0"
+poetry-dynamic-versioning = "^1.8.0"
 
 [tool.poetry.scripts]
 nicegui-pack = "nicegui.scripts.pack:main"
 
 [build-system]
 requires = [
-    "setuptools>=30.3.0",
-    "poetry-core>=1.0.0"
+    "poetry-core>=1.0.0",
+    "poetry-dynamic-versioning>=1.0.0,<2.0.0",
 ]
-build-backend = "poetry.core.masonry.api"
+build-backend = "poetry_dynamic_versioning.backend"
+
+[tool.poetry-dynamic-versioning]
+enable = true
+vcs = "git"
+style = "pep440"
 
 [tool.pytest.ini_options]
 addopts = "--driver Chrome"
@@ -95,8 +101,6 @@ main_file = ""
 testpaths = ["tests"]
 filterwarnings = [
   'error',
-  'ignore::DeprecationWarning:^websockets\.legacy(\.|$)',
-  'ignore::DeprecationWarning:^uvicorn\.protocols\.websockets(\.|$)',
   "ignore:'asyncio\\.iscoroutinefunction' is deprecated and slated for removal:DeprecationWarning",
 ]
 
