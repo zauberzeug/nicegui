@@ -11,20 +11,23 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
       - name: set up Python
         uses: actions/setup-python@v6
         with:
           python-version: "3.x"
-      - name: set up Poetry
-        uses: abatilo/actions-poetry@v4
       - name: get version
         run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
       - name: Set version
-        run: poetry version ${{ env.VERSION }}
-      - name: publish
+        run: |
+          sed -i 's/^version = .*/version = "'${{ env.VERSION }}'"/' pyproject.toml
+      - name: Build package
+        run: uv build
+      - name: Publish to PyPI
         env:
-          POETRY_PYPI_TOKEN_PYPI: ${{ secrets.PYPI_API_TOKEN }}
-        run: poetry publish --build
+          UV_PUBLISH_TOKEN: ${{ secrets.PYPI_API_TOKEN }}
+        run: uv publish
       - name: Create GitHub release entry
         uses: softprops/action-gh-release@v2
         with:
