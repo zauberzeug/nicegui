@@ -8,7 +8,6 @@ from . import (
     markdown_documentation,
     mermaid_documentation,
     restructured_text_documentation,
-    xterm_documentation,
 )
 from .html_documentation import other_html_elements_description, other_html_elements_title, other_html_elements
 
@@ -22,5 +21,4 @@ doc.intro(markdown_documentation)
 doc.intro(restructured_text_documentation)
 doc.intro(mermaid_documentation)
 doc.intro(html_documentation)
-doc.intro(xterm_documentation)
 doc.demo(other_html_elements_title, other_html_elements_description)(other_html_elements)
