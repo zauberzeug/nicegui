@@ -39,8 +39,7 @@ class Xterm(Element, component='xterm.js', esm={'nicegui-xterm': 'dist'}):
         This method only resizes the terminal, making the number of rows and columns match the size of the container.
         Note that you might also need to resize the backing pty to match the new size of the terminal.
 
-        :return: AwaitableResponse that, if awaited, returns ``None`` once the method call is finished.
-                 Otherwise, the method is executed without waiting for it to finish.
+        :return: AwaitableResponse that can be awaited to wait for the completion of the method call
         """
         return self.run_method('fit')
 
@@ -71,8 +70,7 @@ class Xterm(Element, component='xterm.js', esm={'nicegui-xterm': 'dist'}):
                                Set this to ``False`` if the data sent should not be treated like user input would,
                                for example passing an escape sequence to the application.
 
-        :return: AwaitableResponse that, if awaited, returns ``None`` once the method call is finished.
-                 Otherwise, the method is executed without waiting for it to finish.
+        :return: AwaitableResponse that can be awaited to wait for the completion of the method call
         """
         return self.run_method('input', data, was_user_input)
 
@@ -82,8 +80,7 @@ class Xterm(Element, component='xterm.js', esm={'nicegui-xterm': 'dist'}):
         :param data: The data to write to the terminal.
                      This can either be UTF-8 encoded bytes or a string.
 
-        :return: AwaitableResponse that, if awaited, returns ``None`` once the method call is finished.
-                 Otherwise, the method is executed without waiting for it to finish.
+        :return: AwaitableResponse that can be awaited to wait for the completion of the method call
         """
         # Xterm.js accepts an `Uint8Array`, which we can get by converting `bytes` to a `list`
         return self.run_method('write', list(data) if isinstance(data, bytes) else data)
@@ -94,8 +91,7 @@ class Xterm(Element, component='xterm.js', esm={'nicegui-xterm': 'dist'}):
         :param data: The data to write to the terminal.
                      This can either be UTF-8 encoded bytes or a string.
 
-        :return: AwaitableResponse that, if awaited, returns ``None`` once the method call is finished.
-                 Otherwise, the method is executed without waiting for it to finish.
+        :return: AwaitableResponse that can be awaited to wait for the completion of the method call
         """
         # Xterm.js accepts an `Uint8Array`, which we can get by converting `bytes` to a `list`
         return self.run_method('writeln', list(data) if isinstance(data, bytes) else data)
