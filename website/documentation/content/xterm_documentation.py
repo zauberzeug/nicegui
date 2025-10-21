@@ -40,25 +40,25 @@ def subscribing_to_events():
 
 
 @doc.demo('Auto-resizing the terminal', '''
-    You can use the `fit` method to resize the terminal, so that its number of rows and columns match the size of its
-    container.
-    Note that you might also need to resize the backing pty to match the new size of the terminal, which you can do by
-    subscribing to the terminal's `resize` event. Also note that the native `pty` module does not support resizing.
+    You can use the `fit` method to resize the terminal,
+    so that its number of rows and columns match the size of its container.
+    Note that you might also need to resize the backing pty to match the new size of the terminal,
+    which you can do by subscribing to the terminal's `resize` event.
+    Also note that the native `pty` module does not support resizing.
 ''')
 def resizing():
-    with ui.card().style('resize:both; overflow: auto; width: 300px; height: 200px;'):
-        resize_observer = ui.element('q-resize-observer')
+    with ui.card().classes('size-60 resize overflow-auto'):
         terminal = ui.xterm().classes('size-full')
+        ui.element('q-resize-observer').on('resize', terminal.fit)
 
-    size_label = ui.label('Terminal size:')
-    resize_observer.on('resize', terminal.fit)
-    terminal.on('resize', lambda e: size_label.set_text(f'Terminal size: {e.args["cols"]}x{e.args["rows"]}'))
+    label = ui.label()
+    terminal.on('resize', lambda e: label.set_text(f'Size: {e.args["cols"]}x{e.args["rows"]}'))
 
 
 @doc.demo('Showing output of a subprocess', '''
     You can connect the output of a subprocess to the terminal.
     Note that `subprocess.PIPE` buffers the output in `StreamReader` objects in memory.
-    If you want your subprocess to behave like it's running in a terminal, you might need to use a pty.
+    If you want your subprocess to behave like it is running in a terminal, you might need to use a pty.
 ''')
 def connecting_to_subprocess():
     async def run_subprocess():
@@ -77,7 +77,11 @@ def connecting_to_subprocess():
             while chunk := await stream.read(128):
                 terminal.write(chunk)
 
-        await asyncio.gather(write_to_terminal(process.stdout), write_to_terminal(process.stderr), process.wait())
+        await asyncio.gather(
+            write_to_terminal(process.stdout),
+            write_to_terminal(process.stderr),
+            process.wait(),
+        )
         button.enable()
 
     terminal = ui.xterm({'cols': 30, 'rows': 9})
