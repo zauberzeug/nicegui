@@ -17,6 +17,8 @@ class Xterm(Element, component='xterm.js', esm={'nicegui-xterm': 'dist'}):
         This element is a wrapper around `xterm.js <https://github.com/xtermjs/xterm.js>`_ to emulate a terminal.
         Note: This element provides only a front-end component without an underlying shell.
 
+        *Added in version 3.1.0*
+
         :param options: A dictionary of options to configure the terminal, see the
                         `xterm.js documentation <https://xtermjs.org/docs/api/terminal/classes/terminal/#constructor>`_.
         """
