@@ -23,21 +23,20 @@ def ansi_escape_codes():
 
 
 @doc.demo('Subscribing to events', '''
-    Xterm emits a `data` event when you type or paste text into the terminal.
-    Normally, you would pass this data to a pty or similar backend to process it (see the
-    [Xterm example](https://github.com/zauberzeug/nicegui/blob/main/examples/xterm/main.py)).
+    Xterm emits a "data" event when you type or paste text into the terminal.
+    Normally, you would pass this data to a pty or similar backend to process it
+    (see the [Xterm example](https://github.com/zauberzeug/nicegui/blob/main/examples/xterm/main.py)).
     However, you can also connect this event to the terminal's `write` method to see the data in the terminal.
-    Notice that this demo replaces some characters, which would otherwise be done by the pty.
-    You can also connect an audio element to the `bell` event to play a sound when the terminal's bell is triggered
-    (e.g. by pressing `Ctrl-G`).
-''')
-def on_data_event():
-    terminal = ui.xterm({'cols': 30, 'rows': 9})
-    terminal.on_data(lambda event: terminal.write(event.data.replace('\r', '\n\r').replace('\x7f', '\x1b[0D\x1b[0K')))
-    terminal.on_data(lambda e: print(e.data.encode()))
+    Notice that this demo replaces some characters, which would otherwise be done by the pty (newline and backspace).
 
-    bell_sound = ui.audio('https://www.soundjay.com/buttons/beep-07a.mp3', controls=False)
-    terminal.on_bell(lambda _: bell_sound.play())
+    You can also handle the "bell" event, e.g. to play a sound when the terminal's bell is triggered
+    (e.g. by pressing `Ctrl-G`).
+    This demo shows a notification instead.
+''')
+def subscribing_to_events():
+    terminal = ui.xterm({'cols': 30, 'rows': 9})
+    terminal.on_data(lambda e: terminal.write(e.data.replace('\r', '\n\r').replace('\x7f', '\x1b[0D\x1b[0K')))
+    terminal.on_bell(lambda: ui.notify('🔔'))
 
 
 @doc.demo('Auto-resizing the terminal', '''
