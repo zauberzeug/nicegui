@@ -9,7 +9,7 @@ export default {
 
     // Create terminal with addons
     this.terminal = new Terminal(this.options);
-    this.terminal.loadAddon(new FitAddon());
+    this.terminal.loadAddon((this.fit_addon = new FitAddon()));
     this.terminal.loadAddon(new WebLinksAddon());
     this.terminal.open(this.$el);
 

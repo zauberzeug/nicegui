@@ -70,19 +70,19 @@ def test_bell_and_data_events(screen: Screen) -> None:
     screen.should_not_contain('123456')  # Neither typing nor the `input` method write text on the terminal
 
 
-def test_fit_and_other_events(screen: Screen) -> None:
+def test_fit_and_resize_event(screen: Screen) -> None:
     @ui.page('/')
     def main():
         with ui.card().classes('size-96'):
             terminal = ui.xterm()
-            terminal.on('resize', lambda e: ui.label(f'Terminal size: {e.args["cols"]}x{e.args["rows"]}'))
-            ui.button('Fill', on_click=lambda: terminal.classes('size-full'))
-            ui.button('Fit', on_click=terminal.fit)
+            terminal.on('resize', lambda e: ui.notify(f'Size: {e.args["cols"]}x{e.args["rows"]}'))
+        ui.button('Fill', on_click=lambda: terminal.classes('size-full'))
+        ui.button('Fit', on_click=terminal.fit)
 
     screen.open('/')
     screen.click('Fill')
     screen.click('Fit')
-    screen.should_contain('Terminal size: 37x19')  # depends on size of the container (ui.card)
+    screen.should_contain('Size: 37x20')  # depends on size of the container (ui.card)
 
 
 def test_run_terminal_method(screen: Screen) -> None:
