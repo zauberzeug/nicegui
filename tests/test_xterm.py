@@ -2,7 +2,6 @@ from selenium.webdriver import Keys
 from selenium.webdriver.common.action_chains import ActionChains
 
 from nicegui import ui
-from nicegui.events import XtermBellEventArguments, XtermDataEventArguments
 from nicegui.testing import Screen
 
 
@@ -22,55 +21,67 @@ def test_init(screen: Screen) -> None:
 
 
 def test_write(screen: Screen) -> None:
-    terminal = ui.xterm()
-    screen.open('/')
+    @ui.page('/')
+    def main():
+        terminal = ui.xterm()
+        ui.button('Write Hello!', on_click=lambda: terminal.write('Hello!'))
+        ui.button('Write 😎', on_click=lambda: terminal.write(b'\xf0\x9f\x98\x8e\n\r'))
+        ui.button('Write link', on_click=lambda: terminal.writeln(f'http://localhost:{screen.PORT}/subpage'))
 
-    terminal.write('Hello NiceGUI!')  # write string
-    terminal.write(b'\xf0\x9f\x98\x8e\n\r')  # write UTF-8 encoded bytes
+    @ui.page('/subpage')
+    def subpage():
+        ui.label('This is the subpage')
+
+    screen.open('/')
+    screen.click('Write Hello!')
+    screen.click('Write 😎')
     screen.wait(0.1)
-    assert screen.find_element(terminal).text.strip() == 'Hello NiceGUI!😎'
+    assert screen.find_by_class('xterm').text == 'Hello!😎\n '
 
     # `Ctrl`+ click on a link opens the link in a new tab
-    terminal.writeln('https://nicegui.io/')
-    link = screen.find('https://nicegui.io/')
+    screen.click('Write link')
+    link = screen.find('subpage')
     ActionChains(screen.selenium).key_down(Keys.CONTROL).click(link).key_up(Keys.CONTROL).perform()
     screen.switch_to(1)  # Switch to the new tab opened by the link
-    screen.wait(0.5)
-    assert screen.selenium.current_url == 'https://nicegui.io/'
+    screen.should_contain('This is the subpage')
 
 
 def test_bell_and_data_events(screen: Screen) -> None:
-    terminal = ui.xterm()
-    bell_events: list[XtermBellEventArguments] = []
-    data_events: list[XtermDataEventArguments] = []
-    terminal.on_bell(bell_events.append)
-    terminal.on_data(data_events.append)
+    counts = {'bell': 0, 'data': 0}
+
+    @ui.page('/')
+    def main():
+        terminal = ui.xterm()
+        terminal.on_bell(lambda: counts.update(bell=counts['bell'] + 1))
+        terminal.on_data(lambda: counts.update(data=counts['data'] + 1))
+        ui.button('Ring Bell', on_click=lambda: terminal.write('\x07'))
+        ui.button('Input 456', on_click=lambda: terminal.input('456'))
+
     screen.open('/')
-
-    # Write the "Bell" character to trigger bell
-    terminal.write('\x07')
+    screen.click('Ring Bell')
     screen.wait(0.1)
-    assert len(bell_events) == 1
-    assert len(data_events) == 0  # The `write` method does not trigger a data event
+    assert counts == {'bell': 1, 'data': 0}
 
-    # Type text to trigger data input
-    screen.find_element(terminal).click()  # Focus the terminal
-    screen.type('Hello ')
-    terminal.input('NiceGUI!')  # The `input` method does trigger a data event
+    screen.find_by_class('xterm').click()
+    screen.type('123')
+    screen.click('Input 456')
     screen.wait(0.1)
-    assert ''.join(e.data for e in data_events) == 'Hello NiceGUI!'
-    screen.should_not_contain('Hello NiceGUI!')  # Neither typing nor the `input` method write text on the terminal
+    assert counts == {'bell': 1, 'data': 4}  # The `input` method triggers a single data event
+    screen.should_not_contain('123456')  # Neither typing nor the `input` method write text on the terminal
 
 
 def test_fit_and_other_events(screen: Screen) -> None:
-    with ui.card().classes('size-96'):
-        terminal = ui.xterm()
+    @ui.page('/')
+    def main():
+        with ui.card().classes('size-96'):
+            terminal = ui.xterm()
+            terminal.on('resize', lambda e: ui.label(f'Terminal size: {e.args["cols"]}x{e.args["rows"]}'))
+            ui.button('Fill', on_click=lambda: terminal.classes('size-full'))
+            ui.button('Fit', on_click=terminal.fit)
 
-    terminal.on('resize', lambda e: ui.label(f'Terminal size: {e.args["cols"]}x{e.args["rows"]}'))
     screen.open('/')
-
-    terminal.classes('size-full')  # Make the terminal fill its container
-    terminal.fit()  # Resize the terminal (number of rows and columns) to fit in the container
+    screen.click('Fill')
+    screen.click('Fit')
     screen.should_contain('Terminal size: 37x19')  # depends on size of the container (ui.card)
 
 
