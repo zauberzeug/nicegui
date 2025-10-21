@@ -1,5 +1,3 @@
-from typing import List
-
 from selenium.webdriver import Keys
 from selenium.webdriver.common.action_chains import ActionChains
 
@@ -11,12 +9,12 @@ from nicegui.testing import Screen
 def test_init(screen: Screen) -> None:
     @ui.page('/')
     async def main():
-        terminal_default = ui.xterm()
-        custom_size = ui.xterm({'cols': 132, 'rows': 43})
+        default_terminal = ui.xterm()
+        custom_terminal = ui.xterm({'cols': 132, 'rows': 43})
         await ui.context.client.connected()
 
-        ui.label(f'Default terminal size: {await terminal_default.get_columns()}x{await terminal_default.get_rows()}')
-        ui.label(f'Custom terminal size: {await custom_size.get_columns()}x{await custom_size.get_rows()}')
+        ui.label(f'Default terminal size: {await default_terminal.get_columns()}x{await default_terminal.get_rows()}')
+        ui.label(f'Custom terminal size: {await custom_terminal.get_columns()}x{await custom_terminal.get_rows()}')
 
     screen.open('/')
     screen.should_contain('Default terminal size: 80x24')  # See https://softwareengineering.stackexchange.com/q/148754
@@ -27,10 +25,10 @@ def test_write(screen: Screen) -> None:
     terminal = ui.xterm()
     screen.open('/')
 
-    terminal.write('Hello nicegui!')  # write string
+    terminal.write('Hello NiceGUI!')  # write string
     terminal.write(b'\xf0\x9f\x98\x8e\n\r')  # write UTF-8 encoded bytes
     screen.wait(0.1)
-    assert screen.find_element(terminal).text.strip() == 'Hello nicegui!😎'
+    assert screen.find_element(terminal).text.strip() == 'Hello NiceGUI!😎'
 
     # `Ctrl`+ click on a link opens the link in a new tab
     terminal.writeln('https://nicegui.io/')
@@ -43,8 +41,8 @@ def test_write(screen: Screen) -> None:
 
 def test_bell_and_data_events(screen: Screen) -> None:
     terminal = ui.xterm()
-    bell_events: List[XtermBellEventArguments] = []
-    data_events: List[XtermDataEventArguments] = []
+    bell_events: list[XtermBellEventArguments] = []
+    data_events: list[XtermDataEventArguments] = []
     terminal.on_bell(bell_events.append)
     terminal.on_data(data_events.append)
     screen.open('/')
@@ -58,10 +56,10 @@ def test_bell_and_data_events(screen: Screen) -> None:
     # Type text to trigger data input
     screen.find_element(terminal).click()  # Focus the terminal
     screen.type('Hello ')
-    terminal.input('nicegui!')  # The `input` method does trigger a data event
+    terminal.input('NiceGUI!')  # The `input` method does trigger a data event
     screen.wait(0.1)
-    assert ''.join(e.data for e in data_events) == 'Hello nicegui!'
-    screen.should_not_contain('Hello nicegui!')  # Neither typing nor the `input` method write text on the terminal
+    assert ''.join(e.data for e in data_events) == 'Hello NiceGUI!'
+    screen.should_not_contain('Hello NiceGUI!')  # Neither typing nor the `input` method write text on the terminal
 
 
 def test_fit_and_other_events(screen: Screen) -> None:
@@ -81,12 +79,12 @@ def test_run_terminal_method(screen: Screen) -> None:
     async def main():
         terminal = ui.xterm({'rows': 4})
         await ui.context.client.connected()
-        await terminal.write('\n\n\n' + 'Hello nicegui!' + '\n\r' + 'https://nicegui.io/' + '\n\n\n\n')
+        await terminal.write('\n\n\n' + 'Hello NiceGUI!' + '\n\r' + 'https://nicegui.io/' + '\n\n\n\n')
 
         await terminal.run_terminal_method('scrollLines', -2)  # Scroll up 2 lines
         await terminal.run_terminal_method(':select', '8', 'this.rows', '10')  # 10 chars starting at column 8, row 4
         ui.label(f'Selected text: {await terminal.run_terminal_method("getSelection")}')
 
     screen.open('/')
-    screen.should_contain('Hello nicegui!')
+    screen.should_contain('Hello NiceGUI!')
     screen.should_contain('Selected text: nicegui.io')
