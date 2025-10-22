@@ -26,6 +26,7 @@ from . import (
     time_documentation,
     toggle_documentation,
     upload_documentation,
+    xterm_documentation,
 )
 
 doc.title('*Controls*')
@@ -49,6 +50,7 @@ doc.intro(joystick_documentation)
 doc.intro(input_documentation)
 doc.intro(textarea_documentation)
 doc.intro(codemirror_documentation)
+doc.intro(xterm_documentation)
 doc.intro(number_documentation)
 doc.intro(knob_documentation)
 doc.intro(color_input_documentation)
