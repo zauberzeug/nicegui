@@ -2,7 +2,7 @@ from copy import deepcopy
 from typing import Any, Callable, Literal, Optional, Union, overload, Generic, Iterable
 
 from ..events import GenericEventArguments, Handler, ValueChangeEventArguments
-from .choice_element import ChoiceElement, Option, VAL, T, P, to_option, JsonPrimitive, OptionDict, DEFAULT
+from .choice_element import ChoiceElement, Option, VAL, P, T, to_option, JsonPrimitive, OptionDict, DEFAULT
 from .mixins.disableable_element import DisableableElement
 from .mixins.label_element import LabelElement
 from .mixins.validation_element import ValidationDict, ValidationElement, ValidationFunction
@@ -19,15 +19,12 @@ class Select(
     ):
 
     def __init__(self,
-                 options: Union[Iterable[P], Iterable[T]], *,
+                 options: Union[Iterable[T], Iterable[P]], *,
                  label: str = "",
-                 value: Union[tuple[Option[P, P], ...], tuple[T, ...], tuple[P, ...], Optional[P], Optional[Option[P, P]]] = None,
+                 value: Union[tuple[T, ...], Optional[T], tuple[P, ...], Optional[P], Optional[Option[P, P]], tuple[Option[P, P], ...]] = None,
                  on_change: Optional[Union[
-                    Handler[ValueChangeEventArguments[tuple[T, ...]]], 
-                    Handler[ValueChangeEventArguments[tuple[Option[P, P], ...]]], 
-                    Handler[ValueChangeEventArguments[tuple[P, ...]]], 
+                    Handler[ValueChangeEventArguments[tuple[T, ...]]],  
                     Handler[ValueChangeEventArguments[Optional[T]]], 
-                    Handler[ValueChangeEventArguments[Optional[P]]]
                 ]] = None,
                 with_input: bool = False,
                 new_value_mode: Optional[Literal['add', 'add-unique', 'toggle']] = None,
@@ -36,8 +33,6 @@ class Select(
                 validation: Union[
                     Optional[Union[ValidationFunction[tuple[T, ...]], ValidationDict[tuple[T, ...]]]],
                     Optional[Union[ValidationFunction[Optional[T]], ValidationDict[Optional[T]]]],
-                    Optional[Union[ValidationFunction[Optional[Option[P, P]]], ValidationDict[Optional[Option[P, P]]]]],
-                    Optional[Union[ValidationFunction[tuple[Option[P, P], ...]], ValidationDict[tuple[Option[P, P], ...]]]],
                 ] = None
                 ) -> None:
         """Dropdown Selection
@@ -146,42 +141,6 @@ class Select(
                 self.options.append(new_option)
         self._update_values_and_labels()
         return new_option
-
-@overload
-def select(
-    options: Iterable[P], *, label: str = ..., value: P = ...,
-    on_change: Optional[Handler[ValueChangeEventArguments[Optional[T]]]] = ..., 
-    with_input: bool = ...,
-    new_value_mode: Optional[Literal['add', 'add-unique', 'toggle']] = ...,
-    new_value_to_option: Optional[Callable[[str], Optional[T]]] = ...,
-    clearable: bool = ...,
-    validation: Optional[Union[ValidationFunction[Optional[T]], ValidationDict[Optional[T]]]] = ...,
-    ) -> Select[Optional[Option[P, P]], Option[P, P]]:
-    ...
-
-@overload
-def select(
-    options: Iterable[P], *, label: str = ..., value: P = ...,
-    on_change: Optional[Handler[ValueChangeEventArguments[Optional[T]]]] = ..., 
-    with_input: bool = ...,
-    new_value_mode: Optional[Literal['add', 'add-unique', 'toggle']] = ...,
-    new_value_to_option: Optional[Callable[[str], Optional[T]]] = ...,
-    clearable: bool = ...,
-    validation: Optional[Union[ValidationFunction[Optional[T]], ValidationDict[Optional[T]]]] = ...,
-    ) -> Select[Optional[Option[P, P]], Option[P, P]]:
-    ...
-
-@overload
-def select(
-    options: Iterable[P], *, label: str = ..., value: Literal[None] = ...,
-    on_change: Optional[Handler[ValueChangeEventArguments[Optional[T]]]] = ..., 
-    with_input: bool = ...,
-    new_value_mode: Optional[Literal['add', 'add-unique', 'toggle']] = ...,
-    new_value_to_option: Optional[Callable[[str], Optional[T]]] = ...,
-    clearable: bool = ...,
-    validation: Optional[Union[ValidationFunction[Optional[T]], ValidationDict[Optional[T]]]] = ...,
-    ) -> Select[Optional[Option[P, P]], Option[P, P]]:
-    ...
 
 @overload
 def select(
