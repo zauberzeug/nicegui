@@ -8,9 +8,9 @@ import weakref
 from collections import defaultdict
 from collections.abc import Iterable, Mapping
 from contextvars import ContextVar
-from typing import TYPE_CHECKING, Any, Callable, Literal, Generic
+from typing import TYPE_CHECKING, Any, Callable, Generic, Literal
 
-from typing_extensions import dataclass_transform, TypeVar
+from typing_extensions import TypeVar, dataclass_transform
 
 from . import core
 from .logging import log
@@ -28,7 +28,7 @@ active_links: list[tuple[Any, str, Any, str, Callable[[Any], Any] | None]] = []
 
 TC = TypeVar('TC', bound=type)
 T = TypeVar('T', default=Any)
-O = TypeVar('O', default=Any)
+E = TypeVar('E', default=Any)
 
 
 def _has_attribute(obj: object | Mapping, name: str) -> Any:
@@ -204,18 +204,18 @@ def bind(self_obj: Any, self_name: str, other_obj: Any, other_name: str, *,
     bind_to(self_obj, self_name, other_obj, other_name, forward=forward, self_strict=False, other_strict=False)
 
 
-class BindableProperty(Generic[T, O]):
+class BindableProperty(Generic[T, E]):
 
-    def __init__(self, on_change: Callable[[O, T], Any] | None = None) -> None:
+    def __init__(self, on_change: Callable[[E, T], Any] | None = None) -> None:
         self._change_handler = on_change
 
     def __set_name__(self, _, name: str) -> None:
         self.name = name  # pylint: disable=attribute-defined-outside-init
 
-    def __get__(self, owner: O, _=None) -> T:
+    def __get__(self, owner: E, _=None) -> T:
         return getattr(owner, '___' + self.name)
 
-    def __set__(self, owner: O, value: T) -> None:
+    def __set__(self, owner: E, value: T) -> None:
         has_attr = hasattr(owner, '___' + self.name)
         if not has_attr:
             _make_copyable(type(owner))

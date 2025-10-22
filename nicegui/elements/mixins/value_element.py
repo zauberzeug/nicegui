@@ -1,11 +1,10 @@
-from typing import Any, Callable, Optional, cast, Generic
+from typing import Any, Callable, Generic, Optional, cast
 
 from typing_extensions import Self, TypeVar
 
 from ...binding import BindableProperty, bind, bind_from, bind_to
 from ...element import Element
 from ...events import GenericEventArguments, Handler, ValueChangeEventArguments, handle_event
-
 
 V = TypeVar('V')
 

@@ -1,15 +1,16 @@
-from typing import Any, cast, Optional, Union, Generic, Iterable, overload
-from typing_extensions import TypeVar, TypedDict
+import hashlib
+from collections.abc import Iterable
+from dataclasses import dataclass
+from typing import Any, Generic, Optional, Union, overload
 
+from typing_extensions import TypedDict, TypeVar
 
 from ..events import Handler, ValueChangeEventArguments
 from .mixins.value_element import ValueElement
-from dataclasses import dataclass
-import hashlib
 
 JsonPrimitive = Union[str, int, float, bool]
 JsonValue = Union[
-    JsonPrimitive, list[str], list[int], list[float], list[bool], 'list[JsonValue]', 
+    JsonPrimitive, list[str], list[int], list[float], list[bool], 'list[JsonValue]',
     dict[str, str], dict[str, int], dict[str, float], dict[str, bool], 'dict[str, JsonValue]'
 ]
 
@@ -18,8 +19,12 @@ V = TypeVar('V', bound=JsonValue)
 T = TypeVar('T', bound='Option[Any, Any]')
 P = TypeVar('P', bound=JsonPrimitive)
 VAL = TypeVar('VAL', bound='Union[tuple[Option[Any, Any], ...], Optional[Option[Any, Any]]]')
-class DEFAULT: pass
 
+class DEFAULT:
+    pass
+
+default = DEFAULT()
+# ^ used as default value in set_options below
 
 @dataclass
 class Option(Generic[L, V]):
@@ -27,7 +32,7 @@ class Option(Generic[L, V]):
     value: V
 
     def __post_init__(self) -> None:
-        self.id = hashlib.md5(f"{self.label}{self.value}".encode()).hexdigest()
+        self.id = hashlib.md5(f'{self.label}{self.value}'.encode()).hexdigest()
 
 
 class OptionDict(TypedDict, Generic[L, V]):
@@ -96,7 +101,7 @@ class ChoiceElement(ValueElement[VAL], Generic[VAL, T]):
             self._update_options()
         super().update()
 
-    def set_options(self, options: Iterable[T], *, value: Union[VAL, DEFAULT] = DEFAULT()) -> None:
+    def set_options(self, options: Iterable[T], *, value: Union[VAL, DEFAULT] = default) -> None:
         """Set the options of this choice element.
 
         :param options: The new options.
@@ -106,4 +111,3 @@ class ChoiceElement(ValueElement[VAL], Generic[VAL, T]):
         if not isinstance(value, DEFAULT):
             self.value: VAL = value
         self.update()
-

@@ -1,18 +1,18 @@
+from collections.abc import Iterable
 from copy import deepcopy
-from typing import Any, Callable, Literal, Optional, Union, overload, Generic, Iterable
+from typing import Any, Callable, Generic, Literal, Optional, Union, overload
 
 from ..events import GenericEventArguments, Handler, ValueChangeEventArguments
-from .choice_element import ChoiceElement, Option, VAL, P, T, to_option, JsonPrimitive, OptionDict, DEFAULT
+from .choice_element import VAL, ChoiceElement, Option, OptionDict, P, T, to_option
 from .mixins.disableable_element import DisableableElement
 from .mixins.label_element import LabelElement
 from .mixins.validation_element import ValidationDict, ValidationElement, ValidationFunction
-from dataclasses import dataclass
 
 
 class Select(
-    LabelElement, 
-    ValidationElement[VAL], 
-    ChoiceElement[VAL, T], 
+    LabelElement,
+    ValidationElement[VAL],
+    ChoiceElement[VAL, T],
     DisableableElement,
     Generic[VAL, T],
     component='select.js'
@@ -20,11 +20,11 @@ class Select(
 
     def __init__(self,
                  options: Union[Iterable[T], Iterable[P]], *,
-                 label: str = "",
+                 label: str = '',
                  value: Union[tuple[T, ...], Optional[T], tuple[P, ...], Optional[P], Optional[Option[P, P]], tuple[Option[P, P], ...]] = None,
                  on_change: Optional[Union[
-                    Handler[ValueChangeEventArguments[tuple[T, ...]]],  
-                    Handler[ValueChangeEventArguments[Optional[T]]], 
+                    Handler[ValueChangeEventArguments[tuple[T, ...]]],
+                    Handler[ValueChangeEventArguments[Optional[T]]],
                 ]] = None,
                 with_input: bool = False,
                 new_value_mode: Optional[Literal['add', 'add-unique', 'toggle']] = None,
@@ -97,7 +97,7 @@ class Select(
         return self._is_showing_popup
 
     def _event_args_to_value(self, e: GenericEventArguments[Union[list[Union[OptionDict[Any, Any], str]], Optional[Union[OptionDict[Any, Any], str]]]]) -> Union[tuple[T, ...], Optional[T]]:
-        print("e.args =", e.args)
+        print('e.args =', e.args)
         if isinstance(e.args, list):
             if self.new_value_mode == 'add-unique':
                 # handle issue #4896: eliminate duplicate arguments
@@ -128,7 +128,7 @@ class Select(
         assert self.new_value_to_option
         mode = self.new_value_mode
         new_option: Optional[T] = self.new_value_to_option(value)
-        print("new_option =", new_option)
+        print('new_option =', new_option)
         if mode == 'add' and new_option:
             self.options.append(new_option)
         elif mode == 'add-unique' and new_option:
@@ -144,8 +144,8 @@ class Select(
 
 @overload
 def select(
-    options: Iterable[T], *, label: str = ..., value: tuple[T, ...] = ..., 
-    on_change: Literal[None] = ..., 
+    options: Iterable[T], *, label: str = ..., value: tuple[T, ...] = ...,
+    on_change: Literal[None] = ...,
     with_input: bool = ...,
     new_value_mode: Optional[Literal['add', 'add-unique', 'toggle']] = ...,
     new_value_to_option: Optional[Callable[[str], Optional[T]]] = ...,
@@ -157,7 +157,7 @@ def select(
 @overload
 def select(
     options: Iterable[P], *, label: str = ..., value: tuple[P, ...],
-    on_change: Optional[Handler[ValueChangeEventArguments[tuple[T, ...]]]] = ..., 
+    on_change: Optional[Handler[ValueChangeEventArguments[tuple[T, ...]]]] = ...,
     with_input: bool = ...,
     new_value_mode: Optional[Literal['add', 'add-unique', 'toggle']] = ...,
     new_value_to_option: Optional[Callable[[str], Optional[T]]] = ...,
@@ -169,7 +169,7 @@ def select(
 @overload
 def select(
     options: Iterable[P], *, label: str = ..., value: Optional[P] = ...,
-    on_change: Optional[Handler[ValueChangeEventArguments[Optional[T]]]] = ..., 
+    on_change: Optional[Handler[ValueChangeEventArguments[Optional[T]]]] = ...,
     with_input: bool = ...,
     new_value_mode: Optional[Literal['add', 'add-unique', 'toggle']] = ...,
     new_value_to_option: Optional[Callable[[str], Optional[T]]] = ...,
@@ -180,17 +180,17 @@ def select(
 
 def select(
         options: Union[Iterable[T], Iterable[P]], *,
-        label: str = "",
+        label: str = '',
         value: Union[
             tuple[T, ...],
             tuple[P, ...],
             Optional[T],
             Optional[P]
-        ] = None, 
+        ] = None,
         on_change: Union[
-            Optional[Handler[ValueChangeEventArguments[tuple[T, ...]]]], 
-            Optional[Handler[ValueChangeEventArguments[Optional[T]]], 
-        ]] = None,
+            Optional[Handler[ValueChangeEventArguments[tuple[T, ...]]]],
+            Optional[Handler[ValueChangeEventArguments[Optional[T]]]],
+        ] = None,
         with_input: bool = False,
         new_value_mode: Optional[Literal['add', 'add-unique', 'toggle']] = None,
         new_value_to_option: Optional[Callable[[str], Optional[T]]] = None,
@@ -206,38 +206,7 @@ def select(
             Select[tuple[Option[P, P], ...], Option[P, P]],
         ]:
     return Select(
-        options=options, label=label, value=value, on_change=on_change, 
+        options=options, label=label, value=value, on_change=on_change,
         with_input=with_input, new_value_mode=new_value_mode, new_value_to_option=new_value_to_option,
         clearable=clearable, validation=validation
     )
-
-
-if __name__ == "__main__":
-    def v(val: str) -> Option[int, int]:
-        return Option(label=int(val), value=int(val))
-
-    s = select(options=[1, 2], value=2, new_value_mode="add", new_value_to_option=v)
-    s.value
-
-    o = (Option(label="a", value=1),)
-    z = select(options=o, value=(Option(label="a", value=1),))
-
-    @dataclass
-    class M(Option[str, dict[str, int]]):
-        icon: str
-
-    a = select(options=[M(label="team 1", value=dict(players=13), icon="basketball")])
-    a.options[0].icon
-    print(a.value)
-
-    b = select(options=[M(label="team 1", value=dict(players=13), icon="basketball")], value=())
-    b.options[0].icon
-    print(b.value)
-
-    c = select(options=[M(label="team 1", value=dict(players=13), icon="basketball")], label="A")
-    c.options[0].icon
-    print(c.value)
-
-    d = select(options=[1,2,3], value=(1,), label="A")
-    d.options[0]
-    print(d.value)
