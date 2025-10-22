@@ -144,8 +144,8 @@ class Select(
 
 @overload
 def select(
-    options: Iterable[T], *, label: str = ..., value: tuple[T, ...] = ...,
-    on_change: Literal[None] = ...,
+    options: Iterable[T], *, label: str = ..., value: tuple[T, ...],
+    on_change: Optional[Handler[ValueChangeEventArguments[tuple[T, ...]]]] = ...,
     with_input: bool = ...,
     new_value_mode: Optional[Literal['add', 'add-unique', 'toggle']] = ...,
     new_value_to_option: Optional[Callable[[str], Optional[T]]] = ...,
@@ -154,9 +154,23 @@ def select(
     ) -> Select[tuple[T, ...], T]:
     ...
 
+
 @overload
 def select(
-    options: Iterable[P], *, label: str = ..., value: tuple[P, ...],
+    options: Iterable[T], *, label: str = ..., value: Literal[None] = ...,
+    on_change: Optional[Handler[ValueChangeEventArguments[tuple[T, ...]]]] = ...,
+    with_input: bool = ...,
+    new_value_mode: Optional[Literal['add', 'add-unique', 'toggle']] = ...,
+    new_value_to_option: Optional[Callable[[str], Optional[T]]] = ...,
+    clearable: bool = ...,
+    validation: Optional[Union[ValidationFunction[tuple[T, ...]], ValidationDict[tuple[T, ...]]]] = ...,
+    ) -> Select[Optional[T], T]:
+    ...
+
+
+@overload
+def select(
+    options: Iterable[P], *, label: str = ..., value: tuple[P, ...] = ...,
     on_change: Optional[Handler[ValueChangeEventArguments[tuple[T, ...]]]] = ...,
     with_input: bool = ...,
     new_value_mode: Optional[Literal['add', 'add-unique', 'toggle']] = ...,
@@ -165,6 +179,7 @@ def select(
     validation: Optional[Union[ValidationFunction[tuple[T, ...]], ValidationDict[tuple[T, ...]]]] = ...,
     ) -> Select[tuple[Option[P, P], ...], Option[P, P]]:
     ...
+
 
 @overload
 def select(
