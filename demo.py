@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 from nicegui import ui
-from nicegui.elements.select import Option, to_option
+from nicegui.elements.select import Option
 
 
 @dataclass
@@ -15,15 +15,19 @@ if __name__ in {'__main__', '__mp_main__'}:
 
     @ui.page('/')
     def page():
-        ui.select(
+        s = ui.select(
             options=[1,2,3],
             value=None,
             on_change=lambda e: print(e.value, e.previous_value),
         )
+        s.value
 
-        s = ui.select(options=[Option(label=v, value=k) for k, v in {'a': 'A', 'b': 'B', 'c': 'C'}.items()], new_value_mode='toggle', new_value_to_option=to_option)
-        ui.label().bind_text_from(s, 'value', lambda v: f'value = {v.value if v else v}')
-        ui.label().bind_text_from(s, 'options', lambda options: f'options = {options}')
+        s2 = ui.select(
+            options=[1,2,3],
+            value=(1,),
+            on_change=lambda e: print(e.value, e.previous_value),
+        )
+        s2.value
 
         select_people = (
             ui.select(
@@ -32,8 +36,8 @@ if __name__ in {'__main__', '__mp_main__'}:
                     Person(label='Falko', value=1, icon='person-outline', caption='Company: Trilliant Health'),
                     Person(label='Zauberzeug', value=2, icon='people-outline', caption='Company'),
                 ],
+                on_change=lambda e: print(e.value),
                 value=(),
-                on_change=lambda e: print(e.value)
             )
             .props('use-chips')
             .classes('w-64')
