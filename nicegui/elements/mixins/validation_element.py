@@ -1,10 +1,10 @@
 from collections.abc import Awaitable
 from typing import Any, Callable, Optional, Union
 
-from typing_extensions import Self, TypeVar
+from typing_extensions import Self
 
 from ... import background_tasks, helpers
-from .value_element import ValueElement, V
+from .value_element import V, ValueElement
 
 ValidationFunction = Callable[[V], Union[Optional[str], Awaitable[Optional[str]]]]
 ValidationDict = dict[str, Callable[[V], bool]]

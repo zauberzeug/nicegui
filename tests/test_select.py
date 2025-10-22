@@ -1,12 +1,12 @@
-from typing import Optional, Literal
+import re
+from typing import Literal, Optional
 
 import pytest
 from selenium.webdriver import Keys
-import re
 
 from nicegui import ui
-from nicegui.testing import Screen, User
 from nicegui.elements.choice_element import Option, to_option
+from nicegui.testing import Screen, User
 
 
 def test_select(screen: Screen):
@@ -222,7 +222,7 @@ def test_opening_and_closing_popup_with_screen(multiple: bool, screen: Screen):
         nonlocal select
         select = ui.select(options=['Apple', 'Banana', 'Cherry'], label='Fruits', value=() if multiple else None).classes('w-24')
         ui.label().bind_text_from(select, 'is_showing_popup', lambda v: 'open' if v else 'closed')
-        ui.label().bind_text_from(select, 'value', backward=lambda value: f"value = {[v.value for v in value] if multiple else (value.value if value else value)}")
+        ui.label().bind_text_from(select, 'value', backward=lambda value: f'value = {[v.value for v in value] if multiple else (value.value if value else value)}')
 
     screen.open('/')
     fruits = screen.find_element(select)
