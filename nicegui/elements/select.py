@@ -170,13 +170,13 @@ def select(
 
 @overload
 def select(
-    options: Iterable[P], *, label: str = ..., value: tuple[P, ...] = ...,
-    on_change: Optional[Handler[ValueChangeEventArguments[tuple[T, ...]]]] = ...,
+    options: Iterable[P], *, label: str = ..., value: tuple[P, ...],
+    on_change: Optional[Handler[ValueChangeEventArguments[tuple[Option[P, P], ...]]]] = ...,
     with_input: bool = ...,
     new_value_mode: Optional[Literal['add', 'add-unique', 'toggle']] = ...,
-    new_value_to_option: Optional[Callable[[str], Optional[T]]] = ...,
+    new_value_to_option: Optional[Callable[[str], Optional[Option[P, P]]]] = ...,
     clearable: bool = ...,
-    validation: Optional[Union[ValidationFunction[tuple[T, ...]], ValidationDict[tuple[T, ...]]]] = ...,
+    validation: Optional[Union[ValidationFunction[tuple[Option[P, P], ...]], ValidationDict[tuple[Option[P, P], ...]]]] = ...,
     ) -> Select[tuple[Option[P, P], ...], Option[P, P]]:
     ...
 
@@ -184,12 +184,12 @@ def select(
 @overload
 def select(
     options: Iterable[P], *, label: str = ..., value: Optional[P] = ...,
-    on_change: Optional[Handler[ValueChangeEventArguments[Optional[T]]]] = ...,
+    on_change: Optional[Handler[ValueChangeEventArguments[Optional[Option[P, P]]]]] = ...,
     with_input: bool = ...,
     new_value_mode: Optional[Literal['add', 'add-unique', 'toggle']] = ...,
-    new_value_to_option: Optional[Callable[[str], Optional[T]]] = ...,
+    new_value_to_option: Optional[Callable[[str], Optional[Option[P, P]]]] = ...,
     clearable: bool = ...,
-    validation: Optional[Union[ValidationFunction[Optional[T]], ValidationDict[Optional[T]]]] = ...,
+    validation: Optional[Union[ValidationFunction[Optional[Option[P, P]]], ValidationDict[Optional[Option[P, P]]]]] = ...,
     ) -> Select[Optional[Option[P, P]], Option[P, P]]:
     ...
 
