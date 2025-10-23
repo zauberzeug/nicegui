@@ -17,6 +17,7 @@ from . import (
     notify_documentation,
     pagination_documentation,
     row_documentation,
+    responsive_documentation,
     scroll_area_documentation,
     separator_documentation,
     skeleton_documentation,
@@ -89,6 +90,7 @@ def clear_containers_demo():
 doc.intro(teleport_documentation)
 doc.intro(expansion_documentation)
 doc.intro(scroll_area_documentation)
+doc.intro(responsive_documentation)
 doc.intro(separator_documentation)
 doc.intro(space_documentation)
 doc.intro(skeleton_documentation)
