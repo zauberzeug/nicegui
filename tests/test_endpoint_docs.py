@@ -15,14 +15,23 @@ def get_openapi_paths() -> set[str]:
 
 
 def test_endpoint_documentation_default(screen: Screen):
+    @ui.page('/')
+    def page():
+        ui.markdown('Hey!')
+
     screen.open('/')
     assert get_openapi_paths() == set()
 
 
 def test_endpoint_documentation_page_only(screen: Screen):
     screen.ui_run_kwargs['endpoint_documentation'] = 'page'
+
+    @ui.page('/')
+    def page():
+        ui.markdown('Hey!')
+
     screen.open('/')
-    assert get_openapi_paths() == set()
+    assert get_openapi_paths() == {'/'}
 
 
 def test_endpoint_documentation_internal_only(screen: Screen):
