@@ -1,7 +1,8 @@
-from typing import Any, Optional, Iterable
+from collections.abc import Iterable
+from typing import Optional
 
 from ..events import GenericEventArguments, Handler, ValueChangeEventArguments
-from .choice_element import T, ChoiceElement, P, to_option, Option
+from .choice_element import ChoiceElement, Option, P, to_option
 from .mixins.disableable_element import DisableableElement
 
 

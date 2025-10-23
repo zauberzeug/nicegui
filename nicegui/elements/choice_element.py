@@ -67,7 +67,7 @@ class ChoiceElement(ValueElement[VAL], Generic[VAL, T]):
     def __init__(self, *,
                  tag: Optional[str] = None,
                  options: Iterable[T],
-                 value: VAL = None,
+                 value: VAL,
                  on_change: Optional[Handler[ValueChangeEventArguments[VAL]]] = None,
                  ) -> None:
         self.value = value
@@ -78,7 +78,7 @@ class ChoiceElement(ValueElement[VAL], Generic[VAL, T]):
         if isinstance(self.value, tuple):
             if (invalid_values := set(to_option(v).value for v in self.value) - set(o.value for o in self.options)):
                 raise ValueError(f'Invalid values: {invalid_values}')
-        elif self.value is not None and to_option(self.value).value not in [o.value for o in self.options]:
+        elif self.value is not None and (self.value if isinstance(self.value, (str, int, float, bool)) else self.value.value) not in [o.value for o in self.options]:
             raise ValueError(f'Invalid value: {value}')
         super().__init__(tag=tag, value=value, on_value_change=on_change)
         self._update_options()
