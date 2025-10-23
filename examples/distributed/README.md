@@ -1,6 +1,6 @@
 # Distributed Events
 
-Events are automatically shared across all NiceGUI instances when you enable distributed mode (`ui.run(distributed=True)`).
+`DistributedEvent` instances are automatically shared across all NiceGUI instances when you enable distributed mode (`ui.run(distributed=True)`).
 
 ## Demo
 

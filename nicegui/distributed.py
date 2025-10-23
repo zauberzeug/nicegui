@@ -58,10 +58,11 @@ class DistributedSession:
 
     @classmethod
     def _setup_existing_events(cls) -> None:
-        """Set up distributed mode for all existing Event instances."""
-        from .event import Event
-        for event in Event.instances:
-            event._setup_distributed()  # pylint: disable=protected-access
+        """Set up distributed mode for all existing DistributedEvent instances."""
+        from .distributed_event import DistributedEvent
+        for event in DistributedEvent.instances:
+            if isinstance(event, DistributedEvent):
+                event._setup_distributed()  # pylint: disable=protected-access
 
     def publish(self, topic: str, data: Any) -> None:
         """Publish data to a topic.

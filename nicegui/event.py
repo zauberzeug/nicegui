@@ -16,7 +16,6 @@ from .awaitable_response import AwaitableResponse
 from .client import Client, ClientConnectionTimeout
 from .context import context
 from .dataclasses import KWONLY_SLOTS
-from .distributed import DistributedSession
 from .logging import log
 from .slot import Slot
 
@@ -34,6 +33,10 @@ class Callback(Generic[P]):
         """Run the callback."""
         with (self.slot and self.slot()) or nullcontext():
             expect_args = helpers.expects_arguments(self.func)
+            expect_args |= (
+                isinstance(getattr(self.func, '__self__', None), Event) and
+                getattr(self.func, '__name__', None) in {'emit', 'call'}
+            )
             return self.func(*args, **kwargs) if expect_args else self.func()  # type: ignore[call-arg]
 
     async def await_result(self, result: Awaitable | AwaitableResponse | asyncio.Task) -> Any:
@@ -45,7 +48,7 @@ class Callback(Generic[P]):
 class Event(Generic[P]):
     instances: ClassVar[WeakSet[Event]] = WeakSet()
 
-    def __init__(self, local: bool = False) -> None:
+    def __init__(self) -> None:
         """Event
 
         Events are a powerful tool distribute information between different parts of your code,
@@ -54,42 +57,22 @@ class Event(Generic[P]):
         Handlers can be synchronous or asynchronous.
         They can also take arguments if the event contains arguments.
 
-        When distributed mode is enabled via `ui.run(distributed=True)`, events are automatically shared
-        across all instances in the network unless `local=True` is specified.
-
         *Added in version 3.0.0*
-
-        :param local: if True, event will not be distributed even when distributed mode is active (default: False)
         """
         self.callbacks: list[Callback[P]] = []
-        self.local = local
-        # NOTE: Use creation location for topic to ensure same Event in different processes shares the same topic
-        frame = inspect.currentframe()
-        assert frame is not None
-        frame = frame.f_back
-        assert frame is not None
-        # NOTE: Skip frames from typing module (when using Event[T]() syntax)
-        while frame and 'typing.py' in frame.f_code.co_filename:
-            frame = frame.f_back
-        assert frame is not None
-        module = inspect.getmodule(frame)
-        module_name = module.__name__ if module else 'unknown'
-        self.topic = f'event_{module_name}:{frame.f_code.co_filename}:{frame.f_lineno}'
-        self._zenoh_setup_done = False
         self.instances.add(self)
-        self._setup_distributed()
 
     def subscribe(self, callback: Callable[P, Any] | Callable[[], Any], *,
-                  unsubscribe_on_disconnect: bool | None = None) -> None:
+                  unsubscribe_on_delete: bool | None = None) -> None:
         """Subscribe to the event.
 
-        The ``unsubscribe_on_disconnect`` can be used to explicitly define
-        whether the callback should be automatically unsubscribed when the client disconnects.
+        The ``unsubscribe_on_delete`` can be used to explicitly define
+        whether the callback should be automatically unsubscribed when the current client is deleted.
         By default, the callback is automatically unsubscribed if subscribed from within a UI context
         to prevent memory leaks.
 
         :param callback: the callback which will be called when the event is fired
-        :param unsubscribe_on_disconnect: whether to unsubscribe the callback when the client disconnects
+        :param unsubscribe_on_delete: whether to unsubscribe the callback when the current client is deleted
             (default: ``None`` meaning the callback is automatically unsubscribed if subscribed from within a UI context)
         """
         frame = inspect.currentframe()
@@ -101,21 +84,21 @@ class Event(Generic[P]):
         if Slot.get_stack():  # NOTE: additional check before accessing `context.slot` which would enter script mode
             callback_.slot = weakref.ref(context.slot)
             client = context.client
-        if callback_.slot is None and unsubscribe_on_disconnect is True:
-            raise RuntimeError('Calling `subscribe` with `unsubscribe_on_disconnect=True` outside of a UI context '
+        if callback_.slot is None and unsubscribe_on_delete is True:
+            raise RuntimeError('Calling `subscribe` with `unsubscribe_on_delete=True` outside of a UI context '
                                'is not supported.')
-        if client is not None and unsubscribe_on_disconnect is not False and not core.is_script_mode_preflight():
-            async def register_disconnect() -> None:
+        if client is not None and unsubscribe_on_delete is not False and not core.is_script_mode_preflight():
+            async def register_unsubscribe() -> None:
                 try:
                     await client.connected()
-                    client.on_disconnect(lambda: self.unsubscribe(callback))
+                    client.on_delete(lambda: self.unsubscribe(callback))
                 except ClientConnectionTimeout:
                     log.debug('Could not register a disconnect handler for callback %s', callback)
                     self.unsubscribe(callback)
             if core.loop and core.loop.is_running():
-                background_tasks.create(register_disconnect())
+                background_tasks.create(register_unsubscribe())
             else:
-                core.app.on_startup(register_disconnect())
+                core.app.on_startup(register_unsubscribe())
         self.callbacks.append(callback_)
 
     def unsubscribe(self, callback: Callable[P, Any] | Callable[[], Any]) -> None:
@@ -125,51 +108,14 @@ class Event(Generic[P]):
         """
         self.callbacks[:] = [c for c in self.callbacks if c.func != callback]
 
-    def _setup_distributed(self) -> None:
-        """Set up distributed event handling if enabled.
-
-        This method is safe to call multiple times due to the _zenoh_setup_done guard.
-        It's called during Event initialization and retroactively when DistributedSession.initialize() is called.
-        Events emitted before distributed mode is initialized will only be local.
-        """
-        if self.local or self._zenoh_setup_done:
-            return
-        session = DistributedSession.get()
-        if session is None:
-            return
-
-        def remote_handler(data: dict) -> None:
-            """Handle events received from remote instances."""
-            for callback in self.callbacks:
-                _invoke_and_forget(callback, *data.get('args', ()), **data.get('kwargs', {}))
-
-        session.subscribe(self.topic, remote_handler)
-        self._zenoh_setup_done = True
-
     def emit(self, *args: P.args, **kwargs: P.kwargs) -> None:
         """Fire the event without waiting for the subscribed callbacks to complete."""
-        if not self.local and not self._zenoh_setup_done:
-            self._setup_distributed()
-
         for callback in self.callbacks:
             _invoke_and_forget(callback, *args, **kwargs)
 
-        if not self.local:
-            session = DistributedSession.get()
-            if session is not None:
-                session.publish(self.topic, {'args': args, 'kwargs': kwargs})
-
     async def call(self, *args: P.args, **kwargs: P.kwargs) -> None:
         """Fire the event and wait asynchronously until all subscribed callbacks are completed."""
-        if not self.local and not self._zenoh_setup_done:
-            self._setup_distributed()
-
         await asyncio.gather(*[_invoke_and_await(callback, *args, **kwargs) for callback in self.callbacks])
-
-        if not self.local:
-            session = DistributedSession.get()
-            if session is not None:
-                session.publish(self.topic, {'args': args, 'kwargs': kwargs})
 
     async def emitted(self, timeout: float | None = None) -> Any:
         """Wait for an event to be fired and return its arguments.
@@ -202,18 +148,15 @@ def _invoke_and_forget(callback: Callback[P], *args: P.args, **kwargs: P.kwargs)
                 background_tasks.create(callback.await_result(result), name=f'{callback.filepath}:{callback.line}')
             else:
                 core.app.on_startup(callback.await_result(result))
-    except Exception:
-        log.exception('Could not emit callback %s', callback)
+    except Exception as e:
+        core.app.handle_exception(e)
 
 
 async def _invoke_and_await(callback: Callback[P], *args: P.args, **kwargs: P.kwargs) -> Any:
-    try:
-        result = callback.run(*args, **kwargs)
-        if _should_await(result):
-            result = await callback.await_result(result)
-        return result
-    except Exception as e:
-        core.app.handle_exception(e)
+    result = callback.run(*args, **kwargs)
+    if _should_await(result):
+        result = await callback.await_result(result)
+    return result
 
 
 def _should_await(result: Any) -> bool:

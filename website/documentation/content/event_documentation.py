@@ -1,4 +1,4 @@
-from nicegui import ui, Event
+from nicegui import DistributedEvent, Event, ui
 
 from . import doc
 
@@ -58,29 +58,27 @@ def emitting_vs_calling_events():
 
 
 @doc.demo('Distributed events', '''
-    When you enable distributed mode via `ui.run(distributed=True)`, events are automatically shared
-    across all NiceGUI instances in the same network.
-    This allows multiple servers to communicate seamlessly without any additional setup.
+    Use `DistributedEvent` to share events across all NiceGUI instances in the same network.
+    When you enable distributed mode via `ui.run(distributed=True)`,
+    `DistributedEvent` instances will communicate seamlessly without any additional setup.
 
-    The following example shows how to use distributed events.
+    The following example shows how to use distributed events vs regular local events.
     When you run this on multiple instances in the same network,
-    all instances will receive the events emitted by any instance.
-
-    Events can be marked as `local=True` to prevent them from being distributed.
+    all instances will receive the events emitted by any instance via `DistributedEvent`.
 ''')
 def distributed_events():
-    from nicegui import Event
+    from nicegui import DistributedEvent, Event
 
     # This event will be distributed across all instances
-    shared_event = Event[str]()
+    shared_event = DistributedEvent[str]()
 
-    # This event will stay local to this instance
-    local_event = Event[str](local=True)
+    # Regular events stay local to this instance
+    local_event = Event[str]()
 
     # @ui.page('/')
     def page():
         with ui.column():
-            ui.label('Distributed event:')
+            ui.label('Distributed event (shared across instances):')
             with ui.row(align_items='center'):
                 message = ui.input('Message')
                 ui.button('Send to all', on_click=lambda: shared_event.emit(message.value))
@@ -88,7 +86,7 @@ def distributed_events():
             shared_event.subscribe(lambda m: ui.notify(f'Received: "{m}"'))
 
             ui.separator()
-            ui.label('Local event (not distributed):')
+            ui.label('Local event (this instance only):')
             with ui.row(align_items='center'):
                 local_msg = ui.input('Local message')
                 ui.button('Send locally', on_click=lambda: local_event.emit(local_msg.value))
@@ -104,3 +102,4 @@ def distributed_events():
 
 
 doc.reference(Event)
+doc.reference(DistributedEvent)

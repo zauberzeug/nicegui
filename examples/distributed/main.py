@@ -2,9 +2,9 @@
 import random
 import socket
 
-from nicegui import Event, context, ui
+from nicegui import DistributedEvent, context, ui
 
-reaction_event = Event[str]()
+reaction_event = DistributedEvent[str]()
 
 
 @ui.page('/')
