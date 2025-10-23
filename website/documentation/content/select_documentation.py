@@ -52,4 +52,60 @@ def update_selection():
         ui.button('1, 2, 3', on_click=lambda: select.set_options(map(ui.to_option, [1, 2, 3]), value=ui.to_option(1)))
 
 
+@doc.demo('Extending options and custom slotting', '''
+    Options can be extended by defining our own `Option` `dataclass`.
+    In the example below, we define a new `Person` option with additional fields utilized
+    in the `option` slot.
+''')
+def extending_options_and_custom_slotting():
+    from dataclasses import dataclass
+
+    @dataclass
+    class Person(ui.option[str, int]):
+        icon: str
+        caption: str
+
+        def __repr__(self) -> str:
+            return f"Person({self.label}, {self.value})"
+
+    select_people = (
+        ui.select(
+            options=[
+                Person(
+                    label='Joe', value=0, icon='person', 
+                    caption='Company: Trilliant Health'
+                    ),
+                Person(
+                    label='Rodja', value=1, icon='person', 
+                    caption='Company: Zauberzeug GmbH'
+                    ),
+                Person(
+                    label='Darth Vader', value=2, icon='person_off', 
+                    caption='Fired for being evil'
+                    ),
+            ],
+            on_change=lambda e: ui.notify(e.value),
+            value=(),
+        )
+        .props('use-chips')
+        .classes('w-64')
+    )
+    select_people.add_slot(
+        'option',
+        r'''
+        <q-item
+            v-bind="props.itemProps"
+        >
+            <q-item-section avatar>
+                <q-icon :name="props.opt.icon"></ion-icon>
+            </q-item-section>
+            <q-item-section>
+                <q-item-label>{{ props.opt.label }}</q-item-label>
+                <q-item-label caption>{{ props.opt.caption }}</q-item-label>
+            </q-item-section>
+        </q-item>
+        '''
+    )
+
+
 doc.reference(Select)
