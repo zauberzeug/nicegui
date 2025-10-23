@@ -101,7 +101,6 @@ class Select(
         return self._is_showing_popup
 
     def _event_args_to_value(self, e: GenericEventArguments[Union[list[Union[OptionDict[Any, Any], str]], Optional[Union[OptionDict[Any, Any], str]]]]) -> Union[tuple[T, ...], Optional[T]]:
-        print('e.args =', e.args)
         if isinstance(e.args, list):
             if self.new_value_mode == 'add-unique':
                 # handle issue #4896: eliminate duplicate arguments
@@ -183,7 +182,6 @@ def select(
     validation: Optional[Union[ValidationFunction[tuple[Option[P, P], ...]], ValidationDict[tuple[Option[P, P], ...]]]] = ...,
     ) -> Select[tuple[Option[P, P], ...], Option[P, P]]:
     ...
-
 
 @overload
 def select(
