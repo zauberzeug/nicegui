@@ -2,19 +2,23 @@ from collections.abc import Iterable
 from copy import deepcopy
 from typing import Any, Callable, Generic, Literal, Optional, Union, overload
 
+from typing_extensions import TypeVar
+
 from ..events import GenericEventArguments, Handler, ValueChangeEventArguments
-from .choice_element import VAL, ChoiceElement, Option, OptionDict, P, T, to_option
+from .choice_element import ChoiceElement, Option, OptionDict, P, T, to_option
 from .mixins.disableable_element import DisableableElement
 from .mixins.label_element import LabelElement
 from .mixins.validation_element import ValidationDict, ValidationElement, ValidationFunction
 
+V = TypeVar('V', bound='Union[tuple[Option[Any, Any], ...], Optional[Option[Any, Any]]]')
+
 
 class Select(
     LabelElement,
-    ValidationElement[VAL],
-    ChoiceElement[VAL, T],
+    ValidationElement[V],
+    ChoiceElement[V, T],
     DisableableElement,
-    Generic[VAL, T],
+    Generic[V, T],
     component='select.js'
     ):
 
@@ -119,7 +123,7 @@ class Select(
                 else:
                     return self._id_to_option[e.args['id']]
 
-    def _value_to_model_value(self, value: VAL) -> Any:
+    def _value_to_model_value(self, value: V) -> Any:
         if isinstance(value, tuple):
             return tuple(v for v in value if v.value in self._values)
         return value if value is not None and value.value in self._values else None
