@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 from nicegui import ui
-from nicegui.elements.select import Option
+from nicegui.elements.select import Option, to_option
 
 
 @dataclass
@@ -58,6 +58,11 @@ if __name__ in {'__main__', '__mp_main__'}:
             </q-item>
             '''
         )
+
+        t = ui.toggle([10, 20, 30], value=10)
+        ui.label().bind_text_from(t, 'value', lambda v: f'value = {v}')
+        ui.button('reverse', on_click=lambda: (t.options.reverse(), t.update()))
+        ui.button('clear', on_click=lambda: (t.options.clear(), t.update()))
 
 
     ui.run()
