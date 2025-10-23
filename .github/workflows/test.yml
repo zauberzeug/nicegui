@@ -28,7 +28,7 @@ jobs:
   test:
     strategy:
       matrix:
-        python: ["3.9", "3.10", "3.11", "3.12", "3.13"]
+        python: ["3.9", "3.10", "3.11", "3.12", "3.13", "3.14"]
       fail-fast: false
     runs-on: ubuntu-latest
     timeout-minutes: 40
@@ -44,18 +44,25 @@ jobs:
       - name: install dependencies
         run: |
           set -x
-          poetry install --all-extras
-          # install packages to run the examples
-          poetry run pip install opencv-python opencv-contrib-python-headless httpx isort replicate langchain openai simpy tortoise-orm
-          poetry run pip install -r tests/requirements.txt
-          # try fix issue with importlib_resources
-          poetry run pip install importlib-resources
-      - name: test startup
-        run: poetry run ./test_startup.sh
+          poetry install --all-extras --with dev
       - name: setup chromedriver
         uses: nanasess/setup-chromedriver@v2.3.0
       - name: pytest
         run: poetry run pytest
+      - name: Upload failed screenshots
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: screenshots-${{ matrix.python }}
+          path: screenshots/*.failed.png
+          retention-days: 14
+      - name: test startup
+        run: poetry run ./test_startup.sh
+      - name: restore dependencies for effective caching
+        if: always()
+        run: |
+          set -x
+          poetry install --all-extras --with dev
 
   slack:
     needs:

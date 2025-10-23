@@ -21,7 +21,7 @@ except Exception:
 run(['fly', 'deploy', '--wait-timeout', '600', '--lease-timeout', '30s', '--build-arg', f'VERSION={version}'])
 
 instances = {
-    'yul': 2,  # Montreal, Quebec (Canada)
+    'yyz': 2,  # Toronto, Ontario (Canada)
     'iad': 3,  # Washington DC, Virginia (US)
     'sjc': 2,  # San Jose, California (US)
     'lax': 2,  # Los Angeles, California (US)
@@ -29,15 +29,12 @@ instances = {
     'sea': 2,  # Seattle, Washington (US)
     'fra': 3,  # Frankfurt, Germany
     'ams': 2,  # Amsterdam, Netherlands
-    'mad': 1,  # Madrid, Spain
     'cdg': 2,  # Paris, France
     'lhr': 2,  # London, England (UK)
-    'otp': 1,  # Bucharest, Romania
     'jnb': 1,  # Johannesburg, South Africa
     'bom': 1,  # Mumbai, India
     'nrt': 3,  # Tokyo, Japan
-    'sin': 2,  # Singapore
-    'hkg': 3,  # Hong Kong
+    'sin': 3,  # Singapore
     'syd': 1,  # Sydney, Australia
     'gru': 1,  # Sao Paulo, Brazil
 }

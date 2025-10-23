@@ -170,7 +170,7 @@ async def _exception_handler_404(request: Request, exception: Exception) -> Resp
                 param.annotation,
             )
             for name, param in inspect.signature(root).parameters.items()
-            if name in request.query_params
+            if name in request.query_params and name != 'request'
         }
         return await page('')._wrap(root)(request=request, **kwargs)  # pylint: disable=protected-access
     log.warning(f'{request.url} not found')

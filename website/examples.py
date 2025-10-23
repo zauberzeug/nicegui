@@ -73,4 +73,6 @@ examples: list[Example] = [
     Example('Google One-Tap Auth', 'Authenticate users via Google One-Tap'),
     Example('Google OAuth2', 'Authenticate with Google OAuth2'),
     Example('Stripe', 'Use Stripe to process payments'),
+    Example('Xterm', 'Connect a terminal emulator [xterm.js](https://github.com/xtermjs/xterm.js) to a Bash process'),
+    Example('API Request', 'Fetch and display random quotes from [Zen Quotes API](https://zenquotes.io/)'),
 ]

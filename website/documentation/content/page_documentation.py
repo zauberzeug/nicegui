@@ -107,15 +107,17 @@ def api_router_demo():
     # router = APIRouter(prefix='/sub-path')
     #
     # @router.page('/')
-    # def page():
+    # def sub_page():
     #     ui.label('This is content on /sub-path')
     #
     # @router.page('/sub-sub-path')
-    # def page():
+    # def sub_sub_page():
     #     ui.label('This is content on /sub-path/sub-sub-path')
     #
-    # ui.link('Visit sub-path', '/sub-path')
-    # ui.link('Visit sub-sub-path', '/sub-path/sub-sub-path')
+    # @ui.page('/')
+    # def page():
+    #     ui.link('Visit sub-path', '/sub-path')
+    #     ui.link('Visit sub-sub-path', '/sub-path/sub-sub-path')
     #
     # app.include_router(router)
     # END OF DEMO

@@ -133,14 +133,14 @@ jobs:
           python-version: "3.11"
       - name: Install httpx
         run: pip install httpx
-      - name: Update version in pyproject.toml and citation.cff
+      - name: Update version in citation.cff
         run: python .github/workflows/update_version.py ${GITHUB_REF#refs/tags/}
       - name: Commit and push changes
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add pyproject.toml CITATION.cff
-          git commit -m "Update version"
+          git add CITATION.cff
+          git commit -m "Update citation version"
           git push origin HEAD:main
 
   verify:
