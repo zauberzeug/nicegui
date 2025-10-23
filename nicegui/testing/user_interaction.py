@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING, Any, Generic, TypeVar
 from typing_extensions import Self
 
 from nicegui import background_tasks, events, ui
+from nicegui.elements.select import Select
 from nicegui.element import Element
 from nicegui.elements.mixins.disableable_element import DisableableElement
 from nicegui.elements.mixins.value_element import ValueElement
@@ -80,7 +81,7 @@ class UserInteraction(Generic[T]):
                     background_tasks.create(self.user.open(href), name=f'open {href}')
                     return self
 
-                if isinstance(element, ui.select):
+                if isinstance(element, Select):
                     if element.is_showing_popup:
                         if isinstance(element.options, dict):
                             target_value = next((k for k, v in element.options.items() if v == self.target), '')

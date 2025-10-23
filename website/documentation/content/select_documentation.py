@@ -1,12 +1,14 @@
 from nicegui import ui
+from nicegui.elements.select import Select
 
 from . import doc
 
 
-@doc.demo(ui.select)
+@doc.demo(Select)
 def main_demo() -> None:
     select1 = ui.select([1, 2, 3], value=1)
-    select2 = ui.select({1: 'One', 2: 'Two', 3: 'Three'}).bind_value(select1, 'value')
+    options = [ui.option(l, v) for v, l in {1: 'One', 2: 'Two', 3: 'Three'}.items()]
+    select2 = ui.select(options).bind_value(select1, 'value')
 
 
 @doc.demo('Search-as-you-type', '''
@@ -32,9 +34,9 @@ def search_as_you_type():
 ''')
 def multi_select():
     names = ['Alice', 'Bob', 'Carol']
-    ui.select(names, multiple=True, value=names[:2], label='comma-separated') \
+    ui.select(names, value=tuple(names[:2]), label='comma-separated') \
         .classes('w-64')
-    ui.select(names, multiple=True, value=names[:2], label='with chips') \
+    ui.select(names, value=tuple(names[:2]), label='with chips') \
         .classes('w-64').props('use-chips')
 
 
@@ -46,8 +48,8 @@ def multi_select():
 def update_selection():
     select = ui.select([1, 2, 3], value=1)
     with ui.row():
-        ui.button('4, 5, 6', on_click=lambda: select.set_options([4, 5, 6], value=4))
-        ui.button('1, 2, 3', on_click=lambda: select.set_options([1, 2, 3], value=1))
+        ui.button('4, 5, 6', on_click=lambda: select.set_options(map(ui.to_option, [4, 5, 6]), value=ui.to_option(4)))
+        ui.button('1, 2, 3', on_click=lambda: select.set_options(map(ui.to_option, [1, 2, 3]), value=ui.to_option(1)))
 
 
-doc.reference(ui.select)
+doc.reference(Select)
