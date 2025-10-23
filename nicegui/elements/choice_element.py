@@ -43,7 +43,6 @@ class OptionDict(TypedDict, Generic[L, V]):
 
 def dict_to_option(v: OptionDict[L, V]) -> Option[L, V]:
     option = Option[L, V](label=v['label'], value=v['value'])
-    assert option.id == v['id']
     return option
 
 
@@ -54,7 +53,6 @@ def to_option(v: L) -> Option[L, L]:
 @overload
 def to_option(v: Option[L, V]) -> Option[L, V]:
     ...
-
 
 def to_option(v: Union[L, Option[L, V]]) -> Union[Option[L, V], Option[L, L]]:
     if isinstance(v, Option):

@@ -37,7 +37,7 @@ class ValueElement(Element, Generic[V]):
         self._props['loopback'] = self.LOOPBACK
         self._change_handlers: list[Handler[ValueChangeEventArguments[V]]] = [on_value_change] if on_value_change else []
 
-        def handle_change(e: GenericEventArguments) -> None:
+        def handle_change(e: GenericEventArguments[V]) -> None:
             self._send_update_on_value_change = self.LOOPBACK is True
             self.set_value(self._event_args_to_value(e))
             self._send_update_on_value_change = True
