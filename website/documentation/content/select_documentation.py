@@ -53,7 +53,7 @@ def update_selection():
 
 
 @doc.demo('Extending options and custom slotting', '''
-    Options can be extended by defining our own `Option` `dataclass`.
+    Options can be extended by defining your own `Option` `dataclass`.
     In the example below, we define a new `Person` option with additional fields utilized
     in the `option` slot.
 ''')
