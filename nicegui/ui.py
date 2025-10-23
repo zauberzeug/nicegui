@@ -125,6 +125,7 @@ __all__ = [
     'timer',
     'toggle',
     'tooltip',
+    'to_option',
     'tree',
     'update',
     'upload',
@@ -149,6 +150,7 @@ from .elements.carousel import CarouselSlide as carousel_slide
 from .elements.chat_message import ChatMessage as chat_message
 from .elements.checkbox import Checkbox as checkbox
 from .elements.chip import Chip as chip
+from .elements.choice_element import to_option
 from .elements.code import Code as code
 from .elements.codemirror import CodeMirror as codemirror
 from .elements.color_input import ColorInput as color_input

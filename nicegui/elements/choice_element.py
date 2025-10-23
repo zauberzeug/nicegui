@@ -18,7 +18,7 @@ L = TypeVar('L', bound=JsonPrimitive)
 V = TypeVar('V', bound=JsonValue)
 T = TypeVar('T', bound='Option[Any, Any]')
 P = TypeVar('P', bound=JsonPrimitive)
-VAL = TypeVar('VAL', bound='Union[tuple[Option[Any, Any], ...], Optional[Option[Any, Any]]]')
+VAL = TypeVar('VAL', bound='Union[tuple[Option[Any, Any], ...], Optional[Option[Any, Any]], Optional[JsonPrimitive]]')
 
 class DEFAULT:
     pass
