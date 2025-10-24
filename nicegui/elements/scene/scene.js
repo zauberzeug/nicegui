@@ -183,7 +183,7 @@ export default {
     this.drag_controls.addEventListener("dragend", handleDrag);
 
     const render = () => {
-      requestAnimationFrame(() => setTimeout(() => render(), 1000 / 20));
+      requestAnimationFrame(() => setTimeout(() => render(), 1000 / this.fps));
       this.camera_tween?.update();
       this.renderer.render(this.scene, this.camera);
       this.text_renderer.render(this.scene, this.camera);
@@ -552,5 +552,6 @@ export default {
     click_events: Array,
     drag_constraints: String,
     background_color: String,
+    fps: { type: Number, default: 20 },
   },
 };
