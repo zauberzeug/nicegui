@@ -31,16 +31,12 @@ def get_full_code(f: Callable) -> str:
 
     if has_root_function:
         code = [line for line in code if line.strip() != 'return root']
-        code.append('ui.run(root)')
-    elif not code[-1].startswith('ui.run('):
-        code.append('ui.run()')
 
-    full_code = isort.code('\n'.join(code), no_sections=True, lines_after_imports=1)
+    if not code[-1].startswith('ui.run('):
+        code.append('ui.run(root)' if has_root_function else 'ui.run()')
 
-    lines = full_code.rstrip('\n').splitlines()
-    if lines and lines[-1].startswith('ui.run('):
-        while len(lines) >= 2 and lines[-2].strip() == '':
-            lines.pop(-2)
-        lines.insert(-1, '')
+    code.insert(-1, '')  # ensure blank line before ui.run
+    while code[-3] == '':
+        code.pop(-3)  # avoid double blank line before ui.run
 
-    return '\n'.join(lines) + '\n'
+    return isort.code('\n'.join(code), no_sections=True, lines_after_imports=1)
