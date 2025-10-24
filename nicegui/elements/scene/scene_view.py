@@ -26,6 +26,7 @@ class SceneView(Element, component='scene_view.js', default_classes='nicegui-sce
                  camera: Optional[SceneCamera] = None,
                  on_click: Optional[Handler[ClickEventArguments]] = None,
                  fps: int = 20,
+                 show_stats: bool = False
                  ) -> None:
         """Scene View
 
@@ -41,11 +42,13 @@ class SceneView(Element, component='scene_view.js', default_classes='nicegui-sce
         :param camera: camera definition, either instance of ``ui.scene.perspective_camera`` (default) or ``ui.scene.orthographic_camera``
         :param on_click: callback to execute when a 3D object is clicked
         :param fps: target frame rate for the scene view in frames per second (default: 20, *added in version 3.2.0*)
+        :param show_stats: whether to show performance stats (default: False)
         """
         super().__init__()
         self._props['width'] = width
         self._props['height'] = height
         self._props['fps'] = fps
+        self._props['show_stats'] = show_stats
         self._props['scene_id'] = scene.id
         self.camera = camera or Scene.perspective_camera()
         self._props['camera_type'] = self.camera.type
