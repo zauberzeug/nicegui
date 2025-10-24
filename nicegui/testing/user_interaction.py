@@ -33,7 +33,7 @@ class UserInteraction(Generic[T]):
         """Trigger the given event on the elements selected by the simulated user.
 
         :param event: the event type to trigger (e.g. "keydown.enter", "click", ...)
-        :param args: optional event arguments to pass to the handler (default: None)
+        :param args: optional event arguments to pass to the handler (default: ``None``)
         """
         assert self.user.client
         with self.user.client:
