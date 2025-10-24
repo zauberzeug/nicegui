@@ -33,7 +33,14 @@ def get_full_code(f: Callable) -> str:
         code = [line for line in code if line.strip() != 'return root']
         code.append('ui.run(root)')
     elif not code[-1].startswith('ui.run('):
-        code.append('')
         code.append('ui.run()')
+
     full_code = isort.code('\n'.join(code), no_sections=True, lines_after_imports=1)
-    return full_code
+
+    lines = full_code.rstrip('\n').splitlines()
+    if lines and lines[-1].startswith('ui.run('):
+        while len(lines) >= 2 and lines[-2].strip() == '':
+            lines.pop(-2)
+        lines.insert(-1, '')
+
+    return '\n'.join(lines) + '\n'
