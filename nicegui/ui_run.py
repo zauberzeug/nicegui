@@ -77,6 +77,7 @@ def run(root: Optional[Callable] = None, *,
         storage_secret: Optional[str] = None,
         session_middleware_kwargs: Optional[dict[str, Any]] = None,
         show_welcome_message: bool = True,
+        distributed: Optional[Union[dict, bool]] = None,
         **kwargs: Any,
         ) -> None:
     """ui.run
@@ -114,6 +115,7 @@ def run(root: Optional[Callable] = None, *,
     :param storage_secret: secret key for browser-based storage (default: `None`, a value is required to enable ui.storage.individual and ui.storage.browser)
     :param session_middleware_kwargs: additional keyword arguments passed to SessionMiddleware that creates the session cookies used for browser-based storage
     :param show_welcome_message: whether to show the welcome message (default: `True`)
+    :param distributed: enable distributed events across network instances (default: `None`, use `True` for defaults or pass a dict with Zenoh config)
     :param kwargs: additional keyword arguments are passed to `uvicorn.run`
     """
     if core.script_mode:
@@ -185,6 +187,14 @@ def run(root: Optional[Callable] = None, *,
     if helpers.is_user_simulation():
         set_storage_secret(storage_secret, session_middleware_kwargs)
         return
+
+    if distributed is not None:
+        from .distributed import ZENOH_AVAILABLE, DistributedSession
+        if not ZENOH_AVAILABLE:
+            log.warning('zenoh is not installed. Distributed events disabled. '
+                        'Install with: pip install "nicegui[distributed]"')
+        else:
+            DistributedSession.initialize(distributed)
 
     if on_air:
         core.air = Air('' if on_air is True else on_air)

@@ -31,6 +31,7 @@ matplotlib = { version = "^3.5.0", optional = true }
 nicegui-highcharts = { version = "^2.0.2", optional = true }
 libsass = { version = "^0.23.0", optional = true }
 redis = { version = ">=4.0.0", optional = true }
+eclipse-zenoh = { version = ">=1.0.0", optional = true }
 watchfiles = ">=0.18.1" # transitive, used by uvicorn
 h11 = ">=0.16.0" # transitive, pinned to https://github.com/zauberzeug/nicegui/security/dependabot/45
 python-engineio = ">=4.12.0"  # transitive, pinned to address https://github.com/zauberzeug/nicegui/issues/4602
@@ -45,6 +46,7 @@ matplotlib = ["matplotlib"]
 highcharts = ["nicegui-highcharts"]
 sass = ["libsass"]
 redis = ["redis"]
+distributed = ["eclipse-zenoh"]
 
 [tool.poetry.group.dev.dependencies]
 autopep8 = ">=1.5.7,<3.0.0"
@@ -120,6 +122,7 @@ module = [
     "sass",
     "socketio.*",
     "webview.*", # can be removed with next pywebview release
+    "zenoh.*",
 ]
 ignore_missing_imports = true
 

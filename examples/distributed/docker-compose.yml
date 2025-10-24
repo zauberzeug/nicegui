@@ -1,0 +1,47 @@
+version: "3.8"
+
+services:
+  app:
+    image: zauberzeug/nicegui:3.0.2
+    volumes:
+      - ../../nicegui:/app/nicegui
+      - ./main.py:/app/main.py
+    entrypoint: ["/bin/sh", "-c"]
+    command: ["pip3 install eclipse-zenoh && python3 main.py"] # TODO: remove pip3 after this PR is released and nicegui is upgraded
+    networks:
+      - distributed
+    deploy:
+      replicas: 3
+      restart_policy:
+        condition: on-failure
+      labels:
+        - "traefik.enable=true"
+        - "traefik.http.routers.app.rule=PathPrefix(`/`)"
+        - "traefik.http.services.app.loadbalancer.server.port=8080"
+        - "traefik.http.services.app.loadbalancer.sticky.cookie=true"
+        - "traefik.http.services.app.loadbalancer.sticky.cookie.name=nicegui_server"
+
+  traefik:
+    image: traefik:v2.10
+    command:
+      - "--providers.docker=true"
+      - "--providers.docker.swarmMode=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+    ports:
+      - "8080:80"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      - distributed
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == manager
+      restart_policy:
+        condition: on-failure
+
+networks:
+  distributed:
+    driver: overlay

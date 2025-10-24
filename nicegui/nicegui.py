@@ -152,6 +152,10 @@ async def _shutdown() -> None:
     if app.native.main_window:
         app.native.main_window.signal_server_shutdown()
     air.disconnect()
+    from .distributed import DistributedSession
+    session = DistributedSession.get()
+    if session is not None:
+        session.shutdown()
     await app.stop()
     run.tear_down()
 

@@ -31,6 +31,7 @@ def run_with(
     storage_secret: Optional[str] = None,
     session_middleware_kwargs: Optional[dict[str, Any]] = None,
     show_welcome_message: bool = True,
+    distributed: Optional[Union[dict, bool]] = None,
 ) -> None:
     """Run NiceGUI with FastAPI.
 
@@ -52,6 +53,7 @@ def run_with(
     :param storage_secret: secret key for browser-based storage (default: `None`, a value is required to enable ui.storage.individual and ui.storage.browser)
     :param session_middleware_kwargs: additional keyword arguments passed to SessionMiddleware that creates the session cookies used for browser-based storage
     :param show_welcome_message: whether to show the welcome message (default: `True`)
+    :param distributed: enable distributed events across network instances (default: `None`, use `True` for defaults or pass a dict with Zenoh config)
     """
     core.app.config.add_run_config(
         reload=False,
@@ -70,6 +72,16 @@ def run_with(
     )
     core.root = root
     storage.set_storage_secret(storage_secret, session_middleware_kwargs)
+
+    if distributed is not None:
+        from .distributed import ZENOH_AVAILABLE, DistributedSession
+        from .logging import log
+        if not ZENOH_AVAILABLE:
+            log.warning('zenoh is not installed. Distributed events disabled. '
+                        'Install with: pip install "nicegui[distributed]"')
+        else:
+            DistributedSession.initialize(distributed)
+
     core.app.add_middleware(GZipMiddleware)
     core.app.add_middleware(RedirectWithPrefixMiddleware)
     core.app.add_middleware(SetCacheControlMiddleware)
