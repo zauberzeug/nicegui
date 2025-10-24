@@ -16,7 +16,7 @@ from typing_extensions import Self
 
 from . import background_tasks, binding, core, helpers, json, storage
 from .awaitable_response import AwaitableResponse
-from .dependencies import generate_resources
+from .dependencies import generate_resources, Library, register_built_in_library
 from .element import Element
 from .favicon import get_favicon_url
 from .javascript_request import JavaScriptRequest
@@ -103,6 +103,8 @@ class Client:
 
         with self:
             self.sub_pages_router = SubPagesRouter(request)
+
+        self.add_global_libraries()
 
     @property
     def request(self) -> Request:
@@ -410,3 +412,12 @@ class Client:
 
         except Exception:
             log.exception('Error while pruning clients')
+
+    @staticmethod
+    def add_global_libraries():
+        static_directory = (Path(__file__).parent / 'static').resolve()
+        register_built_in_library(
+            'vue',
+            path=static_directory / 'vue.esm-browser.js',
+            prod_path=static_directory / 'vue.esm-browser.prod.js'
+        )

@@ -59,6 +59,13 @@ class Library:
 
 
 @dataclass(**KWONLY_SLOTS)
+class BuiltInLibrary:
+    name: str
+    path: Path
+    prod_path: Path
+
+
+@dataclass(**KWONLY_SLOTS)
 class EsmModule:
     name: str
     path: Path
@@ -67,6 +74,7 @@ class EsmModule:
 vue_components: dict[str, VueComponent] = {}
 js_components: dict[str, JsComponent] = {}
 libraries: dict[str, Library] = {}
+built_in_libraries: dict[str, BuiltInLibrary] = {}
 resources: dict[str, Resource] = {}
 dynamic_resources: dict[str, DynamicResource] = {}
 esm_modules: dict[str, EsmModule] = {}
@@ -108,6 +116,15 @@ def register_library(path: Path, *, max_time: float | None) -> Library:
         libraries[key] = Library(key=key, name=name, path=path)
         return libraries[key]
     raise ValueError(f'Unsupported library type "{path.suffix}"')
+
+
+def register_built_in_library(name: str, *, path: Path, prod_path: Path) -> BuiltInLibrary:
+    """Register a built-in *.js library."""
+    library = BuiltInLibrary(name=name, path=path, prod_path=prod_path)
+    if name in built_in_libraries and built_in_libraries[name] == library:
+        return built_in_libraries[name]
+    built_in_libraries[name] = library
+    return built_in_libraries[name]
 
 
 def register_resource(path: Path, *, max_time: float | None) -> Resource:
@@ -168,6 +185,10 @@ def generate_resources(prefix: str, elements: Iterable[Element]) -> tuple[list[s
     imports: dict[str, str] = {}
     js_imports: list[str] = []
     js_imports_urls: list[str] = []
+
+    # build the importmap structure for built-in libraries
+    for library in built_in_libraries.values():
+        imports[library.name] = f"{prefix}/_nicegui/{__version__}/corelibs/{library.name}.js"
 
     # build the importmap structure for libraries
     for key, library in libraries.items():
