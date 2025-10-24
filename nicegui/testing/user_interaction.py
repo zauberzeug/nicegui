@@ -51,7 +51,7 @@ class UserInteraction(Generic[T]):
                     event_arguments = events.GenericEventArguments(
                         sender=element,
                         client=self.user.client,
-                        args=args if args is not None else {}
+                        args=args or {},
                     )
                     events.handle_event(listener.handler, event_arguments)
         return self
