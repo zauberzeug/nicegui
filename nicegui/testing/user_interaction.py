@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Generic, TypeVar
+from typing import TYPE_CHECKING, Any, Generic, TypeVar
 
 from typing_extensions import Self
 
@@ -29,10 +29,11 @@ class UserInteraction(Generic[T]):
         self.elements = elements
         self.target = target
 
-    def trigger(self, event: str) -> Self:
+    def trigger(self, event: str, args: Any = None) -> Self:
         """Trigger the given event on the elements selected by the simulated user.
 
-        Examples: "keydown.enter", "click", ...
+        :param event: the event type to trigger (e.g. "keydown.enter", "click", ...)
+        :param args: optional event arguments to pass to the handler (default: None)
         """
         assert self.user.client
         with self.user.client:
@@ -47,7 +48,11 @@ class UserInteraction(Generic[T]):
                 for listener in element._event_listeners.values():  # pylint: disable=protected-access
                     if listener.type != event:
                         continue
-                    event_arguments = events.GenericEventArguments(sender=element, client=self.user.client, args={})
+                    event_arguments = events.GenericEventArguments(
+                        sender=element,
+                        client=self.user.client,
+                        args=args if args is not None else {}
+                    )
                     events.handle_event(listener.handler, event_arguments)
         return self
 

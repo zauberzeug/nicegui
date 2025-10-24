@@ -297,6 +297,16 @@ async def test_trigger_event(user: User) -> None:
     await user.should_see('Enter pressed')
 
 
+async def test_trigger_with_event_arguments(user: User) -> None:
+    @ui.page('/')
+    def page():
+        ui.button('Click').on('click', lambda e: ui.notify(f'x={e.args["clientX"]}, y={e.args["clientY"]}'))
+
+    await user.open('/')
+    user.find('Click').trigger('click', args={'clientX': 100, 'clientY': 200})
+    await user.should_see('x=100, y=200')
+
+
 async def test_click_link(user: User) -> None:
     @ui.page('/')
     def page():
