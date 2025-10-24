@@ -332,6 +332,25 @@ class CodeMirror(ValueElement, DisableableElement,
         """List of supported languages."""
         return list(get_args(SUPPORTED_LANGUAGES))
 
+    @property
+    def line_wrapping(self) -> bool:
+        """Whether line wrapping is enabled
+
+        *Added in version 3.2.0*
+        """
+        return self._props['lineWrapping']
+
+    @line_wrapping.setter
+    def line_wrapping(self, value: bool) -> None:
+        self._props['lineWrapping'] = value
+
+    def set_line_wrapping(self, value: bool) -> None:
+        """Sets whether line wrapping is enabled.
+
+        *Added in version 3.2.0*
+        """
+        self._props['lineWrapping'] = value
+
     def _event_args_to_value(self, e: GenericEventArguments) -> str:
         """The event contains a change set which is applied to the current value."""
         return self._apply_change_set(e.args['sections'], e.args['inserted'])
