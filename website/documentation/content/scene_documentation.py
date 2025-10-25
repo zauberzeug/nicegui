@@ -193,7 +193,8 @@ def scene_views():
 
 @doc.demo('Frame Rate and Statistics', '''
     You can configure the target frames per second (FPS) of the scene using the `fps` argument.
-    The default value is 20. To see the changes for yourself, enable the statistics display using the `show_stats` argument.
+    The default value is 20.
+    To see the changes for yourself, enable the statistics display using the `show_stats` argument.
     This demo shows how to set the frame rate to 40 FPS for the main scene and 5 FPS for the static view.
     The FPS is generally lower than the target frame rate, because the browser also takes some time to render the scene.
     This also applies to `ui.scene_view`.
