@@ -5,10 +5,10 @@ from typing import TYPE_CHECKING, Any, Generic, TypeVar
 from typing_extensions import Self
 
 from nicegui import background_tasks, events, ui
-from nicegui.elements.select import Select
 from nicegui.element import Element
 from nicegui.elements.mixins.disableable_element import DisableableElement
 from nicegui.elements.mixins.value_element import ValueElement
+from nicegui.elements.select import Select
 
 if TYPE_CHECKING:
     from .user import User
@@ -51,7 +51,7 @@ class UserInteraction(Generic[T]):
                 for listener in element._event_listeners.values():  # pylint: disable=protected-access
                     if listener.type != event:
                         continue
-                    event_arguments = events.GenericEventArguments(sender=element, client=self.user.client, args=args)
+                    event_arguments = events.GenericEventArguments[dict](sender=element, client=self.user.client, args=args)
                     events.handle_event(listener.handler, event_arguments)
         return self
 
