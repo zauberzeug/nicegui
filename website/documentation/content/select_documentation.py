@@ -27,6 +27,23 @@ def search_as_you_type():
     ]
     ui.select(options=continents, with_input=True,
               on_change=lambda e: ui.notify(e.value)).classes('w-40')
+    
+
+@doc.demo('New value mode', '''
+    You can add new options by providing a `new_value_mode` and
+    a `new_value_to_option` function.
+''')
+def new_value_mode():
+    def event_to_option(v: str) -> ui.option[int, int]:
+        return ui.to_option(int(v))
+    
+    ui.select(
+        [1,2,3,4,5], 
+        with_input=True,
+        on_change=lambda e: ui.notify(e.value),
+        new_value_mode="add-unique",
+        new_value_to_option=event_to_option
+    ).classes('w-40')
 
 
 @doc.demo('Multi selection', '''

@@ -1,15 +1,15 @@
 from collections.abc import Iterable
-from typing import Optional
+from typing import Optional, Union, Generic, overload
 
 from ..events import GenericEventArguments, Handler, ValueChangeEventArguments
-from .choice_element import ChoiceElement, Option, P, to_option
+from .choice_element import ChoiceElement, Option, L, P, to_option
 from .mixins.disableable_element import DisableableElement
 
 
-class Toggle(ChoiceElement[Optional[P], Option[P, P]], DisableableElement):
+class Toggle(ChoiceElement[Optional[P], Option[L, P]], DisableableElement, Generic[L, P]):
 
     def __init__(self,
-                 options: Iterable[P], *,
+                 options: Union[Iterable[P], Iterable[Option[L, P]]], *,
                  value: Optional[P] = None,
                  on_change: Optional[Handler[ValueChangeEventArguments[Optional[P]]]] = None,
                  clearable: bool = False,
@@ -34,3 +34,31 @@ class Toggle(ChoiceElement[Optional[P], Option[P, P]], DisableableElement):
 
     def _value_to_model_value(self, value: Optional[P]) -> Optional[P]:
         return value if value in self._values else None
+    
+
+@overload
+def toggle(
+    options: Iterable[P], *,
+    value: Optional[P] = ...,
+    on_change: Optional[Handler[ValueChangeEventArguments[Optional[P]]]] = ...,
+    clearable: bool = ...,
+) -> Toggle[P, P]:
+    ...
+
+@overload
+def toggle(
+    options: Iterable[Option[L, P]], *,
+    value: Optional[P] = ...,
+    on_change: Optional[Handler[ValueChangeEventArguments[Optional[P]]]] = ...,
+    clearable: bool = ...,
+) -> Toggle[L, P]:
+    ...
+
+
+def toggle(
+    options: Union[Iterable[P], Iterable[Option[L, P]]], *,
+    value: Optional[P] = None,
+    on_change: Optional[Handler[ValueChangeEventArguments[Optional[P]]]] = None,
+    clearable: bool = False,
+) -> Union[Toggle[L, P], Toggle[P, P]]:
+    return Toggle(options, value=value, on_change=on_change, clearable=clearable)

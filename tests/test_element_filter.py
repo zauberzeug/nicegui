@@ -79,10 +79,11 @@ async def test_find_toggle(user: User):
     @ui.page('/')
     def page():
         toggle_list = ui.toggle(['toggle 1', 'toggle 2'])
-        toggle_dict = ui.toggle({'toggle 1': 'Toggle A', 'toggle 2': 'Toggle B'})
+        options = [ui.option(v, k) for k, v in {'toggle 1': 'Toggle A', 'toggle 2': 'Toggle B'}.items()]
+        toggle_options = ui.toggle(options)
 
         assert next(iter(ElementFilter(content=['toggle 1']))) is toggle_list
-        assert next(iter(ElementFilter(content=['Toggle A']))) is toggle_dict
+        assert next(iter(ElementFilter(content=['Toggle A']))) is toggle_options
 
     await user.open('/')
 
@@ -91,13 +92,13 @@ async def test_find_select(user: User):
     @ui.page('/')
     def page():
         select_list = ui.select(['select 1', 'select 2'])
-        select_dict = ui.select({'select 1': 'Select A', 'select 2': 'Select B'})
+        select_options = ui.select([ui.option(v, k) for k, v in {'select 1': 'Select A', 'select 2': 'Select B'}.items()])
 
         select_list._is_showing_popup = True  # pylint: disable=protected-access
-        select_dict._is_showing_popup = True  # pylint: disable=protected-access
+        select_options._is_showing_popup = True  # pylint: disable=protected-access
 
         assert next(iter(ElementFilter(content=['select 1']))) is select_list
-        assert next(iter(ElementFilter(content=['Select A']))) is select_dict
+        assert next(iter(ElementFilter(content=['Select A']))) is select_options
 
     await user.open('/')
 

@@ -123,9 +123,8 @@ class ElementFilter(Generic[T]):
                     element_contents.append(element.message)
                 if isinstance(element, ChoiceElement):
                     if isinstance(element, Select):
-                        values = element.value if element.multiple else [element.value]
-                        labels = [value if isinstance(element.options, list) else element.options.get(value, '')
-                                  for value in values]
+                        labels = [option.label for option in element.options]
+                        print(labels)
                         element_contents.extend(labels)
                     if not isinstance(element, Select) or element.is_showing_popup:
                         element_contents.extend(element._labels)  # pylint: disable=protected-access
