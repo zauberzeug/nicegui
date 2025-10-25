@@ -6,7 +6,7 @@ from pathlib import Path
 from typing import Any, Callable, Literal, Optional, TypedDict, Union
 
 from fastapi.middleware.gzip import GZipMiddleware
-from Secweb import SecWeb
+from Secweb import SecWeb  # type: ignore
 from starlette.routing import Route
 from uvicorn.main import STARTUP_FAILURE
 from uvicorn.supervisors import ChangeReload, Multiprocess

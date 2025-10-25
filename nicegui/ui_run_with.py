@@ -4,7 +4,7 @@ from typing import Any, Callable, Literal, Optional, Union
 
 from fastapi import FastAPI
 from fastapi.middleware.gzip import GZipMiddleware
-from Secweb import SecWeb
+from Secweb import SecWeb  # type: ignore
 
 from . import core, storage
 from .air import Air
