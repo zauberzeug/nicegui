@@ -81,6 +81,7 @@ class Table(FilterElement, component='table.js'):
         self._pagination_change_handlers = [on_pagination_change] if on_pagination_change else []
 
         self._scan_rows_for_lists()
+        self._props.on_change(self._scan_rows_for_lists)
 
         def handle_selection(e: GenericEventArguments) -> None:
             if e.args['added']:
@@ -305,7 +306,6 @@ class Table(FilterElement, component='table.js'):
     @rows.setter
     def rows(self, value: list[dict]) -> None:
         self._props['rows'] = value
-        self._scan_rows_for_lists()
 
     @property
     def columns(self) -> list[dict]:
