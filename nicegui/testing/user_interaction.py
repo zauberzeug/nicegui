@@ -35,6 +35,8 @@ class UserInteraction(Generic[T]):
         :param event: the event type to trigger (e.g. "keydown.enter", "click", ...)
         :param args: optional event arguments to pass to the handler (default: ``None``)
         """
+        if args is None:
+            args = {}
         assert self.user.client
         with self.user.client:
             for element in self.elements:
@@ -51,7 +53,7 @@ class UserInteraction(Generic[T]):
                     event_arguments = events.GenericEventArguments(
                         sender=element,
                         client=self.user.client,
-                        args=args or {},
+                        args=args,
                     )
                     events.handle_event(listener.handler, event_arguments)
         return self

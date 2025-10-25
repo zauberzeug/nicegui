@@ -1,6 +1,6 @@
 import csv
 import re
-from typing import Callable, Union
+from typing import Any, Callable, Union
 
 import pytest
 from fastapi.responses import PlainTextResponse
@@ -297,14 +297,30 @@ async def test_trigger_event(user: User) -> None:
     await user.should_see('Enter pressed')
 
 
-async def test_trigger_with_event_arguments(user: User) -> None:
+@pytest.mark.parametrize('args_value,expected', [
+    ({'clientX': 100, 'clientY': 200}, "{'clientX': 100, 'clientY': 200}"),
+    (False, 'False'),
+    (True, 'True'),
+    (0, '0'),
+    (42, '42'),
+    (-17, '-17'),
+    (3.14, '3.14'),
+    ('', "''"),
+    ('hello', "'hello'"),
+    ([], '[]'),
+    ([1, 2, 3], '[1, 2, 3]'),
+    ({}, '{}'),
+    ({'nested': {'key': 'value'}}, "{'nested': {'key': 'value'}}"),
+    (None, '{}'),
+])
+async def test_trigger_with_event_arguments(user: User, args_value: Any, expected: str) -> None:
     @ui.page('/')
     def page():
-        ui.button('Click').on('click', lambda e: ui.notify(f'x={e.args["clientX"]}, y={e.args["clientY"]}'))
+        ui.button('Click').on('click', lambda e: ui.notify(f'{e.args!r}'))
 
     await user.open('/')
-    user.find('Click').trigger('click', args={'clientX': 100, 'clientY': 200})
-    await user.should_see('x=100, y=200')
+    user.find('Click').trigger('click', args=args_value)
+    await user.should_see(expected)
 
 
 async def test_click_link(user: User) -> None:
