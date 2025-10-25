@@ -1,16 +1,17 @@
-from typing import Any, Optional, Union
+from collections.abc import Iterable
+from typing import Generic, Optional, Union, overload
 
 from ..events import GenericEventArguments, Handler, ValueChangeEventArguments
-from .choice_element import ChoiceElement
+from .choice_element import ChoiceElement, L, Option, P, to_option
 from .mixins.disableable_element import DisableableElement
 
 
-class Toggle(ChoiceElement, DisableableElement):
+class Toggle(ChoiceElement[Optional[P], Option[L, P]], DisableableElement, Generic[L, P]):
 
     def __init__(self,
-                 options: Union[list, dict], *,
-                 value: Any = None,
-                 on_change: Optional[Handler[ValueChangeEventArguments]] = None,
+                 options: Union[Iterable[P], Iterable[Option[L, P]]], *,
+                 value: Optional[P] = None,
+                 on_change: Optional[Handler[ValueChangeEventArguments[Optional[P]]]] = None,
                  clearable: bool = False,
                  ) -> None:
         """Toggle
@@ -25,11 +26,38 @@ class Toggle(ChoiceElement, DisableableElement):
         :param on_change: callback to execute when selection changes
         :param clearable: whether the toggle can be cleared by clicking the selected option
         """
-        super().__init__(tag='q-btn-toggle', options=options, value=value, on_change=on_change)
+        super().__init__(tag='q-btn-toggle', options=[to_option(v) for v in options], value=value, on_change=on_change)
         self._props['clearable'] = clearable
 
-    def _event_args_to_value(self, e: GenericEventArguments) -> Any:
-        return self._values[e.args] if e.args is not None else None
+    def _event_args_to_value(self, e: GenericEventArguments[Optional[P]]) -> Optional[P]:
+        return e.args
 
-    def _value_to_model_value(self, value: Any) -> Any:
-        return self._values.index(value) if value in self._values else None
+    def _value_to_model_value(self, value: Optional[P]) -> Optional[P]:
+        return value if value in self._values else None
+
+@overload
+def toggle(
+    options: Iterable[P], *,
+    value: Optional[P] = ...,
+    on_change: Optional[Handler[ValueChangeEventArguments[Optional[P]]]] = ...,
+    clearable: bool = ...,
+) -> Toggle[P, P]:
+    ...
+
+@overload
+def toggle(
+    options: Iterable[Option[L, P]], *,
+    value: Optional[P] = ...,
+    on_change: Optional[Handler[ValueChangeEventArguments[Optional[P]]]] = ...,
+    clearable: bool = ...,
+) -> Toggle[L, P]:
+    ...
+
+
+def toggle(
+    options: Union[Iterable[P], Iterable[Option[L, P]]], *,
+    value: Optional[P] = None,
+    on_change: Optional[Handler[ValueChangeEventArguments[Optional[P]]]] = None,
+    clearable: bool = False,
+) -> Union[Toggle[L, P], Toggle[P, P]]:
+    return Toggle(options, value=value, on_change=on_change, clearable=clearable)

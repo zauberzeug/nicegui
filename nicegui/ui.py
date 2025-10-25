@@ -77,6 +77,7 @@ __all__ = [
     'notify',
     'number',
     'on',
+    'option',
     'page',
     'page_sticky',
     'page_title',
@@ -123,6 +124,7 @@ __all__ = [
     'timeline',
     'timeline_entry',
     'timer',
+    'to_option',
     'toggle',
     'tooltip',
     'tree',
@@ -149,6 +151,8 @@ from .elements.carousel import CarouselSlide as carousel_slide
 from .elements.chat_message import ChatMessage as chat_message
 from .elements.checkbox import Checkbox as checkbox
 from .elements.chip import Chip as chip
+from .elements.choice_element import Option as option
+from .elements.choice_element import to_option
 from .elements.code import Code as code
 from .elements.codemirror import CodeMirror as codemirror
 from .elements.color_input import ColorInput as color_input
@@ -214,7 +218,7 @@ from .elements.row import Row as row
 from .elements.scene import Scene as scene
 from .elements.scene import SceneView as scene_view
 from .elements.scroll_area import ScrollArea as scroll_area
-from .elements.select import Select as select
+from .elements.select import select
 from .elements.separator import Separator as separator
 from .elements.skeleton import Skeleton as skeleton
 from .elements.slide_item import SlideItem as slide_item
@@ -238,7 +242,7 @@ from .elements.time import Time as time
 from .elements.timeline import Timeline as timeline
 from .elements.timeline import TimelineEntry as timeline_entry
 from .elements.timer import Timer as timer
-from .elements.toggle import Toggle as toggle
+from .elements.toggle import toggle
 from .elements.tooltip import Tooltip as tooltip
 from .elements.tree import Tree as tree
 from .elements.upload import Upload as upload
