@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import Any, Callable, Literal, Optional, TypedDict, Union
 
 from fastapi.middleware.gzip import GZipMiddleware
+from Secweb import SecWeb
 from starlette.routing import Route
 from uvicorn.main import STARTUP_FAILURE
 from uvicorn.supervisors import ChangeReload, Multiprocess
@@ -154,6 +155,7 @@ def run(root: Optional[Callable] = None, *,
         core.app.add_middleware(GZipMiddleware)
     core.app.add_middleware(RedirectWithPrefixMiddleware)
     core.app.add_middleware(SetCacheControlMiddleware)
+    SecWeb(app=core.app, script_nonce=True, Option={'hsts': False, 'wshsts': False})
 
     for route in core.app.routes:
         if not isinstance(route, Route):

@@ -32,7 +32,7 @@
     </style>
     <!-- prevent Prettier from removing this line -->
     {{ head_html | safe }}
-    <script type="importmap">
+    <script type="importmap" nonce="{{ nonce }}">
       {"imports": {{ imports | safe }}}
     </script>
     {% for url in js_imports_urls %}
@@ -46,7 +46,6 @@
     {% endif %}
   </head>
   <body>
-    <script async src="{{ prefix | safe }}/_nicegui/{{version}}/static/es-module-shims.js"></script>
     <script defer src="{{ prefix | safe }}/_nicegui/{{version}}/static/socket.io.min.js"></script>
     {% if tailwind %}
     <script defer src="{{ prefix | safe }}/_nicegui/{{version}}/static/tailwindcss.min.js"></script>
@@ -69,7 +68,7 @@
       <span>{{ translations.connection_lost }}</span>
       <span>{{ translations.trying_to_reconnect }}</span>
     </div>
-    <script type="module">
+    <script type="module" nonce="{{ nonce }}">
       const app = createApp(parseElements(String.raw`{{ elements | safe }}`), {
         version: "{{ version }}",
         prefix: "{{ prefix | safe }}",

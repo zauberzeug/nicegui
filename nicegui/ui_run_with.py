@@ -4,6 +4,7 @@ from typing import Any, Callable, Literal, Optional, Union
 
 from fastapi import FastAPI
 from fastapi.middleware.gzip import GZipMiddleware
+from Secweb import SecWeb
 
 from . import core, storage
 from .air import Air
@@ -73,6 +74,7 @@ def run_with(
     core.app.add_middleware(GZipMiddleware)
     core.app.add_middleware(RedirectWithPrefixMiddleware)
     core.app.add_middleware(SetCacheControlMiddleware)
+    SecWeb(app=core.app, script_nonce=True, Option={'hsts': False, 'wshsts': False})
 
     if on_air:
         core.air = Air('' if on_air is True else on_air)

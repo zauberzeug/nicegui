@@ -37,6 +37,7 @@ python-engineio = ">=4.12.0"  # transitive, pinned to address https://github.com
 aiohttp = ">=3.10.2" # transitive, pinned to address https://github.com/zauberzeug/nicegui/security/dependabot/36
 certifi = ">=2024.07.04" # transitive, pinned to address https://github.com/zauberzeug/nicegui/security/dependabot/35
 pydantic-core = {version = ">=2.35.0", optional = true} # Optional to not force Pydantic V2
+secweb = "^1.25.2"
 
 [tool.poetry.extras]
 native = ["pywebview"]
