@@ -3,10 +3,7 @@ import { loadResource } from "../../static/utils/resources.js";
 
 export default {
   template: "<div></div>",
-  async mounted() {
-    await this.$nextTick(); // NOTE: wait for window.path_prefix to be set
-    await loadResource(window.path_prefix + `${this.resource_path}/xterm.css`);
-
+  mounted() {
     // Create terminal with addons
     this.terminal = new Terminal(this.options);
     this.terminal.loadAddon((this.fit_addon = new FitAddon()));
@@ -19,6 +16,11 @@ export default {
       .forEach((key) => {
         this.terminal[key]((e) => this.$emit(key.slice(2).toLowerCase(), e));
       });
+
+    this.$nextTick().then(() => {
+      // NOTE: wait for window.path_prefix to be set
+      loadResource(window.path_prefix + `${this.resource_path}/xterm.css`);
+    });
   },
   methods: {
     getRows() {
