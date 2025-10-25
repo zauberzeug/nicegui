@@ -10,10 +10,10 @@ class GUI:
     This pattern is useful for any scenario where the main thread needs to remain available for other work.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.message = Event[str]()  # NOTE: broadcast data to all clients currently visiting self.root
 
-    def start(self):
+    def start(self) -> None:
         """Start the NiceGUI server in a separate thread."""
         started = threading.Event()
         app.on_startup(started.set)
@@ -22,7 +22,7 @@ class GUI:
         if not started.wait(timeout=3.0):  # NOTE: wait for the server to start
             raise RuntimeError('NiceGUI did not start within 3 seconds.')
 
-    def root(self):
+    def root(self) -> None:
         """Create the UI for each new visitor."""
         ui.label('NiceGUI running in separate thread').classes('text-h6')
         message_label = ui.label('Waiting for CLI input...')
