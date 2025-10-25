@@ -8,7 +8,7 @@ from . import doc
 @doc.demo(ui.xterm)
 def main_demo() -> None:
     terminal = ui.xterm({'cols': 30, 'rows': 9})
-    ui.timer(0.1, lambda: terminal.write('Hello NiceGUI!'), once=True)
+    ui.timer(0, lambda: terminal.write('Hello NiceGUI!'), once=True)
 
 
 @doc.demo('Using ANSI escape codes', '''
