@@ -27,7 +27,7 @@ def search_as_you_type():
     ]
     ui.select(options=continents, with_input=True,
               on_change=lambda e: ui.notify(e.value)).classes('w-40')
-    
+
 
 @doc.demo('New value mode', '''
     You can add new options by providing a `new_value_mode` and
@@ -36,12 +36,12 @@ def search_as_you_type():
 def new_value_mode():
     def event_to_option(v: str) -> ui.option[int, int]:
         return ui.to_option(int(v))
-    
+
     ui.select(
-        [1,2,3,4,5], 
+        [1,2,3,4,5],
         with_input=True,
         on_change=lambda e: ui.notify(e.value),
-        new_value_mode="add-unique",
+        new_value_mode='add-unique',
         new_value_to_option=event_to_option
     ).classes('w-40')
 
@@ -83,21 +83,21 @@ def extending_options_and_custom_slotting():
         caption: str
 
         def __repr__(self) -> str:
-            return f"Person({self.label}, {self.value})"
+            return f'Person({self.label}, {self.value})'
 
     select_people = (
         ui.select(
             options=[
                 Person(
-                    label='Joe', value=0, icon='person', 
+                    label='Joe', value=0, icon='person',
                     caption='Company: Trilliant Health'
                     ),
                 Person(
-                    label='Rodja', value=1, icon='person', 
+                    label='Rodja', value=1, icon='person',
                     caption='Company: Zauberzeug GmbH'
                     ),
                 Person(
-                    label='Darth Vader', value=2, icon='person_off', 
+                    label='Darth Vader', value=2, icon='person_off',
                     caption='Fired for being evil'
                     ),
             ],
