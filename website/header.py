@@ -2,6 +2,7 @@ import os
 from pathlib import Path
 
 from nicegui import app, ui
+from website.seo_constants import KEYWORDS
 
 from . import svg
 from .search import Search
@@ -19,6 +20,10 @@ def add_head_html() -> None:
             '<script defer data-domain="nicegui.io" src="https://plausible.io/js/script.hash.outbound-links.js">'
             '</script>'
         )
+    ui.add_head_html(f'''
+        <meta name="keywords" content="{', '.join(KEYWORDS)}">
+        <link rel="canonical" href="https://nicegui.io">
+    ''')
 
 
 def add_header(menu: ui.left_drawer) -> ui.button:

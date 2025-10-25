@@ -1,9 +1,13 @@
 from nicegui import ui
 from website.documentation.rendering import section_heading, subheading
+from website.seo_constants import NICEGUI_TAGLINE
 
 
 def create():
     ui.page_title('Imprint & Privacy | NiceGUI')
+    ui.add_head_html(f'''
+        <meta name="description" content="Imprint and Privacy Policy of {NICEGUI_TAGLINE}">
+    ''')
 
     with ui.column().classes('w-full p-8 lg:p-16 max-w-[1250px] mx-auto'):
         section_heading('', 'Imprint')
