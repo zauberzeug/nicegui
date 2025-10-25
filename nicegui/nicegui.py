@@ -14,7 +14,7 @@ from fastapi.responses import FileResponse, Response
 from . import air, background_tasks, binding, core, favicon, helpers, json, run, welcome
 from .app import App
 from .client import Client
-from .dependencies import dynamic_resources, esm_modules, js_components, libraries, resources
+from .dependencies import dynamic_resources, esm_modules, js_components, built_in_libraries, libraries, resources
 from .error import error_content
 from .json import NiceGUIJSONResponse
 from .logging import log
@@ -74,6 +74,19 @@ def _get_library(key: str) -> FileResponse:
         if path.exists():
             return FileResponse(path, media_type='text/javascript')
     raise HTTPException(status_code=404, detail=f'library "{key}" not found')
+
+
+@app.get(f'/_nicegui/{__version__}' + '/corelibs/{name:path}.js')
+def _get_built_in_library(name: str) -> FileResponse:
+    if name in built_in_libraries:
+        library = built_in_libraries[name]
+        if core.app.config.prod_js:
+            path = library.prod_path
+        else:
+            path = library.path
+        if path.exists():
+            return FileResponse(path, media_type='text/javascript')
+    raise HTTPException(status_code=404, detail=f'library "{name}" not found')
 
 
 @app.get(f'/_nicegui/{__version__}' + '/components/{key:path}')
