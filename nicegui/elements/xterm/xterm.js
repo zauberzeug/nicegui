@@ -17,10 +17,8 @@ export default {
         this.terminal[key]((e) => this.$emit(key.slice(2).toLowerCase(), e));
       });
 
-    this.$nextTick().then(() => {
-      // NOTE: wait for window.path_prefix to be set
-      loadResource(window.path_prefix + `${this.resource_path}/xterm.css`);
-    });
+    // NOTE: wait for window.path_prefix to be set
+    this.$nextTick().then(() => loadResource(window.path_prefix + `${this.resource_path}/xterm.css`));
   },
   methods: {
     getRows() {
