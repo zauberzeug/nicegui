@@ -89,6 +89,7 @@ __all__ = [
     'rating',
     'refreshable',
     'refreshable_method',
+    'responsive',
     'restructured_text',
     'right_drawer',
     'row',
@@ -209,6 +210,7 @@ from .elements.query import Query as query
 from .elements.radio import Radio as radio
 from .elements.range import Range as range  # pylint: disable=redefined-builtin
 from .elements.rating import Rating as rating
+from .elements.responsive import Responsive as responsive
 from .elements.restructured_text import ReStructuredText as restructured_text
 from .elements.row import Row as row
 from .elements.scene import Scene as scene
