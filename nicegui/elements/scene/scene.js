@@ -552,6 +552,6 @@ export default {
     click_events: Array,
     drag_constraints: String,
     background_color: String,
-    fps: { type: Number, default: 20 },
+    fps: Number,
   },
 };

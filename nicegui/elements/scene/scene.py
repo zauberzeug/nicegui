@@ -61,6 +61,7 @@ class Scene(Element, component='scene.js', esm={'nicegui-scene': 'dist'}, defaul
     def __init__(self,
                  width: int = 400,
                  height: int = 300,
+                 # DEPRECATED: enforce keyword-only arguments in NiceGUI 4.0
                  grid: Union[bool, tuple[int, int]] = True,
                  camera: Optional[SceneCamera] = None,
                  on_click: Optional[Handler[SceneClickEventArguments]] = None,
@@ -88,7 +89,7 @@ class Scene(Element, component='scene.js', esm={'nicegui-scene': 'dist'}, defaul
         :param on_drag_end: callback to execute when a 3D object is dropped
         :param drag_constraints: comma-separated JavaScript expression for constraining positions of dragged objects (e.g. ``'x = 0, z = y / 2'``)
         :param background_color: background color of the scene (default: "#eee")
-        :param fps: target frame rate for the scene in frames per second (default: 20)
+        :param fps: target frame rate for the scene in frames per second (default: 20, *added in version 3.2.0*)
         """
         super().__init__()
         self._props['width'] = width

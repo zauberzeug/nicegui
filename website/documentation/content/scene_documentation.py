@@ -5,7 +5,7 @@ from . import doc
 
 @doc.demo(ui.scene)
 def main_demo() -> None:
-    with ui.scene(fps=60).classes('w-full h-64') as scene:
+    with ui.scene().classes('w-full h-64') as scene:
         scene.axes_helper()
         scene.sphere().material('#4488ff').move(2, 2)
         scene.cylinder(1, 0.5, 2, 20).material('#ff8800', opacity=0.5).move(-2, 1)
@@ -59,21 +59,6 @@ def click_events() -> None:
     with ui.scene(width=285, height=220, on_click=handle_click) as scene:
         scene.sphere().move(x=-1, z=1).with_name('sphere')
         scene.box().move(x=1, z=1).with_name('box')
-
-
-@doc.demo('FPS configuration', '''
-    You can configure the target frames per second (FPS) of the scene using the `fps` argument.
-    The default value is 20. In the main demo you can see it has been set to 60 FPS.
-    The FPS is generally lower than the target frame rate, because the browser also takes some time to render the scene.
-    This also applies to `ui.scene_view`.
-''')
-def fps_configuration() -> None:
-    ui.label('Higher frame rate for the movable view')
-    with ui.scene(fps=40).classes('w-full h-32') as scene:
-        scene.sphere()
-    ui.label('Lower frame rate for the static view')
-    with ui.scene_view(scene, fps=5).classes('w-full h-32') as scene_view:
-        scene_view.move_camera(x=1, y=-3, z=5)
 
 
 @doc.demo('Context menu for 3D objects', '''
@@ -204,6 +189,25 @@ def scene_views():
 
         with ui.scene_view(scene).classes('h-32') as scene_view2:
             scene_view2.move_camera(x=0, y=4, z=3)
+
+
+@doc.demo('Frame Rate', '''
+    You can configure the target frames per second (FPS) of the scene using the `fps` argument.
+    The default value is 20.
+    This demo shows how to set the frame rate to 40 FPS for the main scene and 5 FPS for the static view.
+    The FPS is generally lower than the target frame rate, because the browser also takes some time to render the scene.
+    This also applies to `ui.scene_view`.
+
+    *Added in version 3.2.0*
+''')
+def fps_configuration() -> None:
+    ui.label('Higher frame rate for the movable view')
+    with ui.scene(fps=40).classes('w-full h-32') as scene:
+        scene.sphere()
+
+    ui.label('Lower frame rate for the static view')
+    with ui.scene_view(scene, fps=5).classes('w-full h-32') as scene_view:
+        scene_view.move_camera(x=1, y=-3, z=5)
 
 
 @doc.demo('Camera Parameters', '''

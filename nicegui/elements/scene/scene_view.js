@@ -157,6 +157,6 @@ export default {
     camera_type: String,
     camera_params: Object,
     scene_id: String,
-    fps: { type: Number, default: 20 },
+    fps: Number,
   },
 };
