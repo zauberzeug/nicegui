@@ -1,5 +1,5 @@
 import importlib.util
-from typing import TYPE_CHECKING, Literal, Optional, Union
+from typing import TYPE_CHECKING, Any, Literal, Optional, Union
 
 from typing_extensions import Self
 
@@ -81,7 +81,6 @@ class Table(FilterElement, component='table.js'):
         self._pagination_change_handlers = [on_pagination_change] if on_pagination_change else []
 
         self._scan_rows_for_lists()
-        self._props.on_change(self._scan_rows_for_lists)
 
         def handle_selection(e: GenericEventArguments) -> None:
             if e.args['added']:
@@ -122,6 +121,10 @@ class Table(FilterElement, component='table.js'):
                             {{ Array.isArray(props.value) ? props.value.join(', ') : props.value }}
                         </td>
                     ''')
+
+    def _to_dict(self) -> dict[str, Any]:
+        self._scan_rows_for_lists()
+        return super()._to_dict()
 
     def on_select(self, callback: Handler[TableSelectionEventArguments]) -> Self:
         """Add a callback to be invoked when the selection changes."""
