@@ -71,6 +71,8 @@ class Select(
         self.multiple = isinstance(value, tuple)
         self.new_value_mode = new_value_mode
         self.new_value_to_option: Optional[Callable[[str], Optional[T]]] = new_value_to_option
+        if self.new_value_mode and self.new_value_to_option is None:
+            raise ValueError(f"new_value_to_option not passed. You must provide a function for handling new values when new value mode is '{self.new_value_mode}'.")
         if isinstance(value, tuple) and all(isinstance(v, (str, int, float, bool)) for v in value):
             value = tuple(to_option(v) for v in value)
         if isinstance(value, (str, int, float, bool)):

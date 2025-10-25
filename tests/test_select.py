@@ -117,10 +117,7 @@ def test_add_new_values(screen:  Screen, multiple: bool, new_value_mode: Optiona
     @ui.page('/')
     def page():
         options = [Option(label=v, value=k) for k, v in {'a': 'A', 'b': 'B', 'c': 'C'}.items()]
-        if multiple:
-            s = ui.select(options=options, value=(), new_value_mode=new_value_mode, new_value_to_option=to_option)
-        else:
-            s = ui.select(options=options, new_value_mode=new_value_mode, new_value_to_option=to_option)
+        s = ui.select(options=options, value=() if multiple else None, new_value_mode=new_value_mode, new_value_to_option=to_option)
         ui.label().bind_text_from(s, 'value', lambda value: f'value = {(value.value if value else value) if not multiple else tuple(v.value for v in value)}')
         ui.label().bind_text_from(s, 'options', lambda options: f'options = {options}')
 
