@@ -133,7 +133,6 @@ class Select(
         assert self.new_value_to_option
         mode = self.new_value_mode
         new_option: Optional[T] = self.new_value_to_option(value)
-        print('new_option =', new_option)
         if mode == 'add' and new_option:
             self.options.append(new_option)
         elif mode == 'add-unique' and new_option:
