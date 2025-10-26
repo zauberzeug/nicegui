@@ -189,8 +189,14 @@ def test_replace_rows(screen: Screen):
         def replace_rows_with_daniel():
             t.update_rows([{'id': 4, 'name': 'Daniel', 'age': 33}])
 
+        def update_rows():
+            current_rows = t.rows
+            current_rows[0]['age'] = 35
+            t.update_rows(current_rows)
+
         ui.button('Replace rows with C.', on_click=replace_rows_with_carol)
         ui.button('Replace rows with D.', on_click=replace_rows_with_daniel)
+        ui.button('Update rows', on_click=update_rows)
 
     screen.open('/')
     screen.should_contain('Alice')
@@ -208,6 +214,12 @@ def test_replace_rows(screen: Screen):
     screen.wait(0.5)
     screen.should_not_contain('Carol')
     screen.should_contain('Daniel')
+
+    screen.click('Update rows')
+    screen.wait(0.5)
+    screen.should_contain('Daniel')
+    screen.should_not_contain('33')
+    screen.should_contain('35')
 
 
 @pytest.mark.parametrize('df_type', ['pandas', 'polars'])
