@@ -120,6 +120,8 @@ To view the log output, use the command
 
 ### Formatting
 
+We follow **PEP 8** with a few deviations (see Style Principles below).
+
 We use [autopep8](https://github.com/hhatto/autopep8) with a 120 character line length to format our code.
 Before submitting a pull request, please run
 
@@ -136,18 +138,29 @@ There are cases where one or the other arrangement of, e.g., function arguments 
 Then we like the flexibility to either put all arguments on separate lines or only put the lengthy event handler
 on a second line and leave the other arguments as they are.
 
+**Fluent Interface Formatting:** When chaining methods (builder pattern), use backslash line continuation:
+
+```python
+ui.button('Click me') \
+    .classes('bg-blue-500') \
+    .on('click', lambda: ui.notify('Hello'))
+```
+
 ### Style Principles
 
 - Always prefer simple solutions
 - Avoid having files over 200-300 lines of code. Refactor at that point
 - Use single quotes for strings in Python, double quotes in JavaScript
-- Use f-strings wherever possible for better readability (except in performance-critical sections which should be marked with "NOTE:" comments)
+- Use `# NOTE:` prefix for important implementation details and non-obvious code
+- Use f-strings wherever possible for better readability (except in performance-critical sections which should be marked with `# NOTE:` comments)
 - Follow autopep8 formatting with 120 character line length
+- Never use mutable defaults (`[]`, `{}`) without `# noqa: B006` and justification; prefer `None` as default
+- Put high-level/interesting code at the top of files; helper functions should be below their usage
 - Each sentence in documentation should be on a new line
 - Use ruff for linting and code checks
 - Ensure proper use of async (no blocking operations)
-- Never use `asyncio.create_task`, because garbage collector might remove unfinished tasks.
-  `background_tasks.create` takes better care of this.
+- **Never use `asyncio.create_task()`**, because the garbage collector might remove unfinished tasks.
+  Always use `background_tasks.create()` which takes better care of task lifecycle management.
 
 ### Workflow Guidelines
 
@@ -170,6 +183,54 @@ on a second line and leave the other arguments as they are.
 - Discuss before implementing and if an approach is unclear, present options and trade-offs
 - Approach large changes step-by-step and get confirmation before drastic refactorings
 - Think from first principles: Always question your assumptions to find the true nature of problems
+
+## NiceGUI-Specific Patterns
+
+Beyond standard Python conventions, NiceGUI has developed specific architectural patterns to handle its unique requirements: real-time UI synchronization between Python and Vue.js, efficient memory management with many short-lived objects, and a fluent API design.
+
+When contributing to the core library (`nicegui/` directory), you'll encounter these patterns.
+They may seem unusual at first, but they solve specific problems related to NiceGUI's architecture.
+Understanding these patterns will help you write code that fits naturally into the existing codebase.
+
+### Element Architecture
+
+- **Mixins**: Elements use mixin composition; inheritance order matters for Python's Method Resolution Order (MRO)
+- **Props vs Attributes**: Use `self._props` for data that syncs to Vue/frontend; use instance attributes for Python-only state
+- **Context Managers**: Elements can be used as context managers (`with element:`) for slot/child management
+- **Component Registration**: Use class parameters for components: `component='file.js'`, `esm={'package': 'dist'}`, `default_classes='css-class'`
+
+### Memory Management
+
+- **Weakref Pattern**: Use `self._element = weakref.ref(element)` to avoid circular references (which require more costly garbage collection); always check if `element()` returns `None` before using
+- **WeakValueDictionary**: Use for caches that shouldn't prevent garbage collection
+
+### Binding System
+
+- **BindableProperty**: Use with `cast(Self, sender)` in on-change handlers for type safety
+- **Triple Underscore Storage**: BindableProperty stores values in `___property_name` attributes
+- **Batch Updates**: Use `suspend_updates()` context manager when changing multiple properties
+
+### Async and Background Tasks
+
+- Use `helpers.is_coroutine_function()` to check if a handler is async
+- Use `helpers.expects_arguments()` to check if a handler expects arguments
+- Use `core.app.handle_exception()` for handling exceptions in background tasks
+
+### Method Returns
+
+- Methods that support chaining (fluent interface) return `Self` from `typing_extensions`
+- This enables the builder pattern: `element.method1().method2().method3()`
+
+### Error Handling
+
+- Use assertions for internal invariants (e.g., `assert self.current_scene is not None`)
+- Raise descriptive exceptions (`ValueError`, `RuntimeError`) with helpful messages
+- Use `core.app.handle_exception()` for global exception handling in background tasks
+
+### Dataclasses
+
+- Use `@dataclass(**KWONLY_SLOTS)` for Python 3.9 compatibility (instead of `@dataclass(kw_only=True, slots=True)`)
+- This pattern is defined in `nicegui/dataclasses.py` and handles version differences automatically
 
 ### Linting
 
@@ -216,6 +277,11 @@ These checks will also run automatically before every commit:
 
 Our tests are built with pytest and require python-selenium with ChromeDriver.
 See [tests/README.md](https://github.com/zauberzeug/nicegui/blob/main/tests/README.md) for detailed installation instructions and more infos about the test infrastructure and tricks for daily usage.
+
+### User vs Screen Fixtures
+
+- **Use `User` fixture when possible**: Fast, runs in the same async context as NiceGUI, no browser needed
+- **Use `Screen` fixture only when necessary**: Required when testing browser/JavaScript interactions, but slower
 
 Before submitting a pull request, please make sure that all tests are passing.
 To run them all, use the following command in the root directory of NiceGUI:
@@ -264,6 +330,7 @@ Your contributions are much appreciated.
 ### Formatting
 
 Because it has [numerous benefits](https://nick.groenen.me/notes/one-sentence-per-line/) we write each sentence in a new line.
+Use backslash at end of line for continuation without paragraph breaks (e.g., in blockquotes).
 
 ### Examples
 
