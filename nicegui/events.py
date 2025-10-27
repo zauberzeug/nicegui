@@ -396,6 +396,16 @@ class JsonEditorChangeEventArguments(UiEventArguments):
     errors: dict = field(default_factory=dict)
 
 
+@dataclass(**KWONLY_SLOTS)
+class XtermBellEventArguments(UiEventArguments):
+    pass
+
+
+@dataclass(**KWONLY_SLOTS)
+class XtermDataEventArguments(UiEventArguments):
+    data: str
+
+
 EventT = TypeVar('EventT', bound=EventArguments)
 Handler = Union[Callable[[EventT], Any], Callable[[], Any]]
 

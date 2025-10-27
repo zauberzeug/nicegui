@@ -235,3 +235,43 @@ def test_refreshable_with_return_value(screen: Screen):
 
     screen.open('/')
     screen.should_contain('42')
+
+
+def test_awaitable_refresh(screen: Screen):
+    events = []
+
+    @ui.refreshable
+    async def content(number: int):
+        events.append('refresh started')
+        await asyncio.sleep(0.5)
+        ui.label(f'1 / {number} = {1 / number}')
+        events.append('refresh finished')
+
+    async def update(number: int):
+        events.append('update started')
+        try:
+            await content.refresh(number)
+        except ZeroDivisionError:
+            events.append('refresh failed')
+            ui.label('error handled')
+        events.append('update finished')
+
+    @ui.page('/')
+    async def page():
+        await content(1)
+        ui.button('Try 2', on_click=lambda: update(2))
+        ui.button('Try 0', on_click=lambda: update(0))
+
+    screen.open('/')
+    screen.should_contain('1 / 1 = 1.0')
+    assert events == ['refresh started', 'refresh finished']
+
+    events.clear()
+    screen.click('Try 2')
+    screen.should_contain('1 / 2 = 0.5')
+    assert events == ['update started', 'refresh started', 'refresh finished', 'update finished']
+
+    events.clear()
+    screen.click('Try 0')
+    screen.should_contain('error handled')
+    assert events == ['update started', 'refresh started', 'refresh failed', 'update finished']
