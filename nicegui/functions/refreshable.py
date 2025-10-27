@@ -120,7 +120,7 @@ class refreshable(Generic[_P, _T]):
 
     def _execute_refresh(self, args: tuple[Any, ...], kwargs: dict[str, Any]) -> list[Awaitable[Any]]:
         """Execute the refresh and return a list of coroutines for async functions."""
-        coroutines = []
+        coroutines: list[Awaitable[Any]] = []
         for target in self.targets:
             if target.instance != self.instance:
                 continue
