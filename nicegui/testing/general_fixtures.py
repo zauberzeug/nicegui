@@ -47,11 +47,7 @@ def nicegui_reset_globals() -> Generator[None, None, None]:
     app.middleware_stack = None
     app.user_middleware.clear()
     app.urls.clear()
-    core.air = None
-    core.loop = None
-    core.root = None
-    core.script_mode = False
-    core.script_client = None
+    core.reset()
 
     # capture initial defaults
     element_types: list[type[ui.element]] = [ui.element, *find_all_subclasses(ui.element)]
@@ -80,14 +76,11 @@ def nicegui_reset_globals() -> Generator[None, None, None]:
         t._default_style = default_styles[t]  # pylint: disable=protected-access
         t._default_props = default_props[t]  # pylint: disable=protected-access
 
-    # NOTE: remove only modules that registered pages to ensure they are imported again when the main file is re-executed so that @ui.page() decorators run again
-    modules_with_page_registrations = {func.__module__ for func in Client.page_routes}
-    for module_name in modules_with_page_registrations:
-        # NOTE: skip pytest test modules from the tests/ directory (they shouldn't be deleted as it breaks pickling and class identity)
-        if module_name.startswith('tests.'):
-            continue
-        if module_name in sys.modules:
-            del sys.modules[module_name]
+    # NOTE: remove modules that registered pages to re-imported them when the main file is re-executed so that @ui.page decorators run again
+    for func in Client.page_routes:
+        # NOTE: skip pytest modules from the tests/ directory (they shouldn't be deleted as it breaks pickling and class identity)
+        if not func.__module__.startswith('tests.'):
+            sys.modules.pop(func.__module__, None)
 
 
 def find_all_subclasses(cls: type) -> list[type]:

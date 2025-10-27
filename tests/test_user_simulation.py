@@ -1,6 +1,7 @@
 import csv
 import re
 import sys
+import textwrap
 from typing import Callable, Union
 
 import pytest
@@ -728,18 +729,19 @@ async def test_tree_with_labels(user: User) -> None:
 
 @pytest.mark.order(1)
 async def test_module_import_isolation_first_test(user: User, tmp_path) -> None:  # pylint: disable=unused-argument
-    """First test that imports a module with @ui.page() - should not be there in the next test. See https://github.com/zauberzeug/nicegui/pull/5300"""
+    """First test that imports a module with @ui.page() - should not be there in the next test.
 
-    test_module = tmp_path / 'test_isolation_module.py'
-    test_module.write_text('''
-from nicegui import ui
+    See https://github.com/zauberzeug/nicegui/pull/5300.
+    """
+    (tmp_path / 'test_isolation_module.py').write_text(textwrap.dedent('''\
+        from nicegui import ui
 
-value = "from_first_test"
+        value = "from_first_test"
 
-@ui.page('/test_isolation')
-def test_page():
-    ui.label('Test isolation page from first test')
-''')
+        @ui.page('/test_isolation')
+        def test_page():
+            ui.label('Test isolation page from first test')
+    '''))
 
     sys.path.insert(0, str(tmp_path))
     import test_isolation_module  # type: ignore  # noqa: F401
@@ -749,7 +751,9 @@ def test_page():
 
 @pytest.mark.order(2)
 async def test_module_import_isolation_second_test(user: User, tmp_path) -> None:  # pylint: disable=unused-argument
-    """Second test that should have a clean sys.modules without imports from previous test. See https://github.com/zauberzeug/nicegui/pull/5300"""
+    """Second test that should have a clean sys.modules without imports from previous test.
 
+    See https://github.com/zauberzeug/nicegui/pull/5300.
+    """
     assert 'test_isolation_module' not in sys.modules, \
         'test_isolation_module from previous test should not be in sys.modules'

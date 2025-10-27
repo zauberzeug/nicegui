@@ -1,6 +1,5 @@
 import asyncio
 import logging
-import sys
 import traceback
 from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
 from concurrent.futures.process import BrokenProcessPool
@@ -13,7 +12,6 @@ from . import core, helpers
 
 process_pool: Optional[ProcessPoolExecutor] = None
 thread_pool = ThreadPoolExecutor()
-_shutdown_kwargs = {'cancel_futures': True} if sys.version_info >= (3, 9) else {}
 
 P = ParamSpec('P')
 R = TypeVar('R')
@@ -106,13 +104,13 @@ def reset() -> None:
     if process_pool is not None:
         try:
             _kill_processes()
-            process_pool.shutdown(wait=False, **_shutdown_kwargs)
+            process_pool.shutdown(wait=False, cancel_futures=True)
         except Exception:  # pylint: disable=broad-except
             pass
         process_pool = None
 
     try:
-        thread_pool.shutdown(wait=False, **_shutdown_kwargs)
+        thread_pool.shutdown(wait=False, cancel_futures=True)
     except Exception:  # pylint: disable=broad-except
         pass
     thread_pool = ThreadPoolExecutor()
@@ -125,12 +123,12 @@ def tear_down() -> None:
 
     if process_pool is not None:
         _kill_processes()
-        process_pool.shutdown(wait=True, **_shutdown_kwargs)
-    thread_pool.shutdown(wait=False, **_shutdown_kwargs)
+        process_pool.shutdown(wait=True, cancel_futures=True)
+    thread_pool.shutdown(wait=False, cancel_futures=True)
 
 
 def _kill_processes() -> None:
     assert process_pool is not None
-    assert process_pool._processes is not None  # type: ignore  # pylint: disable=protected-access
+    assert process_pool._processes is not None  # pylint: disable=protected-access
     for p in process_pool._processes.values():  # pylint: disable=protected-access
         p.kill()
