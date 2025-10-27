@@ -118,6 +118,8 @@ To view the log output, use the command
 
 ## Coding Style Guide
 
+This section covers our formatting conventions, style principles, workflow practices, and automated linting enforcement.
+
 ### Formatting
 
 We follow **PEP 8** with a few deviations (see Style Principles below).
@@ -157,7 +159,6 @@ ui.button('Click me') \
 - Never use mutable defaults (`[]`, `{}`) without `# noqa: B006` and justification; prefer `None` as default
 - Put high-level/interesting code at the top of files; helper functions should be below their usage
 - Each sentence in documentation should be on a new line
-- Use ruff for linting and code checks
 - Ensure proper use of async (no blocking operations)
 - **Never use `asyncio.create_task()`**, because the garbage collector might remove unfinished tasks.
   Always use `background_tasks.create()` which takes better care of task lifecycle management.
@@ -183,6 +184,47 @@ ui.button('Click me') \
 - Discuss before implementing and if an approach is unclear, present options and trade-offs
 - Approach large changes step-by-step and get confirmation before drastic refactorings
 - Think from first principles: Always question your assumptions to find the true nature of problems
+
+### Linting
+
+We use [pre-commit](https://github.com/pre-commit/pre-commit) to make sure the coding style is enforced.
+You first need to install pre-commit and the corresponding git commit hooks by running the following commands:
+
+```bash
+python3 -m pip install pre-commit
+pre-commit install
+```
+
+After that you can make sure your code satisfies the coding style by running the following command:
+
+```bash
+pre-commit run --all-files
+```
+
+> [!TIP]
+> The command may fail with
+>
+> > RuntimeError: failed to find interpreter for Builtin discover of python_spec='python3.9'
+>
+> You will need to install Python 3.9 and make sure it is available in your `PATH`.
+
+These checks will also run automatically before every commit:
+
+- Run `ruff check . --fix` to check the code and sort imports.
+- Remove trailing whitespace.
+- Fix end of files.
+- Enforce single quotes.
+
+> [!NOTE]
+>
+> **Regarding single or double quotes:** > [PEP 8](https://peps.python.org/pep-0008/) doesn't give any recommendation, so we simply chose single quotes and sticked with it.
+> On qwerty keyboards it's a bit easier to type, is visually less cluttered, and it works well for strings containing double quotes from the English language.
+
+> [!NOTE]
+>
+> **We use f-strings** where ever possible because they are generally more readable - once you get used to them.
+> There are only a few places in the code base where performance really matters and f-strings might not be the best choice.
+> These places should be marked with a `# NOTE: ...` comment when diverging from f-string usage.
 
 ## NiceGUI-Specific Patterns
 
@@ -231,47 +273,6 @@ Understanding these patterns will help you write code that fits naturally into t
 
 - Use `@dataclass(**KWONLY_SLOTS)` for Python 3.9 compatibility (instead of `@dataclass(kw_only=True, slots=True)`)
 - This pattern is defined in `nicegui/dataclasses.py` and handles version differences automatically
-
-### Linting
-
-We use [pre-commit](https://github.com/pre-commit/pre-commit) to make sure the coding style is enforced.
-You first need to install pre-commit and the corresponding git commit hooks by running the following commands:
-
-```bash
-python3 -m pip install pre-commit
-pre-commit install
-```
-
-After that you can make sure your code satisfies the coding style by running the following command:
-
-```bash
-pre-commit run --all-files
-```
-
-> [!TIP]
-> The command may fail with
->
-> > RuntimeError: failed to find interpreter for Builtin discover of python_spec='python3.9'
->
-> You will need to install Python 3.9 and make sure it is available in your `PATH`.
-
-These checks will also run automatically before every commit:
-
-- Run `ruff check . --fix` to check the code and sort imports.
-- Remove trailing whitespace.
-- Fix end of files.
-- Enforce single quotes.
-
-> [!NOTE]
->
-> **Regarding single or double quotes:** > [PEP 8](https://peps.python.org/pep-0008/) doesn't give any recommendation, so we simply chose single quotes and sticked with it.
-> On qwerty keyboards it's a bit easier to type, is visually less cluttered, and it works well for strings containing double quotes from the English language.
-
-> [!NOTE]
->
-> **We use f-strings** where ever possible because they are generally more readable - once you get used to them.
-> There are only a few places in the code base where performance really matters and f-strings might not be the best choice.
-> These places should be marked with a `# NOTE: ...` comment when diverging from f-string usage.
 
 ## Running tests
 
@@ -327,7 +328,7 @@ Please help us grow the number of insightful demos by following these easy steps
 
 Your contributions are much appreciated.
 
-### Formatting
+### Documentation Formatting
 
 Because it has [numerous benefits](https://nick.groenen.me/notes/one-sentence-per-line/) we write each sentence in a new line.
 Use backslash at end of line for continuation without paragraph breaks (e.g., in blockquotes).
