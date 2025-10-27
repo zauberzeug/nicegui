@@ -31,7 +31,7 @@ def test_sanitize(screen: Screen):
         ui.html('<img src=x onerror=Quasar.Notify.create({message:"C"})>', sanitize=lambda x: x.replace('C', 'C!'))
         ui.html('<img src=x onerror=Quasar.Notify.create({message:"D"})>', sanitize=Sanitizer().sanitize)
 
-    screen.allow_js_errors = True  # Reason: accessing /x will trigger JS errors
+    screen.allowed_js_errors.append('/x - Failed to load resource')
     screen.open('/')
     screen.should_contain('A')
     screen.should_contain('B')

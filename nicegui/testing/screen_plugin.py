@@ -99,10 +99,10 @@ def screen(nicegui_reset_globals,  # noqa: F811, pylint: disable=unused-argument
         if logs:
             pytest.fail('There were unexpected ERROR logs.', pytrace=False)
         if screen_.is_open:
-            browser_logs = screen_.selenium.get_log('browser')
-            js_errors = [e for e in browser_logs if str(e.get('level', '')).upper() in ('SEVERE', 'ERROR')]
-            if js_errors and not screen_.allow_js_errors:
-                pytest.fail(f'JavaScript console errors:\n{js_errors}', pytrace=False)
+            for js_error in screen_.selenium.get_log('browser'):
+                if str(js_error.get('level', '')).upper() in ('SEVERE', 'ERROR') and \
+                        not any(allowed_error in js_error['message'] for allowed_error in screen_.allowed_js_errors):
+                    pytest.fail(f'JavaScript console error:\n{js_error}', pytrace=False)
     finally:
         os.environ.pop('NICEGUI_SCREEN_TEST_PORT', None)
         screen_.stop_server()

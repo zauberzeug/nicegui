@@ -122,7 +122,7 @@ def test_add_new_values(screen:  Screen, option_dict: bool, multiple: bool, new_
 
     screen.open('/')
     if option_dict and new_value_mode == 'add':
-        screen.allow_js_errors = True  # Reason: the error will become HTTP-500
+        screen.allowed_js_errors.append('500 (Internal Server Error)')
         screen.assert_py_logger('ERROR', 'new_value_mode "add" is not supported for dict options without key_generator')
         return
 

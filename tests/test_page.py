@@ -137,7 +137,7 @@ def test_exception(screen: Screen):
     def page():
         raise RuntimeError('some exception')
 
-    screen.allow_js_errors = True  # Reason: accessing / will trigger JS errors
+    screen.allowed_js_errors.append('/ - Failed to load resource')
     screen.open('/')
     screen.should_contain('500')
     screen.should_contain('Server error')
@@ -311,6 +311,6 @@ def test_warning_if_response_takes_too_long(screen: Screen):
         await asyncio.sleep(1)
         ui.label('all done')
 
-    screen.allow_js_errors = True  # Reason: / will error out due to intentional delay
+    screen.allowed_js_errors.append('/ - Failed to load resource')
     screen.open('/')
     screen.assert_py_logger('WARNING', re.compile('Response for / not ready after 0.5 seconds'))

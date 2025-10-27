@@ -89,7 +89,7 @@ def test_error(screen: Screen):
                 A -> C;
         ''').on('error', lambda e: ui.label(e.args['message']))
 
-    screen.allow_js_errors = True  # Reason: malformed Mermaid
+    screen.allowed_js_errors.append('40:18 Object')
     screen.open('/')
     screen.should_contain('Syntax error in text')
     screen.should_contain('Parse error on line 3')
