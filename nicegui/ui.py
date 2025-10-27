@@ -5,6 +5,7 @@ __all__ = [
     'add_sass',
     'add_scss',
     'aggrid',
+    'aspect_ratio',
     'audio',
     'avatar',
     'badge',
@@ -89,7 +90,6 @@ __all__ = [
     'rating',
     'refreshable',
     'refreshable_method',
-    'responsive',
     'restructured_text',
     'right_drawer',
     'row',
@@ -136,6 +136,7 @@ __all__ = [
 from .context import context
 from .element import Element as element
 from .elements.aggrid import AgGrid as aggrid
+from .elements.aspect_ratio import AspectRatio as aspect_ratio
 from .elements.audio import Audio as audio
 from .elements.avatar import Avatar as avatar
 from .elements.badge import Badge as badge
@@ -210,7 +211,6 @@ from .elements.query import Query as query
 from .elements.radio import Radio as radio
 from .elements.range import Range as range  # pylint: disable=redefined-builtin
 from .elements.rating import Rating as rating
-from .elements.responsive import Responsive as responsive
 from .elements.restructured_text import ReStructuredText as restructured_text
 from .elements.row import Row as row
 from .elements.scene import Scene as scene
