@@ -59,6 +59,8 @@ def resizing():
     You can connect the output of a subprocess to the terminal.
     Note that `subprocess.PIPE` buffers the output in `StreamReader` objects in memory.
     If you want your subprocess to behave like it is running in a terminal, you might need to use a pty.
+    The `convertEol` parameter automatically converts line feeds (`\\n`) to carriage return + line feed (`\\r\\n`),
+    which ensures proper line breaks when displaying subprocess output.
 ''')
 def connecting_to_subprocess():
     async def run_subprocess():
@@ -84,7 +86,7 @@ def connecting_to_subprocess():
         )
         button.enable()
 
-    terminal = ui.xterm({'cols': 30, 'rows': 9})
+    terminal = ui.xterm({'cols': 30, 'rows': 9, 'convertEol': True})
     button = ui.button('Run subprocess', on_click=run_subprocess)
 
 
