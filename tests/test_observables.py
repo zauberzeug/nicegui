@@ -3,7 +3,7 @@ import copy
 
 from nicegui import ui
 from nicegui.observables import ObservableDict, ObservableList, ObservableSet
-from nicegui.testing import Screen
+from nicegui.testing import Screen, User
 
 # pylint: disable=global-statement
 count = 0
@@ -167,3 +167,14 @@ def test_copy():
     assert a == [[0, 2, 3], [4, 5, 6], [7, 8, 9]]
     assert b == [[0, 2, 3], [4, 5, 6]]
     assert c == [[1, 2, 3], [4, 5, 6]]
+
+
+async def test_no_infinite_recursion(user: User):
+    @ui.page('/')
+    def page():
+        list_ = ObservableList([1, 2, 3])
+        list_ += list_
+        ui.label(str(list_))
+
+    await user.open('/')
+    await user.should_see('[1, 2, 3, 1, 2, 3]')
