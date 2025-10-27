@@ -140,11 +140,12 @@ There are cases where one or the other arrangement of, e.g., function arguments 
 Then we like the flexibility to either put all arguments on separate lines or only put the lengthy event handler
 on a second line and leave the other arguments as they are.
 
-**Fluent Interface Formatting:** When chaining methods (builder pattern), use backslash line continuation:
+**Fluent Interface Formatting:**
+When chaining methods (builder pattern), use backslash line continuation:
 
 ```python
 ui.button('Click me') \
-    .classes('bg-blue-500') \
+    .classes('bg-green') \
     .on('click', lambda: ui.notify('Hello'))
 ```
 
@@ -228,7 +229,8 @@ These checks will also run automatically before every commit:
 
 ## NiceGUI-Specific Patterns
 
-Beyond standard Python conventions, NiceGUI has developed specific architectural patterns to handle its unique requirements: real-time UI synchronization between Python and Vue.js, efficient memory management with many short-lived objects, and a fluent API design.
+Beyond standard Python conventions, NiceGUI has developed specific architectural patterns to handle its unique requirements:
+real-time UI synchronization between Python and Vue.js, efficient memory management with many short-lived objects, and a fluent API design.
 
 When contributing to the core library (`nicegui/` directory), you'll encounter these patterns.
 They may seem unusual at first, but they solve specific problems related to NiceGUI's architecture.
@@ -237,20 +239,21 @@ Understanding these patterns will help you write code that fits naturally into t
 ### Element Architecture
 
 - **Mixins**: Elements use mixin composition; inheritance order matters for Python's Method Resolution Order (MRO)
-- **Props vs Attributes**: Use `self._props` for data that syncs to Vue/frontend; use instance attributes for Python-only state
+- **Props vs. Attributes**: Use `self._props` for data that syncs to Vue/frontend; use instance attributes for Python-only state
 - **Context Managers**: Elements can be used as context managers (`with element:`) for slot/child management
 - **Component Registration**: Use class parameters for components: `component='file.js'`, `esm={'package': 'dist'}`, `default_classes='css-class'`
 
 ### Memory Management
 
-- **Weakref Pattern**: Use `self._element = weakref.ref(element)` to avoid circular references (which require more costly garbage collection); always check if `element()` returns `None` before using
+- **Weakref Pattern**: Use `self._element = weakref.ref(element)` to avoid circular references
+  (which require more costly garbage collection); always check if `element()` returns `None` before using
 - **WeakValueDictionary**: Use for caches that shouldn't prevent garbage collection
 
 ### Binding System
 
 - **BindableProperty**: Use with `cast(Self, sender)` in on-change handlers for type safety
 - **Triple Underscore Storage**: BindableProperty stores values in `___property_name` attributes
-- **Batch Updates**: Use `suspend_updates()` context manager when changing multiple properties
+- **Batch Updates**: Use `suspend_updates()` context manager when changing properties in `update()` method to avoid infinite cycles
 
 ### Async and Background Tasks
 
@@ -331,7 +334,7 @@ Your contributions are much appreciated.
 ### Documentation Formatting
 
 Because it has [numerous benefits](https://nick.groenen.me/notes/one-sentence-per-line/) we write each sentence in a new line.
-Use backslash at end of line for continuation without paragraph breaks (e.g., in blockquotes).
+Use backslash at end of line for line breaks without paragraph breaks.
 
 ### Examples
 
