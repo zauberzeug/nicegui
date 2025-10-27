@@ -173,8 +173,8 @@ async def test_no_infinite_recursion(user: User):
     @ui.page('/')
     def page():
         list_ = ObservableList([1, 2, 3])
-        list_[:] = list_
+        list_ += list_
         ui.label(str(list_))
 
     await user.open('/')
-    await user.should_see('1, 2, 3, 1, 2, 3')
+    await user.should_see('[1, 2, 3, 1, 2, 3]')
