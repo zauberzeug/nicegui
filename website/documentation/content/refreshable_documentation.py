@@ -113,7 +113,7 @@ def awaitable_refresh():
         ui.button('Refresh', on_click=handle_refresh)
         await compute()
 
-    return root()
+    return root
 
 
 @doc.auto_execute

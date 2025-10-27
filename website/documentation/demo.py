@@ -1,4 +1,3 @@
-import inspect
 from typing import Callable, Optional, Union
 
 from nicegui import helpers, json, ui
@@ -25,10 +24,11 @@ def demo(f: Callable, *, lazy: bool = True, tab: Optional[Union[str, Callable]] 
 
                 async def handle_intersection():
                     window.remove(spinner)
-                    result = await f() if helpers.is_coroutine_function(f) else f()
-                    if inspect.iscoroutine(result):
-                        await result
-                    elif callable(result):
+                    if helpers.is_coroutine_function(f):
+                        result = await f()
+                    else:
+                        result = f()
+                    if callable(result):
                         if helpers.is_coroutine_function(result):
                             await result()
                         else:

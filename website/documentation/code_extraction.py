@@ -30,7 +30,7 @@ def get_full_code(f: Callable) -> str:
     code = ['' if line == '#' else line for line in code]
 
     if has_root_function:
-        code = [line for line in code if line.strip() not in ('return root', 'return root()')]
+        code = [line for line in code if line.strip() != 'return root']
 
     if not code[-1].startswith('ui.run('):
         code.append('ui.run(root)' if has_root_function else 'ui.run()')
