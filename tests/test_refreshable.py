@@ -235,3 +235,65 @@ def test_refreshable_with_return_value(screen: Screen):
 
     screen.open('/')
     screen.should_contain('42')
+
+
+def test_awaitable_refresh(screen: Screen):
+    events = []
+
+    @ui.refreshable
+    async def content():
+        events.append('refresh_started')
+        await asyncio.sleep(0.5)
+        events.append('refresh_finished')
+        ui.label('done')
+
+    @ui.page('/')
+    async def page():
+        await content()
+
+        async def handle_click():
+            await content.refresh()
+            events.append('after_await')
+
+        ui.button('click', on_click=handle_click)
+
+    screen.open('/')
+    assert events == ['refresh_started', 'refresh_finished']
+    events.clear()
+    screen.click('click')
+    screen.should_contain('done')
+    assert events == ['refresh_started', 'refresh_finished', 'after_await']
+
+
+def test_awaitable_refresh_with_exception(screen: Screen):
+    events = []
+
+    @ui.refreshable
+    async def content():
+        events.append('refresh_started')
+        await asyncio.sleep(0.1)
+        raise ValueError('test error')
+
+    @ui.page('/')
+    async def page():
+        try:
+            await content()
+        except ValueError:
+            events.append('initial_error_caught')
+
+        async def handle_click():
+            try:
+                await content.refresh()
+                events.append('should_not_reach_here')
+            except ValueError:
+                events.append('refresh_error_caught')
+                ui.label('error handled')
+
+        ui.button('click', on_click=handle_click)
+
+    screen.open('/')
+    assert events == ['refresh_started', 'initial_error_caught']
+    events.clear()
+    screen.click('click')
+    screen.should_contain('error handled')
+    assert events == ['refresh_started', 'refresh_error_caught']
