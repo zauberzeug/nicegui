@@ -98,19 +98,20 @@ def reactive_state():
 def awaitable_refresh():
     import asyncio
     from uuid import uuid4
+    from nicegui import events
 
     @ui.refreshable
     async def compute():
         await asyncio.sleep(1)
         ui.label(uuid4())
 
-    async def handle_refresh(e):
+    async def handle_click(e: events.ClickEventArguments):
         e.sender.disable()
         await compute.refresh()
         e.sender.enable()
 
     async def root():
-        ui.button('Refresh', on_click=handle_refresh)
+        ui.button('Refresh', on_click=handle_click)
         await compute()
 
     return root

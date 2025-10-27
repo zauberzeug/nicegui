@@ -241,59 +241,37 @@ def test_awaitable_refresh(screen: Screen):
     events = []
 
     @ui.refreshable
-    async def content():
-        events.append('refresh_started')
+    async def content(number: int):
+        events.append('refresh started')
         await asyncio.sleep(0.5)
-        events.append('refresh_finished')
-        ui.label('done')
+        ui.label(f'1 / {number} = {1 / number}')
+        events.append('refresh finished')
 
-    @ui.page('/')
-    async def page():
-        await content()
-
-        async def handle_click():
-            await content.refresh()
-            events.append('after_await')
-
-        ui.button('click', on_click=handle_click)
-
-    screen.open('/')
-    assert events == ['refresh_started', 'refresh_finished']
-    events.clear()
-    screen.click('click')
-    screen.should_contain('done')
-    assert events == ['refresh_started', 'refresh_finished', 'after_await']
-
-
-def test_awaitable_refresh_with_exception(screen: Screen):
-    events = []
-
-    @ui.refreshable
-    async def content():
-        events.append('refresh_started')
-        await asyncio.sleep(0.1)
-        raise ValueError('test error')
-
-    @ui.page('/')
-    async def page():
+    async def update(number: int):
+        events.append('update started')
         try:
-            await content()
-        except ValueError:
-            events.append('initial_error_caught')
+            await content.refresh(number)
+        except ZeroDivisionError:
+            events.append('refresh failed')
+            ui.label('error handled')
+        events.append('update finished')
 
-        async def handle_click():
-            try:
-                await content.refresh()
-                events.append('should_not_reach_here')
-            except ValueError:
-                events.append('refresh_error_caught')
-                ui.label('error handled')
-
-        ui.button('click', on_click=handle_click)
+    @ui.page('/')
+    async def page():
+        await content(1)
+        ui.button('Try 2', on_click=lambda: update(2))
+        ui.button('Try 0', on_click=lambda: update(0))
 
     screen.open('/')
-    assert events == ['refresh_started', 'initial_error_caught']
+    screen.should_contain('1 / 1 = 1.0')
+    assert events == ['refresh started', 'refresh finished']
+
     events.clear()
-    screen.click('click')
+    screen.click('Try 2')
+    screen.should_contain('1 / 2 = 0.5')
+    assert events == ['update started', 'refresh started', 'refresh finished', 'update finished']
+
+    events.clear()
+    screen.click('Try 0')
     screen.should_contain('error handled')
-    assert events == ['refresh_started', 'refresh_error_caught']
+    assert events == ['update started', 'refresh started', 'refresh failed', 'update finished']

@@ -104,16 +104,14 @@ class refreshable(Generic[_P, _T]):
         self.prune()
 
         def fire_and_forget() -> None:
-            coroutines = self._execute_refresh(args, kwargs)
-            for coroutine in coroutines:
+            if coroutines := self._execute_refresh(args, kwargs):
                 if core.loop and core.loop.is_running():
-                    background_tasks.create(coroutine, name=f'refresh {self.func.__name__}')
+                    background_tasks.create(asyncio.gather(*coroutines), name=f'refresh {self.func.__name__}')
                 else:
-                    core.app.on_startup(coroutine)
+                    core.app.on_startup(asyncio.gather(*coroutines))
 
         async def wait_for_completion() -> None:
-            coroutines = self._execute_refresh(args, kwargs)
-            if coroutines:
+            if coroutines := self._execute_refresh(args, kwargs):
                 await asyncio.gather(*coroutines)
 
         return AwaitableResponse(fire_and_forget, wait_for_completion)
