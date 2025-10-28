@@ -8,7 +8,19 @@ export default {
     const { Plotly } = await import("nicegui-plotly");
     this.Plotly = Plotly;
     this.update();
+
+    this.$nextTick(() => {
+      this.initResizeObserver();
+    });
   },
+
+  beforeUnmount() {
+    if (this.__ro) {
+      this.__ro.disconnect();
+      this.__ro = null;
+    }
+  },
+  
   methods: {
     update() {
       // wait for plotly to be loaded
@@ -33,6 +45,20 @@ export default {
       // store last options
       this.last_options = options;
     },
+    initResizeObserver() {
+      if (this.__ro) {
+        return;
+      }
+
+      const el = this.$el;
+
+      this.__ro = new ResizeObserver(() => {
+        this.Plotly.Plots.resize(el);
+      });
+
+      this.__ro.observe(el);
+    },
+    
     set_handlers() {
       // forward events
       for (const name of [
@@ -74,6 +100,7 @@ export default {
   data() {
     return {
       last_options: {},
+       __ro: null,
     };
   },
   props: {
