@@ -1,6 +1,7 @@
 from nicegui import ui
 
 from . import (
+    aspect_ratio_documentation,
     card_documentation,
     carousel_documentation,
     column_documentation,
@@ -89,6 +90,7 @@ def clear_containers_demo():
 doc.intro(teleport_documentation)
 doc.intro(expansion_documentation)
 doc.intro(scroll_area_documentation)
+doc.intro(aspect_ratio_documentation)
 doc.intro(separator_documentation)
 doc.intro(space_documentation)
 doc.intro(skeleton_documentation)

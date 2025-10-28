@@ -199,6 +199,7 @@ def map_of_nicegui():
                 - `is_deleted`: whether an element has been deleted
         - elements:
             - [`ui.aggrid`](/documentation/aggrid)
+            - [`ui.aspect_ratio`](/documentation/aspect_ratio)
             - [`ui.audio`](/documentation/audio)
             - [`ui.avatar`](/documentation/avatar)
             - [`ui.badge`](/documentation/badge)
