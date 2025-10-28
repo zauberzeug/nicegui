@@ -94,9 +94,17 @@ while True:
 print(f'Found {len(sponsors)} sponsors')
 print(f'Total contributors for NiceGUI: {len(contributors)}')
 
-Path('website/sponsors.json').write_text(json.dumps({
-    'top': [s['login'] for s in sponsors if s['tier_amount'] >= 100 and not s['tier_is_one_time']],
-    'total': len(sponsors),
+json_path = Path('website/sponsors.json')
+special_sponsors = json.loads(json_path.read_text(encoding='utf-8'))['special']
+top_sponsors = [
+    s['login']
+    for s in sponsors
+    if s['tier_amount'] >= 100 and not s['tier_is_one_time'] and s['login'] not in special_sponsors
+]
+json_path.write_text(json.dumps({
+    'special': special_sponsors,
+    'top': top_sponsors,
+    'normal': len(sponsors) - len(top_sponsors) - len(special_sponsors),
     'contributors': len(contributors),
 }, indent=2) + '\n', encoding='utf-8')
 
