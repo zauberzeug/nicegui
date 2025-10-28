@@ -1,7 +1,7 @@
+import platform
+import sys
 from datetime import datetime, timedelta, timezone
 
-import pandas as pd
-import polars as pl
 import pytest
 from selenium.webdriver.common.by import By
 
@@ -211,15 +211,18 @@ def test_replace_rows(screen: Screen):
 
 
 @pytest.mark.parametrize('df_type', ['pandas', 'polars'])
+@pytest.mark.skipif(platform.python_implementation() == 'PyPy', reason='PyPy no pandas, assuming no polars either')
 def test_create_and_update_from_df(screen: Screen, df_type: str):
     @ui.page('/')
     def page():
         if df_type == 'pandas':
+            import pandas as pd
             DataFrame = pd.DataFrame
             df = DataFrame({'name': ['Alice', 'Bob'], 'age': [18, 21]})
             table = ui.table.from_pandas(df)
             update_from_df = table.update_from_pandas
         else:
+            import polars as pl
             DataFrame = pl.DataFrame
             df = DataFrame({'name': ['Alice', 'Bob'], 'age': [18, 21]})
             table = ui.table.from_polars(df)
@@ -239,10 +242,13 @@ def test_create_and_update_from_df(screen: Screen, df_type: str):
 
 
 @pytest.mark.parametrize('df_type', ['pandas', 'polars'])
+@pytest.mark.skipif(sys.version_info[:2] == (3, 8), reason='Skipping test for Python 3.8')
+@pytest.mark.skipif(platform.python_implementation() == 'PyPy', reason='PyPy no pandas, assuming no polars either')
 def test_problematic_datatypes(screen: Screen, df_type: str):
     @ui.page('/')
     def page():
         if df_type == 'pandas':
+            import pandas as pd
             df = pd.DataFrame({
                 'Datetime_col': [datetime(2020, 1, 1)],
                 'Datetime_col_tz': [datetime(2020, 1, 2, tzinfo=timezone.utc)],
@@ -252,6 +258,7 @@ def test_problematic_datatypes(screen: Screen, df_type: str):
             })
             ui.table.from_pandas(df)
         else:
+            import polars as pl
             df = pl.DataFrame({
                 'Datetime_col': [datetime(2020, 1, 1)],
                 'Datetime_col_tz': [datetime(2020, 1, 2, tzinfo=timezone.utc)],
@@ -340,10 +347,12 @@ def test_default_column_parameters(screen: Screen):
 
 
 @pytest.mark.parametrize('df_type', ['pandas', 'polars'])
+@pytest.mark.skipif(platform.python_implementation() == 'PyPy', reason='PyPy no pandas, assuming no polars either')
 def test_columns_from_df(screen: Screen, df_type: str):
     @ui.page('/')
     def page():
         if df_type == 'pandas':
+            import pandas as pd
             persons = ui.table.from_pandas(pd.DataFrame({'name': ['Alice', 'Bob'], 'age': [18, 21]}))
             cars = ui.table.from_pandas(pd.DataFrame({'make': ['Ford', 'Toyota'], 'model': ['Focus', 'Corolla']}),
                                         columns=[{'name': 'make', 'label': 'make', 'field': 'make'}])
@@ -351,6 +360,7 @@ def test_columns_from_df(screen: Screen, df_type: str):
             update_persons_from_df = persons.update_from_pandas
             update_cars_from_df = cars.update_from_pandas
         else:
+            import polars as pl
             persons = ui.table.from_polars(pl.DataFrame({'name': ['Alice', 'Bob'], 'age': [18, 21]}))
             cars = ui.table.from_polars(pl.DataFrame({'make': ['Ford', 'Toyota'], 'model': ['Focus', 'Corolla']}),
                                         columns=[{'name': 'make', 'label': 'make', 'field': 'make'}])

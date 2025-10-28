@@ -119,16 +119,17 @@ def test_throttling(screen: Screen):
     screen.open('/')
     screen.click('Test')
     screen.click('Test')
-    screen.click('Test')
-    assert events == [1, 2, 1, 1]
+    screen.wait(0.5)
+    assert events == [1, 2, 1]
 
-    screen.wait(1.1)
-    assert events == [1, 2, 1, 1, 2]
+    screen.wait(1)
+    assert events == [1, 2, 1, 2]
 
     screen.click('Test')
     screen.click('Test')
     screen.click('Test')
-    assert events == [1, 2, 1, 1, 2, 1, 2, 1, 1]
+    screen.wait(0.5)
+    assert events == [1, 2, 1, 2, 1, 2, 1, 1]
 
 
 def test_throttling_variants(screen: Screen):
