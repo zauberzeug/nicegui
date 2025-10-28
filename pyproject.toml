@@ -197,3 +197,10 @@ disable = [
     "W0718", # Catching too general exception
     "W1203", # Use % formatting in logging functions
 ]
+
+[tool.codespell]
+# Ref: https://github.com/codespell-project/codespell#using-a-config-file
+skip = '.git*,*.svg,package-lock.json,*.lock,*.css,*.min.*,*.map'
+check-hidden = true
+# ignore-regex = ''
+# ignore-words-list = ''
