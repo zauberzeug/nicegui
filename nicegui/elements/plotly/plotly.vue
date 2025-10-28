@@ -22,7 +22,7 @@ export default {
       if (options.config === undefined) options.config = { responsive: true };
       if (options.config.responsive === undefined) options.config.responsive = true;
 
-      // re-use plotly instance if config is the same
+      // reuse plotly instance if config is the same
       if (JSON.stringify(options.config) == JSON.stringify(this.last_options.config)) {
         this.Plotly.react(this.$el, this.options, options.config);
       } else {
