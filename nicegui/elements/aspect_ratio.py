@@ -3,7 +3,7 @@ from ..element import Element
 
 class AspectRatio(Element):
 
-    def __init__(self, *, ratio: float) -> None:
+    def __init__(self, ratio: float) -> None:
         """Aspect Ratio
 
         This element is based on Quasar's `QResponsive <https://quasar.dev/vue-components/responsive>`_ component.
