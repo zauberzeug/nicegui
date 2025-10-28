@@ -51,7 +51,7 @@ jobs:
         run: poetry run pytest
       - name: Upload failed screenshots
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: screenshots-${{ matrix.python }}
           path: screenshots/*.failed.png
