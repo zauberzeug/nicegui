@@ -30,3 +30,10 @@ repos:
       - id: end-of-file-fixer
         exclude: *exclusions
       - id: double-quote-string-fixer
+  - repo: https://github.com/codespell-project/codespell
+    # Configuration for codespell is in .pre-commit-config.yaml
+    rev: v2.4.1
+    hooks:
+      - id: codespell
+        additional_dependencies:
+          - tomli; python_version<'3.11'
