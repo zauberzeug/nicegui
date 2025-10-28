@@ -20,6 +20,7 @@ def test_text_vs_html(screen: Screen):
         with pytest.raises(ValueError):
             ui.chat_message('80&euro;', text_html=True)
 
+    screen.allowed_js_errors.append('/x - Failed to load resource')
     screen.open('/')
     screen.should_contain('10&euro;')
     screen.should_contain('20€')

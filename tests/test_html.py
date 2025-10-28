@@ -32,6 +32,7 @@ def test_sanitize(screen: Screen):
         ui.html('<img src=x onerror=Quasar.Notify.create({message:"B"})>', sanitize=str)
         ui.html('<img src=x onerror=Quasar.Notify.create({message:"C"})>', sanitize=lambda x: x.replace('C', 'C!'))
 
+    screen.allowed_js_errors.append('/x - Failed to load resource')
     screen.open('/')
     screen.should_contain('A')
     screen.should_contain('B')
