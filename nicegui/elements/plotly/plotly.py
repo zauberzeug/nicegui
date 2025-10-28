@@ -33,6 +33,8 @@ class Plotly(Element, component='plotly.vue', esm={'nicegui-plotly': 'dist'}):
         self.update()
         self._classes.append('js-plotly-plot')
         self._update_method = 'update'
+        ui.timer(0, self._enable_responsiveness, once=True)
+
 
     def update_figure(self, figure: dict | go.Figure):
         """Overrides figure instance of this Plotly chart and updates chart on client side."""
@@ -55,3 +57,20 @@ class Plotly(Element, component='plotly.vue', esm={'nicegui-plotly': 'dist'}):
             return self.figure
 
         raise ValueError(f'Plotly figure is of unknown type "{self.figure.__class__.__name__}".')
+
+    async def _enable_responsiveness(self):
+        await ui.run_javascript(
+            f"""
+                    (function () {{
+                        const plotRef = getElement({self.id});
+                        const plotEl = plotRef.$el ?? plotRef;
+
+                        const ro = new ResizeObserver(() => {{
+                        Plotly.Plots.resize(plotEl);
+                        }});
+                        
+                        ro.observe(plotEl);
+                    }})();
+                """
+        )
+
