@@ -1,5 +1,5 @@
 import gc
-import importlib
+import sys
 from collections.abc import Generator
 from copy import copy
 from pathlib import Path
@@ -47,9 +47,7 @@ def nicegui_reset_globals() -> Generator[None, None, None]:
     app.middleware_stack = None
     app.user_middleware.clear()
     app.urls.clear()
-    core.air = None
-    importlib.reload(core)
-    importlib.reload(run)
+    core.reset()
 
     # capture initial defaults
     element_types: list[type[ui.element]] = [ui.element, *find_all_subclasses(ui.element)]
@@ -70,12 +68,19 @@ def nicegui_reset_globals() -> Generator[None, None, None]:
 
     app.reset()
     event.reset()
+    run.reset()
 
     # restore initial defaults
     for t in element_types:
         t._default_classes = default_classes[t]  # pylint: disable=protected-access
         t._default_style = default_styles[t]  # pylint: disable=protected-access
         t._default_props = default_props[t]  # pylint: disable=protected-access
+
+    # NOTE: remove modules that registered pages to re-imported them when the main file is re-executed so that @ui.page decorators run again
+    for func in Client.page_routes:
+        # NOTE: skip pytest modules from the tests/ directory (they shouldn't be deleted as it breaks pickling and class identity)
+        if not func.__module__.startswith('tests.'):
+            sys.modules.pop(func.__module__, None)
 
 
 def find_all_subclasses(cls: type) -> list[type]:
