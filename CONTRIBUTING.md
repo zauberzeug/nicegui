@@ -246,8 +246,9 @@ Understanding these patterns will help you write code that fits naturally into t
 ### Memory Management
 
 - **Weakref Pattern**: Use `self._element = weakref.ref(element)` to avoid circular references
-  (which require more costly garbage collection); always check if `element()` returns `None` before using
-- **WeakValueDictionary**: Use for caches that shouldn't prevent garbage collection
+  (which require more costly garbage collection).
+  When dereferencing, always check for `None`: `element = self._element(); if element is not None: element.update()`
+- **WeakValueDictionary**: Use for caches that shouldn't prevent garbage collection by means of the reference counting mechanism of CPython
 
 ### Binding System
 
