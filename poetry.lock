@@ -2843,7 +2843,7 @@ description = "Fast, correct Python JSON library supporting dataclasses, datetim
 optional = false
 python-versions = ">=3.9"
 groups = ["main"]
-markers = "platform_machine != \"i386\" and platform_machine != \"i686\" and platform_python_implementation != \"PyPy\""
+markers = "platform_python_implementation != \"PyPy\" and platform_machine != \"i386\" and platform_machine != \"i686\""
 files = [
     {file = "orjson-3.11.4-cp310-cp310-macosx_10_15_x86_64.macosx_11_0_arm64.macosx_10_15_universal2.whl", hash = "sha256:e3aa2118a3ece0d25489cbe48498de8a5d580e42e8d9979f65bf47900a15aba1"},
     {file = "orjson-3.11.4-cp310-cp310-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:a69ab657a4e6733133a3dca82768f2f8b884043714e8d2b9ba9f52b6efef5c44"},
@@ -5758,4 +5758,4 @@ sass = ["libsass"]
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.9"
-content-hash = "dead563f5cbc26cc689574ab591ccda261404109b3c27be78297886c910c97c5"
+content-hash = "f5ee65f8d7ce3fe4afecba03b65630dad22edb24c28211269eb3feb33b415bca"
