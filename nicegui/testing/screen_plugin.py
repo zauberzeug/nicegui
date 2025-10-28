@@ -98,7 +98,7 @@ def screen(nicegui_reset_globals,  # noqa: F811, pylint: disable=unused-argument
             screen_.shot(request.node.name, failed=test_failed or bool(logs))
         if logs:
             pytest.fail('There were unexpected ERROR logs.', pytrace=False)
-        if screen_.is_open:
+        if screen_.is_open and Screen.CATCH_JS_ERRORS:
             for js_error in screen_.selenium.get_log('browser'):
                 if str(js_error.get('level', '')).upper() in ('SEVERE', 'ERROR') and \
                         not any(allowed_error in js_error['message'] for allowed_error in screen_.allowed_js_errors):
