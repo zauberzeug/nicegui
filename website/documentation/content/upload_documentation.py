@@ -8,6 +8,26 @@ def main_demo() -> None:
     ui.upload(on_upload=lambda e: ui.notify(f'Uploaded {e.file.name}')).classes('max-w-full')
 
 
+doc.text('Upload event arguments', '''
+    The `UploadEventArguments` class is used to pass the uploaded file to the handler.
+    It contains a single field `file` of type `ui.upload.FileUpload`, which contains properties
+
+    - `name: str` and
+    - `content_type: str`
+
+    as well as methods for accessing the content:
+
+    - `read()` - read the file contents as bytes,
+    - `text()` - read the file contents as text,
+    - `json()` - read the file contents as JSON dictionary,
+    - `iterate()` - iterate over the file contents as bytes,
+    - `save()` - save the file contents to a path,
+    - `size()` - get the file size in bytes.
+
+    *Added in NiceGUI 3.0.0*
+''')
+
+
 @doc.demo('Upload restrictions', '''
     In this demo, the upload is restricted to a maximum file size of 1 MB.
     When a file is rejected, a notification is shown.
@@ -53,4 +73,5 @@ def uploading_large_files() -> None:
     ui.upload(on_upload=lambda e: ui.notify(f'Uploaded {e.file.name}')).classes('max-w-full')
 
 
-doc.reference(ui.upload)
+doc.reference(ui.upload, title='Reference for ui.upload')
+doc.reference(ui.upload.FileUpload, title='Reference for ui.upload.FileUpload')

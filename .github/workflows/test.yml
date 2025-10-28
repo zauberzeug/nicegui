@@ -44,12 +44,7 @@ jobs:
       - name: install dependencies
         run: |
           set -x
-          poetry install --all-extras
-          # install packages to run the examples
-          poetry run pip install httpx isort replicate openai simpy tortoise-orm
-          poetry run pip install -r tests/requirements.txt
-          # try fix issue with importlib_resources
-          poetry run pip install importlib-resources
+          poetry install --all-extras --with dev
       - name: ensure pydantic v1 for pypy
         if: ${{ startsWith(matrix.python, 'pypy') }}
         run: poetry run pip install 'pydantic<2.0.0'
@@ -59,6 +54,20 @@ jobs:
         uses: nanasess/setup-chromedriver@v2.3.0
       - name: pytest
         run: poetry run pytest
+      - name: Upload failed screenshots
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: screenshots-${{ matrix.python }}
+          path: screenshots/*.failed.png
+          retention-days: 14
+      - name: test startup
+        run: poetry run ./test_startup.sh
+      - name: restore dependencies for effective caching
+        if: always()
+        run: |
+          set -x
+          poetry install --all-extras --with dev
 
   slack:
     needs:

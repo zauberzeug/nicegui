@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "nicegui"
-version = "3.0.3.dev0"
+version = "3.0.0"
 description = "Create web-based user interfaces with Python. The nice way."
 authors = ["Zauberzeug GmbH <info@zauberzeug.com>"]
 license = "MIT"
@@ -17,10 +17,6 @@ starlette = ">=0.45.3"
 uvicorn = {extras = ["standard"], version = ">=0.22.0"}
 fastapi = ">=0.109.1"
 python-socketio = {extras = ["asyncio-client"], version = ">=5.14.0"} # https://github.com/zauberzeug/nicegui/security/dependabot/52
-vbuild = [
-    {version = ">=0.8.2", python = "<3.14"},
-    {git = "https://github.com/manatlan/vbuild.git", rev = "31157af79eeb8ef86e37f6f4965fcc8a1391d6a1", python = ">=3.14" } # Until released
-]
 jinja2 = "^3.1.6" # https://github.com/zauberzeug/nicegui/security/dependabot/44
 python-multipart = ">=0.0.18"
 orjson = {version = ">=3.9.15", markers = "platform_machine != 'i386' and platform_machine != 'i686' and platform_python_implementation != 'PyPy'"} # https://github.com/zauberzeug/nicegui/security/dependabot/29, orjson does not support 32bit
@@ -80,16 +76,22 @@ cssbeautifier = "^1.15.4"
 rcssmin = "^1.2.1"
 tinycss2 = "^1.4.0"
 html-sanitizer = "^2.6.0"
+poetry-dynamic-versioning = "^1.8.0"
 
 [tool.poetry.scripts]
 nicegui-pack = "nicegui.scripts.pack:main"
 
 [build-system]
 requires = [
-    "setuptools>=30.3.0",
-    "poetry-core>=1.0.0"
+    "poetry-core>=1.0.0",
+    "poetry-dynamic-versioning>=1.0.0,<2.0.0",
 ]
-build-backend = "poetry.core.masonry.api"
+build-backend = "poetry_dynamic_versioning.backend"
+
+[tool.poetry-dynamic-versioning]
+enable = true
+vcs = "git"
+style = "pep440"
 
 [tool.pytest.ini_options]
 addopts = "--driver Chrome"
@@ -99,9 +101,6 @@ main_file = ""
 testpaths = ["tests"]
 filterwarnings = [
   'error',
-  'ignore::DeprecationWarning:^vbuild(\.|$)',
-  'ignore::DeprecationWarning:^websockets\.legacy(\.|$)',
-  'ignore::DeprecationWarning:^uvicorn\.protocols\.websockets(\.|$)',
   "ignore:'asyncio\\.iscoroutinefunction' is deprecated and slated for removal:DeprecationWarning",
 ]
 
@@ -120,7 +119,6 @@ module = [
     "pyecharts.*",
     "sass",
     "socketio.*",
-    "vbuild",
     "webview.*", # can be removed with next pywebview release
 ]
 ignore_missing_imports = true

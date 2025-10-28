@@ -191,6 +191,25 @@ def scene_views():
             scene_view2.move_camera(x=0, y=4, z=3)
 
 
+@doc.demo('Frame Rate', '''
+    You can configure the target frames per second (FPS) of the scene using the `fps` argument.
+    The default value is 20.
+    This demo shows how to set the frame rate to 40 FPS for the main scene and 5 FPS for the static view.
+    The FPS is generally lower than the target frame rate, because the browser also takes some time to render the scene.
+    This also applies to `ui.scene_view`.
+
+    *Added in version 3.2.0*
+''')
+def fps_configuration() -> None:
+    ui.label('Higher frame rate for the movable view')
+    with ui.scene(fps=40).classes('w-full h-32') as scene:
+        scene.sphere()
+
+    ui.label('Lower frame rate for the static view')
+    with ui.scene_view(scene, fps=5).classes('w-full h-32') as scene_view:
+        scene_view.move_camera(x=1, y=-3, z=5)
+
+
 @doc.demo('Camera Parameters', '''
     You can use the `camera` argument to `ui.scene` to use a custom camera.
     This allows you to set the field of view of a perspective camera or the size of an orthographic camera.

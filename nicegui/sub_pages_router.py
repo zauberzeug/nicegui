@@ -43,11 +43,22 @@ class SubPagesRouter:
     def on_path_changed(self, handler: Callable[[str], None]) -> None:
         """Register a callback to be invoked when the path changes.
 
-        **This is an experimental feature, and the API is subject to change.**
-
         :param handler: callback function that receives the new path as its argument
         """
         self._path_changed_handlers.append(handler)
+
+    async def refresh(self) -> None:
+        """Refresh the currently shown sub pages.
+
+        This will clear and rebuild the current sub page as if navigating to it again.
+        Useful when you want to update the page content based on changes in data or state.
+
+        *Added in version 3.1.0*
+        """
+        for el in context.client.layout.descendants():
+            if isinstance(el, SubPages):
+                el._reset_match()  # pylint: disable=protected-access
+        await self._handle_open(self.current_path)
 
     async def _handle_open(self, path: str) -> bool:
         self.current_path = path

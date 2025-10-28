@@ -241,6 +241,7 @@ If you plan to implement a new element you can follow these suggestions:
 8. Add a documentation file in `website/documentation/content`.
    By calling the `@doc.demo(...)` function with an element as a parameter the docstring is used as a description.
    The docstrings are written in restructured-text.
+   Make sure to use the correct syntax (like double backticks for code).
    Refer to the new documentation page using `@doc.intro(...)` in any documentation section `website/documentation/content/section_*.py`.
 9. Create a pull-request (see below).
 
