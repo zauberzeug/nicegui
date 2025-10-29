@@ -8,8 +8,8 @@ import pytest
 from fastapi.responses import PlainTextResponse
 
 from nicegui import ElementFilter, app, events, ui
-from nicegui.testing import User
 from nicegui.elements.select import Select
+from nicegui.testing import User
 
 # pylint: disable=missing-function-docstring
 
@@ -472,7 +472,7 @@ async def test_select_multiple_from_options(user: User) -> None:
             ui.option('label A', 'value A'), ui.option('label B', 'value B'), ui.option('label C', 'value C')
         ]
         ui.select(
-            options=options, 
+            options=options,
             on_change=lambda e: ui.notify(f'Notify: {list(o.value for o in e.value)}'),
             value=()
         )
