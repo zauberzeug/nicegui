@@ -6,6 +6,7 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { STLLoader } from "three/addons/loaders/STLLoader.js";
 import * as TWEEN from "@tweenjs/tween.js";
+import Stats from "three/examples/jsm/libs/stats.module.js";
 
 export default {
   CSS2DObject,
@@ -18,4 +19,5 @@ export default {
   STLLoader,
   THREE,
   TWEEN,
+  Stats,
 };

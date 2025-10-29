@@ -22,3 +22,13 @@ script_client: Client | None = None
 def is_script_mode_preflight() -> bool:
     """Return whether this is the preflight run of the script mode."""
     return script_mode and not app.is_started  # pylint: disable=undefined-variable # noqa: F821
+
+
+def reset() -> None:
+    """Reset core variables. (Useful for testing.)"""
+    global loop, air, root, script_mode, script_client  # pylint: disable=global-statement # noqa: PLW0603
+    loop = None
+    air = None
+    root = None
+    script_mode = False
+    script_client = None

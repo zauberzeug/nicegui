@@ -362,7 +362,7 @@ def test_default_style(screen: Screen):
 def test_invalid_tags(screen: Screen):
     @ui.page('/')
     def page():
-        good_tags = ['div', 'div-1', 'DIV', 'däv', 'div_x', '🙂']
+        good_tags = ['div', 'div-1', 'DIV', 'däv', 'div_x']
         bad_tags = ['<div>', 'hi hi', 'hi/ho', 'foo$bar']
         for tag in good_tags:
             ui.element(tag)

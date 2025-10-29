@@ -24,7 +24,10 @@ def demo(f: Callable, *, lazy: bool = True, tab: Optional[Union[str, Callable]] 
 
                 async def handle_intersection():
                     window.remove(spinner)
-                    result = f()
+                    if helpers.is_coroutine_function(f):
+                        result = await f()
+                    else:
+                        result = f()
                     if callable(result):
                         if helpers.is_coroutine_function(result):
                             await result()
