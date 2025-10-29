@@ -1,12 +1,17 @@
 from nicegui import ui
+from nicegui.elements.radio import Radio
 
 from . import doc
 
 
-@doc.demo(ui.radio)
+@doc.demo(Radio)
 def main_demo() -> None:
     radio1 = ui.radio([1, 2, 3], value=1).props('inline')
-    radio2 = ui.radio({1: 'A', 2: 'B', 3: 'C'}).props('inline').bind_value(radio1, 'value')
+    radio2 = (
+        ui.radio([ui.option('A', 1), ui.option('B', 2), ui.option('C', 3)])
+        .props('inline')
+        .bind_value(radio1, 'value')
+    )
 
 
 @doc.demo('Inject arbitrary content', '''
@@ -24,4 +29,4 @@ def arbitrary_content():
     ui.label().bind_text_from(radio, 'value')
 
 
-doc.reference(ui.radio)
+doc.reference(Radio)
