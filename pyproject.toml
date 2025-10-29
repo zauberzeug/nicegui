@@ -197,3 +197,11 @@ disable = [
     "W0718", # Catching too general exception
     "W1203", # Use % formatting in logging functions
 ]
+
+[tool.codespell]
+# Ref: https://github.com/codespell-project/codespell#using-a-config-file
+skip = '.git*,*.svg,package-lock.json,*.lock,*.css,*.min.*,*.map,dist,lang,*.prod.js,fuse.js*,quasar.*.js,vue.*.js,es-module-shims.js'
+check-hidden = true
+# ignore all inCased constructs
+ignore-regex = '\b[a-z0-9]+[A-Z][a-zA-Z0-9]*\b'
+ignore-words-list = 'simpy,medias'
