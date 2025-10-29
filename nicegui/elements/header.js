@@ -8,9 +8,7 @@ export default {
     }
   },
   unmounted() {
-    if (this.resizeObserver) {
-      this.resizeObserver.disconnect();
-    }
+    this.resizeObserver?.disconnect();
   },
   props: {
     add_scroll_padding: Boolean,
