@@ -14,6 +14,8 @@ from inspect import Parameter, signature
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
+from typing_extensions import ParamSpec, TypeVar
+
 from .context import context
 from .logging import log
 
@@ -26,6 +28,10 @@ if sys.version_info < (3, 13):
     from asyncio import iscoroutinefunction
 else:
     from inspect import iscoroutinefunction
+
+
+P = ParamSpec('P')
+R = TypeVar('R')
 
 
 def warn_once(message: str, *, stack_info: bool = False) -> None:
@@ -146,3 +152,12 @@ def require_top_level_layout(element: Element) -> None:
             f'Found top level layout element "{element.__class__.__name__}" inside element "{parent.__class__.__name__}". '
             'Top level layout elements can not be nested but must be direct children of the page content.',
         )
+
+def add_docstring_from(docstring_func: Callable[..., Any]) -> Callable[[Callable[P, R]], Callable[P, R]]:
+    """
+    Adds the docstring from `docstring_func` to the decorated function.
+    """
+    def wrapper(func: Callable[P, R]) -> Callable[P, R]:
+        func.__doc__ = docstring_func.__doc__
+        return func
+    return wrapper

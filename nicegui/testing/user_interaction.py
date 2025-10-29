@@ -8,6 +8,8 @@ from nicegui import background_tasks, events, ui
 from nicegui.element import Element
 from nicegui.elements.mixins.disableable_element import DisableableElement
 from nicegui.elements.mixins.value_element import ValueElement
+from nicegui.elements.radio import Radio
+from nicegui.elements.select import Select
 
 if TYPE_CHECKING:
     from .user import User
@@ -50,7 +52,7 @@ class UserInteraction(Generic[T]):
                 for listener in element._event_listeners.values():  # pylint: disable=protected-access
                     if listener.type != event:
                         continue
-                    event_arguments = events.GenericEventArguments(sender=element, client=self.user.client, args=args)
+                    event_arguments = events.GenericEventArguments[dict](sender=element, client=self.user.client, args=args)
                     events.handle_event(listener.handler, event_arguments)
         return self
 
@@ -80,30 +82,24 @@ class UserInteraction(Generic[T]):
                     background_tasks.create(self.user.open(href), name=f'open {href}')
                     return self
 
-                if isinstance(element, ui.select):
+                if isinstance(element, Select):
                     if element.is_showing_popup:
-                        if isinstance(element.options, dict):
-                            target_value = next((k for k, v in element.options.items() if v == self.target), '')
-                        else:
-                            target_value = self.target
+                        target_option = next((o for o in element.options if o.label == self.target), ui.to_option(''))
                         if element.multiple:
-                            if target_value in element.value:
-                                element.value = [v for v in element.value if v != target_value]
-                            elif target_value in element._values:  # pylint: disable=protected-access
-                                element.value = [*element.value, target_value]
+                            if target_option in element.value:
+                                element.value = tuple(v for v in element.value if v != target_option)
+                            elif target_option.value in element._values:  # pylint: disable=protected-access
+                                element.value = tuple([*element.value, target_option])
                             else:
                                 element._is_showing_popup = False  # pylint: disable=protected-access
                         else:
-                            element.value = target_value
+                            element.value = target_option
                             element._is_showing_popup = False  # pylint: disable=protected-access
                     else:
                         element._is_showing_popup = True  # pylint: disable=protected-access
                     return self
-                elif isinstance(element, ui.radio):
-                    if isinstance(element.options, dict):
-                        target_value = next((k for k, v in element.options.items() if v == self.target), '')
-                    else:
-                        target_value = self.target
+                elif isinstance(element, Radio):
+                    target_value = next((o.value for o in element.options if o.value == self.target), '')
                     element.value = target_value
                     return self
 
