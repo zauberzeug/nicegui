@@ -16,9 +16,6 @@ export default {
       props: this.properties,
     });
   },
-  beforeDestroy() {
-    this.destroyEditor();
-  },
   beforeUnmount() {
     this.destroyEditor();
   },
