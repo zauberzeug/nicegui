@@ -24,19 +24,32 @@ from .user import User
 
 
 @pytest.fixture
-async def user(nicegui_reset_globals,  # noqa: F811, pylint: disable=unused-argument
-               caplog: pytest.LogCaptureFixture,
-               request: pytest.FixtureRequest,
-               ) -> AsyncGenerator[User, None]:
-    """Create a new user fixture."""
-    os.environ['NICEGUI_USER_SIMULATION'] = 'true'
-    try:
+def user_startup_func(request: pytest.FixtureRequest) -> Callable[[], None]:
+    """Return a startup function that initializes the NiceGUI app for testing.
+
+    Executes configured main file, or prepares a basic setup if '' is provided.
+    Can be replaced to provide fully customized startup behavior (see https://nicegui.io/documentation/user#using_pytest_fixtures_to_startup_your_app).
+    """
+    def startup():
         main_path = get_path_to_main_file(request)
         if main_path is None:
             prepare_simulation()
             ui.run(storage_secret='simulated secret')
         else:
             runpy.run_path(str(main_path), run_name='__main__')
+
+    return startup
+
+
+@pytest.fixture
+async def user(nicegui_reset_globals,  # noqa: F811, pylint: disable=unused-argument
+               caplog: pytest.LogCaptureFixture,
+               user_startup_func: Callable[[], None],
+               ) -> AsyncGenerator[User, None]:
+    """Simulate a user interacting with the NiceGUI app without starting a real browser."""
+    os.environ['NICEGUI_USER_SIMULATION'] = 'true'
+    try:
+        user_startup_func()
 
         async with core.app.router.lifespan_context(core.app):
             async with httpx.AsyncClient(transport=httpx.ASGITransport(core.app), base_url='http://test') as client:
