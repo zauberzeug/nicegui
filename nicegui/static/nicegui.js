@@ -342,7 +342,7 @@ function createApp(elements, options) {
       window.did_handshake = false;
       const messageHandlers = {
         connect: () => {
-          function tapIntoFunction(target, functionName, popupId) {
+          function tapIntoFunction(target, functionName) {
             try {
               const originalFunction = target[functionName];
               target[functionName] = function (...args) {
@@ -353,7 +353,7 @@ function createApp(elements, options) {
                   if (window.tooLongMessageTimer) {
                     clearTimeout(window.tooLongMessageTimer);
                   }
-                  const popup = document.getElementById(popupId);
+                  const popup = document.getElementById("popup_toolongmessage");
                   popup.ariaHidden = false;
                   window.tooLongMessageTimer = setTimeout(() => {
                     popup.ariaHidden = true;
@@ -366,8 +366,8 @@ function createApp(elements, options) {
             }
           }
 
-          tapIntoFunction(window.socket.io.engine.transport.ws, "send", "popup_toolongmessage");
-          tapIntoFunction(window.socket.io.engine.transport, "doWrite", "popup_toolongmessage");
+          tapIntoFunction(window.socket.io.engine.transport.ws, "send");
+          tapIntoFunction(window.socket.io.engine.transport, "doWrite");
           const args = {
             client_id: window.clientId,
             document_id: window.documentId,
