@@ -15,12 +15,11 @@ export default {
   },
 
   beforeUnmount() {
-    if (this.__ro) {
-      this.__ro.disconnect();
-      this.__ro = null;
+    if (this.resizeObserver) {
+      this.resizeObserver.disconnect();
+      this.resizeObserver = null;
     }
   },
-  
   methods: {
     update() {
       // wait for plotly to be loaded
@@ -46,17 +45,13 @@ export default {
       this.last_options = options;
     },
     initResizeObserver() {
-      if (this.__ro) {
+      if (this.resizeObserver) {
         return;
       }
-
-      const el = this.$el;
-
-      this.__ro = new ResizeObserver(() => {
-        this.Plotly.Plots.resize(el);
+      this.resizeObserver = new ResizeObserver(() => {
+        this.Plotly.Plots.resize(this.$el);
       });
-
-      this.__ro.observe(el);
+      this.resizeObserver.observe(this.$el);
     },
     
     set_handlers() {
@@ -100,7 +95,6 @@ export default {
   data() {
     return {
       last_options: {},
-       __ro: null,
     };
   },
   props: {
