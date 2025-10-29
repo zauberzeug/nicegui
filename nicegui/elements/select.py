@@ -13,6 +13,20 @@ from .mixins.validation_element import ValidationDict, ValidationElement, Valida
 V = TypeVar('V', bound='Union[tuple[Option[Any, Any], ...], Optional[Option[Any, Any]]]')
 
 
+def _convert_value(value: Union[tuple[T, ...], Optional[T], tuple[P, ...], Optional[P], Optional[Option[P, P]], tuple[Option[P, P], ...]]):
+    if isinstance(value, tuple) and all(isinstance(v, (str, int, float, bool)) for v in value):
+        return tuple(to_option(v) for v in value)
+    if isinstance(value, (str, int, float, bool)):
+        return to_option(value)
+    return value
+
+
+def _convert_options( options: Union[Iterable[T], Iterable[P]]):
+    if all(isinstance(v, (str, int, float, bool)) for v in options):
+        return [to_option(v) for v in options]
+    return options
+
+
 class Select(
     LabelElement,
     ValidationElement[V],
@@ -73,14 +87,7 @@ class Select(
         self.new_value_to_option: Optional[Callable[[str], Optional[T]]] = new_value_to_option
         if self.new_value_mode and self.new_value_to_option is None:
             raise ValueError(f"new_value_to_option not passed. You must provide a function for handling new values when new value mode is '{self.new_value_mode}'.")
-        if isinstance(value, tuple) and all(isinstance(v, (str, int, float, bool)) for v in value):
-            value = tuple(to_option(v) for v in value)
-        if isinstance(value, (str, int, float, bool)):
-            value = to_option(value)
-        if all(isinstance(v, (str, int, float, bool)) for v in options):
-            super().__init__(label=label or None, options=[to_option(v) for v in options], value=value, on_change=on_change, validation=validation)
-        else:
-            super().__init__(label=label or None, options=options, value=value, on_change=on_change, validation=validation)
+        super().__init__(label=label or None, options=_convert_options(options), value=_convert_value(value), on_change=on_change, validation=validation)
         if new_value_mode is not None:
             self._props['new-value-mode'] = new_value_mode
             with_input = True
@@ -146,6 +153,7 @@ class Select(
         self._update_values_and_labels()
         return new_option
 
+
 @overload
 def select(
     options: Iterable[T], *, label: str = ..., value: tuple[T, ...],
@@ -158,7 +166,6 @@ def select(
     ) -> Select[tuple[T, ...], T]:
     ...
 
-
 @overload
 def select(
     options: Iterable[T], *, label: str = ..., value: Literal[None] = ...,
@@ -170,7 +177,6 @@ def select(
     validation: Optional[Union[ValidationFunction[tuple[T, ...]], ValidationDict[tuple[T, ...]]]] = ...,
     ) -> Select[Optional[T], T]:
     ...
-
 
 @overload
 def select(

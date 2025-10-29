@@ -10,7 +10,7 @@ from .mixins.value_element import ValueElement
 
 JsonPrimitive = Union[str, int, float, bool, None]
 JsonValue = Union[
-    JsonPrimitive, 
+    JsonPrimitive,
     list[str], list[int], list[float], list[bool], 'list[JsonValue]',
     tuple[str, ...], tuple[int, ...], tuple[float, ...], tuple[bool, ...], 'tuple[JsonValue, ...]',
     dict[str, str], dict[str, int], dict[str, float], dict[str, bool], 'dict[str, JsonValue]',

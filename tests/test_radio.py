@@ -1,6 +1,6 @@
 from nicegui import ui
-from nicegui.testing import Screen, User
 from nicegui.elements.radio import Radio
+from nicegui.testing import Screen, User
 
 
 def test_radio_click(screen: Screen):

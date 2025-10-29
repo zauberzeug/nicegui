@@ -8,8 +8,8 @@ from nicegui import background_tasks, events, ui
 from nicegui.element import Element
 from nicegui.elements.mixins.disableable_element import DisableableElement
 from nicegui.elements.mixins.value_element import ValueElement
-from nicegui.elements.select import Select
 from nicegui.elements.radio import Radio
+from nicegui.elements.select import Select
 
 if TYPE_CHECKING:
     from .user import User

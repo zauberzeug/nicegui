@@ -38,7 +38,7 @@ def test_ui_select_with_list_of_tuples(screen: Screen):
         selection: Optional[ui.option[str, tuple[int, int]]] = None
     data = Model()
     options: list[ui.option[str, tuple[int, int]]] = [
-        ui.option("1,1", (1, 1)), ui.option("2,2", (2, 2)), ui.option("3,3", (3, 3))
+        ui.option('1,1', (1, 1)), ui.option('2,2', (2, 2)), ui.option('3,3', (3, 3))
     ]
     data.selection = options[0]
 
@@ -53,14 +53,14 @@ def test_ui_select_with_list_of_tuples(screen: Screen):
     screen.wait(0.3)
     screen.should_contain('2,2')
     screen.should_not_contain('1,1')
-    assert data.selection == ui.option("2,2", (2, 2))
+    assert data.selection == ui.option('2,2', (2, 2))
 
 
 def test_ui_select_with_list_of_lists(screen: Screen):
     class Model:
         selection: Optional[ui.option[str, list[int]]] = None
     data = Model()
-    options = [ui.option("1,1", [1, 1]), ui.option("2,2", [2, 2]), ui.option("3,3", [3, 3])]
+    options = [ui.option('1,1', [1, 1]), ui.option('2,2', [2, 2]), ui.option('3,3', [3, 3])]
     data.selection = options[0]
 
     @ui.page('/')
@@ -74,7 +74,7 @@ def test_ui_select_with_list_of_lists(screen: Screen):
     screen.wait(0.3)
     screen.should_contain('2,2')
     screen.should_not_contain('1,1')
-    assert data.selection == ui.option("2,2", [2, 2])
+    assert data.selection == ui.option('2,2', [2, 2])
 
 
 def test_binding_to_input(screen: Screen):

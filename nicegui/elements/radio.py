@@ -1,8 +1,8 @@
 from collections.abc import Iterable
-from typing import Any, Optional, Generic, Union, overload
+from typing import Any, Generic, Optional, Union, overload
 
 from ..events import GenericEventArguments, Handler, ValueChangeEventArguments
-from .choice_element import ChoiceElement, Option, L, P, to_option
+from .choice_element import ChoiceElement, L, Option, P, to_option
 from .mixins.disableable_element import DisableableElement
 
 
@@ -31,7 +31,7 @@ class Radio(ChoiceElement[Optional[P], Option[L, P]], DisableableElement, Generi
 
     def _value_to_model_value(self, value: Optional[P]) -> Optional[P]:
         return value if value in self._values else None
-    
+
 
 @overload
 def radio(

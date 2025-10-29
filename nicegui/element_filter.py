@@ -14,7 +14,6 @@ from .elements.mixins.content_element import ContentElement
 from .elements.mixins.source_element import SourceElement
 from .elements.mixins.text_element import TextElement
 from .elements.notification import Notification
-from .elements.select import Select
 from .elements.tree import Tree
 
 T = TypeVar('T', bound=Element)
