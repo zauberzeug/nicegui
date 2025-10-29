@@ -22,6 +22,7 @@ export default {
   },
   methods: {
     renderMermaid() {
+      if (!this.use_mermaid || !this.mermaid) return;
       // render new diagrams
       const usedKeys = new Set();
       this.$el.querySelectorAll(".mermaid-pre").forEach(async (pre, i) => {
