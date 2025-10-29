@@ -8,16 +8,18 @@ from typing_extensions import TypedDict, TypeVar
 from ..events import Handler, ValueChangeEventArguments
 from .mixins.value_element import ValueElement
 
-JsonPrimitive = Union[str, int, float, bool]
+JsonPrimitive = Union[str, int, float, bool, None]
 JsonValue = Union[
-    JsonPrimitive, list[str], list[int], list[float], list[bool], 'list[JsonValue]',
-    dict[str, str], dict[str, int], dict[str, float], dict[str, bool], 'dict[str, JsonValue]'
+    JsonPrimitive, 
+    list[str], list[int], list[float], list[bool], 'list[JsonValue]',
+    tuple[str, ...], tuple[int, ...], tuple[float, ...], tuple[bool, ...], 'tuple[JsonValue, ...]',
+    dict[str, str], dict[str, int], dict[str, float], dict[str, bool], 'dict[str, JsonValue]',
 ]
 
 L = TypeVar('L', bound=JsonPrimitive)
 V = TypeVar('V', bound=JsonValue)
 T = TypeVar('T', bound='Option[Any, Any]')
-P = TypeVar('P', bound=JsonPrimitive)
+P = TypeVar('P', bound=Optional[JsonPrimitive])
 VAL = TypeVar('VAL', bound='Union[tuple[Option[Any, Any], ...], Optional[Option[Any, Any]], Optional[JsonPrimitive]]')
 
 class DEFAULT:

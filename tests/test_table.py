@@ -126,8 +126,8 @@ def test_selection(screen: Screen):
     def page():
         nonlocal table
         table = ui.table(columns=columns(), rows=rows(), selection='single')
-        ui.radio({None: 'none', 'single': 'single', 'multiple': 'multiple'},
-                 on_change=lambda e: table.set_selection(e.value))
+        options: list[ui.option[str, str | None]]  = [ui.option('none', None), ui.option('single', 'single'), ui.option('multiple', 'multiple')]
+        ui.radio(options, on_change=lambda e: table.set_selection(e.value))
 
     screen.open('/')
     screen.find('Alice').find_element(By.XPATH, 'preceding-sibling::td').click()

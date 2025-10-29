@@ -9,14 +9,14 @@ from nicegui import binding, ui
 from nicegui.testing import Screen, User
 
 
-def test_ui_select_with_tuple_as_key(screen: Screen):
+def test_ui_select_with_tuple_as_value(screen: Screen):
     class Model:
-        selection: Optional[tuple[int, int]] = None
+        selection: Optional[ui.option[str, tuple[int, int]]] = None
     data = Model()
-    options = {
-        (2, 1): 'option A',
-        (1, 2): 'option B',
-    }
+    options: list[ui.option[str, tuple[int, int]]] = [
+        ui.option('option A', (2, 1)),
+        ui.option('option B', (1,2))
+    ]
     data.selection = next(iter(options))
 
     @ui.page('/')
@@ -30,14 +30,16 @@ def test_ui_select_with_tuple_as_key(screen: Screen):
     screen.wait(0.3)
     screen.should_contain('option B')
     screen.should_not_contain('option A')
-    assert data.selection == (1, 2)
+    assert data.selection.value == (1, 2)
 
 
 def test_ui_select_with_list_of_tuples(screen: Screen):
     class Model:
-        selection = None
+        selection: Optional[ui.option[str, tuple[int, int]]] = None
     data = Model()
-    options = [(1, 1), (2, 2), (3, 3)]
+    options: list[ui.option[str, tuple[int, int]]] = [
+        ui.option("1,1", (1, 1)), ui.option("2,2", (2, 2)), ui.option("3,3", (3, 3))
+    ]
     data.selection = options[0]
 
     @ui.page('/')
@@ -51,14 +53,14 @@ def test_ui_select_with_list_of_tuples(screen: Screen):
     screen.wait(0.3)
     screen.should_contain('2,2')
     screen.should_not_contain('1,1')
-    assert data.selection == (2, 2)
+    assert data.selection == ui.option("2,2", (2, 2))
 
 
 def test_ui_select_with_list_of_lists(screen: Screen):
     class Model:
-        selection = None
+        selection: Optional[ui.option[str, list[int]]] = None
     data = Model()
-    options = [[1, 1], [2, 2], [3, 3]]
+    options = [ui.option("1,1", [1, 1]), ui.option("2,2", [2, 2]), ui.option("3,3", [3, 3])]
     data.selection = options[0]
 
     @ui.page('/')
@@ -72,7 +74,7 @@ def test_ui_select_with_list_of_lists(screen: Screen):
     screen.wait(0.3)
     screen.should_contain('2,2')
     screen.should_not_contain('1,1')
-    assert data.selection == [2, 2]
+    assert data.selection == ui.option("2,2", [2, 2])
 
 
 def test_binding_to_input(screen: Screen):

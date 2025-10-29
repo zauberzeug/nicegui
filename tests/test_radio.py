@@ -1,5 +1,6 @@
 from nicegui import ui
 from nicegui.testing import Screen, User
+from nicegui.elements.radio import Radio
 
 
 def test_radio_click(screen: Screen):
@@ -46,19 +47,19 @@ def test_radio_set_options(screen: Screen):
         ui.button('clear', on_click=lambda: (radio.options.clear(), radio.update()))  # type: ignore
 
     screen.open('/')
-    radio.set_options(['C', 'D', 'E'])
+    radio.set_options(map(ui.to_option, ['C', 'D', 'E']))
     screen.should_contain('D')
     screen.should_contain('E')
     screen.should_contain('Value: C')
 
-    radio.set_options(['X', 'Y', 'Z'])
+    radio.set_options(map(ui.to_option, ['X', 'Y', 'Z']))
     screen.should_contain('X')
     screen.should_contain('Y')
     screen.should_contain('Z')
     screen.should_contain('Value: None')
     screen.should_contain('Event: None')
 
-    radio.set_options(['1', '2', '3'], value='3')
+    radio.set_options(map(ui.to_option, ['1', '2', '3']), value='3')
     screen.should_contain('Value: 3')
     screen.should_contain('Event: 3')
 
@@ -77,11 +78,11 @@ async def test_radio_click_with_user(user: User):
         ui.label().bind_text_from(radio, 'value', lambda x: f'Value: {x}')
 
     await user.open('/')
-    user.find('A', kind=ui.radio).click()
+    user.find('A', kind=Radio).click()
     await user.should_see('Value: A')
 
-    user.find('B', kind=ui.radio).click()
+    user.find('B', kind=Radio).click()
     await user.should_see('Value: B')
 
-    user.find('B', kind=ui.radio).click()  # already selected, should not change
+    user.find('B', kind=Radio).click()  # already selected, should not change
     await user.should_see('Value: B')

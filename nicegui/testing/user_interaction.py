@@ -9,6 +9,7 @@ from nicegui.element import Element
 from nicegui.elements.mixins.disableable_element import DisableableElement
 from nicegui.elements.mixins.value_element import ValueElement
 from nicegui.elements.select import Select
+from nicegui.elements.radio import Radio
 
 if TYPE_CHECKING:
     from .user import User
@@ -97,11 +98,8 @@ class UserInteraction(Generic[T]):
                     else:
                         element._is_showing_popup = True  # pylint: disable=protected-access
                     return self
-                elif isinstance(element, ui.radio):
-                    if isinstance(element.options, dict):
-                        target_value = next((k for k, v in element.options.items() if v == self.target), '')
-                    else:
-                        target_value = self.target
+                elif isinstance(element, Radio):
+                    target_value = next((o.value for o in element.options if o.value == self.target), '')
                     element.value = target_value
                     return self
 

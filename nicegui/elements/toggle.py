@@ -53,7 +53,6 @@ def toggle(
 ) -> Toggle[L, P]:
     ...
 
-
 def toggle(
     options: Union[Iterable[P], Iterable[Option[L, P]]], *,
     value: Optional[P] = None,
