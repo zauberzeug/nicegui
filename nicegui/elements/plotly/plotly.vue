@@ -9,16 +9,12 @@ export default {
     this.Plotly = Plotly;
     this.update();
 
-    this.$nextTick(() => {
-      this.initResizeObserver();
-    });
+    this.$nextTick(() => this.initResizeObserver());
   },
 
   beforeUnmount() {
-    if (this.resizeObserver) {
-      this.resizeObserver.disconnect();
-      this.resizeObserver = null;
-    }
+    this.resizeObserver?.disconnect();
+    this.resizeObserver = null;
   },
   methods: {
     update() {
@@ -48,9 +44,7 @@ export default {
       if (this.resizeObserver) {
         return;
       }
-      this.resizeObserver = new ResizeObserver(() => {
-        this.Plotly.Plots.resize(this.$el);
-      });
+      this.resizeObserver = new ResizeObserver(() => this.Plotly.Plots.resize(this.$el));
       this.resizeObserver.observe(this.$el);
     },
     
