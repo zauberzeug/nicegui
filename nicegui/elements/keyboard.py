@@ -1,4 +1,4 @@
-from typing import List, Literal, Optional
+from typing import Literal, Optional
 
 from typing_extensions import Self
 
@@ -22,7 +22,7 @@ class Keyboard(Element, component='keyboard.js'):
                  on_key: Optional[Handler[KeyEventArguments]] = None, *,
                  active: bool = True,
                  repeating: bool = True,
-                 ignore: List[Literal['input', 'select', 'button', 'textarea']] =
+                 ignore: list[Literal['input', 'select', 'button', 'textarea']] =
                      ['input', 'select', 'button', 'textarea'],  # noqa: B006
                  ) -> None:
         """Keyboard

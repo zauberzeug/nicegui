@@ -39,7 +39,7 @@ def test_schedule_browser(monkeypatch):
         sock.bind(('127.0.0.1', 0))
         host, port = sock.getsockname()
 
-        _, cancel_event = helpers.schedule_browser(host, port)
+        _, cancel_event = helpers.schedule_browser('http', host, port)
 
         try:
             # port bound, but not opened yet
@@ -70,7 +70,7 @@ def test_canceling_schedule_browser(monkeypatch):
     # ... and close it so schedule_browser does not launch the browser
     sock.close()
 
-    thread, cancel_event = helpers.schedule_browser(host, port)
+    thread, cancel_event = helpers.schedule_browser('http', host, port)
     time.sleep(0.2)
     cancel_event.set()
     time.sleep(0.2)

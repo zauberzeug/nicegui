@@ -29,14 +29,14 @@ doc.intro(run_documentation)
     You can enable native mode for NiceGUI by specifying `native=True` in the `ui.run` function.
     To customize the initial window size and display mode, use the `window_size` and `fullscreen` parameters respectively.
     Additionally, you can provide extra keyword arguments via `app.native.window_args` and `app.native.start_args`.
-    Pick any parameter as it is defined by the internally used [pywebview module](https://pywebview.flowrl.com/guide/api.html)
+    Pick any parameter as it is defined by the internally used [pywebview module](https://pywebview.flowrl.com/api)
     for the `webview.create_window` and `webview.start` functions.
     Note that these keyword arguments will take precedence over the parameters defined in `ui.run`.
 
     Additionally, you can change `webview.settings` via `app.native.settings`.
 
     In native mode the `app.native.main_window` object allows you to access the underlying window.
-    It is an async version of [`Window` from pywebview](https://pywebview.flowrl.com/guide/api.html#window-object).
+    It is an async version of [`Window` from pywebview](https://pywebview.flowrl.com/api/#webview-window).
 ''', tab=lambda: ui.label('NiceGUI'))
 def native_mode_demo():
     from nicegui import app
@@ -153,12 +153,12 @@ doc.text('Custom Vue Components', '''
     The ["Custom Vue components" example](https://github.com/zauberzeug/nicegui/tree/main/examples/custom_vue_component)
     demonstrates how to create a custom counter component which emits events and receives updates from the server.
 
-    The ["Signature pad" example](https://github.com/zauberzeug/nicegui/blob/main/examples/signature_pad)
-    shows how to define dependencies for a custom component using a `package.json` file.
-    This allows you to use third-party libraries via NPM in your component.
-
-    Last but not least, the ["Node module integration" example](https://github.com/zauberzeug/nicegui/blob/main/examples/node_module_integration)
-    demonstrates how to create a package.json file and a webpack.config.js file to bundle a custom Vue component with its dependencies.
+    The ["Signature pad" example](https://github.com/zauberzeug/nicegui/blob/main/examples/signature_pad) and
+    the ["Node module integration" example](https://github.com/zauberzeug/nicegui/blob/main/examples/node_module_integration)
+    demonstrate how to bundle a custom Vue component with its dependencies defined in a `package.json` file.
+    In Python we can use the `esm` parameter when subclassing `ui.element`
+    to specify the ESM module name and the path to the bundled component.
+    This adds the ESM module to the import map of the page and makes it available in the Vue component.
 ''')
 
 doc.text('Server Hosting', '''
@@ -218,7 +218,8 @@ doc.text('', '''
 
     To serve your application with [HTTPS](https://fastapi.tiangolo.com/deployment/https/) encryption, you can provide SSL certificates in multiple ways.
     For instance, you can directly provide your certificates to [Uvicorn](https://www.uvicorn.org/), which NiceGUI is based on, by passing the
-    relevant [options](https://www.uvicorn.org/#command-line-options) to `ui.run()`:
+    relevant [options](https://www.uvicorn.org/#command-line-options) to `ui.run()`.
+    If both a certificate and key file are provided, the application will automatically be served over HTTPS:
 ''')
 
 
@@ -253,7 +254,11 @@ doc.text('Package for Installation', '''
     NiceGUI apps can also be bundled into an executable with `nicegui-pack` which is based on [PyInstaller](https://www.pyinstaller.org/).
     This allows you to distribute your app as a single file that can be executed on any computer.
 
-    Just make sure to call `ui.run` with `reload=False` in your main script to disable the auto-reload feature.
+    Just make sure
+
+    - to call `ui.run` with `reload=False` in your main script to disable the auto-reload feature, and
+    - to pass a `root` page function to `ui.run` or define at least one decorated `@page` function.
+
     Running the `nicegui-pack` command below will create an executable `myapp` in the `dist` folder:
 ''')
 
@@ -266,9 +271,10 @@ def pyinstaller():
                 ```python
                 from nicegui import native, ui
 
-                ui.label('Hello from PyInstaller')
+                def root():
+                    ui.label('Hello from PyInstaller')
 
-                ui.run(reload=False, port=native.find_open_port())
+                ui.run(root, reload=False, port=native.find_open_port())
                 ```
             ''')
         with bash_window(classes='max-w-lg w-full'):
@@ -304,6 +310,10 @@ doc.text('', '''
     and zip up the generated `dist` directory yourself, distribute it,
     and your end users can unzip once and be good to go,
     without the constant expansion of files due to the `--onefile` flag.
+
+    - Specifying `--onedir` to `nicegui-pack` will create an executable with all supporting files in a directory.
+    This starts faster than "--onefile" because it skips the unpacking step.
+    For distribution, package the directory into an archive file (e.g., .zip or .7z).
 
     - Summary of user experience for different options:
 

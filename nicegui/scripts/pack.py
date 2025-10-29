@@ -38,6 +38,11 @@ def main() -> None:
         'Create a single executable file.\n'
         'Whilst convenient for distribution, it will be slower to start up.'
     ))
+    parser.add_argument('--onedir', action='store_true', default=False, help=(
+        'Create an executable with all supporting files in a directory.\n'
+        'This starts faster than "--onefile" because it skips the unpacking step.\n'
+        'For distribution, package the directory into an archive file (e.g., .zip or .7z).'
+    ))
     parser.add_argument('--add-data', type=str, action='append', default=[
         f'{Path(nicegui.__file__).parent}{os.pathsep}nicegui',
     ], help='Include additional data.')
@@ -57,12 +62,20 @@ def main() -> None:
         command.append('--windowed')
     if args.onefile:
         command.append('--onefile')
+    if args.onedir:
+        command.append('--onedir')
     for data in args.add_data:
         command.extend(['--add-data', data])
     if args.icon:
         command.extend(['--icon', args.icon])
     if args.osx_bundle_identifier:
         command.extend(['--osx-bundle-identifier', args.osx_bundle_identifier])
+
+    try:
+        import pyecharts  # pylint: disable=import-outside-toplevel
+        command.extend(['--add-data', f'{Path(pyecharts.__file__).parent}{os.pathsep}pyecharts'])
+    except ModuleNotFoundError:
+        pass
 
     command.extend([args.main])
 

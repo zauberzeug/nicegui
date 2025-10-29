@@ -11,7 +11,7 @@ def screen_fixture():
         The `screen` fixture starts a real (headless) browser to interact with your application.
         This is only necessary if you have browser-specific behavior to test.
         NiceGUI itself is thoroughly tested with this fixture to ensure each component works as expected.
-        So only use it if you have to.
+        Therefore we recommend to only use it if you absolutely have to.
     ''').classes('bold-links arrow-links')
 
     with python_window(classes='w-[600px]', title='example'):
@@ -30,6 +30,16 @@ def screen_fixture():
             screen.should_contain('Log in')
             ```
         ''')
+
+
+doc.text('Configuration', '''
+    The `screen` fixture can be configured by setting the following static attributes:
+
+    - `PORT`: The port to use for the server (default: 3392).
+    - `IMPLICIT_WAIT`: The implicit wait time in seconds (default: 4).
+    - `SCREENSHOT_DIR`: The directory to store the screenshots (default: "screenshots").
+    - `CATCH_JS_ERRORS`: Whether to catch JavaScript errors (default: `True`, *added in version 3.2.0*).
+''')
 
 
 @doc.part('Web driver')

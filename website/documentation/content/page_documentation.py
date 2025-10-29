@@ -3,6 +3,7 @@ from nicegui import ui
 from . import doc
 
 
+@doc.auto_execute
 @doc.demo(ui.page)
 def main_demo() -> None:
     @ui.page('/other_page')
@@ -13,10 +14,14 @@ def main_demo() -> None:
     def dark_page():
         ui.label('Welcome to the dark side')
 
-    ui.link('Visit other page', other_page)
-    ui.link('Visit dark page', dark_page)
+    # @ui.page('/')
+    def page():
+        ui.link('Visit other page', other_page)
+        ui.link('Visit dark page', dark_page)
+    page()  # HIDE
 
 
+@doc.auto_execute
 @doc.demo('Pages with Path Parameters', '''
     Page routes can contain parameters like [FastAPI](https://fastapi.tiangolo.com/tutorial/path-params/).
     If type-annotated, they are automatically converted to bool, int, float and complex values.
@@ -25,12 +30,16 @@ def main_demo() -> None:
 ''')
 def page_with_path_parameters_demo():
     @ui.page('/repeat/{word}/{count}')
-    def page(word: str, count: int):
+    def repeat(word: str, count: int):
         ui.label(word * count)
 
-    ui.link('Say hi to Santa!', '/repeat/Ho! /3')
+    # @ui.page('/')
+    def page():
+        ui.link('Say hi to Santa!', '/repeat/Ho! /3')
+    page()  # HIDE
 
 
+@doc.auto_execute
 @doc.demo('Wait for Client Connection', '''
     To wait for a client connection, you can add a `client` argument to the decorated page function
     and await `client.connected()`.
@@ -49,9 +58,13 @@ def wait_for_connected_demo():
         await asyncio.sleep(2)
         ui.label('This text is displayed 2 seconds after the page has been fully loaded.')
 
-    ui.link('wait for connection', wait_for_connection)
+    # @ui.page('/')
+    def page():
+        ui.link('wait for connection', wait_for_connection)
+    page()  # HIDE
 
 
+@doc.auto_execute
 @doc.demo('Multicasting', '''
     The content on a page is private to the client (the browser tab) and has its own local element context.
     If you want to send updates to _all_ clients of a specific page, you can use the `app.clients` iterator.
@@ -63,7 +76,7 @@ def multicasting():
     from nicegui import app
 
     @ui.page('/multicast_receiver')
-    def page():
+    def multicast_receiver():
         ui.label('This page will show messages from the index page.')
 
     def send(message: str):
@@ -71,8 +84,11 @@ def multicasting():
             with client:
                 ui.notify(message)
 
-    ui.button('Send message', on_click=lambda: send('Hi!'))
-    ui.link('Open receiver', '/multicast_receiver', new_tab=True)
+    # @ui.page('/')
+    def page():
+        ui.button('Send message', on_click=lambda: send('Hi!'))
+        ui.link('Open receiver', '/multicast_receiver', new_tab=True)
+    page()  # HIDE
 
 
 @doc.demo('Modularize with APIRouter', '''
@@ -91,16 +107,18 @@ def api_router_demo():
     # router = APIRouter(prefix='/sub-path')
     #
     # @router.page('/')
-    # def page():
+    # def sub_page():
     #     ui.label('This is content on /sub-path')
     #
     # @router.page('/sub-sub-path')
-    # def page():
+    # def sub_sub_page():
     #     ui.label('This is content on /sub-path/sub-sub-path')
     #
-    # ui.link('Visit sub-path', '/sub-path')
-    # ui.link('Visit sub-sub-path', '/sub-path/sub-sub-path')
+    # @ui.page('/')
+    # def page():
+    #     ui.link('Visit sub-path', '/sub-path')
+    #     ui.link('Visit sub-sub-path', '/sub-path/sub-sub-path')
     #
     # app.include_router(router)
     # END OF DEMO
-    ui.label('Shows up on /sub-path')
+    ui.label('This is content on /sub-path')

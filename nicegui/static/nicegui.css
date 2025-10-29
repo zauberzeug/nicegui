@@ -23,6 +23,7 @@
 .nicegui-expansion .q-expansion-item__content,
 .nicegui-scroll-area .q-scrollarea__content,
 .nicegui-splitter .q-splitter__panel,
+.nicegui-sub-pages,
 .nicegui-timeline-entry .q-timeline__content,
 .nicegui-row,
 .nicegui-column {
@@ -39,7 +40,8 @@
   flex-direction: row;
 }
 .nicegui-row,
-.nicegui-column {
+.nicegui-column,
+.nicegui-sub-pages {
   padding: 0;
 }
 .nicegui-card-tight {
@@ -51,6 +53,9 @@
 .nicegui-step .q-stepper__nav {
   padding: 8px 0 0 0;
   gap: 8px;
+}
+.nicegui-step .q-stepper__step-inner {
+  padding: 0 24px 32px 60px;
 }
 .nicegui-timeline-entry .q-timeline__content {
   padding: 0 0 24px 0;
@@ -190,8 +195,11 @@
   padding: 0.5rem;
   border: 1px solid #8884;
 }
-.nicegui-markdown .codehilite pre {
+.nicegui-markdown pre {
   margin: 0.5rem 0;
+}
+.nicegui-markdown .mermaid-pre > .mermaid {
+  display: none;
 }
 
 /* other NiceGUI elements */
@@ -207,7 +215,7 @@
 .nicegui-link:active {
   opacity: 0.8;
 }
-.nicegui-separator {
+.nicegui-separator.q-separator--horizontal {
   width: 100%;
 }
 .nicegui-aggrid,
@@ -219,17 +227,23 @@
   width: 100%;
   height: 16rem;
 }
+.nicegui-leaflet video.leaflet-image-layer {
+  max-width: none; /* HACK: make the video show up */
+}
 .nicegui-log {
-  padding: 0.5rem;
+  outline: 1px solid rgba(127, 159, 191, 0.15);
+}
+.nicegui-log .q-scrollarea__container {
   scroll-padding-bottom: 0.5rem;
   scroll-snap-type: y proximity;
-  overflow-y: scroll;
-  outline: 1px solid rgba(127, 159, 191, 0.15);
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-  white-space: pre;
   background-color: rgba(127, 159, 191, 0.05);
 }
-.nicegui-log > :last-child {
+.nicegui-log .q-scrollarea__content {
+  white-space: pre;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  padding: 0.5rem;
+}
+.nicegui-log .q-scrollarea__content > :last-child {
   scroll-snap-align: end;
 }
 h6.q-timeline__title {
@@ -243,7 +257,7 @@ h6.q-timeline__title {
   box-shadow: 0 0 0.5em rgba(127, 159, 191, 0.05);
   border-radius: 0.25rem;
 }
-.nicegui-code .codehilite {
+.nicegui-code pre {
   padding: 0 0.5rem;
 }
 .nicegui-matplotlib > svg,
@@ -260,8 +274,14 @@ h6.q-timeline__title {
 .nicegui-scene-view[data-initializing] {
   visibility: hidden;
 }
-
-/* CodeMirror */
+.nicegui-interactive-image-layer {
+  position: absolute !important;
+  inset: 0;
+  pointer-events: none;
+}
+.nicegui-interactive-image-layer img {
+  display: none;
+}
 .nicegui-codemirror .cm-editor.cm-focused {
   outline: none;
 }
@@ -270,7 +290,6 @@ h6.q-timeline__title {
 .nicegui-error-popup {
   position: fixed;
   bottom: 0;
-  left: 0;
   border: 1pt solid rgba(127, 159, 191, 0.25);
   border-radius: 0.25em;
   box-shadow: 0 0 0.5em rgba(127, 159, 191, 0.05);
@@ -282,6 +301,12 @@ h6.q-timeline__title {
   transition-duration: 500ms;
   pointer-events: none;
   z-index: 10000;
+}
+#popup:dir(ltr) {
+  left: 0;
+}
+#popup:dir(rtl) {
+  right: 0;
 }
 .body--dark .nicegui-error-popup {
   background-color: black;
@@ -305,8 +330,13 @@ h6.q-timeline__title {
 .nicegui-error-popup > span:first-child {
   font-weight: bold;
 }
-.nicegui-error-popup > span:first-child::before {
+.nicegui-error-popup:dir(ltr) > span:first-child::before {
   content: "⚠️";
   position: absolute;
   left: 1.5em;
+}
+#popup:dir(rtl) > span:first-child::before {
+  content: "⚠️";
+  position: absolute;
+  right: 1.5em;
 }

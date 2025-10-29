@@ -9,15 +9,13 @@ from . import doc
 def user_fixture():
     ui.markdown('''
         We recommend utilizing the `user` fixture instead of the [`screen` fixture](/documentation/screen) wherever possible
-        because execution is as fast as unit tests and it does not need Selenium as a dependency
-        when loaded via `pytest_plugins = ['nicegui.testing.user_plugin']`.
-        The `user` fixture cuts away the browser and replaces it by a lightweight simulation entirely in Python.
-        See [project structure](/documentation/project_structure) for a description of the setup.
+        because execution is as fast as unit tests and it does not need Selenium as a dependency.
+        The `user` fixture cuts away the browser and replaces it by a lightweight simulation.
 
         You can assert to "see" specific elements or content, click buttons, type into inputs and trigger events.
         We aimed for a nice API to write acceptance tests which read like a story and are easy to understand.
         Due to the fast execution, the classical [test pyramid](https://martinfowler.com/bliki/TestPyramid.html),
-        where UI tests are considered slow and expensive, does not apply anymore.
+        where UI tests are considered to be slow, error prone and expensive, does not apply anymore 🚀.
     ''').classes('bold-links arrow-links')
 
     with python_window(classes='w-[600px]', title='example'):
@@ -33,7 +31,7 @@ def user_fixture():
         ''')
 
     ui.markdown('''
-        **NOTE:** The `user` fixture is quite new and still misses some features.
+        **NOTE:** The `user` fixture might still miss some features.
         Please let us know in separate feature requests
         [over on GitHub](https://github.com/zauberzeug/nicegui/discussions/new?category=ideas-feature-requests).
     ''').classes('bold-links arrow-links')
@@ -105,62 +103,12 @@ def querying():
             ''')
 
 
-doc.text('Complex elements', '''
-    There are some elements with complex visualization and interaction behaviors (`ui.upload`, `ui.table`, ...).
-    Not every aspect of these elements can be tested with `should_see` and `UserInteraction`.
-    Still, you can grab them with `user.find(...)` and do the testing on the elements themselves.
-''')
+doc.text('User Interaction', '''
+    `user.find(...)` returns a `UserInteraction` object which provides methods to type text,
+    clear inputs, click buttons and trigger events on the found elements.
+    This demo shows how to trigger a "keydown.tab" event to autocomplete an input field after typing the first letter.
 
-
-@doc.ui
-def upload_table():
-    with ui.row().classes('gap-4 items-stretch'):
-        with python_window(classes='w-[500px]', title='some UI code'):
-            ui.markdown('''
-                ```python
-                def receive_file(e: events.UploadEventArguments):
-                    content = e.content.read().decode('utf-8')
-                    reader = csv.DictReader(content.splitlines())
-                    ui.table(
-                        columns=[{
-                            'name': h,
-                            'label': h.capitalize(),
-                            'field': h,
-                        } for h in reader.fieldnames or []],
-                        rows=list(reader),
-                    )
-
-                ui.upload(on_upload=receive_file)
-                ```
-            ''')
-
-        with python_window(classes='w-[500px]', title='user assertions'):
-            ui.markdown('''
-                ```python
-                upload = user.find(ui.upload).elements.pop()
-                upload.handle_uploads([UploadFile(
-                    BytesIO(b'name,age\\nAlice,30\\nBob,28'),
-                    filename='data.csv',
-                    headers=Headers(raw=[(b'content-type', b'text/csv')]),
-                )])
-                table = user.find(ui.table).elements.pop()
-                assert table.columns == [
-                    {'name': 'name', 'label': 'Name', 'field': 'name'},
-                    {'name': 'age', 'label': 'Age', 'field': 'age'},
-                ]
-                assert table.rows == [
-                    {'name': 'Alice', 'age': '30'},
-                    {'name': 'Bob', 'age': '28'},
-                ]
-                ```
-            ''')
-
-
-doc.text('Autocomplete', '''
-    The `UserInteraction` object returned by `user.find(...)` provides methods to trigger events on the found elements.
-    This demo shows how to trigger a "keydown.tab" event to autocomplete an input field.
-
-    *Added in version 2.7.0*
+    *Added in version 2.7.0: triggering events*
 ''')
 
 
@@ -184,9 +132,135 @@ def trigger_events():
             ''')
 
 
+doc.text('Selecting options', '''
+    To choose items in a `ui.select` simply
+
+    - locate the `ui.select` element using `user.find()`,
+    - use `click()` to open the dropdown,
+    - locate the specific _option_ you want to select, again using `user.find()`, and
+    - use `click()` a second time to select the desired option.
+
+    For a multi-select element, repeat the click-and-choose steps for each item.
+''')
+
+
+@doc.ui
+def selecting_options_in_a_select():
+    with ui.row().classes('gap-4 items-stretch'):
+        with python_window(classes='w-[500px]', title='UI code'):
+            ui.markdown('''
+                ```python
+                ui.select(
+                    ['Apple', 'Banana', 'Cherry'],
+                    label='Fruits',
+                    multiple=True,
+                    on_change=lambda e: ui.notify(', '.join(e.value)),
+                )
+                ```
+            ''')
+
+        with python_window(classes='w-[500px]', title='user assertions'):
+            ui.markdown('''
+                ```python
+                user.find('Fruits').click()
+                user.find('Apple').click()
+                user.find('Banana').click()
+                await user.should_see('Apple, Banana')
+                ```
+            ''')
+
+
+doc.text('Using an ElementFilter', '''
+    It may be desirable to use an [`ElementFilter`](/documentation/element_filter) to
+
+    - preserve the order of elements to check their order on the page, and
+    - more granular filtering options, such as `ElementFilter(...).within(...)`.
+
+    By entering the `user` context and iterating over `ElementFilter`,
+    you can preserve the natural document order of matching elements:
+''')
+
+
+@doc.ui
+def using_an_elementfilter():
+    with ui.row().classes('gap-4 items-stretch'):
+        with python_window(classes='w-[400px]', title='UI code'):
+            ui.markdown('''
+                ```python
+                ui.label('1').mark('number')
+                ui.label('2').mark('number')
+                ui.label('3').mark('number')
+                ```
+            ''')
+
+        with python_window(classes='w-[600px]', title='user assertions'):
+            ui.markdown('''
+                ```python
+                with user:
+                    elements = list(ElementFilter(marker='number'))
+                    assert len(elements) == 3
+                    assert elements[0].text == '1'
+                    assert elements[1].text == '2'
+                    assert elements[2].text == '3'
+                ```
+            ''')
+
+
+doc.text('Complex elements', '''
+    There are some elements with complex visualization and interaction behaviors (`ui.upload`, `ui.table`, ...).
+    Not every aspect of these elements can be tested with `should_see` and `UserInteraction`.
+    Still, you can grab them with `user.find(...)` and do the testing on the elements themselves.
+''')
+
+
+@doc.ui
+def upload_table():
+    with ui.row().classes('gap-4 items-stretch'):
+        with python_window(classes='w-[500px]', title='some UI code'):
+            ui.markdown('''
+                ```python
+                async def receive_file(e: events.UploadEventArguments):
+                    content = await e.file.text()
+                    reader = csv.DictReader(content.splitlines())
+                    ui.table(
+                        columns=[{
+                            'name': h,
+                            'label': h.capitalize(),
+                            'field': h,
+                        } for h in reader.fieldnames or []],
+                        rows=list(reader),
+                    )
+
+                ui.upload(on_upload=receive_file)
+                ```
+            ''')
+
+        with python_window(classes='w-[500px]', title='user assertions'):
+            ui.markdown('''
+                ```python
+                from nicegui import ui
+
+                upload = user.find(ui.upload).elements.pop()
+                await upload.handle_uploads([
+                    ui.upload.SmallFileUpload('data.csv', 'text/csv', b'name,age\\nAlice,30\\nBob,28')
+                ])
+                await user.should_see(ui.table)
+                table = user.find(ui.table).elements.pop()
+                assert table.columns == [
+                    {'name': 'name', 'label': 'Name', 'field': 'name'},
+                    {'name': 'age', 'label': 'Age', 'field': 'age'},
+                ]
+                assert table.rows == [
+                    {'name': 'Alice', 'age': '30'},
+                    {'name': 'Bob', 'age': '28'},
+                ]
+                ```
+            ''')
+
+
 doc.text('Test Downloads', '''
-    You can verify that a download was triggered by checking `user.downloads.http_responses`.
-    By awaiting `user.downloads.next()` you can get the next download response.
+    You can verify that a download was triggered by checking `user.download.http_responses`.
+    By awaiting `user.download.next()` you can get the next download response.
 
     *Added in version 2.1.0*
 ''')

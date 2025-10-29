@@ -1,11 +1,9 @@
-import asyncio
 import contextvars
 import os
-import time
 import uuid
 from datetime import timedelta
 from pathlib import Path
-from typing import Dict, Optional, Union
+from typing import Any, Optional, Union
 
 from starlette.middleware import Middleware
 from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
@@ -13,14 +11,13 @@ from starlette.middleware.sessions import SessionMiddleware
 from starlette.requests import Request
 from starlette.responses import Response
 
-from . import core, observables
+from . import core, helpers, observables
 from .context import context
 from .observables import ObservableDict
 from .persistence import FilePersistentDict, PersistentDict, ReadOnlyDict, RedisPersistentDict
+from .persistence.peudo_persistent_dict import PseudoPersistentDict
 
 request_contextvar: contextvars.ContextVar[Optional[Request]] = contextvars.ContextVar('request_var', default=None)
-
-PURGE_INTERVAL = timedelta(minutes=5).total_seconds()
 
 
 class RequestTrackingMiddleware(BaseHTTPMiddleware):
@@ -30,43 +27,46 @@ class RequestTrackingMiddleware(BaseHTTPMiddleware):
         if 'id' not in request.session:
             request.session['id'] = str(uuid.uuid4())
         request.state.responded = False
-        await core.app.storage._create_user_storage(request.session['id'])  # pylint: disable=protected-access
+        session_id = request.session['id']
+        if session_id not in core.app.storage._users:  # pylint: disable=protected-access
+            await core.app.storage._create_user_storage(session_id)  # pylint: disable=protected-access
         response = await call_next(request)
         request.state.responded = True
         return response
 
 
-def set_storage_secret(storage_secret: Optional[str] = None) -> None:
+def set_storage_secret(storage_secret: Optional[str] = None,
+                       session_middleware_kwargs: Optional[dict[str, Any]] = None) -> None:
     """Set storage_secret and add request tracking middleware."""
     if any(m.cls == SessionMiddleware for m in core.app.user_middleware):
         # NOTE not using "add_middleware" because it would be the wrong order
         core.app.user_middleware.append(Middleware(RequestTrackingMiddleware))
     elif storage_secret is not None:
         core.app.add_middleware(RequestTrackingMiddleware)
-        core.app.add_middleware(SessionMiddleware, secret_key=storage_secret)
+        core.app.add_middleware(SessionMiddleware, secret_key=storage_secret, **(session_middleware_kwargs or {}))
     Storage.secret = storage_secret
 
 
 class Storage:
     secret: Optional[str] = None
-    """Secret key for session storage."""
+    '''Secret key for session storage.'''
 
     path = Path(os.environ.get('NICEGUI_STORAGE_PATH', '.nicegui')).resolve()
-    """Path to use for local persistence. Defaults to ".nicegui"."""
+    '''Path to use for local persistence. Defaults to ".nicegui".'''
 
     redis_url = os.environ.get('NICEGUI_REDIS_URL', None)
-    """URL to use for shared persistent storage via Redis. Defaults to None, which means local file storage is used."""
+    '''URL to use for shared persistent storage via Redis. Defaults to None, which means local file storage is used.'''
 
     redis_key_prefix = os.environ.get('NICEGUI_REDIS_KEY_PREFIX', 'nicegui:')
-    """Prefix for Redis keys. Defaults to "nicegui:"."""
+    '''Prefix for Redis keys. Defaults to "nicegui:".'''
 
     max_tab_storage_age: float = timedelta(days=30).total_seconds()
-    """Maximum age in seconds before tab storage is automatically purged. Defaults to 30 days."""
+    '''Maximum age in seconds before tab storage is automatically purged. Defaults to 30 days.'''
 
     def __init__(self) -> None:
         self._general = Storage._create_persistent_dict('general')
-        self._users: Dict[str, PersistentDict] = {}
-        self._tabs: Dict[str, ObservableDict] = {}
+        self._users: dict[str, PersistentDict] = {}
+        self._tabs: dict[str, ObservableDict] = {}
 
     @staticmethod
     def _create_persistent_dict(id: str) -> PersistentDict:  # pylint: disable=redefined-builtin
@@ -76,18 +76,17 @@ class Storage:
             return FilePersistentDict(Storage.path / f'storage-{id}.json', encoding='utf-8')
 
     @property
-    def browser(self) -> Union[ReadOnlyDict, Dict]:
+    def browser(self) -> Union[ReadOnlyDict, dict]:
         """Small storage that is saved directly within the user's browser (encrypted cookie).
 
         The data is shared between all browser tabs and can only be modified before the initial request has been submitted.
         Therefore it is normally better to use `app.storage.user` instead,
         which can be modified anytime, reduces overall payload, improves security and has larger storage capacity.
         """
+        if core.is_script_mode_preflight():
+            return {}
         request: Optional[Request] = request_contextvar.get()
         if request is None:
-            if self._is_in_auto_index_context():
-                raise RuntimeError('app.storage.browser can only be used with page builder functions '
-                                   '(https://nicegui.io/documentation/page)')
             if Storage.secret is None:
                 raise RuntimeError('app.storage.browser needs a storage_secret passed in ui.run()')
             raise RuntimeError('app.storage.browser can only be used within a UI context')
@@ -105,11 +104,10 @@ class Storage:
         The data is stored on the server.
         It is shared between all browser tabs by identifying the user via session cookie ID.
         """
+        if core.is_script_mode_preflight():
+            return PseudoPersistentDict()
         request: Optional[Request] = request_contextvar.get()
         if request is None:
-            if self._is_in_auto_index_context():
-                raise RuntimeError('app.storage.user can only be used with page builder functions '
-                                   '(https://nicegui.io/documentation/page)')
             if Storage.secret is None:
                 raise RuntimeError('app.storage.user needs a storage_secret passed in ui.run()')
             raise RuntimeError('app.storage.user can only be used within a UI context')
@@ -118,16 +116,8 @@ class Storage:
         return self._users[session_id]
 
     async def _create_user_storage(self, session_id: str) -> None:
-        if session_id not in self._users:
-            self._users[session_id] = Storage._create_persistent_dict(f'user-{session_id}')
-            await self._users[session_id].initialize()
-
-    @staticmethod
-    def _is_in_auto_index_context() -> bool:
-        try:
-            return context.client.is_auto_index_client
-        except RuntimeError:
-            return False  # no client
+        self._users[session_id] = Storage._create_persistent_dict(f'user-{session_id}')
+        await self._users[session_id].initialize()
 
     @property
     def general(self) -> PersistentDict:
@@ -141,17 +131,11 @@ class Storage:
         Like `app.storage.tab` data is unique per browser tab but is even more volatile as it is already discarded
         when the connection to the client is lost through a page reload or a navigation.
         """
-        if self._is_in_auto_index_context():
-            raise RuntimeError('app.storage.client can only be used with page builder functions '
-                               '(https://nicegui.io/documentation/page)')
         return context.client.storage
 
     @property
     def tab(self) -> observables.ObservableDict:
         """A volatile storage that is only kept during the current tab session."""
-        if self._is_in_auto_index_context():
-            raise RuntimeError('app.storage.tab can only be used with page builder functions '
-                               '(https://nicegui.io/documentation/page)')
         client = context.client
         if not client.has_socket_connection:
             raise RuntimeError('app.storage.tab can only be used with a client connection; '
@@ -180,30 +164,12 @@ class Storage:
                 self._tabs[tab_id] = ObservableDict()
             self._tabs[tab_id].update(self._tabs[old_tab_id])
 
-    async def prune_tab_storage(self) -> None:
-        """Regularly prune tab storage that is older than the configured `max_tab_storage_age`."""
-        while True:
-            for tab_id, tab in list(self._tabs.items()):
-                if time.time() > tab.last_modified + self.max_tab_storage_age:
-                    tab.clear()
-                    if isinstance(tab, PersistentDict):
-                        await tab.close()
-                    del self._tabs[tab_id]
-            try:
-                await asyncio.sleep(PURGE_INTERVAL)
-            except asyncio.CancelledError:
-                break
-
     def clear(self) -> None:
         """Clears all storage."""
         self._general.clear()
         self._users.clear()
-        try:
-            client = context.client
-        except RuntimeError:
-            pass  # no client, could be a pytest
-        else:
-            client.storage.clear()
+        if not helpers.is_pytest():
+            context.client.storage.clear()
         self._tabs.clear()
         for filepath in self.path.glob('storage-*.json'):
             filepath.unlink()

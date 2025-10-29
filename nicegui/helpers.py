@@ -1,20 +1,31 @@
-import asyncio
+from __future__ import annotations
+
 import functools
 import hashlib
 import os
 import socket
+import struct
+import sys
 import threading
 import time
 import webbrowser
-from collections.abc import Awaitable
+from collections.abc import Callable
+from inspect import Parameter, signature
 from pathlib import Path
-from typing import Any, Optional, Set, Tuple, Union
+from typing import TYPE_CHECKING, Any
 
-import wait_for2
-
+from .context import context
 from .logging import log
 
-_shown_warnings: Set[str] = set()
+if TYPE_CHECKING:
+    from .element import Element
+
+_shown_warnings: set[str] = set()
+
+if sys.version_info < (3, 13):
+    from asyncio import iscoroutinefunction
+else:
+    from inspect import iscoroutinefunction
 
 
 def warn_once(message: str, *, stack_info: bool = False) -> None:
@@ -29,6 +40,11 @@ def is_pytest() -> bool:
     return 'PYTEST_CURRENT_TEST' in os.environ
 
 
+def is_user_simulation() -> bool:
+    """Check if the code is running in with user simulation (see https://nicegui.io/documentation/user)."""
+    return 'NICEGUI_USER_SIMULATION' in os.environ
+
+
 def is_coroutine_function(obj: Any) -> bool:
     """Check if the object is a coroutine function.
 
@@ -37,10 +53,18 @@ def is_coroutine_function(obj: Any) -> bool:
     """
     while isinstance(obj, functools.partial):
         obj = obj.func
-    return asyncio.iscoroutinefunction(obj)
+    return iscoroutinefunction(obj)
 
 
-def is_file(path: Optional[Union[str, Path]]) -> bool:
+def expects_arguments(func: Callable) -> bool:
+    """Check if the function expects non-variable arguments without a default value."""
+    return any(p.default is Parameter.empty and
+               p.kind is not Parameter.VAR_POSITIONAL and
+               p.kind is not Parameter.VAR_KEYWORD
+               for p in signature(func).parameters.values())
+
+
+def is_file(path: str | Path | None) -> bool:
     """Check if the path is a file that exists."""
     if not path:
         return False
@@ -52,9 +76,12 @@ def is_file(path: Optional[Union[str, Path]]) -> bool:
         return False
 
 
-def hash_file_path(path: Path) -> str:
-    """Hash the given path."""
-    return hashlib.sha256(path.as_posix().encode()).hexdigest()[:32]
+def hash_file_path(path: Path, *, max_time: float | None = None) -> str:
+    """Hash the given path based on its string representation and optionally the last modification time of given files."""
+    hasher = hashlib.sha256(path.as_posix().encode())
+    if max_time is not None:
+        hasher.update(struct.pack('!d', max_time))
+    return hasher.hexdigest()[:32]
 
 
 def is_port_open(host: str, port: int) -> bool:
@@ -72,7 +99,7 @@ def is_port_open(host: str, port: int) -> bool:
         sock.close()
 
 
-def schedule_browser(host: str, port: int) -> Tuple[threading.Thread, threading.Event]:
+def schedule_browser(protocol: str, host: str, port: int) -> tuple[threading.Thread, threading.Event]:
     """Wait non-blockingly for the port to be open, then start a webbrowser.
 
     This function launches a thread in order to be non-blocking.
@@ -88,15 +115,15 @@ def schedule_browser(host: str, port: int) -> Tuple[threading.Thread, threading.
     """
     cancel = threading.Event()
 
-    def in_thread(host: str, port: int) -> None:
+    def in_thread(protocol: str, host: str, port: int) -> None:
         while not is_port_open(host, port):
             if cancel.is_set():
                 return
             time.sleep(0.1)
-        webbrowser.open(f'http://{host}:{port}/')
+        webbrowser.open(f'{protocol}://{host}:{port}/')
 
     host = host if host != '0.0.0.0' else '127.0.0.1'
-    thread = threading.Thread(target=in_thread, args=(host, port), daemon=True)
+    thread = threading.Thread(target=in_thread, args=(protocol, host, port), daemon=True)
     thread.start()
     return thread, cancel
 
@@ -111,10 +138,11 @@ def event_type_to_camel_case(string: str) -> str:
     return '.'.join(kebab_to_camel_case(part) if part != '-' else part for part in string.split('.'))
 
 
-async def wait_for(fut: Awaitable, timeout: Optional[float] = None) -> None:
-    """Wait for a future to complete.
-
-    This function is a wrapper around ``wait_for2.wait_for`` which is a drop-in replacement for ``asyncio.wait_for``.
-    It can be removed once we drop support for older versions than Python 3.13 which fixes ``asyncio.wait_for``.
-    """
-    return await wait_for2.wait_for(fut, timeout)
+def require_top_level_layout(element: Element) -> None:
+    """Check if the element is a top level layout element."""
+    parent = context.slot.parent
+    if parent != parent.client.content:
+        raise RuntimeError(
+            f'Found top level layout element "{element.__class__.__name__}" inside element "{parent.__class__.__name__}". '
+            'Top level layout elements can not be nested but must be direct children of the page content.',
+        )

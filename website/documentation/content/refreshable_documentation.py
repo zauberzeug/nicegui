@@ -91,6 +91,33 @@ def reactive_state():
         counter('B')
 
 
+@doc.demo('Awaitable refresh', '''
+    When you have an async refreshable function, you can await the `refresh()` call to know when it completes.
+    This is useful for coordinating UI updates, such as disabling buttons during refresh operations.
+''')
+def awaitable_refresh():
+    import asyncio
+    from uuid import uuid4
+    from nicegui import events
+
+    @ui.refreshable
+    async def compute():
+        await asyncio.sleep(1)
+        ui.label(uuid4())
+
+    async def handle_click(e: events.ClickEventArguments):
+        e.sender.disable()
+        await compute.refresh()
+        e.sender.enable()
+
+    async def root():
+        ui.button('Refresh', on_click=handle_click)
+        await compute()
+
+    return root
+
+
+@doc.auto_execute
 @doc.demo('Global scope', '''
     When defining a refreshable function in the global scope,
     every refreshable UI that is created by calling this function will share the same state.
@@ -111,12 +138,16 @@ def global_scope():
         time()
         ui.button('Refresh', on_click=time.refresh)
 
-    ui.link('Open demo', demo)
+    # @ui.page('/')
+    def page():
+        ui.link('Open demo', demo)
+    page()  # HIDE
     # END OF DEMO
     ui.label('Note: This demo may not work as expected on nicegui.io due to load balancing across multiple servers. '
              'For accurate results, please run this example locally on your machine.').classes('text-gray-600')
 
 
+@doc.auto_execute
 @doc.demo('Local scope (variant A)', '''
     When defining a refreshable function in a local scope,
     refreshable UI that is created by calling this function will refresh independently.
@@ -135,9 +166,13 @@ def local_scope_a():
         time()
         ui.button('Refresh', on_click=time.refresh)
 
-    ui.link('Open demo', demo)
+    # @ui.page('/')
+    def page():
+        ui.link('Open demo', demo)
+    page()  # HIDE
 
 
+@doc.auto_execute
 @doc.demo('Local scope (variant B)', '''
     In order to define refreshable UIs with local state outside of page functions,
     you can, e.g., define a class with a refreshable method.
@@ -158,9 +193,13 @@ def local_scope_b():
         clock.time()
         ui.button('Refresh', on_click=clock.time.refresh)
 
-    ui.link('Open demo', demo)
+    # @ui.page('/')
+    def page():
+        ui.link('Open demo', demo)
+    page()  # HIDE
 
 
+@doc.auto_execute
 @doc.demo('Local scope (variant C)', '''
     As an alternative to the class definition shown above, you can also define the UI function in global scope,
     but apply the `ui.refreshable` decorator inside the page function.
@@ -178,7 +217,10 @@ def local_scope_c():
         refreshable_time()
         ui.button('Refresh', on_click=refreshable_time.refresh)
 
-    ui.link('Open demo', demo)
+    # @ui.page('/')
+    def page():
+        ui.link('Open demo', demo)
+    page()  # HIDE
 
 
 doc.reference(ui.refreshable)
