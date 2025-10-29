@@ -8,6 +8,7 @@ from starlette.middleware.sessions import SessionMiddleware
 from nicegui import app, ui
 from nicegui.page_arguments import RouteMatch
 from website import documentation, fly, header, imprint_privacy, main_page, rate_limits, svg
+from website.seo_constants import NICEGUI_TAGLINE
 
 # session middleware is required for demo in documentation
 app.add_middleware(SessionMiddleware, secret_key=os.environ.get('NICEGUI_SECRET_KEY', ''))
@@ -99,4 +100,4 @@ def _status():
 
 
 # NOTE: do not reload on fly.io (see https://github.com/zauberzeug/nicegui/discussions/1720#discussioncomment-7288741)
-ui.run(uvicorn_reload_includes='*.py, *.css, *.html', reload=not on_fly, reconnect_timeout=10.0)
+ui.run(uvicorn_reload_includes='*.py, *.css, *.html', reload=not on_fly, reconnect_timeout=10.0, title=NICEGUI_TAGLINE)
