@@ -84,7 +84,7 @@ class UserInteraction(Generic[T]):
 
                 if isinstance(element, Select):
                     if element.is_showing_popup:
-                        target_option = next((o for o in element.options if o.value == self.target), ui.to_option(''))
+                        target_option = next((o for o in element.options if o.label == self.target), ui.to_option(''))
                         if element.multiple:
                             if target_option in element.value:
                                 element.value = tuple([v for v in element.value if v != target_option])

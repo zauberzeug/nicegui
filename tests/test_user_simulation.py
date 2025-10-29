@@ -9,6 +9,7 @@ from fastapi.responses import PlainTextResponse
 
 from nicegui import ElementFilter, app, events, ui
 from nicegui.testing import User
+from nicegui.elements.select import Select
 
 # pylint: disable=missing-function-docstring
 
@@ -426,13 +427,13 @@ async def test_typing(user: User) -> None:
 async def test_select(user: User) -> None:
     @ui.page('/')
     def page():
-        ui.select(options=['A', 'B', 'C'], on_change=lambda e: ui.notify(f'Value: {e.value}'))
+        ui.select(options=['A', 'B', 'C'], on_change=lambda e: ui.notify(f'Value: {e.value.value if e.value else ""}'))
 
     await user.open('/')
     await user.should_not_see('A')
     await user.should_not_see('B')
     await user.should_not_see('C')
-    user.find(ui.select).click()
+    user.find(Select).click()
     await user.should_see('B')
     await user.should_see('C')
     user.find('A').click()
@@ -442,18 +443,20 @@ async def test_select(user: User) -> None:
     await user.should_not_see('C')
 
 
-async def test_select_from_dict(user: User) -> None:
+async def test_select_from_options(user: User) -> None:
     @ui.page('/')
     def page():
-        ui.select(options={'value A': 'label A', 'value B': 'label B', 'value C': 'label C'},
-                  on_change=lambda e: ui.notify(f'Notify: {e.value}'))
+        options = [
+            ui.option('label A', 'value A'), ui.option('label B', 'value B'), ui.option('label C', 'value C')
+        ]
+        ui.select(options=options, on_change=lambda e: ui.notify(f'Notify: {e.value.value if e.value else ""}'))
 
     await user.open('/')
     await user.should_not_see('label A')
     await user.should_not_see('label B')
     await user.should_not_see('label C')
 
-    user.find(ui.select).click()
+    user.find(Select).click()
     await user.should_see('label A')
     await user.should_see('label B')
     await user.should_see('label C')
@@ -462,18 +465,24 @@ async def test_select_from_dict(user: User) -> None:
     await user.should_see('Notify: value A')
 
 
-async def test_select_multiple_from_dict(user: User) -> None:
+async def test_select_multiple_from_options(user: User) -> None:
     @ui.page('/')
     def page():
-        ui.select(options={'value A': 'label A', 'value B': 'label B', 'value C': 'label C'},
-                  multiple=True, on_change=lambda e: ui.notify(f'Notify: {e.value}'))
+        options = [
+            ui.option('label A', 'value A'), ui.option('label B', 'value B'), ui.option('label C', 'value C')
+        ]
+        ui.select(
+            options=options, 
+            on_change=lambda e: ui.notify(f'Notify: {list(o.value for o in e.value)}'),
+            value=()
+        )
 
     await user.open('/')
     await user.should_not_see('label A')
     await user.should_not_see('label B')
     await user.should_not_see('label C')
 
-    user.find(ui.select).click()
+    user.find(Select).click()
     await user.should_see('label A')
     await user.should_see('label B')
     await user.should_see('label C')
@@ -491,23 +500,23 @@ async def test_select_multiple_values(user: User):
     @ui.page('/')
     def page():
         nonlocal select
-        select = ui.select(['A', 'B'], value='A',
-                           multiple=True, on_change=lambda e: ui.notify(f'Notify: {e.value}'))
-        ui.label().bind_text_from(select, 'value', backward=lambda v: f'value = {v}')
+        select = ui.select(['A', 'B'], value=('A',),
+                           on_change=lambda e: ui.notify(f'Notify: {list(o.value for o in e.value)}'))
+        ui.label().bind_text_from(select, 'value', backward=lambda value: f'value = {list(o.value for o in value)}')
 
     await user.open('/')
     await user.should_see("value = ['A']")
 
-    user.find(ui.select).click()
+    user.find(Select).click()
     user.find('B').click()
     await user.should_see("Notify: ['A', 'B']")
     await user.should_see("value = ['A', 'B']")
-    assert select.value == ['A', 'B']
+    assert select.value == (ui.to_option('A'), ui.to_option('B'))
 
     user.find('A').click()
     await user.should_see("Notify: ['B']")
     await user.should_see("value = ['B']")
-    assert select.value == ['B']
+    assert select.value == (ui.to_option('B'),)
 
 
 async def test_upload_table(user: User) -> None:

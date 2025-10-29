@@ -169,12 +169,12 @@ def select(
 @overload
 def select(
     options: Iterable[T], *, label: str = ..., value: Literal[None] = ...,
-    on_change: Optional[Handler[ValueChangeEventArguments[tuple[T, ...]]]] = ...,
+    on_change: Optional[Handler[ValueChangeEventArguments[Optional[T]]]] = ...,
     with_input: bool = ...,
     new_value_mode: Optional[Literal['add', 'add-unique', 'toggle']] = ...,
     new_value_to_option: Optional[Callable[[str], Optional[T]]] = ...,
     clearable: bool = ...,
-    validation: Optional[Union[ValidationFunction[tuple[T, ...]], ValidationDict[tuple[T, ...]]]] = ...,
+    validation: Optional[Union[ValidationFunction[Optional[T]], ValidationDict[Optional[T]]]] = ...,
     ) -> Select[Optional[T], T]:
     ...
 

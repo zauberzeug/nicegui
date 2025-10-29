@@ -9,6 +9,7 @@ from .context import context
 from .element import Element
 from .elements.chat_message import ChatMessage
 from .elements.choice_element import ChoiceElement
+from .elements.select import Select
 from .elements.icon import Icon
 from .elements.mixins.content_element import ContentElement
 from .elements.mixins.source_element import SourceElement
@@ -121,8 +122,12 @@ class ElementFilter(Generic[T]):
                 if isinstance(element, Notification):
                     element_contents.append(element.message)
                 if isinstance(element, ChoiceElement):
-                    labels = [option.label for option in element.options]
-                    element_contents.extend(labels)
+                    if isinstance(element, Select):
+                        value_options = element.value if isinstance(element.value, tuple) else (element.value,) if element.value else ()
+                        labels = [option.label for option in value_options]
+                        element_contents.extend(labels)
+                    if not isinstance(element, Select) or element.is_showing_popup:
+                        element_contents.extend(element._labels)  # pylint: disable=protected-access
                 if isinstance(element, Tree):
                     LABEL_KEY = element.props.get('label-key')
                     element_contents.extend(node[LABEL_KEY] for node in element.nodes(visible=True))
