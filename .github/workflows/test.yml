@@ -51,16 +51,11 @@ jobs:
         run: poetry run pytest
       - name: Upload failed screenshots
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: screenshots-${{ matrix.python }}
           path: screenshots/*.failed.png
           retention-days: 14
-      - name: install test startup dependencies
-        run: |
-          set -x
-          # install packages to run the examples
-          poetry run pip install opencv-python opencv-contrib-python-headless httpx isort replicate openai simpy tortoise-orm
       - name: test startup
         run: poetry run ./test_startup.sh
       - name: restore dependencies for effective caching
