@@ -347,11 +347,7 @@ function createApp(elements, options) {
               const originalFunction = target[functionName];
               target[functionName] = function (...args) {
                 const msg = args[0];
-                if (typeof msg !== "string" || !msg.length) {
-                  console.error("Tapper: Message is not a string or has no length property.");
-                  return originalFunction.call(this, ...args);
-                }
-                if (msg.length > 1000000 - 100) {
+                if (typeof msg === "string" && msg.length && msg.length > 1000000 - 100) {
                   console.error("Payload size exceeds the maximum allowed limit.", msg.length);
                   args[0] = '42["too-long-message"]';
                   if (window.tooLongMessageTimer) {
@@ -362,14 +358,11 @@ function createApp(elements, options) {
                   window.tooLongMessageTimer = setTimeout(() => {
                     popup.ariaHidden = true;
                   }, 5000);
-                } else {
-                  //return originalFunction.call(this, ...args);
                 }
                 return originalFunction.call(this, ...args);
               };
-              console.log(`${functionName} function tapped successfully.`);
             } catch (e) {
-              console.log(`Cannot tap into ${functionName} function:`, e);
+              console.error(`Cannot tap into ${functionName} function:`, e);
             }
           }
 
