@@ -39,7 +39,8 @@ class ObservableCollection(abc.ABC):  # noqa: B024
 
     def on_change(self, handler: Callable) -> None:
         """Register a handler to be called when the collection changes."""
-        self._change_handlers.append(handler)
+        if handler != self._handle_change:  # pylint: disable=comparison-with-callable
+            self._change_handlers.append(handler)
 
     def _observe(self, data: Any) -> Any:
         if isinstance(data, ObservableCollection):
