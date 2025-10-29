@@ -1,7 +1,8 @@
 import hashlib
 from collections.abc import Iterable
 from dataclasses import dataclass
-from typing import Any, Generic, Optional, Union, overload
+from typing import Any, Generic, Optional, Union, overload  # pylint: disable=unused-import
+# NOTE: pylint ignore is for the `Any` import.
 
 from typing_extensions import TypedDict, TypeVar
 
@@ -43,11 +44,6 @@ class OptionDict(TypedDict, Generic[L, V]):
     id: str
 
 
-def dict_to_option(v: OptionDict[L, V]) -> Option[L, V]:
-    option = Option[L, V](label=v['label'], value=v['value'])
-    return option
-
-
 @overload
 def to_option(v: L) -> Option[L, L]:
     ...
@@ -57,6 +53,10 @@ def to_option(v: Option[L, V]) -> Option[L, V]:
     ...
 
 def to_option(v: Union[L, Option[L, V]]) -> Union[Option[L, V], Option[L, L]]:
+    """Converts a primitive type to an `Option`. If the value is already an `Option`, it will return that option unchanged.
+
+    :param v: The primitive type (`int`, `float`, `str`, `bool`, `None`)
+    """
     if isinstance(v, Option):
         return v
     return Option(label=v, value=v)

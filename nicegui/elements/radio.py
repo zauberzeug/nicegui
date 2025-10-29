@@ -4,6 +4,7 @@ from typing import Any, Generic, Optional, Union, overload
 from ..events import GenericEventArguments, Handler, ValueChangeEventArguments
 from .choice_element import ChoiceElement, L, Option, P, to_option
 from .mixins.disableable_element import DisableableElement
+from ..helpers import add_docstring_from
 
 
 class Radio(ChoiceElement[Optional[P], Option[L, P]], DisableableElement, Generic[L, P]):
@@ -49,6 +50,8 @@ def radio(
 ) -> Radio[L, P]:
     ...
 
+# pylint: disable=missing-function-docstring
+@add_docstring_from(Radio.__init__)
 def radio(
     options: Union[Iterable[P], Iterable[Option[L, P]]], *,
     value: Optional[P] = None,

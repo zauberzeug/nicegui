@@ -5,6 +5,7 @@ from typing import Any, Callable, Generic, Literal, Optional, Union, overload
 from typing_extensions import TypeVar
 
 from ..events import GenericEventArguments, Handler, ValueChangeEventArguments
+from ..helpers import add_docstring_from
 from .choice_element import ChoiceElement, Option, OptionDict, P, T, to_option
 from .mixins.disableable_element import DisableableElement
 from .mixins.label_element import LabelElement
@@ -202,6 +203,8 @@ def select(
     ) -> Select[Optional[Option[P, P]], Option[P, P]]:
     ...
 
+# pylint: disable=missing-function-docstring
+@add_docstring_from(Select.__init__)
 def select(
         options: Union[Iterable[T], Iterable[P]], *,
         label: str = '',

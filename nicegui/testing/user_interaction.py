@@ -87,7 +87,7 @@ class UserInteraction(Generic[T]):
                         target_option = next((o for o in element.options if o.label == self.target), ui.to_option(''))
                         if element.multiple:
                             if target_option in element.value:
-                                element.value = tuple([v for v in element.value if v != target_option])
+                                element.value = tuple(v for v in element.value if v != target_option)
                             elif target_option.value in element._values:  # pylint: disable=protected-access
                                 element.value = tuple([*element.value, target_option])
                             else:
