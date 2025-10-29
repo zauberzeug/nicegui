@@ -262,3 +262,8 @@ async def prune_user_storage(*, force: bool = False) -> None:
     for result in results:
         if isinstance(result, Exception):
             log.exception(result)
+
+
+@sio.on('too-long-message')
+def _on_too_long_message(_: str) -> None:
+    log.warning('Received a too long message from the client.')
