@@ -2,8 +2,8 @@ import hashlib
 from collections.abc import Iterable
 from dataclasses import dataclass
 from typing import Any, Generic, Optional, Union, overload  # pylint: disable=unused-import
-# NOTE: pylint ignore is for the `Any` import.
 
+# NOTE: pylint ignore is for the `Any` import.
 from typing_extensions import TypedDict, TypeVar
 
 from ..events import Handler, ValueChangeEventArguments

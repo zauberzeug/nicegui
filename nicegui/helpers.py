@@ -13,7 +13,8 @@ from collections.abc import Callable
 from inspect import Parameter, signature
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
-from typing_extensions import TypeVar, ParamSpec
+
+from typing_extensions import ParamSpec, TypeVar
 
 from .context import context
 from .logging import log

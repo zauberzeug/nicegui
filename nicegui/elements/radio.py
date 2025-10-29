@@ -2,9 +2,9 @@ from collections.abc import Iterable
 from typing import Any, Generic, Optional, Union, overload
 
 from ..events import GenericEventArguments, Handler, ValueChangeEventArguments
+from ..helpers import add_docstring_from
 from .choice_element import ChoiceElement, L, Option, P, to_option
 from .mixins.disableable_element import DisableableElement
-from ..helpers import add_docstring_from
 
 
 class Radio(ChoiceElement[Optional[P], Option[L, P]], DisableableElement, Generic[L, P]):
