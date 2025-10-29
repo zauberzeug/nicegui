@@ -344,6 +344,9 @@ function createApp(elements, options) {
         connect: () => {
           function tapIntoFunction(target, functionName) {
             try {
+              if (!target || !(functionName in target)) {
+                return;
+              }
               const originalFunction = target[functionName];
               target[functionName] = function (...args) {
                 const msg = args[0];
