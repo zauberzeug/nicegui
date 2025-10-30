@@ -3,17 +3,17 @@ from contextlib import asynccontextmanager
 
 import httpx
 
-from nicegui import core, ui
-from nicegui.functions.download import download
-from nicegui.functions.navigate import Navigate
-from nicegui.functions.notify import notify
-from nicegui.testing.user_plugin import User
+from .. import core, ui
+from ..functions.download import download
+from ..functions.navigate import Navigate
+from ..functions.notify import notify
+from .user import User
 
 
 @asynccontextmanager
 async def run(ui_code):
     """A user context manager for the given `nicegui.ui` code.
-    
+
     Example use in a plain pytest function without user plugin use:
 
     ```
@@ -47,5 +47,3 @@ async def run(ui_code):
         ui.navigate = Navigate()
         ui.notify = notify
         ui.download = download
-
-
