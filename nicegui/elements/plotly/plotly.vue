@@ -8,6 +8,13 @@ export default {
     const { Plotly } = await import("nicegui-plotly");
     this.Plotly = Plotly;
     this.update();
+    this.$nextTick(() => {
+      this.resizeObserver = new ResizeObserver(() => this.Plotly.Plots.resize(this.$el));
+      this.resizeObserver.observe(this.$el);
+    });
+  },
+  unmounted() {
+    this.resizeObserver?.disconnect();
   },
   methods: {
     update() {
