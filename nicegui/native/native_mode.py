@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import _thread
+import contextlib
 import multiprocessing as mp
 import queue
 import socket
@@ -8,6 +9,7 @@ import sys
 import tempfile
 import time
 import warnings
+from collections.abc import Generator
 from threading import Event, Thread
 from typing import Any, Callable
 
@@ -50,13 +52,26 @@ def _open_window(
     _start_window_method_executor(window, method_queue, response_queue, closed)
     if not core.app.native.start_args.get('private_mode', True) and 'storage_path' not in core.app.native.start_args:
         log.warning('Pass in a `storage_path` to properly disable `private_mode` for the native app.')
+    with _provide_storage():
+        webview.start(**core.app.native.start_args)
+
+
+@contextlib.contextmanager
+def _provide_storage() -> Generator[None, None, None]:
+    if 'storage_path' in core.app.native.start_args:
+        yield
+        return
+
     try:
-        storage_path = tempfile.mkdtemp()
-    except Exception:
-        log.error('Error creating temporary storage path. '
+        temp_dir = tempfile.TemporaryDirectory()
+    except OSError as e:
+        log.error(f'Error creating temporary storage path: {e}. '
                   'Please set `app.native.start_args["storage_path"]` to a valid path.')
         sys.exit(1)
-    webview.start(**{'storage_path': storage_path, **core.app.native.start_args})
+
+    with temp_dir:
+        core.app.native.start_args['storage_path'] = temp_dir.name
+        yield
 
 
 def _start_window_method_executor(window: webview.Window,
