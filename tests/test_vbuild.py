@@ -24,7 +24,7 @@ def test_template_only():
         </template>
     ''', '''
         <script type="text/x-template" id="tpl-TEST">
-            <h1 data-"TEST">Hello, World!</h1>
+            <h1 data-TEST>Hello, World!</h1>
         </script>
     ''', '''
     ''', '''
@@ -44,7 +44,7 @@ def test_template_with_style():
         </style>
     ''', '''
         <script type="text/x-template" id="tpl-TEST">
-            <h1 data-"TEST">Hello, World!</h1>
+            <h1 data-TEST>Hello, World!</h1>
         </script>
     ''', '''
         h1 {color: red; }
@@ -65,7 +65,7 @@ def test_template_with_scoped_style():
         </style>
     ''', '''
         <script type="text/x-template" id="tpl-TEST">
-            <h1 data-"TEST">Hello, World!</h1>
+            <h1 data-TEST>Hello, World!</h1>
         </script>
     ''', '''
         *[data-TEST] h1 {color: red; }
@@ -90,7 +90,7 @@ def test_template_with_script():
         </script>
     ''', '''
         <script type="text/x-template" id="tpl-TEST">
-            <h1 data-"TEST">Hello, World!</h1>
+            <h1 data-TEST>Hello, World!</h1>
         </script>
     ''', '''
     ''', '''

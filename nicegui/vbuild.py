@@ -15,7 +15,7 @@ class VBuild:
             raise ValueError(f'{filepath} has no template')
 
         name = filepath.stem.replace('/', '-').replace('\\', '-').replace(':', '-').replace('.', '-')
-        html = re.sub(r'^<([\w-]+)', rf'<\1 data-"{name}"', parser.html)
+        html = re.sub(r'^<([\w-]+)', rf'<\1 data-{name}', parser.html)
         self.html = f'<script type="text/x-template" id="tpl-{name}">\n    {html}\n</script>'
         self.style = '\n'.join(add_css_prefix(style, '') for style in parser.styles) + '\n'
         self.style += '\n'.join(add_css_prefix(style, f'*[data-{name}]') for style in parser.scopedStyles)
