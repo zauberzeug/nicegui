@@ -50,7 +50,13 @@ def _open_window(
     _start_window_method_executor(window, method_queue, response_queue, closed)
     if not core.app.native.start_args.get('private_mode', True) and 'storage_path' not in core.app.native.start_args:
         log.warning('Pass in a `storage_path` to properly disable `private_mode` for the native app.')
-    webview.start(**{'storage_path': tempfile.mkdtemp(), **core.app.native.start_args})
+    try:
+        storage_path = tempfile.mkdtemp()
+    except Exception:
+        log.error('Error creating temporary storage path. '
+                  'Please set `app.native.start_args["storage_path"]` to a valid path.')
+        sys.exit(1)
+    webview.start(**{'storage_path': storage_path, **core.app.native.start_args})
 
 
 def _start_window_method_executor(window: webview.Window,
