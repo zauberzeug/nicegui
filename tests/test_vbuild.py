@@ -7,14 +7,14 @@ from nicegui.elements.markdown import remove_indentation
 from nicegui.vbuild import VBuild
 
 
-def check(text: str, html: str, style: str, script: str) -> None:
+def check(text: str, *, html: str, css: str, js: str) -> None:
     with tempfile.TemporaryDirectory() as tmp_dir:
         temp_file = Path(tmp_dir) / 'TEST.vue'
         temp_file.write_text(remove_indentation(text), encoding='utf-8')
         vbuild = VBuild(temp_file)
         assert remove_indentation(vbuild.html).strip() == remove_indentation(html).strip()
-        assert remove_indentation(vbuild.style).strip() == remove_indentation(style).strip()
-        assert remove_indentation(vbuild.script).strip() == remove_indentation(script).strip()
+        assert remove_indentation(vbuild.style).strip() == remove_indentation(css).strip()
+        assert remove_indentation(vbuild.script).strip() == remove_indentation(js).strip()
 
 
 def test_template_only():
@@ -22,12 +22,12 @@ def test_template_only():
         <template>
             <h1>Hello, World!</h1>
         </template>
-    ''', '''
+    ''', html='''
         <script type="text/x-template" id="tpl-TEST">
             <h1 data-TEST>Hello, World!</h1>
         </script>
-    ''', '''
-    ''', '''
+    ''', css='''
+    ''', js='''
         var TEST = Vue.component(\'TEST\', {template:"#tpl-TEST",});
     ''')
 
@@ -42,13 +42,13 @@ def test_template_with_style():
                 color: red;
             }
         </style>
-    ''', '''
+    ''', html='''
         <script type="text/x-template" id="tpl-TEST">
             <h1 data-TEST>Hello, World!</h1>
         </script>
-    ''', '''
+    ''', css='''
         h1 {color: red; }
-    ''', '''
+    ''', js='''
         var TEST = Vue.component(\'TEST\', {template:"#tpl-TEST",});
     ''')
 
@@ -63,13 +63,13 @@ def test_template_with_scoped_style():
                 color: red;
             }
         </style>
-    ''', '''
+    ''', html='''
         <script type="text/x-template" id="tpl-TEST">
             <h1 data-TEST>Hello, World!</h1>
         </script>
-    ''', '''
+    ''', css='''
         *[data-TEST] h1 {color: red; }
-    ''', '''
+    ''', js='''
         var TEST = Vue.component(\'TEST\', {template:"#tpl-TEST",});
     ''')
 
@@ -88,12 +88,12 @@ def test_template_with_script():
                 }
             }
         </script>
-    ''', '''
+    ''', html='''
         <script type="text/x-template" id="tpl-TEST">
             <h1 data-TEST>Hello, World!</h1>
         </script>
-    ''', '''
-    ''', '''
+    ''', css='''
+    ''', js='''
         var TEST = Vue.component(\'TEST\', {template:"#tpl-TEST",
                 methods: {
                     hello() {
@@ -113,7 +113,7 @@ def test_multiple_templates():
             <template>
                 <h1>Hello, NiceGUI!</h1>
             </template>
-        ''', '', '', '')
+        ''', html='', css='', js='')
 
 
 def test_multiple_top_level_tags():
@@ -123,4 +123,4 @@ def test_multiple_top_level_tags():
                 <h1>Hello, World!</h1>
                 <h1>Hello, NiceGUI!</h1>
             </template>
-        ''', '', '', '')
+        ''', html='', css='', js='')
