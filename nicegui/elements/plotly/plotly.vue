@@ -8,10 +8,11 @@ export default {
     const { Plotly } = await import("nicegui-plotly");
     this.Plotly = Plotly;
     this.update();
-
-    this.$nextTick(() => this.initResizeObserver());
+    this.$nextTick(() => {
+      this.resizeObserver = new ResizeObserver(() => this.Plotly.Plots.resize(this.$el));
+      this.resizeObserver.observe(this.$el);
+    });
   },
-
   beforeUnmount() {
     this.resizeObserver?.disconnect();
     this.resizeObserver = null;
@@ -40,14 +41,6 @@ export default {
       // store last options
       this.last_options = options;
     },
-    initResizeObserver() {
-      if (this.resizeObserver) {
-        return;
-      }
-      this.resizeObserver = new ResizeObserver(() => this.Plotly.Plots.resize(this.$el));
-      this.resizeObserver.observe(this.$el);
-    },
-    
     set_handlers() {
       // forward events
       for (const name of [
