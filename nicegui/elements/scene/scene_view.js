@@ -101,7 +101,7 @@ export default {
     }, 100);
   },
 
-  beforeDestroy() {
+  beforeUnmount() {
     window.removeEventListener("resize", this.resize);
     window.removeEventListener("DOMContentLoaded", this.resize);
   },

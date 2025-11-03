@@ -81,9 +81,6 @@ export default {
 
     this.update_chart();
   },
-  beforeDestroy() {
-    this.chart.dispose();
-  },
   beforeUnmount() {
     this.chart.dispose();
   },
