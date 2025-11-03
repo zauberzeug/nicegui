@@ -13,9 +13,8 @@ export default {
       this.resizeObserver.observe(this.$el);
     });
   },
-  beforeUnmount() {
+  unmounted() {
     this.resizeObserver?.disconnect();
-    this.resizeObserver = null;
   },
   methods: {
     update() {
