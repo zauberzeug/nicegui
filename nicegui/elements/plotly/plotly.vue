@@ -9,7 +9,10 @@ export default {
     this.Plotly = Plotly;
     this.update();
     this.$nextTick(() => {
-      this.resizeObserver = new ResizeObserver(() => this.Plotly.Plots.resize(this.$el));
+      this.resizeObserver = new ResizeObserver(() => {
+        if (this.options.config?.responsive === false) return;
+        this.Plotly.Plots.resize(this.$el);
+      });
       this.resizeObserver.observe(this.$el);
     });
   },
