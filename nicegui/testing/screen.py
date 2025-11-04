@@ -29,6 +29,7 @@ class Screen:
     PORT = 3392
     IMPLICIT_WAIT = 4
     SCREENSHOT_DIR = Path('screenshots')
+    CATCH_JS_ERRORS = True
 
     def __init__(self, selenium: webdriver.Chrome, caplog: pytest.LogCaptureFixture, request: Optional[pytest.FixtureRequest] = None) -> None:
         self.selenium = selenium
@@ -39,10 +40,11 @@ class Screen:
         self.connected = threading.Event()
         app.on_connect(self.connected.set)
         self.url = f'http://localhost:{self.PORT}'
+        self.allowed_js_errors: list[str] = []
 
     def start_server(self) -> None:
         """Start the webserver in a separate thread."""
-        main_path = get_path_to_main_file(self.pytest_request.config) if self.pytest_request else None
+        main_path = get_path_to_main_file(self.pytest_request) if self.pytest_request else None
         if main_path is None:
             prepare_simulation()
             self.server_thread = threading.Thread(target=lambda: ui.run(**self.ui_run_kwargs))
@@ -65,7 +67,8 @@ class Screen:
         """Stop the webserver."""
         self.close()
         self.caplog.clear()
-        Server.instance.should_exit = True
+        if hasattr(Server, 'instance'):
+            Server.instance.should_exit = True
         if self.server_thread:
             self.server_thread.join()
         if core.loop:

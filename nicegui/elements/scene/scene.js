@@ -10,6 +10,7 @@ const {
   STLLoader,
   THREE,
   TWEEN,
+  Stats,
 } = SceneLib;
 
 function texture_geometry(coords) {
@@ -78,6 +79,13 @@ export default {
     this.objects.set("scene", this.scene);
     this.draggable_objects = [];
     this.is_initialized = false;
+
+    if (this.show_stats) {
+      this.stats = new Stats();
+      this.stats.domElement.style.position = "absolute";
+      this.stats.domElement.style.top = "0px";
+      this.$el.appendChild(this.stats.domElement);
+    }
 
     window["scene_" + this.$el.id] = this.scene; // NOTE: for selenium tests only
 
@@ -183,11 +191,12 @@ export default {
     this.drag_controls.addEventListener("dragend", handleDrag);
 
     const render = () => {
-      requestAnimationFrame(() => setTimeout(() => render(), 1000 / 20));
+      requestAnimationFrame(() => setTimeout(() => render(), 1000 / this.fps));
       this.camera_tween?.update();
       this.renderer.render(this.scene, this.camera);
       this.text_renderer.render(this.scene, this.camera);
       this.text3d_renderer.render(this.scene, this.camera);
+      if (this.stats) this.stats.update();
     };
     render();
 
@@ -226,7 +235,7 @@ export default {
     }, 100);
   },
 
-  beforeDestroy() {
+  beforeUnmount() {
     window.removeEventListener("resize", this.resize);
     window.removeEventListener("DOMContentLoaded", this.resize);
   },
@@ -552,5 +561,7 @@ export default {
     click_events: Array,
     drag_constraints: String,
     background_color: String,
+    fps: Number,
+    show_stats: Boolean,
   },
 };

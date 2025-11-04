@@ -1,4 +1,5 @@
-import importlib
+import gc
+import sys
 from collections.abc import Generator
 from copy import copy
 from pathlib import Path
@@ -17,13 +18,19 @@ def pytest_addoption(parser: pytest.Parser) -> None:
     parser.addini('main_file', 'main file', default='main.py')
 
 
-def get_path_to_main_file(config: pytest.Config) -> Optional[Path]:
-    """Get the path to the main file."""
-    main_file = config.getini('main_file')
-    if main_file == '':
+def pytest_configure(config: pytest.Config) -> None:
+    """Register the "nicegui_main_file" marker."""
+    config.addinivalue_line('markers', 'nicegui_main_file: specify the main file for the test')
+
+
+def get_path_to_main_file(request: pytest.FixtureRequest) -> Optional[Path]:
+    """Get the path to the main file from the test marker or global config."""
+    marker = next((m for m in request.node.iter_markers('nicegui_main_file')), None)
+    main_file = marker.args[0] if marker else request.config.getini('main_file')
+    if not main_file:
         return None
-    assert config.inipath is not None
-    path = (config.inipath.parent / main_file).resolve()
+    assert request.config.inipath is not None
+    path = (request.config.inipath.parent / main_file).resolve()
     if not path.is_file():
         raise FileNotFoundError(f'Main file not found: {path}')
     return path
@@ -40,9 +47,7 @@ def nicegui_reset_globals() -> Generator[None, None, None]:
     app.middleware_stack = None
     app.user_middleware.clear()
     app.urls.clear()
-    core.air = None
-    importlib.reload(core)
-    importlib.reload(run)
+    core.reset()
 
     # capture initial defaults
     element_types: list[type[ui.element]] = [ui.element, *find_all_subclasses(ui.element)]
@@ -55,16 +60,27 @@ def nicegui_reset_globals() -> Generator[None, None, None]:
     app.reset()
     binding.reset()
 
+    gc.collect()
+
     yield
+
+    gc.collect()
 
     app.reset()
     event.reset()
+    run.reset()
 
     # restore initial defaults
     for t in element_types:
         t._default_classes = default_classes[t]  # pylint: disable=protected-access
         t._default_style = default_styles[t]  # pylint: disable=protected-access
         t._default_props = default_props[t]  # pylint: disable=protected-access
+
+    # NOTE: remove modules that registered pages to re-imported them when the main file is re-executed so that @ui.page decorators run again
+    for func in Client.page_routes:
+        # NOTE: skip pytest modules from the tests/ directory (they shouldn't be deleted as it breaks pickling and class identity)
+        if not func.__module__.startswith('tests.'):
+            sys.modules.pop(func.__module__, None)
 
 
 def find_all_subclasses(cls: type) -> list[type]:

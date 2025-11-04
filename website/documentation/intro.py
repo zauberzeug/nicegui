@@ -1,59 +1,105 @@
+import random
 from typing import Callable
 
 from nicegui import ui
 
 from ..style import subheading
+from .content.sub_pages_documentation import FakeSubPages
 from .demo import demo
 
 
 def create_intro() -> None:
-    @_main_page_demo('Styling', '''
-        While having reasonable defaults, you can still modify the look of your app with CSS as well as Tailwind and Quasar classes.
+    @_main_page_demo('Single-Page Applications', '''
+        Build applications with fast client-side routing using [`ui.sub_pages`](/documentation/sub_pages)
+        and a `root` function as single entry point.
+        For each visitor, the `root` function is executed and generates the interface.
+        [`ui.link`](/documentation/link) and [`ui.navigate`](/documentation/navigate) can be used to navigate to other sub pages.
+
+        If you do not want a single-page application, you can also use [`@ui.page('/your/path')`](/documentation/page)
+        to define standalone content available at a specific path.
     ''')
-    def formatting_demo():
-        ui.icon('thumb_up')
-        ui.markdown('This is **Markdown**.')
-        ui.html('This is <strong>HTML</strong>.', sanitize=False)
-        with ui.row():
-            ui.label('CSS').style('color: #888; font-weight: bold')
-            ui.label('Tailwind').classes('font-serif')
-            ui.label('Quasar').classes('q-ml-xl')
-        ui.link('NiceGUI on GitHub', 'https://github.com/zauberzeug/nicegui')
+    def spa_demo():
+        sub_pages = None  # HIDE
 
-    @_main_page_demo('Common UI Elements', '''
-        NiceGUI comes with a collection of commonly used UI elements.
-    ''')
-    def common_elements_demo():
-        from nicegui.events import ValueChangeEventArguments
+        def root():
+            # ui.sub_pages({
+            #     '/': table_page,
+            #     '/map/{lat}/{lon}': map_page,
+            # }).classes('w-full')
+            nonlocal sub_pages  # HIDE
+            sub_pages = FakeSubPages({'/': table_page, '/map/{lat}/{lon}': map_page}).classes('w-full')  # HIDE
+            sub_pages.init()  # HIDE
 
-        def show(event: ValueChangeEventArguments):
-            name = type(event.sender).__name__
-            ui.notify(f'{name}: {event.value}')
+        def table_page():
+            ui.table(rows=[
+                {'name': 'New York', 'lat': 40.7119, 'lon': -74.0027},
+                {'name': 'London', 'lat': 51.5074, 'lon': -0.1278},
+                {'name': 'Tokyo', 'lat': 35.6863, 'lon': 139.7722},
+            ]).on('row-click', lambda e: sub_pages._render('/map/{lat}/{lon}', lat=e.args[1]['lat'], lon=e.args[1]['lon']))  # HIDE
+            # ]).on('row-click', lambda e: ui.navigate.to(f'/map/{e.args[1]["lat"]}/{e.args[1]["lon"]}'))
 
-        ui.button('Button', on_click=lambda: ui.notify('Click'))
-        with ui.row():
-            ui.checkbox('Checkbox', on_change=show)
-            ui.switch('Switch', on_change=show)
-        ui.radio(['A', 'B', 'C'], value='A', on_change=show).props('inline')
-        with ui.row():
-            ui.input('Text input', on_change=show)
-            ui.select(['One', 'Two'], value='One', on_change=show)
-        ui.link('And many more...', '/documentation').classes('mt-8')
+        def map_page(lat: float, lon: float):
+            ui.leaflet(center=(lat, lon), zoom=10)
+            # ui.link('Back to table', '/')
+            sub_pages.link('Back to table', '/')  # HIDE
 
-    @_main_page_demo('Value Binding', '''
-        Binding values between UI elements and data models is built into NiceGUI.
+        return root
+
+    @_main_page_demo('Reactive Transformations', '''
+        Create real-time interfaces with automatic updates.
+        Type and watch text flow in both directions.
+        When input changes, the [binding](/documentation/section_binding_properties) transforms the text
+        with a custom Python function and updates the label.
     ''')
     def binding_demo():
-        class Demo:
-            def __init__(self):
-                self.number = 1
+        def root():
+            user_input = ui.input(value='Hello')
+            ui.label().bind_text_from(user_input, 'value', reverse)
 
-        demo = Demo()
-        v = ui.checkbox('visible', value=True)
-        with ui.column().bind_visibility_from(v, 'value'):
-            ui.slider(min=1, max=3).bind_value(demo, 'number')
-            ui.toggle({1: 'A', 2: 'B', 3: 'C'}).bind_value(demo, 'number')
-            ui.number().bind_value(demo, 'number')
+        def reverse(text: str) -> str:
+            return text[::-1]
+
+        return root
+
+    @_main_page_demo('Event System', '''
+        Use an [Event](/documentation/event) to trigger actions and pass data.
+        Here we have an IoT temperature sensor submitting its readings
+        to a [FastAPI endpoint](/documentation/section_pages_routing#api_responses) with path "/sensor".
+        When a new value arrives, it emits an event for the chart to be updated.
+    ''')
+    def event_system_demo():
+        import time
+
+        from nicegui import Event, app
+
+        sensor = Event[float]()
+
+        # @app.post('/sensor')
+        def sensor_webhook(temperature: float):
+            sensor.emit(temperature)
+
+        def root():
+            chart = ui.echart({
+                'xAxis': {'type': 'time', 'axisLabel': {'hideOverlap': True}},
+                'yAxis': {'type': 'value', 'min': 'dataMin'},
+                'series': [{'type': 'line', 'data': [], 'smooth': True}],
+            })
+
+            def update_chart(temperature: float):
+                data = chart.options['series'][0]['data']
+                data.append([time.time(), temperature])
+                if len(data) > 10:
+                    data.pop(0)
+
+            sensor.subscribe(update_chart)
+            # END OF DEMO
+
+            data = chart.options['series'][0]['data']
+            data.append([time.time(), 24.0])
+            ui.timer(1.0, lambda: update_chart(round(data[-1][1] + (random.random() - 0.5), 1)), immediate=False)
+        app  # noqa: B018 to avoid unused import warning
+
+        return root
 
 
 def _main_page_demo(title: str, explanation: str) -> Callable:
