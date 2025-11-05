@@ -49,19 +49,15 @@ export default {
       is_running = false;
     },
     attachClickHandlers(element) {
-      const clickables = element.querySelectorAll("g.node");
-      console.log(clickables);
-      clickables.forEach((node) => {
+      element.querySelectorAll("g.node").forEach((node) => {
         node.style.cursor = "pointer";
-
-        const nodeText = node.textContent.trim();
         const nodeId = node.id;
 
         node.addEventListener("click", () => {
           this.$emit("node_click", {
             node: this.getNodeName(nodeId),
             nodeId,
-            nodeText,
+            nodeText: node.textContent.trim(),
           });
         });
       });
