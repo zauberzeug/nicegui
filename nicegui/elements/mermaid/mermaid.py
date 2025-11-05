@@ -7,7 +7,7 @@ from ..mixins.content_element import ContentElement
 class Mermaid(ContentElement, component='mermaid.js', esm={'nicegui-mermaid': 'dist'}):
     CONTENT_PROP = 'content'
 
-    def __init__(self, content: str, config: Optional[dict] = None, on_node_click: Optional[Handler[GenericEventArguments]] = None) -> None:
+    def __init__(self, content: str, config: Optional[dict] = None, *, on_node_click: Optional[Handler[GenericEventArguments]] = None) -> None:
         """Mermaid Diagrams
 
         Renders diagrams and charts written in the Markdown-inspired `Mermaid <https://mermaid.js.org/>`_ language.
@@ -31,7 +31,7 @@ class Mermaid(ContentElement, component='mermaid.js', esm={'nicegui-mermaid': 'd
         super().__init__(content=content)
         self._props['config'] = config
 
-        if on_node_click:
+        if on_node_click is not None:
             self.on('node_click', on_node_click)
             self._props['clickInstance'] = True
 
