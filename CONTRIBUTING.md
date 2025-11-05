@@ -43,13 +43,6 @@ By participating, you agree to abide by its terms.
 We are excited that you want to contribute code to NiceGUI.
 We're always looking for bug fixes, performance improvements, and new features.
 
-> [!IMPORTANT]
-> You will clone your fork, which you have full write access to, in the steps below.
->
-> Even then, it is still not recommended to push code to your branch's `main` because:
-> 1. It blocks you from working on more than one thing at a time
-> 2. It highly increases chance of unclean commit history, deviating from how `main` is supposed to stay in sync with upstream.
-
 ### AI Assistant Integration
 
 This project is designed to work well with AI assistants like Cursor, GitHub Copilot, and others.
@@ -378,6 +371,13 @@ The following tools are used to update other resources:
 - summarize_dependencies.py to update the dependencies in the DEPENDENCIES.md file
 
 ## Pull requests
+
+> [!IMPORTANT]
+> While you have full access to your fork, still it is not recommended to push code to your branch's `main` because:
+>
+> 1. It blocks you from working on more than one thing at a time,
+> 2. It highly increases chance of unclean commit history,
+> 3. It deviates from how `main` is supposed to stay in sync with upstream.
 
 To get started, fork the repository on GitHub, clone it somewhere on your filesystem, commit and push your changes,
 and then open a pull request (PR) with a detailed description of the changes you've made
