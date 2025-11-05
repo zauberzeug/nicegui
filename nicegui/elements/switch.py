@@ -8,7 +8,10 @@ from .mixins.value_element import ValueElement
 
 class Switch(TextElement, ValueElement, DisableableElement):
 
-    def __init__(self, text: str = '', *, value: bool = False, on_change: Optional[Handler[ValueChangeEventArguments]] = None) -> None:
+    def __init__(self,
+                 text: str = '', *,
+                 value: Optional[bool] = False,
+                 on_change: Optional[Handler[ValueChangeEventArguments]] = None) -> None:
         """Switch
 
         This element is based on Quasar's `QToggle <https://quasar.dev/vue-components/toggle>`_ component.

@@ -21,6 +21,12 @@ def main_demo() -> None:
 def click_demo() -> None:
     ui.mermaid('''
     graph LR;
+        A((Click me!));
+        click A call emitEvent("mermaid_click", "You clicked me!")
+    ''', config={'securityLevel': 'loose'})
+    ui.on('mermaid_click', lambda e: ui.notify(e.args))
+    ui.mermaid('''
+    graph LR;
         A((Click Me));
         B((Or Click Me));
         A --> B;

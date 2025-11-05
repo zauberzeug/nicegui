@@ -5,9 +5,14 @@ from nicegui.testing import Screen
 
 
 def test_joystick(screen: Screen):
-    j = ui.joystick(on_move=lambda e: coordinates.set_text(f'move {e.x:.3f}, {e.y:.3f}'),
-                    on_end=lambda _: coordinates.set_text('end 0, 0'))
-    coordinates = ui.label('start 0, 0')
+    j = None
+
+    @ui.page('/')
+    def page():
+        nonlocal j
+        j = ui.joystick(on_move=lambda e: coordinates.set_text(f'move {e.x:.3f}, {e.y:.3f}'),
+                        on_end=lambda _: coordinates.set_text('end 0, 0'))
+        coordinates = ui.label('start 0, 0')
 
     screen.open('/')
     joystick = screen.find_element(j)
@@ -31,7 +36,12 @@ def test_joystick(screen: Screen):
 
 
 def test_styling_joystick(screen: Screen):
-    j = ui.joystick().style('background-color: gray;').classes('shadow-lg')
+    j = None
+
+    @ui.page('/')
+    def page():
+        nonlocal j
+        j = ui.joystick().style('background-color: gray;').classes('shadow-lg')
 
     screen.open('/')
     joystick = screen.find_element(j)

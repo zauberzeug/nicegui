@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Dict, List, Literal, Optional, Union
+from typing import Literal, Optional, Union
 
 from ..dataclasses import KWONLY_SLOTS
 from ..language import Language
@@ -9,11 +9,11 @@ from ..language import Language
 @dataclass(**KWONLY_SLOTS)
 class AppConfig:
     endpoint_documentation: Literal['none', 'internal', 'page', 'all'] = 'none'
-    socket_io_js_query_params: Dict = field(default_factory=dict)
-    socket_io_js_extra_headers: Dict = field(default_factory=dict)
-    socket_io_js_transports: List[Literal['websocket', 'polling']] = \
+    socket_io_js_query_params: dict = field(default_factory=dict)
+    socket_io_js_extra_headers: dict = field(default_factory=dict)
+    socket_io_js_transports: list[Literal['websocket', 'polling']] = \
         field(default_factory=lambda: ['websocket', 'polling'])  # NOTE: we favor websocket
-    quasar_config: Dict = \
+    quasar_config: dict = \
         field(default_factory=lambda: {
             'brand': {
                 'primary': '#5898d4',
@@ -23,6 +23,11 @@ class AppConfig:
                 'skipHijack': False,
             },
         })
+    vue_config_script: str = r'''
+        app.use(Quasar, {config: vue_config});
+        Quasar.lang.set(Quasar.lang[language.replace('-', '')]);
+        Quasar.Dark.set(dark === None ? "auto" : dark);
+    '''
 
     reload: bool = field(init=False)
     title: str = field(init=False)

@@ -5,6 +5,7 @@ from .persistent_dict import PersistentDict
 try:
     import redis as redis_sync
     import redis.asyncio as redis
+    import redis.exceptions as redis_exceptions
     optional_features.register('redis')
 except ImportError:
     pass
@@ -16,15 +17,16 @@ class RedisPersistentDict(PersistentDict):
         if not optional_features.has('redis'):
             raise ImportError('Redis is not installed. Please run "pip install nicegui[redis]".')
         self.url = url
-        self.redis_client = redis.from_url(
-            url,
-            health_check_interval=10,
-            socket_connect_timeout=5,
-            retry_on_timeout=True,
-            socket_keepalive=True,
-        )
+        self._redis_client_params = {
+            'health_check_interval': 10,
+            'socket_connect_timeout': 5,
+            'retry_on_timeout': True,
+            **({'socket_keepalive': True} if not url.startswith('unix://') else {}),
+        }
+        self.redis_client = redis.from_url(self.url, **self._redis_client_params)
         self.pubsub = self.redis_client.pubsub()
         self.key = key_prefix + id
+        self._should_listen = True
         super().__init__(data={}, on_change=self.publish)
 
     async def initialize(self) -> None:
@@ -38,13 +40,7 @@ class RedisPersistentDict(PersistentDict):
 
     def initialize_sync(self) -> None:
         """Load initial data from Redis and start listening for changes in a synchronous context."""
-        with redis_sync.from_url(
-            self.url,
-            health_check_interval=10,
-            socket_connect_timeout=5,
-            retry_on_timeout=True,
-            socket_keepalive=True,
-        ) as redis_client_sync:
+        with redis_sync.from_url(self.url, **self._redis_client_params) as redis_client_sync:
             try:
                 data = redis_client_sync.get(self.key)
                 self.update(json.loads(data) if data else {})
@@ -54,12 +50,25 @@ class RedisPersistentDict(PersistentDict):
 
     def _start_listening(self) -> None:
         async def listen():
-            await self.pubsub.subscribe(self.key + 'changes')
-            async for message in self.pubsub.listen():
-                if message['type'] == 'message':
-                    new_data = json.loads(message['data'])
-                    if new_data != self:
-                        self.update(new_data)
+            try:
+                if not self._should_listen:
+                    return
+                await self.pubsub.subscribe(self.key + 'changes')
+                if not self._should_listen:
+                    await self.pubsub.unsubscribe()
+                    return
+                async for message in self.pubsub.listen():
+                    t = message['type']
+                    if t == 'message':
+                        new_data = json.loads(message['data'])
+                        if new_data != self:
+                            self.update(new_data)
+                    elif t in ('unsubscribe', 'punsubscribe') and message.get('data') == 0:
+                        break
+            except Exception as e:
+                if isinstance(e, redis_exceptions.ConnectionError) and not self._should_listen:
+                    return  # NOTE: on quick instantiation cycles, unsubscribe event might not be received before the connection is closed
+                log.exception(f'Unexpected error in Redis listener for {self.key}')
 
         if core.loop and core.loop.is_running():
             background_tasks.create(listen(), name=f'redis-listen-{self.key}')
@@ -69,6 +78,8 @@ class RedisPersistentDict(PersistentDict):
     def publish(self) -> None:
         """Publish the data to Redis and notify other instances."""
         async def backup() -> None:
+            if not await self.redis_client.exists(self.key) and not self:
+                return
             pipeline = self.redis_client.pipeline()
             pipeline.set(self.key, json.dumps(self))
             pipeline.publish(self.key + 'changes', json.dumps(self))
@@ -80,7 +91,9 @@ class RedisPersistentDict(PersistentDict):
 
     async def close(self) -> None:
         """Close Redis connection and subscription."""
-        await self.pubsub.unsubscribe()
+        self._should_listen = False
+        if self.pubsub.subscribed:
+            await self.pubsub.unsubscribe()
         await self.pubsub.close()
         await self.redis_client.close()
 
