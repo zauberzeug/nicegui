@@ -36,7 +36,7 @@ export default {
           if (this.clickInstance) {
             await this.$nextTick();
             this.attachClickHandlers(element);
-          };
+          }
         } catch (error) {
           const { svg, bindFunctions } = await mermaid.render(element.id + "_mermaid", "error");
           element.innerHTML = svg;
@@ -50,17 +50,17 @@ export default {
     },
     attachClickHandlers(element) {
       const clickables = element.querySelectorAll("g.node");
-      console.log(clickables)
-      clickables.forEach(node => {
-        if (node.getAttribute('data-listener-added')) return;
-        node.setAttribute('data-listener-added', 'true');
+      console.log(clickables);
+      clickables.forEach((node) => {
+        if (node.getAttribute("data-listener-added")) return;
+        node.setAttribute("data-listener-added", "true");
         node.style.cursor = "pointer";
 
         const nodeText = node.textContent.trim();
         const nodeId = node.id;
 
         node.addEventListener("click", () => {
-          this.$emit("nodeClick", {
+          this.$emit("node_click", {
             node: this.getNodeName(nodeId),
             nodeId,
             nodeText,

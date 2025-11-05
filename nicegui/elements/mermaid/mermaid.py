@@ -29,11 +29,10 @@ class Mermaid(ContentElement, component='mermaid.js', esm={'nicegui-mermaid': 'd
         :param on_node_click: callback that is invoked when a node is clicked
         """
         super().__init__(content=content)
-
-        self._props['config'] = config or {}
+        self._props['config'] = config
 
         if on_node_click:
-            self.on('nodeClick', on_node_click)
+            self.on('node_click', on_node_click)
             self._props['clickInstance'] = True
 
     def _handle_content_change(self, content: str) -> None:
