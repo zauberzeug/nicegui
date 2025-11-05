@@ -14,23 +14,32 @@ def main_demo() -> None:
     list(ui.context.client.elements.values())[-1].props['config'] = {'securityLevel': 'loose'}  # HACK: for click_demo
 
 
-@doc.demo('Handle node events', '''
-    You can register to click events by adding a callback to the `on_node_click` parameter.
-    When a callback is specified the `config` is updated to include ``{"securityLevel": "loose"}`` to allow JavaScript execution.
+@doc.demo('Handle click events', '''
+    You can register to click events by using the `on_node_click` parameter.
+    This one does not require `securityLevel` to be set as `loose` in the `config` parameter and is more secure and straightforward.
+
+    *Added in version 3.3.0*
 ''')
 def click_demo() -> None:
     ui.mermaid('''
     graph LR;
-        A((Click me!));
-        click A call emitEvent("mermaid_click", "You clicked me!")
-    ''', config={'securityLevel': 'loose'})
-    ui.on('mermaid_click', lambda e: ui.notify(e.args))
+        A((Click me));
+    ''', on_node_click=lambda e: ui.notify(e.args))
+
+
+@doc.demo('Handle click events with JS', '''
+    Alternatively, you can register to click events by adding a `click` directive to a node and running custom JavaScript.
+    Make sure to set the `securityLevel` to `loose` in the `config` parameter to allow JavaScript execution,
+    and do not let untrusted users pass arbitrary Mermaid diagrams as input.
+''')
+def click_js_demo() -> None:
     ui.mermaid('''
     graph LR;
-        A((Click Me));
-        B((Or Click Me));
-        A --> B;
-    ''', on_node_click=lambda e: ui.notify(e.args))
+        X((JS alert)) --> Y((NiceGUI alert));
+        click X call alert("You clicked me!")
+        click Y call emitEvent("mermaid_click", "You clicked me!")
+    ''', config={'securityLevel': 'loose'})
+    ui.on('mermaid_click', lambda e: ui.notify(e.args))
 
 
 @doc.demo('Handle errors', '''
