@@ -24,16 +24,16 @@ export default {
     async update(content) {
       if (this.last_content === content) return;
       this.last_content = content;
-      queue.push({ element: this.$el, content: content });
+      queue.push({ element: this.$el, content: content, clickInstance: this.clickInstance });
       if (is_running) return;
       is_running = true;
       while (queue.length) {
-        const { element, content } = queue.shift();
+        const { element, content, clickInstance } = queue.shift();
         try {
           const { svg, bindFunctions } = await mermaid.render(element.id + "_mermaid", content);
           element.innerHTML = svg;
           bindFunctions?.(element);
-          if (this.clickInstance) {
+          if (clickInstance) {
             await this.$nextTick();
             this.attachClickHandlers(element);
           }
@@ -54,7 +54,7 @@ export default {
         const nodeId = node.id;
 
         node.addEventListener("click", () => {
-          this.$emit("node_click", {
+          getElement(element).$emit("node_click", {
             node: this.getNodeName(nodeId),
             nodeId,
             nodeText: node.textContent.trim(),
