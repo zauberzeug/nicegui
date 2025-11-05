@@ -34,8 +34,16 @@ export default {
           element.innerHTML = svg;
           bindFunctions?.(element);
           if (clickInstance) {
-            await this.$nextTick();
-            this.attachClickHandlers(element);
+            element.querySelectorAll("g.node").forEach((node) => {
+              node.style.cursor = "pointer";
+              node.addEventListener("click", () => {
+                getElement(element).$emit("node_click", {
+                  node: this.getNodeName(node.id),
+                  nodeId: node.id,
+                  nodeText: node.textContent.trim(),
+                });
+              });
+            });
           }
         } catch (error) {
           const { svg, bindFunctions } = await mermaid.render(element.id + "_mermaid", "error");
@@ -47,20 +55,6 @@ export default {
         }
       }
       is_running = false;
-    },
-    attachClickHandlers(element) {
-      element.querySelectorAll("g.node").forEach((node) => {
-        node.style.cursor = "pointer";
-        const nodeId = node.id;
-
-        node.addEventListener("click", () => {
-          getElement(element).$emit("node_click", {
-            node: this.getNodeName(nodeId),
-            nodeId,
-            nodeText: node.textContent.trim(),
-          });
-        });
-      });
     },
     getNodeName(domId) {
       if (!domId) return undefined;
