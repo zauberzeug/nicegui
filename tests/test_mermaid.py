@@ -97,23 +97,25 @@ def test_error(screen: Screen):
 
 @pytest.mark.parametrize('security_level', ['loose', 'strict'])
 def test_click_mermaid_node(security_level: str, screen: Screen):
-    ui.mermaid('''
-        flowchart TD;
-            X;
-            click X call document.write("Clicked X")
-    ''', config={'securityLevel': security_level})
+    @ui.page('/')
+    def page():
+        ui.mermaid('''
+            flowchart TD;
+                X;
+                click X call document.write("Clicked X")
+        ''', config={'securityLevel': security_level})
 
-    ui.mermaid('''
-        flowchart TD;
-            Y;
-            click Y call document.write("Clicked Y")
-    ''', config={'securityLevel': security_level})
+        ui.mermaid('''
+            flowchart TD;
+                Y;
+                click Y call document.write("Clicked Y")
+        ''', config={'securityLevel': security_level})
 
-    ui.mermaid('''
-        flowchart TD;
-            Z;
-            click Z call document.write("Clicked Z")
-    ''', config={'securityLevel': security_level})
+        ui.mermaid('''
+            flowchart TD;
+                Z;
+                click Z call document.write("Clicked Z")
+        ''', config={'securityLevel': security_level})
 
     screen.open('/')
     screen.click('Y')
@@ -127,12 +129,17 @@ def test_click_mermaid_node(security_level: str, screen: Screen):
 
 
 def test_click_mermaid_node_new(screen: Screen):
-    ui.mermaid('''
-        flowchart TD;
-            A[Node A];
-            B[Node B];
-    ''', on_node_click=lambda e: label.set_text(str(e.args['nodeText'])))
-    label = ui.label('')
+    label = None
+
+    @ui.page('/')
+    def page():
+        nonlocal label
+        ui.mermaid('''
+            flowchart TD;
+                A[Node A];
+                B[Node B];
+        ''', on_node_click=lambda e: label.set_text(str(e.args['nodeText'])))
+        label = ui.label('')
 
     screen.open('/')
     screen.click('Node A')
