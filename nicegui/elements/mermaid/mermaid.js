@@ -52,8 +52,6 @@ export default {
       const clickables = element.querySelectorAll("g.node");
       console.log(clickables);
       clickables.forEach((node) => {
-        if (node.getAttribute("data-listener-added")) return;
-        node.setAttribute("data-listener-added", "true");
         node.style.cursor = "pointer";
 
         const nodeText = node.textContent.trim();
