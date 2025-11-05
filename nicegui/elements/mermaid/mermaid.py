@@ -16,7 +16,7 @@ class Mermaid(ContentElement, component='mermaid.js', esm={'nicegui-mermaid': 'd
         The optional configuration dictionary is passed directly to mermaid before the first diagram is rendered.
         This can be used to set such options as
 
-            ``{'securityLevel': 'loose', ...}`` - allow running JavaScript when a node is clicked, applied automatically when `on_node_clicked` is specified
+            ``{'securityLevel': 'loose', ...}`` - allow running JavaScript when a node is clicked
             ``{'logLevel': 'info', ...}`` - log debug info to the console
 
         Refer to the Mermaid documentation for the ``mermaid.initialize()`` method for a full list of options.
@@ -26,7 +26,7 @@ class Mermaid(ContentElement, component='mermaid.js', esm={'nicegui-mermaid': 'd
 
         :param content: the Mermaid content to be displayed
         :param config: configuration dictionary to be passed to ``mermaid.initialize()``
-        :param on_node_click: callback that is invoked when a node is clicked, applies ``{'securityLevel': 'loose'}`` automatically
+        :param on_node_click: callback that is invoked when a node is clicked
         """
         super().__init__(content=content)
 
@@ -34,8 +34,6 @@ class Mermaid(ContentElement, component='mermaid.js', esm={'nicegui-mermaid': 'd
 
         if on_node_click:
             self.on('nodeClick', on_node_click)
-            # when a click handler is provided, allow JS execution in mermaid nodes
-            self._props['config']['securityLevel'] = 'loose'
             self._props['clickInstance'] = True
 
     def _handle_content_change(self, content: str) -> None:
