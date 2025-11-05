@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import copy
 import difflib
+import re
 import shutil
 from pathlib import Path
 
@@ -14,6 +15,15 @@ from tinycss2 import ast
 ROOT = Path(__file__).parent
 STATIC = ROOT / 'nicegui' / 'static'
 NODE_MODULES = ROOT / 'node_modules'
+
+
+def _patch_rotate(css_text: str) -> str:
+    reg = r'\.rotate-(\d+)\s*\{\s*transform:\s*rotate\((\d+)deg\)\s*/\*\s*rtl:ignore\s*\*/;\s*\}'
+
+    def repl(match: re.Match) -> str:
+        degrees = int(match.group(1))
+        return f'.rotate-{degrees} {{ rotate: {degrees}deg /* rtl:ignore */; }}'
+    return re.sub(reg, repl, css_text)
 
 
 def _extract_quasar_css(css_path: Path) -> None:
@@ -29,7 +39,7 @@ def _extract_quasar_css(css_path: Path) -> None:
         return new_rule
 
     FORMAT_OPTIONS = {'indent_size': 2, 'selector_separator_newline': False}
-    rules = tinycss2.parse_stylesheet(css_path.read_text(), skip_whitespace=True)
+    rules = tinycss2.parse_stylesheet(_patch_rotate(css_path.read_text()), skip_whitespace=True)
     reference_css = cssbeautifier.beautify(tinycss2.serialize(rules), FORMAT_OPTIONS)
     important_css = cssbeautifier.beautify(tinycss2.serialize(_extract_all(rules, important=True)), FORMAT_OPTIONS)
     unimportant_css = cssbeautifier.beautify(tinycss2.serialize(_extract_all(rules, important=False)), FORMAT_OPTIONS)
