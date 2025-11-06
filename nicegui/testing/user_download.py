@@ -3,7 +3,7 @@ from __future__ import annotations
 import asyncio
 import time
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, List, Optional, Union
+from typing import TYPE_CHECKING, Any
 
 import httpx
 
@@ -17,23 +17,23 @@ if TYPE_CHECKING:
 class UserDownload(Download):
 
     def __init__(self, user: User) -> None:
-        self.http_responses: List[httpx.Response] = []
+        self.http_responses: list[httpx.Response] = []
         self.user = user
 
-    def __call__(self, src: Union[str, Path, bytes], filename: Optional[str] = None, media_type: str = '') -> Any:
+    def __call__(self, src: str | Path | bytes, filename: str | None = None, media_type: str = '') -> Any:
         background_tasks.create(self._get(src),
                                 name=f'download {str(src[:10]) + "..." if isinstance(src, bytes) else src}')
 
-    def file(self, path: Union[str, Path], filename: Optional[str] = None, media_type: str = '') -> None:
+    def file(self, path: str | Path, filename: str | None = None, media_type: str = '') -> None:
         self(path)
 
-    def from_url(self, url: str, filename: Optional[str] = None, media_type: str = '') -> None:
+    def from_url(self, url: str, filename: str | None = None, media_type: str = '') -> None:
         self(url)
 
-    def content(self, content: Union[bytes, str], filename: Optional[str] = None, media_type: str = '') -> None:
+    def content(self, content: bytes | str, filename: str | None = None, media_type: str = '') -> None:
         self(content)
 
-    async def _get(self,  src: Union[str, Path, bytes]) -> None:
+    async def _get(self,  src: str | Path | bytes) -> None:
         if isinstance(src, bytes):
             await asyncio.sleep(0)
             response = httpx.Response(httpx.codes.OK, content=src)

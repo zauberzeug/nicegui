@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, Optional, Union, cast
+from typing import Any, cast
 
 from ..context import context
 from ..element import Element
@@ -13,8 +13,8 @@ from .mixins.value_element import ValueElement
 class Stepper(ValueElement, default_classes='nicegui-stepper'):
 
     def __init__(self, *,
-                 value: Union[str, Step, None] = None,
-                 on_value_change: Optional[Handler[ValueChangeEventArguments]] = None,
+                 value: str | Step | None = None,
+                 on_value_change: Handler[ValueChangeEventArguments] | None = None,
                  keep_alive: bool = True,
                  ) -> None:
         """Stepper
@@ -54,7 +54,7 @@ class Stepper(ValueElement, default_classes='nicegui-stepper'):
 
 class Step(IconElement, DisableableElement, default_classes='nicegui-step'):
 
-    def __init__(self, name: str, title: Optional[str] = None, icon: Optional[str] = None) -> None:
+    def __init__(self, name: str, title: str | None = None, icon: str | None = None) -> None:
         """Step
 
         This element represents `Quasar's QStep <https://quasar.dev/vue-components/stepper#qstep-api>`_ component.

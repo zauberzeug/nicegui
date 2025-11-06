@@ -1,14 +1,9 @@
 from typing import Callable
 
-import pytest
-
 from nicegui import ui
 from nicegui.testing import User
 
-from . import main
 
-
-@pytest.mark.module_under_test(main)
 async def test_basic_startup_appearance(user: User) -> None:
     """Test basic appearance of the chat app."""
     await user.open('/')
@@ -18,7 +13,6 @@ async def test_basic_startup_appearance(user: User) -> None:
     await user.should_see('No messages yet')
 
 
-@pytest.mark.module_under_test(main)
 async def test_sending_messages(create_user: Callable[[], User]) -> None:
     """Test sending messages from two different screens."""
     userA = create_user()

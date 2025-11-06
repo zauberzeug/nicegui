@@ -1,4 +1,5 @@
-from typing import Any, Awaitable, Callable, Dict, Optional, Union
+from collections.abc import Awaitable
+from typing import Any, Callable, Optional, Union
 
 from typing_extensions import Self
 
@@ -6,7 +7,7 @@ from ... import background_tasks, helpers
 from .value_element import ValueElement
 
 ValidationFunction = Callable[[Any], Union[Optional[str], Awaitable[Optional[str]]]]
-ValidationDict = Dict[str, Callable[[Any], bool]]
+ValidationDict = dict[str, Callable[[Any], bool]]
 
 
 class ValidationElement(ValueElement):
@@ -49,7 +50,6 @@ class ValidationElement(ValueElement):
         self._error = error
         self._props['error'] = new_error_prop
         self._props['error-message'] = error
-        self.update()
 
     def validate(self, *, return_result: bool = True) -> bool:
         """Validate the current value and set the error message if necessary.

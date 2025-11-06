@@ -44,7 +44,10 @@ def page_layout_demo():
         with ui.page_scroller(position='bottom-right', x_offset=20, y_offset=20):
             ui.button('Scroll to Top')
 
-    ui.link('show page with fancy layout', page_layout)
+    # @ui.page('/')
+    def page():
+        ui.link('show page with fancy layout', page_layout)
+    page()  # HIDE
 
 
 doc.reference(ui.header, title='Reference for ui.header')

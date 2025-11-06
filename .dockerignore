@@ -2,7 +2,7 @@
 **/__pycache__
 **/*.egg-info
 **/.*.swp
-**/dist
+**/node_modules
 test.py
 demo.py
 **/*.pickle
@@ -23,3 +23,4 @@ tests/.pytest_cache/**/*
 **/.DS_Store
 **/.idea
 **/.vscode
+package-lock.json

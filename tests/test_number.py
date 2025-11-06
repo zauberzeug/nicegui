@@ -7,8 +7,10 @@ from nicegui.testing import Screen
 
 
 def test_number_input(screen: Screen):
-    ui.number('Number', value=42)
-    ui.button('Button')
+    @ui.page('/')
+    def page():
+        ui.number('Number', value=42)
+        ui.button('Button')
 
     screen.open('/')
     screen.should_contain_input('42')
@@ -19,8 +21,10 @@ def test_number_input(screen: Screen):
 
 
 def test_apply_format_on_blur(screen: Screen):
-    ui.number('Number', format='%.4f', value=3.14159)
-    ui.button('Button')
+    @ui.page('/')
+    def page():
+        ui.number('Number', format='%.4f', value=3.14159)
+        ui.button('Button')
 
     screen.open('/')
     screen.should_contain_input('3.1416')
@@ -37,8 +41,10 @@ def test_apply_format_on_blur(screen: Screen):
 
 
 def test_max_value(screen: Screen):
-    ui.number('Number', min=0, max=10, value=5)
-    ui.button('Button')
+    @ui.page('/')
+    def page():
+        ui.number('Number', min=0, max=10, value=5)
+        ui.button('Button')
 
     screen.open('/')
     screen.should_contain_input('5')
@@ -50,8 +56,10 @@ def test_max_value(screen: Screen):
 
 
 def test_clearable_number(screen: Screen):
-    number = ui.number(value=42).props('clearable')
-    ui.label().bind_text_from(number, 'value', lambda value: f'value: {value}')
+    @ui.page('/')
+    def page():
+        number = ui.number(value=42).props('clearable')
+        ui.label().bind_text_from(number, 'value', lambda value: f'value: {value}')
 
     screen.open('/')
     screen.should_contain('value: 42')
@@ -63,8 +71,13 @@ def test_clearable_number(screen: Screen):
 
 
 def test_out_of_limits(screen: Screen):
-    number = ui.number('Number', min=0, max=10, value=5)
-    ui.label().bind_text_from(number, 'out_of_limits', lambda value: f'out_of_limits: {value}')
+    number = None
+
+    @ui.page('/')
+    def page():
+        nonlocal number
+        number = ui.number('Number', min=0, max=10, value=5)
+        ui.label().bind_text_from(number, 'out_of_limits', lambda value: f'out_of_limits: {value}')
 
     screen.open('/')
     screen.should_contain('out_of_limits: False')
@@ -78,8 +91,10 @@ def test_out_of_limits(screen: Screen):
 
 @pytest.mark.parametrize('precision', [None, 1, -1])
 def test_rounding(precision: int, screen: Screen):
-    number = ui.number('Number', value=12, precision=precision)
-    ui.label().bind_text_from(number, 'value', lambda value: f'number=_{value}_')
+    @ui.page('/')
+    def page():
+        number = ui.number('Number', value=12, precision=precision)
+        ui.label().bind_text_from(number, 'value', lambda value: f'number=_{value}_')
 
     screen.open('/')
     screen.should_contain('number=_12_')
@@ -96,7 +111,9 @@ def test_rounding(precision: int, screen: Screen):
 
 
 def test_int_float_conversion_on_error1(screen: Screen):
-    ui.number('Number', validation={'Error': lambda value: value == 1}, value=1)
+    @ui.page('/')
+    def page():
+        ui.number('Number', validation={'Error': lambda value: value == 1}, value=1)
 
     screen.open('/')
     element = screen.selenium.find_element(By.XPATH, '//*[@aria-label="Number"]')
@@ -106,7 +123,9 @@ def test_int_float_conversion_on_error1(screen: Screen):
 
 
 def test_int_float_conversion_on_error2(screen: Screen):
-    ui.number('Number', validation={'Error': lambda value: value == 1.02}, value=1.02)
+    @ui.page('/')
+    def page():
+        ui.number('Number', validation={'Error': lambda value: value == 1.02}, value=1.02)
 
     screen.open('/')
     element = screen.selenium.find_element(By.XPATH, '//*[@aria-label="Number"]')
@@ -116,9 +135,11 @@ def test_int_float_conversion_on_error2(screen: Screen):
 
 
 def test_changing_limits(screen: Screen):
-    number = ui.number('Number', max=0, value=0)
-    ui.button('Raise max', on_click=lambda: setattr(number, 'max', 1))
-    ui.button('Step up', on_click=lambda: number.run_method('(e) => e.getNativeElement().stepUp()'))
+    @ui.page('/')
+    def page():
+        number = ui.number('Number', max=0, value=0)
+        ui.button('Raise max', on_click=lambda: setattr(number, 'max', 1))
+        ui.button('Step up', on_click=lambda: number.run_method('(e) => e.getNativeElement().stepUp()'))
 
     screen.open('/')
     screen.should_contain_input('0')
@@ -134,8 +155,10 @@ def test_changing_limits(screen: Screen):
 
 
 def test_none_values(screen: Screen):
-    n = ui.number('Number', on_change=lambda e: ui.label(f'event: {e.value}'))
-    ui.label().bind_text_from(n, 'value', lambda value: f'model: {value}')
+    @ui.page('/')
+    def page():
+        n = ui.number('Number', on_change=lambda e: ui.label(f'event: {e.value}'))
+        ui.label().bind_text_from(n, 'value', lambda value: f'model: {value}')
 
     screen.open('/')
     element = screen.selenium.find_element(By.XPATH, '//*[@aria-label="Number"]')

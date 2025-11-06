@@ -20,17 +20,25 @@ def demo(f: Callable, *, lazy: bool = True, tab: Optional[Union[str, Callable]] 
         with browser_window(title=tab,
                             classes='w-full max-w-[44rem] min-[1500px]:max-w-[20rem] min-h-[10rem] browser-window') as window:
             if lazy:
-                spinner = ui.spinner(size='lg').props('thickness=2')
+                spinner = ui.image('/static/loading.gif').classes('w-8 h-8').props('no-spinner no-transition')
 
                 async def handle_intersection():
                     window.remove(spinner)
                     if helpers.is_coroutine_function(f):
-                        await f()
+                        result = await f()
                     else:
-                        f()
+                        result = f()
+                    if callable(result):
+                        if helpers.is_coroutine_function(result):
+                            await result()
+                        else:
+                            result()
                 intersection_observer(on_intersection=handle_intersection)
             else:
-                assert not helpers.is_coroutine_function(f), 'async functions are not supported in non-lazy demos'
-                f()
+                result = f()
+                if callable(result):
+                    assert not helpers.is_coroutine_function(result), \
+                        'async functions are not supported in non-lazy demos'
+                    result()
 
     return f
