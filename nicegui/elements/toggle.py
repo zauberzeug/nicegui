@@ -54,7 +54,7 @@ def toggle(
 def toggle(
     options: dict[V, P], *,
     value: Optional[V] = ...,
-    on_change: Optional[Handler[ValueChangeEventArguments[Optional[P]]]] = ...,
+    on_change: Optional[Handler[ValueChangeEventArguments[Optional[V]]]] = ...,
     clearable: bool = ...
 ) -> Toggle[V, P]:
     ...

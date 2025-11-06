@@ -63,4 +63,3 @@ def radio(
     on_change: Optional[Handler[ValueChangeEventArguments[Optional[V]]]] = None,
 ) -> Union[Radio[V, P], Radio[P, P]]:
     return Radio(options, value=value, on_change=on_change)
-

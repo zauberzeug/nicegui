@@ -15,6 +15,7 @@ VAL = TypeVar('VAL')
 
 
 def are_all_primitive_type(values: Union[list[T], list[P]]) -> TypeIs[list[P]]:
+    """TODO"""
     return all(isinstance(v, (str, int, float, bool)) for v in values)
 
 
@@ -24,7 +25,7 @@ def _convert_options(options: dict[VAL, P]) -> list[Option[P, VAL]]:
 
 @overload
 def _convert_options(options: list[T]) -> list[T]:
-    ...   
+    ...
 
 @overload
 def _convert_options(options: list[P]) -> list[Option[P, P]]:
@@ -130,7 +131,8 @@ class Select(
             return tuple()
         if isinstance(value, tuple):
             return tuple(set(o.value for o in value) - set(self._values))
-        return tuple(set([value.value]) - set(self._values))
+        else:
+            return tuple(set([value.value]) - set(self._values))
 
     @property
     def is_showing_popup(self) -> bool:
@@ -302,7 +304,7 @@ def select(
         ]:
     return Select(
         options=options, label=label, value=value, on_change=on_change,
-        with_input=with_input, new_value_mode=new_value_mode, multiple=multiple, 
+        with_input=with_input, new_value_mode=new_value_mode, multiple=multiple,
         new_value_to_option=new_value_to_option,
         clearable=clearable, validation=validation
     )
