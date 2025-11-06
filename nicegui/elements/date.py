@@ -1,4 +1,4 @@
-from typing import Dict, List, Optional, Union
+from typing import Optional, Union
 
 from ..events import Handler, ValueChangeEventArguments
 from .mixins.disableable_element import DisableableElement
@@ -9,7 +9,7 @@ class Date(ValueElement, DisableableElement):
 
     def __init__(self,
                  value: Optional[
-                     Union[str, Dict[str, str], List[str], List[Union[str, Dict[str, str]]]]
+                     Union[str, dict[str, str], list[str], list[Union[str, dict[str, str]]]]
                  ] = None,
                  *,
                  mask: str = 'YYYY-MM-DD',

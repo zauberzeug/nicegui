@@ -10,13 +10,13 @@ jobs:
   code-check:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: set up Poetry
         uses: abatilo/actions-poetry@v4
       - name: set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
-          python-version: "3.8"
+          python-version: "3.9"
           cache: "poetry"
       - name: install dependencies
         run: poetry install --all-extras --with dev
@@ -28,34 +28,41 @@ jobs:
   test:
     strategy:
       matrix:
-        python: ["3.8", "3.9", "3.10", "3.11", "3.12", "3.13"]
+        python: ["3.9", "3.10", "3.11", "3.12", "3.13", "3.14"]
       fail-fast: false
     runs-on: ubuntu-latest
     timeout-minutes: 40
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: set up Poetry
         uses: abatilo/actions-poetry@v4
       - name: set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: ${{ matrix.python }}
           cache: "poetry"
       - name: install dependencies
         run: |
           set -x
-          poetry install --all-extras
-          # install packages to run the examples
-          poetry run pip install opencv-python opencv-contrib-python-headless httpx isort replicate langchain openai simpy tortoise-orm
-          poetry run pip install -r tests/requirements.txt
-          # try fix issue with importlib_resources
-          poetry run pip install importlib-resources
-      - name: test startup
-        run: poetry run ./test_startup.sh
+          poetry install --all-extras --with dev
       - name: setup chromedriver
         uses: nanasess/setup-chromedriver@v2.3.0
       - name: pytest
         run: poetry run pytest
+      - name: Upload failed screenshots
+        if: failure()
+        uses: actions/upload-artifact@v5
+        with:
+          name: screenshots-${{ matrix.python }}
+          path: screenshots/*.failed.png
+          retention-days: 14
+      - name: test startup
+        run: poetry run ./test_startup.sh
+      - name: restore dependencies for effective caching
+        if: always()
+        run: |
+          set -x
+          poetry install --all-extras --with dev
 
   slack:
     needs:

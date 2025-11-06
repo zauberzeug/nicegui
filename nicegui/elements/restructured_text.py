@@ -21,7 +21,6 @@ class ReStructuredText(Markdown):
         html = prepare_content(content)
         if self._props.get('innerHTML') != html:
             self._props['innerHTML'] = html
-            self.update()
 
 
 @lru_cache(maxsize=int(os.environ.get('RST_CONTENT_CACHE_SIZE', '1000')))

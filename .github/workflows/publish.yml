@@ -10,9 +10,9 @@ jobs:
   pypi:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: "3.x"
       - name: set up Poetry
@@ -29,7 +29,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           draft: true
-          prerelease: false
+          prerelease: ${{ contains(env.VERSION, 'rc') }}
           name: ${{ env.VERSION }}
           tag_name: ${{ env.VERSION }}
         env:
@@ -42,7 +42,7 @@ jobs:
     needs: pypi
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Prepare
         id: prep
         run: |
@@ -121,25 +121,26 @@ jobs:
           short_description: "Web Based User Interface for Python with Buttons, Dialogs, Markdown, 3D Scenes and Plots"
 
   update_version:
+    if: ${{ !contains(github.ref_name, 'rc') }}
     needs: docker
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           ref: main
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: "3.11"
       - name: Install httpx
         run: pip install httpx
-      - name: Update version in pyproject.toml and citation.cff
+      - name: Update version in citation.cff
         run: python .github/workflows/update_version.py ${GITHUB_REF#refs/tags/}
       - name: Commit and push changes
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add pyproject.toml CITATION.cff
-          git commit -m "Update version"
+          git add CITATION.cff
+          git commit -m "Update citation version"
           git push origin HEAD:main
 
   verify:
