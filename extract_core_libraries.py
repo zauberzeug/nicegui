@@ -17,15 +17,6 @@ STATIC = ROOT / 'nicegui' / 'static'
 NODE_MODULES = ROOT / 'node_modules'
 
 
-def _patch_rotate(css_text: str) -> str:
-    reg = r'\.rotate-(\d+)\s*\{\s*transform:\s*rotate\((\d+)deg\)\s*/\*\s*rtl:ignore\s*\*/;\s*\}'
-
-    def repl(match: re.Match) -> str:
-        degrees = int(match.group(1))
-        return f'.rotate-{degrees} {{ rotate: {degrees}deg /* rtl:ignore */; }}'
-    return re.sub(reg, repl, css_text)
-
-
 def _extract_quasar_css(css_path: Path) -> None:
     def _extract_all(rules: list[ast.Node], *, important: bool) -> list[ast.QualifiedRule | ast.AtRule]:
         new_rules = [_extract(r, important=important) for r in rules if isinstance(r, (ast.QualifiedRule, ast.AtRule))]
@@ -37,6 +28,10 @@ def _extract_quasar_css(css_path: Path) -> None:
         new_rule.content = _extract_all(nodes, important=important) if isinstance(rule, ast.AtRule) \
             else [n for n in nodes if isinstance(n, ast.Declaration) and n.important == important]
         return new_rule
+
+    def _patch_rotate(css_text: str) -> str:
+        reg = r'\.rotate-(\d+)\s*\{\s*transform:\s*rotate\((\d+)deg\)\s*/\*\s*rtl:ignore\s*\*/;\s*\}'
+        return re.sub(reg, r'.rotate-\1 { rotate: \1deg /* rtl:ignore */; }', css_text)
 
     FORMAT_OPTIONS = {'indent_size': 2, 'selector_separator_newline': False}
     rules = tinycss2.parse_stylesheet(_patch_rotate(css_path.read_text()), skip_whitespace=True)
