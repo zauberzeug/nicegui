@@ -1,5 +1,4 @@
 from nicegui import ui
-from nicegui.elements.radio import Radio
 from nicegui.testing import Screen, User
 
 
@@ -78,11 +77,11 @@ async def test_radio_click_with_user(user: User):
         ui.label().bind_text_from(radio, 'value', lambda x: f'Value: {x}')
 
     await user.open('/')
-    user.find('A', kind=Radio).click()
+    user.find('A', kind=ui.radio).click()
     await user.should_see('Value: A')
 
-    user.find('B', kind=Radio).click()
+    user.find('B', kind=ui.radio).click()
     await user.should_see('Value: B')
 
-    user.find('B', kind=Radio).click()  # already selected, should not change
+    user.find('B', kind=ui.radio).click()  # already selected, should not change
     await user.should_see('Value: B')
