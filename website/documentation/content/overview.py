@@ -217,6 +217,7 @@ def map_of_nicegui():
             - [`ui.column`](/documentation/column)
             - [`ui.context_menu`](/documentation/context_menu)
             - [`ui.date`](/documentation/date)
+            - [`ui.date_input`](/documentation/date_input)
             - [`ui.dialog`](/documentation/dialog)
             - [`ui.dropdown_button`](/documentation/button_dropdown)
             - [`ui.echart`](/documentation/echart)
@@ -273,6 +274,7 @@ def map_of_nicegui():
             - [`ui.table`](/documentation/table)
             - [`ui.textarea`](/documentation/textarea)
             - [`ui.time`](/documentation/time)
+            - [`ui.time_input`](/documentation/time_input)
             - [`ui.timeline`](/documentation/timeline), `ui.timeline_entry`
             - [`ui.toggle`](/documentation/toggle)
             - [`ui.tooltip`](/documentation/tooltip)

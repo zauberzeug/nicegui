@@ -30,6 +30,7 @@ __all__ = [
     'context_menu',
     'dark_mode',
     'date',
+    'date_input',
     'dialog',
     'download',
     'drawer',
@@ -121,6 +122,7 @@ __all__ = [
     'teleport',
     'textarea',
     'time',
+    'time_input',
     'timeline',
     'timeline_entry',
     'timer',
@@ -159,6 +161,7 @@ from .elements.column import Column as column
 from .elements.context_menu import ContextMenu as context_menu
 from .elements.dark_mode import DarkMode as dark_mode
 from .elements.date import Date as date
+from .elements.date_input import DateInput as date_input
 from .elements.dialog import Dialog as dialog
 from .elements.drawer import Drawer as drawer
 from .elements.drawer import LeftDrawer as left_drawer
@@ -237,6 +240,7 @@ from .elements.tabs import Tabs as tabs
 from .elements.teleport import Teleport as teleport
 from .elements.textarea import Textarea as textarea
 from .elements.time import Time as time
+from .elements.time_input import TimeInput as time_input
 from .elements.timeline import Timeline as timeline
 from .elements.timeline import TimelineEntry as timeline_entry
 from .elements.timer import Timer as timer
