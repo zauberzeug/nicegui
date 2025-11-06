@@ -49,7 +49,7 @@ class DateInput(LabelElement, ValueElement, DisableableElement):
         if isinstance(value, dict):
             return f'{value["from"]} - {value["to"]}' if 'from' in value and 'to' in value else None
         else:
-            return value or None
+            return value
 
     def _input_to_picker_value(self, value: str | None) -> dict | str | None:
         if value and ' - ' in value:
