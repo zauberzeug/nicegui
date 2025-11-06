@@ -19,7 +19,7 @@ from . import doc
     - The `position`, `x_offset` and `y_offset` arguments control the position of the sticky element.
     - See <https://quasar.dev/layout/page-sticky> for more information.
 
-    With [`ui.page_scroller`](page_layout#reference_for_ui_page_scroller) you can add a scroll-to-top button to the page.
+    With [`ui.page_scroller`](page_layout#reference_for_ui_page_scroller) you can add a scroll-to-top button to the page (*added in version 3.3.0*).
 
     - Shares the basic arguments with [`ui.page_sticky`](page_layout#reference_for_ui_page_sticky).
     - The `scroll_offset`, `duration` and `reverse` arguments control the behavior.

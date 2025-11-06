@@ -284,6 +284,7 @@ def map_of_nicegui():
             - `ui.footer`
             - `ui.drawer`, `ui.left_drawer`, `ui.right_drawer`
             - `ui.page_sticky`
+            - `ui.page_scroller`
         - special functions and objects:
             - [`ui.add_body_html`](/documentation/section_pages_routing#add_html_to_the_page) and
                 [`ui.add_head_html`](/documentation/section_pages_routing#add_html_to_the_page): add HTML to the body and head of the page
