@@ -5,9 +5,8 @@ from . import doc
 
 @doc.demo(ui.date_input)
 def main_demo() -> None:
-    label = ui.label('date: 2025-05-31')
-    ui.date_input(label='Date', value='2025-05-31',
-                  on_change=lambda e: label.set_text(f'date: {e.value}'))
+    date = ui.date_input('Date', value='2025-05-31')
+    ui.label().bind_text_from(date, 'value', lambda v: f'date: {v}')
 
 
 @doc.demo('Date Range Input', '''
@@ -16,9 +15,9 @@ def main_demo() -> None:
     To respect the input which expects a string, the value is a string formatted as 'start_date - end_date'.
 ''')
 def date_range_input_demo():
-    label = ui.label('date range: 2025-05-01 - 2025-05-31')
-    ui.date_input('Date range', value='2025-05-01 - 2025-05-31', range_input=True,
-                  on_change=lambda e: label.set_text(f'date range: {e.value}'))
+    date = ui.date_input('Range', value='2025-05-01 - 2025-05-31', range_input=True)
+    date.classes('w-60')
+    ui.label().bind_text_from(date, 'value', lambda v: f'range: {v}')
 
 
 @doc.demo('Date Input with Date Filter', '''
@@ -27,10 +26,9 @@ def date_range_input_demo():
     Read more about the date filter in the [`ui.date` documentation](date).
 ''')
 def date_input_with_filter_demo():
-    label = ui.label('date: 2023-01-01')
-    date_input = ui.date_input(label='Date', value='2023-01-01',
-                               on_change=lambda e: label.set_text(f'date: {e.value}'))
-    date_input.picker.props('''default-year-month=2023/01 :options="date => date <= '2023/01/15'"''')
+    date = ui.date_input('Date', value='2025-11-15')
+    date.picker.props[':options'] = 'date => date >= "2025/11/10"'
+    ui.label().bind_text_from(date, 'value', lambda v: f'date: {v}')
 
 
 doc.reference(ui.date_input)

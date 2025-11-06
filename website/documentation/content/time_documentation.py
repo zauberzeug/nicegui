@@ -10,7 +10,7 @@ def main_demo() -> None:
 
 
 @doc.demo('Input element with time picker', '''
-    **Check out the [new implementation using `ui.time_input`](time_input)**. It is more convenient to use, and the picker button is implemented with a `ui.button` element.
+    **Note:** Since version 3.3.0 you can use the [`ui.time_input`](time_input) element instead of following this demo.
 
     This demo shows how to implement a time picker with an input element.
     We place an icon in the input element's append slot.
