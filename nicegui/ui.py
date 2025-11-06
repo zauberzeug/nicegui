@@ -78,6 +78,7 @@ __all__ = [
     'number',
     'on',
     'page',
+    'page_scroller',
     'page_sticky',
     'page_title',
     'pagination',
@@ -198,6 +199,7 @@ from .elements.menu import MenuItem as menu_item
 from .elements.mermaid import Mermaid as mermaid
 from .elements.notification import Notification as notification
 from .elements.number import Number as number
+from .elements.page_scroller import PageScroller as page_scroller
 from .elements.page_sticky import PageSticky as page_sticky
 from .elements.pagination import Pagination as pagination
 from .elements.plotly import Plotly as plotly
