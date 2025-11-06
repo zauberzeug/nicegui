@@ -10,8 +10,8 @@ class PageScroller(Element):
                  y_offset: float = 0,
                  *,
                  expand: bool = False,
-                 scroll_offset: int = 1000,
-                 duration: int = 0.3,
+                 scroll_offset: float = 1000,
+                 duration: float = 0.3,
                  reverse: bool = False,
                  ) -> None:
         """Page scroller
