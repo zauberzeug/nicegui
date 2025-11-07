@@ -6,9 +6,9 @@ from . import doc
 @doc.demo(ui.mermaid)
 def main_demo() -> None:
     ui.mermaid('''
-    graph LR;
-        A --> B;
-        A --> C;
+        graph LR;
+            A --> B;
+            A --> C;
     ''')
     # END OF DEMO
     list(ui.context.client.elements.values())[-1].props['config'] = {'securityLevel': 'loose'}  # HACK: for click_demo
@@ -16,15 +16,14 @@ def main_demo() -> None:
 
 @doc.demo('Handle click events', '''
     You can register to click events by using the `on_node_click` parameter.
-    This one does not require `securityLevel` to be set as `loose` in the `config` parameter and is more secure and straightforward.
 
     *Added in version 3.3.0*
 ''')
 def click_demo() -> None:
     ui.mermaid('''
-    graph LR;
-        A((Click me));
-    ''', on_node_click=lambda e: ui.notify(e.args))
+        graph LR;
+            A((Click me));
+    ''', on_node_click=lambda e: ui.notify(f'{e.text} clicked'))
 
 
 @doc.demo('Handle click events with JS', '''
@@ -34,10 +33,10 @@ def click_demo() -> None:
 ''')
 def click_js_demo() -> None:
     ui.mermaid('''
-    graph LR;
-        X((JS alert)) --> Y((NiceGUI alert));
-        click X call alert("You clicked me!")
-        click Y call emitEvent("mermaid_click", "You clicked me!")
+        graph LR;
+            X((JS alert)) --> Y((NiceGUI alert));
+            click X call alert("You clicked me!")
+            click Y call emitEvent("mermaid_click", "You clicked me!")
     ''', config={'securityLevel': 'loose'})
     ui.on('mermaid_click', lambda e: ui.notify(e.args))
 
@@ -48,9 +47,9 @@ def click_js_demo() -> None:
 ''')
 def error_demo() -> None:
     ui.mermaid('''
-    graph LR;
-        A --> B;
-        A -> C;
+        graph LR;
+            A --> B;
+            A -> C;
     ''').on('error', lambda e: print(e.args['message']))
     # END OF DEMO
     list(ui.context.client.elements.values())[-1].props['config'] = {'securityLevel': 'loose'}  # HACK: for click_demo

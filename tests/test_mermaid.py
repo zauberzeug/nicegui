@@ -128,22 +128,18 @@ def test_click_mermaid_node(security_level: str, screen: Screen):
         screen.should_not_contain('Clicked Y')
 
 
-def test_click_mermaid_node_new(screen: Screen):
-    label = None
-
+def test_node_click_handler(screen: Screen):
     @ui.page('/')
     def page():
-        nonlocal label
         ui.mermaid('''
             flowchart TD;
                 A[Node A];
                 B[Node B];
-        ''', on_node_click=lambda e: label.set_text(str(e.args['nodeText'])))
-        label = ui.label('')
+        ''', on_node_click=lambda e: ui.notify(f'{e.text} clicked'))
 
     screen.open('/')
     screen.click('Node A')
-    assert 'Node A' in label.text
+    screen.should_contain('Node A clicked')
 
     screen.click('Node B')
-    assert 'Node B' in label.text
+    screen.should_contain('Node B clicked')

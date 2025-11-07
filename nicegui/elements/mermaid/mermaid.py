@@ -1,13 +1,20 @@
 from typing import Optional
 
-from ...events import GenericEventArguments, Handler
+from typing_extensions import Self
+
+from ...events import Handler, MermaidNodeClickEventArguments, handle_event
 from ..mixins.content_element import ContentElement
 
 
 class Mermaid(ContentElement, component='mermaid.js', esm={'nicegui-mermaid': 'dist'}):
     CONTENT_PROP = 'content'
 
-    def __init__(self, content: str, config: Optional[dict] = None, *, on_node_click: Optional[Handler[GenericEventArguments]] = None) -> None:
+    def __init__(self,
+                 content: str,
+                 config: Optional[dict] = None,
+                 *,
+                 on_node_click: Optional[Handler[MermaidNodeClickEventArguments]] = None,
+                 ) -> None:
         """Mermaid Diagrams
 
         Renders diagrams and charts written in the Markdown-inspired `Mermaid <https://mermaid.js.org/>`_ language.
@@ -26,14 +33,23 @@ class Mermaid(ContentElement, component='mermaid.js', esm={'nicegui-mermaid': 'd
 
         :param content: the Mermaid content to be displayed
         :param config: configuration dictionary to be passed to ``mermaid.initialize()``
-        :param on_node_click: callback that is invoked when a node is clicked
+        :param on_node_click: callback that is invoked when a node is clicked (*added in version 3.3.0*)
         """
         super().__init__(content=content)
         self._props['config'] = config
 
         if on_node_click is not None:
-            self.on('node_click', on_node_click)
-            self._props['clickInstance'] = True
+            self.on_node_click(on_node_click)
+
+    def on_node_click(self, callback: Handler[MermaidNodeClickEventArguments]) -> Self:
+        """Add a callback to be invoked when a node is clicked."""
+        self.on('node_click', lambda e: handle_event(callback, MermaidNodeClickEventArguments(sender=self,
+                                                                                              client=self.client,
+                                                                                              id=e.args['id'],
+                                                                                              name=e.args['name'],
+                                                                                              text=e.args['text'])))
+        self._props['clickable'] = True
+        return self
 
     def _handle_content_change(self, content: str) -> None:
         self._props[self.CONTENT_PROP] = content.strip()

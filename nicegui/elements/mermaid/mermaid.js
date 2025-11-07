@@ -24,23 +24,23 @@ export default {
     async update(content) {
       if (this.last_content === content) return;
       this.last_content = content;
-      queue.push({ element: this.$el, content: content, clickInstance: this.clickInstance });
+      queue.push({ element: this.$el, content: content, clickable: this.clickable });
       if (is_running) return;
       is_running = true;
       while (queue.length) {
-        const { element, content, clickInstance } = queue.shift();
+        const { element, content, clickable } = queue.shift();
         try {
           const { svg, bindFunctions } = await mermaid.render(element.id + "_mermaid", content);
           element.innerHTML = svg;
           bindFunctions?.(element);
-          if (clickInstance) {
+          if (clickable) {
             element.querySelectorAll("g.node").forEach((node) => {
               node.style.cursor = "pointer";
               node.addEventListener("click", () => {
                 getElement(element).$emit("node_click", {
-                  node: this.getNodeName(node.id),
-                  nodeId: node.id,
-                  nodeText: node.textContent.trim(),
+                  id: node.id,
+                  name: node.id.split("-").slice(1, -1).join("-"),
+                  text: node.textContent.trim(),
                 });
               });
             });
@@ -56,17 +56,10 @@ export default {
       }
       is_running = false;
     },
-    getNodeName(domId) {
-      if (!domId) return undefined;
-      const parts = domId.split("-");
-      if (parts.length >= 3) return parts.slice(1, -1).join("-");
-      if (parts.length === 2) return parts[1];
-      return domId;
-    },
   },
   props: {
     config: Object,
     content: String,
-    clickInstance: Boolean,
+    clickable: Boolean,
   },
 };
