@@ -14,6 +14,7 @@ class Mermaid(ContentElement, component='mermaid.js', esm={'nicegui-mermaid': 'd
                  config: Optional[dict] = None,
                  *,
                  on_node_click: Optional[Handler[MermaidNodeClickEventArguments]] = None,
+                 clickable_nodes: Optional[set[str]] = None
                  ) -> None:
         """Mermaid Diagrams
 
@@ -34,19 +35,34 @@ class Mermaid(ContentElement, component='mermaid.js', esm={'nicegui-mermaid': 'd
         :param content: the Mermaid content to be displayed
         :param config: configuration dictionary to be passed to ``mermaid.initialize()``
         :param on_node_click: callback that is invoked when a node is clicked (*added in version 3.3.0*)
+        :param clickable_nodes: set of node IDs that should be clickable. Default (empty set) means all nodes (*added in version 3.3.0*)
         """
         super().__init__(content=content)
         self._props['config'] = config
+        self.set_clickable_nodes(clickable_nodes)
 
         if on_node_click is not None:
             self.on_node_click(on_node_click)
 
     def on_node_click(self, callback: Handler[MermaidNodeClickEventArguments]) -> Self:
-        """Add a callback to be invoked when a node is clicked."""
+        """Add a callback to be invoked when a node is clicked.
+
+        Consider using ``set_clickable_nodes()`` to restrict which nodes are clickable.
+
+        :param callback: callback that is invoked when a node is clicked
+        """
         self.on('node_click', lambda e: handle_event(callback, MermaidNodeClickEventArguments(sender=self,
                                                                                               client=self.client,
                                                                                               html_id=e.args['html_id'])))
         self._props['clickable'] = True
+        return self
+
+    def set_clickable_nodes(self, clickable_nodes: Optional[set[str]] = None) -> Self:
+        """Set the clickable nodes of the Mermaid element.
+
+        :param clickable_nodes: set of node IDs that should be clickable. Default (empty set) means all nodes.
+        """
+        self._props['clickableNodes'] = list(clickable_nodes or set())
         return self
 
     def _handle_content_change(self, content: str) -> None:

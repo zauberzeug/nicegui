@@ -143,3 +143,35 @@ def test_node_click_handler(screen: Screen):
 
     screen.click('Node B')
     screen.should_contain('flowchart-B-1 clicked')
+
+
+def test_clickable_nodes(screen: Screen):
+    @ui.page('/')
+    def page():
+        m = ui.mermaid('''
+            flowchart TD;
+                A[Node A];
+                B[Node B];
+        ''', on_node_click=lambda e: ui.notify(f'{e.html_id} clicked'), clickable_nodes={'flowchart-A-0'})
+
+        ui.button('Set new content', on_click=lambda: (m.set_content('''
+            flowchart TD;
+                C[Node C];
+                D[Node D];
+        '''), m.set_clickable_nodes({'flowchart-C-0', 'NONEXISTENTNODE'})))
+
+    screen.open('/')
+    screen.click('Node A')
+    screen.should_contain('flowchart-A-0 clicked')
+
+    screen.click('Node B')
+    screen.should_not_contain('flowchart-B-1 clicked')
+
+    screen.click('Set new content')
+    screen.click('Node C')
+    screen.click('Node D')
+
+    screen.should_contain('flowchart-C-0 clicked')
+    screen.should_not_contain('flowchart-D-1 clicked')
+
+    assert 'Explicit click target set, but some not found' in screen.render_js_logs()
