@@ -27,6 +27,12 @@ class Option(Generic[P, V]):
     def __post_init__(self) -> None:
         self.id = hashlib.md5(f'{self.label}{self.value}'.encode()).hexdigest()
 
+    def __str__(self) -> str:
+        return f"{self.__class__.__name__}({self.label}, {self.value})"
+
+    def __repr__(self) -> str:
+        return self.__str__()
+
 
 class OptionDict(TypedDict, Generic[P, V]):
     label: P

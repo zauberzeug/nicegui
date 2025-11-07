@@ -39,6 +39,26 @@ def _convert_options(options: Union[dict[VAL, P], list[T], list[P]]) -> Union[li
     return list(options)
 
 
+def _convert_value(
+    value: Union[list[VAL], Optional[VAL]],
+    multiple: bool,
+    value_to_option: dict[Any, Option[Any, Any]]
+    ):
+    if multiple:
+        if value is None:
+            value = []
+        elif not isinstance(value, list):
+            value = [value]
+        else:
+            value = value[:]  # NOTE: avoid modifying the original list which could be the list of options (#3014)
+    try:
+        if multiple and isinstance(value, list):
+            return tuple(value_to_option[v] for v in value)
+        return value_to_option[value] if value else None
+    except KeyError as e:
+        raise ValueError(f"Invalid values: '{e}'") from e
+
+
 class Select(
     LabelElement,
     ValidationElement[V],
@@ -103,13 +123,8 @@ class Select(
                 f"new_value_to_option not passed. You must provide a function for handling new values when new value mode is '{self.new_value_mode}'."
                 )
         converted_options = _convert_options(options)
-        value_to_option = {o.value: o for o in converted_options}
-        if multiple and isinstance(value, list):
-            super().__init__(
-                label=label or None, options=converted_options, value=tuple(value_to_option[v] for v in value), on_change=on_change, validation=validation
-                )
-        else:
-            super().__init__(label=label or None, options=converted_options, value=value_to_option[value] if value else None, on_change=on_change, validation=validation)
+        converted_value = _convert_value(value, multiple, {o.value: o for o in converted_options})
+        super().__init__(label=label or None, options=converted_options, value=converted_value, on_change=on_change, validation=validation)
         if new_value_mode is not None:
             self._props['new-value-mode'] = new_value_mode
             with_input = True
@@ -226,19 +241,6 @@ def select(
 @overload
 def select(
     options: list[P], *, label: str = ..., value: Optional[P] = ...,
-    on_change: Optional[Handler[ValueChangeEventArguments[Optional[Option[P, P]]]]] = ...,
-    with_input: bool = ...,
-    new_value_mode: Optional[Literal['add', 'add-unique', 'toggle']] = ...,
-    multiple: Literal[False] = ...,
-    new_value_to_option: Optional[Callable[[str], Optional[Option[P, P]]]] = ...,
-    clearable: bool = ...,
-    validation: Optional[Union[ValidationFunction[Optional[Option[P, P]]], ValidationDict[Optional[Option[P, P]]]]] = ...,
-    ) -> Select[Optional[Option[P, P]], Option[P, P]]:
-    ...
-
-@overload
-def select(
-    options: list[P], *, label: str = ..., value: Literal[None] = ...,
     on_change: Optional[Handler[ValueChangeEventArguments[Optional[Option[P, P]]]]] = ...,
     with_input: bool = ...,
     new_value_mode: Optional[Literal['add', 'add-unique', 'toggle']] = ...,
