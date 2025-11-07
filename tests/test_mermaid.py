@@ -135,11 +135,11 @@ def test_node_click_handler(screen: Screen):
             flowchart TD;
                 A[Node A];
                 B[Node B];
-        ''', on_node_click=lambda e: ui.notify(f'{e.text} clicked'))
+        ''', on_node_click=lambda e: ui.notify(f'{e.name} clicked'))
 
     screen.open('/')
     screen.click('Node A')
-    screen.should_contain('Node A clicked')
+    screen.should_contain('A clicked')
 
     screen.click('Node B')
-    screen.should_contain('Node B clicked')
+    screen.should_contain('B clicked')

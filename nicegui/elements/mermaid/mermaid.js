@@ -40,7 +40,6 @@ export default {
                 getElement(element).$emit("node_click", {
                   id: node.id,
                   name: node.id.split("-").slice(1, -1).join("-"),
-                  text: node.textContent.trim(),
                 });
               });
             });
