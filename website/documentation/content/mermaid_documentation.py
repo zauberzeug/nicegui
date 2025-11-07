@@ -23,7 +23,7 @@ def click_demo() -> None:
     ui.mermaid('''
         graph LR;
             A((Click me));
-    ''', on_node_click=lambda e: ui.notify(f'Node {e.name} clicked'))
+    ''', on_node_click=lambda e: ui.notify(f'Node {e.html_id} clicked'))
 
 
 @doc.demo('Handle click events with JS', '''
