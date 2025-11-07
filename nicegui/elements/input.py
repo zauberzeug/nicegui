@@ -51,6 +51,7 @@ class Input(LabelElement, ValidationElement, DisableableElement, component='inpu
         :param validation: dictionary of validation rules or a callable that returns an optional error message (default: None for no validation)
         """
         super().__init__(label=label, value=value, on_value_change=on_change, validation=validation)
+        self._props['for'] = self.html_id
         if placeholder is not None:
             self._props['placeholder'] = placeholder
         self._props['type'] = 'password' if password else 'text'

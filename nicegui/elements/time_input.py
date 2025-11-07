@@ -30,6 +30,7 @@ class TimeInput(LabelElement, ValueElement, DisableableElement):
         :param on_change: callback to execute when the value changes
         """
         super().__init__(tag='q-input', label=label, value=value, on_value_change=on_change)
+        self._props['for'] = self.html_id
         if placeholder is not None:
             self._props['placeholder'] = placeholder
 

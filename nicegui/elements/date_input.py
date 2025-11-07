@@ -33,6 +33,7 @@ class DateInput(LabelElement, ValueElement, DisableableElement):
         """
         self._range_input = range_input
         super().__init__(tag='q-input', label=label, value=value, on_value_change=on_change)
+        self._props['for'] = self.html_id
         if placeholder is not None:
             self._props['placeholder'] = placeholder
 
