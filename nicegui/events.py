@@ -402,6 +402,16 @@ class PywebviewEventArguments(EventArguments):
     args: tuple[Any, ...]
 
 
+@dataclass(**KWONLY_SLOTS)
+class XtermBellEventArguments(UiEventArguments):
+    pass
+
+
+@dataclass(**KWONLY_SLOTS)
+class XtermDataEventArguments(UiEventArguments):
+    data: str
+
+
 EventT = TypeVar('EventT', bound=EventArguments)
 Handler = Union[Callable[[EventT], Any], Callable[[], Any]]
 

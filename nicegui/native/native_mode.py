@@ -5,7 +5,6 @@ import multiprocessing as mp
 import queue
 import socket
 import sys
-import tempfile
 import time
 import warnings
 from multiprocessing.connection import Connection
@@ -51,10 +50,7 @@ def _open_window(
     window.events.closed += closed.set
     _start_window_method_executor(window, method_queue, response_queue, closed)
     _bind_pywebview_events(window, event_sender)
-    if not core.app.native.start_args.get('private_mode', True) and 'storage_path' not in core.app.native.start_args:
-        log.warning('Pass in a `storage_path` to properly disable `private_mode` for the native app.')
-    webview.start(_bind_pywebview_dom_events, (window, event_sender), **
-                  {'storage_path': tempfile.mkdtemp(), **core.app.native.start_args})
+    webview.start(_bind_pywebview_dom_events, (window, event_sender), **core.app.native.start_args)
 
 
 def _start_window_method_executor(window: webview.Window,

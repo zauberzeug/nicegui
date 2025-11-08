@@ -23,6 +23,9 @@ export default {
     disable(newDisable) {
       this.setDisabled(newDisable);
     },
+    lineWrapping(newLineWrapping) {
+      this.setLineWrapping(newLineWrapping);
+    },
   },
   data() {
     return {
@@ -104,6 +107,11 @@ export default {
         effects: this.editableConfig.reconfigure(this.editableStates[!disabled]),
       });
     },
+    setLineWrapping(wrap) {
+      this.editor.dispatch({
+        effects: this.lineWrappingConfig.reconfigure(wrap ? [CM.EditorView.lineWrapping] : []),
+      });
+    },
     setupExtensions() {
       const self = this;
 
@@ -133,13 +141,13 @@ export default {
         this.themeConfig.of([]),
         this.languageConfig.of([]),
         this.editableConfig.of([]),
+        this.lineWrappingConfig.of([]),
         CM.EditorView.theme({
           "&": { height: "100%" },
           ".cm-scroller": { overflow: "auto" },
         }),
       ];
 
-      if (this.lineWrapping) extensions.push(CM.EditorView.lineWrapping);
       if (this.highlightWhitespace) extensions.push([CM.highlightWhitespace()]);
 
       return extensions;
@@ -156,6 +164,7 @@ export default {
     this.languageConfig = new CM.Compartment();
     this.editableConfig = new CM.Compartment();
     this.editableStates = { true: CM.EditorView.editable.of(true), false: CM.EditorView.editable.of(false) };
+    this.lineWrappingConfig = new CM.Compartment();
 
     const extensions = this.setupExtensions();
 
@@ -170,5 +179,6 @@ export default {
     this.setLanguage(this.language);
     this.setTheme(this.theme);
     this.setDisabled(this.disable);
+    this.setLineWrapping(this.lineWrapping);
   },
 };
