@@ -184,8 +184,10 @@ def generate_resources(prefix: str, elements: Iterable[Element]) -> tuple[list[s
     for key, vue_component in vue_components.items():
         if key not in done_components:
             vue_html.append(vue_component.html)
-            vue_scripts.append(vue_component.script.replace(f"Vue.component('{vue_component.name}',",
-                                                            f"app.component('{vue_component.tag}',", 1))
+            url = f'{prefix}/_nicegui/{__version__}/components/{vue_component.key}'
+            js_imports.append(f'import {{ default as {vue_component.name} }} from "{url}";')
+            js_imports.append(f"{vue_component.name}.template = '#tpl-{vue_component.name}';")
+            js_imports.append(f'app.component("{vue_component.tag}", {vue_component.name});')
             vue_styles.append(vue_component.style)
             done_components.add(key)
 

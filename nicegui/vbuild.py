@@ -19,7 +19,7 @@ class VBuild:
         self.html = f'<script type="text/x-template" id="tpl-{name}">\n    {html}\n</script>'
         self.style = '\n'.join(add_css_prefix(style, '') for style in parser.styles) + '\n'
         self.style += '\n'.join(add_css_prefix(style, f'*[data-{name}]') for style in parser.scopedStyles)
-        self.script = create_vue_component(filepath.stem, f'#tpl-{name}', parser.script)
+        self.script = parser.script or ''
 
 
 class VueParser(HTMLParser):  # pylint: disable=abstract-method  # pylint assumes there is an abstract ``error`` method
@@ -79,20 +79,6 @@ class VueParser(HTMLParser):  # pylint: disable=abstract-method  # pylint assume
         text = self.get_starttag_text()
         assert text is not None
         return text
-
-
-def create_vue_component(name: str, template: str, code: str | None) -> str:
-    """Create a Vue component."""
-    if code is None:
-        js = '{}'
-    else:
-        p1 = code.find('{')
-        p2 = code.rfind('}')
-        if not 0 <= p1 <= p2:
-            raise ValueError('Cannot find valid content inside "{" and "}"')
-        js = code[p1:p2 + 1]
-    js = js.replace('{', f'{{template:"{template}",', 1)
-    return f'''var {name} = Vue.component('{name}', {js});'''
 
 
 def add_css_prefix(css: str, prefix: str) -> str:
