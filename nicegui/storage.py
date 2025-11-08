@@ -3,7 +3,7 @@ import os
 import uuid
 from datetime import timedelta
 from pathlib import Path
-from typing import Optional, Union
+from typing import Any, Optional, Union
 
 from starlette.middleware import Middleware
 from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
@@ -35,14 +35,15 @@ class RequestTrackingMiddleware(BaseHTTPMiddleware):
         return response
 
 
-def set_storage_secret(storage_secret: Optional[str] = None) -> None:
+def set_storage_secret(storage_secret: Optional[str] = None,
+                       session_middleware_kwargs: Optional[dict[str, Any]] = None) -> None:
     """Set storage_secret and add request tracking middleware."""
     if any(m.cls == SessionMiddleware for m in core.app.user_middleware):
         # NOTE not using "add_middleware" because it would be the wrong order
         core.app.user_middleware.append(Middleware(RequestTrackingMiddleware))
     elif storage_secret is not None:
         core.app.add_middleware(RequestTrackingMiddleware)
-        core.app.add_middleware(SessionMiddleware, secret_key=storage_secret)
+        core.app.add_middleware(SessionMiddleware, secret_key=storage_secret, **(session_middleware_kwargs or {}))
     Storage.secret = storage_secret
 
 
@@ -82,7 +83,7 @@ class Storage:
         Therefore it is normally better to use `app.storage.user` instead,
         which can be modified anytime, reduces overall payload, improves security and has larger storage capacity.
         """
-        if core.script_mode and not core.app.is_started:
+        if core.is_script_mode_preflight():
             return {}
         request: Optional[Request] = request_contextvar.get()
         if request is None:
@@ -103,7 +104,7 @@ class Storage:
         The data is stored on the server.
         It is shared between all browser tabs by identifying the user via session cookie ID.
         """
-        if core.script_mode and not core.app.is_started:
+        if core.is_script_mode_preflight():
             return PseudoPersistentDict()
         request: Optional[Request] = request_contextvar.get()
         if request is None:

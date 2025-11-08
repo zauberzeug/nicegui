@@ -227,6 +227,7 @@ def test_nested_sub_pages_on_root_path(screen: Screen):
         await asyncio.sleep(0.2)
         ui.label('some content')
 
+    screen.allowed_js_errors.append('/bad_path - Failed to load resource')
     screen.open('/')
     screen.should_not_contain('some content')
     screen.should_contain('home1')
@@ -955,6 +956,7 @@ def test_on_path_changed_event(screen: Screen):
         calls['other'] += 1
         ui.label('other page')
 
+    screen.allowed_js_errors.append('/bad_path - Failed to load resource')
     screen.open('/')
     screen.should_contain('main page')
     assert paths == []  # NOTE: initial path is not reported, because the path does not "change" on first load
@@ -1070,6 +1072,7 @@ def test_navigate_from_404_to_root_path(screen: Screen):
     def main():
         ui.label('main page')
 
+    screen.allowed_js_errors.append('/bad_path - Failed to load resource')
     screen.open('/')
     screen.click('Go to bad_path')
     screen.should_contain('404: sub page /bad_path not found')
@@ -1091,6 +1094,7 @@ def test_http_404_on_initial_request(screen: Screen):
     assert httpx.get(f'http://localhost:{Screen.PORT}/').status_code == 200
     assert httpx.get(f'http://localhost:{Screen.PORT}/bad_path').status_code == 404
 
+    screen.allowed_js_errors.append('/bad_path - Failed to load resource')
     screen.open('/')
     screen.should_contain('main page')
 
@@ -1111,6 +1115,7 @@ def test_http_404_on_initial_request_with_async_page_builder(screen: Screen):
     assert httpx.get(f'http://localhost:{Screen.PORT}/').status_code == 200
     assert httpx.get(f'http://localhost:{Screen.PORT}/bad_path').status_code == 404
 
+    screen.allowed_js_errors.append('/bad_path - Failed to load resource')
     screen.open('/')
     screen.should_contain('main page')
 
@@ -1142,6 +1147,7 @@ def test_http_404_on_initial_request_with_async_sub_page_builder(screen: Screen)
     assert httpx.get(f'http://localhost:{Screen.PORT}/async-sub').status_code == 200
     assert httpx.get(f'http://localhost:{Screen.PORT}/async-sub/bad_path').status_code == 404
 
+    screen.allowed_js_errors.append('/bad_path - Failed to load resource')
     screen.open('/sub')
     screen.should_contain('sub sub page')
 
@@ -1170,3 +1176,46 @@ def test_clearing_sub_pages_element(screen: Screen):
     screen.click('Delete')
     screen.wait(0.5)
     screen.should_not_contain('main page')
+
+
+def test_refresh_sub_page(screen: Screen):
+    calls = {'index': 0, 'outer': 0, 'inner_main': 0, 'inner_other': 0}
+
+    @ui.page('/')
+    @ui.page('/{_:path}')
+    def index():
+        calls['index'] += 1
+        sub_pages = ui.sub_pages({'/': outer_page})
+        ui.button('Refresh via Router', on_click=ui.context.client.sub_pages_router.refresh)
+        ui.button('Refresh via SubPages', on_click=sub_pages.refresh)
+
+    def outer_page():
+        calls['outer'] += 1
+        ui.sub_pages({'/': inner_main, '/other': inner_other})
+        ui.link('Go to other', '/other')
+
+    def inner_main(args: PageArguments):
+        calls['inner_main'] += 1
+        ui.button('Refresh inner main', on_click=args.frame.refresh)
+
+    def inner_other(args: PageArguments):
+        calls['inner_other'] += 1
+        ui.button('Refresh inner other', on_click=args.frame.refresh)
+
+    screen.open('/')
+    assert calls == {'index': 1, 'outer': 1, 'inner_main': 1, 'inner_other': 0}
+
+    screen.click('Refresh inner main')
+    assert calls == {'index': 1, 'outer': 1, 'inner_main': 2, 'inner_other': 0}
+
+    screen.click('Go to other')
+    assert calls == {'index': 1, 'outer': 1, 'inner_main': 2, 'inner_other': 1}
+
+    screen.click('Refresh inner other')
+    assert calls == {'index': 1, 'outer': 1, 'inner_main': 2, 'inner_other': 2}
+
+    screen.click('Refresh via Router')
+    assert calls == {'index': 1, 'outer': 2, 'inner_main': 2, 'inner_other': 3}
+
+    screen.click('Refresh via SubPages')
+    assert calls == {'index': 1, 'outer': 3, 'inner_main': 2, 'inner_other': 4}

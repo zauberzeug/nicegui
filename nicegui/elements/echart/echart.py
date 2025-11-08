@@ -30,7 +30,6 @@ class EChart(Element, component='echart.js', esm={'nicegui-echart': 'dist'}, def
 
         An element to create a chart using `ECharts <https://echarts.apache.org/>`_.
         Updates can be pushed to the chart by changing the `options` property.
-        After data has changed, call the `update` method to refresh the chart.
 
         :param options: dictionary of EChart options
         :param on_click_point: callback that is invoked when a point is clicked

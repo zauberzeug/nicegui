@@ -6,10 +6,9 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import TYPE_CHECKING, Callable
 
-import vbuild
-
 from .dataclasses import KWONLY_SLOTS
 from .helpers import hash_file_path
+from .vbuild import VBuild
 from .version import __version__
 
 if TYPE_CHECKING:
@@ -86,7 +85,7 @@ def register_vue_component(path: Path, *, max_time: float | None) -> Component:
         if key in vue_components and vue_components[key].path == path:
             return vue_components[key]
         assert key not in vue_components, f'Duplicate VUE component {key}'
-        v = vbuild.VBuild(path.name, path.read_text(encoding='utf-8'))
+        v = VBuild(path)
         vue_components[key] = VueComponent(key=key, name=name, path=path, html=v.html, script=v.script, style=v.style)
         return vue_components[key]
     if path.suffix == '.js':
@@ -185,8 +184,10 @@ def generate_resources(prefix: str, elements: Iterable[Element]) -> tuple[list[s
     for key, vue_component in vue_components.items():
         if key not in done_components:
             vue_html.append(vue_component.html)
-            vue_scripts.append(vue_component.script.replace(f"Vue.component('{vue_component.name}',",
-                                                            f"app.component('{vue_component.tag}',", 1))
+            url = f'{prefix}/_nicegui/{__version__}/components/{vue_component.key}'
+            js_imports.append(f'import {{ default as {vue_component.name} }} from "{url}";')
+            js_imports.append(f"{vue_component.name}.template = '#tpl-{vue_component.name}';")
+            js_imports.append(f'app.component("{vue_component.tag}", {vue_component.name});')
             vue_styles.append(vue_component.style)
             done_components.add(key)
 

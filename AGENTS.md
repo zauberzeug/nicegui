@@ -1,7 +1,7 @@
 # AI Agent Guidelines for NiceGUI
 
-> **For**: AI assistants (Cursor, GitHub Copilot, Codex, etc.) working on NiceGUI codebase
-> **About**: The project, examples and architecture is described in [README.md](README.md)
+> **For**: AI assistants (Cursor, GitHub Copilot, Codex, etc.) working on NiceGUI codebase \
+> **About**: The project, examples and architecture is described in [README.md](README.md) \
 > **Standards**: All coding standards are in [CONTRIBUTING.md](CONTRIBUTING.md) – follow those rules
 
 ## Core Principles
@@ -27,22 +27,7 @@ We work together as pair programmers, switching seamlessly between driver and na
 - Remove obsolete code rather than working around it
 - Code should be self-explanatory
 
-## Code Organization
-
-- **High-level code first**: Put interesting logic at the top of files
-- **Helpers below usage**: Functions called from high-level code should be close to, but below, their usage
-- **Keep files focused**: Aim for under 200-300 lines per file; suggest refactorings when larger
-
-## Async/Event Loop
-
-- **Never block the event loop**: All async handlers must stay non-blocking
-- **Never use `asyncio.create_task()`** – The garbage collector might remove unfinished tasks
-- Use appropriate methods based on operation type:
-  - `run.cpu_bound()` for CPU-intensive operations
-  - `run.io_bound()` for blocking I/O operations
-  - `background_tasks.create()` for background tasks that need proper lifecycle management
-- Clean up background tasks on teardown
-- Handle resource cleanup properly in async contexts
+Note: See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed style principles, code organization rules, and async/event loop requirements.
 
 ## API Stability
 
