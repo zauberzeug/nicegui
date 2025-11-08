@@ -85,7 +85,9 @@ async def cpu_bound(callback: Callable[P, R], *args: P.args, **kwargs: P.kwargs)
     try:
         return await _run(process_pool, safe_callback, callback, *args, **kwargs)
     except PicklingError as e:
-        raise RuntimeError('Unable to run CPU-bound in script mode. Use a `@ui.page` function instead.') from e
+        if core.script_mode:
+            raise RuntimeError('Unable to run CPU-bound in script mode. Use a `@ui.page` function instead.') from e
+        raise e
     except BrokenProcessPool as e:
         try:
             await _run(process_pool, safe_callback, lambda: None)
