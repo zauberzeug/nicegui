@@ -27,10 +27,10 @@ redirects: dict[str, str] = {}
 def dummy_client() -> Generator[Client, None, None]:
     """Create a dummy client for pre-rendering UI."""
     try:
-        with Client(nicegui_ui.page('')) as client:
+        with Client(nicegui_ui.page(''), _init_self_delete=False) as client:
             yield client
     finally:
-        client.delete()
+        client.delete()  # hence _init_self_delete=False above
 
 
 def auto_execute(function: Callable) -> Callable:

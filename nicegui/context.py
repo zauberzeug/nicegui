@@ -21,7 +21,8 @@ class Context:
             from .page import page  # pylint: disable=import-outside-toplevel,cyclic-import
             if not Client.instances:  # in case some kind of dummy client is already created
                 core.script_mode = True
-                core.script_client = Client(page('/')).__enter__()  # pylint: disable=unnecessary-dunder-call
+                core.script_client = Client(
+                    page('/'), _init_self_delete=False).__enter__()  # pylint: disable=unnecessary-dunder-call
                 stack = Slot.get_stack()
         return stack
 
