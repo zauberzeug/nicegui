@@ -393,3 +393,4 @@ class Client:
     @classmethod
     def prune_instances(cls, *, client_age_threshold: float = 60.0) -> None:
         """Deprecated since client should self-delete"""
+        helpers.warn_once('Client.prune_instances is deprecated and will be removed in a future version.')
