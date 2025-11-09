@@ -291,6 +291,7 @@ def test_missing_storage_secret(screen: Screen):
         ui.label(app.storage.user.get('message', 'no message'))
 
     core.app.user_middleware.clear()  # remove the session middlewares added by prepare_simulation by default
+    screen.allowed_js_errors.append('/ - Failed to load resource')
     screen.open('/')
     screen.assert_py_logger('ERROR', 'app.storage.user needs a storage_secret passed in ui.run()')
 

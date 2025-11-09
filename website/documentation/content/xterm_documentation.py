@@ -8,7 +8,7 @@ from . import doc
 @doc.demo(ui.xterm)
 def main_demo() -> None:
     terminal = ui.xterm({'cols': 30, 'rows': 9})
-    ui.timer(0.1, lambda: terminal.write('Hello NiceGUI!'), once=True)
+    ui.timer(0, lambda: terminal.write('Hello NiceGUI!'), once=True)
 
 
 @doc.demo('Using ANSI escape codes', '''
@@ -59,15 +59,20 @@ def resizing():
     You can connect the output of a subprocess to the terminal.
     Note that `subprocess.PIPE` buffers the output in `StreamReader` objects in memory.
     If you want your subprocess to behave like it is running in a terminal, you might need to use a pty.
+    The `convertEol` parameter automatically converts line feeds (`\\n`) to carriage return + line feed (`\\r\\n`),
+    which ensures proper line breaks when displaying subprocess output.
 ''')
 def connecting_to_subprocess():
     async def run_subprocess():
         button.disable()
         process = await asyncio.create_subprocess_exec(
-            'python3', '-c',
+            'python3', '-u', '-c',
             (
-                'import time; [print(f"\\r[{\'#\' * i}{\' \' * (10 - i)}] {i * 10}%", end="", flush=True) or '
-                'time.sleep(0.5) for i in range(11)]; print("\x1b[32m  Done!\x1b[0m")'
+                'import time\n'
+                'for i in range(5):\n'
+                '    print(f"Step {i+1}/5: Processing...")\n'
+                '    time.sleep(0.5)\n'
+                'print("\\x1b[32m✓ All steps completed!\\x1b[0m")'
             ),
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE,
@@ -84,7 +89,7 @@ def connecting_to_subprocess():
         )
         button.enable()
 
-    terminal = ui.xterm({'cols': 30, 'rows': 9})
+    terminal = ui.xterm({'cols': 30, 'rows': 9, 'convertEol': True})
     button = ui.button('Run subprocess', on_click=run_subprocess)
 
 

@@ -1,5 +1,5 @@
 import SceneLib from "nicegui-scene";
-const { THREE, TWEEN } = SceneLib;
+const { THREE, TWEEN, Stats } = SceneLib;
 
 export default {
   template: `
@@ -10,6 +10,12 @@ export default {
   async mounted() {
     await this.$nextTick();
     this.scene = getElement(this.scene_id).scene;
+    if (this.show_stats) {
+      this.stats = new Stats();
+      this.stats.domElement.style.position = "absolute";
+      this.stats.domElement.style.top = "0px";
+      this.$el.appendChild(this.stats.domElement);
+    }
 
     if (this.camera_type === "perspective") {
       this.camera = new THREE.PerspectiveCamera(
@@ -56,9 +62,10 @@ export default {
     window.addEventListener("DOMContentLoaded", this.resize, false);
 
     const render = () => {
-      requestAnimationFrame(() => setTimeout(() => render(), 1000 / 20));
+      requestAnimationFrame(() => setTimeout(() => render(), 1000 / this.fps));
       this.camera_tween?.update();
       this.renderer.render(this.scene, this.camera);
+      if (this.show_stats) this.stats.update();
     };
     render();
 
@@ -94,7 +101,7 @@ export default {
     }, 100);
   },
 
-  beforeDestroy() {
+  beforeUnmount() {
     window.removeEventListener("resize", this.resize);
     window.removeEventListener("DOMContentLoaded", this.resize);
   },
@@ -157,5 +164,7 @@ export default {
     camera_type: String,
     camera_params: Object,
     scene_id: String,
+    fps: Number,
+    show_stats: Boolean,
   },
 };
