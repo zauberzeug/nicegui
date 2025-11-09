@@ -4,7 +4,6 @@ import asyncio
 import inspect
 import time
 import uuid
-from collections import defaultdict
 from collections.abc import Awaitable, Iterable
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Callable, ClassVar
@@ -20,7 +19,6 @@ from .dependencies import generate_resources
 from .element import Element
 from .favicon import get_favicon_url
 from .javascript_request import JavaScriptRequest
-from .logging import log
 from .observables import ObservableDict
 from .outbox import Outbox
 from .sub_pages_router import SubPagesRouter
@@ -74,8 +72,7 @@ class Client:
         self._deleted_event = asyncio.Event()
         self.environ: dict[str, Any] | None = None
         self.on_air = False
-        self._num_connections: defaultdict[str, int] = defaultdict(int)
-        self._delete_tasks: dict[str, asyncio.Task] = {}
+        self._delete_task: asyncio.Task | None = None
         self._deleted = False
         self._socket_to_document_id: dict[str, str] = {}
         self.tab_id: str | None = None
@@ -103,6 +100,8 @@ class Client:
 
         with self:
             self.sub_pages_router = SubPagesRouter(request)
+
+        self._reset_self_delete(timeout=60.0)
 
     @property
     def request(self) -> Request:
@@ -284,8 +283,7 @@ class Client:
         self._waiting_for_connection.clear()
         self._connected.set()
         self._socket_to_document_id[socket_id] = document_id
-        self._cancel_delete_task(document_id)
-        self._num_connections[document_id] += 1
+        self._cancel_delete_task()
         if next_message_id is not None:
             self.outbox.try_rewind(next_message_id)
         storage.request_contextvar.set(self.request)
@@ -298,28 +296,26 @@ class Client:
         """Wait for the browser to reconnect; invoke deletion handlers if it doesn't."""
         if socket_id not in self._socket_to_document_id:
             return
-        document_id = self._socket_to_document_id.pop(socket_id)
-        self._cancel_delete_task(document_id)
-        self._num_connections[document_id] -= 1
+        self._socket_to_document_id.pop(socket_id)
         self.tab_id = None
 
         for t in self.disconnect_handlers:
             self.safe_invoke(t)
         for t in core.app._disconnect_handlers:  # pylint: disable=protected-access
             self.safe_invoke(t)
+        self._reset_self_delete()
 
+    def _reset_self_delete(self, *, timeout: float | None = None) -> None:
         async def delete_content() -> None:
-            await asyncio.sleep(self.page.resolve_reconnect_timeout())
-            if self._num_connections[document_id] == 0:
-                self._num_connections.pop(document_id)
-                self._delete_tasks.pop(document_id)
-                self.delete()
-        self._delete_tasks[document_id] = \
-            background_tasks.create(delete_content(), name=f'delete content {document_id}')
+            await asyncio.sleep(timeout or self.page.resolve_reconnect_timeout())
+            self.delete()
+        self._cancel_delete_task()
+        self._delete_task = background_tasks.create(delete_content(), name=f'delete content {self.id}')
 
-    def _cancel_delete_task(self, document_id: str) -> None:
-        if document_id in self._delete_tasks:
-            self._delete_tasks.pop(document_id).cancel()
+    def _cancel_delete_task(self) -> None:
+        if self._delete_task is not None:
+            self._delete_task.cancel()
+            self._delete_task = None
 
     def handle_event(self, msg: dict) -> None:
         """Forward an event to the corresponding element."""
@@ -396,20 +392,4 @@ class Client:
 
     @classmethod
     def prune_instances(cls, *, client_age_threshold: float = 60.0) -> None:
-        """Prune stale clients."""
-        try:
-            stale_clients = [
-                client
-                for client in cls.instances.values()
-                if (
-                    not client.has_socket_connection and
-                    not client._delete_tasks and  # pylint: disable=protected-access
-                    client.created <= time.time() - client_age_threshold
-                )
-            ]
-            for client in stale_clients:
-                log.debug(f'Pruning stale client {client.id}')
-                client.delete()
-
-        except Exception:
-            log.exception('Error while pruning clients')
+        """Deprecated since client should self-delete"""
