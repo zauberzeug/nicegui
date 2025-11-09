@@ -392,6 +392,6 @@ class Client:
                               stack_info=True)
 
     @classmethod
-    def prune_instances(cls, *, client_age_threshold: float = 60.0) -> None:
+    def prune_instances(cls, *, client_age_threshold: float = 60.0) -> None:  # pylint: disable=unused-argument
         """Deprecated since client should self-delete"""
         helpers.warn_once('Client.prune_instances is deprecated and will be removed in a future version.')
