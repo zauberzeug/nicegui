@@ -1,6 +1,6 @@
 import asyncio
 
-from nicegui import app, ui
+from nicegui import Client, app, ui
 from nicegui.testing import Screen
 
 
@@ -142,3 +142,18 @@ def test_all_lifecycle_handlers_are_called(screen: Screen):
                       'page disconnect', 'app disconnect',
                       'page connect', 'app connect',
                       'page delete', 'app delete']
+
+
+def test_no_double_delete(screen: Screen):
+    events: list[str] = []
+
+    @ui.page('/', reconnect_timeout=3)
+    def page():
+        ui.context.client.on_delete(lambda: events.append('delete'))
+
+    screen.open('/')
+    screen.wait(1)
+    screen.close()  # will trigger client.delete() after another 3 seconds
+    Client.prune_instances(client_age_threshold=0)  # should do nothing because client is still trying to reconnect
+    screen.wait(4)  # meanwhile client.delete() will be called without raising KeyError
+    assert len(events) == 1, 'delete event should be called only once'
