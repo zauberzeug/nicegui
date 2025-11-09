@@ -23,7 +23,7 @@ class BackgroundColorElement(Element):
     def __init__(self, *, background_color: Optional[str], **kwargs: Any) -> None:
         super().__init__(**kwargs)
         if background_color in QUASAR_COLORS:
-            self._props[self.BACKGROUND_COLOR_PROP] = background_color
+            self._props._set_and_warn(self.BACKGROUND_COLOR_PROP, background_color)
         elif background_color in TAILWIND_COLORS:
             self._classes.append(f'bg-{background_color}')
         elif background_color is not None:

@@ -76,8 +76,8 @@ class TabPanels(ValueElement):
         super().__init__(tag='q-tab-panels', value=value, on_value_change=on_change)
         if tabs is not None:
             tabs.bind_value(self, 'value')
-        self._props['animated'] = animated
-        self._props['keep-alive'] = keep_alive
+        self._props._set_and_warn('animated', animated)
+        self._props._set_and_warn('keep-alive', keep_alive)
 
     def _value_to_model_value(self, value: Any) -> Any:
         return value.props['name'] if isinstance(value, (Tab, TabPanel)) else value

@@ -138,3 +138,9 @@ class Props(ObservableDict, Generic[T]):
                     props[key] = True
 
         return props
+
+    def _set_and_warn(self, key: str, value: Any) -> None:
+        if key in self:
+            helpers.warn_once(
+                f"Conflict in {str(self.element).partition(' ')[0]}.props['{key}']: User set '{self[key]}', but NiceGUI set '{value}' instead. Please use the Python API.")
+        self[key] = value
