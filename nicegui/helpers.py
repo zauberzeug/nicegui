@@ -15,9 +15,8 @@ from inspect import Parameter, signature
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
-from nicegui.storage import Storage
-
 from .context import context
+from .core import app
 from .logging import log
 from .version import __version__
 
@@ -154,7 +153,11 @@ def require_top_level_layout(element: Element) -> None:
 
 @functools.cache
 def version_signature() -> str:
-    if Storage.secret:
-        return hmac.new(Storage.secret.encode(), str(__version__).encode(), hashlib.sha256).hexdigest()
-    else:
-        return __version__
+    """Compute a version signature based on the storage secret and the NiceGUI version.
+
+    If the storage secret is not available, the plain-text NiceGUI version is returned."""
+    storage_secret = app.storage.secret
+
+    if storage_secret:
+        return hmac.new(storage_secret.encode(), str(__version__).encode(), hashlib.sha256).hexdigest()
+    return __version__
