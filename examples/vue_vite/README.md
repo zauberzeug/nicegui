@@ -14,15 +14,22 @@ Both use TypeScript and Vue's Single-File Component (SFC) syntax.
 ## Usage
 
 Run the example with `python demo.py`.
-With this setup you could modify the Vue components and the changes would be reflected live
-if you also kept Vite's build-watch process running at the same time.
+
+To enable building/rebuilding the components, install the npm dependencies with:
 
 ```bash
-$ npm run watch
+npm install
 ```
 
-Alternatively the components can be rebuilt with:
+In order to have modifications to the Vue components be reflected live, you can run Vite's build-watch process in parallel with the NiceGUI server:
 
 ```bash
-$ npm run watch
+$ npm run watch &
+$ python demo.py
+```
+
+Alternatively you can rebuild components manually with:
+
+```bash
+$ npm run build
 ```
