@@ -1,7 +1,8 @@
 import httpx
 import pytest
 
-from nicegui import __version__, ui
+from nicegui import ui
+from nicegui.helpers import version_signature
 from nicegui.testing import Screen
 
 
@@ -43,11 +44,11 @@ def test_endpoint_documentation_internal_only(screen: Screen):
 
     screen.open('/')
     assert get_openapi_paths() == {
-        f'/_nicegui/{__version__}/libraries/{{key}}',
-        f'/_nicegui/{__version__}/components/{{key}}',
-        f'/_nicegui/{__version__}/resources/{{key}}/{{path}}',
-        f'/_nicegui/{__version__}/dynamic_resources/{{name}}',
-        f'/_nicegui/{__version__}/esm/{{key}}/{{path}}',
+        f'/_nicegui/{version_signature()}/libraries/{{key}}',
+        f'/_nicegui/{version_signature()}/components/{{key}}',
+        f'/_nicegui/{version_signature()}/resources/{{key}}/{{path}}',
+        f'/_nicegui/{version_signature()}/dynamic_resources/{{name}}',
+        f'/_nicegui/{version_signature()}/esm/{{key}}/{{path}}',
     }
 
 
@@ -61,9 +62,9 @@ def test_endpoint_documentation_all(screen: Screen):
     screen.open('/')
     assert get_openapi_paths() == {
         '/',
-        f'/_nicegui/{__version__}/libraries/{{key}}',
-        f'/_nicegui/{__version__}/components/{{key}}',
-        f'/_nicegui/{__version__}/resources/{{key}}/{{path}}',
-        f'/_nicegui/{__version__}/dynamic_resources/{{name}}',
-        f'/_nicegui/{__version__}/esm/{{key}}/{{path}}',
+        f'/_nicegui/{version_signature()}/libraries/{{key}}',
+        f'/_nicegui/{version_signature()}/components/{{key}}',
+        f'/_nicegui/{version_signature()}/resources/{{key}}/{{path}}',
+        f'/_nicegui/{version_signature()}/dynamic_resources/{{name}}',
+        f'/_nicegui/{version_signature()}/esm/{{key}}/{{path}}',
     }

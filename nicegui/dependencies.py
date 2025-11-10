@@ -7,9 +7,8 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Callable
 
 from .dataclasses import KWONLY_SLOTS
-from .helpers import hash_file_path
+from .helpers import hash_file_path, version_signature
 from .vbuild import VBuild
-from .version import __version__
 
 if TYPE_CHECKING:
     from .element import Element
@@ -172,19 +171,19 @@ def generate_resources(prefix: str, elements: Iterable[Element]) -> tuple[list[s
     # build the importmap structure for libraries
     for key, library in libraries.items():
         if key not in done_libraries:
-            imports[library.name] = f'{prefix}/_nicegui/{__version__}/libraries/{key}'
+            imports[library.name] = f'{prefix}/_nicegui/{version_signature()}/libraries/{key}'
             done_libraries.add(key)
 
     # build the importmap structure for ESM modules
     for key, esm_module in esm_modules.items():
-        imports[f'{esm_module.name}'] = f'{prefix}/_nicegui/{__version__}/esm/{key}/index.js'
-        imports[f'{esm_module.name}/'] = f'{prefix}/_nicegui/{__version__}/esm/{key}/'
+        imports[f'{esm_module.name}'] = f'{prefix}/_nicegui/{version_signature()}/esm/{key}/index.js'
+        imports[f'{esm_module.name}/'] = f'{prefix}/_nicegui/{version_signature()}/esm/{key}/'
 
     # build the none-optimized component (i.e. the Vue component)
     for key, vue_component in vue_components.items():
         if key not in done_components:
             vue_html.append(vue_component.html)
-            url = f'{prefix}/_nicegui/{__version__}/components/{vue_component.key}'
+            url = f'{prefix}/_nicegui/{version_signature()}/components/{vue_component.key}'
             js_imports.append(f'import {{ default as {vue_component.name} }} from "{url}";')
             js_imports.append(f"{vue_component.name}.template = '#tpl-{vue_component.name}';")
             js_imports.append(f'app.component("{vue_component.tag}", {vue_component.name});')
@@ -196,7 +195,7 @@ def generate_resources(prefix: str, elements: Iterable[Element]) -> tuple[list[s
         if element.component:
             js_component = element.component
             if js_component.key not in done_components and js_component.path.suffix.lower() == '.js':
-                url = f'{prefix}/_nicegui/{__version__}/components/{js_component.key}'
+                url = f'{prefix}/_nicegui/{version_signature()}/components/{js_component.key}'
                 js_imports.append(f'import {{ default as {js_component.name} }} from "{url}";')
                 js_imports.append(f'app.component("{js_component.tag}", {js_component.name});')
                 js_imports_urls.append(url)

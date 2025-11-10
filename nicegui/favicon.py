@@ -9,8 +9,7 @@ from typing import TYPE_CHECKING
 from fastapi.responses import FileResponse, Response, StreamingResponse
 
 from . import core
-from .helpers import is_file
-from .version import __version__
+from .helpers import is_file, version_signature
 
 if TYPE_CHECKING:
     from .page import page
@@ -27,7 +26,7 @@ def get_favicon_url(page: page, prefix: str) -> str:
     """Return the URL of the favicon for a given page."""
     favicon = page.favicon or core.app.config.favicon
     if not favicon:
-        return f'{prefix}/_nicegui/{__version__}/static/favicon.ico'
+        return f'{prefix}/_nicegui/{version_signature()}/static/favicon.ico'
 
     favicon = str(favicon).strip()
     if _is_remote_url(favicon):
