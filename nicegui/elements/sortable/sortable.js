@@ -1,10 +1,10 @@
-import { default as Sortable } from 'sortable';
+import { Sortable } from "nicegui-sortable";
 
 // Add CancelClonePlugin
 function CancelClonePlugin() {
   function CancelClone() {
     this.defaults = {
-      cancelClone: false  // Disabled by default
+      cancelClone: false, // Disabled by default
     };
   }
 
@@ -43,9 +43,9 @@ function CancelClonePlugin() {
 
         // Clean up the drag element
         if (dragEl) {
-          dragEl.classList.remove(this.options.ghostClass || '');
-          dragEl.classList.remove(this.options.chosenClass || '');
-          dragEl.removeAttribute('draggable');
+          dragEl.classList.remove(this.options.ghostClass || "");
+          dragEl.classList.remove(this.options.chosenClass || "");
+          dragEl.removeAttribute("draggable");
         }
 
         // Remove any clone created by SortableJS
@@ -56,25 +56,25 @@ function CancelClonePlugin() {
         // Emit a special event for true cloning with all necessary data
         if (this.options.onCancelClone && dragEl) {
           this.options.onCancelClone({
-            sourceItem: dragEl ? (dragEl.id || dragEl.dataset.id || null) : null,
+            sourceItem: dragEl ? dragEl.id || dragEl.dataset.id || null : null,
             newIndex: newIndex !== undefined ? newIndex : -1,
-            sourceList: rootEl ? (rootEl.id || rootEl.dataset.id || null) : null,
-            targetList: parentEl ? (parentEl.id || parentEl.dataset.id || null) : null,
+            sourceList: rootEl ? rootEl.id || rootEl.dataset.id || null : null,
+            targetList: parentEl ? parentEl.id || parentEl.dataset.id || null : null,
           });
         }
 
         // Dispatch 'end' event
-        dispatchSortableEvent('end');
+        dispatchSortableEvent("end");
       } catch (error) {
         console.error("Error in CancelClone plugin:", error);
       }
 
       return false; // Cancel the default drop
-    }
+    },
   };
 
   return Object.assign(CancelClone, {
-    pluginName: 'cancelClone'
+    pluginName: "cancelClone",
   });
 }
 
@@ -105,99 +105,99 @@ export default {
 
       this.sortableInstance = Sortable.create(el, {
         ...options,
-        dataIdAttr: 'id', // Explicitly tell SortableJS to use the HTML id attribute
+        dataIdAttr: "id", // Explicitly tell SortableJS to use the HTML id attribute
         onChoose: (evt) => {
-          this.$emit('sort_choose', {
+          this.$emit("sort_choose", {
             item: evt.item.id || evt.item.dataset.id || null,
-            oldIndex: evt.oldIndex
+            oldIndex: evt.oldIndex,
           });
         },
         onUnchoose: (evt) => {
-          this.$emit('sort_unchoose', {
+          this.$emit("sort_unchoose", {
             item: evt.item.id || evt.item.dataset.id || null,
-            oldIndex: evt.oldIndex
+            oldIndex: evt.oldIndex,
           });
         },
         onStart: (evt) => {
-          this.$emit('sort_start', {
+          this.$emit("sort_start", {
             item: evt.item.id || evt.item.dataset.id || null,
-            oldIndex: evt.oldIndex
+            oldIndex: evt.oldIndex,
           });
         },
         onEnd: (evt) => {
           // Get the complete current order of all elements to synchronize with Python
           const currentOrder = this.sortableInstance.toArray();
           const childElements = Array.from(this.sortableInstance.el.children);
-          const childrenData = childElements.map(el => ({
+          const childrenData = childElements.map((el) => ({
             id: el.id || el.dataset.id || null,
-            index: currentOrder.indexOf(el.id || el.dataset.id || "")
+            index: currentOrder.indexOf(el.id || el.dataset.id || ""),
           }));
 
-          this.$emit('sort_end', {
+          this.$emit("sort_end", {
             item: evt.item.id || evt.item.dataset.id || null,
-            to: evt.to ? (evt.to.id || null) : null,
-            from: evt.from ? (evt.from.id || null) : null,
+            to: evt.to ? evt.to.id || null : null,
+            from: evt.from ? evt.from.id || null : null,
             oldIndex: evt.oldIndex,
             newIndex: evt.newIndex,
             oldDraggableIndex: evt.oldDraggableIndex,
             newDraggableIndex: evt.newDraggableIndex,
             clone: evt.clone,
             pullMode: evt.pullMode,
-            childrenData: childrenData
+            childrenData: childrenData,
           });
         },
         onAdd: (evt) => {
-          this.$emit('sort_add', {
+          this.$emit("sort_add", {
             item: evt.item.id || evt.item.dataset.id || null,
             newIndex: evt.newIndex,
-            from: evt.from ? (evt.from.id || null) : null,
-            to: evt.to ? (evt.to.id || null) : null,
+            from: evt.from ? evt.from.id || null : null,
+            to: evt.to ? evt.to.id || null : null,
           });
         },
         onUpdate: (evt) => {
-          this.$emit('sort_update', {
+          this.$emit("sort_update", {
             item: evt.item.id || evt.item.dataset.id || null,
             newIndex: evt.newIndex,
-            oldIndex: evt.oldIndex
+            oldIndex: evt.oldIndex,
           });
         },
         onSort: (evt) => {
           // Get the complete current order of all elements to synchronize with Python
           const currentOrder = this.sortableInstance.toArray();
           const childElements = Array.from(this.sortableInstance.el.children);
-          const childrenData = childElements.map(el => ({
+          const childrenData = childElements.map((el) => ({
             id: el.id || el.dataset.id || null,
-            index: currentOrder.indexOf(el.id || el.dataset.id || "")
+            index: currentOrder.indexOf(el.id || el.dataset.id || ""),
           }));
 
-          this.$emit('sort_sort', {
+          this.$emit("sort_sort", {
             item: evt.item.id || evt.item.dataset.id || null,
-            to: evt.to ? (evt.to.id || null) : null,
-            from: evt.from ? (evt.from.id || null) : null,
+            to: evt.to ? evt.to.id || null : null,
+            from: evt.from ? evt.from.id || null : null,
             oldIndex: evt.oldIndex,
             newIndex: evt.newIndex,
             oldDraggableIndex: evt.oldDraggableIndex,
             newDraggableIndex: evt.newDraggableIndex,
             clone: evt.clone,
             pullMode: evt.pullMode,
-            childrenData: childrenData
+            childrenData: childrenData,
           });
         },
         onRemove: (evt) => {
-          this.$emit('sort_remove', {
+          this.$emit("sort_remove", {
             item: evt.item.id || evt.item.dataset.id || null,
             oldIndex: evt.oldIndex,
-            from: evt.from ? (evt.from.id || null) : null,
-            to: evt.to ? (evt.to.id || null) : null
+            from: evt.from ? evt.from.id || null : null,
+            to: evt.to ? evt.to.id || null : null,
           });
         },
         onFilter: (evt) => {
-          this.$emit('sort_filter', {
-            item: evt.item.id || evt.item.dataset.id || null
+          this.$emit("sort_filter", {
+            item: evt.item.id || evt.item.dataset.id || null,
           });
         },
         onMove: (evt, originalEvent) => {
-          this.$emit('sort_move', {
+          this.$emit("sort_move", {
             dragged: evt.dragged.id || evt.dragged.dataset.id || null,
             draggedRect: evt.draggedRect,
             related: evt.related.id || evt.related.dataset.id || null,
@@ -211,44 +211,44 @@ export default {
           if (evt.clone && !evt.clone.id) {
             evt.clone.id = evt.item.id;
           }
-          this.$emit('sort_clone', {
+          this.$emit("sort_clone", {
             item: evt.item.id || evt.item.dataset.id || null,
-            origEl: evt.item ? (evt.item.id || evt.item.dataset.id || null) : null,
-            clone: evt.clone ? (evt.clone.id || evt.clone.dataset.id || null) : null,
+            origEl: evt.item ? evt.item.id || evt.item.dataset.id || null : null,
+            clone: evt.clone ? evt.clone.id || evt.clone.dataset.id || null : null,
           });
         },
         onCancelClone: (evt) => {
-          this.$emit('sort_cancel_clone', {
+          this.$emit("sort_cancel_clone", {
             sourceItem: evt.sourceItem || null,
             newIndex: evt.newIndex,
             sourceList: evt.sourceList || null,
-            targetList: evt.targetList || null
+            targetList: evt.targetList || null,
           });
         },
         onChange: (evt) => {
-          this.$emit('sort_change', {
+          this.$emit("sort_change", {
             item: evt.item.id || evt.item.dataset.id || null,
             newIndex: evt.newIndex,
-            oldIndex: evt.oldIndex
+            oldIndex: evt.oldIndex,
           });
         },
         // Plugin event handlers
         onSpill: (evt) => {
-          this.$emit('sort_spill', {
+          this.$emit("sort_spill", {
             item: evt.item.id || evt.item.dataset.id || null,
-            clone: evt.clone ? (evt.clone.id || evt.clone.dataset.id || null) : null
+            clone: evt.clone ? evt.clone.id || evt.clone.dataset.id || null : null,
           });
         },
         onSelect: (evt) => {
-          this.$emit('sort_select', {
-            item: evt.item.id || evt.item.dataset.id || null
+          this.$emit("sort_select", {
+            item: evt.item.id || evt.item.dataset.id || null,
           });
         },
         onDeselect: (evt) => {
-          this.$emit('sort_deselect', {
-            item: evt.item.id || evt.item.dataset.id || null
+          this.$emit("sort_deselect", {
+            item: evt.item.id || evt.item.dataset.id || null,
           });
-        }
+        },
       });
     } catch (error) {
       console.error("Error initializing Sortable:", error);
@@ -263,12 +263,12 @@ export default {
 
     enable() {
       if (this.sortableInstance) {
-        this.sortableInstance.option('disabled', false);
+        this.sortableInstance.option("disabled", false);
       }
     },
     disable() {
       if (this.sortableInstance) {
-        this.sortableInstance.option('disabled', true);
+        this.sortableInstance.option("disabled", true);
       }
     },
     // Add a method to get a specific option value
@@ -327,15 +327,14 @@ export default {
         const childElements = Array.from(this.sortableInstance.el.children);
 
         // Return array of element IDs in their current DOM order
-        return childElements.map(el => el.id || el.dataset.id || null)
-          .filter(id => id !== null); // Filter out any null IDs
+        return childElements.map((el) => el.id || el.dataset.id || null).filter((id) => id !== null); // Filter out any null IDs
       }
       return [];
-    }
+    },
   },
   beforeDestroy() {
     if (this.sortableInstance) {
       this.sortableInstance.destroy();
     }
-  }
-}
+  },
+};

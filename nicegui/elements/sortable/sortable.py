@@ -11,7 +11,7 @@ from nicegui.events import GenericEventArguments, Handler
 
 class Sortable(Element,
                component='sortable.js',
-               dependencies=['lib/sortable/sortable.complete.esm.js'],
+               esm={'nicegui-sortable': 'dist'},
                default_classes='nicegui-sortable'):
     """Sortable.
 
