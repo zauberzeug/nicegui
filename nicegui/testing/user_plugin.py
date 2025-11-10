@@ -11,7 +11,6 @@ from nicegui.functions.notify import notify
 
 from .general_fixtures import (  # noqa: F401  # pylint: disable=unused-import
     get_path_to_main_file,
-    nicegui_reset_globals,
     pytest_addoption,
     pytest_configure,
 )
@@ -22,8 +21,7 @@ from .user_simulation import prepare_simulation, user_simulation
 
 
 @pytest.fixture
-async def user(nicegui_reset_globals,  # noqa: F811, pylint: disable=unused-argument
-               caplog: pytest.LogCaptureFixture,
+async def user(caplog: pytest.LogCaptureFixture,   # noqa: F811, pylint: disable=unused-argument
                request: pytest.FixtureRequest,
                ) -> AsyncGenerator[User, None]:
     """Create a new user fixture."""
