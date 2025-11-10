@@ -286,7 +286,7 @@ h6.q-timeline__title {
   outline: none;
 }
 
-/* connection popup & too-long-message popup */
+/* error popups */
 .nicegui-error-popup {
   position: fixed;
   bottom: 0;
@@ -302,10 +302,10 @@ h6.q-timeline__title {
   pointer-events: none;
   z-index: 10000;
 }
-#popup:dir(ltr) {
+.nicegui-error-popup:dir(ltr) {
   left: 0;
 }
-#popup:dir(rtl) {
+.nicegui-error-popup:dir(rtl) {
   right: 0;
 }
 .body--dark .nicegui-error-popup {
@@ -318,14 +318,12 @@ h6.q-timeline__title {
   opacity: 0;
   visibility: hidden;
 }
-#popup[aria-hidden="false"] {
+.nicegui-error-popup[aria-hidden="false"] {
   opacity: 1;
   visibility: visible;
-  transition-delay: 2000ms;
 }
-#popup_toolongmessage[aria-hidden="false"] {
-  opacity: 1;
-  visibility: visible;
+#popup[aria-hidden="false"] {
+  transition-delay: 2000ms;
 }
 .nicegui-error-popup > span:first-child {
   font-weight: bold;
@@ -335,7 +333,7 @@ h6.q-timeline__title {
   position: absolute;
   left: 1.5em;
 }
-#popup:dir(rtl) > span:first-child::before {
+.nicegui-error-popup:dir(rtl) > span:first-child::before {
   content: "⚠️";
   position: absolute;
   right: 1.5em;

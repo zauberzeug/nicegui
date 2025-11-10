@@ -342,35 +342,24 @@ function createApp(elements, options) {
       window.did_handshake = false;
       const messageHandlers = {
         connect: () => {
-          function tapIntoFunction(target, functionName) {
-            try {
-              if (!target || !(functionName in target)) {
-                return;
+          function wrapFunction(originalFunction) {
+            return function (...args) {
+              const msg = args[0];
+              if (typeof msg === "string" && msg.length > 1000000 - 100) {
+                console.error(`Payload size ${msg.length} exceeds the maximum allowed limit.`);
+                args[0] = '42["too_long_message"]';
+                if (window.tooLongMessageTimer) clearTimeout(window.tooLongMessageTimer);
+                const popup = document.getElementById("too_long_message_popup");
+                popup.ariaHidden = false;
+                window.tooLongMessageTimer = setTimeout(() => (popup.ariaHidden = true), 5000);
               }
-              const originalFunction = target[functionName];
-              target[functionName] = function (...args) {
-                const msg = args[0];
-                if (typeof msg === "string" && msg.length && msg.length > 1000000 - 100) {
-                  console.error("Payload size exceeds the maximum allowed limit.", msg.length);
-                  args[0] = '42["too-long-message"]';
-                  if (window.tooLongMessageTimer) {
-                    clearTimeout(window.tooLongMessageTimer);
-                  }
-                  const popup = document.getElementById("popup_toolongmessage");
-                  popup.ariaHidden = false;
-                  window.tooLongMessageTimer = setTimeout(() => {
-                    popup.ariaHidden = true;
-                  }, 5000);
-                }
-                return originalFunction.call(this, ...args);
-              };
-            } catch (e) {
-              console.error(`Cannot tap into ${functionName} function:`, e);
-            }
+              return originalFunction.call(this, ...args);
+            };
           }
+          const transport = window.socket.io.engine.transport;
+          if (transport?.ws?.send) transport.ws.send = wrapFunction(transport.ws.send);
+          if (transport?.doWrite) transport.doWrite = wrapFunction(transport.doWrite);
 
-          tapIntoFunction(window.socket.io.engine.transport.ws, "send");
-          tapIntoFunction(window.socket.io.engine.transport, "doWrite");
           const args = {
             client_id: window.clientId,
             document_id: window.documentId,
