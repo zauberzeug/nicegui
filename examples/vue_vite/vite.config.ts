@@ -1,33 +1,29 @@
-import { fileURLToPath, URL } from 'node:url';
-import { defineConfig } from 'vite';
-import vue from '@vitejs/plugin-vue';
-import checker from 'vite-plugin-checker';
+import { defineConfig } from "vite";
+import vue from "@vitejs/plugin-vue";
+import checker from "vite-plugin-checker";
 
 export default defineConfig({
-  plugins: [
-    vue({}),
-    checker({ vueTsc: true, typescript: true })
-  ],
+  plugins: [vue({}), checker({ vueTsc: true, typescript: true })],
   build: {
     cssCodeSplit: true,
-    outDir: './vue_vite/components',
+    outDir: "./vue_vite/components",
     lib: {
       entry: {
-        'CounterOptions': './js/CounterOptions.vue',
-        'CounterComposition': './js/CounterComposition.vue',
+        CounterOptions: "./js/CounterOptions.vue",
+        CounterComposition: "./js/CounterComposition.vue",
       },
-      formats: ['es'],
+      formats: ["es"],
       fileName: (format, entryName) => `${entryName}.js`,
-      name: 'vue_vite',
+      name: "vue_vite",
     },
     minify: false,
     rollupOptions: {
-      external: ['vue'],
+      external: ["vue"],
       output: {
         entryFileNames: `[name].js`,
         chunkFileNames: `[name].js`,
         assetFileNames: `[name].[ext]`,
       },
     },
-  }
+  },
 });

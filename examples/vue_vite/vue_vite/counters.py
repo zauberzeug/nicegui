@@ -1,9 +1,9 @@
 from typing import Callable, Optional
 
-from nicegui.element import Element
+from nicegui import ui
 
 
-class CounterOptions(Element, component='components/CounterOptions.js'):
+class CounterOptions(ui.element, component='components/CounterOptions.js'):
 
     def __init__(self, title: str, *, on_change: Optional[Callable] = None) -> None:
         super().__init__()
@@ -14,7 +14,7 @@ class CounterOptions(Element, component='components/CounterOptions.js'):
         self.run_method('reset')
 
 
-class CounterComposition(Element, component='components/CounterComposition.js'):
+class CounterComposition(ui.element, component='components/CounterComposition.js'):
 
     def __init__(self, title: str, *, on_change: Optional[Callable] = None) -> None:
         super().__init__()

@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import { ref, defineProps, defineEmits, defineExpose } from 'vue'
+import { ref, defineProps, defineEmits, defineExpose } from "vue";
 
 const props = defineProps<{
-  title: string
+  title: string;
 }>();
 
 const emit = defineEmits<{
-  change: [value: number]
+  change: [value: number];
 }>();
 
 const value = ref(0);
@@ -20,11 +20,14 @@ function reset(event: Event) {
   value.value = 0;
 }
 
-defineExpose({reset});
+defineExpose({ reset });
 </script>
 
 <template>
-  <button @click="handle_click" :style="{ background: value > 0 ? '#bf8' : '#eee', padding: '8px 16px', borderRadius: '4px' }">
-    <strong>{{title}}: {{value}}</strong>
+  <button
+    @click="handle_click"
+    :style="{ background: value > 0 ? '#bf8' : '#eee', padding: '8px 16px', borderRadius: '4px' }"
+  >
+    <strong>{{ title }}: {{ value }}</strong>
   </button>
 </template>

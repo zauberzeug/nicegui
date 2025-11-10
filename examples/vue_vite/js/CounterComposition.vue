@@ -1,5 +1,5 @@
 <script lang="ts">
-import { defineComponent } from 'vue'
+import { defineComponent } from "vue";
 
 export default defineComponent({
   props: {
@@ -20,13 +20,16 @@ export default defineComponent({
     },
     reset(event: Event) {
       this.value = 0;
-    }
-  }
+    },
+  },
 });
 </script>
 
 <template>
-  <button @click="handle_click" :style="{ background: value > 0 ? '#bf8' : '#eee', padding: '8px 16px', borderRadius: '4px' }">
-    <strong>{{title}}: {{value}}</strong>
+  <button
+    @click="handle_click"
+    :style="{ background: value > 0 ? '#bf8' : '#eee', padding: '8px 16px', borderRadius: '4px' }"
+  >
+    <strong>{{ title }}: {{ value }}</strong>
   </button>
 </template>
