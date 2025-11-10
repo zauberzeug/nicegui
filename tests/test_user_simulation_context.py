@@ -67,7 +67,7 @@ async def test_user_simulation_with_page_definitios():
         def root():
             ui.label("Main file content")
 
-        ui.run(root, storage_secret="simulated secret")
+        ui.run(root)
     '''),
 ])
 async def test_user_simulation_script_main_file(tmp_path, file_content):
