@@ -1,6 +1,7 @@
 from selenium.webdriver.common.by import By
 
-from nicegui import __version__, ui
+from nicegui import ui
+from nicegui.helpers import version_signature
 from nicegui.testing import Screen
 
 
@@ -12,8 +13,8 @@ def test_dev_mode(screen: Screen) -> None:
         ui.label('Hello, world!')
 
     screen.open('/')
-    screen.selenium.find_element(By.XPATH, f'//script[@src="/_nicegui/{__version__}/static/vue.global.js"]')
-    screen.selenium.find_element(By.XPATH, f'//script[@src="/_nicegui/{__version__}/static/quasar.umd.js"]')
+    screen.selenium.find_element(By.XPATH, f'//script[@src="/_nicegui/{version_signature()}/static/vue.global.js"]')
+    screen.selenium.find_element(By.XPATH, f'//script[@src="/_nicegui/{version_signature()}/static/quasar.umd.js"]')
 
 
 def test_prod_mode(screen: Screen):
@@ -24,5 +25,7 @@ def test_prod_mode(screen: Screen):
         ui.label('Hello, world!')
 
     screen.open('/')
-    screen.selenium.find_element(By.XPATH, f'//script[@src="/_nicegui/{__version__}/static/vue.global.prod.js"]')
-    screen.selenium.find_element(By.XPATH, f'//script[@src="/_nicegui/{__version__}/static/quasar.umd.prod.js"]')
+    screen.selenium.find_element(
+        By.XPATH, f'//script[@src="/_nicegui/{version_signature()}/static/vue.global.prod.js"]')
+    screen.selenium.find_element(
+        By.XPATH, f'//script[@src="/_nicegui/{version_signature()}/static/quasar.umd.prod.js"]')

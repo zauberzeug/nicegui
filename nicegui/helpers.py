@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import functools
 import hashlib
+import hmac
 import os
 import socket
 import struct
@@ -14,8 +15,11 @@ from inspect import Parameter, signature
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
+from nicegui.storage import Storage
+
 from .context import context
 from .logging import log
+from .version import __version__
 
 if TYPE_CHECKING:
     from .element import Element
@@ -146,3 +150,11 @@ def require_top_level_layout(element: Element) -> None:
             f'Found top level layout element "{element.__class__.__name__}" inside element "{parent.__class__.__name__}". '
             'Top level layout elements can not be nested but must be direct children of the page content.',
         )
+
+
+@functools.cache
+def version_signature() -> str:
+    if Storage.secret:
+        return hmac.new(Storage.secret.encode(), str(__version__).encode(), hashlib.sha256).hexdigest()
+    else:
+        return __version__

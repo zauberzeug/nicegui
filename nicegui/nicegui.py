@@ -16,6 +16,7 @@ from .app import App
 from .client import Client
 from .dependencies import dynamic_resources, esm_modules, js_components, libraries, resources, vue_components
 from .error import error_content
+from .helpers import version_signature
 from .json import NiceGUIJSONResponse
 from .logging import log
 from .page import page
@@ -23,7 +24,6 @@ from .page_arguments import PageArguments
 from .persistence import PersistentDict
 from .slot import Slot
 from .staticfiles import CacheControlledStaticFiles
-from .version import __version__
 
 
 @asynccontextmanager
@@ -60,10 +60,10 @@ static_files = CacheControlledStaticFiles(
     directory=(Path(__file__).parent / 'static').resolve(),
     follow_symlink=True,
 )
-app.mount(f'/_nicegui/{__version__}/static', static_files, name='static')
+app.mount(f'/_nicegui/{version_signature()}/static', static_files, name='static')
 
 
-@app.get(f'/_nicegui/{__version__}' + '/libraries/{key:path}')
+@app.get(f'/_nicegui/{version_signature()}' + '/libraries/{key:path}')
 def _get_library(key: str) -> FileResponse:
     is_map = key.endswith('.map')
     dict_key = key[:-4] if is_map else key
@@ -76,7 +76,7 @@ def _get_library(key: str) -> FileResponse:
     raise HTTPException(status_code=404, detail=f'library "{key}" not found')
 
 
-@app.get(f'/_nicegui/{__version__}' + '/components/{key:path}')
+@app.get(f'/_nicegui/{version_signature()}' + '/components/{key:path}')
 def _get_component(key: str) -> Response:
     if key in js_components and js_components[key].path.exists():
         return FileResponse(js_components[key].path, media_type='text/javascript')
@@ -85,7 +85,7 @@ def _get_component(key: str) -> Response:
     raise HTTPException(status_code=404, detail=f'component "{key}" not found')
 
 
-@app.get(f'/_nicegui/{__version__}' + '/resources/{key}/{path:path}')
+@app.get(f'/_nicegui/{version_signature()}' + '/resources/{key}/{path:path}')
 def _get_resource(key: str, path: str) -> FileResponse:
     if key in resources:
         filepath = resources[key].path / path
@@ -97,14 +97,14 @@ def _get_resource(key: str, path: str) -> FileResponse:
     raise HTTPException(status_code=404, detail=f'resource "{key}" not found')
 
 
-@app.get(f'/_nicegui/{__version__}' + '/dynamic_resources/{name}')
+@app.get(f'/_nicegui/{version_signature()}' + '/dynamic_resources/{name}')
 def _get_dynamic_resource(name: str) -> Response:
     if name in dynamic_resources:
         return dynamic_resources[name].function()
     raise HTTPException(status_code=404, detail=f'dynamic resource "{name}" not found')
 
 
-@app.get(f'/_nicegui/{__version__}' + '/esm/{key}/{path:path}')
+@app.get(f'/_nicegui/{version_signature()}' + '/esm/{key}/{path:path}')
 def _get_esm(key: str, path: str) -> FileResponse:
     if key in esm_modules:
         filepath = esm_modules[key].path / path

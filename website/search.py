@@ -1,4 +1,5 @@
-from nicegui import __version__, background_tasks, events, ui
+from nicegui import background_tasks, events, ui
+from nicegui.helpers import version_signature
 
 from .documentation import CustomRestructuredText as custom_restructured_text
 from .documentation.search import search_index
@@ -10,7 +11,7 @@ class Search:
         ui.add_head_html(r'''
             <script>
             async function loadSearchData() {
-                const response = await fetch("/static/search_index.json?version=''' + __version__ + r'''");
+                const response = await fetch("/static/search_index.json?version=''' + version_signature() + r'''");
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }

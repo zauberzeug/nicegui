@@ -28,7 +28,6 @@ from .event_listener import EventListener
 from .props import Props
 from .slot import Slot
 from .style import Style
-from .version import __version__
 
 if TYPE_CHECKING:
     from .client import Client
@@ -156,7 +155,7 @@ class Element(Visibility):
         """
         path_ = Path(path)
         resource = register_resource(path_, max_time=path_.stat().st_mtime)
-        self._props['resource_path'] = f'/_nicegui/{__version__}/resources/{resource.key}'
+        self._props['resource_path'] = f'/_nicegui/{helpers.version_signature()}/resources/{resource.key}'
 
     def add_dynamic_resource(self, name: str, function: Callable) -> None:
         """Add a dynamic resource to the element which returns the result of a function.
@@ -165,7 +164,7 @@ class Element(Visibility):
         :param function: function that returns the resource response
         """
         register_dynamic_resource(name, function)
-        self._props['dynamic_resource_path'] = f'/_nicegui/{__version__}/dynamic_resources'
+        self._props['dynamic_resource_path'] = f'/_nicegui/{helpers.version_signature()}/dynamic_resources'
 
     def add_slot(self, name: str, template: str | None = None) -> Slot:
         """Add a slot to the element.

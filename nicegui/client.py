@@ -25,7 +25,6 @@ from .observables import ObservableDict
 from .outbox import Outbox
 from .sub_pages_router import SubPagesRouter
 from .translations import translations
-from .version import __version__
 
 if TYPE_CHECKING:
     from .page import page
@@ -161,7 +160,7 @@ class Client:
             name='index.html',
             context={
                 'request': request,
-                'version': __version__,
+                'version': helpers.version_signature(),
                 'elements': elements.translate(HTML_ESCAPE_TABLE),
                 'head_html': self.head_html,
                 'body_html': '<style>' + '\n'.join(vue_styles) + '</style>\n' + self.body_html + '\n' + '\n'.join(vue_html),

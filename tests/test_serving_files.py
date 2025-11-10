@@ -4,7 +4,8 @@ from pathlib import Path
 import httpx
 import pytest
 
-from nicegui import __version__, app, ui
+from nicegui import app, ui
+from nicegui.helpers import version_signature
 from nicegui.testing import Screen
 
 from .test_helpers import TEST_DIR
@@ -137,11 +138,12 @@ def test_mimetypes_of_static_files(screen: Screen):
 
     screen.open('/')
 
-    response = httpx.get(f'http://localhost:{Screen.PORT}/_nicegui/{__version__}/static/vue.global.js', timeout=5)
+    response = httpx.get(
+        f'http://localhost:{Screen.PORT}/_nicegui/{version_signature()}/static/vue.global.js', timeout=5)
     assert response.status_code == 200
     assert response.headers['Content-Type'].startswith('text/javascript')
 
-    response = httpx.get(f'http://localhost:{Screen.PORT}/_nicegui/{__version__}/static/nicegui.css', timeout=5)
+    response = httpx.get(f'http://localhost:{Screen.PORT}/_nicegui/{version_signature()}/static/nicegui.css', timeout=5)
     assert response.status_code == 200
     assert response.headers['Content-Type'].startswith('text/css')
 
@@ -156,12 +158,13 @@ def test_cache_control_header_of_static_files(screen: Screen):
     screen.open('/')
 
     # resources are served with cache-control headers from `ui.run`
-    response1 = httpx.get(f'http://localhost:{Screen.PORT}/_nicegui/{__version__}/static/nicegui.css', timeout=5)
+    response1 = httpx.get(
+        f'http://localhost:{Screen.PORT}/_nicegui/{version_signature()}/static/nicegui.css', timeout=5)
     assert 'immutable' in response1.headers.get('Cache-Control', '')
 
     # dynamic resources are _not_ served with cache-control headers from `ui.run`
     response2 = httpx.get(
-        f'http://localhost:{Screen.PORT}/_nicegui/{__version__}/dynamic_resources/codehilite.css', timeout=5)
+        f'http://localhost:{Screen.PORT}/_nicegui/{version_signature()}/dynamic_resources/codehilite.css', timeout=5)
     assert 'immutable' not in response2.headers.get('Cache-Control', '')
 
     # static resources are _not_ served with cache-control headers from `ui.run`
