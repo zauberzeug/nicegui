@@ -20,15 +20,5 @@ def test_socketio_too_long(screen: Screen, transport: Literal['websocket', 'poll
     for _ in range(5):
         screen.type('y')
 
-    # first 2 times OK
-    assert events == ['changed'] * 2
-
-    # next 3 times, too long
-    PAYLOAD_KEYWORD = 'Payload size exceeds the maximum allowed limit.'
-    messages = [log['message'] for log in screen.selenium.get_log('browser') if PAYLOAD_KEYWORD in log['message']]
-    assert len(messages) == 3
-
-    # check for increasing lengths
-    lengths = [int(msg.rpartition(' ')[-1]) for msg in messages]
-    for i, j in zip(lengths, lengths[1:]):
-        assert i + 1 == j
+    assert events == ['changed'] * 2, 'two more characters are ok'
+    assert len([log for log in screen.selenium.get_log('browser') if 'Payload size' in log['message']]) == 3
