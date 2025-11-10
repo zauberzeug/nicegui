@@ -69,7 +69,7 @@ export default {
     let initialResizeTriggered = false;
     const initialWidth = this.$el.offsetWidth;
     const initialHeight = this.$el.offsetHeight;
-    new ResizeObserver(() => {
+    this.resizeObserver = new ResizeObserver(() => {
       if (!initialResizeTriggered) {
         initialResizeTriggered = true;
         if (this.$el.offsetWidth === initialWidth && this.$el.offsetHeight === initialHeight) {
@@ -81,11 +81,11 @@ export default {
 
     this.update_chart();
   },
-  beforeDestroy() {
-    this.chart.dispose();
-  },
   beforeUnmount() {
     this.chart.dispose();
+  },
+  unmounted() {
+    this.resizeObserver?.disconnect();
   },
   methods: {
     update_chart() {

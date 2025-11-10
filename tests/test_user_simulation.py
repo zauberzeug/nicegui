@@ -389,7 +389,7 @@ q-layout
       Button [markers=second, label=World]
       Icon [markers=third, name=thumbs-up]
     Avatar [icon=star]
-    Input [value=typed, label=some input, placeholder=type here, type=text]
+    Input [value=typed, label=some input, for=c10, placeholder=type here, type=text]
     Markdown [content=## Markdown...]
     Card
      Image [src=https://via.placehol...]
