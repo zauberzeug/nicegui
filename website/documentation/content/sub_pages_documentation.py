@@ -36,8 +36,9 @@ class FakeSubPages(ui.column):
 
 class FakeArguments:
 
-    def __init__(self, **kwargs: Any) -> None:
+    def __init__(self, remaining_path: str = '', **kwargs: Any) -> None:
         self.query_parameters = kwargs
+        self.remaining_path = remaining_path
 
 
 @doc.demo('Sub Pages', '''
@@ -224,6 +225,42 @@ def page_arguments_demo():
     })
     sub_pages.link('msg=hello', '/?msg=hello')
     sub_pages.link('msg=world', '/?msg=world')
+    sub_pages.init()
+
+
+@doc.demo('Wildcard Routing', '''
+    For wildcard routing where a single handler should match multiple paths,
+    use `show_404=False` and access `PageArguments.remaining_path`.
+    This is useful for routing patterns like `/item/*` where everything under `/item/` goes to one handler.
+''')
+def wildcard_demo():
+    from nicegui import PageArguments
+
+    # def root():
+    #     ui.sub_pages({
+    #         '/': main,
+    #         '/item': item_handler,
+    #     }, show_404=False)
+
+    def main():
+        # ui.link('Item x/2/a', '/item/x/2/a')
+        # ui.link('Item foo/bar', '/item/foo/bar')
+        sub_pages.link('Item x/2/a', '/item/x/2/a')  # HIDE
+        sub_pages.link('Item foo/bar', '/item/foo/bar')  # HIDE
+
+    def item_handler(args: PageArguments):
+        segments = [s for s in args.remaining_path.split('/') if s]
+        ui.label(f'Item path: {" > ".join(segments)}')
+        # ui.link('back', '/')
+        sub_pages.link('back', '/')  # HIDE
+
+    # ui.run(root)
+    # END OF DEMO
+    sub_pages = FakeSubPages({
+        '/': main,
+        '/item/x/2/a': lambda: item_handler(FakeArguments(remaining_path='/x/2/a')),  # type: ignore
+        '/item/foo/bar': lambda: item_handler(FakeArguments(remaining_path='/foo/bar')),  # type: ignore
+    })
     sub_pages.init()
 
 
