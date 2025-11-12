@@ -1219,3 +1219,18 @@ def test_refresh_sub_page(screen: Screen):
 
     screen.click('Refresh via SubPages')
     assert calls == {'index': 1, 'outer': 3, 'inner_main': 2, 'inner_other': 4}
+
+
+def test_navigation_not_crashing_for_root_pages_with_remaining_path(screen: Screen):
+    """Regression test for #5437: navigation crashed with KeyError: 'route'."""
+
+    def root():
+        ui.sub_pages({
+            '/': lambda: ui.link('other/1', '/other/1'),
+            '/other': lambda: ui.label('other page')
+        })
+
+    screen.ui_run_kwargs['root'] = root
+    screen.open('/')
+    screen.click('other/1')
+    screen.should_contain('404: sub page /other/1 not found')
