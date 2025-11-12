@@ -260,5 +260,6 @@ async def test_late_event_registration(screen: Screen):
     await asyncio.sleep(1)  # wait for the page to load and the event to be attached
     screen.selenium.find_element(By.XPATH, '//*[@aria-label="A"]').send_keys('x')
     assert events == ['A']
-    screen.assert_py_logger('WARNING', 'Event listeners changed after initial definition')
-    assert 'Event listeners changed after initial definition' in screen.render_js_logs()
+    ERROR_STRING = 'Event listeners changed after initial definition. Affected elements will be re-rendered.'
+    screen.assert_py_logger('WARNING', ERROR_STRING)
+    assert ERROR_STRING in screen.render_js_logs()
