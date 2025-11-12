@@ -12,7 +12,7 @@ from typing import TYPE_CHECKING, Any, Callable, Literal, TypeVar
 
 from typing_extensions import dataclass_transform
 
-from . import core
+from . import background_tasks, core
 from .logging import log
 
 if TYPE_CHECKING:
@@ -72,6 +72,18 @@ def _refresh_step() -> None:
         del link, source_obj, target_obj  # pylint: disable=modified-iterating-list
     if time.time() - t > MAX_PROPAGATION_TIME:
         log.warning(f'binding propagation for {len(active_links)} active links took {time.time() - t:.3f} s')
+
+
+class _ActiveLinkRefresher:
+    running: asyncio.Task | None = None
+
+    @classmethod
+    def ensure_running(cls) -> None:
+        """If not already running, [re]start the active bindings refresher task."""
+        if not cls.running or cls.running.done():
+            if core.app.config.binding_refresh_interval is None:
+                raise RuntimeError('Can not use active binding if binding_refresh_interval is None (i.e. disabled).')
+            cls.running = background_tasks.create(refresh_loop(), name='refresh bindings')
 
 
 def _propagate(source_obj: Any, source_name: str) -> None:
@@ -148,6 +160,7 @@ def bind_to(self_obj: Any, self_name: str, other_obj: Any, other_name: str,
     bindings[(id(self_obj), self_name)].append((self_obj, other_obj, other_name, forward))
     if (id(self_obj), self_name) not in bindable_properties:
         active_links.append((self_obj, self_name, other_obj, other_name, forward))
+        _ActiveLinkRefresher.ensure_running()
     _propagate(self_obj, self_name)
 
 
@@ -173,6 +186,7 @@ def bind_from(self_obj: Any, self_name: str, other_obj: Any, other_name: str,
     bindings[(id(other_obj), other_name)].append((other_obj, self_obj, self_name, backward))
     if (id(other_obj), other_name) not in bindable_properties:
         active_links.append((other_obj, other_name, self_obj, self_name, backward))
+        _ActiveLinkRefresher.ensure_running()
     _propagate(other_obj, other_name)
 
 
