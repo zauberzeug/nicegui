@@ -29,12 +29,19 @@ def _extract_quasar_css(css_path: Path) -> None:
             else [n for n in nodes if isinstance(n, ast.Declaration) and n.important == important]
         return new_rule
 
-    def _patch_rotate(css_text: str) -> str:
-        reg = r'\.rotate-(\d+)\s*\{\s*transform:\s*rotate\((\d+)deg\)\s*/\*\s*rtl:ignore\s*\*/;\s*\}'
-        return re.sub(reg, r'.rotate-\1 { rotate: \1deg /* rtl:ignore */; }', css_text)
+    def _generate_headwind(css_text: str) -> str:
+        def _format_match(match: re.Match) -> str:
+            angle = match.group(1)
+            return f'''.rotate-{angle} {{
+  rotate: 0deg !important;
+}}'''
+        matches = re.finditer(r'\.rotate-(\d+)\s*\{[^}]*\}', css_text)
+        headwind_css = '\n'.join(_format_match(m) for m in matches) + '\n'
+        (STATIC / 'headwind.css').write_text(headwind_css)
+        return css_text
 
     FORMAT_OPTIONS = {'indent_size': 2, 'selector_separator_newline': False}
-    rules = tinycss2.parse_stylesheet(_patch_rotate(css_path.read_text()), skip_whitespace=True)
+    rules = tinycss2.parse_stylesheet(_generate_headwind(css_path.read_text()), skip_whitespace=True)
     reference_css = cssbeautifier.beautify(tinycss2.serialize(rules), FORMAT_OPTIONS)
     important_css = cssbeautifier.beautify(tinycss2.serialize(_extract_all(rules, important=True)), FORMAT_OPTIONS)
     unimportant_css = cssbeautifier.beautify(tinycss2.serialize(_extract_all(rules, important=False)), FORMAT_OPTIONS)
