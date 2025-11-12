@@ -135,6 +135,7 @@ def test_node_click_handler(screen: Screen):
             flowchart TD;
                 A[Node A];
                 B[Node B];
+                Node-With-Hyphen[Node With Hyphen];
         ''', on_node_click=lambda e: ui.notify(f'{e.node_id} clicked'))
 
     screen.open('/')
@@ -143,3 +144,6 @@ def test_node_click_handler(screen: Screen):
 
     screen.click('Node B')
     screen.should_contain('B clicked')
+
+    screen.click('Node With Hyphen')
+    screen.should_contain('Node-With-Hyphen clicked')  # make sure our ID extraction works even with hyphens
