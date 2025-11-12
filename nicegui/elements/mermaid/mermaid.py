@@ -43,10 +43,11 @@ class Mermaid(ContentElement, component='mermaid.js', esm={'nicegui-mermaid': 'd
 
     def on_node_click(self, callback: Handler[MermaidNodeClickEventArguments]) -> Self:
         """Add a callback to be invoked when a node is clicked."""
-        self.on('node_click', lambda e: handle_event(callback, MermaidNodeClickEventArguments(sender=self,
-                                                                                              client=self.client,
-                                                                                              id=e.args['id'],
-                                                                                              name=e.args['name'])))
+        self.on('node_click', lambda e: handle_event(callback, MermaidNodeClickEventArguments(
+            sender=self,
+            client=self.client,
+            node_id='-'.join(e.args.split('-')[1:-1])  # extract Node ID from HTML ID (<type>-<node_id>-<index>)
+        )))
         self._props['clickable'] = True
         return self
 
