@@ -17,28 +17,13 @@ def main_demo() -> None:
 @doc.demo('Handle click events', '''
     You can register to click events by using the `on_node_click` parameter.
 
-    Optionally, you can control which nodes are clickable via the `clickable_nodes` parameter (defaults to all nodes).
-
-
-    To get the correct node IDs:
-
-    - Check the HTML element IDs in the browser developer tools
-    - Or, check the `e.id` in the emitted event.
-
-    Check the browser console for errors about nonexistent clickable nodes, which could be due to:
-
-    - Accidental misconfiguration
-    - Chart updated without calling `set_clickable_nodes()`
-    - And/Or, breaking changes from Mermaid.
-
     *Added in version 3.3.0*
 ''')
 def click_demo() -> None:
     ui.mermaid('''
         graph LR;
-            A((Click me)) --> B((Nope));
-    ''', on_node_click=lambda e: ui.notify(f'Node {e.html_id} clicked'),
-               clickable_nodes={'flowchart-A-0'})
+            A((Click me));
+    ''', on_node_click=lambda e: ui.notify(f'Node {e.html_id} clicked'))
 
 
 @doc.demo('Handle click events with JS', '''
