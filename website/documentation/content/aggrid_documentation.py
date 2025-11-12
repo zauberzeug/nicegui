@@ -28,7 +28,7 @@ def main_demo() -> None:
 
 
 @doc.demo('Adding rows', '''
-    It's simple to add new rows with by updating the `options` property.
+    It's simple to add new rows by updating the `options` property.
     To scroll to the new row, use the AG Grid API method `ensureIndexVisible`.
 ''')
 def adding_rows():

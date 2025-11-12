@@ -225,7 +225,7 @@ def table_from_polars_demo():
 
 
 @doc.demo('Adding rows', '''
-    It's simple to add new rows with by updating the `rows` property.
+    It's simple to add new rows by updating the `rows` property.
     With the "virtual-scroll" prop set, the table can be programmatically scrolled with the `scrollTo` JavaScript function.
 ''')
 def adding_rows():
