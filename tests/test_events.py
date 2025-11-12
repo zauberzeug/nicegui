@@ -245,3 +245,20 @@ def test_value_change_event_arguments(screen: Screen):
     screen.click('Checkbox')
     screen.wait(0.5)
     assert events == [(True, False), (False, True)]
+
+
+async def test_late_event_registration(screen: Screen):
+    events = []
+
+    @ui.page('/')
+    async def page():
+        a_input = ui.input('A')
+        await ui.context.client.connected()
+        a_input.on('keydown', lambda _: events.append('A'), [])
+
+    screen.open('/')
+    await asyncio.sleep(1)  # wait for the page to load and the event to be attached
+    screen.selenium.find_element(By.XPATH, '//*[@aria-label="A"]').send_keys('x')
+    assert events == ['A']
+    screen.assert_py_logger('WARNING', 'Event listeners changed after initial definition')
+    assert 'Event listeners changed after initial definition' in screen.render_js_logs()

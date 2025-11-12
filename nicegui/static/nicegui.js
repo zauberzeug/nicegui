@@ -379,6 +379,23 @@ function createApp(elements, options) {
             .map(([_, element]) => loadDependencies(element, options.prefix, options.version));
           await Promise.all(loadPromises);
 
+          let needAwaitNextTick = false;
+
+          for (const [id, element] of Object.entries(msg)) {
+            if (element === null) continue;
+
+            const oldTypes = new Set((this.elements[id]?.events || []).map((ev) => ev.type));
+            if (element.events?.some((e) => !oldTypes.has(e.type))) {
+              delete this.elements[id];
+              needAwaitNextTick = true;
+            }
+          }
+
+          if (needAwaitNextTick) {
+            console.warn("Event listeners changed after initial definition. Affected elements will be re-rendered.");
+            await this.$nextTick();
+          }
+
           for (const [id, element] of Object.entries(msg)) {
             if (element === null) {
               delete this.elements[id];
