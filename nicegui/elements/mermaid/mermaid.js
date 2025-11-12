@@ -38,7 +38,8 @@ export default {
               node.style.cursor = "pointer";
               node.addEventListener("click", () => {
                 getElement(element).$emit("node_click", {
-                  html_id: node.id,
+                  id: node.id,
+                  name: node.id.split("-").slice(1, -1).join("-"),
                 });
               });
             });

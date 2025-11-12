@@ -65,7 +65,8 @@ class EChartPointClickEventArguments(UiEventArguments):
 
 @dataclass(**KWONLY_SLOTS)
 class MermaidNodeClickEventArguments(UiEventArguments):
-    html_id: str
+    id: str
+    name: str
 
 
 @dataclass(**KWONLY_SLOTS)
