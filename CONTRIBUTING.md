@@ -372,9 +372,22 @@ The following tools are used to update other resources:
 
 ## Pull requests
 
-To get started, fork the repository on GitHub, clone it somewhere on your filesystem, commit and push your changes,
-and then open a pull request (PR) with a detailed description of the changes you've made
-(the PR button is shown on the GitHub website of your forked repository).
+To get started:
+
+1. **Fork** the repository on GitHub
+2. **Clone** your fork to your local filesystem
+3. **Create a feature branch** (e.g., `git checkout -b fix-button-alignment` or `git checkout -b add-dark-mode`)
+4. Make your changes, **commit** them to your branch
+5. **Push** your feature branch to your fork (e.g., `git push origin fix-button-alignment`)
+6. Open a **pull request (PR)** from your feature branch with a detailed description of your changes
+   (the PR button is shown on the GitHub website of your forked repository)
+
+> [!IMPORTANT]
+> Always work on a feature branch, never on `main`:
+>
+> 1. Working on `main` blocks you from contributing to multiple things simultaneously,
+> 2. It highly increases the chance of an unclean commit history,
+> 3. Your `main` branch should stay in sync with the upstream repository.
 
 When submitting a PR, please make sure that the code follows the existing coding style and that all tests are passing.
 If you're adding a new feature, please include tests that cover the new functionality.

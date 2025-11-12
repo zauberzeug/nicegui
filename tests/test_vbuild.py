@@ -27,9 +27,7 @@ def test_template_only():
             <h1 data-TEST>Hello, World!</h1>
         </script>
     ''', css='''
-    ''', js='''
-        var TEST = Vue.component(\'TEST\', {template:"#tpl-TEST",});
-    ''')
+    ''', js='')
 
 
 def test_template_with_style():
@@ -48,9 +46,7 @@ def test_template_with_style():
         </script>
     ''', css='''
         h1 {color: red; }
-    ''', js='''
-        var TEST = Vue.component(\'TEST\', {template:"#tpl-TEST",});
-    ''')
+    ''', js='')
 
 
 def test_template_with_scoped_style():
@@ -69,9 +65,7 @@ def test_template_with_scoped_style():
         </script>
     ''', css='''
         *[data-TEST] h1 {color: red; }
-    ''', js='''
-        var TEST = Vue.component(\'TEST\', {template:"#tpl-TEST",});
-    ''')
+    ''', js='')
 
 
 def test_template_with_script():
@@ -94,13 +88,13 @@ def test_template_with_script():
         </script>
     ''', css='''
     ''', js='''
-        var TEST = Vue.component(\'TEST\', {template:"#tpl-TEST",
-                methods: {
-                    hello() {
-                        alert('Hello, World!');
-                    }
+        export default {
+            methods: {
+                hello() {
+                    alert('Hello, World!');
                 }
-            });
+            }
+        }
     ''')
 
 
