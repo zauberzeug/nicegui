@@ -1,0 +1,43 @@
+name: Publish on Tag
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - v**
+
+jobs:
+  extract-version:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.get_version.outputs.version }}
+    steps:
+      - name: Extract version
+        id: get_version
+        run: echo "version=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+
+  pypi:
+    needs: extract-version
+    uses: ./.github/workflows/_pypi.yml
+    with:
+      version: ${{ needs.extract-version.outputs.version }}
+    secrets: inherit
+
+  docker:
+    needs: [extract-version, pypi]
+    uses: ./.github/workflows/_docker.yml
+    with:
+      version: ${{ needs.extract-version.outputs.version }}
+    secrets: inherit
+
+  citation:
+    needs: [extract-version, docker]
+    uses: ./.github/workflows/_citation.yml
+    with:
+      version: ${{ needs.extract-version.outputs.version }}
+    secrets: inherit
+
+  verify:
+    needs: docker
+    uses: ./.github/workflows/_verify.yml
+    secrets: inherit

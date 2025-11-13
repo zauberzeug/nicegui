@@ -1,0 +1,24 @@
+name: Test on Merge
+
+on: merge_group
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    uses: ./.github/workflows/_check.yml
+
+  test:
+    uses: ./.github/workflows/_test.yml
+    with:
+      python-versions: '["3.9", "3.10", "3.11", "3.12", "3.13", "3.14"]'
+      scope: '["pytest", "startup"]'
+
+  slack:
+    needs: [check, test]
+    uses: ./.github/workflows/_slack.yml
+    with:
+      workflow-name: "NiceGUI Merge Queue"
+    secrets: inherit
