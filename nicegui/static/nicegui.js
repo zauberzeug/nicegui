@@ -364,11 +364,31 @@ function createApp(elements, options) {
           const args = {
             client_id: window.clientId,
             document_id: window.documentId,
+            server_id: options.serverId,
             tab_id: TAB_ID,
             old_tab_id: OLD_TAB_ID,
             next_message_id: window.nextMessageId,
           };
           window.socket.emit("handshake", args, (ok) => {
+            if (ok === "WRONG_SERVER_ID") {
+              console.log("reloading because server ID mismatch");
+              sessionStorage.setItem(
+                "__wrong_server_id",
+                parseInt(sessionStorage.getItem("__wrong_server_id") || "0") + 1
+              );
+              const wrongCount = parseInt(sessionStorage.getItem("__wrong_server_id") || "0", 10);
+              if (
+                wrongCount > 3 &&
+                !confirm(
+                  "The server ID has changed 3+ times. Are there multiple workers without session affinity? Press OK to retry."
+                )
+              ) {
+                return;
+              }
+              window.location.reload();
+              return;
+            }
+            sessionStorage.removeItem("__wrong_server_id");
             if (!ok) {
               console.log("reloading because handshake failed for clientId " + window.clientId);
               window.location.reload();

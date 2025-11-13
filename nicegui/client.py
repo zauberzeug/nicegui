@@ -160,6 +160,7 @@ class Client:
             request=request,
             name='index.html',
             context={
+                'server_id': core.app._uuid,  # pylint: disable=protected-access
                 'request': request,
                 'version': __version__,
                 'elements': elements.translate(HTML_ESCAPE_TABLE),

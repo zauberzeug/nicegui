@@ -4,6 +4,7 @@ import os
 import platform
 import signal
 import urllib
+import uuid
 from collections.abc import Awaitable, Iterator
 from enum import Enum
 from pathlib import Path
@@ -41,6 +42,7 @@ class App(FastAPI):
         self.urls = ObservableSet()
         self._state: State = State.STOPPED
         self.config = AppConfig()
+        self._uuid = str(uuid.uuid4())
 
         self._startup_handlers: list[Union[Callable[..., Any], Awaitable]] = []
         self._shutdown_handlers: list[Union[Callable[..., Any], Awaitable]] = []
