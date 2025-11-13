@@ -1,5 +1,5 @@
-# Table and slots
+# Table and Slots
 
-Show how to use component slots in a table.
+Use component slots in a table.
 
 ![Screenshot](screenshot.webp)

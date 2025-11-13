@@ -4,7 +4,6 @@ Build a simple ZeroMQ PUSH/PULL server and client.
 
 ![Screenshot](screenshot.webp)
 
-
 This example is a basic Zeromq implementation with NiceGUI.
 It shows how to stream data from a ZeroMQ socket to a NiceGUI plot.
 

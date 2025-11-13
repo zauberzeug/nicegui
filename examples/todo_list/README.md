@@ -1,4 +1,4 @@
-# Todo list
+# Todo List
 
 Build a simple todo list with checkboxes and text input.
 

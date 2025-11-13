@@ -1,6 +1,6 @@
 # Authentication
 
-Show how to use sessions to build a login screen.
+Use sessions to build a login screen.
 
 ![Screenshot](screenshot.webp)
 

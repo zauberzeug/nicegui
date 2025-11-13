@@ -1,13 +1,9 @@
 # NGINX HTTPS
 
-Use NGINX to serve a NiceGUI app with HTTPS.
+Serve NiceGUI with HTTPS encryption behind NGINX.
 
 ![Screenshot](screenshot.webp)
 
-
-## Serving an App with HTTPS Encryption behind a Reverse Proxy (NGINX)
-
-This example shows how to serve NiceGUI with HTTPS encryption behind NGINX.
 For running the app under a subpath, have a look at https://github.com/zauberzeug/nicegui/blob/main/examples/nginx_subpath.
 
 ## Try Out
