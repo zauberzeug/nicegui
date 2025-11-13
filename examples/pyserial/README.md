@@ -1,4 +1,5 @@
 # Pyserial
-Communicate with a serial device
+
+Communicate with a serial device.
 
 ![Screenshot](screenshot.webp)

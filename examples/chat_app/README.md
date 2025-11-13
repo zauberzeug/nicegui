@@ -1,4 +1,5 @@
 # Chat App
-A simple chat app
+
+Build a simple chat app.
 
 ![Screenshot](screenshot.webp)

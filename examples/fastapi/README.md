@@ -1,5 +1,6 @@
 # FastAPI
-Illustrates the integration of NiceGUI with an existing FastAPI application
+
+Illustrate the integration of NiceGUI with an existing FastAPI application.
 
 ![Screenshot](screenshot.webp)
 

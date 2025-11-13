@@ -1,4 +1,5 @@
 # Script Executor
-Executes scripts on selection and displays the output
+
+Execute scripts on selection and display the output.
 
 ![Screenshot](screenshot.webp)

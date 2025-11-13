@@ -1,5 +1,6 @@
 # NGINX HTTPS
-Use NGINX to serve a NiceGUI app with HTTPS
+
+Use NGINX to serve a NiceGUI app with HTTPS.
 
 ![Screenshot](screenshot.webp)
 

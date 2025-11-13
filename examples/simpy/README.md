@@ -1,4 +1,5 @@
 # Simpy
-SimPy Traffic Light Demo
+
+Build a SimPy traffic light demo.
 
 ![Screenshot](screenshot.webp)

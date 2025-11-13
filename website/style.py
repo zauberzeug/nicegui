@@ -45,8 +45,8 @@ def example_link(example: Example) -> None:
         ui.label(example.title).classes(replace='font-bold')
         ui.markdown(example.description).classes(replace='bold-links arrow-links')
         ui.space()
-        ui.image(example.screenshot) \
-            .style('width: 100%; height: auto; object-fit: contain; border: 1px solid #ccc; border-radius: 4px')
+        ui.interactive_image(example.screenshot) \
+            .classes('w-full object-contain border border-gray-300 rounded-md overflow-hidden')
 
 
 def features(icon: str, title_: str, items: list[str]) -> None:

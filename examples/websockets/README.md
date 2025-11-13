@@ -1,4 +1,5 @@
 # Websockets
-Use [websockets library](https://websockets.readthedocs.io/) to start a websocket server.
+
+Use the [websockets library](https://websockets.readthedocs.io/) to start a websocket server.
 
 ![Screenshot](screenshot.webp)

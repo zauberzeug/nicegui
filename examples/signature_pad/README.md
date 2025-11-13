@@ -1,5 +1,6 @@
 # Signature Pad
-A custom element based on [signature_pad](https://www.npmjs.com/package/signature_pad)
+
+Build a custom element based on [signature_pad](https://www.npmjs.com/package/signature_pad).
 
 ![Screenshot](screenshot.webp)
 

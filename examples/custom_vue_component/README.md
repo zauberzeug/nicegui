@@ -1,5 +1,6 @@
 # Custom Vue Component
-Shows how to write and integrate a custom Vue component
+
+Show how to write and integrate a custom Vue component.
 
 ![Screenshot](screenshot.webp)
 

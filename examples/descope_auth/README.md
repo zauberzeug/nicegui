@@ -1,5 +1,6 @@
 # Descope Auth
-Login form and user profile using [Descope](https://descope.com)
+
+Build a login form and user profile using [Descope](https://descope.com).
 
 ![Screenshot](screenshot.webp)
 

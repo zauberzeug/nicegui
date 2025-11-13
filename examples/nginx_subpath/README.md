@@ -1,6 +1,6 @@
-
 # NGINX Subpath
-Shows the setup to serve an app behind a reverse proxy subpath
+
+Show the setup to serve an app behind a reverse proxy subpath.
 
 ![Screenshot](screenshot.webp)
 

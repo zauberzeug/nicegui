@@ -1,4 +1,5 @@
 # Editable table
-Editable table allowing to add, edit, delete rows
+
+Build an editable table allowing to add, edit, and delete rows.
 
 ![Screenshot](screenshot.webp)

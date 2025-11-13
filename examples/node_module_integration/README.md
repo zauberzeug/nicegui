@@ -1,5 +1,6 @@
 # Node Module Integration
-Use NPM to add dependencies to a NiceGUI app
+
+Use NPM to add dependencies to a NiceGUI app.
 
 ![Screenshot](screenshot.webp)
 

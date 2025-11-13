@@ -1,5 +1,6 @@
 # ZeroMQ
-Simple ZeroMQ PUSH/PULL server and client
+
+Build a simple ZeroMQ PUSH/PULL server and client.
 
 ![Screenshot](screenshot.webp)
 
