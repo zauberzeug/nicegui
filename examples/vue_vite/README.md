@@ -11,25 +11,38 @@ There are two implementations of a counter component.
 `CounterOptions` is implemented using the options API, and `CounterComposition` uses the composition API.
 Both use TypeScript and Vue's Single-File Component (SFC) syntax.
 
-## Usage
+## Quick Start
 
-Run the example with `python main.py`.
+The example includes pre-built components, so you can run it immediately:
 
-To enable building/rebuilding the components, install the npm dependencies with:
+```bash
+python main.py
+```
+
+## Development Setup
+
+To modify and rebuild the Vue components, install the NPM dependencies:
 
 ```bash
 npm install
 ```
 
-In order to have modifications to the Vue components be reflected live, you can run Vite's build-watch process in parallel with the NiceGUI server:
+Then run Vite's watch process in one terminal:
 
 ```bash
-$ npm run watch &
-$ python main.py
+npm run watch
 ```
 
-Alternatively you can rebuild components manually with:
+And the NiceGUI server in another terminal:
 
 ```bash
-$ npm run build
+python main.py
+```
+
+This will automatically rebuild your Vue components whenever you save changes.
+
+Alternatively, you can rebuild components manually after making changes:
+
+```bash
+npm run build
 ```
