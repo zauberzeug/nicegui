@@ -13,7 +13,7 @@ Both use TypeScript and Vue's Single-File Component (SFC) syntax.
 
 ## Usage
 
-Run the example with `python demo.py`.
+Run the example with `python main.py`.
 
 To enable building/rebuilding the components, install the npm dependencies with:
 
@@ -25,7 +25,7 @@ In order to have modifications to the Vue components be reflected live, you can 
 
 ```bash
 $ npm run watch &
-$ python demo.py
+$ python main.py
 ```
 
 Alternatively you can rebuild components manually with:
