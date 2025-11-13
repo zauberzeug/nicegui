@@ -5758,4 +5758,4 @@ sass = ["libsass"]
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.9"
-content-hash = "28faa44617fe650e73bf260e08d68ffe595f3928347c86b1a4f3d9b84d561f12"
+content-hash = "5f870593ce31ddeb7941a344666c99997368cdc79d2add53f6648f4a0f95f859"
