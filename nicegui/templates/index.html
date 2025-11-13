@@ -31,11 +31,11 @@
         }
       }
     </style>
-    <!-- prevent Prettier from removing this line -->
-    {{ head_html | safe }}
     <script type="importmap">
       {"imports": {{ imports | safe }}}
     </script>
+    {{ head_html | safe }}
+    <!-- prevent Prettier from removing this line -->
     {% for url in js_imports_urls %}
     <link rel="modulepreload" href="{{ url }}" />
     {% endfor %}
