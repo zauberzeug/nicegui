@@ -1,6 +1,7 @@
 name: Update Citation
 
 on:
+  workflow_dispatch:
   workflow_call:
     inputs:
       version:
