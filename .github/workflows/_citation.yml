@@ -1,0 +1,32 @@
+name: Update Citation
+
+on:
+  workflow_call:
+    inputs:
+      version:
+        description: "Version to update (e.g., v1.2.3)"
+        required: true
+        type: string
+
+jobs:
+  citation:
+    if: ${{ !contains(inputs.version, 'rc') }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: main
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.x"
+      - name: Install httpx
+        run: pip install httpx
+      - name: Update citation version
+        run: python .github/workflows/update_version.py ${{ inputs.version }}
+      - name: Commit and push citation version
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add CITATION.cff
+          git commit -m "Update citation version"
+          git push origin HEAD:main
