@@ -34,7 +34,7 @@ jobs:
           set -x
           poetry install --all-extras --with dev
       - uses: nanasess/setup-chromedriver@v2.3.0
-      - name: Run pytest
+      - name: ${{ matrix.python }} / ${{ matrix.scope }}
         if: matrix.scope == 'pytest'
         run: poetry run pytest
       - uses: actions/upload-artifact@v5
@@ -43,7 +43,7 @@ jobs:
           name: screenshots-${{ matrix.python }}
           path: screenshots/*.failed.png
           retention-days: 14
-      - name: Run startup tests
+      - name: ${{ matrix.python }} / ${{ matrix.scope }}
         if: matrix.scope == 'startup'
         run: poetry run ./test_startup.sh
       - name: Restore dependencies for effective caching

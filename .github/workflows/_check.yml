@@ -4,6 +4,7 @@ on: workflow_call
 
 jobs:
   code-check:
+    name: ${{ matrix.target.name }}
     strategy:
       matrix:
         target:
