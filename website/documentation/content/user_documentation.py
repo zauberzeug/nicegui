@@ -364,5 +364,53 @@ doc.text('Comparison with the screen fixture', '''
     but in most cases the speed of the `user` fixture makes it the first choice.
 ''')
 
+
+doc.text('User simulation context', '''
+    The [`user_simulation`](https://github.com/zauberzeug/nicegui/blob/main/nicegui/testing/user_simulation.py) context is the low-level building block behind the `user` fixture. 
+    It spins up a NiceGUI app inside the same event loop, giving tests deterministic control without Selenium. 
+    More usage examples can be found in [`tests/test_user_simulation_context.py`](https://github.com/zauberzeug/nicegui/blob/main/tests/test_user_simulation_context.py).
+    
+    It can be used directly to  
+
+    - simulate a `User` client without relying on pytest-specific fixtures. 
+    That means, it can be used with `unittest` or within plain async code.
+    - switch effortlessly between script mode (`root` callables) and main-file execution in a set of tests.
+''')
+
+
+@doc.ui
+def user_simulation_examples():
+    with ui.row().classes('gap-4 items-stretch'):
+        with python_window(classes='w-[500px]', title='script mode with root'):
+            ui.markdown('''
+                ```python
+                from nicegui.testing.user_simulation import user_simulation
+
+                async def test_click_via_root():
+                    def root():
+                        ui.button('Click me', on_click=lambda: ui.notify('Hello World!'))
+
+                    async with user_simulation(root) as user:
+                        await user.open('/')
+                        await user.should_see('Click me')
+                        user.find(ui.button).click()
+                        await user.should_see('Hello World!')
+                ```
+            ''')
+
+        with python_window(classes='w-[500px]', title='main file via path'):
+            ui.markdown('''
+                ```python
+                from nicegui.testing.user_simulation import user_simulation
+
+                MAIN_PATH = 'examples/pytests/main.py'
+
+                async def test_click_via_main_file():
+                    async with user_simulation(main_path=MAIN_PATH) as user:
+                        await user.open('/')
+                        await user.should_see('Main file content')
+                ```
+            ''')
+
 doc.reference(User, title='User Reference')
 doc.reference(UserInteraction, title='UserInteraction Reference')
