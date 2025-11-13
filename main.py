@@ -7,14 +7,13 @@ from starlette.middleware.sessions import SessionMiddleware
 
 from nicegui import app, ui
 from nicegui.page_arguments import RouteMatch
-from website import anti_scroll_hack, documentation, fly, header, imprint_privacy, main_page, rate_limits, svg
+from website import documentation, fly, header, imprint_privacy, main_page, rate_limits, svg
 
 # session middleware is required for demo in documentation
 app.add_middleware(SessionMiddleware, secret_key=os.environ.get('NICEGUI_SECRET_KEY', ''))
 rate_limits.setup()
 
 on_fly = fly.setup()
-anti_scroll_hack.setup()
 
 app.add_static_files('/favicon', str(Path(__file__).parent / 'website' / 'favicon'))
 app.add_static_files('/fonts', str(Path(__file__).parent / 'website' / 'fonts'))
@@ -51,7 +50,7 @@ def _main_page() -> None:
             .style('height: calc(100% + 20px) !important') as menu:
         tree = ui.tree(documentation.tree.nodes, label_key='title',
                        on_select=lambda e: ui.navigate.to(f'/documentation/{e.value}')) \
-            .classes('w-full').props('accordion no-connectors')
+            .classes('w-full').props('accordion no-connectors no-selection-unset')
     menu_button = header.add_header(menu)
 
     window_state = {'is_desktop': None}

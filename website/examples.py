@@ -1,7 +1,5 @@
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import List
-
 
 PATH = Path(__file__).parent.parent / 'examples'
 
@@ -26,12 +24,12 @@ class Example:
 
 
 # Discover all examples folders (no symlink recursion)
-examples_folders: List[Path] = sorted(
+examples_folders: list[Path] = sorted(
     (p for p in PATH.iterdir() if p.is_dir(follow_symlinks=False)),
     key=lambda r: r.name.lower(),
 )
 
-examples: List[Example] = []
+examples: list[Example] = []
 for folder in examples_folders:
     title = description = folder.name.replace('_', ' ').title()
     readme_file = folder / 'README.md'

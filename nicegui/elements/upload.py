@@ -1,4 +1,4 @@
-from typing import Dict, List, Optional, cast
+from typing import Optional, cast
 
 from fastapi import Request
 from starlette.datastructures import UploadFile
@@ -8,9 +8,12 @@ from ..events import Handler, MultiUploadEventArguments, UiEventArguments, Uploa
 from ..nicegui import app
 from .mixins.disableable_element import DisableableElement
 from .mixins.label_element import LabelElement
+from .upload_files import create_file_upload
 
 
 class Upload(LabelElement, DisableableElement, component='upload.js'):
+    # pylint: disable=import-outside-toplevel
+    from .upload_files import FileUpload, LargeFileUpload, SmallFileUpload
 
     def __init__(self, *,
                  multiple: bool = False,
@@ -71,38 +74,28 @@ class Upload(LabelElement, DisableableElement, component='upload.js'):
         self._multi_upload_handlers = [on_multi_upload] if on_multi_upload else []
 
         @app.post(self._props['url'])
-        async def upload_route(request: Request) -> Dict[str, str]:
+        async def upload_route(request: Request) -> dict[str, str]:
             for begin_upload_handler in self._begin_upload_handlers:
                 handle_event(begin_upload_handler, UiEventArguments(sender=self, client=self.client))
-            form = await request.form()
-            uploads = [cast(UploadFile, data) for data in form.values()]
-            self.handle_uploads(uploads)
+            async with request.form() as form:
+                files = [await create_file_upload(cast(UploadFile, data)) for data in form.values()]
+            await self.handle_uploads(files)
             return {'upload': 'success'}
 
         if on_rejected:
             self.on_rejected(on_rejected)
 
-    def handle_uploads(self, uploads: List[UploadFile]) -> None:
+    async def handle_uploads(self, files: list[FileUpload]) -> None:
         """Handle the uploaded files.
 
         This method is primarily intended for internal use and for simulating file uploads in tests.
         """
-        for upload in uploads:
+        assert all(isinstance(f, Upload.FileUpload) for f in files), \
+            'since NiceGUI 3.0, uploads must be a list of FileUpload instances'
+        for file in files:
             for upload_handler in self._upload_handlers:
-                handle_event(upload_handler, UploadEventArguments(
-                    sender=self,
-                    client=self.client,
-                    content=upload.file,
-                    name=upload.filename or '',
-                    type=upload.content_type or '',
-                ))
-        multi_upload_args = MultiUploadEventArguments(
-            sender=self,
-            client=self.client,
-            contents=[upload.file for upload in uploads],
-            names=[upload.filename or '' for upload in uploads],
-            types=[upload.content_type or '' for upload in uploads],
-        )
+                handle_event(upload_handler, UploadEventArguments(sender=self, client=self.client, file=file))
+        multi_upload_args = MultiUploadEventArguments(sender=self, client=self.client, files=files)
         for multi_upload_handler in self._multi_upload_handlers:
             handle_event(multi_upload_handler, multi_upload_args)
 

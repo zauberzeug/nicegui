@@ -1,10 +1,11 @@
-import os
 import re
+import runpy
 import threading
 import time
+from collections.abc import Generator
 from contextlib import contextmanager
 from pathlib import Path
-from typing import Callable, Generator, List, Optional, Union, overload
+from typing import Any, Callable, Optional, Union, overload
 from urllib.parse import urlparse
 
 import pytest
@@ -21,24 +22,34 @@ from selenium.webdriver.remote.webelement import WebElement
 from nicegui import app, core, ui
 from nicegui.server import Server
 
+from .general_fixtures import get_path_to_main_file, prepare_simulation
+
 
 class Screen:
     PORT = 3392
     IMPLICIT_WAIT = 4
     SCREENSHOT_DIR = Path('screenshots')
+    CATCH_JS_ERRORS = True
 
-    def __init__(self, selenium: webdriver.Chrome, caplog: pytest.LogCaptureFixture) -> None:
+    def __init__(self, selenium: webdriver.Chrome, caplog: pytest.LogCaptureFixture, request: Optional[pytest.FixtureRequest] = None) -> None:
         self.selenium = selenium
         self.caplog = caplog
         self.server_thread: Optional[threading.Thread] = None
-        self.ui_run_kwargs = {'port': self.PORT, 'show': False, 'reload': False}
+        self.pytest_request = request
+        self.ui_run_kwargs: dict[str, Any] = {'port': self.PORT, 'show': False, 'reload': False}
         self.connected = threading.Event()
         app.on_connect(self.connected.set)
         self.url = f'http://localhost:{self.PORT}'
+        self.allowed_js_errors: list[str] = []
 
     def start_server(self) -> None:
-        """Start the webserver in a separate thread. This is the equivalent of `ui.run()` in a normal script."""
-        self.server_thread = threading.Thread(target=ui.run, kwargs=self.ui_run_kwargs)
+        """Start the webserver in a separate thread."""
+        main_path = get_path_to_main_file(self.pytest_request) if self.pytest_request else None
+        if main_path is None:
+            prepare_simulation()
+            self.server_thread = threading.Thread(target=lambda: ui.run(**self.ui_run_kwargs))
+        else:
+            self.server_thread = threading.Thread(target=lambda: runpy.run_path(str(main_path), run_name='__main__'))
         self.server_thread.start()
 
     @property
@@ -56,7 +67,8 @@ class Screen:
         """Stop the webserver."""
         self.close()
         self.caplog.clear()
-        Server.instance.should_exit = True
+        if hasattr(Server, 'instance'):
+            Server.instance.should_exit = True
         if self.server_thread:
             self.server_thread.join()
         if core.loop:
@@ -199,7 +211,7 @@ class Screen:
         except NoSuchElementException as e:
             raise AssertionError(f'Could not find "{text}"') from e
 
-    def find_all(self, text: str) -> List[WebElement]:
+    def find_all(self, text: str) -> list[WebElement]:
         """Find all elements containing the given text."""
         query = f'//*[not(self::script) and not(self::style) and text()[contains(., "{text}")]]'
         return self.selenium.find_elements(By.XPATH, query)
@@ -212,7 +224,7 @@ class Screen:
         """Find the element with the given CSS class."""
         return self.selenium.find_element(By.CLASS_NAME, name)
 
-    def find_all_by_class(self, name: str) -> List[WebElement]:
+    def find_all_by_class(self, name: str) -> list[WebElement]:
         """Find all elements with the given CSS class."""
         return self.selenium.find_elements(By.CLASS_NAME, name)
 
@@ -220,7 +232,7 @@ class Screen:
         """Find the element with the given HTML tag."""
         return self.selenium.find_element(By.TAG_NAME, name)
 
-    def find_all_by_tag(self, name: str) -> List[WebElement]:
+    def find_all_by_tag(self, name: str) -> list[WebElement]:
         """Find all elements with the given HTML tag."""
         return self.selenium.find_elements(By.TAG_NAME, name)
 
@@ -237,10 +249,12 @@ class Screen:
         """Wait for the given number of seconds."""
         time.sleep(t)
 
-    def shot(self, name: str) -> None:
+    def shot(self, name: str, *, failed: bool) -> None:
         """Take a screenshot and store it in the screenshots directory."""
-        os.makedirs(self.SCREENSHOT_DIR, exist_ok=True)
-        filename = f'{self.SCREENSHOT_DIR}/{name}.png'
+        self.SCREENSHOT_DIR.mkdir(parents=True, exist_ok=True)
+        if failed:
+            name = f'{name}.failed'
+        filename = self.SCREENSHOT_DIR / f'{name}.png'
         print(f'Storing screenshot to {filename}')
         self.selenium.get_screenshot_as_file(filename)
 
@@ -257,7 +271,7 @@ class Screen:
             else:
                 assert record.message.strip() == message, f'Expected "{message}" but got "{record.message}"'
         finally:
-            self.caplog.records.clear()
+            self.caplog.records.pop(0)
 
     @contextmanager
     def implicitly_wait(self, t: float) -> Generator[None, None, None]:

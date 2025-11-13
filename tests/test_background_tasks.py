@@ -1,4 +1,6 @@
 import asyncio
+import gc
+from typing import Callable
 
 import pytest
 
@@ -46,8 +48,10 @@ async def test_awaiting_background_tasks_on_shutdown(user: User, strategy: str):
         except asyncio.CancelledError:
             cancelled.add('four')
 
-    ui.button('One', on_click=lambda: background_tasks.create(one(), name='one'))
-    ui.button('Two', on_click=lambda: background_tasks.create(two(), name='two'))
+    @ui.page('/')
+    def page():
+        ui.button('One', on_click=lambda: background_tasks.create(one(), name='one'))
+        ui.button('Two', on_click=lambda: background_tasks.create(two(), name='two'))
 
     if strategy == 'system':
         app.on_connect(lambda: background_tasks.create(one(), name='one'))
@@ -68,3 +72,28 @@ async def test_awaiting_background_tasks_on_shutdown(user: User, strategy: str):
     await background_tasks.teardown()
     assert cancelled == {'one', 'three'}
     assert run == {'one', 'two', 'four'}
+
+
+@pytest.mark.parametrize('create', [background_tasks.create, background_tasks.create_lazy])
+async def test_inner_async_function_is_awaited_on_shutdown(user: User, create: Callable):
+    events: list[str] = []
+
+    @ui.page('/')
+    def page():
+        @background_tasks.await_on_shutdown
+        async def inner():
+            try:
+                await asyncio.sleep(0.05)
+                events.append('inner ran')
+            except asyncio.CancelledError:
+                events.append('inner cancelled')
+        create(inner(), name='inner')
+
+    await user.open('/')
+
+    for _ in range(3):
+        await asyncio.sleep(0)
+        gc.collect()
+
+    await background_tasks.teardown()
+    assert events == ['inner ran']

@@ -131,7 +131,7 @@ export default {
     },
     onUserEvents() {
       const events = {};
-      for (const type of this.events) {
+      for (const type of this.events || []) {
         events[type] = (event) => this.onMouseEvent(type, event);
       }
       return events;

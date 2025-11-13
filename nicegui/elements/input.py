@@ -1,4 +1,4 @@
-from typing import Any, List, Optional, Union
+from typing import Any, Optional, Union
 
 from ..events import Handler, ValueChangeEventArguments
 from .icon import Icon
@@ -18,7 +18,7 @@ class Input(LabelElement, ValidationElement, DisableableElement, component='inpu
                  password: bool = False,
                  password_toggle_button: bool = False,
                  on_change: Optional[Handler[ValueChangeEventArguments]] = None,
-                 autocomplete: Optional[List[str]] = None,
+                 autocomplete: Optional[list[str]] = None,
                  validation: Optional[Union[ValidationFunction, ValidationDict]] = None,
                  ) -> None:
         """Text Input
@@ -51,6 +51,7 @@ class Input(LabelElement, ValidationElement, DisableableElement, component='inpu
         :param validation: dictionary of validation rules or a callable that returns an optional error message (default: None for no validation)
         """
         super().__init__(label=label, value=value, on_value_change=on_change, validation=validation)
+        self._props['for'] = self.html_id
         if placeholder is not None:
             self._props['placeholder'] = placeholder
         self._props['type'] = 'password' if password else 'text'
@@ -65,10 +66,9 @@ class Input(LabelElement, ValidationElement, DisableableElement, component='inpu
 
         self._props['_autocomplete'] = autocomplete or []
 
-    def set_autocomplete(self, autocomplete: Optional[List[str]]) -> None:
+    def set_autocomplete(self, autocomplete: Optional[list[str]]) -> None:
         """Set the autocomplete list."""
         self._props['_autocomplete'] = autocomplete
-        self.update()
 
     def _handle_value_change(self, value: Any) -> None:
         super()._handle_value_change(value)
