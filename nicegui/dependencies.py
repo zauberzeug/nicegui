@@ -6,6 +6,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import TYPE_CHECKING, Callable
 
+from . import core
 from .dataclasses import KWONLY_SLOTS
 from .helpers import hash_file_path
 from .vbuild import VBuild
@@ -165,7 +166,9 @@ def generate_resources(prefix: str, elements: Iterable[Element]) -> tuple[list[s
     vue_scripts: list[str] = []
     vue_html: list[str] = []
     vue_styles: list[str] = []
-    imports: dict[str, str] = {}
+    imports: dict[str, str] = {
+        'vue': f'{prefix}/_nicegui/{__version__}/static/vue.esm-browser{".prod" if core.app.config.prod_js else ""}.js',
+    }
     js_imports: list[str] = []
     js_imports_urls: list[str] = []
 
