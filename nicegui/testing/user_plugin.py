@@ -29,9 +29,9 @@ async def user(caplog: pytest.LogCaptureFixture,  # pylint: disable=unused-argum
     async with user_simulation(main_path=main_path) as user:
         yield user
 
-    logs = [record for record in caplog.get_records('call') if record.levelname == 'ERROR']
-    if logs:
-        pytest.fail('There were unexpected ERROR logs.', pytrace=False)
+        logs = [record for record in caplog.get_records('call') if record.levelname == 'ERROR']
+        if logs:
+            pytest.fail('There were unexpected ERROR logs.', pytrace=False)
 
 
 @pytest.fixture
