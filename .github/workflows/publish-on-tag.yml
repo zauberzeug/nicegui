@@ -29,13 +29,6 @@ jobs:
       version: ${{ needs.extract-version.outputs.version }}
     secrets: inherit
 
-  citation:
-    needs: [extract-version, docker]
-    uses: ./.github/workflows/_citation.yml
-    with:
-      version: ${{ needs.extract-version.outputs.version }}
-    secrets: inherit
-
   verify:
     needs: docker
     uses: ./.github/workflows/_verify.yml
