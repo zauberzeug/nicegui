@@ -34,7 +34,7 @@ async def test_user_simulation_script_mode_with_subpages():
         await user.should_see('Another')
 
 
-async def test_user_simulation_with_page_definitios():
+async def test_user_simulation_with_page_definitions():
     async with user_simulation() as user:
 
         @ui.page('/')
@@ -77,6 +77,7 @@ async def test_user_simulation_script_main_file(tmp_path, file_content):
     async with user_simulation(main_path=main_path) as user:
         await user.open('/')
         await user.should_see('Main file content')
+
 
 async def test_user_simulation_normal_and_script_mode():
     def root():

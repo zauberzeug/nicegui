@@ -3,6 +3,7 @@ import gc
 import os
 import runpy
 import sys
+from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 from copy import copy
 from pathlib import Path
@@ -96,7 +97,7 @@ def find_all_subclasses(cls: type) -> list[type]:
 @asynccontextmanager
 async def user_simulation(
     root: Optional[Callable] = None, *, main_path: Optional[Union[str, bytes, os.PathLike]] = None
-):
+) -> AsyncGenerator[User, None]:
     """Context manager for test user simulation.
 
     Context manager that yields a ``User`` connected to a NiceGUI app within an isolated test context.
