@@ -15,6 +15,7 @@
         @import url("{{ prefix | safe }}/_nicegui/{{version}}/static/quasar.important.css") layer(quasar_importants);
       {% endif %}
       @import url("{{ prefix | safe }}/_nicegui/{{version}}/static/nicegui.css") layer(nicegui);
+      @import url("{{ prefix | safe }}/_nicegui/{{version}}/static/headwind.css") layer(overrides);
       @layer quasar {
         blockquote, dd, dl, figure, h1, h2, h3, h4, h5, h6, hr, p, pre {
           margin: revert-layer; /* HACK: revert Quasar's margin styles */
@@ -65,9 +66,13 @@
     {{ body_html | safe }}
 
     <div id="app"></div>
-    <div id="popup" aria-hidden="true">
+    <div id="popup" class="nicegui-error-popup" aria-hidden="true">
       <span>{{ translations.connection_lost }}</span>
       <span>{{ translations.trying_to_reconnect }}</span>
+    </div>
+    <div id="too_long_message_popup" class="nicegui-error-popup" aria-hidden="true">
+      <span>{{ translations.message_too_long }}</span>
+      <span>{{ translations.message_too_long_body }}</span>
     </div>
     <script type="module">
       const app = createApp(parseElements(String.raw`{{ elements | safe }}`), {

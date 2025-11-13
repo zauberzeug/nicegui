@@ -119,6 +119,7 @@ If you would like to support this project and have your avatar or company logo a
   <a href="https://github.com/digiquip"><img src="https://github.com/digiquip.png" width="50px" alt="DigiQuip AS" /></a>
   <a href="https://github.com/aitech95"><img src="https://github.com/aitech95.png" width="50px" alt="JACOB SHI " /></a>
   <a href="https://github.com/Christian-D-Bock"><img src="https://github.com/Christian-D-Bock.png" width="50px" alt="Christian Bock" /></a>
+  <a href="https://github.com/LambdaTest-Inc"><img src="https://github.com/LambdaTest-Inc.png" width="50px" alt="LambdaTest" /></a>
 </p>
 <!-- SPONSORS -->
 

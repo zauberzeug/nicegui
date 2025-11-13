@@ -29,6 +29,7 @@ class Screen:
     PORT = 3392
     IMPLICIT_WAIT = 4
     SCREENSHOT_DIR = Path('screenshots')
+    CATCH_JS_ERRORS = True
 
     def __init__(self, selenium: webdriver.Chrome, caplog: pytest.LogCaptureFixture, request: Optional[pytest.FixtureRequest] = None) -> None:
         self.selenium = selenium

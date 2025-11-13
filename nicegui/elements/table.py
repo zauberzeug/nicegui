@@ -43,6 +43,7 @@ class Table(FilterElement, component='table.js'):
         """Table
 
         A table based on Quasar's `QTable <https://quasar.dev/vue-components/table>`_ component.
+        Updates can be pushed to the table by updating the ``rows`` or ``columns`` properties.
 
         If ``selection`` is "single" or "multiple", then a ``selected`` property is accessible containing the selected rows.
 

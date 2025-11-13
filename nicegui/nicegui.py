@@ -14,7 +14,7 @@ from fastapi.responses import FileResponse, Response
 from . import air, background_tasks, binding, core, favicon, helpers, json, run, welcome
 from .app import App
 from .client import Client
-from .dependencies import dynamic_resources, esm_modules, js_components, libraries, resources
+from .dependencies import dynamic_resources, esm_modules, js_components, libraries, resources, vue_components
 from .error import error_content
 from .json import NiceGUIJSONResponse
 from .logging import log
@@ -77,9 +77,11 @@ def _get_library(key: str) -> FileResponse:
 
 
 @app.get(f'/_nicegui/{__version__}' + '/components/{key:path}')
-def _get_component(key: str) -> FileResponse:
+def _get_component(key: str) -> Response:
     if key in js_components and js_components[key].path.exists():
         return FileResponse(js_components[key].path, media_type='text/javascript')
+    elif key in vue_components:
+        return Response(vue_components[key].script, media_type='text/javascript')
     raise HTTPException(status_code=404, detail=f'component "{key}" not found')
 
 
@@ -234,6 +236,11 @@ def _on_ack(_: str, msg: dict) -> None:
     if not client:
         return
     client.outbox.prune_history(msg['next_message_id'])
+
+
+@sio.on('too_long_message')
+def _on_too_long_message(_: str) -> None:
+    log.warning('Received a too long message from the client.')
 
 
 async def prune_tab_storage(*, force: bool = False) -> None:

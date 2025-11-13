@@ -34,6 +34,7 @@ class ColorInput(LabelElement, ValueElement, DisableableElement):
         :param preview: change button background to selected color (default: False)
         """
         super().__init__(tag='q-input', label=label, value=value, on_value_change=on_change)
+        self._props['for'] = self.html_id
         if placeholder is not None:
             self._props['placeholder'] = placeholder
 

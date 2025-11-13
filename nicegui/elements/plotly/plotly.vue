@@ -8,6 +8,16 @@ export default {
     const { Plotly } = await import("nicegui-plotly");
     this.Plotly = Plotly;
     this.update();
+    this.$nextTick(() => {
+      this.resizeObserver = new ResizeObserver(() => {
+        if (this.options.config?.responsive === false) return;
+        this.Plotly.Plots.resize(this.$el);
+      });
+      this.resizeObserver.observe(this.$el);
+    });
+  },
+  unmounted() {
+    this.resizeObserver?.disconnect();
   },
   methods: {
     update() {
@@ -19,8 +29,7 @@ export default {
 
       // default responsive to true
       const options = this.options;
-      if (options.config === undefined) options.config = { responsive: true };
-      if (options.config.responsive === undefined) options.config.responsive = true;
+      if (options.config?.responsive === true) options.config.responsive = undefined;
 
       // re-use plotly instance if config is the same
       if (JSON.stringify(options.config) == JSON.stringify(this.last_options.config)) {
