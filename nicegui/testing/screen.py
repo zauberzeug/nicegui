@@ -22,8 +22,8 @@ from selenium.webdriver.remote.webelement import WebElement
 from nicegui import app, core, ui
 from nicegui.server import Server
 
+from .general import prepare_simulation
 from .general_fixtures import get_path_to_main_file
-from .user_simulation import prepare_simulation
 
 
 class Screen:
