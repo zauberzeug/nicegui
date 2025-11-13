@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Literal, Union
+from typing import Union
 
 from .. import helpers
 from .html import add_head_html
@@ -20,7 +20,7 @@ def add_css(content: Union[str, Path], *, shared: bool = False) -> None:
     add_head_html(f'<style>{content}</style>', shared=shared)
 
 
-def add_scss(content: Union[str, Path], *, indented: Union[bool, Literal['DEPRECATED']] = False, shared: bool = False) -> None:
+def add_scss(content: Union[str, Path], *, indented: bool = False, shared: bool = False) -> None:
     """Add SCSS style definitions to the page.
 
     This function can be used to add SCSS style definitions to the head of the HTML page.
@@ -28,18 +28,16 @@ def add_scss(content: Union[str, Path], *, indented: Union[bool, Literal['DEPREC
     *Added in version 2.0.0*
 
     :param content: SCSS content (string or file path)
-    :param indented: deprecated because the client-side SASS compiler makes no such distinction. Removed in version 4.0.0.
+    :param indented: whether the content is indented (SASS) or not (SCSS) (default: `False`)
     :param shared: whether to add the code to all pages (default: ``False``, *added in version 2.14.0*)
     """
-    if indented != 'DEPRECATED':
-        helpers.warn_once('The "indented" parameter of add_scss() is deprecated and will be removed in version 4.0.0. ')
     if helpers.is_file(content):
         content = Path(content).read_text(encoding='utf-8')
     add_head_html(f'''
 <script type="module">
     import * as sass from 'sass';
     const style = document.createElement('style');
-    style.textContent = sass.compileString({str(content).strip()!r}).css;
+    style.textContent = sass.compileString({str(content).strip()!r}, {{syntax: '{'indented' if indented else 'scss'}'}}).css;
     document.head.appendChild(style);
 </script>
 ''', shared=shared)
