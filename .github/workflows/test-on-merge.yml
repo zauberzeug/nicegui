@@ -1,6 +1,8 @@
 name: Test on Merge
 
-on: merge_group
+on:
+  merge_group:
+  workflow_dispatch:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}

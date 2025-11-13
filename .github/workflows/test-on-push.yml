@@ -1,6 +1,8 @@
 name: Test on Push
 
-on: push
+on:
+  push:
+  workflow_dispatch:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.sha }}
