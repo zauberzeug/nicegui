@@ -381,7 +381,7 @@ doc.text('User simulation context', '''
 @doc.ui
 def user_simulation_examples():
     with ui.row().classes('gap-4 items-stretch'):
-        with python_window(classes='w-[500px]', title='script mode with root'):
+        with python_window(classes='w-[700px]', title='script mode with root'):
             ui.markdown('''
                 ```python
                 from nicegui.testing.user_simulation import user_simulation
@@ -398,7 +398,7 @@ def user_simulation_examples():
                 ```
             ''')
 
-        with python_window(classes='w-[500px]', title='main file via path'):
+        with python_window(classes='w-[700px]', title='main file via path'):
             ui.markdown('''
                 ```python
                 from nicegui.testing.user_simulation import user_simulation
