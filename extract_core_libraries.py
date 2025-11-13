@@ -29,12 +29,8 @@ def _extract_quasar_css(css_path: Path) -> None:
             else [n for n in nodes if isinstance(n, ast.Declaration) and n.important == important]
         return new_rule
 
-    def _patch_rotate(css_text: str) -> str:
-        reg = r'\.rotate-(\d+)\s*\{\s*transform:\s*rotate\((\d+)deg\)\s*/\*\s*rtl:ignore\s*\*/;\s*\}'
-        return re.sub(reg, r'.rotate-\1 { rotate: \1deg /* rtl:ignore */; }', css_text)
-
     FORMAT_OPTIONS = {'indent_size': 2, 'selector_separator_newline': False}
-    rules = tinycss2.parse_stylesheet(_patch_rotate(css_path.read_text()), skip_whitespace=True)
+    rules = tinycss2.parse_stylesheet(css_path.read_text(), skip_whitespace=True)
     reference_css = cssbeautifier.beautify(tinycss2.serialize(rules), FORMAT_OPTIONS)
     important_css = cssbeautifier.beautify(tinycss2.serialize(_extract_all(rules, important=True)), FORMAT_OPTIONS)
     unimportant_css = cssbeautifier.beautify(tinycss2.serialize(_extract_all(rules, important=False)), FORMAT_OPTIONS)
@@ -52,14 +48,21 @@ def _extract_quasar_css(css_path: Path) -> None:
     (STATIC / 'quasar.unimportant.prod.css').write_text(rcssmin.cssmin(unimportant_css))
 
 
-shutil.copy2(NODE_MODULES / 'vue' / 'dist' / 'vue.global.js', STATIC / 'vue.global.js')
-shutil.copy2(NODE_MODULES / 'vue' / 'dist' / 'vue.global.prod.js', STATIC / 'vue.global.prod.js')
+def _extract_headwind_css(quasar_css_path: Path) -> None:
+    matches = re.finditer(r'\.rotate-(\d+)\s*\{[^}]*\}', quasar_css_path.read_text())
+    headwind_css = '\n'.join(f'''.rotate-{m.group(1)} {{\n  rotate: 0deg;\n}}''' for m in matches) + '\n'
+    (STATIC / 'headwind.css').write_text(headwind_css)
+
+
+shutil.copy2(NODE_MODULES / 'vue' / 'dist' / 'vue.esm-browser.js', STATIC / 'vue.esm-browser.js')
+shutil.copy2(NODE_MODULES / 'vue' / 'dist' / 'vue.esm-browser.prod.js', STATIC / 'vue.esm-browser.prod.js')
 
 shutil.copy2(NODE_MODULES / 'quasar' / 'dist' / 'quasar.umd.js', STATIC / 'quasar.umd.js')
 shutil.copy2(NODE_MODULES / 'quasar' / 'dist' / 'quasar.umd.prod.js', STATIC / 'quasar.umd.prod.js')
 for entry in (NODE_MODULES / 'quasar' / 'dist' / 'lang').glob('*.umd.prod.js'):
     shutil.copy2(entry, STATIC / 'lang' / entry.name)
 _extract_quasar_css(NODE_MODULES / 'quasar' / 'dist' / 'quasar.rtl.css')
+_extract_headwind_css(NODE_MODULES / 'quasar' / 'dist' / 'quasar.rtl.css')
 
 shutil.copy2(NODE_MODULES / '@tailwindcss' / 'browser' / 'dist' / 'index.global.js', STATIC / 'tailwindcss.min.js')
 
