@@ -25,8 +25,7 @@ async def user(caplog: pytest.LogCaptureFixture,  # pylint: disable=unused-argum
                request: pytest.FixtureRequest,
                ) -> AsyncGenerator[User, None]:
     """Create a new user fixture."""
-    main_path = get_path_to_main_file(request)
-    async with user_simulation(main_path=main_path) as user:
+    async with user_simulation(main_file=get_path_to_main_file(request)) as user:
         yield user
 
         logs = [record for record in caplog.get_records('call') if record.levelname == 'ERROR']

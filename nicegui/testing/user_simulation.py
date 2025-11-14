@@ -17,35 +17,35 @@ from .user import User
 
 @asynccontextmanager
 async def user_simulation(
-    root: Optional[Callable] = None, *, main_path: Optional[Union[str, bytes, os.PathLike]] = None
+    root: Optional[Callable] = None, *, main_file: Optional[Union[str, bytes, os.PathLike]] = None
 ) -> AsyncGenerator[User, None]:
     """Context manager for test user simulation.
 
     Context manager that yields a ``User`` connected to a NiceGUI app within an isolated test context.
 
-    :param root: root function for NiceGUI in script mode. It is passed directly to ``ui.run``; mutually exclusive with ``main_path`` argument.
-    :param main_path: path to a NiceGUI main file executed via ``runpy.run_path``; mutually exclusive with ``root`` argument.
+    :param root: root function for NiceGUI in script mode. It is passed directly to ``ui.run``; mutually exclusive with ``main_file`` argument.
+    :param main_file: path to a NiceGUI main file executed via ``runpy.run_path``; mutually exclusive with ``root`` argument.
     """
 
-    if main_path is not None and root is not None:
-        raise ValueError('Cannot specify both `main_path` and `root` function simultaneously.')
+    if main_file is not None and root is not None:
+        raise ValueError('Cannot specify both `main_file` and `root` function simultaneously.')
 
     if root is not None and not callable(root):
         raise ValueError('`root` must be a callable or None')
 
-    if main_path is not None:
+    if main_file is not None:
         try:
-            main_path = Path(main_path)
+            main_file_path = Path(main_file)
         except TypeError as e:
-            raise TypeError('main_path must be convertible to Path') from e
-        if not main_path.exists():
-            raise FileNotFoundError(f'Main file not found at {main_path}')
+            raise TypeError('main_file must be convertible to Path') from e
+        if not main_file_path.exists():
+            raise FileNotFoundError(f'Main file not found at {main_file_path}')
 
     with nicegui_reset_globals():
         os.environ['NICEGUI_USER_SIMULATION'] = 'true'
         try:
-            if main_path is not None:
-                runpy.run_path(str(main_path), run_name='__main__')
+            if main_file is not None:
+                runpy.run_path(str(main_file_path), run_name='__main__')
             else:
                 prepare_simulation()
                 if root is None:

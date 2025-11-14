@@ -366,13 +366,13 @@ doc.text('Comparison with the screen fixture', '''
 
 
 doc.text('User Simulation Context', '''
-    The [`user_simulation`](https://github.com/zauberzeug/nicegui/blob/main/nicegui/testing/user_simulation.py) context is the low-level building block behind the `user` fixture. 
-    It spins up a NiceGUI app inside the same event loop, giving tests deterministic control without Selenium. 
+    The [`user_simulation`](https://github.com/zauberzeug/nicegui/blob/main/nicegui/testing/user_simulation.py) context is the low-level building block behind the `user` fixture.
+    It spins up a NiceGUI app inside the same event loop, giving tests deterministic control without Selenium.
     More usage examples can be found in [`tests/test_user_simulation_context.py`](https://github.com/zauberzeug/nicegui/blob/main/tests/test_user_simulation_context.py).
-    
-    It can be used directly to  
 
-    - simulate a `User` client without relying on pytest-specific fixtures. 
+    It can be used directly to
+
+    - simulate a `User` client without relying on pytest-specific fixtures.
     That means, it can be used with `unittest` or within plain async code.
     - test script-mode `root` functions passed to context as callables.
     - test NiceGUI main files passed to context as file paths.
@@ -405,10 +405,8 @@ def user_simulation_examples():
                 ```python
                 from nicegui.testing.user_simulation import user_simulation
 
-                MAIN_PATH = 'examples/pytests/main.py'
-
                 async def test_click_via_main_file():
-                    async with user_simulation(main_path=MAIN_PATH) as user:
+                    async with user_simulation(main_file='app.py') as user:
                         await user.open('/')
                         await user.should_see('Main file content')
                 ```
@@ -430,6 +428,7 @@ def user_simulation_examples():
                         await user.should_see('Main page')
                 ```
             ''')
+
 
 doc.reference(User, title='User Reference')
 doc.reference(UserInteraction, title='UserInteraction Reference')

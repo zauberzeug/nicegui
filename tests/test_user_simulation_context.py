@@ -71,10 +71,10 @@ async def test_user_simulation_with_page_definitions():
     '''),
 ])
 async def test_user_simulation_script_main_file(tmp_path, file_content):
-    main_path = tmp_path / 'main.py'
-    main_path.write_text(file_content, encoding='utf-8')
+    main_file = tmp_path / 'main.py'
+    main_file.write_text(file_content, encoding='utf-8')
 
-    async with user_simulation(main_path=main_path) as user:
+    async with user_simulation(main_file=main_file) as user:
         await user.open('/')
         await user.should_see('Main file content')
 
