@@ -6,7 +6,7 @@ from nicegui import ui
 from nicegui.testing.user_simulation import user_simulation
 
 
-async def test_user_simulation_script_mode():
+async def test_basic_root_function():
     def root():
         ui.button('Click me', on_click=lambda: ui.notify('Hello World!'))
 
@@ -17,15 +17,15 @@ async def test_user_simulation_script_mode():
         await user.should_see('Hello World!')
 
 
-async def test_user_simulation_script_mode_with_subpages():
+async def test_root_function_with_subpages():
     def root():
-        def main():
-            ui.label('Main page content')
-
-        def other():
-            ui.label('Another page content')
-
         ui.sub_pages({'/': main, '/other': other})
+
+    def main():
+        ui.label('Main page content')
+
+    def other():
+        ui.label('Another page content')
 
     async with user_simulation(root) as user:
         await user.open('/')
@@ -34,7 +34,7 @@ async def test_user_simulation_script_mode_with_subpages():
         await user.should_see('Another')
 
 
-async def test_user_simulation_with_page_definitions():
+async def test_with_page_definitions():
     async with user_simulation() as user:
 
         @ui.page('/')
@@ -70,7 +70,7 @@ async def test_user_simulation_with_page_definitions():
         ui.run(root)
     '''),
 ])
-async def test_user_simulation_script_main_file(tmp_path, file_content):
+async def test_main_file(tmp_path, file_content):
     main_file = tmp_path / 'main.py'
     main_file.write_text(file_content, encoding='utf-8')
 
@@ -79,7 +79,17 @@ async def test_user_simulation_script_main_file(tmp_path, file_content):
         await user.should_see('Main file content')
 
 
-async def test_user_simulation_normal_and_script_mode():
+async def test_providing_page_inside_context():
+    async with user_simulation() as user:
+        @ui.page('/')
+        def page():
+            ui.label('Some page content')
+
+        await user.open('/')
+        await user.should_see('Some page content')
+
+
+async def test_adding_page_to_root_function():
     def root():
         ui.button('Click me', on_click=lambda: ui.notify('Hello World!'))
 
