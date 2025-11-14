@@ -367,16 +367,16 @@ doc.text('Comparison with the screen fixture', '''
 
 doc.text('User Simulation Context', '''
     The [`user_simulation`](https://github.com/zauberzeug/nicegui/blob/main/nicegui/testing/user_simulation.py) context is the low-level building block behind the `user` fixture.
-    It spins up a NiceGUI app inside the same event loop, giving tests deterministic control without Selenium.
+    It spins up a NiceGUI app inside the same event loop, providing deterministic test control without Selenium.
+    Unlike the `user` fixture, it does not rely on pytest-specific infrastructure and can be used with `unittest` or within plain async code.
+
+    The context supports three testing approaches:
+
+    - Test a `root` callable directly.
+    - Test a specific main file by passing its path.
+    - Define `ui.page` definitions inline within the context.
+
     More usage examples can be found in [`tests/test_user_simulation_context.py`](https://github.com/zauberzeug/nicegui/blob/main/tests/test_user_simulation_context.py).
-
-    It can be used directly to
-
-    - simulate a `User` client without relying on pytest-specific fixtures.
-    That means, it can be used with `unittest` or within plain async code.
-    - test script-mode `root` functions passed to context as callables.
-    - test NiceGUI main files passed to context as file paths.
-    - inline `ui` page definitions inside the context, handy for self-contained test cases.
 ''')
 
 

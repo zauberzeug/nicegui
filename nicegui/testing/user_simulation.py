@@ -23,7 +23,7 @@ async def user_simulation(
 
     Context manager that yields a ``User`` connected to a NiceGUI app within an isolated test context.
 
-    :param root: root function for NiceGUI in script mode. It is passed directly to ``ui.run``; mutually exclusive with ``main_file`` argument.
+    :param root: root function which is passed directly to ``ui.run``; mutually exclusive with ``main_file`` argument.
     :param main_file: path to a NiceGUI main file executed via ``runpy.run_path``; mutually exclusive with ``root`` argument.
     """
 
