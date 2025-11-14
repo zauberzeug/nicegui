@@ -34,6 +34,5 @@ def get_path_to_main_file(request: pytest.FixtureRequest) -> Optional[Path]:
 @pytest.fixture
 def nicegui_reset_globals():
     """Reset the global state of the NiceGUI package."""
-
     with general.nicegui_reset_globals():
         yield
