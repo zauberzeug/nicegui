@@ -3,7 +3,7 @@ from typing import Optional
 
 import pytest
 
-from . import user_simulation  # local import to avoid circular dependency
+from . import general
 
 # pylint: disable=redefined-outer-name
 
@@ -35,5 +35,5 @@ def get_path_to_main_file(request: pytest.FixtureRequest) -> Optional[Path]:
 def nicegui_reset_globals():
     """Reset the global state of the NiceGUI package."""
 
-    with user_simulation.nicegui_reset_globals():
+    with general.nicegui_reset_globals():
         yield
