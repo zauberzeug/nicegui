@@ -49,12 +49,18 @@ class Leaflet(Element, component='leaflet.js', esm={'nicegui-leaflet': 'dist'}, 
         self.layers: list[Layer] = []
         self.is_initialized = False
 
-        self.center = center  # Read-write public API
-        self.zoom = zoom  # Read-write public API
-        self._props['center'] = center  # Internal state, mutates actual map state via _to_dict
-        self._props['zoom'] = zoom  # Internal state, mutates actual map state via _to_dict
-        self._real_zoom = zoom  # Tracks actual map state
-        self._real_center = center  # Tracks actual map state
+        # read-write public API
+        self.center = center
+        self.zoom = zoom
+
+        # internal state, mutates client state via _to_dict
+        self._props['center'] = center
+        self._props['zoom'] = zoom
+
+        # client state
+        self._client_center = center
+        self._client_zoom = zoom
+
         self._props['options'] = {**options}
         self._props['draw_control'] = draw_control
         self._props['hide_drawn_items'] = hide_drawn_items
@@ -95,8 +101,8 @@ class Leaflet(Element, component='leaflet.js', esm={'nicegui-leaflet': 'dist'}, 
 
     def _handle_move_or_zoom_end(self, e: GenericEventArguments) -> None:
         self._send_update_on_value_change = False
-        self.center = self._real_center = e.args['center']
-        self.zoom = self._real_zoom = e.args['zoom']
+        self.center = self._client_center = e.args['center']
+        self.zoom = self._client_zoom = e.args['zoom']
         self._send_update_on_value_change = True
 
     def run_method(self, name: str, *args: Any, timeout: float = 1) -> AwaitableResponse:
@@ -162,7 +168,9 @@ class Leaflet(Element, component='leaflet.js', esm={'nicegui-leaflet': 'dist'}, 
         super()._handle_delete()
 
     def _to_dict(self):
-        if self._props['center'] != self._real_center or self._props['zoom'] != self._real_zoom:
-            if self._send_update_on_value_change:
-                self.run_map_method('setView', self._props['center'], self._props['zoom'])
+        if self._send_update_on_value_change and (
+            self._props['center'] != self._client_center or
+            self._props['zoom'] != self._client_zoom
+        ):
+            self.run_map_method('setView', self._props['center'], self._props['zoom'])
         return super()._to_dict()
