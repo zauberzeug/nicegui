@@ -17,7 +17,7 @@ from .user import User
 
 @asynccontextmanager
 async def user_simulation(
-    root: Optional[Callable] = None, *, main_file: Optional[Union[str, bytes, os.PathLike]] = None
+    root: Optional[Callable] = None, *, main_file: Optional[Union[str, os.PathLike]] = None
 ) -> AsyncGenerator[User, None]:
     """Context manager for test user simulation.
 
