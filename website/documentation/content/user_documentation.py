@@ -386,7 +386,7 @@ def user_simulation_examples():
         with python_window(classes='w-[700px]', title='script mode with root'):
             ui.markdown('''
                 ```python
-                from nicegui.testing.user_simulation import user_simulation
+                from nicegui.testing import user_simulation
 
                 async def test_click_via_root():
                     def root():
@@ -403,7 +403,7 @@ def user_simulation_examples():
         with python_window(classes='w-[700px]', title='main file via path'):
             ui.markdown('''
                 ```python
-                from nicegui.testing.user_simulation import user_simulation
+                from nicegui.testing import user_simulation
 
                 async def test_click_via_main_file():
                     async with user_simulation(main_file='app.py') as user:
@@ -415,7 +415,7 @@ def user_simulation_examples():
         with python_window(classes='w-[700px]', title='inline UI definitions'):
             ui.markdown('''
                 ```python
-                from nicegui.testing.user_simulation import user_simulation
+                from nicegui.testing import user_simulation
 
                 async def test_inline_pages():
                     async with user_simulation() as user:

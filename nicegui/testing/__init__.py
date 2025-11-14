@@ -8,9 +8,11 @@ except ImportError:
 
 from .user import User
 from .user_interaction import UserInteraction
+from .user_simulation import user_simulation
 
 __all__ = [
     'Screen',
     'User',
     'UserInteraction',
+    'user_simulation',
 ]
