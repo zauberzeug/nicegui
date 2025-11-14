@@ -44,7 +44,7 @@ def nicegui_reset_globals():
     app.urls.clear()
     core.reset()
 
-    element_types: list[type[ui.element]] = [ui.element, *find_all_subclasses(ui.element)]
+    element_types: list[type[ui.element]] = [ui.element, *_find_all_subclasses(ui.element)]
     default_classes = {t: copy(t._default_classes) for t in element_types}  # pylint: disable=protected-access
     default_styles = {t: copy(t._default_style) for t in element_types}  # pylint: disable=protected-access
     default_props = {t: copy(t._default_props) for t in element_types}  # pylint: disable=protected-access
@@ -75,9 +75,9 @@ def nicegui_reset_globals():
                 sys.modules.pop(func.__module__, None)
 
 
-def find_all_subclasses(cls: type) -> list[type]:
+def _find_all_subclasses(cls: type) -> list[type]:
     subclasses = []
     for subclass in cls.__subclasses__():
         subclasses.append(subclass)
-        subclasses.extend(find_all_subclasses(subclass))
+        subclasses.extend(_find_all_subclasses(subclass))
     return subclasses
