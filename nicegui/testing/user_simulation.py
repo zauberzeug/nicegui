@@ -33,6 +33,7 @@ async def user_simulation(
     if root is not None and not callable(root):
         raise ValueError('`root` must be a callable or None')
 
+    main_file_path = None
     if main_file is not None:
         try:
             main_file_path = Path(main_file)
@@ -44,7 +45,7 @@ async def user_simulation(
     with nicegui_reset_globals():
         os.environ['NICEGUI_USER_SIMULATION'] = 'true'
         try:
-            if main_file is not None:
+            if main_file_path is not None:
                 runpy.run_path(str(main_file_path), run_name='__main__')
             else:
                 prepare_simulation()
