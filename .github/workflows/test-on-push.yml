@@ -2,6 +2,7 @@ name: Test on Push
 
 on:
   push:
+  pull_request:
   workflow_dispatch:
 
 concurrency:
