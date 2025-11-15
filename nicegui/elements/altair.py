@@ -3,8 +3,8 @@ from __future__ import annotations
 import importlib.util
 from typing import TYPE_CHECKING, Any
 
-from ... import optional_features
-from .anywidget import AnyWidget
+from .. import optional_features
+from .anywidget.anywidget import AnyWidget
 
 if importlib.util.find_spec('altair'):
     optional_features.register('altair')
