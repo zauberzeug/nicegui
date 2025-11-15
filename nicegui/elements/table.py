@@ -105,7 +105,7 @@ class Table(FilterElement, component='table.js'):
     def _to_dict(self) -> dict[str, Any]:
         # scan rows for lists and add slot templates if needed
         for column in self._props['columns']:
-            key = column.get('field')
+            key = column.get('name')
             if not key or f'body-cell-{key}' in self.slots:
                 continue
             for row in self._props['rows']:
