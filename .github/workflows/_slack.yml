@@ -7,6 +7,10 @@ on:
         description: "Name for Slack notifications"
         required: true
         type: string
+      needs-context:
+        description: "JSON string of needs context"
+        required: true
+        type: string
 
 jobs:
   slack:
@@ -16,7 +20,7 @@ jobs:
       - uses: Jimdo/should-i-notify-action@main
         id: should_notify
         with:
-          needs_context: ${{ toJson(needs) }}
+          needs_context: ${{ inputs.needs-context }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
       - name: Check if secret exists
         id: check_secret
