@@ -238,6 +238,11 @@ def _on_ack(_: str, msg: dict) -> None:
     client.outbox.prune_history(msg['next_message_id'])
 
 
+@sio.on('too_long_message')
+def _on_too_long_message(_: str) -> None:
+    log.warning('Received a too long message from the client.')
+
+
 async def prune_tab_storage(*, force: bool = False) -> None:
     """Prune tab storage that is older than the configured ``max_tab_storage_age``."""
     tab_storages = core.app.storage._tabs  # pylint: disable=protected-access

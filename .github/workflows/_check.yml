@@ -1,0 +1,29 @@
+name: Code Quality Check
+
+on: workflow_call
+
+jobs:
+  code-check:
+    name: ${{ matrix.target.name }}
+    strategy:
+      matrix:
+        target:
+          - name: pre-commit
+            command: pre-commit run --all-files
+          - name: mypy
+            command: mypy ./nicegui --non-interactive
+          - name: pylint
+            command: pylint ./nicegui
+      fail-fast: false
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: abatilo/actions-poetry@v4
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.9"
+          cache: "poetry"
+      - name: Install dependencies
+        run: poetry install --all-extras --with dev
+      - name: ${{ matrix.target.name }}
+        run: poetry run ${{ matrix.target.command }}
