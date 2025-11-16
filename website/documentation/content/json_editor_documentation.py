@@ -23,6 +23,19 @@ def main_demo() -> None:
                    on_change=lambda e: ui.notify(f'Change: {e}'))
 
 
+@doc.demo('Update content', '''
+    You can update the content of the JSONEditor by updating the `properties` property.
+''')
+def update_content():
+    import random
+
+    def update_number():
+        editor.properties['content']['json'].update(number=random.randint(0, 100))
+
+    editor = ui.json_editor({'content': {'json': {'number': 0}}})
+    ui.button('Update number', on_click=update_number)
+
+
 @doc.demo('Validation', '''
     You can use the `schema` parameter to define a [JSON schema](https://json-schema.org/) for validating the data being edited.
     In this demo, the editor will warn if the data does not match the schema:
