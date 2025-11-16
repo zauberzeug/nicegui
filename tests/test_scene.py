@@ -198,7 +198,7 @@ def test_gltf(screen: Screen):
     @ui.page('/')
     def page():
         nonlocal scene
-        app.add_static_file(local_file=TEST_DIR / 'media' / 'Box.glb', url_path='/box.glb')
+        app.add_static_file(local_file=TEST_DIR / 'media' / 'box.glb', url_path='/box.glb')
         with ui.scene() as scene:
             scene.gltf('/box.glb')
 
