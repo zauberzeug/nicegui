@@ -61,8 +61,7 @@ def test_replace_interactive_image(screen: Screen):
             ui.interactive_image(URL_PATH1)
 
         def replace():
-            container.clear()
-            with container:
+            with container.clear():
                 ui.interactive_image(URL_PATH2)
         ui.button('Replace', on_click=replace)
 

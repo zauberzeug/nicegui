@@ -22,8 +22,7 @@ def update_context_menu() -> None:
     from nicegui import events
 
     def update_menu(e: events.MouseEventArguments) -> None:
-        context_menu.clear()
-        with context_menu:
+        with context_menu.clear():
             ui.menu_item(f'Add circle at ({e.image_x:.0f}, {e.image_y:.0f})')
 
     source = 'https://picsum.photos/id/377/640/360'

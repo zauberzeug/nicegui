@@ -18,8 +18,7 @@ def test_replace_video(screen: Screen):
             ui.video(VIDEO1)
 
         def replace():
-            container.clear()
-            with container:
+            with container.clear():
                 ui.video(VIDEO2)
         ui.button('Replace', on_click=replace)
 
