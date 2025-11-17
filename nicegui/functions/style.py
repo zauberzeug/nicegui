@@ -34,13 +34,13 @@ def add_scss(content: Union[str, Path], *, indented: bool = False, shared: bool 
     if helpers.is_file(content):
         content = Path(content).read_text(encoding='utf-8')
     add_head_html(f'''
-<script type="module">
-    import * as sass from 'sass';
-    const style = document.createElement('style');
-    style.textContent = sass.compileString({str(content).strip()!r}, {{syntax: '{'indented' if indented else 'scss'}'}}).css;
-    document.head.appendChild(style);
-</script>
-''', shared=shared)
+        <script type="module">
+            import * as sass from 'sass';
+            const style = document.createElement('style');
+            style.textContent = sass.compileString({str(content).strip()!r}, {{syntax: '{'indented' if indented else 'scss'}'}}).css;
+            document.head.appendChild(style);
+        </script>
+    ''', shared=shared)
 
 
 def add_sass(content: Union[str, Path], *, shared: bool = False) -> None:
