@@ -57,6 +57,10 @@ def _extract_headwind_css(quasar_css_path: Path) -> None:
 shutil.copy2(NODE_MODULES / 'vue' / 'dist' / 'vue.esm-browser.js', STATIC / 'vue.esm-browser.js')
 shutil.copy2(NODE_MODULES / 'vue' / 'dist' / 'vue.esm-browser.prod.js', STATIC / 'vue.esm-browser.prod.js')
 
+shutil.copy2(NODE_MODULES / 'vue' / 'dist' / 'vue.runtime.esm-browser.js', STATIC / 'vue.runtime.esm-browser.js')
+shutil.copy2(NODE_MODULES / 'vue' / 'dist' / 'vue.runtime.esm-browser.prod.js',
+             STATIC / 'vue.runtime.esm-browser.prod.js')
+
 shutil.copy2(NODE_MODULES / 'quasar' / 'dist' / 'quasar.umd.js', STATIC / 'quasar.umd.js')
 shutil.copy2(NODE_MODULES / 'quasar' / 'dist' / 'quasar.umd.prod.js', STATIC / 'quasar.umd.prod.js')
 for entry in (NODE_MODULES / 'quasar' / 'dist' / 'lang').glob('*.umd.prod.js'):

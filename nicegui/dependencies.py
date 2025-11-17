@@ -167,7 +167,7 @@ def generate_resources(prefix: str, elements: Iterable[Element]) -> tuple[list[s
     vue_html: list[str] = []
     vue_styles: list[str] = []
     imports: dict[str, str] = {
-        'vue': f'{prefix}/_nicegui/{__version__}/static/vue.esm-browser{".prod" if core.app.config.prod_js else ""}.js',
+        'vue': f'{prefix}/_nicegui/{__version__}/static/vue.runtime.esm-browser{".prod" if core.app.config.prod_js else ""}.js',
     }
     js_imports: list[str] = []
     js_imports_urls: list[str] = []
