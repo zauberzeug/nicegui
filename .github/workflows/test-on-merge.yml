@@ -18,9 +18,8 @@ jobs:
       python-versions: '["3.9", "3.10", "3.11", "3.12", "3.13", "3.14"]'
       scope: '["pytest", "startup"]'
 
-  slack:
+  ci-gate:
+    runs-on: ubuntu-latest
     needs: [check, test]
-    uses: ./.github/workflows/_slack.yml
-    with:
-      workflow-name: "NiceGUI Merge Queue"
-    secrets: inherit
+    steps:
+      - run: echo "Gate passed"

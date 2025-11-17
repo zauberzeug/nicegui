@@ -308,16 +308,16 @@ def multiple_users():
         ui.markdown('''
             ```python
             async def test_chat(create_user: Callable[[], User]) -> None:
-                userA = create_user()
-                await userA.open('/')
-                userB = create_user()
-                await userB.open('/')
+                user1 = create_user()
+                await user1.open('/')
+                user2 = create_user()
+                await user2.open('/')
 
-                userA.find(ui.input).type('from A').trigger('keydown.enter')
-                await userB.should_see('from A')
-                userB.find(ui.input).type('from B').trigger('keydown.enter')
-                await userA.should_see('from A')
-                await userA.should_see('from B')
+                user1.find(ui.input).type('from A').trigger('keydown.enter')
+                await user2.should_see('from A')
+                user2.find(ui.input).type('from B').trigger('keydown.enter')
+                await user1.should_see('from A')
+                await user1.should_see('from B')
             ```
         ''')
 

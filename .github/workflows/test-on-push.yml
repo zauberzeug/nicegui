@@ -19,9 +19,8 @@ jobs:
       python-versions: '["3.9"]'
       scope: '["pytest"]'
 
-  slack:
+  ci-gate:
+    runs-on: ubuntu-latest
     needs: [check, test]
-    uses: ./.github/workflows/_slack.yml
-    with:
-      workflow-name: "NiceGUI Push"
-    secrets: inherit
+    steps:
+      - run: echo "Gate passed"
