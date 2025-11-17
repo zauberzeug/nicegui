@@ -1227,7 +1227,7 @@ def test_navigation_not_crashing_for_root_pages_with_remaining_path(screen: Scre
     def root():
         ui.sub_pages({
             '/': lambda: ui.link('other/1', '/other/1'),
-            '/other': lambda: ui.label('other page')
+            '/other': lambda: ui.label('other page'),
         })
 
     screen.ui_run_kwargs['root'] = root
