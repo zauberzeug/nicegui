@@ -22,6 +22,7 @@ class Tree(FilterElement):
         """Tree
 
         Display hierarchical data using Quasar's `QTree <https://quasar.dev/vue-components/tree>`_ component.
+        Updates can be pushed to the tree by updating ``.props['nodes']``.
 
         If using IDs, make sure they are unique within the whole tree.
 

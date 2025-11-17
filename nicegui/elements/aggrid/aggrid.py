@@ -29,6 +29,7 @@ class AgGrid(Element, component='aggrid.js', esm={'nicegui-aggrid': 'dist'}, def
         """AG Grid
 
         An element to create a grid using `AG Grid <https://www.ag-grid.com/>`_.
+        Updates can be pushed to the grid by updating the ``options`` property.
 
         The methods ``run_grid_method`` and ``run_row_method`` can be used to interact with the AG Grid instance on the client.
 

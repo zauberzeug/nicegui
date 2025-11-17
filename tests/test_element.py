@@ -426,3 +426,36 @@ def test_no_cyclic_references_when_deleting_clients(screen: Screen):
     screen.close()
     screen.wait(1.5)
     assert len(labels) == 0
+
+
+def test_even_special_elements_have_an_html_id(screen: Screen):
+
+    @ui.page('/')
+    def page():
+        elements = [
+            ui.input(),
+            ui.textarea(),
+            ui.number(),
+            ui.date_input(),
+            ui.time_input(),
+            ui.color_input(),
+            ui.select([]),
+            ui.input_chips(),
+            ui.toggle([]),
+            ui.radio([]),
+            ui.upload(),
+        ]
+        with ui.tabs() as tabs:
+            elements += [ui.tab('One')]
+        with ui.tab_panels(tabs, value='One'):
+            elements += [ui.tab_panel('One')]
+
+        @ui.button('Check IDs').on_click
+        async def check_ids():
+            for element in elements:
+                assert await ui.run_javascript(f'document.getElementById("{element.html_id}") !== null')
+            ui.notify('All IDs found')
+
+    screen.open('/')
+    screen.click('Check IDs')
+    screen.should_contain('All IDs found')
