@@ -5,11 +5,11 @@ import copy
 import difflib
 import re
 import shutil
+import subprocess
 from pathlib import Path
 
 import cssbeautifier
 import rcssmin
-import rjsmin
 import tinycss2
 from tinycss2 import ast
 
@@ -55,6 +55,11 @@ def _extract_headwind_css(quasar_css_path: Path) -> None:
     (STATIC / 'headwind.css').write_text(headwind_css)
 
 
+def _minify_js(input_path: Path, output_path: Path) -> None:
+    subprocess.run(['npx', '--yes', 'terser', str(input_path), '--compress', '--mangle', '--output', str(output_path)],
+                   capture_output=True, text=True, check=True)
+
+
 shutil.copy2(NODE_MODULES / 'vue' / 'dist' / 'vue.esm-browser.js', STATIC / 'vue.esm-browser.js')
 shutil.copy2(NODE_MODULES / 'vue' / 'dist' / 'vue.esm-browser.prod.js', STATIC / 'vue.esm-browser.prod.js')
 
@@ -72,6 +77,6 @@ shutil.copy2(NODE_MODULES / 'socket.io' / 'client-dist' / 'socket.io.min.js.map'
 
 shutil.copy2(NODE_MODULES / 'es-module-shims' / 'dist' / 'es-module-shims.js', STATIC / 'es-module-shims.js')
 
-shutil.copy2(NODE_MODULES / 'sass' / 'sass.default.js', STATIC / 'sass.default.js')
-(STATIC / 'sass.dart.js').write_text(rjsmin.jsmin((NODE_MODULES / 'sass' / 'sass.dart.js').read_text())+'\n')
-(STATIC / 'immutable.es.js').write_text(rjsmin.jsmin((NODE_MODULES / 'immutable' / 'dist' / 'immutable.es.js').read_text())+'\n')
+_minify_js(NODE_MODULES / 'sass' / 'sass.default.js', STATIC / 'sass.default.js')
+_minify_js(NODE_MODULES / 'sass' / 'sass.dart.js', STATIC / 'sass.dart.js')
+_minify_js(NODE_MODULES / 'immutable' / 'dist' / 'immutable.es.js', STATIC / 'immutable.es.js')
