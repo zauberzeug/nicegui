@@ -9,6 +9,7 @@ from pathlib import Path
 
 import cssbeautifier
 import rcssmin
+import rjsmin
 import tinycss2
 from tinycss2 import ast
 
@@ -54,10 +55,6 @@ def _extract_headwind_css(quasar_css_path: Path) -> None:
     (STATIC / 'headwind.css').write_text(headwind_css)
 
 
-def _strip_trailing_whitespace(content: str) -> str:
-    return '\n'.join(line.rstrip() for line in content.splitlines()) + '\n'
-
-
 shutil.copy2(NODE_MODULES / 'vue' / 'dist' / 'vue.esm-browser.js', STATIC / 'vue.esm-browser.js')
 shutil.copy2(NODE_MODULES / 'vue' / 'dist' / 'vue.esm-browser.prod.js', STATIC / 'vue.esm-browser.prod.js')
 
@@ -76,5 +73,5 @@ shutil.copy2(NODE_MODULES / 'socket.io' / 'client-dist' / 'socket.io.min.js.map'
 shutil.copy2(NODE_MODULES / 'es-module-shims' / 'dist' / 'es-module-shims.js', STATIC / 'es-module-shims.js')
 
 shutil.copy2(NODE_MODULES / 'sass' / 'sass.default.js', STATIC / 'sass.default.js')
-shutil.copy2(NODE_MODULES / 'sass' / 'sass.dart.js', STATIC / 'sass.dart.js')
-(STATIC / 'immutable.es.js').write_text(_strip_trailing_whitespace((NODE_MODULES / 'immutable' / 'dist' / 'immutable.es.js').read_text()))
+(STATIC / 'sass.dart.js').write_text(rjsmin.jsmin((NODE_MODULES / 'sass' / 'sass.dart.js').read_text())+'\n')
+(STATIC / 'immutable.es.js').write_text(rjsmin.jsmin((NODE_MODULES / 'immutable' / 'dist' / 'immutable.es.js').read_text())+'\n')
