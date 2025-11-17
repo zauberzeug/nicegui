@@ -197,3 +197,8 @@ disable = [
     "W0718", # Catching too general exception
     "W1203", # Use % formatting in logging functions
 ]
+
+[tool.codespell]
+skip = '*.min.js,*.min.js.map,*.prod.js,*.lock'
+check-hidden = true
+ignore-words-list = 'simpy'
