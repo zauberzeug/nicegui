@@ -76,7 +76,7 @@
       <span>{{ translations.message_too_long }}</span>
       <span>{{ translations.message_too_long_body }}</span>
     </div>
-    <script type="module">
+    <script type="module" nonce="{{ nonce }}">
       const app = createApp(parseElements(String.raw`{{ elements | safe }}`), {
         version: "{{ version }}",
         prefix: "{{ prefix | safe }}",
