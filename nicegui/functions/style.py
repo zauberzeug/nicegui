@@ -1,7 +1,7 @@
 from pathlib import Path
 from typing import Union
 
-from .. import helpers
+from .. import helpers, json
 from .html import add_head_html
 
 
@@ -31,13 +31,13 @@ def add_scss(content: Union[str, Path], *, indented: bool = False, shared: bool 
     :param indented: whether the content is indented (SASS) or not (SCSS) (default: `False`)
     :param shared: whether to add the code to all pages (default: ``False``, *added in version 2.14.0*)
     """
-    if helpers.is_file(content):
-        content = Path(content).read_text(encoding='utf-8')
+    content = Path(content).read_text(encoding='utf-8') if helpers.is_file(content) else str(content).strip()
+    syntax = 'indented' if indented else 'scss'
     add_head_html(f'''
         <script type="module">
-            import * as sass from 'sass';
-            const style = document.createElement('style');
-            style.textContent = sass.compileString({str(content).strip()!r}, {{syntax: '{'indented' if indented else 'scss'}'}}).css;
+            import * as sass from "sass";
+            const style = document.createElement("style");
+            style.textContent = sass.compileString({json.dumps(content)}, {{syntax: "{syntax}"}}).css;
             document.head.appendChild(style);
         </script>
     ''', shared=shared)
