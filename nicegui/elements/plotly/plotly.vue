@@ -32,7 +32,7 @@ export default {
       if (options.config?.responsive === true) options.config.responsive = undefined;
 
       // re-use plotly instance if config is the same
-      if (JSON.stringify(options.config) == JSON.stringify(this.last_options.config)) {
+      if (this.last_options && JSON.stringify(options.config) === JSON.stringify(this.last_options.config)) {
         this.Plotly.react(this.$el, this.options, options.config);
       } else {
         this.Plotly.newPlot(this.$el, this.options, options.config);
@@ -82,7 +82,7 @@ export default {
   },
   data() {
     return {
-      last_options: {},
+      last_options: null,
     };
   },
   props: {
