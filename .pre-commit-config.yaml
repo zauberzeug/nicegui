@@ -5,12 +5,12 @@ default_stages: [pre-commit]
 
 repos:
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.12.7
+    rev: v0.14.5
     hooks:
-      - id: ruff
+      - id: ruff-check
         args: [--fix]
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v5.0.0
+    rev: v6.0.0
     hooks:
       - id: trailing-whitespace
         exclude: &exclusions |
@@ -31,7 +31,6 @@ repos:
         exclude: *exclusions
       - id: double-quote-string-fixer
   - repo: https://github.com/codespell-project/codespell
-    # Configuration for codespell is in .pre-commit-config.yaml
     rev: v2.4.1
     hooks:
       - id: codespell
@@ -44,8 +43,8 @@ repos:
             .*/package-lock.json|
             nicegui/static/es-module-shims\.js|
             nicegui/static/vue\..*|
-            nicegui/static/lang/.*|
             nicegui/static/quasar\..*|
+            nicegui/translations\.py|
             website/static/fuse\.js\@.*|
           )$
         additional_dependencies:

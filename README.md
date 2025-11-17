@@ -151,4 +151,3 @@ Key architectural decisions:
 - **Real-time communication**: WebSocket connection is established after initial page load, kept open for client-server communication
 - **User interactions**: All UI events are sent to backend and invoke Python functions, which can then generate UI updates
 - **Outbox**: Accumulates UI updates and sends them in batches to the client
-I am resetted

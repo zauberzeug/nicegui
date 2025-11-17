@@ -199,9 +199,6 @@ disable = [
 ]
 
 [tool.codespell]
-# Ref: https://github.com/codespell-project/codespell#using-a-config-file
-skip = '.git*,*.svg,package-lock.json,*.lock,*.css,*.min.*,*.map,dist,lang,*.prod.js,fuse.js*,quasar.*.js,vue.*.js,es-module-shims.js'
+skip = '*.min.js,*.min.js.map,*.prod.js,*.lock'
 check-hidden = true
-# ignore all inCased constructs
-ignore-regex = '\b[a-z0-9]+[A-Z][a-zA-Z0-9]*\b'
-ignore-words-list = 'simpy,medias'
+ignore-words-list = 'simpy'
