@@ -64,6 +64,11 @@ class EChartPointClickEventArguments(UiEventArguments):
 
 
 @dataclass(**KWONLY_SLOTS)
+class MermaidNodeClickEventArguments(UiEventArguments):
+    node_id: str
+
+
+@dataclass(**KWONLY_SLOTS)
 class SceneClickHit:
     object_id: str
     object_name: str

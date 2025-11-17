@@ -225,15 +225,15 @@ def table_from_polars_demo():
 
 
 @doc.demo('Adding rows', '''
-    It's simple to add new rows with the `add_row(dict)` and `add_rows(list[dict])` methods.
+    It's simple to add new rows by updating the `rows` property.
     With the "virtual-scroll" prop set, the table can be programmatically scrolled with the `scrollTo` JavaScript function.
 ''')
 def adding_rows():
     from datetime import datetime
 
     def add():
-        table.add_row({'date': datetime.now().strftime('%c')})
-        table.run_method('scrollTo', len(table.rows)-1)
+        table.rows.append({'date': datetime.now().strftime('%c')})
+        table.run_method('scrollTo', len(table.rows) - 1)
 
     columns = [{'name': 'date', 'label': 'Date', 'field': 'date'}]
     table = ui.table(columns=columns, rows=[]).classes('h-52').props('virtual-scroll')

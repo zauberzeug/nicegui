@@ -89,7 +89,9 @@ class SubPagesRouter:
 
     def _other_page_builder_matches_path(self, path: str, client: Client) -> bool:
         """Check if there is any other matching page builder than the one for this client."""
-        client_route = client.request.scope['route']
+        client_route = client.request.scope.get('route')
+        if client_route is None:
+            return False  # NOTE: requests handled by 404 handler (e.g., root pages) have no route key
         client_func = getattr(client_route.endpoint, '__func__', client_route.endpoint)
 
         other_routes = [route for route in core.app.routes if isinstance(route, Route)]

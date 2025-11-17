@@ -46,10 +46,10 @@ async def test_multiple_pages(create_user: Callable[[], User]) -> None:
 async def test_source_element(user: User) -> None:
     @ui.page('/')
     def index():
-        ui.image('https://via.placeholder.com/150')
+        ui.image('/image.jpg')
 
     await user.open('/')
-    await user.should_see('placeholder.com')
+    await user.should_see('image.jpg')
 
 
 async def test_button_click(user: User) -> None:
@@ -374,7 +374,7 @@ async def test_page_to_string_output_used_in_error_messages(user: User) -> None:
                     - C
                     ''')
         with ui.card().tight():
-            ui.image('https://via.placeholder.com/150')
+            ui.image('/image.jpg')
 
     await user.open('/')
     output = str(user.current_layout)
@@ -389,10 +389,10 @@ q-layout
       Button [markers=second, label=World]
       Icon [markers=third, name=thumbs-up]
     Avatar [icon=star]
-    Input [value=typed, label=some input, placeholder=type here, type=text]
+    Input [value=typed, label=some input, for=c10, placeholder=type here, type=text]
     Markdown [content=## Markdown...]
     Card
-     Image [src=https://via.placehol...]
+     Image [src=/image.jpg]
 '''.strip()
 
 

@@ -387,8 +387,7 @@ class Client:
         self._deleted_event.set()
         self.remove_all_elements()
         self.outbox.stop()
-        if self.id in Client.instances:
-            del Client.instances[self.id]
+        del Client.instances[self.id]
         self._deleted = True
 
     def check_existence(self) -> None:
@@ -406,7 +405,11 @@ class Client:
             stale_clients = [
                 client
                 for client in cls.instances.values()
-                if not client.has_socket_connection and client.created <= time.time() - client_age_threshold
+                if (
+                    not client.has_socket_connection and
+                    not client._delete_tasks and  # pylint: disable=protected-access
+                    client.created <= time.time() - client_age_threshold
+                )
             ]
             for client in stale_clients:
                 log.debug(f'Pruning stale client {client.id}')

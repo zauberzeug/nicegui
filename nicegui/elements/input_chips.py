@@ -43,6 +43,7 @@ class InputChips(LabelElement, ValidationElement, DisableableElement):
         """
         super().__init__(tag='q-select', label=label, value=value or [], on_value_change=on_change, validation=validation)
 
+        self._props['for'] = self.html_id
         self._props['new-value-mode'] = new_value_mode
         self._props['use-input'] = True
         self._props['use-chips'] = True
