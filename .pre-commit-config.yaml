@@ -44,6 +44,7 @@ repos:
             nicegui/static/es-module-shims\.js|
             nicegui/static/vue\..*|
             nicegui/static/quasar\..*|
+            nicegui/static/sass\..*|
             nicegui/translations\.py|
             website/static/fuse\.js\@.*|
           )$
