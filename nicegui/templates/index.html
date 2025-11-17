@@ -53,7 +53,7 @@
     {% if tailwind %}
     <script defer src="{{ prefix | safe }}/_nicegui/{{version}}/static/tailwindcss.min.js"></script>
     {% endif %}
-    <script type="module">
+    <script type="module" nonce="{{ nonce }}">
       import * as Vue from "vue";
       globalThis.Vue = Vue;
     </script>
@@ -72,7 +72,6 @@
       <span>{{ translations.connection_lost }}</span>
       <span>{{ translations.trying_to_reconnect }}</span>
     </div>
-    <script type="module" nonce="{{ nonce }}">
     <div id="too_long_message_popup" class="nicegui-error-popup" aria-hidden="true">
       <span>{{ translations.message_too_long }}</span>
       <span>{{ translations.message_too_long_body }}</span>
