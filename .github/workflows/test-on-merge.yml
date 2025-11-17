@@ -23,11 +23,3 @@ jobs:
     needs: [check, test]
     steps:
       - run: echo "Gate passed"
-
-  slack:
-    needs: [check, test]
-    uses: ./.github/workflows/_slack.yml
-    with:
-      workflow-name: "NiceGUI Merge Queue"
-      needs-context: ${{ toJson(needs) }}
-    secrets: inherit
