@@ -4703,6 +4703,18 @@ files = [
 ]
 
 [[package]]
+name = "secweb"
+version = "1.25.2"
+description = "Secweb is a pack of security middlewares for fastApi and starlette servers it includes CSP, HSTS, and many more"
+optional = false
+python-versions = ">=3.8"
+groups = ["main"]
+files = [
+    {file = "secweb-1.25.2-py3-none-any.whl", hash = "sha256:73282af68d53e7f18d5ef9cd17b1d94cbb08271d8ab4fafba604978afa334114"},
+    {file = "secweb-1.25.2.tar.gz", hash = "sha256:d0b5325ecb5c1977aa296849530cf25f0517388ca12b98c4dcfe6cd65c22fbb0"},
+]
+
+[[package]]
 name = "selenium"
 version = "4.36.0"
 description = "Official Python bindings for Selenium WebDriver"
@@ -5758,4 +5770,4 @@ sass = ["libsass"]
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.9"
-content-hash = "28faa44617fe650e73bf260e08d68ffe595f3928347c86b1a4f3d9b84d561f12"
+content-hash = "a724323a35a0dadc2ade6ccabdb0a0d4f1c3a7d3bfb5bac22a24ddb28cc053c2"

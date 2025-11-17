@@ -1,10 +1,10 @@
 from pathlib import Path
 from typing import Union
 
-from .mixins.source_element import SourceElement
+from ..mixins.source_element import SourceElement
 
 
-class Audio(SourceElement, component='audio.js'):
+class Audio(SourceElement, component='dist/audio.build.js'):
     SOURCE_IS_MEDIA_FILE = True
 
     def __init__(self, src: Union[str, Path], *,

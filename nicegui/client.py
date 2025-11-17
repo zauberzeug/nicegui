@@ -12,6 +12,7 @@ from typing import TYPE_CHECKING, Any, Callable, ClassVar
 from fastapi import Request
 from fastapi.responses import Response
 from fastapi.templating import Jinja2Templates
+from Secweb.ContentSecurityPolicy import Nonce_Processor  # type: ignore
 from typing_extensions import Self
 
 from . import background_tasks, binding, core, helpers, json, storage
@@ -82,6 +83,8 @@ class Client:
 
         self.page = page
         self.outbox = Outbox(self)
+
+        self.nonce = Nonce_Processor()
 
         with Element('q-layout', _client=self).props('view="hhh lpr fff"').classes('nicegui-layout') as self.layout:
             with Element('q-page-container') as self.page_container:
@@ -183,6 +186,7 @@ class Client:
                 'socket_io_js_query_params': socket_io_js_query_params,
                 'socket_io_js_extra_headers': core.app.config.socket_io_js_extra_headers,
                 'socket_io_js_transports': core.app.config.socket_io_js_transports,
+                'nonce': self.nonce,
             },
             status_code=status_code,
             headers={'Cache-Control': 'no-store', 'X-NiceGUI-Content': 'page'},

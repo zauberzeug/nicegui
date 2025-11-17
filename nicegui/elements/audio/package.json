@@ -1,0 +1,17 @@
+{
+  "name": "nicegui-audio-bundle",
+  "version": "1.0.0",
+  "description": "Audio component bundling for NiceGUI",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "vite build",
+    "clean": "rimraf ./dist/*"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^6.0.1",
+    "rimraf": "^6.1.0",
+    "terser": "^5.44.0",
+    "vite": "^7.1.11"
+  }
+}
