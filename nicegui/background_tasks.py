@@ -2,8 +2,8 @@
 from __future__ import annotations
 
 import asyncio
-from collections.abc import Awaitable, Coroutine, Generator
-from typing import Any, Callable, TypeVar, cast
+from collections.abc import Awaitable, Callable, Coroutine, Generator
+from typing import Any, TypeVar, cast
 
 from . import core
 from .logging import log

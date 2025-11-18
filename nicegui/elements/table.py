@@ -1,5 +1,7 @@
+from __future__ import annotations
+
 import importlib.util
-from typing import TYPE_CHECKING, Any, Literal, Optional, Union
+from typing import TYPE_CHECKING, Any, Literal
 
 from typing_extensions import Self
 
@@ -31,14 +33,14 @@ class Table(FilterElement, component='table.js'):
     def __init__(self,
                  *,
                  rows: list[dict],
-                 columns: Optional[list[dict]] = None,
-                 column_defaults: Optional[dict] = None,
+                 columns: list[dict] | None = None,
+                 column_defaults: dict | None = None,
                  row_key: str = 'id',
-                 title: Optional[str] = None,
+                 title: str | None = None,
                  selection: Literal[None, 'single', 'multiple'] = None,
-                 pagination: Optional[Union[int, dict]] = None,
-                 on_select: Optional[Handler[TableSelectionEventArguments]] = None,
-                 on_pagination_change: Optional[Handler[ValueChangeEventArguments]] = None,
+                 pagination: int | dict | None = None,
+                 on_select: Handler[TableSelectionEventArguments] | None = None,
+                 on_pagination_change: Handler[ValueChangeEventArguments] | None = None,
                  ) -> None:
         """Table
 
@@ -141,14 +143,14 @@ class Table(FilterElement, component='table.js'):
 
     @classmethod
     def from_pandas(cls,
-                    df: 'pd.DataFrame', *,
-                    columns: Optional[list[dict]] = None,
-                    column_defaults: Optional[dict] = None,
+                    df: pd.DataFrame, *,
+                    columns: list[dict] | None = None,
+                    column_defaults: dict | None = None,
                     row_key: str = 'id',
-                    title: Optional[str] = None,
-                    selection: Optional[Literal['single', 'multiple']] = None,
-                    pagination: Optional[Union[int, dict]] = None,
-                    on_select: Optional[Handler[TableSelectionEventArguments]] = None) -> Self:
+                    title: str | None = None,
+                    selection: Literal['single', 'multiple'] | None = None,
+                    pagination: int | dict | None = None,
+                    on_select: Handler[TableSelectionEventArguments] | None = None) -> Self:
         """Create a table from a Pandas DataFrame.
 
         Note:
@@ -185,14 +187,14 @@ class Table(FilterElement, component='table.js'):
 
     @classmethod
     def from_polars(cls,
-                    df: 'pl.DataFrame', *,
-                    columns: Optional[list[dict]] = None,
-                    column_defaults: Optional[dict] = None,
+                    df: pl.DataFrame, *,
+                    columns: list[dict] | None = None,
+                    column_defaults: dict | None = None,
                     row_key: str = 'id',
-                    title: Optional[str] = None,
-                    selection: Optional[Literal['single', 'multiple']] = None,
-                    pagination: Optional[Union[int, dict]] = None,
-                    on_select: Optional[Handler[TableSelectionEventArguments]] = None) -> Self:
+                    title: str | None = None,
+                    selection: Literal['single', 'multiple'] | None = None,
+                    pagination: int | dict | None = None,
+                    on_select: Handler[TableSelectionEventArguments] | None = None) -> Self:
         """Create a table from a Polars DataFrame.
 
         Note:
@@ -226,10 +228,10 @@ class Table(FilterElement, component='table.js'):
         return table
 
     def update_from_pandas(self,
-                           df: 'pd.DataFrame', *,
+                           df: pd.DataFrame, *,
                            clear_selection: bool = True,
-                           columns: Optional[list[dict]] = None,
-                           column_defaults: Optional[dict] = None) -> None:
+                           columns: list[dict] | None = None,
+                           column_defaults: dict | None = None) -> None:
         """Update the table from a Pandas DataFrame.
 
         See `from_pandas()` for more information about the conversion of non-serializable columns.
@@ -246,10 +248,10 @@ class Table(FilterElement, component='table.js'):
         self._update_table(rows, columns_from_df, clear_selection, columns, column_defaults)
 
     def update_from_polars(self,
-                           df: 'pl.DataFrame', *,
+                           df: pl.DataFrame, *,
                            clear_selection: bool = True,
-                           columns: Optional[list[dict]] = None,
-                           column_defaults: Optional[dict] = None) -> None:
+                           columns: list[dict] | None = None,
+                           column_defaults: dict | None = None) -> None:
         """Update the table from a Polars DataFrame.
 
         :param df: Polars DataFrame
@@ -264,8 +266,8 @@ class Table(FilterElement, component='table.js'):
                       rows: list[dict],
                       columns_from_df: list[dict],
                       clear_selection: bool,
-                      columns: Optional[list[dict]],
-                      column_defaults: Optional[dict]) -> None:
+                      columns: list[dict] | None,
+                      column_defaults: dict | None) -> None:
         """Helper function to update the table."""
         self.rows[:] = rows
         if column_defaults is not None:
@@ -276,7 +278,7 @@ class Table(FilterElement, component='table.js'):
             self.selected.clear()
 
     @staticmethod
-    def _pandas_df_to_rows_and_columns(df: 'pd.DataFrame') -> tuple[list[dict], list[dict]]:
+    def _pandas_df_to_rows_and_columns(df: pd.DataFrame) -> tuple[list[dict], list[dict]]:
         import pandas as pd  # pylint: disable=import-outside-toplevel
 
         def is_special_dtype(dtype):
@@ -298,7 +300,7 @@ class Table(FilterElement, component='table.js'):
         return df.to_dict('records'), [{'name': col, 'label': col, 'field': col} for col in df.columns]
 
     @staticmethod
-    def _polars_df_to_rows_and_columns(df: 'pl.DataFrame') -> tuple[list[dict], list[dict]]:
+    def _polars_df_to_rows_and_columns(df: pl.DataFrame) -> tuple[list[dict], list[dict]]:
         return df.to_dicts(), [{'name': col, 'label': col, 'field': col} for col in df.columns]
 
     @property
@@ -320,12 +322,12 @@ class Table(FilterElement, component='table.js'):
         self._props['columns'] = self._normalize_columns(value)
 
     @property
-    def column_defaults(self) -> Optional[dict]:
+    def column_defaults(self) -> dict | None:
         """Default column properties."""
         return self._column_defaults
 
     @column_defaults.setter
-    def column_defaults(self, value: Optional[dict]) -> None:
+    def column_defaults(self, value: dict | None) -> None:
         self._column_defaults = value
         self.columns = self.columns  # re-normalize columns
 

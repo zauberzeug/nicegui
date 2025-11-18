@@ -1,4 +1,6 @@
-from typing import Any, Optional
+from __future__ import annotations
+
+from typing import Any
 
 from ..events import Handler, ValueChangeEventArguments
 from .mixins.disableable_element import DisableableElement
@@ -11,9 +13,9 @@ class Editor(ValueElement, DisableableElement, component='editor.js', default_cl
 
     def __init__(self,
                  *,
-                 placeholder: Optional[str] = None,
+                 placeholder: str | None = None,
                  value: str = '',
-                 on_change: Optional[Handler[ValueChangeEventArguments]] = None,
+                 on_change: Handler[ValueChangeEventArguments] | None = None,
                  ) -> None:
         """Editor
 

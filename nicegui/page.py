@@ -2,9 +2,10 @@ from __future__ import annotations
 
 import asyncio
 import inspect
+from collections.abc import Callable
 from functools import wraps
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Callable
+from typing import TYPE_CHECKING, Any
 
 from fastapi import HTTPException, Request, Response
 

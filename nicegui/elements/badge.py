@@ -1,4 +1,5 @@
-from typing import Optional
+
+from __future__ import annotations
 
 from .mixins.color_elements import BackgroundColorElement, TextColorElement
 from .mixins.text_element import TextElement
@@ -9,8 +10,8 @@ class Badge(TextElement, BackgroundColorElement, TextColorElement):
 
     def __init__(self,
                  text: str = '', *,
-                 color: Optional[str] = 'primary',
-                 text_color: Optional[str] = None,
+                 color: str | None = 'primary',
+                 text_color: str | None = None,
                  outline: bool = False) -> None:
         """Badge
 

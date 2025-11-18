@@ -1,4 +1,5 @@
-from typing import Optional
+
+from __future__ import annotations
 
 from typing_extensions import Self
 
@@ -9,7 +10,7 @@ from .mixins.text_element import TextElement
 
 class Item(DisableableElement):
 
-    def __init__(self, text: str = '', *, on_click: Optional[Handler[ClickEventArguments]] = None) -> None:
+    def __init__(self, text: str = '', *, on_click: Handler[ClickEventArguments] | None = None) -> None:
         """List Item
 
         Creates a clickable list item based on Quasar's

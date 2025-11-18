@@ -1,4 +1,5 @@
-from typing import Optional
+
+from __future__ import annotations
 
 from ..events import ClickEventArguments, Handler
 from .context_menu import ContextMenu
@@ -43,7 +44,7 @@ class MenuItem(Item):
 
     def __init__(self,
                  text: str = '',
-                 on_click: Optional[Handler[ClickEventArguments]] = None, *,
+                 on_click: Handler[ClickEventArguments] | None = None, *,
                  auto_close: bool = True,
                  ) -> None:
         """Menu Item

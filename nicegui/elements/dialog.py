@@ -1,5 +1,7 @@
+from __future__ import annotations
+
 import asyncio
-from typing import Any, Optional
+from typing import Any
 
 from .mixins.value_element import ValueElement
 
@@ -21,7 +23,7 @@ class Dialog(ValueElement, component='dialog.js'):
         """
         super().__init__(value=value, on_value_change=None)
         self._result: Any = None
-        self._submitted: Optional[asyncio.Event] = None
+        self._submitted: asyncio.Event | None = None
 
     @property
     def submitted(self) -> asyncio.Event:

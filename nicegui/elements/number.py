@@ -1,4 +1,6 @@
-from typing import Any, Optional, Union
+from __future__ import annotations
+
+from typing import Any
 
 from ..events import GenericEventArguments, Handler, ValueChangeEventArguments
 from .mixins.disableable_element import DisableableElement
@@ -10,18 +12,18 @@ class Number(LabelElement, ValidationElement, DisableableElement):
     LOOPBACK = False
 
     def __init__(self,
-                 label: Optional[str] = None, *,
-                 placeholder: Optional[str] = None,
-                 value: Optional[float] = None,
-                 min: Optional[float] = None,  # pylint: disable=redefined-builtin
-                 max: Optional[float] = None,  # pylint: disable=redefined-builtin
-                 precision: Optional[int] = None,
-                 step: Optional[float] = None,
-                 prefix: Optional[str] = None,
-                 suffix: Optional[str] = None,
-                 format: Optional[str] = None,  # pylint: disable=redefined-builtin
-                 on_change: Optional[Handler[ValueChangeEventArguments]] = None,
-                 validation: Optional[Union[ValidationFunction, ValidationDict]] = None,
+                 label: str | None = None, *,
+                 placeholder: str | None = None,
+                 value: float | None = None,
+                 min: float | None = None,  # pylint: disable=redefined-builtin
+                 max: float | None = None,  # pylint: disable=redefined-builtin
+                 precision: int | None = None,
+                 step: float | None = None,
+                 prefix: str | None = None,
+                 suffix: str | None = None,
+                 format: str | None = None,  # pylint: disable=redefined-builtin
+                 on_change: Handler[ValueChangeEventArguments] | None = None,
+                 validation: ValidationFunction | ValidationDict | None = None,
                  ) -> None:
         """Number Input
 
@@ -90,12 +92,12 @@ class Number(LabelElement, ValidationElement, DisableableElement):
         self.sanitize()
 
     @property
-    def precision(self) -> Optional[int]:
+    def precision(self) -> int | None:
         """The number of decimal places allowed (default: no limit, negative: decimal places before the dot)."""
         return self._precision
 
     @precision.setter
-    def precision(self, value: Optional[int]) -> None:
+    def precision(self, value: int | None) -> None:
         self._precision = value
         self.sanitize()
 

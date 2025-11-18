@@ -1,4 +1,4 @@
-from typing import Optional
+from __future__ import annotations
 
 from .mixins.color_elements import BackgroundColorElement, TextColorElement
 from .mixins.icon_element import IconElement
@@ -8,11 +8,11 @@ class Avatar(IconElement, BackgroundColorElement, TextColorElement):
     TEXT_COLOR_PROP = 'text-color'
 
     def __init__(self,
-                 icon: Optional[str] = None, *,
-                 color: Optional[str] = 'primary',
-                 text_color: Optional[str] = None,
-                 size: Optional[str] = None,
-                 font_size: Optional[str] = None,
+                 icon: str | None = None, *,
+                 color: str | None = 'primary',
+                 text_color: str | None = None,
+                 size: str | None = None,
+                 font_size: str | None = None,
                  square: bool = False,
                  rounded: bool = False,
                  ) -> None:

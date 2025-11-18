@@ -1,5 +1,6 @@
+from __future__ import annotations
+
 from pathlib import Path
-from typing import Optional
 
 import pytest
 
@@ -18,7 +19,7 @@ def pytest_configure(config: pytest.Config) -> None:
     config.addinivalue_line('markers', 'nicegui_main_file: specify the main file for the test')
 
 
-def get_path_to_main_file(request: pytest.FixtureRequest) -> Optional[Path]:
+def get_path_to_main_file(request: pytest.FixtureRequest) -> Path | None:
     """Get the path to the main file from the test marker or global config."""
     marker = next((m for m in request.node.iter_markers('nicegui_main_file')), None)
     main_file = marker.args[0] if marker else request.config.getini('main_file')

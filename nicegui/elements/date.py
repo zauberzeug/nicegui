@@ -1,4 +1,4 @@
-from typing import Optional, Union
+from __future__ import annotations
 
 from ..events import Handler, ValueChangeEventArguments
 from .mixins.disableable_element import DisableableElement
@@ -8,12 +8,10 @@ from .mixins.value_element import ValueElement
 class Date(ValueElement, DisableableElement):
 
     def __init__(self,
-                 value: Optional[
-                     Union[str, dict[str, str], list[str], list[Union[str, dict[str, str]]]]
-                 ] = None,
+                 value: str | dict[str, str] | list[str] | list[str | dict[str, str]] | None = None,
                  *,
                  mask: str = 'YYYY-MM-DD',
-                 on_change: Optional[Handler[ValueChangeEventArguments]] = None) -> None:
+                 on_change: Handler[ValueChangeEventArguments] | None = None) -> None:
         """Date Picker
 
         This element is based on Quasar's `QDate <https://quasar.dev/vue-components/date>`_ component.

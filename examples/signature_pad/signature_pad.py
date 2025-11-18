@@ -1,11 +1,11 @@
-from typing import Optional
+from __future__ import annotations
 
 from nicegui import ui
 
 
 class SignaturePad(ui.element, component='signature_pad.js', esm={'signature_pad': 'dist'}):
 
-    def __init__(self, options: Optional[dict] = None) -> None:
+    def __init__(self, options: dict | None = None) -> None:
         """SignaturePad
 
         An element that integrates the `Signature Pad library <https://szimek.github.io/signature_pad/>`_.

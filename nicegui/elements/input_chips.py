@@ -1,4 +1,6 @@
-from typing import Any, Literal, Optional, Union
+from __future__ import annotations
+
+from typing import Any, Literal
 
 from ..events import GenericEventArguments, Handler, ValueChangeEventArguments
 from .mixins.disableable_element import DisableableElement
@@ -9,13 +11,13 @@ from .mixins.validation_element import ValidationDict, ValidationElement, Valida
 class InputChips(LabelElement, ValidationElement, DisableableElement):
 
     def __init__(self,
-                 label: Optional[str] = None,
+                 label: str | None = None,
                  *,
-                 value: Optional[list[str]] = None,
-                 on_change: Optional[Handler[ValueChangeEventArguments]] = None,
+                 value: list[str] | None = None,
+                 on_change: Handler[ValueChangeEventArguments] | None = None,
                  new_value_mode: Literal['add', 'add-unique', 'toggle'] = 'toggle',
                  clearable: bool = False,
-                 validation: Optional[Union[ValidationFunction, ValidationDict]] = None,
+                 validation: ValidationFunction | ValidationDict | None = None,
                  ) -> None:
         """Input Chips
 

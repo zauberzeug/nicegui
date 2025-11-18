@@ -1,5 +1,6 @@
+from __future__ import annotations
+
 import io
-from typing import Optional, Union
 
 from .. import json, optional_features
 from ..logging import log
@@ -12,7 +13,7 @@ except ImportError:
     pass
 
 
-async def read() -> Optional[str]:
+async def read() -> str | None:
     """Read text from the clipboard.
 
     Note: This function only works in secure contexts (HTTPS or localhost).
@@ -47,7 +48,7 @@ def write(text: str) -> None:
     ''')
 
 
-async def read_image() -> Union['PIL_Image.Image', None]:
+async def read_image() -> PIL_Image.Image | None:
     """Read PIL images from the clipboard.
 
     Note: This function only works in secure contexts (HTTPS or localhost) and requires Pillow to be installed.

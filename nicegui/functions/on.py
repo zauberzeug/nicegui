@@ -1,13 +1,14 @@
+from __future__ import annotations
+
 from collections.abc import Sequence
-from typing import Optional, Union
 
 from ..context import context
 from ..events import GenericEventArguments, Handler
 
 
 def on(type: str,  # pylint: disable=redefined-builtin
-       handler: Optional[Handler[GenericEventArguments]] = None,
-       args: Union[None, Sequence[str], Sequence[Optional[Sequence[str]]]] = None, *,
+       handler: Handler[GenericEventArguments] | None = None,
+       args: None | Sequence[str] | Sequence[Sequence[str] | None] = None, *,
        throttle: float = 0.0,
        leading_events: bool = True,
        trailing_events: bool = True,

@@ -1,11 +1,12 @@
+from __future__ import annotations
+
 from pathlib import Path
-from typing import Union
 
 from .. import helpers, json
 from .html import add_head_html
 
 
-def add_css(content: Union[str, Path], *, shared: bool = False) -> None:
+def add_css(content: str | Path, *, shared: bool = False) -> None:
     """Add CSS style definitions to the page.
 
     This function can be used to add CSS style definitions to the head of the HTML page.
@@ -20,7 +21,7 @@ def add_css(content: Union[str, Path], *, shared: bool = False) -> None:
     add_head_html(f'<style>{content}</style>', shared=shared)
 
 
-def add_scss(content: Union[str, Path], *, indented: bool = False, shared: bool = False) -> None:  # DEPRECATED
+def add_scss(content: str | Path, *, indented: bool = False, shared: bool = False) -> None:  # DEPRECATED
     """Add SCSS style definitions to the page (deprecated).
 
     This function can be used to add SCSS style definitions to the head of the HTML page.
@@ -45,7 +46,7 @@ def add_scss(content: Union[str, Path], *, indented: bool = False, shared: bool 
     ''', shared=shared)
 
 
-def add_sass(content: Union[str, Path], *, shared: bool = False) -> None:  # DEPRECATED
+def add_sass(content: str | Path, *, shared: bool = False) -> None:  # DEPRECATED
     """Add SASS style definitions to the page (deprecated).
 
     This function can be used to add SASS style definitions to the head of the HTML page.

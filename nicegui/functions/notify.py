@@ -1,4 +1,6 @@
-from typing import Any, Literal, Optional, Union
+from __future__ import annotations
+
+from typing import Any, Literal
 
 from ..context import context
 
@@ -21,15 +23,9 @@ def notify(message: Any, *,
                'right',
                'center',
            ] = 'bottom',
-           close_button: Union[bool, str] = False,
-           type: Optional[Literal[  # pylint: disable=redefined-builtin
-               'positive',
-               'negative',
-               'warning',
-               'info',
-               'ongoing',
-           ]] = None,
-           color: Optional[str] = None,
+           close_button: bool | str = False,
+           type: Literal['positive', 'negative', 'warning', 'info', 'ongoing'] | None = None,
+           color: str | None = None,
            multi_line: bool = False,
            **kwargs: Any,
            ) -> None:

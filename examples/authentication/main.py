@@ -5,7 +5,7 @@ Please see the `OAuth2 example at FastAPI <https://fastapi.tiangolo.com/tutorial
 use the great `Authlib package <https://docs.authlib.org/en/v0.13/client/starlette.html#using-fastapi>`_ to implement a classing real authentication system.
 Here we just demonstrate the NiceGUI integration.
 """
-from typing import Optional
+from __future__ import annotations
 
 from fastapi import Request
 from fastapi.responses import RedirectResponse
@@ -52,7 +52,7 @@ def test_page() -> None:
 
 
 @ui.page('/login')
-def login(redirect_to: str = '/') -> Optional[RedirectResponse]:
+def login(redirect_to: str = '/') -> RedirectResponse | None:
     def try_login() -> None:  # local function to avoid passing username and password as arguments
         if passwords.get(username.value) == password.value:
             app.storage.user.update({'username': username.value, 'authenticated': True})

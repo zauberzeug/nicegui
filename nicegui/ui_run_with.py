@@ -1,6 +1,9 @@
+from __future__ import annotations
+
+from collections.abc import Callable
 from contextlib import asynccontextmanager
 from pathlib import Path
-from typing import Any, Callable, Literal, Optional, Union
+from typing import Any, Literal
 
 from fastapi import FastAPI
 from fastapi.middleware.gzip import GZipMiddleware
@@ -14,22 +17,22 @@ from .nicegui import _shutdown, _startup
 
 def run_with(
     app: FastAPI, *,
-    root: Optional[Callable] = None,
+    root: Callable | None = None,
     title: str = 'NiceGUI',
     viewport: str = 'width=device-width, initial-scale=1',
-    favicon: Optional[Union[str, Path]] = None,
-    dark: Optional[bool] = False,
+    favicon: str | Path | None = None,
+    dark: bool | None = False,
     language: Language = 'en-US',
     binding_refresh_interval: float = 0.1,
     reconnect_timeout: float = 3.0,
     message_history_length: int = 1000,
     cache_control_directives: str = 'public, max-age=31536000, immutable, stale-while-revalidate=31536000',
     mount_path: str = '/',
-    on_air: Optional[Union[str, Literal[True]]] = None,
+    on_air: str | Literal[True] | None = None,
     tailwind: bool = True,
     prod_js: bool = True,
-    storage_secret: Optional[str] = None,
-    session_middleware_kwargs: Optional[dict[str, Any]] = None,
+    storage_secret: str | None = None,
+    session_middleware_kwargs: dict[str, Any] | None = None,
     show_welcome_message: bool = True,
 ) -> None:
     """Run NiceGUI with FastAPI.

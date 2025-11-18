@@ -1,4 +1,5 @@
-from typing import Optional
+
+from __future__ import annotations
 
 from ..events import Handler, ValueChangeEventArguments
 from .mixins.disableable_element import DisableableElement
@@ -11,8 +12,8 @@ class Slider(ValueElement, DisableableElement):
                  min: float,  # pylint: disable=redefined-builtin
                  max: float,  # pylint: disable=redefined-builtin
                  step: float = 1.0,
-                 value: Optional[float] = None,
-                 on_change: Optional[Handler[ValueChangeEventArguments]] = None,
+                 value: float | None = None,
+                 on_change: Handler[ValueChangeEventArguments] | None = None,
                  ) -> None:
         """Slider
 

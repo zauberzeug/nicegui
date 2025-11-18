@@ -1,11 +1,13 @@
+from __future__ import annotations
+
 import re
 import runpy
 import threading
 import time
-from collections.abc import Generator
+from collections.abc import Callable, Generator
 from contextlib import contextmanager
 from pathlib import Path
-from typing import Any, Callable, Optional, Union, overload
+from typing import Any, overload
 from urllib.parse import urlparse
 
 import pytest
@@ -32,10 +34,10 @@ class Screen:
     SCREENSHOT_DIR = Path('screenshots')
     CATCH_JS_ERRORS = True
 
-    def __init__(self, selenium: webdriver.Chrome, caplog: pytest.LogCaptureFixture, request: Optional[pytest.FixtureRequest] = None) -> None:
+    def __init__(self, selenium: webdriver.Chrome, caplog: pytest.LogCaptureFixture, request: pytest.FixtureRequest | None = None) -> None:
         self.selenium = selenium
         self.caplog = caplog
-        self.server_thread: Optional[threading.Thread] = None
+        self.server_thread: threading.Thread | None = None
         self.pytest_request = request
         self.ui_run_kwargs: dict[str, Any] = {'port': self.PORT, 'show': False, 'reload': False}
         self.connected = threading.Event()
@@ -127,7 +129,7 @@ class Screen:
     def wait_for(self, target: Callable[..., bool]) -> None:
         """Wait until the given condition is met."""
 
-    def wait_for(self, target: Union[str, Callable[..., bool]]) -> None:
+    def wait_for(self, target: str | Callable[..., bool]) -> None:
         """Wait until the page contains the given text or the given condition is met."""
         if isinstance(target, str):
             self.should_contain(target)
@@ -259,7 +261,7 @@ class Screen:
         print(f'Storing screenshot to {filename}')
         self.selenium.get_screenshot_as_file(filename)
 
-    def assert_py_logger(self, level: str, message: Union[str, re.Pattern]) -> None:
+    def assert_py_logger(self, level: str, message: str | re.Pattern) -> None:
         """Assert that the Python logger has received a message with the given level and text or regex pattern."""
         try:
             assert self.caplog.records, 'Expected a log message'

@@ -1,4 +1,6 @@
-from typing import Literal, Optional
+from __future__ import annotations
+
+from typing import Literal
 
 from ..element import Element
 
@@ -7,7 +9,7 @@ class Row(Element, default_classes='nicegui-row'):
 
     def __init__(self, *,
                  wrap: bool = True,
-                 align_items: Optional[Literal['start', 'end', 'center', 'baseline', 'stretch']] = None,
+                 align_items: Literal['start', 'end', 'center', 'baseline', 'stretch'] | None = None,
                  ) -> None:
         """Row Element
 

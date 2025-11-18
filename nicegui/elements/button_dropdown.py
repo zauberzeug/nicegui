@@ -1,4 +1,4 @@
-from typing import Optional
+from __future__ import annotations
 
 from typing_extensions import Self
 
@@ -15,12 +15,12 @@ class DropdownButton(IconElement, TextElement, DisableableElement, BackgroundCol
     def __init__(self,
                  text: str = '', *,
                  value: bool = False,
-                 on_value_change: Optional[Handler[ValueChangeEventArguments]] = None,
-                 on_click: Optional[Handler[ClickEventArguments]] = None,
-                 color: Optional[str] = 'primary',
-                 icon: Optional[str] = None,
-                 auto_close: Optional[bool] = False,
-                 split: Optional[bool] = False,
+                 on_value_change: Handler[ValueChangeEventArguments] | None = None,
+                 on_click: Handler[ClickEventArguments] | None = None,
+                 color: str | None = 'primary',
+                 icon: str | None = None,
+                 auto_close: bool | None = False,
+                 split: bool | None = False,
                  ) -> None:
         """Dropdown Button
 

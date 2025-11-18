@@ -1,4 +1,7 @@
-from typing import Callable, Literal, Optional, Union
+from __future__ import annotations
+
+from collections.abc import Callable
+from typing import Literal
 
 from typing_extensions import Self
 
@@ -21,10 +24,10 @@ class EChart(Element, component='echart.js', esm={'nicegui-echart': 'dist'}, def
 
     def __init__(self,
                  options: dict,
-                 on_point_click: Optional[Handler[EChartPointClickEventArguments]] = None, *,
+                 on_point_click: Handler[EChartPointClickEventArguments] | None = None, *,
                  enable_3d: bool = False,
                  renderer: Literal['canvas', 'svg'] = 'canvas',
-                 theme: Optional[Union[str, dict]] = None,
+                 theme: str | dict | None = None,
                  ) -> None:
         """Apache EChart
 
@@ -77,7 +80,7 @@ class EChart(Element, component='echart.js', esm={'nicegui-echart': 'dist'}, def
         return self
 
     @classmethod
-    def from_pyecharts(cls, chart: 'Chart', on_point_click: Optional[Callable] = None) -> Self:
+    def from_pyecharts(cls, chart: Chart, on_point_click: Callable | None = None) -> Self:
         """Create an echart element from a pyecharts object.
 
         :param chart: pyecharts chart object

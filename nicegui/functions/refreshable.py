@@ -1,9 +1,9 @@
 from __future__ import annotations
 
 import asyncio
-from collections.abc import Awaitable
+from collections.abc import Awaitable, Callable
 from dataclasses import dataclass, field
-from typing import Any, Callable, ClassVar, Generic, TypeVar, cast
+from typing import Any, ClassVar, Generic, TypeVar, cast
 
 from typing_extensions import Concatenate, ParamSpec, Self
 

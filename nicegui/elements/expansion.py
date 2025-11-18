@@ -1,4 +1,4 @@
-from typing import Optional
+from __future__ import annotations
 
 from ..events import Handler, ValueChangeEventArguments
 from .mixins.disableable_element import DisableableElement
@@ -11,11 +11,11 @@ class Expansion(IconElement, TextElement, ValueElement, DisableableElement, defa
 
     def __init__(self,
                  text: str = '', *,
-                 caption: Optional[str] = None,
-                 icon: Optional[str] = None,
-                 group: Optional[str] = None,
+                 caption: str | None = None,
+                 icon: str | None = None,
+                 group: str | None = None,
                  value: bool = False,
-                 on_value_change: Optional[Handler[ValueChangeEventArguments]] = None
+                 on_value_change: Handler[ValueChangeEventArguments] | None = None
                  ) -> None:
         """Expansion Element
 

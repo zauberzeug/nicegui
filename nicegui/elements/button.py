@@ -1,5 +1,6 @@
+from __future__ import annotations
+
 import asyncio
-from typing import Optional
 
 from typing_extensions import Self
 
@@ -14,9 +15,9 @@ class Button(IconElement, TextElement, DisableableElement, BackgroundColorElemen
 
     def __init__(self,
                  text: str = '', *,
-                 on_click: Optional[Handler[ClickEventArguments]] = None,
-                 color: Optional[str] = 'primary',
-                 icon: Optional[str] = None,
+                 on_click: Handler[ClickEventArguments] | None = None,
+                 color: str | None = 'primary',
+                 icon: str | None = None,
                  ) -> None:
         """Button
 

@@ -1,5 +1,7 @@
+from __future__ import annotations
+
 from itertools import accumulate, chain, repeat
-from typing import Literal, Optional, get_args
+from typing import Literal, get_args
 
 from nicegui.elements.mixins.disableable_element import DisableableElement
 from nicegui.elements.mixins.value_element import ValueElement
@@ -256,8 +258,8 @@ class CodeMirror(ValueElement, DisableableElement,
         self,
         value: str = '',
         *,
-        on_change: Optional[Handler[ValueChangeEventArguments]] = None,
-        language: Optional[SUPPORTED_LANGUAGES] = None,
+        on_change: Handler[ValueChangeEventArguments] | None = None,
+        language: SUPPORTED_LANGUAGES | None = None,
         theme: SUPPORTED_THEMES = 'basicLight',
         indent: str = ' ' * 4,
         line_wrapping: bool = False,
@@ -320,10 +322,10 @@ class CodeMirror(ValueElement, DisableableElement,
         return self._props['language']
 
     @language.setter
-    def language(self, language: Optional[SUPPORTED_LANGUAGES] = None) -> None:
+    def language(self, language: SUPPORTED_LANGUAGES | None = None) -> None:
         self._props['language'] = language
 
-    def set_language(self, language: Optional[SUPPORTED_LANGUAGES] = None) -> None:
+    def set_language(self, language: SUPPORTED_LANGUAGES | None = None) -> None:
         """Sets the language of the editor (case-insensitive)."""
         self._props['language'] = language
 

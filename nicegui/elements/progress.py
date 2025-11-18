@@ -1,4 +1,5 @@
-from typing import Optional
+
+from __future__ import annotations
 
 from .label import Label as label
 from .mixins.color_elements import TextColorElement
@@ -10,9 +11,9 @@ class LinearProgress(ValueElement, TextColorElement):
 
     def __init__(self,
                  value: float = 0.0, *,
-                 size: Optional[str] = None,
+                 size: str | None = None,
                  show_value: bool = True,
-                 color: Optional[str] = 'primary',
+                 color: str | None = 'primary',
                  ) -> None:
         """Linear Progress
 
@@ -41,7 +42,7 @@ class CircularProgress(ValueElement, TextColorElement):
                  max: float = 1.0,  # pylint: disable=redefined-builtin
                  size: str = 'xl',
                  show_value: bool = True,
-                 color: Optional[str] = 'primary',
+                 color: str | None = 'primary',
                  ) -> None:
         """Circular Progress
 

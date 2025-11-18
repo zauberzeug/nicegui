@@ -1,4 +1,4 @@
-from typing import Optional
+from __future__ import annotations
 
 from .mixins.color_elements import TextColorElement
 from .mixins.name_element import NameElement
@@ -9,8 +9,8 @@ class Icon(NameElement, TextColorElement):
     def __init__(self,
                  name: str,
                  *,
-                 size: Optional[str] = None,
-                 color: Optional[str] = None,
+                 size: str | None = None,
+                 color: str | None = None,
                  ) -> None:
         """Icon
 

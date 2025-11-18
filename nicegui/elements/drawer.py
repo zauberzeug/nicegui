@@ -1,4 +1,6 @@
-from typing import Literal, Optional
+from __future__ import annotations
+
+from typing import Literal
 
 from ..context import context
 from ..helpers import require_top_level_layout
@@ -11,7 +13,7 @@ class Drawer(ValueElement, default_classes='nicegui-drawer'):
 
     def __init__(self,
                  side: DrawerSides, *,
-                 value: Optional[bool] = None,
+                 value: bool | None = None,
                  fixed: bool = True,
                  bordered: bool = False,
                  elevated: bool = False,
@@ -83,7 +85,7 @@ class Drawer(ValueElement, default_classes='nicegui-drawer'):
 class LeftDrawer(Drawer):
 
     def __init__(self, *,
-                 value: Optional[bool] = None,
+                 value: bool | None = None,
                  fixed: bool = True,
                  bordered: bool = False,
                  elevated: bool = False,
@@ -120,7 +122,7 @@ class LeftDrawer(Drawer):
 class RightDrawer(Drawer):
 
     def __init__(self, *,
-                 value: Optional[bool] = None,
+                 value: bool | None = None,
                  fixed: bool = True,
                  bordered: bool = False,
                  elevated: bool = False,

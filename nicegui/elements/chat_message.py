@@ -1,7 +1,8 @@
 from __future__ import annotations
 
 import html
-from typing import Callable, Literal
+from collections.abc import Callable
+from typing import Literal
 
 from .html import Html
 from .mixins.label_element import LabelElement

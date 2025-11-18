@@ -1,7 +1,9 @@
+from __future__ import annotations
+
 import weakref
 from collections.abc import Iterator
 from contextlib import contextmanager
-from typing import TYPE_CHECKING, Generic, Optional, TypeVar
+from typing import TYPE_CHECKING, Generic, TypeVar
 
 from .observables import ObservableDict
 
@@ -43,9 +45,9 @@ class Style(ObservableDict, Generic[T]):
             element.update()
 
     def __call__(self,
-                 add: Optional[str] = None, *,
-                 remove: Optional[str] = None,
-                 replace: Optional[str] = None) -> T:
+                 add: str | None = None, *,
+                 remove: str | None = None,
+                 replace: str | None = None) -> T:
         """Apply, remove, or replace CSS definitions.
 
         Removing or replacing styles can be helpful if the predefined style is not desired.
@@ -66,7 +68,7 @@ class Style(ObservableDict, Generic[T]):
         return element
 
     @staticmethod
-    def parse(text: Optional[str]) -> dict[str, str]:
+    def parse(text: str | None) -> dict[str, str]:
         """Parse a string of styles into a dictionary."""
         result = {}
         for word in (text or '').split(';'):

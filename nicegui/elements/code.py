@@ -1,6 +1,7 @@
+from __future__ import annotations
+
 import asyncio
 import time
-from typing import Optional
 
 from .button import Button as button
 from .markdown import Markdown as markdown
@@ -11,7 +12,7 @@ from .timer import Timer as timer
 
 class Code(ContentElement, component='code.js', default_classes='nicegui-code'):
 
-    def __init__(self, content: str = '', *, language: Optional[str] = 'python') -> None:
+    def __init__(self, content: str = '', *, language: str | None = 'python') -> None:
         """Code
 
         This element displays a code block with syntax highlighting.

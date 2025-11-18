@@ -1,4 +1,6 @@
-from typing import Literal, Optional
+from __future__ import annotations
+
+from typing import Literal
 
 from typing_extensions import Self
 
@@ -16,7 +18,7 @@ class Fab(ValueElement, LabelElement, IconElement, BackgroundColorElement, Disab
                  icon: str, *,
                  value: bool = False,
                  label: str = '',
-                 color: Optional[str] = 'primary',
+                 color: str | None = 'primary',
                  direction: Literal['up', 'down', 'left', 'right'] = 'right',
                  ) -> None:
         """Floating Action Button (FAB)
@@ -50,8 +52,8 @@ class FabAction(LabelElement, IconElement, BackgroundColorElement, DisableableEl
 
     def __init__(self, icon: str, *,
                  label: str = '',
-                 on_click: Optional[Handler[ClickEventArguments]] = None,
-                 color: Optional[str] = 'primary',
+                 on_click: Handler[ClickEventArguments] | None = None,
+                 color: str | None = 'primary',
                  auto_close: bool = True,
                  ) -> None:
         """Floating Action Button Action

@@ -157,6 +157,8 @@ fixable = [
     "Q002",  # bad quotes docstring
     "Q003",  # avoidable escaped quote
     "Q004",  # unnecessary escaped quote
+    "UP007", # PEP 604 union types
+    "UP045", # PEP 604 optional types
 ]
 ignore = [
     "E501", # line too long

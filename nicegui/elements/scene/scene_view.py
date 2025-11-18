@@ -1,5 +1,6 @@
+from __future__ import annotations
+
 import asyncio
-from typing import Optional
 
 from typing_extensions import Self
 
@@ -23,8 +24,8 @@ class SceneView(Element, component='scene_view.js', default_classes='nicegui-sce
                  # DEPRECATED: enforce keyword-only arguments in NiceGUI 4.0
                  width: int = 400,
                  height: int = 300,
-                 camera: Optional[SceneCamera] = None,
-                 on_click: Optional[Handler[ClickEventArguments]] = None,
+                 camera: SceneCamera | None = None,
+                 on_click: Handler[ClickEventArguments] | None = None,
                  fps: int = 20,
                  show_stats: bool = False,
                  ) -> None:
@@ -95,15 +96,15 @@ class SceneView(Element, component='scene_view.js', default_classes='nicegui-sce
             handle_event(handler, arguments)
 
     def move_camera(self,
-                    x: Optional[float] = None,
-                    y: Optional[float] = None,
-                    z: Optional[float] = None,
-                    look_at_x: Optional[float] = None,
-                    look_at_y: Optional[float] = None,
-                    look_at_z: Optional[float] = None,
-                    up_x: Optional[float] = None,
-                    up_y: Optional[float] = None,
-                    up_z: Optional[float] = None,
+                    x: float | None = None,
+                    y: float | None = None,
+                    z: float | None = None,
+                    look_at_x: float | None = None,
+                    look_at_y: float | None = None,
+                    look_at_z: float | None = None,
+                    up_x: float | None = None,
+                    up_y: float | None = None,
+                    up_z: float | None = None,
                     duration: float = 0.5) -> None:
         """Move the camera to a new position.
 

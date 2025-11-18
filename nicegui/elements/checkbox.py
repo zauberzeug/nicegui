@@ -1,4 +1,5 @@
-from typing import Optional
+
+from __future__ import annotations
 
 from ..events import Handler, ValueChangeEventArguments
 from .mixins.disableable_element import DisableableElement
@@ -10,8 +11,8 @@ class Checkbox(TextElement, ValueElement, DisableableElement):
 
     def __init__(self,
                  text: str = '', *,
-                 value: Optional[bool] = False,
-                 on_change: Optional[Handler[ValueChangeEventArguments]] = None) -> None:
+                 value: bool | None = False,
+                 on_change: Handler[ValueChangeEventArguments] | None = None) -> None:
         """Checkbox
 
         This element is based on Quasar's `QCheckbox <https://quasar.dev/vue-components/checkbox>`_ component.
