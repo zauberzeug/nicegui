@@ -10,7 +10,7 @@ def user_fixture():
     ui.markdown('''
         We recommend utilizing the `user` fixture instead of the [`screen` fixture](/documentation/screen) wherever possible
         because execution is as fast as unit tests and it does not need Selenium as a dependency.
-        The `user` fixture cuts away the browser and replaces it by a lightweight simulation.
+        The `user` fixture cuts away the browser and replaces it with a lightweight simulation.
 
         You can assert to "see" specific elements or content, click buttons, type into inputs and trigger events.
         We aimed for a nice API to write acceptance tests which read like a story and are easy to understand.
@@ -356,6 +356,56 @@ def simulate_javascript():
             ''')
 
 
+doc.text('Using pytest fixtures to startup your app', '''
+    Sometimes it is not enough using a file (specified by the `main_file` config) for starting up your app for testing. 
+    In that case you can replace the `pytest` fixture `user_startup_func` and return your own startup function. 
+    That enables you to provide test objects via your own `pytest` fixtures that can be used in the startup function 
+    and in your test function.
+    
+    *Added in version 3.3.0*
+    
+    The following snippet should give you an idea of how to use fixtures to startup your app.
+''')
+
+
+@doc.ui
+def user_startup_function_pytest_fixture():
+    with ui.row().classes('gap-4 items-stretch'):
+        with python_window(classes='w-[500px]', title='conftest.py'):
+            ui.markdown('''
+                ```python
+                @pytest.fixture
+                def test_database() -> MyTestDatabase:
+                    # simulate some test database creation
+                    return MyTestDatabase()
+            
+                
+                @pytest.fixture
+                def user_startup_func(test_database: MyTestDatabase) -> Callable[[], None]:
+                    def my_startup():
+                        # consider you have a function to create a root that receives a database
+                        root = create_root(test_database)
+                        
+                        ui.run(root)
+                        
+                    return my_startup
+                ```
+            ''')
+
+        with python_window(classes='w-[500px]', title='my_test.py'):
+            ui.markdown('''
+                ```python
+                def my_test(user: User, test_database: MyTestDatabase):
+                    test_database.prepare_test_scenario("some-test-scenario")
+                
+                    await user.open('/my-app')
+                    user.find("Do some action").click()
+                    
+                    assert 1 == test_database.query("SELECT COUNT(*) FROM table"
+                ```
+            ''')
+
+
 doc.text('Comparison with the screen fixture', '''
     By cutting out the browser, test execution becomes much faster than the [`screen` fixture](/documentation/screen).
     See our [pytests example](https://github.com/zauberzeug/nicegui/tree/main/examples/pytests)
@@ -363,6 +413,7 @@ doc.text('Comparison with the screen fixture', '''
     Of course, some features like screenshots or browser-specific behavior are not available,
     but in most cases the speed of the `user` fixture makes it the first choice.
 ''')
+
 
 doc.reference(User, title='User Reference')
 doc.reference(UserInteraction, title='UserInteraction Reference')
