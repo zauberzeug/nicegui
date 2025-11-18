@@ -1,5 +1,7 @@
+from __future__ import annotations
+
 from dataclasses import dataclass, field
-from typing import Any, Union
+from typing import Any
 
 from typing_extensions import Self
 
@@ -58,7 +60,7 @@ class ImageOverlay(Layer):
 
 @dataclass(**KWONLY_SLOTS)
 class VideoOverlay(Layer):
-    url: Union[str, list[str]]
+    url: str | list[str]
     bounds: list[list[float]]
     options: dict = field(default_factory=dict)
 

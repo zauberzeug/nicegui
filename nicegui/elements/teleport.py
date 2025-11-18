@@ -1,11 +1,11 @@
-from typing import Union
+from __future__ import annotations
 
 from ..element import Element
 
 
 class Teleport(Element, component='teleport.js'):
 
-    def __init__(self, to: Union[str, Element]) -> None:
+    def __init__(self, to: str | Element) -> None:
         """Teleport
 
         An element that allows us to transmit the content from within a component to any location on the page.

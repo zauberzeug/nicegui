@@ -1,4 +1,4 @@
-from typing import Optional
+from __future__ import annotations
 
 from typing_extensions import Self
 
@@ -17,15 +17,15 @@ class Chip(IconElement, ValueElement, TextElement, BackgroundColorElement, TextC
     def __init__(self,
                  text: str = '',
                  *,
-                 icon: Optional[str] = None,
-                 color: Optional[str] = 'primary',
-                 text_color: Optional[str] = None,
-                 on_click: Optional[Handler[ClickEventArguments]] = None,
+                 icon: str | None = None,
+                 color: str | None = 'primary',
+                 text_color: str | None = None,
+                 on_click: Handler[ClickEventArguments] | None = None,
                  selectable: bool = False,
                  selected: bool = False,
-                 on_selection_change: Optional[Handler[ValueChangeEventArguments]] = None,
+                 on_selection_change: Handler[ValueChangeEventArguments] | None = None,
                  removable: bool = False,
-                 on_value_change: Optional[Handler[ValueChangeEventArguments]] = None,
+                 on_value_change: Handler[ValueChangeEventArguments] | None = None,
                  ) -> None:
         """Chip
 

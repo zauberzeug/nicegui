@@ -1,5 +1,5 @@
 import asyncio
-from typing import Literal, Optional
+from typing import Literal
 
 import pytest
 from selenium.webdriver.common.by import By
@@ -77,7 +77,7 @@ def test_input_validation(method: Literal['dict', 'sync', 'async'], screen: Scre
             input_ = ui.input('Name',
                               validation={'Short': lambda x: len(x) >= 3, 'Still short': lambda x: len(x) >= 5})
         else:
-            async def validate(x: str) -> Optional[str]:
+            async def validate(x: str) -> str | None:
                 await asyncio.sleep(0.1)
                 return 'Short' if len(x) < 3 else 'Still short' if len(x) < 5 else None
             input_ = ui.input('Name', validation=validate)

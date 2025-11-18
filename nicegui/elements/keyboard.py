@@ -1,4 +1,6 @@
-from typing import Literal, Optional
+from __future__ import annotations
+
+from typing import Literal
 
 from typing_extensions import Self
 
@@ -19,7 +21,7 @@ class Keyboard(Element, component='keyboard.js'):
     active = BindableProperty()
 
     def __init__(self,
-                 on_key: Optional[Handler[KeyEventArguments]] = None, *,
+                 on_key: Handler[KeyEventArguments] | None = None, *,
                  active: bool = True,
                  repeating: bool = True,
                  ignore: list[Literal['input', 'select', 'button', 'textarea']] =

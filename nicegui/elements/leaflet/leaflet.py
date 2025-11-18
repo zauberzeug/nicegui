@@ -1,6 +1,8 @@
+from __future__ import annotations
+
 import asyncio
 from pathlib import Path
-from typing import Any, Optional, Union, cast
+from typing import Any, cast
 
 from typing_extensions import Self
 
@@ -28,9 +30,9 @@ class Leaflet(Element, component='leaflet.js', esm={'nicegui-leaflet': 'dist'}, 
                  zoom: int = 13,
                  *,
                  options: dict = {},  # noqa: B006
-                 draw_control: Union[bool, dict] = False,
+                 draw_control: bool | dict = False,
                  hide_drawn_items: bool = False,
-                 additional_resources: Optional[list[str]] = None,
+                 additional_resources: list[str] | None = None,
                  ) -> None:
         """Leaflet map
 

@@ -1,6 +1,8 @@
+from __future__ import annotations
+
 import re
 from colorsys import rgb_to_yiq
-from typing import Any, Optional
+from typing import Any
 
 from ..events import Handler, ValueChangeEventArguments
 from .button import Button as button
@@ -17,10 +19,10 @@ class ColorInput(LabelElement, ValueElement, DisableableElement):
     LOOPBACK = False
 
     def __init__(self,
-                 label: Optional[str] = None, *,
-                 placeholder: Optional[str] = None,
+                 label: str | None = None, *,
+                 placeholder: str | None = None,
                  value: str = '',
-                 on_change: Optional[Handler[ValueChangeEventArguments]] = None,
+                 on_change: Handler[ValueChangeEventArguments] | None = None,
                  preview: bool = False,
                  ) -> None:
         """Color Input

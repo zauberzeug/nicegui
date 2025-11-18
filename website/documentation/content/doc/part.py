@@ -1,5 +1,7 @@
+from __future__ import annotations
+
 from dataclasses import dataclass
-from typing import Callable, Literal, Optional, Union
+from typing import Callable, Literal
 
 from nicegui.dataclasses import KWONLY_SLOTS
 
@@ -10,21 +12,21 @@ from ....style import create_anchor_name
 class Demo:
     function: Callable
     lazy: bool = True
-    tab: Optional[Union[str, Callable]] = None
+    tab: str | Callable | None = None
 
 
 @dataclass(**KWONLY_SLOTS)
 class DocumentationPart:
-    title: Optional[str] = None
-    description: Optional[str] = None
+    title: str | None = None
+    description: str | None = None
     description_format: Literal['md', 'rst'] = 'md'
-    link: Optional[str] = None
-    ui: Optional[Callable] = None
-    demo: Optional[Demo] = None
-    reference: Optional[type] = None
-    search_text: Optional[str] = None
+    link: str | None = None
+    ui: Callable | None = None
+    demo: Demo | None = None
+    reference: type | None = None
+    search_text: str | None = None
 
     @property
-    def link_target(self) -> Optional[str]:
+    def link_target(self) -> str | None:
         """Return the link target for in-page navigation."""
         return create_anchor_name(self.title) if self.title else None

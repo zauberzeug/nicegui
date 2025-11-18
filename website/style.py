@@ -1,5 +1,6 @@
+from __future__ import annotations
+
 import re
-from typing import Optional
 
 from nicegui import ui
 
@@ -61,7 +62,7 @@ def side_menu() -> ui.left_drawer:
         .style('height: calc(100% + 20px) !important')
 
 
-def subheading(text: str, *, link: Optional[str] = None, major: bool = False, anchor_name: Optional[str] = None) -> None:
+def subheading(text: str, *, link: str | None = None, major: bool = False, anchor_name: str | None = None) -> None:
     """Render a subheading with an anchor that can be linked to with a hash."""
     name = anchor_name or create_anchor_name(text)
     ui.html(f'<div id="{name}"></div>', sanitize=False).style('position: relative; top: -90px')

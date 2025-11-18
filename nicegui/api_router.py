@@ -1,5 +1,7 @@
+from __future__ import annotations
+
+from collections.abc import Callable
 from pathlib import Path
-from typing import Callable, Optional, Union
 
 import fastapi
 
@@ -10,10 +12,10 @@ class APIRouter(fastapi.APIRouter):
 
     def page(self,
              path: str, *,
-             title: Optional[str] = None,
-             viewport: Optional[str] = None,
-             favicon: Optional[Union[str, Path]] = None,
-             dark: Optional[bool] = ...,  # type: ignore
+             title: str | None = None,
+             viewport: str | None = None,
+             favicon: str | Path | None = None,
+             dark: bool | None = ...,  # type: ignore
              response_timeout: float = 3.0,
              **kwargs,
              ) -> Callable:

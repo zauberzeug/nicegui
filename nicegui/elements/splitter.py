@@ -1,4 +1,4 @@
-from typing import Optional
+from __future__ import annotations
 
 from ..events import Handler, ValueChangeEventArguments
 from .mixins.disableable_element import DisableableElement
@@ -8,11 +8,11 @@ from .mixins.value_element import ValueElement
 class Splitter(ValueElement, DisableableElement, default_classes='nicegui-splitter'):
 
     def __init__(self, *,
-                 horizontal: Optional[bool] = False,
-                 reverse: Optional[bool] = False,
-                 limits: Optional[tuple[float, float]] = (0, 100),
-                 value: Optional[float] = 50,
-                 on_change: Optional[Handler[ValueChangeEventArguments]] = None,
+                 horizontal: bool | None = False,
+                 reverse: bool | None = False,
+                 limits: tuple[float, float] | None = (0, 100),
+                 value: float | None = 50,
+                 on_change: Handler[ValueChangeEventArguments] | None = None,
                  ) -> None:
         """Splitter
 

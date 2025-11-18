@@ -1,4 +1,6 @@
-from typing import Callable, Literal, Optional, Union
+from __future__ import annotations
+
+from typing import Callable, Literal
 
 from nicegui import ui
 
@@ -18,7 +20,7 @@ def _dots() -> None:
         ui.icon('circle').classes('text-[13px] text-green-400')
 
 
-def _window(type_: WindowType, *, title: str = '', tab: Union[str, Callable] = '', classes: str = '') -> ui.column:
+def _window(type_: WindowType, *, title: str = '', tab: str | Callable = '', classes: str = '') -> ui.column:
     bar_color = ('#00000010', '#ffffff10')
     color = WINDOW_BG_COLORS[type_]
     with ui.card() \
@@ -46,7 +48,7 @@ def _window(type_: WindowType, *, title: str = '', tab: Union[str, Callable] = '
         return ui.column().classes('w-full h-full overflow-auto')
 
 
-def python_window(title: Optional[str] = None, *, classes: str = '') -> ui.column:
+def python_window(title: str | None = None, *, classes: str = '') -> ui.column:
     """Create a window for Python code."""
     return _window('python', title=title or 'main.py', classes=classes).classes('px-4 py-2 python-window')
 
@@ -56,6 +58,6 @@ def bash_window(*, classes: str = '') -> ui.column:
     return _window('bash', title='bash', classes=classes).classes('px-4 py-2 bash-window')
 
 
-def browser_window(title: Optional[Union[str, Callable]] = None, *, classes: str = '') -> ui.column:
+def browser_window(title: str | Callable | None = None, *, classes: str = '') -> ui.column:
     """Create a browser window."""
     return _window('browser', tab=title or 'NiceGUI', classes=classes).classes('p-4 browser-window')

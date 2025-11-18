@@ -1,12 +1,14 @@
+from __future__ import annotations
+
 import base64
-from typing import Callable, Optional
+from typing import Callable
 
 from nicegui import events, ui
 
 
 class AudioRecorder(ui.element, component='audio_recorder.vue'):
 
-    def __init__(self, *, on_audio_ready: Optional[Callable] = None) -> None:
+    def __init__(self, *, on_audio_ready: Callable | None = None) -> None:
         super().__init__()
         self.recording = b''
 

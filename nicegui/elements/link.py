@@ -1,4 +1,7 @@
-from typing import Any, Callable, Union
+from __future__ import annotations
+
+from collections.abc import Callable
+from typing import Any
 
 from ..client import Client
 from ..element import Element
@@ -9,7 +12,7 @@ class Link(TextElement, component='link.js', default_classes='nicegui-link'):
 
     def __init__(self,
                  text: str = '',
-                 target: Union[Callable[..., Any], str, Element] = '#',
+                 target: Callable[..., Any] | str | Element = '#',
                  new_tab: bool = False,
                  ) -> None:
         """Link

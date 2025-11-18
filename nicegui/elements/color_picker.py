@@ -1,4 +1,4 @@
-from typing import Optional
+from __future__ import annotations
 
 from typing_extensions import Self
 
@@ -10,7 +10,7 @@ from .menu import Menu
 class ColorPicker(Menu):
 
     def __init__(self, *,
-                 on_pick: Optional[Handler[ColorPickEventArguments]] = None,
+                 on_pick: Handler[ColorPickEventArguments] | None = None,
                  value: bool = False,
                  ) -> None:
         """Color Picker

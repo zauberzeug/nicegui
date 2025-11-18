@@ -1,4 +1,4 @@
-from typing import Optional
+from __future__ import annotations
 
 from typing_extensions import Self
 
@@ -17,9 +17,9 @@ class JsonEditor(Element, component='json_editor.js', esm={'nicegui-json-editor'
 
     def __init__(self,
                  properties: dict, *,
-                 on_select: Optional[Handler[JsonEditorSelectEventArguments]] = None,
-                 on_change: Optional[Handler[JsonEditorChangeEventArguments]] = None,
-                 schema: Optional[dict] = None,
+                 on_select: Handler[JsonEditorSelectEventArguments] | None = None,
+                 on_change: Handler[JsonEditorChangeEventArguments] | None = None,
+                 schema: dict | None = None,
                  ) -> None:
         """JSONEditor
 

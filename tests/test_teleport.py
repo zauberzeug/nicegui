@@ -1,4 +1,4 @@
-from typing import Optional
+from __future__ import annotations
 
 from nicegui import ui
 from nicegui.testing import Screen
@@ -39,7 +39,7 @@ def test_teleport_with_element(screen: Screen):
 def test_update(screen: Screen):
     @ui.page('/')
     def page():
-        teleport: Optional[ui.teleport] = None
+        teleport: ui.teleport | None = None
 
         card = ui.card().classes('card')
 

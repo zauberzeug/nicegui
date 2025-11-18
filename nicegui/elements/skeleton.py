@@ -1,4 +1,6 @@
-from typing import Literal, Optional
+from __future__ import annotations
+
+from typing import Literal
 
 from ..element import Element
 
@@ -36,9 +38,9 @@ class Skeleton(Element):
                  animation_speed: float = 1.5,
                  square: bool = False,
                  bordered: bool = False,
-                 size: Optional[str] = None,
-                 width: Optional[str] = None,
-                 height: Optional[str] = None,
+                 size: str | None = None,
+                 width: str | None = None,
+                 height: str | None = None,
                  ) -> None:
         """Skeleton
 

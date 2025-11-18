@@ -1,4 +1,4 @@
-from typing import Optional
+from __future__ import annotations
 
 from ..events import Handler, ValueChangeEventArguments
 from .mixins.disableable_element import DisableableElement
@@ -8,9 +8,9 @@ from .mixins.value_element import ValueElement
 class Time(ValueElement, DisableableElement):
 
     def __init__(self,
-                 value: Optional[str] = None, *,
+                 value: str | None = None, *,
                  mask: str = 'HH:mm',
-                 on_change: Optional[Handler[ValueChangeEventArguments]] = None,
+                 on_change: Handler[ValueChangeEventArguments] | None = None,
                  ) -> None:
         """Time Picker
 

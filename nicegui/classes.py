@@ -1,7 +1,9 @@
+from __future__ import annotations
+
 import weakref
 from collections.abc import Iterator
 from contextlib import contextmanager
-from typing import TYPE_CHECKING, Generic, Optional, TypeVar
+from typing import TYPE_CHECKING, Generic, TypeVar
 
 from .observables import ObservableList
 
@@ -43,10 +45,10 @@ class Classes(ObservableList, Generic[T]):
             element.update()
 
     def __call__(self,
-                 add: Optional[str] = None, *,
-                 remove: Optional[str] = None,
-                 toggle: Optional[str] = None,
-                 replace: Optional[str] = None) -> T:
+                 add: str | None = None, *,
+                 remove: str | None = None,
+                 toggle: str | None = None,
+                 replace: str | None = None) -> T:
         """Apply, remove, toggle, or replace HTML classes.
 
         This allows modifying the look of the element or its layout using `Tailwind <https://tailwindcss.com/>`_ or `Quasar <https://quasar.dev/>`_ classes.
@@ -66,10 +68,10 @@ class Classes(ObservableList, Generic[T]):
 
     @staticmethod
     def update_list(classes: list[str],
-                    add: Optional[str] = None,
-                    remove: Optional[str] = None,
-                    toggle: Optional[str] = None,
-                    replace: Optional[str] = None) -> list[str]:
+                    add: str | None = None,
+                    remove: str | None = None,
+                    toggle: str | None = None,
+                    replace: str | None = None) -> list[str]:
         """Update a list of classes."""
         class_list = classes if replace is None else []
         class_list = [c for c in class_list if c not in (remove or '').split()]

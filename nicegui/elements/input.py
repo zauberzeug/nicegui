@@ -1,4 +1,6 @@
-from typing import Any, Optional, Union
+from __future__ import annotations
+
+from typing import Any
 
 from ..events import Handler, ValueChangeEventArguments
 from .icon import Icon
@@ -12,14 +14,14 @@ class Input(LabelElement, ValidationElement, DisableableElement, component='inpu
     LOOPBACK = False
 
     def __init__(self,
-                 label: Optional[str] = None, *,
-                 placeholder: Optional[str] = None,
+                 label: str | None = None, *,
+                 placeholder: str | None = None,
                  value: str = '',
                  password: bool = False,
                  password_toggle_button: bool = False,
-                 on_change: Optional[Handler[ValueChangeEventArguments]] = None,
-                 autocomplete: Optional[list[str]] = None,
-                 validation: Optional[Union[ValidationFunction, ValidationDict]] = None,
+                 on_change: Handler[ValueChangeEventArguments] | None = None,
+                 autocomplete: list[str] | None = None,
+                 validation: ValidationFunction | ValidationDict | None = None,
                  ) -> None:
         """Text Input
 
@@ -66,7 +68,7 @@ class Input(LabelElement, ValidationElement, DisableableElement, component='inpu
 
         self._props['_autocomplete'] = autocomplete or []
 
-    def set_autocomplete(self, autocomplete: Optional[list[str]]) -> None:
+    def set_autocomplete(self, autocomplete: list[str] | None) -> None:
         """Set the autocomplete list."""
         self._props['_autocomplete'] = autocomplete
 

@@ -1,9 +1,12 @@
+from __future__ import annotations
+
 import multiprocessing
 import os
 import runpy
 import sys
+from collections.abc import Callable
 from pathlib import Path
-from typing import Any, Callable, Literal, Optional, TypedDict, Union
+from typing import Any, Literal, TypedDict
 
 from fastapi.middleware.gzip import GZipMiddleware
 from starlette.routing import Route
@@ -26,44 +29,44 @@ APP_IMPORT_STRING = 'nicegui:app'
 
 
 class ContactDict(TypedDict):
-    name: Optional[str]
-    url: Optional[str]
-    email: Optional[str]
+    name: str | None
+    url: str | None
+    email: str | None
 
 
 class LicenseInfoDict(TypedDict):
     name: str
-    identifier: Optional[str]
-    url: Optional[str]
+    identifier: str | None
+    url: str | None
 
 
 class DocsConfig(TypedDict):
-    title: Optional[str]
-    summary: Optional[str]
-    description: Optional[str]
-    version: Optional[str]
-    terms_of_service: Optional[str]
-    contact: Optional[ContactDict]
-    license_info: Optional[LicenseInfoDict]
+    title: str | None
+    summary: str | None
+    description: str | None
+    version: str | None
+    terms_of_service: str | None
+    contact: ContactDict | None
+    license_info: LicenseInfoDict | None
 
 
-def run(root: Optional[Callable] = None, *,
-        host: Optional[str] = None,
-        port: Optional[int] = None,
+def run(root: Callable | None = None, *,
+        host: str | None = None,
+        port: int | None = None,
         title: str = 'NiceGUI',
         viewport: str = 'width=device-width, initial-scale=1',
-        favicon: Optional[Union[str, Path]] = None,
-        dark: Optional[bool] = False,
+        favicon: str | Path | None = None,
+        dark: bool | None = False,
         language: Language = 'en-US',
         binding_refresh_interval: float = 0.1,
         reconnect_timeout: float = 3.0,
         message_history_length: int = 1000,
         cache_control_directives: str = 'public, max-age=31536000, immutable, stale-while-revalidate=31536000',
-        fastapi_docs: Union[bool, DocsConfig] = False,
+        fastapi_docs: bool | DocsConfig = False,
         show: bool = True,
-        on_air: Optional[Union[str, Literal[True]]] = None,
+        on_air: str | Literal[True] | None = None,
         native: bool = False,
-        window_size: Optional[tuple[int, int]] = None,
+        window_size: tuple[int, int] | None = None,
         fullscreen: bool = False,
         frameless: bool = False,
         reload: bool = True,
@@ -74,8 +77,8 @@ def run(root: Optional[Callable] = None, *,
         tailwind: bool = True,
         prod_js: bool = True,
         endpoint_documentation: Literal['none', 'internal', 'page', 'all'] = 'none',
-        storage_secret: Optional[str] = None,
-        session_middleware_kwargs: Optional[dict[str, Any]] = None,
+        storage_secret: str | None = None,
+        session_middleware_kwargs: dict[str, Any] | None = None,
         show_welcome_message: bool = True,
         **kwargs: Any,
         ) -> None:

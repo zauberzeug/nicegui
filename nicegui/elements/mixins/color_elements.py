@@ -1,4 +1,6 @@
-from typing import Any, Optional
+from __future__ import annotations
+
+from typing import Any
 
 from ...element import Element
 
@@ -20,7 +22,7 @@ TAILWIND_COLORS = {
 class BackgroundColorElement(Element):
     BACKGROUND_COLOR_PROP = 'color'
 
-    def __init__(self, *, background_color: Optional[str], **kwargs: Any) -> None:
+    def __init__(self, *, background_color: str | None, **kwargs: Any) -> None:
         super().__init__(**kwargs)
         if background_color in QUASAR_COLORS:
             self._props[self.BACKGROUND_COLOR_PROP] = background_color
@@ -33,7 +35,7 @@ class BackgroundColorElement(Element):
 class TextColorElement(Element):
     TEXT_COLOR_PROP = 'color'
 
-    def __init__(self, *, text_color: Optional[str], **kwargs: Any) -> None:
+    def __init__(self, *, text_color: str | None, **kwargs: Any) -> None:
         super().__init__(**kwargs)
         if text_color in QUASAR_COLORS:
             self._props[self.TEXT_COLOR_PROP] = text_color

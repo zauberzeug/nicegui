@@ -1,4 +1,4 @@
-from typing import Optional, Union
+from __future__ import annotations
 
 from ..events import Handler, ValueChangeEventArguments
 from .mixins.disableable_element import DisableableElement
@@ -8,14 +8,14 @@ from .mixins.value_element import ValueElement
 class Rating(ValueElement, DisableableElement):
 
     def __init__(self,
-                 value: Optional[float] = None,
+                 value: float | None = None,
                  max: int = 5,  # pylint: disable=redefined-builtin
-                 icon: Optional[str] = None,
-                 icon_selected: Optional[str] = None,
-                 icon_half: Optional[str] = None,
-                 color: Optional[Union[str, list[str]]] = 'primary',
-                 size: Optional[str] = None,
-                 on_change: Optional[Handler[ValueChangeEventArguments]] = None,
+                 icon: str | None = None,
+                 icon_selected: str | None = None,
+                 icon_half: str | None = None,
+                 color: str | list[str] | None = 'primary',
+                 size: str | None = None,
+                 on_change: Handler[ValueChangeEventArguments] | None = None,
                  ) -> None:
         """Rating
 

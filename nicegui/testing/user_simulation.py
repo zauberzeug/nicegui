@@ -2,10 +2,9 @@ from __future__ import annotations
 
 import os
 import runpy
-from collections.abc import AsyncGenerator
+from collections.abc import AsyncGenerator, Callable
 from contextlib import asynccontextmanager
 from pathlib import Path
-from typing import Callable
 
 import httpx
 

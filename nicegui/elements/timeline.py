@@ -1,4 +1,6 @@
-from typing import Literal, Optional
+from __future__ import annotations
+
+from typing import Literal
 
 from ..element import Element
 from .mixins.icon_element import IconElement
@@ -10,7 +12,7 @@ class Timeline(Element):
                  *,
                  side: Literal['left', 'right'] = 'left',
                  layout: Literal['dense', 'comfortable', 'loose'] = 'dense',
-                 color: Optional[str] = None,
+                 color: str | None = None,
                  ) -> None:
         """Timeline
 
@@ -30,16 +32,16 @@ class Timeline(Element):
 class TimelineEntry(IconElement, default_classes='nicegui-timeline-entry'):
 
     def __init__(self,
-                 body: Optional[str] = None,
+                 body: str | None = None,
                  *,
                  side: Literal['left', 'right'] = 'left',
                  heading: bool = False,
-                 tag: Optional[str] = None,
-                 icon: Optional[str] = None,
-                 avatar: Optional[str] = None,
-                 title: Optional[str] = None,
-                 subtitle: Optional[str] = None,
-                 color: Optional[str] = None,
+                 tag: str | None = None,
+                 icon: str | None = None,
+                 avatar: str | None = None,
+                 title: str | None = None,
+                 subtitle: str | None = None,
+                 color: str | None = None,
                  ) -> None:
         """Timeline Entry
 

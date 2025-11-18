@@ -1,6 +1,8 @@
+from __future__ import annotations
+
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Literal, Optional, Union
+from typing import Literal
 
 from ..dataclasses import KWONLY_SLOTS
 from ..language import Language
@@ -32,8 +34,8 @@ class AppConfig:
     reload: bool = field(init=False)
     title: str = field(init=False)
     viewport: str = field(init=False)
-    favicon: Optional[Union[str, Path]] = field(init=False)
-    dark: Optional[bool] = field(init=False)
+    favicon: str | Path | None = field(init=False)
+    dark: bool | None = field(init=False)
     language: Language = field(init=False)
     binding_refresh_interval: float = field(init=False)
     reconnect_timeout: float = field(init=False)
@@ -49,8 +51,8 @@ class AppConfig:
                        reload: bool,
                        title: str,
                        viewport: str,
-                       favicon: Optional[Union[str, Path]],
-                       dark: Optional[bool],
+                       favicon: str | Path | None,
+                       dark: bool | None,
                        language: Language,
                        binding_refresh_interval: float,
                        reconnect_timeout: float,

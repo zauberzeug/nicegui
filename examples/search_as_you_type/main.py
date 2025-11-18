@@ -1,13 +1,14 @@
 #!/usr/bin/env python3
+from __future__ import annotations
+
 import asyncio
-from typing import Optional
 
 import httpx
 
 from nicegui import events, ui
 
 api = httpx.AsyncClient()
-running_query: Optional[asyncio.Task] = None
+running_query: asyncio.Task | None = None
 
 
 async def search(e: events.ValueChangeEventArguments) -> None:

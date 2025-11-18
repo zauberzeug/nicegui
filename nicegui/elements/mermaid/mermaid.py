@@ -1,4 +1,4 @@
-from typing import Optional
+from __future__ import annotations
 
 from typing_extensions import Self
 
@@ -11,9 +11,9 @@ class Mermaid(ContentElement, component='mermaid.js', esm={'nicegui-mermaid': 'd
 
     def __init__(self,
                  content: str,
-                 config: Optional[dict] = None,
+                 config: dict | None = None,
                  *,
-                 on_node_click: Optional[Handler[MermaidNodeClickEventArguments]] = None,
+                 on_node_click: Handler[MermaidNodeClickEventArguments] | None = None,
                  ) -> None:
         """Mermaid Diagrams
 

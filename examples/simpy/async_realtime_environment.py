@@ -1,6 +1,8 @@
+from __future__ import annotations
+
 import asyncio
 from time import monotonic
-from typing import Any, Optional, Union
+from typing import Any
 
 from simpy.core import EmptySchedule, Environment, Infinity, SimTime, StopSimulation
 from simpy.events import URGENT, Event
@@ -50,8 +52,8 @@ class AsyncRealtimeEnvironment(RealtimeEnvironment):
         Environment.step(self)
 
     async def run(
-        self, until: Optional[Union[SimTime, Event]] = None
-    ) -> Optional[Any]:
+        self, until: None | SimTime | Event = None
+    ) -> Any | None:
         """Executes :meth:`step()` until the given criterion *until* is met.
 
         - If it is ``None`` (which is the default), this method will return

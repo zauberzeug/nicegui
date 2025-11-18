@@ -1,5 +1,6 @@
+from __future__ import annotations
+
 from pathlib import Path
-from typing import Union
 
 import httpx
 import pytest
@@ -15,7 +16,7 @@ def get_favicon_url(screen: Screen) -> str:
     return screen.find_by_css('link[rel="shortcut icon"]').get_attribute('href')
 
 
-def assert_favicon(content: Union[Path, str, bytes], url_path: str = '/favicon.ico'):
+def assert_favicon(content: Path | str | bytes, url_path: str = '/favicon.ico'):
     response = httpx.get(f'http://localhost:{Screen.PORT}{url_path}', timeout=5)
     assert response.status_code == 200
     if isinstance(content, Path):

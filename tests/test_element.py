@@ -1,5 +1,6 @@
+from __future__ import annotations
+
 import weakref
-from typing import Optional
 
 import pytest
 from selenium.webdriver.common.by import By
@@ -58,7 +59,7 @@ def test_classes(screen: Screen):
     ('transform: translate(120.0px, 50%)', {'transform': 'translate(120.0px, 50%)'}),
     ('box-shadow: 0 0 0.5em #1976d2', {'box-shadow': '0 0 0.5em #1976d2'}),
 ])
-def test_style_parsing(value: Optional[str], expected: dict[str, str]):
+def test_style_parsing(value: str | None, expected: dict[str, str]):
     assert Style.parse(value) == expected
 
 
@@ -89,7 +90,7 @@ def test_style_parsing(value: Optional[str], expected: dict[str, str]):
     ('''object={'one': "foo"} baz''', {'object': {'one': 'foo'}, 'baz': True}),
     ('''object={'one': "foo", "two": "bar"}''', {'object': {'one': 'foo', 'two': 'bar'}}),
 ])
-def test_props_parsing(value: Optional[str], expected: dict[str, str]):
+def test_props_parsing(value: str | None, expected: dict[str, str]):
     assert Props.parse(value) == expected
 
 

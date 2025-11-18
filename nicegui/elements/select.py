@@ -1,6 +1,8 @@
-from collections.abc import Generator, Iterable, Iterator
+from __future__ import annotations
+
+from collections.abc import Callable, Generator, Iterable, Iterator
 from copy import deepcopy
-from typing import Any, Callable, Literal, Optional, Union
+from typing import Any, Literal
 
 from ..events import GenericEventArguments, Handler, ValueChangeEventArguments
 from .choice_element import ChoiceElement
@@ -12,16 +14,16 @@ from .mixins.validation_element import ValidationDict, ValidationElement, Valida
 class Select(LabelElement, ValidationElement, ChoiceElement, DisableableElement, component='select.js'):
 
     def __init__(self,
-                 options: Union[list, dict], *,
-                 label: Optional[str] = None,
+                 options: list | dict, *,
+                 label: str | None = None,
                  value: Any = None,
-                 on_change: Optional[Handler[ValueChangeEventArguments]] = None,
+                 on_change: Handler[ValueChangeEventArguments] | None = None,
                  with_input: bool = False,
-                 new_value_mode: Optional[Literal['add', 'add-unique', 'toggle']] = None,
+                 new_value_mode: Literal['add', 'add-unique', 'toggle'] | None = None,
                  multiple: bool = False,
                  clearable: bool = False,
-                 validation: Optional[Union[ValidationFunction, ValidationDict]] = None,
-                 key_generator: Optional[Union[Callable[[Any], Any], Iterator[Any]]] = None,
+                 validation: ValidationFunction | ValidationDict | None = None,
+                 key_generator: Callable[[Any], Any] | Iterator[Any] | None = None,
                  ) -> None:
         """Dropdown Selection
 

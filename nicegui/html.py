@@ -1,11 +1,11 @@
-from typing import Optional
+from __future__ import annotations
 
 from .element import Element
 
 
 def _create_html_element(tag: str):
     class HTMLElement(Element):
-        def __init__(self, inner_html: Optional[str] = None, **kwargs) -> None:
+        def __init__(self, inner_html: str | None = None, **kwargs) -> None:
             super().__init__(tag)
             self._text = inner_html
             self.props.update(**kwargs)

@@ -1,4 +1,7 @@
-from typing import Any, Callable, Union
+from __future__ import annotations
+
+from collections.abc import Callable
+from typing import Any
 from urllib.parse import urlparse
 
 from .. import background_tasks
@@ -44,7 +47,7 @@ class Navigate:
         """
         run_javascript('history.go(0)')
 
-    def to(self, target: Union[Callable[..., Any], str, Element], new_tab: bool = False) -> None:
+    def to(self, target: Callable[..., Any] | str | Element, new_tab: bool = False) -> None:
         """ui.navigate.to (formerly ui.open)
 
         Can be used to programmatically open a different page or URL.

@@ -1,4 +1,4 @@
-from typing import Optional
+from __future__ import annotations
 
 from ..events import Handler, ValueChangeEventArguments
 from .label import Label
@@ -15,12 +15,12 @@ class Knob(ValueElement, DisableableElement, TextColorElement):
                  min: float = 0.0,  # pylint: disable=redefined-builtin
                  max: float = 1.0,  # pylint: disable=redefined-builtin
                  step: float = 0.01,
-                 color: Optional[str] = 'primary',
-                 center_color: Optional[str] = None,
-                 track_color: Optional[str] = None,
-                 size: Optional[str] = None,
+                 color: str | None = 'primary',
+                 center_color: str | None = None,
+                 track_color: str | None = None,
+                 size: str | None = None,
                  show_value: bool = False,
-                 on_change: Optional[Handler[ValueChangeEventArguments]] = None,
+                 on_change: Handler[ValueChangeEventArguments] | None = None,
                  ) -> None:
         """Knob
 
@@ -54,7 +54,7 @@ class Knob(ValueElement, DisableableElement, TextColorElement):
         if size:
             self._props['size'] = size
 
-        self.label: Optional[Label] = None
+        self.label: Label | None = None
         if show_value:
             with self:
                 self.label = Label().bind_text_from(self, 'value')

@@ -1,4 +1,6 @@
-from typing import Literal, Optional
+from __future__ import annotations
+
+from typing import Literal
 
 from typing_extensions import Self
 
@@ -8,7 +10,7 @@ from ..element import Element
 class Card(Element, default_classes='nicegui-card'):
 
     def __init__(self, *,
-                 align_items: Optional[Literal['start', 'end', 'center', 'baseline', 'stretch']] = None,
+                 align_items: Literal['start', 'end', 'center', 'baseline', 'stretch'] | None = None,
                  ) -> None:
         """Card
 

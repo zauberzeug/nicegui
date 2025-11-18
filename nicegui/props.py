@@ -1,9 +1,11 @@
+from __future__ import annotations
+
 import ast
 import re
 import weakref
 from collections.abc import Iterator
 from contextlib import contextmanager
-from typing import TYPE_CHECKING, Any, Generic, Optional, TypeVar
+from typing import TYPE_CHECKING, Any, Generic, TypeVar
 
 from . import helpers
 from .observables import ObservableDict
@@ -92,8 +94,8 @@ class Props(ObservableDict, Generic[T]):
         self._warnings[prop] = message
 
     def __call__(self,
-                 add: Optional[str] = None, *,
-                 remove: Optional[str] = None) -> T:
+                 add: str | None = None, *,
+                 remove: str | None = None) -> T:
         """Add or remove props.
 
         This allows modifying the look of the element or its layout using `Quasar <https://quasar.dev/>`_ props.
@@ -118,7 +120,7 @@ class Props(ObservableDict, Generic[T]):
         return element
 
     @staticmethod
-    def parse(text: Optional[str]) -> dict[str, Any]:
+    def parse(text: str | None) -> dict[str, Any]:
         """Parse a string of props into a dictionary."""
         if not text:
             return {}

@@ -1,6 +1,7 @@
+from __future__ import annotations
+
 import asyncio
 import re
-from typing import Optional
 
 from fastapi.responses import PlainTextResponse
 from selenium.webdriver.common.by import By
@@ -64,7 +65,7 @@ def test_creating_new_page_after_startup(screen: Screen):
 
 
 def test_wait_for_connected(screen: Screen):
-    label: Optional[ui.label] = None
+    label: ui.label | None = None
 
     async def load() -> None:
         assert label
