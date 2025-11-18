@@ -29,7 +29,6 @@ pywebview = { version = "^5.0.1", optional = true }
 plotly = { version = ">=5.13,<7.0", optional = true }
 matplotlib = { version = "^3.5.0", optional = true }
 nicegui-highcharts = { version = "^2.0.2", optional = true }
-libsass = { version = "^0.23.0", optional = true }
 redis = { version = ">=4.0.0", optional = true }
 watchfiles = ">=0.18.1" # transitive, used by uvicorn
 h11 = ">=0.16.0" # transitive, pinned to https://github.com/zauberzeug/nicegui/security/dependabot/45
@@ -43,7 +42,6 @@ native = ["pywebview"]
 plotly = ["plotly"]
 matplotlib = ["matplotlib"]
 highcharts = ["nicegui-highcharts"]
-sass = ["libsass"]
 redis = ["redis"]
 
 [tool.poetry.group.dev.dependencies]
@@ -118,7 +116,6 @@ module = [
     "plotly.*",
     "polars.*",
     "pyecharts.*",
-    "sass",
     "socketio.*",
     "webview.*", # can be removed with next pywebview release
 ]
