@@ -21,9 +21,7 @@ from .user_simulation import prepare_simulation, user_simulation
 
 
 @pytest.fixture
-async def user(caplog: pytest.LogCaptureFixture,  # pylint: disable=unused-argument
-               request: pytest.FixtureRequest,
-               ) -> AsyncGenerator[User, None]:
+async def user(caplog: pytest.LogCaptureFixture, request: pytest.FixtureRequest) -> AsyncGenerator[User, None]:
     """Create a new user fixture."""
     async with user_simulation(main_file=get_path_to_main_file(request)) as user:
         yield user

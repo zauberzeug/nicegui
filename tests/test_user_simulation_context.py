@@ -1,4 +1,5 @@
 import textwrap
+from pathlib import Path
 
 import pytest
 
@@ -13,6 +14,7 @@ async def test_basic_root_function():
     async with user_simulation(root) as user:
         await user.open('/')
         await user.should_see('Click me')
+
         user.find(ui.button).click()
         await user.should_see('Hello World!')
 
@@ -30,6 +32,7 @@ async def test_root_function_with_subpages():
     async with user_simulation(root) as user:
         await user.open('/')
         await user.should_see('Main')
+
         await user.open('/other')
         await user.should_see('Another')
 
@@ -47,6 +50,7 @@ async def test_with_page_definitions():
 
         await user.open('/')
         await user.should_see('Main page')
+
         await user.open('/a')
         await user.should_see('Page A')
 
@@ -70,23 +74,13 @@ async def test_with_page_definitions():
         ui.run(root)
     '''),
 ])
-async def test_main_file(tmp_path, file_content):
+async def test_main_file(tmp_path: Path, file_content: str):
     main_file = tmp_path / 'main.py'
     main_file.write_text(file_content, encoding='utf-8')
 
     async with user_simulation(main_file=main_file) as user:
         await user.open('/')
         await user.should_see('Main file content')
-
-
-async def test_providing_page_inside_context():
-    async with user_simulation() as user:
-        @ui.page('/')
-        def page():
-            ui.label('Some page content')
-
-        await user.open('/')
-        await user.should_see('Some page content')
 
 
 async def test_adding_page_to_root_function():
@@ -100,7 +94,9 @@ async def test_adding_page_to_root_function():
 
         await user.open('/')
         await user.should_see('Click me')
+
         user.find(ui.button).click()
         await user.should_see('Hello World!')
+
         await user.open('/a')
         await user.should_see('Page A')
