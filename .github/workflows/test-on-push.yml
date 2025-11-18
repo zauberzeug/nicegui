@@ -22,5 +22,10 @@ jobs:
   ci-gate:
     runs-on: ubuntu-latest
     needs: [check, test]
+    if: always()
     steps:
-      - run: echo "Gate passed"
+      - name: Verify all dependencies passed
+        if: needs.check.result != 'success' || needs.test.result != 'success'
+        run: |
+          echo "Dependencies failed: check=${{ needs.check.result }}, test=${{ needs.test.result }}"
+          exit 1
