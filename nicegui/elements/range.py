@@ -21,7 +21,7 @@ class Range(ValueElement, DisableableElement):
         :param min: lower bound of the range
         :param max: upper bound of the range
         :param step: step size
-        :param value: initial value to set min and max position of the range (default: `min` to `max`)
+        :param value: initial value to set min and max position of the range (default: ``min`` to ``max``)
         :param on_change: callback which is invoked when the user releases the range
         """
         super().__init__(tag='q-range', value=value or {'min': min, 'max': max},
