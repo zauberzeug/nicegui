@@ -315,6 +315,11 @@ doc.text('', '''
     This starts faster than "--onefile" because it skips the unpacking step.
     For distribution, package the directory into an archive file (e.g., .zip or .7z).
 
+    - Specifying `--clean` to `nicegui-pack` will clean the PyInstaller cache (in `./build` folder) and remove temporary files before building.
+
+    - Specifying `--noconfirm` to `nicegui-pack` will replace the output directory (`./dist/SPECNAME`) without asking for confirmation.
+
+
     - Summary of user experience for different options:
 
         | `nicegui-pack`           | `ui.run(...)`  | Explanation |
