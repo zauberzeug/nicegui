@@ -312,8 +312,7 @@ class Client:
 
         async def delete_content() -> None:
             await asyncio.sleep(timeout or self.page.resolve_reconnect_timeout())
-            if not self._deleted:
-                self.delete()
+            self.delete()
         self._cancel_delete_task()
         self._delete_task = background_tasks.create(delete_content(), name=f'delete content {self.id}')
 
