@@ -361,10 +361,13 @@ function createApp(elements, options) {
           if (transport?.ws?.send) transport.ws.send = wrapFunction(transport.ws.send);
           if (transport?.doWrite) transport.doWrite = wrapFunction(transport.doWrite);
 
+          const mismatches = parseInt(sessionStorage.getItem("__mismatches") || "0", 10);
+
           const args = {
             client_id: window.clientId,
             document_id: window.documentId,
             server_id: options.serverId,
+            mismatches: mismatches,
             tab_id: TAB_ID,
             old_tab_id: OLD_TAB_ID,
             next_message_id: window.nextMessageId,
@@ -372,23 +375,14 @@ function createApp(elements, options) {
           window.socket.emit("handshake", args, (ok) => {
             if (ok === "WRONG_SERVER_ID") {
               console.log("reloading because server ID mismatch");
-              sessionStorage.setItem(
-                "__wrong_server_id",
-                parseInt(sessionStorage.getItem("__wrong_server_id") || "0") + 1
-              );
-              const wrongCount = parseInt(sessionStorage.getItem("__wrong_server_id") || "0", 10);
-              if (
-                wrongCount > 3 &&
-                !confirm(
-                  "The server ID has changed 3+ times. Are there multiple workers without session affinity? Press OK to retry."
-                )
-              ) {
+              sessionStorage.setItem("__mismatches", mismatches + 1);
+              if (mismatches > 20 && !confirm("Unable to connect. Press OK to retry.")) {
                 return;
               }
               window.location.reload();
               return;
             }
-            sessionStorage.removeItem("__wrong_server_id");
+            sessionStorage.removeItem("__mismatches");
             if (!ok) {
               console.log("reloading because handshake failed for clientId " + window.clientId);
               window.location.reload();
