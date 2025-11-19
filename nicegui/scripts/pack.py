@@ -49,10 +49,10 @@ def main() -> None:
     parser.add_argument('--icon', type=str, help='Path to an icon file.')
     parser.add_argument('--osx-bundle-identifier', type=str, help='Mac OS .app bundle identifier.')
     parser.add_argument('--dry-run', action='store_true', help='Dry run.', default=False)
-    parser.add_argument('--clean', action='store_true', default=True, help=(
+    parser.add_argument('--clean', action='store_true', default=False, help=(
         'Clean PyInstaller cache (build folder) and remove temporary files before building.'
     ))
-    parser.add_argument('--noconfirm', action='store_true', default=True, help=(
+    parser.add_argument('--noconfirm', action='store_true', default=False, help=(
         'Replace output directory (default: SPECPATH/dist/SPECNAME) without asking for confirmation'
     ))
     parser.add_argument('main', default='main.py', help='Main file which calls `ui.run()`.')
