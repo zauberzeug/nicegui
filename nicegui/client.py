@@ -385,6 +385,7 @@ class Client:
         self.outbox.stop()
         del Client.instances[self.id]
         self._deleted = True
+        self._cancel_delete_task()
 
     def check_existence(self) -> None:
         """Check if the client still exists and print a warning if it doesn't."""
