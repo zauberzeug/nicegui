@@ -319,7 +319,6 @@ doc.text('', '''
 
     - Specifying `--noconfirm` to `nicegui-pack` will replace the output directory (`./dist/SPECNAME`) without asking for confirmation.
 
-
     - Summary of user experience for different options:
 
         | `nicegui-pack`           | `ui.run(...)`  | Explanation |

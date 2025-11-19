@@ -53,7 +53,7 @@ def main() -> None:
         'Clean PyInstaller cache (in ./build folder) and remove temporary files before building.'
     ))
     parser.add_argument('--noconfirm', action='store_true', default=False, help=(
-        'Replace output directory (./dist/SPECNAME) without asking for confirmation'
+        'Replace output directory (./dist/SPECNAME) without asking for confirmation.'
     ))
     parser.add_argument('main', default='main.py', help='Main file which calls `ui.run()`.')
     args = parser.parse_args()
