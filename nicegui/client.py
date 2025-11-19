@@ -306,6 +306,10 @@ class Client:
         self._reset_self_delete()
 
     def _reset_self_delete(self, *, timeout: float | None = None) -> None:
+        if not (core.loop and core.loop.is_running()):
+            core.app.on_startup(lambda: self._reset_self_delete(timeout=timeout))
+            return
+
         async def delete_content() -> None:
             await asyncio.sleep(timeout or self.page.resolve_reconnect_timeout())
             if not self._deleted:
