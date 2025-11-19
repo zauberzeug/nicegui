@@ -48,6 +48,7 @@ class Number(LabelElement, ValidationElement, DisableableElement):
         """
         self.format = format
         super().__init__(tag='q-input', label=label, value=value, on_value_change=on_change, validation=validation)
+        self._props['for'] = self.html_id
         self._props['type'] = 'number'
         if placeholder is not None:
             self._props['placeholder'] = placeholder

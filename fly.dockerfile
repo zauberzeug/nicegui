@@ -27,7 +27,7 @@ WORKDIR /app
 
 COPY pyproject.toml poetry.lock*  ./
 
-RUN poetry install --no-root --extras "plotly matplotlib highcharts sass"
+RUN poetry install --no-root --extras "plotly matplotlib highcharts"
 
 RUN pip install latex2mathml slowapi
 

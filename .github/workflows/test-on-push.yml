@@ -1,0 +1,31 @@
+name: Test on Push
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.sha }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    uses: ./.github/workflows/_check.yml
+
+  test:
+    uses: ./.github/workflows/_test.yml
+    with:
+      python-versions: '["3.9"]'
+      scope: '["pytest"]'
+
+  ci-gate:
+    runs-on: ubuntu-latest
+    needs: [check, test]
+    if: always()
+    steps:
+      - name: Verify all dependencies passed
+        if: needs.check.result != 'success' || needs.test.result != 'success'
+        run: |
+          echo "Dependencies failed: check=${{ needs.check.result }}, test=${{ needs.test.result }}"
+          exit 1
