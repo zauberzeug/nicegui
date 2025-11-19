@@ -58,7 +58,7 @@ class Client:
     shared_body_html = ''
     '''HTML to be inserted in the <body> of every page template.'''
 
-    def __init__(self, page: page, *, request: Request | None = None, _init_self_delete: bool = True) -> None:
+    def __init__(self, page: page, *, request: Request | None = None) -> None:
         self._request = request
         self.id = str(uuid.uuid4())
         self.created = time.time()
@@ -101,8 +101,7 @@ class Client:
         with self:
             self.sub_pages_router = SubPagesRouter(request)
 
-        if _init_self_delete:  # don't pass this unless you will call client.delete() yourself
-            self._reset_self_delete(timeout=60.0)
+        self._reset_self_delete(timeout=60.0)
 
     @property
     def request(self) -> Request:

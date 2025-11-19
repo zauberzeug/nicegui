@@ -131,7 +131,7 @@ def run(root: Optional[Callable] = None, *,
             runpy.run_path(sys.argv[0], run_name='__main__')
         root = run_script
         assert core.script_client is not None
-        core.script_client.delete()  # hence why _init_self_delete=False
+        core.script_client.delete()
 
     core.app.config.add_run_config(
         reload=reload,
