@@ -9,7 +9,7 @@ from ..helpers import DEFAULT_CLASS, DEFAULT_STYLE
 class Row(Element, default_classes='nicegui-row'):
 
     def __init__(self, *,
-                 wrap: bool = DEFAULT_STYLE or True,
+                 wrap: bool = DEFAULT_STYLE or True,  # type: ignore[assignment]
                  align_items: Literal[
                      'start',
                      'end',

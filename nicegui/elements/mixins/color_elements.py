@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import Any
 
 from ...element import Element
-from ...helpers import DEFAULT_PROP
+from ...helpers import DEFAULT_PROP, _DefaultSentinel
 
 QUASAR_COLORS = {'primary', 'secondary', 'accent', 'dark', 'positive', 'negative', 'info', 'warning'}
 for color in ['red', 'pink', 'purple', 'deep-purple', 'indigo', 'blue', 'light-blue', 'cyan', 'teal', 'green',
@@ -23,7 +23,7 @@ TAILWIND_COLORS = {
 class BackgroundColorElement(Element):
     BACKGROUND_COLOR_PROP = 'color'
 
-    def __init__(self, *, background_color: str | None | DEFAULT_PROP, **kwargs: Any) -> None:
+    def __init__(self, *, background_color: str | None | _DefaultSentinel, **kwargs: Any) -> None:
         super().__init__(**kwargs)
         if background_color in QUASAR_COLORS or background_color is DEFAULT_PROP or background_color is None:
             self._props.set(self.BACKGROUND_COLOR_PROP, background_color)
@@ -38,7 +38,7 @@ class BackgroundColorElement(Element):
 class TextColorElement(Element):
     TEXT_COLOR_PROP = 'color'
 
-    def __init__(self, *, text_color: str | None | DEFAULT_PROP, **kwargs: Any) -> None:
+    def __init__(self, *, text_color: str | None | _DefaultSentinel, **kwargs: Any) -> None:
         super().__init__(**kwargs)
         if text_color in QUASAR_COLORS or text_color is DEFAULT_PROP or text_color is None:
             self._props[self.TEXT_COLOR_PROP] = text_color

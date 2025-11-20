@@ -6,14 +6,14 @@ from typing_extensions import Self
 
 from ...binding import BindableProperty, bind, bind_from, bind_to
 from ...element import Element
-from ...helpers import DEFAULT_PROP
+from ...helpers import _DefaultSentinel
 
 
 class IconElement(Element):
     icon = BindableProperty(
         on_change=lambda sender, icon: cast(Self, sender)._handle_icon_change(icon))  # pylint: disable=protected-access
 
-    def __init__(self, *, icon: str | None | DEFAULT_PROP, **kwargs: Any) -> None:
+    def __init__(self, *, icon: str | None | _DefaultSentinel, **kwargs: Any) -> None:
         super().__init__(**kwargs)
         self.icon = icon
         self._props.set('icon', icon)
