@@ -118,6 +118,10 @@ def run(root: Optional[Callable] = None, *,
     """
     if core.script_mode:
         if Client.page_routes:
+            if not core.script_client.content.default_slot.children and (core.script_client._head_html or core.script_client._body_html):  # pylint: disable=protected-access
+                helpers.warn_once(
+                    'Note: You had no other UI elements in the global scope than ui.add_head_html / ui.add_body_html / ui.add_css. \n'
+                    'To resolve the RuntimeError below, consider using shared=True, as they do not constitute UI elements. \n')
             raise RuntimeError('ui.page cannot be used in NiceGUI scripts where you define UI in the global scope. '
                                'To use multiple pages, either move all UI into page functions or use ui.sub_pages.')
 
