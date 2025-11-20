@@ -15,7 +15,7 @@ def main_demo() -> None:
 
 @doc.demo('Context menus with dynamic content', '''
     To show a context menu with content that changes dynamically, e.g. based on the position of the mouse,
-    it is recommended to re-use the same context menu instance.
+    it is recommended to reuse the same context menu instance.
     This demo shows how to clear the context menu and add new items to it.
 ''')
 def update_context_menu() -> None:
