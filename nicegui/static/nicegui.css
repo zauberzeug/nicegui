@@ -63,6 +63,7 @@
 }
 .nicegui-step .q-stepper__nav {
   padding-top: 8px;
+  gap: 8px;
 }
 
 /* HACK: avoid stutter when expansion item is toggled */
