@@ -52,8 +52,7 @@ def test_replace_select(screen: Screen):
             ui.select(['A'], value='A')
 
         def replace():
-            container.clear()
-            with container:
+            with container.clear():
                 ui.select(['B'], value='B')
         ui.button('Replace', on_click=replace)
 

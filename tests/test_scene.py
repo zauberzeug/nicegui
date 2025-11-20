@@ -109,8 +109,7 @@ def test_replace_scene(screen: Screen):
                 scene.sphere().with_name('sphere')
 
         def replace():
-            container.clear()
-            with container:
+            with container.clear():
                 nonlocal scene
                 with ui.scene() as scene:
                     scene.box().with_name('box')

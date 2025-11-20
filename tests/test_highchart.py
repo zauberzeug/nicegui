@@ -100,8 +100,7 @@ def test_replace_chart(screen: Screen):
             ui.highchart({'series': [{'name': 'A'}]})
 
         def replace():
-            container.clear()
-            with container:
+            with container.clear():
                 ui.highchart({'series': [{'name': 'B'}]})
         ui.button('Replace', on_click=replace)
 
