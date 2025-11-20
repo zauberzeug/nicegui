@@ -1,6 +1,9 @@
-# Use Node Modules as Third-party Dependencies
+# Signature Pad
 
-This example demonstrates how to use third-party node modules as dependencies in a NiceGUI app.
+Build a custom element based on the third-party NPM module [signature_pad](https://www.npmjs.com/package/signature_pad).
+
+![Screenshot](screenshot.webp)
+
 The app uses the [signature_pad](https://www.npmjs.com/package/signature_pad) node module to create a signature pad.
 In package.json, the signature_pad module is listed as a dependency,
 while signature_pad.js and signature_pad.py define the new UI element which can be used in main.py.

@@ -1,6 +1,9 @@
 # Custom SFC Vue Component using Vite
 
-This example demonstrates how to build Single-File Component (SFC) Vue components with Vite in NiceGUI.
+Build Single-File Component (SFC) Vue components with Vite in NiceGUI.
+
+![Screenshot](screenshot.webp)
+
 Using Vite rather than NiceGUI's vbuild based build step currently supports more features of the SFC spec.
 It might be useful to see also:
 

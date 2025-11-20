@@ -1,6 +1,9 @@
-# Use Bundled Node Modules as Third-party Dependencies
+# Node Module Integration
 
-This example demonstrates how to use multiple third-party node modules as dependencies in a NiceGUI app.
+Use multiple third-party NPM modules as dependencies in a NiceGUI app.
+
+![Screenshot](screenshot.webp)
+
 The app uses the [is-odd](https://www.npmjs.com/package/is-odd) node modules to check if a number is even or odd.
 We chose this package to demonstrate a very simple node module which has a dependency itself,
 namely the [is-number](https://www.npmjs.com/package/is-number) package.
