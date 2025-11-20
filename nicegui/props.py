@@ -138,3 +138,12 @@ class Props(ObservableDict, Generic[T]):
                     props[key] = True
 
         return props
+
+    def set(self, key: str, value: Any) -> None:
+        """Set a prop value unless it is ``DEFAULT_PROPS``; remove it if the value is ``None``."""
+        if value is helpers.DEFAULT_PROP:
+            return
+        if value is None:
+            self.pop(key, None)
+        else:
+            self[key] = value

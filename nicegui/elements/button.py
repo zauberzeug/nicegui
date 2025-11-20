@@ -4,19 +4,20 @@ from typing import Optional
 from typing_extensions import Self
 
 from ..events import ClickEventArguments, Handler, handle_event
+from ..helpers import DEFAULT_PROP
 from .mixins.color_elements import BackgroundColorElement
 from .mixins.disableable_element import DisableableElement
 from .mixins.icon_element import IconElement
 from .mixins.text_element import TextElement
 
 
-class Button(IconElement, TextElement, DisableableElement, BackgroundColorElement):
+class Button(IconElement, TextElement, DisableableElement, BackgroundColorElement, default_props='color=primary'):
 
     def __init__(self,
                  text: str = '', *,
                  on_click: Optional[Handler[ClickEventArguments]] = None,
-                 color: Optional[str] = 'primary',
-                 icon: Optional[str] = None,
+                 color: Optional[str] = DEFAULT_PROP or 'primary',  # type: ignore[assignment]
+                 icon: Optional[str] = DEFAULT_PROP or None,  # type: ignore[assignment]
                  ) -> None:
         """Button
 
@@ -29,8 +30,8 @@ class Button(IconElement, TextElement, DisableableElement, BackgroundColorElemen
 
         :param text: the label of the button
         :param on_click: callback which is invoked when button is pressed
-        :param color: the color of the button (either a Quasar, Tailwind, or CSS color or `None`, default: 'primary')
-        :param icon: the name of an icon to be displayed on the button (default: `None`)
+        :param color: the color of the button (either a Quasar, Tailwind, or CSS color or `None`, default: "primary" unless overridden by default props)
+        :param icon: the name of an icon to be displayed on the button (default: ``None`` unless overridden by default props)
         """
         super().__init__(tag='q-btn', text=text, background_color=color, icon=icon)
 

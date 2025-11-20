@@ -1,6 +1,9 @@
-from typing import Any, Optional
+from __future__ import annotations
+
+from typing import Any
 
 from ...element import Element
+from ...helpers import DEFAULT_PROP
 
 QUASAR_COLORS = {'primary', 'secondary', 'accent', 'dark', 'positive', 'negative', 'info', 'warning'}
 for color in ['red', 'pink', 'purple', 'deep-purple', 'indigo', 'blue', 'light-blue', 'cyan', 'teal', 'green',
@@ -20,24 +23,26 @@ TAILWIND_COLORS = {
 class BackgroundColorElement(Element):
     BACKGROUND_COLOR_PROP = 'color'
 
-    def __init__(self, *, background_color: Optional[str], **kwargs: Any) -> None:
+    def __init__(self, *, background_color: str | None | DEFAULT_PROP, **kwargs: Any) -> None:
         super().__init__(**kwargs)
-        if background_color in QUASAR_COLORS:
-            self._props[self.BACKGROUND_COLOR_PROP] = background_color
+        if background_color in QUASAR_COLORS or background_color is DEFAULT_PROP or background_color is None:
+            self._props.set(self.BACKGROUND_COLOR_PROP, background_color)
         elif background_color in TAILWIND_COLORS:
             self._classes.append(f'bg-{background_color}')
-        elif background_color is not None:
+            self._props.pop(self.BACKGROUND_COLOR_PROP, None)
+        else:
             self._style['background-color'] = background_color
+            self._props.pop(self.BACKGROUND_COLOR_PROP, None)
 
 
 class TextColorElement(Element):
     TEXT_COLOR_PROP = 'color'
 
-    def __init__(self, *, text_color: Optional[str], **kwargs: Any) -> None:
+    def __init__(self, *, text_color: str | None | DEFAULT_PROP, **kwargs: Any) -> None:
         super().__init__(**kwargs)
-        if text_color in QUASAR_COLORS:
+        if text_color in QUASAR_COLORS or text_color is DEFAULT_PROP or text_color is None:
             self._props[self.TEXT_COLOR_PROP] = text_color
         elif text_color in TAILWIND_COLORS:
             self._classes.append(f'text-{text_color}')
-        elif text_color is not None:
+        else:
             self._style['color'] = text_color

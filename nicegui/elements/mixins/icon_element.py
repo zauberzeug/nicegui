@@ -1,26 +1,28 @@
-from typing import Any, Callable, Optional, cast
+from __future__ import annotations
+
+from typing import Any, Callable, cast
 
 from typing_extensions import Self
 
 from ...binding import BindableProperty, bind, bind_from, bind_to
 from ...element import Element
+from ...helpers import DEFAULT_PROP
 
 
 class IconElement(Element):
     icon = BindableProperty(
         on_change=lambda sender, icon: cast(Self, sender)._handle_icon_change(icon))  # pylint: disable=protected-access
 
-    def __init__(self, *, icon: Optional[str] = None, **kwargs: Any) -> None:  # pylint: disable=redefined-builtin
+    def __init__(self, *, icon: str | None | DEFAULT_PROP, **kwargs: Any) -> None:
         super().__init__(**kwargs)
         self.icon = icon
-        if icon is not None:
-            self._props['icon'] = icon
+        self._props.set('icon', icon)
 
     def bind_icon_to(self,
                      target_object: Any,
                      target_name: str = 'icon',
-                     forward: Optional[Callable[[Any], Any]] = None, *,
-                     strict: Optional[bool] = None,
+                     forward: Callable[[Any], Any] | None = None, *,
+                     strict: bool | None = None,
                      ) -> Self:
         """Bind the icon of this element to the target object's target_name property.
 
@@ -39,8 +41,8 @@ class IconElement(Element):
     def bind_icon_from(self,
                        target_object: Any,
                        target_name: str = 'icon',
-                       backward: Optional[Callable[[Any], Any]] = None, *,
-                       strict: Optional[bool] = None,
+                       backward: Callable[[Any], Any] | None = None, *,
+                       strict: bool | None = None,
                        ) -> Self:
         """Bind the icon of this element from the target object's target_name property.
 
@@ -59,9 +61,9 @@ class IconElement(Element):
     def bind_icon(self,
                   target_object: Any,
                   target_name: str = 'icon', *,
-                  forward: Optional[Callable[[Any], Any]] = None,
-                  backward: Optional[Callable[[Any], Any]] = None,
-                  strict: Optional[bool] = None,
+                  forward: Callable[[Any], Any] | None = None,
+                  backward: Callable[[Any], Any] | None = None,
+                  strict: bool | None = None,
                   ) -> Self:
         """Bind the icon of this element to the target object's target_name property.
 
@@ -81,19 +83,16 @@ class IconElement(Element):
              self_strict=False, other_strict=strict)
         return self
 
-    def set_icon(self, icon: Optional[str]) -> None:
+    def set_icon(self, icon: str | None) -> None:
         """Set the icon of this element.
 
         :param icon: The new icon.
         """
         self.icon = icon
 
-    def _handle_icon_change(self, icon: Optional[str]) -> None:
+    def _handle_icon_change(self, icon: str | None) -> None:
         """Called when the icon of this element changes.
 
         :param icon: The new icon.
         """
-        if icon is not None:
-            self._props['icon'] = icon
-        else:
-            self._props.pop('icon', None)
+        self._props.set('icon', icon)

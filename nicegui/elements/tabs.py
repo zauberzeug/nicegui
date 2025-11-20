@@ -4,6 +4,7 @@ from typing import Any
 
 from ..context import context
 from ..events import Handler, ValueChangeEventArguments
+from ..helpers import DEFAULT_PROP
 from .mixins.disableable_element import DisableableElement
 from .mixins.icon_element import IconElement
 from .mixins.label_element import LabelElement
@@ -49,14 +50,14 @@ class Tab(LabelElement, IconElement, DisableableElement):
         self.tabs = context.slot.parent
 
 
-class TabPanels(ValueElement):
+class TabPanels(ValueElement, default_props='animated keep_alive'):
 
     def __init__(self,
                  tabs: Tabs | None = None, *,
                  value: Tab | TabPanel | str | None = None,
                  on_change: Handler[ValueChangeEventArguments] | None = None,
-                 animated: bool = True,
-                 keep_alive: bool = True,
+                 animated: bool = DEFAULT_PROP or True,  # type: ignore[assignment]
+                 keep_alive: bool = DEFAULT_PROP or True,  # type: ignore[assignment]
                  ) -> None:
         """Tab Panels
 
@@ -70,14 +71,14 @@ class TabPanels(ValueElement):
         :param tabs: an optional `ui.tabs` element that controls this element
         :param value: `ui.tab`, `ui.tab_panel`, or name of the tab panel to be initially visible
         :param on_change: callback to be executed when the visible tab panel changes
-        :param animated: whether the tab panels should be animated (default: `True`)
-        :param keep_alive: whether to use Vue's keep-alive component on the content (default: `True`)
+        :param animated: whether the tab panels should be animated (default: ``True`` unless overridden by default props)
+        :param keep_alive: whether to use Vue's keep-alive component on the content (default: ``True`` unless overridden by default props)
         """
         super().__init__(tag='q-tab-panels', value=value, on_value_change=on_change)
         if tabs is not None:
             tabs.bind_value(self, 'value')
-        self._props['animated'] = animated
-        self._props['keep-alive'] = keep_alive
+        self._props.set('animated', animated)
+        self._props.set('keep-alive', keep_alive)
 
     def _value_to_model_value(self, value: Any) -> Any:
         return value.props['name'] if isinstance(value, (Tab, TabPanel)) else value

@@ -14,6 +14,8 @@ from inspect import Parameter, signature
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
+from typing_extensions import Self
+
 from .context import context
 from .logging import log
 
@@ -26,6 +28,16 @@ if sys.version_info < (3, 13):
     from asyncio import iscoroutinefunction
 else:
     from inspect import iscoroutinefunction
+
+
+class _DefaultSentinel:
+    def __or__(self, other: int) -> Self:
+        return self
+
+
+DEFAULT_PROP = _DefaultSentinel()
+DEFAULT_CLASS = _DefaultSentinel()
+DEFAULT_STYLE = _DefaultSentinel()
 
 
 def warn_once(message: str, *, stack_info: bool = False) -> None:
