@@ -44,5 +44,7 @@ class TextColorElement(Element):
             self._props[self.TEXT_COLOR_PROP] = text_color
         elif text_color in TAILWIND_COLORS:
             self._classes.append(f'text-{text_color}')
+            self._props.pop(self.TEXT_COLOR_PROP, None)
         else:
             self._style['color'] = text_color
+            self._props.pop(self.TEXT_COLOR_PROP, None)
