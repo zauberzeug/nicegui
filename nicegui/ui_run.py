@@ -128,6 +128,14 @@ def run(root: Optional[Callable] = None, *,
             return
 
         def run_script() -> None:
+            if not sys.argv or not sys.argv[0] or not helpers.is_file(sys.argv[0]):
+                raise RuntimeError(
+                    'Script mode requires a valid script file to re-execute.\n'
+                    'This error occurs when running code interactively (e.g., Shift-Enter in an IDE).\n'
+                    'To fix this, either:\n'
+                    '  1. Run the complete file instead of a selection (e.g., "python script.py")\n'
+                    '  2. Use a root function: wrap your UI code in a function and pass it to ui.run(root=my_function)'
+                )
             runpy.run_path(sys.argv[0], run_name='__main__')
         root = run_script
         assert core.script_client is not None

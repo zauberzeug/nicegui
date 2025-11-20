@@ -364,5 +364,74 @@ doc.text('Comparison with the screen fixture', '''
     but in most cases the speed of the `user` fixture makes it the first choice.
 ''')
 
+
+doc.text('User Simulation Context', '''
+    The [`user_simulation`](https://github.com/zauberzeug/nicegui/blob/main/nicegui/testing/user_simulation.py) context
+    is the low-level building block behind the `user` fixture.
+    It spins up a NiceGUI app inside the same event loop, providing deterministic test control without Selenium.
+    Unlike the `user` fixture, it does not rely on pytest-specific infrastructure
+    and can be used with `unittest` or within plain async code.
+
+    The context supports three testing approaches:
+
+    - Test a `root` callable directly.
+    - Test a specific main file by passing its path.
+    - Define `ui.page` definitions inline within the context.
+
+    More usage examples can be found in
+    [`tests/test_user_simulation_context.py`](https://github.com/zauberzeug/nicegui/blob/main/tests/test_user_simulation_context.py).
+''')
+
+
+@doc.ui
+def user_simulation_examples():
+    with ui.row().classes('gap-4 items-stretch'):
+        with python_window(classes='w-[700px]', title='script mode with root'):
+            ui.markdown('''
+                ```python
+                from nicegui.testing import user_simulation
+
+                async def test_click_via_root():
+                    def root():
+                        ui.button('Click me', on_click=lambda: ui.notify('Hello World!'))
+
+                    async with user_simulation(root) as user:
+                        await user.open('/')
+                        await user.should_see('Click me')
+                        user.find(ui.button).click()
+                        await user.should_see('Hello World!')
+                ```
+            ''')
+
+        with python_window(classes='w-[700px]', title='main file via path'):
+            ui.markdown('''
+                ```python
+                from nicegui.testing import user_simulation
+
+                async def test_click_via_main_file():
+                    async with user_simulation(main_file='app.py') as user:
+                        await user.open('/')
+                        await user.should_see('Main file content')
+                ```
+            ''')
+
+        with python_window(classes='w-[700px]', title='inline UI definitions'):
+            ui.markdown('''
+                ```python
+                from nicegui.testing import user_simulation
+
+                async def test_inline_pages():
+                    async with user_simulation() as user:
+
+                        @ui.page('/')
+                        def main_page():
+                            ui.label('Main page')
+
+                        await user.open('/')
+                        await user.should_see('Main page')
+                ```
+            ''')
+
+
 doc.reference(User, title='User Reference')
 doc.reference(UserInteraction, title='UserInteraction Reference')

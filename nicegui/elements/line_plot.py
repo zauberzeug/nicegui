@@ -1,5 +1,7 @@
 from typing import Any, Literal, Union
 
+from typing_extensions import Self
+
 from .pyplot import Pyplot
 
 
@@ -90,7 +92,7 @@ class LinePlot(Pyplot):
 
         self._convert_to_html()
 
-    def clear(self) -> None:
+    def clear(self) -> Self:
         """Clear the line plot."""
         super().clear()
         self.x.clear()
@@ -99,3 +101,4 @@ class LinePlot(Pyplot):
         for line in self.lines:
             line.set_data([], [])
         self._convert_to_html()
+        return self
