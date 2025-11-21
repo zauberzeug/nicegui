@@ -21,3 +21,7 @@
 - plotly.js: ^3.1.1 ([MIT](https://opensource.org/licenses/MIT))
 - three: ^0.180.0 ([MIT](https://opensource.org/licenses/MIT))
 - @tweenjs/tween.js: ^25.0.0 ([MIT](https://opensource.org/licenses/MIT))
+- sortablejs: ^1.15.6 ([MIT](https://opensource.org/licenses/MIT))
+- @xterm/xterm: ^5.5.0 ([MIT](https://opensource.org/licenses/MIT))
+- @xterm/addon-fit: ^0.10.0 ([MIT](https://opensource.org/licenses/MIT))
+- @xterm/addon-web-links: ^0.11.0 ([MIT](https://opensource.org/licenses/MIT))
