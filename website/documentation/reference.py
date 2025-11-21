@@ -30,7 +30,7 @@ def generate_class_doc(class_obj: type, part_title: str) -> None:
     def owner_label(owner):
         if owner is not class_obj:
             ui.label(f'(inherited from {owner.__name__})') \
-                .classes('ml-8 text-sm text-gray-500 dark:text-gray-400 -mt-4')
+                .classes('ml-8 text-sm text-gray-500 dark:text-gray-400 -mt-3')
     if properties:
         subheading('Properties', anchor_name=create_anchor_name(part_title.replace('Reference', 'Properties')))
         with ui.column().classes('gap-2 w-full overflow-x-auto'):
