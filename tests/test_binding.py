@@ -275,7 +275,7 @@ def test_binding_dict_is_not_strict(screen: Screen):
     screen.open('/')
 
 
-def test__binding_refresh_interval_none(screen: Screen):
+def test_binding_refresh_interval_none(screen: Screen):
     class Model:
         val: int = 0
 
@@ -285,5 +285,4 @@ def test__binding_refresh_interval_none(screen: Screen):
         ui.label().bind_text_from(Model, 'val')
 
     screen.open('/')
-    screen.assert_py_logger('WARNING', re.compile(
-        'Can not use active binding if binding_refresh_interval is None (i.e. disabled).'))
+    screen.assert_py_logger('WARNING', re.compile('Should not use active binding if binding_refresh_interval is None'))

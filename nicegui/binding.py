@@ -51,8 +51,9 @@ def _set_attribute(obj: object | Mapping, name: str, value: Any) -> None:
 
 async def refresh_loop() -> None:
     """Refresh all bindings in an endless loop."""
-    binding_refresh_interval = core.app.config.binding_refresh_interval
-    assert binding_refresh_interval is not None, 'binding_refresh_interval is None'
+    if (binding_refresh_interval := core.app.config.binding_refresh_interval) is None or binding_refresh_interval <= 0:
+        binding_refresh_interval = 0.1
+
     while True:
         _refresh_step()
         try:
@@ -84,7 +85,7 @@ class _ActiveLinkRefresher:
         """If not already running, [re]start the active bindings refresher task."""
         if not cls.running or cls.running.done():
             if core.app.config.binding_refresh_interval is None:
-                log.warning('Can not use active binding if binding_refresh_interval is None (i.e. disabled).')
+                log.warning('Should not use active binding if binding_refresh_interval is None (i.e. disabled).')
             cls.running = background_tasks.create(refresh_loop(), name='refresh bindings')
 
 
