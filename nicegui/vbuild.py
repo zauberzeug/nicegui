@@ -16,10 +16,10 @@ class VBuild:
 
         name = filepath.stem.replace('/', '-').replace('\\', '-').replace(':', '-').replace('.', '-')
         html = re.sub(r'^<([\w-]+)', rf'<\1 data-{name}', parser.html)
-        self.html = f'<script type="text/x-template" id="tpl-{name}">{html}</script>'
+        self.html = f'<script type="text/x-template" id="tpl-{name}">\n    {html}\n</script>'
         self.style = '\n'.join(add_css_prefix(style, '') for style in parser.styles) + '\n'
         self.style += '\n'.join(add_css_prefix(style, f'*[data-{name}]') for style in parser.scopedStyles)
-        self.script = create_vue_component(filepath.stem, f'#tpl-{name}', parser.script)
+        self.script = parser.script or ''
 
 
 class VueParser(HTMLParser):  # pylint: disable=abstract-method  # pylint assumes there is an abstract ``error`` method
@@ -81,23 +81,9 @@ class VueParser(HTMLParser):  # pylint: disable=abstract-method  # pylint assume
         return text
 
 
-def create_vue_component(name: str, template: str, code: str | None) -> str:
-    """Create a Vue component."""
-    if code is None:
-        js = '{}'
-    else:
-        p1 = code.find('{')
-        p2 = code.rfind('}')
-        if not 0 <= p1 <= p2:
-            raise ValueError('Cannot find valid content inside "{" and "}"')
-        js = code[p1:p2 + 1]
-    js = js.replace('{', f'{{template:"{template}",', 1)
-    return f'''var {name} = Vue.component('{name}', {js});'''
-
-
 def add_css_prefix(css: str, prefix: str) -> str:
     """Add the prefix (CSS selector) to all rules in ``css``."""
-    medias: list[tuple[str, str]] = []
+    media_queries: list[tuple[str, str]] = []
     while '@media' in css:
         p1 = css.find('@media', 0)
         p2 = css.find('{', p1) + 1
@@ -109,7 +95,7 @@ def add_css_prefix(css: str, prefix: str) -> str:
         media_def = block[:block.find('{')].strip()
         media_css = block[block.find('{') + 1:block.rfind('}')].strip()
         css = css.replace(block, '')
-        medias.append((media_def, add_css_prefix(media_css, prefix)))
+        media_queries.append((media_def, add_css_prefix(media_css, prefix)))
 
     lines: list[str] = []
     css = re.sub(re.compile(r'/\*.*?\*/', re.DOTALL), '', css)
@@ -121,5 +107,5 @@ def add_css_prefix(css: str, prefix: str) -> str:
         else:
             line = [i.strip() for i in selectors.split(',')]
         lines.append(', '.join(line) + ' {' + declarations.strip())
-    lines.extend(f'{d} {{ {c} }}' for d, c in medias)
+    lines.extend(f'{d} {{ {c} }}' for d, c in media_queries)
     return '\n'.join(lines).strip()

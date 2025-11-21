@@ -227,6 +227,7 @@ def test_nested_sub_pages_on_root_path(screen: Screen):
         await asyncio.sleep(0.2)
         ui.label('some content')
 
+    screen.allowed_js_errors.append('/bad_path - Failed to load resource')
     screen.open('/')
     screen.should_not_contain('some content')
     screen.should_contain('home1')
@@ -837,7 +838,7 @@ def test_sub_pages_with_url_fragments(screen: Screen):
         calls['main'] += 1
         ui.label('Main page')
         ui.link('Go to bottom', '/page#bottom')
-        # NOTE: extend content of main page so we can verify that scroll positions are resetted when doing cross-page navigation
+        # NOTE: extend content of main page so we can verify that scroll positions are reset when doing cross-page navigation
         for i in range(100):
             ui.label(f'Line {i}')
 
@@ -955,6 +956,7 @@ def test_on_path_changed_event(screen: Screen):
         calls['other'] += 1
         ui.label('other page')
 
+    screen.allowed_js_errors.append('/bad_path - Failed to load resource')
     screen.open('/')
     screen.should_contain('main page')
     assert paths == []  # NOTE: initial path is not reported, because the path does not "change" on first load
@@ -1070,6 +1072,7 @@ def test_navigate_from_404_to_root_path(screen: Screen):
     def main():
         ui.label('main page')
 
+    screen.allowed_js_errors.append('/bad_path - Failed to load resource')
     screen.open('/')
     screen.click('Go to bad_path')
     screen.should_contain('404: sub page /bad_path not found')
@@ -1091,6 +1094,7 @@ def test_http_404_on_initial_request(screen: Screen):
     assert httpx.get(f'http://localhost:{Screen.PORT}/').status_code == 200
     assert httpx.get(f'http://localhost:{Screen.PORT}/bad_path').status_code == 404
 
+    screen.allowed_js_errors.append('/bad_path - Failed to load resource')
     screen.open('/')
     screen.should_contain('main page')
 
@@ -1111,6 +1115,7 @@ def test_http_404_on_initial_request_with_async_page_builder(screen: Screen):
     assert httpx.get(f'http://localhost:{Screen.PORT}/').status_code == 200
     assert httpx.get(f'http://localhost:{Screen.PORT}/bad_path').status_code == 404
 
+    screen.allowed_js_errors.append('/bad_path - Failed to load resource')
     screen.open('/')
     screen.should_contain('main page')
 
@@ -1142,6 +1147,7 @@ def test_http_404_on_initial_request_with_async_sub_page_builder(screen: Screen)
     assert httpx.get(f'http://localhost:{Screen.PORT}/async-sub').status_code == 200
     assert httpx.get(f'http://localhost:{Screen.PORT}/async-sub/bad_path').status_code == 404
 
+    screen.allowed_js_errors.append('/bad_path - Failed to load resource')
     screen.open('/sub')
     screen.should_contain('sub sub page')
 
@@ -1213,3 +1219,18 @@ def test_refresh_sub_page(screen: Screen):
 
     screen.click('Refresh via SubPages')
     assert calls == {'index': 1, 'outer': 3, 'inner_main': 2, 'inner_other': 4}
+
+
+def test_navigation_not_crashing_for_root_pages_with_remaining_path(screen: Screen):
+    """Regression test for #5437: navigation crashed with KeyError: 'route'."""
+
+    def root():
+        ui.sub_pages({
+            '/': lambda: ui.link('other/1', '/other/1'),
+            '/other': lambda: ui.label('other page'),
+        })
+
+    screen.ui_run_kwargs['root'] = root
+    screen.open('/')
+    screen.click('other/1')
+    screen.should_contain('404: sub page /other/1 not found')

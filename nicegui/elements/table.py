@@ -1,5 +1,5 @@
 import importlib.util
-from typing import TYPE_CHECKING, Literal, Optional, Union
+from typing import TYPE_CHECKING, Any, Literal, Optional, Union
 
 from typing_extensions import Self
 
@@ -12,6 +12,7 @@ from ..events import (
     ValueChangeEventArguments,
     handle_event,
 )
+from ..logging import log
 from .mixins.filter_element import FilterElement
 
 if importlib.util.find_spec('pandas'):
@@ -42,6 +43,7 @@ class Table(FilterElement, component='table.js'):
         """Table
 
         A table based on Quasar's `QTable <https://quasar.dev/vue-components/table>`_ component.
+        Updates can be pushed to the table by updating the ``rows`` or ``columns`` properties.
 
         If ``selection`` is "single" or "multiple", then a ``selected`` property is accessible containing the selected rows.
 
@@ -99,6 +101,30 @@ class Table(FilterElement, component='table.js'):
             for handler in self._pagination_change_handlers:
                 handle_event(handler, arguments)
         self.on('update:pagination', handle_pagination_change)
+
+    def _to_dict(self) -> dict[str, Any]:
+        # scan rows for lists and add slot templates if needed
+        for column in self._props['columns']:
+            field = column.get('field')
+            name = column.get('name')
+            if not field or not name or f'body-cell-{name}' in self.slots:
+                continue
+            for row in self._props['rows']:
+                value = row.get(field)
+                if isinstance(value, (list, set, tuple)):
+                    log.warning(
+                        f'Found list in column "{name}": {value}.\n'
+                        'Unless there is slot template, table rows must not contain lists or the browser will crash.\n'
+                        'NiceGUI is intervening by adding a slot template to display the list as comma-separated values.'
+                    )
+                    self.add_slot(f'body-cell-{name}', '''
+                        <td class="text-right" :props="props">
+                            {{ Array.isArray(props.value) ? props.value.join(', ') : props.value }}
+                        </td>
+                    ''')
+                    break
+
+        return super()._to_dict()
 
     def on_select(self, callback: Handler[TableSelectionEventArguments]) -> Self:
         """Add a callback to be invoked when the selection changes."""

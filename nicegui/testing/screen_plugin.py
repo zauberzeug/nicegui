@@ -9,7 +9,6 @@ from selenium.webdriver.chrome.service import Service
 
 from .general_fixtures import (  # noqa: F401  # pylint: disable=unused-import
     nicegui_reset_globals,
-    prepare_simulation,
     pytest_addoption,
     pytest_configure,
 )
@@ -98,6 +97,11 @@ def screen(nicegui_reset_globals,  # noqa: F811, pylint: disable=unused-argument
             screen_.shot(request.node.name, failed=test_failed or bool(logs))
         if logs:
             pytest.fail('There were unexpected ERROR logs.', pytrace=False)
+        if screen_.is_open and Screen.CATCH_JS_ERRORS:
+            for js_error in screen_.selenium.get_log('browser'):
+                if str(js_error.get('level', '')).upper() in ('SEVERE', 'ERROR') and \
+                        not any(allowed_error in js_error['message'] for allowed_error in screen_.allowed_js_errors):
+                    pytest.fail(f'JavaScript console error:\n{js_error}', pytrace=False)
     finally:
         os.environ.pop('NICEGUI_SCREEN_TEST_PORT', None)
         screen_.stop_server()

@@ -1,86 +1,99 @@
 [project]
 name = "nicegui"
-version = "3.0.4.dev0"
+version = "3.0.0"
 description = "Create web-based user interfaces with Python. The nice way."
-authors = [
-    {name = "Zauberzeug GmbH", email = "info@zauberzeug.com"}
-]
-license = {text = "MIT"}
+authors = [{ name = "Zauberzeug GmbH", email = "info@zauberzeug.com" }]
+requires-python = ">=3.9,<4"
 readme = "README.md"
-keywords = ["gui", "ui", "web", "interface", "live"]
-requires-python = ">=3.9"
+license = "MIT"
+keywords = [
+    "gui",
+    "ui",
+    "web",
+    "interface",
+    "live",
+]
 dependencies = [
     "typing-extensions>=4.0.0",
     "markdown2>=2.4.7,!=2.4.11",
     "Pygments>=2.15.1,<3.0.0",
-    "starlette>=0.45.3",
+    "starlette>=0.49.1",
     "uvicorn[standard]>=0.22.0",
     "fastapi>=0.109.1",
-    "python-socketio[asyncio-client]>=5.14.0", # https://github.com/zauberzeug/nicegui/security/dependabot/52
-    "jinja2>=3.1.6", # https://github.com/zauberzeug/nicegui/security/dependabot/44
+    "python-socketio[asyncio-client]>=5.14.0",
+    "jinja2>=3.1.6,<4",
     "python-multipart>=0.0.18",
-    "orjson>=3.9.15; platform_machine != 'i386' and platform_machine != 'i686'", # https://github.com/zauberzeug/nicegui/security/dependabot/29, orjson does not support 32bit
-    "itsdangerous>=2.1.2",
+    "orjson>=3.9.15 ; platform_machine != 'i386' and platform_machine != 'i686'",
+    "itsdangerous>=2.1.2,<3",
     "aiofiles>=23.1.0",
     "httpx>=0.24.0",
     "ifaddr>=0.2.0",
     "docutils>=0.19.0",
-    "watchfiles>=0.18.1", # transitive, used by uvicorn
-    "h11>=0.16.0", # transitive, pinned to https://github.com/zauberzeug/nicegui/security/dependabot/45
-    "python-engineio>=4.12.0", # transitive, pinned to address https://github.com/zauberzeug/nicegui/issues/4602
-    "aiohttp>=3.10.2", # transitive, pinned to address https://github.com/zauberzeug/nicegui/security/dependabot/36
-    "certifi>=2024.07.04", # transitive, pinned to address https://github.com/zauberzeug/nicegui/security/dependabot/35
+    "watchfiles>=0.18.1",
+    "h11>=0.16.0",
+    "python-engineio>=4.12.0",
+    "aiohttp>=3.10.2",
+    "certifi>=2024.07.04",
+    "pydantic-core>=2.35.0",
 ]
 
 [project.optional-dependencies]
-native = ["pywebview>=5.0.1"]
+native = ["pywebview>=5.0.1,<6"]
 plotly = ["plotly>=5.13,<7.0"]
-matplotlib = ["matplotlib>=3.5.0"]
-highcharts = ["nicegui-highcharts>=2.0.2"]
-sass = ["libsass>=0.23.0"]
+matplotlib = ["matplotlib>=3.5.0,<4"]
+highcharts = ["nicegui-highcharts>=2.0.2,<3"]
 redis = ["redis>=4.0.0"]
-pydantic = ["pydantic-core>=2.35.0"] # Optional to not force Pydantic V2
-
-[dependency-groups]
-dev = [
-    "autopep8>=1.5.7,<3.0.0",
-    "debugpy>=1.3.0",
-    "pytest-selenium>=4.1.0",
-    "pytest-asyncio>=0.23.0",
-    "pytest-watcher>=0.4.2",
-    "pytest>=8.2.2",
-    "requests>=2.32.4", # transitive, pinned to address https://github.com/zauberzeug/nicegui/security/dependabot/46
-    "urllib3>=1.26.18,!=2.0.0,!=2.0.1,!=2.0.2,!=2.0.3,!=2.0.4,!=2.0.5,!=2.0.6,!=2.0.7,!=2.1.0,!=2.2.0,!=2.2.1", # transitive, pinned to address https://github.com/zauberzeug/nicegui/security/dependabot/34
-    "itsdangerous>=2.1.2", # required by SessionMiddleware (see https://fastapi.tiangolo.com/?h=itsdangerous#optional-dependencies)
-    "pandas>=2.0.0; python_version<'3.13'",
-    "pandas>=2.2.3; python_version>='3.13' and python_version<'3.14'",
-    "pandas>=2.3.3; python_version>='3.14'",
-    "secure>=0.3.0",
-    "webdriver-manager>=3.8.6,<5.0.0",
-    "numpy>=1.26.0",
-    "selenium>=4.11.2",
-    "pyecharts>=2.0.4",
-    "ruff>=0.8.1",
-    "pre-commit>=4.0.0",
-    "isort>=5.11",
-    "polars>=1.12.0",
-    "mypy>=1.13.0",
-    "pylint>=3.3.1",
-    "cssbeautifier>=1.15.4",
-    "rcssmin>=1.2.1",
-    "tinycss2>=1.4.0",
-    "html-sanitizer>=2.6.0",
-]
-
-[project.scripts]
-nicegui-pack = "nicegui.scripts.pack:main"
 
 [project.urls]
 Repository = "https://github.com/zauberzeug/nicegui"
 
+[project.scripts]
+nicegui-pack = "nicegui.scripts.pack:main"
+
+[dependency-groups]
+dev = [
+    "autopep8>=1.5.7,<3.0.0",
+    "debugpy>=1.3.0,<2",
+    "pytest-selenium>=4.1.0,<5",
+    "pytest-asyncio>=0.23.0",
+    "pytest-watcher>=0.4.2,<0.5",
+    "pytest-order>=1.3.0,<2",
+    "pytest>=8.2.2,<9",
+    "requests>=2.32.4",
+    "urllib3>=1.26.18,!=2.0.0,!=2.0.1,!=2.0.2,!=2.0.3,!=2.0.4,!=2.0.5,!=2.0.6,!=2.0.7,!=2.1.0,!=2.2.0,!=2.2.1",
+    "itsdangerous>=2.1.2,<3",
+    "pandas>=2.0.0,<3 ; python_version < '3.13'",
+    "pandas>=2.2.3,<3 ; python_version >= '3.13' and python_version < '3.14'",
+    "pandas>=2.3.3,<3 ; python_version >= '3.14'",
+    "secure>=0.3.0",
+    "webdriver-manager>=3.8.6,<5.0.0",
+    "numpy>=1.26.0",
+    "selenium>=4.11.2,<5",
+    "pyecharts>=2.0.4,<3",
+    "ruff>=0.8.1",
+    "pre-commit>=4.0.0",
+    "isort>=5.11,<6",
+    "polars>=1.12.0,<2",
+    "mypy>=1.13.0,<2",
+    "pylint>=3.3.1",
+    "cssbeautifier>=1.15.4,<2",
+    "rcssmin>=1.2.1,<2",
+    "tinycss2>=1.4.0,<2",
+    "html-sanitizer>=2.6.0,<3",
+    "poetry-dynamic-versioning>=1.8.0,<2",
+]
+
 [build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
+requires = [
+    "poetry-core>=1.0.0",
+    "poetry-dynamic-versioning>=1.0.0,<2.0.0",
+]
+build-backend = "poetry_dynamic_versioning.backend"
+
+[tool.poetry-dynamic-versioning]
+enable = true
+vcs = "git"
+style = "pep440"
 
 [tool.pytest.ini_options]
 addopts = "--driver Chrome"
@@ -106,7 +119,6 @@ module = [
     "plotly.*",
     "polars.*",
     "pyecharts.*",
-    "sass",
     "socketio.*",
     "webview.*", # can be removed with next pywebview release
 ]
@@ -185,3 +197,8 @@ disable = [
     "W0718", # Catching too general exception
     "W1203", # Use % formatting in logging functions
 ]
+
+[tool.codespell]
+skip = '*.min.js,*.min.js.map,*.prod.js,*.lock'
+check-hidden = true
+ignore-words-list = 'simpy'

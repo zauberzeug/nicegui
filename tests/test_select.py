@@ -52,8 +52,7 @@ def test_replace_select(screen: Screen):
             ui.select(['A'], value='A')
 
         def replace():
-            container.clear()
-            with container:
+            with container.clear():
                 ui.select(['B'], value='B')
         ui.button('Replace', on_click=replace)
 
@@ -122,6 +121,7 @@ def test_add_new_values(screen:  Screen, option_dict: bool, multiple: bool, new_
 
     screen.open('/')
     if option_dict and new_value_mode == 'add':
+        screen.allowed_js_errors.append('500 (Internal Server Error)')
         screen.assert_py_logger('ERROR', 'new_value_mode "add" is not supported for dict options without key_generator')
         return
 

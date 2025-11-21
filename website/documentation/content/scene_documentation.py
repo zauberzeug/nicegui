@@ -70,9 +70,8 @@ def context_menu_for_3d_objects():
     from nicegui import events
 
     def handle_click(e: events.SceneClickEventArguments) -> None:
-        context_menu.clear()
         name = next((hit.object_name for hit in e.hits if hit.object_name), None)
-        with context_menu:
+        with context_menu.clear():
             if name == 'sphere':
                 ui.item('SPHERE').classes('font-bold')
                 ui.menu_item('inspect')
@@ -189,6 +188,26 @@ def scene_views():
 
         with ui.scene_view(scene).classes('h-32') as scene_view2:
             scene_view2.move_camera(x=0, y=4, z=3)
+
+
+@doc.demo('Frame Rate and Statistics', '''
+    You can configure the target frames per second (FPS) of the scene using the `fps` argument.
+    The default value is 20.
+    To see the changes for yourself, enable the statistics display using the `show_stats` argument.
+    This demo shows how to set the frame rate to 40 FPS for the main scene and 5 FPS for the static view.
+    The FPS is generally lower than the target frame rate, because the browser also takes some time to render the scene.
+    This also applies to `ui.scene_view`.
+
+    *Added in version 3.2.0*
+''')
+def fps_stats_configuration() -> None:
+    ui.label('Higher frame rate for the movable view')
+    with ui.scene(fps=40, show_stats=True).classes('w-full h-32') as scene:
+        scene.sphere()
+
+    ui.label('Lower frame rate for the static view')
+    with ui.scene_view(scene, fps=5, show_stats=True).classes('w-full h-32') as scene_view:
+        scene_view.move_camera(x=1, y=-3, z=5)
 
 
 @doc.demo('Camera Parameters', '''

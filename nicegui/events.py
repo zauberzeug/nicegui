@@ -64,6 +64,11 @@ class EChartPointClickEventArguments(UiEventArguments):
 
 
 @dataclass(**KWONLY_SLOTS)
+class MermaidNodeClickEventArguments(UiEventArguments):
+    node_id: str
+
+
+@dataclass(**KWONLY_SLOTS)
 class SceneClickHit:
     object_id: str
     object_name: str
@@ -394,6 +399,16 @@ class JsonEditorSelectEventArguments(UiEventArguments):
 class JsonEditorChangeEventArguments(UiEventArguments):
     content: dict
     errors: dict = field(default_factory=dict)
+
+
+@dataclass(**KWONLY_SLOTS)
+class XtermBellEventArguments(UiEventArguments):
+    pass
+
+
+@dataclass(**KWONLY_SLOTS)
+class XtermDataEventArguments(UiEventArguments):
+    data: str
 
 
 EventT = TypeVar('EventT', bound=EventArguments)

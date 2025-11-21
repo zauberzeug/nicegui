@@ -33,6 +33,7 @@ examples: list[Example] = [
     Example('SVG Clock', 'displays an analog clock by updating an SVG with `ui.timer`'),
     Example('Progress', 'demonstrates a progress bar for heavy computations'),
     Example('Global Worker', 'demonstrates a global worker for heavy computations with progress feedback'),
+    Example('Threaded NiceGUI', 'runs NiceGUI in a separate thread with Event-based communication'),
     Example('NGINX Subpath', 'shows the setup to serve an app behind a reverse proxy subpath'),
     Example('Script Executor', 'executes scripts on selection and displays the output'),
     Example('Local File Picker', 'demonstrates a dialog for selecting files locally on the server'),
@@ -73,4 +74,7 @@ examples: list[Example] = [
     Example('Google One-Tap Auth', 'Authenticate users via Google One-Tap'),
     Example('Google OAuth2', 'Authenticate with Google OAuth2'),
     Example('Stripe', 'Use Stripe to process payments'),
+    Example('Xterm', 'Connect a terminal emulator [xterm.js](https://github.com/xtermjs/xterm.js) to a Bash process'),
+    Example('API Requests', 'Fetch and display random quotes from [Zen Quotes API](https://zenquotes.io/)'),
+    Example('Vue Vite', 'Custom SFC Vue Component using Vite'),
 ]
