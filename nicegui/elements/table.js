@@ -20,9 +20,5 @@ export default {
       this.columns.forEach((column) => convertDynamicProperties(column, false));
       return this.columns;
     },
-    forwardedSlots() {
-      const { default: _default, ...nonDefaultSlots } = this.$slots;
-      return nonDefaultSlots;
-    },
   },
 };
