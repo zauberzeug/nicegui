@@ -11,7 +11,7 @@ import socketio
 from fastapi import HTTPException, Request
 from fastapi.responses import FileResponse, Response
 
-from . import air, background_tasks, binding, core, favicon, helpers, json, run, welcome
+from . import air, core, favicon, helpers, json, run, welcome
 from .app import App
 from .client import Client
 from .dependencies import dynamic_resources, esm_modules, js_components, libraries, resources, vue_components
@@ -140,7 +140,6 @@ async def _startup() -> None:
     core.loop = asyncio.get_running_loop()
     run.setup()
     app.start()
-    background_tasks.create(binding.refresh_loop(), name='refresh bindings')
     app.timer(10, Client.prune_instances)
     app.timer(10, Slot.prune_stacks)
     app.timer(10, prune_tab_storage)
