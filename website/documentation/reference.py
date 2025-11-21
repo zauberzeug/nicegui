@@ -31,31 +31,44 @@ def generate_class_doc(class_obj: type, part_title: str) -> None:
         if ancestor is not class_obj:
             ui.label(f'(inherited from {ancestor.__name__})') \
                 .classes('ml-8 text-sm text-gray-500 dark:text-gray-400 -mt-3')
+
+    def render_section(items: dict[str, tuple[type, object | None]], is_method: bool) -> None:
+        sorted_items = sorted(items.items())
+        native = [(n, o, a) for n, (o, a) in sorted_items if o is class_obj]
+        inherited_items = [(n, o, a) for n, (o, a) in sorted_items if o is not class_obj]
+
+        def render_item(name: str, owner: type, attr: object | None) -> None:
+            if is_method:
+                decorator = ''
+                owner_attr = owner.__dict__.get(name)
+                if isinstance(owner_attr, staticmethod):
+                    decorator += '`@staticmethod`<br />'
+                if isinstance(owner_attr, classmethod):
+                    decorator += '`@classmethod`<br />'
+                ui.markdown(f'{decorator}**`{name}`**`{_generate_method_signature_description(attr)}`') \
+                    .classes('w-full overflow-x-auto')
+            else:
+                ui.markdown(f'**`{name}`**`{_generate_property_signature_description(attr)}`')
+            ancestor_label(owner)
+            docstring = getattr(attr, '__doc__', None)
+            if docstring:
+                _render_docstring(docstring).classes('ml-8')
+
+        for name, owner, attr in native:
+            render_item(name, owner, attr)
+        if inherited_items:
+            ui.label('Inherited').classes('text-sm text-gray-500 dark:text-gray-400 mt-2')
+            for name, owner, attr in inherited_items:
+                render_item(name, owner, attr)
+
     if properties:
         subheading('Properties', anchor_name=create_anchor_name(part_title.replace('Reference', 'Properties')))
         with ui.column().classes('gap-2 w-full overflow-x-auto'):
-            for name, (ancestor, property_) in sorted(properties.items()):
-                ui.markdown(f'**`{name}`**`{_generate_property_signature_description(property_)}`')
-                ancestor_label(ancestor)
-                docstring = getattr(property_, '__doc__', None)
-                if docstring:
-                    _render_docstring(docstring).classes('ml-8')
+            render_section(properties, is_method=False)
     if methods:
         subheading('Methods', anchor_name=create_anchor_name(part_title.replace('Reference', 'Methods')))
         with ui.column().classes('gap-2 w-full overflow-x-auto'):
-            for name, (ancestor, method) in sorted(methods.items()):
-                decorator = ''
-                ancestor_attr = ancestor.__dict__.get(name)
-                if isinstance(ancestor_attr, staticmethod):
-                    decorator += '`@staticmethod`<br />'
-                if isinstance(ancestor_attr, classmethod):
-                    decorator += '`@classmethod`<br />'
-                ui.markdown(f'{decorator}**`{name}`**`{_generate_method_signature_description(method)}`') \
-                    .classes('w-full overflow-x-auto')
-                ancestor_label(ancestor)
-                docstring = getattr(method, '__doc__', None)
-                if docstring:
-                    _render_docstring(docstring).classes('ml-8')
+            render_section(methods, is_method=True)
     if ancestors:
         subheading('Inheritance', anchor_name=create_anchor_name(part_title.replace('Reference', 'Inheritance')))
         ui.markdown('\n'.join(f'- `{ancestor.__name__}`' for ancestor in ancestors))
