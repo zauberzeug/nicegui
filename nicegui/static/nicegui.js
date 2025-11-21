@@ -7,6 +7,19 @@ let mounted_app = undefined;
 
 const loaded_components = new Set();
 
+const allClasses = new Set();
+
+async function generateStylesFromClasses() {
+  if (window.__unocss_runtime === undefined) return;
+  const div = document.createElement("div");
+  div.className = Array.from(allClasses).join(" ");
+  await window.__unocss_runtime.extract(div.outerHTML);
+  for (const style of document.querySelectorAll("style[data-unocss-runtime-layer]:not([data-nicegui-moved])")) {
+    document.head.appendChild(style);
+    style.dataset.niceguiMoved = "true";
+  }
+}
+
 function parseElements(raw_elements) {
   return JSON.parse(
     raw_elements
@@ -313,6 +326,8 @@ window.onbeforeunload = function () {
 function createApp(elements, options) {
   Object.entries(elements).forEach(([_, element]) => replaceUndefinedAttributes(element));
   setInterval(() => ack(), 3000);
+  for (const el of Object.values(elements)) for (const c of el.class || []) allClasses.add(c);
+  generateStylesFromClasses().then(() => document.getElementById("app").style.removeProperty("display"));
   return (app = Vue.createApp({
     data() {
       return {
@@ -397,6 +412,10 @@ function createApp(elements, options) {
             .filter(([_, element]) => element && element.component)
             .map(([_, element]) => loadDependencies(element, options.prefix, options.version));
           await Promise.all(loadPromises);
+
+          const originalClassesCount = allClasses.size;
+          for (const el of Object.values(elements)) for (const c of el.class || []) allClasses.add(c);
+          if (allClasses.size > originalClassesCount) await generateStylesFromClasses();
 
           for (const [id, element] of Object.entries(msg)) {
             if (element === null) {

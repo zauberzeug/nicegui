@@ -6,6 +6,9 @@
     <link href="{{ favicon_url }}" rel="shortcut icon" />
     <style>
       @layer theme, base, quasar, nicegui, components, utilities, overrides, quasar_importants;
+      {% if unocss %}
+      @import url("{{ prefix | safe }}/_nicegui/{{version}}/static/unocss/{{ 'tailwind-v4' if unocss == 'wind4' else 'tailwind' }}.css") layer(base);
+      {% endif %}
       @import url("{{ prefix | safe }}/_nicegui/{{version}}/static/fonts.css") layer(base);
       {% if prod_js %}
         @import url("{{ prefix | safe }}/_nicegui/{{version}}/static/quasar.unimportant.prod.css") layer(quasar);
@@ -47,6 +50,29 @@
       @custom-variant dark (&:where(body.body--dark, body.body--dark *));
     </style>
     {% endif %}
+    <!-- prevent Prettier from removing this line -->
+    {% if unocss %}
+    <script src="{{ prefix | safe }}/_nicegui/{{version}}/static/unocss/preset-{{unocss}}.global.js"></script>
+    <script>
+      window.__unocss = {
+        presets: [() => window.__unocss_runtime.presets.preset{{unocss.title()}}({
+          dark: {
+            light: 'body.body--light',
+            dark: 'body.body--dark',
+          },
+          preflight: false,
+        })],
+        runtime: { ready: () => false },
+        outputToCssLayers: {
+          cssLayerName: (layer) => {
+            if (layer === 'default')
+              return 'utilities'
+          }
+        },
+      };
+    </script>
+    <script src="{{ prefix | safe }}/_nicegui/{{version}}/static/unocss/core.global.js"></script>
+    {% endif %}
   </head>
   <body>
     <script async src="{{ prefix | safe }}/_nicegui/{{version}}/static/es-module-shims.js"></script>
@@ -68,7 +94,7 @@
     <script defer src="{{ prefix | safe }}/_nicegui/{{version}}/static/lang/{{ language }}.umd.prod.js"></script>
     {{ body_html | safe }}
 
-    <div id="app"></div>
+    <div id="app" {% if unocss %}style="display: none" {% endif %}></div>
     <div id="popup" class="nicegui-error-popup" aria-hidden="true">
       <span>{{ translations.connection_lost }}</span>
       <span>{{ translations.trying_to_reconnect }}</span>

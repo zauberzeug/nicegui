@@ -4,6 +4,8 @@
   },
   "dependencies": {
     "@tailwindcss/browser": "4.1.13",
+    "@unocss/reset": "^66.5.9",
+    "@unocss/runtime": "^66.5.9",
     "es-module-shims": "2.6.2",
     "quasar": "2.18.5",
     "sass": "^1.94.0",
