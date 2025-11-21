@@ -229,9 +229,9 @@ def page_arguments_demo():
 
 
 @doc.demo('Wildcard Routing', '''
-    For wildcard routing where a single handler should match multiple paths,
+    For wildcard routing, where a single handler should match multiple paths,
     use `show_404=False` and access `PageArguments.remaining_path`.
-    This is useful for routing patterns like `/item/*` where everything under `/item/` goes to one handler.
+    This is useful for routing patterns like "/item/*" where everything under "/item/" goes to one handler.
 ''')
 def wildcard_demo():
     from nicegui import PageArguments
@@ -239,16 +239,18 @@ def wildcard_demo():
     # def root():
     #     ui.sub_pages({
     #         '/': main,
-    #         '/item': item_handler,
+    #         '/item': item,
     #     }, show_404=False)
 
     def main():
-        # ui.link('Item x/2/a', '/item/x/2/a')
-        # ui.link('Item foo/bar', '/item/foo/bar')
-        sub_pages.link('Item x/2/a', '/item/x/2/a')  # HIDE
-        sub_pages.link('Item foo/bar', '/item/foo/bar')  # HIDE
+        # ui.link('Item 1', '/item/1')
+        # ui.link('Item 2a', '/item/2/a')
+        # ui.link('Item 2b', '/item/2/b')
+        sub_pages.link('Item 1', '/item/1')  # HIDE
+        sub_pages.link('Item 2a', '/item/2/a')  # HIDE
+        sub_pages.link('Item 2b', '/item/2/b')  # HIDE
 
-    def item_handler(args: PageArguments):
+    def item(args: PageArguments):
         segments = [s for s in args.remaining_path.split('/') if s]
         ui.label(f'Item path: {" > ".join(segments)}')
         # ui.link('back', '/')
@@ -258,8 +260,9 @@ def wildcard_demo():
     # END OF DEMO
     sub_pages = FakeSubPages({
         '/': main,
-        '/item/x/2/a': lambda: item_handler(FakeArguments(remaining_path='/x/2/a')),  # type: ignore
-        '/item/foo/bar': lambda: item_handler(FakeArguments(remaining_path='/foo/bar')),  # type: ignore
+        '/item/1': lambda: item(FakeArguments(remaining_path='/1')),  # type: ignore
+        '/item/2/a': lambda: item(FakeArguments(remaining_path='/2/a')),  # type: ignore
+        '/item/2/b': lambda: item(FakeArguments(remaining_path='/2/b')),  # type: ignore
     })
     sub_pages.init()
 

@@ -1225,16 +1225,13 @@ def test_remaining_path_for_wildcard_routing(screen: Screen):
     @ui.page('/')
     @ui.page('/{_:path}')
     def index():
-        ui.sub_pages({
-            '/': lambda: ui.label('home'),
-            '/item': item_handler,
-        }, show_404=False)
+        ui.sub_pages({'/sub': sub_page}, show_404=False)
 
-    def item_handler(args: PageArguments):
+    def sub_page(args: PageArguments):
         ui.label(f'remaining={args.remaining_path}')
 
-    screen.open('/item/x/2/a')
-    screen.should_contain('remaining=/x/2/a')
-
-    screen.open('/item')
+    screen.open('/sub')
     screen.should_contain('remaining=')
+
+    screen.open('/sub/x/2/a')
+    screen.should_contain('remaining=/x/2/a')
