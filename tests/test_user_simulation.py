@@ -31,25 +31,25 @@ async def test_multiple_pages(create_user: Callable[[], User]) -> None:
     def other():
         ui.label('Other page')
 
-    userA = create_user()
-    userB = create_user()
+    user1 = create_user()
+    user2 = create_user()
 
-    await userA.open('/')
-    await userA.should_see('Main page')
-    await userA.should_not_see('Other page')
+    await user1.open('/')
+    await user1.should_see('Main page')
+    await user1.should_not_see('Other page')
 
-    await userB.open('/other')
-    await userB.should_see('Other page')
-    await userB.should_not_see('Main page')
+    await user2.open('/other')
+    await user2.should_see('Other page')
+    await user2.should_not_see('Main page')
 
 
 async def test_source_element(user: User) -> None:
     @ui.page('/')
     def index():
-        ui.image('https://via.placeholder.com/150')
+        ui.image('/image.jpg')
 
     await user.open('/')
-    await user.should_see('placeholder.com')
+    await user.should_see('image.jpg')
 
 
 async def test_button_click(user: User) -> None:
@@ -141,26 +141,26 @@ async def test_multi_user_navigation(create_user: Callable[[], User]) -> None:
         ui.label('Other page')
         ui.button('back', on_click=ui.navigate.back)
 
-    userA = create_user()
-    userB = create_user()
+    user1 = create_user()
+    user2 = create_user()
 
-    await userA.open('/')
-    await userA.should_see('Main page')
+    await user1.open('/')
+    await user1.should_see('Main page')
 
-    await userB.open('/')
-    await userB.should_see('Main page')
+    await user2.open('/')
+    await user2.should_see('Main page')
 
-    userA.find('go to other').click()
-    await userA.should_see('Other page')
-    await userB.should_see('Main page')
+    user1.find('go to other').click()
+    await user1.should_see('Other page')
+    await user2.should_see('Main page')
 
-    userA.find('back').click()
-    await userA.should_see('Main page')
-    await userB.should_see('Main page')
+    user1.find('back').click()
+    await user1.should_see('Main page')
+    await user2.should_see('Main page')
 
-    userA.find('forward').click()
-    await userA.should_see('Other page')
-    await userB.should_see('Main page')
+    user1.find('forward').click()
+    await user1.should_see('Other page')
+    await user2.should_see('Main page')
 
 
 async def test_reload(user: User) -> None:
@@ -374,7 +374,7 @@ async def test_page_to_string_output_used_in_error_messages(user: User) -> None:
                     - C
                     ''')
         with ui.card().tight():
-            ui.image('https://via.placeholder.com/150')
+            ui.image('/image.jpg')
 
     await user.open('/')
     output = str(user.current_layout)
@@ -392,7 +392,7 @@ q-layout
     Input [value=typed, label=some input, for=c10, placeholder=type here, type=text]
     Markdown [content=## Markdown...]
     Card
-     Image [src=https://via.placehol...]
+     Image [src=/image.jpg]
 '''.strip()
 
 

@@ -43,6 +43,7 @@ class Table(FilterElement, component='table.js'):
         """Table
 
         A table based on Quasar's `QTable <https://quasar.dev/vue-components/table>`_ component.
+        Updates can be pushed to the table by updating the ``rows`` or ``columns`` properties.
 
         If ``selection`` is "single" or "multiple", then a ``selected`` property is accessible containing the selected rows.
 
@@ -104,18 +105,19 @@ class Table(FilterElement, component='table.js'):
     def _to_dict(self) -> dict[str, Any]:
         # scan rows for lists and add slot templates if needed
         for column in self._props['columns']:
-            key = column.get('field')
-            if not key or f'body-cell-{key}' in self.slots:
+            field = column.get('field')
+            name = column.get('name')
+            if not field or not name or f'body-cell-{name}' in self.slots:
                 continue
             for row in self._props['rows']:
-                value = row.get(key)
+                value = row.get(field)
                 if isinstance(value, (list, set, tuple)):
                     log.warning(
-                        f'Found list in column "{key}": {value}.\n'
+                        f'Found list in column "{name}": {value}.\n'
                         'Unless there is slot template, table rows must not contain lists or the browser will crash.\n'
                         'NiceGUI is intervening by adding a slot template to display the list as comma-separated values.'
                     )
-                    self.add_slot(f'body-cell-{key}', '''
+                    self.add_slot(f'body-cell-{name}', '''
                         <td class="text-right" :props="props">
                             {{ Array.isArray(props.value) ? props.value.join(', ') : props.value }}
                         </td>

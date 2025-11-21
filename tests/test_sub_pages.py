@@ -838,7 +838,7 @@ def test_sub_pages_with_url_fragments(screen: Screen):
         calls['main'] += 1
         ui.label('Main page')
         ui.link('Go to bottom', '/page#bottom')
-        # NOTE: extend content of main page so we can verify that scroll positions are resetted when doing cross-page navigation
+        # NOTE: extend content of main page so we can verify that scroll positions are reset when doing cross-page navigation
         for i in range(100):
             ui.label(f'Line {i}')
 
@@ -1219,6 +1219,21 @@ def test_refresh_sub_page(screen: Screen):
 
     screen.click('Refresh via SubPages')
     assert calls == {'index': 1, 'outer': 3, 'inner_main': 2, 'inner_other': 4}
+
+
+def test_navigation_not_crashing_for_root_pages_with_remaining_path(screen: Screen):
+    """Regression test for #5437: navigation crashed with KeyError: 'route'."""
+
+    def root():
+        ui.sub_pages({
+            '/': lambda: ui.link('other/1', '/other/1'),
+            '/other': lambda: ui.label('other page'),
+        })
+
+    screen.ui_run_kwargs['root'] = root
+    screen.open('/')
+    screen.click('other/1')
+    screen.should_contain('404: sub page /other/1 not found')
 
 
 def test_remaining_path_for_wildcard_routing(screen: Screen):

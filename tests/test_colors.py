@@ -9,8 +9,7 @@ def test_replace_colors(screen: Screen):
             ui.colors(primary='blue')
 
         def replace():
-            container.clear()
-            with container:
+            with container.clear():
                 ui.colors(primary='red')
         ui.button('Replace', on_click=replace)
 

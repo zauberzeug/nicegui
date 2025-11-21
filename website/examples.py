@@ -76,4 +76,5 @@ examples: list[Example] = [
     Example('Stripe', 'Use Stripe to process payments'),
     Example('Xterm', 'Connect a terminal emulator [xterm.js](https://github.com/xtermjs/xterm.js) to a Bash process'),
     Example('API Requests', 'Fetch and display random quotes from [Zen Quotes API](https://zenquotes.io/)'),
+    Example('Vue Vite', 'Custom SFC Vue Component using Vite'),
 ]

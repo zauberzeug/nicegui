@@ -27,6 +27,24 @@ def main_demo() -> None:
     ui.button('Show parent', on_click=lambda: grid.run_grid_method('setColumnsVisible', ['parent'], True))
 
 
+@doc.demo('Adding rows', '''
+    It's simple to add new rows by updating the `options` property.
+    To scroll to the new row, use the AG Grid API method `ensureIndexVisible`.
+''')
+def adding_rows():
+    import random
+
+    def add():
+        grid.options['rowData'].append({'number': random.randint(0, 100)})
+        grid.run_grid_method('ensureIndexVisible', len(grid.options['rowData']) - 1)
+
+    grid = ui.aggrid({
+        'columnDefs': [{'field': 'number'}],
+        'rowData': [],
+    }).classes('h-52')
+    ui.button('Add row', on_click=add)
+
+
 @doc.demo('Select AG Grid Rows', '''
     You can add checkboxes to grid cells to allow the user to select single or multiple rows.
 

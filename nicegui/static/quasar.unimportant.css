@@ -11190,43 +11190,43 @@ body.mobile .scroll--mobile {
 }
 
 .rotate-45 {
-  rotate: 45deg
+  transform: rotate(45deg)
     /* rtl:ignore */
   ;
 }
 
 .rotate-90 {
-  rotate: 90deg
+  transform: rotate(90deg)
     /* rtl:ignore */
   ;
 }
 
 .rotate-135 {
-  rotate: 135deg
+  transform: rotate(135deg)
     /* rtl:ignore */
   ;
 }
 
 .rotate-180 {
-  rotate: 180deg
+  transform: rotate(180deg)
     /* rtl:ignore */
   ;
 }
 
 .rotate-225 {
-  rotate: 225deg
+  transform: rotate(225deg)
     /* rtl:ignore */
   ;
 }
 
 .rotate-270 {
-  rotate: 270deg
+  transform: rotate(270deg)
     /* rtl:ignore */
   ;
 }
 
 .rotate-315 {
-  rotate: 315deg
+  transform: rotate(315deg)
     /* rtl:ignore */
   ;
 }

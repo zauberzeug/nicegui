@@ -26,8 +26,7 @@ class FakeSubPages(ui.column):
             self.task.cancel()
 
         async def render() -> None:
-            self.clear()
-            with self:
+            with self.clear():
                 result = self.routes[route](**self.data, **kwargs)
                 if isinstance(result, Awaitable):
                     await result
