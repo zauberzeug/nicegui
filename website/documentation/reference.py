@@ -24,35 +24,35 @@ def generate_class_doc(class_obj: type, part_title: str) -> None:
         for name in dir(base):
             if not name.startswith('_') and _is_method_or_property(base, name):
                 attributes[name] = (base, getattr(base, name, None))
-    properties = {name: (owner, attribute) for name, (owner, attribute) in attributes.items() if not callable(attribute)}
-    methods = {name: (owner, attribute) for name, (owner, attribute) in attributes.items() if callable(attribute)}
+    properties = {name: (ancestor, attribute) for name, (ancestor, attribute) in attributes.items() if not callable(attribute)}
+    methods = {name: (ancestor, attribute) for name, (ancestor, attribute) in attributes.items() if callable(attribute)}
 
-    def owner_label(owner):
-        if owner is not class_obj:
-            ui.label(f'(inherited from {owner.__name__})') \
+    def ancestor_label(ancestor):
+        if ancestor is not class_obj:
+            ui.label(f'(inherited from {ancestor.__name__})') \
                 .classes('ml-8 text-sm text-gray-500 dark:text-gray-400 -mt-3')
     if properties:
         subheading('Properties', anchor_name=create_anchor_name(part_title.replace('Reference', 'Properties')))
         with ui.column().classes('gap-2 w-full overflow-x-auto'):
-            for name, (owner, property_) in sorted(properties.items()):
+            for name, (ancestor, property_) in sorted(properties.items()):
                 ui.markdown(f'**`{name}`**`{_generate_property_signature_description(property_)}`')
-                owner_label(owner)
+                ancestor_label(ancestor)
                 docstring = getattr(property_, '__doc__', None)
                 if docstring:
                     _render_docstring(docstring).classes('ml-8')
     if methods:
         subheading('Methods', anchor_name=create_anchor_name(part_title.replace('Reference', 'Methods')))
         with ui.column().classes('gap-2 w-full overflow-x-auto'):
-            for name, (owner, method) in sorted(methods.items()):
+            for name, (ancestor, method) in sorted(methods.items()):
                 decorator = ''
-                owner_attr = owner.__dict__.get(name)
-                if isinstance(owner_attr, staticmethod):
+                ancestor_attr = ancestor.__dict__.get(name)
+                if isinstance(ancestor_attr, staticmethod):
                     decorator += '`@staticmethod`<br />'
-                if isinstance(owner_attr, classmethod):
+                if isinstance(ancestor_attr, classmethod):
                     decorator += '`@classmethod`<br />'
                 ui.markdown(f'{decorator}**`{name}`**`{_generate_method_signature_description(method)}`') \
                     .classes('w-full overflow-x-auto')
-                owner_label(owner)
+                ancestor_label(ancestor)
                 docstring = getattr(method, '__doc__', None)
                 if docstring:
                     _render_docstring(docstring).classes('ml-8')
