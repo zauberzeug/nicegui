@@ -51,13 +51,14 @@ def _set_attribute(obj: object | Mapping, name: str, value: Any) -> None:
 
 async def refresh_loop() -> None:
     """Refresh all bindings in an endless loop."""
-    if (binding_refresh_interval := core.app.config.binding_refresh_interval) is None or binding_refresh_interval <= 0:
-        binding_refresh_interval = 0.1
+    # Sanity check the refresh interval before use
+    if (interval := core.app.config.binding_refresh_interval) is None or interval <= 0:
+        interval = 0.1
 
     while True:
         _refresh_step()
         try:
-            await asyncio.sleep(binding_refresh_interval)
+            await asyncio.sleep(interval)
         except asyncio.CancelledError:
             break
 
