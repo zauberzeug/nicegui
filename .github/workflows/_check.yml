@@ -26,5 +26,8 @@ jobs:
         run: uv python install 3.9
       - name: Install dependencies
         run: uv sync --all-extras --group dev
+      - name: Install pip for mypy
+        if: matrix.target.name == 'mypy'
+        run: uv pip install pip
       - name: ${{ matrix.target.name }}
         run: uv run ${{ matrix.target.command }}
