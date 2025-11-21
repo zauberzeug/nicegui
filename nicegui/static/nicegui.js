@@ -7,6 +7,15 @@ let mounted_app = undefined;
 
 const loaded_components = new Set();
 
+let darkSetter = undefined;
+
+function setDark(dark) {
+  if (dark === null) dark = None;
+  if (darkSetter) darkSetter(dark);
+  document.getElementById("color-scheme").setAttribute("content", dark === None ? "normal" : dark ? "dark" : "light");
+  document.getElementById("darkreader-lock").setAttribute("name", dark ? "darkreader-lock" : "");
+}
+
 function parseElements(raw_elements) {
   return JSON.parse(
     raw_elements

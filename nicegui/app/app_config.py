@@ -26,7 +26,8 @@ class AppConfig:
     vue_config_script: str = r'''
         app.use(Quasar, {config: vue_config});
         Quasar.lang.set(Quasar.lang[language.replace('-', '')]);
-        Quasar.Dark.set(dark === None ? "auto" : dark);
+        darkSetter = (dark) => Quasar.Dark.set(dark === None ? "auto" : dark);
+        setDark(dark);
     '''
 
     reload: bool = field(init=False)
