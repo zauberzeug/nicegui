@@ -9,6 +9,59 @@ const loaded_components = new Set();
 
 const allClasses = new Set();
 
+const elementObservers = new Map();
+
+function observeElement(id) {
+  if (window.__unocss_runtime === undefined) return;
+  if (elementObservers.has(id)) return;
+  const htmlElement = getHtmlElement(id);
+  if (!htmlElement) return;
+
+  const observer = new MutationObserver((mutations) => {
+    let hasNewClasses = false;
+    for (const mutation of mutations) {
+      if (mutation.type !== "attributes" || mutation.attributeName !== "class") continue;
+      for (const c of mutation.target.classList) {
+        if (!allClasses.has(c)) {
+          console.log("Detected new class:", c);
+          allClasses.add(c);
+          hasNewClasses = true;
+        }
+      }
+    }
+    if (hasNewClasses) generateStylesFromClasses();
+  });
+
+  observer.observe(htmlElement, {
+    attributes: true,
+    attributeFilter: ["class"],
+  });
+
+  elementObservers.set(id, observer);
+}
+
+function stopObservingElement(id) {
+  if (window.__unocss_runtime === undefined) return;
+  elementObservers.get(id)?.disconnect();
+  elementObservers.delete(id);
+}
+
+function addObservers(elements) {
+  if (window.__unocss_runtime === undefined) return;
+  for (const [id, element] of Object.entries(elements)) {
+    if (element.component) {
+      observeElement(id);
+    }
+  }
+}
+
+function dropAllObservers() {
+  if (window.__unocss_runtime === undefined) return;
+  for (const id of elementObservers.keys()) {
+    stopObservingElement(id);
+  }
+}
+
 async function generateStylesFromClasses() {
   if (window.__unocss_runtime === undefined) return;
   const div = document.createElement("div");
@@ -321,6 +374,7 @@ const TAB_ID =
 sessionStorage.__nicegui_tab_closed = "false";
 window.onbeforeunload = function () {
   sessionStorage.__nicegui_tab_closed = "true";
+  dropAllObservers();
 };
 
 function createApp(elements, options) {
@@ -336,6 +390,9 @@ function createApp(elements, options) {
     },
     render() {
       return renderRecursively(this.elements, 0);
+    },
+    beforeUnmount() {
+      dropAllObservers();
     },
     mounted() {
       mounted_app = this;
@@ -355,6 +412,7 @@ function createApp(elements, options) {
             : options.transports,
       });
       window.did_handshake = false;
+      addObservers(this.elements);
       const messageHandlers = {
         connect: () => {
           function wrapFunction(originalFunction) {
@@ -420,6 +478,7 @@ function createApp(elements, options) {
           for (const [id, element] of Object.entries(msg)) {
             if (element === null) {
               delete this.elements[id];
+              stopObservingElement(id);
               continue;
             }
             replaceUndefinedAttributes(element);
@@ -432,6 +491,7 @@ function createApp(elements, options) {
               getElement(id)[element.update_method]();
             }
           }
+          addObservers(msg);
         },
         run_javascript: (msg) => runJavascript(msg.code, msg.request_id),
         open: (msg) => {
