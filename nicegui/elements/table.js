@@ -5,7 +5,7 @@ export default {
   template: `
     <div>
       <q-table ref="qRef" v-bind="$attrs" :columns="convertedColumns">
-        <template v-for="(_, slot) in forwardedSlots" v-slot:[slot]="slotProps">
+        <template v-for="(_, slot) in $slots" v-if="slot !== 'default'" v-slot:[slot]="slotProps">
           <slot :name="slot" v-bind="slotProps || {}" />
         </template>
       </q-table>
