@@ -93,8 +93,7 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
                 self._set_match(match)
         else:
             self._cancel_active_tasks()
-            self.clear()
-            with self:
+            with self.clear():
                 if match is not None and self._render_page(match):
                     self._set_match(match)
                 else:
@@ -140,8 +139,7 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
         self._match = match
         self.has_404 = match is None
         if self.has_404 and self._404_enabled:
-            self.clear()
-            with self:
+            with self.clear():
                 self._render_404()
 
     def _reset_match(self) -> None:
