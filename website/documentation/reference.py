@@ -27,14 +27,16 @@ def generate_class_doc(class_obj: type, part_title: str) -> None:
     properties = {name: (owner, attribute) for name, (owner, attribute) in attributes.items() if not callable(attribute)}
     methods = {name: (owner, attribute) for name, (owner, attribute) in attributes.items() if callable(attribute)}
 
+    def owner_label(owner):
+        if owner is not class_obj:
+            ui.label(f'(inherited from {owner.__name__})') \
+                .classes('ml-8 text-sm text-gray-500 dark:text-gray-400 -mt-4')
     if properties:
         subheading('Properties', anchor_name=create_anchor_name(part_title.replace('Reference', 'Properties')))
         with ui.column().classes('gap-2 w-full overflow-x-auto'):
             for name, (owner, property_) in sorted(properties.items()):
                 ui.markdown(f'**`{name}`**`{_generate_property_signature_description(property_)}`')
-                if owner is not class_obj:
-                    ui.label(f'(inherited from {owner.__name__})') \
-                        .classes('ml-8 text-sm text-gray-500 dark:text-gray-400 -mt-2')
+                owner_label(owner)
                 docstring = getattr(property_, '__doc__', None)
                 if docstring:
                     _render_docstring(docstring).classes('ml-8')
@@ -50,9 +52,7 @@ def generate_class_doc(class_obj: type, part_title: str) -> None:
                     decorator += '`@classmethod`<br />'
                 ui.markdown(f'{decorator}**`{name}`**`{_generate_method_signature_description(method)}`') \
                     .classes('w-full overflow-x-auto')
-                if owner is not class_obj:
-                    ui.label(f'(inherited from {owner.__name__})') \
-                        .classes('ml-8 text-sm text-gray-500 dark:text-gray-400 -mt-2')
+                owner_label(owner)
                 docstring = getattr(method, '__doc__', None)
                 if docstring:
                     _render_docstring(docstring).classes('ml-8')
