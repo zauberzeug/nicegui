@@ -8,6 +8,7 @@ let mounted_app = undefined;
 const loaded_components = new Set();
 
 const allClasses = new Set();
+const renderedClasses = new Set();
 
 const elementObservers = new Map();
 
@@ -54,9 +55,7 @@ function stopObservingElement(id) {
 
 function addObservers(elements) {
   if (window.__unocss_runtime === undefined) return;
-  for (const [id, element] of Object.entries(elements)) {
-    if (element?.component) observeElement(id);
-  }
+  for (const [id, element] of Object.entries(elements)) if (element?.component) observeElement(id);
 }
 
 function dropAllObservers() {
@@ -64,15 +63,20 @@ function dropAllObservers() {
   for (const id of elementObservers.keys()) stopObservingElement(id);
 }
 
+let unocssStyleMoved = false;
+
 async function generateStylesFromClasses() {
   if (window.__unocss_runtime === undefined) return;
+  const newClasses = new Set();
+  for (const c of allClasses) if (!renderedClasses.has(c)) newClasses.add(c);
+  if (newClasses.size === 0) return;
+  for (const c of newClasses) renderedClasses.add(c);
   const div = document.createElement("div");
-  div.className = Array.from(allClasses).join(" ");
+  div.className = Array.from(newClasses).join(" ");
   await window.__unocss_runtime.extract(div.outerHTML);
-  for (const style of document.querySelectorAll("style[data-unocss-runtime-layer]:not([data-nicegui-moved])")) {
-    document.head.appendChild(style);
-    style.dataset.niceguiMoved = "true";
-  }
+  if (unocssStyleMoved) return;
+  for (const style of document.querySelectorAll("style[data-unocss-runtime-layer]")) document.head.appendChild(style);
+  unocssStyleMoved = true;
 }
 
 function parseElements(raw_elements) {
