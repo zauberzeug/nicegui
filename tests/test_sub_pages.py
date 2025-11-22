@@ -1250,3 +1250,17 @@ def test_remaining_path_for_wildcard_routing(screen: Screen):
 
     screen.open('/sub/x/2/a')
     screen.should_contain('remaining=/x/2/a')
+
+
+def test_userspace_handlers(screen: Screen):
+    events = []
+
+    @ui.page('/{_:path}')
+    def index():
+        ui.on('sub_pages_navigate', lambda e: events.append(f'navigate to {e.args}'))
+        ui.sub_pages({'/a': lambda: None, '/b': lambda: None})
+        ui.button('navigate', on_click=lambda: ui.navigate.to('/b'))
+
+    screen.open('/a')
+    screen.click('navigate')
+    assert events
