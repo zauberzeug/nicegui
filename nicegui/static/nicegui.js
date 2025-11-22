@@ -49,7 +49,7 @@ function stopObservingElement(id) {
 function addObservers(elements) {
   if (window.__unocss_runtime === undefined) return;
   for (const [id, element] of Object.entries(elements)) {
-    if (element.component) {
+    if (element?.component) {
       observeElement(id);
     }
   }
