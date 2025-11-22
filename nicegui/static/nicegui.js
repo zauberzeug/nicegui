@@ -23,7 +23,6 @@ function observeElement(id) {
       if (mutation.type !== "attributes" || mutation.attributeName !== "class") continue;
       for (const c of mutation.target.classList) {
         if (!allClasses.has(c)) {
-          console.log("Detected new class:", c);
           allClasses.add(c);
           hasNewClasses = true;
         }
