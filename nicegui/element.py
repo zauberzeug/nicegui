@@ -334,8 +334,7 @@ class Element(Visibility):
         :param text: text of the tooltip
         """
         from .elements.tooltip import Tooltip  # pylint: disable=import-outside-toplevel, cyclic-import
-        with self:
-            Tooltip(text)
+        Tooltip(text).props['target'] = f'#{self.html_id}'
         return self
 
     def on(self,
