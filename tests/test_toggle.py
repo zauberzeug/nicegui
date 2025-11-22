@@ -9,7 +9,7 @@ def test_adding_toggle_options(screen: Screen):
         toggle = ui.toggle(['A', 'B', 'C'], on_change=lambda e: label.set_text(f'Choice: {e.value}'))
 
         def add_option():
-            toggle.options.append('D')
+            toggle.options.append(ui.to_option('D'))
             toggle.update()
 
         ui.button('Add option', on_click=add_option)
