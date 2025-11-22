@@ -380,7 +380,7 @@ window.onbeforeunload = function () {
 function createApp(elements, options) {
   Object.entries(elements).forEach(([_, element]) => replaceUndefinedAttributes(element));
   setInterval(() => ack(), 3000);
-  for (const el of Object.values(elements)) for (const c of el.class || []) allClasses.add(c);
+  for (const el of Object.values(elements)) for (const c of el?.class || []) allClasses.add(c);
   generateStylesFromClasses().then(() => document.getElementById("app").style.removeProperty("display"));
   return (app = Vue.createApp({
     data() {
@@ -472,7 +472,7 @@ function createApp(elements, options) {
           await Promise.all(loadPromises);
 
           const originalClassesCount = allClasses.size;
-          for (const el of Object.values(elements)) for (const c of el.class || []) allClasses.add(c);
+          for (const el of Object.values(msg)) for (const c of el?.class || []) allClasses.add(c);
           if (allClasses.size > originalClassesCount) await generateStylesFromClasses();
 
           for (const [id, element] of Object.entries(msg)) {
