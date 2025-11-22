@@ -94,7 +94,7 @@
     <script defer src="{{ prefix | safe }}/_nicegui/{{version}}/static/lang/{{ language }}.umd.prod.js"></script>
     {{ body_html | safe }}
 
-    <div id="app" {% if unocss %}style="display: none" {% endif %}></div>
+    <div id="app" {% if unocss %}class="nicegui-unocss-loading" {% endif %}></div>
     <div id="popup" class="nicegui-error-popup" aria-hidden="true">
       <span>{{ translations.connection_lost }}</span>
       <span>{{ translations.trying_to_reconnect }}</span>

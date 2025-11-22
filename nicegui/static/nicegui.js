@@ -20,10 +20,9 @@ function observeElement(id) {
   function collectNewClasses(el) {
     let added = false;
     for (const c of el.classList) {
-      if (!allClasses.has(c)) {
-        allClasses.add(c);
-        added = true;
-      }
+      if (allClasses.has(c)) continue;
+      allClasses.add(c);
+      added = true;
     }
     return added;
   }
@@ -56,17 +55,13 @@ function stopObservingElement(id) {
 function addObservers(elements) {
   if (window.__unocss_runtime === undefined) return;
   for (const [id, element] of Object.entries(elements)) {
-    if (element?.component) {
-      observeElement(id);
-    }
+    if (element?.component) observeElement(id);
   }
 }
 
 function dropAllObservers() {
   if (window.__unocss_runtime === undefined) return;
-  for (const id of elementObservers.keys()) {
-    stopObservingElement(id);
-  }
+  for (const id of elementObservers.keys()) stopObservingElement(id);
 }
 
 async function generateStylesFromClasses() {
@@ -387,8 +382,9 @@ window.onbeforeunload = function () {
 function createApp(elements, options) {
   Object.entries(elements).forEach(([_, element]) => replaceUndefinedAttributes(element));
   setInterval(() => ack(), 3000);
-  for (const el of Object.values(elements)) for (const c of el?.class || []) allClasses.add(c);
-  generateStylesFromClasses().then(() => document.getElementById("app").style.removeProperty("display"));
+  if (window.__unocss_runtime !== undefined)
+    for (const el of Object.values(elements)) for (const c of el?.class || []) allClasses.add(c);
+  generateStylesFromClasses().then(() => document.getElementById("app").classList.remove("nicegui-unocss-loading"));
   return (app = Vue.createApp({
     data() {
       return {
@@ -478,9 +474,11 @@ function createApp(elements, options) {
             .map(([_, element]) => loadDependencies(element, options.prefix, options.version));
           await Promise.all(loadPromises);
 
-          const originalClassesCount = allClasses.size;
-          for (const el of Object.values(msg)) for (const c of el?.class || []) allClasses.add(c);
-          if (allClasses.size > originalClassesCount) await generateStylesFromClasses();
+          if (window.__unocss_runtime !== undefined) {
+            const originalClassesCount = allClasses.size;
+            for (const el of Object.values(msg)) for (const c of el?.class || []) allClasses.add(c);
+            if (allClasses.size > originalClassesCount) await generateStylesFromClasses();
+          }
 
           for (const [id, element] of Object.entries(msg)) {
             if (element === null) {
@@ -493,12 +491,12 @@ function createApp(elements, options) {
           }
 
           await this.$nextTick();
+          addObservers(msg);
           for (const [id, element] of Object.entries(msg)) {
             if (element?.update_method) {
               getElement(id)[element.update_method]();
             }
           }
-          addObservers(msg);
         },
         run_javascript: (msg) => runJavascript(msg.code, msg.request_id),
         open: (msg) => {
