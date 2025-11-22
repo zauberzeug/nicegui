@@ -3,6 +3,8 @@ from typing import Optional
 
 from typing_extensions import Self
 
+from nicegui.helpers import default_props_or
+
 from ..events import ClickEventArguments, Handler, handle_event
 from .mixins.color_elements import BackgroundColorElement
 from .mixins.disableable_element import DisableableElement
@@ -15,7 +17,7 @@ class Button(IconElement, TextElement, DisableableElement, BackgroundColorElemen
     def __init__(self,
                  text: str = '', *,
                  on_click: Optional[Handler[ClickEventArguments]] = None,
-                 color: Optional[str] = 'primary',
+                 color: Optional[str] = default_props_or('primary'),
                  icon: Optional[str] = None,
                  ) -> None:
         """Button

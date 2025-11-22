@@ -8,11 +8,12 @@ import struct
 import sys
 import threading
 import time
+import types
 import webbrowser
 from collections.abc import Callable
 from inspect import Parameter, signature
 from pathlib import Path
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, TypeVar
 
 from .context import context
 from .logging import log
@@ -26,6 +27,22 @@ if sys.version_info < (3, 13):
     from asyncio import iscoroutinefunction
 else:
     from inspect import iscoroutinefunction
+
+T = TypeVar('T')
+
+SPECIAL_MARKER = 'nicegui!default_'  # intentional use of !
+
+
+def default_props_or(value: T) -> T:
+    """User's default_props are honored over this value.
+
+    Done by wrapping a value into a lightweight marker class that indicates it is a default value."""
+    return types.new_class(f'{SPECIAL_MARKER}{type(value).__name__}', (type(value),), {})(value)
+
+
+def is_default_value(value: Any) -> bool:
+    """Check if the value is wrapped as a default value."""
+    return type(value).__name__.startswith(SPECIAL_MARKER)
 
 
 def warn_once(message: str, *, stack_info: bool = False) -> None:

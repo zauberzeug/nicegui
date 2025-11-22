@@ -138,3 +138,8 @@ class Props(ObservableDict, Generic[T]):
                     props[key] = True
 
         return props
+
+    def __setitem__(self, __key, __value):
+        if helpers.is_default_value(__value) and __key in self:
+            return
+        return super().__setitem__(__key, __value)
