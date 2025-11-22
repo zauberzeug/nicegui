@@ -17,18 +17,26 @@ function observeElement(id) {
   const htmlElement = getHtmlElement(id);
   if (!htmlElement) return;
 
-  const observer = new MutationObserver((mutations) => {
-    let hasNewClasses = false;
-    for (const mutation of mutations) {
-      if (mutation.type !== "attributes" || mutation.attributeName !== "class") continue;
-      for (const c of mutation.target.classList) {
-        if (!allClasses.has(c)) {
-          allClasses.add(c);
-          hasNewClasses = true;
-        }
+  function collectNewClasses(el) {
+    let added = false;
+    for (const c of el.classList) {
+      if (!allClasses.has(c)) {
+        allClasses.add(c);
+        added = true;
       }
     }
-    if (hasNewClasses) generateStylesFromClasses();
+    return added;
+  }
+
+  if (collectNewClasses(htmlElement)) generateStylesFromClasses();
+
+  const observer = new MutationObserver((mutations) => {
+    let hasNew = false;
+    for (const mutation of mutations) {
+      if (mutation.type !== "attributes" || mutation.attributeName !== "class") continue;
+      if (collectNewClasses(mutation.target)) hasNew = true;
+    }
+    if (hasNew) generateStylesFromClasses();
   });
 
   observer.observe(htmlElement, {
