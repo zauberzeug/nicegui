@@ -9,19 +9,10 @@ from nicegui.testing import Screen
 
 from .test_helpers import TEST_DIR
 
-IMAGE_FILE = Path(TEST_DIR).parent / 'examples' / 'slideshow' / 'slides' / 'slide1.jpg'
+IMAGE_FILE = Path(TEST_DIR) / 'media' / 'test1.jpg'
 VIDEO_FILE = Path(TEST_DIR) / 'media' / 'test.mp4'
-
-
-@pytest.fixture(autouse=True)
-def provide_media_files():
-    if not VIDEO_FILE.exists():
-        VIDEO_FILE.parent.mkdir(exist_ok=True)
-        url = 'https://test-videos.co.uk/vids/bigbuckbunny/mp4/h264/360/Big_Buck_Bunny_360_10s_1MB.mp4'
-        with httpx.stream('GET', url) as response:
-            with open(VIDEO_FILE, 'wb') as file:
-                for chunk in response.iter_raw():
-                    file.write(chunk)
+VIDEO_FILE.parent.mkdir(exist_ok=True)
+VIDEO_FILE.write_bytes(b'\x00' * 2000)  # dummy video file large enough to be streamed
 
 
 def assert_video_file_streaming(path: str) -> None:
@@ -40,12 +31,20 @@ def assert_video_file_streaming(path: str) -> None:
 def test_media_files_can_be_streamed(screen: Screen):
     app.add_media_files('/media', Path(TEST_DIR) / 'media')
 
+    @ui.page('/')
+    def page():
+        ui.label('Hello, world!')
+
     screen.open('/')
     assert_video_file_streaming('/media/test.mp4')
 
 
 def test_adding_single_media_file(screen: Screen):
     url_path = app.add_media_file(local_file=VIDEO_FILE)
+
+    @ui.page('/')
+    def page():
+        ui.label('Hello, world!')
 
     screen.open('/')
     assert_video_file_streaming(url_path)
@@ -54,6 +53,10 @@ def test_adding_single_media_file(screen: Screen):
 @pytest.mark.parametrize('url_path', ['/static', '/static/'])
 def test_get_from_static_files_dir(url_path: str, screen: Screen):
     app.add_static_files(url_path, Path(TEST_DIR).parent, max_cache_age=3456)
+
+    @ui.page('/')
+    def page():
+        ui.label('Hello, world!')
 
     screen.open('/')
     with httpx.Client() as http_client:
@@ -64,6 +67,10 @@ def test_get_from_static_files_dir(url_path: str, screen: Screen):
 
 def test_404_for_non_existing_static_file(screen: Screen):
     app.add_static_files('/static', Path(TEST_DIR))
+
+    @ui.page('/')
+    def page():
+        ui.label('Hello, world!')
 
     screen.open('/')
     with httpx.Client() as http_client:
@@ -76,6 +83,10 @@ def test_404_for_non_existing_static_file(screen: Screen):
 def test_adding_single_static_file(screen: Screen):
     url_path = app.add_static_file(local_file=IMAGE_FILE, max_cache_age=3456)
 
+    @ui.page('/')
+    def page():
+        ui.label('Hello, world!')
+
     screen.open('/')
     with httpx.Client() as http_client:
         r = http_client.get(f'http://localhost:{Screen.PORT}{url_path}')
@@ -84,7 +95,9 @@ def test_adding_single_static_file(screen: Screen):
 
 
 def test_auto_serving_file_from_image_source(screen: Screen):
-    ui.image(IMAGE_FILE)
+    @ui.page('/')
+    def page():
+        ui.image(IMAGE_FILE)
 
     screen.open('/')
     img = screen.find_by_tag('img')
@@ -98,7 +111,9 @@ def test_auto_serving_file_from_image_source(screen: Screen):
 
 
 def test_auto_serving_file_from_video_source(screen: Screen):
-    ui.video(VIDEO_FILE)
+    @ui.page('/')
+    def page():
+        ui.video(VIDEO_FILE)
 
     screen.open('/')
     video = screen.find_by_tag('video')
@@ -107,9 +122,13 @@ def test_auto_serving_file_from_video_source(screen: Screen):
 
 
 def test_mimetypes_of_static_files(screen: Screen):
+    @ui.page('/')
+    def page():
+        ui.label('Hello, world!')
+
     screen.open('/')
 
-    response = httpx.get(f'http://localhost:{Screen.PORT}/_nicegui/{__version__}/static/vue.global.js', timeout=5)
+    response = httpx.get(f'http://localhost:{Screen.PORT}/_nicegui/{__version__}/static/vue.esm-browser.js', timeout=5)
     assert response.status_code == 200
     assert response.headers['Content-Type'].startswith('text/javascript')
 
@@ -119,8 +138,11 @@ def test_mimetypes_of_static_files(screen: Screen):
 
 
 def test_cache_control_header_of_static_files(screen: Screen):
-    ui.markdown()
     app.add_static_files('/static', Path(TEST_DIR).parent)
+
+    @ui.page('/')
+    def page():
+        ui.markdown()
 
     screen.open('/')
 

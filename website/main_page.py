@@ -52,7 +52,7 @@ def create() -> None:
         section_heading('Installation', 'Get *started*')
         with ui.row().classes('w-full text-lg leading-tight grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-8'):
             with ui.column().classes('w-full max-w-md gap-2'):
-                ui.html('<em>1.</em>').classes('text-3xl font-bold fancy-em')
+                ui.html('<em>1.</em>', sanitize=False).classes('text-3xl font-bold fancy-em')
                 ui.markdown('Create __main.py__').classes('text-lg')
                 with documentation.python_window(classes='w-full h-52'):
                     ui.markdown('''
@@ -65,7 +65,7 @@ def create() -> None:
                         ```
                     ''')
             with ui.column().classes('w-full max-w-md gap-2'):
-                ui.html('<em>2.</em>').classes('text-3xl font-bold fancy-em')
+                ui.html('<em>2.</em>', sanitize=False).classes('text-3xl font-bold fancy-em')
                 ui.markdown('Install and launch').classes('text-lg')
                 with documentation.bash_window(classes='w-full h-52'):
                     ui.markdown('''
@@ -75,7 +75,7 @@ def create() -> None:
                         ```
                     ''')
             with ui.column().classes('w-full max-w-md gap-2'):
-                ui.html('<em>3.</em>').classes('text-3xl font-bold fancy-em')
+                ui.html('<em>3.</em>', sanitize=False).classes('text-3xl font-bold fancy-em')
                 ui.markdown('Enjoy!').classes('text-lg')
                 with documentation.browser_window(classes='w-full h-52'):
                     ui.label('Hello NiceGUI!')
@@ -121,19 +121,19 @@ def create() -> None:
                 'customizable [color themes](/documentation/section_styling_appearance#color_theming)',
                 'custom CSS and classes',
                 'modern look with material design',
-                '[Tailwind CSS](https://v3.tailwindcss.com/) auto-completion',
+                '[Tailwind CSS](https://tailwindcss.com/)',
             ])
             features('source', 'Coding', [
-                'routing for multiple [pages](/documentation/page)',
+                'single page apps with [ui.sub_pages](/documentation/sub_pages)',
                 'auto-reload on code change',
                 'persistent [user sessions](/documentation/storage)',
-                'super nice [testing framework](/documentation/section_testing)',
+                'super powerful [testing framework](/documentation/section_testing)',
             ])
             features('anchor', 'Foundation', [
                 'generic [Vue](https://vuejs.org/) to Python bridge',
                 'dynamic GUI through [Quasar](https://quasar.dev/)',
                 'content is served with [FastAPI](https://fastapi.tiangolo.com/)',
-                'Python 3.8+',
+                'Python 3.9+',
             ])
 
     with ui.column().classes('w-full p-8 lg:p-16 max-w-[1600px] mx-auto'):
@@ -147,7 +147,7 @@ def create() -> None:
             with ui.column().classes('gap-1 max-lg:items-center max-lg:text-center'):
                 ui.markdown('Browse through plenty of live demos.') \
                     .classes('text-white text-2xl md:text-3xl font-medium')
-                ui.html('Fun-Fact: This whole website is also coded with NiceGUI.') \
+                ui.label('Fun-Fact: This whole website is also coded with NiceGUI.') \
                     .classes('text-white text-lg md:text-xl')
             ui.link('Documentation', '/documentation').style('color: black !important') \
                 .classes('rounded-full mx-auto px-12 py-2 bg-white font-medium text-lg md:text-xl')
@@ -159,36 +159,35 @@ def create() -> None:
             for example in examples:
                 example_link(example)
 
-    with ui.column().classes('dark-box p-8 lg:p-16 my-16 bg-transparent border-y-2'):
+    with ui.column().classes('dark-box p-8 lg:p-16 my-16 bg-transparent border-y-2 border-gray-200'):
         with ui.column().classes('mx-auto items-center gap-y-8 gap-x-32 lg:flex-row'):
-            with ui.column().classes('max-lg:items-center max-lg:text-center'):
+            with ui.column().classes('max-lg:items-center max-lg:text-center gap-8'):
                 link_target('sponsors')
                 ui.markdown('NiceGUI is supported by') \
                     .classes('text-2xl md:text-3xl font-medium')
-                if SPONSORS['top']:
-                    with ui.row(align_items='center'):
-                        assert SPONSORS['total'] > 0
-                        ui.markdown(f'''
-                            our top {'sponsor' if len(SPONSORS['top']) == 1 else 'sponsors'}
-                        ''')
+                if SPONSORS['special'] or SPONSORS['top']:
+                    with ui.row().classes('gap-8 justify-center'):
+                        for sponsor in SPONSORS['special']:
+                            with ui.link(target=SPONSORS['special'][sponsor]):
+                                ui.interactive_image(f'/static/sponsors/{sponsor}.png').classes('h-12')
                         for sponsor in SPONSORS['top']:
                             with ui.link(target=f'https://github.com/{sponsor}').classes('row items-center gap-2'):
                                 ui.image(f'https://github.com/{sponsor}.png').classes('w-12 h-12 border')
                                 ui.label(f'@{sponsor}')
                     ui.markdown(f'''
-                        as well as {SPONSORS['total'] - len(SPONSORS['top'])} other [sponsors](https://github.com/sponsors/zauberzeug)
+                        as well as {SPONSORS['normal']} other [sponsors](https://github.com/sponsors/zauberzeug)
                         and {SPONSORS['contributors']} [contributors](https://github.com/zauberzeug/nicegui/graphs/contributors).
                     ''').classes('bold-links arrow-links')
                 else:
                     ui.markdown(f'''
-                        {SPONSORS['total']} [sponsors](https://github.com/sponsors/zauberzeug)
+                        {SPONSORS['normal']} [sponsors](https://github.com/sponsors/zauberzeug)
                         and {SPONSORS['contributors']} [contributors](https://github.com/zauberzeug/nicegui/graphs/contributors).
                     ''').classes('bold-links arrow-links')
             with ui.link(target='https://github.com/sponsors/zauberzeug').style('color: black !important') \
                     .classes('rounded-full mx-auto px-12 py-2 border-2 border-[#3e6a94] font-medium text-lg md:text-xl'):
-                with ui.row().classes('items-center gap-4'):
+                with ui.row(wrap=False).classes('items-center gap-4'):
                     ui.icon('sym_o_favorite', color='#3e6a94')
-                    ui.label('Become a sponsor').classes('text-[#3e6a94]')
+                    ui.label('Become a sponsor').classes('text-[#3e6a94] whitespace-nowrap')
 
     with ui.row().classes('dark-box min-h-screen mt-16'):
         link_target('why', '70px')

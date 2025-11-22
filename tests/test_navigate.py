@@ -7,11 +7,14 @@ from nicegui.testing import Screen
 @pytest.mark.parametrize('new_tab', [False, True])
 def test_navigate_to(screen: Screen, new_tab: bool):
     @ui.page('/test_page')
-    def page():
+    def test_page():
         ui.label('Test page')
         ui.button('Back', on_click=ui.navigate.back)
-    ui.button('Open test page', on_click=lambda: ui.navigate.to('/test_page', new_tab=new_tab))
-    ui.button('Forward', on_click=ui.navigate.forward)
+
+    @ui.page('/')
+    def page():
+        ui.button('Open test page', on_click=lambda: ui.navigate.to('/test_page', new_tab=new_tab))
+        ui.button('Forward', on_click=ui.navigate.forward)
 
     screen.open('/')
     screen.click('Open test page')
@@ -28,7 +31,7 @@ def test_navigate_to(screen: Screen, new_tab: bool):
 
 
 def test_navigate_to_absolute_url(screen: Screen):
-    external_url = 'https://nicegui.io'
+    external_url = 'https://www.google.com/'
 
     @ui.page('/')
     def page():

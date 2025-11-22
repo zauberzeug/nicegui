@@ -1,4 +1,4 @@
-FROM python:3.11-slim AS builder
+FROM python:3.12-slim AS builder
 
 RUN apt-get update && \
     DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC \
@@ -9,10 +9,8 @@ RUN apt-get update && \
 
 RUN python -m pip install --upgrade pip
 
-RUN python -m pip install --upgrade libsass
-
-FROM python:3.11-slim AS release
-COPY --from=builder /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
+FROM python:3.12-slim AS release
+COPY --from=builder /usr/local/lib/python3.12/site-packages /usr/local/lib/python3.12/site-packages
 ARG VERSION
 
 LABEL maintainer="Zauberzeug GmbH <info@zauberzeug.com>"

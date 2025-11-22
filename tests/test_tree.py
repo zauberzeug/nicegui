@@ -3,10 +3,12 @@ from nicegui.testing import Screen
 
 
 def test_tree(screen: Screen):
-    ui.tree([
-        {'id': 'numbers', 'children': [{'id': '1'}, {'id': '2'}]},
-        {'id': 'letters', 'children': [{'id': 'A'}, {'id': 'B'}]},
-    ], label_key='id')
+    @ui.page('/')
+    def page():
+        ui.tree([
+            {'id': 'numbers', 'children': [{'id': '1'}, {'id': '2'}]},
+            {'id': 'letters', 'children': [{'id': 'A'}, {'id': 'B'}]},
+        ], label_key='id')
 
     screen.open('/')
     screen.should_contain('numbers')
@@ -23,15 +25,17 @@ def test_tree(screen: Screen):
 
 
 def test_expand_and_collapse_nodes(screen: Screen):
-    tree = ui.tree([
-        {'id': 'numbers', 'children': [{'id': '1'}, {'id': '2'}]},
-        {'id': 'letters', 'children': [{'id': 'A'}, {'id': 'B'}]},
-    ], label_key='id')
+    @ui.page('/')
+    def page():
+        tree = ui.tree([
+            {'id': 'numbers', 'children': [{'id': '1'}, {'id': '2'}]},
+            {'id': 'letters', 'children': [{'id': 'A'}, {'id': 'B'}]},
+        ], label_key='id')
 
-    ui.button('Expand all', on_click=tree.expand)
-    ui.button('Collapse all', on_click=tree.collapse)
-    ui.button('Expand numbers', on_click=lambda: tree.expand(['numbers']))
-    ui.button('Collapse numbers', on_click=lambda: tree.collapse(['numbers']))
+        ui.button('Expand all', on_click=tree.expand)
+        ui.button('Collapse all', on_click=tree.collapse)
+        ui.button('Expand numbers', on_click=lambda: tree.expand(['numbers']))
+        ui.button('Collapse numbers', on_click=lambda: tree.collapse(['numbers']))
 
     screen.open('/')
     screen.click('Expand all')
@@ -65,14 +69,16 @@ def test_expand_and_collapse_nodes(screen: Screen):
 
 
 def test_select_deselect_node(screen: Screen):
-    tree = ui.tree([
-        {'id': 'numbers', 'children': [{'id': '1'}, {'id': '2'}]},
-        {'id': 'letters', 'children': [{'id': 'A'}, {'id': 'B'}]},
-    ], label_key='id')
+    @ui.page('/')
+    def page():
+        tree = ui.tree([
+            {'id': 'numbers', 'children': [{'id': '1'}, {'id': '2'}]},
+            {'id': 'letters', 'children': [{'id': 'A'}, {'id': 'B'}]},
+        ], label_key='id')
 
-    ui.button('Select', on_click=lambda: tree.select('2'))
-    ui.button('Deselect', on_click=tree.deselect)
-    ui.label().bind_text_from(tree.props, 'selected', lambda x: f'Selected: {x}')
+        ui.button('Select', on_click=lambda: tree.select('2'))
+        ui.button('Deselect', on_click=tree.deselect)
+        ui.label().bind_text_from(tree.props, 'selected', lambda x: f'Selected: {x}')
 
     screen.open('/')
     screen.click('Select')
@@ -83,16 +89,18 @@ def test_select_deselect_node(screen: Screen):
 
 
 def test_tick_untick_node_or_nodes(screen: Screen):
-    tree = ui.tree([
-        {'id': 'numbers', 'children': [{'id': '1'}, {'id': '2'}]},
-        {'id': 'letters', 'children': [{'id': 'A'}, {'id': 'B'}]},
-    ], label_key='id', tick_strategy='leaf')
+    @ui.page('/')
+    def page():
+        tree = ui.tree([
+            {'id': 'numbers', 'children': [{'id': '1'}, {'id': '2'}]},
+            {'id': 'letters', 'children': [{'id': 'A'}, {'id': 'B'}]},
+        ], label_key='id', tick_strategy='leaf')
 
-    ui.button('Tick some', on_click=lambda: tree.tick(['1', '2', 'B']))
-    ui.button('Untick some', on_click=lambda: tree.untick(['1', 'B']))
-    ui.button('Tick all', on_click=tree.tick)
-    ui.button('Untick all', on_click=tree.untick)
-    ui.label().bind_text_from(tree.props, 'ticked', lambda x: f'Ticked: {sorted(x)}')
+        ui.button('Tick some', on_click=lambda: tree.tick(['1', '2', 'B']))
+        ui.button('Untick some', on_click=lambda: tree.untick(['1', 'B']))
+        ui.button('Tick all', on_click=tree.tick)
+        ui.button('Untick all', on_click=tree.untick)
+        ui.label().bind_text_from(tree.props, 'ticked', lambda x: f'Ticked: {sorted(x)}')
 
     screen.open('/')
     screen.should_contain('Ticked: []')
@@ -111,10 +119,12 @@ def test_tick_untick_node_or_nodes(screen: Screen):
 
 
 def test_filter(screen: Screen):
-    t = ui.tree([
-        {'id': 'fruits', 'children': [{'id': 'Apple'}, {'id': 'Banana'}, {'id': 'Cherry'}]},
-    ], label_key='id', tick_strategy='leaf-filtered').expand()
-    ui.button('Filter', on_click=lambda: t.set_filter('a'))
+    @ui.page('/')
+    def page():
+        t = ui.tree([
+            {'id': 'fruits', 'children': [{'id': 'Apple'}, {'id': 'Banana'}, {'id': 'Cherry'}]},
+        ], label_key='id', tick_strategy='leaf-filtered').expand()
+        ui.button('Filter', on_click=lambda: t.set_filter('a'))
 
     screen.open('/')
     screen.should_contain('Apple')

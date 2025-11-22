@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import inspect
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Callable, Dict, Union, get_args, get_origin
+from typing import TYPE_CHECKING, Any, Callable, Union, get_args, get_origin
 
 from starlette.datastructures import QueryParams
 
@@ -21,7 +21,7 @@ class RouteMatch:
     '''The original route pattern (e.g., "/user/{id}").'''
     builder: Callable
     '''The function to call to build the page.'''
-    parameters: Dict[str, str]
+    parameters: dict[str, str]
     '''The extracted parameters (name -> value) from the path (e.g., ``{'id': '123'}``).'''
     query_params: QueryParams
     '''The query parameters from the URL.'''
@@ -61,6 +61,8 @@ class PageArguments:
     '''Query parameters from the request URL.'''
     data: dict[str, Any]
     '''Arbitrary data passed to the ``ui.sub_pages`` element.'''
+    remaining_path: str = ''
+    '''Remaining path after the matched route (useful for wildcard routing).'''
 
     @classmethod
     def build_kwargs(cls, match: RouteMatch, frame: SubPages, data: dict[str, Any]) -> dict[str, Any]:
@@ -101,6 +103,7 @@ class PageArguments:
             path_parameters=route_match.parameters or {},
             query_parameters=route_match.query_params,
             data=data,
+            remaining_path=route_match.remaining_path,
         )
 
     @staticmethod

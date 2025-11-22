@@ -9,15 +9,13 @@ from . import doc
 def user_fixture():
     ui.markdown('''
         We recommend utilizing the `user` fixture instead of the [`screen` fixture](/documentation/screen) wherever possible
-        because execution is as fast as unit tests and it does not need Selenium as a dependency
-        when loaded via `pytest_plugins = ['nicegui.testing.user_plugin']`.
-        The `user` fixture cuts away the browser and replaces it by a lightweight simulation entirely in Python.
-        See [project structure](/documentation/project_structure) for a description of the setup.
+        because execution is as fast as unit tests and it does not need Selenium as a dependency.
+        The `user` fixture cuts away the browser and replaces it by a lightweight simulation.
 
         You can assert to "see" specific elements or content, click buttons, type into inputs and trigger events.
         We aimed for a nice API to write acceptance tests which read like a story and are easy to understand.
         Due to the fast execution, the classical [test pyramid](https://martinfowler.com/bliki/TestPyramid.html),
-        where UI tests are considered slow and expensive, does not apply anymore.
+        where UI tests are considered to be slow, error prone and expensive, does not apply anymore 🚀.
     ''').classes('bold-links arrow-links')
 
     with python_window(classes='w-[600px]', title='example'):
@@ -33,7 +31,7 @@ def user_fixture():
         ''')
 
     ui.markdown('''
-        **NOTE:** The `user` fixture is quite new and still misses some features.
+        **NOTE:** The `user` fixture might still miss some features.
         Please let us know in separate feature requests
         [over on GitHub](https://github.com/zauberzeug/nicegui/discussions/new?category=ideas-feature-requests).
     ''').classes('bold-links arrow-links')
@@ -221,8 +219,8 @@ def upload_table():
         with python_window(classes='w-[500px]', title='some UI code'):
             ui.markdown('''
                 ```python
-                def receive_file(e: events.UploadEventArguments):
-                    content = e.content.read().decode('utf-8')
+                async def receive_file(e: events.UploadEventArguments):
+                    content = await e.file.text()
                     reader = csv.DictReader(content.splitlines())
                     ui.table(
                         columns=[{
@@ -240,12 +238,13 @@ def upload_table():
         with python_window(classes='w-[500px]', title='user assertions'):
             ui.markdown('''
                 ```python
+                from nicegui import ui
+
                 upload = user.find(ui.upload).elements.pop()
-                upload.handle_uploads([UploadFile(
-                    BytesIO(b'name,age\\nAlice,30\\nBob,28'),
-                    filename='data.csv',
-                    headers=Headers(raw=[(b'content-type', b'text/csv')]),
-                )])
+                await upload.handle_uploads([
+                    ui.upload.SmallFileUpload('data.csv', 'text/csv', b'name,age\\nAlice,30\\nBob,28')
+                ])
+                await user.should_see(ui.table)
                 table = user.find(ui.table).elements.pop()
                 assert table.columns == [
                     {'name': 'name', 'label': 'Name', 'field': 'name'},
@@ -260,8 +259,8 @@ def upload_table():
 
 
 doc.text('Test Downloads', '''
-    You can verify that a download was triggered by checking `user.downloads.http_responses`.
-    By awaiting `user.downloads.next()` you can get the next download response.
+    You can verify that a download was triggered by checking `user.download.http_responses`.
+    By awaiting `user.download.next()` you can get the next download response.
 
     *Added in version 2.1.0*
 ''')
@@ -309,16 +308,16 @@ def multiple_users():
         ui.markdown('''
             ```python
             async def test_chat(create_user: Callable[[], User]) -> None:
-                userA = create_user()
-                await userA.open('/')
-                userB = create_user()
-                await userB.open('/')
+                user1 = create_user()
+                await user1.open('/')
+                user2 = create_user()
+                await user2.open('/')
 
-                userA.find(ui.input).type('from A').trigger('keydown.enter')
-                await userB.should_see('from A')
-                userB.find(ui.input).type('from B').trigger('keydown.enter')
-                await userA.should_see('from A')
-                await userA.should_see('from B')
+                user1.find(ui.input).type('from A').trigger('keydown.enter')
+                await user2.should_see('from A')
+                user2.find(ui.input).type('from B').trigger('keydown.enter')
+                await user1.should_see('from A')
+                await user1.should_see('from B')
             ```
         ''')
 
@@ -364,6 +363,75 @@ doc.text('Comparison with the screen fixture', '''
     Of course, some features like screenshots or browser-specific behavior are not available,
     but in most cases the speed of the `user` fixture makes it the first choice.
 ''')
+
+
+doc.text('User Simulation Context', '''
+    The [`user_simulation`](https://github.com/zauberzeug/nicegui/blob/main/nicegui/testing/user_simulation.py) context
+    is the low-level building block behind the `user` fixture.
+    It spins up a NiceGUI app inside the same event loop, providing deterministic test control without Selenium.
+    Unlike the `user` fixture, it does not rely on pytest-specific infrastructure
+    and can be used with `unittest` or within plain async code.
+
+    The context supports three testing approaches:
+
+    - Test a `root` callable directly.
+    - Test a specific main file by passing its path.
+    - Define `ui.page` definitions inline within the context.
+
+    More usage examples can be found in
+    [`tests/test_user_simulation_context.py`](https://github.com/zauberzeug/nicegui/blob/main/tests/test_user_simulation_context.py).
+''')
+
+
+@doc.ui
+def user_simulation_examples():
+    with ui.row().classes('gap-4 items-stretch'):
+        with python_window(classes='w-[700px]', title='script mode with root'):
+            ui.markdown('''
+                ```python
+                from nicegui.testing import user_simulation
+
+                async def test_click_via_root():
+                    def root():
+                        ui.button('Click me', on_click=lambda: ui.notify('Hello World!'))
+
+                    async with user_simulation(root) as user:
+                        await user.open('/')
+                        await user.should_see('Click me')
+                        user.find(ui.button).click()
+                        await user.should_see('Hello World!')
+                ```
+            ''')
+
+        with python_window(classes='w-[700px]', title='main file via path'):
+            ui.markdown('''
+                ```python
+                from nicegui.testing import user_simulation
+
+                async def test_click_via_main_file():
+                    async with user_simulation(main_file='app.py') as user:
+                        await user.open('/')
+                        await user.should_see('Main file content')
+                ```
+            ''')
+
+        with python_window(classes='w-[700px]', title='inline UI definitions'):
+            ui.markdown('''
+                ```python
+                from nicegui.testing import user_simulation
+
+                async def test_inline_pages():
+                    async with user_simulation() as user:
+
+                        @ui.page('/')
+                        def main_page():
+                            ui.label('Main page')
+
+                        await user.open('/')
+                        await user.should_see('Main page')
+                ```
+            ''')
+
 
 doc.reference(User, title='User Reference')
 doc.reference(UserInteraction, title='UserInteraction Reference')

@@ -2,7 +2,7 @@
 **/__pycache__
 **/*.egg-info
 **/.*.swp
-**/dist
+**/node_modules
 test.py
 demo.py
 **/*.pickle

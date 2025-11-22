@@ -1,11 +1,14 @@
 from __future__ import annotations
 
+import asyncio
+from collections.abc import Awaitable
 from dataclasses import dataclass, field
-from typing import Any, Awaitable, Callable, ClassVar, Dict, Generic, List, Optional, Tuple, TypeVar, cast
+from typing import Any, Callable, ClassVar, Generic, TypeVar, cast
 
 from typing_extensions import Concatenate, ParamSpec, Self
 
 from .. import background_tasks, core
+from ..awaitable_response import AwaitableResponse
 from ..dataclasses import KWONLY_SLOTS
 from ..element import Element
 from ..helpers import is_coroutine_function
@@ -20,11 +23,11 @@ class RefreshableTarget:
     container: RefreshableContainer
     refreshable: refreshable
     instance: Any
-    args: Tuple[Any, ...]
-    kwargs: Dict[str, Any]
+    args: tuple[Any, ...]
+    kwargs: dict[str, Any]
 
-    current_target: ClassVar[Optional[RefreshableTarget]] = None
-    locals: List[Any] = field(default_factory=list)
+    current_target: ClassVar[RefreshableTarget | None] = None
+    locals: list[Any] = field(default_factory=list)
     next_index: int = 0
 
     def run(self, func: Callable[..., _T]) -> _T:
@@ -67,7 +70,7 @@ class refreshable(Generic[_P, _T]):
         """
         self.func = func
         self.instance = None
-        self.targets: List[RefreshableTarget] = []
+        self.targets: list[RefreshableTarget] = []
 
     def __get__(self, instance, _) -> Self:
         self.instance = instance
@@ -76,9 +79,9 @@ class refreshable(Generic[_P, _T]):
     def __getattribute__(self, __name: str) -> Any:
         attribute = object.__getattribute__(self, __name)
         if __name == 'refresh':
-            def refresh(*args: Any, _instance=self.instance, **kwargs: Any) -> None:
+            def refresh(*args: Any, _instance=self.instance, **kwargs: Any) -> AwaitableResponse:
                 self.instance = _instance
-                attribute(*args, **kwargs)
+                return attribute(*args, **kwargs)
             return refresh
         return attribute
 
@@ -89,13 +92,33 @@ class refreshable(Generic[_P, _T]):
         self.targets.append(target)
         return target.run(self.func)
 
-    def refresh(self, *args: Any, **kwargs: Any) -> None:
+    def refresh(self, *args: Any, **kwargs: Any) -> AwaitableResponse:
         """Refresh the UI elements created by this function.
 
         This method accepts the same arguments as the function itself or a subset of them.
         It will combine the arguments passed to the function with the arguments passed to this method.
+
+        If the function is awaited, it will wait for all async refresh operations to complete.
+        Otherwise, the refresh operations are executed in the background as fire-and-forget tasks.
         """
         self.prune()
+
+        def fire_and_forget() -> None:
+            if coroutines := self._execute_refresh(args, kwargs):
+                if core.loop and core.loop.is_running():
+                    background_tasks.create(asyncio.gather(*coroutines), name=f'refresh {self.func.__name__}')
+                else:
+                    core.app.on_startup(asyncio.gather(*coroutines))
+
+        async def wait_for_completion() -> None:
+            if coroutines := self._execute_refresh(args, kwargs):
+                await asyncio.gather(*coroutines)
+
+        return AwaitableResponse(fire_and_forget, wait_for_completion)
+
+    def _execute_refresh(self, args: tuple[Any, ...], kwargs: dict[str, Any]) -> list[Awaitable[Any]]:
+        """Execute the refresh and return a list of coroutines for async functions."""
+        coroutines: list[Awaitable[Any]] = []
         for target in self.targets:
             if target.instance != self.instance:
                 continue
@@ -113,10 +136,8 @@ class refreshable(Generic[_P, _T]):
                 raise
             if is_coroutine_function(self.func):
                 assert isinstance(result, Awaitable)
-                if core.loop and core.loop.is_running():
-                    background_tasks.create(result, name=f'refresh {self.func.__name__}')
-                else:
-                    core.app.on_startup(result)
+                coroutines.append(result)
+        return coroutines
 
     def prune(self) -> None:
         """Remove all targets that are no longer on a page with a client connection.
@@ -137,7 +158,7 @@ class refreshable_method(Generic[_S, _P, _T], refreshable[_P, _T]):
         super().__init__(func)  # type: ignore
 
 
-def state(value: Any) -> Tuple[Any, Callable[[Any], None]]:
+def state(value: Any) -> tuple[Any, Callable[[Any], None]]:
     """Create a state variable that automatically updates its refreshable UI container.
 
     :param value: The initial value of the state variable.

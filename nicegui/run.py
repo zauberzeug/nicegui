@@ -1,9 +1,10 @@
 import asyncio
 import logging
-import sys
 import traceback
 from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
+from concurrent.futures.process import BrokenProcessPool
 from functools import partial
+from pickle import PicklingError
 from typing import Any, Callable, Optional, TypeVar
 
 from typing_extensions import ParamSpec
@@ -76,10 +77,24 @@ async def cpu_bound(callback: Callable[P, R], *args: P.args, **kwargs: P.kwargs)
     It is encouraged to create static methods (or free functions) which get all the data as simple parameters (eg. no class/ui logic)
     and return the result (instead of writing it in class properties or global variables).
     """
+    global process_pool  # pylint: disable=global-statement # noqa: PLW0603
+
     if process_pool is None:
         raise RuntimeError('Process pool not set up.')
 
-    return await _run(process_pool, safe_callback, callback, *args, **kwargs)
+    try:
+        return await _run(process_pool, safe_callback, callback, *args, **kwargs)
+    except PicklingError as e:
+        if core.script_mode:
+            raise RuntimeError('Unable to run CPU-bound in script mode. Use a `@ui.page` function instead.') from e
+        raise e
+    except BrokenProcessPool as e:
+        try:
+            await _run(process_pool, safe_callback, lambda: None)
+        except BrokenProcessPool:
+            process_pool = ProcessPoolExecutor()
+        finally:
+            raise e
 
 
 async def io_bound(callback: Callable[P, R], *args: P.args, **kwargs: P.kwargs) -> R:
@@ -87,14 +102,38 @@ async def io_bound(callback: Callable[P, R], *args: P.args, **kwargs: P.kwargs) 
     return await _run(thread_pool, callback, *args, **kwargs)
 
 
+def reset() -> None:
+    """Reset process and thread pools. (Useful for testing.)"""
+    global process_pool, thread_pool  # pylint: disable=global-statement # noqa: PLW0603
+
+    if process_pool is not None:
+        try:
+            _kill_processes()
+            process_pool.shutdown(wait=False, cancel_futures=True)
+        except Exception:  # pylint: disable=broad-except
+            pass
+        process_pool = None
+
+    try:
+        thread_pool.shutdown(wait=False, cancel_futures=True)
+    except Exception:  # pylint: disable=broad-except
+        pass
+    thread_pool = ThreadPoolExecutor()
+
+
 def tear_down() -> None:
     """Kill all processes and threads."""
     if helpers.is_pytest():
         return
 
-    kwargs = {'cancel_futures': True} if sys.version_info >= (3, 9) else {}
     if process_pool is not None:
-        for p in process_pool._processes.values():  # pylint: disable=protected-access
-            p.kill()
-        process_pool.shutdown(wait=True, **kwargs)
-    thread_pool.shutdown(wait=False, **kwargs)
+        _kill_processes()
+        process_pool.shutdown(wait=True, cancel_futures=True)
+    thread_pool.shutdown(wait=False, cancel_futures=True)
+
+
+def _kill_processes() -> None:
+    assert process_pool is not None
+    assert process_pool._processes is not None  # pylint: disable=protected-access
+    for p in process_pool._processes.values():  # pylint: disable=protected-access
+        p.kill()
