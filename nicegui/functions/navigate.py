@@ -71,7 +71,11 @@ class Navigate:
                     any(isinstance(el, SubPages) for el in context.client.elements.values()):
                 async def navigate_sub_pages(client: Client) -> None:
                     with client:
-                        await client.sub_pages_router._handle_navigate(path)  # pylint: disable=protected-access
+                        for event_listener in client.layout._event_listeners.values():  # pylint: disable=protected-access
+                            if event_listener.type == 'sub_pages_navigate':
+                                client.layout._handle_event(  # pylint: disable=protected-access
+                                    {'listener_id': event_listener.id, 'args': path})
+
                 background_tasks.create(navigate_sub_pages(context.client), name='navigate_sub_pages')
                 return
 
