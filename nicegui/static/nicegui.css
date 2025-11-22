@@ -327,8 +327,3 @@ h6.q-timeline__title {
   position: absolute;
   right: 1.5em;
 }
-
-/* Hide body before UnoCSS ready */
-body.nicegui-unocss-loading {
-  display: none;
-}
