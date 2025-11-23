@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import inspect
 import re
 import weakref
@@ -45,6 +46,7 @@ class Element(Visibility):
     _default_props: ClassVar[dict[str, Any]] = {}
     _default_classes: ClassVar[list[str]] = []
     _default_style: ClassVar[dict[str, str]] = {}
+    default_cache_keys: ClassVar[list[list[str]]] = []
 
     def __init__(self, tag: str | None = None, *, _client: Client | None = None) -> None:
         """Generic Element
@@ -73,6 +75,8 @@ class Element(Visibility):
         self.default_slot = self.add_slot('default')
         self._update_method: str | None = None
         self._deleted: bool = False
+        self._cache_name: str | None = None
+        self._cache_keys: list[list[str]] | None = None
 
         client.elements[self.id] = self
         self._parent_slot: weakref.ref[Slot] | None = None
@@ -209,8 +213,8 @@ class Element(Visibility):
             if slot != self.default_slot
         }
 
-    def _to_dict(self) -> dict[str, Any]:
-        return {
+    def _to_dict(self, *, client_hash: str | None = None) -> dict[str, Any]:
+        orig_data = {
             'tag': self.tag,
             **({'text': self._text} if self._text is not None else {}),
             **{
@@ -232,6 +236,30 @@ class Element(Visibility):
                 if value
             },
         }
+        data = json.loads(json.dumps(orig_data))  # avoid triggering observables
+        if self.caching_enabled():
+            data['cache'] = {
+                'name': self._cache_name,
+                'keys': self._cache_keys,
+                'hit': False,
+            }
+            cache_data = {}
+            for keys in self._cache_keys:  # nested traversal to collect cache data
+                source = data
+                target = cache_data
+                for key in keys[:-1]:
+                    source = source.get(key, {})
+                    target = target.setdefault(key, {})
+                if keys[-1] in source:
+                    target[keys[-1]] = source[keys[-1]]
+            if client_hash == hashlib.sha256(json.dumps(cache_data, sort_keys=True).encode()).hexdigest():
+                for keys in self._cache_keys:  # nested traversal to remove cached data
+                    d = data
+                    for key in keys[:-1]:
+                        d = d.get(key, {})
+                    d.pop(keys[-1], None)
+                data['cache']['hit'] = True
+        return data
 
     @property
     def classes(self) -> Classes[Self]:
@@ -558,3 +586,22 @@ class Element(Visibility):
         *Added in version 2.16.0*
         """
         return f'c{self.id}'
+
+    def cache(self, name: str, cache_keys: list[Callable[[list[list[str]]], None]] | None = None) -> Self:
+        """Cache the element's data.
+
+        :param name: A unique name associated with this element only.
+        :param strategies: list of cache strategy functions. Defaults to only the element's default cache strategy.
+        """
+        if cache_keys is None:
+            cache_keys = self.default_cache_keys
+        self._cache_name = name
+        self._cache_keys = cache_keys
+        return self
+
+    def caching_enabled(self) -> bool:
+        """Whether caching is enabled for this element.
+
+        :return: True if caching is enabled, False otherwise.
+        """
+        return self._cache_name is not None and self._cache_keys is not None

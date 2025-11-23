@@ -7,6 +7,89 @@ let mounted_app = undefined;
 
 const loaded_components = new Set();
 
+// https://www.w3schools.com/js/js_cookies.asp
+
+function setCookie(cname, cvalue, exdays) {
+  const d = new Date();
+  d.setTime(d.getTime() + exdays * 24 * 60 * 60 * 1000);
+  let expires = "expires=" + d.toUTCString();
+  document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
+}
+
+function storeCacheContent(elements) {
+  for (const element of Object.values(elements)) {
+    if (!element?.cache || element.cache.hit !== false) continue;
+
+    const cache_data = {};
+    for (const key_path of element.cache.keys) {
+      let src = element;
+      let dst = cache_data;
+      for (let i = 0; i < key_path.length; i++) {
+        const key = key_path[i];
+        if (i === key_path.length - 1) {
+          dst[key] = src?.[key];
+        } else {
+          src = src?.[key];
+          if (src === undefined) break;
+          dst[key] ??= {};
+          dst = dst[key];
+        }
+      }
+    }
+
+    const cache_string = JSON.stringify(cache_data);
+    localStorage.setItem("nicegui_cache_" + element.cache.name, cache_string);
+
+    crypto.subtle.digest("SHA-256", new TextEncoder().encode(cache_string)).then((hashBuffer) => {
+      const hashHex = Array.from(new Uint8Array(hashBuffer))
+        .map((b) => b.toString(16).padStart(2, "0"))
+        .join("");
+      setCookie("nicegui_cache_" + element.cache.name, hashHex, 7);
+    });
+  }
+}
+
+function loadCacheContent(elements) {
+  for (const [id, element] of Object.entries(elements)) {
+    if (!element?.cache || element.cache.hit !== true) continue;
+    const cache_string = localStorage.getItem("nicegui_cache_" + element.cache.name);
+    if (!cache_string) continue;
+
+    let cache_data;
+    try {
+      cache_data = JSON.parse(cache_string);
+    } catch {
+      continue;
+    }
+
+    for (const key_path of element.cache.keys) {
+      let source = cache_data;
+      let target = element;
+      const last = key_path.length - 1;
+
+      for (let i = 0; i < key_path.length; i++) {
+        const key = key_path[i];
+        if (source[key] === undefined) break;
+
+        if (i === last) {
+          if (target[key] === undefined) target[key] = source[key];
+        } else {
+          source = source[key];
+          target[key] ??= {};
+          target = target[key];
+        }
+      }
+    }
+
+    elements[id] = element;
+  }
+}
+
+function cachify(elements) {
+  storeCacheContent(elements);
+  loadCacheContent(elements);
+}
+
 function parseElements(raw_elements) {
   return JSON.parse(
     raw_elements
@@ -312,6 +395,7 @@ window.onbeforeunload = function () {
 
 function createApp(elements, options) {
   Object.entries(elements).forEach(([_, element]) => replaceUndefinedAttributes(element));
+  cachify(elements);
   setInterval(() => ack(), 3000);
   return (app = Vue.createApp({
     data() {
@@ -393,6 +477,7 @@ function createApp(elements, options) {
           document.getElementById("popup").ariaHidden = false;
         },
         update: async (msg) => {
+          cachify(msg);
           const loadPromises = Object.entries(msg)
             .filter(([_, element]) => element && element.component)
             .map(([_, element]) => loadDependencies(element, options.prefix, options.version));

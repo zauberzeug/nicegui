@@ -1,5 +1,6 @@
 import os
 from functools import lru_cache
+from typing import ClassVar
 
 import markdown2
 from fastapi.responses import PlainTextResponse
@@ -10,6 +11,7 @@ from .mixins.content_element import ContentElement
 
 class Markdown(ContentElement, component='markdown.js', default_classes='nicegui-markdown'):
     # NOTE: The Mermaid ESM is already registered in mermaid.py.
+    default_cache_keys: ClassVar[list[list[str]]] = [['props', 'innerHTML']]
 
     def __init__(self,
                  content: str = '', *,
