@@ -477,7 +477,6 @@ function createApp(elements, options) {
           document.getElementById("popup").ariaHidden = false;
         },
         update: async (msg) => {
-          cachify(msg);
           const loadPromises = Object.entries(msg)
             .filter(([_, element]) => element && element.component)
             .map(([_, element]) => loadDependencies(element, options.prefix, options.version));

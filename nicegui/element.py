@@ -213,8 +213,8 @@ class Element(Visibility):
             if slot != self.default_slot
         }
 
-    def _to_dict(self, *, client_hash: str | None = None) -> dict[str, Any]:
-        orig_data = {
+    def _to_dict(self) -> dict[str, Any]:
+        return {
             'tag': self.tag,
             **({'text': self._text} if self._text is not None else {}),
             **{
@@ -236,14 +236,17 @@ class Element(Visibility):
                 if value
             },
         }
-        data = json.loads(json.dumps(orig_data))  # avoid triggering observables
+
+    def _to_cached_dict(self, *, client_hash: str | None = None) -> dict[str, Any]:
+        data = json.loads(json.dumps(self._to_dict()))  # avoid triggering observables
         if self.caching_enabled():
+            assert self._cache_keys is not None
             data['cache'] = {
                 'name': self._cache_name,
                 'keys': self._cache_keys,
                 'hit': False,
             }
-            cache_data = {}
+            cache_data: dict[str, Any] = {}
             for keys in self._cache_keys:  # nested traversal to collect cache data
                 source = data
                 target = cache_data
@@ -587,7 +590,7 @@ class Element(Visibility):
         """
         return f'c{self.id}'
 
-    def cache(self, name: str, cache_keys: list[Callable[[list[list[str]]], None]] | None = None) -> Self:
+    def cache(self, name: str, cache_keys: list[list[str]] | None = None) -> Self:
         """Cache the element's data.
 
         :param name: A unique name associated with this element only.
