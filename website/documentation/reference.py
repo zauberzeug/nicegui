@@ -24,7 +24,8 @@ def generate_class_doc(class_obj: type, part_title: str) -> None:
         for name in dir(base):
             if not name.startswith('_') and _is_method_or_property(base, name):
                 attributes[name] = (base, getattr(base, name, None))
-    properties = {name: (ancestor, attribute) for name, (ancestor, attribute) in attributes.items() if not callable(attribute)}
+    properties = {name: (ancestor, attribute) for name, (ancestor, attribute)
+                  in attributes.items() if not callable(attribute)}
     methods = {name: (ancestor, attribute) for name, (ancestor, attribute) in attributes.items() if callable(attribute)}
 
     def ancestor_label(ancestor):
