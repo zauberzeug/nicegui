@@ -4,7 +4,7 @@ export default {
   template: `<div></div>`,
   async mounted() {
     await this.$nextTick(); // NOTE: wait for window.path_prefix to be set
-    await loadResource(window.path_prefix + `${this.dynamic_resource_path}/codehilite.css`);
+    await loadResource(window.path_prefix + `${this.dynamic_resource_path}/${this.filename}`);
     if (this.use_mermaid) {
       this.mermaid = (await import("nicegui-mermaid")).mermaid;
       this.mermaid.initialize({ startOnLoad: false });
@@ -54,6 +54,7 @@ export default {
   },
   props: {
     dynamic_resource_path: String,
+    filename: String,
     use_mermaid: {
       required: false,
       default: false,
