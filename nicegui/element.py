@@ -255,7 +255,7 @@ class Element(Visibility):
                     target = target.setdefault(key, {})
                 if keys[-1] in source:
                     target[keys[-1]] = source[keys[-1]]
-            if client_hash == hashlib.sha256(json.dumps(cache_data, sort_keys=True).encode()).hexdigest():
+            if client_hash == hashlib.sha256(json.dumps(cache_data).encode()).hexdigest():
                 for keys in self._cache_keys:  # nested traversal to remove cached data
                     d = data
                     for key in keys[:-1]:
