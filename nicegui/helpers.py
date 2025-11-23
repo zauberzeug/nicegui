@@ -1,20 +1,31 @@
-import asyncio
+from __future__ import annotations
+
 import functools
 import hashlib
 import os
 import socket
 import struct
+import sys
 import threading
 import time
 import webbrowser
 from collections.abc import Callable
 from inspect import Parameter, signature
 from pathlib import Path
-from typing import Any, Optional, Set, Tuple, Union
+from typing import TYPE_CHECKING, Any
 
+from .context import context
 from .logging import log
 
-_shown_warnings: Set[str] = set()
+if TYPE_CHECKING:
+    from .element import Element
+
+_shown_warnings: set[str] = set()
+
+if sys.version_info < (3, 13):
+    from asyncio import iscoroutinefunction
+else:
+    from inspect import iscoroutinefunction
 
 
 def warn_once(message: str, *, stack_info: bool = False) -> None:
@@ -29,6 +40,11 @@ def is_pytest() -> bool:
     return 'PYTEST_CURRENT_TEST' in os.environ
 
 
+def is_user_simulation() -> bool:
+    """Check if the code is running in with user simulation (see https://nicegui.io/documentation/user)."""
+    return 'NICEGUI_USER_SIMULATION' in os.environ
+
+
 def is_coroutine_function(obj: Any) -> bool:
     """Check if the object is a coroutine function.
 
@@ -37,7 +53,7 @@ def is_coroutine_function(obj: Any) -> bool:
     """
     while isinstance(obj, functools.partial):
         obj = obj.func
-    return asyncio.iscoroutinefunction(obj)
+    return iscoroutinefunction(obj)
 
 
 def expects_arguments(func: Callable) -> bool:
@@ -48,7 +64,7 @@ def expects_arguments(func: Callable) -> bool:
                for p in signature(func).parameters.values())
 
 
-def is_file(path: Optional[Union[str, Path]]) -> bool:
+def is_file(path: str | Path | None) -> bool:
     """Check if the path is a file that exists."""
     if not path:
         return False
@@ -60,7 +76,7 @@ def is_file(path: Optional[Union[str, Path]]) -> bool:
         return False
 
 
-def hash_file_path(path: Path, *, max_time: Optional[float] = None) -> str:
+def hash_file_path(path: Path, *, max_time: float | None = None) -> str:
     """Hash the given path based on its string representation and optionally the last modification time of given files."""
     hasher = hashlib.sha256(path.as_posix().encode())
     if max_time is not None:
@@ -83,7 +99,7 @@ def is_port_open(host: str, port: int) -> bool:
         sock.close()
 
 
-def schedule_browser(protocol: str, host: str, port: int) -> Tuple[threading.Thread, threading.Event]:
+def schedule_browser(protocol: str, host: str, port: int) -> tuple[threading.Thread, threading.Event]:
     """Wait non-blockingly for the port to be open, then start a webbrowser.
 
     This function launches a thread in order to be non-blocking.
@@ -120,3 +136,13 @@ def kebab_to_camel_case(string: str) -> str:
 def event_type_to_camel_case(string: str) -> str:
     """Convert an event type string to camelCase."""
     return '.'.join(kebab_to_camel_case(part) if part != '-' else part for part in string.split('.'))
+
+
+def require_top_level_layout(element: Element) -> None:
+    """Check if the element is a top level layout element."""
+    parent = context.slot.parent
+    if parent != parent.client.content:
+        raise RuntimeError(
+            f'Found top level layout element "{element.__class__.__name__}" inside element "{parent.__class__.__name__}". '
+            'Top level layout elements can not be nested but must be direct children of the page content.',
+        )

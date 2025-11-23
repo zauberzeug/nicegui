@@ -1,12 +1,14 @@
-FROM python:3.11-slim
+FROM python:3.12-slim
 
 LABEL maintainer="Zauberzeug GmbH <nicegui@zauberzeug.com>"
 
-RUN apt update && apt install -y curl procps
+RUN apt update && apt install -y curl procps build-essential
+RUN pip install --upgrade pip
 
 RUN pip install \
     dnspython \
     docutils \
+    httpx \
     isort \
     itsdangerous \
     matplotlib \
@@ -14,7 +16,6 @@ RUN pip install \
     plotly \
     pyecharts \
     pytest \
-    requests \
     selenium
 
 RUN curl -sSL https://install.python-poetry.org | python3 - && \
@@ -26,9 +27,9 @@ WORKDIR /app
 
 COPY pyproject.toml poetry.lock*  ./
 
-RUN poetry install --no-root --extras "plotly matplotlib highcharts sass"
+RUN poetry install --no-root --extras "plotly matplotlib highcharts"
 
-RUN pip install latex2mathml
+RUN pip install latex2mathml slowapi
 
 ADD . .
 
@@ -37,6 +38,7 @@ ARG VERSION=unknown
 RUN if [ "$VERSION" = "unknown" ]; then echo "Error: VERSION build argument is required. Use: fly deploy --build-arg VERSION=$(git describe --abbrev=0 --tags --match 'v*' 2>/dev/null | sed 's/^v//' || echo '0.0.0')" && exit 1; fi
 RUN sed -i "/\[tool.poetry\]/,/]/s/version = .*/version = \"$VERSION\"/" pyproject.toml
 
+ENV POETRY_DYNAMIC_VERSIONING_BYPASS=$VERSION
 RUN pip install .
 
 EXPOSE 8080

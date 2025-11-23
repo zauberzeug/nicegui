@@ -3,8 +3,10 @@ from nicegui.testing import Screen, User
 
 
 def test_radio_click(screen: Screen):
-    radio = ui.radio(['A', 'B', 'C'])
-    ui.label().bind_text_from(radio, 'value', lambda x: f'Value: {x}')
+    @ui.page('/')
+    def page():
+        radio = ui.radio(['A', 'B', 'C'])
+        ui.label().bind_text_from(radio, 'value', lambda x: f'Value: {x}')
 
     screen.open('/')
     screen.click('A')
@@ -18,8 +20,13 @@ def test_radio_click(screen: Screen):
 
 
 def test_radio_set_value(screen: Screen):
-    radio = ui.radio(['A', 'B', 'C'])
-    ui.label().bind_text_from(radio, 'value', lambda x: f'Value: {x}')
+    radio = None
+
+    @ui.page('/')
+    def page():
+        nonlocal radio
+        radio = ui.radio(['A', 'B', 'C'])
+        ui.label().bind_text_from(radio, 'value', lambda x: f'Value: {x}')
 
     screen.open('/')
     radio.set_value('B')
@@ -27,11 +34,16 @@ def test_radio_set_value(screen: Screen):
 
 
 def test_radio_set_options(screen: Screen):
-    radio = ui.radio(['A', 'B', 'C'], value='C', on_change=lambda e: ui.notify(f'Event: {e.value}'))
-    ui.label().bind_text_from(radio, 'value', lambda x: f'Value: {x}')
+    radio = None
 
-    ui.button('reverse', on_click=lambda: (radio.options.reverse(), radio.update()))  # type: ignore
-    ui.button('clear', on_click=lambda: (radio.options.clear(), radio.update()))  # type: ignore
+    @ui.page('/')
+    def page():
+        nonlocal radio
+        radio = ui.radio(['A', 'B', 'C'], value='C', on_change=lambda e: ui.notify(f'Event: {e.value}'))
+        ui.label().bind_text_from(radio, 'value', lambda x: f'Value: {x}')
+
+        ui.button('reverse', on_click=lambda: (radio.options.reverse(), radio.update()))  # type: ignore
+        ui.button('clear', on_click=lambda: (radio.options.clear(), radio.update()))  # type: ignore
 
     screen.open('/')
     radio.set_options(['C', 'D', 'E'])
@@ -59,8 +71,10 @@ def test_radio_set_options(screen: Screen):
 
 
 async def test_radio_click_with_user(user: User):
-    radio = ui.radio(['A', 'B', 'C'])
-    ui.label().bind_text_from(radio, 'value', lambda x: f'Value: {x}')
+    @ui.page('/')
+    def page():
+        radio = ui.radio(['A', 'B', 'C'])
+        ui.label().bind_text_from(radio, 'value', lambda x: f'Value: {x}')
 
     await user.open('/')
     user.find('A', kind=ui.radio).click()

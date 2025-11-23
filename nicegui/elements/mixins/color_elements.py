@@ -1,7 +1,6 @@
-from typing import Any, Optional, get_args
+from typing import Any, Optional
 
 from ...element import Element
-from ...tailwind_types.background_color import BackgroundColor
 
 QUASAR_COLORS = {'primary', 'secondary', 'accent', 'dark', 'positive', 'negative', 'info', 'warning'}
 for color in ['red', 'pink', 'purple', 'deep-purple', 'indigo', 'blue', 'light-blue', 'cyan', 'teal', 'green',
@@ -10,7 +9,12 @@ for color in ['red', 'pink', 'purple', 'deep-purple', 'indigo', 'blue', 'light-b
     for i in range(1, 15):
         QUASAR_COLORS.add(f'{color}-{i}')
 
-TAILWIND_COLORS = get_args(BackgroundColor)
+TAILWIND_COLORS = {
+    f'{name}-{value}'
+    for name in ['red', 'orange', 'amber', 'yellow', 'lime', 'green', 'emerald', 'teal', 'cyan', 'sky', 'blue',
+                 'indigo', 'violet', 'purple', 'fuchsia', 'pink', 'rose', 'slate', 'gray', 'zinc', 'neutral', 'stone']
+    for value in [50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950]
+}
 
 
 class BackgroundColorElement(Element):

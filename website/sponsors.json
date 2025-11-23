@@ -1,5 +1,9 @@
 {
+  "special": {
+    "lechler-gmbh": "https://www.lechler.com/",
+    "LambdaTest-Inc": "https://www.lambdatest.com/?utm_source=nicegui&utm_medium=sponsor"
+  },
   "top": [],
-  "total": 21,
-  "contributors": 162
+  "normal": 23,
+  "contributors": 182
 }
