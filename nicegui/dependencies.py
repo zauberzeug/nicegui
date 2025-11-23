@@ -72,6 +72,9 @@ resources: dict[str, Resource] = {}
 dynamic_resources: dict[str, DynamicResource] = {}
 esm_modules: dict[str, EsmModule] = {}
 
+import_names: set[str] = {'vue', 'sass', 'immutable'}
+component_names: set[str] = set()
+
 
 def register_vue_component(path: Path, *, max_time: float | None) -> Component:
     """Register a .vue or .js Vue component.
@@ -85,15 +88,19 @@ def register_vue_component(path: Path, *, max_time: float | None) -> Component:
     if path.suffix == '.vue':
         if key in vue_components and vue_components[key].path == path:
             return vue_components[key]
+        assert name not in component_names, f'Component name "{name}" is already used'
         assert key not in vue_components, f'Duplicate VUE component {key}'
         v = VBuild(path)
         vue_components[key] = VueComponent(key=key, name=name, path=path, html=v.html, script=v.script, style=v.style)
+        component_names.add(name)
         return vue_components[key]
     if path.suffix == '.js':
         if key in js_components and js_components[key].path == path:
             return js_components[key]
+        assert name not in component_names, f'Component name "{name}" is already used'
         assert key not in js_components, f'Duplicate JS component {key}'
         js_components[key] = JsComponent(key=key, name=name, path=path)
+        component_names.add(name)
         return js_components[key]
     raise ValueError(f'Unsupported component type "{path.suffix}"')
 
@@ -105,8 +112,10 @@ def register_library(path: Path, *, max_time: float | None) -> Library:
     if path.suffix in {'.js', '.mjs'}:
         if key in libraries and libraries[key].path == path:
             return libraries[key]
+        assert name not in import_names, f'Library / ESM module name "{name}" is already used'
         assert key not in libraries, f'Duplicate js library {key}'
         libraries[key] = Library(key=key, name=name, path=path)
+        import_names.add(name)
         return libraries[key]
     raise ValueError(f'Unsupported library type "{path.suffix}"')
 
@@ -129,8 +138,8 @@ def register_dynamic_resource(name: str, function: Callable) -> DynamicResource:
 
 def register_esm(name: str, path: Path, *, max_time: float | None) -> None:
     """Register an ESM module."""
-    if any(name == esm_module.name for esm_module in esm_modules.values()):
-        raise ValueError(f'Duplicate ESM module name "{name}"')
+    assert name not in import_names, f'Library / ESM module name "{name}" is already used'
+    import_names.add(name)
     esm_modules[compute_key(path, max_time=max_time)] = EsmModule(name=name, path=path)
 
 
