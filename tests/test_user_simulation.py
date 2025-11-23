@@ -378,22 +378,23 @@ async def test_page_to_string_output_used_in_error_messages(user: User) -> None:
 
     await user.open('/')
     output = str(user.current_layout)
-    assert output == '''
+    pattern = r'''
 q-layout
  q-page-container
   q-page
    div
-    Label [markers=first, text=Hello]
+    Label \[markers=first, text=Hello\]
     Row
      Column
-      Button [markers=second, label=World]
-      Icon [markers=third, name=thumbs-up]
-    Avatar [icon=star]
-    Input [value=typed, label=some input, for=c10, placeholder=type here, type=text]
-    Markdown [content=## Markdown...]
+      Button \[markers=second, label=World\]
+      Icon \[markers=third, name=thumbs-up\]
+    Avatar \[icon=star\]
+    Input \[value=typed, label=some input, for=c10, placeholder=type here, type=text\]
+    Markdown \[content=\#\# Markdown..., filename=[^\]]+\]
     Card
-     Image [src=/image.jpg]
+     Image \[src=/image.jpg\]
 '''.strip()
+    assert re.fullmatch(pattern, output) is not None
 
 
 async def test_combined_filter_parameters(user: User) -> None:
