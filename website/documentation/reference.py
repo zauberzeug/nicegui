@@ -28,11 +28,6 @@ def generate_class_doc(class_obj: type, part_title: str) -> None:
                   in attributes.items() if not callable(attribute)}
     methods = {name: (ancestor, attribute) for name, (ancestor, attribute) in attributes.items() if callable(attribute)}
 
-    def ancestor_label(ancestor):
-        if ancestor is not class_obj:
-            ui.label(f'(inherited from {ancestor.__name__})') \
-                .classes('ml-8 text-sm text-gray-500 dark:text-gray-400 -mt-3')
-
     def render_section(items: dict[str, tuple[type, object | None]], is_method: bool) -> None:
         sorted_items = sorted(items.items())
         native = [(n, o, a) for n, (o, a) in sorted_items if o is class_obj]
@@ -50,9 +45,8 @@ def generate_class_doc(class_obj: type, part_title: str) -> None:
                     .classes('w-full overflow-x-auto')
             else:
                 ui.markdown(f'**`{name}`**`{_generate_property_signature_description(attr)}`')
-            ancestor_label(owner)
             docstring = getattr(attr, '__doc__', None)
-            if docstring:
+            if attr is not None and docstring:
                 _render_docstring(docstring).classes('ml-8')
 
         for name, owner, attr in native:
