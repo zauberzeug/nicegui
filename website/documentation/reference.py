@@ -53,7 +53,7 @@ def generate_class_doc(class_obj: type, part_title: str) -> None:
             render_item(name, owner, attr)
         if inherited_items:
             with ui.row().classes('items-center gap-2 text-sm text-gray-500 dark:text-gray-400 mt-2'):
-                ui.icon('account_tree')
+                ui.icon('sym_o_account_tree')
                 ui.label('Inherited')
             for name, owner, attr in inherited_items:
                 render_item(name, owner, attr)
