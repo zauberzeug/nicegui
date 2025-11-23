@@ -14,20 +14,20 @@ def face(half: bool = False) -> ui.html:
     code = HAPPY_FACE_SVG
     if half:
         code = code.replace('viewBox="0 0 62.44 71.74"', 'viewBox="31.22 0 31.22 71.74"')
-    return ui.html(code, sanitize=False)
+    return ui.html(code, sanitize=False).cache('nicegui-svg-face' + ('-half' if half else ''))
 
 
 def word() -> ui.html:
-    return ui.html(NICEGUI_WORD_SVG, sanitize=False)
+    return ui.html(NICEGUI_WORD_SVG, sanitize=False).cache('nicegui-svg-word')
 
 
 def github() -> ui.html:
-    return ui.html(GITHUB_SVG, sanitize=False)
+    return ui.html(GITHUB_SVG, sanitize=False).cache('nicegui-svg-github')
 
 
 def discord() -> ui.html:
-    return ui.html(DISCORD_SVG, sanitize=False)
+    return ui.html(DISCORD_SVG, sanitize=False).cache('nicegui-svg-discord')
 
 
 def reddit() -> ui.html:
-    return ui.html(REDDIT_SVG, sanitize=False)
+    return ui.html(REDDIT_SVG, sanitize=False).cache('nicegui-svg-reddit')
