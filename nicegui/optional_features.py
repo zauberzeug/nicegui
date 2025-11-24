@@ -12,6 +12,8 @@ FEATURE = Literal[
     'pyecharts',
     'redis',
     'webview',
+    'anywidget',
+    'altair',
 ]
 
 

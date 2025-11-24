@@ -2,6 +2,8 @@ from nicegui import optional_features
 
 from . import (
     aggrid_documentation,
+    altair_documentation,
+    anywidget_documentation,
     circular_progress_documentation,
     code_documentation,
     doc,
@@ -35,6 +37,10 @@ if optional_features.has('matplotlib'):
     doc.intro(line_plot_documentation)
 if optional_features.has('plotly'):
     doc.intro(plotly_documentation)
+if optional_features.has('altair'):
+    doc.intro(altair_documentation)
+if optional_features.has('anywidget'):
+    doc.intro(anywidget_documentation)
 doc.intro(linear_progress_documentation)
 doc.intro(circular_progress_documentation)
 doc.intro(spinner_documentation)
