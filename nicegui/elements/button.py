@@ -6,6 +6,7 @@ from typing_extensions import Self
 from nicegui.helpers import WEAK_DEFAULT
 
 from ..events import ClickEventArguments, Handler, handle_event
+from ..helpers import weaken_defaults
 from .mixins.color_elements import BackgroundColorElement
 from .mixins.disableable_element import DisableableElement
 from .mixins.icon_element import IconElement
@@ -58,3 +59,7 @@ class Button(IconElement, TextElement, DisableableElement, BackgroundColorElemen
         self.on('click', event.set, [])
         await self.client.connected()
         await event.wait()
+
+
+# Apply weaken_defaults to the __init__ method to enable default prop overriding
+Button.__init__ = weaken_defaults(Button.__init__)
