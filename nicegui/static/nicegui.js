@@ -324,12 +324,14 @@ function createApp(elements, options) {
     },
     mounted() {
       mounted_app = this;
-      window.documentId = createRandomUUID();
+      window.documentId = options.query.document_id = createRandomUUID();
       window.clientId = options.query.client_id;
       const url = window.location.protocol === "https:" ? "wss://" : "ws://" + window.location.host;
       window.path_prefix = options.prefix;
       window.nextMessageId = options.query.next_message_id;
       window.ackedMessageId = -1;
+      options.query.tab_id = TAB_ID;
+      options.query.old_tab_id = OLD_TAB_ID;
       window.socket = io(url, {
         path: `${options.prefix}/_nicegui_ws/socket.io`,
         query: options.query,
@@ -361,18 +363,7 @@ function createApp(elements, options) {
           if (transport?.ws?.send) transport.ws.send = wrapFunction(transport.ws.send);
           if (transport?.doWrite) transport.doWrite = wrapFunction(transport.doWrite);
 
-          const args = {
-            client_id: window.clientId,
-            document_id: window.documentId,
-            tab_id: TAB_ID,
-            old_tab_id: OLD_TAB_ID,
-            next_message_id: window.nextMessageId,
-          };
-          window.socket.emit("handshake", args, (ok) => {
-            if (!ok) {
-              console.log("reloading because handshake failed for clientId " + window.clientId);
-              window.location.reload();
-            }
+          window.socket.on("connect", () => {
             window.did_handshake = true;
             document.getElementById("popup").ariaHidden = true;
           });
