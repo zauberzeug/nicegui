@@ -363,8 +363,20 @@ function createApp(elements, options) {
           if (transport?.ws?.send) transport.ws.send = wrapFunction(transport.ws.send);
           if (transport?.doWrite) transport.doWrite = wrapFunction(transport.doWrite);
 
-          window.did_handshake = true;
-          document.getElementById("popup").ariaHidden = true;
+          function finshHandshake(ok) {
+            if (!ok) {
+              console.log("reloading because handshake failed for clientId " + window.clientId);
+              window.location.reload();
+            }
+            window.did_handshake = true;
+            document.getElementById("popup").ariaHidden = true;
+          }
+
+          if (options.query.implicit_handshake) {
+            finshHandshake(true);
+          } else {
+            window.socket.emit("handshake", options.query, finshHandshake);
+          }
         },
         connect_error: (err) => {
           if (err.message == "timeout") {
