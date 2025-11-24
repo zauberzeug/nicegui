@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import functools
 import hashlib
+import inspect
 import os
 import socket
 import struct
@@ -12,7 +13,7 @@ import webbrowser
 from collections.abc import Callable
 from inspect import Parameter, signature
 from pathlib import Path
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Union
 
 from .context import context
 from .logging import log
@@ -26,6 +27,49 @@ if sys.version_info < (3, 13):
     from asyncio import iscoroutinefunction
 else:
     from inspect import iscoroutinefunction
+
+
+class WEAK_DEFAULT:
+    pass
+
+
+def weaken_defaults(original_func):
+    """Create a generic wrapper that detects if certain parameters have a WEAK_DEFAULT type hint.
+
+    If that is the case, we pass WEAK_DEFAULT for that parameter if the user does not provide a value.
+    This way, the default value shown in the IDE is just for decorative purposes.
+    """
+    weak_args = set()
+    for name, annotation in original_func.__annotations__.items():
+        if getattr(annotation, '__origin__', None) is Union:
+            for arg in annotation.__args__:
+                if arg is WEAK_DEFAULT:
+                    weak_args.add(name)
+
+    sentinels = {param_name: object() for param_name in weak_args}
+
+    sig = inspect.signature(original_func)
+
+    new_params = [param.replace(default=sentinels[param.name]) if param.name in sentinels else param
+                  for param in sig.parameters.values()]
+
+    new_sig = sig.replace(parameters=new_params)
+
+    @functools.wraps(original_func)
+    def wrapper(*args, **kwargs):
+        bound_args = new_sig.bind(*args, **kwargs)
+        bound_args.apply_defaults()
+
+        return original_func(**{
+            param_name: (WEAK_DEFAULT
+                         if param_name in sentinels and value is sentinels[param_name]
+                         else value)
+            for param_name, value in bound_args.arguments.items()
+        })
+
+    wrapper.__signature__ = new_sig
+
+    return wrapper
 
 
 def warn_once(message: str, *, stack_info: bool = False) -> None:

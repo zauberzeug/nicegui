@@ -1,7 +1,9 @@
 import asyncio
-from typing import Optional
+from typing import Optional, Union
 
 from typing_extensions import Self
+
+from nicegui.helpers import WEAK_DEFAULT
 
 from ..events import ClickEventArguments, Handler, handle_event
 from .mixins.color_elements import BackgroundColorElement
@@ -15,7 +17,7 @@ class Button(IconElement, TextElement, DisableableElement, BackgroundColorElemen
     def __init__(self,
                  text: str = '', *,
                  on_click: Optional[Handler[ClickEventArguments]] = None,
-                 color: Optional[str] = 'primary',
+                 color: Union[Optional[str], WEAK_DEFAULT] = 'primary',
                  icon: Optional[str] = None,
                  ) -> None:
         """Button
@@ -32,6 +34,11 @@ class Button(IconElement, TextElement, DisableableElement, BackgroundColorElemen
         :param color: the color of the button (either a Quasar, Tailwind, or CSS color or `None`, default: 'primary')
         :param icon: the name of an icon to be displayed on the button (default: `None`)
         """
+        if color is WEAK_DEFAULT:
+            if 'color' in self._default_props:
+                color = self._default_props['color']
+            else:
+                color = 'primary'
         super().__init__(tag='q-btn', text=text, background_color=color, icon=icon)
 
         if on_click:
