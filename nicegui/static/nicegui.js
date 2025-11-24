@@ -363,10 +363,8 @@ function createApp(elements, options) {
           if (transport?.ws?.send) transport.ws.send = wrapFunction(transport.ws.send);
           if (transport?.doWrite) transport.doWrite = wrapFunction(transport.doWrite);
 
-          window.socket.on("connect", () => {
-            window.did_handshake = true;
-            document.getElementById("popup").ariaHidden = true;
-          });
+          window.did_handshake = true;
+          document.getElementById("popup").ariaHidden = true;
         },
         connect_error: (err) => {
           if (err.message == "timeout") {
