@@ -186,7 +186,7 @@ async def _exception_handler_500(request: Request, exception: Exception) -> Resp
 
 
 @sio.on('connect')
-async def _on_connect(sid: str, data: dict[str, Any], _: Any | None = None) -> None:
+async def _on_connect(sid: str, data: dict[str, Any], _=None) -> None:
     if not await _on_handshake(sid, {k: v[0] for k, v in urllib.parse.parse_qs(data.get('QUERY_STRING', '')).items()}):
         await sio.disconnect(sid)
 
