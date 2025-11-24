@@ -63,13 +63,9 @@ def honor_default_props(original_func):
         bound_args.apply_defaults()
 
         return original_func(**{
-            param_name: (DEFAULT_PROPS
-                         if param_name in sentinels and value is sentinels[param_name]
-                         else value)
+            param_name: (DEFAULT_PROPS if param_name in sentinels and value is sentinels[param_name] else value)
             for param_name, value in bound_args.arguments.items()
         })
-
-    wrapper.__signature__ = new_sig
 
     return wrapper
 
