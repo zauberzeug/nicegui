@@ -61,5 +61,4 @@ class Button(IconElement, TextElement, DisableableElement, BackgroundColorElemen
         await event.wait()
 
 
-# Apply weaken_defaults to the __init__ method to enable default prop overriding
 Button.__init__ = honor_default_props(Button.__init__)
