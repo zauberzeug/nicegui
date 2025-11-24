@@ -157,7 +157,9 @@ def create() -> None:
         section_heading('In-depth examples', 'Pick your *solution*')
         with ui.row().classes('w-full text-lg leading-tight grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4'):
             for example in examples:
-                example_link(example)
+                if example.title in ['Authentication', 'Chat App', 'Todo List']:
+                    example_link(example)
+            example_link().classes('min-h-40 text-center items-center justify-center xl:col-span-3')
 
     with ui.column().classes('dark-box p-8 lg:p-16 my-16 bg-transparent border-y-2 border-gray-200'):
         with ui.column().classes('mx-auto items-center gap-y-8 gap-x-32 lg:flex-row'):

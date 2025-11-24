@@ -7,7 +7,7 @@ from starlette.middleware.sessions import SessionMiddleware
 
 from nicegui import app, ui
 from nicegui.page_arguments import RouteMatch
-from website import documentation, fly, header, imprint_privacy, main_page, rate_limits, svg
+from website import documentation, examples_page, fly, header, imprint_privacy, main_page, rate_limits, svg
 
 # session middleware is required for demo in documentation
 app.add_middleware(SessionMiddleware, secret_key=os.environ.get('NICEGUI_SECRET_KEY', ''))
@@ -65,6 +65,7 @@ def _main_page() -> None:
 
     custom_sub_pages({
         '/': main_page.create,
+        '/examples': examples_page.create,
         '/documentation': lambda: documentation.render_page(documentation.registry['']),
         '/documentation/{name}': lambda name: _documentation_detail_page(name, tree),
         '/imprint_privacy': imprint_privacy.create,
