@@ -18,7 +18,7 @@ class Button(IconElement, TextElement, DisableableElement, BackgroundColorElemen
     def __init__(self,
                  text: str = '', *,
                  on_click: Optional[Handler[ClickEventArguments]] = None,
-                 color: Union[Optional[str], DEFAULT_PROPS] = 'primary',
+                 color: Union[Optional[str], DEFAULT_PROPS['color']] = 'primary',  # noqa: F821
                  icon: Optional[str] = None,
                  ) -> None:
         """Button

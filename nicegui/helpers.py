@@ -30,7 +30,9 @@ else:
 
 
 class DEFAULT_PROPS:
-    pass
+    @classmethod
+    def __class_getitem__(cls, _):
+        return cls
 
 
 def honor_default_props(original_func):
