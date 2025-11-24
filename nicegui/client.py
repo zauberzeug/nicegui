@@ -146,8 +146,14 @@ class Client:
         """Build a FastAPI response for the client."""
         self.outbox.updates.clear()
         prefix = request.headers.get('X-Forwarded-Prefix', '') + request.scope.get('root_path', '')
+
+        def _strip_extra_component_info(element_dict: dict[str, Any]) -> dict[str, Any]:
+            if 'component' in element_dict:
+                element_dict['component'].pop('key', None)
+                element_dict['component'].pop('tag', None)
+            return element_dict
         elements = json.dumps({
-            id: element._to_dict() for id, element in self.elements.items()  # pylint: disable=protected-access
+            id: _strip_extra_component_info(element._to_dict()) for id, element in self.elements.items()  # pylint: disable=protected-access
         })
         socket_io_js_query_params = {
             **core.app.config.socket_io_js_query_params,
