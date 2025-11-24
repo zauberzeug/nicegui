@@ -3,10 +3,10 @@ from typing import Optional, Union
 
 from typing_extensions import Self
 
-from nicegui.helpers import WEAK_DEFAULT
+from nicegui.helpers import DEFAULT_PROPS
 
 from ..events import ClickEventArguments, Handler, handle_event
-from ..helpers import weaken_defaults
+from ..helpers import honor_default_props
 from .mixins.color_elements import BackgroundColorElement
 from .mixins.disableable_element import DisableableElement
 from .mixins.icon_element import IconElement
@@ -18,7 +18,7 @@ class Button(IconElement, TextElement, DisableableElement, BackgroundColorElemen
     def __init__(self,
                  text: str = '', *,
                  on_click: Optional[Handler[ClickEventArguments]] = None,
-                 color: Union[Optional[str], WEAK_DEFAULT] = 'primary',
+                 color: Union[Optional[str], DEFAULT_PROPS] = 'primary',
                  icon: Optional[str] = None,
                  ) -> None:
         """Button
@@ -35,7 +35,7 @@ class Button(IconElement, TextElement, DisableableElement, BackgroundColorElemen
         :param color: the color of the button (either a Quasar, Tailwind, or CSS color or `None`, default: 'primary')
         :param icon: the name of an icon to be displayed on the button (default: `None`)
         """
-        if color is WEAK_DEFAULT:
+        if color is DEFAULT_PROPS:
             if 'color' in self._default_props:
                 color = self._default_props['color']
             else:
@@ -62,4 +62,4 @@ class Button(IconElement, TextElement, DisableableElement, BackgroundColorElemen
 
 
 # Apply weaken_defaults to the __init__ method to enable default prop overriding
-Button.__init__ = weaken_defaults(Button.__init__)
+Button.__init__ = honor_default_props(Button.__init__)

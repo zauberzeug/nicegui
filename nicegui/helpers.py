@@ -29,24 +29,24 @@ else:
     from inspect import iscoroutinefunction
 
 
-class WEAK_DEFAULT:
+class DEFAULT_PROPS:
     pass
 
 
-def weaken_defaults(original_func):
-    """Create a generic wrapper that detects if certain parameters have a WEAK_DEFAULT type hint.
+def honor_default_props(original_func):
+    """Create a generic wrapper that makes the function honor default properties set via `default_props`.
 
-    If that is the case, we pass WEAK_DEFAULT for that parameter if the user does not provide a value.
-    This way, the default value shown in the IDE is just for decorative purposes.
+    If a parameter is type-hinted with `Union[..., DEFAULT_PROPS]` and is not provided when calling the function,
+    then we pass `DEFAULT_PROPS` to the original function, which should handle it accordingly.
     """
-    weak_args = set()
+    default_props_args = set()
     for name, annotation in original_func.__annotations__.items():
         if getattr(annotation, '__origin__', None) is Union:
             for arg in annotation.__args__:
-                if arg is WEAK_DEFAULT:
-                    weak_args.add(name)
+                if arg is DEFAULT_PROPS:
+                    default_props_args.add(name)
 
-    sentinels = {param_name: object() for param_name in weak_args}
+    sentinels = {param_name: object() for param_name in default_props_args}
 
     sig = inspect.signature(original_func)
 
@@ -61,7 +61,7 @@ def weaken_defaults(original_func):
         bound_args.apply_defaults()
 
         return original_func(**{
-            param_name: (WEAK_DEFAULT
+            param_name: (DEFAULT_PROPS
                          if param_name in sentinels and value is sentinels[param_name]
                          else value)
             for param_name, value in bound_args.arguments.items()
