@@ -36,7 +36,7 @@ class DEFAULT_PROPS:
 
 
 def honor_default_props(original_func):
-    """Create a generic wrapper that makes the function honor default properties set via `default_props`.
+    """This decorator makes the function honor default properties set via `default_props`.
 
     If a parameter is type-hinted with `Union[..., DEFAULT_PROPS]` and is not provided when calling the function,
     then we pass `DEFAULT_PROPS` to the original function, which should handle it accordingly.
@@ -48,26 +48,27 @@ def honor_default_props(original_func):
                 if arg is DEFAULT_PROPS:
                     default_props_args.add(name)
 
-    sentinels = {param_name: object() for param_name in default_props_args}
-
     sig = inspect.signature(original_func)
 
-    new_params = [param.replace(default=sentinels[param.name]) if param.name in sentinels else param
-                  for param in sig.parameters.values()]
-
-    new_sig = sig.replace(parameters=new_params)
-
     @functools.wraps(original_func)
-    def wrapper(*args, **kwargs):
-        bound_args = new_sig.bind(*args, **kwargs)
-        bound_args.apply_defaults()
+    def decorated(*args, **kwargs):
+        bound_partial = sig.bind_partial(*args, **kwargs)
+
+        bound_with_defaults = sig.bind(*args, **kwargs)
+        bound_with_defaults.apply_defaults()
 
         return original_func(**{
-            param_name: (DEFAULT_PROPS if param_name in sentinels and value is sentinels[param_name] else value)
-            for param_name, value in bound_args.arguments.items()
+            param_name: (
+                bound_partial.arguments[param_name]
+                if param_name in bound_partial.arguments  # Explicitly provided
+                else DEFAULT_PROPS
+                if param_name in default_props_args  # Not provided, is DEFAULT_PROPS arg
+                else bound_with_defaults.arguments[param_name]  # Fallback
+            )
+            for param_name in sig.parameters
         })
 
-    return wrapper
+    return decorated
 
 
 def warn_once(message: str, *, stack_info: bool = False) -> None:
