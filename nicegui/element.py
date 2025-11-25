@@ -558,3 +558,17 @@ class Element(Visibility):
         *Added in version 2.16.0*
         """
         return f'c{self.id}'
+
+    def handle_default_props(self, value: Any, props_key: str, default_value: Any) -> Any:
+        """Helper method to handle DEFAULT_PROPS in element props.
+
+        :param value: the value to check
+        :param props_key: the key of the prop
+        :param default_value: the default value to use if value is DEFAULT_PROPS
+        :return: the resolved value
+        """
+        if value is not helpers.DEFAULT_PROPS:
+            return value
+        if props_key in self._default_props:
+            return self._default_props[props_key]
+        return default_value

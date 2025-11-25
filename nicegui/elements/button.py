@@ -36,11 +36,7 @@ class Button(IconElement, TextElement, DisableableElement, BackgroundColorElemen
         :param color: the color of the button (either a Quasar, Tailwind, or CSS color or `None`, default: 'primary')
         :param icon: the name of an icon to be displayed on the button (default: `None`)
         """
-        if color is DEFAULT_PROPS:
-            if 'color' in self._default_props:
-                color = self._default_props['color']
-            else:
-                color = 'primary'
+        color = self.handle_default_props(color, 'color', 'primary')
         super().__init__(tag='q-btn', text=text, background_color=color, icon=icon)
 
         if on_click:
