@@ -32,7 +32,8 @@
 .nicegui-timeline-entry .q-timeline__content,
 .nicegui-sub-pages,
 .nicegui-row,
-.nicegui-column {
+.nicegui-column,
+.nicegui-sortable {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -326,4 +327,28 @@ h6.q-timeline__title {
   content: "⚠️";
   position: absolute;
   right: 1.5em;
+}
+
+/* sortable */
+.nicegui-sortable-ghost {
+  background-color: #ffffff60 !important;
+}
+.nicegui-sortable-multi-selected {
+  background-color: #f9c7c860 !important;
+  border: solid #ff000060 1px !important;
+  z-index: 1 !important;
+}
+.nicegui-sortable-swap-highlight {
+  background-color: #a3ffba80 !important;
+}
+.nicegui-sortable-handle {
+  cursor: grab !important;
+}
+.nicegui-sortable-nested:empty {
+  padding: 10px;
+  border: 1px dashed #8b8b8b;
+  border-radius: 4px;
+}
+.nicegui-sortable-filtered {
+  background-color: #f87171 !important;
 }
