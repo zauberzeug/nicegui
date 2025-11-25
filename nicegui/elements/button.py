@@ -15,6 +15,7 @@ from .mixins.text_element import TextElement
 
 class Button(IconElement, TextElement, DisableableElement, BackgroundColorElement):
 
+    @honor_default_props
     def __init__(self,
                  text: str = '', *,
                  on_click: Optional[Handler[ClickEventArguments]] = None,
@@ -59,6 +60,3 @@ class Button(IconElement, TextElement, DisableableElement, BackgroundColorElemen
         self.on('click', event.set, [])
         await self.client.connected()
         await event.wait()
-
-
-Button.__init__ = honor_default_props(Button.__init__)  # type: ignore
