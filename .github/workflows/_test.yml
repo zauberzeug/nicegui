@@ -1,0 +1,53 @@
+name: Test Suite
+
+on:
+  workflow_call:
+    inputs:
+      python-versions:
+        description: "JSON array of Python versions to test"
+        required: true
+        type: string
+      scope:
+        description: "JSON array of scopes to run"
+        required: true
+        type: string
+
+jobs:
+  test:
+    name: ${{ matrix.python }} / ${{ matrix.scope }}
+    strategy:
+      matrix:
+        python: ${{ fromJson(inputs.python-versions) }}
+        scope: ${{ fromJson(inputs.scope) }}
+      fail-fast: false
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v6
+      - uses: abatilo/actions-poetry@v4
+      - uses: actions/setup-python@v6
+        with:
+          python-version: ${{ matrix.python }}
+          cache: "poetry"
+      - name: Install dependencies
+        run: |
+          set -x
+          poetry install --all-extras --with dev
+      - uses: nanasess/setup-chromedriver@v2.3.0
+      - name: ${{ matrix.python }} / ${{ matrix.scope }}
+        if: matrix.scope == 'pytest'
+        run: poetry run pytest
+      - uses: actions/upload-artifact@v5
+        if: matrix.scope == 'pytest' && failure()
+        with:
+          name: screenshots-${{ matrix.python }}
+          path: screenshots/*.failed.png
+          retention-days: 14
+      - name: ${{ matrix.python }} / ${{ matrix.scope }}
+        if: matrix.scope == 'startup'
+        run: poetry run ./test_startup.sh
+      - name: Restore dependencies for effective caching
+        if: matrix.scope == 'startup' && always()
+        run: |
+          set -x
+          poetry install --all-extras --with dev

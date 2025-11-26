@@ -1,0 +1,39 @@
+name: Publish to PyPI
+
+on:
+  workflow_call:
+    inputs:
+      version:
+        description: "Version to publish (e.g., v1.2.3)"
+        required: true
+        type: string
+
+jobs:
+  pypi:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.x"
+      - uses: abatilo/actions-poetry@v4
+      - run: poetry version ${{ inputs.version }}
+      - run: poetry publish --build
+        env:
+          POETRY_PYPI_TOKEN_PYPI: ${{ secrets.PYPI_API_TOKEN }}
+      - uses: softprops/action-gh-release@v2
+        with:
+          draft: true
+          prerelease: ${{ contains(inputs.version, 'rc') }}
+          name: ${{ inputs.version }}
+          tag_name: ${{ inputs.version }}
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+      - name: Verify PyPI package
+        run: |
+          for i in {1..100}
+          do
+            sleep 2
+            python -m pip install 'nicegui==${{ inputs.version }}' && break
+          done
+          sleep 5

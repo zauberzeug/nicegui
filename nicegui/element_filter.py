@@ -74,7 +74,7 @@ class ElementFilter(Generic[T]):
 
         :param kind: filter by element type; the iterator will be of type ``kind``
         :param marker: filter by element markers; can be a list of strings or a single string where markers are separated by whitespace
-        :param content: filter for elements which contain ``content`` in one of their content attributes like ``.text``, ``.value``, ``.source``, ...; can be a singe string or a list of strings which all must match
+        :param content: filter for elements which contain ``content`` in one of their content attributes like ``.text``, ``.value``, ``.source``, ...; can be a single string or a list of strings which all must match
         :param local_scope: if `True`, only elements within the current scope are returned; by default the whole page is searched (this default behavior can be changed with ``ElementFilter.DEFAULT_LOCAL_SCOPE = True``)
         """
         self._kind = kind

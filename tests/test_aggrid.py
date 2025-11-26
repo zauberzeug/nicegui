@@ -155,8 +155,7 @@ def test_replace_aggrid(screen: Screen):
             ui.aggrid({'columnDefs': [{'field': 'name'}], 'rowData': [{'name': 'Alice'}]})
 
         def replace():
-            container.clear()
-            with container:
+            with container.clear():
                 ui.aggrid({'columnDefs': [{'field': 'name'}], 'rowData': [{'name': 'Bob'}]})
         ui.button('Replace', on_click=replace)
 

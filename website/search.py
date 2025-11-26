@@ -27,7 +27,11 @@ class Search:
                 };
                 window.fuse = new Fuse(searchData, options);
             }
-            loadSearchData();
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', loadSearchData);
+            } else {
+                loadSearchData();
+            }
             </script>
         ''')
         with ui.dialog() as self.dialog, ui.card().tight().classes('w-[800px] h-[600px]'):

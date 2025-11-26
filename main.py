@@ -3,11 +3,24 @@ import os
 from pathlib import Path
 
 from fastapi import Request
+from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
 from starlette.middleware.sessions import SessionMiddleware
+from starlette.responses import Response
 
-from nicegui import app, ui
+from nicegui import app, core, ui
 from nicegui.page_arguments import RouteMatch
 from website import documentation, examples_page, fly, header, imprint_privacy, main_page, rate_limits, svg
+
+
+@app.add_middleware
+class DocsSetCacheControlMiddleware(BaseHTTPMiddleware):
+
+    async def dispatch(self, request: Request, call_next: RequestResponseEndpoint) -> Response:
+        response = await call_next(request)
+        if request.url.path.startswith('/fonts/') or request.url.path.startswith('/static/'):
+            response.headers['Cache-Control'] = core.app.config.cache_control_directives
+        return response
+
 
 # session middleware is required for demo in documentation
 app.add_middleware(SessionMiddleware, secret_key=os.environ.get('NICEGUI_SECRET_KEY', ''))

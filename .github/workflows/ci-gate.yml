@@ -1,0 +1,53 @@
+name: CI Gate
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  merge_group:
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    uses: ./.github/workflows/_check.yml
+
+  quick-test:
+    if: github.event_name != 'merge_group'
+    uses: ./.github/workflows/_test.yml
+    with:
+      python-versions: '["3.9"]'
+      scope: '["pytest"]'
+
+  full-test:
+    if: github.event_name == 'merge_group'
+    uses: ./.github/workflows/_test.yml
+    with:
+      python-versions: '["3.9", "3.10", "3.11", "3.12", "3.13", "3.14"]'
+      scope: '["pytest", "startup"]'
+
+  quick-test-gate:
+    runs-on: ubuntu-latest
+    needs: [check, quick-test]
+    if: always() && github.event_name != 'merge_group'
+    steps:
+      - name: Verify all dependencies passed
+        if: needs.check.result != 'success' || needs.quick-test.result != 'success'
+        run: |
+          echo "Dependencies failed: check=${{ needs.check.result }}, quick-test=${{ needs.quick-test.result }}"
+          exit 1
+
+  full-test-gate:
+    runs-on: ubuntu-latest
+    needs: [check, full-test]
+    if: always() && github.event_name == 'merge_group'
+    steps:
+      - name: Verify all dependencies passed
+        if: needs.check.result != 'success' || needs.full-test.result != 'success'
+        run: |
+          echo "Dependencies failed: check=${{ needs.check.result }}, full-test=${{ needs.full-test.result }}"
+          exit 1

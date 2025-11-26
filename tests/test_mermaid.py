@@ -56,8 +56,7 @@ def test_replace_mermaid(screen: Screen):
             ui.mermaid('graph LR; Node_A')
 
         def replace():
-            container.clear()
-            with container:
+            with container.clear():
                 ui.mermaid('graph LR; Node_B')
         ui.button('Replace', on_click=replace)
 
