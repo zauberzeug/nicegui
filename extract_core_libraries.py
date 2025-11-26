@@ -51,8 +51,8 @@ def _extract_quasar_css(css_path: Path) -> None:
 
 def _extract_headwind_css(quasar_css_path: Path) -> None:
     matches = re.finditer(r'\.rotate-(\d+)\s*\{[^}]*\}', quasar_css_path.read_text())
-    (STATIC / 'headwind.css').write_text(
-        f"{', '.join(f'.rotate-{m.group(1)}' for m in matches)} {{\n  rotate: 0deg;\n}}\n")
+    css = f'{", ".join(f".rotate-{m.group(1)}" for m in matches)} {{\n  rotate: 0deg;\n}}\n'
+    (STATIC / 'headwind.css').write_text(css)
 
 
 def _minify_js(input_path: Path, output_path: Path) -> None:
