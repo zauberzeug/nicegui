@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import copy
 import difflib
+import os
 import re
 import shutil
 import subprocess
@@ -80,3 +81,15 @@ shutil.copy2(NODE_MODULES / 'es-module-shims' / 'dist' / 'es-module-shims.js', S
 _minify_js(NODE_MODULES / 'sass' / 'sass.default.js', STATIC / 'sass.default.js')
 _minify_js(NODE_MODULES / 'sass' / 'sass.dart.js', STATIC / 'sass.dart.js')
 _minify_js(NODE_MODULES / 'immutable' / 'dist' / 'immutable.es.js', STATIC / 'immutable.es.js')
+
+os.makedirs(STATIC / 'unocss', exist_ok=True)
+
+shutil.copy2(NODE_MODULES / '@unocss' / 'reset' / 'tailwind.css', STATIC / 'unocss' / 'tailwind.css')
+shutil.copy2(NODE_MODULES / '@unocss' / 'reset' / 'tailwind-v4.css', STATIC / 'unocss' / 'tailwind-v4.css')
+shutil.copy2(NODE_MODULES / '@unocss' / 'runtime' / 'core.global.js', STATIC / 'unocss' / 'core.global.js')
+shutil.copy2(NODE_MODULES / '@unocss' / 'runtime' / 'preset-mini.global.js',
+             STATIC / 'unocss' / 'preset-mini.global.js')
+shutil.copy2(NODE_MODULES / '@unocss' / 'runtime' / 'preset-wind3.global.js',
+             STATIC / 'unocss' / 'preset-wind3.global.js')
+shutil.copy2(NODE_MODULES / '@unocss' / 'runtime' / 'preset-wind4.global.js',
+             STATIC / 'unocss' / 'preset-wind4.global.js')

@@ -7,6 +7,78 @@ let mounted_app = undefined;
 
 const loaded_components = new Set();
 
+const allClasses = new Set();
+const renderedClasses = new Set();
+
+const elementObservers = new Map();
+
+function observeElement(id) {
+  if (window.__unocss_runtime === undefined) return;
+  if (elementObservers.has(id)) return;
+  const htmlElement = getHtmlElement(id);
+  if (!htmlElement) return;
+
+  function collectNewClasses(el) {
+    let added = false;
+    for (const c of el.classList) {
+      if (allClasses.has(c)) continue;
+      allClasses.add(c);
+      added = true;
+    }
+    return added;
+  }
+
+  if (collectNewClasses(htmlElement)) generateStylesFromClasses();
+
+  const observer = new MutationObserver((mutations) => {
+    let hasNew = false;
+    for (const mutation of mutations) {
+      if (mutation.type !== "attributes" || mutation.attributeName !== "class") continue;
+      if (collectNewClasses(mutation.target)) hasNew = true;
+    }
+    if (hasNew) generateStylesFromClasses();
+  });
+
+  observer.observe(htmlElement, {
+    attributes: true,
+    attributeFilter: ["class"],
+  });
+
+  elementObservers.set(id, observer);
+}
+
+function stopObservingElement(id) {
+  if (window.__unocss_runtime === undefined) return;
+  elementObservers.get(id)?.disconnect();
+  elementObservers.delete(id);
+}
+
+function addObservers(elements) {
+  if (window.__unocss_runtime === undefined) return;
+  for (const [id, element] of Object.entries(elements)) if (element?.component) observeElement(id);
+}
+
+function dropAllObservers() {
+  if (window.__unocss_runtime === undefined) return;
+  for (const id of elementObservers.keys()) stopObservingElement(id);
+}
+
+let unocssStyleMoved = false;
+
+async function generateStylesFromClasses() {
+  if (window.__unocss_runtime === undefined) return;
+  const newClasses = new Set();
+  for (const c of allClasses) if (!renderedClasses.has(c)) newClasses.add(c);
+  if (newClasses.size === 0) return;
+  for (const c of newClasses) renderedClasses.add(c);
+  const div = document.createElement("div");
+  div.className = Array.from(newClasses).join(" ");
+  await window.__unocss_runtime.extract(div.outerHTML);
+  if (unocssStyleMoved) return;
+  for (const style of document.querySelectorAll("style[data-unocss-runtime-layer]")) document.head.appendChild(style);
+  unocssStyleMoved = true;
+}
+
 function parseElements(raw_elements) {
   return JSON.parse(
     raw_elements
@@ -308,11 +380,15 @@ const TAB_ID =
 sessionStorage.__nicegui_tab_closed = "false";
 window.onbeforeunload = function () {
   sessionStorage.__nicegui_tab_closed = "true";
+  dropAllObservers();
 };
 
 function createApp(elements, options) {
   Object.entries(elements).forEach(([_, element]) => replaceUndefinedAttributes(element));
   setInterval(() => ack(), 3000);
+  if (window.__unocss_runtime !== undefined)
+    for (const el of Object.values(elements)) for (const c of el?.class || []) allClasses.add(c);
+  generateStylesFromClasses().then(() => document.getElementById("app").classList.remove("nicegui-unocss-loading"));
   return (app = Vue.createApp({
     data() {
       return {
@@ -321,6 +397,9 @@ function createApp(elements, options) {
     },
     render() {
       return renderRecursively(this.elements, 0);
+    },
+    beforeUnmount() {
+      dropAllObservers();
     },
     mounted() {
       mounted_app = this;
@@ -340,6 +419,7 @@ function createApp(elements, options) {
             : options.transports,
       });
       window.did_handshake = false;
+      addObservers(this.elements);
       const messageHandlers = {
         connect: () => {
           function wrapFunction(originalFunction) {
@@ -398,9 +478,16 @@ function createApp(elements, options) {
             .map(([_, element]) => loadDependencies(element, options.prefix, options.version));
           await Promise.all(loadPromises);
 
+          if (window.__unocss_runtime !== undefined) {
+            const originalClassesCount = allClasses.size;
+            for (const el of Object.values(msg)) for (const c of el?.class || []) allClasses.add(c);
+            if (allClasses.size > originalClassesCount) await generateStylesFromClasses();
+          }
+
           for (const [id, element] of Object.entries(msg)) {
             if (element === null) {
               delete this.elements[id];
+              stopObservingElement(id);
               continue;
             }
             replaceUndefinedAttributes(element);
@@ -408,6 +495,7 @@ function createApp(elements, options) {
           }
 
           await this.$nextTick();
+          addObservers(msg);
           for (const [id, element] of Object.entries(msg)) {
             if (element?.update_method) {
               getElement(id)[element.update_method]();

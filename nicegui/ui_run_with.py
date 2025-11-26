@@ -27,6 +27,7 @@ def run_with(
     mount_path: str = '/',
     on_air: Optional[Union[str, Literal[True]]] = None,
     tailwind: bool = True,
+    unocss_preset: Optional[Literal['mini', 'wind3', 'wind4']] = None,
     prod_js: bool = True,
     storage_secret: Optional[str] = None,
     session_middleware_kwargs: Optional[dict[str, Any]] = None,
@@ -48,6 +49,7 @@ def run_with(
     :param mount_path: mount NiceGUI at this path (default: `'/'`)
     :param on_air: tech preview: `allows temporary remote access <https://nicegui.io/documentation/section_configuration_deployment#nicegui_on_air>`_ if set to `True` (default: disabled)
     :param tailwind: whether to use Tailwind CSS (experimental, default: `True`)
+    :param unocss_preset: use UnoCSS with the specified preset (mutually exclusive to `tailwind`, default: `None`, options: `'mini'`, `'wind3'`, `'wind4'`)
     :param prod_js: whether to use the production version of Vue and Quasar dependencies (default: `True`)
     :param storage_secret: secret key for browser-based storage (default: `None`, a value is required to enable ui.storage.individual and ui.storage.browser)
     :param session_middleware_kwargs: additional keyword arguments passed to SessionMiddleware that creates the session cookies used for browser-based storage
@@ -64,6 +66,7 @@ def run_with(
         reconnect_timeout=reconnect_timeout,
         message_history_length=message_history_length,
         tailwind=tailwind,
+        unocss_preset=unocss_preset,
         prod_js=prod_js,
         show_welcome_message=show_welcome_message,
         cache_control_directives=cache_control_directives,
