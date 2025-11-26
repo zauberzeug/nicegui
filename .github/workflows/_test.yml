@@ -33,7 +33,7 @@ jobs:
       - name: Install dependencies
         run: |
           set -x
-          uv sync --all-extras --group dev
+          uv sync --all-extras
       - uses: nanasess/setup-chromedriver@v2.3.0
       - name: ${{ matrix.python }} / ${{ matrix.scope }}
         if: matrix.scope == 'pytest'
@@ -51,4 +51,4 @@ jobs:
         if: matrix.scope == 'startup' && always()
         run: |
           set -x
-          uv sync --all-extras --group dev
+          uv sync --all-extras
