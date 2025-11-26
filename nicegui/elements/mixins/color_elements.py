@@ -1,4 +1,6 @@
-from typing import Any, Callable, Optional, Self, cast
+from typing import Any, Callable, Optional, cast
+
+from typing_extensions import Self
 
 from nicegui.binding import BindableProperty, bind, bind_from, bind_to
 
