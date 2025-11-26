@@ -83,6 +83,9 @@ class Client:
         self.page = page
         self.outbox = Outbox(self)
 
+        if self._request is not None:
+            self._request.scope['nicegui_page_path'] = self.page.path
+
         with Element('q-layout', _client=self).props('view="hhh lpr fff"').classes('nicegui-layout') as self.layout:
             with Element('q-page-container') as self.page_container:
                 with Element('q-page'):

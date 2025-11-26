@@ -180,9 +180,11 @@ async def _exception_handler_404(request: Request, exception: Exception) -> Resp
 @app.exception_handler(Exception)
 async def _exception_handler_500(request: Request, exception: Exception) -> Response:
     log.exception(exception)
-    with Client(page(''), request=request) as client:
-        error_content(500, exception)
-    return client.build_response(request, 500)
+    if request.scope.get('nicegui_page_path'):
+        with Client(page(''), request=request) as client:
+            error_content(500, exception)
+        return client.build_response(request, 500)
+    raise exception  # Simply return "Internal Server Error", just like FastAPI would do
 
 
 @sio.on('handshake')
