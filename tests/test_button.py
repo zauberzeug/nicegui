@@ -21,6 +21,35 @@ def test_quasar_colors(screen: Screen):
     assert screen.find_all_by_tag('button')[5].value_of_css_property('background-color') == 'rgba(0, 255, 255, 1)'
 
 
+def test_quasar_colors_via_setter(screen: Screen):
+    cases = [
+        ('1', 'rgba(239, 83, 80, 1)', 'red-5'),
+        ('2', 'oklch(0.637 0.237 25.331)', 'red-500'),
+        ('3', 'rgba(255, 0, 0, 1)', '#ff0000'),
+        ('4', 'rgba(0, 255, 255, 1)', '#00ffff'),
+    ]
+
+    @ui.page('/')
+    def page():
+        mybutton = ui.button()
+        display = ui.label()
+        mybutton.bind_background_color_to(display, 'text', forward=lambda c: f'###{c}###')
+        for label, _, color in cases:
+            ui.button(label, on_click=lambda c=color: mybutton.set_background_color(c))
+
+    screen.open('/')
+
+    def get_main_btn():
+        return screen.find_all_by_tag('button')[0]
+    assert get_main_btn().value_of_css_property('background-color') == 'rgba(88, 152, 212, 1)'
+
+    for label, expected_color, color in cases:
+        screen.click(label)
+        screen.wait(1)
+        assert get_main_btn().value_of_css_property('background-color') == expected_color
+        screen.should_contain(f'###{color}###')
+
+
 def test_enable_disable(screen: Screen):
     events = []
 
