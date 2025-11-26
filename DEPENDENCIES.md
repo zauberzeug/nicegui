@@ -2,6 +2,7 @@
 
 - @tailwindcss/browser: 4.1.13 ([MIT](https://opensource.org/licenses/MIT))
 - quasar: 2.18.5 ([MIT](https://opensource.org/licenses/MIT))
+- sass: ^1.94.0 ([MIT](https://opensource.org/licenses/MIT))
 - socket.io: 4.8.1 ([MIT](https://opensource.org/licenses/MIT))
 - vue: 3.5.22 ([MIT](https://opensource.org/licenses/MIT))
 - ag-grid-community: ^34.2.0 ([MIT](https://opensource.org/licenses/MIT))
@@ -20,3 +21,6 @@
 - plotly.js: ^3.1.1 ([MIT](https://opensource.org/licenses/MIT))
 - three: ^0.180.0 ([MIT](https://opensource.org/licenses/MIT))
 - @tweenjs/tween.js: ^25.0.0 ([MIT](https://opensource.org/licenses/MIT))
+- @xterm/xterm: ^5.5.0 ([MIT](https://opensource.org/licenses/MIT))
+- @xterm/addon-fit: ^0.10.0 ([MIT](https://opensource.org/licenses/MIT))
+- @xterm/addon-web-links: ^0.11.0 ([MIT](https://opensource.org/licenses/MIT))
