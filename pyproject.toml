@@ -1,6 +1,6 @@
 [project]
 name = "nicegui"
-version = "3.0.0"
+dynamic = ["version"]
 description = "Create web-based user interfaces with Python. The nice way."
 authors = [{ name = "Zauberzeug GmbH", email = "info@zauberzeug.com" }]
 requires-python = ">=3.9,<4"
@@ -89,6 +89,9 @@ requires = [
     "poetry-dynamic-versioning>=1.0.0,<2.0.0",
 ]
 build-backend = "poetry_dynamic_versioning.backend"
+
+[tool.poetry]
+version = "0.0.0"
 
 [tool.poetry-dynamic-versioning]
 enable = true
