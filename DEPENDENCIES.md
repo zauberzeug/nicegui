@@ -1,7 +1,6 @@
 # Included Web Dependencies
 
 - @tailwindcss/browser: 4.1.13 ([MIT](https://opensource.org/licenses/MIT))
-- es-module-shims: 2.6.2 ([MIT](https://opensource.org/licenses/MIT))
 - quasar: 2.18.5 ([MIT](https://opensource.org/licenses/MIT))
 - sass: ^1.94.0 ([MIT](https://opensource.org/licenses/MIT))
 - socket.io: 4.8.1 ([MIT](https://opensource.org/licenses/MIT))
