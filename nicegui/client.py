@@ -186,9 +186,14 @@ class Client:
         async def generate():
             serialized_elements: set[int] = set()
 
+            def _strip_children(element_dict: dict) -> dict:
+                element_dict = element_dict.copy()
+                element_dict.pop('children', None)
+                return element_dict
+
             def get_elements_to_yield() -> str:
                 retval = (',' if serialized_elements else '') + json.dumps({
-                    id: element._to_dict() for id, element in self.elements.items() if id not in serialized_elements  # pylint: disable=protected-access
+                    id: _strip_children(element._to_dict()) for id, element in self.elements.items() if id not in serialized_elements  # pylint: disable=protected-access
                 }).translate(HTML_ESCAPE_TABLE)[1:-1]  # strip {}
                 serialized_elements.update(self.elements.keys())
                 print(serialized_elements)
@@ -209,6 +214,9 @@ class Client:
                         error_content(500, e)
                         yield get_elements_to_yield()
             yield '}'
+            context['children_supplement'] = json.dumps({
+                id: [child.id for child in element.default_slot.children] for id, element in self.elements.items() if element.default_slot.children
+            })
             yield templates.get_template('index2.html').render(**context)
         return StreamingResponse(generate(), media_type='text/html', status_code=status_code, headers={'Cache-Control': 'no-store', 'X-NiceGUI-Content': 'page'})
 
