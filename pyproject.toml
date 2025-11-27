@@ -120,7 +120,6 @@ filterwarnings = [
 
 [tool.mypy]
 python_version = "3.9"
-install_types = true
 check_untyped_defs = true
 
 [[tool.mypy.overrides]]
@@ -131,6 +130,7 @@ module = [
     "plotly.*",
     "polars.*",
     "pyecharts.*",
+    "scipy.*",
     "socketio.*",
     "webview.*", # can be removed with next pywebview release
 ]

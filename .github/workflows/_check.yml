@@ -11,7 +11,7 @@ jobs:
           - name: pre-commit
             command: pre-commit run --all-files
           - name: mypy
-            command: mypy ./nicegui --non-interactive
+            command: mypy ./nicegui
           - name: pylint
             command: pylint ./nicegui
       fail-fast: false
