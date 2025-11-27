@@ -5,14 +5,16 @@ import inspect
 import time
 import uuid
 from collections import defaultdict
-from collections.abc import Awaitable, Iterable
+from collections.abc import Awaitable, Coroutine, Iterable
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Callable, ClassVar
 
 from fastapi import Request
-from fastapi.responses import Response
+from fastapi.responses import Response, StreamingResponse
 from fastapi.templating import Jinja2Templates
 from typing_extensions import Self
+
+from nicegui.error import error_content
 
 from . import background_tasks, binding, core, helpers, json, storage
 from .awaitable_response import AwaitableResponse
@@ -144,13 +146,10 @@ class Client:
     def __exit__(self, *_) -> None:
         self.content.__exit__()
 
-    def build_response(self, request: Request, status_code: int = 200) -> Response:
+    def build_response(self, request: Request, status_code: int = 200, *, rendering_awaitable: Coroutine[Any, Any, Any] | None = None) -> Response:
         """Build a FastAPI response for the client."""
         self.outbox.updates.clear()
         prefix = request.headers.get('X-Forwarded-Prefix', '') + request.scope.get('root_path', '')
-        elements = json.dumps({
-            id: element._to_dict() for id, element in self.elements.items()  # pylint: disable=protected-access
-        })
         socket_io_js_query_params = {
             **core.app.config.socket_io_js_query_params,
             'client_id': self.id,
@@ -158,38 +157,59 @@ class Client:
         }
         vue_html, vue_styles, vue_scripts, imports, js_imports, js_imports_urls = \
             generate_resources(prefix, self.elements.values())
-        return templates.TemplateResponse(
-            request=request,
-            name='index.html',
-            context={
-                'request': request,
-                'version': __version__,
-                'elements': elements.translate(HTML_ESCAPE_TABLE),
-                'head_html': self.head_html,
-                'body_html': '<style>' + '\n'.join(vue_styles) + '</style>\n' + self.body_html + '\n' + '\n'.join(vue_html),
-                'vue_scripts': '\n'.join(vue_scripts),
-                'imports': json.dumps(imports),
-                'js_imports': '\n'.join(js_imports),
-                'js_imports_urls': js_imports_urls,
-                'vue_config': json.dumps(core.app.config.quasar_config),
-                'vue_config_script': core.app.config.vue_config_script,
-                'title': self.resolve_title(),
-                'viewport': self.page.resolve_viewport(),
-                'favicon_url': get_favicon_url(self.page, prefix),
-                'dark': str(self.page.resolve_dark()),
-                'language': self.page.resolve_language(),
-                'translations': translations.get(self.page.resolve_language(), translations['en-US']),
-                'prefix': prefix,
-                'tailwind': core.app.config.tailwind,
-                'headwind_css': HEADWIND_CONTENT if core.app.config.tailwind else '',
-                'prod_js': core.app.config.prod_js,
-                'socket_io_js_query_params': socket_io_js_query_params,
-                'socket_io_js_extra_headers': core.app.config.socket_io_js_extra_headers,
-                'socket_io_js_transports': core.app.config.socket_io_js_transports,
-            },
-            status_code=status_code,
-            headers={'Cache-Control': 'no-store', 'X-NiceGUI-Content': 'page'},
-        )
+        context = {
+            'request': request,
+            'version': __version__,
+            'head_html': self.head_html,
+            'body_html': '<style>' + '\n'.join(vue_styles) + '</style>\n' + self.body_html + '\n' + '\n'.join(vue_html),
+            'vue_scripts': '\n'.join(vue_scripts),
+            'imports': json.dumps(imports),
+            'js_imports': '\n'.join(js_imports),
+            'js_imports_urls': js_imports_urls,
+            'vue_config': json.dumps(core.app.config.quasar_config),
+            'vue_config_script': core.app.config.vue_config_script,
+            'title': self.resolve_title(),
+            'viewport': self.page.resolve_viewport(),
+            'favicon_url': get_favicon_url(self.page, prefix),
+            'dark': str(self.page.resolve_dark()),
+            'language': self.page.resolve_language(),
+            'translations': translations.get(self.page.resolve_language(), translations['en-US']),
+            'prefix': prefix,
+            'tailwind': core.app.config.tailwind,
+            'headwind_css': HEADWIND_CONTENT if core.app.config.tailwind else '',
+            'prod_js': core.app.config.prod_js,
+            'socket_io_js_query_params': socket_io_js_query_params,
+            'socket_io_js_extra_headers': core.app.config.socket_io_js_extra_headers,
+            'socket_io_js_transports': core.app.config.socket_io_js_transports,
+        }
+
+        async def generate():
+            serialized_elements = set()
+
+            def get_elements_to_yield() -> str:
+                retval = (',' if serialized_elements else '') + json.dumps({
+                    id: element._to_dict() for id, element in self.elements.items()  # pylint: disable=protected-access
+                }).translate(HTML_ESCAPE_TABLE)[1:-1]  # strip {}
+                serialized_elements.update(self.elements.keys())
+                return retval
+
+            yield templates.get_template('index1.html').render(**context)
+            yield '{'
+            yield get_elements_to_yield()  # full element list if no streaming, or the layout if streaming
+            resume_element_id = self.next_element_id
+            if rendering_awaitable is not None:
+                with self:
+                    try:
+                        async for _ in await rendering_awaitable:
+                            yield get_elements_to_yield()
+                    except Exception as e:
+                        self.elements.clear()
+                        self.next_element_id = resume_element_id
+                        error_content(500, e)
+                        yield get_elements_to_yield()
+            yield '}'
+            yield templates.get_template('index2.html').render(**context)
+        return StreamingResponse(generate(), media_type='text/html', status_code=status_code, headers={'Cache-Control': 'no-store', 'X-NiceGUI-Content': 'page'})
 
     def resolve_title(self) -> str:
         """Return the title of the page."""
