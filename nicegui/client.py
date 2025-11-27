@@ -196,7 +196,6 @@ class Client:
                     id: _strip_children(element._to_dict()) for id, element in self.elements.items() if id not in serialized_elements  # pylint: disable=protected-access
                 }).translate(HTML_ESCAPE_TABLE)[1:-1]  # strip {}
                 serialized_elements.update(self.elements.keys())
-                print(serialized_elements)
                 return retval
 
             yield templates.get_template('index1.html').render(**context)
