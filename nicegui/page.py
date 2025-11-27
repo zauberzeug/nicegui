@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import inspect
+from collections.abc import AsyncIterable
 from functools import wraps
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Callable
@@ -30,7 +31,6 @@ class page:
                  response_timeout: float = 3.0,
                  reconnect_timeout: float | None = None,
                  api_router: APIRouter | None = None,
-                 stream: bool = False,
                  **kwargs: Any,
                  ) -> None:
         """Page
@@ -58,7 +58,6 @@ class page:
         :param reconnect_timeout: maximum time the server waits for the browser to reconnect (defaults to `reconnect_timeout` argument of `run` command))
         :param api_router: APIRouter instance to use, can be left `None` to use the default
         :param kwargs: additional keyword arguments passed to FastAPI's @app.get method
-        :param stream: Get performance improvements with `yield`, but the decorated function cannot return any value
         """
         self._path = path
         self.title = title
@@ -70,7 +69,6 @@ class page:
         self.kwargs = kwargs
         self.api_router = api_router or core.app.router
         self.reconnect_timeout = reconnect_timeout
-        self.streamable = stream
 
         create_favicon_route(self.path, favicon)
 
@@ -158,7 +156,7 @@ class page:
 
             client = Client(self, request=request)
 
-            async def core_rendering_logic() -> Response | None:
+            async def core_rendering_logic() -> Response | AsyncIterable | None:
                 with client:
                     if any(p.name == 'client' for p in inspect.signature(func).parameters.values()):
                         dec_kwargs['client'] = client
@@ -198,9 +196,9 @@ class page:
                     return create_error_page(HTTPException(404, f'{client.sub_pages_router.current_path} not found'), request)
                 return result
 
-            if self.streamable:
-                return client.build_response(request, rendering_awaitable=core_rendering_logic())
             result = await core_rendering_logic()
+            if isinstance(result, AsyncIterable):
+                return client.build_response(request, render_async_iterable=result)
 
             if isinstance(result, Response):  # NOTE if setup returns a response, we don't need to render the page
                 return result

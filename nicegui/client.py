@@ -5,12 +5,12 @@ import inspect
 import time
 import uuid
 from collections import defaultdict
-from collections.abc import Awaitable, Coroutine, Iterable
+from collections.abc import AsyncIterable, Awaitable, Iterable
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Callable, ClassVar
 
 from fastapi import Request
-from fastapi.responses import Response, StreamingResponse
+from fastapi.responses import StreamingResponse
 from fastapi.templating import Jinja2Templates
 from typing_extensions import Self
 
@@ -146,7 +146,7 @@ class Client:
     def __exit__(self, *_) -> None:
         self.content.__exit__()
 
-    def build_response(self, request: Request, status_code: int = 200, *, rendering_awaitable: Coroutine[Any, Any, Any] | None = None) -> Response:
+    def build_response(self, request: Request, status_code: int = 200, *, render_async_iterable: AsyncIterable | None = None) -> StreamingResponse:
         """Build a FastAPI response for the client."""
         self.outbox.updates.clear()
         prefix = request.headers.get('X-Forwarded-Prefix', '') + request.scope.get('root_path', '')
@@ -184,7 +184,7 @@ class Client:
         }
 
         async def generate():
-            serialized_elements = set()
+            serialized_elements: set[int] = set()
 
             def get_elements_to_yield() -> str:
                 retval = (',' if serialized_elements else '') + json.dumps({
@@ -197,10 +197,10 @@ class Client:
             yield '{'
             yield get_elements_to_yield()  # full element list if no streaming, or the layout if streaming
             resume_element_id = self.next_element_id
-            if rendering_awaitable is not None:
+            if render_async_iterable is not None:
                 with self:
                     try:
-                        async for _ in await rendering_awaitable:
+                        async for _ in render_async_iterable:
                             yield get_elements_to_yield()
                     except Exception as e:
                         self.elements.clear()
