@@ -134,7 +134,7 @@ We use [autopep8](https://github.com/hhatto/autopep8) with a 120 character line 
 Before submitting a pull request, please run
 
 ```bash
-autopep8 --max-line-length=120 --in-place --recursive .
+uv run autopep8 --max-line-length=120 --in-place --recursive .
 ```
 
 on your code to ensure that it meets our formatting guidelines.
@@ -195,17 +195,17 @@ ui.button('Click me') \
 ### Linting
 
 We use [pre-commit](https://github.com/pre-commit/pre-commit) to make sure the coding style is enforced.
-You first need to install pre-commit and the corresponding git commit hooks by running the following commands:
+If you used `uv sync` to install the dependencies, pre-commit should already have been installed then.
+Now run this command to install the git commit hooks used in this project:
 
 ```bash
-python3 -m pip install pre-commit
-pre-commit install
+uv run pre-commit install
 ```
 
 After that you can make sure your code satisfies the coding style by running the following command:
 
 ```bash
-pre-commit run --all-files
+uv run pre-commit run --all-files
 ```
 
 > [!TIP]
@@ -217,7 +217,7 @@ pre-commit run --all-files
 
 These checks will also run automatically before every commit:
 
-- Run `ruff check . --fix` to check the code and sort imports.
+- Run `uv run ruff check . --fix` to check the code and sort imports.
 - Remove trailing whitespace.
 - Fix end of files.
 - Enforce single quotes.
@@ -298,7 +298,7 @@ Before submitting a pull request, please make sure that all tests are passing.
 To run them all, use the following command in the root directory of NiceGUI:
 
 ```bash
-pytest
+uv run pytest
 ```
 
 ## Documentation
@@ -309,8 +309,8 @@ If you plan to implement a new element you can follow these suggestions:
 
 1. Ensure with the maintainers that the element is a good fit for NiceGUI core;
    otherwise it may be better to create a separate git repository for it.
-2. Clone the NiceGUI repository and launch `main.py` in the root directory.
-3. Run `python3 -m pip install -e .` in the repository as explained above.
+2. Clone the NiceGUI repository and install the requirements including the project itself with `uv sync --all-extras`.
+3. Launch `main.py` in the root directory: `uv run main.py`.
 4. Create a `test.py` file or similar where you can experiment with your new element.
 5. Look at other similar elements and how they are implemented in `nicegui/elements`.
 6. Create a new file with your new element alongside the existing ones.
@@ -327,8 +327,8 @@ If you plan to implement a new element you can follow these suggestions:
 There is a separate page for each element where multiple interactive demos can be listed.
 Please help us grow the number of insightful demos by following these easy steps:
 
-1. Clone the NiceGUI repository and launch `main.py` in the root directory.
-2. Run `python3 -m pip install -e .` in the repository as explained above.
+1. Clone the NiceGUI repository and install the requirements including the project itself with `uv sync --all-extras`.
+2. Launch `main.py` in the root directory with `uv run main.py`.
 3. In the newly opened browser window you can navigate to the documentation page where you want to change something.
 4. Open the code in your editor (for example [website/documentation/content/table_documentation.py](https://github.com/zauberzeug/nicegui/blob/main/website/documentation/content/table_documentation.py)).
 5. In the `more()` function insert an inner function containing your demo code.
