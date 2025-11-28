@@ -7,6 +7,7 @@ services:
       - 80:8080
     volumes:
       - ./:/app
+      - /app/.venv
     labels:
       - traefik.http.routers.app.rule=PathPrefix(`/app`)
       - traefik.http.services.app.loadbalancer.server.port=8080

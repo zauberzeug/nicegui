@@ -24,3 +24,4 @@ tests/.pytest_cache/**/*
 **/.idea
 **/.vscode
 package-lock.json
+.venv
