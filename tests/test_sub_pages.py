@@ -1234,3 +1234,19 @@ def test_navigation_not_crashing_for_root_pages_with_remaining_path(screen: Scre
     screen.open('/')
     screen.click('other/1')
     screen.should_contain('404: sub page /other/1 not found')
+
+
+def test_remaining_path_for_wildcard_routing(screen: Screen):
+    @ui.page('/')
+    @ui.page('/{_:path}')
+    def index():
+        ui.sub_pages({'/sub': sub_page}, show_404=False)
+
+    def sub_page(args: PageArguments):
+        ui.label(f'remaining={args.remaining_path}')
+
+    screen.open('/sub')
+    screen.should_contain('remaining=')
+
+    screen.open('/sub/x/2/a')
+    screen.should_contain('remaining=/x/2/a')
