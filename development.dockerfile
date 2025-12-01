@@ -13,6 +13,4 @@ ENV POETRY_DYNAMIC_VERSIONING_BYPASS=$VERSION
 COPY . .
 RUN uv sync --all-extras
 
-RUN uv pip install latex2mathml
-
 CMD ["uv", "run", "python3", "-m", "debugpy", "--listen", "5678", "main.py"]

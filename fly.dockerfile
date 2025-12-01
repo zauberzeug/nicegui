@@ -11,9 +11,7 @@ WORKDIR /app
 
 COPY pyproject.toml uv.lock* ./
 
-RUN uv sync --no-install-project --no-dev --extra plotly --extra matplotlib --extra highcharts
-
-RUN uv pip install isort latex2mathml slowapi
+RUN uv sync --no-install-project --no-dev --extra plotly --extra matplotlib --extra highcharts --group website
 
 ADD . .
 

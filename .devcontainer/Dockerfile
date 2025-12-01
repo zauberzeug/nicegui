@@ -5,7 +5,7 @@ ENV DEBIAN_FRONTEND=noninteractive \
 
 # Install packages
 RUN apt-get update && apt-get install --no-install-recommends -y \
-    sudo git build-essential chromium chromium-driver curl \
+    sudo git build-essential chromium chromium-driver \
     && rm -rf /var/lib/apt/lists/*
 
 # Install uv
@@ -26,8 +26,7 @@ ENV CHROME_BINARY_LOCATION=/usr/bin/chromium
 
 # Install nicegui
 COPY pyproject.toml uv.lock* README.md ./
-RUN uv sync --all-extras --no-dev
-RUN uv pip install latex2mathml
+RUN uv sync --no-install-project --all-extras
 
 USER $USERNAME
 

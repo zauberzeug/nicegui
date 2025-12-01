@@ -35,5 +35,5 @@
   },
   // More info: https://aka.ms/dev-containers-non-root.
   "remoteUser": "vscode",
-  "postCreateCommand": "uv sync --all-extras --group dev"
+  "postCreateCommand": "uv sync --all-extras"
 }
