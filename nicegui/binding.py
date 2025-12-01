@@ -271,9 +271,13 @@ def reset() -> None:
 
     This function is intended for testing purposes only.
     """
+    global _refresh_loop_task  # pylint: disable=global-statement # noqa: PLW0603
     bindings.clear()
     bindable_properties.clear()
     active_links.clear()
+    if _refresh_loop_task:
+        _refresh_loop_task.cancel()
+        _refresh_loop_task = None
 
 
 @dataclass_transform()
