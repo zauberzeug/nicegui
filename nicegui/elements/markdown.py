@@ -29,12 +29,12 @@ class Markdown(ContentElement, component='markdown.js', default_classes='nicegui
         if 'mermaid' in extras:
             self._props['use_mermaid'] = True
 
-        self._props['filename'] = f'codehilite_{hashlib.sha256(self._generate_codehilite_css().encode()).hexdigest()[:32]}.css'
-
+        codehilite = self._generate_codehilite_css()
+        self._props['resource_name'] = f'codehilite_{hashlib.sha256(codehilite.encode()).hexdigest()[:32]}.css'
         self.add_dynamic_resource(
-            self._props['filename'],
+            self._props['resource_name'],
             lambda: PlainTextResponse(
-                self._generate_codehilite_css(),
+                codehilite,
                 media_type='text/css',
                 headers={'Cache-Control': core.app.config.cache_control_directives},
             ),
