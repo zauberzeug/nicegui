@@ -25,3 +25,4 @@ tests/.pytest_cache/**/*
 **/.vscode
 package-lock.json
 .venv
+.git
