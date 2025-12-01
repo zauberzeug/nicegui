@@ -4,7 +4,7 @@ import asyncio
 import inspect
 import re
 from typing import Any, Callable
-from urllib.parse import urlparse
+from urllib.parse import urlparse, ParseResult
 
 from starlette.datastructures import QueryParams
 from typing_extensions import Self
@@ -147,6 +147,7 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
 
     def _find_matching_path(self) -> RouteMatch | None:
         match: RouteMatch | None = None
+        query_params: QueryParams | None = None
         relative_path = self._router.current_path[len(self._root_path or ''):]
         if not relative_path.startswith('/'):
             relative_path = '/' + relative_path
@@ -155,17 +156,22 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
             path = '/'.join(segments)
             if not path:
                 path = '/'
-            match = self._match_route(path)
+            parsed_url = urlparse(path)
+
+            if query_params is None and parsed_url.query:
+                query_params = QueryParams(parsed_url.query)
+
+            match = self._match_route(parsed_url, query_params)
             if match is not None:
                 match.remaining_path = urlparse(relative_path).path.rstrip('/')[len(match.path):]
                 break
             segments.pop()
         return match
 
-    def _match_route(self, path: str) -> RouteMatch | None:
-        parsed_url = urlparse(path)
+    def _match_route(self, parsed_url: ParseResult, query_params: QueryParams | None) -> RouteMatch | None:
         path_only = parsed_url.path.rstrip('/')
-        query_params = QueryParams(parsed_url.query) if parsed_url.query else QueryParams()
+        if query_params is None:
+            query_params = QueryParams(parsed_url.query) if parsed_url.query else QueryParams()
         fragment = parsed_url.fragment
         if not path_only.startswith('/'):
             path_only = '/' + path_only
