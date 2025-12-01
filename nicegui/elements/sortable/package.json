@@ -1,0 +1,20 @@
+{
+  "name": "nicegui-sortable-bundle",
+  "version": "1.0.0",
+  "description": "Sortable bundling for NiceGUI",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "rollup -c rollup.config.mjs --validate",
+    "clean": "rimraf ./dist/*"
+  },
+  "dependencies": {
+    "sortablejs": "^1.15.6"
+  },
+  "devDependencies": {
+    "@rollup/plugin-node-resolve": "^15.3.0",
+    "@rollup/plugin-terser": "^0.4.4",
+    "rollup": "^4.52.3",
+    "rimraf": "^6.0.1"
+  }
+}
