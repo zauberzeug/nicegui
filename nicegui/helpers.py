@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import functools
 import hashlib
+import inspect
 import os
 import socket
 import struct
@@ -12,7 +13,7 @@ import webbrowser
 from collections.abc import Callable
 from inspect import Parameter, signature
 from pathlib import Path
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Union
 
 from .context import context
 from .logging import log
@@ -26,6 +27,48 @@ if sys.version_info < (3, 13):
     from asyncio import iscoroutinefunction
 else:
     from inspect import iscoroutinefunction
+
+
+class DEFAULT_PROPS:
+    @classmethod
+    def __class_getitem__(cls, _):
+        return cls
+
+
+def honor_default_props(original_func):
+    """This decorator makes the function honor default properties set via `default_props`.
+
+    If a parameter is type-hinted with `Union[..., DEFAULT_PROPS]` and is not provided when calling the function,
+    then we pass `DEFAULT_PROPS` to the original function, which should handle it accordingly.
+    """
+    default_props_args = set()
+    for name, annotation in original_func.__annotations__.items():
+        if getattr(annotation, '__origin__', None) is Union:
+            for arg in annotation.__args__:
+                if arg is DEFAULT_PROPS:
+                    default_props_args.add(name)
+
+    sig = inspect.signature(original_func)
+
+    @functools.wraps(original_func)
+    def decorated(*args, **kwargs):
+        bound_partial = sig.bind_partial(*args, **kwargs)
+
+        bound_with_defaults = sig.bind(*args, **kwargs)
+        bound_with_defaults.apply_defaults()
+
+        return original_func(**{
+            param_name: (
+                bound_partial.arguments[param_name]
+                if param_name in bound_partial.arguments  # Explicitly provided
+                else DEFAULT_PROPS
+                if param_name in default_props_args  # Not provided, is DEFAULT_PROPS arg
+                else bound_with_defaults.arguments[param_name]  # Fallback
+            )
+            for param_name in sig.parameters
+        })
+
+    return decorated
 
 
 def warn_once(message: str, *, stack_info: bool = False) -> None:
