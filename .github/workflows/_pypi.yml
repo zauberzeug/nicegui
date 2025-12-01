@@ -19,9 +19,6 @@ jobs:
           cache-dependency-glob: "uv.lock"
       - name: Install Python
         run: uv python install
-      - name: Update version
-        run: |
-          sed -i "/^\[project\]/,/^version = /s/version = .*/version = \"${{ inputs.version }}\"/" pyproject.toml
       - name: Build and publish
         run: |
           uv build
