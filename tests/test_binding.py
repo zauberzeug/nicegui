@@ -1,12 +1,11 @@
 import copy
-import re
 import weakref
 from typing import Optional
 
 import pytest
 from selenium.webdriver.common.keys import Keys
 
-from nicegui import binding, core, ui
+from nicegui import binding, ui
 from nicegui.testing import Screen, User
 
 
@@ -277,12 +276,13 @@ def test_binding_dict_is_not_strict(screen: Screen):
 
 def test_binding_refresh_interval_none(screen: Screen):
     class Model:
-        val: int = 0
+        value = 0
 
     @ui.page('/')
     def page():
-        core.app.config.binding_refresh_interval = None
-        ui.label().bind_text_from(Model, 'val')
+        ui.label().bind_text_from(Model, 'value', lambda value: f'Value is {value}')
 
+    screen.ui_run_kwargs['binding_refresh_interval'] = None
     screen.open('/')
-    screen.assert_py_logger('WARNING', re.compile('Should not use active binding if binding_refresh_interval is None'))
+    screen.should_contain('Value is 0')
+    screen.assert_py_logger('WARNING', 'Starting active binding loop although binding_refresh_interval is None.')

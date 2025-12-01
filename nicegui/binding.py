@@ -86,7 +86,7 @@ class _ActiveLinkRefresher:
         """If not already running, [re]start the active bindings refresher task."""
         if not cls.running or cls.running.done():
             if core.app.config.binding_refresh_interval is None:
-                log.warning('Should not use active binding if binding_refresh_interval is None (i.e. disabled).')
+                log.warning('Starting active binding loop although binding_refresh_interval is None.')
             cls.running = background_tasks.create(refresh_loop(), name='refresh bindings')
 
 
