@@ -285,4 +285,6 @@ def test_binding_refresh_interval_none(screen: Screen):
     screen.ui_run_kwargs['binding_refresh_interval'] = None
     screen.open('/')
     screen.should_contain('Value is 0')
-    screen.assert_py_logger('WARNING', 'Starting active binding loop although binding_refresh_interval is None.')
+    screen.assert_py_logger(
+        'WARNING', 'Starting active binding loop even though it was disabled via binding_refresh_interval=None.',
+    )

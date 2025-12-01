@@ -25,6 +25,7 @@ propagation_visited: ContextVar[set[tuple[int, str]] | None] = ContextVar('propa
 bindings: defaultdict[tuple[int, str], list[tuple[Any, Any, str, Callable[[Any], Any] | None]]] = defaultdict(list)
 bindable_properties: weakref.WeakValueDictionary[tuple[int, str], Any] = weakref.WeakValueDictionary()
 active_links: list[tuple[Any, str, Any, str, Callable[[Any], Any] | None]] = []
+_refresh_loop_task: asyncio.Task | None = None
 
 TC = TypeVar('TC', bound=type)
 T = TypeVar('T')
@@ -51,14 +52,10 @@ def _set_attribute(obj: object | Mapping, name: str, value: Any) -> None:
 
 async def refresh_loop() -> None:
     """Refresh all bindings in an endless loop."""
-    # Sanity check the refresh interval before use
-    if (interval := core.app.config.binding_refresh_interval) is None or interval <= 0:
-        interval = 0.1
-
     while True:
         _refresh_step()
         try:
-            await asyncio.sleep(interval)
+            await asyncio.sleep(core.app.config.binding_refresh_interval)
         except asyncio.CancelledError:
             break
 
@@ -78,16 +75,13 @@ def _refresh_step() -> None:
         log.warning(f'binding propagation for {len(active_links)} active links took {time.time() - t:.3f} s')
 
 
-class _ActiveLinkRefresher:
-    running: asyncio.Task | None = None
-
-    @classmethod
-    def ensure_running(cls) -> None:
-        """If not already running, [re]start the active bindings refresher task."""
-        if not cls.running or cls.running.done():
-            if core.app.config.binding_refresh_interval is None:
-                log.warning('Starting active binding loop although binding_refresh_interval is None.')
-            cls.running = background_tasks.create(refresh_loop(), name='refresh bindings')
+def _ensure_refresh_loop_is_running() -> None:
+    global _refresh_loop_task  # pylint: disable=global-statement # noqa: PLW0603
+    if not _refresh_loop_task:
+        if core.app.config.binding_refresh_interval is None:
+            log.warning('Starting active binding loop even though it was disabled via binding_refresh_interval=None.')
+            core.app.config.binding_refresh_interval = 0.1
+        _refresh_loop_task = background_tasks.create(refresh_loop(), name='refresh bindings')
 
 
 def _propagate(source_obj: Any, source_name: str) -> None:
@@ -163,8 +157,8 @@ def bind_to(self_obj: Any, self_name: str, other_obj: Any, other_name: str,
     _check_self_and_other_attribute(self_obj, self_name, other_obj, other_name, self_strict, other_strict)
     bindings[(id(self_obj), self_name)].append((self_obj, other_obj, other_name, forward))
     if (id(self_obj), self_name) not in bindable_properties:
+        _ensure_refresh_loop_is_running()
         active_links.append((self_obj, self_name, other_obj, other_name, forward))
-        _ActiveLinkRefresher.ensure_running()
     _propagate(self_obj, self_name)
 
 
@@ -189,8 +183,8 @@ def bind_from(self_obj: Any, self_name: str, other_obj: Any, other_name: str,
     _check_self_and_other_attribute(self_obj, self_name, other_obj, other_name, self_strict, other_strict)
     bindings[(id(other_obj), other_name)].append((other_obj, self_obj, self_name, backward))
     if (id(other_obj), other_name) not in bindable_properties:
+        _ensure_refresh_loop_is_running()
         active_links.append((other_obj, other_name, self_obj, self_name, backward))
-        _ActiveLinkRefresher.ensure_running()
     _propagate(other_obj, other_name)
 
 
