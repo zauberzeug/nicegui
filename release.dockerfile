@@ -1,32 +1,17 @@
-FROM python:3.12-slim AS builder
-
-RUN apt-get update && \
-    DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC \
-    apt-get install -y --no-install-recommends \
-    build-essential \
-    && rm -rf /var/lib/apt/lists/* \
-    && apt-get clean
-
-RUN python -m pip install --upgrade pip
-
-FROM python:3.12-slim AS release
-COPY --from=builder /usr/local/lib/python3.12/site-packages /usr/local/lib/python3.12/site-packages
-ARG VERSION
+FROM python:3.12-slim
 
 LABEL maintainer="Zauberzeug GmbH <info@zauberzeug.com>"
 
 RUN python -m pip install --upgrade pip
 
-RUN python -m pip install \
-    nicegui[plotly,matplotlib]==$VERSION \
-    docutils \
-    httpx \
+ARG VERSION
+# isort is needed for the documentation
+RUN python -m pip install nicegui[native,plotly,matplotlib,highcharts,redis]==$VERSION \
     isort \
-    itsdangerous \
     pytest \
     latex2mathml \
     selenium \
-    redis
+    pytest-selenium
 
 WORKDIR /app
 
