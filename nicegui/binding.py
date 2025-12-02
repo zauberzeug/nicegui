@@ -61,7 +61,9 @@ async def refresh_loop() -> None:
             except RuntimeError:  # loop changed, Pytest
                 _refresh_loop_active = asyncio.Event()
             interval = core.app.config.binding_refresh_interval
-            assert interval is not None
+            if interval is None:
+                interval = core.app.config.binding_refresh_interval = 0.1
+                log.warning('Starting active binding loop even though it was disabled via binding_refresh_interval=None.')
             await asyncio.sleep(interval)
         except asyncio.CancelledError:
             break
@@ -80,13 +82,6 @@ def _refresh_step() -> None:
         del link, source_obj, target_obj  # pylint: disable=modified-iterating-list
     if time.time() - t > MAX_PROPAGATION_TIME:
         log.warning(f'binding propagation for {len(active_links)} active links took {time.time() - t:.3f} s')
-
-
-def _ensure_refresh_loop_is_running() -> None:
-    if core.app.config.binding_refresh_interval is None:
-        log.warning('Starting active binding loop even though it was disabled via binding_refresh_interval=None.')
-        core.app.config.binding_refresh_interval = 0.1
-    _refresh_loop_active.set()
 
 
 def _propagate(source_obj: Any, source_name: str) -> None:
@@ -162,8 +157,8 @@ def bind_to(self_obj: Any, self_name: str, other_obj: Any, other_name: str,
     _check_self_and_other_attribute(self_obj, self_name, other_obj, other_name, self_strict, other_strict)
     bindings[(id(self_obj), self_name)].append((self_obj, other_obj, other_name, forward))
     if (id(self_obj), self_name) not in bindable_properties:
-        _ensure_refresh_loop_is_running()
         active_links.append((self_obj, self_name, other_obj, other_name, forward))
+        _refresh_loop_active.set()
     _propagate(self_obj, self_name)
 
 
@@ -188,8 +183,8 @@ def bind_from(self_obj: Any, self_name: str, other_obj: Any, other_name: str,
     _check_self_and_other_attribute(self_obj, self_name, other_obj, other_name, self_strict, other_strict)
     bindings[(id(other_obj), other_name)].append((other_obj, self_obj, self_name, backward))
     if (id(other_obj), other_name) not in bindable_properties:
-        _ensure_refresh_loop_is_running()
         active_links.append((other_obj, other_name, self_obj, self_name, backward))
+        _refresh_loop_active.set()
     _propagate(other_obj, other_name)
 
 
