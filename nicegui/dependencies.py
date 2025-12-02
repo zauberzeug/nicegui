@@ -193,6 +193,7 @@ def generate_resources(prefix: str, elements: Iterable[Element]) -> tuple[list[s
             js_imports.append(f'import {{ default as {vue_component.name} }} from "{url}";')
             js_imports.append(f"{vue_component.name}.template = '#tpl-{vue_component.name}';")
             js_imports.append(f'app.component("{vue_component.tag}", {vue_component.name});')
+            js_imports_urls.append(url)
             vue_styles.append(vue_component.style)
             done_components.add(key)
 

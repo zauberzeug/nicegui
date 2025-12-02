@@ -19,6 +19,7 @@ passwords = {'user1': 'pass1', 'user2': 'pass2'}
 unrestricted_page_routes = {'/login'}
 
 
+@app.add_middleware
 class AuthMiddleware(BaseHTTPMiddleware):
     """This middleware restricts access to all NiceGUI pages.
 
@@ -30,9 +31,6 @@ class AuthMiddleware(BaseHTTPMiddleware):
             if not request.url.path.startswith('/_nicegui') and request.url.path not in unrestricted_page_routes:
                 return RedirectResponse(f'/login?redirect_to={request.url.path}')
         return await call_next(request)
-
-
-app.add_middleware(AuthMiddleware)
 
 
 @ui.page('/')
