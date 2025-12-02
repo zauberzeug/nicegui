@@ -4,7 +4,7 @@ set -euo pipefail
 
 run() {
     pwd
-    output=$({ timeout 10 ./"$1" "${@:2}"; } 2>&1)
+    output=$({ timeout 10 uv run --no-sync ./"$1" "${@:2}"; } 2>&1)
     exitcode=$?
     [[ $exitcode -eq 124 ]] && exitcode=0 # exitcode 124 is coming from "timeout command above"
     echo "$output" | grep -qE "NiceGUI ready to go|Uvicorn running on http://127.0.0.1:8000" || exitcode=1
