@@ -52,16 +52,10 @@ def _set_attribute(obj: object | Mapping, name: str, value: Any) -> None:
 
 async def refresh_loop() -> None:
     """Refresh all bindings in an endless loop."""
-    global _refresh_loop_active  # pylint: disable=global-statement # noqa: PLW0603
     while True:
         try:
-            try:
-                await _refresh_loop_active.wait()
-                _refresh_step()
-            except RuntimeError as e:  # loop changed, Pytest
-                if not str(e).endswith('attached to a different loop'):
-                    raise e
-                _refresh_loop_active = asyncio.Event()
+            await _refresh_loop_active.wait()
+            _refresh_step()
             interval = core.app.config.binding_refresh_interval
             if interval is None:
                 interval = core.app.config.binding_refresh_interval = 0.1
@@ -272,10 +266,11 @@ def reset() -> None:
 
     This function is intended for testing purposes only.
     """
+    global _refresh_loop_active  # pylint: disable=global-statement # noqa: PLW0603
     bindings.clear()
     bindable_properties.clear()
     active_links.clear()
-    _refresh_loop_active.clear()
+    _refresh_loop_active = asyncio.Event()
 
 
 @dataclass_transform()
