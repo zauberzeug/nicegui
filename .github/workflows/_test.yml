@@ -46,7 +46,7 @@ jobs:
           retention-days: 14
       - name: ${{ matrix.python }} / ${{ matrix.scope }}
         if: matrix.scope == 'startup'
-        run: uv run ./test_startup.sh
+        run: ./test_startup.sh
       - name: Restore dependencies for effective caching
         if: matrix.scope == 'startup' && always()
         run: |
