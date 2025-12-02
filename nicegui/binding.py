@@ -12,7 +12,7 @@ from typing import TYPE_CHECKING, Any, Callable, Literal, TypeVar
 
 from typing_extensions import dataclass_transform
 
-from . import background_tasks, core
+from . import core
 from .logging import log
 
 if TYPE_CHECKING:
@@ -25,7 +25,7 @@ propagation_visited: ContextVar[set[tuple[int, str]] | None] = ContextVar('propa
 bindings: defaultdict[tuple[int, str], list[tuple[Any, Any, str, Callable[[Any], Any] | None]]] = defaultdict(list)
 bindable_properties: weakref.WeakValueDictionary[tuple[int, str], Any] = weakref.WeakValueDictionary()
 active_links: list[tuple[Any, str, Any, str, Callable[[Any], Any] | None]] = []
-_refresh_loop_task: asyncio.Task | None = None
+_refresh_loop_active = asyncio.Event()
 
 TC = TypeVar('TC', bound=type)
 T = TypeVar('T')
@@ -52,9 +52,14 @@ def _set_attribute(obj: object | Mapping, name: str, value: Any) -> None:
 
 async def refresh_loop() -> None:
     """Refresh all bindings in an endless loop."""
+    global _refresh_loop_active  # pylint: disable=global-statement # noqa: PLW0603
     while True:
-        _refresh_step()
         try:
+            try:
+                await _refresh_loop_active.wait()
+                _refresh_step()
+            except RuntimeError:  # loop changed, Pytest
+                _refresh_loop_active = asyncio.Event()
             interval = core.app.config.binding_refresh_interval
             assert interval is not None
             await asyncio.sleep(interval)
@@ -78,12 +83,10 @@ def _refresh_step() -> None:
 
 
 def _ensure_refresh_loop_is_running() -> None:
-    global _refresh_loop_task  # pylint: disable=global-statement # noqa: PLW0603
-    if not _refresh_loop_task:
-        if core.app.config.binding_refresh_interval is None:
-            log.warning('Starting active binding loop even though it was disabled via binding_refresh_interval=None.')
-            core.app.config.binding_refresh_interval = 0.1
-        _refresh_loop_task = background_tasks.create(refresh_loop(), name='refresh bindings')
+    if core.app.config.binding_refresh_interval is None:
+        log.warning('Starting active binding loop even though it was disabled via binding_refresh_interval=None.')
+        core.app.config.binding_refresh_interval = 0.1
+    _refresh_loop_active.set()
 
 
 def _propagate(source_obj: Any, source_name: str) -> None:
@@ -272,13 +275,10 @@ def reset() -> None:
 
     This function is intended for testing purposes only.
     """
-    global _refresh_loop_task  # pylint: disable=global-statement # noqa: PLW0603
     bindings.clear()
     bindable_properties.clear()
     active_links.clear()
-    if _refresh_loop_task:
-        _refresh_loop_task.cancel()
-        _refresh_loop_task = None
+    _refresh_loop_active.clear()
 
 
 @dataclass_transform()
