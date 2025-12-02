@@ -53,14 +53,13 @@ def _set_attribute(obj: object | Mapping, name: str, value: Any) -> None:
 async def refresh_loop() -> None:
     """Refresh all bindings in an endless loop."""
     await _active_links_added.wait()
+    if core.app.config.binding_refresh_interval is None:
+        core.app.config.binding_refresh_interval = 0.1
+        log.warning('Starting active binding loop even though it was disabled via binding_refresh_interval=None.')
     while True:
+        _refresh_step()
         try:
-            _refresh_step()
-            interval = core.app.config.binding_refresh_interval
-            if interval is None:
-                interval = core.app.config.binding_refresh_interval = 0.1
-                log.warning('Starting active binding loop even though it was disabled via binding_refresh_interval=None.')
-            await asyncio.sleep(interval)
+            await asyncio.sleep(core.app.config.binding_refresh_interval)
         except asyncio.CancelledError:
             break
 
