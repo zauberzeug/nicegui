@@ -4,7 +4,7 @@ on:
   workflow_call:
     inputs:
       version:
-        description: "Version to publish (e.g., v1.2.3)"
+        description: "Version to publish (e.g., 1.2.3)"
         required: true
         type: string
 
@@ -13,20 +13,22 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
-      - uses: actions/setup-python@v6
+      - uses: astral-sh/setup-uv@v7
         with:
-          python-version: "3.x"
-      - uses: abatilo/actions-poetry@v4
-      - run: poetry version ${{ inputs.version }}
-      - run: poetry publish --build
-        env:
-          POETRY_PYPI_TOKEN_PYPI: ${{ secrets.PYPI_API_TOKEN }}
+          enable-cache: true
+          cache-dependency-glob: "uv.lock"
+      - name: Install Python
+        run: uv python install
+      - name: Build and publish
+        run: |
+          uv build
+          uv publish --token ${{ secrets.PYPI_API_TOKEN }}
       - uses: softprops/action-gh-release@v2
         with:
           draft: true
           prerelease: ${{ contains(inputs.version, 'rc') }}
-          name: ${{ inputs.version }}
-          tag_name: ${{ inputs.version }}
+          name: v${{ inputs.version }}
+          tag_name: v${{ inputs.version }}
         env:
           GITHUB_TOKEN: ${{ github.token }}
       - name: Verify PyPI package
@@ -34,6 +36,6 @@ jobs:
           for i in {1..100}
           do
             sleep 2
-            python -m pip install 'nicegui==${{ inputs.version }}' && break
+            python -m pip install "nicegui==${{ inputs.version }}" && break
           done
           sleep 5

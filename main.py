@@ -51,6 +51,7 @@ class custom_sub_pages(ui.sub_pages):
 
 
 @ui.page('/')
+@ui.page('/examples')
 @ui.page('/documentation')
 @ui.page('/documentation/{path:path}')
 @ui.page('/imprint_privacy')

@@ -7,6 +7,7 @@ services:
       - 80:8080
     volumes:
       - ./:/app
+      - /app/.venv # anonymous volume to not sync the local venv, see here: https://docs.astral.sh/uv/guides/integration/docker/#developing-in-a-container
     labels:
       - traefik.http.routers.app.rule=PathPrefix(`/app`)
       - traefik.http.services.app.loadbalancer.server.port=8080

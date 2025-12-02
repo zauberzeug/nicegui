@@ -4,7 +4,7 @@ on:
   workflow_call:
     inputs:
       version:
-        description: "Version to build (e.g., v1.2.3)"
+        description: "Version to build (e.g., 1.2.3)"
         required: true
         type: string
 
@@ -18,8 +18,6 @@ jobs:
         run: |
           DOCKER_IMAGE=${{ secrets.DOCKER_USERNAME }}/${GITHUB_REPOSITORY#*/}
           VERSION=${{ inputs.version }}
-          # Remove 'v' prefix if present
-          VERSION=${VERSION#v}
           SHORTREF=${GITHUB_SHA::8}
           TAGS="${DOCKER_IMAGE}:${VERSION},${DOCKER_IMAGE}:${SHORTREF}"
 
