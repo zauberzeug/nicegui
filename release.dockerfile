@@ -18,6 +18,7 @@ RUN uv sync --no-install-project --no-dev --all-extras --group website
 # Copy application files
 COPY main.py README.md ./
 COPY examples ./examples
+COPY nicegui ./nicegui
 COPY website ./website
 RUN mkdir /resources
 COPY docker-entrypoint.sh /resources
@@ -30,4 +31,4 @@ EXPOSE 8080
 ENV PYTHONUNBUFFERED=True
 
 ENTRYPOINT ["/resources/docker-entrypoint.sh"]
-CMD ["python", "main.py"]
+CMD ["uv", "run", "--no-sync", "main.py"]

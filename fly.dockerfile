@@ -31,4 +31,4 @@ ENTRYPOINT ["/entrypoint.sh"]
 ENV PYTHONUNBUFFERED=1
 ENV ENABLE_ANALYTICS=true
 
-CMD ["uv", "run", "--no-dev", "./main.py"]
+CMD ["uv", "run", "--no-sync", "main.py"]
