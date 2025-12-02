@@ -25,7 +25,7 @@ propagation_visited: ContextVar[set[tuple[int, str]] | None] = ContextVar('propa
 bindings: defaultdict[tuple[int, str], list[tuple[Any, Any, str, Callable[[Any], Any] | None]]] = defaultdict(list)
 bindable_properties: weakref.WeakValueDictionary[tuple[int, str], Any] = weakref.WeakValueDictionary()
 active_links: list[tuple[Any, str, Any, str, Callable[[Any], Any] | None]] = []
-_refresh_loop_active = asyncio.Event()
+_active_links_added = asyncio.Event()
 
 TC = TypeVar('TC', bound=type)
 T = TypeVar('T')
@@ -54,7 +54,7 @@ async def refresh_loop() -> None:
     """Refresh all bindings in an endless loop."""
     while True:
         try:
-            await _refresh_loop_active.wait()
+            await _active_links_added.wait()
             _refresh_step()
             interval = core.app.config.binding_refresh_interval
             if interval is None:
@@ -154,7 +154,7 @@ def bind_to(self_obj: Any, self_name: str, other_obj: Any, other_name: str,
     bindings[(id(self_obj), self_name)].append((self_obj, other_obj, other_name, forward))
     if (id(self_obj), self_name) not in bindable_properties:
         active_links.append((self_obj, self_name, other_obj, other_name, forward))
-        _refresh_loop_active.set()
+        _active_links_added.set()
     _propagate(self_obj, self_name)
 
 
@@ -180,7 +180,7 @@ def bind_from(self_obj: Any, self_name: str, other_obj: Any, other_name: str,
     bindings[(id(other_obj), other_name)].append((other_obj, self_obj, self_name, backward))
     if (id(other_obj), other_name) not in bindable_properties:
         active_links.append((other_obj, other_name, self_obj, self_name, backward))
-        _refresh_loop_active.set()
+        _active_links_added.set()
     _propagate(other_obj, other_name)
 
 
@@ -266,11 +266,11 @@ def reset() -> None:
 
     This function is intended for testing purposes only.
     """
-    global _refresh_loop_active  # pylint: disable=global-statement # noqa: PLW0603
+    global _active_links_added  # pylint: disable=global-statement # noqa: PLW0603
     bindings.clear()
     bindable_properties.clear()
     active_links.clear()
-    _refresh_loop_active = asyncio.Event()
+    _active_links_added = asyncio.Event()
 
 
 @dataclass_transform()
