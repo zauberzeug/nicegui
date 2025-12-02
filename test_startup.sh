@@ -62,7 +62,7 @@ do
     # install all requirements except nicegui
     if test -f $path/requirements.txt; then
         sed '/^nicegui/d' $path/requirements.txt > $path/requirements.tmp.txt || exit 1 # remove nicegui from requirements.txt
-        python3 -m pip install -r $path/requirements.tmp.txt || exit 1
+        uv pip install -r $path/requirements.tmp.txt || exit 1
         rm $path/requirements.tmp.txt || exit 1
     fi
 
@@ -74,7 +74,7 @@ do
     fi
     if pytest -q --collect-only $path >/dev/null 2>&1; then
         echo "running tests for $path"
-        pytest $path || exit 1
+        uv run --no-sync pytest $path || exit 1
     fi
 done
 
