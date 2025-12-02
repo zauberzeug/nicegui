@@ -5,7 +5,7 @@ ENV DEBIAN_FRONTEND=noninteractive \
 
 # Install packages
 RUN apt-get update && apt-get install --no-install-recommends -y \
-    sudo git build-essential chromium chromium-driver \
+    sudo git chromium chromium-driver \
     && rm -rf /var/lib/apt/lists/*
 
 # Install uv
