@@ -52,9 +52,9 @@ def _set_attribute(obj: object | Mapping, name: str, value: Any) -> None:
 
 async def refresh_loop() -> None:
     """Refresh all bindings in an endless loop."""
+    await _active_links_added.wait()
     while True:
         try:
-            await _active_links_added.wait()
             _refresh_step()
             interval = core.app.config.binding_refresh_interval
             if interval is None:
