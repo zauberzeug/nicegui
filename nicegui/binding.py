@@ -55,8 +55,9 @@ async def refresh_loop() -> None:
     while True:
         _refresh_step()
         try:
-            assert core.app.config.binding_refresh_interval is not None
-            await asyncio.sleep(core.app.config.binding_refresh_interval)
+            interval = core.app.config.binding_refresh_interval
+            assert interval is not None
+            await asyncio.sleep(interval)
         except asyncio.CancelledError:
             break
 
