@@ -58,7 +58,9 @@ async def refresh_loop() -> None:
             try:
                 await _refresh_loop_active.wait()
                 _refresh_step()
-            except RuntimeError:  # loop changed, Pytest
+            except RuntimeError as e:  # loop changed, Pytest
+                if not str(e).endswith('attached to a different loop'):
+                    raise e
                 _refresh_loop_active = asyncio.Event()
             interval = core.app.config.binding_refresh_interval
             if interval is None:
