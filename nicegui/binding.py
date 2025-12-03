@@ -52,6 +52,8 @@ def _set_attribute(obj: object | Mapping, name: str, value: Any) -> None:
 
 async def refresh_loop() -> None:
     """Refresh all bindings in an endless loop."""
+    global _active_links_added  # pylint: disable=global-statement # noqa: PLW0603
+    _active_links_added = asyncio.Event()
     await _active_links_added.wait()
     if core.app.config.binding_refresh_interval is None:
         core.app.config.binding_refresh_interval = 0.1
@@ -265,11 +267,9 @@ def reset() -> None:
 
     This function is intended for testing purposes only.
     """
-    global _active_links_added  # pylint: disable=global-statement # noqa: PLW0603
     bindings.clear()
     bindable_properties.clear()
     active_links.clear()
-    _active_links_added = asyncio.Event()
 
 
 @dataclass_transform()
