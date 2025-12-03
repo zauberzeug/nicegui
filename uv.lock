@@ -2372,7 +2372,7 @@ requires-dist = [
     { name = "aiohttp", specifier = ">=3.10.2" },
     { name = "certifi", specifier = ">=2024.7.4" },
     { name = "docutils", specifier = ">=0.19.0" },
-    { name = "fastapi", specifier = ">=0.109.1" },
+    { name = "fastapi", specifier = ">=0.109.1,!=0.123.5" },
     { name = "h11", specifier = ">=0.16.0" },
     { name = "httpx", specifier = ">=0.24.0" },
     { name = "ifaddr", specifier = ">=0.2.0" },
