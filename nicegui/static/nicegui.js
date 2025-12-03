@@ -322,7 +322,7 @@ function createApp(elements, options) {
     render() {
       return renderRecursively(this.elements, 0);
     },
-    mounted() {
+    created() {
       mounted_app = this;
       window.documentId = createRandomUUID();
       window.clientId = options.query.client_id;
@@ -449,6 +449,8 @@ function createApp(elements, options) {
         });
       }
     },
+  }).use(Quasar, {
+    config: options.quasarConfig,
   }));
 }
 
