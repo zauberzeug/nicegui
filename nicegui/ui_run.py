@@ -55,7 +55,7 @@ def run(root: Optional[Callable] = None, *,
         favicon: Optional[Union[str, Path]] = None,
         dark: Optional[bool] = False,
         language: Language = 'en-US',
-        binding_refresh_interval: float = 0.1,
+        binding_refresh_interval: Optional[float] = 0.1,
         reconnect_timeout: float = 3.0,
         message_history_length: int = 1000,
         cache_control_directives: str = 'public, max-age=31536000, immutable, stale-while-revalidate=31536000',
@@ -92,7 +92,7 @@ def run(root: Optional[Callable] = None, *,
     :param favicon: relative filepath, absolute URL to a favicon (default: `None`, NiceGUI icon will be used) or emoji (e.g. `'🚀'`, works for most browsers)
     :param dark: whether to use Quasar's dark mode (default: `False`, use `None` for "auto" mode)
     :param language: language for Quasar elements (default: `'en-US'`)
-    :param binding_refresh_interval: time between binding updates (default: `0.1` seconds, bigger is more CPU friendly)
+    :param binding_refresh_interval: interval for updating active links (default: 0.1 seconds, bigger is more CPU friendly, *since version 3.4.0*: can be ``None`` to disable update loop)
     :param reconnect_timeout: maximum time the server waits for the browser to reconnect (default: 3.0 seconds)
     :param message_history_length: maximum number of messages that will be stored and resent after a connection interruption (default: 1000, use 0 to disable, *added in version 2.9.0*)
     :param cache_control_directives: cache control directives for internal static files (default: `'public, max-age=31536000, immutable, stale-while-revalidate=31536000'`)
@@ -118,8 +118,18 @@ def run(root: Optional[Callable] = None, *,
     """
     if core.script_mode:
         if Client.page_routes:
-            raise RuntimeError('ui.page cannot be used in NiceGUI scripts where you define UI in the global scope. '
-                               'To use multiple pages, either move all UI into page functions or use ui.sub_pages.')
+            if core.script_client and not core.script_client.content.default_slot.children and (
+                core.script_client._head_html or core.script_client._body_html  # pylint: disable=protected-access
+            ):
+                raise RuntimeError(
+                    'ui.add_head_html, ui.add_body_html, or ui.add_css has been called inside the global scope while using ui.page.\n'
+                    'Consider using shared=True for this call to add the code to all pages.\n'
+                    'Alternatively, to add the code to a specific page, move the call into the page function.'
+                )
+            raise RuntimeError(
+                'ui.page cannot be used in NiceGUI scripts when UI is defined in the global scope.\n'
+                'To use multiple pages, either move all UI into page functions or use ui.sub_pages.'
+            )
 
         if helpers.is_pytest():
             raise RuntimeError('Script mode is not supported in pytest. '
@@ -128,6 +138,14 @@ def run(root: Optional[Callable] = None, *,
             return
 
         def run_script() -> None:
+            if not sys.argv or not sys.argv[0] or not helpers.is_file(sys.argv[0]):
+                raise RuntimeError(
+                    'Script mode requires a valid script file to re-execute.\n'
+                    'This error occurs when running code interactively (e.g., Shift-Enter in an IDE).\n'
+                    'To fix this, either:\n'
+                    '  1. Run the complete file instead of a selection (e.g., "python script.py")\n'
+                    '  2. Use a root function: wrap your UI code in a function and pass it to ui.run(root=my_function)'
+                )
             runpy.run_path(sys.argv[0], run_name='__main__')
         root = run_script
         assert core.script_client is not None

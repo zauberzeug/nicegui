@@ -31,7 +31,7 @@ def test_navigate_to(screen: Screen, new_tab: bool):
 
 
 def test_navigate_to_absolute_url(screen: Screen):
-    external_url = 'https://nicegui.io'
+    external_url = 'https://www.google.com/'
 
     @ui.page('/')
     def page():

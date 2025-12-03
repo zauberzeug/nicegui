@@ -15,13 +15,13 @@
         @import url("{{ prefix | safe }}/_nicegui/{{version}}/static/quasar.important.css") layer(quasar_importants);
       {% endif %}
       @import url("{{ prefix | safe }}/_nicegui/{{version}}/static/nicegui.css") layer(nicegui);
-      @import url("{{ prefix | safe }}/_nicegui/{{version}}/static/headwind.css") layer(overrides);
       @layer quasar {
         blockquote, dd, dl, figure, h1, h2, h3, h4, h5, h6, hr, p, pre {
           margin: revert-layer; /* HACK: revert Quasar's margin styles */
         }
       }
       @layer overrides {
+        {{ headwind_css | safe }}
         .column.inline, .flex.inline, .row.inline {
           display: inline-flex;  /* HACK: re-apply Quasar's inline styles to override Tailwind */
         }
@@ -31,11 +31,11 @@
         }
       }
     </style>
-    <!-- prevent Prettier from removing this line -->
-    {{ head_html | safe }}
     <script type="importmap">
       {"imports": {{ imports | safe }}}
     </script>
+    {{ head_html | safe }}
+    <!-- prevent Prettier from removing this line -->
     {% for url in js_imports_urls %}
     <link rel="modulepreload" href="{{ url }}" />
     {% endfor %}
@@ -47,7 +47,6 @@
     {% endif %}
   </head>
   <body>
-    <script async src="{{ prefix | safe }}/_nicegui/{{version}}/static/es-module-shims.js"></script>
     <script defer src="{{ prefix | safe }}/_nicegui/{{version}}/static/socket.io.min.js"></script>
     {% if tailwind %}
     <script defer src="{{ prefix | safe }}/_nicegui/{{version}}/static/tailwindcss.min.js"></script>

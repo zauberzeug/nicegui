@@ -168,6 +168,8 @@ def generate_resources(prefix: str, elements: Iterable[Element]) -> tuple[list[s
     vue_styles: list[str] = []
     imports: dict[str, str] = {
         'vue': f'{prefix}/_nicegui/{__version__}/static/vue.esm-browser{".prod" if core.app.config.prod_js else ""}.js',
+        'sass': f'{prefix}/_nicegui/{__version__}/static/sass.default.js',
+        'immutable': f'{prefix}/_nicegui/{__version__}/static/immutable.es.js',
     }
     js_imports: list[str] = []
     js_imports_urls: list[str] = []
@@ -191,6 +193,7 @@ def generate_resources(prefix: str, elements: Iterable[Element]) -> tuple[list[s
             js_imports.append(f'import {{ default as {vue_component.name} }} from "{url}";')
             js_imports.append(f"{vue_component.name}.template = '#tpl-{vue_component.name}';")
             js_imports.append(f'app.component("{vue_component.tag}", {vue_component.name});')
+            js_imports_urls.append(url)
             vue_styles.append(vue_component.style)
             done_components.add(key)
 

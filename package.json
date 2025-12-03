@@ -4,8 +4,8 @@
   },
   "dependencies": {
     "@tailwindcss/browser": "4.1.13",
-    "es-module-shims": "2.6.2",
     "quasar": "2.18.5",
+    "sass": "^1.94.0",
     "socket.io": "4.8.1",
     "vue": "3.5.22"
   }

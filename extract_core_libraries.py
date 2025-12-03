@@ -5,6 +5,7 @@ import copy
 import difflib
 import re
 import shutil
+import subprocess
 from pathlib import Path
 
 import cssbeautifier
@@ -50,8 +51,13 @@ def _extract_quasar_css(css_path: Path) -> None:
 
 def _extract_headwind_css(quasar_css_path: Path) -> None:
     matches = re.finditer(r'\.rotate-(\d+)\s*\{[^}]*\}', quasar_css_path.read_text())
-    headwind_css = '\n'.join(f'''.rotate-{m.group(1)} {{\n  rotate: 0deg;\n}}''' for m in matches) + '\n'
-    (STATIC / 'headwind.css').write_text(headwind_css)
+    css = f'{", ".join(f".rotate-{m.group(1)}" for m in matches)} {{\n  rotate: 0deg;\n}}\n'
+    (STATIC / 'headwind.css').write_text(css)
+
+
+def _minify_js(input_path: Path, output_path: Path) -> None:
+    subprocess.run(['npx', '--yes', 'terser', str(input_path), '--compress', '--mangle', '--output', str(output_path)],
+                   capture_output=True, text=True, check=True)
 
 
 shutil.copy2(NODE_MODULES / 'vue' / 'dist' / 'vue.esm-browser.js', STATIC / 'vue.esm-browser.js')
@@ -69,4 +75,6 @@ shutil.copy2(NODE_MODULES / '@tailwindcss' / 'browser' / 'dist' / 'index.global.
 shutil.copy2(NODE_MODULES / 'socket.io' / 'client-dist' / 'socket.io.min.js', STATIC / 'socket.io.min.js')
 shutil.copy2(NODE_MODULES / 'socket.io' / 'client-dist' / 'socket.io.min.js.map', STATIC / 'socket.io.min.js.map')
 
-shutil.copy2(NODE_MODULES / 'es-module-shims' / 'dist' / 'es-module-shims.js', STATIC / 'es-module-shims.js')
+_minify_js(NODE_MODULES / 'sass' / 'sass.default.js', STATIC / 'sass.default.js')
+_minify_js(NODE_MODULES / 'sass' / 'sass.dart.js', STATIC / 'sass.dart.js')
+_minify_js(NODE_MODULES / 'immutable' / 'dist' / 'immutable.es.js', STATIC / 'immutable.es.js')
