@@ -56,8 +56,7 @@ def test_replace_mermaid(screen: Screen):
             ui.mermaid('graph LR; Node_A')
 
         def replace():
-            container.clear()
-            with container:
+            with container.clear():
                 ui.mermaid('graph LR; Node_B')
         ui.button('Replace', on_click=replace)
 
@@ -89,7 +88,7 @@ def test_error(screen: Screen):
                 A -> C;
         ''').on('error', lambda e: ui.label(e.args['message']))
 
-    screen.allowed_js_errors.append('40:18 Object')
+    screen.allowed_js_errors.append(':18 Object')
     screen.open('/')
     screen.should_contain('Syntax error in text')
     screen.should_contain('Parse error on line 3')
@@ -126,3 +125,24 @@ def test_click_mermaid_node(security_level: str, screen: Screen):
         screen.should_contain('Clicked Y')
     else:
         screen.should_not_contain('Clicked Y')
+
+
+def test_node_click_handler(screen: Screen):
+    @ui.page('/')
+    def page():
+        ui.mermaid('''
+            flowchart TD;
+                A[Node A];
+                B[Node B];
+                Node-With-Hyphen[Node With Hyphen];
+        ''', on_node_click=lambda e: ui.notify(f'{e.node_id} clicked'))
+
+    screen.open('/')
+    screen.click('Node A')
+    screen.should_contain('A clicked')
+
+    screen.click('Node B')
+    screen.should_contain('B clicked')
+
+    screen.click('Node With Hyphen')
+    screen.should_contain('Node-With-Hyphen clicked')  # make sure our ID extraction works even with hyphens

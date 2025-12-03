@@ -70,9 +70,8 @@ def context_menu_for_3d_objects():
     from nicegui import events
 
     def handle_click(e: events.SceneClickEventArguments) -> None:
-        context_menu.clear()
         name = next((hit.object_name for hit in e.hits if hit.object_name), None)
-        with context_menu:
+        with context_menu.clear():
             if name == 'sphere':
                 ui.item('SPHERE').classes('font-bold')
                 ui.menu_item('inspect')

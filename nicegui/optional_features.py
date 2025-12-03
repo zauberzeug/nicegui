@@ -11,7 +11,6 @@ FEATURE = Literal[
     'polars',
     'pyecharts',
     'redis',
-    'sass',
     'webview',
 ]
 

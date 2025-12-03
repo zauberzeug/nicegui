@@ -342,6 +342,25 @@ function createApp(elements, options) {
       window.did_handshake = false;
       const messageHandlers = {
         connect: () => {
+          function wrapFunction(originalFunction) {
+            const MAX_WEBSOCKET_MESSAGE_SIZE = 1000000 - 100; // 1MB without 100 bytes of slack for the message header
+            return function (...args) {
+              const msg = args[0];
+              if (typeof msg === "string" && msg.length > MAX_WEBSOCKET_MESSAGE_SIZE) {
+                console.error(`Payload size ${msg.length} exceeds the maximum allowed limit.`);
+                args[0] = '42["too_long_message"]';
+                if (window.tooLongMessageTimerId) clearTimeout(window.tooLongMessageTimerId);
+                const popup = document.getElementById("too_long_message_popup");
+                popup.ariaHidden = false;
+                window.tooLongMessageTimerId = setTimeout(() => (popup.ariaHidden = true), 5000);
+              }
+              return originalFunction.call(this, ...args);
+            };
+          }
+          const transport = window.socket.io.engine.transport;
+          if (transport?.ws?.send) transport.ws.send = wrapFunction(transport.ws.send);
+          if (transport?.doWrite) transport.doWrite = wrapFunction(transport.doWrite);
+
           const args = {
             client_id: window.clientId,
             document_id: window.documentId,

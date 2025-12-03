@@ -83,7 +83,7 @@ class VueParser(HTMLParser):  # pylint: disable=abstract-method  # pylint assume
 
 def add_css_prefix(css: str, prefix: str) -> str:
     """Add the prefix (CSS selector) to all rules in ``css``."""
-    medias: list[tuple[str, str]] = []
+    media_queries: list[tuple[str, str]] = []
     while '@media' in css:
         p1 = css.find('@media', 0)
         p2 = css.find('{', p1) + 1
@@ -95,7 +95,7 @@ def add_css_prefix(css: str, prefix: str) -> str:
         media_def = block[:block.find('{')].strip()
         media_css = block[block.find('{') + 1:block.rfind('}')].strip()
         css = css.replace(block, '')
-        medias.append((media_def, add_css_prefix(media_css, prefix)))
+        media_queries.append((media_def, add_css_prefix(media_css, prefix)))
 
     lines: list[str] = []
     css = re.sub(re.compile(r'/\*.*?\*/', re.DOTALL), '', css)
@@ -107,5 +107,5 @@ def add_css_prefix(css: str, prefix: str) -> str:
         else:
             line = [i.strip() for i in selectors.split(',')]
         lines.append(', '.join(line) + ' {' + declarations.strip())
-    lines.extend(f'{d} {{ {c} }}' for d, c in medias)
+    lines.extend(f'{d} {{ {c} }}' for d, c in media_queries)
     return '\n'.join(lines).strip()

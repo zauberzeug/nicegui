@@ -275,7 +275,8 @@ class Scene(Element, component='scene.js', esm={'nicegui-scene': 'dist'}, defaul
             if predicate(obj) and obj.id in self.objects:  # NOTE: object might have been deleted already by its parent
                 obj.delete()
 
-    def clear(self) -> None:
+    def clear(self) -> Self:
         """Remove all objects from the scene."""
         super().clear()
         self.delete_objects()
+        return self

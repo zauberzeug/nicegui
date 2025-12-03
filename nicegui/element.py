@@ -459,12 +459,13 @@ class Element(Visibility):
         for child in self:
             yield from child.descendants(include_self=True)
 
-    def clear(self) -> None:
+    def clear(self) -> Self:
         """Remove all child elements."""
         self.client.remove_elements(self.descendants())
         for slot in self.slots.values():
             slot.children.clear()
         self.update()
+        return self
 
     def move(self,
              target_container: Element | None = None,

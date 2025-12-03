@@ -26,8 +26,7 @@ class FakeSubPages(ui.column):
             self.task.cancel()
 
         async def render() -> None:
-            self.clear()
-            with self:
+            with self.clear():
                 result = self.routes[route](**self.data, **kwargs)
                 if isinstance(result, Awaitable):
                     await result
@@ -36,8 +35,9 @@ class FakeSubPages(ui.column):
 
 class FakeArguments:
 
-    def __init__(self, **kwargs: Any) -> None:
+    def __init__(self, remaining_path: str = '', **kwargs: Any) -> None:
         self.query_parameters = kwargs
+        self.remaining_path = remaining_path
 
 
 @doc.demo('Sub Pages', '''
@@ -227,6 +227,45 @@ def page_arguments_demo():
     sub_pages.init()
 
 
+@doc.demo('Wildcard Routing', '''
+    For wildcard routing, where a single handler should match multiple paths,
+    use `show_404=False` and access `PageArguments.remaining_path`.
+    This is useful for routing patterns like "/item/*" where everything under "/item/" goes to one handler.
+''')
+def wildcard_demo():
+    from nicegui import PageArguments
+
+    # def root():
+    #     ui.sub_pages({
+    #         '/': main,
+    #         '/item': item,
+    #     }, show_404=False)
+
+    def main():
+        # ui.link('Item 1', '/item/1')
+        # ui.link('Item 2a', '/item/2/a')
+        # ui.link('Item 2b', '/item/2/b')
+        sub_pages.link('Item 1', '/item/1')  # HIDE
+        sub_pages.link('Item 2a', '/item/2/a')  # HIDE
+        sub_pages.link('Item 2b', '/item/2/b')  # HIDE
+
+    def item(args: PageArguments):
+        segments = [s for s in args.remaining_path.split('/') if s]
+        ui.label(f'Item path: {" > ".join(segments)}')
+        # ui.link('back', '/')
+        sub_pages.link('back', '/')  # HIDE
+
+    # ui.run(root)
+    # END OF DEMO
+    sub_pages = FakeSubPages({
+        '/': main,
+        '/item/1': lambda: item(FakeArguments(remaining_path='/1')),  # type: ignore
+        '/item/2/a': lambda: item(FakeArguments(remaining_path='/2/a')),  # type: ignore
+        '/item/2/b': lambda: item(FakeArguments(remaining_path='/2/b')),  # type: ignore
+    })
+    sub_pages.init()
+
+
 @doc.demo('Nested Sub Pages', '''
     Sub pages elements can be nested to create a hierarchical page structure.
     Each of these elements determines which part of the path they should handle by:
@@ -250,6 +289,7 @@ def nested_sub_pages_demo():
 
     def other():
         ui.label('sub page')
+        # ui.link('Go to main', '/')
         # ui.link('Go to A', '/other/a')
         # ui.link('Go to B', '/other/b')
         # ui.sub_pages({

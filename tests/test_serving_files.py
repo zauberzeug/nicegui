@@ -9,19 +9,10 @@ from nicegui.testing import Screen
 
 from .test_helpers import TEST_DIR
 
-IMAGE_FILE = Path(TEST_DIR).parent / 'examples' / 'slideshow' / 'slides' / 'slide1.jpg'
+IMAGE_FILE = Path(TEST_DIR) / 'media' / 'test1.jpg'
 VIDEO_FILE = Path(TEST_DIR) / 'media' / 'test.mp4'
-
-
-@pytest.fixture(autouse=True)
-def provide_media_files():
-    if not VIDEO_FILE.exists():
-        VIDEO_FILE.parent.mkdir(exist_ok=True)
-        url = 'https://test-videos.co.uk/vids/bigbuckbunny/mp4/h264/360/Big_Buck_Bunny_360_10s_1MB.mp4'
-        with httpx.stream('GET', url) as response:
-            with open(VIDEO_FILE, 'wb') as file:
-                for chunk in response.iter_raw():
-                    file.write(chunk)
+VIDEO_FILE.parent.mkdir(exist_ok=True)
+VIDEO_FILE.write_bytes(b'\x00' * 2000)  # dummy video file large enough to be streamed
 
 
 def assert_video_file_streaming(path: str) -> None:
@@ -137,7 +128,7 @@ def test_mimetypes_of_static_files(screen: Screen):
 
     screen.open('/')
 
-    response = httpx.get(f'http://localhost:{Screen.PORT}/_nicegui/{__version__}/static/vue.global.js', timeout=5)
+    response = httpx.get(f'http://localhost:{Screen.PORT}/_nicegui/{__version__}/static/vue.esm-browser.js', timeout=5)
     assert response.status_code == 200
     assert response.headers['Content-Type'].startswith('text/javascript')
 
