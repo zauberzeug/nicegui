@@ -17,6 +17,8 @@ class Input(LabelElement, ValidationElement, DisableableElement, component='inpu
                  value: str = '',
                  password: bool = False,
                  password_toggle_button: bool = False,
+                 prefix: Optional[str] = None,
+                 suffix: Optional[str] = None,
                  on_change: Optional[Handler[ValueChangeEventArguments]] = None,
                  autocomplete: Optional[list[str]] = None,
                  validation: Optional[Union[ValidationFunction, ValidationDict]] = None,
@@ -46,6 +48,8 @@ class Input(LabelElement, ValidationElement, DisableableElement, component='inpu
         :param value: the current value of the text input
         :param password: whether to hide the input (default: False)
         :param password_toggle_button: whether to show a button to toggle the password visibility (default: False)
+        :param prefix: a prefix to prepend to the displayed value
+        :param suffix: a suffix to append to the displayed value
         :param on_change: callback to execute when the value changes
         :param autocomplete: optional list of strings for autocompletion
         :param validation: dictionary of validation rules or a callable that returns an optional error message (default: None for no validation)
@@ -66,9 +70,30 @@ class Input(LabelElement, ValidationElement, DisableableElement, component='inpu
 
         self._props['_autocomplete'] = autocomplete or []
 
+        if prefix is not None:
+            self._props['prefix'] = prefix
+        if suffix is not None:
+            self._props['suffix'] = suffix
+
     def set_autocomplete(self, autocomplete: Optional[list[str]]) -> None:
         """Set the autocomplete list."""
         self._props['_autocomplete'] = autocomplete
+    
+    def set_prefix(self, text: Optional[str]) -> None:
+        """
+        Set the prefix.
+        
+        :param text: the context of the prefix.
+        """
+        self._props['prefix'] = text
+    
+    def set_suffix(self, text: Optional[str]) -> None:
+        """
+        set the suffix.
+
+        :param text: the context of the suffix.
+        """
+        self._props['suffix'] = text
 
     def _handle_value_change(self, value: Any) -> None:
         super()._handle_value_change(value)
