@@ -120,15 +120,15 @@ class Number(LabelElement, ValidationElement, DisableableElement):
         """
         Set the prefix.
         
-        :param text: the context of the prefix.
+        :param text: the content of the prefix.
         """
         self._props['prefix'] = text
     
     def set_suffix(self, text: Optional[str]) -> None:
         """
-        set the suffix.
+        Set the suffix.
 
-        :param text: the context of the suffix.
+        :param text: the content of the suffix.
         """
         self._props['suffix'] = text
 
