@@ -693,7 +693,8 @@ def test_async_sub_pages(screen: Screen):
 
 
 @pytest.mark.parametrize('use_page_arguments', [True, False])
-def test_sub_page_with_query_parameters(screen: Screen, use_page_arguments: bool):
+@pytest.mark.parametrize('show_404', [True, False])
+def test_sub_page_with_query_parameters(screen: Screen, use_page_arguments: bool, show_404: bool):
     calls = {'index': 0, 'main_content': 0}
 
     @ui.page('/')
@@ -701,7 +702,7 @@ def test_sub_page_with_query_parameters(screen: Screen, use_page_arguments: bool
         calls['index'] += 1
         ui.link('Link to main', '/?access=link')
         ui.button('Button to main', on_click=lambda: ui.navigate.to('/?access=button'))
-        ui.sub_pages({'/': with_page_arguments if use_page_arguments else with_parameter})
+        ui.sub_pages({'/': with_page_arguments if use_page_arguments else with_parameter}, show_404=show_404)
 
     def with_page_arguments(args: PageArguments):
         calls['main_content'] += 1
@@ -1250,3 +1251,19 @@ def test_remaining_path_for_wildcard_routing(screen: Screen):
 
     screen.open('/sub/x/2/a')
     screen.should_contain('remaining=/x/2/a')
+
+
+def test_query_parameters_wildcard_routing(screen: Screen):
+    @ui.page('/')
+    @ui.page('/{_:path}')
+    def index():
+        ui.sub_pages({'/sub': sub_page}, show_404=False)
+
+    def sub_page(args: PageArguments):
+        ui.label(f'query_parameters: {args.query_parameters}')
+
+    screen.open('/sub?color=red')
+    screen.should_contain('query_parameters: color=red')
+
+    screen.open('/sub/x/2/a?color=blue')
+    screen.should_contain('query_parameters: color=blue')
