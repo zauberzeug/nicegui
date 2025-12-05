@@ -1204,21 +1204,27 @@ def test_refresh_sub_page(screen: Screen):
         ui.button('Refresh inner other', on_click=args.frame.refresh)
 
     screen.open('/')
+    screen.wait(0.2)
     assert calls == {'index': 1, 'outer': 1, 'inner_main': 1, 'inner_other': 0}
 
     screen.click('Refresh inner main')
+    screen.wait(0.2)
     assert calls == {'index': 1, 'outer': 1, 'inner_main': 2, 'inner_other': 0}
 
     screen.click('Go to other')
+    screen.wait(0.2)
     assert calls == {'index': 1, 'outer': 1, 'inner_main': 2, 'inner_other': 1}
 
     screen.click('Refresh inner other')
+    screen.wait(0.2)
     assert calls == {'index': 1, 'outer': 1, 'inner_main': 2, 'inner_other': 2}
 
     screen.click('Refresh via Router')
+    screen.wait(0.2)
     assert calls == {'index': 1, 'outer': 2, 'inner_main': 2, 'inner_other': 3}
 
     screen.click('Refresh via SubPages')
+    screen.wait(0.2)
     assert calls == {'index': 1, 'outer': 3, 'inner_main': 2, 'inner_other': 4}
 
 

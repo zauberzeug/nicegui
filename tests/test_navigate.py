@@ -46,7 +46,8 @@ def test_navigate_to_absolute_url(screen: Screen):
 def test_navigate_to_relative_url(screen: Screen):
     @ui.page('/')
     def page():
-        ui.button('Go relative', on_click=lambda: ui.navigate.to('/test_page'))
+        ui.label('Index page')
+        ui.button('Go test page', on_click=lambda: ui.navigate.to('/test_page'))
 
     @ui.page('/test_page')
     def test_page():
@@ -54,13 +55,11 @@ def test_navigate_to_relative_url(screen: Screen):
         ui.button('Back', on_click=ui.navigate.back)
 
     screen.open('/')
-    screen.click('Go relative')
-    screen.wait(0.2)
-    assert screen.selenium.current_url == f'http://localhost:{Screen.PORT}/test_page'
+    screen.click('Go test page')
+    screen.should_contain('Test page')
 
     screen.click('Back')
-    screen.wait(0.2)
-    assert screen.selenium.current_url == f'http://localhost:{Screen.PORT}/'
+    screen.should_contain('Index page')
 
 
 @pytest.mark.parametrize('sub_pages', [False, True])
