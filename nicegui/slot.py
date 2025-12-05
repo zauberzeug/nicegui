@@ -61,13 +61,12 @@ class Slot:
     async def prune_stacks(cls) -> None:
         """Remove stale slot stacks."""
         try:
-            running = [id(task) for task in asyncio.tasks.all_tasks() if not task.done() and not task.cancelled()]
+            running = {id(task) for task in asyncio.tasks.all_tasks() if not task.done() and not task.cancelled()}
 
-            # Id 0 is the special id used in cases where no task is active (see
-            # get_task_id). Since it has no associated task, we always assume
-            # it to be active in order to avoid pruning the associated stack
-            # while the Slot is active.
-            running.append(0)
+            # ID 0 is the special ID used in cases where no task is active (see get_task_id).
+            # Since it has no associated task, we always assume it to be active
+            # in order to avoid pruning the associated stack while the slot is active.
+            running.add(0)
 
             stale_ids = [task_id for task_id in cls.stacks if task_id not in running]
             for task_id in stale_ids:
