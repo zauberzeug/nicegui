@@ -311,6 +311,11 @@ window.onbeforeunload = function () {
 };
 
 function createApp(elements, options) {
+  if (options.childrenSupplement) {
+    for (const [id, child_ids] of Object.entries(options.childrenSupplement)) {
+      elements[id].children = child_ids;
+    }
+  }
   Object.entries(elements).forEach(([_, element]) => replaceUndefinedAttributes(element));
   setInterval(() => ack(), 3000);
   return (app = Vue.createApp({

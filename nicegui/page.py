@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import inspect
+from collections.abc import AsyncIterable
 from functools import wraps
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Callable
@@ -152,43 +153,52 @@ class page:
             request = dec_kwargs['request']
             # NOTE cleaning up the keyword args so the signature is consistent with "func" again
             dec_kwargs = {k: v for k, v in dec_kwargs.items() if k in parameters_of_decorated_func}
-            with Client(self, request=request) as client:
-                if any(p.name == 'client' for p in inspect.signature(func).parameters.values()):
-                    dec_kwargs['client'] = client
-                try:
-                    result = func(*dec_args, **dec_kwargs)
-                except Exception as e:
-                    return create_error_page(e, request)
-            if helpers.is_coroutine_function(func):
-                async def wait_for_result() -> Response | None:
-                    with client:
-                        try:
-                            return await result
-                        except Exception as e:
-                            return create_error_page(e, request)
-                task = background_tasks.create(wait_for_result(),
-                                               name=f'wait for result of page "{client.page.path}"',
-                                               handle_exceptions=False)
-                task_wait_for_connection = background_tasks.create(
-                    client._waiting_for_connection.wait(),  # pylint: disable=protected-access
-                )
-                await asyncio.wait([
-                    task,
-                    task_wait_for_connection,
-                ], timeout=self.response_timeout, return_when=asyncio.FIRST_COMPLETED)
-                if not task_wait_for_connection.done() and not task.done():
-                    task_wait_for_connection.cancel()
-                    task.cancel()
-                    log.warning(f'Response for {client.page.path} not ready after {self.response_timeout} seconds')
-                    client.delete()
-                if task.done():
-                    result = task.result()
-                else:
-                    result = None
-                    task.add_done_callback(check_for_late_return_value)
 
-            if not await client.sub_pages_router._can_resolve_full_path(client):  # pylint: disable=protected-access
-                return create_error_page(HTTPException(404, f'{client.sub_pages_router.current_path} not found'), request)
+            client = Client(self, request=request)
+
+            async def core_rendering_logic() -> Response | AsyncIterable | None:
+                with client:
+                    if any(p.name == 'client' for p in inspect.signature(func).parameters.values()):
+                        dec_kwargs['client'] = client
+                    try:
+                        result = func(*dec_args, **dec_kwargs)
+                    except Exception as e:
+                        return create_error_page(e, request)
+                if helpers.is_coroutine_function(func):
+                    async def wait_for_result() -> Response | None:
+                        with client:
+                            try:
+                                return await result
+                            except Exception as e:
+                                return create_error_page(e, request)
+                    task = background_tasks.create(wait_for_result(),
+                                                   name=f'wait for result of page "{client.page.path}"',
+                                                   handle_exceptions=False)
+                    task_wait_for_connection = background_tasks.create(
+                        client._waiting_for_connection.wait(),  # pylint: disable=protected-access
+                    )
+                    await asyncio.wait([
+                        task,
+                        task_wait_for_connection,
+                    ], timeout=self.response_timeout, return_when=asyncio.FIRST_COMPLETED)
+                    if not task_wait_for_connection.done() and not task.done():
+                        task_wait_for_connection.cancel()
+                        task.cancel()
+                        log.warning(f'Response for {client.page.path} not ready after {self.response_timeout} seconds')
+                        client.delete()
+                    if task.done():
+                        result = task.result()
+                    else:
+                        result = None
+                        task.add_done_callback(check_for_late_return_value)
+
+                if not await client.sub_pages_router._can_resolve_full_path(client):  # pylint: disable=protected-access
+                    return create_error_page(HTTPException(404, f'{client.sub_pages_router.current_path} not found'), request)
+                return result
+
+            result = await core_rendering_logic()
+            if isinstance(result, AsyncIterable):
+                return client.build_response(request, render_async_iterable=result)
 
             if isinstance(result, Response):  # NOTE if setup returns a response, we don't need to render the page
                 return result
