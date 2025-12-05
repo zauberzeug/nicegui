@@ -19,34 +19,53 @@ def generate_class_doc(class_obj: type, part_title: str) -> None:
 
     mro = [base for base in class_obj.__mro__ if base.__module__.startswith('nicegui.')]
     ancestors = mro[1:]
-    attributes = {}
+    attributes: dict[str, tuple[type, object | None]] = {}
     for base in reversed(mro):
         for name in dir(base):
             if not name.startswith('_') and _is_method_or_property(base, name):
-                attributes[name] = getattr(base, name, None)
-    properties = {name: attribute for name, attribute in attributes.items() if not callable(attribute)}
-    methods = {name: attribute for name, attribute in attributes.items() if callable(attribute)}
+                attributes[name] = (base, getattr(base, name, None))
+    properties = {name: (ancestor, attribute) for name, (ancestor, attribute)
+                  in attributes.items() if not callable(attribute)}
+    methods = {name: (ancestor, attribute) for name, (ancestor, attribute) in attributes.items() if callable(attribute)}
+
+    def render_section(items: dict[str, tuple[type, object | None]], is_method: bool) -> None:
+        sorted_items = sorted(items.items())
+        native = [(n, o, a) for n, (o, a) in sorted_items if o is class_obj]
+        inherited_items = [(n, o, a) for n, (o, a) in sorted_items if o is not class_obj]
+
+        def render_item(name: str, owner: type, attr: object | None) -> None:
+            if is_method:
+                decorator = ''
+                owner_attr = owner.__dict__.get(name)
+                if isinstance(owner_attr, staticmethod):
+                    decorator += '`@staticmethod`<br />'
+                if isinstance(owner_attr, classmethod):
+                    decorator += '`@classmethod`<br />'
+                ui.markdown(f'{decorator}**`{name}`**`{_generate_method_signature_description(attr)}`') \
+                    .classes('w-full overflow-x-auto')
+            else:
+                ui.markdown(f'**`{name}`**`{_generate_property_signature_description(attr)}`')
+            docstring = getattr(attr, '__doc__', None)
+            if attr is not None and docstring:
+                _render_docstring(docstring).classes('ml-8')
+
+        for name, owner, attr in native:
+            render_item(name, owner, attr)
+        if inherited_items:
+            with ui.row().classes('items-center gap-2 text-sm text-gray-500 dark:text-gray-400 mt-2'):
+                ui.icon('account_tree')
+                ui.label('Inherited')
+            for name, owner, attr in inherited_items:
+                render_item(name, owner, attr)
 
     if properties:
         subheading('Properties', anchor_name=create_anchor_name(part_title.replace('Reference', 'Properties')))
         with ui.column().classes('gap-2 w-full overflow-x-auto'):
-            for name, property_ in sorted(properties.items()):
-                ui.markdown(f'**`{name}`**`{_generate_property_signature_description(property_)}`')
-                if property_ is not None and property_.__doc__:
-                    _render_docstring(property_.__doc__).classes('ml-8')
+            render_section(properties, is_method=False)
     if methods:
         subheading('Methods', anchor_name=create_anchor_name(part_title.replace('Reference', 'Methods')))
         with ui.column().classes('gap-2 w-full overflow-x-auto'):
-            for name, method in sorted(methods.items()):
-                decorator = ''
-                if isinstance(class_obj.__dict__.get(name), staticmethod):
-                    decorator += '`@staticmethod`<br />'
-                if isinstance(class_obj.__dict__.get(name), classmethod):
-                    decorator += '`@classmethod`<br />'
-                ui.markdown(f'{decorator}**`{name}`**`{_generate_method_signature_description(method)}`') \
-                    .classes('w-full overflow-x-auto')
-                if method.__doc__:
-                    _render_docstring(method.__doc__).classes('ml-8')
+            render_section(methods, is_method=True)
     if ancestors:
         subheading('Inheritance', anchor_name=create_anchor_name(part_title.replace('Reference', 'Inheritance')))
         ui.markdown('\n'.join(f'- `{ancestor.__name__}`' for ancestor in ancestors))
