@@ -38,20 +38,21 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+# NOTE: These dependencies repeat in the dependency-groups section below.
 native = ["pywebview>=5.0.1,<6"]
 plotly = ["plotly>=5.13,<7.0"]
 matplotlib = ["matplotlib>=3.5.0,<4"]
 highcharts = ["nicegui-highcharts>=2.0.2,<3"]
 redis = ["redis>=4.0.0"]
 
-[project.urls]
-Repository = "https://github.com/zauberzeug/nicegui"
-
-[project.scripts]
-nicegui-pack = "nicegui.scripts.pack:main"
-
 [dependency-groups]
 dev = [
+    # NOTE: These dependencies repeat in the project.optional-dependencies section above.
+    "pywebview>=5.0.1,<6",  # extra: native
+    "plotly>=5.13,<7.0",  # extra: plotly
+    "matplotlib>=3.5.0,<4",  # extra: matplotlib
+    "nicegui-highcharts>=2.0.2,<3",  # extra: highcharts
+    "redis>=4.0.0",  # extra: redis
     {include-group = "types"},
     {include-group = "website"},
     "autopep8>=1.5.7,<3.0.0",
@@ -95,6 +96,12 @@ website = [
     "pyecharts>=2.0.4,<3",
     "slowapi>=0.1.9,<0.2.0",
 ]
+
+[project.urls]
+Repository = "https://github.com/zauberzeug/nicegui"
+
+[project.scripts]
+nicegui-pack = "nicegui.scripts.pack:main"
 
 [build-system]
 requires = [
