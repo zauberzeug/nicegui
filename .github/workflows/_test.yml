@@ -30,6 +30,8 @@ jobs:
           cache-dependency-glob: "uv.lock"
       - name: Install Python
         run: uv python install ${{ matrix.python }}
+      - name: Install dependencies
+        run: uv sync
       - uses: nanasess/setup-chromedriver@v2.3.0
       - name: ${{ matrix.python }} / ${{ matrix.scope }}
         if: matrix.scope == 'pytest'
