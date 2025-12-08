@@ -55,7 +55,7 @@ def run(root: Optional[Callable] = None, *,
         favicon: Optional[Union[str, Path]] = None,
         dark: Optional[bool] = False,
         language: Language = 'en-US',
-        binding_refresh_interval: float = 0.1,
+        binding_refresh_interval: Optional[float] = 0.1,
         reconnect_timeout: float = 3.0,
         message_history_length: int = 1000,
         cache_control_directives: str = 'public, max-age=31536000, immutable, stale-while-revalidate=31536000',
@@ -92,7 +92,7 @@ def run(root: Optional[Callable] = None, *,
     :param favicon: relative filepath, absolute URL to a favicon (default: `None`, NiceGUI icon will be used) or emoji (e.g. `'🚀'`, works for most browsers)
     :param dark: whether to use Quasar's dark mode (default: `False`, use `None` for "auto" mode)
     :param language: language for Quasar elements (default: `'en-US'`)
-    :param binding_refresh_interval: time between binding updates (default: `0.1` seconds, bigger is more CPU friendly)
+    :param binding_refresh_interval: interval for updating active links (default: 0.1 seconds, bigger is more CPU friendly, *since version 3.4.0*: can be ``None`` to disable update loop)
     :param reconnect_timeout: maximum time the server waits for the browser to reconnect (default: 3.0 seconds)
     :param message_history_length: maximum number of messages that will be stored and resent after a connection interruption (default: 1000, use 0 to disable, *added in version 2.9.0*)
     :param cache_control_directives: cache control directives for internal static files (default: `'public, max-age=31536000, immutable, stale-while-revalidate=31536000'`)

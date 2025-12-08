@@ -15,6 +15,14 @@ VIDEO_FILE.parent.mkdir(exist_ok=True)
 VIDEO_FILE.write_bytes(b'\x00' * 2000)  # dummy video file large enough to be streamed
 
 
+@pytest.fixture
+def secret_file():
+    secret_path = Path(TEST_DIR) / '.env'
+    secret_path.write_text('TOP SECRET DATA')
+    yield secret_path
+    secret_path.unlink(missing_ok=True)
+
+
 def assert_video_file_streaming(path: str) -> None:
     with httpx.Client() as http_client:
         r = http_client.get(
@@ -37,6 +45,21 @@ def test_media_files_can_be_streamed(screen: Screen):
 
     screen.open('/')
     assert_video_file_streaming('/media/test.mp4')
+
+
+def test_media_files_against_path_traversal(screen: Screen, secret_file):
+    app.add_media_files('/media', Path(TEST_DIR) / 'media')
+
+    @ui.page('/')
+    def page():
+        ui.label('Hello, world!')
+
+    screen.open('/')
+
+    with httpx.Client() as http_client:
+        r = http_client.get(f'http://localhost:{Screen.PORT}/media/%2e%2e/.env')
+        assert 'TOP SECRET DATA' not in r.text
+        assert r.status_code == 404
 
 
 def test_adding_single_media_file(screen: Screen):
