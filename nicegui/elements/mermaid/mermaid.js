@@ -9,6 +9,7 @@ export default {
     last_content: "",
   }),
   mounted() {
+    window.mermaid = mermaid;
     this.initialize();
     this.update(this.content);
   },
