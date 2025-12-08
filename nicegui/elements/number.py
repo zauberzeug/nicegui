@@ -115,15 +115,15 @@ class Number(LabelElement, ValidationElement, DisableableElement):
             value = float(round(value, self.precision))
         self.value = float(self.format % value) if self.format else value
         self.update()
-    
+
     def set_prefix(self, text: Optional[str]) -> None:
         """
         Set the prefix.
-        
+
         :param text: the content of the prefix.
         """
         self._props['prefix'] = text
-    
+
     def set_suffix(self, text: Optional[str]) -> None:
         """
         Set the suffix.
