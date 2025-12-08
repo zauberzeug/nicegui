@@ -39,7 +39,7 @@ dependencies = [
 
 [project.optional-dependencies]
 # NOTE: These dependencies repeat in the dependency-groups section below.
-native = ["pywebview>=5.0.1,<6"]
+native = ["pywebview>=5.0.1,<7"]
 plotly = ["plotly>=5.13,<7.0"]
 matplotlib = ["matplotlib>=3.5.0,<4"]
 highcharts = ["nicegui-highcharts>=2.0.2,<3"]
@@ -48,7 +48,7 @@ redis = ["redis>=4.0.0"]
 [dependency-groups]
 dev = [
     # NOTE: These dependencies repeat in the project.optional-dependencies section above.
-    "pywebview>=5.0.1,<6",  # extra: native
+    "pywebview>=5.0.1,<7",  # extra: native
     "plotly>=5.13,<7.0",  # extra: plotly
     "matplotlib>=3.5.0,<4",  # extra: matplotlib
     "nicegui-highcharts>=2.0.2,<3",  # extra: highcharts
@@ -143,7 +143,6 @@ module = [
     "pyecharts.*",
     "scipy.*",
     "socketio.*",
-    "webview.*", # can be removed with next pywebview release
 ]
 ignore_missing_imports = true
 
