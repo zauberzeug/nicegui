@@ -216,3 +216,22 @@ def test_switching_focus(screen: Screen):
     screen.click('focus 2')
     screen.wait(0.3)
     assert elements[1] == screen.selenium.switch_to.active_element
+
+
+def test_input_with_prefix_suffix(screen: Screen):
+    @ui.page('/')
+    def page():
+        n = ui.input(prefix='MyPrefix', suffix='MySuffix')
+
+        def change_prefix_suffix():
+            n.set_prefix('NewPrefix')
+            n.set_suffix('NewSuffix')
+
+        ui.button('Change', on_click=change_prefix_suffix)
+
+    screen.open('/')
+    screen.should_contain('MyPrefix')
+    screen.should_contain('MySuffix')
+    screen.click('Change')
+    screen.should_contain('NewPrefix')
+    screen.should_contain('NewSuffix')
