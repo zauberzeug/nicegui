@@ -17,7 +17,8 @@ def add_css(content: Union[str, Path], *, shared: bool = False) -> None:
     """
     if helpers.is_file(content):
         content = Path(content).read_text(encoding='utf-8')
-    add_head_html(f'<style>{content}</style>', shared=shared)
+    safe_content = json.dumps(content).replace('<', r'\u003c')
+    add_head_html(f'<script>addStyle({safe_content});</script>', shared=shared)
 
 
 def add_scss(content: Union[str, Path], *, indented: bool = False, shared: bool = False) -> None:  # DEPRECATED
@@ -35,12 +36,11 @@ def add_scss(content: Union[str, Path], *, indented: bool = False, shared: bool 
     """
     content = Path(content).read_text(encoding='utf-8') if helpers.is_file(content) else str(content).strip()
     syntax = 'indented' if indented else 'scss'
+    safe_content = json.dumps(content).replace('<', r'\u003c')
     add_head_html(f'''
         <script type="module">
             import * as sass from "sass";
-            const style = document.createElement("style");
-            style.textContent = sass.compileString({json.dumps(content)}, {{syntax: "{syntax}"}}).css;
-            document.head.appendChild(style);
+            addStyle(sass.compileString({safe_content}, {{syntax: "{syntax}"}}).css);
         </script>
     ''', shared=shared)
 
