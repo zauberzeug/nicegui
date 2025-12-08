@@ -1,5 +1,5 @@
 version = 1
-revision = 2
+revision = 3
 requires-python = ">=3.9, <4"
 resolution-markers = [
     "python_full_version >= '3.14'",
@@ -2394,7 +2394,7 @@ requires-dist = [
     { name = "python-engineio", specifier = ">=4.12.0" },
     { name = "python-multipart", specifier = ">=0.0.18" },
     { name = "python-socketio", extras = ["asyncio-client"], specifier = ">=5.14.0" },
-    { name = "pywebview", marker = "extra == 'native'", specifier = ">=5.0.1,<6" },
+    { name = "pywebview", marker = "extra == 'native'", specifier = ">=5.0.1,<7" },
     { name = "redis", marker = "extra == 'redis'", specifier = ">=4.0.0" },
     { name = "starlette", specifier = ">=0.49.1" },
     { name = "typing-extensions", specifier = ">=4.0.0" },
@@ -2432,7 +2432,7 @@ dev = [
     { name = "pytest-order", specifier = ">=1.3.0,<2" },
     { name = "pytest-selenium", specifier = ">=4.1.0,<5" },
     { name = "pytest-watcher", specifier = ">=0.4.2,<0.5" },
-    { name = "pywebview", specifier = ">=5.0.1,<6" },
+    { name = "pywebview", specifier = ">=5.0.1,<7" },
     { name = "rcssmin", specifier = ">=1.2.1,<2" },
     { name = "redis", specifier = ">=4.0.0" },
     { name = "requests", specifier = ">=2.32.4" },
