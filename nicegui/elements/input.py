@@ -78,15 +78,15 @@ class Input(LabelElement, ValidationElement, DisableableElement, component='inpu
     def set_autocomplete(self, autocomplete: Optional[list[str]]) -> None:
         """Set the autocomplete list."""
         self._props['_autocomplete'] = autocomplete
-    
+
     def set_prefix(self, text: Optional[str]) -> None:
         """
         Set the prefix.
-        
+
         :param text: the content of the prefix.
         """
         self._props['prefix'] = text
-    
+
     def set_suffix(self, text: Optional[str]) -> None:
         """
         Set the suffix.
