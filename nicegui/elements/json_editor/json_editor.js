@@ -22,7 +22,14 @@ export default {
   methods: {
     checkValidation() {
       if (this.schema !== undefined) {
-        this.properties.validator = createAjvValidator({ schema: this.schema, schemaDefinitions: {}, ajvOptions: {} });
+        this.properties.validator = createAjvValidator({
+          schema: this.schema,
+          schemaDefinitions: {},
+          ajvOptions: {},
+          onCreateAjv: (ajv) => {
+            for (const ajvAddin of this.ajvAddins) eval(ajvAddin)(ajv);
+          },
+        });
       }
     },
     update_editor() {
@@ -49,5 +56,6 @@ export default {
   props: {
     properties: Object,
     schema: Object,
+    ajvAddins: Array,
   },
 };

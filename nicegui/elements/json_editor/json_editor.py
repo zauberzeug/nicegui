@@ -20,6 +20,7 @@ class JsonEditor(Element, component='json_editor.js', esm={'nicegui-json-editor'
                  on_select: Optional[Handler[JsonEditorSelectEventArguments]] = None,
                  on_change: Optional[Handler[JsonEditorChangeEventArguments]] = None,
                  schema: Optional[dict] = None,
+                 ajv_addins: Optional[list[str]] = None,
                  ) -> None:
         """JSONEditor
 
@@ -30,6 +31,9 @@ class JsonEditor(Element, component='json_editor.js', esm={'nicegui-json-editor'
         :param on_select: callback which is invoked when some of the content has been selected
         :param on_change: callback which is invoked when the content has changed
         :param schema: optional `JSON schema <https://json-schema.org/>`_ for validating the data being edited (*added in version 2.8.0*)
+        :param ajv_addins: optional list of JavaScript-side functions to extend the AJV validator, e.g. to add custom formats (*added in version 3.5.0*)
+
+        Note: Do not let user control the input to `ajv_addins` as `eval` is used and this will cause XSS vulnerabilities!
         """
         super().__init__()
         self._props['properties'] = properties
@@ -43,6 +47,8 @@ class JsonEditor(Element, component='json_editor.js', esm={'nicegui-json-editor'
 
         if on_change:
             self.on_change(on_change)
+
+        self._props['ajvAddins'] = ajv_addins or []
 
     def on_change(self, callback: Handler[JsonEditorChangeEventArguments]) -> Self:
         """Add a callback to be invoked when the content changes."""
