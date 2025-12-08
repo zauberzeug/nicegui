@@ -112,7 +112,7 @@ def test_add_layer(screen: Screen):
     def page():
         ii = ui.interactive_image(
             URL_PATH1, content='<rect x="0" y="0" width="100" height="100" fill="red" />', sanitize=False)
-        ii.add_layer(content='<circle cx="100" cy="100" r="15" />', sanitize=False)
+        ii.add_layer(content='<circle cx="100" cy="100" r="15" />')
 
     screen.open('/')
     screen.find_by_tag('svg')
