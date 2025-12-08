@@ -185,26 +185,50 @@ def generate_resources(prefix: str, elements: Iterable[Element]) -> tuple[list[s
         imports[f'{esm_module.name}'] = f'{prefix}/_nicegui/{__version__}/esm/{key}/index.js'
         imports[f'{esm_module.name}/'] = f'{prefix}/_nicegui/{__version__}/esm/{key}/'
 
+    def _add_to_js_imports(keys: set[str], names: set[str]) -> None:
+        url = f'{prefix}/_nicegui/{__version__}/component_pack/_/{",".join(x.replace("/", ":") for x in sorted(keys))}'
+        js_imports.append(f'import {{ {", ".join(sorted(names))} }} from "{url}";')
+        js_imports_urls.append(url)
+
     # build the none-optimized component (i.e. the Vue component)
-    for key, vue_component in vue_components.items():
-        if key not in done_components:
-            vue_html.append(vue_component.html)
-            url = f'{prefix}/_nicegui/{__version__}/components/{vue_component.key}'
-            js_imports.append(f'import {{ default as {vue_component.name} }} from "{url}";')
-            js_imports.append(f"{vue_component.name}.template = '#tpl-{vue_component.name}';")
-            js_imports.append(f'app.component("{vue_component.tag}", {vue_component.name});')
-            js_imports_urls.append(url)
-            vue_styles.append(vue_component.style)
-            done_components.add(key)
+    vue_pack_keys: set[str] = set()
+    vue_pack_names: set[str] = set()
+    for operation in range(3):
+        if operation == 1:
+            _add_to_js_imports(vue_pack_keys, vue_pack_names)
+            continue
+        for key, vue_component in vue_components.items():
+            if key not in done_components:
+                if operation == 0:
+                    vue_pack_keys.add(vue_component.key)
+                    vue_pack_names.add(vue_component.name)
+                elif operation == 2:
+                    vue_html.append(vue_component.html)
+                    url = f'{prefix}/_nicegui/{__version__}/components/{vue_component.key}'
+                    js_imports.append(f"{vue_component.name}.template = '#tpl-{vue_component.name}';")
+                    js_imports.append(f'app.component("{vue_component.tag}", {vue_component.name});')
+                    vue_styles.append(vue_component.style)
+                    done_components.add(key)
 
     # build the resources associated with the elements
-    for element in elements:
-        if element.component:
-            js_component = element.component
-            if js_component.key not in done_components and js_component.path.suffix.lower() == '.js':
-                url = f'{prefix}/_nicegui/{__version__}/components/{js_component.key}'
-                js_imports.append(f'import {{ default as {js_component.name} }} from "{url}";')
-                js_imports.append(f'app.component("{js_component.tag}", {js_component.name});')
-                js_imports_urls.append(url)
-                done_components.add(js_component.key)
+    js_pack_keys: set[str] = set()
+    js_pack_names: set[str] = set()
+    for operation in range(3):
+        if operation == 1:
+            _add_to_js_imports(js_pack_keys, js_pack_names)
+            continue
+        for element in elements:
+            if element.component:
+                js_component = element.component
+                if js_component.key not in done_components and js_component.path.suffix.lower() == '.js':
+                    if operation == 0:
+                        js_pack_keys.add(js_component.key)
+                        js_pack_names.add(js_component.name)
+                    elif operation == 2:
+                        url = f'{prefix}/_nicegui/{__version__}/components/{js_component.key}'
+                        if js_component.name not in js_pack_names:
+                            js_imports.append(f'import {{ default as {js_component.name} }} from "{url}";')
+                            js_imports_urls.append(url)
+                        js_imports.append(f'app.component("{js_component.tag}", {js_component.name});')
+                        done_components.add(js_component.key)
     return vue_html, vue_styles, vue_scripts, imports, js_imports, js_imports_urls
