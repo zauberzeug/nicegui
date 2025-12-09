@@ -4,10 +4,10 @@ from ..events import Handler, ValueChangeEventArguments
 from .mixins.value_element import ValueElement
 
 
-class DarkMode(ValueElement, component='dark_mode.js'):
+class DarkMode(ValueElement[Optional[bool]], component='dark_mode.js'):
     VALUE_PROP = 'value'
 
-    def __init__(self, value: Optional[bool] = False, *, on_change: Optional[Handler[ValueChangeEventArguments]] = None) -> None:
+    def __init__(self, value: Optional[bool] = False, *, on_change: Optional[Handler[ValueChangeEventArguments[Optional[bool]]]] = None) -> None:
         """Dark mode
 
         You can use this element to enable, disable or toggle dark mode on the page.
