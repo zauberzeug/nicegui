@@ -56,8 +56,9 @@ app.mount('/_nicegui_ws/', sio_app)
 mimetypes.add_type('text/javascript', '.js')
 mimetypes.add_type('text/css', '.css')
 
+static_files_path = (Path(__file__).parent / 'static').resolve()
 static_files = CacheControlledStaticFiles(
-    directory=(Path(__file__).parent / 'static').resolve(),
+    directory=static_files_path,
     follow_symlink=True,
 )
 app.mount(f'/_nicegui/{__version__}/static', static_files, name='static')
@@ -100,6 +101,20 @@ def _get_component_pack(keys: str) -> Response:
             response += _to_named_export(vue_component.script, vue_component.name) + '\n'
         else:
             response += '/* Component not found: ' + key + ' */\n'
+    if response:
+        return Response(response, media_type='text/javascript')
+    raise HTTPException(status_code=404)
+
+
+@app.get(f'/_nicegui/{__version__}' + '/umd_pack/{keys:path}')
+def _get_umd_pack(keys: str) -> Response:
+    response = ''
+    for key in keys.split(','):
+        umd_file_path = (static_files_path / key).resolve()
+        if umd_file_path.is_relative_to(static_files_path) and umd_file_path.exists():
+            response += umd_file_path.read_text(encoding='utf-8') + '\n'
+        else:
+            response += '/* UMD file not found: ' + key + ' */\n'
     if response:
         return Response(response, media_type='text/javascript')
     raise HTTPException(status_code=404)
