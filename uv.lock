@@ -1,5 +1,5 @@
 version = 1
-revision = 2
+revision = 3
 requires-python = ">=3.9, <4"
 resolution-markers = [
     "python_full_version >= '3.14'",
@@ -844,6 +844,34 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/96/8e/709914eb2b5749865801041647dc7f4e6d00b549cfe88b65ca192995f07c/distlib-0.4.0.tar.gz", hash = "sha256:feec40075be03a04501a973d81f633735b4b69f98b05450592310c0f401a4e0d", size = 614605, upload-time = "2025-07-17T16:52:00.465Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/33/6b/e0547afaf41bf2c42e52430072fa5658766e3d65bd4b03a563d1b6336f57/distlib-0.4.0-py2.py3-none-any.whl", hash = "sha256:9659f7d87e46584a30b5780e43ac7a2143098441670ff0a49d5f9034c54a6c16", size = 469047, upload-time = "2025-07-17T16:51:58.613Z" },
+]
+
+[[package]]
+name = "dnspython"
+version = "2.7.0"
+source = { registry = "https://pypi.org/simple" }
+resolution-markers = [
+    "python_full_version < '3.10'",
+]
+sdist = { url = "https://files.pythonhosted.org/packages/b5/4a/263763cb2ba3816dd94b08ad3a33d5fdae34ecb856678773cc40a3605829/dnspython-2.7.0.tar.gz", hash = "sha256:ce9c432eda0dc91cf618a5cedf1a4e142651196bbcd2c80e89ed5a907e5cfaf1", size = 345197, upload-time = "2024-10-05T20:14:59.362Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/68/1b/e0a87d256e40e8c888847551b20a017a6b98139178505dc7ffb96f04e954/dnspython-2.7.0-py3-none-any.whl", hash = "sha256:b4c34b7d10b51bcc3a5071e7b8dee77939f1e878477eeecc965e9835f63c6c86", size = 313632, upload-time = "2024-10-05T20:14:57.687Z" },
+]
+
+[[package]]
+name = "dnspython"
+version = "2.8.0"
+source = { registry = "https://pypi.org/simple" }
+resolution-markers = [
+    "python_full_version >= '3.14'",
+    "python_full_version == '3.13.*'",
+    "python_full_version == '3.12.*'",
+    "python_full_version == '3.11.*'",
+    "python_full_version == '3.10.*'",
+]
+sdist = { url = "https://files.pythonhosted.org/packages/8c/8b/57666417c0f90f08bcafa776861060426765fdb422eb10212086fb811d26/dnspython-2.8.0.tar.gz", hash = "sha256:181d3c6996452cb1189c4046c61599b84a5a86e099562ffde77d26984ff26d0f", size = 368251, upload-time = "2025-09-07T18:58:00.022Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/ba/5a/18ad964b0086c6e62e2e7500f7edc89e3faa45033c71c1893d34eed2b2de/dnspython-2.8.0-py3-none-any.whl", hash = "sha256:01d9bbc4a2d76bf0db7c1f729812ded6d912bd318d3b1cf81d30c0f845dbf3af", size = 331094, upload-time = "2025-09-07T18:57:58.071Z" },
 ]
 
 [[package]]
@@ -2313,16 +2341,22 @@ dev = [
     { name = "autopep8" },
     { name = "cssbeautifier" },
     { name = "debugpy" },
+    { name = "dnspython", version = "2.7.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.10'" },
+    { name = "dnspython", version = "2.8.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.10'" },
     { name = "html-sanitizer" },
     { name = "isort" },
     { name = "latex2mathml" },
+    { name = "matplotlib", version = "3.9.4", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.10'" },
+    { name = "matplotlib", version = "3.10.7", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.10'" },
     { name = "mypy" },
+    { name = "nicegui-highcharts" },
     { name = "numpy", version = "2.0.2", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.10'" },
     { name = "numpy", version = "2.2.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version == '3.10.*'" },
     { name = "numpy", version = "2.3.4", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
     { name = "pandas" },
     { name = "pandas-stubs", version = "2.2.2.240807", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.10'" },
     { name = "pandas-stubs", version = "2.3.2.250926", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.10'" },
+    { name = "plotly" },
     { name = "poetry-dynamic-versioning" },
     { name = "polars" },
     { name = "pre-commit" },
@@ -2334,7 +2368,9 @@ dev = [
     { name = "pytest-order" },
     { name = "pytest-selenium" },
     { name = "pytest-watcher" },
+    { name = "pywebview" },
     { name = "rcssmin" },
+    { name = "redis" },
     { name = "requests" },
     { name = "ruff" },
     { name = "secure", version = "0.3.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.10'" },
@@ -2357,6 +2393,8 @@ types = [
     { name = "types-requests" },
 ]
 website = [
+    { name = "dnspython", version = "2.7.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.10'" },
+    { name = "dnspython", version = "2.8.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.10'" },
     { name = "html-sanitizer" },
     { name = "isort" },
     { name = "latex2mathml" },
@@ -2388,7 +2426,7 @@ requires-dist = [
     { name = "python-engineio", specifier = ">=4.12.0" },
     { name = "python-multipart", specifier = ">=0.0.18" },
     { name = "python-socketio", extras = ["asyncio-client"], specifier = ">=5.14.0" },
-    { name = "pywebview", marker = "extra == 'native'", specifier = ">=5.0.1,<6" },
+    { name = "pywebview", marker = "extra == 'native'", specifier = ">=5.0.1,<7" },
     { name = "redis", marker = "extra == 'redis'", specifier = ">=4.0.0" },
     { name = "starlette", specifier = ">=0.49.1" },
     { name = "typing-extensions", specifier = ">=4.0.0" },
@@ -2402,10 +2440,13 @@ dev = [
     { name = "autopep8", specifier = ">=1.5.7,<3.0.0" },
     { name = "cssbeautifier", specifier = ">=1.15.4,<2" },
     { name = "debugpy", specifier = ">=1.3.0,<2" },
+    { name = "dnspython", specifier = ">=2.4.0,<3" },
     { name = "html-sanitizer", specifier = ">=2.6.0,<3" },
     { name = "isort", specifier = ">=6.0.0,<7.0.0" },
     { name = "latex2mathml", specifier = ">=3.78.1,<4.0.0" },
+    { name = "matplotlib", specifier = ">=3.5.0,<4" },
     { name = "mypy", specifier = ">=1.13.0,<2" },
+    { name = "nicegui-highcharts", specifier = ">=2.0.2,<3" },
     { name = "numpy", specifier = ">=1.26.0" },
     { name = "pandas", marker = "python_full_version < '3.13'", specifier = ">=2.0.0,<3" },
     { name = "pandas", marker = "python_full_version == '3.13.*'", specifier = ">=2.2.3,<3" },
@@ -2413,6 +2454,7 @@ dev = [
     { name = "pandas-stubs", marker = "python_full_version < '3.13'", specifier = ">=2.0.0,<3" },
     { name = "pandas-stubs", marker = "python_full_version == '3.13.*'", specifier = ">=2.2.3,<3" },
     { name = "pandas-stubs", marker = "python_full_version >= '3.14'", specifier = ">=2.3.2,<3" },
+    { name = "plotly", specifier = ">=5.13,<7.0" },
     { name = "poetry-dynamic-versioning", specifier = ">=1.8.0,<2" },
     { name = "polars", specifier = ">=1.12.0,<2" },
     { name = "pre-commit", specifier = ">=4.0.0" },
@@ -2423,7 +2465,9 @@ dev = [
     { name = "pytest-order", specifier = ">=1.3.0,<2" },
     { name = "pytest-selenium", specifier = ">=4.1.0,<5" },
     { name = "pytest-watcher", specifier = ">=0.4.2,<0.5" },
+    { name = "pywebview", specifier = ">=5.0.1,<7" },
     { name = "rcssmin", specifier = ">=1.2.1,<2" },
+    { name = "redis", specifier = ">=4.0.0" },
     { name = "requests", specifier = ">=2.32.4" },
     { name = "ruff", specifier = ">=0.8.1" },
     { name = "secure", specifier = ">=0.3.0" },
@@ -2445,6 +2489,7 @@ types = [
     { name = "types-requests", specifier = ">=2.32.4" },
 ]
 website = [
+    { name = "dnspython", specifier = ">=2.4.0,<3" },
     { name = "html-sanitizer", specifier = ">=2.6.0,<3" },
     { name = "isort", specifier = ">=6.0.0,<7.0.0" },
     { name = "latex2mathml", specifier = ">=3.78.1,<4.0.0" },

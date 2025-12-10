@@ -89,7 +89,7 @@ curl -LsSf https://astral.sh/uv/install.sh | sh
 Then use the following command to install NiceGUI in editable mode with all dependencies:
 
 ```bash
-uv sync --all-extras
+uv sync
 ```
 
 This will install the `nicegui` package and all its dependencies, and link it to your local development environment so that changes you make to the code will be immediately reflected.
@@ -309,7 +309,7 @@ If you plan to implement a new element you can follow these suggestions:
 
 1. Ensure with the maintainers that the element is a good fit for NiceGUI core;
    otherwise it may be better to create a separate git repository for it.
-2. Clone the NiceGUI repository and install the requirements including the project itself with `uv sync --all-extras`.
+2. Clone the NiceGUI repository and install the requirements including the project itself with `uv sync`.
 3. Launch `main.py` in the root directory: `uv run main.py`.
 4. Create a `test.py` file or similar where you can experiment with your new element.
 5. Look at other similar elements and how they are implemented in `nicegui/elements`.
@@ -327,7 +327,7 @@ If you plan to implement a new element you can follow these suggestions:
 There is a separate page for each element where multiple interactive demos can be listed.
 Please help us grow the number of insightful demos by following these easy steps:
 
-1. Clone the NiceGUI repository and install the requirements including the project itself with `uv sync --all-extras`.
+1. Clone the NiceGUI repository and install the requirements including the project itself with `uv sync`.
 2. Launch `main.py` in the root directory with `uv run main.py`.
 3. In the newly opened browser window you can navigate to the documentation page where you want to change something.
 4. Open the code in your editor (for example [website/documentation/content/table_documentation.py](https://github.com/zauberzeug/nicegui/blob/main/website/documentation/content/table_documentation.py)).

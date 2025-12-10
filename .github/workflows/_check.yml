@@ -25,6 +25,6 @@ jobs:
       - name: Install Python
         run: uv python install 3.9
       - name: Install dependencies
-        run: uv sync --all-extras
+        run: uv sync
       - name: ${{ matrix.target.name }}
         run: uv run ${{ matrix.target.command }}
