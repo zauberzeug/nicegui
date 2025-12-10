@@ -88,7 +88,7 @@ def _get_component(key: str) -> Response:
 @app.get(f'/_nicegui/{__version__}' + '/component_pack/_/{keys:path}')
 def _get_component(keys: str) -> Response:
     def _to_named_export(script: str, name: str) -> str:
-        return script.replace('export default', f'export const {name} =', 1)
+        return script.replace('export default', f'export const pack_{name} =', 1)
     response = ''
     for key_escaped in keys.split(','):
         key = key_escaped.replace(':', '/')

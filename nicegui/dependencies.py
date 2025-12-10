@@ -187,7 +187,7 @@ def generate_resources(prefix: str, elements: Iterable[Element]) -> tuple[list[s
 
     def _add_to_js_imports(keys: set[str], names: set[str]) -> None:
         url = f'{prefix}/_nicegui/{__version__}/component_pack/_/{",".join(x.replace("/", ":") for x in sorted(keys))}'
-        js_imports.append(f'import {{ {", ".join(sorted(names))} }} from "{url}";')
+        js_imports.append(f'import {{ {", ".join("pack_" + name for name in sorted(names))} }} from "{url}";')
         js_imports_urls.append(url)
 
     # build the none-optimized component (i.e. the Vue component)
@@ -205,8 +205,7 @@ def generate_resources(prefix: str, elements: Iterable[Element]) -> tuple[list[s
                 elif operation == 2:
                     vue_html.append(vue_component.html)
                     url = f'{prefix}/_nicegui/{__version__}/components/{vue_component.key}'
-                    js_imports.append(f"{vue_component.name}.template = '#tpl-{vue_component.name}';")
-                    js_imports.append(f'app.component("{vue_component.tag}", {vue_component.name});')
+                    js_imports.append(f"pack_{vue_component.name}.template = '#tpl-{vue_component.name}';")
                     vue_styles.append(vue_component.style)
                     done_components.add(key)
 
@@ -229,6 +228,8 @@ def generate_resources(prefix: str, elements: Iterable[Element]) -> tuple[list[s
                         if js_component.name not in js_pack_names:
                             js_imports.append(f'import {{ default as {js_component.name} }} from "{url}";')
                             js_imports_urls.append(url)
-                        js_imports.append(f'app.component("{js_component.tag}", {js_component.name});')
+                            js_imports.append(f'app.component("{js_component.tag}", {js_component.name});')
+                        else:
+                            js_imports.append(f'app.component("{js_component.tag}", pack_{js_component.name});')
                         done_components.add(js_component.key)
     return vue_html, vue_styles, vue_scripts, imports, js_imports, js_imports_urls
