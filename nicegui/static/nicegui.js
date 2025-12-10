@@ -145,9 +145,6 @@ function renderRecursively(elements, id) {
     return;
   }
 
-  // @todo: Try avoid this with better handling of initial page load.
-  if (element.component) loaded_components.add(element.component.name);
-
   const props = {
     id: "c" + id,
     ref: "r" + id,
