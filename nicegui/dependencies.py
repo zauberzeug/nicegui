@@ -199,11 +199,12 @@ def generate_resources(prefix: str, elements: Iterable[Element], *,
 
     # Add the packed components to the imports
     if packed_js_components:
-        keys = [key for key, _, _ in packed_js_components]
-        names = [name for _, name, _ in packed_js_components]
+        sorted_packs = sorted(packed_js_components, key=lambda x: x[1])
+        keys = [key for key, _, _ in sorted_packs]
+        names = [name for _, name, _ in sorted_packs]
         url = f'{prefix}/_nicegui/{__version__}/component_pack/_/{",".join(x.replace("/", ":") for x in keys)}'
         js_imports.append(f'import {{ {", ".join("pack_" + name for name in names)} }} from "{url}";')
-        for _, name, vue in packed_js_components:
+        for _, name, vue in sorted_packs:
             if vue:
                 js_imports.append(f"pack_{name}.template = '#tpl-{name}';")
             js_imports.append(f'app.component("nicegui-{name}", pack_{name});')
