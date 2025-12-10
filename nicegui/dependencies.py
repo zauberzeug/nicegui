@@ -175,7 +175,7 @@ def generate_resources(prefix: str, elements: Iterable[Element], *,
         'immutable': f'{prefix}/_nicegui/{__version__}/static/immutable.es.js',
     }
     js_imports: list[str] = []
-    js_imports_urls: list[str] = [imports['vue']]
+    js_imports_urls: list[str] = [imports['vue'], f'{prefix}/_nicegui/{__version__}/static/utils/resources.js']
 
     # build the importmap structure for libraries
     for key, library in libraries.items():
