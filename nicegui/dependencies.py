@@ -199,14 +199,15 @@ def generate_resources(prefix: str, elements: Iterable[Element], *,
 
     # Add the packed components to the imports
     if packed_js_components:
-        keys, names, is_vue = zip(*sorted(packed_js_components))
+        keys = [key for key, _, _ in packed_js_components]
+        names = [name for _, name, _ in packed_js_components]
         url = f'{prefix}/_nicegui/{__version__}/component_pack/_/{",".join(x.replace("/", ":") for x in keys)}'
         js_imports.append(f'import {{ {", ".join("pack_" + name for name in names)} }} from "{url}";')
-        for name, vue in zip(names, is_vue):
+        for _, name, vue in packed_js_components:
             if vue:
                 js_imports.append(f"pack_{name}.template = '#tpl-{name}';")
-            js_imports.append(f'loaded_components.add("{name}");')
             js_imports.append(f'app.component("nicegui-{name}", pack_{name});')
+            js_imports.append(f'loaded_components.add("{name}");')
         js_imports_urls.append(url)
 
     # build the none-optimized component (i.e. the Vue component)
@@ -226,5 +227,6 @@ def generate_resources(prefix: str, elements: Iterable[Element], *,
                 js_imports.append(f'import {{ default as pack_{js_component.name} }} from "{url}";')
                 js_imports_urls.append(url)
                 js_imports.append(f'app.component("{js_component.tag}", pack_{js_component.name});')
+                js_imports.append(f'loaded_components.add("{js_component.name}");')
                 done_components.add(js_component.key)
     return vue_html, vue_styles, vue_scripts, imports, js_imports, js_imports_urls
