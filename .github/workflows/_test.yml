@@ -1,0 +1,50 @@
+name: Test Suite
+
+on:
+  workflow_call:
+    inputs:
+      python-versions:
+        description: "JSON array of Python versions to test"
+        required: true
+        type: string
+      scope:
+        description: "JSON array of scopes to run"
+        required: true
+        type: string
+
+jobs:
+  test:
+    name: ${{ matrix.python }} / ${{ matrix.scope }}
+    strategy:
+      matrix:
+        python: ${{ fromJson(inputs.python-versions) }}
+        scope: ${{ fromJson(inputs.scope) }}
+      fail-fast: false
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v6
+      - uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+          cache-dependency-glob: "uv.lock"
+      - name: Install Python
+        run: uv python install ${{ matrix.python }}
+      - name: Install dependencies
+        run: uv sync
+      - uses: nanasess/setup-chromedriver@v2.3.0
+      - name: ${{ matrix.python }} / ${{ matrix.scope }}
+        if: matrix.scope == 'pytest'
+        run: uv run pytest
+      - uses: actions/upload-artifact@v5
+        if: matrix.scope == 'pytest' && failure()
+        with:
+          name: screenshots-${{ matrix.python }}
+          path: screenshots/*.failed.png
+          retention-days: 14
+      - name: ${{ matrix.python }} / ${{ matrix.scope }}
+        if: matrix.scope == 'startup'
+        run: ./test_startup.sh
+      - name: Restore dependencies for effective caching
+        if: matrix.scope == 'startup' && always()
+        run: uv sync

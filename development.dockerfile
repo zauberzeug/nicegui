@@ -1,18 +1,14 @@
-FROM python:3.8-slim
+FROM python:3.9-slim
 
-RUN apt update && apt install curl build-essential -y
-
-# We use Poetry for dependency management
-RUN curl -sSL https://install.python-poetry.org | python3 - && \
-    cd /usr/local/bin && \
-    ln -s ~/.local/bin/poetry && \
-    poetry config virtualenvs.create false
+# Install uv
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
 
 WORKDIR /app
 
+ARG VERSION="0.0.0"
+ENV POETRY_DYNAMIC_VERSIONING_BYPASS=$VERSION
+
 COPY . .
-RUN poetry install --all-extras
+RUN uv sync
 
-RUN pip install latex2mathml
-
-CMD python3 -m debugpy --listen 5678 main.py
+CMD ["uv", "run", "python3", "-m", "debugpy", "--listen", "5678", "main.py"]

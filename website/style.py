@@ -1,5 +1,5 @@
 import re
-from typing import List, Optional
+from typing import Optional
 
 from nicegui import ui
 
@@ -34,19 +34,25 @@ def title(content: str) -> ui.markdown:
 
 def subtitle(content: str) -> ui.markdown:
     """Render a subtitle."""
-    return ui.markdown(content).classes('text-xl sm:text-2xl md:text-3xl leading-7')
+    return ui.markdown(content).classes('text-xl sm:text-2xl md:text-3xl leading-9')
 
 
-def example_link(example: Example) -> None:
+def example_link(example: Optional[Example] = None) -> ui.link:
     """Render a link to an example."""
-    with ui.link(target=example.url) \
+    with ui.link(target=example.url if example else '/examples') \
             .classes('bg-[#5898d420] p-4 self-stretch rounded flex flex-col gap-2') \
-            .style('box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1)'):
-        ui.label(example.title).classes(replace='font-bold')
-        ui.markdown(example.description).classes(replace='bold-links arrow-links')
+            .style('box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1)') as link:
+        ui.label(example.title if example else '...and many more').classes(replace='font-bold')
+        ui.markdown(example.description if example else 'Browse through plenty of examples.') \
+            .classes(replace='bold-links arrow-links')
+        if example:
+            ui.space()
+            ui.interactive_image(example.screenshot) \
+                .classes('w-full object-contain border border-gray-300 rounded-md overflow-hidden')
+    return link
 
 
-def features(icon: str, title_: str, items: List[str]) -> None:
+def features(icon: str, title_: str, items: list[str]) -> None:
     """Render a list of features."""
     with ui.column().classes('gap-1'):
         ui.icon(icon).classes('max-sm:hidden text-3xl md:text-5xl mb-3 text-primary opacity-80')
@@ -64,7 +70,7 @@ def side_menu() -> ui.left_drawer:
 def subheading(text: str, *, link: Optional[str] = None, major: bool = False, anchor_name: Optional[str] = None) -> None:
     """Render a subheading with an anchor that can be linked to with a hash."""
     name = anchor_name or create_anchor_name(text)
-    ui.html(f'<div id="{name}"></div>').style('position: relative; top: -90px')
+    ui.html(f'<div id="{name}"></div>', sanitize=False).style('position: relative; top: -90px')
     with ui.row().classes('gap-2 items-center relative'):
         classes = 'text-3xl' if major else 'text-2xl'
         if link:

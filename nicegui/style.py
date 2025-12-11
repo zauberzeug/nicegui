@@ -1,4 +1,9 @@
-from typing import TYPE_CHECKING, Dict, Generic, Optional, TypeVar
+import weakref
+from collections.abc import Iterator
+from contextlib import contextmanager
+from typing import TYPE_CHECKING, Generic, Optional, TypeVar
+
+from .observables import ObservableDict
 
 if TYPE_CHECKING:
     from .element import Element
@@ -6,11 +11,36 @@ if TYPE_CHECKING:
 T = TypeVar('T', bound='Element')
 
 
-class Style(dict, Generic[T]):
+class Style(ObservableDict, Generic[T]):
 
     def __init__(self, *args, element: T, **kwargs) -> None:
-        super().__init__(*args, **kwargs)
-        self.element = element
+        super().__init__(*args, on_change=self._update, **kwargs)
+        self._element = weakref.ref(element)
+        self._suspend_count = 0
+
+    @contextmanager
+    def suspend_updates(self) -> Iterator[None]:
+        """Suspend updates."""
+        self._suspend_count += 1
+        try:
+            yield
+        finally:
+            self._suspend_count -= 1
+
+    @property
+    def element(self) -> T:
+        """The element this style object belongs to."""
+        element = self._element()
+        if element is None:
+            raise RuntimeError('The element this style object belongs to has been deleted.')
+        return element
+
+    def _update(self) -> None:
+        if self._suspend_count > 0:
+            return
+        element = self._element()
+        if element is not None:
+            element.update()
 
     def __call__(self,
                  add: Optional[str] = None, *,
@@ -24,6 +54,7 @@ class Style(dict, Generic[T]):
         :param remove: semicolon-separated list of styles to remove from the element
         :param replace: semicolon-separated list of styles to use instead of existing ones
         """
+        element = self.element
         style_dict = {**self} if replace is None else {}
         for key in self.parse(remove):
             style_dict.pop(key, None)
@@ -32,11 +63,10 @@ class Style(dict, Generic[T]):
         if self != style_dict:
             self.clear()
             self.update(style_dict)
-            self.element.update()
-        return self.element
+        return element
 
     @staticmethod
-    def parse(text: Optional[str]) -> Dict[str, str]:
+    def parse(text: Optional[str]) -> dict[str, str]:
         """Parse a string of styles into a dictionary."""
         result = {}
         for word in (text or '').split(';'):

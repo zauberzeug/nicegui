@@ -3,12 +3,14 @@ from nicegui.testing import Screen
 
 
 def test_splitter(screen: Screen):
-    with ui.splitter() as splitter:
-        with splitter.before:
-            ui.label('Left hand side.')
-        with splitter.after:
-            ui.label('Right hand side.')
-    ui.label().bind_text_from(splitter, 'value')
+    @ui.page('/')
+    def page():
+        with ui.splitter() as splitter:
+            with splitter.before:
+                ui.label('Left hand side.')
+            with splitter.after:
+                ui.label('Right hand side.')
+        ui.label().bind_text_from(splitter, 'value')
 
     screen.open('/')
     screen.should_contain('Left hand side.')

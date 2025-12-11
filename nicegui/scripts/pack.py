@@ -38,31 +38,50 @@ def main() -> None:
         'Create a single executable file.\n'
         'Whilst convenient for distribution, it will be slower to start up.'
     ))
+    parser.add_argument('--onedir', action='store_true', default=False, help=(
+        'Create an executable with all supporting files in a directory.\n'
+        'This starts faster than "--onefile" because it skips the unpacking step.\n'
+        'For distribution, package the directory into an archive file (e.g., .zip or .7z).'
+    ))
     parser.add_argument('--add-data', type=str, action='append', default=[
         f'{Path(nicegui.__file__).parent}{os.pathsep}nicegui',
     ], help='Include additional data.')
     parser.add_argument('--icon', type=str, help='Path to an icon file.')
     parser.add_argument('--osx-bundle-identifier', type=str, help='Mac OS .app bundle identifier.')
     parser.add_argument('--dry-run', action='store_true', help='Dry run.', default=False)
+    parser.add_argument('--clean', action='store_true', default=False, help=(
+        'Clean PyInstaller cache (in ./build folder) and remove temporary files before building.'
+    ))
+    parser.add_argument('--noconfirm', action='store_true', default=False, help=(
+        'Replace output directory (./dist/SPECNAME) without asking for confirmation.'
+    ))
     parser.add_argument('main', default='main.py', help='Main file which calls `ui.run()`.')
     args = parser.parse_args()
 
-    for directory in ['build', 'dist']:
-        if Path(directory).exists():
-            Path(directory).rmdir()
-
     command = ['pyinstaller'] if platform.system() == 'Windows' else ['python', '-m', 'PyInstaller']
     command.extend(['--name', args.name])
+    if args.clean:
+        command.append('--clean')
+    if args.noconfirm:
+        command.append('--noconfirm')
     if args.windowed:
         command.append('--windowed')
     if args.onefile:
         command.append('--onefile')
+    if args.onedir:
+        command.append('--onedir')
     for data in args.add_data:
         command.extend(['--add-data', data])
     if args.icon:
         command.extend(['--icon', args.icon])
     if args.osx_bundle_identifier:
         command.extend(['--osx-bundle-identifier', args.osx_bundle_identifier])
+
+    try:
+        import pyecharts  # pylint: disable=import-outside-toplevel
+        command.extend(['--add-data', f'{Path(pyecharts.__file__).parent}{os.pathsep}pyecharts'])
+    except ModuleNotFoundError:
+        pass
 
     command.extend([args.main])
 

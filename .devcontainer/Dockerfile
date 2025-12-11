@@ -1,16 +1,15 @@
-FROM --platform=linux/amd64 python:3.8
+FROM python:3.9
 
-ENV POETRY_VERSION=1.6.1 \
-    POETRY_NO_INTERACTION=1 \
-    POETRY_VIRTUALENVS_IN_PROJECT=false \
-    POETRY_VIRTUALENVS_CREATE=false \
-    DEBIAN_FRONTEND=noninteractive \
+ENV DEBIAN_FRONTEND=noninteractive \
     DISPLAY=:99
 
 # Install packages
 RUN apt-get update && apt-get install --no-install-recommends -y \
-    sudo git build-essential chromium chromium-driver \
+    sudo git chromium chromium-driver \
     && rm -rf /var/lib/apt/lists/*
+
+# Install uv
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
 
 # Create remote user
 ARG USERNAME=vscode
@@ -26,11 +25,9 @@ ENV PATH="/home/${USERNAME}/.local/bin:${PATH}"
 ENV CHROME_BINARY_LOCATION=/usr/bin/chromium
 
 # Install nicegui
-RUN pip install -U pip && pip install poetry==$POETRY_VERSION
-COPY pyproject.toml poetry.lock README.md ./
-RUN poetry install --all-extras --no-root
-RUN pip install latex2mathml
+COPY pyproject.toml uv.lock* README.md ./
+RUN uv sync --no-install-project --all-extras
 
 USER $USERNAME
 
-ENTRYPOINT ["poetry", "run", "python", "-m", "debugpy", "--listen" ,"5678", "main.py"]
+ENTRYPOINT ["uv", "run", "python", "-m", "debugpy", "--listen" ,"5678", "main.py"]

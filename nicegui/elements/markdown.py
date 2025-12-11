@@ -1,23 +1,21 @@
+import hashlib
 import os
 from functools import lru_cache
-from typing import List
 
 import markdown2
 from fastapi.responses import PlainTextResponse
 from pygments.formatters import HtmlFormatter  # pylint: disable=no-name-in-module
 
 from .. import core
-from ..version import __version__
 from .mixins.content_element import ContentElement
-
-CODEHILITE_CSS_URL = f'/_nicegui/{__version__}/codehilite.css'
 
 
 class Markdown(ContentElement, component='markdown.js', default_classes='nicegui-markdown'):
+    # NOTE: The Mermaid ESM is already registered in mermaid.py.
 
     def __init__(self,
                  content: str = '', *,
-                 extras: List[str] = ['fenced-code-blocks', 'tables'],  # noqa: B006
+                 extras: list[str] = ['fenced-code-blocks', 'tables'],  # noqa: B006
                  ) -> None:
         """Markdown Element
 
@@ -31,19 +29,29 @@ class Markdown(ContentElement, component='markdown.js', default_classes='nicegui
         if 'mermaid' in extras:
             self._props['use_mermaid'] = True
 
-        self._props['codehilite_css_url'] = CODEHILITE_CSS_URL
-        if not any(r for r in core.app.routes if getattr(r, 'path', None) == CODEHILITE_CSS_URL):
-            core.app.get(CODEHILITE_CSS_URL)(lambda: PlainTextResponse(
-                HtmlFormatter(nobackground=True).get_style_defs('.codehilite') +
-                HtmlFormatter(nobackground=True, style='github-dark').get_style_defs('.body--dark .codehilite'),
+        codehilite = self._generate_codehilite_css()
+        self._props['resource_name'] = f'codehilite_{hashlib.sha256(codehilite.encode()).hexdigest()[:32]}.css'
+        self.add_dynamic_resource(
+            self._props['resource_name'],
+            lambda: PlainTextResponse(
+                codehilite,
                 media_type='text/css',
-            ))
+                headers={'Cache-Control': core.app.config.cache_control_directives},
+            ),
+        )
+
+    @staticmethod
+    @lru_cache(maxsize=1)
+    def _generate_codehilite_css() -> str:
+        return (
+            HtmlFormatter(nobackground=True).get_style_defs('.codehilite') +
+            HtmlFormatter(nobackground=True, style='github-dark').get_style_defs('.body--dark .codehilite')
+        )
 
     def _handle_content_change(self, content: str) -> None:
         html = prepare_content(content, extras=' '.join(self.extras))
         if self._props.get('innerHTML') != html:
             self._props['innerHTML'] = html
-            self.update()
 
 
 @lru_cache(maxsize=int(os.environ.get('MARKDOWN_CONTENT_CACHE_SIZE', '1000')))

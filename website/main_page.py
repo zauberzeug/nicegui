@@ -5,7 +5,6 @@ from nicegui import ui
 
 from . import documentation, example_card, svg
 from .examples import examples
-from .header import add_head_html, add_header
 from .style import example_link, features, heading, link_target, section_heading, subtitle, title
 
 SPONSORS = json.loads((Path(__file__).parent / 'sponsors.json').read_text(encoding='utf-8'))
@@ -13,10 +12,6 @@ SPONSORS = json.loads((Path(__file__).parent / 'sponsors.json').read_text(encodi
 
 def create() -> None:
     """Create the content of the main page."""
-    ui.context.client.content.classes('p-0 gap-0')
-    add_head_html()
-    add_header()
-
     with ui.row().classes('w-full h-screen items-center gap-8 pr-4 no-wrap into-section'):
         svg.face(half=True).classes('stroke-black dark:stroke-white w-[200px] md:w-[230px] lg:w-[300px]')
         with ui.column().classes('gap-4 md:gap-8 pt-32'):
@@ -31,7 +26,7 @@ def create() -> None:
             py-20 px-8 lg:px-16
             gap-8 sm:gap-16 md:gap-8 lg:gap-16
         '''):
-        link_target('about')
+        link_target('about', '70px')
         with ui.column().classes('text-white max-w-4xl'):
             heading('Interact with Python through buttons, dialogs, 3D&nbsp;scenes, plots and much more.')
             with ui.column().classes('gap-2 bold-links arrow-links text-lg'):
@@ -53,11 +48,11 @@ def create() -> None:
         example_card.create()
 
     with ui.column().classes('w-full text-lg p-8 lg:p-16 max-w-[1600px] mx-auto'):
-        link_target('installation', '-50px')
+        link_target('installation')
         section_heading('Installation', 'Get *started*')
         with ui.row().classes('w-full text-lg leading-tight grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-8'):
             with ui.column().classes('w-full max-w-md gap-2'):
-                ui.html('<em>1.</em>').classes('text-3xl font-bold fancy-em')
+                ui.html('<em>1.</em>', sanitize=False).classes('text-3xl font-bold fancy-em')
                 ui.markdown('Create __main.py__').classes('text-lg')
                 with documentation.python_window(classes='w-full h-52'):
                     ui.markdown('''
@@ -70,7 +65,7 @@ def create() -> None:
                         ```
                     ''')
             with ui.column().classes('w-full max-w-md gap-2'):
-                ui.html('<em>2.</em>').classes('text-3xl font-bold fancy-em')
+                ui.html('<em>2.</em>', sanitize=False).classes('text-3xl font-bold fancy-em')
                 ui.markdown('Install and launch').classes('text-lg')
                 with documentation.bash_window(classes='w-full h-52'):
                     ui.markdown('''
@@ -80,7 +75,7 @@ def create() -> None:
                         ```
                     ''')
             with ui.column().classes('w-full max-w-md gap-2'):
-                ui.html('<em>3.</em>').classes('text-3xl font-bold fancy-em')
+                ui.html('<em>3.</em>', sanitize=False).classes('text-3xl font-bold fancy-em')
                 ui.markdown('Enjoy!').classes('text-lg')
                 with documentation.browser_window(classes='w-full h-52'):
                     ui.label('Hello NiceGUI!')
@@ -101,7 +96,7 @@ def create() -> None:
                     ''')
 
     with ui.column().classes('w-full p-8 lg:p-16 bold-links arrow-links max-w-[1600px] mx-auto'):
-        link_target('features', '-50px')
+        link_target('features')
         section_heading('Features', 'Code *nicely*')
         with ui.row().classes('w-full text-lg leading-tight grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-8'):
             features('swap_horiz', 'Interaction', [
@@ -126,23 +121,23 @@ def create() -> None:
                 'customizable [color themes](/documentation/section_styling_appearance#color_theming)',
                 'custom CSS and classes',
                 'modern look with material design',
-                '[Tailwind CSS](https://v3.tailwindcss.com/) auto-completion',
+                '[Tailwind CSS](https://tailwindcss.com/)',
             ])
             features('source', 'Coding', [
-                'routing for multiple [pages](/documentation/page)',
+                'single page apps with [ui.sub_pages](/documentation/sub_pages)',
                 'auto-reload on code change',
                 'persistent [user sessions](/documentation/storage)',
-                'super nice [testing framework](/documentation/section_testing)',
+                'super powerful [testing framework](/documentation/section_testing)',
             ])
             features('anchor', 'Foundation', [
                 'generic [Vue](https://vuejs.org/) to Python bridge',
                 'dynamic GUI through [Quasar](https://quasar.dev/)',
                 'content is served with [FastAPI](https://fastapi.tiangolo.com/)',
-                'Python 3.8+',
+                'Python 3.9+',
             ])
 
     with ui.column().classes('w-full p-8 lg:p-16 max-w-[1600px] mx-auto'):
-        link_target('demos', '-50px')
+        link_target('demos')
         section_heading('Demos', 'Try *this*')
         with ui.column().classes('w-full'):
             documentation.create_intro()
@@ -152,51 +147,52 @@ def create() -> None:
             with ui.column().classes('gap-1 max-lg:items-center max-lg:text-center'):
                 ui.markdown('Browse through plenty of live demos.') \
                     .classes('text-white text-2xl md:text-3xl font-medium')
-                ui.html('Fun-Fact: This whole website is also coded with NiceGUI.') \
+                ui.label('Fun-Fact: This whole website is also coded with NiceGUI.') \
                     .classes('text-white text-lg md:text-xl')
             ui.link('Documentation', '/documentation').style('color: black !important') \
                 .classes('rounded-full mx-auto px-12 py-2 bg-white font-medium text-lg md:text-xl')
 
     with ui.column().classes('w-full p-8 lg:p-16 max-w-[1600px] mx-auto'):
-        link_target('examples', '-50px')
+        link_target('examples')
         section_heading('In-depth examples', 'Pick your *solution*')
         with ui.row().classes('w-full text-lg leading-tight grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4'):
             for example in examples:
-                example_link(example)
+                if example.title in {'Authentication', 'Chat App', 'Todo List'}:
+                    example_link(example)
+            example_link().classes('min-h-40 text-center items-center justify-center xl:col-span-3')
 
-    with ui.column().classes('dark-box p-8 lg:p-16 my-16 bg-transparent border-y-2'):
+    with ui.column().classes('dark-box p-8 lg:p-16 my-16 bg-transparent border-y-2 border-gray-200'):
         with ui.column().classes('mx-auto items-center gap-y-8 gap-x-32 lg:flex-row'):
-            with ui.column().classes('max-lg:items-center max-lg:text-center'):
+            with ui.column().classes('max-lg:items-center max-lg:text-center gap-8'):
                 link_target('sponsors')
                 ui.markdown('NiceGUI is supported by') \
                     .classes('text-2xl md:text-3xl font-medium')
-                if SPONSORS['top']:
-                    with ui.row(align_items='center'):
-                        assert SPONSORS['total'] > 0
-                        ui.markdown(f'''
-                            our top {'sponsor' if len(SPONSORS['top']) == 1 else 'sponsors'}
-                        ''')
+                if SPONSORS['special'] or SPONSORS['top']:
+                    with ui.row().classes('gap-8 justify-center'):
+                        for sponsor in SPONSORS['special']:
+                            with ui.link(target=SPONSORS['special'][sponsor]):
+                                ui.interactive_image(f'/static/sponsors/{sponsor}.png').classes('h-12')
                         for sponsor in SPONSORS['top']:
                             with ui.link(target=f'https://github.com/{sponsor}').classes('row items-center gap-2'):
                                 ui.image(f'https://github.com/{sponsor}.png').classes('w-12 h-12 border')
                                 ui.label(f'@{sponsor}')
                     ui.markdown(f'''
-                        as well as {SPONSORS['total'] - len(SPONSORS['top'])} other [sponsors](https://github.com/sponsors/zauberzeug)
+                        as well as {SPONSORS['normal']} other [sponsors](https://github.com/sponsors/zauberzeug)
                         and {SPONSORS['contributors']} [contributors](https://github.com/zauberzeug/nicegui/graphs/contributors).
                     ''').classes('bold-links arrow-links')
                 else:
                     ui.markdown(f'''
-                        {SPONSORS['total']} [sponsors](https://github.com/sponsors/zauberzeug)
+                        {SPONSORS['normal']} [sponsors](https://github.com/sponsors/zauberzeug)
                         and {SPONSORS['contributors']} [contributors](https://github.com/zauberzeug/nicegui/graphs/contributors).
                     ''').classes('bold-links arrow-links')
             with ui.link(target='https://github.com/sponsors/zauberzeug').style('color: black !important') \
                     .classes('rounded-full mx-auto px-12 py-2 border-2 border-[#3e6a94] font-medium text-lg md:text-xl'):
-                with ui.row().classes('items-center gap-4'):
-                    ui.icon('sym_o_favorite', color='#3e6a94')
-                    ui.label('Become a sponsor').classes('text-[#3e6a94]')
+                with ui.row(wrap=False).classes('items-center gap-4'):
+                    ui.icon('favorite_border', color='#3e6a94')
+                    ui.label('Become a sponsor').classes('text-[#3e6a94] whitespace-nowrap')
 
     with ui.row().classes('dark-box min-h-screen mt-16'):
-        link_target('why')
+        link_target('why', '70px')
         with ui.column().classes('''
                 max-w-[1600px] m-auto
                 py-20 px-8 lg:px-16

@@ -48,6 +48,7 @@ class Number(LabelElement, ValidationElement, DisableableElement):
         """
         self.format = format
         super().__init__(tag='q-input', label=label, value=value, on_value_change=on_change, validation=validation)
+        self._props['for'] = self.html_id
         self._props['type'] = 'number'
         if placeholder is not None:
             self._props['placeholder'] = placeholder
@@ -75,7 +76,6 @@ class Number(LabelElement, ValidationElement, DisableableElement):
             return
         self._props['min'] = value
         self.sanitize()
-        self.update()
 
     @property
     def max(self) -> float:
@@ -88,7 +88,6 @@ class Number(LabelElement, ValidationElement, DisableableElement):
             return
         self._props['max'] = value
         self.sanitize()
-        self.update()
 
     @property
     def precision(self) -> Optional[int]:
@@ -114,7 +113,7 @@ class Number(LabelElement, ValidationElement, DisableableElement):
         value = min(value, self.max)
         if self.precision is not None:
             value = float(round(value, self.precision))
-        self.set_value(float(self.format % value) if self.format else value)
+        self.value = float(self.format % value) if self.format else value
         self.update()
 
     def _event_args_to_value(self, e: GenericEventArguments) -> Any:

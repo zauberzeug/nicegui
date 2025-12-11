@@ -1,12 +1,13 @@
 from __future__ import annotations
 
 import time
+from collections.abc import Callable
 from pathlib import Path
-from typing import List, Optional, Tuple, Union, cast
+from typing import Literal, cast
 
 from typing_extensions import Self
 
-from .. import optional_features
+from .. import helpers, optional_features
 from ..events import GenericEventArguments, Handler, MouseEventArguments, handle_event
 from ..logging import log
 from .image import pil_to_base64
@@ -25,12 +26,13 @@ class InteractiveImage(SourceElement, ContentElement, component='interactive_ima
     PIL_CONVERT_FORMAT = 'PNG'
 
     def __init__(self,
-                 source: Union[str, Path, 'PIL_Image'] = '', *,  # noqa: UP037
+                 source: str | Path | PIL_Image = '', *,
                  content: str = '',
-                 size: Optional[Tuple[float, float]] = None,
-                 on_mouse: Optional[Handler[MouseEventArguments]] = None,
-                 events: List[str] = ['click'],  # noqa: B006
-                 cross: Union[bool, str] = False,
+                 size: tuple[float, float] | None = None,
+                 on_mouse: Handler[MouseEventArguments] | None = None,
+                 events: list[str] = ['click'],  # noqa: B006
+                 cross: bool | str = False,
+                 sanitize: Callable[[str], str] | Literal[False] | None = None,
                  ) -> None:
         """Interactive Image
 
@@ -50,13 +52,20 @@ class InteractiveImage(SourceElement, ContentElement, component='interactive_ima
         You can also pass a tuple of width and height instead of an image source.
         This will create an empty image with the given size.
 
+        Note that since NiceGUI 3.4.0, you need to specify how to ``sanitize`` the SVG content (if any).
+        Especially if you are displaying user input, you should sanitize the content to prevent XSS attacks.
+        We recommend ``Sanitizer().sanitize`` which requires the html-sanitizer package to be installed.
+        If you are not displaying user input, you can pass ``False`` to disable sanitization.
+
         :param source: the source of the image; can be an URL, local file path, a base64 string or just an image size
         :param content: SVG content which should be overlaid; viewport has the same dimensions as the image
         :param size: size of the image (width, height) in pixels; only used if `source` is not set
         :param on_mouse: callback for mouse events (contains image coordinates `image_x` and `image_y` in pixels)
         :param events: list of JavaScript events to subscribe to (default: `['click']`)
         :param cross: whether to show crosshairs or a color string (default: `False`)
+        :param sanitize: a sanitize function to be applied to the content, ``False`` to deactivate sanitization (default ``None``: warns if content is provided, *added in version 3.4.0*)
         """
+        self._sanitize = sanitize
         super().__init__(source=source, content=content)
         self._props['events'] = events[:]
         self._props['cross'] = cross
@@ -65,7 +74,7 @@ class InteractiveImage(SourceElement, ContentElement, component='interactive_ima
         if on_mouse:
             self.on_mouse(on_mouse)
 
-    def set_source(self, source: Union[str, Path, 'PIL_Image']) -> None:  # noqa: UP037
+    def set_source(self, source: str | Path | PIL_Image) -> None:
         return super().set_source(source)
 
     def on_mouse(self, on_mouse: Handler[MouseEventArguments]) -> Self:
@@ -89,7 +98,7 @@ class InteractiveImage(SourceElement, ContentElement, component='interactive_ima
         self.on('mouse', handle_mouse)
         return self
 
-    def _set_props(self, source: Union[str, Path, 'PIL_Image']) -> None:  # noqa: UP037
+    def _set_props(self, source: str | Path | PIL_Image) -> None:
         if optional_features.has('pillow') and isinstance(source, PIL_Image):
             source = pil_to_base64(source, self.PIL_CONVERT_FORMAT)
         super()._set_props(source)
@@ -100,7 +109,6 @@ class InteractiveImage(SourceElement, ContentElement, component='interactive_ima
             log.warning('ui.interactive_image: force_reload() only works with network sources (not base64)')
             return
         self._props['t'] = time.time()
-        self.update()
 
     def add_layer(self, *, content: str = '') -> InteractiveImageLayer:
         """Add a new layer with its own content.
@@ -108,27 +116,49 @@ class InteractiveImage(SourceElement, ContentElement, component='interactive_ima
         *Added in version 2.17.0*
         """
         with self:
-            layer = InteractiveImageLayer(source=self.source, content=content, size=self._props['size']) \
-                .classes('nicegui-interactive-image-layer')
+            layer = InteractiveImageLayer(
+                source=self.source,
+                content=content,
+                size=self._props['size'],
+                sanitize=self._sanitize,
+            ).classes('nicegui-interactive-image-layer')
             self.on('loaded', lambda e: layer.run_method('updateViewbox', e.args['width'], e.args['height']))
             return layer
+
+    def _handle_content_change(self, content: str) -> None:
+        if content and self._sanitize is None:
+            helpers.warn_once('ui.interactive_image: content provided but no explicit sanitize function set; '
+                              'to avoid XSS vulnerabilities, please provide a sanitize function or set sanitize=False')
+        return super()._handle_content_change(self._sanitize(content) if self._sanitize else content)
 
 
 class InteractiveImageLayer(SourceElement, ContentElement, component='interactive_image.js'):
     CONTENT_PROP = 'content'
     PIL_CONVERT_FORMAT = 'PNG'
 
-    def __init__(self, *, source: str, content: str, size: Optional[Tuple[float, float]]) -> None:
+    def __init__(self, *,
+                 source: str,
+                 content: str,
+                 size: tuple[float, float] | None,
+                 sanitize: Callable[[str], str] | Literal[False] | None = None,
+                 ) -> None:
         """Interactive Image Layer
 
         This element is created when adding a layer to an ``InteractiveImage``.
 
         *Added in version 2.17.0*
         """
+        self._sanitize = sanitize
         super().__init__(source=source, content=content)
         self._props['size'] = size
 
-    def _set_props(self, source: Union[str, Path, 'PIL_Image']) -> None:  # noqa: UP037
+    def _set_props(self, source: str | Path | PIL_Image) -> None:
         if optional_features.has('pillow') and isinstance(source, PIL_Image):
             source = pil_to_base64(source, self.PIL_CONVERT_FORMAT)
         super()._set_props(source)
+
+    def _handle_content_change(self, content: str) -> None:
+        if self._sanitize is None:
+            helpers.warn_once('ui.interactive_image layer: content provided but no explicit sanitize function set; '
+                              'to avoid XSS vulnerabilities, please provide a sanitize function or set sanitize=False')
+        return super()._handle_content_change(self._sanitize(content) if self._sanitize else content)

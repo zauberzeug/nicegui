@@ -10,7 +10,7 @@ export default {
         v-on="onUserEvents"
         draggable="false"
       />
-      <svg ref="svg" style="position:absolute;top:0;left:0;pointer-events:none" :viewBox="viewBox">
+      <svg ref="svg" style="position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none" :viewBox="viewBox" preserveAspectRatio="none">
         <g :style="{ display: showCross ? 'block' : 'none' }">
           <line v-if="cross" :x1="x" y1="0" :x2="x" y2="100%" :stroke="cross === true ? 'black' : cross" />
           <line v-if="cross" x1="0" :y1="y" x2="100%" :y2="y" :stroke="cross === true ? 'black' : cross" />
@@ -131,7 +131,7 @@ export default {
     },
     onUserEvents() {
       const events = {};
-      for (const type of this.events) {
+      for (const type of this.events || []) {
         events[type] = (event) => this.onMouseEvent(type, event);
       }
       return events;

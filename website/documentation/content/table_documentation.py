@@ -116,8 +116,6 @@ def table_with_expandable_rows():
     Here is an example of how to show and hide columns in a table.
 ''')
 def show_and_hide_columns():
-    from typing import Dict
-
     columns = [
         {'name': 'name', 'label': 'Name', 'field': 'name', 'required': True, 'align': 'left'},
         {'name': 'age', 'label': 'Age', 'field': 'age', 'sortable': True},
@@ -129,21 +127,45 @@ def show_and_hide_columns():
     ]
     table = ui.table(columns=columns, rows=rows, row_key='name')
 
-    def toggle(column: Dict, visible: bool) -> None:
+    def toggle(column: dict, visible: bool) -> None:
         column['classes'] = '' if visible else 'hidden'
         column['headerClasses'] = '' if visible else 'hidden'
         table.update()
 
     with ui.button(icon='menu'):
         with ui.menu(), ui.column().classes('gap-0 p-2'):
-            for column in columns:
+            for column in table.columns:
                 ui.switch(column['label'], value=True, on_change=lambda e,
                           column=column: toggle(column, e.value))
 
 
+@doc.demo('Table with buttons', '''
+    You can add buttons to the table cells using a named slot "body-cell-[name]".
+    In this example, we add a button to the "action" column.
+    When the button is clicked, a custom "notify" event is emitted with the row as argument.
+    The "notify" event is handled by a lambda function, which emits a notification with the name of the row.
+''')
+def table_with_buttons():
+    columns = [
+        {'name': 'name', 'label': 'Name', 'field': 'name'},
+        {'name': 'action', 'label': 'Action', 'align': 'center'},
+    ]
+    rows = [
+        {'name': 'Alice'},
+        {'name': 'Bob'},
+    ]
+    table = ui.table(columns=columns, rows=rows)
+    table.add_slot('body-cell-action', '''
+        <q-td :props="props">
+            <q-btn label="Notify" @click="() => $parent.$emit('notify', props.row)" flat />
+        </q-td>
+    ''')
+    table.on('notify', lambda e: ui.notify(f'Hi {e.args["name"]}!'))
+
+
 @doc.demo('Table with drop down selection', '''
     Here is an example of how to use a drop down selection in a table.
-    After emitting a `rename` event from the scoped slot, the `rename` function updates the table rows.
+    After emitting a "rename" event from the scoped slot, the `rename` function updates the table rows.
 ''')
 def table_with_drop_down_selection():
     from nicegui import events
@@ -203,15 +225,15 @@ def table_from_polars_demo():
 
 
 @doc.demo('Adding rows', '''
-    It's simple to add new rows with the `add_row(dict)` and `add_rows(list[dict])` methods.
+    It's simple to add new rows by updating the `rows` property.
     With the "virtual-scroll" prop set, the table can be programmatically scrolled with the `scrollTo` JavaScript function.
 ''')
 def adding_rows():
     from datetime import datetime
 
     def add():
-        table.add_row({'date': datetime.now().strftime('%c')})
-        table.run_method('scrollTo', len(table.rows)-1)
+        table.rows.append({'date': datetime.now().strftime('%c')})
+        table.run_method('scrollTo', len(table.rows) - 1)
 
     columns = [{'name': 'date', 'label': 'Date', 'field': 'date'}]
     table = ui.table(columns=columns, rows=[]).classes('h-52').props('virtual-scroll')

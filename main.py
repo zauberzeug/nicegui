@@ -1,20 +1,32 @@
 #!/usr/bin/env python3
 import os
 from pathlib import Path
-from typing import Optional
 
-from fastapi import HTTPException, Request
-from fastapi.responses import RedirectResponse
+from fastapi import Request
+from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
 from starlette.middleware.sessions import SessionMiddleware
+from starlette.responses import Response
 
-from nicegui import app, ui
-from website import anti_scroll_hack, documentation, fly, imprint_privacy, main_page, svg
+from nicegui import app, core, ui
+from nicegui.page_arguments import RouteMatch
+from website import documentation, examples_page, fly, header, imprint_privacy, main_page, rate_limits, svg
+
+
+@app.add_middleware
+class DocsSetCacheControlMiddleware(BaseHTTPMiddleware):
+
+    async def dispatch(self, request: Request, call_next: RequestResponseEndpoint) -> Response:
+        response = await call_next(request)
+        if request.url.path.startswith('/fonts/') or request.url.path.startswith('/static/'):
+            response.headers['Cache-Control'] = core.app.config.cache_control_directives
+        return response
+
 
 # session middleware is required for demo in documentation
 app.add_middleware(SessionMiddleware, secret_key=os.environ.get('NICEGUI_SECRET_KEY', ''))
+rate_limits.setup()
 
 on_fly = fly.setup()
-anti_scroll_hack.setup()
 
 app.add_static_files('/favicon', str(Path(__file__).parent / 'website' / 'favicon'))
 app.add_static_files('/fonts', str(Path(__file__).parent / 'website' / 'fonts'))
@@ -31,29 +43,69 @@ async def _post_dark_mode(request: Request) -> None:
     app.storage.browser['dark_mode'] = (await request.json()).get('value')
 
 
+class custom_sub_pages(ui.sub_pages):
+    def _render_page(self, match: RouteMatch) -> bool:
+        if match.path == '/' and match.remaining_path:
+            return False
+        return super()._render_page(match)
+
+
 @ui.page('/')
-def _main_page() -> None:
-    main_page.create()
-
-
+@ui.page('/examples')
 @ui.page('/documentation')
-def _documentation_page() -> None:
-    documentation.render_page(documentation.registry[''], with_menu=False)
+@ui.page('/documentation/{path:path}')
+@ui.page('/imprint_privacy')
+def _main_page() -> None:
+    ui.context.client.content.classes('p-0 gap-0')
+    header.add_head_html()
+
+    with ui.left_drawer() \
+            .classes('column no-wrap gap-1 bg-[#eee] dark:bg-[#1b1b1b] mt-[-20px] px-8 py-20') \
+            .style('height: calc(100% + 20px) !important') as menu:
+        tree = ui.tree(documentation.tree.nodes, label_key='title',
+                       on_select=lambda e: ui.navigate.to(f'/documentation/{e.value}')) \
+            .classes('w-full').props('accordion no-connectors no-selection-unset')
+    menu_button = header.add_header(menu)
+
+    window_state = {'is_desktop': None}
+    ui.on('is_desktop', lambda v: window_state.update(is_desktop=v.args))
+    ui.add_head_html('''
+        <script>
+            const mediaQuery = window.matchMedia('(min-width: 1024px)');
+            mediaQuery.addEventListener('change', e => emitEvent('is_desktop', e.matches));
+            window.addEventListener('load', () => emitEvent('is_desktop', mediaQuery.matches));
+        </script>
+    ''')
+
+    custom_sub_pages({
+        '/': main_page.create,
+        '/examples': examples_page.create,
+        '/documentation': lambda: documentation.render_page(documentation.registry['']),
+        '/documentation/{name}': lambda name: _documentation_detail_page(name, tree),
+        '/imprint_privacy': imprint_privacy.create,
+    }, show_404=False).classes('w-full')
+
+    def _update_menu(path: str):
+        if path.startswith('/documentation/'):
+            menu_button.visible = True
+            if window_state['is_desktop'] is not None:
+                menu.value = window_state['is_desktop']
+        else:
+            menu_button.visible = False
+            menu.value = False
+    ui.context.client.sub_pages_router.on_path_changed(_update_menu)
+    _update_menu(ui.context.client.sub_pages_router.current_path)
 
 
-@ui.page('/documentation/{name}')
-def _documentation_detail_page(name: str) -> Optional[RedirectResponse]:
+def _documentation_detail_page(name: str, tree: ui.tree) -> None:
+    tree.props.update(expanded=documentation.tree.ancestors(name))
+    tree.update()
     if name in documentation.registry:
         documentation.render_page(documentation.registry[name])
-        return None
-    if name in documentation.redirects:
-        return RedirectResponse(documentation.redirects[name])
-    raise HTTPException(404, f'documentation for "{name}" could not be found')
-
-
-@ui.page('/imprint_privacy')
-def _imprint_privacy() -> None:
-    imprint_privacy.create()
+    elif name in documentation.redirects:
+        ui.navigate.to('/documentation/' + documentation.redirects[name])
+    else:
+        ui.label(f'Documentation for "{name}" could not be found.').classes('absolute-center')
 
 
 @app.get('/status')

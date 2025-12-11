@@ -3,8 +3,10 @@ from nicegui.testing import Screen
 
 
 def test_time(screen: Screen):
-    t = ui.time(value='01:23')
-    ui.label().bind_text_from(t, 'value')
+    @ui.page('/')
+    def page():
+        t = ui.time(value='01:23')
+        ui.label().bind_text_from(t, 'value')
 
     screen.open('/')
     screen.should_contain('01:23')

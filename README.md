@@ -117,6 +117,9 @@ If you would like to support this project and have your avatar or company logo a
   <a href="https://github.com/sereneturtlefox"><img src="https://github.com/sereneturtlefox.png" width="50px" alt="None" /></a>
   <a href="https://github.com/whoulden"><img src="https://github.com/whoulden.png" width="50px" alt="Wayne Houlden" /></a>
   <a href="https://github.com/digiquip"><img src="https://github.com/digiquip.png" width="50px" alt="DigiQuip AS" /></a>
+  <a href="https://github.com/aitech95"><img src="https://github.com/aitech95.png" width="50px" alt="JACOB SHI " /></a>
+  <a href="https://github.com/Christian-D-Bock"><img src="https://github.com/Christian-D-Bock.png" width="50px" alt="Christian Bock" /></a>
+  <a href="https://github.com/LambdaTest-Inc"><img src="https://github.com/LambdaTest-Inc.png" width="50px" alt="LambdaTest" /></a>
 </p>
 <!-- SPONSORS -->
 
@@ -136,3 +139,15 @@ If you have any questions or need help with anything, please don't hesitate to r
 ## Included Web Dependencies
 
 See [DEPENDENCIES.md](https://github.com/zauberzeug/nicegui/blob/main/DEPENDENCIES.md) for a list of web frameworks NiceGUI depends on.
+
+## Architecture
+
+NiceGUI is a Python framework for building web UIs with a **backend-first philosophy**.
+Key architectural decisions:
+
+- **Backend-first**: All UI logic lives in Python; the framework handles web details
+- **Tech stack**: Python/FastAPI backend, Vue/Quasar frontend, socket.io for communication
+- **Single worker**: Uses one uvicorn worker (thanks to full async support, no multi-process synchronization needed)
+- **Real-time communication**: WebSocket connection is established after initial page load, kept open for client-server communication
+- **User interactions**: All UI events are sent to backend and invoke Python functions, which can then generate UI updates
+- **Outbox**: Accumulates UI updates and sends them in batches to the client

@@ -1,0 +1,41 @@
+name: Publish to PyPI
+
+on:
+  workflow_call:
+    inputs:
+      version:
+        description: "Version to publish (e.g., 1.2.3)"
+        required: true
+        type: string
+
+jobs:
+  pypi:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+          cache-dependency-glob: "uv.lock"
+      - name: Install Python
+        run: uv python install
+      - name: Build and publish
+        run: |
+          uv build
+          uv publish --token ${{ secrets.PYPI_API_TOKEN }}
+      - uses: softprops/action-gh-release@v2
+        with:
+          draft: true
+          prerelease: ${{ contains(inputs.version, 'rc') }}
+          name: v${{ inputs.version }}
+          tag_name: v${{ inputs.version }}
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+      - name: Verify PyPI package
+        run: |
+          for i in {1..100}
+          do
+            sleep 2
+            python -m pip install "nicegui==${{ inputs.version }}" && break
+          done
+          sleep 5
