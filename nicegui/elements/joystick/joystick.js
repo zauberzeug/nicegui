@@ -1,11 +1,8 @@
-<template>
-  <div><div></div></div>
-</template>
+import { nipplejs } from "nicegui-joystick";
 
-<script>
 export default {
-  async mounted() {
-    const { nipplejs } = await import("nicegui-joystick");
+  template: "<div><div></div></div>",
+  mounted() {
     const joystick = nipplejs.create({
       zone: this.$el.children[0],
       position: { left: "50%", top: "50%" },
@@ -20,12 +17,3 @@ export default {
     options: Object,
   },
 };
-</script>
-
-<style scoped>
-:scope > div {
-  width: 100%;
-  height: 100%;
-  position: relative;
-}
-</style>
