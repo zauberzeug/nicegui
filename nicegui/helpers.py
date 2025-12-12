@@ -48,10 +48,10 @@ def honor_default_props(original_func):
     """
     @functools.wraps(original_func)
     def decorated(*args, **kwargs):
-        element: Element = args[0] if args else kwargs['self']
-
         bound = inspect.signature(original_func).bind(*args, **kwargs)
         bound.apply_defaults()
+
+        element: Element = bound.arguments['self']
 
         return original_func(**{
             param_name: (element._default_props.get(value.prop_key, value.default_value)  # pylint: disable=protected-access
