@@ -1,6 +1,7 @@
+import pytest
 from selenium.webdriver.common.by import By
 
-from nicegui import ui
+from nicegui import dependencies, ui
 from nicegui.testing import Screen
 
 
@@ -21,10 +22,14 @@ def test_markdown(screen: Screen):
     assert element.get_attribute('innerHTML') == 'New <strong>content</strong>'
 
 
-def test_markdown_with_mermaid(screen: Screen):
+@pytest.mark.parametrize('using_pack', [False, True])
+def test_markdown_with_mermaid(screen: Screen, using_pack: bool):
+    if not using_pack:
+        dependencies.packed_js_components.clear()
+
     m = None
 
-    @ui.page('/')
+    @ui.page('/' if using_pack else '/avoid_packing')
     def page():
         nonlocal m
         m = ui.markdown('''
@@ -44,7 +49,9 @@ def test_markdown_with_mermaid(screen: Screen):
             ```
         '''))
 
-    screen.open('/')
+    screen.open('/' if using_pack else '/avoid_packing')
+    assert any('component_pack' in line and 'markdown' in line
+               for line in screen.selenium.page_source.splitlines()) == using_pack
     screen.wait(1.0)  # wait for Mermaid to render
     screen.should_contain('Mermaid')
     assert screen.find_by_tag('svg').get_attribute('id') == f'{m.html_id}_mermaid_0'

@@ -1,12 +1,16 @@
 import pytest
 from selenium.webdriver.common.by import By
 
-from nicegui import ui
+from nicegui import dependencies, ui
 from nicegui.testing import Screen
 
 
-def test_mermaid(screen: Screen):
-    @ui.page('/')
+@pytest.mark.parametrize('using_pack', [False, True])
+def test_mermaid(screen: Screen, using_pack: bool):
+    if not using_pack:
+        dependencies.packed_js_components.clear()
+
+    @ui.page('/' if using_pack else '/avoid_packing')
     def page():
         m = ui.mermaid('''
             graph TD;
@@ -17,7 +21,9 @@ def test_mermaid(screen: Screen):
                 Node_C --> Node_D;
         '''))
 
-    screen.open('/')
+    screen.open('/' if using_pack else '/avoid_packing')
+    assert any('component_pack' in line and 'mermaid' in line
+               for line in screen.selenium.page_source.splitlines()) == using_pack
     node_a = screen.selenium.find_element(By.XPATH, '//span[p[contains(text(), "Node_A")]]')
     assert node_a.get_attribute('class') == 'nodeLabel'
 
