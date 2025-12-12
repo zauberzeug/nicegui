@@ -28,7 +28,7 @@ def add_header(menu: ui.left_drawer) -> ui.button:
         'Features': '/#features',
         'Demos': '/#demos',
         'Documentation': '/documentation',
-        'Examples': '/#examples',
+        'Examples': '/examples',
         'Why?': '/#why',
     }
     dark_mode = ui.dark_mode(value=app.storage.browser.get('dark_mode'), on_change=lambda e: ui.run_javascript(f'''

@@ -151,21 +151,22 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
         if not relative_path.startswith('/'):
             relative_path = '/' + relative_path
         segments = relative_path.split('/')
+        query_params: QueryParams | None = None
         while segments:
             path = '/'.join(segments)
             if not path:
                 path = '/'
-            match = self._match_route(path)
+            match, query_params = self._match_route(path, query_params)
             if match is not None:
                 match.remaining_path = urlparse(relative_path).path.rstrip('/')[len(match.path):]
                 break
             segments.pop()
         return match
 
-    def _match_route(self, path: str) -> RouteMatch | None:
+    def _match_route(self, path: str, query_params: QueryParams | None) -> tuple[RouteMatch | None, QueryParams | None]:
         parsed_url = urlparse(path)
         path_only = parsed_url.path.rstrip('/')
-        query_params = QueryParams(parsed_url.query) if parsed_url.query else QueryParams()
+        query_params = query_params or QueryParams(parsed_url.query)
         fragment = parsed_url.fragment
         if not path_only.startswith('/'):
             path_only = '/' + path_only
@@ -180,8 +181,8 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
                     parameters=parameters,
                     query_params=query_params,
                     fragment=fragment,
-                )
-        return None
+                ), query_params
+        return None, query_params
 
     @staticmethod
     def _match_path(pattern: str, path: str) -> dict[str, str] | None:
