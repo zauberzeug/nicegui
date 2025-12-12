@@ -46,25 +46,17 @@ def honor_default_props(original_func):
     the actual value will be taken from the element's ``_default_props`` dictionary with key ``prop_key`` if present,
     otherwise the specified ``default_value`` is used.
     """
-    sig = inspect.signature(original_func)
-
     @functools.wraps(original_func)
     def decorated(*args, **kwargs):
-        inferred_self: Element = args[0] if args else kwargs['self']
+        element: Element = args[0] if args else kwargs['self']
 
-        def _honor_default_props(default_prop: DEFAULT_PROPS) -> Any:
-            return inferred_self._default_props.get(default_prop.prop_key, default_prop.default_value)  # pylint: disable=protected-access
-
-        bound_with_defaults = sig.bind(*args, **kwargs)
-        bound_with_defaults.apply_defaults()
+        bound = inspect.signature(original_func).bind(*args, **kwargs)
+        bound.apply_defaults()
 
         return original_func(**{
-            param_name: (
-                _honor_default_props(bound_with_defaults.arguments[param_name])
-                if isinstance(bound_with_defaults.arguments[param_name], DEFAULT_PROPS)
-                else bound_with_defaults.arguments[param_name]
-            )
-            for param_name in sig.parameters
+            param_name: (element._default_props.get(value.prop_key, value.default_value)  # pylint: disable=protected-access
+                         if isinstance(value, DEFAULT_PROPS) else value)
+            for param_name, value in bound.arguments.items()
         })
 
     return decorated
