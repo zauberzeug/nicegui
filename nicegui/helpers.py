@@ -42,8 +42,9 @@ class DEFAULT_PROPS:
 def honor_default_props(original_func):
     """This decorator makes the function honor default properties set via `default_props`.
 
-    If a parameter is type-hinted with `Union[..., DEFAULT_PROPS]` and is not provided when calling the function,
-    then we pass `DEFAULT_PROPS` to the original function, which should handle it accordingly.
+    If a parameter has a default value which looks like ``DEFAULT_PROPS('prop_key') | default_value``,
+    the actual value will be taken from the element's ``_default_props`` dictionary with key ``prop_key`` if present,
+    otherwise the specified ``default_value`` is used.
     """
     sig = inspect.signature(original_func)
 
