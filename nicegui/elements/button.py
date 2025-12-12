@@ -3,10 +3,8 @@ from typing import Optional
 
 from typing_extensions import Self
 
-from nicegui.helpers import DEFAULT_PROPS
-
 from ..events import ClickEventArguments, Handler, handle_event
-from ..helpers import honor_default_props
+from ..helpers import DEFAULT_PROPS, honor_default_props
 from .mixins.color_elements import BackgroundColorElement
 from .mixins.disableable_element import DisableableElement
 from .mixins.icon_element import IconElement
