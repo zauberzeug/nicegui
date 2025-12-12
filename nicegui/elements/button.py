@@ -1,5 +1,5 @@
 import asyncio
-from typing import Optional, Union
+from typing import Optional
 
 from typing_extensions import Self
 
@@ -19,7 +19,7 @@ class Button(IconElement, TextElement, DisableableElement, BackgroundColorElemen
     def __init__(self,
                  text: str = '', *,
                  on_click: Optional[Handler[ClickEventArguments]] = None,
-                 color: Union[Optional[str], DEFAULT_PROPS['color']] = 'primary',  # type: ignore # noqa: F821
+                 color: Optional[str] = DEFAULT_PROPS('color') | 'primary',
                  icon: Optional[str] = None,
                  ) -> None:
         """Button
@@ -36,7 +36,6 @@ class Button(IconElement, TextElement, DisableableElement, BackgroundColorElemen
         :param color: the color of the button (either a Quasar, Tailwind, or CSS color or `None`, default: 'primary')
         :param icon: the name of an icon to be displayed on the button (default: `None`)
         """
-        color = self.handle_default_props(color, 'color', 'primary')
         super().__init__(tag='q-btn', text=text, background_color=color, icon=icon)
 
         if on_click:

@@ -13,7 +13,7 @@ import webbrowser
 from collections.abc import Callable
 from inspect import Parameter, signature
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Union
+from typing import TYPE_CHECKING, Any
 
 from .context import context
 from .logging import log
@@ -30,9 +30,13 @@ else:
 
 
 class DEFAULT_PROPS:
-    @classmethod
-    def __class_getitem__(cls, _):
-        return cls
+    def __init__(self, prop_key: str) -> None:
+        self.prop_key = prop_key
+        self.default_value = None
+
+    def __or__(self, other: Any) -> Any:  # Intentional Any type
+        self.default_value = other
+        return self
 
 
 def honor_default_props(original_func):
@@ -41,29 +45,23 @@ def honor_default_props(original_func):
     If a parameter is type-hinted with `Union[..., DEFAULT_PROPS]` and is not provided when calling the function,
     then we pass `DEFAULT_PROPS` to the original function, which should handle it accordingly.
     """
-    default_props_args = set()
-    for name, annotation in original_func.__annotations__.items():
-        if getattr(annotation, '__origin__', None) is Union:
-            for arg in annotation.__args__:
-                if arg is DEFAULT_PROPS:
-                    default_props_args.add(name)
-
     sig = inspect.signature(original_func)
 
     @functools.wraps(original_func)
     def decorated(*args, **kwargs):
-        bound_partial = sig.bind_partial(*args, **kwargs)
+        inferred_self: Element = args[0] if args else kwargs['self']
+
+        def _honor_default_props(default_prop: DEFAULT_PROPS) -> Any:
+            return inferred_self._default_props.get(default_prop.prop_key, default_prop.default_value)  # pylint: disable=protected-access
 
         bound_with_defaults = sig.bind(*args, **kwargs)
         bound_with_defaults.apply_defaults()
 
         return original_func(**{
             param_name: (
-                bound_partial.arguments[param_name]
-                if param_name in bound_partial.arguments  # Explicitly provided
-                else DEFAULT_PROPS
-                if param_name in default_props_args  # Not provided, is DEFAULT_PROPS arg
-                else bound_with_defaults.arguments[param_name]  # Fallback
+                _honor_default_props(bound_with_defaults.arguments[param_name])
+                if isinstance(bound_with_defaults.arguments[param_name], DEFAULT_PROPS)
+                else bound_with_defaults.arguments[param_name]
             )
             for param_name in sig.parameters
         })
