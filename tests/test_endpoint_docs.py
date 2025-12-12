@@ -45,6 +45,8 @@ def test_endpoint_documentation_internal_only(screen: Screen):
     assert get_openapi_paths() == {
         f'/_nicegui/{__version__}/libraries/{{key}}',
         f'/_nicegui/{__version__}/components/{{key}}',
+        f'/_nicegui/{__version__}/component_pack/_/{{keys}}',
+        f'/_nicegui/{__version__}/umd_pack/{{keys}}',
         f'/_nicegui/{__version__}/resources/{{key}}/{{path}}',
         f'/_nicegui/{__version__}/dynamic_resources/{{name}}',
         f'/_nicegui/{__version__}/esm/{{key}}/{{path}}',
@@ -63,6 +65,8 @@ def test_endpoint_documentation_all(screen: Screen):
         '/',
         f'/_nicegui/{__version__}/libraries/{{key}}',
         f'/_nicegui/{__version__}/components/{{key}}',
+        f'/_nicegui/{__version__}/component_pack/_/{{keys}}',
+        f'/_nicegui/{__version__}/umd_pack/{{keys}}',
         f'/_nicegui/{__version__}/resources/{{key}}/{{path}}',
         f'/_nicegui/{__version__}/dynamic_resources/{{name}}',
         f'/_nicegui/{__version__}/esm/{{key}}/{{path}}',
