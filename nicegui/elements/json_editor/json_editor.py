@@ -13,7 +13,7 @@ from ...events import (
 )
 
 
-class JsonEditor(Element, component='json_editor.js', esm={'nicegui-json-editor': 'dist'}):
+class JsonEditor(Element, component='json_editor.js', esm={'nicegui-json-editor': 'dist', 'nicegui-ajv-formats': 'dist2'}):
 
     def __init__(self,
                  properties: dict, *,
