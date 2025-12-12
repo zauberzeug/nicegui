@@ -90,6 +90,11 @@ def _get_component(key: str) -> Response:
 def _get_component_pack(keys: str) -> Response:
     def _to_named_export(script: str, name: str) -> str:
         return script.replace('export default', f'export const pack_{name} =', 1)
+
+    def _hoist_and_deduplicate(response: str, line: str) -> str:
+        if line in response:
+            return line + response.replace(line, '')
+        return response
     response = ''
     for key_escaped in keys.split(','):
         key = key_escaped.replace(':', '/')
@@ -102,6 +107,10 @@ def _get_component_pack(keys: str) -> Response:
         else:
             response += '/* Component not found: ' + key + ' */\n'
     if response:
+        response = _hoist_and_deduplicate(
+            response, 'import { loadResource } from "../../static/utils/resources.js";\n')
+        response = _hoist_and_deduplicate(
+            response, 'import { convertDynamicProperties } from "../../static/utils/dynamic_properties.js";\n')
         return Response(response, media_type='text/javascript')
     raise HTTPException(status_code=404)
 
