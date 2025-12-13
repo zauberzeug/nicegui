@@ -116,6 +116,22 @@ class Number(LabelElement, ValidationElement, DisableableElement):
         self.value = float(self.format % value) if self.format else value
         self.update()
 
+    def set_prefix(self, text: Optional[str]) -> None:
+        """
+        Set the prefix.
+
+        :param text: the content of the prefix.
+        """
+        self._props['prefix'] = text
+
+    def set_suffix(self, text: Optional[str]) -> None:
+        """
+        Set the suffix.
+
+        :param text: the content of the suffix.
+        """
+        self._props['suffix'] = text
+
     def _event_args_to_value(self, e: GenericEventArguments) -> Any:
         if not e.args:
             return None
