@@ -157,7 +157,7 @@ class Client:
             'next_message_id': self.outbox.next_message_id,
         }
         vue_html, vue_styles, vue_scripts, imports, js_imports, js_imports_urls = \
-            generate_resources(prefix, self.elements.values())
+            generate_resources(prefix, self.elements.values(), add_to_pack=self.page.path == '/')
         return templates.TemplateResponse(
             request=request,
             name='index.html',

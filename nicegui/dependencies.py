@@ -72,6 +72,8 @@ resources: dict[str, Resource] = {}
 dynamic_resources: dict[str, DynamicResource] = {}
 esm_modules: dict[str, EsmModule] = {}
 
+packed_js_components: set[tuple[str, str, bool]] = set()
+
 
 def register_vue_component(path: Path, *, max_time: float | None) -> Component:
     """Register a .vue or .js Vue component.
@@ -154,12 +156,13 @@ def _get_name(path: Path) -> str:
     return path.name.split('.', 1)[0]
 
 
-def generate_resources(prefix: str, elements: Iterable[Element]) -> tuple[list[str],
-                                                                          list[str],
-                                                                          list[str],
-                                                                          dict[str, str],
-                                                                          list[str],
-                                                                          list[str]]:
+def generate_resources(prefix: str, elements: Iterable[Element], *,
+                       add_to_pack: bool = False) -> tuple[list[str],
+                                                           list[str],
+                                                           list[str],
+                                                           dict[str, str],
+                                                           list[str],
+                                                           list[str]]:
     """Generate the resources required by the elements to be sent to the client."""
     done_libraries: set[str] = set()
     done_components: set[str] = set()
@@ -172,7 +175,7 @@ def generate_resources(prefix: str, elements: Iterable[Element]) -> tuple[list[s
         'immutable': f'{prefix}/_nicegui/{__version__}/static/immutable.es.js',
     }
     js_imports: list[str] = []
-    js_imports_urls: list[str] = [imports['vue']]
+    js_imports_urls: list[str] = [imports['vue'], f'{prefix}/_nicegui/{__version__}/static/utils/resources.js']
 
     # build the importmap structure for libraries
     for key, library in libraries.items():
@@ -185,15 +188,33 @@ def generate_resources(prefix: str, elements: Iterable[Element]) -> tuple[list[s
         imports[f'{esm_module.name}'] = f'{prefix}/_nicegui/{__version__}/esm/{key}/index.js'
         imports[f'{esm_module.name}/'] = f'{prefix}/_nicegui/{__version__}/esm/{key}/'
 
+    # Pack the always-loaded Vue components
+    for _, vue_component in vue_components.items():
+        packed_js_components.add((vue_component.key, vue_component.name, True))
+
+    # Pack the JS components if add_to_pack is True
+    for element in elements if add_to_pack else []:
+        if element.component:
+            packed_js_components.add((element.component.key, element.component.name, False))
+
+    # Add the packed components to the imports
+    if packed_js_components:
+        sorted_packs = sorted(packed_js_components, key=lambda x: x[1])
+        keys = [key for key, _, _ in sorted_packs]
+        names = [name for _, name, _ in sorted_packs]
+        url = f'{prefix}/_nicegui/{__version__}/component_pack/_/{",".join(x.replace("/", ":") for x in keys)}'
+        js_imports.append(f'import {{ {", ".join("pack_" + name for name in names)} }} from "{url}";')
+        for _, name, vue in sorted_packs:
+            if vue:
+                js_imports.append(f"pack_{name}.template = '#tpl-{name}';")
+            js_imports.append(f'app.component("nicegui-{name}", pack_{name});')
+            js_imports.append(f'loaded_components.add("{name}");')
+        js_imports_urls.append(url)
+
     # build the none-optimized component (i.e. the Vue component)
     for key, vue_component in vue_components.items():
         if key not in done_components:
             vue_html.append(vue_component.html)
-            url = f'{prefix}/_nicegui/{__version__}/components/{vue_component.key}'
-            js_imports.append(f'import {{ default as {vue_component.name} }} from "{url}";')
-            js_imports.append(f"{vue_component.name}.template = '#tpl-{vue_component.name}';")
-            js_imports.append(f'app.component("{vue_component.tag}", {vue_component.name});')
-            js_imports_urls.append(url)
             vue_styles.append(vue_component.style)
             done_components.add(key)
 
@@ -201,10 +222,12 @@ def generate_resources(prefix: str, elements: Iterable[Element]) -> tuple[list[s
     for element in elements:
         if element.component:
             js_component = element.component
-            if js_component.key not in done_components and js_component.path.suffix.lower() == '.js':
+            if js_component.key not in done_components and js_component.path.suffix.lower() == '.js' \
+                    and (js_component.key, js_component.name, False) not in packed_js_components:
                 url = f'{prefix}/_nicegui/{__version__}/components/{js_component.key}'
-                js_imports.append(f'import {{ default as {js_component.name} }} from "{url}";')
-                js_imports.append(f'app.component("{js_component.tag}", {js_component.name});')
+                js_imports.append(f'import {{ default as pack_{js_component.name} }} from "{url}";')
                 js_imports_urls.append(url)
+                js_imports.append(f'app.component("{js_component.tag}", pack_{js_component.name});')
+                js_imports.append(f'loaded_components.add("{js_component.name}");')
                 done_components.add(js_component.key)
     return vue_html, vue_styles, vue_scripts, imports, js_imports, js_imports_urls

@@ -34,6 +34,13 @@
     <script type="importmap">
       {"imports": {{ imports | safe }}}
     </script>
+    {% if prod_js %}
+    <link
+      rel="preload"
+      as="script"
+      href="{{ prefix | safe }}/_nicegui/{{version}}/umd_pack/quasar.umd.prod.js,socket.io.min.js,nicegui.js{% if tailwind %},tailwindcss.min.js{% endif %}"
+    />
+    {% endif %}
     <script>
       addStyle = (c) => document.head.append(Object.assign(document.createElement("style"), { textContent: c }));
     </script>
@@ -50,20 +57,23 @@
     {% endif %}
   </head>
   <body>
-    <script defer src="{{ prefix | safe }}/_nicegui/{{version}}/static/socket.io.min.js"></script>
-    {% if tailwind %}
-    <script defer src="{{ prefix | safe }}/_nicegui/{{version}}/static/tailwindcss.min.js"></script>
-    {% endif %}
     <script type="module">
       import * as Vue from "vue";
       globalThis.Vue = Vue;
     </script>
     {% if prod_js %}
-    <script defer src="{{ prefix | safe }}/_nicegui/{{version}}/static/quasar.umd.prod.js"></script>
+    <script
+      defer
+      src="{{ prefix | safe }}/_nicegui/{{version}}/umd_pack/quasar.umd.prod.js,socket.io.min.js,nicegui.js{% if tailwind %},tailwindcss.min.js{% endif %}"
+    ></script>
     {% else %}
-    <script defer src="{{ prefix | safe }}/_nicegui/{{version}}/static/quasar.umd.js"></script>
+    <script defer src="{{ prefix | safe }}/_nicegui/{{version}}/static/socket.io.min.js"></script>
+    {% if tailwind %}
+    <script defer src="{{ prefix | safe }}/_nicegui/{{version}}/static/tailwindcss.min.js"></script>
     {% endif %}
+    <script defer src="{{ prefix | safe }}/_nicegui/{{version}}/static/quasar.umd.js"></script>
     <script defer src="{{ prefix | safe }}/_nicegui/{{version}}/static/nicegui.js"></script>
+    {% endif %}
 
     <script defer src="{{ prefix | safe }}/_nicegui/{{version}}/static/lang/{{ language }}.umd.prod.js"></script>
     {{ body_html | safe }}
