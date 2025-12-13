@@ -34,7 +34,7 @@ jobs:
         run: uv sync
       - uses: nanasess/setup-chromedriver@v2.3.0
         with:
-          chromedriver-version: '142.0.6367.60'
+          chromedriver-version: '142.0.7444.175'
       - name: ${{ matrix.python }} / ${{ matrix.scope }}
         if: matrix.scope == 'pytest'
         run: uv run pytest
