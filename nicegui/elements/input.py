@@ -48,8 +48,8 @@ class Input(LabelElement, ValidationElement, DisableableElement, component='inpu
         :param value: the current value of the text input
         :param password: whether to hide the input (default: False)
         :param password_toggle_button: whether to show a button to toggle the password visibility (default: False)
-        :param prefix: a prefix to prepend to the displayed value
-        :param suffix: a suffix to append to the displayed value
+        :param prefix: a prefix to prepend to the displayed value (*added in version 3.5.0*)
+        :param suffix: a suffix to append to the displayed value (*added in version 3.5.0*)
         :param on_change: callback to execute when the value changes
         :param autocomplete: optional list of strings for autocompletion
         :param validation: dictionary of validation rules or a callable that returns an optional error message (default: None for no validation)
@@ -80,16 +80,18 @@ class Input(LabelElement, ValidationElement, DisableableElement, component='inpu
         self._props['_autocomplete'] = autocomplete
 
     def set_prefix(self, text: Optional[str]) -> None:
-        """
-        Set the prefix.
+        """Set the prefix.
+
+        *Added in version 3.5.0*
 
         :param text: the content of the prefix.
         """
         self._props['prefix'] = text
 
     def set_suffix(self, text: Optional[str]) -> None:
-        """
-        Set the suffix.
+        """Set the suffix.
+
+        *Added in version 3.5.0*
 
         :param text: the content of the suffix.
         """

@@ -117,16 +117,18 @@ class Number(LabelElement, ValidationElement, DisableableElement):
         self.update()
 
     def set_prefix(self, text: Optional[str]) -> None:
-        """
-        Set the prefix.
+        """Set the prefix.
+
+        *Added in version 3.5.0*
 
         :param text: the content of the prefix.
         """
         self._props['prefix'] = text
 
     def set_suffix(self, text: Optional[str]) -> None:
-        """
-        Set the suffix.
+        """Set the suffix.
+
+        *Added in version 3.5.0*
 
         :param text: the content of the suffix.
         """
