@@ -12,7 +12,7 @@ import webbrowser
 from collections.abc import Callable
 from inspect import Parameter, signature
 from pathlib import Path
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, TypeVar
 
 from .context import context
 from .logging import log
@@ -27,15 +27,17 @@ if sys.version_info < (3, 13):
 else:
     from inspect import iscoroutinefunction
 
+T = TypeVar('T')
+
 
 class DEFAULT_PROPS:
     def __init__(self, prop_key: str) -> None:
         self.prop_key = prop_key
         self.default_value = None
 
-    def __or__(self, other: Any) -> Any:  # Intentional Any type
-        self.default_value = other
-        return self
+    def __or__(self, other: T) -> T:
+        self.default_value = other  # type: ignore[assignment]
+        return self  # type: ignore[return-value]
 
 
 def honor_default_props(original_func):
