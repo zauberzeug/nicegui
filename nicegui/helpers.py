@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import functools
 import hashlib
-import inspect
 import os
 import socket
 import struct
@@ -40,15 +39,17 @@ class DEFAULT_PROPS:
 
 
 def honor_default_props(original_func):
-    """This decorator makes the function honor default properties set via `default_props`.
+    """This decorator makes the function honor default properties set via ``default_props``.
 
     If a parameter has a default value which looks like ``DEFAULT_PROPS('prop_key') | default_value``,
     the actual value will be taken from the element's ``_default_props`` dictionary with key ``prop_key`` if present,
     otherwise the specified ``default_value`` is used.
     """
+    original_signature = signature(original_func)
+
     @functools.wraps(original_func)
     def decorated(*args, **kwargs):
-        bound = inspect.signature(original_func).bind(*args, **kwargs)
+        bound = original_signature.bind(*args, **kwargs)
         bound.apply_defaults()
 
         element: Element = bound.arguments['self']
