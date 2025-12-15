@@ -70,7 +70,7 @@ def run_with(
     )
     core.root = root
     storage.set_storage_secret(storage_secret, session_middleware_kwargs)
-    if not any(issubclass(middleware.cls, GZipMiddleware) for middleware in core.app.user_middleware):
+    if not any(isinstance(m.cls, type) and issubclass(m.cls, GZipMiddleware) for m in core.app.user_middleware):
         core.app.add_middleware(GZipMiddleware)
     core.app.add_middleware(RedirectWithPrefixMiddleware)
     core.app.add_middleware(SetCacheControlMiddleware)
