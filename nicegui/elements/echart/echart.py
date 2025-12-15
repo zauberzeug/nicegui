@@ -53,15 +53,15 @@ class EChart(Element, component='echart.js', esm={'nicegui-echart': 'dist'}, def
             handle_event(callback, EChartPointClickEventArguments(
                 sender=self,
                 client=self.client,
-                component_type=e.args['componentType'],
-                series_type=e.args['seriesType'],
-                series_index=e.args['seriesIndex'],
-                series_name=e.args['seriesName'],
-                name=e.args['name'],
-                data_index=e.args['dataIndex'],
-                data=e.args['data'],
+                component_type=e.args['componentType'],  # Must be there
+                series_type=e.args.get('seriesType'),
+                series_index=e.args.get('seriesIndex'),
+                series_name=e.args.get('seriesName'),
+                name=e.args['name'],  # Must be there
+                data_index=e.args.get('dataIndex'),
+                data=e.args.get('data'),
                 data_type=e.args.get('dataType'),
-                value=e.args['value'],
+                value=e.args.get('value'),
             ))
         self.on('pointClick', handle_point_click, [
             'componentType',
