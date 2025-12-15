@@ -168,7 +168,7 @@ def run(root: Optional[Callable] = None, *,
     )
     core.root = root
     core.app.config.endpoint_documentation = endpoint_documentation
-    if not helpers.is_pytest() and not any(isinstance(m.cls, type) and issubclass(m.cls, GZipMiddleware) for m in core.app.user_middleware):
+    if not helpers.is_pytest(is_mockable=True) and not any(isinstance(m.cls, type) and issubclass(m.cls, GZipMiddleware) for m in core.app.user_middleware):
         core.app.add_middleware(GZipMiddleware)
     core.app.add_middleware(RedirectWithPrefixMiddleware)
     core.app.add_middleware(SetCacheControlMiddleware)

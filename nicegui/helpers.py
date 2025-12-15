@@ -35,8 +35,10 @@ def warn_once(message: str, *, stack_info: bool = False) -> None:
         _shown_warnings.add(message)
 
 
-def is_pytest() -> bool:
-    """Check if the code is running in pytest."""
+def is_pytest(*, is_mockable: bool = False) -> bool:
+    """Check if the code is running in pytest, unless mockable and overridden"""
+    if is_mockable and 'HIDE_IS_PYTEST' in os.environ:
+        return False
     return 'PYTEST_CURRENT_TEST' in os.environ
 
 
