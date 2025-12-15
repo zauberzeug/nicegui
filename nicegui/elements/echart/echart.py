@@ -89,7 +89,7 @@ class EChart(Element, component='echart.js', esm={'nicegui-echart': 'dist'}, def
         return self
 
     def on_click(self, callback: Handler[EChartComponentClickEventArguments]) -> Self:
-        """Add a callback to be invoked when a component is clicked, and the component is not a point."""
+        """Add a callback to be invoked when any component is clicked."""
         def handle_click(e: GenericEventArguments) -> None:
             handle_event(callback, EChartComponentClickEventArguments(
                 sender=self,
