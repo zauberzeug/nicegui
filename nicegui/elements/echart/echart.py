@@ -82,8 +82,8 @@ class EChart(Element, component='echart.js', esm={'nicegui-echart': 'dist'}, def
             handle_event(callback, EChartPointClickEventArguments(
                 sender=self,
                 client=self.client,
-                **{python_key: e.args.get(js_key) for js_key, python_key in _COMPONENT_MANDATORY_KEYS.items()},
-                **{python_key: e.args.get(js_key) for js_key, python_key in _POINT_MANDATORY_KEYS.items()},
+                **{python_key: e.args[js_key] for js_key, python_key in _COMPONENT_MANDATORY_KEYS.items()},
+                **{python_key: e.args[js_key] for js_key, python_key in _POINT_MANDATORY_KEYS.items()},
                 data_type=e.args.get('dataType'),
             ))
         self.on('pointClick', handle_point_click, [*_COMPONENT_MANDATORY_KEYS.keys(), *_POINT_MANDATORY_KEYS.keys()])
@@ -97,7 +97,7 @@ class EChart(Element, component='echart.js', esm={'nicegui-echart': 'dist'}, def
             handle_event(callback, EChartComponentClickEventArguments(
                 sender=self,
                 client=self.client,
-                **{python_key: e.args.get(js_key) for js_key, python_key in _COMPONENT_MANDATORY_KEYS.items()}
+                **{python_key: e.args[js_key] for js_key, python_key in _COMPONENT_MANDATORY_KEYS.items()}
             ))
         self.on('pointClick', handle_component_click, [
                 *_COMPONENT_MANDATORY_KEYS.keys(), *_POINT_MANDATORY_KEYS.keys()])
