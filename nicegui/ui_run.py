@@ -5,7 +5,7 @@ import sys
 from pathlib import Path
 from typing import Any, Callable, Literal, Optional, TypedDict, Union
 
-from fastapi.middleware.gzip import GZipMiddleware
+from starlette.middleware.gzip import GZipMiddleware
 from starlette.routing import Route
 from uvicorn.main import STARTUP_FAILURE
 from uvicorn.supervisors import ChangeReload, Multiprocess
@@ -168,7 +168,7 @@ def run(root: Optional[Callable] = None, *,
     )
     core.root = root
     core.app.config.endpoint_documentation = endpoint_documentation
-    if not helpers.is_pytest():
+    if not helpers.is_pytest() and not any(issubclass(middleware.cls, GZipMiddleware) for middleware in core.app.user_middleware):
         core.app.add_middleware(GZipMiddleware)
     core.app.add_middleware(RedirectWithPrefixMiddleware)
     core.app.add_middleware(SetCacheControlMiddleware)

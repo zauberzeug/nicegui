@@ -3,7 +3,7 @@ from pathlib import Path
 from typing import Any, Callable, Literal, Optional, Union
 
 from fastapi import FastAPI
-from fastapi.middleware.gzip import GZipMiddleware
+from starlette.middleware.gzip import GZipMiddleware
 
 from . import core, storage
 from .air import Air
@@ -70,7 +70,8 @@ def run_with(
     )
     core.root = root
     storage.set_storage_secret(storage_secret, session_middleware_kwargs)
-    core.app.add_middleware(GZipMiddleware)
+    if not any(issubclass(middleware.cls, GZipMiddleware) for middleware in core.app.user_middleware):
+        core.app.add_middleware(GZipMiddleware)
     core.app.add_middleware(RedirectWithPrefixMiddleware)
     core.app.add_middleware(SetCacheControlMiddleware)
 
