@@ -73,7 +73,6 @@ dynamic_resources: dict[str, DynamicResource] = {}
 esm_modules: dict[str, EsmModule] = {}
 
 import_names: set[str] = {'vue', 'sass', 'immutable'}
-component_names: set[str] = set()
 
 
 def register_vue_component(path: Path, *, max_time: float | None) -> Component:
@@ -88,19 +87,19 @@ def register_vue_component(path: Path, *, max_time: float | None) -> Component:
     if path.suffix == '.vue':
         if key in vue_components and vue_components[key].path == path:
             return vue_components[key]
-        assert name not in component_names, f'Component name "{name}" is already used'
+        assert name not in import_names, f'Component name "{name}" is already used'
         assert key not in vue_components, f'Duplicate VUE component {key}'
         v = VBuild(path)
         vue_components[key] = VueComponent(key=key, name=name, path=path, html=v.html, script=v.script, style=v.style)
-        component_names.add(name)
+        import_names.add(name)
         return vue_components[key]
     if path.suffix == '.js':
         if key in js_components and js_components[key].path == path:
             return js_components[key]
-        assert name not in component_names, f'Component name "{name}" is already used'
+        assert name not in import_names, f'Component name "{name}" is already used'
         assert key not in js_components, f'Duplicate JS component {key}'
         js_components[key] = JsComponent(key=key, name=name, path=path)
-        component_names.add(name)
+        import_names.add(name)
         return js_components[key]
     raise ValueError(f'Unsupported component type "{path.suffix}"')
 
