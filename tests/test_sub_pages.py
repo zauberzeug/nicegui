@@ -1156,6 +1156,17 @@ def test_http_404_on_initial_request_with_async_sub_page_builder(screen: Screen)
     screen.should_contain('HTTPException: 404: /bad_path not found')
 
 
+def test_http_404_with_root_function_and_sub_pages(screen: Screen):
+    def root():
+        ui.sub_pages({'/': lambda: ui.label('Home')})
+
+    screen.ui_run_kwargs['root'] = root
+    screen.open('/')
+    screen.should_contain('Home')
+
+    httpx.get(f'http://localhost:{Screen.PORT}/bad_path')  # should not print an exception
+
+
 def test_clearing_sub_pages_element(screen: Screen):
     @ui.page('/')
     @ui.page('/{_:path}')
