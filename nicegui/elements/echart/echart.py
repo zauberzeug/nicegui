@@ -75,7 +75,7 @@ class EChart(Element, component='echart.js', esm={'nicegui-echart': 'dist'}, def
                 data_type=e.args.get('dataType'),
                 value=e.args['value'],
             ))
-        self.on('click', handle_point_click, [
+        self.on('componentClick', handle_point_click, [
             'componentType',
             'seriesType',
             'seriesIndex',
@@ -97,7 +97,7 @@ class EChart(Element, component='echart.js', esm={'nicegui-echart': 'dist'}, def
                 component_type=e.args['componentType'],
                 name=e.args['name'],
             ))
-        self.on('click', handle_click, [
+        self.on('componentClick', handle_click, [
             'componentType',
             'name',
         ])
