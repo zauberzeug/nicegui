@@ -1,8 +1,9 @@
 import asyncio
 
+import httpx
 import pytest
 
-from nicegui import Event, app, ui
+from nicegui import Client, Event, app, ui
 from nicegui.testing import Screen, User
 
 
@@ -26,7 +27,7 @@ async def test_event_with_args(user: User):
     def page():
         ui.button('Click me', on_click=lambda: event.emit(42))
         event.subscribe(lambda: ui.notify('clicked'))
-        event.subscribe(lambda x: ui.notify(f'{x = }'))
+        event.subscribe(lambda x: ui.notify(f'{x=}'))
 
     await user.open('/')
     user.find('Click me').click()
@@ -138,3 +139,21 @@ def test_reconnect(screen: Screen):
 
     screen.click('Click me!')
     screen.should_contain('Click me!!')
+
+
+async def test_event_memory_leak(screen: Screen):
+    event = Event()
+
+    @ui.page('/')
+    def page():
+        ui.label('Keep screen occupied')
+
+    @ui.page('/memory_leak')
+    def memory_leak():
+        event.subscribe(ui.notify)
+
+    screen.open('/')
+    httpx.get(f'http://localhost:{Screen.PORT}/memory_leak', timeout=5)
+    await asyncio.sleep(1)
+    Client.prune_instances(client_age_threshold=0)
+    assert len(event.callbacks) == 0
