@@ -36,6 +36,10 @@ _POINT_MANDATORY_KEYS = {
 }
 
 
+def _is_point_click(args: GenericEventArguments) -> bool:
+    return all(key in args.args for key in _POINT_MANDATORY_KEYS)
+
+
 class EChart(Element, component='echart.js', esm={'nicegui-echart': 'dist'}, default_classes='nicegui-echart'):
 
     def __init__(self,
@@ -73,7 +77,7 @@ class EChart(Element, component='echart.js', esm={'nicegui-echart': 'dist'}, def
     def on_point_click(self, callback: Handler[EChartPointClickEventArguments]) -> Self:
         """Add a callback to be invoked when a point is clicked."""
         def handle_point_click(e: GenericEventArguments) -> None:
-            if not all(key in e.args for key in _POINT_MANDATORY_KEYS):
+            if not _is_point_click(e):
                 return  # should use on_component_click instead
             handle_event(callback, EChartPointClickEventArguments(
                 sender=self,
@@ -88,7 +92,7 @@ class EChart(Element, component='echart.js', esm={'nicegui-echart': 'dist'}, def
     def on_component_click(self, callback: Handler[EChartComponentClickEventArguments]) -> Self:
         """Add a callback to be invoked when a component is clicked, and the component is not a point."""
         def handle_component_click(e: GenericEventArguments) -> None:
-            if any(key in e.args for key in _POINT_MANDATORY_KEYS):
+            if _is_point_click(e):
                 return  # should use on_point_click instead
             handle_event(callback, EChartComponentClickEventArguments(
                 sender=self,
