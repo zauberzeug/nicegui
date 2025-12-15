@@ -22,30 +22,13 @@ try:
 except ImportError:
     pass
 
-_COMPONENT_MANDATORY_KEYS = {
-    'componentType': 'component_type',
-    'name': 'name',
-}
-_POINT_MANDATORY_KEYS = {
-    'seriesType': 'series_type',
-    'seriesIndex': 'series_index',
-    'seriesName': 'series_name',
-    'dataIndex': 'data_index',
-    'data': 'data',
-    'value': 'value',
-}
-
-
-def _is_point_click(args: GenericEventArguments) -> bool:
-    return all(key in args.args for key in _POINT_MANDATORY_KEYS)
-
 
 class EChart(Element, component='echart.js', esm={'nicegui-echart': 'dist'}, default_classes='nicegui-echart'):
 
     def __init__(self,
                  options: dict,
                  on_point_click: Optional[Handler[EChartPointClickEventArguments]] = None, *,
-                 on_component_click: Optional[Handler[EChartComponentClickEventArguments]] = None,
+                 on_click: Optional[Handler[EChartComponentClickEventArguments]] = None,
                  enable_3d: bool = False,
                  renderer: Literal['canvas', 'svg'] = 'canvas',
                  theme: Optional[Union[str, dict]] = None,
@@ -57,7 +40,7 @@ class EChart(Element, component='echart.js', esm={'nicegui-echart': 'dist'}, def
 
         :param options: dictionary of EChart options
         :param on_point_click: callback that is invoked when a point is clicked
-        :param on_component_click: callback that is invoked when a component is clicked, and the component is not a point (*added in version 3.5.0*)
+        :param on_click: callback that is invoked when any component is clicked (*added in version 3.5.0*)
         :param enable_3d: enforce importing the echarts-gl library
         :param renderer: renderer to use ("canvas" or "svg", *added in version 2.7.0*)
         :param theme: an EChart theme configuration (dictionary or a URL returning a JSON object, *added in version 2.15.0*)
@@ -71,36 +54,53 @@ class EChart(Element, component='echart.js', esm={'nicegui-echart': 'dist'}, def
 
         if on_point_click:
             self.on_point_click(on_point_click)
-        if on_component_click:
-            self.on_component_click(on_component_click)
+        if on_click:
+            self.on_click(on_click)
 
     def on_point_click(self, callback: Handler[EChartPointClickEventArguments]) -> Self:
         """Add a callback to be invoked when a point is clicked."""
         def handle_point_click(e: GenericEventArguments) -> None:
-            if not _is_point_click(e):
-                return  # should use on_component_click instead
+            if e.args['componentType'] != 'series':
+                return
             handle_event(callback, EChartPointClickEventArguments(
                 sender=self,
                 client=self.client,
-                **{python_key: e.args[js_key] for js_key, python_key in _COMPONENT_MANDATORY_KEYS.items()},
-                **{python_key: e.args[js_key] for js_key, python_key in _POINT_MANDATORY_KEYS.items()},
+                component_type=e.args['componentType'],
+                series_type=e.args['seriesType'],
+                series_index=e.args['seriesIndex'],
+                series_name=e.args['seriesName'],
+                name=e.args['name'],
+                data_index=e.args['dataIndex'],
+                data=e.args['data'],
                 data_type=e.args.get('dataType'),
+                value=e.args['value'],
             ))
-        self.on('pointClick', handle_point_click, [*_COMPONENT_MANDATORY_KEYS.keys(), *_POINT_MANDATORY_KEYS.keys()])
+        self.on('click', handle_point_click, [
+            'componentType',
+            'seriesType',
+            'seriesIndex',
+            'seriesName',
+            'name',
+            'dataIndex',
+            'data',
+            'dataType',
+            'value',
+        ])
         return self
 
-    def on_component_click(self, callback: Handler[EChartComponentClickEventArguments]) -> Self:
+    def on_click(self, callback: Handler[EChartComponentClickEventArguments]) -> Self:
         """Add a callback to be invoked when a component is clicked, and the component is not a point."""
-        def handle_component_click(e: GenericEventArguments) -> None:
-            if _is_point_click(e):
-                return  # should use on_point_click instead
+        def handle_click(e: GenericEventArguments) -> None:
             handle_event(callback, EChartComponentClickEventArguments(
                 sender=self,
                 client=self.client,
-                **{python_key: e.args[js_key] for js_key, python_key in _COMPONENT_MANDATORY_KEYS.items()}
+                component_type=e.args['componentType'],
+                name=e.args['name'],
             ))
-        self.on('pointClick', handle_component_click, [
-                *_COMPONENT_MANDATORY_KEYS.keys(), *_POINT_MANDATORY_KEYS.keys()])
+        self.on('click', handle_click, [
+            'componentType',
+            'name',
+        ])
         return self
 
     @classmethod
