@@ -95,7 +95,7 @@ class EChart(Element, component='echart.js', esm={'nicegui-echart': 'dist'}, def
                 sender=self,
                 client=self.client,
                 component_type=e.args['componentType'],
-                name=e.args['name'],
+                name=e.args.get('name'),
             ))
         self.on('componentClick', handle_click, [
             'componentType',
