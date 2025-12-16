@@ -60,8 +60,7 @@ def run(root: Optional[Callable] = None, *,
         reconnect_timeout: float = 3.0,
         message_history_length: int = 1000,
         cache_control_directives: str = 'public, max-age=31536000, immutable, stale-while-revalidate=31536000',
-        gzip_middleware_factory: Optional[
-            Callable[[ASGIApp], GZipMiddleware]] = lambda app: GZipMiddleware(app, minimum_size=500, compresslevel=9),
+        gzip_middleware_factory: Optional[Callable[[ASGIApp], GZipMiddleware]] = GZipMiddleware,
         fastapi_docs: Union[bool, DocsConfig] = False,
         show: bool = True,
         on_air: Optional[Union[str, Literal[True]]] = None,
@@ -99,7 +98,7 @@ def run(root: Optional[Callable] = None, *,
     :param reconnect_timeout: maximum time the server waits for the browser to reconnect (default: 3.0 seconds)
     :param message_history_length: maximum number of messages that will be stored and resent after a connection interruption (default: 1000, use 0 to disable, *added in version 2.9.0*)
     :param cache_control_directives: cache control directives for internal static files (default: `'public, max-age=31536000, immutable, stale-while-revalidate=31536000'`)
-    :param gzip_middleware_factory: GZipMiddleware factory function (default: ``lambda app: GZipMiddleware(app, minimum_size=500, compresslevel=9)``, can be ``None`` to disable, *added in version 3.5.0*)
+    :param gzip_middleware_factory: GZipMiddleware factory function (e.g. ``lambda app: GZipMiddleware(app, minimum_size=500, compresslevel=9)``, defaults to Starlette's ``GZipMiddleware``, can be ``None`` to disable, *added in version 3.5.0*)
     :param fastapi_docs: enable FastAPI's automatic documentation with Swagger UI, ReDoc, and OpenAPI JSON (bool or dictionary as described `here <https://fastapi.tiangolo.com/tutorial/metadata/>`_, default: `False`, *updated in version 2.9.0*)
     :param show: automatically open the UI in a browser tab (default: `True`)
     :param on_air: tech preview: `allows temporary remote access <https://nicegui.io/documentation/section_configuration_deployment#nicegui_on_air>`_ if set to `True` (default: disabled)
