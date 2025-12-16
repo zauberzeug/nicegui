@@ -123,7 +123,7 @@ class page:
             except Exception as e:
                 core.app.handle_exception(e)
 
-        def create_error_page(e: Exception, request: Request) -> Response:
+        def create_500_error_page(e: Exception, request: Request) -> Response:
             page_exception_handler = core.app._page_exception_handler  # pylint: disable=protected-access
             if page_exception_handler is None:
                 raise e
@@ -159,14 +159,14 @@ class page:
                 try:
                     result = func(*dec_args, **dec_kwargs)
                 except Exception as e:
-                    return create_error_page(e, request)
+                    return create_500_error_page(e, request)
             if helpers.is_coroutine_function(func):
                 async def wait_for_result() -> Response | None:
                     with client:
                         try:
                             return await result
                         except Exception as e:
-                            return create_error_page(e, request)
+                            return create_500_error_page(e, request)
                 task = background_tasks.create(wait_for_result(),
                                                name=f'wait for result of page "{client.page.path}"',
                                                handle_exceptions=False)
