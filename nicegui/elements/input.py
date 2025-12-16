@@ -89,7 +89,10 @@ class Input(LabelElement, ValidationElement, DisableableElement, component='inpu
 
     @prefix.setter
     def prefix(self, value: Optional[str]) -> None:
-        self._props['prefix'] = value
+        if value is None:
+            self._props.pop('prefix', None)
+        else:
+            self._props['prefix'] = value
 
     @property
     def suffix(self) -> Optional[str]:
@@ -101,7 +104,10 @@ class Input(LabelElement, ValidationElement, DisableableElement, component='inpu
 
     @suffix.setter
     def suffix(self, value: Optional[str]) -> None:
-        self._props['suffix'] = value
+        if value is None:
+            self._props.pop('suffix', None)
+        else:
+            self._props['suffix'] = value
 
     def _handle_value_change(self, value: Any) -> None:
         super()._handle_value_change(value)
