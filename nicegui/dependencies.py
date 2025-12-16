@@ -84,10 +84,10 @@ def register_vue_component(path: Path, *, max_time: float | None) -> Component:
     """
     key = compute_key(path, max_time=max_time)
     name = _get_name(path)
+    _check_for_duplicates(name)
     if path.suffix == '.vue':
         if key in vue_components and vue_components[key].path == path:
             return vue_components[key]
-        assert name not in import_names, f'Component name "{name}" is already used'
         assert key not in vue_components, f'Duplicate VUE component {key}'
         v = VBuild(path)
         vue_components[key] = VueComponent(key=key, name=name, path=path, html=v.html, script=v.script, style=v.style)
@@ -96,7 +96,6 @@ def register_vue_component(path: Path, *, max_time: float | None) -> Component:
     if path.suffix == '.js':
         if key in js_components and js_components[key].path == path:
             return js_components[key]
-        assert name not in import_names, f'Component name "{name}" is already used'
         assert key not in js_components, f'Duplicate JS component {key}'
         js_components[key] = JsComponent(key=key, name=name, path=path)
         import_names.add(name)
@@ -108,10 +107,10 @@ def register_library(path: Path, *, max_time: float | None) -> Library:
     """Register a *.js library."""
     key = compute_key(path, max_time=max_time)
     name = _get_name(path)
+    _check_for_duplicates(name)
     if path.suffix in {'.js', '.mjs'}:
         if key in libraries and libraries[key].path == path:
             return libraries[key]
-        assert name not in import_names, f'Library / ESM module name "{name}" is already used'
         assert key not in libraries, f'Duplicate js library {key}'
         libraries[key] = Library(key=key, name=name, path=path)
         import_names.add(name)
@@ -137,9 +136,15 @@ def register_dynamic_resource(name: str, function: Callable) -> DynamicResource:
 
 def register_esm(name: str, path: Path, *, max_time: float | None) -> None:
     """Register an ESM module."""
-    assert name not in import_names, f'Library / ESM module name "{name}" is already used'
+    _check_for_duplicates(name)
     import_names.add(name)
     esm_modules[compute_key(path, max_time=max_time)] = EsmModule(name=name, path=path)
+
+
+def _check_for_duplicates(name: str) -> None:
+    """Check if a name is already used for a component, library, or ESM module."""
+    if name in vue_components or name in js_components or name in libraries or name in esm_modules:
+        raise ValueError(f'Dependency name "{name}" is already used')
 
 
 @functools.cache
