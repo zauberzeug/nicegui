@@ -86,6 +86,7 @@ types = [
     "types-requests>=2.32.4",
 ]
 website = [
+    "dnspython>=2.4.0,<3",
     "html-sanitizer>=2.6.0,<3",
     "isort>=6.0.0,<7.0.0",
     "latex2mathml>=3.78.1,<4.0.0",
