@@ -82,7 +82,7 @@ def register_vue_component(path: Path, *, max_time: float | None) -> Component:
     """
     key = compute_key(path, max_time=max_time)
     name = _get_name(path)
-    _check_for_duplicates(name)
+    assert _name_is_unique(name), f'Duplicate name "{name}" for Vue component {path}'
     if path.suffix == '.vue':
         if key in vue_components and vue_components[key].path == path:
             return vue_components[key]
@@ -103,7 +103,7 @@ def register_library(path: Path, *, max_time: float | None) -> Library:
     """Register a *.js library."""
     key = compute_key(path, max_time=max_time)
     name = _get_name(path)
-    _check_for_duplicates(name)
+    assert _name_is_unique(name), f'Duplicate name "{name}" for library {path}'
     if path.suffix in {'.js', '.mjs'}:
         if key in libraries and libraries[key].path == path:
             return libraries[key]
@@ -131,14 +131,12 @@ def register_dynamic_resource(name: str, function: Callable) -> DynamicResource:
 
 def register_esm(name: str, path: Path, *, max_time: float | None) -> None:
     """Register an ESM module."""
-    _check_for_duplicates(name)
+    assert _name_is_unique(name), f'Duplicate name "{name}" for ESM module {path}'
     esm_modules[compute_key(path, max_time=max_time)] = EsmModule(name=name, path=path)
 
 
-def _check_for_duplicates(name: str) -> None:
-    """Check if a name is already used for a component, library, or ESM module."""
-    if name in {'vue', 'sass', 'immutable', *vue_components, *js_components, *libraries, *esm_modules}:
-        raise ValueError(f'Dependency name "{name}" is already used')
+def _name_is_unique(name: str) -> None:
+    return name not in {'vue', 'sass', 'immutable', *vue_components, *js_components, *libraries, *esm_modules}
 
 
 @functools.cache
