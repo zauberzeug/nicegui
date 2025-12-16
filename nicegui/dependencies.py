@@ -136,7 +136,8 @@ def register_esm(name: str, path: Path, *, max_time: float | None) -> None:
 
 
 def _name_is_unique(name: str) -> None:
-    return name not in {'vue', 'sass', 'immutable', *vue_components, *js_components, *libraries, *esm_modules}
+    esm_names = {esm_module.name for esm_module in esm_modules.values()}
+    return name not in {'vue', 'sass', 'immutable', *vue_components, *js_components, *libraries, *esm_names}
 
 
 @functools.cache
