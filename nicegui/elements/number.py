@@ -100,6 +100,24 @@ class Number(LabelElement, ValidationElement, DisableableElement):
         self.sanitize()
 
     @property
+    def prefix(self) -> Optional[str]:
+        """The prefix to prepend to the displayed value (*added in version 3.5.0*)."""
+        return self._props.get('prefix')
+
+    @prefix.setter
+    def prefix(self, value: Optional[str]) -> None:
+        self._props['prefix'] = value
+
+    @property
+    def suffix(self) -> Optional[str]:
+        """The suffix to append to the displayed value (*added in version 3.5.0*)."""
+        return self._props.get('suffix')
+
+    @suffix.setter
+    def suffix(self, value: Optional[str]) -> None:
+        self._props['suffix'] = value
+
+    @property
     def out_of_limits(self) -> bool:
         """Whether the current value is out of the allowed limits."""
         return not self.min <= self.value <= self.max
@@ -115,24 +133,6 @@ class Number(LabelElement, ValidationElement, DisableableElement):
             value = float(round(value, self.precision))
         self.value = float(self.format % value) if self.format else value
         self.update()
-
-    def set_prefix(self, text: Optional[str]) -> None:
-        """Set the prefix.
-
-        *Added in version 3.5.0*
-
-        :param text: the content of the prefix.
-        """
-        self._props['prefix'] = text
-
-    def set_suffix(self, text: Optional[str]) -> None:
-        """Set the suffix.
-
-        *Added in version 3.5.0*
-
-        :param text: the content of the suffix.
-        """
-        self._props['suffix'] = text
 
     def _event_args_to_value(self, e: GenericEventArguments) -> Any:
         if not e.args:

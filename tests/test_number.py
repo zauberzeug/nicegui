@@ -178,20 +178,21 @@ def test_none_values(screen: Screen):
     screen.should_contain('event: 1')
 
 
-def test_number_with_prefix_suffix(screen: Screen):
+def test_prefix_and_suffix(screen: Screen):
     @ui.page('/')
     def page():
         n = ui.number(prefix='MyPrefix', suffix='MySuffix')
 
         def change_prefix_suffix():
-            n.set_prefix('NewPrefix')
-            n.set_suffix('NewSuffix')
+            n.prefix = 'NewPrefix'
+            n.suffix = 'NewSuffix'
 
         ui.button('Change', on_click=change_prefix_suffix)
 
     screen.open('/')
     screen.should_contain('MyPrefix')
     screen.should_contain('MySuffix')
+
     screen.click('Change')
     screen.should_contain('NewPrefix')
     screen.should_contain('NewSuffix')

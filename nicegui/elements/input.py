@@ -79,23 +79,23 @@ class Input(LabelElement, ValidationElement, DisableableElement, component='inpu
         """Set the autocomplete list."""
         self._props['_autocomplete'] = autocomplete
 
-    def set_prefix(self, text: Optional[str]) -> None:
-        """Set the prefix.
+    @property
+    def prefix(self) -> Optional[str]:
+        """The prefix to prepend to the displayed value (*added in version 3.5.0*)."""
+        return self._props.get('prefix')
 
-        *Added in version 3.5.0*
+    @prefix.setter
+    def prefix(self, value: Optional[str]) -> None:
+        self._props['prefix'] = value
 
-        :param text: the content of the prefix.
-        """
-        self._props['prefix'] = text
+    @property
+    def suffix(self) -> Optional[str]:
+        """The suffix to append to the displayed value (*added in version 3.5.0*)."""
+        return self._props.get('suffix')
 
-    def set_suffix(self, text: Optional[str]) -> None:
-        """Set the suffix.
-
-        *Added in version 3.5.0*
-
-        :param text: the content of the suffix.
-        """
-        self._props['suffix'] = text
+    @suffix.setter
+    def suffix(self, value: Optional[str]) -> None:
+        self._props['suffix'] = value
 
     def _handle_value_change(self, value: Any) -> None:
         super()._handle_value_change(value)
