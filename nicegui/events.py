@@ -51,13 +51,18 @@ class SlideEventArguments(UiEventArguments):
 
 
 @dataclass(**KWONLY_SLOTS)
-class EChartComponentClickEventArguments(UiEventArguments):
+class EChartClickEventArguments(UiEventArguments):
     component_type: str
-    name: str
 
 
 @dataclass(**KWONLY_SLOTS)
-class EChartPointClickEventArguments(EChartComponentClickEventArguments):
+class EChartComponentClickEventArguments(EChartClickEventArguments):
+    name: str | None
+
+
+@dataclass(**KWONLY_SLOTS)
+class EChartPointClickEventArguments(EChartClickEventArguments):
+    name: str
     series_type: str
     series_index: int
     series_name: str
