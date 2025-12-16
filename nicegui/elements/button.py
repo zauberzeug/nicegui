@@ -17,7 +17,7 @@ class Button(IconElement, TextElement, DisableableElement, BackgroundColorElemen
     def __init__(self,
                  text: str = '', *,
                  on_click: Optional[Handler[ClickEventArguments]] = None,
-                 color: Optional[str] = DEFAULT_PROPS('color') | 'primary',
+                 color: Optional[str] = DEFAULT_PROPS['color'] | 'primary',
                  icon: Optional[str] = None,
                  ) -> None:
         """Button
