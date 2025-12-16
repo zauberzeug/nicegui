@@ -14,6 +14,8 @@ from inspect import Parameter, signature
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, TypeVar
 
+from typing_extensions import ParamSpec
+
 from .context import context
 from .logging import log
 
@@ -29,18 +31,21 @@ else:
 
 T = TypeVar('T')
 
+P = ParamSpec('P')
+R = TypeVar('R')
+
 
 class DEFAULT_PROPS:
     def __init__(self, prop_key: str) -> None:
-        self.prop_key = prop_key
-        self.default_value = None
+        self.key = prop_key
+        self.default: Any
 
     def __or__(self, other: T) -> T:
-        self.default_value = other  # type: ignore[assignment]
+        self.default = other  # type: ignore[assignment]
         return self  # type: ignore[return-value]
 
 
-def honor_default_props(original_func):
+def honor_default_props(original_func: Callable[P, R]) -> Callable[P, R]:
     """This decorator makes the function honor default properties set via ``default_props``.
 
     If a parameter has a default value which looks like ``DEFAULT_PROPS('prop_key') | default_value``,
@@ -56,8 +61,8 @@ def honor_default_props(original_func):
 
         element: Element = bound.arguments['self']
 
-        return original_func(**{
-            param_name: (element._default_props.get(value.prop_key, value.default_value)  # pylint: disable=protected-access
+        return original_func(*bound.args, **{
+            param_name: (element._default_props.get(value.key, value.default)  # pylint: disable=protected-access
                          if isinstance(value, DEFAULT_PROPS) else value)
             for param_name, value in bound.arguments.items()
         })
