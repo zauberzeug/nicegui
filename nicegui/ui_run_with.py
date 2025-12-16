@@ -4,6 +4,7 @@ from typing import Any, Callable, Literal, Optional, Union
 
 from fastapi import FastAPI
 from fastapi.middleware.gzip import GZipMiddleware
+from starlette.types import ASGIApp
 
 from . import core, helpers, storage
 from .air import Air
@@ -24,7 +25,8 @@ def run_with(
     reconnect_timeout: float = 3.0,
     message_history_length: int = 1000,
     cache_control_directives: str = 'public, max-age=31536000, immutable, stale-while-revalidate=31536000',
-    gzip_middleware: Optional[type[GZipMiddleware]] = GZipMiddleware,
+    gzip_middleware_factory: Optional[
+        Callable[[ASGIApp], GZipMiddleware]] = lambda app: GZipMiddleware(app, minimum_size=500, compresslevel=9),
     mount_path: str = '/',
     on_air: Optional[Union[str, Literal[True]]] = None,
     tailwind: bool = True,
@@ -46,7 +48,7 @@ def run_with(
     :param reconnect_timeout: maximum time the server waits for the browser to reconnect (default: 3.0 seconds)
     :param message_history_length: maximum number of messages that will be stored and resent after a connection interruption (default: 1000, use 0 to disable, *added in version 2.9.0*)
     :param cache_control_directives: cache control directives for internal static files (default: `'public, max-age=31536000, immutable, stale-while-revalidate=31536000'`)
-    :param gzip_middleware: GZipMiddleware class to use (default: ``GZipMiddleware``, can be ``None`` to disable, *added in version 3.5.0*)
+    :param gzip_middleware_factory: GZipMiddleware factory function (default: ``lambda app: GZipMiddleware(app, minimum_size=500, compresslevel=9)``, can be ``None`` to disable, *added in version 3.5.0*)
     :param mount_path: mount NiceGUI at this path (default: `'/'`)
     :param on_air: tech preview: `allows temporary remote access <https://nicegui.io/documentation/section_configuration_deployment#nicegui_on_air>`_ if set to `True` (default: disabled)
     :param tailwind: whether to use Tailwind CSS (experimental, default: `True`)
@@ -72,8 +74,8 @@ def run_with(
     )
     core.root = root
     storage.set_storage_secret(storage_secret, session_middleware_kwargs)
-    if not helpers.is_pytest() and gzip_middleware is not None:
-        core.app.add_middleware(gzip_middleware)
+    if not helpers.is_pytest() and gzip_middleware_factory is not None:
+        core.app.add_middleware(gzip_middleware_factory)
     core.app.add_middleware(RedirectWithPrefixMiddleware)
     core.app.add_middleware(SetCacheControlMiddleware)
 
