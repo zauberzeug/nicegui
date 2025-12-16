@@ -3,8 +3,8 @@ from typing import Optional
 
 from typing_extensions import Self
 
+from ..defaults import DEFAULT_PROPS, honor_default_props
 from ..events import ClickEventArguments, Handler, handle_event
-from ..helpers import DEFAULT_PROPS, honor_default_props
 from .mixins.color_elements import BackgroundColorElement
 from .mixins.disableable_element import DisableableElement
 from .mixins.icon_element import IconElement
