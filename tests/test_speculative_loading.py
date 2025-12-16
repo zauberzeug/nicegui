@@ -83,6 +83,11 @@ def test_prerender_with_long_page_build(screen: Screen, event_log: EventLog) -> 
 
 
 def test_prefetch_connects_after_navigation(screen: Screen, event_log: EventLog) -> None:
+    def _prune_clients_without_socket() -> None:
+        for client in list(Client.instances.values()):
+            if not client.has_socket_connection:
+                client.delete()
+
     app.on_connect(lambda client: event_log.append(f'connect: {client.page.path}'))
 
     @ui.page('/')
@@ -111,7 +116,7 @@ def test_prefetch_connects_after_navigation(screen: Screen, event_log: EventLog)
 
     screen.open('/')
     event_log.wait_for('answer: called')
-    Client.prune_instances(client_age_threshold=0)
+    _prune_clients_without_socket()
     assert event_log.items == ['answer: called', 'connect: /']
 
     screen.click('answer')
