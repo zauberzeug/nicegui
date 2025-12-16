@@ -172,14 +172,12 @@ def test_theme_url(screen: Screen, test_route: str):  # pylint: disable=redefine
     assert screen.find_by_tag('rect').value_of_css_property('fill') == 'rgb(254, 248, 239)'
 
 
-def test_click(screen: Screen):
+def test_click3(screen: Screen):
     events = []
-    myechart = None
 
     @ui.page('/')
     def page():
-        nonlocal myechart
-        myechart = ui.echart({
+        ui.echart({
             'legend': {
                 'triggerEvent': True,
             },
@@ -190,17 +188,19 @@ def test_click(screen: Screen):
             'series': [{
                 'type': 'radar',
                 'data': [{'name': 'Test', 'value': [77.0, 50.0, 90.0]}],
+                'animation': False,
             }],
-        }, on_point_click=lambda e: events.append(('point', e)),
-            on_click=lambda e: events.append(('component', e))
-        ).style('width: 200px; height: 200px')
+        }, on_point_click=lambda e: events.append(('point', e)), on_click=lambda e: events.append(('component', e))) \
+            .style('width: 200px; height: 200px')
+
     screen.open('/')
-    screen.wait(1)
-    myechart_element = screen.find_element(myechart)
-    for points in [(20, 20), (0, 70), (60, 30)]:
-        x, y = points
-        screen.click_at_position(myechart_element, x, y)
-    screen.wait(1)
-    assert len(events) == 4
-    assert set(event[0] for event in events) == {'point', 'component'}
-    assert set(event[1].component_type for event in events) == {'series', 'radar', 'legend'}
+    echart = screen.find_by_tag('canvas')
+    for x, y in [(20, 20), (0, 70), (60, 30)]:
+        screen.click_at_position(echart, x, y)
+    screen.wait(0.5)
+    assert [(source, event.component_type, event.name) for source, event in events] == [
+        ('point', 'series', 'Test'),
+        ('component', 'series', 'Test'),
+        ('component', 'legend', None),
+        ('component', 'radar', 'C'),
+    ]
