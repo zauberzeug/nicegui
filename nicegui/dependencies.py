@@ -82,10 +82,10 @@ def register_vue_component(path: Path, *, max_time: float | None) -> Component:
     """
     key = compute_key(path, max_time=max_time)
     name = _get_name(path)
-    assert _name_is_unique(name), f'Duplicate name "{name}" for Vue component {path}'
     if path.suffix == '.vue':
         if key in vue_components and vue_components[key].path == path:
             return vue_components[key]
+        assert _name_is_unique(name), f'Duplicate name "{name}" for Vue component {path}'
         assert key not in vue_components, f'Duplicate VUE component {key}'
         v = VBuild(path)
         vue_components[key] = VueComponent(key=key, name=name, path=path, html=v.html, script=v.script, style=v.style)
@@ -93,6 +93,7 @@ def register_vue_component(path: Path, *, max_time: float | None) -> Component:
     if path.suffix == '.js':
         if key in js_components and js_components[key].path == path:
             return js_components[key]
+        assert _name_is_unique(name), f'Duplicate name "{name}" for Vue component {path}'
         assert key not in js_components, f'Duplicate JS component {key}'
         js_components[key] = JsComponent(key=key, name=name, path=path)
         return js_components[key]
@@ -103,10 +104,10 @@ def register_library(path: Path, *, max_time: float | None) -> Library:
     """Register a *.js library."""
     key = compute_key(path, max_time=max_time)
     name = _get_name(path)
-    assert _name_is_unique(name), f'Duplicate name "{name}" for library {path}'
     if path.suffix in {'.js', '.mjs'}:
         if key in libraries and libraries[key].path == path:
             return libraries[key]
+        assert _name_is_unique(name), f'Duplicate name "{name}" for library {path}'
         assert key not in libraries, f'Duplicate js library {key}'
         libraries[key] = Library(key=key, name=name, path=path)
         return libraries[key]
