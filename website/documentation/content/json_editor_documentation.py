@@ -45,7 +45,9 @@ def update_content():
     - `price` must be a number greater than 0
     - `uuid` must be a valid UUID (requires NiceGUI version 3.5.0 or higher)
 
-    *Added in version 2.8.0*, with formats from [ajv-formats](https://ajv.js.org/packages/ajv-formats.html) now supported *since version 3.5.0*
+    *Added in version 2.8.0*
+
+    *Updated in version 3.5.0: Added support for [ajv-formats](https://ajv.js.org/packages/ajv-formats.html)*
 ''')
 def schema_demo() -> None:
     schema = {
