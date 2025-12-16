@@ -101,7 +101,10 @@ class Number(LabelElement, ValidationElement, DisableableElement):
 
     @property
     def prefix(self) -> Optional[str]:
-        """The prefix to prepend to the displayed value (*added in version 3.5.0*)."""
+        """The prefix to prepend to the displayed value.
+
+        *Added in version 3.5.0*
+        """
         return self._props.get('prefix')
 
     @prefix.setter
@@ -110,7 +113,10 @@ class Number(LabelElement, ValidationElement, DisableableElement):
 
     @property
     def suffix(self) -> Optional[str]:
-        """The suffix to append to the displayed value (*added in version 3.5.0*)."""
+        """The suffix to append to the displayed value.
+
+        *Added in version 3.5.0*
+        """
         return self._props.get('suffix')
 
     @suffix.setter

@@ -81,7 +81,10 @@ class Input(LabelElement, ValidationElement, DisableableElement, component='inpu
 
     @property
     def prefix(self) -> Optional[str]:
-        """The prefix to prepend to the displayed value (*added in version 3.5.0*)."""
+        """The prefix to prepend to the displayed value.
+
+        *Added in version 3.5.0*
+        """
         return self._props.get('prefix')
 
     @prefix.setter
@@ -90,7 +93,10 @@ class Input(LabelElement, ValidationElement, DisableableElement, component='inpu
 
     @property
     def suffix(self) -> Optional[str]:
-        """The suffix to append to the displayed value (*added in version 3.5.0*)."""
+        """The suffix to append to the displayed value.
+
+        *Added in version 3.5.0*
+        """
         return self._props.get('suffix')
 
     @suffix.setter
