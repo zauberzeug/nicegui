@@ -47,12 +47,11 @@ def honor_default_props(original_func: Callable[P, R]) -> Callable[P, R]:
         bound = signature.bind(*args, **kwargs)
         bound.apply_defaults()
 
-        element: Element = bound.arguments['self']
+        el: Element = bound.arguments['self']
 
-        return original_func(*bound.args, **{
-            param_name: (element._default_props.get(value.key, value.default)  # pylint: disable=protected-access
-                         if isinstance(value, Sentinel) else value)
-            for param_name, value in bound.arguments.items()
-        })
+        for param_name, value in bound.arguments.items():
+            if isinstance(value, Sentinel):
+                kwargs[param_name] = el._default_props.get(value.key, value.default)  # pylint: disable=protected-access
+        return original_func(*args, **kwargs)
 
     return decorated
