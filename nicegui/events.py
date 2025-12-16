@@ -53,7 +53,7 @@ class SlideEventArguments(UiEventArguments):
 @dataclass(**KWONLY_SLOTS)
 class EChartComponentClickEventArguments(UiEventArguments):
     component_type: str
-    name: str | None
+    name: str
 
 
 @dataclass(**KWONLY_SLOTS)
