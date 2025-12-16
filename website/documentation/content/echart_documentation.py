@@ -35,9 +35,13 @@ def clickable_points() -> None:
 
 
 @doc.demo('EChart with clickable components', '''
-    Besides series points, you can register a callback for an event when any component registered with `triggerEvent=True` is clicked.
+    Besides series points, you can register a callback for an event
+    when any component registered with `triggerEvent=True` is clicked.
 
-    Hint: Check if that component is a point by checking `e.component_type == 'series'` to avoid double-processing with `on_point_click`.
+    Hint: Check if that component is a point by checking `e.component_type == 'series'`
+    to avoid double-processing with `on_point_click`.
+
+    *Added in version 3.5.0*
 ''')
 def clickable_components() -> None:
     ui.echart({
