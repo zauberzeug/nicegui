@@ -172,7 +172,7 @@ def test_theme_url(screen: Screen, test_route: str):  # pylint: disable=redefine
     assert screen.find_by_tag('rect').value_of_css_property('fill') == 'rgb(254, 248, 239)'
 
 
-def test_click3(screen: Screen):
+def test_click(screen: Screen):
     events = []
 
     @ui.page('/')
