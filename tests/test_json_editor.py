@@ -1,5 +1,3 @@
-import pytest
-
 from nicegui import ui
 from nicegui.testing import Screen
 
@@ -33,27 +31,24 @@ def test_json_editor_validation(screen: Screen):
     screen.should_contain('must be string')
 
 
-@pytest.mark.parametrize('valid_uuid', [True, False])
-def test_json_editor_validate_uuid(screen: Screen, valid_uuid: str):
+def test_json_editor_validate_uuid(screen: Screen):
     @ui.page('/')
     def page():
-        schema = {
+        editor = ui.json_editor({
+            'content': {'json': {'id': '00000000-0000-0000-0000-000000000000'}},
+        }, schema={
             'type': 'object',
             'properties': {
-                'uuid': {
-                    'type': 'string',
-                    'format': 'uuid',
-                },
+                'id': {'type': 'string', 'format': 'uuid'},
             },
-            'required': ['uuid'],
-        }
-        data = {
-            'uuid': '123e4567-e89b-12d3-a456-426614174000' if valid_uuid else 'invalid-uuid',
-        }
-        ui.json_editor({'content': {'json': data}}, schema=schema)
+            'required': ['id'],
+        })
+        ui.button('Replace ID', on_click=lambda: editor.properties['content']['json'].update(id='invalid-id'))
 
     screen.open('/')
-    if valid_uuid:
-        screen.should_not_contain('must match format')
-    else:
-        screen.should_contain('must match format')
+    screen.should_contain('00000000-0000-0000-0000-000000000000')
+    screen.should_not_contain('must match format')
+
+    screen.click('Replace ID')
+    screen.should_contain('invalid-id')
+    screen.should_contain('must match format')
