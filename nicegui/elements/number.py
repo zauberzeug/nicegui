@@ -100,6 +100,36 @@ class Number(LabelElement, ValidationElement, DisableableElement):
         self.sanitize()
 
     @property
+    def prefix(self) -> Optional[str]:
+        """The prefix to prepend to the displayed value.
+
+        *Added in version 3.5.0*
+        """
+        return self._props.get('prefix')
+
+    @prefix.setter
+    def prefix(self, value: Optional[str]) -> None:
+        if value is None:
+            self._props.pop('prefix', None)
+        else:
+            self._props['prefix'] = value
+
+    @property
+    def suffix(self) -> Optional[str]:
+        """The suffix to append to the displayed value.
+
+        *Added in version 3.5.0*
+        """
+        return self._props.get('suffix')
+
+    @suffix.setter
+    def suffix(self, value: Optional[str]) -> None:
+        if value is None:
+            self._props.pop('suffix', None)
+        else:
+            self._props['suffix'] = value
+
+    @property
     def out_of_limits(self) -> bool:
         """Whether the current value is out of the allowed limits."""
         return not self.min <= self.value <= self.max
