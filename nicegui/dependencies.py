@@ -178,7 +178,7 @@ def generate_resources(prefix: str, elements: Iterable[Element]) -> tuple[list[s
         'immutable': f'{prefix}/_nicegui/{__version__}/static/immutable.es.js',
     }
     js_imports: list[str] = []
-    js_imports_urls: list[str] = []
+    js_imports_urls: list[str] = [imports['vue']]
 
     # build the importmap structure for libraries
     for key, library in libraries.items():
@@ -199,6 +199,7 @@ def generate_resources(prefix: str, elements: Iterable[Element]) -> tuple[list[s
             js_imports.append(f'import {{ default as {vue_component.name} }} from "{url}";')
             js_imports.append(f"{vue_component.name}.template = '#tpl-{vue_component.name}';")
             js_imports.append(f'app.component("{vue_component.tag}", {vue_component.name});')
+            js_imports_urls.append(url)
             vue_styles.append(vue_component.style)
             done_components.add(key)
 

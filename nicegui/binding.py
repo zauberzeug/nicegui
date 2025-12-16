@@ -25,6 +25,7 @@ propagation_visited: ContextVar[set[tuple[int, str]] | None] = ContextVar('propa
 bindings: defaultdict[tuple[int, str], list[tuple[Any, Any, str, Callable[[Any], Any] | None]]] = defaultdict(list)
 bindable_properties: weakref.WeakValueDictionary[tuple[int, str], Any] = weakref.WeakValueDictionary()
 active_links: list[tuple[Any, str, Any, str, Callable[[Any], Any] | None]] = []
+_active_links_added = asyncio.Event()
 
 TC = TypeVar('TC', bound=type)
 T = TypeVar('T')
@@ -51,6 +52,12 @@ def _set_attribute(obj: object | Mapping, name: str, value: Any) -> None:
 
 async def refresh_loop() -> None:
     """Refresh all bindings in an endless loop."""
+    global _active_links_added  # pylint: disable=global-statement # noqa: PLW0603
+    _active_links_added = asyncio.Event()
+    await _active_links_added.wait()
+    if core.app.config.binding_refresh_interval is None:
+        core.app.config.binding_refresh_interval = 0.1
+        log.warning('Starting active binding loop even though it was disabled via binding_refresh_interval=None.')
     while True:
         _refresh_step()
         try:
@@ -148,6 +155,7 @@ def bind_to(self_obj: Any, self_name: str, other_obj: Any, other_name: str,
     bindings[(id(self_obj), self_name)].append((self_obj, other_obj, other_name, forward))
     if (id(self_obj), self_name) not in bindable_properties:
         active_links.append((self_obj, self_name, other_obj, other_name, forward))
+        _active_links_added.set()
     _propagate(self_obj, self_name)
 
 
@@ -173,6 +181,7 @@ def bind_from(self_obj: Any, self_name: str, other_obj: Any, other_name: str,
     bindings[(id(other_obj), other_name)].append((other_obj, self_obj, self_name, backward))
     if (id(other_obj), other_name) not in bindable_properties:
         active_links.append((other_obj, other_name, self_obj, self_name, backward))
+        _active_links_added.set()
     _propagate(other_obj, other_name)
 
 
