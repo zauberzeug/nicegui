@@ -65,7 +65,7 @@ class EChartPointClickEventArguments(UiEventArguments):
     series_name: str
     data_index: int
     data: float | int | str
-    data_type: str
+    data_type: str | None
     value: float | int | list
 
 
