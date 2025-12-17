@@ -85,7 +85,7 @@ def register_vue_component(path: Path, *, max_time: float | None) -> Component:
     if path.suffix == '.vue':
         if key in vue_components and vue_components[key].path == path:
             return vue_components[key]
-        assert _name_is_unique(name), f'Duplicate name "{name}" for Vue component {path}'
+        assert _component_name_is_unique(name), f'Duplicate name "{name}" for Vue component {path}'
         assert key not in vue_components, f'Duplicate VUE component {key}'
         v = VBuild(path)
         vue_components[key] = VueComponent(key=key, name=name, path=path, html=v.html, script=v.script, style=v.style)
@@ -93,7 +93,7 @@ def register_vue_component(path: Path, *, max_time: float | None) -> Component:
     if path.suffix == '.js':
         if key in js_components and js_components[key].path == path:
             return js_components[key]
-        assert _name_is_unique(name), f'Duplicate name "{name}" for Vue component {path}'
+        assert _component_name_is_unique(name), f'Duplicate name "{name}" for Vue component {path}'
         assert key not in js_components, f'Duplicate JS component {key}'
         js_components[key] = JsComponent(key=key, name=name, path=path)
         return js_components[key]
@@ -107,7 +107,7 @@ def register_library(path: Path, *, max_time: float | None) -> Library:
     if path.suffix in {'.js', '.mjs'}:
         if key in libraries and libraries[key].path == path:
             return libraries[key]
-        assert _name_is_unique(name), f'Duplicate name "{name}" for library {path}'
+        assert _import_name_is_unique(name), f'Duplicate name "{name}" for library {path}'
         assert key not in libraries, f'Duplicate js library {key}'
         libraries[key] = Library(key=key, name=name, path=path)
         return libraries[key]
@@ -132,17 +132,27 @@ def register_dynamic_resource(name: str, function: Callable) -> DynamicResource:
 
 def register_esm(name: str, path: Path, *, max_time: float | None) -> None:
     """Register an ESM module."""
-    assert _name_is_unique(name), f'Duplicate name "{name}" for ESM module {path}'
+    assert _import_name_is_unique(name), f'Duplicate name "{name}" for ESM module {path}'
     esm_modules[compute_key(path, max_time=max_time)] = EsmModule(name=name, path=path)
 
 
-seen_names: set[str] = {'vue', 'sass', 'immutable'}
+component_names: set[str] = set()
+import_names: set[str] = {'vue', 'sass', 'immutable'}
 
 
-def _name_is_unique(name: str) -> bool:
-    if name in seen_names:
+def _component_name_is_unique(name: str) -> bool:
+    """Check if a component name is unique (used as JS variable name)."""
+    if name in component_names:
         return False
-    seen_names.add(name)
+    component_names.add(name)
+    return True
+
+
+def _import_name_is_unique(name: str) -> bool:
+    """Check if an importmap name is unique (used for ESM modules and libraries)."""
+    if name in import_names:
+        return False
+    import_names.add(name)
     return True
 
 
