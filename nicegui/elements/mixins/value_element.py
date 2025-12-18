@@ -1,13 +1,15 @@
-from typing import Any, Callable, Optional, cast
+from typing import Any, Callable, Generic, Optional, cast
 
-from typing_extensions import Self
+from typing_extensions import Self, TypeVar
 
 from ...binding import BindableProperty, bind, bind_from, bind_to
 from ...element import Element
 from ...events import GenericEventArguments, Handler, ValueChangeEventArguments, handle_event
 
+V = TypeVar('V')
 
-class ValueElement(Element):
+
+class ValueElement(Element, Generic[V]):
     VALUE_PROP: str = 'model-value'
     '''Name of the prop that holds the value of the element'''
 
@@ -19,12 +21,12 @@ class ValueElement(Element):
     - ``None``: The value is updated automatically by the Vue element.
     '''
 
-    value = BindableProperty(
-        on_change=lambda sender, value: cast(Self, sender)._handle_value_change(value))  # pylint: disable=protected-access
+    value = BindableProperty[V, 'ValueElement[V]'](
+        on_change=lambda sender, value: sender._handle_value_change(value))  # pylint: disable=protected-access
 
     def __init__(self, *,
-                 value: Any,
-                 on_value_change: Optional[Handler[ValueChangeEventArguments]] = None,
+                 value: V,
+                 on_value_change: Optional[Handler[ValueChangeEventArguments[V]]] = None,
                  throttle: float = 0,
                  **kwargs: Any,
                  ) -> None:
@@ -33,15 +35,15 @@ class ValueElement(Element):
         self.set_value(value)
         self._props[self.VALUE_PROP] = self._value_to_model_value(value)
         self._props['loopback'] = self.LOOPBACK
-        self._change_handlers: list[Handler[ValueChangeEventArguments]] = [on_value_change] if on_value_change else []
+        self._change_handlers: list[Handler[ValueChangeEventArguments[V]]] = [on_value_change] if on_value_change else []
 
-        def handle_change(e: GenericEventArguments) -> None:
+        def handle_change(e: GenericEventArguments[V]) -> None:
             self._send_update_on_value_change = self.LOOPBACK is True
             self.set_value(self._event_args_to_value(e))
             self._send_update_on_value_change = True
         self.on(f'update:{self.VALUE_PROP}', handle_change, [None], throttle=throttle)
 
-    def on_value_change(self, callback: Handler[ValueChangeEventArguments]) -> Self:
+    def on_value_change(self, callback: Handler[ValueChangeEventArguments[V]]) -> Self:
         """Add a callback to be invoked when the value changes."""
         self._change_handlers.append(callback)
         return self
@@ -111,15 +113,15 @@ class ValueElement(Element):
              self_strict=False, other_strict=strict)
         return self
 
-    def set_value(self, value: Any) -> None:
+    def set_value(self, value: V) -> None:
         """Set the value of this element.
 
         :param value: The value to set.
         """
         self.value = value
 
-    def _handle_value_change(self, value: Any) -> None:
-        previous_value = self._props.get(self.VALUE_PROP)
+    def _handle_value_change(self, value: V) -> None:
+        previous_value = cast(V, self._props.get(self.VALUE_PROP))
         with self._props.suspend_updates():
             self._props[self.VALUE_PROP] = self._value_to_model_value(value)
         if self._send_update_on_value_change:
@@ -130,11 +132,11 @@ class ValueElement(Element):
         for handler in self._change_handlers:
             handle_event(handler, args)
 
-    def _event_args_to_value(self, e: GenericEventArguments) -> Any:
+    def _event_args_to_value(self, e: GenericEventArguments[Any]) -> Any:
         return e.args
 
-    def _value_to_model_value(self, value: Any) -> Any:
+    def _value_to_model_value(self, value: V) -> Any:
         return value
 
-    def _value_to_event_value(self, value: Any) -> Any:
+    def _value_to_event_value(self, value: V) -> Any:
         return value
