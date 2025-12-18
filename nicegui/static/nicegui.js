@@ -139,7 +139,7 @@ function throttle(callback, time, leading, trailing, id) {
     }
   }
 }
-function renderRecursively(elements, id) {
+function renderRecursively(elements, id, slotPropsContext) {
   const element = elements[id];
   if (element === undefined) {
     return;
@@ -160,9 +160,11 @@ function renderRecursively(elements, id) {
     if (key.startsWith(":")) {
       try {
         try {
-          props[key.substring(1)] = new Function(`return (${value})`)();
+          props[key.substring(1)] = slotPropsContext
+            ? new Function("props", `return (${value})`)(slotPropsContext)
+            : new Function(`return (${value})`)();
         } catch (e) {
-          props[key.substring(1)] = eval(value);
+          props[key.substring(1)] = slotPropsContext ? undefined : eval(value);
         }
         delete props[key];
       } catch (e) {
@@ -213,7 +215,7 @@ function renderRecursively(elements, id) {
     ...element.slots,
   };
   Object.entries(element_slots).forEach(([name, data]) => {
-    slots[name] = (props) => {
+    slots[name] = (slotProps) => {
       const rendered = [];
       if (data.template) {
         rendered.push(
@@ -223,12 +225,12 @@ function renderRecursively(elements, id) {
               template: data.template,
             },
             {
-              props: props,
+              props: slotProps,
             }
           )
         );
       }
-      const children = data.ids.map((id) => renderRecursively(elements, id));
+      const children = data.ids.map((id) => renderRecursively(elements, id, slotProps || slotPropsContext));
       if (name === "default" && element.text !== null) {
         children.unshift(element.text);
       }
