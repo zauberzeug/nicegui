@@ -10,7 +10,7 @@ except ImportError:
     pass
 
 
-class Plotly(Element, component='plotly.vue', esm={'nicegui-plotly': 'dist'}):
+class Plotly(Element, component='plotly.js', esm={'nicegui-plotly': 'dist'}):
 
     def __init__(self, figure: dict | go.Figure) -> None:
         """Plotly Element

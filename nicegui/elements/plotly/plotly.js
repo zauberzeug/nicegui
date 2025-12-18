@@ -1,9 +1,5 @@
-<template>
-  <div></div>
-</template>
-
-<script>
 export default {
+  template: "<div></div>",
   async mounted() {
     const { Plotly } = await import("nicegui-plotly");
     this.Plotly = Plotly;
@@ -89,26 +85,3 @@ export default {
     options: Object,
   },
 };
-</script>
-
-<style>
-/*
-  fix styles to correctly render modebar, otherwise large buttons with unwanted line breaks are shown,
-  possibly due to other CSS libraries overriding default styles affecting plotly styling.
-*/
-.js-plotly-plot .plotly .modebar-group {
-  display: flex;
-}
-.js-plotly-plot .plotly .modebar-btn {
-  display: flex;
-}
-.js-plotly-plot .plotly .modebar-btn svg {
-  position: static;
-}
-/*
-  fix overflow when adding borders to the plotly plot
-*/
-.js-plotly-plot {
-  box-sizing: content-box;
-}
-</style>
