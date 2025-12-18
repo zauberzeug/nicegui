@@ -22,7 +22,7 @@ export default {
     }
 
     this.chart = echarts.init(this.$el, theme_name, { renderer: this.renderer });
-    this.chart.on("click", (e) => this.$emit("pointClick", e));
+    this.chart.on("click", (e) => this.$emit("componentClick", e));
     for (const event of [
       "click",
       "dblclick",

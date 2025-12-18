@@ -6,7 +6,13 @@ from ... import optional_features
 from ...awaitable_response import AwaitableResponse
 from ...defaults import DEFAULT_PROPS, resolve_defaults
 from ...element import Element
-from ...events import EChartPointClickEventArguments, GenericEventArguments, Handler, handle_event
+from ...events import (
+    EChartComponentClickEventArguments,
+    EChartPointClickEventArguments,
+    GenericEventArguments,
+    Handler,
+    handle_event,
+)
 
 try:
     from pyecharts.charts.base import default, json
@@ -24,6 +30,7 @@ class EChart(Element, component='echart.js', esm={'nicegui-echart': 'dist'}, def
     def __init__(self,
                  options: dict,
                  on_point_click: Optional[Handler[EChartPointClickEventArguments]] = None, *,
+                 on_click: Optional[Handler[EChartComponentClickEventArguments]] = None,
                  enable_3d: bool = DEFAULT_PROPS['enable_3d'] | False,
                  renderer: Literal['canvas', 'svg'] = DEFAULT_PROPS['renderer'] | 'canvas',
                  theme: Optional[Union[str, dict]] = DEFAULT_PROPS['theme'] | None,
@@ -34,7 +41,8 @@ class EChart(Element, component='echart.js', esm={'nicegui-echart': 'dist'}, def
         Updates can be pushed to the chart by changing the `options` property.
 
         :param options: dictionary of EChart options
-        :param on_click_point: callback that is invoked when a point is clicked
+        :param on_point_click: callback that is invoked when a point is clicked
+        :param on_click: callback that is invoked when any component is clicked (*added in version 3.5.0*)
         :param enable_3d: enforce importing the echarts-gl library
         :param renderer: renderer to use ("canvas" or "svg", *added in version 2.7.0*)
         :param theme: an EChart theme configuration (dictionary or a URL returning a JSON object, *added in version 2.15.0*)
@@ -48,6 +56,8 @@ class EChart(Element, component='echart.js', esm={'nicegui-echart': 'dist'}, def
 
         if on_point_click:
             self.on_point_click(on_point_click)
+        if on_click:
+            self.on_click(on_click)
 
     def on_point_click(self, callback: Handler[EChartPointClickEventArguments]) -> Self:
         """Add a callback to be invoked when a point is clicked."""
@@ -67,7 +77,7 @@ class EChart(Element, component='echart.js', esm={'nicegui-echart': 'dist'}, def
                 data_type=e.args.get('dataType'),
                 value=e.args['value'],
             ))
-        self.on('pointClick', handle_point_click, [
+        self.on('componentClick', handle_point_click, [
             'componentType',
             'seriesType',
             'seriesIndex',
@@ -77,6 +87,21 @@ class EChart(Element, component='echart.js', esm={'nicegui-echart': 'dist'}, def
             'data',
             'dataType',
             'value',
+        ])
+        return self
+
+    def on_click(self, callback: Handler[EChartComponentClickEventArguments]) -> Self:
+        """Add a callback to be invoked when any component is clicked."""
+        def handle_click(e: GenericEventArguments) -> None:
+            handle_event(callback, EChartComponentClickEventArguments(
+                sender=self,
+                client=self.client,
+                component_type=e.args['componentType'],
+                name=e.args.get('name'),
+            ))
+        self.on('componentClick', handle_click, [
+            'componentType',
+            'name',
         ])
         return self
 

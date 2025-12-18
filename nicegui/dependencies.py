@@ -4,7 +4,7 @@ import functools
 from collections.abc import Iterable
 from dataclasses import dataclass
 from pathlib import Path
-from typing import TYPE_CHECKING, Callable
+from typing import TYPE_CHECKING, Callable, ClassVar
 
 from . import core
 from .dataclasses import KWONLY_SLOTS
@@ -21,6 +21,14 @@ class Component:
     key: str
     name: str
     path: Path
+    _keys: ClassVar[set[str]] = set()
+    _names: ClassVar[set[str]] = set()
+
+    def __post_init__(self) -> None:
+        assert self.key not in self._keys, f'Duplicate key "{self.key}" for {self.__class__.__name__} {self.path}'
+        assert self.name not in self._names, f'Duplicate name "{self.name}" for {self.__class__.__name__} {self.path}'
+        self._keys.add(self.key)
+        self._names.add(self.name)
 
     @property
     def tag(self) -> str:
@@ -44,6 +52,11 @@ class JsComponent(Component):
 class Resource:
     key: str
     path: Path
+    _keys: ClassVar[set[str]] = set()
+
+    def __post_init__(self) -> None:
+        assert self.key not in self._keys, f'Duplicate key "{self.key}" for {self.__class__.__name__} {self.path}'
+        self._keys.add(self.key)
 
 
 @dataclass(**KWONLY_SLOTS)
@@ -53,16 +66,29 @@ class DynamicResource:
 
 
 @dataclass(**KWONLY_SLOTS)
-class Library:
-    key: str
+class Import:
     name: str
     path: Path
+    _names: ClassVar[set[str]] = set()
+
+    def __post_init__(self) -> None:
+        assert self.name not in self._names, f'Duplicate name "{self.name}" for {self.__class__.__name__} {self.path}'
+        self._names.add(self.name)
 
 
 @dataclass(**KWONLY_SLOTS)
-class EsmModule:
-    name: str
-    path: Path
+class Library(Import):
+    key: str
+    _keys: ClassVar[set[str]] = set()
+
+    def __post_init__(self) -> None:
+        assert self.key not in self._keys, f'Duplicate key "{self.key}" for {self.__class__.__name__} {self.path}'
+        self._keys.add(self.key)
+
+
+@dataclass(**KWONLY_SLOTS)
+class EsmModule(Import):
+    pass
 
 
 vue_components: dict[str, VueComponent] = {}
@@ -85,14 +111,12 @@ def register_vue_component(path: Path, *, max_time: float | None) -> Component:
     if path.suffix == '.vue':
         if key in vue_components and vue_components[key].path == path:
             return vue_components[key]
-        assert key not in vue_components, f'Duplicate VUE component {key}'
         v = VBuild(path)
         vue_components[key] = VueComponent(key=key, name=name, path=path, html=v.html, script=v.script, style=v.style)
         return vue_components[key]
     if path.suffix == '.js':
         if key in js_components and js_components[key].path == path:
             return js_components[key]
-        assert key not in js_components, f'Duplicate JS component {key}'
         js_components[key] = JsComponent(key=key, name=name, path=path)
         return js_components[key]
     raise ValueError(f'Unsupported component type "{path.suffix}"')
@@ -105,7 +129,6 @@ def register_library(path: Path, *, max_time: float | None) -> Library:
     if path.suffix in {'.js', '.mjs'}:
         if key in libraries and libraries[key].path == path:
             return libraries[key]
-        assert key not in libraries, f'Duplicate js library {key}'
         libraries[key] = Library(key=key, name=name, path=path)
         return libraries[key]
     raise ValueError(f'Unsupported library type "{path.suffix}"')
@@ -116,7 +139,6 @@ def register_resource(path: Path, *, max_time: float | None) -> Resource:
     key = compute_key(path, max_time=max_time)
     if key in resources and resources[key].path == path:
         return resources[key]
-    assert key not in resources, f'Duplicate resource {key}'
     resources[key] = Resource(key=key, path=path)
     return resources[key]
 
@@ -129,8 +151,6 @@ def register_dynamic_resource(name: str, function: Callable) -> DynamicResource:
 
 def register_esm(name: str, path: Path, *, max_time: float | None) -> None:
     """Register an ESM module."""
-    if any(name == esm_module.name for esm_module in esm_modules.values()):
-        raise ValueError(f'Duplicate ESM module name "{name}"')
     esm_modules[compute_key(path, max_time=max_time)] = EsmModule(name=name, path=path)
 
 
