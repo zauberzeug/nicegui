@@ -20,7 +20,7 @@ class Sentinel:
         self.default: Any
 
     def __or__(self, other: T) -> T:
-        self.default = other  # type: ignore[assignment]
+        self.default = other
         return self  # type: ignore[return-value]
 
 
