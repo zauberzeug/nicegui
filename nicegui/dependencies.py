@@ -26,8 +26,8 @@ class Component:
 
     def __post_init__(self) -> None:
         assert self.key not in self._keys, f'Duplicate key "{self.key}" for {self.__class__.__name__} {self.path}'
-        self._keys.add(self.key)
         assert self.name not in self._names, f'Duplicate name "{self.name}" for {self.__class__.__name__} {self.path}'
+        self._keys.add(self.key)
         self._names.add(self.name)
 
     @property
