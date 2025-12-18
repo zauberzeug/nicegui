@@ -395,3 +395,19 @@ def test_columns_from_df(screen: Screen, df_type: str):
     screen.click('Update cars with columns')  # updated columns via parameter
     screen.should_contain('Hyundai')
     screen.should_contain('i30')
+
+
+def test_new_slots(screen: Screen):
+    @ui.page('/')
+    def page():
+        table = ui.table(rows=[{'name': 'Alice'}, {'name': 'Bob'}, {'name': 'Carol'}])
+        with table.add_slot('body-cell-name'):
+            with table.cell():
+                ui.button().props(':label="props.value"') \
+                    .on('click', js_handler='() => emit(props.label)', handler=lambda e: ui.notify(f'Clicked {e.args}'))
+
+    screen.open('/')
+    screen.should_contain('Alice')
+
+    screen.click('Alice')
+    screen.should_contain('Clicked Alice')
