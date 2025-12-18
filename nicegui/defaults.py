@@ -33,8 +33,8 @@ class SentinelFactory:
 DEFAULT_PROPS = SentinelFactory()
 
 
-def honor_default_props(original_func: Callable[P, R]) -> Callable[P, R]:
-    """This decorator makes the function honor default properties set via ``default_props``.
+def resolve_defaults(original_func: Callable[P, R]) -> Callable[P, R]:
+    """This decorator makes the function resolve default properties set via ``default_props``.
 
     If a parameter has a default value which looks like ``DEFAULT_PROPS['prop_key'] | default_value``,
     the actual value will be taken from the element's ``_default_props`` dictionary with key ``prop_key`` if present,
