@@ -5,6 +5,7 @@ from typing_extensions import Self
 
 from ... import optional_features
 from ...awaitable_response import AwaitableResponse
+from ...defaults import DEFAULT_PROPS, resolve_defaults
 from ...element import Element
 
 if importlib.util.find_spec('pandas'):
@@ -20,9 +21,10 @@ if importlib.util.find_spec('polars'):
 
 class AgGrid(Element, component='aggrid.js', esm={'nicegui-aggrid': 'dist'}, default_classes='nicegui-aggrid'):
 
+    @resolve_defaults
     def __init__(self,
                  options: dict, *,
-                 html_columns: list[int] = [],  # noqa: B006
+                 html_columns: list[int] = DEFAULT_PROPS['html_columns'] | [],
                  theme: Optional[Literal['quartz', 'balham', 'material', 'alpine']] = None,
                  auto_size_columns: bool = True,
                  ) -> None:

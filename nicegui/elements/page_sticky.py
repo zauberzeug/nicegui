@@ -1,5 +1,6 @@
 from typing import Literal
 
+from ..defaults import DEFAULT_PROPS, resolve_defaults
 from ..element import Element
 
 PageStickyPositions = Literal[
@@ -16,12 +17,14 @@ PageStickyPositions = Literal[
 
 class PageSticky(Element):
 
+    @resolve_defaults
     def __init__(self,
-                 position: PageStickyPositions = 'bottom-right',
+                 position: PageStickyPositions = DEFAULT_PROPS['position'] | 'bottom-right',
                  x_offset: float = 0,
                  y_offset: float = 0,
                  *,
-                 expand: bool = False) -> None:
+                 expand: bool = DEFAULT_PROPS['expand'] | False,
+                 ) -> None:
         """Page sticky
 
         This element is based on Quasar's `QPageSticky <https://quasar.dev/layout/page-sticky>`_ component.
@@ -34,5 +37,4 @@ class PageSticky(Element):
         super().__init__('q-page-sticky')
         self._props['position'] = position
         self._props['offset'] = [x_offset, y_offset]
-        if expand:
-            self._props['expand'] = True
+        self._props.set_bool('expand', expand)

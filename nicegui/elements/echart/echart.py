@@ -4,6 +4,7 @@ from typing_extensions import Self
 
 from ... import optional_features
 from ...awaitable_response import AwaitableResponse
+from ...defaults import DEFAULT_PROPS, resolve_defaults
 from ...element import Element
 from ...events import EChartPointClickEventArguments, GenericEventArguments, Handler, handle_event
 
@@ -19,12 +20,13 @@ except ImportError:
 
 class EChart(Element, component='echart.js', esm={'nicegui-echart': 'dist'}, default_classes='nicegui-echart'):
 
+    @resolve_defaults
     def __init__(self,
                  options: dict,
                  on_point_click: Optional[Handler[EChartPointClickEventArguments]] = None, *,
-                 enable_3d: bool = False,
-                 renderer: Literal['canvas', 'svg'] = 'canvas',
-                 theme: Optional[Union[str, dict]] = None,
+                 enable_3d: bool = DEFAULT_PROPS['enable_3d'] | False,
+                 renderer: Literal['canvas', 'svg'] = DEFAULT_PROPS['renderer'] | 'canvas',
+                 theme: Optional[Union[str, dict]] = DEFAULT_PROPS['theme'] | None,
                  ) -> None:
         """Apache EChart
 

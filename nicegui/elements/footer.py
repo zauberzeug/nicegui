@@ -1,15 +1,17 @@
 from ..context import context
+from ..defaults import DEFAULT_PROPS, resolve_defaults
 from ..helpers import require_top_level_layout
 from .mixins.value_element import ValueElement
 
 
 class Footer(ValueElement, default_classes='nicegui-footer'):
 
+    @resolve_defaults
     def __init__(self, *,
-                 value: bool = True,
+                 value: bool = DEFAULT_PROPS['model-value'] | True,
                  fixed: bool = True,
-                 bordered: bool = False,
-                 elevated: bool = False,
+                 bordered: bool = DEFAULT_PROPS['bordered'] | False,
+                 elevated: bool = DEFAULT_PROPS['elevated'] | False,
                  wrap: bool = True,
                  ) -> None:
         """Footer

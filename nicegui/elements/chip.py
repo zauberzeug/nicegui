@@ -2,6 +2,7 @@ from typing import Optional
 
 from typing_extensions import Self
 
+from ..defaults import DEFAULT_PROPS, resolve_defaults
 from ..events import ClickEventArguments, Handler, ValueChangeEventArguments, handle_event
 from .mixins.color_elements import BackgroundColorElement, TextColorElement
 from .mixins.disableable_element import DisableableElement
@@ -14,17 +15,18 @@ from .mixins.value_element import ValueElement
 class Chip(IconElement, ValueElement, TextElement, BackgroundColorElement, TextColorElement, DisableableElement, SelectableElement):
     TEXT_COLOR_PROP = 'text-color'
 
+    @resolve_defaults
     def __init__(self,
                  text: str = '',
                  *,
                  icon: Optional[str] = None,
-                 color: Optional[str] = 'primary',
-                 text_color: Optional[str] = None,
+                 color: Optional[str] = DEFAULT_PROPS['color'] | 'primary',
+                 text_color: Optional[str] = DEFAULT_PROPS['text-color'] | None,
                  on_click: Optional[Handler[ClickEventArguments]] = None,
-                 selectable: bool = False,
-                 selected: bool = False,
+                 selectable: bool = DEFAULT_PROPS['selectable'] | False,
+                 selected: bool = DEFAULT_PROPS['selected'] | False,
                  on_selection_change: Optional[Handler[ValueChangeEventArguments]] = None,
-                 removable: bool = False,
+                 removable: bool = DEFAULT_PROPS['removable'] | False,
                  on_value_change: Optional[Handler[ValueChangeEventArguments]] = None,
                  ) -> None:
         """Chip

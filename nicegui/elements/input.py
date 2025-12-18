@@ -1,5 +1,6 @@
 from typing import Any, Optional, Union
 
+from ..defaults import DEFAULT_PROPS, resolve_defaults
 from ..events import Handler, ValueChangeEventArguments
 from .icon import Icon
 from .mixins.disableable_element import DisableableElement
@@ -11,14 +12,15 @@ class Input(LabelElement, ValidationElement, DisableableElement, component='inpu
     VALUE_PROP: str = 'value'
     LOOPBACK = False
 
+    @resolve_defaults
     def __init__(self,
-                 label: Optional[str] = None, *,
-                 placeholder: Optional[str] = None,
-                 value: str = '',
-                 password: bool = False,
+                 label: Optional[str] = DEFAULT_PROPS['label'] | None, *,
+                 placeholder: Optional[str] = DEFAULT_PROPS['placeholder'] | None,
+                 value: str = DEFAULT_PROPS['value'] | '',
+                 password: bool = DEFAULT_PROPS['password'] | False,
                  password_toggle_button: bool = False,
                  on_change: Optional[Handler[ValueChangeEventArguments]] = None,
-                 autocomplete: Optional[list[str]] = None,
+                 autocomplete: Optional[list[str]] = DEFAULT_PROPS['_autocomplete'] | None,
                  validation: Optional[Union[ValidationFunction, ValidationDict]] = None,
                  ) -> None:
         """Text Input
@@ -52,8 +54,7 @@ class Input(LabelElement, ValidationElement, DisableableElement, component='inpu
         """
         super().__init__(label=label, value=value, on_value_change=on_change, validation=validation)
         self._props['for'] = self.html_id
-        if placeholder is not None:
-            self._props['placeholder'] = placeholder
+        self._props.set_optional('placeholder', placeholder)
         self._props['type'] = 'password' if password else 'text'
 
         if password_toggle_button:

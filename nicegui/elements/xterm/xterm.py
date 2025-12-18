@@ -5,13 +5,15 @@ from pathlib import Path
 from typing_extensions import Self
 
 from ...awaitable_response import AwaitableResponse
+from ...defaults import DEFAULT_PROPS, resolve_defaults
 from ...element import Element
 from ...events import GenericEventArguments, Handler, XtermBellEventArguments, XtermDataEventArguments, handle_event
 
 
 class Xterm(Element, component='xterm.js', esm={'nicegui-xterm': 'dist'}):
 
-    def __init__(self, options: dict | None = None) -> None:
+    @resolve_defaults
+    def __init__(self, options: dict | None = DEFAULT_PROPS['options'] | None) -> None:
         """Xterm
 
         This element is a wrapper around `xterm.js <https://github.com/xtermjs/xterm.js>`_ to emulate a terminal.

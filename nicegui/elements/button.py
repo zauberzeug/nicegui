@@ -18,7 +18,7 @@ class Button(IconElement, TextElement, DisableableElement, BackgroundColorElemen
                  text: str = '', *,
                  on_click: Optional[Handler[ClickEventArguments]] = None,
                  color: Optional[str] = DEFAULT_PROPS['color'] | 'primary',
-                 icon: Optional[str] = None,
+                 icon: Optional[str] = DEFAULT_PROPS['icon'] | None,
                  ) -> None:
         """Button
 

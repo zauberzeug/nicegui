@@ -1,10 +1,12 @@
 from typing import Literal, Optional
 
+from ..defaults import DEFAULT_PROPS, resolve_defaults
 from ..element import Element
 
 
 class Skeleton(Element):
 
+    @resolve_defaults
     def __init__(self,
                  type: Literal[  # pylint: disable=redefined-builtin
                      'text',
@@ -21,9 +23,9 @@ class Skeleton(Element):
                      'QRange',
                      'QInput',
                      'QAvatar',
-                 ] = 'rect',
+                 ] = DEFAULT_PROPS['type'] | 'rect',
                  *,
-                 tag: str = 'div',
+                 tag: str = DEFAULT_PROPS['tag'] | 'div',
                  animation: Literal[
                      'wave',
                      'pulse',
@@ -32,13 +34,13 @@ class Skeleton(Element):
                      'fade',
                      'blink',
                      'none',
-                 ] = 'wave',
+                 ] = DEFAULT_PROPS['animation'] | 'wave',
                  animation_speed: float = 1.5,
-                 square: bool = False,
-                 bordered: bool = False,
-                 size: Optional[str] = None,
-                 width: Optional[str] = None,
-                 height: Optional[str] = None,
+                 square: bool = DEFAULT_PROPS['square'] | False,
+                 bordered: bool = DEFAULT_PROPS['bordered'] | False,
+                 size: Optional[str] = DEFAULT_PROPS['size'] | None,
+                 width: Optional[str] = DEFAULT_PROPS['width'] | None,
+                 height: Optional[str] = DEFAULT_PROPS['height'] | None,
                  ) -> None:
         """Skeleton
 
@@ -57,21 +59,12 @@ class Skeleton(Element):
         :param height: height in CSS units (overridden by ``size`` if set)
         """
         super().__init__('q-skeleton')
-        if type != 'rect':
-            self._props['type'] = type
-        if tag != 'div':
-            self._props['tag'] = tag
-        if animation != 'wave':
-            self._props['animation'] = animation
-        if animation_speed != 1.5:
-            self._props['animation-speed'] = animation_speed
-        if square:
-            self._props['square'] = True
-        if bordered:
-            self._props['bordered'] = True
-        if size:
-            self._props['size'] = size
-        if width:
-            self._props['width'] = width
-        if height:
-            self._props['height'] = height
+        self._props.set_optional('type', type if type != 'rect' else None)
+        self._props.set_optional('tag', tag if tag != 'div' else None)
+        self._props.set_optional('animation', animation if animation != 'wave' else None)
+        self._props.set_optional('animation-speed', animation_speed if animation_speed != 1.5 else None)
+        self._props.set_bool('square', square)
+        self._props.set_bool('bordered', bordered)
+        self._props.set_optional('size', size)
+        self._props.set_optional('width', width)
+        self._props.set_optional('height', height)

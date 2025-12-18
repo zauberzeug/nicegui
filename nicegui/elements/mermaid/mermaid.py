@@ -2,6 +2,7 @@ from typing import Optional
 
 from typing_extensions import Self
 
+from ...defaults import DEFAULT_PROPS, resolve_defaults
 from ...events import Handler, MermaidNodeClickEventArguments, handle_event
 from ..mixins.content_element import ContentElement
 
@@ -9,9 +10,10 @@ from ..mixins.content_element import ContentElement
 class Mermaid(ContentElement, component='mermaid.js', esm={'nicegui-mermaid': 'dist'}):
     CONTENT_PROP = 'content'
 
+    @resolve_defaults
     def __init__(self,
                  content: str,
-                 config: Optional[dict] = None,
+                 config: Optional[dict] = DEFAULT_PROPS['config'] | None,
                  *,
                  on_node_click: Optional[Handler[MermaidNodeClickEventArguments]] = None,
                  ) -> None:
