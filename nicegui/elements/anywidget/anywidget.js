@@ -1,5 +1,4 @@
-import { load_widget, load_css } from "widget";  // lib/anywidget/widget.js
-import { convertDynamicProperties } from "../../static/utils/dynamic_properties.js";
+import { load_widget, load_css } from "widget"; // lib/anywidget/widget.js
 
 export default {
   template: "<div></div>",
@@ -25,7 +24,7 @@ export default {
           attributes: { ...this.traits },
           callbacks: {},
           get: function (key) {
-            log('Getting value for', key, ':', this.attributes[key]);
+            log("Getting value for", key, ":", this.attributes[key]);
             const value = this.attributes[key];
             try {
               // TODO: this should not be necessary but was running into some
@@ -33,30 +32,30 @@ export default {
               return JSON.parse(JSON.stringify(value));
             } catch (e) {
               // If value is not serializable, return null or a fallback
-              console.warn('NiceGUI-Anywidget: Value for key', key, 'is not JSON-serializable:', value);
+              console.warn("NiceGUI-Anywidget: Value for key", key, "is not JSON-serializable:", value);
               return null;
             }
           },
           set: function (key, value) {
-            log('Setting value for', key, ':', value);
+            log("Setting value for", key, ":", value);
             this.attributes[key] = value;
-            this.emit('change:' + key, value);
+            this.emit("change:" + key, value);
           },
           save_changes: function () {
-            log('Saving changes:', this.attributes);
+            log("Saving changes:", this.attributes);
 
             // Trigger any change callbacks
-            if (this.callbacks['change'] && Array.isArray(this.callbacks['change'])) {
-              this.callbacks['change'].forEach((cb) => cb());
+            if (this.callbacks["change"] && Array.isArray(this.callbacks["change"])) {
+              this.callbacks["change"].forEach((cb) => cb());
             }
 
             // Propagate the change back to python backend;
             // currently serializing all traits instead of just the changed ones
             // (ideally would do this to reduce communication overhead)
-            emit_to_py('update:traits', { ...this.attributes });
+            emit_to_py("update:traits", { ...this.attributes });
           },
           on: function (event, callback) {
-            log('Registering callback for event:', event);
+            log("Registering callback for event:", event);
             if (!this.callbacks[event]) {
               this.callbacks[event] = [];
             }
@@ -75,17 +74,17 @@ export default {
           },
           emit: function (event, value) {
             if (this.callbacks[event]) {
-              this.callbacks[event].forEach(cb => cb(value));
+              this.callbacks[event].forEach((cb) => cb(value));
             }
           },
           send: function (content, callbacks, buffers) {
             if (buffers) {
-              console.warn('anywidget.send() buffers are not supported in NiceGUI currently');
+              console.warn("anywidget.send() buffers are not supported in NiceGUI currently");
             } else {
-              console.warn('anywidget.send() is not yet implemented in NiceGUI;', content);
+              console.warn("anywidget.send() is not yet implemented in NiceGUI;", content);
             }
             // emit_to_py('custom', content);
-          }
+          },
         };
 
         // Dynamically load esm_content as an ECMAScript module
@@ -101,23 +100,18 @@ export default {
       // If you have an API to add listeners, do so here (placeholder)
       // this.api.addGlobalListener(this.handle_event);
     },
-    update_trait(change) {
-      // Callback from Python traitlet backend change event
-      // change is a dictionary with 'trait', 'new', and 'old' keys
-      convertDynamicProperties(change, true);
-      this._log('Updating trait:', change);
-      if (change) {
-        this.model.attributes[change['trait']] = change['new'];
-        this.model.emit("change:" + change['trait'], change['new']);
-      }
+    update_trait(trait, value) {
+      this._log("Updating trait:", trait, value);
+      this.model.attributes[trait] = value;
+      this.model.emit("change:" + trait, value);
     },
     update_traits() {
       // Currently no-op
-      this._log('Updating traits:', this.traits, this.model.attributes);
+      this._log("Updating traits:", this.traits, this.model.attributes);
     },
     handle_event(type, args) {
       // Currently unused
-      this._log('handle_event', type, args);
+      this._log("handle_event", type, args);
     },
   },
   props: {
