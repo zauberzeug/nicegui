@@ -4,7 +4,7 @@ import importlib.util
 from typing import TYPE_CHECKING
 
 from .. import optional_features
-from .anywidget.anywidget import AnyWidget
+from .anywidget import AnyWidget
 
 if importlib.util.find_spec('altair'):
     optional_features.register('altair')
@@ -30,4 +30,4 @@ class Altair(AnyWidget):
         if isinstance(chart, altair.Chart):
             chart = altair.JupyterChart(chart)
 
-        super().__init__(chart, throttle=throttle)
+        super().__init__(chart, throttle=throttle)  # type: ignore[arg-type]
