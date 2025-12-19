@@ -57,6 +57,8 @@ def _get_attribute(obj: object, name: str) -> str:
     content = getattr(obj, name, '')
     if callable(content) and not inspect.isclass(content):  # content is a property function
         content = content()
+    assert isinstance(content, (str, Path)), f'Attribute {name} is not a string or Path'
     if helpers.is_file(content):
         content = Path(content).read_text(encoding='utf8')
+    assert isinstance(content, str), f'Attribute {name} is a Path but does not exist'
     return content
