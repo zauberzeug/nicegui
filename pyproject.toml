@@ -100,6 +100,7 @@ website = [
     "polars>=1.12.0,<2",
     "pyecharts>=2.0.4,<3",
     "slowapi>=0.1.9,<0.2.0",
+    "vega_datasets>=0.9.0,<0.10.0",
 ]
 
 [project.urls]

@@ -2630,6 +2630,7 @@ dev = [
     { name = "types-pygments" },
     { name = "types-requests" },
     { name = "urllib3" },
+    { name = "vega-datasets" },
     { name = "webdriver-manager" },
 ]
 types = [
@@ -2649,6 +2650,7 @@ website = [
     { name = "polars" },
     { name = "pyecharts" },
     { name = "slowapi" },
+    { name = "vega-datasets" },
 ]
 
 [package.metadata]
@@ -2729,6 +2731,7 @@ dev = [
     { name = "types-pygments", specifier = ">=2.15.1,<3.0.0" },
     { name = "types-requests", specifier = ">=2.32.4" },
     { name = "urllib3", specifier = ">=1.26.18,!=2.0.0,!=2.0.1,!=2.0.2,!=2.0.3,!=2.0.4,!=2.0.5,!=2.0.6,!=2.0.7,!=2.1.0,!=2.2.0,!=2.2.1" },
+    { name = "vega-datasets", specifier = ">=0.9.0,<0.10.0" },
     { name = "webdriver-manager", specifier = ">=3.8.6,<5.0.0" },
 ]
 types = [
@@ -2750,6 +2753,7 @@ website = [
     { name = "polars", specifier = ">=1.12.0,<2" },
     { name = "pyecharts", specifier = ">=2.0.4,<3" },
     { name = "slowapi", specifier = ">=0.1.9,<0.2.0" },
+    { name = "vega-datasets", specifier = ">=0.9.0,<0.10.0" },
 ]
 
 [[package]]
@@ -5481,6 +5485,18 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/d5/9a/733fcb815d345979fc54d3cdc3eb50bc75a47da3e4003ea7ada58e6daa65/uvloop-0.22.1-cp39-cp39-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:17d4e97258b0172dfa107b89aa1eeba3016f4b1974ce85ca3ef6a66b35cbf659", size = 3685477, upload-time = "2025-10-16T22:17:15.307Z" },
     { url = "https://files.pythonhosted.org/packages/83/fb/bee1eb11cc92bd91f76d97869bb6a816e80d59fd73721b0a3044dc703d9c/uvloop-0.22.1-cp39-cp39-musllinux_1_2_aarch64.whl", hash = "sha256:05e4b5f86e621cf3927631789999e697e58f0d2d32675b67d9ca9eb0bca55743", size = 3496128, upload-time = "2025-10-16T22:17:16.558Z" },
     { url = "https://files.pythonhosted.org/packages/76/ee/3fdfeaa9776c0fd585d358c92b1dbca669720ffa476f0bbe64ed8f245bd7/uvloop-0.22.1-cp39-cp39-musllinux_1_2_x86_64.whl", hash = "sha256:286322a90bea1f9422a470d5d2ad82d38080be0a29c4dd9b3e6384320a4d11e7", size = 3602565, upload-time = "2025-10-16T22:17:17.755Z" },
+]
+
+[[package]]
+name = "vega-datasets"
+version = "0.9.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "pandas" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/8f/a0/ce608d9a5b82fce2ebaa2311136b1e1d1dc2807f501bbdfa56bd174fff76/vega_datasets-0.9.0.tar.gz", hash = "sha256:9dbe9834208e8ec32ab44970df315de9102861e4cda13d8e143aab7a80d93fc0", size = 215013, upload-time = "2020-11-26T13:56:59.421Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/e6/9f/ca52771fe972e0dcc5167fedb609940e01516066938ff2ee28b273ae4f29/vega_datasets-0.9.0-py3-none-any.whl", hash = "sha256:3d7c63917be6ca9b154b565f4779a31fedce57b01b5b9d99d8a34a7608062a1d", size = 210822, upload-time = "2020-11-26T13:56:57.776Z" },
 ]
 
 [[package]]

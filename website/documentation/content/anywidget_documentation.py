@@ -54,4 +54,23 @@ def main_demo() -> None:
       .bind_text_from(counter, 'value', backward=lambda c: f'Count is {c}')
 
 
+@doc.demo('Altair charts with AnyWidget', '''
+    You can use `ui.anywidget` to integrate existing AnyWidget widgets into NiceGUI.
+    This demo shows how to integrate an Altair chart.
+''')
+def integrate_altair() -> None:
+    import altair as alt
+    import numpy as np
+    import pandas as pd
+
+    df = pd.DataFrame(np.random.random((60, 3)), columns=['x', 'y', 'size'])
+
+    chart = alt.Chart(df).mark_circle() \
+        .encode(x='x', y='y', size='size', color='size', tooltip=['x', 'y', 'size'])
+
+    jchart = alt.JupyterChart(chart)
+
+    ui.anywidget(jchart)
+
+
 doc.reference(ui.anywidget)
