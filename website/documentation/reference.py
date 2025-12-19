@@ -32,7 +32,7 @@ def generate_class_doc(class_obj: type, part_title: str) -> None:
         with ui.column().classes('gap-2 w-full overflow-x-auto'):
             for name, property_ in sorted(properties.items()):
                 ui.markdown(f'**`{name}`**`{_generate_property_signature_description(property_)}`')
-                if property_.__doc__:
+                if property_ is not None and property_.__doc__:
                     _render_docstring(property_.__doc__).classes('ml-8')
     if methods:
         subheading('Methods', anchor_name=create_anchor_name(part_title.replace('Reference', 'Methods')))

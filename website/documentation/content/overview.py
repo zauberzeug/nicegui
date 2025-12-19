@@ -293,8 +293,8 @@ def map_of_nicegui():
             - [`ui.add_body_html`](/documentation/section_pages_routing#add_html_to_the_page) and
                 [`ui.add_head_html`](/documentation/section_pages_routing#add_html_to_the_page): add HTML to the body and head of the page
             - [`ui.add_css`](/documentation/add_style#add_css_style_definitions_to_the_page),
-                [`ui.add_sass`](/documentation/add_style#add_sass_style_definitions_to_the_page) and
-                [`ui.add_scss`](/documentation/add_style#add_scss_style_definitions_to_the_page): add CSS, SASS and SCSS to the page
+                [`ui.add_sass`](/documentation/add_style#add_sass_style_definitions_to_the_page) (deprecated) and
+                [`ui.add_scss`](/documentation/add_style#add_scss_style_definitions_to_the_page) (deprecated): add CSS, SASS and SCSS to the page
             - [`ui.clipboard`](/documentation/clipboard): interact with the browser's clipboard
             - [`ui.colors`](/documentation/colors): define the main color theme for a page
             - `ui.context`: get the current UI context including the `client` and `request` objects

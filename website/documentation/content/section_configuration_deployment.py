@@ -37,6 +37,11 @@ doc.intro(run_documentation)
 
     In native mode the `app.native.main_window` object allows you to access the underlying window.
     It is an async version of [`Window` from pywebview](https://pywebview.flowrl.com/api/#webview-window).
+
+    On Windows, native mode requires the .NET Framework to be installed,
+    as pywebview uses it for the EdgeChromium backend.
+    This is typically pre-installed on standard Windows installations,
+    but may be missing on minimal or freshly installed systems.
 ''', tab=lambda: ui.label('NiceGUI'))
 def native_mode_demo():
     from nicegui import app
@@ -314,6 +319,10 @@ doc.text('', '''
     - Specifying `--onedir` to `nicegui-pack` will create an executable with all supporting files in a directory.
     This starts faster than "--onefile" because it skips the unpacking step.
     For distribution, package the directory into an archive file (e.g., .zip or .7z).
+
+    - Specifying `--clean` to `nicegui-pack` will clean the PyInstaller cache (in `./build` folder) and remove temporary files before building.
+
+    - Specifying `--noconfirm` to `nicegui-pack` will replace the output directory (`./dist/SPECNAME`) without asking for confirmation.
 
     - Summary of user experience for different options:
 

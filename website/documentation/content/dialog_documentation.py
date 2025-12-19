@@ -36,8 +36,7 @@ def async_dialog_demo():
 ''')
 def replace_content():
     def replace():
-        dialog.clear()
-        with dialog, ui.card().classes('w-64 h-64'):
+        with dialog.clear(), ui.card().classes('w-64 h-64'):
             ui.label('New Content')
         dialog.open()
 
