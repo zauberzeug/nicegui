@@ -2558,6 +2558,12 @@ dependencies = [
 ]
 
 [package.optional-dependencies]
+altair = [
+    { name = "altair" },
+]
+anywidget = [
+    { name = "anywidget" },
+]
 highcharts = [
     { name = "nicegui-highcharts" },
 ]
@@ -2634,8 +2640,6 @@ types = [
     { name = "types-requests" },
 ]
 website = [
-    { name = "altair" },
-    { name = "anywidget" },
     { name = "dnspython", version = "2.7.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.10'" },
     { name = "dnspython", version = "2.8.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.10'" },
     { name = "html-sanitizer" },
@@ -2651,6 +2655,8 @@ website = [
 requires-dist = [
     { name = "aiofiles", specifier = ">=23.1.0" },
     { name = "aiohttp", specifier = ">=3.10.2" },
+    { name = "altair", marker = "extra == 'altair'", specifier = ">=6.0.0" },
+    { name = "anywidget", marker = "extra == 'anywidget'", specifier = ">=0.9.21" },
     { name = "certifi", specifier = ">=2024.7.4" },
     { name = "docutils", specifier = ">=0.19.0" },
     { name = "fastapi", specifier = ">=0.109.1,!=0.123.5" },
@@ -2676,7 +2682,7 @@ requires-dist = [
     { name = "uvicorn", extras = ["standard"], specifier = ">=0.22.0" },
     { name = "watchfiles", specifier = ">=0.18.1" },
 ]
-provides-extras = ["highcharts", "matplotlib", "native", "plotly", "redis"]
+provides-extras = ["altair", "anywidget", "highcharts", "matplotlib", "native", "plotly", "redis"]
 
 [package.metadata.requires-dev]
 dev = [
@@ -2734,8 +2740,6 @@ types = [
     { name = "types-requests", specifier = ">=2.32.4" },
 ]
 website = [
-    { name = "altair", specifier = ">=6.0.0" },
-    { name = "anywidget", specifier = ">=0.9.21" },
     { name = "dnspython", specifier = ">=2.4.0,<3" },
     { name = "html-sanitizer", specifier = ">=2.6.0,<3" },
     { name = "isort", specifier = ">=6.0.0,<7.0.0" },
