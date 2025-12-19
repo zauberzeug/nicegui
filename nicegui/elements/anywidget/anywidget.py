@@ -17,7 +17,7 @@ if importlib.util.find_spec('anywidget'):
 
 class AnyWidget(ValueElement,
                 component='anywidget.js',
-                dependencies=['widget.js'],
+                dependencies=['lib/widget.js'],
                 default_classes='nicegui-anywidget'):
 
     VALUE_PROP: str = 'traits'
