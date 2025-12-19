@@ -22,6 +22,8 @@ class Altair(AnyWidget):
         Refer to the `altair documentation <https://altair-viz.github.io/user_guide/interactions/jupyter_chart.html#accessing-variable-params>`_
         for more information about synchronizing Altair parameters with Python.
 
+        *Added in version 3.5.0*
+
         :param chart: the ``altair.Chart`` or ``altair.JupyterChart`` to wrap
         :param throttle: minimum time (in seconds) between widget updates to Python (default: 0.0)
         """

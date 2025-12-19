@@ -33,6 +33,8 @@ class AnyWidget(ValueElement, component='anywidget.js', dependencies=['lib/widge
         Conversely, changes on the frontend will be synced back to the widget,
         using ``ValueElement``'s handling to listen to changes on ``traits``.
 
+        *Added in version 3.5.0*
+
         :param widget: the ``anywidget.AnyWidget`` to wrap
         :param throttle: minimum time (in seconds) between widget updates to Python (default: 0.0)
         """
