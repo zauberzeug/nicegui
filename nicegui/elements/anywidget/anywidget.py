@@ -4,7 +4,7 @@ import importlib.util
 import inspect
 import os
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Tuple
+from typing import TYPE_CHECKING, Any
 
 from ... import optional_features
 from ..mixins.value_element import ValueElement
@@ -58,10 +58,10 @@ class AnyWidget(ValueElement,
         self._update_method = 'update_traits'
 
     @classmethod
-    def get_esm_css(cls, widget_instance: anywidget.AnyWidget) -> Tuple[str, str]:
+    def get_esm_css(cls, widget_instance: anywidget.AnyWidget) -> tuple[str, str]:
         """Extract the widget's ESM and CSS content, reading if they are `Path` objects"""
         # Get the ESM module content
-        esm_content = getattr(widget_instance, '_esm')
+        esm_content = widget_instance._esm  # pylint: disable=protected-access
 
         # Check if ESM content is a property function (sometimes the case in anywidget)
         if callable(esm_content) and not inspect.isclass(esm_content):
@@ -70,7 +70,7 @@ class AnyWidget(ValueElement,
         # Get CSS content if available
         css_content = None
         if hasattr(widget_instance, '_css'):
-            css_attr = getattr(widget_instance, '_css')
+            css_attr = widget_instance._css  # pylint: disable=protected-access
             if callable(css_attr) and not inspect.isclass(css_attr):
                 css_content = css_attr()
             else:
@@ -82,10 +82,10 @@ class AnyWidget(ValueElement,
             css_content = Path(css_content)
 
         if isinstance(esm_content, os.PathLike):
-            with open(esm_content, 'r') as f:
+            with open(esm_content, encoding='utf8') as f:
                 esm_content = f.read()
         if isinstance(css_content, os.PathLike):
-            with open(css_content, 'r') as f:
+            with open(css_content, encoding='utf8') as f:
                 css_content = f.read()
         return esm_content or '', css_content or ''
 
