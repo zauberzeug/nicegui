@@ -1,29 +1,23 @@
-import pytest
+import anywidget
+import traitlets
 
 from nicegui import ui
 from nicegui.testing import Screen
 
-anywidget = pytest.importorskip('anywidget')
-traitlets = pytest.importorskip('traitlets')
-
 
 def test_anywidget(screen: Screen):
-    class CounterWidget(anywidget.AnyWidget):
-        """Baseline anywidget example
-
-        This is the getting started example from the anywidget documentation:
-        https://anywidget.dev/en/getting-started/
-        """
+    class CounterWidget(anywidget.AnyWidget):  # pylint: disable=abstract-method
+        """Baseline AnyWidget example from https://anywidget.dev/en/getting-started/."""
         _esm = '''
         function render({ model, el }) {
           let button = document.createElement("button");
-          button.innerHTML = `anywidget count is ${model.get("value")}`;
+          button.innerHTML = `AnyWidget count is ${model.get("value")}`;
           button.addEventListener("click", () => {
             model.set("value", model.get("value") + 1);
             model.save_changes();
           });
           model.on("change:value", () => {
-            button.innerHTML = `anywidget count is ${model.get("value")}`;
+            button.innerHTML = `AnyWidget count is ${model.get("value")}`;
           });
           el.classList.add("counter-widget");
           el.appendChild(button);
@@ -43,12 +37,10 @@ def test_anywidget(screen: Screen):
 
         def increment_counter():
             counter.value += 1
-        ui.button(
-            f'NiceGUI count is {counter.value}', on_click=increment_counter
-        ).bind_text_from(counter, 'value', backward=lambda c: f'NiceGUI count is {c}')
+        ui.button(f'NiceGUI count is {counter.value}', on_click=increment_counter) \
+          .bind_text_from(counter, 'value', backward=lambda c: f'NiceGUI count is {c}')
 
     screen.open('/')
-    screen.should_contain('anywidget count is 42')
-
-    screen.click('anywidget count is 42')
-    screen.should_contain('anywidget count is 43')
+    screen.click('AnyWidget count is 42')
+    screen.click('NiceGUI count is 43')
+    screen.should_contain('AnyWidget count is 44')
