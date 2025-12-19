@@ -23,12 +23,12 @@ class AnyWidget(ValueElement, component='anywidget.js', dependencies=['lib/widge
         `anywidget <https://anywidget.dev/en/getting-started/>`_ is a library that allows you to
         embed arbitrary JavaScript widgets in a cross-frontend friendly manner.
 
-        There are many publicly available examples of `anywidget` widgets
+        There are many publicly available examples of anywidget widgets
         in the `anywidget gallery <https://try.anywidget.dev/>`_, including
         `altair.JupyterChart <https://altair-viz.github.io/user_guide/interactions/jupyter_chart.html>`_,
         and `quak <https://github.com/manzt/quak>`_.
 
-        Implementation: The `nicegui.anywidget` element takes an ``Anywidget`` and observes all ``sync=True`` traits
+        Implementation: The ``nicegui.anywidget`` element takes an ``Anywidget`` and observes all ``sync=True`` traits
         of the widget, trigger JS updates when the traits change.
         Conversely, changes on the frontend will be synced back to the widget,
         using ``ValueElement``'s handling to listen to changes on ``traits``.
@@ -41,7 +41,6 @@ class AnyWidget(ValueElement, component='anywidget.js', dependencies=['lib/widge
         super().__init__(value=widget.get_state(self._traits), throttle=throttle)
         self._props['esm_content'] = _get_attribute(widget, '_esm')
         self._props['css_content'] = _get_attribute(widget, '_css')
-        self._update_method = 'update_traits'
         widget.observe(lambda change: self.run_method('update_trait', change['name'], change['new']), self._traits)
 
     def _handle_value_change(self, value: Any) -> None:
