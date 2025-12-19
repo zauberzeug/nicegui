@@ -19,13 +19,9 @@ class AnyWidget(ValueElement,
                 component='anywidget.js',
                 dependencies=['lib/widget.js'],
                 default_classes='nicegui-anywidget'):
-
     VALUE_PROP: str = 'traits'
 
-    def __init__(self,
-                 widget: anywidget.AnyWidget,
-                 **kwargs: Any,
-                 ) -> None:
+    def __init__(self, widget: anywidget.AnyWidget, **kwargs: Any) -> None:
         """Anywidget
 
         `anywidget <https://anywidget.dev/en/getting-started/>`_ is a library that allows you to
@@ -36,13 +32,13 @@ class AnyWidget(ValueElement,
         `altair.JupyterChart <https://altair-viz.github.io/user_guide/interactions/jupyter_chart.html>`_,
         and `quak <https://github.com/manzt/quak>`_.
 
-        Implementation: The `nicegui.anywidget` element takes an `Anywidget` and observes all `sync=True` traits
+        Implementation: The `nicegui.anywidget` element takes an ``Anywidget`` and observes all ``sync=True`` traits
         of the widget, trigger JS updates when the traits change.
         Conversely, changes on the frontend will be synced back to the widget,
-        using `ValueElement`'s handling to listen to changes on `traits`.
+        using ``ValueElement``'s handling to listen to changes on ``traits``.
 
-        :param widget: the `anywidget.AnyWidget` to wrap
-        :param throttle: minimum time (in seconds) between widget updates to python (default: 0.0)
+        :param widget: the ``anywidget.AnyWidget`` to wrap
+        :param throttle: minimum time (in seconds) between widget updates to Python (default: 0.0)
         """
         self._widget = widget
         traits = self.get_traits(widget)
@@ -52,14 +48,14 @@ class AnyWidget(ValueElement,
 
         # Observe all widget traits and fire update_trait() JS method when changed in python
         for trait in traits:
-            def update_trait(change, trait=trait):
+            def update_trait(change, trait=trait) -> None:
                 self.run_method('update_trait', {'trait': trait, 'new': change['new'], 'old': change['old']})
             self._widget.observe(update_trait, trait)
         self._update_method = 'update_traits'
 
     @classmethod
     def get_esm_css(cls, widget_instance: anywidget.AnyWidget) -> tuple[str, str]:
-        """Extract the widget's ESM and CSS content, reading if they are `Path` objects"""
+        """Extract the widget's ESM and CSS content, reading if they are ``Path`` objects"""
         # Get the ESM module content
         esm_content = widget_instance._esm  # pylint: disable=protected-access
 
@@ -91,7 +87,7 @@ class AnyWidget(ValueElement,
 
     @classmethod
     def get_traits(cls, widget_instance: anywidget.AnyWidget) -> dict[str, Any]:
-        """Extract the widget's current state - only get traits marked with `sync=True`"""
+        """Extract the widget's current state - only get traits marked with ``sync=True``"""
         sync_traits = list(widget_instance.traits(sync=True))
         # get_state() will access the trait values and serialize to JSON if needed
         # https://ipywidgets.readthedocs.io/en/latest/_modules/ipywidgets/widgets/widget.html#Widget.get_state
