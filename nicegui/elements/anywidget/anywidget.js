@@ -53,8 +53,7 @@ export default {
   },
   methods: {
     update_trait(trait, value) {
-      this.model.attributes[trait] = value;
-      this.model.emit("change:" + trait, value);
+      this.model.set(trait, value);
     },
   },
   props: {
