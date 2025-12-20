@@ -209,7 +209,9 @@ class Client:
         try:
             await asyncio.wait_for(self._connected.wait(), timeout=None if is_prefetch else timeout)
             assert self._deleted is not True, 'Client was deleted while waiting for connection'
-        except (asyncio.TimeoutError, AssertionError) as e:
+        except AssertionError:
+            pass
+        except asyncio.TimeoutError as e:
             raise ClientConnectionTimeout(self) from e
 
     async def disconnected(self) -> None:
