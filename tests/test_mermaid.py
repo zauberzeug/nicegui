@@ -94,6 +94,19 @@ def test_error(screen: Screen):
     screen.should_contain('Parse error on line 3')
 
 
+def test_error_source_accurate(screen: Screen):
+    errors = []
+
+    @ui.page('/')
+    def page():
+        ui.mermaid('graph TD\nA --> B').on('error', errors.append)
+        ui.mermaid('BAD SYNTAX')
+
+    screen.allowed_js_errors.append(':18 Object')
+    screen.open('/')
+    assert not errors
+
+
 @pytest.mark.parametrize('security_level', ['loose', 'strict'])
 def test_click_mermaid_node(security_level: str, screen: Screen):
     @ui.page('/')
