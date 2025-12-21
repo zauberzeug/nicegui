@@ -37,7 +37,7 @@ class BackgroundColorElement(Element):
 
     def _handle_background_color_change(self, background_color: Optional[str], _skip_clear: bool = False) -> None:
         if not _skip_clear:
-            self.clear_background_color()
+            self._clear_background_color()
         if background_color in QUASAR_COLORS:
             self._props[self.BACKGROUND_COLOR_PROP] = background_color
         elif background_color in TAILWIND_COLORS:
@@ -45,13 +45,11 @@ class BackgroundColorElement(Element):
         elif background_color is not None:
             self._style['background-color'] = background_color
 
-    def clear_background_color(self) -> None:
+    def _clear_background_color(self) -> None:
         """Clears the background color"""
-        self._props[self.BACKGROUND_COLOR_PROP] = None
-        classes_to_remove = ' '.join(cls for cls in self._classes if cls.startswith('bg-'))
-        if classes_to_remove:
-            self._classes(remove=classes_to_remove)
-        self._style['background-color'] = None
+        self._props.pop(self.BACKGROUND_COLOR_PROP, None)
+        self._classes(remove=' '.join(f'bg-{t}' for t in TAILWIND_COLORS))
+        self._style.pop('background-color', None)
 
     def bind_background_color_to(self,
                                  target_object: Any,
@@ -137,7 +135,7 @@ class TextColorElement(Element):
 
     def _handle_text_color_change(self, text_color: Optional[str], _skip_clear: bool = False) -> None:
         if not _skip_clear:
-            self.clear_text_color()
+            self._clear_text_color()
         if text_color in QUASAR_COLORS:
             self._props[self.TEXT_COLOR_PROP] = text_color
         elif text_color in TAILWIND_COLORS:
@@ -145,13 +143,11 @@ class TextColorElement(Element):
         elif text_color is not None:
             self._style['color'] = text_color
 
-    def clear_text_color(self) -> None:
+    def _clear_text_color(self) -> None:
         """Clears the text color"""
-        self._props[self.TEXT_COLOR_PROP] = None
-        classes_to_remove = ' '.join(cls for cls in self._classes if cls.startswith('text-'))
-        if classes_to_remove:
-            self._classes(remove=classes_to_remove)
-        self._style['color'] = None
+        self._props.pop(self.TEXT_COLOR_PROP, None)
+        self._classes(remove=' '.join(f'text-{t}' for t in TAILWIND_COLORS))
+        self._style.pop('color', None)
 
     def bind_text_color_to(self,
                            target_object: Any,
