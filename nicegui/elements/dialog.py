@@ -1,12 +1,13 @@
 import asyncio
 from typing import Any, Optional
 
+from ..element import Element
 from .mixins.value_element import ValueElement
 
 
 class Dialog(ValueElement, component='dialog.js'):
 
-    def __init__(self, *, value: bool = False) -> None:
+    def __init__(self, *, value: bool = False, local: bool = True) -> None:
         """Dialog
 
         Creates a dialog based on Quasar's `QDialog <https://quasar.dev/vue-components/dialog>`_ component.
@@ -22,6 +23,19 @@ class Dialog(ValueElement, component='dialog.js'):
         super().__init__(value=value, on_value_change=None)
         self._result: Any = None
         self._submitted: Optional[asyncio.Event] = None
+        if local is False:
+            self.move(self.client.content)
+
+            class DeletePropagationElement(Element):
+                def __init__(self, element_to_delete: Element = self) -> None:
+                    super().__init__(tag='div')
+                    self.set_visibility(False)
+                    self._element_to_delete = element_to_delete
+
+                def _handle_delete(self):
+                    self._element_to_delete.delete()
+                    return super()._handle_delete()
+            DeletePropagationElement(element_to_delete=self)
 
     @property
     def submitted(self) -> asyncio.Event:
