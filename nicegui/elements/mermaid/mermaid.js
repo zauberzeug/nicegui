@@ -45,7 +45,7 @@ export default {
           bindFunctions?.(element);
           const mermaidErrorFormat = { str: error.message, message: error.message, hash: error.name, error };
           console.error(mermaidErrorFormat);
-          getElement(element.id.substring(1)).$emit("error", mermaidErrorFormat);
+          getElement(element).$emit("error", mermaidErrorFormat);
         }
       }
       is_running = false;
