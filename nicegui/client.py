@@ -208,9 +208,8 @@ class Client:
         is_prefetch = 'prefetch' in purpose and 'prerender' not in purpose
         try:
             await asyncio.wait_for(self._connected.wait(), timeout=None if is_prefetch else timeout)
-            assert self._deleted is not True, 'Client was deleted while waiting for connection'
-        except AssertionError:
-            pass
+            if self._deleted:
+                return  # Client was deleted while waiting for connection
         except asyncio.TimeoutError as e:
             raise ClientConnectionTimeout(self) from e
 
