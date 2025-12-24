@@ -194,6 +194,7 @@ function renderRecursively(elements, id, propsContext) {
 
     let handler;
     if (event.js_handler) {
+      const props = propsContext; // make `props` accessible from inside the event handler
       handler = eval(event.js_handler);
     } else {
       handler = emit;
