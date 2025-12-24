@@ -160,11 +160,9 @@ function renderRecursively(elements, id, propsContext) {
     if (key.startsWith(":")) {
       try {
         try {
-          props[key.substring(1)] = propsContext
-            ? new Function("props", `return (${value})`)(propsContext)
-            : new Function(`return (${value})`)();
+          props[key.substring(1)] = new Function("props", `return (${value})`)(propsContext);
         } catch (e) {
-          props[key.substring(1)] = propsContext ? undefined : eval(value);
+          props[key.substring(1)] = eval(value);
         }
         delete props[key];
       } catch (e) {
