@@ -5,6 +5,9 @@ LABEL maintainer="Zauberzeug GmbH <info@zauberzeug.com>"
 # Install uv
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
 
+ENV UV_PROJECT_ENVIRONMENT=/opt/venv
+ENV PATH="/opt/venv/bin:${PATH}"
+
 WORKDIR /app
 
 # Copy dependency files first for better layer caching
@@ -31,4 +34,4 @@ EXPOSE 8080
 ENV PYTHONUNBUFFERED=True
 
 ENTRYPOINT ["/resources/docker-entrypoint.sh"]
-CMD ["uv", "run", "--no-sync", "main.py"]
+CMD ["/opt/venv/bin/python", "main.py"]
