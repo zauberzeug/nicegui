@@ -2,6 +2,7 @@ from typing import Literal, Optional
 
 from typing_extensions import Self
 
+from ..defaults import DEFAULT_PROPS, resolve_defaults
 from ..events import ClickEventArguments, Handler, handle_event
 from .mixins.color_elements import BackgroundColorElement
 from .mixins.disableable_element import DisableableElement
@@ -12,12 +13,13 @@ from .mixins.value_element import ValueElement
 
 class Fab(ValueElement, LabelElement, IconElement, BackgroundColorElement, DisableableElement):
 
+    @resolve_defaults
     def __init__(self,
                  icon: str, *,
-                 value: bool = False,
-                 label: str = '',
-                 color: Optional[str] = 'primary',
-                 direction: Literal['up', 'down', 'left', 'right'] = 'right',
+                 value: bool = DEFAULT_PROPS['model-value'] | False,
+                 label: str = DEFAULT_PROPS['label'] | '',
+                 color: Optional[str] = DEFAULT_PROPS['color'] | 'primary',
+                 direction: Literal['up', 'down', 'left', 'right'] = DEFAULT_PROPS['direction'] | 'right',
                  ) -> None:
         """Floating Action Button (FAB)
 
@@ -48,10 +50,12 @@ class Fab(ValueElement, LabelElement, IconElement, BackgroundColorElement, Disab
 
 class FabAction(LabelElement, IconElement, BackgroundColorElement, DisableableElement):
 
-    def __init__(self, icon: str, *,
-                 label: str = '',
+    @resolve_defaults
+    def __init__(self,
+                 icon: str, *,
+                 label: str = DEFAULT_PROPS['label'] | '',
                  on_click: Optional[Handler[ClickEventArguments]] = None,
-                 color: Optional[str] = 'primary',
+                 color: Optional[str] = DEFAULT_PROPS['color'] | 'primary',
                  auto_close: bool = True,
                  ) -> None:
         """Floating Action Button Action

@@ -22,8 +22,8 @@ class BackgroundColorElement(Element):
 
     def __init__(self, *, background_color: Optional[str], **kwargs: Any) -> None:
         super().__init__(**kwargs)
-        if background_color in QUASAR_COLORS:
-            self._props[self.BACKGROUND_COLOR_PROP] = background_color
+        if background_color in QUASAR_COLORS or background_color is None:
+            self._props.set_optional(self.BACKGROUND_COLOR_PROP, background_color)
         elif background_color in TAILWIND_COLORS:
             self._classes.append(f'bg-{background_color}')
         elif background_color is not None:
@@ -35,8 +35,8 @@ class TextColorElement(Element):
 
     def __init__(self, *, text_color: Optional[str], **kwargs: Any) -> None:
         super().__init__(**kwargs)
-        if text_color in QUASAR_COLORS:
-            self._props[self.TEXT_COLOR_PROP] = text_color
+        if text_color in QUASAR_COLORS or text_color is None:
+            self._props.set_optional(self.TEXT_COLOR_PROP, text_color)
         elif text_color in TAILWIND_COLORS:
             self._classes.append(f'text-{text_color}')
         elif text_color is not None:

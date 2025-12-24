@@ -1,5 +1,6 @@
 from typing import Optional
 
+from ..defaults import DEFAULT_PROPS, resolve_defaults
 from ..events import Handler, ValueChangeEventArguments
 from .mixins.disableable_element import DisableableElement
 from .mixins.value_element import ValueElement
@@ -7,11 +8,12 @@ from .mixins.value_element import ValueElement
 
 class Splitter(ValueElement, DisableableElement, default_classes='nicegui-splitter'):
 
+    @resolve_defaults
     def __init__(self, *,
-                 horizontal: Optional[bool] = False,
-                 reverse: Optional[bool] = False,
-                 limits: Optional[tuple[float, float]] = (0, 100),
-                 value: Optional[float] = 50,
+                 horizontal: Optional[bool] = DEFAULT_PROPS['horizontal'] | False,
+                 reverse: Optional[bool] = DEFAULT_PROPS['reverse'] | False,
+                 limits: Optional[tuple[float, float]] = DEFAULT_PROPS['limits'] | (0, 100),
+                 value: Optional[float] = DEFAULT_PROPS['model-value'] | 50,
                  on_change: Optional[Handler[ValueChangeEventArguments]] = None,
                  ) -> None:
         """Splitter
@@ -32,9 +34,9 @@ class Splitter(ValueElement, DisableableElement, default_classes='nicegui-splitt
         :param on_change: callback which is invoked when the user releases the splitter
         """
         super().__init__(tag='q-splitter', value=value, on_value_change=on_change, throttle=0.05)
-        self._props['horizontal'] = horizontal
-        self._props['limits'] = limits
-        self._props['reverse'] = reverse
+        self._props.set_bool('horizontal', horizontal)
+        self._props.set_bool('reverse', reverse)
+        self._props.set_optional('limits', limits)
 
         self.before = self.add_slot('before')
         self.after = self.add_slot('after')

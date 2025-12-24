@@ -1,6 +1,7 @@
 from itertools import accumulate, chain, repeat
 from typing import Literal, Optional, get_args
 
+from nicegui.defaults import DEFAULT_PROPS, resolve_defaults
 from nicegui.elements.mixins.disableable_element import DisableableElement
 from nicegui.elements.mixins.value_element import ValueElement
 from nicegui.events import GenericEventArguments, Handler, ValueChangeEventArguments
@@ -252,16 +253,17 @@ class CodeMirror(ValueElement, DisableableElement,
     VALUE_PROP = 'value'
     LOOPBACK = None
 
+    @resolve_defaults
     def __init__(
         self,
         value: str = '',
         *,
         on_change: Optional[Handler[ValueChangeEventArguments]] = None,
-        language: Optional[SUPPORTED_LANGUAGES] = None,
-        theme: SUPPORTED_THEMES = 'basicLight',
-        indent: str = ' ' * 4,
-        line_wrapping: bool = False,
-        highlight_whitespace: bool = False,
+        language: Optional[SUPPORTED_LANGUAGES] = DEFAULT_PROPS['language'] | None,
+        theme: SUPPORTED_THEMES = DEFAULT_PROPS['theme'] | 'basicLight',
+        indent: str = DEFAULT_PROPS['indent'] | ' ' * 4,
+        line_wrapping: bool = DEFAULT_PROPS['lineWrapping'] | False,
+        highlight_whitespace: bool = DEFAULT_PROPS['highlightWhitespace'] | False,
     ) -> None:
         """CodeMirror
 

@@ -6,6 +6,7 @@ from typing_extensions import Self
 
 from ... import binding
 from ...awaitable_response import AwaitableResponse, NullResponse
+from ...defaults import DEFAULT_PROPS, resolve_defaults
 from ...element import Element
 from ...events import GenericEventArguments
 from .leaflet_layer import Layer
@@ -23,14 +24,15 @@ class Leaflet(Element, component='leaflet.js', esm={'nicegui-leaflet': 'dist'}, 
     center = binding.BindableProperty(lambda sender, value: cast(Leaflet, sender).set_center(value))
     zoom = binding.BindableProperty(lambda sender, value: cast(Leaflet, sender).set_zoom(value))
 
+    @resolve_defaults
     def __init__(self,
-                 center: tuple[float, float] = (0.0, 0.0),
-                 zoom: int = 13,
+                 center: tuple[float, float] = DEFAULT_PROPS['center'] | (0.0, 0.0),
+                 zoom: int = DEFAULT_PROPS['zoom'] | 13,
                  *,
-                 options: dict = {},  # noqa: B006
-                 draw_control: Union[bool, dict] = False,
-                 hide_drawn_items: bool = False,
-                 additional_resources: Optional[list[str]] = None,
+                 options: dict = DEFAULT_PROPS['options'] | {},
+                 draw_control: Union[bool, dict] = DEFAULT_PROPS['draw_control'] | False,
+                 hide_drawn_items: bool = DEFAULT_PROPS['hide_drawn_items'] | False,
+                 additional_resources: Optional[list[str]] = DEFAULT_PROPS['additional_resources'] | None,
                  ) -> None:
         """Leaflet map
 

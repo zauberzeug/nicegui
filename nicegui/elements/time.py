@@ -1,5 +1,6 @@
 from typing import Optional
 
+from ..defaults import DEFAULT_PROPS, resolve_defaults
 from ..events import Handler, ValueChangeEventArguments
 from .mixins.disableable_element import DisableableElement
 from .mixins.value_element import ValueElement
@@ -7,9 +8,10 @@ from .mixins.value_element import ValueElement
 
 class Time(ValueElement, DisableableElement):
 
+    @resolve_defaults
     def __init__(self,
-                 value: Optional[str] = None, *,
-                 mask: str = 'HH:mm',
+                 value: Optional[str] = DEFAULT_PROPS['model-value'] | None, *,
+                 mask: str = DEFAULT_PROPS['mask'] | 'HH:mm',
                  on_change: Optional[Handler[ValueChangeEventArguments]] = None,
                  ) -> None:
         """Time Picker

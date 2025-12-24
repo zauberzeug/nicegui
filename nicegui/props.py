@@ -63,6 +63,20 @@ class Props(ObservableDict, Generic[T]):
         self._warnings: dict[str, str] = {}
         self._suspend_count = 0
 
+    def set_optional(self, key: str, value: Any) -> None:
+        """Set a prop value or remove it if None is provided."""
+        if value is None:
+            self.pop(key, None)
+        else:
+            self[key] = value
+
+    def set_bool(self, key: str, value: Any) -> None:
+        """Set a boolean prop value or remove it if falsy value is provided."""
+        if value:
+            self[key] = value
+        else:
+            self.pop(key, None)
+
     @contextmanager
     def suspend_updates(self) -> Iterator[None]:
         """Suspend updates."""

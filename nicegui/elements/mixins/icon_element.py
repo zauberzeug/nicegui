@@ -13,8 +13,7 @@ class IconElement(Element):
     def __init__(self, *, icon: Optional[str] = None, **kwargs: Any) -> None:  # pylint: disable=redefined-builtin
         super().__init__(**kwargs)
         self.icon = icon
-        if icon is not None:
-            self._props['icon'] = icon
+        self._props.set_optional('icon', icon)
 
     def bind_icon_to(self,
                      target_object: Any,
@@ -93,7 +92,4 @@ class IconElement(Element):
 
         :param icon: The new icon.
         """
-        if icon is not None:
-            self._props['icon'] = icon
-        else:
-            self._props.pop('icon', None)
+        self._props.set_optional('icon', icon)

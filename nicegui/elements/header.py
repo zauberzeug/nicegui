@@ -1,17 +1,19 @@
 from ..context import context
+from ..defaults import DEFAULT_PROPS, resolve_defaults
 from ..helpers import require_top_level_layout
 from .mixins.value_element import ValueElement
 
 
 class Header(ValueElement, component='header.js', default_classes='nicegui-header'):
 
+    @resolve_defaults
     def __init__(self, *,
-                 value: bool = True,
+                 value: bool = DEFAULT_PROPS['model-value'] | True,
                  fixed: bool = True,
-                 bordered: bool = False,
-                 elevated: bool = False,
+                 bordered: bool = DEFAULT_PROPS['bordered'] | False,
+                 elevated: bool = DEFAULT_PROPS['elevated'] | False,
                  wrap: bool = True,
-                 add_scroll_padding: bool = True,
+                 add_scroll_padding: bool = DEFAULT_PROPS['add_scroll_padding'] | True,
                  ) -> None:
         """Header
 

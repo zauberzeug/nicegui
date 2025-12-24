@@ -4,6 +4,7 @@ from typing import Literal
 
 from typing_extensions import Self
 
+from ..defaults import DEFAULT_PROPS, resolve_defaults
 from ..events import Handler, SlideEventArguments, handle_event
 from ..slot import Slot
 from .item import Item
@@ -55,8 +56,7 @@ class SlideItem(DisableableElement):
         :param on_slide: callback which is invoked when the slide action is activated
         :param color: the color of the slide background (either a Quasar, Tailwind, or CSS color or ``None``, default: "primary")
         """
-        if color:
-            self._props[f'{side}-color'] = color
+        self._props.set_optional(f'{side}-color', color)
 
         if on_slide:
             self.on_slide(side, on_slide)
@@ -68,10 +68,11 @@ class SlideItem(DisableableElement):
 
         return slot
 
+    @resolve_defaults
     def left(self,
              text: str = '', *,
              on_slide: Handler[SlideEventArguments] | None = None,
-             color: str | None = 'primary',
+             color: str | None = DEFAULT_PROPS['left-color'] | 'primary',
              ) -> Slot:
         """Add a slide action to the left side.
 
@@ -81,10 +82,11 @@ class SlideItem(DisableableElement):
         """
         return self.action('left', text=text, on_slide=on_slide, color=color)
 
+    @resolve_defaults
     def right(self,
               text: str = '', *,
               on_slide: Handler[SlideEventArguments] | None = None,
-              color: str | None = 'primary',
+              color: str | None = DEFAULT_PROPS['right-color'] | 'primary',
               ) -> Slot:
         """Add a slide action to the right side.
 
@@ -94,10 +96,11 @@ class SlideItem(DisableableElement):
         """
         return self.action('right', text=text, on_slide=on_slide, color=color)
 
+    @resolve_defaults
     def top(self,
             text: str = '', *,
             on_slide: Handler[SlideEventArguments] | None = None,
-            color: str | None = 'primary',
+            color: str | None = DEFAULT_PROPS['top-color'] | 'primary',
             ) -> Slot:
         """Add a slide action to the top side.
 
@@ -107,10 +110,11 @@ class SlideItem(DisableableElement):
         """
         return self.action('top', text=text, on_slide=on_slide, color=color)
 
+    @resolve_defaults
     def bottom(self,
                text: str = '', *,
                on_slide: Handler[SlideEventArguments] | None = None,
-               color: str | None = 'primary',
+               color: str | None = DEFAULT_PROPS['bottom-color'] | 'primary',
                ) -> Slot:
         """Add a slide action to the bottom side.
 

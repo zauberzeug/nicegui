@@ -1,5 +1,6 @@
 from typing import Optional, Union
 
+from ..defaults import DEFAULT_PROPS, resolve_defaults
 from ..events import Handler, ValueChangeEventArguments
 from .mixins.disableable_element import DisableableElement
 from .mixins.value_element import ValueElement
@@ -7,12 +8,13 @@ from .mixins.value_element import ValueElement
 
 class Date(ValueElement, DisableableElement):
 
+    @resolve_defaults
     def __init__(self,
                  value: Optional[
                      Union[str, dict[str, str], list[str], list[Union[str, dict[str, str]]]]
-                 ] = None,
+                 ] = DEFAULT_PROPS['model-value'] | None,
                  *,
-                 mask: str = 'YYYY-MM-DD',
+                 mask: str = DEFAULT_PROPS['mask'] | 'YYYY-MM-DD',
                  on_change: Optional[Handler[ValueChangeEventArguments]] = None) -> None:
         """Date Picker
 

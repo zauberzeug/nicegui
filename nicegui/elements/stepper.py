@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import Any, cast
 
 from ..context import context
+from ..defaults import DEFAULT_PROPS, resolve_defaults
 from ..element import Element
 from ..events import Handler, ValueChangeEventArguments
 from .mixins.disableable_element import DisableableElement
@@ -12,10 +13,11 @@ from .mixins.value_element import ValueElement
 
 class Stepper(ValueElement, default_classes='nicegui-stepper'):
 
+    @resolve_defaults
     def __init__(self, *,
-                 value: str | Step | None = None,
+                 value: str | Step | None = DEFAULT_PROPS['model-value'] | None,
                  on_value_change: Handler[ValueChangeEventArguments] | None = None,
-                 keep_alive: bool = True,
+                 keep_alive: bool = DEFAULT_PROPS['keep-alive'] | True,
                  ) -> None:
         """Stepper
 
@@ -31,7 +33,7 @@ class Stepper(ValueElement, default_classes='nicegui-stepper'):
         :param keep_alive: whether to use Vue's keep-alive component on the content (default: `True`)
         """
         super().__init__(tag='q-stepper', value=value, on_value_change=on_value_change)
-        self._props['keep-alive'] = keep_alive
+        self._props.set_bool('keep-alive', keep_alive)
 
     def _value_to_model_value(self, value: Any) -> Any:
         return value.props['name'] if isinstance(value, Step) else value
@@ -54,7 +56,8 @@ class Stepper(ValueElement, default_classes='nicegui-stepper'):
 
 class Step(IconElement, DisableableElement, default_classes='nicegui-step'):
 
-    def __init__(self, name: str, title: str | None = None, icon: str | None = None) -> None:
+    @resolve_defaults
+    def __init__(self, name: str, title: str | None = None, icon: str | None = DEFAULT_PROPS['icon'] | None) -> None:
         """Step
 
         This element represents `Quasar's QStep <https://quasar.dev/vue-components/stepper#qstep-api>`_ component.

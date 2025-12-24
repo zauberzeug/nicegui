@@ -2,6 +2,7 @@ from typing import Optional
 
 from typing_extensions import Self
 
+from ..defaults import DEFAULT_PROPS, resolve_defaults
 from ..element import Element
 from ..events import ColorPickEventArguments, GenericEventArguments, Handler, handle_event
 from .menu import Menu
@@ -9,9 +10,10 @@ from .menu import Menu
 
 class ColorPicker(Menu):
 
+    @resolve_defaults
     def __init__(self, *,
                  on_pick: Optional[Handler[ColorPickEventArguments]] = None,
-                 value: bool = False,
+                 value: bool = DEFAULT_PROPS['model-value'] | False,
                  ) -> None:
         """Color Picker
 
