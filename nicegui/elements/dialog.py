@@ -27,12 +27,13 @@ class Dialog(ValueElement, component='dialog.js'):
             self.move(self.client.content)
 
             class DeletePropagationElement(Element):
-                def __init__(self, element_to_delete: Element = self) -> None:
-                    super().__init__(tag='div')
+
+                def __init__(self, element_to_delete: Element) -> None:
+                    super().__init__()
                     self.set_visibility(False)
                     self._element_to_delete = element_to_delete
 
-                def _handle_delete(self):
+                def _handle_delete(self) -> None:
                     self._element_to_delete.delete()
                     return super()._handle_delete()
             DeletePropagationElement(element_to_delete=self)
