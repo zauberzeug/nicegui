@@ -1,7 +1,7 @@
 import pytest
 from selenium.webdriver.common.by import By
 
-from nicegui import ui
+from nicegui import events, ui
 from nicegui.testing import Screen
 
 
@@ -95,16 +95,16 @@ def test_error(screen: Screen):
 
 
 def test_error_source_accurate(screen: Screen):
-    errors = []
+    errors: list[events.GenericEventArguments] = []
 
     @ui.page('/')
     def page():
-        ui.mermaid('graph TD\nA --> B').on('error', errors.append)
+        ui.mermaid('graph TD; A --> B').on('error', errors.append)
         ui.mermaid('BAD SYNTAX')
 
     screen.allowed_js_errors.append(':18 Object')
     screen.open('/')
-    assert not errors
+    assert not errors, 'No errors should be collected because the invalid diagram has no error handler'
 
 
 @pytest.mark.parametrize('security_level', ['loose', 'strict'])
