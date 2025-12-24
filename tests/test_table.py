@@ -404,7 +404,7 @@ def test_new_slots(screen: Screen):
         with table.add_slot('body-cell-name'):
             with table.cell():
                 ui.button().props(':label="props.value"') \
-                    .on('click', js_handler='() => emit(props.label)', handler=lambda e: ui.notify(f'Clicked {e.args}'))
+                    .on('click', js_handler='() => emit(props.value)', handler=lambda e: ui.notify(f'Clicked {e.args}'))
 
     screen.open('/')
     screen.should_contain('Alice')
