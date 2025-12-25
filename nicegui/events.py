@@ -408,6 +408,12 @@ class JsonEditorChangeEventArguments(UiEventArguments):
 
 
 @dataclass(**KWONLY_SLOTS)
+class PywebviewEventArguments(EventArguments):
+    id: str
+    args: tuple[Any, ...]
+
+
+@dataclass(**KWONLY_SLOTS)
 class XtermBellEventArguments(UiEventArguments):
     pass
 
