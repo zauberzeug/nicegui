@@ -25,7 +25,8 @@ class Example:
             url=f'https://github.com/zauberzeug/nicegui/tree/main/examples/{path.name}/main.py',
             screenshot=app.add_media_file(
                 local_file=path / 'screenshot.webp',
-                url_path=f'/examples/images/{path.name}/screenshot.webp'),
+                url_path=f'/examples/images/{path.name}/screenshot.webp',
+            ),
         )
 
 
