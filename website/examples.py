@@ -3,6 +3,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 from pathlib import Path
 
+from nicegui import app
+
 PATH = Path(__file__).parent.parent / 'examples'
 
 
@@ -11,7 +13,7 @@ class Example:
     title: str
     description: str
     url: str
-    screenshot: Path
+    screenshot: str
 
     @classmethod
     def from_path(cls, path: Path) -> Example:
@@ -21,7 +23,9 @@ class Example:
             title=lines[0].removeprefix('# '),
             description=lines[2].removesuffix('.'),
             url=f'https://github.com/zauberzeug/nicegui/tree/main/examples/{path.name}/main.py',
-            screenshot=path / 'screenshot.webp',
+            screenshot=app.add_media_file(
+                local_file=path / 'screenshot.webp',
+                url_path=f'/examples/images/{path.name}/screenshot.webp'),
         )
 
 
