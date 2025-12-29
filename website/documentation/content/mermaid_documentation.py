@@ -6,23 +6,37 @@ from . import doc
 @doc.demo(ui.mermaid)
 def main_demo() -> None:
     ui.mermaid('''
-    graph LR;
-        A --> B;
-        A --> C;
+        graph LR;
+            A --> B;
+            A --> C;
     ''')
     # END OF DEMO
     list(ui.context.client.elements.values())[-1].props['config'] = {'securityLevel': 'loose'}  # HACK: for click_demo
 
 
 @doc.demo('Handle click events', '''
-    You can register to click events by adding a `click` directive to a node and emitting a custom event.
-    Make sure to set the `securityLevel` to `loose` in the `config` parameter to allow JavaScript execution.
+    You can register to click events by using the `on_node_click` parameter.
+
+    *Added in version 3.3.0*
 ''')
 def click_demo() -> None:
     ui.mermaid('''
-    graph LR;
-        X((Click me!));
-        click X call emitEvent("mermaid_click", "You clicked me!")
+        graph LR;
+            A((Click me));
+    ''', on_node_click=lambda e: ui.notify(f'Node {e.node_id} clicked'))
+
+
+@doc.demo('Handle click events with JS', '''
+    Alternatively, you can register to click events by adding a `click` directive to a node and running custom JavaScript.
+    Make sure to set the `securityLevel` to `loose` in the `config` parameter to allow JavaScript execution,
+    and do not let untrusted users pass arbitrary Mermaid diagrams as input.
+''')
+def click_js_demo() -> None:
+    ui.mermaid('''
+        graph LR;
+            X((JS alert)) --> Y((NiceGUI alert));
+            click X call alert("You clicked me!")
+            click Y call emitEvent("mermaid_click", "You clicked me!")
     ''', config={'securityLevel': 'loose'})
     ui.on('mermaid_click', lambda e: ui.notify(e.args))
 
@@ -33,9 +47,9 @@ def click_demo() -> None:
 ''')
 def error_demo() -> None:
     ui.mermaid('''
-    graph LR;
-        A --> B;
-        A -> C;
+        graph LR;
+            A --> B;
+            A -> C;
     ''').on('error', lambda e: print(e.args['message']))
     # END OF DEMO
     list(ui.context.client.elements.values())[-1].props['config'] = {'securityLevel': 'loose'}  # HACK: for click_demo

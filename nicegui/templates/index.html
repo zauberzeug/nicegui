@@ -21,6 +21,7 @@
         }
       }
       @layer overrides {
+        {{ headwind_css | safe }}
         .column.inline, .flex.inline, .row.inline {
           display: inline-flex;  /* HACK: re-apply Quasar's inline styles to override Tailwind */
         }
@@ -30,11 +31,14 @@
         }
       }
     </style>
-    <!-- prevent Prettier from removing this line -->
-    {{ head_html | safe }}
     <script type="importmap">
       {"imports": {{ imports | safe }}}
     </script>
+    <script>
+      addStyle = (c) => document.head.append(Object.assign(document.createElement("style"), { textContent: c }));
+    </script>
+    {{ head_html | safe }}
+    <!-- prevent Prettier from removing this line -->
     {% for url in js_imports_urls %}
     <link rel="modulepreload" href="{{ url }}" />
     {% endfor %}
@@ -46,17 +50,17 @@
     {% endif %}
   </head>
   <body>
-    <script async src="{{ prefix | safe }}/_nicegui/{{version}}/static/es-module-shims.js"></script>
     <script defer src="{{ prefix | safe }}/_nicegui/{{version}}/static/socket.io.min.js"></script>
     {% if tailwind %}
     <script defer src="{{ prefix | safe }}/_nicegui/{{version}}/static/tailwindcss.min.js"></script>
     {% endif %}
-    <!-- prevent Prettier from removing this line -->
+    <script type="module">
+      import * as Vue from "vue";
+      globalThis.Vue = Vue;
+    </script>
     {% if prod_js %}
-    <script defer src="{{ prefix | safe }}/_nicegui/{{version}}/static/vue.global.prod.js"></script>
     <script defer src="{{ prefix | safe }}/_nicegui/{{version}}/static/quasar.umd.prod.js"></script>
     {% else %}
-    <script defer src="{{ prefix | safe }}/_nicegui/{{version}}/static/vue.global.js"></script>
     <script defer src="{{ prefix | safe }}/_nicegui/{{version}}/static/quasar.umd.js"></script>
     {% endif %}
     <script defer src="{{ prefix | safe }}/_nicegui/{{version}}/static/nicegui.js"></script>
@@ -65,9 +69,13 @@
     {{ body_html | safe }}
 
     <div id="app"></div>
-    <div id="popup" aria-hidden="true">
+    <div id="popup" class="nicegui-error-popup" aria-hidden="true">
       <span>{{ translations.connection_lost }}</span>
       <span>{{ translations.trying_to_reconnect }}</span>
+    </div>
+    <div id="too_long_message_popup" class="nicegui-error-popup" aria-hidden="true">
+      <span>{{ translations.message_too_long }}</span>
+      <span>{{ translations.message_too_long_body }}</span>
     </div>
     <script type="module">
       const app = createApp(parseElements(String.raw`{{ elements | safe }}`), {

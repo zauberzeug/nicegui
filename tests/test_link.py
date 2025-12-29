@@ -46,8 +46,7 @@ def test_replace_link(screen: Screen):
             ui.link('nicegui.io', 'https://nicegui.io/')
 
         def replace():
-            container.clear()
-            with container:
+            with container.clear():
                 ui.link('zauberzeug', 'https://zauberzeug.com/')
         ui.button('Replace', on_click=replace)
 

@@ -40,6 +40,8 @@ HTML_ESCAPE_TABLE = str.maketrans({
     '$': '&#36;',
 })
 
+HEADWIND_CONTENT = (Path(__file__).parent / 'static' / 'headwind.css').read_text().strip()
+
 
 class ClientConnectionTimeout(TimeoutError):
     def __init__(self, client: Client) -> None:
@@ -179,6 +181,7 @@ class Client:
                 'translations': translations.get(self.page.resolve_language(), translations['en-US']),
                 'prefix': prefix,
                 'tailwind': core.app.config.tailwind,
+                'headwind_css': HEADWIND_CONTENT if core.app.config.tailwind else '',
                 'prod_js': core.app.config.prod_js,
                 'socket_io_js_query_params': socket_io_js_query_params,
                 'socket_io_js_extra_headers': core.app.config.socket_io_js_extra_headers,
@@ -383,9 +386,10 @@ class Client:
         self._deleted_event.set()
         self.remove_all_elements()
         self.outbox.stop()
-        if self.id in Client.instances:
-            del Client.instances[self.id]
+        del Client.instances[self.id]
         self._deleted = True
+        self._connected.set()  # for terminating connected() waits
+        self._connected.clear()
 
     def check_existence(self) -> None:
         """Check if the client still exists and print a warning if it doesn't."""
@@ -402,7 +406,11 @@ class Client:
             stale_clients = [
                 client
                 for client in cls.instances.values()
-                if not client.has_socket_connection and client.created <= time.time() - client_age_threshold
+                if (
+                    not client.has_socket_connection and
+                    not client._delete_tasks and  # pylint: disable=protected-access
+                    client.created <= time.time() - client_age_threshold
+                )
             ]
             for client in stale_clients:
                 log.debug(f'Pruning stale client {client.id}')

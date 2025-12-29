@@ -22,8 +22,7 @@ def root():
         response = ''
         async for chunk in llm.astream(question):
             response += chunk.content
-            response_message.clear()
-            with response_message:
+            with response_message.clear():
                 ui.html(response, sanitize=Sanitizer().sanitize)
             ui.run_javascript('window.scrollTo(0, document.body.scrollHeight)')
         message_container.remove(spinner)

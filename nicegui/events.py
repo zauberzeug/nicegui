@@ -51,16 +51,27 @@ class SlideEventArguments(UiEventArguments):
 
 
 @dataclass(**KWONLY_SLOTS)
+class EChartComponentClickEventArguments(UiEventArguments):
+    component_type: str
+    name: str | None
+
+
+@dataclass(**KWONLY_SLOTS)
 class EChartPointClickEventArguments(UiEventArguments):
     component_type: str
+    name: str
     series_type: str
     series_index: int
     series_name: str
-    name: str
     data_index: int
     data: float | int | str
-    data_type: str
+    data_type: str | None
     value: float | int | list
+
+
+@dataclass(**KWONLY_SLOTS)
+class MermaidNodeClickEventArguments(UiEventArguments):
+    node_id: str
 
 
 @dataclass(**KWONLY_SLOTS)
