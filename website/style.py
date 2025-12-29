@@ -48,7 +48,7 @@ def example_link(example: Optional[Example] = None) -> ui.link:
         if example:
             ui.space()
             ui.interactive_image(example.screenshot) \
-                .classes('w-full object-contain border border-gray-300 rounded-md overflow-hidden')
+                .classes('w-full object-contain border border-gray-300 rounded-md overflow-hidden aspect-16/9')
     return link
 
 
