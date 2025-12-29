@@ -16,9 +16,10 @@ event_sender = None
 
 def create_queues() -> None:
     """Create the message queues. (For internal use only.)"""
-    global method_queue, response_queue, event_receiver, event_sender  # pylint: disable=global-statement # noqa: PLW0603
+    global method_queue, response_queue, event_queue, event_receiver, event_sender  # pylint: disable=global-statement # noqa: PLW0603
     method_queue = Queue()
     response_queue = Queue()
+    event_queue = Queue()
     event_receiver, event_sender = Pipe(duplex=False)
 
 
