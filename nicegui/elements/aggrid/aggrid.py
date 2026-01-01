@@ -246,11 +246,13 @@ class AgGrid(Element, component='aggrid.js', esm={'nicegui-aggrid': 'dist'}, def
         result = await self.client.run_javascript(f'''
             const rowData = [];
             if (getElement({self.id}) === undefined) {{
+                const ancestor = mounted_app.elements[{next(self.ancestors()).id}];
+                const index = ancestor.children.indexOf({self.id});
+                ancestor.children.splice(index, 1);
                 mounted_app.elements[{self.client.content.id}].children.push({self.id});
-                mounted_app.elements[{next(self.ancestors()).id}].children.pop({self.id});
                 await mounted_app.$nextTick();
-                mounted_app.elements[{self.client.content.id}].children.pop({self.id});
-                mounted_app.elements[{next(self.ancestors()).id}].children.push({self.id});
+                mounted_app.elements[{self.client.content.id}].children.pop();
+                ancestor.children.splice(index, 0, {self.id});
             }}
             getElement({self.id}).api.{API_METHODS[method]}(node => rowData.push(node.data));
             return rowData;
