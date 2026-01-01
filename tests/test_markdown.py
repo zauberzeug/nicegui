@@ -1,3 +1,4 @@
+import pytest
 from selenium.webdriver.common.by import By
 
 from nicegui import ui
@@ -56,7 +57,12 @@ def test_markdown_with_mermaid(screen: Screen):
     screen.should_not_contain('Node_A')
 
 
-def test_markdown_with_mermaid_on_demand(screen: Screen):
+@pytest.mark.parametrize('use_default_extras', [True, False])
+def test_markdown_with_mermaid_on_demand(screen: Screen, use_default_extras: bool):
+    EXTRAS = ['mermaid', 'fenced-code-blocks']
+    if use_default_extras:
+        ui.markdown.default_extras = EXTRAS
+
     @ui.page('/')
     def page():
         ui.button('Create Mermaid', on_click=lambda: ui.markdown('''
@@ -64,7 +70,7 @@ def test_markdown_with_mermaid_on_demand(screen: Screen):
             graph TD;
                 Node_A --> Node_B;
             ```
-        ''', extras=['mermaid', 'fenced-code-blocks']))
+        ''', **({'extras': EXTRAS} if not use_default_extras else {})))
 
     screen.open('/')
     screen.click('Create Mermaid')

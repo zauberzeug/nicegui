@@ -1,6 +1,7 @@
 import hashlib
 import os
 from functools import lru_cache
+from typing import ClassVar, Optional
 
 import markdown2
 from fastapi.responses import PlainTextResponse
@@ -12,18 +13,22 @@ from .mixins.content_element import ContentElement
 
 class Markdown(ContentElement, component='markdown.js', default_classes='nicegui-markdown'):
     # NOTE: The Mermaid ESM is already registered in mermaid.py.
+    default_extras: ClassVar[list[str]] = ['fenced-code-blocks', 'tables']
 
     def __init__(self,
                  content: str = '', *,
-                 extras: list[str] = ['fenced-code-blocks', 'tables'],  # noqa: B006
+                 extras: Optional[list[str]] = None,
                  ) -> None:
         """Markdown Element
 
         Renders Markdown onto the page.
 
         :param content: the Markdown content to be displayed
-        :param extras: list of `markdown2 extensions <https://github.com/trentm/python-markdown2/wiki/Extras#implemented-extras>`_ (default: `['fenced-code-blocks', 'tables']`)
+        :param extras: list of `markdown2 extensions <https://github.com/trentm/python-markdown2/wiki/Extras#implemented-extras>`_
+                       (default: `['fenced-code-blocks', 'tables']`, can be set via `ui.markdown.default_extras`)
         """
+        if extras is None:
+            extras = self.default_extras
         self.extras = extras[:]
         super().__init__(content=content)
         if 'mermaid' in extras:
