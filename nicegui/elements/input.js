@@ -19,10 +19,15 @@ export default {
   props: {
     _autocomplete: Array,
     value: String,
+    internal_id: String,
+  },
+  unmounted() {
+    window.__nicegui_input_values__[this.internal_id] = this.inputValue;
   },
   data() {
+    if (!window.__nicegui_input_values__) window.__nicegui_input_values__ = {};
     return {
-      inputValue: this.value,
+      inputValue: window.__nicegui_input_values__[this.internal_id] || this.value,
       emitting: true,
     };
   },
