@@ -376,6 +376,8 @@ class App(FastAPI):
         self._delete_handlers.clear()
         self._exception_handlers[:] = [log.exception]
         self.config = AppConfig()
+        self._colors.clear()
+        self.colors()  # reset colors to default
 
     @staticmethod
     def clients(path: str) -> Iterator[Client]:
