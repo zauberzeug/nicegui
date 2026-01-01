@@ -14,6 +14,7 @@ from fastapi.responses import FileResponse
 
 from .. import background_tasks, core, helpers
 from ..client import Client
+from ..elements.mixins.color_elements import QUASAR_COLORS
 from ..logging import log
 from ..native import NativeConfig
 from ..observables import ObservableSet
@@ -49,6 +50,9 @@ class App(FastAPI):
         self._delete_handlers: list[Union[Callable[..., Any], Awaitable]] = []
         self._exception_handlers: list[Callable[..., Any]] = [log.exception]
         self._page_exception_handler: Optional[Callable[..., Any]] = None
+
+        self._colors: dict[str, str] = {}
+        self.colors()  # populates self._colors with default colors
 
     @property
     def is_starting(self) -> bool:
@@ -311,6 +315,52 @@ class App(FastAPI):
             return get_range_response(file, request, chunk_size=nicegui_chunk_size)
 
         return urllib.parse.quote(path)
+
+    def colors(self, *,
+               primary: str = '#5898d4',
+               secondary: str = '#26a69a',
+               accent: str = '#9c27b0',
+               dark: str = '#1d1d1d',
+               dark_page: str = '#121212',
+               positive: str = '#21ba45',
+               negative: str = '#c10015',
+               info: str = '#31ccec',
+               warning: str = '#f2c037',
+               **custom_colors: str) -> None:
+        """Color Theming
+
+        Sets the main colors (primary, secondary, accent, ...) used by `Quasar <https://quasar.dev/style/theme-builder>`_ on an application-wide basis.
+
+        NOTE: Use `ui.colors()` if you want to set colors after a page has been rendered on a per-page basis.
+
+        :param primary: Primary color (default: "#5898d4")
+        :param secondary: Secondary color (default: "#26a69a")
+        :param accent: Accent color (default: "#9c27b0")
+        :param dark: Dark color (default: "#1d1d1d")
+        :param dark_page: Dark page color (default: "#121212")
+        :param positive: Positive color (default: "#21ba45")
+        :param negative: Negative color (default: "#c10015")
+        :param info: Info color (default: "#31ccec")
+        :param warning: Warning color (default: "#f2c037")
+        :param custom_colors: Custom color definitions for branding (needs ``ui.colors`` to be called before custom color is ever used, *added in version 2.2.0*)
+        """
+        self._colors['primary'] = primary
+        self._colors['secondary'] = secondary
+        self._colors['accent'] = accent
+        self._colors['dark'] = dark
+        self._colors['dark-page'] = dark_page
+        self._colors['positive'] = positive
+        self._colors['negative'] = negative
+        self._colors['info'] = info
+        self._colors['warning'] = warning
+        self._colors.update({name.replace('_', '-'): value for name, value in custom_colors.items()})
+        QUASAR_COLORS.update({name.replace('_', '-') for name in custom_colors})
+
+    def get_quasar_config(self) -> dict:
+        """Get the Quasar configuration dictionary."""
+        quasar_config = self.config.quasar_config
+        quasar_config['brand'] = self._colors.copy()
+        return quasar_config
 
     def remove_route(self, path: str) -> None:
         """Remove routes with the given path."""
