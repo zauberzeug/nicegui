@@ -117,6 +117,7 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
                         await result
                     except Exception as e:
                         self.client._emit_error(e)  # pylint: disable=protected-access
+                        raise e
 
             task = background_tasks.create(background_task(), name=f'building sub_page {match.pattern}')
             self._active_tasks.add(task)
