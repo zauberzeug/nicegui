@@ -113,7 +113,10 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
         if asyncio.iscoroutine(result):
             async def background_task():
                 with self:
-                    await result
+                    try:
+                        await result
+                    except Exception as e:
+                        self.client._emit_error(e)  # pylint: disable=protected-access
 
             task = background_tasks.create(background_task(), name=f'building sub_page {match.pattern}')
             self._active_tasks.add(task)

@@ -159,6 +159,7 @@ class page:
                 try:
                     result = func(*dec_args, **dec_kwargs)
                 except Exception as e:
+                    client._emit_error(e)  # pylint: disable=protected-access
                     return create_500_error_page(e, request)
             if helpers.is_coroutine_function(func):
                 async def wait_for_result() -> Response | None:
@@ -166,6 +167,7 @@ class page:
                         try:
                             return await result
                         except Exception as e:
+                            client._emit_error(e)  # pylint: disable=protected-access
                             return create_500_error_page(e, request)
                 task = background_tasks.create(wait_for_result(),
                                                name=f'wait for result of page "{client.page.path}"',

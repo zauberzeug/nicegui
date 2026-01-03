@@ -18,6 +18,7 @@ from . import background_tasks, binding, core, helpers, json, storage
 from .awaitable_response import AwaitableResponse
 from .dependencies import generate_resources
 from .element import Element
+from .events import GenericEventArguments, handle_event
 from .favicon import get_favicon_url
 from .javascript_request import JavaScriptRequest
 from .logging import log
@@ -371,6 +372,14 @@ class Client:
     def remove_all_elements(self) -> None:
         """Remove all elements from the client."""
         self.remove_elements(self.elements.values())
+
+    def _emit_error(self, error: Exception) -> None:
+        """Emit an error event to be handled by callers of `ui.on('__error__', ...)`."""
+        target_type = helpers.event_type_to_camel_case('__error__')
+        for listener in self.layout._event_listeners.values():  # pylint: disable=protected-access
+            if listener.type == target_type:
+                event_args = GenericEventArguments(sender=self.layout, client=self, args=error)
+                handle_event(listener.handler, event_args)
 
     def delete(self) -> None:
         """Delete a client and all its elements.
