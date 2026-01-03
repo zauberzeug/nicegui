@@ -321,6 +321,16 @@ def nested_sub_pages_demo():
     sub_pages.init()
 
 
+doc.text('Error handling', '''
+`ui.sub_pages` is in-line with the rest of NiceGUI when it comes to error handling.
+However, when reading the [error handling](/documentation/section_action_events#error_handling) documentation, consider `ui.sub_pages` to operate in post-HTML-response phase.
+
+The end-effect is that errors raised in:
+
+- sync sub page builders: immediately shown as 500.
+- async sub page builders: silent; monitor with `ui.on('__error__', handler)`.
+''')
+
 doc.reference(ui.sub_pages, title='Reference for ui.sub_pages')
 
 doc.reference(PageArguments, title='Reference for PageArguments')

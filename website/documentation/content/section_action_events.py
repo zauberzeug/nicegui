@@ -139,6 +139,20 @@ def lifecycle_demo():
     dt = datetime.now()
 
 
+doc.text('Error handling', '''
+NiceGUI generally follows the following policy to error handling:
+
+- If an exception occurs before the preparation of the HTML response, the page will fail verbosely and return an error page with the exception details.
+  - You can customize this error page by registering a handler with `@app.on_page_exception`.
+  - Read more in the [custom error page](#custom-error-page) section.
+- If an exception occurs after the HTML response has been sent to the client, the page will continue to function in best-effort manner.
+  - You can listen to the `__error__` event on the client side to show a notification or dialog with the error details.
+  - Read more in the [error event](#error-event) section.
+
+If you use `ui.sub_pages`, consider it to operate in post-HTML-response phase. Read more at [sub pages documentation](/documentation/sub_pages#error_handling).
+''')
+
+
 @doc.auto_execute
 @doc.demo('Custom error page', '''
     You can use `@app.on_page_exception` to define a custom error page.
@@ -179,6 +193,72 @@ def error_page_demo():
     def page():
         ui.link('Raise timeout error (custom error page)', '/raise_timeout_error')
         ui.link('Raise runtime error (default error page)', '/raise_runtime_error')
+    page()  # HIDE
+
+
+@doc.auto_execute
+@doc.demo('Error event', '''
+    You can listen to the `__error__` event on the client side to handle errors that occur after the HTML response has been sent to the client.
+    This allows you to show a notification or dialog with the error details.
+    The following example shows how to create a dialog that displays the error details when an error occurs.
+
+    *Added in version 2.20.0*
+''')
+def error_event_demo():
+    import asyncio
+    import traceback
+
+    @ui.page('/error_dialog_page')
+    async def error_dialog_page():
+        with ui.page_sticky(x_offset=16, y_offset=16):
+            fab_error = ui.button(icon='error', color='negative').props('fab')
+            fab_error.set_visibility(False)
+
+        def show_error_dialog(error):
+            with ui.dialog() as error_dialog, ui.card():
+                render_error_details(error, 'max-w-[calc(560px-2rem)]')
+                ui.button('Close', on_click=error_dialog.close)
+            fab_error.on('click', error_dialog.open).set_visibility(True)
+
+        ui.on('__error__', lambda e: show_error_dialog(e.args))
+        ui.label('This @ui.page errors out post-HTML-response in 3 seconds')
+        await ui.context.client.connected()
+        await asyncio.sleep(3)
+        raise ValueError('Test exception handling')
+
+    @ui.page('/clear_content_page')
+    async def clear_content_page():
+        # def clear_content_and_show_error(error):
+        #     with ui.context.client.content.clear():
+        #         render_error_details(error, 'w-full')
+        #         ui.link('Back to menu', '/')
+
+        # ui.on('__error__', lambda e: clear_content_and_show_error(e.args))
+        # ui.label('This @ui.page errors out post-HTML-response in 3 seconds')
+        # await ui.context.client.connected()
+        # await asyncio.sleep(3)
+        # raise ValueError('Test exception handling')
+        with ui.column() as fake_column:  # HIDE
+            ui.label('This @ui.page errors out post-HTML-response in 3 seconds')  # HIDE
+            await ui.context.client.connected()  # HIDE
+            await asyncio.sleep(3)  # HIDE
+            fake_column.clear()  # HIDE
+            try:  # HIDE
+                raise ValueError('Test exception handling')  # HIDE
+            except Exception as e:  # HIDE
+                render_error_details(e, 'w-full')  # HIDE
+            ui.link('Back to menu', '/documentation/section_action_events#error_event')  # HIDE
+
+    def render_error_details(error, code_classes=''):
+        ui.label('Page error').classes('text-lg font-bold')
+        ui.label(f'{error} ({type(error).__name__})').classes('text-red-600')
+        # ui.code(traceback.format_exc(chain=False)).classes(code_classes)
+        ui.code(traceback.format_exc(chain=False).replace('# HIDE', '')).classes(code_classes)  # HIDE
+
+    # @ui.page('/')
+    def page():
+        ui.link('@ui.page raises error, shows error dialog', '/error_dialog_page')
+        ui.link('@ui.page raises error, clears the body and shows the error', '/clear_content_page')
     page()  # HIDE
 
 
