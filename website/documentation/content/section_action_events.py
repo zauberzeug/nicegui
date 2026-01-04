@@ -107,6 +107,25 @@ doc.intro(run_javascript_documentation)
 doc.intro(clipboard_documentation)
 doc.intro(event_documentation)
 
+doc.text('Error handling', '''
+There are 3 error handling means in NiceGUI:
+
+1. [`app.on_exception`](#lifecycle_events): Global exception handler
+  - Works for all exceptions in the NiceGUI app.
+  - Handler has no UI context (cannot use `ui.*`).
+  - Common sources: `app.timer`, `background_tasks.create`, `run.io_bound`, `run.cpu_bound`.
+2. [`@app.on_page_exception`](#custom_error_page): Custom error page
+  - Works for UI-context exceptions raised **before** the Python-side client is ready (critical exceptions).
+  - Handler may use UI elements but in a new client.
+  - Common sources: sync `@ui.page` functions, exceptions in async `@ui.page` functions before `await ui.context.client.connected()`.
+3. [`__error__`](#error_event) event
+  - Works for UI-context exceptions raised **after** the Python-side client is ready (non-critical exceptions).
+  - Handler may use UI elements with the original client at `ui.context.client`.
+  - Common sources: `ui.button(on_click=...)`, `ui.timer`, exceptions in async `@ui.page` functions after `await ui.context.client.connected()`
+
+An exception **always goes through (1)**. If it is in the UI-context then it mutually-exclusively goes through **either (2) or (3) but never both**.
+''')
+
 
 @doc.demo('Lifecycle events', '''
     You can register coroutines or functions to be called for the following lifecycle events:
@@ -137,20 +156,6 @@ def lifecycle_demo():
     # END OF DEMO
     global dt
     dt = datetime.now()
-
-
-doc.text('Error handling in page', '''
-NiceGUI generally follows the following policy to page error handling:
-
-- If an exception occurs before the preparation of the HTML response, the page will fail verbosely and return an error page with the exception details.
-  - You can customize this error page by registering a handler with `@app.on_page_exception`.
-  - Read more in the [custom error page](#custom-error-page) section.
-- If an exception occurs after the HTML response has been sent to the client, the page will continue to function in best-effort manner.
-  - You can listen to the `__error__` event on the client side to show a notification or dialog with the error details.
-  - Read more in the [error event](#error-event) section.
-
-If you use `ui.sub_pages`, consider it to operate in post-HTML-response phase. Read more at [sub pages documentation](/documentation/sub_pages#error_handling).
-''')
 
 
 @doc.auto_execute
@@ -260,16 +265,6 @@ def error_event_demo():
         ui.link('@ui.page raises error, shows error dialog', '/error_dialog_page')
         ui.link('@ui.page raises error, clears the body and shows the error', '/clear_content_page')
     page()  # HIDE
-
-
-doc.demo('Error handling in callbacks', '''
-For callbacks error handling:
-
-- If a callback can spawn UI elements, then it will invoke the `__error__` event to the associated client.
-  - Example: `ui.button(on_click=...)`, `ui.timer(callback=...)`.
-- If a callback cannot spawn UI elements, then the exception will be forwarded to the global exception
-  - Example: `background_tasks.create(coroutine=...)`, `app.timer(callback=...)`.
-''')
 
 
 @doc.demo(app.shutdown)
