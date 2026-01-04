@@ -161,7 +161,6 @@ class App(FastAPI):
 
     def handle_exception(self, exception: Exception) -> None:
         """Handle an exception by invoking all registered exception handlers."""
-        print(context.slot_stack)
         if context.slot_stack and context.client is not None:
             context.client._emit_error(exception)  # pylint: disable=protected-access
         for handler in self._exception_handlers:

@@ -107,6 +107,7 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
         except Exception as e:
             self.clear()  # NOTE: clear partial content created before the exception
             self._render_error(e)
+            self.client._emit_error(e, sender=self)  # pylint: disable=protected-access
             return True
 
         self._handle_scrolling(match, behavior='instant')
