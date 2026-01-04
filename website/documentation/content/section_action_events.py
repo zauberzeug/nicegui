@@ -270,9 +270,6 @@ def error_event_demo():
     page()  # HIDE
 
 
-doc.reference(ui.on_exception)
-
-
 @doc.demo(app.shutdown)
 def shutdown_demo():
     from nicegui import app
