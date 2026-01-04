@@ -245,7 +245,7 @@ class AgGrid(Element, component='aggrid.js', esm={'nicegui-aggrid': 'dist'}, def
         }
         result = await self.client.run_javascript(f'''
             const rowData = [];
-            if (getElement({self.id}) === undefined) {{
+            if (getElement({self.id})?.api === undefined) {{
                 const ancestor = mounted_app.elements[{next(self.ancestors()).id}];
                 const index = ancestor.children.indexOf({self.id});
                 ancestor.children.splice(index, 1);

@@ -307,6 +307,48 @@ def test_get_client_data(screen: Screen):
     screen.wait(0.5)
     assert data == [{'name': 'Alice', 'age': 18}, {'name': 'Bob', 'age': 21}, {'name': 'Carol', 'age': 42}]
 
+    data.clear()
+    screen.click('Get Sorted Data')
+    screen.wait(0.5)
+    assert data == [{'name': 'Carol', 'age': 42}, {'name': 'Bob', 'age': 21}, {'name': 'Alice', 'age': 18}]
+
+
+def test_get_client_data_offscreen(screen: Screen):
+    data: list = []
+
+    @ui.page('/')
+    def page():
+        with ui.tabs().classes('w-full') as tabs:
+            one = ui.tab('One')
+            two = ui.tab('Two')
+        with ui.tab_panels(tabs, value=one).classes('w-full'):
+            with ui.tab_panel(one):
+                async def get_data():
+                    data[:] = await grid.get_client_data()
+                ui.button('Get Data', on_click=get_data)
+
+                async def get_sorted_data():
+                    data[:] = await grid.get_client_data(method='filtered_sorted')
+                ui.button('Get Sorted Data', on_click=get_sorted_data)
+            with ui.tab_panel(two):
+                grid = ui.aggrid({
+                    'columnDefs': [
+                        {'field': 'name'},
+                        {'field': 'age', 'sort': 'desc'},
+                    ],
+                    'rowData': [
+                        {'name': 'Alice', 'age': 18},
+                        {'name': 'Bob', 'age': 21},
+                        {'name': 'Carol', 'age': 42},
+                    ],
+                })
+
+    screen.open('/')
+    screen.click('Get Data')
+    screen.wait(0.5)
+    assert data == [{'name': 'Alice', 'age': 18}, {'name': 'Bob', 'age': 21}, {'name': 'Carol', 'age': 42}]
+
+    data.clear()
     screen.click('Get Sorted Data')
     screen.wait(0.5)
     assert data == [{'name': 'Carol', 'age': 42}, {'name': 'Bob', 'age': 21}, {'name': 'Alice', 'age': 18}]
