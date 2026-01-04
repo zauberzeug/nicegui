@@ -78,6 +78,8 @@ function getComputedProp(target, prop_name) {
 }
 
 function emitEvent(event_name, ...args) {
+  if (event_name === "__error__")
+    console.warn("This event name is reserved for Python-side error handling. Using it may trigger unwanted behavior.");
   getElement(0).$emit(event_name, ...args);
 }
 
