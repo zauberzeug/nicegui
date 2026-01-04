@@ -985,7 +985,7 @@ def test_exception_in_page_builder(screen: Screen):
     @ui.page('/')
     @ui.page('/{_:path}')
     def index():
-        ui.on('__error__', errors.append)
+        ui.on_exception(errors.append)
         ui.link('Go to exception', '/')
         ui.link('Go to content with exception', '/content_with_exception')
         ui.link('Go to async exception', '/async')

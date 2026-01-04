@@ -137,7 +137,7 @@ def test_exception(screen: Screen):
 
     @ui.page('/')
     def page():
-        ui.on('__error__', errors.append)
+        ui.on_exception(errors.append)
         raise RuntimeError('some exception')
 
     screen.allowed_js_errors.append('/ - Failed to load resource')
@@ -145,7 +145,7 @@ def test_exception(screen: Screen):
     screen.should_contain('500')
     screen.should_contain('Server error')
     screen.assert_py_logger('ERROR', 'some exception')
-    assert not errors, '__error__ is used for non-critical exceptions'
+    assert not errors, 'ui.on_exception is used for non-critical exceptions'
 
 
 def test_exception_after_connected(screen: Screen):
@@ -153,7 +153,7 @@ def test_exception_after_connected(screen: Screen):
 
     @ui.page('/')
     async def page():
-        ui.on('__error__', errors.append)
+        ui.on_exception(errors.append)
         await ui.context.client.connected()
         ui.label('this is shown')
         raise RuntimeError('some exception')
@@ -161,7 +161,7 @@ def test_exception_after_connected(screen: Screen):
     screen.open('/')
     screen.should_contain('this is shown')
     screen.assert_py_logger('ERROR', 'some exception')
-    assert errors, 'non-critical exception should be caught by __error__ event'
+    assert errors, 'non-critical exception should be caught by ui.on_exception'
 
 
 def test_page_with_args(screen: Screen):

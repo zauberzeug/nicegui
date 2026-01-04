@@ -115,13 +115,13 @@ There are 3 error handling means in NiceGUI:
   - Applied app-wide.
   - Handler has no UI context (cannot use `ui.*`).
   - Common sources: `app.timer`, `background_tasks.create`, `run.io_bound`, `run.cpu_bound`.
-2. [`@app.on_page_exception`](#custom_error_page): Custom error page
-  - Works for UI-context exceptions raised **before** the Python-side client is ready (critical exceptions).
+2. [`@app.on_page_exception`](#custom_error_page): Custom error page for critical exceptions
+  - Works for UI-context exceptions raised **before** the Python-side client is ready.
   - Applied app-wide.
   - Handler may use UI elements but in a new client.
   - Common sources: sync `@ui.page` functions, exceptions in async `@ui.page` functions before `await ui.context.client.connected()`.
-3. [`__error__`](#error_event) event
-  - Works for UI-context exceptions raised **after** the Python-side client is ready (non-critical exceptions).
+3. [`ui.on_exception`](#ui_on_exception): Page exception handler for non-critical exceptions
+  - Works for UI-context exceptions raised **after** the Python-side client is ready.
   - Applied per-page.
   - Handler may use UI elements with the original client at `ui.context.client`.
   - Common sources: `ui.button(on_click=...)`, `ui.timer`, exceptions in async `@ui.page` functions after `await ui.context.client.connected()`
@@ -205,8 +205,8 @@ def error_page_demo():
 
 
 @doc.auto_execute
-@doc.demo('Error event', '''
-    You can listen to the `__error__` event on the client side to handle errors that occur after the HTML response has been sent to the client.
+@doc.demo('ui.on_exception', '''
+    You can listen to the `ui.on_exception` event on the client side to handle errors that occur after the HTML response has been sent to the client.
     This allows you to show a notification or dialog with the error details.
     The following example shows how to create a dialog that displays the error details when an error occurs.
 
@@ -228,7 +228,7 @@ def error_event_demo():
                 ui.button('Close', on_click=error_dialog.close)
             fab_error.on('click', error_dialog.open).set_visibility(True)
 
-        ui.on('__error__', lambda e: show_error_dialog(e.args))
+        ui.on_exception(lambda e: show_error_dialog(e.args))
         ui.label('This @ui.page errors out post-HTML-response in 3 seconds')
         await ui.context.client.connected()
         await asyncio.sleep(3)
@@ -241,7 +241,7 @@ def error_event_demo():
         #         render_error_details(error, 'w-full')
         #         ui.link('Back to menu', '/')
 
-        # ui.on('__error__', lambda e: clear_content_and_show_error(e.args))
+        # ui.on_exception(lambda e: clear_content_and_show_error(e.args))
         # ui.label('This @ui.page errors out post-HTML-response in 3 seconds')
         # await ui.context.client.connected()
         # await asyncio.sleep(3)

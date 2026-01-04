@@ -329,7 +329,7 @@ Note: you may want to refer to the [error handling](section_action_events#error_
 ''')
 def error_handling_demo():
     # def root():
-    #     ui.on('__error__', lambda e: ui.notify(f'Caught error: {e.args}'))
+    #     ui.on_exception(lambda e: ui.notify(f'Caught error: {e.args}'))
     #     ui.link('Go to main', '/')
     #     ui.link('Go to /error_sync', '/error_sync')
     #     ui.link('Go to /error_async', '/error_async')
