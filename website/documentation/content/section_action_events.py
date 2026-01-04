@@ -210,7 +210,7 @@ def error_page_demo():
     This allows you to show a notification or dialog with the error details.
     The following example shows how to create a dialog that displays the error details when an error occurs.
 
-    *Added in version 2.20.0*
+    *Added in version 3.5.0*
 ''')
 def error_event_demo():
     import asyncio
@@ -268,6 +268,9 @@ def error_event_demo():
         ui.link('@ui.page raises error, shows error dialog', '/error_dialog_page')
         ui.link('@ui.page raises error, clears the body and shows the error', '/clear_content_page')
     page()  # HIDE
+
+
+doc.reference(ui.on_exception)
 
 
 @doc.demo(app.shutdown)
