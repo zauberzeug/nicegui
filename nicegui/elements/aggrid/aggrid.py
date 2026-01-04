@@ -232,6 +232,8 @@ class AgGrid(Element, component='aggrid.js', esm={'nicegui-aggrid': 'dist'}, def
         Note that when editing a cell, the row data is not updated until the cell exits the edit mode.
         This does not happen when the cell loses focus, unless ``stopEditingWhenCellsLoseFocus: True`` is set.
 
+        Works for offscreen grids *after version 3.5.0*.
+
         :param timeout: timeout in seconds (default: 1 second)
         :param method: method to access the data, "all_unsorted" (default), "filtered_unsorted", "filtered_sorted", "leaf"
 
