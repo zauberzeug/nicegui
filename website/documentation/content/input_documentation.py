@@ -79,7 +79,7 @@ def lazy_validation():
 
 
 @doc.demo('Client-side validation', '''
-    Trading performance for security and flexibility, you can also use Quasar's client-side validation
+    Sacrificing security and flexibility for performance, you can also use Quasar's client-side validation
     by passing the `rules` prop with Quasar-compatible rules.
 
     This way the Quasar props such as `lazy-rules` and methods such as `resetValidation` can also be used.
