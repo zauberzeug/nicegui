@@ -112,14 +112,17 @@ There are 3 error handling means in NiceGUI:
 
 1. [`app.on_exception`](#lifecycle_events): Global exception handler
   - Works for all exceptions in the NiceGUI app.
+  - Applied app-wide.
   - Handler has no UI context (cannot use `ui.*`).
   - Common sources: `app.timer`, `background_tasks.create`, `run.io_bound`, `run.cpu_bound`.
 2. [`@app.on_page_exception`](#custom_error_page): Custom error page
   - Works for UI-context exceptions raised **before** the Python-side client is ready (critical exceptions).
+  - Applied app-wide.
   - Handler may use UI elements but in a new client.
   - Common sources: sync `@ui.page` functions, exceptions in async `@ui.page` functions before `await ui.context.client.connected()`.
 3. [`__error__`](#error_event) event
   - Works for UI-context exceptions raised **after** the Python-side client is ready (non-critical exceptions).
+  - Applied per-page.
   - Handler may use UI elements with the original client at `ui.context.client`.
   - Common sources: `ui.button(on_click=...)`, `ui.timer`, exceptions in async `@ui.page` functions after `await ui.context.client.connected()`
 
