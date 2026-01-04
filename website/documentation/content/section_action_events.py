@@ -139,8 +139,8 @@ def lifecycle_demo():
     dt = datetime.now()
 
 
-doc.text('Error handling', '''
-NiceGUI generally follows the following policy to error handling:
+doc.text('Error handling in page', '''
+NiceGUI generally follows the following policy to page error handling:
 
 - If an exception occurs before the preparation of the HTML response, the page will fail verbosely and return an error page with the exception details.
   - You can customize this error page by registering a handler with `@app.on_page_exception`.
@@ -260,6 +260,16 @@ def error_event_demo():
         ui.link('@ui.page raises error, shows error dialog', '/error_dialog_page')
         ui.link('@ui.page raises error, clears the body and shows the error', '/clear_content_page')
     page()  # HIDE
+
+
+doc.demo('Error handling in callbacks', '''
+For callbacks error handling:
+
+- If a callback can spawn UI elements, then it will invoke the `__error__` event to the associated client.
+  - Example: `ui.button(on_click=...)`, `ui.timer(callback=...)`.
+- If a callback cannot spawn UI elements, then the exception will be forwarded to the global exception
+  - Example: `background_tasks.create(coroutine=...)`, `app.timer(callback=...)`.
+''')
 
 
 @doc.demo(app.shutdown)
