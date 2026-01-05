@@ -14,7 +14,7 @@ class Editor(ValueElement, DisableableElement, component='editor.js', default_cl
     def __init__(self,
                  *,
                  placeholder: Optional[str] = DEFAULT_PROPS['placeholder'] | None,
-                 value: str = DEFAULT_PROPS['model'] | '',
+                 value: str = DEFAULT_PROPS['value'] | '',
                  on_change: Optional[Handler[ValueChangeEventArguments]] = None,
                  ) -> None:
         """Editor
