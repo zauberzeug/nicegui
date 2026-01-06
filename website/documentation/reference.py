@@ -60,7 +60,8 @@ def _render_section(class_obj: type, attributes: list[Attribute], *, method_sect
     inherited_attributes = [attribute for attribute in attributes if attribute.base is not class_obj]
     if inherited_attributes:
         with ui.expansion(f'Inherited {"methods" if method_section else "properties"}', icon='account_tree', value=True) \
-                .classes('w-full border border-gray-200 dark:border-gray-800 rounded-md'):
+                .classes('w-full border border-gray-200 dark:border-gray-800 rounded-md') \
+                .props('header-class=text-gray-500'):
             for attribute in inherited_attributes:
                 _render_attribute(attribute, method_section=method_section)
 
