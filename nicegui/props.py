@@ -126,6 +126,10 @@ class Props(ObservableDict, Generic[T]):
                     self[rename] = self[name]
                 helpers.warn_once(f'The prop "{name}" is deprecated. Use "{rename}" instead.')
 
+    def _invoke_checks(self) -> None:
+        self._check_warnings()
+        self._check_renames()
+
     def __call__(self,
                  add: Optional[str] = None, *,
                  remove: Optional[str] = None) -> T:

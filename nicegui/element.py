@@ -213,6 +213,7 @@ class Element(Visibility):
         }
 
     def _to_dict(self) -> dict[str, Any]:
+        self._props._invoke_checks()  # pylint: disable=protected-access
         return {
             'tag': self.tag,
             **({'text': self._text} if self._text is not None else {}),
