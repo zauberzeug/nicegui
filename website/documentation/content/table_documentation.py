@@ -467,4 +467,28 @@ def table_with_masonry_like_grid():
     ''')
 
 
+@doc.demo('Slot templates with NiceGUI elements', '''
+    Instead of using Vue templates, you can use NiceGUI elements in slot templates.
+    The following demo shows how to use the `props` object in JavaScript to customize buttons and badges.
+    The `js_handler` is used to forward the current value of the cell to the Python `handler`.
+
+    *Added in version 3.5.0*
+''')
+def slot_templates_with_nicegui_elements():
+    table = ui.table(rows=[{'name': 'Alex', 'age': 9}, {'name': 'Ben', 'age': 99}])
+    with table.add_slot('body-cell-name'):
+        with table.cell():
+            ui.button().props(':label=props.value flat').on(
+                'click',
+                js_handler='() => emit(props.value)',
+                handler=lambda e: ui.notify(f'Clicked {e.args}'),
+            )
+    with table.add_slot('body-cell-age'):
+        with table.cell():
+            ui.badge().props('''
+                :label=props.value
+                :color="props.value < 21 ? 'red' : 'green'"
+            ''')
+
+
 doc.reference(ui.table)
