@@ -35,6 +35,9 @@ class Component:
         """The tag of the component."""
         return f'nicegui-{self.name}'
 
+    def _to_dict(self) -> dict[str, str]:
+        return {'key': self.key, 'name': self.name, 'tag': self.tag}
+
 
 @dataclass(**KWONLY_SLOTS)
 class VueComponent(Component):

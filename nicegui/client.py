@@ -81,6 +81,7 @@ class Client:
         self._deleted = False
         self._socket_to_document_id: dict[str, str] = {}
         self.tab_id: str | None = None
+        self._loaded_components: set[str] = set()
 
         self.page = page
         self.outbox = Outbox(self)
@@ -149,13 +150,8 @@ class Client:
         self.outbox.updates.clear()
         prefix = request.headers.get('X-Forwarded-Prefix', '') + request.scope.get('root_path', '')
 
-        def _strip_extra_component_info(element_dict: dict[str, Any]) -> dict[str, Any]:
-            if 'component' in element_dict:
-                element_dict['component'].pop('key', None)
-                element_dict['component'].pop('tag', None)
-            return element_dict
         elements = json.dumps({
-            id: _strip_extra_component_info(element._to_dict()) for id, element in self.elements.items()  # pylint: disable=protected-access
+            id: element._to_dict() for id, element in self.elements.items()  # pylint: disable=protected-access
         })
         socket_io_js_query_params = {
             **core.app.config.socket_io_js_query_params,

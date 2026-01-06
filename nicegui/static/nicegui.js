@@ -5,8 +5,6 @@ const None = undefined;
 let app = undefined;
 let mounted_app = undefined;
 
-const loaded_components = new Set();
-
 function parseElements(raw_elements) {
   return JSON.parse(
     raw_elements
@@ -145,9 +143,6 @@ function renderRecursively(elements, id) {
     return;
   }
 
-  // @todo: Try avoid this with better handling of initial page load.
-  if (element.component) loaded_components.add(element.component.name);
-
   const props = {
     id: "c" + id,
     ref: "r" + id,
@@ -278,15 +273,11 @@ function ack() {
   window.ackedMessageId = window.nextMessageId;
 }
 
-async function loadDependencies(element, prefix, version) {
-  if (element.component) {
-    const { name, key, tag } = element.component;
-    if (!loaded_components.has(name) && !key.endsWith(".vue")) {
-      const component = await import(`${prefix}/_nicegui/${version}/components/${key}`);
-      app.component(tag, component.default);
-      loaded_components.add(name);
-    }
-  }
+async function loadDependencies(component, prefix, version) {
+  const { _, key, tag } = component;
+  if (key.endsWith(".vue")) return;
+  const importedComponent = await import(`${prefix}/_nicegui/${version}/components/${key}`);
+  app.component(tag, importedComponent.default);
 }
 
 function createRandomUUID() {
@@ -392,12 +383,10 @@ function createApp(elements, options) {
         disconnect: () => {
           document.getElementById("popup").ariaHidden = false;
         },
+        load_component: async (msg) => {
+          await Promise.all(msg.components.map((c) => loadDependencies(c, options.prefix, options.version)));
+        },
         update: async (msg) => {
-          const loadPromises = Object.entries(msg)
-            .filter(([_, element]) => element && element.component)
-            .map(([_, element]) => loadDependencies(element, options.prefix, options.version));
-          await Promise.all(loadPromises);
-
           for (const [id, element] of Object.entries(msg)) {
             if (element === null) {
               delete this.elements[id];

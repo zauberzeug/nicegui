@@ -7,6 +7,7 @@ from collections import deque
 from typing import TYPE_CHECKING, Any
 
 from . import background_tasks, core
+from .dependencies import Component
 
 if TYPE_CHECKING:
     from .client import Client
@@ -29,6 +30,13 @@ class Deleted:
 
 
 deleted = Deleted()
+
+
+def _component(maybe_element: Element | Deleted) -> Component | None:
+    """Try to get the component of the given element."""
+    if isinstance(maybe_element, Deleted) or not maybe_element.component:
+        return None
+    return maybe_element.component
 
 
 class Outbox:
@@ -105,6 +113,12 @@ class Outbox:
                         element_id: None if element is deleted else element._to_dict()  # type: ignore  # pylint: disable=protected-access
                         for element_id, element in self.updates.items()
                     }
+                    components_to_load = [
+                        c._to_dict() for element in self.updates.values()  # pylint: disable=protected-access
+                        if (c := _component(element)) and c and c.name not in client._loaded_components  # pylint: disable=protected-access
+                    ]
+                    if components_to_load:
+                        coros.append(self._emit((client.id, 'load_component', {'components': components_to_load})))
                     coros.append(self._emit((client.id, 'update', data)))
                     self.updates.clear()
 
