@@ -274,6 +274,9 @@ h6.q-timeline__title {
 .nicegui-codemirror .cm-editor.cm-focused {
   outline: none;
 }
+.js-plotly-plot {
+  box-sizing: content-box; /* HACK: fix overflow when adding borders to the Plotly plot */
+}
 
 /* error popups */
 .nicegui-error-popup {
@@ -326,24 +329,4 @@ h6.q-timeline__title {
   content: "⚠️";
   position: absolute;
   right: 1.5em;
-}
-/* Plotly */
-/*
-  fix styles to correctly render modebar, otherwise large buttons with unwanted line breaks are shown,
-  possibly due to other CSS libraries overriding default styles affecting plotly styling.
-*/
-.js-plotly-plot .plotly .modebar-group {
-  display: flex;
-}
-.js-plotly-plot .plotly .modebar-btn {
-  display: flex;
-}
-.js-plotly-plot .plotly .modebar-btn svg {
-  position: static;
-}
-/*
-  fix overflow when adding borders to the plotly plot
-*/
-.js-plotly-plot {
-  box-sizing: content-box;
 }
