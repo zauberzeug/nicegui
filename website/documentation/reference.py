@@ -1,11 +1,20 @@
 import inspect
+from dataclasses import dataclass
 from typing import Callable, Optional
 
 from nicegui import binding, ui
+from nicegui.dataclasses import KWONLY_SLOTS
 from nicegui.elements.markdown import remove_indentation
 
 from ..style import create_anchor_name, subheading
 from .custom_restructured_text import CustomRestructuredText as custom_restructured_text
+
+
+@dataclass(**KWONLY_SLOTS)
+class Attribute:
+    name: str
+    obj: object | None
+    base: type
 
 
 def generate_class_doc(class_obj: type, part_title: str) -> None:
@@ -19,56 +28,58 @@ def generate_class_doc(class_obj: type, part_title: str) -> None:
 
     mro = [base for base in class_obj.__mro__ if base.__module__.startswith('nicegui.')]
     ancestors = mro[1:]
-    attributes: dict[str, tuple[type, object | None]] = {}
-    for base in reversed(mro):
-        for name in dir(base):
-            if not name.startswith('_') and _is_method_or_property(base, name):
-                attributes[name] = (base, getattr(base, name, None))
-    properties = {name: (ancestor, attribute) for name, (ancestor, attribute)
-                  in attributes.items() if not callable(attribute)}
-    methods = {name: (ancestor, attribute) for name, (ancestor, attribute) in attributes.items() if callable(attribute)}
-
-    def render_section(items: dict[str, tuple[type, object | None]], is_method: bool) -> None:
-        sorted_items = sorted(items.items())
-        native = [(n, o, a) for n, (o, a) in sorted_items if o is class_obj]
-        inherited_items = [(n, o, a) for n, (o, a) in sorted_items if o is not class_obj]
-
-        def render_item(name: str, owner: type, attr: object | None) -> None:
-            if is_method:
-                decorator = ''
-                owner_attr = owner.__dict__.get(name)
-                if isinstance(owner_attr, staticmethod):
-                    decorator += '`@staticmethod`<br />'
-                if isinstance(owner_attr, classmethod):
-                    decorator += '`@classmethod`<br />'
-                ui.markdown(f'{decorator}**`{name}`**`{_generate_method_signature_description(attr)}`') \
-                    .classes('w-full overflow-x-auto')
-            else:
-                ui.markdown(f'**`{name}`**`{_generate_property_signature_description(attr)}`')
-            docstring = getattr(attr, '__doc__', None)
-            if attr is not None and docstring:
-                _render_docstring(docstring).classes('ml-8')
-
-        for name, owner, attr in native:
-            render_item(name, owner, attr)
-        if inherited_items:
-            with ui.row().classes('items-center gap-2 text-sm text-gray-500 dark:text-gray-400 mt-2'):
-                ui.icon('account_tree')
-                ui.label('Inherited')
-            for name, owner, attr in inherited_items:
-                render_item(name, owner, attr)
+    attributes = sorted([
+        Attribute(name=name, obj=getattr(base, name, None), base=base)
+        for base in reversed(mro)
+        for name in dir(base)
+        if not name.startswith('_') and _is_method_or_property(base, name)
+    ], key=lambda x: x.name)
+    properties = [attribute for attribute in attributes if not callable(attribute.obj)]
+    methods = [attribute for attribute in attributes if callable(attribute.obj)]
 
     if properties:
         subheading('Properties', anchor_name=create_anchor_name(part_title.replace('Reference', 'Properties')))
-        with ui.column().classes('gap-2 w-full overflow-x-auto'):
-            render_section(properties, is_method=False)
+        _render_section(class_obj, properties, method_section=False)
+
     if methods:
         subheading('Methods', anchor_name=create_anchor_name(part_title.replace('Reference', 'Methods')))
-        with ui.column().classes('gap-2 w-full overflow-x-auto'):
-            render_section(methods, is_method=True)
+        _render_section(class_obj, methods, method_section=True)
+
     if ancestors:
         subheading('Inheritance', anchor_name=create_anchor_name(part_title.replace('Reference', 'Inheritance')))
         ui.markdown('\n'.join(f'- `{ancestor.__name__}`' for ancestor in ancestors))
+
+
+def _render_section(class_obj: type, attributes: list[Attribute], *, method_section: bool) -> None:
+    native_attributes = [attribute for attribute in attributes if attribute.base is class_obj]
+    if native_attributes:
+        with ui.column().classes('gap-2 w-full overflow-x-auto'):
+            for native_attribute in native_attributes:
+                _render_attribute(native_attribute, method_section=method_section)
+
+    inherited_attributes = [attribute for attribute in attributes if attribute.base is not class_obj]
+    if inherited_attributes:
+        with ui.expansion(f'Inherited {"methods" if method_section else "properties"}', icon='account_tree', value=True) \
+                .classes('w-full border border-gray-200 dark:border-gray-800 rounded-md'):
+            for attribute in inherited_attributes:
+                _render_attribute(attribute, method_section=method_section)
+
+
+def _render_attribute(item: Attribute, *, method_section: bool) -> None:
+    if method_section:
+        decorator = ''
+        owner_attr = item.base.__dict__.get(item.name)
+        if isinstance(owner_attr, staticmethod):
+            decorator += '`@staticmethod`<br />'
+        if isinstance(owner_attr, classmethod):
+            decorator += '`@classmethod`<br />'
+        ui.markdown(f'{decorator}**`{item.name}`**`{_generate_method_signature_description(item.obj)}`') \
+            .classes('w-full overflow-x-auto')
+    else:
+        ui.markdown(f'**`{item.name}`**`{_generate_property_signature_description(item.obj)}`')
+    docstring = getattr(item.obj, '__doc__', None)
+    if item.obj is not None and docstring:
+        _render_docstring(docstring).classes('ml-8')
 
 
 def _is_method_or_property(cls: type, attribute_name: str) -> bool:
