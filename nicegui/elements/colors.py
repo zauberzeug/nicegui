@@ -46,3 +46,4 @@ class Colors(Element, component='colors.js'):
         QUASAR_COLORS.update({name.replace('_', '-') for name in custom_colors})
 
         self._props.add_rename('dark_page', 'dark-page')  # DEPRECATED: remove in NiceGUI 4.0
+        self._props.add_rename('custom_colors', 'custom-colors')  # DEPRECATED: remove in NiceGUI 4.0
