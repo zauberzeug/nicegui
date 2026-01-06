@@ -40,6 +40,8 @@ HTML_ESCAPE_TABLE = str.maketrans({
     '$': '&#36;',
 })
 
+HEADWIND_CONTENT = (Path(__file__).parent / 'static' / 'headwind.css').read_text().strip()
+
 
 class ClientConnectionTimeout(TimeoutError):
     def __init__(self, client: Client) -> None:
@@ -185,6 +187,7 @@ class Client:
                 'translations': translations.get(self.page.resolve_language(), translations['en-US']),
                 'prefix': prefix,
                 'tailwind': core.app.config.tailwind,
+                'headwind_css': HEADWIND_CONTENT if core.app.config.tailwind else '',
                 'prod_js': core.app.config.prod_js,
                 'socket_io_js_query_params': socket_io_js_query_params,
                 'socket_io_js_extra_headers': core.app.config.socket_io_js_extra_headers,
@@ -391,6 +394,8 @@ class Client:
         self.outbox.stop()
         del Client.instances[self.id]
         self._deleted = True
+        self._connected.set()  # for terminating connected() waits
+        self._connected.clear()
 
     def check_existence(self) -> None:
         """Check if the client still exists and print a warning if it doesn't."""

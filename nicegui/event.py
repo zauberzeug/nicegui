@@ -13,10 +13,9 @@ from typing_extensions import ParamSpec
 
 from . import background_tasks, core, helpers
 from .awaitable_response import AwaitableResponse
-from .client import Client, ClientConnectionTimeout
+from .client import Client
 from .context import context
 from .dataclasses import KWONLY_SLOTS
-from .logging import log
 from .slot import Slot
 
 P = ParamSpec('P')
@@ -88,17 +87,7 @@ class Event(Generic[P]):
             raise RuntimeError('Calling `subscribe` with `unsubscribe_on_delete=True` outside of a UI context '
                                'is not supported.')
         if client is not None and unsubscribe_on_delete is not False and not core.is_script_mode_preflight():
-            async def register_unsubscribe() -> None:
-                try:
-                    await client.connected()
-                    client.on_delete(lambda: self.unsubscribe(callback))
-                except ClientConnectionTimeout:
-                    log.debug('Could not register a disconnect handler for callback %s', callback)
-                    self.unsubscribe(callback)
-            if core.loop and core.loop.is_running():
-                background_tasks.create(register_unsubscribe())
-            else:
-                core.app.on_startup(register_unsubscribe())
+            client.on_delete(lambda: self.unsubscribe(callback))
         self.callbacks.append(callback_)
 
     def unsubscribe(self, callback: Callable[P, Any] | Callable[[], Any]) -> None:

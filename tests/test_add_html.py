@@ -63,3 +63,26 @@ def test_sass(screen: Screen):
 
     screen.open('/')
     assert screen.find('This is purple on yellow with SASS.').value_of_css_property('color') == 'rgba(128, 0, 128, 1)'
+
+
+def test_add_css_with_script(screen: Screen):
+    @ui.page('/')
+    def page():
+        ui.add_css("</style></script><script>document.write('XSS');</script>")
+        ui.label('Hello, World!')
+
+    screen.open('/')
+    screen.should_contain('Hello, World!')
+    screen.should_not_contain('XSS')
+
+
+def test_add_scss_with_script(screen: Screen):
+    @ui.page('/')
+    def page():
+        ui.add_scss("</style></script><script>document.write('XSS');</script>")
+        ui.label('Hello, World!')
+
+    screen.allowed_js_errors.append('static/sass.dart.js')
+    screen.open('/')
+    screen.should_contain('Hello, World!')
+    screen.should_not_contain('XSS')

@@ -157,7 +157,9 @@ def create() -> None:
         section_heading('In-depth examples', 'Pick your *solution*')
         with ui.row().classes('w-full text-lg leading-tight grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4'):
             for example in examples:
-                example_link(example)
+                if example.title in {'Authentication', 'Chat App', 'Todo List'}:
+                    example_link(example)
+            example_link().classes('min-h-40 text-center items-center justify-center xl:col-span-3')
 
     with ui.column().classes('dark-box p-8 lg:p-16 my-16 bg-transparent border-y-2 border-gray-200'):
         with ui.column().classes('mx-auto items-center gap-y-8 gap-x-32 lg:flex-row'):
@@ -186,7 +188,7 @@ def create() -> None:
             with ui.link(target='https://github.com/sponsors/zauberzeug').style('color: black !important') \
                     .classes('rounded-full mx-auto px-12 py-2 border-2 border-[#3e6a94] font-medium text-lg md:text-xl'):
                 with ui.row(wrap=False).classes('items-center gap-4'):
-                    ui.icon('sym_o_favorite', color='#3e6a94')
+                    ui.icon('favorite_border', color='#3e6a94')
                     ui.label('Become a sponsor').classes('text-[#3e6a94] whitespace-nowrap')
 
     with ui.row().classes('dark-box min-h-screen mt-16'):
