@@ -475,16 +475,16 @@ def table_with_masonry_like_grid():
     *Added in version 3.5.0*
 ''')
 def slot_templates_with_nicegui_elements():
-    table = ui.table(rows=[{'name': 'Alex', 'age': 9}, {'name': 'Ben', 'age': 99}])
+    table = ui.table(rows=[{'name': 'Alice', 'age': 18}, {'name': 'Bob', 'age': 21}])
     with table.add_slot('body-cell-name'):
-        with table.cell():
+        with table.cell('name'):
             ui.button().props(':label=props.value flat').on(
                 'click',
                 js_handler='() => emit(props.value)',
                 handler=lambda e: ui.notify(f'Clicked {e.args}'),
             )
     with table.add_slot('body-cell-age'):
-        with table.cell():
+        with table.cell('age'):
             ui.badge().props('''
                 :label=props.value
                 :color="props.value < 21 ? 'red' : 'green'"

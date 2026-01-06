@@ -442,20 +442,30 @@ class Table(FilterElement, component='table.js'):
             """
             super().__init__('q-tr')
 
-    class header(Element):
+    class header(Element, default_classes='[&>*]:inline'):
 
-        def __init__(self) -> None:
+        def __init__(self, column_name: Optional[str] = None) -> None:
             """Header Element
 
             This element is based on Quasar's `QTh <https://quasar.dev/vue-components/table#qth-api>`_ component.
+
+            :param column_name: corresponding column to access alignment and other properties (*added in version 3.5.0*)
             """
             super().__init__('q-th')
+            if column_name is not None:
+                self._props[':props'] = 'props'
+                self._props['key'] = column_name
 
     class cell(Element):
 
-        def __init__(self) -> None:
+        def __init__(self, column_name: Optional[str] = None) -> None:
             """Cell Element
 
             This element is based on Quasar's `QTd <https://quasar.dev/vue-components/table#qtd-api>`_ component.
+
+            :param column_name: corresponding column to access alignment and other properties (*added in version 3.5.0*)
             """
             super().__init__('q-td')
+            if column_name is not None:
+                self._props[':props'] = 'props'
+                self._props['key'] = column_name
