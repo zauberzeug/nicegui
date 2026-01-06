@@ -27,7 +27,7 @@ class Sentinel:
 
 @dataclass(**KWONLY_SLOTS)
 class SentinelValue:
-    key: str
+    key: str | None
     default: Any
 
 
