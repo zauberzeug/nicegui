@@ -4,11 +4,11 @@ export default {
   template: "<div></div>",
   props: {
     options: Array,
-    resource_path: String,
+    resourcePath: String,
   },
   async mounted() {
     await this.$nextTick(); // NOTE: wait for window.path_prefix to be set
-    await loadResource(window.path_prefix + `${this.resource_path}/index.global.min.js`);
+    await loadResource(window.path_prefix + `${this.resourcePath}/index.global.min.js`);
     this.options.eventClick = (info) => this.$emit("click", { info });
     this.calendar = new FullCalendar.Calendar(this.$el, this.options);
     this.calendar.render();

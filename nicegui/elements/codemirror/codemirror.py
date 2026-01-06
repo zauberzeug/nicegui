@@ -262,8 +262,8 @@ class CodeMirror(ValueElement, DisableableElement,
         language: Optional[SUPPORTED_LANGUAGES] = DEFAULT_PROPS['language'] | None,
         theme: SUPPORTED_THEMES = DEFAULT_PROPS['theme'] | 'basicLight',
         indent: str = DEFAULT_PROPS['indent'] | ' ' * 4,
-        line_wrapping: bool = DEFAULT_PROPS['lineWrapping'] | False,
-        highlight_whitespace: bool = DEFAULT_PROPS['highlightWhitespace'] | False,
+        line_wrapping: bool = DEFAULT_PROPS['line-wrapping'] | False,
+        highlight_whitespace: bool = DEFAULT_PROPS['highlight-whitespace'] | False,
     ) -> None:
         """CodeMirror
 
@@ -294,9 +294,12 @@ class CodeMirror(ValueElement, DisableableElement,
         self._props['language'] = language
         self._props['theme'] = theme
         self._props['indent'] = indent
-        self._props['lineWrapping'] = line_wrapping
-        self._props['highlightWhitespace'] = highlight_whitespace
+        self._props['line-wrapping'] = line_wrapping
+        self._props['highlight-whitespace'] = highlight_whitespace
         self._update_method = 'setEditorValueFromProps'
+
+        self._props.add_rename('highlightWhitespace', 'highlight-whitespace')  # DEPRECATED: remove in NiceGUI 4.0
+        self._props.add_rename('lineWrapping', 'line-wrapping')  # DEPRECATED: remove in NiceGUI 4.0
 
     @property
     def theme(self) -> str:
@@ -340,18 +343,18 @@ class CodeMirror(ValueElement, DisableableElement,
 
         *Added in version 3.2.0*
         """
-        return self._props['lineWrapping']
+        return self._props['line-wrapping']
 
     @line_wrapping.setter
     def line_wrapping(self, value: bool) -> None:
-        self._props['lineWrapping'] = value
+        self._props['line-wrapping'] = value
 
     def set_line_wrapping(self, value: bool) -> None:
         """Sets whether line wrapping is enabled.
 
         *Added in version 3.2.0*
         """
-        self._props['lineWrapping'] = value
+        self._props['line-wrapping'] = value
 
     def _event_args_to_value(self, e: GenericEventArguments) -> str:
         """The event contains a change set which is applied to the current value."""

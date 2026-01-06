@@ -24,7 +24,7 @@ class AgGrid(Element, component='aggrid.js', esm={'nicegui-aggrid': 'dist'}, def
     @resolve_defaults
     def __init__(self,
                  options: dict, *,
-                 html_columns: list[int] = DEFAULT_PROPS['html_columns'] | [],
+                 html_columns: list[int] = DEFAULT_PROPS['html-columns'] | [],
                  theme: Optional[Literal['quartz', 'balham', 'material', 'alpine']] = None,
                  auto_size_columns: bool = True,
                  ) -> None:
@@ -46,8 +46,10 @@ class AgGrid(Element, component='aggrid.js', esm={'nicegui-aggrid': 'dist'}, def
             **({'autoSizeStrategy': {'type': 'fitGridWidth'}} if auto_size_columns else {}),
             **options,
         }
-        self._props['html_columns'] = html_columns[:]
+        self._props['html-columns'] = html_columns[:]
         self._update_method = 'update_grid'
+
+        self._props.add_rename('html_columns', 'html-columns')  # DEPRECATED: remove in NiceGUI 4.0
 
     @classmethod
     def from_pandas(cls,
@@ -137,11 +139,11 @@ class AgGrid(Element, component='aggrid.js', esm={'nicegui-aggrid': 'dist'}, def
     @property
     def html_columns(self) -> list[int]:
         """The list of columns that should be rendered as HTML."""
-        return self._props['html_columns']
+        return self._props['html-columns']
 
     @html_columns.setter
     def html_columns(self, value: list[int]) -> None:
-        self._props['html_columns'] = value[:]
+        self._props['html-columns'] = value[:]
 
     @property
     def theme(self) -> Optional[Literal['quartz', 'balham', 'material', 'alpine']]:

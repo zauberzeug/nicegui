@@ -61,6 +61,7 @@ class Props(ObservableDict, Generic[T]):
         super().__init__(*args, on_change=self._update, **kwargs)
         self._element = weakref.ref(element)
         self._warnings: dict[str, str] = {}
+        self._renames: dict[str, str] = {}
         self._suspend_count = 0
 
     def set_optional(self, key: str, value: Any) -> None:
@@ -97,6 +98,8 @@ class Props(ObservableDict, Generic[T]):
     def _update(self) -> None:
         if self._suspend_count > 0:
             return
+        self._check_warnings()
+        self._check_renames()
         element = self._element()
         if element is not None:
             element.update()
@@ -104,6 +107,25 @@ class Props(ObservableDict, Generic[T]):
     def add_warning(self, prop: str, message: str) -> None:
         """Add a warning message for a prop."""
         self._warnings[prop] = message
+
+    def add_rename(self, prop: str, replacement: str) -> None:
+        """Add a rename warning for a prop."""
+        self._renames[prop] = replacement
+
+    def _check_warnings(self) -> None:
+        for name, message in self._warnings.items():
+            if name in self:
+                with self.suspend_updates():
+                    del self[name]
+                helpers.warn_once(message)
+
+    def _check_renames(self) -> None:
+        for name, rename in self._renames.items():
+            if name in self:
+                with self.suspend_updates():
+                    self[rename] = self[name]
+                    del self[name]
+                helpers.warn_once(f'The prop "{name}" is deprecated. Use "{rename}" instead.')
 
     def __call__(self,
                  add: Optional[str] = None, *,
@@ -125,10 +147,6 @@ class Props(ObservableDict, Generic[T]):
         for key, value in self.parse(add).items():
             if self.get(key) != value:
                 self[key] = value
-        for name, message in self._warnings.items():
-            if name in self:
-                del self[name]
-                helpers.warn_once(message)
         return element
 
     @staticmethod

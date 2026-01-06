@@ -10,7 +10,7 @@ class Fullscreen(ValueElement, component='fullscreen.js'):
 
     @resolve_defaults
     def __init__(self, *,
-                 require_escape_hold: bool = DEFAULT_PROPS['requireEscapeHold'] | False,
+                 require_escape_hold: bool = DEFAULT_PROPS['require-escape-hold'] | False,
                  on_value_change: Optional[Handler[ValueChangeEventArguments]] = None) -> None:
         """Fullscreen control element
 
@@ -28,7 +28,9 @@ class Fullscreen(ValueElement, component='fullscreen.js'):
         :param on_value_change: callback which is invoked when the fullscreen state changes
         """
         super().__init__(value=False, on_value_change=on_value_change)
-        self._props['requireEscapeHold'] = require_escape_hold
+        self._props['require-escape-hold'] = require_escape_hold
+
+        self._props.add_rename('requireEscapeHold', 'require-escape-hold')  # DEPRECATED: remove in NiceGUI 4.0
 
     @property
     def require_escape_hold(self) -> bool:
@@ -37,11 +39,11 @@ class Fullscreen(ValueElement, component='fullscreen.js'):
         This feature is only supported in some browsers like Google Chrome or Microsoft Edge.
         In unsupported browsers, this setting has no effect.
         """
-        return self._props['requireEscapeHold']
+        return self._props['require-escape-hold']
 
     @require_escape_hold.setter
     def require_escape_hold(self, value: bool) -> None:
-        self._props['requireEscapeHold'] = value
+        self._props['require-escape-hold'] = value
 
     def enter(self) -> None:
         """Enter fullscreen mode."""

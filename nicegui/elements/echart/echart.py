@@ -31,7 +31,7 @@ class EChart(Element, component='echart.js', esm={'nicegui-echart': 'dist'}, def
                  options: dict,
                  on_point_click: Optional[Handler[EChartPointClickEventArguments]] = None, *,
                  on_click: Optional[Handler[EChartComponentClickEventArguments]] = None,
-                 enable_3d: bool = DEFAULT_PROPS['enable_3d'] | False,
+                 enable_3d: bool = DEFAULT_PROPS['enable-3d'] | False,
                  renderer: Literal['canvas', 'svg'] = DEFAULT_PROPS['renderer'] | 'canvas',
                  theme: Optional[Union[str, dict]] = DEFAULT_PROPS['theme'] | None,
                  ) -> None:
@@ -49,7 +49,7 @@ class EChart(Element, component='echart.js', esm={'nicegui-echart': 'dist'}, def
         """
         super().__init__()
         self._props['options'] = options
-        self._props['enable_3d'] = enable_3d or any('3D' in key for key in options)
+        self._props['enable-3d'] = enable_3d or any('3D' in key for key in options)
         self._props['renderer'] = renderer
         self._props['theme'] = theme
         self._update_method = 'update_chart'
@@ -58,6 +58,8 @@ class EChart(Element, component='echart.js', esm={'nicegui-echart': 'dist'}, def
             self.on_point_click(on_point_click)
         if on_click:
             self.on_click(on_click)
+
+        self._props.add_rename('enable_3d', 'enable-3d')  # DEPRECATED: remove in NiceGUI 4.0
 
     def on_point_click(self, callback: Handler[EChartPointClickEventArguments]) -> Self:
         """Add a callback to be invoked when a point is clicked."""

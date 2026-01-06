@@ -11,7 +11,7 @@ class Colors(Element, component='colors.js'):
                  secondary: str = DEFAULT_PROPS['secondary'] | '#26a69a',
                  accent: str = DEFAULT_PROPS['accent'] | '#9c27b0',
                  dark: str = DEFAULT_PROPS['dark'] | '#1d1d1d',
-                 dark_page: str = DEFAULT_PROPS['dark_page'] | '#121212',
+                 dark_page: str = DEFAULT_PROPS['dark-page'] | '#121212',
                  positive: str = DEFAULT_PROPS['positive'] | '#21ba45',
                  negative: str = DEFAULT_PROPS['negative'] | '#c10015',
                  info: str = DEFAULT_PROPS['info'] | '#31ccec',
@@ -37,10 +37,12 @@ class Colors(Element, component='colors.js'):
         self._props['secondary'] = secondary
         self._props['accent'] = accent
         self._props['dark'] = dark
-        self._props['dark_page'] = dark_page
+        self._props['dark-page'] = dark_page
         self._props['positive'] = positive
         self._props['negative'] = negative
         self._props['info'] = info
         self._props['warning'] = warning
-        self._props['customColors'] = custom_colors
+        self._props['custom-colors'] = custom_colors
         QUASAR_COLORS.update({name.replace('_', '-') for name in custom_colors})
+
+        self._props.add_rename('dark_page', 'dark-page')  # DEPRECATED: remove in NiceGUI 4.0

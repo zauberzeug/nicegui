@@ -67,13 +67,13 @@ class Scene(Element, component='scene.js', esm={'nicegui-scene': 'dist'}, defaul
                  grid: Union[bool, tuple[int, int]] = DEFAULT_PROPS['grid'] | True,
                  camera: Optional[SceneCamera] = None,
                  on_click: Optional[Handler[SceneClickEventArguments]] = None,
-                 click_events: list[str] = DEFAULT_PROPS['click_events'] | ['click', 'dblclick'],
+                 click_events: list[str] = DEFAULT_PROPS['click-events'] | ['click', 'dblclick'],
                  on_drag_start: Optional[Handler[SceneDragEventArguments]] = None,
                  on_drag_end: Optional[Handler[SceneDragEventArguments]] = None,
-                 drag_constraints: str = DEFAULT_PROPS['drag_constraints'] | '',
-                 background_color: str = DEFAULT_PROPS['background_color'] | '#eee',
+                 drag_constraints: str = DEFAULT_PROPS['drag-constraints'] | '',
+                 background_color: str = DEFAULT_PROPS['background-color'] | '#eee',
                  fps: int = DEFAULT_PROPS['fps'] | 20,
-                 show_stats: bool = DEFAULT_PROPS['show_stats'] | False,
+                 show_stats: bool = DEFAULT_PROPS['show-stats'] | False,
                  ) -> None:
         """3D Scene
 
@@ -99,23 +99,30 @@ class Scene(Element, component='scene.js', esm={'nicegui-scene': 'dist'}, defaul
         self._props['width'] = width
         self._props['height'] = height
         self._props['fps'] = fps
-        self._props['show_stats'] = show_stats
+        self._props['show-stats'] = show_stats
         self._props['grid'] = grid
-        self._props['background_color'] = background_color
+        self._props['background-color'] = background_color
         self.camera = camera or self.perspective_camera()
-        self._props['camera_type'] = self.camera.type
-        self._props['camera_params'] = self.camera.params
+        self._props['camera-type'] = self.camera.type
+        self._props['camera-params'] = self.camera.params
         self.objects: dict[str, Object3D] = {}
         self.stack: list[Union[Object3D, SceneObject]] = [SceneObject()]
         self._click_handlers = [on_click] if on_click else []
-        self._props['click_events'] = click_events[:]
+        self._props['click-events'] = click_events[:]
         self._drag_start_handlers = [on_drag_start] if on_drag_start else []
         self._drag_end_handlers = [on_drag_end] if on_drag_end else []
         self.on('init', self._handle_init)
         self.on('click3d', self._handle_click)
         self.on('dragstart', self._handle_drag)
         self.on('dragend', self._handle_drag)
-        self._props['drag_constraints'] = drag_constraints
+        self._props['drag-constraints'] = drag_constraints
+
+        self._props.add_rename('background_color', 'background-color')  # DEPRECATED: remove in NiceGUI 4.0
+        self._props.add_rename('camera_params', 'camera-params')  # DEPRECATED: remove in NiceGUI 4.0
+        self._props.add_rename('camera_type', 'camera-type')  # DEPRECATED: remove in NiceGUI 4.0
+        self._props.add_rename('click_events', 'click-events')  # DEPRECATED: remove in NiceGUI 4.0
+        self._props.add_rename('drag_constraints', 'drag-constraints')  # DEPRECATED: remove in NiceGUI 4.0
+        self._props.add_rename('show_stats', 'show-stats')  # DEPRECATED: remove in NiceGUI 4.0
 
     def on_click(self, callback: Handler[SceneClickEventArguments]) -> Self:
         """Add a callback to be invoked when a 3D object is clicked."""

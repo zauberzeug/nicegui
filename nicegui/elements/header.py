@@ -13,7 +13,7 @@ class Header(ValueElement, component='header.js', default_classes='nicegui-heade
                  bordered: bool = DEFAULT_PROPS['bordered'] | False,
                  elevated: bool = DEFAULT_PROPS['elevated'] | False,
                  wrap: bool = True,
-                 add_scroll_padding: bool = DEFAULT_PROPS['add_scroll_padding'] | True,
+                 add_scroll_padding: bool = DEFAULT_PROPS['add-scroll-padding'] | True,
                  ) -> None:
         """Header
 
@@ -36,7 +36,7 @@ class Header(ValueElement, component='header.js', default_classes='nicegui-heade
             super().__init__(value=value, on_value_change=None)
         self._props['bordered'] = bordered
         self._props['elevated'] = elevated
-        self._props['add_scroll_padding'] = add_scroll_padding
+        self._props['add-scroll-padding'] = add_scroll_padding
         if wrap:
             self._classes.append('wrap')
         code = list(self.client.layout.props['view'])
@@ -44,6 +44,8 @@ class Header(ValueElement, component='header.js', default_classes='nicegui-heade
         self.client.layout.props['view'] = ''.join(code)
 
         self.move(target_index=0)
+
+        self._props.add_rename('add_scroll_padding', 'add-scroll-padding')  # DEPRECATED: remove in NiceGUI 4.0
 
     def toggle(self):
         """Toggle the header"""

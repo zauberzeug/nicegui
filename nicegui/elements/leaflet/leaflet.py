@@ -30,9 +30,9 @@ class Leaflet(Element, component='leaflet.js', esm={'nicegui-leaflet': 'dist'}, 
                  zoom: int = DEFAULT_PROPS['zoom'] | 13,
                  *,
                  options: dict = DEFAULT_PROPS['options'] | {},
-                 draw_control: Union[bool, dict] = DEFAULT_PROPS['draw_control'] | False,
-                 hide_drawn_items: bool = DEFAULT_PROPS['hide_drawn_items'] | False,
-                 additional_resources: Optional[list[str]] = DEFAULT_PROPS['additional_resources'] | None,
+                 draw_control: Union[bool, dict] = DEFAULT_PROPS['draw-control'] | False,
+                 hide_drawn_items: bool = DEFAULT_PROPS['hide-drawn-items'] | False,
+                 additional_resources: Optional[list[str]] = DEFAULT_PROPS['additional-resources'] | None,
                  ) -> None:
         """Leaflet map
 
@@ -64,9 +64,13 @@ class Leaflet(Element, component='leaflet.js', esm={'nicegui-leaflet': 'dist'}, 
         self._client_zoom = zoom
 
         self._props['options'] = {**options}
-        self._props['draw_control'] = draw_control
-        self._props['hide_drawn_items'] = hide_drawn_items
-        self._props['additional_resources'] = additional_resources or []
+        self._props['draw-control'] = draw_control
+        self._props['hide-drawn-items'] = hide_drawn_items
+        self._props['additional-resources'] = additional_resources or []
+
+        self._props.add_rename('draw_control', 'draw-control')  # DEPRECATED: remove in NiceGUI 4.0
+        self._props.add_rename('hide_drawn_items', 'hide-drawn-items')  # DEPRECATED: remove in NiceGUI 4.0
+        self._props.add_rename('additional_resources', 'additional-resources')  # DEPRECATED: remove in NiceGUI 4.0
 
         self.on('init', self._handle_init)
         self.on('map-moveend', self._handle_move_or_zoom_end)
