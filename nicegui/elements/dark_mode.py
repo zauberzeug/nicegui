@@ -1,6 +1,6 @@
 from typing import Optional
 
-from ..defaults import DEFAULT_PROPS, resolve_defaults
+from ..defaults import DEFAULT_PROP, resolve_defaults
 from ..events import Handler, ValueChangeEventArguments
 from .mixins.value_element import ValueElement
 
@@ -10,7 +10,7 @@ class DarkMode(ValueElement, component='dark_mode.js'):
 
     @resolve_defaults
     def __init__(self,
-                 value: Optional[bool] = DEFAULT_PROPS['value'] | False, *,
+                 value: Optional[bool] = DEFAULT_PROP | False, *,
                  on_change: Optional[Handler[ValueChangeEventArguments]] = None,
                  ) -> None:
         """Dark mode

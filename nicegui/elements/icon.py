@@ -1,6 +1,6 @@
 from typing import Optional
 
-from ..defaults import DEFAULT_PROPS, resolve_defaults
+from ..defaults import DEFAULT_PROP, resolve_defaults
 from .mixins.color_elements import TextColorElement
 from .mixins.name_element import NameElement
 
@@ -11,8 +11,8 @@ class Icon(NameElement, TextColorElement):
     def __init__(self,
                  name: str,
                  *,
-                 size: Optional[str] = DEFAULT_PROPS['size'] | None,
-                 color: Optional[str] = DEFAULT_PROPS['color'] | None,
+                 size: Optional[str] = DEFAULT_PROP | None,
+                 color: Optional[str] = DEFAULT_PROP | None,
                  ) -> None:
         """Icon
 

@@ -1,6 +1,6 @@
 from typing import Callable, Optional, Union
 
-from ..defaults import DEFAULT_PROPS, resolve_defaults
+from ..defaults import DEFAULT_PROP, DEFAULT_PROPS, resolve_defaults
 from ..events import Handler, ValueChangeEventArguments
 from .input import Input
 
@@ -9,8 +9,8 @@ class Textarea(Input, component='input.js'):
 
     @resolve_defaults
     def __init__(self,
-                 label: Optional[str] = DEFAULT_PROPS['label'] | None, *,
-                 placeholder: Optional[str] = DEFAULT_PROPS['placeholder'] | None,
+                 label: Optional[str] = DEFAULT_PROP | None, *,
+                 placeholder: Optional[str] = DEFAULT_PROP | None,
                  value: str = DEFAULT_PROPS['model-value'] | '',
                  on_change: Optional[Handler[ValueChangeEventArguments]] = None,
                  validation: Optional[Union[Callable[..., Optional[str]], dict[str, Callable[..., bool]]]] = None,

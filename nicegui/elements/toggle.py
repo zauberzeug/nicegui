@@ -1,6 +1,6 @@
 from typing import Any, Optional, Union
 
-from ..defaults import DEFAULT_PROPS, resolve_defaults
+from ..defaults import DEFAULT_PROP, DEFAULT_PROPS, resolve_defaults
 from ..events import GenericEventArguments, Handler, ValueChangeEventArguments
 from .choice_element import ChoiceElement
 from .mixins.disableable_element import DisableableElement
@@ -13,7 +13,7 @@ class Toggle(ChoiceElement, DisableableElement):
                  options: Union[list, dict], *,
                  value: Any = DEFAULT_PROPS['model-value'] | None,
                  on_change: Optional[Handler[ValueChangeEventArguments]] = None,
-                 clearable: bool = DEFAULT_PROPS['clearable'] | False,
+                 clearable: bool = DEFAULT_PROP | False,
                  ) -> None:
         """Toggle
 

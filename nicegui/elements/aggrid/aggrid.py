@@ -5,7 +5,7 @@ from typing_extensions import Self
 
 from ... import optional_features
 from ...awaitable_response import AwaitableResponse
-from ...defaults import DEFAULT_PROPS, resolve_defaults
+from ...defaults import DEFAULT_PROP, resolve_defaults
 from ...element import Element
 
 if importlib.util.find_spec('pandas'):
@@ -24,7 +24,7 @@ class AgGrid(Element, component='aggrid.js', esm={'nicegui-aggrid': 'dist'}, def
     @resolve_defaults
     def __init__(self,
                  options: dict, *,
-                 html_columns: list[int] = DEFAULT_PROPS['html-columns'] | [],
+                 html_columns: list[int] = DEFAULT_PROP | [],
                  theme: Optional[Literal['quartz', 'balham', 'material', 'alpine']] = None,
                  auto_size_columns: bool = True,
                  ) -> None:

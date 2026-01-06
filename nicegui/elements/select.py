@@ -4,7 +4,7 @@ from collections.abc import Generator, Iterable, Iterator
 from copy import deepcopy
 from typing import Any, Callable, Literal
 
-from ..defaults import DEFAULT_PROPS, resolve_defaults
+from ..defaults import DEFAULT_PROP, DEFAULT_PROPS, resolve_defaults
 from ..events import GenericEventArguments, Handler, ValueChangeEventArguments
 from .choice_element import ChoiceElement
 from .mixins.disableable_element import DisableableElement
@@ -17,13 +17,13 @@ class Select(LabelElement, ValidationElement, ChoiceElement, DisableableElement,
     @resolve_defaults
     def __init__(self,
                  options: list | dict, *,
-                 label: str | None = DEFAULT_PROPS['label'] | None,
+                 label: str | None = DEFAULT_PROP | None,
                  value: Any = DEFAULT_PROPS['model-value'] | None,
                  on_change: Handler[ValueChangeEventArguments] | None = None,
                  with_input: bool = False,
-                 new_value_mode: Literal['add', 'add-unique', 'toggle'] | None = DEFAULT_PROPS['new-value-mode'] | None,
-                 multiple: bool = DEFAULT_PROPS['multiple'] | False,
-                 clearable: bool = DEFAULT_PROPS['clearable'] | False,
+                 new_value_mode: Literal['add', 'add-unique', 'toggle'] | None = DEFAULT_PROP | None,
+                 multiple: bool = DEFAULT_PROP | False,
+                 clearable: bool = DEFAULT_PROP | False,
                  validation: ValidationFunction | ValidationDict | None = None,
                  key_generator: Callable[[Any], Any] | Iterator[Any] | None = None,
                  ) -> None:

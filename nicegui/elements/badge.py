@@ -1,6 +1,6 @@
 from typing import Optional
 
-from ..defaults import DEFAULT_PROPS, resolve_defaults
+from ..defaults import DEFAULT_PROP, resolve_defaults
 from .mixins.color_elements import BackgroundColorElement, TextColorElement
 from .mixins.text_element import TextElement
 
@@ -11,9 +11,9 @@ class Badge(TextElement, BackgroundColorElement, TextColorElement):
     @resolve_defaults
     def __init__(self,
                  text: str = '', *,
-                 color: Optional[str] = DEFAULT_PROPS['color'] | 'primary',
-                 text_color: Optional[str] = DEFAULT_PROPS['text-color'] | None,
-                 outline: bool = DEFAULT_PROPS['outline'] | False) -> None:
+                 color: Optional[str] = DEFAULT_PROP | 'primary',
+                 text_color: Optional[str] = DEFAULT_PROP | None,
+                 outline: bool = DEFAULT_PROP | False) -> None:
         """Badge
 
         A badge element wrapping Quasar's

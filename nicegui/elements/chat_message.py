@@ -3,7 +3,7 @@ from __future__ import annotations
 import html
 from typing import Callable, Literal
 
-from ..defaults import DEFAULT_PROPS, resolve_defaults
+from ..defaults import DEFAULT_PROP, resolve_defaults
 from .html import Html
 from .mixins.label_element import LabelElement
 
@@ -13,11 +13,11 @@ class ChatMessage(LabelElement):
     @resolve_defaults
     def __init__(self,
                  text: str | list[str] | None = None,
-                 name: str | None = DEFAULT_PROPS['name'] | None,
-                 label: str | None = DEFAULT_PROPS['label'] | None,
-                 stamp: str | None = DEFAULT_PROPS['stamp'] | None,
-                 avatar: str | None = DEFAULT_PROPS['avatar'] | None,
-                 sent: bool = DEFAULT_PROPS['sent'] | False,
+                 name: str | None = DEFAULT_PROP | None,
+                 label: str | None = DEFAULT_PROP | None,
+                 stamp: str | None = DEFAULT_PROP | None,
+                 avatar: str | None = DEFAULT_PROP | None,
+                 sent: bool = DEFAULT_PROP | False,
                  text_html: bool = False,
                  sanitize: Callable[[str], str] | Literal[False] | None = None,
                  ) -> None:

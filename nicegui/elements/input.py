@@ -1,6 +1,6 @@
 from typing import Any, Optional, Union
 
-from ..defaults import DEFAULT_PROPS, resolve_defaults
+from ..defaults import DEFAULT_PROP, DEFAULT_PROPS, resolve_defaults
 from ..events import Handler, ValueChangeEventArguments
 from .icon import Icon
 from .mixins.disableable_element import DisableableElement
@@ -14,10 +14,10 @@ class Input(LabelElement, ValidationElement, DisableableElement, component='inpu
 
     @resolve_defaults
     def __init__(self,
-                 label: Optional[str] = DEFAULT_PROPS['label'] | None, *,
-                 placeholder: Optional[str] = DEFAULT_PROPS['placeholder'] | None,
-                 value: str = DEFAULT_PROPS['value'] | '',
-                 password: bool = DEFAULT_PROPS['password'] | False,
+                 label: Optional[str] = DEFAULT_PROP | None, *,
+                 placeholder: Optional[str] = DEFAULT_PROP | None,
+                 value: str = DEFAULT_PROP | '',
+                 password: bool = DEFAULT_PROP | False,
                  password_toggle_button: bool = False,
                  prefix: Optional[str] = None,
                  suffix: Optional[str] = None,

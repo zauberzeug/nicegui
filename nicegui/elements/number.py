@@ -1,6 +1,6 @@
 from typing import Any, Optional, Union
 
-from ..defaults import DEFAULT_PROPS, resolve_defaults
+from ..defaults import DEFAULT_PROP, DEFAULT_PROPS, resolve_defaults
 from ..events import GenericEventArguments, Handler, ValueChangeEventArguments
 from .mixins.disableable_element import DisableableElement
 from .mixins.label_element import LabelElement
@@ -12,15 +12,15 @@ class Number(LabelElement, ValidationElement, DisableableElement):
 
     @resolve_defaults
     def __init__(self,
-                 label: Optional[str] = DEFAULT_PROPS['label'] | None, *,
-                 placeholder: Optional[str] = DEFAULT_PROPS['placeholder'] | None,
+                 label: Optional[str] = DEFAULT_PROP | None, *,
+                 placeholder: Optional[str] = DEFAULT_PROP | None,
                  value: Optional[float] = DEFAULT_PROPS['model-value'] | None,
-                 min: Optional[float] = DEFAULT_PROPS['min'] | None,  # pylint: disable=redefined-builtin
-                 max: Optional[float] = DEFAULT_PROPS['max'] | None,  # pylint: disable=redefined-builtin
+                 min: Optional[float] = DEFAULT_PROP | None,  # pylint: disable=redefined-builtin
+                 max: Optional[float] = DEFAULT_PROP | None,  # pylint: disable=redefined-builtin
                  precision: Optional[int] = None,
-                 step: Optional[float] = DEFAULT_PROPS['step'] | None,
-                 prefix: Optional[str] = DEFAULT_PROPS['prefix'] | None,
-                 suffix: Optional[str] = DEFAULT_PROPS['suffix'] | None,
+                 step: Optional[float] = DEFAULT_PROP | None,
+                 prefix: Optional[str] = DEFAULT_PROP | None,
+                 suffix: Optional[str] = DEFAULT_PROP | None,
                  format: Optional[str] = None,  # pylint: disable=redefined-builtin
                  on_change: Optional[Handler[ValueChangeEventArguments]] = None,
                  validation: Optional[Union[ValidationFunction, ValidationDict]] = None,

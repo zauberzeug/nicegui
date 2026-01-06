@@ -1,5 +1,5 @@
 from ..context import context
-from ..defaults import DEFAULT_PROPS, resolve_defaults
+from ..defaults import DEFAULT_PROP, DEFAULT_PROPS, resolve_defaults
 from ..helpers import require_top_level_layout
 from .mixins.value_element import ValueElement
 
@@ -10,10 +10,10 @@ class Header(ValueElement, component='header.js', default_classes='nicegui-heade
     def __init__(self, *,
                  value: bool = DEFAULT_PROPS['model-value'] | True,
                  fixed: bool = True,
-                 bordered: bool = DEFAULT_PROPS['bordered'] | False,
-                 elevated: bool = DEFAULT_PROPS['elevated'] | False,
+                 bordered: bool = DEFAULT_PROP | False,
+                 elevated: bool = DEFAULT_PROP | False,
                  wrap: bool = True,
-                 add_scroll_padding: bool = DEFAULT_PROPS['add-scroll-padding'] | True,
+                 add_scroll_padding: bool = DEFAULT_PROP | True,
                  ) -> None:
         """Header
 

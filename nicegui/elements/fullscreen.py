@@ -1,6 +1,6 @@
 from typing import Optional
 
-from ..defaults import DEFAULT_PROPS, resolve_defaults
+from ..defaults import DEFAULT_PROP, resolve_defaults
 from ..events import Handler, ValueChangeEventArguments
 from .mixins.value_element import ValueElement
 
@@ -10,7 +10,7 @@ class Fullscreen(ValueElement, component='fullscreen.js'):
 
     @resolve_defaults
     def __init__(self, *,
-                 require_escape_hold: bool = DEFAULT_PROPS['require-escape-hold'] | False,
+                 require_escape_hold: bool = DEFAULT_PROP | False,
                  on_value_change: Optional[Handler[ValueChangeEventArguments]] = None) -> None:
         """Fullscreen control element
 

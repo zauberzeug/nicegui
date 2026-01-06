@@ -1,6 +1,6 @@
 from typing import Optional
 
-from ..defaults import DEFAULT_PROPS, resolve_defaults
+from ..defaults import DEFAULT_PROP, DEFAULT_PROPS, resolve_defaults
 from ..events import Handler, ValueChangeEventArguments
 from .label import Label
 from .mixins.color_elements import TextColorElement
@@ -14,13 +14,13 @@ class Knob(ValueElement, DisableableElement, TextColorElement):
     def __init__(self,
                  value: float = DEFAULT_PROPS['model-value'] | 0.0,
                  *,
-                 min: float = DEFAULT_PROPS['min'] | 0.0,  # pylint: disable=redefined-builtin
-                 max: float = DEFAULT_PROPS['max'] | 1.0,  # pylint: disable=redefined-builtin
-                 step: float = DEFAULT_PROPS['step'] | 0.01,
-                 color: Optional[str] = DEFAULT_PROPS['color'] | 'primary',
-                 center_color: Optional[str] = DEFAULT_PROPS['center-color'] | None,
-                 track_color: Optional[str] = DEFAULT_PROPS['track-color'] | None,
-                 size: Optional[str] = DEFAULT_PROPS['size'] | None,
+                 min: float = DEFAULT_PROP | 0.0,  # pylint: disable=redefined-builtin
+                 max: float = DEFAULT_PROP | 1.0,  # pylint: disable=redefined-builtin
+                 step: float = DEFAULT_PROP | 0.01,
+                 color: Optional[str] = DEFAULT_PROP | 'primary',
+                 center_color: Optional[str] = DEFAULT_PROP | None,
+                 track_color: Optional[str] = DEFAULT_PROP | None,
+                 size: Optional[str] = DEFAULT_PROP | None,
                  show_value: bool = False,
                  on_change: Optional[Handler[ValueChangeEventArguments]] = None,
                  ) -> None:

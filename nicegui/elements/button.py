@@ -3,7 +3,7 @@ from typing import Optional
 
 from typing_extensions import Self
 
-from ..defaults import DEFAULT_PROPS, resolve_defaults
+from ..defaults import DEFAULT_PROP, resolve_defaults
 from ..events import ClickEventArguments, Handler, handle_event
 from .mixins.color_elements import BackgroundColorElement
 from .mixins.disableable_element import DisableableElement
@@ -17,8 +17,8 @@ class Button(IconElement, TextElement, DisableableElement, BackgroundColorElemen
     def __init__(self,
                  text: str = '', *,
                  on_click: Optional[Handler[ClickEventArguments]] = None,
-                 color: Optional[str] = DEFAULT_PROPS['color'] | 'primary',
-                 icon: Optional[str] = DEFAULT_PROPS['icon'] | None,
+                 color: Optional[str] = DEFAULT_PROP | 'primary',
+                 icon: Optional[str] = DEFAULT_PROP | None,
                  ) -> None:
         """Button
 

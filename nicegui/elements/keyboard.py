@@ -3,7 +3,7 @@ from typing import Literal, Optional
 from typing_extensions import Self
 
 from ..binding import BindableProperty
-from ..defaults import DEFAULT_PROPS, resolve_defaults
+from ..defaults import DEFAULT_PROP, resolve_defaults
 from ..element import Element
 from ..events import (
     GenericEventArguments,
@@ -23,8 +23,8 @@ class Keyboard(Element, component='keyboard.js'):
     def __init__(self,
                  on_key: Optional[Handler[KeyEventArguments]] = None, *,
                  active: bool = True,
-                 repeating: bool = DEFAULT_PROPS['repeating'] | True,
-                 ignore: list[Literal['input', 'select', 'button', 'textarea']] = DEFAULT_PROPS['ignore'] | [
+                 repeating: bool = DEFAULT_PROP | True,
+                 ignore: list[Literal['input', 'select', 'button', 'textarea']] = DEFAULT_PROP | [
                      'input', 'select', 'button', 'textarea',
                  ],
                  ) -> None:

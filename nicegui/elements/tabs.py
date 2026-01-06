@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import Any
 
 from ..context import context
-from ..defaults import DEFAULT_PROPS, resolve_defaults
+from ..defaults import DEFAULT_PROP, resolve_defaults
 from ..events import Handler, ValueChangeEventArguments
 from .mixins.disableable_element import DisableableElement
 from .mixins.icon_element import IconElement
@@ -57,8 +57,8 @@ class TabPanels(ValueElement):
                  tabs: Tabs | None = None, *,
                  value: Tab | TabPanel | str | None = None,
                  on_change: Handler[ValueChangeEventArguments] | None = None,
-                 animated: bool = DEFAULT_PROPS['animated'] | True,
-                 keep_alive: bool = DEFAULT_PROPS['keep-alive'] | True,
+                 animated: bool = DEFAULT_PROP | True,
+                 keep_alive: bool = DEFAULT_PROP | True,
                  ) -> None:
         """Tab Panels
 

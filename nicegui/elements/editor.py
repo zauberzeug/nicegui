@@ -1,6 +1,6 @@
 from typing import Any, Optional
 
-from ..defaults import DEFAULT_PROPS, resolve_defaults
+from ..defaults import DEFAULT_PROP, resolve_defaults
 from ..events import Handler, ValueChangeEventArguments
 from .mixins.disableable_element import DisableableElement
 from .mixins.value_element import ValueElement
@@ -13,8 +13,8 @@ class Editor(ValueElement, DisableableElement, component='editor.js', default_cl
     @resolve_defaults
     def __init__(self,
                  *,
-                 placeholder: Optional[str] = DEFAULT_PROPS['placeholder'] | None,
-                 value: str = DEFAULT_PROPS['value'] | '',
+                 placeholder: Optional[str] = DEFAULT_PROP | None,
+                 value: str = DEFAULT_PROP | '',
                  on_change: Optional[Handler[ValueChangeEventArguments]] = None,
                  ) -> None:
         """Editor

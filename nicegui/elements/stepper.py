@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import Any, cast
 
 from ..context import context
-from ..defaults import DEFAULT_PROPS, resolve_defaults
+from ..defaults import DEFAULT_PROP, DEFAULT_PROPS, resolve_defaults
 from ..element import Element
 from ..events import Handler, ValueChangeEventArguments
 from .mixins.disableable_element import DisableableElement
@@ -17,7 +17,7 @@ class Stepper(ValueElement, default_classes='nicegui-stepper'):
     def __init__(self, *,
                  value: str | Step | None = DEFAULT_PROPS['model-value'] | None,
                  on_value_change: Handler[ValueChangeEventArguments] | None = None,
-                 keep_alive: bool = DEFAULT_PROPS['keep-alive'] | True,
+                 keep_alive: bool = DEFAULT_PROP | True,
                  ) -> None:
         """Stepper
 
@@ -57,7 +57,7 @@ class Stepper(ValueElement, default_classes='nicegui-stepper'):
 class Step(IconElement, DisableableElement, default_classes='nicegui-step'):
 
     @resolve_defaults
-    def __init__(self, name: str, title: str | None = None, icon: str | None = DEFAULT_PROPS['icon'] | None) -> None:
+    def __init__(self, name: str, title: str | None = None, icon: str | None = DEFAULT_PROP | None) -> None:
         """Step
 
         This element represents `Quasar's QStep <https://quasar.dev/vue-components/stepper#qstep-api>`_ component.

@@ -6,7 +6,7 @@ from typing_extensions import Self
 
 from ... import binding
 from ...dataclasses import KWONLY_SLOTS
-from ...defaults import DEFAULT_PROPS, resolve_defaults
+from ...defaults import DEFAULT_PROP, resolve_defaults
 from ...element import Element
 from ...events import (
     GenericEventArguments,
@@ -61,19 +61,19 @@ class Scene(Element, component='scene.js', esm={'nicegui-scene': 'dist'}, defaul
 
     @resolve_defaults
     def __init__(self,
-                 width: int = DEFAULT_PROPS['width'] | 400,
-                 height: int = DEFAULT_PROPS['height'] | 300,
+                 width: int = DEFAULT_PROP | 400,
+                 height: int = DEFAULT_PROP | 300,
                  # DEPRECATED: enforce keyword-only arguments in NiceGUI 4.0
-                 grid: Union[bool, tuple[int, int]] = DEFAULT_PROPS['grid'] | True,
+                 grid: Union[bool, tuple[int, int]] = DEFAULT_PROP | True,
                  camera: Optional[SceneCamera] = None,
                  on_click: Optional[Handler[SceneClickEventArguments]] = None,
-                 click_events: list[str] = DEFAULT_PROPS['click-events'] | ['click', 'dblclick'],
+                 click_events: list[str] = DEFAULT_PROP | ['click', 'dblclick'],
                  on_drag_start: Optional[Handler[SceneDragEventArguments]] = None,
                  on_drag_end: Optional[Handler[SceneDragEventArguments]] = None,
-                 drag_constraints: str = DEFAULT_PROPS['drag-constraints'] | '',
-                 background_color: str = DEFAULT_PROPS['background-color'] | '#eee',
-                 fps: int = DEFAULT_PROPS['fps'] | 20,
-                 show_stats: bool = DEFAULT_PROPS['show-stats'] | False,
+                 drag_constraints: str = DEFAULT_PROP | '',
+                 background_color: str = DEFAULT_PROP | '#eee',
+                 fps: int = DEFAULT_PROP | 20,
+                 show_stats: bool = DEFAULT_PROP | False,
                  ) -> None:
         """3D Scene
 

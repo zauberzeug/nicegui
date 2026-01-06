@@ -1,6 +1,6 @@
 from typing import Optional
 
-from ..defaults import DEFAULT_PROPS, resolve_defaults
+from ..defaults import DEFAULT_PROP, DEFAULT_PROPS, resolve_defaults
 from ..events import Handler, ValueChangeEventArguments
 from .mixins.disableable_element import DisableableElement
 from .mixins.icon_element import IconElement
@@ -13,9 +13,9 @@ class Expansion(IconElement, TextElement, ValueElement, DisableableElement, defa
     @resolve_defaults
     def __init__(self,
                  text: str = DEFAULT_PROPS['label'] | '', *,
-                 caption: Optional[str] = DEFAULT_PROPS['caption'] | None,
-                 icon: Optional[str] = DEFAULT_PROPS['icon'] | None,
-                 group: Optional[str] = DEFAULT_PROPS['group'] | None,
+                 caption: Optional[str] = DEFAULT_PROP | None,
+                 icon: Optional[str] = DEFAULT_PROP | None,
+                 group: Optional[str] = DEFAULT_PROP | None,
                  value: bool = DEFAULT_PROPS['model-value'] | False,
                  on_value_change: Optional[Handler[ValueChangeEventArguments]] = None
                  ) -> None:

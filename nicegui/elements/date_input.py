@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from ..defaults import DEFAULT_PROPS, resolve_defaults
+from ..defaults import DEFAULT_PROP, DEFAULT_PROPS, resolve_defaults
 from ..events import Handler, ValueChangeEventArguments
 from .button import Button as button
 from .date import Date as date
@@ -15,9 +15,9 @@ class DateInput(LabelElement, ValueElement, DisableableElement):
 
     @resolve_defaults
     def __init__(self,
-                 label: str | None = DEFAULT_PROPS['label'] | None, *,
+                 label: str | None = DEFAULT_PROP | None, *,
                  range_input: bool = False,
-                 placeholder: str | None = DEFAULT_PROPS['placeholder'] | None,
+                 placeholder: str | None = DEFAULT_PROP | None,
                  value: str = DEFAULT_PROPS['model-value'] | '',
                  on_change: Handler[ValueChangeEventArguments] | None = None,
                  ) -> None:

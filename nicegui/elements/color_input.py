@@ -2,7 +2,7 @@ import re
 from colorsys import rgb_to_yiq
 from typing import Any, Optional
 
-from ..defaults import DEFAULT_PROPS, resolve_defaults
+from ..defaults import DEFAULT_PROP, DEFAULT_PROPS, resolve_defaults
 from ..events import Handler, ValueChangeEventArguments
 from .button import Button as button
 from .color_picker import ColorPicker as color_picker
@@ -19,8 +19,8 @@ class ColorInput(LabelElement, ValueElement, DisableableElement):
 
     @resolve_defaults
     def __init__(self,
-                 label: Optional[str] = DEFAULT_PROPS['label'] | None, *,
-                 placeholder: Optional[str] = DEFAULT_PROPS['placeholder'] | None,
+                 label: Optional[str] = DEFAULT_PROP | None, *,
+                 placeholder: Optional[str] = DEFAULT_PROP | None,
                  value: str = DEFAULT_PROPS['model-value'] | '',
                  on_change: Optional[Handler[ValueChangeEventArguments]] = None,
                  preview: bool = False,

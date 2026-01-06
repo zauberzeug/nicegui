@@ -1,6 +1,6 @@
 from typing import Literal, Optional
 
-from ..defaults import DEFAULT_PROPS, resolve_defaults
+from ..defaults import DEFAULT_PROP, resolve_defaults
 from ..element import Element
 
 
@@ -23,9 +23,9 @@ class Skeleton(Element):
                      'QRange',
                      'QInput',
                      'QAvatar',
-                 ] = DEFAULT_PROPS['type'] | 'rect',
+                 ] = DEFAULT_PROP | 'rect',
                  *,
-                 tag: str = DEFAULT_PROPS['tag'] | 'div',
+                 tag: str = DEFAULT_PROP | 'div',
                  animation: Literal[
                      'wave',
                      'pulse',
@@ -34,13 +34,13 @@ class Skeleton(Element):
                      'fade',
                      'blink',
                      'none',
-                 ] = DEFAULT_PROPS['animation'] | 'wave',
+                 ] = DEFAULT_PROP | 'wave',
                  animation_speed: float = 1.5,
-                 square: bool = DEFAULT_PROPS['square'] | False,
-                 bordered: bool = DEFAULT_PROPS['bordered'] | False,
-                 size: Optional[str] = DEFAULT_PROPS['size'] | None,
-                 width: Optional[str] = DEFAULT_PROPS['width'] | None,
-                 height: Optional[str] = DEFAULT_PROPS['height'] | None,
+                 square: bool = DEFAULT_PROP | False,
+                 bordered: bool = DEFAULT_PROP | False,
+                 size: Optional[str] = DEFAULT_PROP | None,
+                 width: Optional[str] = DEFAULT_PROP | None,
+                 height: Optional[str] = DEFAULT_PROP | None,
                  ) -> None:
         """Skeleton
 

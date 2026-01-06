@@ -3,7 +3,7 @@ from typing import Optional
 
 from typing_extensions import Self
 
-from ...defaults import DEFAULT_PROPS, resolve_defaults
+from ...defaults import DEFAULT_PROP, resolve_defaults
 from ...element import Element
 from ...events import (
     ClickEventArguments,
@@ -23,12 +23,12 @@ class SceneView(Element, component='scene_view.js', default_classes='nicegui-sce
     def __init__(self,
                  scene: Scene,
                  # DEPRECATED: enforce keyword-only arguments in NiceGUI 4.0
-                 width: int = DEFAULT_PROPS['width'] | 400,
-                 height: int = DEFAULT_PROPS['height'] | 300,
+                 width: int = DEFAULT_PROP | 400,
+                 height: int = DEFAULT_PROP | 300,
                  camera: Optional[SceneCamera] = None,
                  on_click: Optional[Handler[ClickEventArguments]] = None,
-                 fps: int = DEFAULT_PROPS['fps'] | 20,
-                 show_stats: bool = DEFAULT_PROPS['show-stats'] | False,
+                 fps: int = DEFAULT_PROP | 20,
+                 show_stats: bool = DEFAULT_PROP | False,
                  ) -> None:
         """Scene View
 

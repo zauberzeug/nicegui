@@ -2,7 +2,7 @@ from typing import Optional
 
 from typing_extensions import Self
 
-from ..defaults import DEFAULT_PROPS, resolve_defaults
+from ..defaults import DEFAULT_PROP, resolve_defaults
 from ..events import ClickEventArguments, Handler, ValueChangeEventArguments, handle_event
 from .mixins.color_elements import BackgroundColorElement
 from .mixins.disableable_element import DisableableElement
@@ -19,10 +19,10 @@ class DropdownButton(IconElement, TextElement, DisableableElement, BackgroundCol
                  value: bool = False,
                  on_value_change: Optional[Handler[ValueChangeEventArguments]] = None,
                  on_click: Optional[Handler[ClickEventArguments]] = None,
-                 color: Optional[str] = DEFAULT_PROPS['color'] | 'primary',
-                 icon: Optional[str] = DEFAULT_PROPS['icon'] | None,
-                 auto_close: Optional[bool] = DEFAULT_PROPS['auto-close'] | False,
-                 split: Optional[bool] = DEFAULT_PROPS['split'] | False,
+                 color: Optional[str] = DEFAULT_PROP | 'primary',
+                 icon: Optional[str] = DEFAULT_PROP | None,
+                 auto_close: Optional[bool] = DEFAULT_PROP | False,
+                 split: Optional[bool] = DEFAULT_PROP | False,
                  ) -> None:
         """Dropdown Button
 

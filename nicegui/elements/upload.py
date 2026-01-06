@@ -4,7 +4,7 @@ from fastapi import Request
 from starlette.datastructures import UploadFile
 from typing_extensions import Self
 
-from ..defaults import DEFAULT_PROPS, resolve_defaults
+from ..defaults import DEFAULT_PROP, resolve_defaults
 from ..events import Handler, MultiUploadEventArguments, UiEventArguments, UploadEventArguments, handle_event
 from ..nicegui import app
 from .mixins.disableable_element import DisableableElement
@@ -18,16 +18,16 @@ class Upload(LabelElement, DisableableElement, component='upload.js'):
 
     @resolve_defaults
     def __init__(self, *,
-                 multiple: bool = DEFAULT_PROPS['multiple'] | False,
-                 max_file_size: Optional[int] = DEFAULT_PROPS['max-file-size'] | None,
-                 max_total_size: Optional[int] = DEFAULT_PROPS['max-total-size'] | None,
-                 max_files: Optional[int] = DEFAULT_PROPS['max-files'] | None,
+                 multiple: bool = DEFAULT_PROP | False,
+                 max_file_size: Optional[int] = DEFAULT_PROP | None,
+                 max_total_size: Optional[int] = DEFAULT_PROP | None,
+                 max_files: Optional[int] = DEFAULT_PROP | None,
                  on_begin_upload: Optional[Handler[UiEventArguments]] = None,
                  on_upload: Optional[Handler[UploadEventArguments]] = None,
                  on_multi_upload: Optional[Handler[MultiUploadEventArguments]] = None,
                  on_rejected: Optional[Handler[UiEventArguments]] = None,
-                 label: str = DEFAULT_PROPS['label'] | '',
-                 auto_upload: bool = DEFAULT_PROPS['auto-upload'] | False,
+                 label: str = DEFAULT_PROP | '',
+                 auto_upload: bool = DEFAULT_PROP | False,
                  ) -> None:
         """File Upload
 

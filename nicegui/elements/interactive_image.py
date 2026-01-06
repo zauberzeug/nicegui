@@ -8,7 +8,7 @@ from typing import Literal, cast
 from typing_extensions import Self
 
 from .. import helpers, optional_features
-from ..defaults import DEFAULT_PROPS, resolve_defaults
+from ..defaults import DEFAULT_PROP, resolve_defaults
 from ..events import GenericEventArguments, Handler, MouseEventArguments, handle_event
 from ..logging import log
 from .image import pil_to_base64
@@ -30,10 +30,10 @@ class InteractiveImage(SourceElement, ContentElement, component='interactive_ima
     def __init__(self,
                  source: str | Path | PIL_Image = '', *,
                  content: str = '',
-                 size: tuple[float, float] | None = DEFAULT_PROPS['size'] | None,
+                 size: tuple[float, float] | None = DEFAULT_PROP | None,
                  on_mouse: Handler[MouseEventArguments] | None = None,
-                 events: list[str] = DEFAULT_PROPS['events'] | ['click'],
-                 cross: bool | str = DEFAULT_PROPS['cross'] | False,
+                 events: list[str] = DEFAULT_PROP | ['click'],
+                 cross: bool | str = DEFAULT_PROP | False,
                  sanitize: Callable[[str], str] | Literal[False] | None = None,
                  ) -> None:
         """Interactive Image

@@ -1,7 +1,7 @@
 from pathlib import Path
 from typing import Union
 
-from ..defaults import DEFAULT_PROPS, resolve_defaults
+from ..defaults import DEFAULT_PROP, resolve_defaults
 from .mixins.source_element import SourceElement
 
 
@@ -10,10 +10,10 @@ class Audio(SourceElement, component='audio.js'):
 
     @resolve_defaults
     def __init__(self, src: Union[str, Path], *,
-                 controls: bool = DEFAULT_PROPS['controls'] | True,
-                 autoplay: bool = DEFAULT_PROPS['autoplay'] | False,
-                 muted: bool = DEFAULT_PROPS['muted'] | False,
-                 loop: bool = DEFAULT_PROPS['loop'] | False,
+                 controls: bool = DEFAULT_PROP | True,
+                 autoplay: bool = DEFAULT_PROP | False,
+                 muted: bool = DEFAULT_PROP | False,
+                 loop: bool = DEFAULT_PROP | False,
                  ) -> None:
         """Audio
 

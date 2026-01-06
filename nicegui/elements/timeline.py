@@ -1,6 +1,6 @@
 from typing import Literal, Optional
 
-from ..defaults import DEFAULT_PROPS, resolve_defaults
+from ..defaults import DEFAULT_PROP, resolve_defaults
 from ..element import Element
 from .mixins.icon_element import IconElement
 
@@ -10,9 +10,9 @@ class Timeline(Element):
     @resolve_defaults
     def __init__(self,
                  *,
-                 side: Literal['left', 'right'] = DEFAULT_PROPS['side'] | 'left',
-                 layout: Literal['dense', 'comfortable', 'loose'] = DEFAULT_PROPS['layout'] | 'dense',
-                 color: Optional[str] = DEFAULT_PROPS['color'] | None,
+                 side: Literal['left', 'right'] = DEFAULT_PROP | 'left',
+                 layout: Literal['dense', 'comfortable', 'loose'] = DEFAULT_PROP | 'dense',
+                 color: Optional[str] = DEFAULT_PROP | None,
                  ) -> None:
         """Timeline
 
@@ -32,16 +32,16 @@ class TimelineEntry(IconElement, default_classes='nicegui-timeline-entry'):
 
     @resolve_defaults
     def __init__(self,
-                 body: Optional[str] = DEFAULT_PROPS['body'] | None,
+                 body: Optional[str] = DEFAULT_PROP | None,
                  *,
-                 side: Literal['left', 'right'] = DEFAULT_PROPS['side'] | 'left',
-                 heading: bool = DEFAULT_PROPS['heading'] | False,
-                 tag: Optional[str] = DEFAULT_PROPS['tag'] | None,
-                 icon: Optional[str] = DEFAULT_PROPS['icon'] | None,
-                 avatar: Optional[str] = DEFAULT_PROPS['avatar'] | None,
-                 title: Optional[str] = DEFAULT_PROPS['title'] | None,
-                 subtitle: Optional[str] = DEFAULT_PROPS['subtitle'] | None,
-                 color: Optional[str] = DEFAULT_PROPS['color'] | None,
+                 side: Literal['left', 'right'] = DEFAULT_PROP | 'left',
+                 heading: bool = DEFAULT_PROP | False,
+                 tag: Optional[str] = DEFAULT_PROP | None,
+                 icon: Optional[str] = DEFAULT_PROP | None,
+                 avatar: Optional[str] = DEFAULT_PROP | None,
+                 title: Optional[str] = DEFAULT_PROP | None,
+                 subtitle: Optional[str] = DEFAULT_PROP | None,
+                 color: Optional[str] = DEFAULT_PROP | None,
                  ) -> None:
         """Timeline Entry
 

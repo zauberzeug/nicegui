@@ -1,6 +1,6 @@
 from typing import Optional, Union
 
-from ..defaults import DEFAULT_PROPS, resolve_defaults
+from ..defaults import DEFAULT_PROP, DEFAULT_PROPS, resolve_defaults
 from ..events import Handler, ValueChangeEventArguments
 from .mixins.disableable_element import DisableableElement
 from .mixins.value_element import ValueElement
@@ -11,12 +11,12 @@ class Rating(ValueElement, DisableableElement):
     @resolve_defaults
     def __init__(self,
                  value: Optional[float] = DEFAULT_PROPS['model-value'] | None,
-                 max: int = DEFAULT_PROPS['max'] | 5,  # pylint: disable=redefined-builtin
-                 icon: Optional[str] = DEFAULT_PROPS['icon'] | None,
-                 icon_selected: Optional[str] = DEFAULT_PROPS['icon-selected'] | None,
-                 icon_half: Optional[str] = DEFAULT_PROPS['icon-half'] | None,
-                 color: Optional[Union[str, list[str]]] = DEFAULT_PROPS['color'] | 'primary',
-                 size: Optional[str] = DEFAULT_PROPS['size'] | None,
+                 max: int = DEFAULT_PROP | 5,  # pylint: disable=redefined-builtin
+                 icon: Optional[str] = DEFAULT_PROP | None,
+                 icon_selected: Optional[str] = DEFAULT_PROP | None,
+                 icon_half: Optional[str] = DEFAULT_PROP | None,
+                 color: Optional[Union[str, list[str]]] = DEFAULT_PROP | 'primary',
+                 size: Optional[str] = DEFAULT_PROP | None,
                  on_change: Optional[Handler[ValueChangeEventArguments]] = None,
                  ) -> None:
         """Rating

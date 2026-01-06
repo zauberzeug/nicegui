@@ -1,4 +1,4 @@
-from ..defaults import DEFAULT_PROPS, resolve_defaults
+from ..defaults import DEFAULT_PROP, resolve_defaults
 from ..element import Element
 from .page_sticky import PageStickyPositions
 
@@ -7,14 +7,14 @@ class PageScroller(Element):
 
     @resolve_defaults
     def __init__(self,
-                 position: PageStickyPositions = DEFAULT_PROPS['position'] | 'bottom-right',
+                 position: PageStickyPositions = DEFAULT_PROP | 'bottom-right',
                  x_offset: float = 0,
                  y_offset: float = 0,
                  *,
-                 expand: bool = DEFAULT_PROPS['expand'] | False,
-                 scroll_offset: float = DEFAULT_PROPS['scroll-offset'] | 1000,
-                 duration: float = DEFAULT_PROPS['duration'] | 0.3,
-                 reverse: bool = DEFAULT_PROPS['reverse'] | False,
+                 expand: bool = DEFAULT_PROP | False,
+                 scroll_offset: float = DEFAULT_PROP | 1000,
+                 duration: float = DEFAULT_PROP | 0.3,
+                 reverse: bool = DEFAULT_PROP | False,
                  ) -> None:
         """Page scroller
 

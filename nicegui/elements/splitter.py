@@ -1,6 +1,6 @@
 from typing import Optional
 
-from ..defaults import DEFAULT_PROPS, resolve_defaults
+from ..defaults import DEFAULT_PROP, DEFAULT_PROPS, resolve_defaults
 from ..events import Handler, ValueChangeEventArguments
 from .mixins.disableable_element import DisableableElement
 from .mixins.value_element import ValueElement
@@ -10,9 +10,9 @@ class Splitter(ValueElement, DisableableElement, default_classes='nicegui-splitt
 
     @resolve_defaults
     def __init__(self, *,
-                 horizontal: Optional[bool] = DEFAULT_PROPS['horizontal'] | False,
-                 reverse: Optional[bool] = DEFAULT_PROPS['reverse'] | False,
-                 limits: Optional[tuple[float, float]] = DEFAULT_PROPS['limits'] | (0, 100),
+                 horizontal: Optional[bool] = DEFAULT_PROP | False,
+                 reverse: Optional[bool] = DEFAULT_PROP | False,
+                 limits: Optional[tuple[float, float]] = DEFAULT_PROP | (0, 100),
                  value: Optional[float] = DEFAULT_PROPS['model-value'] | 50,
                  on_change: Optional[Handler[ValueChangeEventArguments]] = None,
                  ) -> None:

@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import Any, cast
 
 from ..context import context
-from ..defaults import DEFAULT_PROPS, resolve_defaults
+from ..defaults import DEFAULT_PROP, DEFAULT_PROPS, resolve_defaults
 from ..events import Handler, ValueChangeEventArguments
 from .mixins.disableable_element import DisableableElement
 from .mixins.value_element import ValueElement
@@ -15,9 +15,9 @@ class Carousel(ValueElement):
     def __init__(self, *,
                  value: str | CarouselSlide | None = DEFAULT_PROPS['model-value'] | None,
                  on_value_change: Handler[ValueChangeEventArguments] | None = None,
-                 animated: bool = DEFAULT_PROPS['animated'] | False,
-                 arrows: bool = DEFAULT_PROPS['arrows'] | False,
-                 navigation: bool = DEFAULT_PROPS['navigation'] | False,
+                 animated: bool = DEFAULT_PROP | False,
+                 arrows: bool = DEFAULT_PROP | False,
+                 navigation: bool = DEFAULT_PROP | False,
                  ) -> None:
         """Carousel
 

@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING, Any, Literal, Optional, Union
 from typing_extensions import Self
 
 from .. import optional_features
-from ..defaults import DEFAULT_PROPS, resolve_defaults
+from ..defaults import DEFAULT_PROP, resolve_defaults
 from ..element import Element
 from ..events import (
     GenericEventArguments,
@@ -35,9 +35,9 @@ class Table(FilterElement, component='table.js'):
                  rows: list[dict],
                  columns: Optional[list[dict]] = None,
                  column_defaults: Optional[dict] = None,
-                 row_key: str = DEFAULT_PROPS['row-key'] | 'id',
-                 title: Optional[str] = DEFAULT_PROPS['title'] | None,
-                 selection: Literal[None, 'single', 'multiple'] = DEFAULT_PROPS['selection'] | None,
+                 row_key: str = DEFAULT_PROP | 'id',
+                 title: Optional[str] = DEFAULT_PROP | None,
+                 selection: Literal[None, 'single', 'multiple'] = DEFAULT_PROP | None,
                  pagination: Optional[Union[int, dict]] = None,
                  on_select: Optional[Handler[TableSelectionEventArguments]] = None,
                  on_pagination_change: Optional[Handler[ValueChangeEventArguments]] = None,

@@ -3,7 +3,7 @@ from typing import Any, Literal, Optional
 
 from typing_extensions import Self
 
-from ..defaults import DEFAULT_PROPS, resolve_defaults
+from ..defaults import DEFAULT_PROP, resolve_defaults
 from ..events import GenericEventArguments, Handler, ValueChangeEventArguments, handle_event
 from .mixins.filter_element import FilterElement
 
@@ -13,15 +13,13 @@ class Tree(FilterElement):
     @resolve_defaults
     def __init__(self,
                  nodes: list[dict], *,
-                 node_key: str = DEFAULT_PROPS['node-key'] | 'id',
-                 label_key: str = DEFAULT_PROPS['label-key'] | 'label',
-                 children_key: str = DEFAULT_PROPS['children-key'] | 'children',
+                 node_key: str = DEFAULT_PROP | 'id',
+                 label_key: str = DEFAULT_PROP | 'label',
+                 children_key: str = DEFAULT_PROP | 'children',
                  on_select: Optional[Handler[ValueChangeEventArguments]] = None,
                  on_expand: Optional[Handler[ValueChangeEventArguments]] = None,
                  on_tick: Optional[Handler[ValueChangeEventArguments]] = None,
-                 tick_strategy: Optional[
-                     Literal['leaf', 'leaf-filtered', 'strict']
-                 ] = DEFAULT_PROPS['tick-strategy'] | None,
+                 tick_strategy: Optional[Literal['leaf', 'leaf-filtered', 'strict']] = DEFAULT_PROP | None,
                  ) -> None:
         """Tree
 

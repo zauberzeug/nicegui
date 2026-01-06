@@ -1,4 +1,4 @@
-from ..defaults import DEFAULT_PROPS, resolve_defaults
+from ..defaults import DEFAULT_PROP, resolve_defaults
 from ..element import Element
 from .mixins.color_elements import QUASAR_COLORS
 
@@ -7,15 +7,15 @@ class Colors(Element, component='colors.js'):
 
     @resolve_defaults
     def __init__(self, *,
-                 primary: str = DEFAULT_PROPS['primary'] | '#5898d4',
-                 secondary: str = DEFAULT_PROPS['secondary'] | '#26a69a',
-                 accent: str = DEFAULT_PROPS['accent'] | '#9c27b0',
-                 dark: str = DEFAULT_PROPS['dark'] | '#1d1d1d',
-                 dark_page: str = DEFAULT_PROPS['dark-page'] | '#121212',
-                 positive: str = DEFAULT_PROPS['positive'] | '#21ba45',
-                 negative: str = DEFAULT_PROPS['negative'] | '#c10015',
-                 info: str = DEFAULT_PROPS['info'] | '#31ccec',
-                 warning: str = DEFAULT_PROPS['warning'] | '#f2c037',
+                 primary: str = DEFAULT_PROP | '#5898d4',
+                 secondary: str = DEFAULT_PROP | '#26a69a',
+                 accent: str = DEFAULT_PROP | '#9c27b0',
+                 dark: str = DEFAULT_PROP | '#1d1d1d',
+                 dark_page: str = DEFAULT_PROP | '#121212',
+                 positive: str = DEFAULT_PROP | '#21ba45',
+                 negative: str = DEFAULT_PROP | '#c10015',
+                 info: str = DEFAULT_PROP | '#31ccec',
+                 warning: str = DEFAULT_PROP | '#f2c037',
                  **custom_colors: str) -> None:
         """Color Theming
 

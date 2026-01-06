@@ -1,7 +1,7 @@
 from typing import Literal, Optional
 
 from ..context import context
-from ..defaults import DEFAULT_PROPS, resolve_defaults
+from ..defaults import DEFAULT_PROP, DEFAULT_PROPS, resolve_defaults
 from ..helpers import require_top_level_layout
 from .mixins.value_element import ValueElement
 
@@ -15,8 +15,8 @@ class Drawer(ValueElement, default_classes='nicegui-drawer'):
                  side: DrawerSides, *,
                  value: Optional[bool] = DEFAULT_PROPS['model-value'] | None,
                  fixed: bool = True,
-                 bordered: bool = DEFAULT_PROPS['bordered'] | False,
-                 elevated: bool = DEFAULT_PROPS['elevated'] | False,
+                 bordered: bool = DEFAULT_PROP | False,
+                 elevated: bool = DEFAULT_PROP | False,
                  top_corner: bool = False,
                  bottom_corner: bool = False) -> None:
         """Drawer
@@ -88,8 +88,8 @@ class LeftDrawer(Drawer):
     def __init__(self, *,
                  value: Optional[bool] = DEFAULT_PROPS['model-value'] | None,
                  fixed: bool = True,
-                 bordered: bool = DEFAULT_PROPS['bordered'] | False,
-                 elevated: bool = DEFAULT_PROPS['elevated'] | False,
+                 bordered: bool = DEFAULT_PROP | False,
+                 elevated: bool = DEFAULT_PROP | False,
                  top_corner: bool = False,
                  bottom_corner: bool = False) -> None:
         """Left drawer
@@ -126,8 +126,8 @@ class RightDrawer(Drawer):
     def __init__(self, *,
                  value: Optional[bool] = DEFAULT_PROPS['model-value'] | None,
                  fixed: bool = True,
-                 bordered: bool = DEFAULT_PROPS['bordered'] | False,
-                 elevated: bool = DEFAULT_PROPS['elevated'] | False,
+                 bordered: bool = DEFAULT_PROP | False,
+                 elevated: bool = DEFAULT_PROP | False,
                  top_corner: bool = False,
                  bottom_corner: bool = False) -> None:
         """Right drawer
