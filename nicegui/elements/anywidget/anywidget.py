@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import importlib.util
 import inspect
-from contextlib import contextmanager
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
@@ -17,7 +16,6 @@ if importlib.util.find_spec('anywidget'):
 
 class AnyWidget(ValueElement, component='anywidget.js', dependencies=['lib/widget.js']):
     VALUE_PROP: str = 'traits'
-    _run_update_traits: bool = True
 
     def __init__(self, widget: anywidget.AnyWidget, *, throttle: float = 0) -> None:
         """AnyWidget
@@ -46,25 +44,23 @@ class AnyWidget(ValueElement, component='anywidget.js', dependencies=['lib/widge
         self._props['esm_content'] = _get_attribute(widget, '_esm')
         self._props['css_content'] = _get_attribute(widget, '_css')
         self._run_update_traits = True
-        def observe_change(change):
+
+        def observe_change(change) -> None:
             if self._run_update_traits:
                 self.run_method('update_trait', change['name'], change['new'])
-        widget.observe(observe_change , self._traits)
-
-    @contextmanager
-    def _no_update_traits(self):
-        self._run_update_traits = False
-        yield
-        self._run_update_traits = True
+        widget.observe(observe_change, self._traits)
 
     def _handle_value_change(self, value: Any) -> None:
         """Update the widget's state when the value changes from frontend"""
-        with self._no_update_traits():
+        self._run_update_traits = False
+        try:
             super()._handle_value_change(value)
             state = self._widget.get_state(self._traits)
             for key, value_ in value.items():
                 if state[key] != value_:
                     setattr(self._widget, key, value_)
+        finally:
+            self._run_update_traits = True
 
 
 def _get_attribute(obj: object, name: str) -> str:
