@@ -1,8 +1,6 @@
-from __future__ import annotations
-
 from collections.abc import Generator, Iterable, Iterator
 from copy import deepcopy
-from typing import Any, Callable, Literal
+from typing import Any, Callable, Literal, Optional, Union
 
 from ..defaults import DEFAULT_PROP, DEFAULT_PROPS, resolve_defaults
 from ..events import GenericEventArguments, Handler, ValueChangeEventArguments
@@ -16,16 +14,16 @@ class Select(LabelElement, ValidationElement, ChoiceElement, DisableableElement,
 
     @resolve_defaults
     def __init__(self,
-                 options: list | dict, *,
-                 label: str | None = DEFAULT_PROP | None,
+                 options: Union[list, dict], *,
+                 label: Optional[str] = DEFAULT_PROP | None,
                  value: Any = DEFAULT_PROPS['model-value'] | None,
-                 on_change: Handler[ValueChangeEventArguments] | None = None,
+                 on_change: Optional[Handler[ValueChangeEventArguments]] = None,
                  with_input: bool = False,
-                 new_value_mode: Literal['add', 'add-unique', 'toggle'] | None = DEFAULT_PROP | None,
+                 new_value_mode: Optional[Literal['add', 'add-unique', 'toggle']] = DEFAULT_PROP | None,
                  multiple: bool = DEFAULT_PROP | False,
                  clearable: bool = DEFAULT_PROP | False,
-                 validation: ValidationFunction | ValidationDict | None = None,
-                 key_generator: Callable[[Any], Any] | Iterator[Any] | None = None,
+                 validation: Optional[Union[ValidationFunction, ValidationDict]] = None,
+                 key_generator: Optional[Union[Callable[[Any], Any], Iterator[Any]]] = None,
                  ) -> None:
         """Dropdown Selection
 
