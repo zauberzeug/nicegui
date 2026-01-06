@@ -13,7 +13,7 @@ from .custom_restructured_text import CustomRestructuredText as custom_restructu
 @dataclass(**KWONLY_SLOTS)
 class Attribute:
     name: str
-    obj: object | None
+    obj: Optional[object]
     base: type
 
 
