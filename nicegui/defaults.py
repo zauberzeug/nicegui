@@ -3,10 +3,12 @@ from __future__ import annotations
 import functools
 import inspect
 from collections.abc import Callable
+from dataclasses import dataclass
 from typing import Any, TypeVar
 
 from typing_extensions import ParamSpec
 
+from .dataclasses import KWONLY_SLOTS
 from .element import Element
 
 T = TypeVar('T')
@@ -15,25 +17,28 @@ P = ParamSpec('P')
 R = TypeVar('R')
 
 
+@dataclass(**KWONLY_SLOTS)
 class Sentinel:
-
-    def __init__(self, prop_key: str | None = None) -> None:
-        self.key = prop_key
-        self.default: Any
+    key: str | None
 
     def __or__(self, other: T) -> T:
-        self.default = other
-        return self  # type: ignore[return-value]
+        return SentinelValue(key=self.key, default=other)  # type: ignore[return-value]
+
+
+@dataclass(**KWONLY_SLOTS)
+class SentinelValue:
+    key: str
+    default: Any
 
 
 class SentinelFactory:
 
     def __getitem__(self, prop_key: str) -> Sentinel:
-        return Sentinel(prop_key)
+        return Sentinel(key=prop_key)
 
 
 DEFAULT_PROPS = SentinelFactory()
-DEFAULT_PROP = Sentinel()
+DEFAULT_PROP = Sentinel(key=None)
 
 
 def resolve_defaults(original_func: Callable[P, R]) -> Callable[P, R]:
@@ -56,7 +61,7 @@ def resolve_defaults(original_func: Callable[P, R]) -> Callable[P, R]:
         el: Element = bound.arguments['self']
 
         for param_name, value in bound.arguments.items():
-            if isinstance(value, Sentinel):
+            if isinstance(value, SentinelValue):
                 key = value.key or param_name.replace('_', '-')
                 kwargs[param_name] = el._default_props.get(key, value.default)  # pylint: disable=protected-access
         return original_func(*args, **kwargs)
