@@ -98,8 +98,13 @@ class Props(ObservableDict, Generic[T]):
     def _update(self) -> None:
         if self._suspend_count > 0:
             return
-        self._check_warnings()
-        self._check_renames()
+
+        for name, message in self._warnings.items():
+            self._check_warning(name, message)
+
+        for name, rename in self._renames.items():
+            self._check_rename(name, rename)
+
         element = self._element()
         if element is not None:
             element.update()
@@ -107,25 +112,24 @@ class Props(ObservableDict, Generic[T]):
     def add_warning(self, prop: str, message: str) -> None:
         """Add a warning message for a prop."""
         self._warnings[prop] = message
+        self._check_warning(prop, message)
 
     def add_rename(self, prop: str, replacement: str) -> None:
         """Add a rename warning for a prop."""
         self._renames[prop] = replacement
+        self._check_rename(prop, replacement)
 
-    def _check_warnings(self) -> None:
-        for name, message in self._warnings.items():
-            if name in self:
-                with self.suspend_updates():
-                    del self[name]
-                helpers.warn_once(message)
+    def _check_warning(self, name: str, message: str) -> None:
+        if name in self:
+            with self.suspend_updates():
+                del self[name]
+            helpers.warn_once(message)
 
-    def _check_renames(self) -> None:
-        for name, rename in self._renames.items():
-            if name in self:
-                with self.suspend_updates():
-                    self[rename] = self[name]
-                    del self[name]
-                helpers.warn_once(f'The prop "{name}" is deprecated. Use "{rename}" instead.')
+    def _check_rename(self, name: str, rename: str) -> None:
+        if name in self:
+            with self.suspend_updates():
+                self[rename] = self[name]
+            helpers.warn_once(f'The prop "{name}" is deprecated. Use "{rename}" instead.')
 
     def __call__(self,
                  add: Optional[str] = None, *,
