@@ -124,7 +124,6 @@ class Props(ObservableDict, Generic[T]):
             if name in self:
                 with self.suspend_updates():
                     self[rename] = self[name]
-                    del self[name]
                 helpers.warn_once(f'The prop "{name}" is deprecated. Use "{rename}" instead.')
 
     def __call__(self,
