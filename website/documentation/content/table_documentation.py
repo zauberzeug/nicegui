@@ -142,8 +142,11 @@ def show_and_hide_columns():
 @doc.demo('Table with buttons', '''
     You can add buttons to the table cells using a named slot "body-cell-[name]".
     In this example, we add a button to the "action" column.
-    When the button is clicked, a custom "notify" event is emitted with the row as argument.
-    The "notify" event is handled by a lambda function, which emits a notification with the name of the row.
+    When the button is clicked, a notification is shown with the name of the row.
+
+    *Since version 3.5.0:*
+    UI elements in scoped slots can access the `props` object to get the current row and column.
+    Previously, the `props` object was only available in Vue templates.
 ''')
 def table_with_buttons():
     columns = [
@@ -155,12 +158,13 @@ def table_with_buttons():
         {'name': 'Bob'},
     ]
     table = ui.table(columns=columns, rows=rows)
-    table.add_slot('body-cell-action', '''
-        <q-td :props="props">
-            <q-btn label="Notify" @click="() => $parent.$emit('notify', props.row)" flat />
-        </q-td>
-    ''')
-    table.on('notify', lambda e: ui.notify(f'Hi {e.args["name"]}!'))
+    with table.add_slot('body-cell-action'):
+        with table.cell('action'):
+            ui.button('Notify').props('flat').on(
+                'click',
+                js_handler='() => emit(props.row.name)',
+                handler=lambda e: ui.notify(e.args),
+            )
 
 
 @doc.demo('Table with drop down selection', '''
