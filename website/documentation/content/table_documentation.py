@@ -416,16 +416,14 @@ def table_cells_with_links():
         {'name': 'link', 'label': 'Link', 'field': 'link', 'align': 'left'},
     ]
     rows = [
+        {'name': 'Apple', 'link': 'https://apple.com'},
         {'name': 'Google', 'link': 'https://google.com'},
-        {'name': 'Facebook', 'link': 'https://facebook.com'},
-        {'name': 'Twitter', 'link': 'https://twitter.com'},
+        {'name': 'Microsoft', 'link': 'https://microsoft.com'},
     ]
     table = ui.table(columns=columns, rows=rows, row_key='name')
-    table.add_slot('body-cell-link', '''
-        <q-td :props="props">
-            <a :href="props.value">{{ props.value }}</a>
-        </q-td>
-    ''')
+    with table.add_slot('body-cell-link'):
+        with table.cell('link'):
+            ui.link().props(':href=props.value :innerHTML=props.value')
 
 
 @doc.demo('Table cells with HTML', '''
