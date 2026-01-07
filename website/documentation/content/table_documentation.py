@@ -169,7 +169,12 @@ def table_with_buttons():
 
 @doc.demo('Table with drop down selection', '''
     Here is an example of how to use a drop down selection in a table.
-    After emitting a "rename" event from the scoped slot, the `rename` function updates the table rows.
+    After emitting a "update:model-value" event from the `ui.select` element,
+    the `rename` function updates the table rows.
+
+    *Since version 3.5.0:*
+    UI elements in scoped slots can access the `props` object to get the current row and column.
+    Previously, the `props` object was only available in Vue templates.
 ''')
 def table_with_drop_down_selection():
     from nicegui import events
@@ -386,6 +391,10 @@ def computed_fields():
     We use the `body-cell-age` slot to insert the `q-badge` into the `age` column.
     The ":color" attribute of the `q-badge` is set to "red" if the age is under 21, otherwise it is set to "green".
     The colon in front of the "color" attribute indicates that the value is a JavaScript expression.
+
+    *Since version 3.5.0:*
+    UI elements in scoped slots can access the `props` object to get the current cell value.
+    Previously, the `props` object was only available in Vue templates.
 ''')
 def conditional_formatting():
     columns = [
@@ -409,6 +418,10 @@ def conditional_formatting():
 @doc.demo('Table cells with links', '''
     Here is a demo of how to insert links into table cells.
     We use the `body-cell-link` slot to insert an `<a>` tag into the `link` column.
+
+    *Since version 3.5.0:*
+    UI elements in scoped slots can access the `props` object to get the current cell value.
+    Previously, the `props` object was only available in Vue templates.
 ''')
 def table_cells_with_links():
     columns = [
