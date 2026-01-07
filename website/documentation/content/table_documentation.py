@@ -186,22 +186,20 @@ def table_with_drop_down_selection():
     name_options = ['Alice', 'Bob', 'Carol']
 
     def rename(e: events.GenericEventArguments) -> None:
-        for row in rows:
-            if row['id'] == e.args['id']:
-                row['name'] = e.args['name']
+        row_id, name_index = e.args
+        for row in table.rows:
+            if row['id'] == row_id:
+                row['name'] = name_options[name_index]
         ui.notify(f'Table.rows is now: {table.rows}')
 
     table = ui.table(columns=columns, rows=rows).classes('w-full')
-    table.add_slot('body-cell-name', r'''
-        <q-td key="name" :props="props">
-            <q-select
-                v-model="props.row.name"
-                :options="''' + str(name_options) + r'''"
-                @update:model-value="() => $parent.$emit('rename', props.row)"
-            />
-        </q-td>
-    ''')
-    table.on('rename', rename)
+    with table.add_slot('body-cell-name'):
+        with table.cell('name'):
+            ui.select(name_options).props(':model-value=props.row.name').on(
+                'update:model-value',
+                js_handler='(e) => emit(props.row.id, e.value)',
+                handler=rename,
+            )
 
 
 @doc.demo('Table from Pandas DataFrame', '''
