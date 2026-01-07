@@ -453,17 +453,13 @@ def table_with_masonry_like_grid():
         {'name': 'Carol', 'age': 42},
     ]
     table = ui.table(columns=columns, rows=rows, row_key='name').props('grid')
-    table.add_slot('item', r'''
-        <q-card flat bordered :props="props" class="m-1">
-            <q-card-section class="text-center">
-                <strong>{{ props.row.name }}</strong>
-            </q-card-section>
-            <q-separator />
-            <q-card-section class="text-center">
-                <div>{{ props.row.age }} years</div>
-            </q-card-section>
-        </q-card>
-    ''')
+    with table.add_slot('item'):
+        with ui.card().tight().props('flat bordered').classes('m-1 items-stretch text-center'):
+            with ui.card_section():
+                ui.label().props(':innerHTML=props.row.name').classes('font-bold')
+            ui.separator()
+            with ui.card_section():
+                ui.label().props(''' :innerHTML="props.row.age + ' years'" ''')
 
 
 @doc.demo('Slot templates with NiceGUI elements', '''
