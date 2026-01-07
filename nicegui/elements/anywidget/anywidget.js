@@ -18,7 +18,7 @@ export default {
       },
       set: function (key, value) {
         this.attributes[key] = value;
-        this.emit("change:" + key, this, value);
+        this.emit("change:" + key, value);
       },
       save_changes: function () {
         if (this.callbacks.change && Array.isArray(this.callbacks.change)) {
@@ -35,8 +35,8 @@ export default {
         else if (!callback) this.callbacks[event] = [];
         else this.callbacks[event]?.delete(callback);
       },
-      emit: function (event, ...values) {
-        this.callbacks[event]?.forEach((cb) => cb(...values));
+      emit: function (event, value) {
+        this.callbacks[event]?.forEach((cb) => cb(value));
       },
       send: function (content, callbacks, buffers) {
         console.warn("anywidget.send() is not yet implemented in NiceGUI", content);
