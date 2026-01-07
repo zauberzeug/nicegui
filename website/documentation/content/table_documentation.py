@@ -398,13 +398,12 @@ def conditional_formatting():
         {'name': 'Carol', 'age': 42},
     ]
     table = ui.table(columns=columns, rows=rows, row_key='name')
-    table.add_slot('body-cell-age', '''
-        <q-td key="age" :props="props">
-            <q-badge :color="props.value < 21 ? 'red' : 'green'">
-                {{ props.value }}
-            </q-badge>
-        </q-td>
-    ''')
+    with table.add_slot('body-cell-age'):
+        with table.cell('age'):
+            ui.badge().props('''
+                :color="props.value < 21 ? 'red' : 'green'"
+                :label="props.value"
+            ''')
 
 
 @doc.demo('Table cells with links', '''
