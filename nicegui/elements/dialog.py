@@ -1,12 +1,14 @@
 import asyncio
 from typing import Any, Optional
 
+from ..defaults import DEFAULT_PROPS, resolve_defaults
 from .mixins.value_element import ValueElement
 
 
 class Dialog(ValueElement, component='dialog.js'):
 
-    def __init__(self, *, value: bool = False) -> None:
+    @resolve_defaults
+    def __init__(self, *, value: bool = DEFAULT_PROPS['model-value'] | False) -> None:
         """Dialog
 
         Creates a dialog based on Quasar's `QDialog <https://quasar.dev/vue-components/dialog>`_ component.

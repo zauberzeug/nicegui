@@ -19,6 +19,8 @@ class DocsSetCacheControlMiddleware(BaseHTTPMiddleware):
         response = await call_next(request)
         if request.url.path.startswith('/fonts/') or request.url.path.startswith('/static/'):
             response.headers['Cache-Control'] = core.app.config.cache_control_directives
+        elif request.url.path.startswith('/examples/images/'):
+            response.headers['Cache-Control'] = 'public, max-age=86400'  # 1 day
         return response
 
 

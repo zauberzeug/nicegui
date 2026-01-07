@@ -390,7 +390,7 @@ async def test_page_to_string_output_used_in_error_messages(user: User) -> None:
               Icon \[markers=third, name=thumbs-up\]
             Avatar \[icon=star\]
             Input \[value=typed, label=some input, for=c10, placeholder=type here, type=text\]
-            Markdown \[content=\#\# Markdown..., resource_name=[^\]]+\]
+            Markdown \[content=\#\# Markdown..., resource-name=[^\]]+\]
             Card
              Image \[src=/image.jpg\]
     ''').strip()

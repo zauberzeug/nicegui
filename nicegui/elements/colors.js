@@ -1,9 +1,14 @@
 export default {
   mounted() {
-    for (let name in this.$props) {
-      if (name === "customColors") continue;
-      document.body.style.setProperty("--q-" + name.replace("_", "-"), this.$props[name]);
-    }
+    document.body.style.setProperty("--q-primary", this.primary);
+    document.body.style.setProperty("--q-secondary", this.secondary);
+    document.body.style.setProperty("--q-accent", this.accent);
+    document.body.style.setProperty("--q-dark", this.dark);
+    document.body.style.setProperty("--q-dark-page", this.darkPage);
+    document.body.style.setProperty("--q-positive", this.positive);
+    document.body.style.setProperty("--q-negative", this.negative);
+    document.body.style.setProperty("--q-info", this.info);
+    document.body.style.setProperty("--q-warning", this.warning);
     if (this.customColors) {
       let customCSS = "";
       for (let customColor in this.customColors) {
@@ -25,7 +30,7 @@ export default {
     secondary: String,
     accent: String,
     dark: String,
-    dark_page: String,
+    darkPage: String,
     positive: String,
     negative: String,
     info: String,

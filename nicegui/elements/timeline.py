@@ -1,16 +1,18 @@
 from typing import Literal, Optional
 
+from ..defaults import DEFAULT_PROP, resolve_defaults
 from ..element import Element
 from .mixins.icon_element import IconElement
 
 
 class Timeline(Element):
 
+    @resolve_defaults
     def __init__(self,
                  *,
-                 side: Literal['left', 'right'] = 'left',
-                 layout: Literal['dense', 'comfortable', 'loose'] = 'dense',
-                 color: Optional[str] = None,
+                 side: Literal['left', 'right'] = DEFAULT_PROP | 'left',
+                 layout: Literal['dense', 'comfortable', 'loose'] = DEFAULT_PROP | 'dense',
+                 color: Optional[str] = DEFAULT_PROP | None,
                  ) -> None:
         """Timeline
 
@@ -23,23 +25,23 @@ class Timeline(Element):
         super().__init__('q-timeline')
         self._props['side'] = side
         self._props['layout'] = layout
-        if color is not None:
-            self._props['color'] = color
+        self._props.set_optional('color', color)
 
 
 class TimelineEntry(IconElement, default_classes='nicegui-timeline-entry'):
 
+    @resolve_defaults
     def __init__(self,
-                 body: Optional[str] = None,
+                 body: Optional[str] = DEFAULT_PROP | None,
                  *,
-                 side: Literal['left', 'right'] = 'left',
-                 heading: bool = False,
-                 tag: Optional[str] = None,
-                 icon: Optional[str] = None,
-                 avatar: Optional[str] = None,
-                 title: Optional[str] = None,
-                 subtitle: Optional[str] = None,
-                 color: Optional[str] = None,
+                 side: Literal['left', 'right'] = DEFAULT_PROP | 'left',
+                 heading: bool = DEFAULT_PROP | False,
+                 tag: Optional[str] = DEFAULT_PROP | None,
+                 icon: Optional[str] = DEFAULT_PROP | None,
+                 avatar: Optional[str] = DEFAULT_PROP | None,
+                 title: Optional[str] = DEFAULT_PROP | None,
+                 subtitle: Optional[str] = DEFAULT_PROP | None,
+                 color: Optional[str] = DEFAULT_PROP | None,
                  ) -> None:
         """Timeline Entry
 
@@ -56,17 +58,11 @@ class TimelineEntry(IconElement, default_classes='nicegui-timeline-entry'):
         :param color: Color or the timeline.
         """
         super().__init__(tag='q-timeline-entry', icon=icon)
-        if body is not None:
-            self._props['body'] = body
+        self._props.set_optional('body', body)
         self._props['side'] = side
         self._props['heading'] = heading
-        if tag is not None:
-            self._props['tag'] = tag
-        if color is not None:
-            self._props['color'] = color
-        if avatar is not None:
-            self._props['avatar'] = avatar
-        if title is not None:
-            self._props['title'] = title
-        if subtitle is not None:
-            self._props['subtitle'] = subtitle
+        self._props.set_optional('tag', tag)
+        self._props.set_optional('color', color)
+        self._props.set_optional('avatar', avatar)
+        self._props.set_optional('title', title)
+        self._props.set_optional('subtitle', subtitle)

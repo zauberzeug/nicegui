@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import Any
 
 from ..context import context
+from ..defaults import DEFAULT_PROP, resolve_defaults
 from ..events import Handler, ValueChangeEventArguments
 from .mixins.disableable_element import DisableableElement
 from .mixins.icon_element import IconElement
@@ -51,12 +52,13 @@ class Tab(LabelElement, IconElement, DisableableElement):
 
 class TabPanels(ValueElement):
 
+    @resolve_defaults
     def __init__(self,
                  tabs: Tabs | None = None, *,
                  value: Tab | TabPanel | str | None = None,
                  on_change: Handler[ValueChangeEventArguments] | None = None,
-                 animated: bool = True,
-                 keep_alive: bool = True,
+                 animated: bool = DEFAULT_PROP | True,
+                 keep_alive: bool = DEFAULT_PROP | True,
                  ) -> None:
         """Tab Panels
 
@@ -76,8 +78,8 @@ class TabPanels(ValueElement):
         super().__init__(tag='q-tab-panels', value=value, on_value_change=on_change)
         if tabs is not None:
             tabs.bind_value(self, 'value')
-        self._props['animated'] = animated
-        self._props['keep-alive'] = keep_alive
+        self._props.set_bool('animated', animated)
+        self._props.set_bool('keep-alive', keep_alive)
 
     def _value_to_model_value(self, value: Any) -> Any:
         return value.props['name'] if isinstance(value, (Tab, TabPanel)) else value
