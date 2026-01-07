@@ -99,10 +99,11 @@ def test_slots(screen: Screen):
     @ui.page('/')
     def page():
         with ui.table(columns=columns(), rows=rows()) as table:
-            with table.add_slot('top-row'):
-                with table.row():
-                    with table.cell():
-                        ui.label('This is the top slot.')
+            table.add_slot('top-row', '''
+                <q-tr>
+                    <q-th>This is the top slot.</q-th>
+                </q-tr>
+            ''')
             table.add_slot('body', '''
                 <q-tr :props="props">
                     <q-td key="name" :props="props">overridden</q-td>
