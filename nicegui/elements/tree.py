@@ -1,5 +1,5 @@
 from collections.abc import Iterator
-from typing import Any, Literal, Optional
+from typing import Any, ClassVar, Literal, Optional
 
 from typing_extensions import Self
 
@@ -9,6 +9,7 @@ from .mixins.filter_element import FilterElement
 
 
 class Tree(FilterElement):
+    default_cache_keys: ClassVar[list[list[str]]] = [['props', 'nodes']]
 
     @resolve_defaults
     def __init__(self,
