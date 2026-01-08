@@ -81,6 +81,7 @@ class Client:
         self._deleted = False
         self._socket_to_document_id: dict[str, str] = {}
         self.tab_id: str | None = None
+        self._loaded_components: set[str] = set()
 
         self.page = page
         self.outbox = Outbox(self)
