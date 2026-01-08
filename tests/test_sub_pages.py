@@ -1284,3 +1284,15 @@ def test_query_parameters_wildcard_routing(screen: Screen):
 
     screen.open('/sub/x/2/a?color=blue')
     screen.should_contain('query_parameters: color=blue')
+
+
+def test_sub_pages_against_xss_by_path(screen: Screen):
+    @ui.page('/')
+    @ui.page('/{_:path}')
+    def index():
+        ui.sub_pages({'/': lambda: ui.link('Go to XSS', '/"+console.error("XSS")+"')})
+
+    screen.open('/')
+    screen.click('Go to XSS')
+    screen.wait(1)
+    assert 'XSS' not in screen.render_js_logs()
