@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import inspect
+import weakref
 from functools import wraps
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Callable
@@ -31,13 +32,15 @@ class page:
                  response_timeout: float = 3.0,
                  reconnect_timeout: float | None = None,
                  api_router: APIRouter | None = None,
+                 shared: bool = False,
                  **kwargs: Any,
                  ) -> None:
         """Page
 
         This decorator marks a function to be a page builder.
-        Each user accessing the given route will see a new instance of the page.
+        By default, each user accessing the given route will see a new instance of the page.
         This means it is private to the user and not shared with others.
+        If ``shared`` is True, all users will see and interact with the same page instance.
 
         Notes:
 
@@ -57,6 +60,7 @@ class page:
         :param response_timeout: maximum time for the decorated function to build the page (default: 3.0 seconds)
         :param reconnect_timeout: maximum time the server waits for the browser to reconnect (defaults to `reconnect_timeout` argument of `run` command))
         :param api_router: APIRouter instance to use, can be left `None` to use the default
+        :param shared: whether all users should see the same page instance (default: ``False``)
         :param kwargs: additional keyword arguments passed to FastAPI's @app.get method
         """
         self._path = path
@@ -69,6 +73,8 @@ class page:
         self.kwargs = kwargs
         self.api_router = api_router or core.app.router
         self.reconnect_timeout = reconnect_timeout
+        self._shared = shared
+        self._shared_client: weakref.ref[Client] | None = None
 
         create_favicon_route(self.path, favicon)
 
@@ -153,7 +159,15 @@ class page:
             request = dec_kwargs['request']
             # NOTE cleaning up the keyword args so the signature is consistent with "func" again
             dec_kwargs = {k: v for k, v in dec_kwargs.items() if k in parameters_of_decorated_func}
+
+            if self._shared and self._shared_client and (client := self._shared_client()):
+                client._request = request  # pylint: disable=protected-access
+                binding._refresh_step()  # pylint: disable=protected-access
+                return client.build_response(request)
+
             with Client(self, request=request) as client:
+                if self._shared:
+                    self._shared_client = weakref.ref(client)
                 if any(p.name == 'client' for p in inspect.signature(func).parameters.values()):
                     dec_kwargs['client'] = client
                 try:
