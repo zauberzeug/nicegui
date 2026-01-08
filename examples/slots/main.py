@@ -6,12 +6,10 @@ tree = ui.tree([
     {'id': 'letters', 'icon': 'text_fields', 'children': [{'id': 'A'}, {'id': 'B'}]},
 ], label_key='id', on_select=lambda e: ui.notify(e.value))
 
-tree.add_slot('default-header', r'''
-    <div class="row items-center">
-        <q-icon :name="props.node.icon || 'share'" color="orange" size="28px" class="q-mr-sm" />
-        <div class="text-weight-bold text-primary">{{ props.node.id }}</div>
-    </div>
-''')
+with tree.add_slot('default-header'):
+    with ui.row(align_items='center').classes('gap-2'):
+        ui.icon('', color='orange', size='28px').props(''' :name="props.node.icon || 'share'" ''')
+        ui.label().props(':innerHTML=props.node.id').classes('text-weight-bold text-primary')
 
 with tree.add_slot('default-body'):
     ui.label('This is some default content.').classes('ml-8 text-weight-light text-black')
