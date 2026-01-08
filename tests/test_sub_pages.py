@@ -1286,6 +1286,17 @@ def test_query_parameters_wildcard_routing(screen: Screen):
     screen.should_contain('query_parameters: color=blue')
 
 
+def test_sub_pages_against_xss_by_fragment(screen: Screen):
+    @ui.page('/')
+    @ui.page('/{_:path}')
+    def index():
+        ui.sub_pages({'/': lambda: ui.label('main page')})
+
+    screen.open('/')
+    screen.open('''/#x');console.error('XSS')//''')
+    assert 'XSS' not in screen.render_js_logs()
+
+
 def test_sub_pages_against_xss_by_path(screen: Screen):
     @ui.page('/')
     @ui.page('/{_:path}')
