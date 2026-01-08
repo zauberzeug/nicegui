@@ -77,3 +77,14 @@ def test_navigate_to_mailto_url(screen: Screen, sub_pages: bool):
     screen.click('Send mail')
     screen.wait(0.5)
     assert screen.selenium.execute_script('return window.__open_calls') == [['mailto:test@example.com', '_self']]
+
+
+def test_xss_via_history_push(screen: Screen):
+    @ui.page('/')
+    def page():
+        ui.button('Push', on_click=lambda: ui.navigate.history.push('/");console.log("XSS");//'))
+
+    screen.open('/')
+    screen.click('Push')
+    screen.wait(1)
+    assert 'XSS' not in screen.render_js_logs()
