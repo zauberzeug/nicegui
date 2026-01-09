@@ -80,6 +80,7 @@ __all__ = [
     'notify',
     'number',
     'on',
+    'on_exception',
     'page',
     'page_scroller',
     'page_sticky',
@@ -261,6 +262,7 @@ from .functions.javascript import run_javascript
 from .functions.navigate import navigate
 from .functions.notify import notify
 from .functions.on import on
+from .functions.on_exception import on_exception
 from .functions.page_title import page_title
 from .functions.refreshable import refreshable, refreshable_method, state
 from .functions.style import add_css, add_sass, add_scss
