@@ -269,6 +269,22 @@ function download(src, filename, mediaType, prefix) {
   }
 }
 
+function showPopup(id, content, duration = 0) {
+  const popup = document.getElementById(id);
+  popup.innerHTML = content;
+  popup.setAttribute("aria-hidden", "false");
+  if (duration > 0) {
+    setTimeout(() => {
+      popup.setAttribute("aria-hidden", "true");
+    }, duration);
+  }
+}
+
+function hidePopup(id) {
+  const popup = document.getElementById(id);
+  popup.setAttribute("aria-hidden", "true");
+}
+
 function ack() {
   if (!window.socket || !window.did_handshake) return;
   if (window.ackedMessageId >= window.nextMessageId) return;
@@ -351,9 +367,11 @@ function createApp(elements, options) {
                 console.error(`Payload size ${msg.length} exceeds the maximum allowed limit.`);
                 args[0] = '42["too_long_message"]';
                 if (window.tooLongMessageTimerId) clearTimeout(window.tooLongMessageTimerId);
-                const popup = document.getElementById("too_long_message_popup");
-                popup.ariaHidden = false;
-                window.tooLongMessageTimerId = setTimeout(() => (popup.ariaHidden = true), 5000);
+                showPopup(
+                  "message_popup",
+                  `<span>${options.translations.message_too_long}</span><span>${options.translations.message_too_long_body}</span>`,
+                  5000
+                );
               }
               return originalFunction.call(this, ...args);
             };
@@ -375,7 +393,7 @@ function createApp(elements, options) {
               window.location.reload();
             }
             window.did_handshake = true;
-            document.getElementById("popup").ariaHidden = true;
+            hidePopup("popup");
           });
         },
         connect_error: (err) => {
@@ -385,19 +403,47 @@ function createApp(elements, options) {
           }
         },
         try_reconnect: async () => {
-          document.getElementById("popup").ariaHidden = false;
+          showPopup(
+            "popup",
+            `<span>${options.translations.connection_lost}</span><span>${options.translations.trying_to_reconnect}</span>`
+          );
           await fetch(window.location.href, { headers: { "NiceGUI-Check": "try_reconnect" } });
           console.log("reloading because reconnect was requested");
           window.location.reload();
         },
         disconnect: () => {
-          document.getElementById("popup").ariaHidden = false;
+          showPopup(
+            "popup",
+            `<span>${options.translations.connection_lost}</span><span>${options.translations.trying_to_reconnect}</span>`
+          );
         },
         update: async (msg) => {
           const loadPromises = Object.entries(msg)
             .filter(([_, element]) => element && element.component)
             .map(([_, element]) => loadDependencies(element, options.prefix, options.version));
           await Promise.all(loadPromises);
+
+          let needAwaitNextTick = false;
+
+          for (const [id, element] of Object.entries(msg)) {
+            if (element === null) continue;
+
+            const oldListenerIds = new Set((this.elements[id]?.events || []).map((ev) => ev.listener_id));
+            if (element.events?.some((e) => !oldListenerIds.has(e.listener_id))) {
+              delete this.elements[id];
+              needAwaitNextTick = true;
+            }
+          }
+
+          if (needAwaitNextTick) {
+            console.warn("Event listeners changed after initial definition. Affected elements will be re-rendered.");
+            showPopup(
+              "message_popup",
+              `<span>${options.translations.element_listener_changed}</span><span>${options.translations.re_rendering_element}</span>`,
+              1000
+            );
+            await this.$nextTick();
+          }
 
           for (const [id, element] of Object.entries(msg)) {
             if (element === null) {
