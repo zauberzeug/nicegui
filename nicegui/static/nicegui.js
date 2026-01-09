@@ -403,8 +403,8 @@ function createApp(elements, options) {
           for (const [id, element] of Object.entries(msg)) {
             if (element === null) continue;
 
-            const oldTypes = new Set((this.elements[id]?.events || []).map((ev) => ev.type));
-            if (element.events?.some((e) => !oldTypes.has(e.type))) {
+            const oldListenerIds = new Set((this.elements[id]?.events || []).map((ev) => ev.listener_id));
+            if (element.events?.some((e) => !oldListenerIds.has(e.listener_id))) {
               delete this.elements[id];
               needAwaitNextTick = true;
             }
