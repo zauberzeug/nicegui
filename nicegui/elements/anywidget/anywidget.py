@@ -43,16 +43,25 @@ class AnyWidget(ValueElement, component='anywidget.js', dependencies=['lib/widge
         super().__init__(value=widget.get_state(self._traits), throttle=throttle)
         self._props['esm_content'] = _get_attribute(widget, '_esm')
         self._props['css_content'] = _get_attribute(widget, '_css')
-        self._run_update_traits = True
+        self._state_lock: dict | None = None
 
         def observe_change(change) -> None:
-            if self._run_update_traits:
-                self.run_method('update_trait', change['name'], change['new'])
+            name = change['name']
+            new = change['new']
+
+            NO_VALUE = object()
+            # We don't want to send updates back if nothing actually changed,
+            # but we can't disable them outright in case an observer changes values
+            if self._state_lock is None or self._state_lock.get(name, NO_VALUE) != new:
+                if self._state_lock is not None:
+                    self._state_lock[name] = new
+                self.run_method('update_trait', name, new)
+
         widget.observe(observe_change, self._traits)
 
     def _handle_value_change(self, value: Any) -> None:
         """Update the widget's state when the value changes from frontend"""
-        self._run_update_traits = False
+        self._state_lock = value.copy()
         try:
             super()._handle_value_change(value)
             state = self._widget.get_state(self._traits)
@@ -60,7 +69,7 @@ class AnyWidget(ValueElement, component='anywidget.js', dependencies=['lib/widge
                 if state[key] != value_:
                     setattr(self._widget, key, value_)
         finally:
-            self._run_update_traits = True
+            self._state_lock = None
 
 
 def _get_attribute(obj: object, name: str) -> str:
