@@ -6,6 +6,7 @@ from typing_extensions import Self
 from ... import optional_features
 from ...awaitable_response import AwaitableResponse
 from ...defaults import DEFAULT_PROP, resolve_defaults
+from ...dependencies import register_importmap_override
 from ...element import Element
 
 if importlib.util.find_spec('pandas'):
@@ -27,6 +28,7 @@ class AgGrid(Element, component='aggrid.js', esm={'nicegui-aggrid': 'dist'}, def
                  html_columns: list[int] = DEFAULT_PROP | [],
                  theme: Optional[Literal['quartz', 'balham', 'material', 'alpine']] = None,
                  auto_size_columns: bool = True,
+                 modules: list[str] = ['AllCommunityModule'],  # noqa: B006
                  ) -> None:
         """AG Grid
 
@@ -39,6 +41,7 @@ class AgGrid(Element, component='aggrid.js', esm={'nicegui-aggrid': 'dist'}, def
         :param html_columns: list of columns that should be rendered as HTML (default: ``[]``)
         :param theme: AG Grid theme "quartz", "balham", "material", or "alpine" (default: ``options['theme']`` or "quartz")
         :param auto_size_columns: whether to automatically resize columns to fit the grid width (default: ``True``)
+        :param modules: list of AG Grid modules to load (default: ``['AllCommunityModule']``, can be ``['AllEnterpriseModule']`` if enterprise AG Grid is used)
         """
         super().__init__()
         self._props['options'] = {
@@ -48,6 +51,7 @@ class AgGrid(Element, component='aggrid.js', esm={'nicegui-aggrid': 'dist'}, def
         }
         self._props['html-columns'] = html_columns[:]
         self._update_method = 'update_grid'
+        self._props['modules'] = modules[:]
 
         self._props.add_rename('html_columns', 'html-columns')  # DEPRECATED: remove in NiceGUI 4.0
 
@@ -264,3 +268,8 @@ class AgGrid(Element, component='aggrid.js', esm={'nicegui-aggrid': 'dist'}, def
         """
         client_row_data = await self.get_client_data()
         self.options['rowData'] = client_row_data
+
+    @staticmethod
+    def set_esm_module(import_name: str) -> None:
+        """Set the ESM module associated with all AG Grid elements."""
+        register_importmap_override('nicegui-aggrid', import_name)
