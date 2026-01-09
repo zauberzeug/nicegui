@@ -6,6 +6,7 @@ from typing_extensions import Self
 from ... import optional_features
 from ...awaitable_response import AwaitableResponse
 from ...defaults import DEFAULT_PROP, resolve_defaults
+from ...dependencies import register_importmap_override
 from ...element import Element
 
 if importlib.util.find_spec('pandas'):
@@ -267,3 +268,8 @@ class AgGrid(Element, component='aggrid.js', esm={'nicegui-aggrid': 'dist'}, def
         """
         client_row_data = await self.get_client_data()
         self.options['rowData'] = client_row_data
+
+    @staticmethod
+    def set_esm_module(import_name: str) -> None:
+        """Set the ESM module associated with all AG Grid elements."""
+        register_importmap_override('nicegui-aggrid', import_name)
