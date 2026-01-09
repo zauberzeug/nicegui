@@ -61,7 +61,7 @@ class AnyWidget(ValueElement, component='anywidget.js', dependencies=['lib/widge
 
     def _handle_value_change(self, value: Any) -> None:
         """Update the widget's state when the value changes from frontend"""
-        self._state_lock = value.copy()
+        self._state_lock = value
         try:
             super()._handle_value_change(value)
             state = self._widget.get_state(self._traits)
