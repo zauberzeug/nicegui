@@ -68,7 +68,6 @@ class Element(Visibility):
         self._props: Props[Self] = Props(self._default_props, element=cast(Self, self))
         self._markers: list[str] = []
         self._event_listeners: dict[str, EventListener] = {}
-        self._posted_event_listeners: set[str] | None = None
         self._text: str | None = None
         self.slots: dict[str, Slot] = {}
         self.default_slot = self.add_slot('default')
@@ -210,14 +209,6 @@ class Element(Visibility):
             if slot != self.default_slot
         }
 
-    def _collect_events_list(self) -> list[dict[str, Any]]:
-        return_value = [listener.to_dict() for listener in self._event_listeners.values()]
-        event_listener_ids = set(x['listener_id'] for x in return_value)
-        if self._posted_event_listeners is not None and self._posted_event_listeners != event_listener_ids:
-            helpers.warn_once('Event listeners changed after initial definition. Affected elements will be re-rendered.')
-        self._posted_event_listeners = event_listener_ids
-        return return_value
-
     def _to_dict(self) -> dict[str, Any]:
         return {
             'tag': self.tag,
@@ -230,7 +221,7 @@ class Element(Visibility):
                     'props': self._props,
                     'slots': self._collect_slot_dict(),
                     'children': [child.id for child in self.default_slot.children],
-                    'events': self._collect_events_list(),
+                    'events': [listener.to_dict() for listener in self._event_listeners.values()],
                     'update_method': self._update_method,
                     'component': {
                         'key': self.component.key,
