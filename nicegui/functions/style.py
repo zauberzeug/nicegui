@@ -2,7 +2,8 @@ from pathlib import Path
 from typing import Union
 
 from .. import helpers, json
-from .html import add_head_html
+from ..client import Client
+from ..context import context
 
 
 def add_css(content: Union[str, Path], *, shared: bool = False) -> None:
@@ -18,7 +19,7 @@ def add_css(content: Union[str, Path], *, shared: bool = False) -> None:
     if helpers.is_file(content):
         content = Path(content).read_text(encoding='utf-8')
     safe_content = json.dumps(content).replace('<', r'\u003c')
-    add_head_html(f'<script>addStyle({safe_content});</script>', shared=shared)
+    _add_javascript(f'addStyle({safe_content});', shared=shared)
 
 
 def add_scss(content: Union[str, Path], *, indented: bool = False, shared: bool = False) -> None:  # DEPRECATED
@@ -37,11 +38,8 @@ def add_scss(content: Union[str, Path], *, indented: bool = False, shared: bool 
     content = Path(content).read_text(encoding='utf-8') if helpers.is_file(content) else str(content).strip()
     syntax = 'indented' if indented else 'scss'
     safe_content = json.dumps(content).replace('<', r'\u003c')
-    add_head_html(f'''
-        <script type="module">
-            import * as sass from "sass";
-            addStyle(sass.compileString({safe_content}, {{syntax: "{syntax}"}}).css);
-        </script>
+    _add_javascript(f'''
+        import("sass").then(sass => addStyle(sass.compileString({safe_content}, {{syntax: "{syntax}"}}).css));
     ''', shared=shared)
 
 
@@ -58,3 +56,14 @@ def add_sass(content: Union[str, Path], *, shared: bool = False) -> None:  # DEP
     :param shared: whether to add the code to all pages (default: ``False``, *added in version 2.14.0*)
     """
     add_scss(content, indented=True, shared=shared)
+
+
+def _add_javascript(code: str, *, shared: bool = False) -> None:
+    script_html = f'<script>{code}</script>'
+    client = context.client
+    if shared:
+        Client.shared_head_html += script_html + '\n'
+    else:
+        client._head_html += script_html + '\n'
+    if client.has_socket_connection:
+        client.run_javascript(code)
