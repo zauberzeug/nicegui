@@ -13,6 +13,8 @@ if importlib.util.find_spec('anywidget'):
     if TYPE_CHECKING:
         import anywidget
 
+UNDEFINED = object()
+
 
 class AnyWidget(ValueElement, component='anywidget.js', dependencies=['lib/widget.js']):
     VALUE_PROP: str = 'traits'
@@ -43,18 +45,18 @@ class AnyWidget(ValueElement, component='anywidget.js', dependencies=['lib/widge
         super().__init__(value=widget.get_state(self._traits), throttle=throttle)
         self._props['esm_content'] = _get_attribute(widget, '_esm')
         self._props['css_content'] = _get_attribute(widget, '_css')
-        self._state_lock: dict | None = None
+        self._state_lock: dict | None = None  # only used while handling a value change from the client
 
         def observe_change(change) -> None:
+            """Observe a trait change and update the frontend (but avoid echoing same values back to the client)."""
             name = change['name']
             new = change['new']
-
-            NO_VALUE = object()
-            # We don't want to send updates back if nothing actually changed,
-            # but we can't disable them outright in case an observer changes values
-            if self._state_lock is None or self._state_lock.get(name, NO_VALUE) != new:
-                if self._state_lock is not None:
-                    self._state_lock[name] = new
+            if self._state_lock is None:
+                # we're not handling a value change from the client, so we send an update to the client
+                self.run_method('update_trait', name, new)
+            elif self._state_lock.get(name, UNDEFINED) != new:
+                # an observer changed a trait to a new value, so we update the lock and send an update to the client
+                self._state_lock[name] = new
                 self.run_method('update_trait', name, new)
 
         widget.observe(observe_change, self._traits)
