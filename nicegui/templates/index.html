@@ -66,14 +66,8 @@
     {{ body_html | safe }}
 
     <div id="app"></div>
-    <div id="popup" class="nicegui-error-popup" aria-hidden="true">
-      <span>{{ translations.connection_lost }}</span>
-      <span>{{ translations.trying_to_reconnect }}</span>
-    </div>
-    <div id="too_long_message_popup" class="nicegui-error-popup" aria-hidden="true">
-      <span>{{ translations.message_too_long }}</span>
-      <span>{{ translations.message_too_long_body }}</span>
-    </div>
+    <div id="popup" class="nicegui-error-popup" aria-hidden="true"></div>
+    <div id="message_popup" class="nicegui-error-popup" aria-hidden="true"></div>
     <script type="module">
       const app = createApp(parseElements(String.raw`{{ elements | safe }}`), {
         version: "{{ version }}",
@@ -81,6 +75,7 @@
         query: {{ socket_io_js_query_params | safe }},
         extraHeaders: {{ socket_io_js_extra_headers | safe }},
         transports: {{ socket_io_js_transports | safe }},
+        translations: {{ translations | safe }},
       });
       const dark = {{ dark }};
       const language = "{{ language }}";
