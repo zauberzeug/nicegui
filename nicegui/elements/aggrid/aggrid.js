@@ -3,15 +3,7 @@ import { convertDynamicProperties } from "../../static/utils/dynamic_properties.
 
 export default {
   template: "<div></div>",
-  async mounted() {
-    this.AgGridExtras = {
-      themes: {
-        quartz: AgGrid.themeQuartz,
-        balham: AgGrid.themeBalham,
-        material: AgGrid.themeMaterial,
-        alpine: AgGrid.themeAlpine,
-      },
-    };
+  mounted() {
     AgGrid.ModuleRegistry.registerModules(this.modules.map((moduleName) => AgGrid[moduleName]));
     this.update_grid();
 
@@ -29,7 +21,12 @@ export default {
       this.$el.textContent = "";
       this.gridOptions = {
         ...this.options,
-        theme: this.AgGridExtras.themes[this.options.theme].withPart(AgGrid.colorSchemeVariable),
+        theme: {
+          quartz: AgGrid.themeQuartz,
+          balham: AgGrid.themeBalham,
+          material: AgGrid.themeMaterial,
+          alpine: AgGrid.themeAlpine,
+        }[this.options.theme].withPart(AgGrid.colorSchemeVariable),
       };
 
       for (const column of this.htmlColumns) {
