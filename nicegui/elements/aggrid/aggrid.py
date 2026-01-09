@@ -1,5 +1,5 @@
 import importlib.util
-from typing import TYPE_CHECKING, Literal, Optional, Union, cast
+from typing import TYPE_CHECKING, Literal, Optional, cast
 
 from typing_extensions import Self
 
@@ -7,7 +7,6 @@ from ... import optional_features
 from ...awaitable_response import AwaitableResponse
 from ...defaults import DEFAULT_PROP, resolve_defaults
 from ...element import Element
-from ...logging import log
 
 if importlib.util.find_spec('pandas'):
     optional_features.register('pandas')
@@ -19,21 +18,6 @@ if importlib.util.find_spec('polars'):
     if TYPE_CHECKING:
         import polars as pl
 
-_LOADER_TEMPLATE = '''(AgGrid) => {{
-    AgGrid.ModuleRegistry.registerModules([AgGrid.{module_name}]);
-    return {{themes: {{
-        quartz: AgGrid.themeQuartz,
-        balham: AgGrid.themeBalham,
-        material: AgGrid.themeMaterial,
-        alpine: AgGrid.themeAlpine}}
-    }};
-}}'''
-
-_LOADERS = {
-    'community': _LOADER_TEMPLATE.format(module_name='AllCommunityModule'),
-    'enterprise': _LOADER_TEMPLATE.format(module_name='AllEnterpriseModule'),
-}
-
 
 class AgGrid(Element, component='aggrid.js', esm={'nicegui-aggrid': 'dist'}, default_classes='nicegui-aggrid'):
 
@@ -43,8 +27,7 @@ class AgGrid(Element, component='aggrid.js', esm={'nicegui-aggrid': 'dist'}, def
                  html_columns: list[int] = DEFAULT_PROP | [],
                  theme: Optional[Literal['quartz', 'balham', 'material', 'alpine']] = None,
                  auto_size_columns: bool = True,
-                 aggrid_loader: Union[Literal['community', 'enterprise'], str] = 'community',
-                 aggrid_import: str = 'nicegui-aggrid'
+                 modules: list[str] = ['AllCommunityModule'],  # noqa: B006
                  ) -> None:
         """AG Grid
 
@@ -57,12 +40,8 @@ class AgGrid(Element, component='aggrid.js', esm={'nicegui-aggrid': 'dist'}, def
         :param html_columns: list of columns that should be rendered as HTML (default: ``[]``)
         :param theme: AG Grid theme "quartz", "balham", "material", or "alpine" (default: ``options['theme']`` or "quartz")
         :param auto_size_columns: whether to automatically resize columns to fit the grid width (default: ``True``)
-        :param aggrid_loader: which AG Grid loader to use, "community" (default) or "enterprise", or a custom loader string (*added in version 3.6.0*)
-        :param aggrid_import: which AG Grid import to use, "nicegui-aggrid" (default) or a custom import URL (*added in version 3.6.0*)
+        :param modules: list of AG Grid modules to load (default: ``['AllCommunityModule']``, can be ``['AllEnterpriseModule']`` if enterprise AG Grid is used)
         """
-        if aggrid_import == 'nicegui-aggrid' and aggrid_loader == 'enterprise':
-            log.warning('The default "nicegui-aggrid" import is the community edition. Enterprise loader is invalid and ignored.')
-            aggrid_loader = 'community'
         super().__init__()
         self._props['options'] = {
             'theme': theme or 'quartz',
@@ -71,8 +50,7 @@ class AgGrid(Element, component='aggrid.js', esm={'nicegui-aggrid': 'dist'}, def
         }
         self._props['html-columns'] = html_columns[:]
         self._update_method = 'update_grid'
-        self.props['aggrid-loader'] = _LOADERS.get(aggrid_loader, aggrid_loader)
-        self.props['aggrid-import'] = aggrid_import
+        self._props['modules'] = modules[:]
 
         self._props.add_rename('html_columns', 'html-columns')  # DEPRECATED: remove in NiceGUI 4.0
 

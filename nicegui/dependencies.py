@@ -97,6 +97,7 @@ libraries: dict[str, Library] = {}
 resources: dict[str, Resource] = {}
 dynamic_resources: dict[str, DynamicResource] = {}
 esm_modules: dict[str, EsmModule] = {}
+importmap_overrides: dict[str, str] = {}
 
 
 def register_vue_component(path: Path, *, max_time: float | None) -> Component:
@@ -152,6 +153,13 @@ def register_dynamic_resource(name: str, function: Callable) -> DynamicResource:
 def register_esm(name: str, path: Path, *, max_time: float | None) -> None:
     """Register an ESM module."""
     esm_modules[compute_key(path, max_time=max_time)] = EsmModule(name=name, path=path)
+
+
+def register_importmap_override(name: str, url: str) -> None:
+    """Register an importmap override.
+
+    NOTE: Override 'nicegui-aggrid' to use AG Grid Enterprise from a CDN."""
+    importmap_overrides[name] = url
 
 
 @functools.cache
@@ -227,4 +235,7 @@ def generate_resources(prefix: str, elements: Iterable[Element]) -> tuple[list[s
                 js_imports.append(f'app.component("{js_component.tag}", {js_component.name});')
                 js_imports_urls.append(url)
                 done_components.add(js_component.key)
+
+    for name, override in importmap_overrides.items():
+        imports[name] = override
     return vue_html, vue_styles, vue_scripts, imports, js_imports, js_imports_urls

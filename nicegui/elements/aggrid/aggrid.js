@@ -1,10 +1,18 @@
+import * as AgGrid from "nicegui-aggrid";
 import { convertDynamicProperties } from "../../static/utils/dynamic_properties.js";
 
 export default {
   template: "<div></div>",
   async mounted() {
-    this.AgGrid = await import(this.aggridImport);
-    this.AgGridExtras = eval(this.aggridLoader)(this.AgGrid);
+    this.AgGridExtras = {
+      themes: {
+        quartz: AgGrid.themeQuartz,
+        balham: AgGrid.themeBalham,
+        material: AgGrid.themeMaterial,
+        alpine: AgGrid.themeAlpine,
+      },
+    };
+    AgGrid.ModuleRegistry.registerModules(this.modules.map((moduleName) => AgGrid[moduleName]));
     this.update_grid();
 
     const updateTheme = () =>
@@ -18,11 +26,10 @@ export default {
   },
   methods: {
     update_grid() {
-      if (!this.AgGrid) return;
       this.$el.textContent = "";
       this.gridOptions = {
         ...this.options,
-        theme: this.AgGridExtras.themes[this.options.theme].withPart(this.AgGrid.colorSchemeVariable),
+        theme: this.AgGridExtras.themes[this.options.theme].withPart(AgGrid.colorSchemeVariable),
       };
 
       for (const column of this.htmlColumns) {
@@ -65,7 +72,7 @@ export default {
           this.handle_event("gridReady", params);
         }
       };
-      this.api = this.AgGrid.createGrid(this.$el, this.gridOptions);
+      this.api = AgGrid.createGrid(this.$el, this.gridOptions);
       this.api.addGlobalListener(this.handle_event);
     },
     run_grid_method(name, ...args) {
@@ -114,7 +121,6 @@ export default {
   props: {
     options: Object,
     htmlColumns: Array,
-    aggridImport: String,
-    aggridLoader: String,
+    modules: Array,
   },
 };
