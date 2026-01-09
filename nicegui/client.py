@@ -171,7 +171,7 @@ class Client:
                 'imports': json.dumps(imports),
                 'js_imports': '\n'.join(js_imports),
                 'js_imports_urls': js_imports_urls,
-                'vue_config': json.dumps(core.app.config.quasar_config),
+                'vue_config': json.dumps(core.app.get_quasar_config()),
                 'vue_config_script': core.app.config.vue_config_script,
                 'title': self.resolve_title(),
                 'viewport': self.page.resolve_viewport(),

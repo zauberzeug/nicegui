@@ -1,5 +1,16 @@
-from nicegui import ui
+from nicegui import app, ui
 from nicegui.testing import Screen
+
+
+def test_appwide_colors(screen: Screen):
+    app.colors(primary='#00ffff')
+
+    @ui.page('/')
+    def page():
+        ui.button('Test Button')
+
+    screen.open('/')
+    assert screen.find_by_tag('button').value_of_css_property('background-color') == 'rgba(0, 255, 255, 1)'
 
 
 def test_replace_colors(screen: Screen):
