@@ -32,6 +32,16 @@ def screen_fixture():
         ''')
 
 
+doc.text('Configuration', '''
+    The `screen` fixture can be configured by setting the following static attributes:
+
+    - `PORT`: The port to use for the server (default: 3392).
+    - `IMPLICIT_WAIT`: The implicit wait time in seconds (default: 4).
+    - `SCREENSHOT_DIR`: The directory to store the screenshots (default: "screenshots").
+    - `CATCH_JS_ERRORS`: Whether to catch JavaScript errors (default: `True`, *added in version 3.2.0*).
+''')
+
+
 @doc.part('Web driver')
 def web_driver():
     ui.markdown('''

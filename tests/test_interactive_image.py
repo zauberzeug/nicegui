@@ -45,7 +45,7 @@ def test_set_source_in_tab(screen: Screen):
 def test_with_cross(screen: Screen, cross: bool):
     @ui.page('/')
     def page():
-        ui.interactive_image(URL_PATH1, content='<circle cx="100" cy="100" r="15" />', cross=cross)
+        ui.interactive_image(URL_PATH1, content='<circle cx="100" cy="100" r="15" />', cross=cross, sanitize=False)
 
     screen.open('/')
     screen.find_by_tag('svg')
@@ -61,8 +61,7 @@ def test_replace_interactive_image(screen: Screen):
             ui.interactive_image(URL_PATH1)
 
         def replace():
-            container.clear()
-            with container:
+            with container.clear():
                 ui.interactive_image(URL_PATH2)
         ui.button('Replace', on_click=replace)
 
@@ -111,7 +110,8 @@ def test_loaded_event(screen: Screen):
 def test_add_layer(screen: Screen):
     @ui.page('/')
     def page():
-        ii = ui.interactive_image(URL_PATH1, content='<rect x="0" y="0" width="100" height="100" fill="red" />')
+        ii = ui.interactive_image(
+            URL_PATH1, content='<rect x="0" y="0" width="100" height="100" fill="red" />', sanitize=False)
         ii.add_layer(content='<circle cx="100" cy="100" r="15" />')
 
     screen.open('/')

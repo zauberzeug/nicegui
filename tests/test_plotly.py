@@ -33,8 +33,7 @@ def test_replace_plotly(screen: Screen):
             ui.plotly(go.Figure(go.Scatter(x=[1], y=[1], text=['A'], mode='text')))
 
         def replace():
-            container.clear()
-            with container:
+            with container.clear():
                 ui.plotly(go.Figure(go.Scatter(x=[1], y=[1], text=['B'], mode='text')))
         ui.button('Replace', on_click=replace)
 

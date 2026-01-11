@@ -1,11 +1,12 @@
 from contextlib import asynccontextmanager
 from pathlib import Path
-from typing import Callable, Literal, Optional, Union
+from typing import Any, Callable, Literal, Optional, Union
 
 from fastapi import FastAPI
 from fastapi.middleware.gzip import GZipMiddleware
+from starlette.types import ASGIApp
 
-from . import core, storage
+from . import core, helpers, storage
 from .air import Air
 from .language import Language
 from .middlewares import RedirectWithPrefixMiddleware, SetCacheControlMiddleware
@@ -20,15 +21,17 @@ def run_with(
     favicon: Optional[Union[str, Path]] = None,
     dark: Optional[bool] = False,
     language: Language = 'en-US',
-    binding_refresh_interval: float = 0.1,
+    binding_refresh_interval: Optional[float] = 0.1,
     reconnect_timeout: float = 3.0,
     message_history_length: int = 1000,
     cache_control_directives: str = 'public, max-age=31536000, immutable, stale-while-revalidate=31536000',
+    gzip_middleware_factory: Optional[Callable[[ASGIApp], GZipMiddleware]] = GZipMiddleware,
     mount_path: str = '/',
     on_air: Optional[Union[str, Literal[True]]] = None,
     tailwind: bool = True,
     prod_js: bool = True,
     storage_secret: Optional[str] = None,
+    session_middleware_kwargs: Optional[dict[str, Any]] = None,
     show_welcome_message: bool = True,
 ) -> None:
     """Run NiceGUI with FastAPI.
@@ -40,15 +43,17 @@ def run_with(
     :param favicon: relative filepath, absolute URL to a favicon (default: `None`, NiceGUI icon will be used) or emoji (e.g. `'🚀'`, works for most browsers)
     :param dark: whether to use Quasar's dark mode (default: `False`, use `None` for "auto" mode)
     :param language: language for Quasar elements (default: `'en-US'`)
-    :param binding_refresh_interval: time between binding updates (default: `0.1` seconds, bigger is more CPU friendly)
+    :param binding_refresh_interval: interval for updating active links (default: 0.1 seconds, bigger is more CPU friendly, *since version 3.4.0*: can be ``None`` to disable update loop)
     :param reconnect_timeout: maximum time the server waits for the browser to reconnect (default: 3.0 seconds)
     :param message_history_length: maximum number of messages that will be stored and resent after a connection interruption (default: 1000, use 0 to disable, *added in version 2.9.0*)
     :param cache_control_directives: cache control directives for internal static files (default: `'public, max-age=31536000, immutable, stale-while-revalidate=31536000'`)
+    :param gzip_middleware_factory: GZipMiddleware factory function (e.g. ``lambda app: GZipMiddleware(app, minimum_size=500, compresslevel=9)``, defaults to Starlette's ``GZipMiddleware``, can be ``None`` to disable, *added in version 3.5.0*)
     :param mount_path: mount NiceGUI at this path (default: `'/'`)
     :param on_air: tech preview: `allows temporary remote access <https://nicegui.io/documentation/section_configuration_deployment#nicegui_on_air>`_ if set to `True` (default: disabled)
     :param tailwind: whether to use Tailwind CSS (experimental, default: `True`)
     :param prod_js: whether to use the production version of Vue and Quasar dependencies (default: `True`)
     :param storage_secret: secret key for browser-based storage (default: `None`, a value is required to enable ui.storage.individual and ui.storage.browser)
+    :param session_middleware_kwargs: additional keyword arguments passed to SessionMiddleware that creates the session cookies used for browser-based storage
     :param show_welcome_message: whether to show the welcome message (default: `True`)
     """
     core.app.config.add_run_config(
@@ -67,8 +72,9 @@ def run_with(
         cache_control_directives=cache_control_directives,
     )
     core.root = root
-    storage.set_storage_secret(storage_secret)
-    core.app.add_middleware(GZipMiddleware)
+    storage.set_storage_secret(storage_secret, session_middleware_kwargs)
+    if not helpers.is_pytest() and gzip_middleware_factory is not None:
+        core.app.add_middleware(gzip_middleware_factory)
     core.app.add_middleware(RedirectWithPrefixMiddleware)
     core.app.add_middleware(SetCacheControlMiddleware)
 

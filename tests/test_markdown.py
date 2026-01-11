@@ -91,8 +91,7 @@ def test_replace_markdown(screen: Screen):
             ui.markdown('A')
 
         def replace():
-            container.clear()
-            with container:
+            with container.clear():
                 ui.markdown('B')
         ui.button('Replace', on_click=replace)
 

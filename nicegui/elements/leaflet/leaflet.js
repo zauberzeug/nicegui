@@ -8,18 +8,19 @@ export default {
     center: Array,
     zoom: Number,
     options: Object,
-    draw_control: Object,
-    resource_path: String,
-    hide_drawn_items: Boolean,
-    additional_resources: Array,
+    drawControl: Object,
+    resourcePath: String,
+    hideDrawnItems: Boolean,
+    additionalResources: Array,
   },
   async mounted() {
     await this.$nextTick(); // NOTE: wait for window.path_prefix to be set
-    await loadResource(window.path_prefix + `${this.resource_path}/leaflet/leaflet.css`);
-    await Promise.all(this.additional_resources.map((resource) => loadResource(resource)));
-    if (this.draw_control) {
+    await loadResource(window.path_prefix + `${this.resourcePath}/leaflet/leaflet.css`);
+    window.L = L;
+    await Promise.all(this.additionalResources.map((resource) => loadResource(resource)));
+    if (this.drawControl) {
       await Promise.all([
-        loadResource(window.path_prefix + `${this.resource_path}/leaflet-draw/leaflet.draw.css`),
+        loadResource(window.path_prefix + `${this.resourcePath}/leaflet-draw/leaflet.draw.css`),
         loadLeafletDraw(),
       ]);
     }
@@ -83,7 +84,7 @@ export default {
         });
       });
     }
-    if (this.draw_control) {
+    if (this.drawControl) {
       for (const key in L.Draw.Event) {
         const type = L.Draw.Event[key];
         this.map.on(type, async (e) => {
@@ -111,8 +112,8 @@ export default {
       window.type = originalType;
       this.map.addLayer(drawnItems);
 
-      // Normalize draw_control options: allow boolean True -> {}
-      const dc = this.draw_control && typeof this.draw_control === "object" ? this.draw_control : {};
+      // Normalize drawControl options: allow boolean True -> {}
+      const dc = this.drawControl && typeof this.drawControl === "object" ? this.drawControl : {};
       const drawOptions = dc.draw === true || dc.draw === undefined ? {} : dc.draw || {};
       let editOptions = dc.edit === true || dc.edit === undefined ? {} : dc.edit || {};
       if (typeof editOptions === "object" && "edit" in editOptions) {
@@ -128,7 +129,7 @@ export default {
         },
       });
       this.map.addControl(drawControl);
-      if (!this.hide_drawn_items) {
+      if (!this.hideDrawnItems) {
         this.map.on("draw:created", (e) => drawnItems.addLayer(e.layer));
       }
     }

@@ -6,10 +6,11 @@ export default {
   mounted() {
     this.update_grid();
 
-    this.themeObserver = new MutationObserver(() =>
-      this.$el.setAttribute("data-ag-theme-mode", document.body.classList.contains("body--dark") ? "dark" : "light")
-    );
+    const updateTheme = () =>
+      this.$el.setAttribute("data-ag-theme-mode", document.body.classList.contains("body--dark") ? "dark" : "light");
+    this.themeObserver = new MutationObserver(updateTheme);
     this.themeObserver.observe(document.body, { attributes: true, attributeFilter: ["class"] });
+    updateTheme();
   },
   unmounted() {
     this.themeObserver.disconnect();
@@ -22,7 +23,7 @@ export default {
         theme: AgGrid.themes[this.options.theme].withPart(AgGrid.colorSchemeVariable),
       };
 
-      for (const column of this.html_columns) {
+      for (const column of this.htmlColumns) {
         if (this.gridOptions.columnDefs[column].cellRenderer === undefined) {
           this.gridOptions.columnDefs[column].cellRenderer = (params) => (params.value ? params.value : "");
         }
@@ -74,9 +75,6 @@ export default {
       return runMethod(this.api.getRowNode(row_id), name, args);
     },
     handle_event(type, args) {
-      if (type === "gridSizeChanged" && this.auto_size_columns) {
-        this.api.sizeColumnsToFit();
-      }
       this.$emit(type, {
         value: args.value,
         oldValue: args.oldValue,
@@ -113,7 +111,6 @@ export default {
   },
   props: {
     options: Object,
-    html_columns: Array,
-    auto_size_columns: Boolean,
+    htmlColumns: Array,
   },
 };

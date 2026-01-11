@@ -1,3 +1,7 @@
+import asyncio
+import contextlib
+from typing import Optional
+
 from .. import background_tasks, core, json, optional_features
 from ..logging import log
 from .persistent_dict import PersistentDict
@@ -5,7 +9,6 @@ from .persistent_dict import PersistentDict
 try:
     import redis as redis_sync
     import redis.asyncio as redis
-    import redis.exceptions as redis_exceptions
     optional_features.register('redis')
 except ImportError:
     pass
@@ -17,16 +20,16 @@ class RedisPersistentDict(PersistentDict):
         if not optional_features.has('redis'):
             raise ImportError('Redis is not installed. Please run "pip install nicegui[redis]".')
         self.url = url
-        self.redis_client = redis.from_url(
-            url,
-            health_check_interval=10,
-            socket_connect_timeout=5,
-            retry_on_timeout=True,
-            socket_keepalive=True,
-        )
+        self._redis_client_params = {
+            'health_check_interval': 10,
+            'socket_connect_timeout': 5,
+            'retry_on_timeout': True,
+            **({'socket_keepalive': True} if not url.startswith('unix://') else {}),
+        }
+        self.redis_client = redis.from_url(self.url, **self._redis_client_params)
         self.pubsub = self.redis_client.pubsub()
         self.key = key_prefix + id
-        self._should_listen = True
+        self._listener_task: Optional[asyncio.Task] = None
         super().__init__(data={}, on_change=self.publish)
 
     async def initialize(self) -> None:
@@ -40,13 +43,7 @@ class RedisPersistentDict(PersistentDict):
 
     def initialize_sync(self) -> None:
         """Load initial data from Redis and start listening for changes in a synchronous context."""
-        with redis_sync.from_url(
-            self.url,
-            health_check_interval=10,
-            socket_connect_timeout=5,
-            retry_on_timeout=True,
-            socket_keepalive=True,
-        ) as redis_client_sync:
+        with redis_sync.from_url(self.url, **self._redis_client_params) as redis_client_sync:
             try:
                 data = redis_client_sync.get(self.key)
                 self.update(json.loads(data) if data else {})
@@ -57,12 +54,7 @@ class RedisPersistentDict(PersistentDict):
     def _start_listening(self) -> None:
         async def listen():
             try:
-                if not self._should_listen:
-                    return
                 await self.pubsub.subscribe(self.key + 'changes')
-                if not self._should_listen:
-                    await self.pubsub.unsubscribe()
-                    return
                 async for message in self.pubsub.listen():
                     t = message['type']
                     if t == 'message':
@@ -71,15 +63,21 @@ class RedisPersistentDict(PersistentDict):
                             self.update(new_data)
                     elif t in ('unsubscribe', 'punsubscribe') and message.get('data') == 0:
                         break
-            except Exception as e:
-                if isinstance(e, redis_exceptions.ConnectionError) and not self._should_listen:
-                    return  # NOTE: on quick instantiation cycles, unsubscribe event might not be received before the connection is closed
+            except asyncio.CancelledError:
+                pass  # Expected during close()
+            except Exception:
                 log.exception(f'Unexpected error in Redis listener for {self.key}')
+            finally:
+                if self.pubsub.subscribed:
+                    await self.pubsub.unsubscribe()
+
+        def create_listener_task() -> None:
+            self._listener_task = background_tasks.create(listen(), name=f'redis-listen-{self.key}')
 
         if core.loop and core.loop.is_running():
-            background_tasks.create(listen(), name=f'redis-listen-{self.key}')
+            create_listener_task()
         else:
-            core.app.on_startup(listen())
+            core.app.on_startup(create_listener_task)
 
     def publish(self) -> None:
         """Publish the data to Redis and notify other instances."""
@@ -97,11 +95,12 @@ class RedisPersistentDict(PersistentDict):
 
     async def close(self) -> None:
         """Close Redis connection and subscription."""
-        self._should_listen = False
-        if self.pubsub.subscribed:
-            await self.pubsub.unsubscribe()
-        await self.pubsub.close()
-        await self.redis_client.close()
+        if self._listener_task and not self._listener_task.done():
+            self._listener_task.cancel()
+            with contextlib.suppress(asyncio.CancelledError):
+                await self._listener_task
+        await self.pubsub.aclose()
+        await self.redis_client.aclose()
 
     def clear(self) -> None:
         super().clear()

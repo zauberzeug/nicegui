@@ -5,6 +5,7 @@ from typing_extensions import Self
 
 from ... import optional_features
 from ...awaitable_response import AwaitableResponse
+from ...defaults import DEFAULT_PROP, resolve_defaults
 from ...element import Element
 
 if importlib.util.find_spec('pandas'):
@@ -20,15 +21,17 @@ if importlib.util.find_spec('polars'):
 
 class AgGrid(Element, component='aggrid.js', esm={'nicegui-aggrid': 'dist'}, default_classes='nicegui-aggrid'):
 
+    @resolve_defaults
     def __init__(self,
                  options: dict, *,
-                 html_columns: list[int] = [],  # noqa: B006
+                 html_columns: list[int] = DEFAULT_PROP | [],
                  theme: Optional[Literal['quartz', 'balham', 'material', 'alpine']] = None,
                  auto_size_columns: bool = True,
                  ) -> None:
         """AG Grid
 
         An element to create a grid using `AG Grid <https://www.ag-grid.com/>`_.
+        Updates can be pushed to the grid by updating the ``options`` property.
 
         The methods ``run_grid_method`` and ``run_row_method`` can be used to interact with the AG Grid instance on the client.
 
@@ -38,10 +41,15 @@ class AgGrid(Element, component='aggrid.js', esm={'nicegui-aggrid': 'dist'}, def
         :param auto_size_columns: whether to automatically resize columns to fit the grid width (default: ``True``)
         """
         super().__init__()
-        self._props['options'] = {'theme': theme or 'quartz', **options}
-        self._props['html_columns'] = html_columns[:]
-        self._props['auto_size_columns'] = auto_size_columns
+        self._props['options'] = {
+            'theme': theme or 'quartz',
+            **({'autoSizeStrategy': {'type': 'fitGridWidth'}} if auto_size_columns else {}),
+            **options,
+        }
+        self._props['html-columns'] = html_columns[:]
         self._update_method = 'update_grid'
+
+        self._props.add_rename('html_columns', 'html-columns')  # DEPRECATED: remove in NiceGUI 4.0
 
     @classmethod
     def from_pandas(cls,
@@ -131,11 +139,11 @@ class AgGrid(Element, component='aggrid.js', esm={'nicegui-aggrid': 'dist'}, def
     @property
     def html_columns(self) -> list[int]:
         """The list of columns that should be rendered as HTML."""
-        return self._props['html_columns']
+        return self._props['html-columns']
 
     @html_columns.setter
     def html_columns(self, value: list[int]) -> None:
-        self._props['html_columns'] = value[:]
+        self._props['html-columns'] = value[:]
 
     @property
     def theme(self) -> Optional[Literal['quartz', 'balham', 'material', 'alpine']]:
@@ -149,11 +157,14 @@ class AgGrid(Element, component='aggrid.js', esm={'nicegui-aggrid': 'dist'}, def
     @property
     def auto_size_columns(self) -> bool:
         """Whether to automatically resize columns to fit the grid width."""
-        return self._props['auto_size_columns']
+        return self._props['options'].get('autoSizeStrategy', {}).get('type') == 'fitGridWidth'
 
     @auto_size_columns.setter
     def auto_size_columns(self, value: bool) -> None:
-        self._props['auto_size_columns'] = value
+        if value and not self.auto_size_columns:
+            self._props['options']['autoSizeStrategy'] = {'type': 'fitGridWidth'}
+        if not value and self.auto_size_columns:
+            self._props['options'].pop('autoSizeStrategy')
 
     def run_grid_method(self, name: str, *args, timeout: float = 1) -> AwaitableResponse:
         """Run an AG Grid API method.

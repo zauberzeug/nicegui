@@ -41,7 +41,7 @@ class Timer:
         self._current_invocation: Optional[asyncio.Task] = None
 
         coroutine = self._run_once if once else self._run_in_loop
-        if core.script_mode and not core.app.is_started:
+        if core.is_script_mode_preflight():
             return
         if core.app.is_started:
             background_tasks.create(coroutine(), name=str(callback))
@@ -105,14 +105,14 @@ class Timer:
             self._cleanup()
 
     async def _invoke_callback(self) -> None:
-        try:
-            assert self.callback is not None
-            with self._get_context():
+        with self._get_context():
+            try:
+                assert self.callback is not None
                 result = self.callback()
                 if isinstance(result, Awaitable) and not isinstance(result, AwaitableResponse):
                     await result
-        except Exception as e:
-            core.app.handle_exception(e)
+            except Exception as e:
+                core.app.handle_exception(e)
 
     async def _can_start(self) -> bool:
         return True

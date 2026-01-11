@@ -37,6 +37,11 @@ doc.intro(run_documentation)
 
     In native mode the `app.native.main_window` object allows you to access the underlying window.
     It is an async version of [`Window` from pywebview](https://pywebview.flowrl.com/api/#webview-window).
+
+    On Windows, native mode requires the .NET Framework to be installed,
+    as pywebview uses it for the EdgeChromium backend.
+    This is typically pre-installed on standard Windows installations,
+    but may be missing on minimal or freshly installed systems.
 ''', tab=lambda: ui.label('NiceGUI'))
 def native_mode_demo():
     from nicegui import app
@@ -254,7 +259,11 @@ doc.text('Package for Installation', '''
     NiceGUI apps can also be bundled into an executable with `nicegui-pack` which is based on [PyInstaller](https://www.pyinstaller.org/).
     This allows you to distribute your app as a single file that can be executed on any computer.
 
-    Just make sure to call `ui.run` with `reload=False` in your main script to disable the auto-reload feature.
+    Just make sure
+
+    - to call `ui.run` with `reload=False` in your main script to disable the auto-reload feature, and
+    - to pass a `root` page function to `ui.run` or define at least one decorated `@page` function.
+
     Running the `nicegui-pack` command below will create an executable `myapp` in the `dist` folder:
 ''')
 
@@ -267,9 +276,10 @@ def pyinstaller():
                 ```python
                 from nicegui import native, ui
 
-                ui.label('Hello from PyInstaller')
+                def root():
+                    ui.label('Hello from PyInstaller')
 
-                ui.run(reload=False, port=native.find_open_port())
+                ui.run(root, reload=False, port=native.find_open_port())
                 ```
             ''')
         with bash_window(classes='max-w-lg w-full'):
@@ -305,6 +315,14 @@ doc.text('', '''
     and zip up the generated `dist` directory yourself, distribute it,
     and your end users can unzip once and be good to go,
     without the constant expansion of files due to the `--onefile` flag.
+
+    - Specifying `--onedir` to `nicegui-pack` will create an executable with all supporting files in a directory.
+    This starts faster than "--onefile" because it skips the unpacking step.
+    For distribution, package the directory into an archive file (e.g., .zip or .7z).
+
+    - Specifying `--clean` to `nicegui-pack` will clean the PyInstaller cache (in `./build` folder) and remove temporary files before building.
+
+    - Specifying `--noconfirm` to `nicegui-pack` will replace the output directory (`./dist/SPECNAME`) without asking for confirmation.
 
     - Summary of user experience for different options:
 

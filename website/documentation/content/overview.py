@@ -199,6 +199,8 @@ def map_of_nicegui():
                 - `is_deleted`: whether an element has been deleted
         - elements:
             - [`ui.aggrid`](/documentation/aggrid)
+            - [`ui.altair`](/documentation/altair)
+            - [`ui.anywidget`](/documentation/anywidget)
             - [`ui.audio`](/documentation/audio)
             - [`ui.avatar`](/documentation/avatar)
             - [`ui.badge`](/documentation/badge)
@@ -217,6 +219,7 @@ def map_of_nicegui():
             - [`ui.column`](/documentation/column)
             - [`ui.context_menu`](/documentation/context_menu)
             - [`ui.date`](/documentation/date)
+            - [`ui.date_input`](/documentation/date_input)
             - [`ui.dialog`](/documentation/dialog)
             - [`ui.dropdown_button`](/documentation/button_dropdown)
             - [`ui.echart`](/documentation/echart)
@@ -273,6 +276,7 @@ def map_of_nicegui():
             - [`ui.table`](/documentation/table)
             - [`ui.textarea`](/documentation/textarea)
             - [`ui.time`](/documentation/time)
+            - [`ui.time_input`](/documentation/time_input)
             - [`ui.timeline`](/documentation/timeline), `ui.timeline_entry`
             - [`ui.toggle`](/documentation/toggle)
             - [`ui.tooltip`](/documentation/tooltip)
@@ -284,12 +288,13 @@ def map_of_nicegui():
             - `ui.footer`
             - `ui.drawer`, `ui.left_drawer`, `ui.right_drawer`
             - `ui.page_sticky`
+            - `ui.page_scroller`
         - special functions and objects:
             - [`ui.add_body_html`](/documentation/section_pages_routing#add_html_to_the_page) and
                 [`ui.add_head_html`](/documentation/section_pages_routing#add_html_to_the_page): add HTML to the body and head of the page
             - [`ui.add_css`](/documentation/add_style#add_css_style_definitions_to_the_page),
-                [`ui.add_sass`](/documentation/add_style#add_sass_style_definitions_to_the_page) and
-                [`ui.add_scss`](/documentation/add_style#add_scss_style_definitions_to_the_page): add CSS, SASS and SCSS to the page
+                [`ui.add_sass`](/documentation/add_style#add_sass_style_definitions_to_the_page) (deprecated) and
+                [`ui.add_scss`](/documentation/add_style#add_scss_style_definitions_to_the_page) (deprecated): add CSS, SASS and SCSS to the page
             - [`ui.clipboard`](/documentation/clipboard): interact with the browser's clipboard
             - [`ui.colors`](/documentation/colors): define the main color theme for a page
             - `ui.context`: get the current UI context including the `client` and `request` objects

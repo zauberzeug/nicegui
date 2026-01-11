@@ -5,7 +5,7 @@ export default {
   template: "<div></div>",
   async mounted() {
     await new Promise((resolve) => setTimeout(resolve, 0)); // wait for Tailwind classes to be applied
-    if (this.enable_3d) {
+    if (this.enable3d) {
       await loadEchartsGL();
     }
 
@@ -22,7 +22,7 @@ export default {
     }
 
     this.chart = echarts.init(this.$el, theme_name, { renderer: this.renderer });
-    this.chart.on("click", (e) => this.$emit("pointClick", e));
+    this.chart.on("click", (e) => this.$emit("componentClick", e));
     for (const event of [
       "click",
       "dblclick",
@@ -69,7 +69,7 @@ export default {
     let initialResizeTriggered = false;
     const initialWidth = this.$el.offsetWidth;
     const initialHeight = this.$el.offsetHeight;
-    new ResizeObserver(() => {
+    this.resizeObserver = new ResizeObserver(() => {
       if (!initialResizeTriggered) {
         initialResizeTriggered = true;
         if (this.$el.offsetWidth === initialWidth && this.$el.offsetHeight === initialHeight) {
@@ -81,11 +81,11 @@ export default {
 
     this.update_chart();
   },
-  beforeDestroy() {
-    this.chart.dispose();
-  },
   beforeUnmount() {
     this.chart.dispose();
+  },
+  unmounted() {
+    this.resizeObserver?.disconnect();
   },
   methods: {
     update_chart() {
@@ -94,7 +94,9 @@ export default {
         return;
       }
       convertDynamicProperties(this.options, true);
-      this.chart.setOption(this.options, { notMerge: this.chart.options?.series.length != this.options.series.length });
+      this.chart.setOption(this.options, {
+        notMerge: this.chart.options?.series?.length != this.options.series?.length,
+      });
     },
     run_chart_method(name, ...args) {
       if (name.startsWith(":")) {
@@ -106,7 +108,7 @@ export default {
   },
   props: {
     options: Object,
-    enable_3d: Boolean,
+    enable3d: Boolean,
     renderer: String,
     theme: String,
   },

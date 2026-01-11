@@ -23,6 +23,19 @@ def main_demo() -> None:
                    on_change=lambda e: ui.notify(f'Change: {e}'))
 
 
+@doc.demo('Update content', '''
+    You can update the content of the JSONEditor by updating the `properties` property.
+''')
+def update_content():
+    import random
+
+    def update_number():
+        editor.properties['content']['json'].update(number=random.randint(0, 100))
+
+    editor = ui.json_editor({'content': {'json': {'number': 0}}})
+    ui.button('Update number', on_click=update_number)
+
+
 @doc.demo('Validation', '''
     You can use the `schema` parameter to define a [JSON schema](https://json-schema.org/) for validating the data being edited.
     In this demo, the editor will warn if the data does not match the schema:
@@ -30,8 +43,11 @@ def main_demo() -> None:
     - `id` must be an integer
     - `name` must be a string
     - `price` must be a number greater than 0
+    - `uuid` must be a valid UUID (requires NiceGUI version 3.5.0 or higher)
 
     *Added in version 2.8.0*
+
+    *Updated in version 3.5.0: Added support for [ajv-formats](https://ajv.js.org/packages/ajv-formats.html)*
 ''')
 def schema_demo() -> None:
     schema = {
@@ -47,13 +63,18 @@ def schema_demo() -> None:
                 'type': 'number',
                 'exclusiveMinimum': 0,
             },
+            'uuid': {
+                'type': 'string',
+                'format': 'uuid',
+            },
         },
-        'required': ['id', 'name', 'price'],
+        'required': ['id', 'name', 'price', 'uuid'],
     }
     data = {
         'id': 42,
         'name': 'Banana',
         'price': 15.0,
+        'uuid': '123e4567-e89b-12d3-a456-426614174000',
     }
     ui.json_editor({'content': {'json': data}}, schema=schema)
 

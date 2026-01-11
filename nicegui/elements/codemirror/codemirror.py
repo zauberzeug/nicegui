@@ -1,6 +1,7 @@
 from itertools import accumulate, chain, repeat
 from typing import Literal, Optional, get_args
 
+from nicegui.defaults import DEFAULT_PROP, resolve_defaults
 from nicegui.elements.mixins.disableable_element import DisableableElement
 from nicegui.elements.mixins.value_element import ValueElement
 from nicegui.events import GenericEventArguments, Handler, ValueChangeEventArguments
@@ -252,16 +253,17 @@ class CodeMirror(ValueElement, DisableableElement,
     VALUE_PROP = 'value'
     LOOPBACK = None
 
+    @resolve_defaults
     def __init__(
         self,
         value: str = '',
         *,
         on_change: Optional[Handler[ValueChangeEventArguments]] = None,
-        language: Optional[SUPPORTED_LANGUAGES] = None,
-        theme: SUPPORTED_THEMES = 'basicLight',
-        indent: str = ' ' * 4,
-        line_wrapping: bool = False,
-        highlight_whitespace: bool = False,
+        language: Optional[SUPPORTED_LANGUAGES] = DEFAULT_PROP | None,
+        theme: SUPPORTED_THEMES = DEFAULT_PROP | 'basicLight',
+        indent: str = DEFAULT_PROP | ' ' * 4,
+        line_wrapping: bool = DEFAULT_PROP | False,
+        highlight_whitespace: bool = DEFAULT_PROP | False,
     ) -> None:
         """CodeMirror
 
@@ -292,9 +294,12 @@ class CodeMirror(ValueElement, DisableableElement,
         self._props['language'] = language
         self._props['theme'] = theme
         self._props['indent'] = indent
-        self._props['lineWrapping'] = line_wrapping
-        self._props['highlightWhitespace'] = highlight_whitespace
+        self._props['line-wrapping'] = line_wrapping
+        self._props['highlight-whitespace'] = highlight_whitespace
         self._update_method = 'setEditorValueFromProps'
+
+        self._props.add_rename('highlightWhitespace', 'highlight-whitespace')  # DEPRECATED: remove in NiceGUI 4.0
+        self._props.add_rename('lineWrapping', 'line-wrapping')  # DEPRECATED: remove in NiceGUI 4.0
 
     @property
     def theme(self) -> str:
@@ -331,6 +336,25 @@ class CodeMirror(ValueElement, DisableableElement,
     def supported_languages(self) -> list[str]:
         """List of supported languages."""
         return list(get_args(SUPPORTED_LANGUAGES))
+
+    @property
+    def line_wrapping(self) -> bool:
+        """Whether line wrapping is enabled
+
+        *Added in version 3.2.0*
+        """
+        return self._props['line-wrapping']
+
+    @line_wrapping.setter
+    def line_wrapping(self, value: bool) -> None:
+        self._props['line-wrapping'] = value
+
+    def set_line_wrapping(self, value: bool) -> None:
+        """Sets whether line wrapping is enabled.
+
+        *Added in version 3.2.0*
+        """
+        self._props['line-wrapping'] = value
 
     def _event_args_to_value(self, e: GenericEventArguments) -> str:
         """The event contains a change set which is applied to the current value."""

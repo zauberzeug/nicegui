@@ -121,13 +121,13 @@ def create() -> None:
                 'customizable [color themes](/documentation/section_styling_appearance#color_theming)',
                 'custom CSS and classes',
                 'modern look with material design',
-                '[Tailwind CSS](https://tailwindcss.com/) auto-completion',
+                '[Tailwind CSS](https://tailwindcss.com/)',
             ])
             features('source', 'Coding', [
-                'routing for multiple [pages](/documentation/page)',
+                'single page apps with [ui.sub_pages](/documentation/sub_pages)',
                 'auto-reload on code change',
                 'persistent [user sessions](/documentation/storage)',
-                'super nice [testing framework](/documentation/section_testing)',
+                'super powerful [testing framework](/documentation/section_testing)',
             ])
             features('anchor', 'Foundation', [
                 'generic [Vue](https://vuejs.org/) to Python bridge',
@@ -157,38 +157,39 @@ def create() -> None:
         section_heading('In-depth examples', 'Pick your *solution*')
         with ui.row().classes('w-full text-lg leading-tight grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4'):
             for example in examples:
-                example_link(example)
+                if example.title in {'Authentication', 'Chat App', 'Todo List'}:
+                    example_link(example)
+            example_link().classes('min-h-40 text-center items-center justify-center xl:col-span-3')
 
     with ui.column().classes('dark-box p-8 lg:p-16 my-16 bg-transparent border-y-2 border-gray-200'):
         with ui.column().classes('mx-auto items-center gap-y-8 gap-x-32 lg:flex-row'):
-            with ui.column().classes('max-lg:items-center max-lg:text-center'):
+            with ui.column().classes('max-lg:items-center max-lg:text-center gap-8'):
                 link_target('sponsors')
                 ui.markdown('NiceGUI is supported by') \
                     .classes('text-2xl md:text-3xl font-medium')
-                if SPONSORS['top']:
-                    with ui.row(align_items='center'):
-                        assert SPONSORS['total'] > 0
-                        ui.markdown(f'''
-                            our top {'sponsor' if len(SPONSORS['top']) == 1 else 'sponsors'}
-                        ''')
+                if SPONSORS['special'] or SPONSORS['top']:
+                    with ui.row().classes('gap-8 justify-center'):
+                        for sponsor in SPONSORS['special']:
+                            with ui.link(target=SPONSORS['special'][sponsor]):
+                                ui.interactive_image(f'/static/sponsors/{sponsor}.png').classes('h-12')
                         for sponsor in SPONSORS['top']:
                             with ui.link(target=f'https://github.com/{sponsor}').classes('row items-center gap-2'):
                                 ui.image(f'https://github.com/{sponsor}.png').classes('w-12 h-12 border')
                                 ui.label(f'@{sponsor}')
                     ui.markdown(f'''
-                        as well as {SPONSORS['total'] - len(SPONSORS['top'])} other [sponsors](https://github.com/sponsors/zauberzeug)
+                        as well as {SPONSORS['normal']} other [sponsors](https://github.com/sponsors/zauberzeug)
                         and {SPONSORS['contributors']} [contributors](https://github.com/zauberzeug/nicegui/graphs/contributors).
                     ''').classes('bold-links arrow-links')
                 else:
                     ui.markdown(f'''
-                        {SPONSORS['total']} [sponsors](https://github.com/sponsors/zauberzeug)
+                        {SPONSORS['normal']} [sponsors](https://github.com/sponsors/zauberzeug)
                         and {SPONSORS['contributors']} [contributors](https://github.com/zauberzeug/nicegui/graphs/contributors).
                     ''').classes('bold-links arrow-links')
             with ui.link(target='https://github.com/sponsors/zauberzeug').style('color: black !important') \
                     .classes('rounded-full mx-auto px-12 py-2 border-2 border-[#3e6a94] font-medium text-lg md:text-xl'):
-                with ui.row().classes('items-center gap-4'):
-                    ui.icon('sym_o_favorite', color='#3e6a94')
-                    ui.label('Become a sponsor').classes('text-[#3e6a94]')
+                with ui.row(wrap=False).classes('items-center gap-4'):
+                    ui.icon('favorite_border', color='#3e6a94')
+                    ui.label('Become a sponsor').classes('text-[#3e6a94] whitespace-nowrap')
 
     with ui.row().classes('dark-box min-h-screen mt-16'):
         link_target('why', '70px')

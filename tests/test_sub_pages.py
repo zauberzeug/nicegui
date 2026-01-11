@@ -227,6 +227,7 @@ def test_nested_sub_pages_on_root_path(screen: Screen):
         await asyncio.sleep(0.2)
         ui.label('some content')
 
+    screen.allowed_js_errors.append('/bad_path - Failed to load resource')
     screen.open('/')
     screen.should_not_contain('some content')
     screen.should_contain('home1')
@@ -692,7 +693,8 @@ def test_async_sub_pages(screen: Screen):
 
 
 @pytest.mark.parametrize('use_page_arguments', [True, False])
-def test_sub_page_with_query_parameters(screen: Screen, use_page_arguments: bool):
+@pytest.mark.parametrize('show_404', [True, False])
+def test_sub_page_with_query_parameters(screen: Screen, use_page_arguments: bool, show_404: bool):
     calls = {'index': 0, 'main_content': 0}
 
     @ui.page('/')
@@ -700,7 +702,7 @@ def test_sub_page_with_query_parameters(screen: Screen, use_page_arguments: bool
         calls['index'] += 1
         ui.link('Link to main', '/?access=link')
         ui.button('Button to main', on_click=lambda: ui.navigate.to('/?access=button'))
-        ui.sub_pages({'/': with_page_arguments if use_page_arguments else with_parameter})
+        ui.sub_pages({'/': with_page_arguments if use_page_arguments else with_parameter}, show_404=show_404)
 
     def with_page_arguments(args: PageArguments):
         calls['main_content'] += 1
@@ -837,7 +839,7 @@ def test_sub_pages_with_url_fragments(screen: Screen):
         calls['main'] += 1
         ui.label('Main page')
         ui.link('Go to bottom', '/page#bottom')
-        # NOTE: extend content of main page so we can verify that scroll positions are resetted when doing cross-page navigation
+        # NOTE: extend content of main page so we can verify that scroll positions are reset when doing cross-page navigation
         for i in range(100):
             ui.label(f'Line {i}')
 
@@ -955,6 +957,7 @@ def test_on_path_changed_event(screen: Screen):
         calls['other'] += 1
         ui.label('other page')
 
+    screen.allowed_js_errors.append('/bad_path - Failed to load resource')
     screen.open('/')
     screen.should_contain('main page')
     assert paths == []  # NOTE: initial path is not reported, because the path does not "change" on first load
@@ -1070,6 +1073,7 @@ def test_navigate_from_404_to_root_path(screen: Screen):
     def main():
         ui.label('main page')
 
+    screen.allowed_js_errors.append('/bad_path - Failed to load resource')
     screen.open('/')
     screen.click('Go to bad_path')
     screen.should_contain('404: sub page /bad_path not found')
@@ -1091,6 +1095,7 @@ def test_http_404_on_initial_request(screen: Screen):
     assert httpx.get(f'http://localhost:{Screen.PORT}/').status_code == 200
     assert httpx.get(f'http://localhost:{Screen.PORT}/bad_path').status_code == 404
 
+    screen.allowed_js_errors.append('/bad_path - Failed to load resource')
     screen.open('/')
     screen.should_contain('main page')
 
@@ -1111,6 +1116,7 @@ def test_http_404_on_initial_request_with_async_page_builder(screen: Screen):
     assert httpx.get(f'http://localhost:{Screen.PORT}/').status_code == 200
     assert httpx.get(f'http://localhost:{Screen.PORT}/bad_path').status_code == 404
 
+    screen.allowed_js_errors.append('/bad_path - Failed to load resource')
     screen.open('/')
     screen.should_contain('main page')
 
@@ -1142,11 +1148,23 @@ def test_http_404_on_initial_request_with_async_sub_page_builder(screen: Screen)
     assert httpx.get(f'http://localhost:{Screen.PORT}/async-sub').status_code == 200
     assert httpx.get(f'http://localhost:{Screen.PORT}/async-sub/bad_path').status_code == 404
 
+    screen.allowed_js_errors.append('/bad_path - Failed to load resource')
     screen.open('/sub')
     screen.should_contain('sub sub page')
 
     screen.open('/bad_path')
     screen.should_contain('HTTPException: 404: /bad_path not found')
+
+
+def test_http_404_with_root_function_and_sub_pages(screen: Screen):
+    def root():
+        ui.sub_pages({'/': lambda: ui.label('Home')})
+
+    screen.ui_run_kwargs['root'] = root
+    screen.open('/')
+    screen.should_contain('Home')
+
+    httpx.get(f'http://localhost:{Screen.PORT}/bad_path')  # should not print an exception
 
 
 def test_clearing_sub_pages_element(screen: Screen):
@@ -1170,3 +1188,122 @@ def test_clearing_sub_pages_element(screen: Screen):
     screen.click('Delete')
     screen.wait(0.5)
     screen.should_not_contain('main page')
+
+
+def test_refresh_sub_page(screen: Screen):
+    calls = {'index': 0, 'outer': 0, 'inner_main': 0, 'inner_other': 0}
+
+    @ui.page('/')
+    @ui.page('/{_:path}')
+    def index():
+        calls['index'] += 1
+        sub_pages = ui.sub_pages({'/': outer_page})
+        ui.button('Refresh via Router', on_click=ui.context.client.sub_pages_router.refresh)
+        ui.button('Refresh via SubPages', on_click=sub_pages.refresh)
+
+    def outer_page():
+        calls['outer'] += 1
+        ui.sub_pages({'/': inner_main, '/other': inner_other})
+        ui.link('Go to other', '/other')
+
+    def inner_main(args: PageArguments):
+        calls['inner_main'] += 1
+        ui.button('Refresh inner main', on_click=args.frame.refresh)
+
+    def inner_other(args: PageArguments):
+        calls['inner_other'] += 1
+        ui.button('Refresh inner other', on_click=args.frame.refresh)
+
+    screen.open('/')
+    screen.wait(0.2)
+    assert calls == {'index': 1, 'outer': 1, 'inner_main': 1, 'inner_other': 0}
+
+    screen.click('Refresh inner main')
+    screen.wait(0.2)
+    assert calls == {'index': 1, 'outer': 1, 'inner_main': 2, 'inner_other': 0}
+
+    screen.click('Go to other')
+    screen.wait(0.2)
+    assert calls == {'index': 1, 'outer': 1, 'inner_main': 2, 'inner_other': 1}
+
+    screen.click('Refresh inner other')
+    screen.wait(0.2)
+    assert calls == {'index': 1, 'outer': 1, 'inner_main': 2, 'inner_other': 2}
+
+    screen.click('Refresh via Router')
+    screen.wait(0.2)
+    assert calls == {'index': 1, 'outer': 2, 'inner_main': 2, 'inner_other': 3}
+
+    screen.click('Refresh via SubPages')
+    screen.wait(0.2)
+    assert calls == {'index': 1, 'outer': 3, 'inner_main': 2, 'inner_other': 4}
+
+
+def test_navigation_not_crashing_for_root_pages_with_remaining_path(screen: Screen):
+    """Regression test for #5437: navigation crashed with KeyError: 'route'."""
+
+    def root():
+        ui.sub_pages({
+            '/': lambda: ui.link('other/1', '/other/1'),
+            '/other': lambda: ui.label('other page'),
+        })
+
+    screen.ui_run_kwargs['root'] = root
+    screen.open('/')
+    screen.click('other/1')
+    screen.should_contain('404: sub page /other/1 not found')
+
+
+def test_remaining_path_for_wildcard_routing(screen: Screen):
+    @ui.page('/')
+    @ui.page('/{_:path}')
+    def index():
+        ui.sub_pages({'/sub': sub_page}, show_404=False)
+
+    def sub_page(args: PageArguments):
+        ui.label(f'remaining={args.remaining_path}')
+
+    screen.open('/sub')
+    screen.should_contain('remaining=')
+
+    screen.open('/sub/x/2/a')
+    screen.should_contain('remaining=/x/2/a')
+
+
+def test_query_parameters_wildcard_routing(screen: Screen):
+    @ui.page('/')
+    @ui.page('/{_:path}')
+    def index():
+        ui.sub_pages({'/sub': sub_page}, show_404=False)
+
+    def sub_page(args: PageArguments):
+        ui.label(f'query_parameters: {args.query_parameters}')
+
+    screen.open('/sub?color=red')
+    screen.should_contain('query_parameters: color=red')
+
+    screen.open('/sub/x/2/a?color=blue')
+    screen.should_contain('query_parameters: color=blue')
+
+
+def test_sub_pages_against_xss_by_fragment(screen: Screen):
+    @ui.page('/')
+    @ui.page('/{_:path}')
+    def index():
+        ui.sub_pages({'/': lambda: ui.label('main page')})
+
+    screen.open('/')
+    screen.open('''/#x');console.error('XSS')//''')
+    assert 'XSS' not in screen.render_js_logs()
+
+
+def test_sub_pages_against_xss_by_path(screen: Screen):
+    @ui.page('/')
+    @ui.page('/{_:path}')
+    def index():
+        ui.sub_pages({'/': lambda: ui.link('Go to XSS', '/"+console.error("XSS")+"')})
+
+    screen.open('/')
+    screen.click('Go to XSS')
+    screen.wait(1)
+    assert 'XSS' not in screen.render_js_logs()

@@ -1,0 +1,75 @@
+name: Build and Push Docker
+
+on:
+  workflow_call:
+    inputs:
+      version:
+        description: "Version to build (e.g., 1.2.3)"
+        required: true
+        type: string
+
+jobs:
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Prepare Docker image
+        id: prep
+        run: |
+          DOCKER_IMAGE=${{ secrets.DOCKER_USERNAME }}/${GITHUB_REPOSITORY#*/}
+          VERSION=${{ inputs.version }}
+          SHORTREF=${GITHUB_SHA::8}
+          TAGS="${DOCKER_IMAGE}:${VERSION},${DOCKER_IMAGE}:${SHORTREF}"
+
+          # If the VERSION looks like a version number, also tag it 'latest'
+          if [[ $VERSION =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$ ]]; then
+            TAGS="$TAGS,${DOCKER_IMAGE}:latest"
+          fi
+
+          echo "tags=${TAGS}" >> $GITHUB_OUTPUT
+          echo "docker_image=${DOCKER_IMAGE}" >> $GITHUB_OUTPUT
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
+      - uses: docker/setup-qemu-action@v3
+      - uses: docker/login-action@v3
+        if: github.event_name != 'pull_request'
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./release.dockerfile
+          platforms: linux/amd64, linux/arm64
+          push: true
+          tags: ${{ steps.prep.outputs.tags }}
+          build-args: VERSION=${{ steps.prep.outputs.version }}
+          cache-from: |
+            type=registry,ref=${{ steps.prep.outputs.docker_image }}:buildcache-amd64
+            type=registry,ref=${{ steps.prep.outputs.docker_image }}:buildcache-arm64
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./release.dockerfile
+          platforms: linux/amd64
+          build-args: VERSION=${{ steps.prep.outputs.version }}
+          push: false
+          cache-from: type=registry,ref=${{ steps.prep.outputs.docker_image }}:buildcache-amd64
+          cache-to: type=registry,ref=${{ steps.prep.outputs.docker_image }}:buildcache-amd64,mode=max
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./release.dockerfile
+          platforms: linux/arm64
+          build-args: VERSION=${{ steps.prep.outputs.version }}
+          push: false
+          cache-from: type=registry,ref=${{ steps.prep.outputs.docker_image }}:buildcache-arm64
+          cache-to: type=registry,ref=${{ steps.prep.outputs.docker_image }}:buildcache-arm64,mode=max
+      - uses: christian-korneck/update-container-description-action@v1
+        env:
+          DOCKER_USER: ${{ secrets.DOCKER_USERNAME }}
+          DOCKER_PASS: ${{ secrets.DOCKER_PASSWORD }}
+        with:
+          destination_container_repo: zauberzeug/nicegui
+          provider: dockerhub
+          short_description: "Web Based User Interface for Python with Buttons, Dialogs, Markdown, 3D Scenes and Plots"

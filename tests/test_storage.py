@@ -4,6 +4,7 @@ import time
 from pathlib import Path
 
 import httpx
+import pytest
 
 from nicegui import Client, app, background_tasks, context, core, nicegui, ui
 from nicegui.persistence.file_persistent_dict import FilePersistentDict
@@ -290,6 +291,7 @@ def test_missing_storage_secret(screen: Screen):
         ui.label(app.storage.user.get('message', 'no message'))
 
     core.app.user_middleware.clear()  # remove the session middlewares added by prepare_simulation by default
+    screen.allowed_js_errors.append('/ - Failed to load resource')
     screen.open('/')
     screen.assert_py_logger('ERROR', 'app.storage.user needs a storage_secret passed in ui.run()')
 
@@ -342,8 +344,8 @@ def test_tab_storage_holds_non_serializable_objects(screen: Screen):
     screen.wait(0.5)
 
 
-def test_user_storage_is_pruned(screen: Screen):
-    @ui.page('/')
+async def test_user_storage_is_pruned(screen: Screen):
+    @ui.page('/', reconnect_timeout=3)
     def page():
         ui.label(f'clients: {len(Client.instances)}')
         ui.label(f'persistent dicts: {len(app.storage._users)}')
@@ -366,8 +368,8 @@ def test_user_storage_is_pruned(screen: Screen):
     assert len(app.storage._users) == 2
 
     screen.close()
-    Client.prune_instances(client_age_threshold=0)
-    asyncio.run(nicegui.prune_user_storage(force=True))
+    screen.wait(5)  # more than 3 seconds
+    await nicegui.prune_user_storage(force=True)
     assert len(Client.instances) == 0
     assert len(app.storage._users) == 0
 
@@ -385,3 +387,23 @@ async def test_awaiting_backup_scheduled_during_teardown(user: User, tmp_path):
     await background_tasks.teardown()
     assert path.exists(), 'backup should be written during teardown'
     assert path.read_text(encoding='utf-8') == '{"key":"value"}'
+
+
+@pytest.mark.parametrize('custom_cookie_headers', [False, True])
+def test_storage_cookie_headers(screen: Screen, custom_cookie_headers: bool):
+    @ui.page('/')
+    def page():
+        ui.label('Hello, world!')
+
+    screen.ui_run_kwargs['storage_secret'] = 'just a test'
+    if custom_cookie_headers:
+        screen.ui_run_kwargs['session_middleware_kwargs'] = {'same_site': 'none', 'https_only': True}
+    screen.open('/')
+    with httpx.Client() as http_client:
+        response = http_client.get(f'http://localhost:{Screen.PORT}/')
+        assert response.status_code == 200
+        cookie_settings = str(response.headers.get('set-cookie')).lower()
+        if custom_cookie_headers:
+            assert cookie_settings.endswith('httponly; samesite=none; secure')
+        else:
+            assert cookie_settings.endswith('httponly; samesite=lax')
