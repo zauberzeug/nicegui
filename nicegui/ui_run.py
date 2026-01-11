@@ -217,6 +217,11 @@ def run(root: Optional[Callable] = None, *,
         log.warning('disabling auto-reloading because is is only supported when running from a file')
         core.app.config.reload = reload = False
 
+    if kwargs.get('ssl_certfile') and kwargs.get('ssl_keyfile'):
+        protocol = 'https'
+    else:
+        protocol = 'http'
+
     if fullscreen:
         native = True
     if frameless:
@@ -229,7 +234,7 @@ def run(root: Optional[Callable] = None, *,
         port = port or native_module.find_open_port()
         width, height = window_size or (800, 600)
         native_host = '127.0.0.1' if host == '0.0.0.0' else host
-        native_module.activate(native_host, port, title, width, height, fullscreen, frameless)
+        native_module.activate(protocol, native_host, port, title, width, height, fullscreen, frameless)
     else:
         port = port or 8080
         host = host or '0.0.0.0'
@@ -242,11 +247,6 @@ def run(root: Optional[Callable] = None, *,
         reload = False
         native = False
         show_welcome_message = False
-
-    if kwargs.get('ssl_certfile') and kwargs.get('ssl_keyfile'):
-        protocol = 'https'
-    else:
-        protocol = 'http'
 
     # NOTE: We save host and port in environment variables so the subprocess started in reload mode can access them.
     os.environ['NICEGUI_HOST'] = host
