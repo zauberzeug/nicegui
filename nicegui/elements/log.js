@@ -12,6 +12,7 @@ export default {
   },
   methods: {
     onScroll() {
+      if (!this.$refs.qRef) return;
       if (!this.$refs.qRef.$el.childNodes[0].clientHeight) return;
       this.shouldScroll = this.$refs.qRef.getScroll().verticalPercentage == 1.0;
     },
