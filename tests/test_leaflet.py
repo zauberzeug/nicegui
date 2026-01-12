@@ -52,7 +52,7 @@ def test_leaflet(screen: Screen):
 def test_leaflet_unhide(screen: Screen):
     @app.get('/fakeimage')
     def fake_image():
-        return Response(content=b64decode('R0lGODlhAQABAIAAAP///wAAACwAAAAAAQABAAACAkQBADs='), media_type='image/png')
+        return Response(content=b64decode('R0lGODlhAQABAIAAAP///wAAACwAAAAAAQABAAACAkQBADs='), media_type='image/gif')
 
     @ui.page('/')
     def page():
