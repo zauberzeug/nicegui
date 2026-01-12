@@ -7,7 +7,8 @@ from .mixins.value_element import ValueElement
 
 class Dialog(ValueElement, component='dialog.js'):
 
-    def __init__(self, *, value: bool = False, local: bool = True) -> None:
+    # DEPRECATED: top_level will default to True in NiceGUI 4.0
+    def __init__(self, *, value: bool = False, top_level: bool = False) -> None:
         """Dialog
 
         Creates a dialog based on Quasar's `QDialog <https://quasar.dev/vue-components/dialog>`_ component.
@@ -19,24 +20,15 @@ class Dialog(ValueElement, component='dialog.js'):
         You should either create it only once and then reuse it, or remove it with `.clear()` after dismissal.
 
         :param value: whether the dialog should be opened on creation (default: `False`)
+        :param top_level: whether the dialog is created at the top level of the DOM to avoid being hidden
+                          when nested inside a hidden container (default: `False` until NiceGUI 4.0, then `True`)
         """
         super().__init__(value=value, on_value_change=None)
         self._result: Any = None
         self._submitted: Optional[asyncio.Event] = None
-        if local is False:
+        if top_level is True:
             self.move(self.client.content)
-
-            class DeletePropagationElement(Element):
-
-                def __init__(self, element_to_delete: Element) -> None:
-                    super().__init__()
-                    self.set_visibility(False)
-                    self._element_to_delete = element_to_delete
-
-                def _handle_delete(self) -> None:
-                    self._element_to_delete.delete()
-                    return super()._handle_delete()
-            DeletePropagationElement(element_to_delete=self)
+            _DeletePropagationElement(element_to_delete=self)
 
     @property
     def submitted(self) -> asyncio.Event:
@@ -72,3 +64,15 @@ class Dialog(ValueElement, component='dialog.js'):
         if not self.value:
             self._result = None
             self.submitted.set()
+
+
+class _DeletePropagationElement(Element):
+
+    def __init__(self, element_to_delete: Element) -> None:
+        super().__init__()
+        self.set_visibility(False)
+        self._element_to_delete = element_to_delete
+
+    def _handle_delete(self) -> None:
+        self._element_to_delete.delete()
+        return super()._handle_delete()
