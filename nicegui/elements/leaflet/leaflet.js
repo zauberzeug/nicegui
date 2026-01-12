@@ -138,8 +138,8 @@ export default {
       this.$emit("init");
       clearInterval(connectInterval);
     }, 100);
-    this.observer = new IntersectionObserver((elems, _) => {
-      if (elems[0].intersectionRatio != 0) this.run_map_method("invalidateSize");
+    this.observer = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) this.run_map_method("invalidateSize");
     });
     this.observer.observe(this.$el);
   },
