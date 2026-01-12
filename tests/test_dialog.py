@@ -71,3 +71,23 @@ def test_dialog_scroll_behavior(screen: Screen):
     screen.type(Keys.ESCAPE)
     screen.wait(0.2)
     assert screen.selenium.execute_script('return window.scrollY') == position
+
+
+def test_dialog_in_menu(screen: Screen):
+    @ui.page('/')
+    def page():
+        def create_dialog():
+            with ui.dialog(value=True, top_level=True), ui.card():
+                ui.label('Hi!')
+                ui.timer(1, menu.delete, once=True)
+
+        with ui.button('Open menu'):
+            with ui.menu() as menu:
+                ui.menu_item('Create dialog', on_click=create_dialog)
+
+    screen.open('/')
+    screen.click('Open menu')
+    screen.click('Create dialog')
+    screen.should_contain('Hi!')
+    screen.wait(2)
+    screen.should_not_contain('Hi!')
