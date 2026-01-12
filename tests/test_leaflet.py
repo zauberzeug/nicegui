@@ -1,10 +1,12 @@
 import time
+from base64 import b64decode
 from tempfile import NamedTemporaryFile
 
 import numpy as np
+from fastapi import Response
 from PIL import Image
 
-from nicegui import ui
+from nicegui import app, ui
 from nicegui.testing import Screen
 
 
@@ -48,10 +50,15 @@ def test_leaflet(screen: Screen):
 
 
 def test_leaflet_unhide(screen: Screen):
+    @app.get('/fakeimage')
+    def fake_image():
+        return Response(content=b64decode('R0lGODlhAQABAIAAAP///wAAACwAAAAAAQABAAACAkQBADs='), media_type='image/png')
+
     @ui.page('/')
     def page():
         with ui.card().classes('w-full') as card:
-            ui.leaflet(center=(51.505, -0.09)).classes('h-screen')
+            myleaflet = ui.leaflet(center=(51.505, -0.09)).classes('h-screen')
+            ui.run_javascript(f"L.tileLayer('/fakeimage').addTo(getElement({myleaflet.id}).map);")
             card.set_visibility(False)
         ui.button('Show map card', on_click=lambda: card.set_visibility(True))
 
