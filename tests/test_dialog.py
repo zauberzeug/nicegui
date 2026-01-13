@@ -78,8 +78,8 @@ def test_dialog_in_menu(screen: Screen):
     def page():
         def create_dialog():
             with ui.dialog(value=True, top_level=True), ui.card():
-                ui.label('Hi!')
-                ui.timer(1, menu.delete, once=True)
+                ui.label('Dialog content')
+                ui.button('Delete menu', on_click=menu.delete)
 
         with ui.button('Open menu'):
             with ui.menu() as menu:
@@ -88,6 +88,8 @@ def test_dialog_in_menu(screen: Screen):
     screen.open('/')
     screen.click('Open menu')
     screen.click('Create dialog')
-    screen.should_contain('Hi!')
-    screen.wait(2)
-    screen.should_not_contain('Hi!')
+    screen.should_contain('Dialog content')  # even though the dialog is nested inside a hidden menu
+
+    screen.click('Delete menu')
+    screen.wait(0.5)
+    screen.should_not_contain('Dialog content')  # it has been deleted together with the menu
