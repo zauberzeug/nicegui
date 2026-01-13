@@ -13,6 +13,7 @@ export default {
     updateTheme();
   },
   unmounted() {
+    this.api?.destroy();
     this.themeObserver.disconnect();
   },
   methods: {
@@ -63,6 +64,7 @@ export default {
           this.handle_event("gridReady", params);
         }
       };
+      this.api?.destroy();
       this.api = AgGrid.createGrid(this.$el, this.gridOptions);
       this.api.addGlobalListener(this.handle_event);
     },

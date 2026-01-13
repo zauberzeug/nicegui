@@ -49,3 +49,20 @@ def test_with_tab_objects(screen: Screen):
     screen.should_contain('Second tab')
     assert event_tabs == ['Two', 'One', 'Two']
     assert event_tab_panels == ['One', 'Two']
+
+
+def test_updating_offscreen_elements_with_update_method(screen: Screen):
+    @ui.page('/')
+    def main_page():
+        with ui.tabs() as tabs:
+            ui.tab('One')
+            ui.tab('Two')
+
+        with ui.tab_panels(tabs, value='One'):
+            with ui.tab_panel('One'):
+                ui.button('Update', on_click=lambda: editor.update())
+            with ui.tab_panel('Two'):
+                editor = ui.json_editor({})
+
+    screen.open('/')
+    screen.click('Update')
