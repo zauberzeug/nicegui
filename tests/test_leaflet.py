@@ -1,4 +1,7 @@
+import base64
 import time
+
+from fastapi import Response
 
 from nicegui import app, ui
 from nicegui.testing import Screen
@@ -49,16 +52,16 @@ def test_leaflet_unhide(screen: Screen):
     @app.get('/mock_tile/{z}/{x}/{y}')
     def mock_tile(z: int, x: int, y: int):
         requested_tiles.add((z, x, y))
+        return Response(base64.b64decode('R0lGODlhAQABAIAAAP///wAAACwAAAAAAQABAAACAkQBADs='))
 
     @ui.page('/')
     def page():
         with ui.card().classes('w-96 h-64') as card:
-            leaflet = ui.leaflet()
-            ui.run_javascript(f'L.tileLayer("/mock_tile/{{z}}/{{x}}/{{y}}").addTo(getElement({leaflet.id}).map)')
+            ui.leaflet().wms_layer('/mock_tile/{{z}}/{{x}}/{{y}}')
             card.visible = False
         ui.button('Show map card', on_click=lambda: card.set_visibility(True))
 
     screen.open('/')
     screen.click('Show map card')
-    screen.wait(1)
-    assert len(requested_tiles) == 4
+    screen.wait(0.5)
+    assert len(requested_tiles) == 12
