@@ -54,7 +54,7 @@ class AnyWidget(ValueElement, component='anywidget.js', dependencies=['lib/widge
             if self._state_lock is None:
                 # we're not handling a value change from the client, so we send an update to the client
                 self.run_method('update_trait', name, new)
-            elif self._state_lock.get(name, UNDEFINED) != new:
+            elif not _equal(self._state_lock.get(name, UNDEFINED), new):
                 # an observer changed a trait to a new value, so we update the lock and send an update to the client
                 self._state_lock[name] = new
                 self.run_method('update_trait', name, new)
@@ -84,3 +84,11 @@ def _get_attribute(obj: object, name: str) -> str:
         content = Path(content).read_text(encoding='utf8')
     assert isinstance(content, str), f'Attribute {name} is a Path but does not exist'
     return content
+
+
+def _equal(a: Any, b: Any) -> bool:
+    """Check if two values are equal, considering NaN as equal."""
+    if a == b:
+        return True
+    # could still be equal if both are NaN
+    return a != a and b != b  # pylint: disable=comparison-with-itself # noqa: PLR0124
