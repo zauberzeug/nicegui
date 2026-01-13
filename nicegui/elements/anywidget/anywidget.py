@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import importlib.util
 import inspect
+import math
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
@@ -90,5 +91,7 @@ def _equal(a: Any, b: Any) -> bool:
     """Check if two values are equal, considering NaN as equal."""
     if a == b:
         return True
-    # could still be equal if both are NaN
-    return a != a and b != b  # pylint: disable=comparison-with-itself # noqa: PLR0124
+    try:
+        return math.isnan(a) and math.isnan(b)
+    except TypeError:
+        return False
