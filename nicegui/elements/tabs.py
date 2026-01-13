@@ -23,12 +23,15 @@ class Tabs(ValueElement):
         It contains individual tabs.
 
         :param value: `ui.tab`, `ui.tab_panel`, or name of the tab to be initially selected
-        :param on_change: callback to be executed when the selected tab changes
+        :param on_change: callback to be executed when the selected tab changes, value is always the name as a string
         """
         super().__init__(tag='q-tabs', value=value, on_value_change=on_change)
 
     def _value_to_model_value(self, value: Any) -> Any:
         return value.props['name'] if isinstance(value, (Tab, TabPanel)) else value
+
+    def _value_to_event_value(self, value: Any) -> Any:
+        return self._value_to_model_value(value)
 
 
 class Tab(LabelElement, IconElement, DisableableElement):
@@ -71,7 +74,7 @@ class TabPanels(ValueElement):
 
         :param tabs: an optional `ui.tabs` element that controls this element
         :param value: `ui.tab`, `ui.tab_panel`, or name of the tab panel to be initially visible
-        :param on_change: callback to be executed when the visible tab panel changes
+        :param on_change: callback to be executed when the visible tab panel changes, value is always the name as a string
         :param animated: whether the tab panels should be animated (default: `True`)
         :param keep_alive: whether to use Vue's keep-alive component on the content (default: `True`)
         """
@@ -83,6 +86,9 @@ class TabPanels(ValueElement):
 
     def _value_to_model_value(self, value: Any) -> Any:
         return value.props['name'] if isinstance(value, (Tab, TabPanel)) else value
+
+    def _value_to_event_value(self, value: Any) -> Any:
+        return self._value_to_model_value(value)
 
 
 class TabPanel(DisableableElement, default_classes='nicegui-tab-panel'):
