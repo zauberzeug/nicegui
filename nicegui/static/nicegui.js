@@ -411,7 +411,7 @@ function createApp(elements, options) {
           await this.$nextTick();
           for (const [id, element] of Object.entries(msg)) {
             if (element?.update_method) {
-              getElement(id)[element.update_method]();
+              getElement(id)?.[element.update_method]();
             }
           }
         },
