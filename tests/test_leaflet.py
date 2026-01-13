@@ -1,10 +1,4 @@
 import time
-from base64 import b64decode
-from tempfile import NamedTemporaryFile
-
-import numpy as np
-from fastapi import Response
-from PIL import Image
 
 from nicegui import app, ui
 from nicegui.testing import Screen
@@ -50,25 +44,21 @@ def test_leaflet(screen: Screen):
 
 
 def test_leaflet_unhide(screen: Screen):
-    @app.get('/fakeimage')
-    def fake_image():
-        return Response(content=b64decode('R0lGODlhAQABAIAAAP///wAAACwAAAAAAQABAAACAkQBADs='), media_type='image/gif')
+    requested_tiles = set()
+
+    @app.get('/mock_tile/{z}/{x}/{y}')
+    def mock_tile(z: int, x: int, y: int):
+        requested_tiles.add((z, x, y))
 
     @ui.page('/')
     def page():
-        with ui.card().classes('w-full') as card:
-            myleaflet = ui.leaflet(center=(51.505, -0.09)).classes('h-screen')
-            ui.run_javascript(f"L.tileLayer('/fakeimage').addTo(getElement({myleaflet.id}).map);")
-            card.set_visibility(False)
+        with ui.card().classes('w-96 h-64') as card:
+            leaflet = ui.leaflet()
+            ui.run_javascript(f'L.tileLayer("/mock_tile/{{z}}/{{x}}/{{y}}").addTo(getElement({leaflet.id}).map)')
+            card.visible = False
         ui.button('Show map card', on_click=lambda: card.set_visibility(True))
-
-    def count_gray_pixels() -> int:
-        with NamedTemporaryFile(suffix='.png') as tmp_path:
-            screen.find_by_tag('body').screenshot(str(tmp_path.name))
-            img = Image.open(tmp_path.name)
-            return (np.array(img)[:, :, :3] == 0xdd).all(axis=2).sum()
 
     screen.open('/')
     screen.click('Show map card')
     screen.wait(1)
-    assert count_gray_pixels() < 10000
+    assert len(requested_tiles) == 4
