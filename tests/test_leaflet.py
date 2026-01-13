@@ -50,13 +50,13 @@ def test_leaflet_unhide(screen: Screen):
     requested_tiles = set()
 
     @app.get('/mock_tile/{z}/{x}/{y}')
-    def mock_tile(z: int, x: int, y: int):
+    def mock_tile(z: str, x: str, y: str) -> Response:
         requested_tiles.add((z, x, y))
         return Response(base64.b64decode('R0lGODlhAQABAIAAAP///wAAACwAAAAAAQABAAACAkQBADs='))
 
     @ui.page('/')
     def page():
-        with ui.card().classes('w-96 h-64') as card:
+        with ui.card().classes('w-full h-64') as card:
             ui.leaflet().wms_layer('/mock_tile/{{z}}/{{x}}/{{y}}')
             card.visible = False
         ui.button('Show map card', on_click=lambda: card.set_visibility(True))
@@ -64,4 +64,4 @@ def test_leaflet_unhide(screen: Screen):
     screen.open('/')
     screen.click('Show map card')
     screen.wait(0.5)
-    assert len(requested_tiles) == 12
+    assert len(requested_tiles) == 8
