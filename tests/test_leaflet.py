@@ -57,7 +57,7 @@ def test_leaflet_unhide(screen: Screen):
     @ui.page('/')
     def page():
         with ui.card().classes('w-full h-64') as card:
-            ui.leaflet().wms_layer('/mock_tile/{{z}}/{{x}}/{{y}}')
+            ui.leaflet().wms_layer(url_template='/mock_tile/{{z}}/{{x}}/{{y}}')
             card.visible = False
         ui.button('Show map card', on_click=lambda: card.set_visibility(True))
 
