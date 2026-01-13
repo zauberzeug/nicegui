@@ -50,21 +50,15 @@ def generate_class_doc(class_obj: type, part_title: str) -> None:
         ui.markdown('\n'.join(f'- `{ancestor.__name__}`' for ancestor in ancestors))
 
 
-def _get_doc(obj: object) -> str:
-    return getattr(obj, '__doc__', '') or ''
-
-
 def _render_section(class_obj: type, attributes: list[Attribute], *, method_section: bool) -> None:
     native_attributes = [attribute for attribute in attributes if attribute.base is class_obj]
-    inherited_attributes = [attribute for attribute in attributes if attribute.base is not class_obj]
     native_attributes_names = {attribute.name for attribute in native_attributes}
-    inherited_attributes_docstrings = {attribute.name: _get_doc(attribute.obj) for attribute in inherited_attributes}
     if native_attributes:
         with ui.column().classes('gap-2 w-full overflow-x-auto'):
             for native_attribute in native_attributes:
-                _render_attribute(native_attribute, method_section=method_section,
-                                  backup_docstring=inherited_attributes_docstrings.get(native_attribute.name))
+                _render_attribute(native_attribute, method_section=method_section)
 
+    inherited_attributes = [attribute for attribute in attributes if attribute.base is not class_obj]
     if inherited_attributes:
         with ui.expansion(f'Inherited {"methods" if method_section else "properties"}', icon='account_tree', value=True) \
                 .classes('w-full border border-gray-200 dark:border-gray-800 rounded-md') \
@@ -75,7 +69,7 @@ def _render_section(class_obj: type, attributes: list[Attribute], *, method_sect
                 _render_attribute(attribute, method_section=method_section)
 
 
-def _render_attribute(item: Attribute, *, method_section: bool, backup_docstring: str | None = None) -> None:
+def _render_attribute(item: Attribute, *, method_section: bool) -> None:
     if method_section:
         decorator = ''
         owner_attr = item.base.__dict__.get(item.name)
@@ -87,7 +81,7 @@ def _render_attribute(item: Attribute, *, method_section: bool, backup_docstring
             .classes('w-full overflow-x-auto')
     else:
         ui.markdown(f'**`{item.name}`**`{_generate_property_signature_description(item.obj)}`')
-    docstring = _get_doc(item.obj) or backup_docstring
+    docstring = inspect.getdoc(item.obj) or ''
     if item.obj is not None and docstring:
         _render_docstring(docstring).classes('ml-8')
 
