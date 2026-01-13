@@ -51,6 +51,8 @@ def nicegui_reset_globals():
 
     Client.instances.clear()
     Client.page_routes.clear()
+    Client.shared_head_html = ''
+    Client.shared_body_html = ''
     app.reset()
     binding.reset()
 

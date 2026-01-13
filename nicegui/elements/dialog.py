@@ -1,14 +1,18 @@
 import asyncio
 from typing import Any, Optional
 
+from ..defaults import DEFAULT_PROPS, resolve_defaults
 from ..element import Element
 from .mixins.value_element import ValueElement
 
 
 class Dialog(ValueElement, component='dialog.js'):
 
-    # DEPRECATED: top_level will default to True in NiceGUI 4.0
-    def __init__(self, *, value: bool = False, top_level: bool = False) -> None:
+    @resolve_defaults
+    def __init__(self, *,
+                 value: bool = DEFAULT_PROPS['model-value'] | False,
+                 top_level: bool = False,  # DEPRECATED: top_level will default to True in NiceGUI 4.0
+                 ) -> None:
         """Dialog
 
         Creates a dialog based on Quasar's `QDialog <https://quasar.dev/vue-components/dialog>`_ component.

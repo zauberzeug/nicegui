@@ -9,7 +9,7 @@ from urllib.parse import urlparse
 from starlette.datastructures import QueryParams
 from typing_extensions import Self
 
-from .. import background_tasks
+from .. import background_tasks, json
 from ..context import context
 from ..element import Element
 from ..elements.label import Label
@@ -212,7 +212,9 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
     def _scroll_to_fragment(self, fragment: str, *, behavior: str) -> None:
         run_javascript(f'''
             requestAnimationFrame(() => {{
-                document.querySelector('#{fragment}, a[name="{fragment}"]')?.scrollIntoView({{ behavior: "{behavior}" }});
+                const frag = {json.dumps(fragment)};
+                const el = document.getElementById(frag) || document.querySelector("a[name=" + JSON.stringify(frag) + "]");
+                el?.scrollIntoView({{ behavior: "{behavior}" }});
             }});
         ''')
 

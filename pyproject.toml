@@ -39,6 +39,8 @@ dependencies = [
 
 [project.optional-dependencies]
 # NOTE: These dependencies repeat in the dependency-groups section below.
+altair = ["altair>=6.0.0"]
+anywidget = ["anywidget>=0.9.21"]
 native = ["pywebview>=5.0.1,<7"]
 plotly = ["plotly>=5.13,<7.0"]
 matplotlib = ["matplotlib>=3.5.0,<4"]
@@ -48,6 +50,8 @@ redis = ["redis>=4.0.0"]
 [dependency-groups]
 dev = [
     # NOTE: These dependencies repeat in the project.optional-dependencies section above.
+    "altair>=6.0.0",  # extra: altair
+    "anywidget>=0.9.21",  # extra: anywidget
     "pywebview>=5.0.1,<7",  # extra: native
     "plotly>=5.13,<7.0",  # extra: plotly
     "matplotlib>=3.5.0,<4",  # extra: matplotlib
@@ -96,6 +100,7 @@ website = [
     "polars>=1.12.0,<2",
     "pyecharts>=2.0.4,<3",
     "slowapi>=0.1.9,<0.2.0",
+    "vega_datasets>=0.9.0,<0.10.0",
 ]
 
 [project.urls]
