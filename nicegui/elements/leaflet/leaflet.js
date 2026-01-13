@@ -138,6 +138,13 @@ export default {
       this.$emit("init");
       clearInterval(connectInterval);
     }, 100);
+    this.observer = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) this.run_map_method("invalidateSize");
+    });
+    this.observer.observe(this.$el);
+  },
+  unmounted() {
+    this.observer?.disconnect();
   },
   methods: {
     add_layer(layer, id) {
