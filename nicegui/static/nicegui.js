@@ -273,13 +273,6 @@ function ack() {
   window.ackedMessageId = window.nextMessageId;
 }
 
-async function loadDependencies(component, prefix, version) {
-  const { _, key, tag } = component;
-  if (key.endsWith(".vue")) return;
-  const importedComponent = await import(`${prefix}/_nicegui/${version}/components/${key}`);
-  app.component(tag, importedComponent.default);
-}
-
 function createRandomUUID() {
   try {
     return crypto.randomUUID();
@@ -383,8 +376,10 @@ function createApp(elements, options) {
         disconnect: () => {
           document.getElementById("popup").ariaHidden = false;
         },
-        load_component: async (msg) => {
-          await Promise.all(msg.components.map((c) => loadDependencies(c, options.prefix, options.version)));
+        load_js_components: async (msg) => {
+          const urls = msg.components.map((c) => `${options.prefix}/_nicegui/${options.version}/components/${c.key}`);
+          const imports = await Promise.all(urls.map((url) => import(url)));
+          msg.components.forEach((c, i) => app.component(c.tag, imports[i].default));
         },
         update: async (msg) => {
           for (const [id, element] of Object.entries(msg)) {

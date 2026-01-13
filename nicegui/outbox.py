@@ -7,7 +7,7 @@ from collections import deque
 from typing import TYPE_CHECKING, Any
 
 from . import background_tasks, core
-from .dependencies import Component
+from .dependencies import JsComponent
 
 if TYPE_CHECKING:
     from .client import Client
@@ -32,13 +32,6 @@ class Deleted:
 deleted = Deleted()
 
 
-def _component(maybe_element: Element | Deleted) -> Component | None:
-    """Try to get the component of the given element."""
-    if isinstance(maybe_element, Deleted) or not maybe_element.component:
-        return None
-    return maybe_element.component
-
-
 class Outbox:
 
     def __init__(self, client: Client) -> None:
@@ -48,6 +41,7 @@ class Outbox:
         self.message_history: deque[HistoryEntry] = deque()
         self.next_message_id: int = 0
 
+        self._loaded_components: set[str] = set()
         self._should_stop = False
         self._enqueue_event: asyncio.Event | None = None
 
@@ -113,12 +107,15 @@ class Outbox:
                         element_id: None if element is deleted else element._to_dict()  # type: ignore  # pylint: disable=protected-access
                         for element_id, element in self.updates.items()
                     }
-                    components_to_load = [
-                        c._to_dict() for element in self.updates.values()  # pylint: disable=protected-access
-                        if (c := _component(element)) and c and c.name not in client._loaded_components  # pylint: disable=protected-access
+                    js_components = [
+                        {'key': component.key, 'name': component.name, 'tag': component.tag}
+                        for element in self.updates.values()
+                        if not isinstance(element, Deleted)
+                        and isinstance((component := element.component), JsComponent)
+                        and component.name not in self._loaded_components
                     ]
-                    if components_to_load:
-                        coros.append(self._emit((client.id, 'load_component', {'components': components_to_load})))
+                    if js_components:
+                        coros.append(self._emit((client.id, 'load_js_components', {'components': js_components})))
                     coros.append(self._emit((client.id, 'update', data)))
                     self.updates.clear()
 
