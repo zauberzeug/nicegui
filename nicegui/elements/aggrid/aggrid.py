@@ -28,7 +28,7 @@ class AgGrid(Element, component='aggrid.js', esm={'nicegui-aggrid': 'dist'}, def
                  html_columns: list[int] = DEFAULT_PROP | [],
                  theme: Optional[Literal['quartz', 'balham', 'material', 'alpine']] = None,
                  auto_size_columns: bool = True,
-                 modules: list[str] = ['AllCommunityModule'],  # noqa: B006
+                 modules: list[Literal['AllCommunityModule', 'AllEnterpriseModule']] = ['AllCommunityModule'],  # noqa: B006
                  ) -> None:
         """AG Grid
 
@@ -41,7 +41,7 @@ class AgGrid(Element, component='aggrid.js', esm={'nicegui-aggrid': 'dist'}, def
         :param html_columns: list of columns that should be rendered as HTML (default: ``[]``)
         :param theme: AG Grid theme "quartz", "balham", "material", or "alpine" (default: ``options['theme']`` or "quartz")
         :param auto_size_columns: whether to automatically resize columns to fit the grid width (default: ``True``)
-        :param modules: list of AG Grid modules to load (default: ``['AllCommunityModule']``, can be ``['AllEnterpriseModule']`` if enterprise AG Grid is used)
+        :param modules: list of AG Grid modules to load (default: ``['AllCommunityModule']``, can be ``['AllEnterpriseModule']`` if AG Grid Enterprise is used)
         """
         super().__init__()
         self._props['options'] = {

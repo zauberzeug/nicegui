@@ -156,9 +156,7 @@ def register_esm(name: str, path: Path, *, max_time: float | None) -> None:
 
 
 def register_importmap_override(name: str, url: str) -> None:
-    """Register an importmap override.
-
-    NOTE: Override 'nicegui-aggrid' to use AG Grid Enterprise from a CDN."""
+    """Register an importmap override."""
     importmap_overrides[name] = url
 
 
@@ -213,6 +211,9 @@ def generate_resources(prefix: str, elements: Iterable[Element]) -> tuple[list[s
         imports[f'{esm_module.name}'] = f'{prefix}/_nicegui/{__version__}/esm/{key}/index.js'
         imports[f'{esm_module.name}/'] = f'{prefix}/_nicegui/{__version__}/esm/{key}/'
 
+    # update the importmap with the overrides
+    imports.update(importmap_overrides)
+
     # build the none-optimized component (i.e. the Vue component)
     for key, vue_component in vue_components.items():
         if key not in done_components:
@@ -236,6 +237,4 @@ def generate_resources(prefix: str, elements: Iterable[Element]) -> tuple[list[s
                 js_imports_urls.append(url)
                 done_components.add(js_component.key)
 
-    for name, override in importmap_overrides.items():
-        imports[name] = override
     return vue_html, vue_styles, vue_scripts, imports, js_imports, js_imports_urls
