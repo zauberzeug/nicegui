@@ -3,6 +3,7 @@ export default {
   data() {
     return {
       shouldScroll: true,
+      lastHeight: NaN,
     };
   },
   updated() {
@@ -11,9 +12,13 @@ export default {
     }
   },
   methods: {
-    onScroll() {
+    onScroll(info) {
       if (!this.$refs.qRef) return;
-      if (!this.$refs.qRef.$el.childNodes[0].clientHeight) return;
+      if (info.verticalContainerSize == 0 || info.horizontalContainerSize == 0) return;
+      if (info.verticalContainerSize != this.lastHeight) {
+        this.lastHeight = info.verticalContainerSize;
+        return;
+      }
       this.shouldScroll = this.$refs.qRef.getScroll().verticalPercentage == 1.0;
     },
   },
