@@ -45,6 +45,7 @@ class Element(Visibility):
     _default_props: ClassVar[dict[str, Any]] = {}
     _default_classes: ClassVar[list[str]] = []
     _default_style: ClassVar[dict[str, str]] = {}
+    _defaults: ClassVar[dict[str, Any]] = {}
 
     def __init__(self, tag: str | None = None, *, _client: Client | None = None) -> None:
         """Generic Element

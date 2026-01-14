@@ -33,6 +33,7 @@ __all__ = [
     'dark_mode',
     'date',
     'date_input',
+    'default',
     'dialog',
     'download',
     'drawer',
@@ -138,6 +139,7 @@ __all__ = [
 ]
 
 from .context import context
+from .defaults import default
 from .element import Element as element
 from .elements.aggrid import AgGrid as aggrid
 from .elements.altair import Altair as altair

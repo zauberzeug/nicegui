@@ -7,15 +7,17 @@ from fastapi.responses import PlainTextResponse
 from pygments.formatters import HtmlFormatter  # pylint: disable=no-name-in-module
 
 from .. import core
+from ..defaults import DEFAULTS, resolve_defaults
 from .mixins.content_element import ContentElement
 
 
 class Markdown(ContentElement, component='markdown.js', default_classes='nicegui-markdown'):
     # NOTE: The Mermaid ESM is already registered in mermaid.py.
 
+    @resolve_defaults
     def __init__(self,
                  content: str = '', *,
-                 extras: list[str] = ['fenced-code-blocks', 'tables'],  # noqa: B006
+                 extras: list[str] = DEFAULTS | ['fenced-code-blocks', 'tables'],
                  ) -> None:
         """Markdown Element
 
