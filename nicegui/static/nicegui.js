@@ -7,6 +7,24 @@ let mounted_app = undefined;
 
 const loaded_components = new Set();
 
+let clientStorage = {};
+
+function getClientStorageValue(clientStorageId, key) {
+  return clientStorage?.[clientStorageId]?.[key];
+}
+
+function setClientStorageValue(clientStorageId, key, value) {
+  if (!(clientStorageId in clientStorage)) {
+    clientStorage[clientStorageId] = {};
+  }
+  clientStorage[clientStorageId][key] = value;
+}
+
+function deleteClientStorage(clientStorageId) {
+  if (!clientStorageId) return;
+  delete clientStorage[clientStorageId];
+}
+
 function parseElements(raw_elements) {
   return JSON.parse(
     raw_elements
@@ -399,6 +417,7 @@ function createApp(elements, options) {
           await Promise.all(loadPromises);
 
           for (const [id, element] of Object.entries(msg)) {
+            if (id in this.elements) deleteClientStorage(this.elements[id].props?.["client-storage-id"]);
             if (element === null) {
               delete this.elements[id];
               continue;
