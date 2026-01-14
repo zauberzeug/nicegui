@@ -22,33 +22,39 @@ def test_with_strings(screen: Screen):
 
 
 def test_with_tab_objects(screen: Screen):
-    event_tabs = []
-    event_tab_panels = []
+    tab_events = []
+    tab_panel_events = []
 
     @ui.page('/')
     def page():
-        with ui.tabs(on_change=lambda e: event_tabs.append(e.value)) as tabs:
+        with ui.tabs(on_change=lambda e: tab_events.append(e.value)) as tabs:
             tab1 = ui.tab('One')
             tab2 = ui.tab('Two')
 
-        with ui.tab_panels(tabs, value=tab2, on_change=lambda e: event_tab_panels.append(e.value)) as tab_panels:
+        with ui.tab_panels(tabs, value=tab2, on_change=lambda e: tab_panel_events.append(e.value)) as tab_panels:
             with ui.tab_panel(tab1):
                 ui.label('First tab')
             with ui.tab_panel(tab2):
                 ui.label('Second tab')
 
-        ui.button('Change tab_panels to Two', on_click=lambda: tab_panels.set_value(tab2))
+        ui.button('Switch to Two', on_click=lambda: tab_panels.set_value(tab2))
 
     screen.open('/')
     screen.should_contain('One')
     screen.should_contain('Two')
     screen.should_contain('Second tab')
+    assert tab_events == ['Two']
+    assert tab_panel_events == []
+
     screen.click('One')
     screen.should_contain('First tab')
-    screen.click('Change tab_panels to Two')
+    assert tab_events == ['Two', 'One']
+    assert tab_panel_events == ['One']
+
+    screen.click('Switch to Two')
     screen.should_contain('Second tab')
-    assert event_tabs == ['Two', 'One', 'Two']
-    assert event_tab_panels == ['One', 'Two']
+    assert tab_events == ['Two', 'One', 'Two']
+    assert tab_panel_events == ['One', 'Two']
 
 
 def test_updating_offscreen_elements_with_update_method(screen: Screen):
