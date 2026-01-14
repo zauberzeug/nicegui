@@ -77,7 +77,7 @@ def test_dialog_in_menu(screen: Screen):
     @ui.page('/')
     def page():
         def create_dialog():
-            with ui.dialog(value=True, top_level=True), ui.card():
+            with ui.dialog(value=True), ui.card():
                 ui.label('Dialog content')
                 ui.button('Delete menu', on_click=menu.delete)
 

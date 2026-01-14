@@ -1,6 +1,7 @@
 import asyncio
 from typing import Any, Optional
 
+from ..context import context
 from ..defaults import DEFAULT_PROPS, resolve_defaults
 from ..element import Element
 from .mixins.value_element import ValueElement
@@ -9,10 +10,7 @@ from .mixins.value_element import ValueElement
 class Dialog(ValueElement, component='dialog.js'):
 
     @resolve_defaults
-    def __init__(self, *,
-                 value: bool = DEFAULT_PROPS['model-value'] | False,
-                 top_level: bool = False,  # DEPRECATED: top_level will default to True in NiceGUI 4.0
-                 ) -> None:
+    def __init__(self, *, value: bool = DEFAULT_PROPS['model-value'] | False) -> None:
         """Dialog
 
         Creates a dialog based on Quasar's `QDialog <https://quasar.dev/vue-components/dialog>`_ component.
@@ -23,22 +21,14 @@ class Dialog(ValueElement, component='dialog.js'):
         That means it is not removed when closed, but only hidden.
         You should either create it only once and then reuse it, or remove it with `.clear()` after dismissal.
 
-        *Since version 3.6.0*:
-        You can now create a dialog as a top level element by setting ``top_level=True``.
-        This will ensure that the dialog is always visible and not hidden when nested inside a hidden container.
-        The dialog will still be automatically deleted when the original context is deleted.
-        This behavior will be the default in NiceGUI 4.0.
-
         :param value: whether the dialog should be opened on creation (default: `False`)
-        :param top_level: whether the dialog is created as a top level element (default: `False`, *added in version 3.6.0*, will default to `True` in NiceGUI 4.0)
         """
-        super().__init__(value=value, on_value_change=None)
+        with context.client.layout:
+            super().__init__(value=value, on_value_change=None)
+        _DeletePropagationElement(self)
+
         self._result: Any = None
         self._submitted: Optional[asyncio.Event] = None
-
-        if top_level is True:
-            self.move(self.client.content)
-            _DeletePropagationElement(self)
 
     @property
     def submitted(self) -> asyncio.Event:
