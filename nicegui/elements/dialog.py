@@ -1,4 +1,5 @@
 import asyncio
+import weakref
 from typing import Any, Optional
 
 from ..context import context
@@ -25,7 +26,11 @@ class Dialog(ValueElement, component='dialog.js'):
         """
         with context.client.layout:
             super().__init__(value=value, on_value_change=None)
-        _DeletePropagationElement(self)
+
+        # create a canary element in the current context to trigger the deletion of the dialog when its parent is deleted
+        canary = Element()
+        canary.visible = False
+        weakref.finalize(canary, lambda: self.delete() if self._parent_slot and self._parent_slot() else None)
 
         self._result: Any = None
         self._submitted: Optional[asyncio.Event] = None
@@ -64,15 +69,3 @@ class Dialog(ValueElement, component='dialog.js'):
         if not self.value:
             self._result = None
             self.submitted.set()
-
-
-class _DeletePropagationElement(Element):
-
-    def __init__(self, element_to_delete: Element) -> None:
-        super().__init__()
-        self.visible = False
-        self._element_to_delete = element_to_delete
-
-    def _handle_delete(self) -> None:
-        self._element_to_delete.delete()
-        return super()._handle_delete()
