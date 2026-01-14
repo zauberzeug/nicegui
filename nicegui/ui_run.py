@@ -100,7 +100,7 @@ def run(root: Optional[Callable] = None, *,
     :param cache_control_directives: cache control directives for internal static files (default: `'public, max-age=31536000, immutable, stale-while-revalidate=31536000'`)
     :param gzip_middleware_factory: GZipMiddleware factory function (e.g. ``lambda app: GZipMiddleware(app, minimum_size=500, compresslevel=9)``, defaults to Starlette's ``GZipMiddleware``, can be ``None`` to disable, *added in version 3.5.0*)
     :param fastapi_docs: enable FastAPI's automatic documentation with Swagger UI, ReDoc, and OpenAPI JSON (bool or dictionary as described `here <https://fastapi.tiangolo.com/tutorial/metadata/>`_, default: `False`, *updated in version 2.9.0*)
-    :param show: automatically open the UI in a browser tab (default: `True`) or a specific path (e.g. ``'/path/to/page'``, *since version 3.6.0*)
+    :param show: automatically open the UI in a browser tab (default: `True`, opens "/", *since version 3.6.0*: you can pass a specific path like "/path/to/page")
     :param on_air: tech preview: `allows temporary remote access <https://nicegui.io/documentation/section_configuration_deployment#nicegui_on_air>`_ if set to `True` (default: disabled)
     :param native: open the UI in a native window of size 800x600 (default: `False`, deactivates `show`, automatically finds an open port)
     :param window_size: open the UI in a native window with the provided size (e.g. `(1024, 786)`, default: `None`, also activates `native`)
