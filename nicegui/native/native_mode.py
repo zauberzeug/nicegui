@@ -28,6 +28,7 @@ except ModuleNotFoundError:
 def _open_window(
     host: str, port: int, title: str, width: int, height: int, fullscreen: bool, frameless: bool,
     method_queue: mp.Queue, response_queue: mp.Queue,
+    window_args: dict[str, Any], settings: dict[str, Any], start_args: dict[str, Any],
 ) -> None:
     while not helpers.is_port_open(host, port):
         time.sleep(0.1)
@@ -39,15 +40,15 @@ def _open_window(
         'height': height,
         'fullscreen': fullscreen,
         'frameless': frameless,
-        **core.app.native.window_args,
+        **window_args,
     }
-    webview.settings.update(**core.app.native.settings)
+    webview.settings.update(**settings)
     window = webview.create_window(**window_kwargs)
     assert window is not None
     closed = Event()
     window.events.closed += closed.set
     _start_window_method_executor(window, method_queue, response_queue, closed)
-    webview.start(**core.app.native.start_args)
+    webview.start(**start_args)
 
 
 def _start_window_method_executor(window: webview.Window,
@@ -95,7 +96,10 @@ def _start_window_method_executor(window: webview.Window,
     Thread(target=window_method_executor).start()
 
 
-def activate(host: str, port: int, title: str, width: int, height: int, fullscreen: bool, frameless: bool) -> None:
+def activate(
+    host: str, port: int, title: str, width: int, height: int, fullscreen: bool, frameless: bool,
+    window_args: dict[str, Any], settings: dict[str, Any], start_args: dict[str, Any],
+) -> None:
     """Activate native mode."""
     def check_shutdown() -> None:
         while process.is_alive():
@@ -113,7 +117,9 @@ def activate(host: str, port: int, title: str, width: int, height: int, fullscre
 
     mp.freeze_support()
     native.create_queues()
-    args = host, port, title, width, height, fullscreen, frameless, native.method_queue, native.response_queue
+    args = (host, port, title, width, height, fullscreen, frameless,
+            native.method_queue, native.response_queue,
+            window_args, settings, start_args)
     process = mp.Process(target=_open_window, args=args, daemon=True)
     process.start()
 

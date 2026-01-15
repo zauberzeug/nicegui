@@ -229,7 +229,8 @@ def run(root: Optional[Callable] = None, *,
         port = port or native_module.find_open_port()
         width, height = window_size or (800, 600)
         native_host = '127.0.0.1' if host == '0.0.0.0' else host
-        native_module.activate(native_host, port, title, width, height, fullscreen, frameless)
+        native_module.activate(native_host, port, title, width, height, fullscreen, frameless,
+                               core.app.native.window_args, core.app.native.settings, core.app.native.start_args)
     else:
         port = port or 8080
         host = host or '0.0.0.0'
