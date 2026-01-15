@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import importlib.util
 import inspect
+import math
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
@@ -12,6 +13,8 @@ if importlib.util.find_spec('anywidget'):
     optional_features.register('anywidget')
     if TYPE_CHECKING:
         import anywidget
+
+UNDEFINED = object()
 
 
 class AnyWidget(ValueElement, component='anywidget.js', dependencies=['lib/widget.js']):
@@ -43,16 +46,25 @@ class AnyWidget(ValueElement, component='anywidget.js', dependencies=['lib/widge
         super().__init__(value=widget.get_state(self._traits), throttle=throttle)
         self._props['esm_content'] = _get_attribute(widget, '_esm')
         self._props['css_content'] = _get_attribute(widget, '_css')
-        self._run_update_traits = True
+        self._state_lock: dict | None = None  # only used while handling a value change from the client
 
         def observe_change(change) -> None:
-            if self._run_update_traits:
-                self.run_method('update_trait', change['name'], change['new'])
+            """Observe a trait change and update the frontend (but avoid echoing same values back to the client)."""
+            name = change['name']
+            new = change['new']
+            if self._state_lock is None:
+                # we're not handling a value change from the client, so we send an update to the client
+                self.run_method('update_trait', name, new)
+            elif not _equal(self._state_lock.get(name, UNDEFINED), new):
+                # an observer changed a trait to a new value, so we update the lock and send an update to the client
+                self._state_lock[name] = new
+                self.run_method('update_trait', name, new)
+
         widget.observe(observe_change, self._traits)
 
     def _handle_value_change(self, value: Any) -> None:
         """Update the widget's state when the value changes from frontend"""
-        self._run_update_traits = False
+        self._state_lock = value
         try:
             super()._handle_value_change(value)
             state = self._widget.get_state(self._traits)
@@ -60,7 +72,7 @@ class AnyWidget(ValueElement, component='anywidget.js', dependencies=['lib/widge
                 if state[key] != value_:
                     setattr(self._widget, key, value_)
         finally:
-            self._run_update_traits = True
+            self._state_lock = None
 
 
 def _get_attribute(obj: object, name: str) -> str:
@@ -73,3 +85,13 @@ def _get_attribute(obj: object, name: str) -> str:
         content = Path(content).read_text(encoding='utf8')
     assert isinstance(content, str), f'Attribute {name} is a Path but does not exist'
     return content
+
+
+def _equal(a: Any, b: Any) -> bool:
+    """Check if two values are equal, considering NaN as equal."""
+    if a == b:
+        return True
+    try:
+        return math.isnan(a) and math.isnan(b)
+    except TypeError:
+        return False

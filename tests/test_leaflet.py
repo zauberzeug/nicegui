@@ -1,6 +1,9 @@
+import base64
 import time
 
-from nicegui import ui
+from fastapi import Response
+
+from nicegui import app, ui
 from nicegui.testing import Screen
 
 
@@ -41,3 +44,24 @@ def test_leaflet(screen: Screen):
 
     screen.click('London')
     screen.should_contain('Center: 51.505, -0.090')
+
+
+def test_leaflet_unhide(screen: Screen):
+    requested_tiles = set()
+
+    @app.get('/mock_tile/{z}/{x}/{y}')
+    def mock_tile(z: str, x: str, y: str) -> Response:
+        requested_tiles.add((z, x, y))
+        return Response(base64.b64decode('R0lGODlhAQABAIAAAP///wAAACwAAAAAAQABAAACAkQBADs='))
+
+    @ui.page('/')
+    def page():
+        with ui.card().classes('w-full h-64') as card:
+            ui.leaflet().wms_layer(url_template='/mock_tile/{{z}}/{{x}}/{{y}}')
+            card.visible = False
+        ui.button('Show map card', on_click=lambda: card.set_visibility(True))
+
+    screen.open('/')
+    screen.click('Show map card')
+    screen.wait(0.5)
+    assert len(requested_tiles) == 8
