@@ -271,5 +271,11 @@ class AgGrid(Element, component='aggrid.js', esm={'nicegui-aggrid': 'dist'}, def
 
     @staticmethod
     def set_esm_module(import_name: str) -> None:
-        """Set the ESM module associated with all AG Grid elements."""
+        """Override the ESM module URL for all AG Grid elements.
+
+        This sets a global import map override, affecting all pages and clients.
+        Use this to switch to AG Grid Enterprise or a self-hosted bundle.
+
+        :param import_name: the ESM module URL (e.g., "https://cdn.jsdelivr.net/npm/ag-grid-enterprise@34.2.0/+esm")
+        """
         register_importmap_override('nicegui-aggrid', import_name)
