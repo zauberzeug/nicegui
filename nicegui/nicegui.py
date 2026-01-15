@@ -179,6 +179,8 @@ async def _exception_handler_404(request: Request, exception: Exception) -> Resp
 
 @app.exception_handler(Exception)
 async def _exception_handler_500(request: Request, exception: Exception) -> Response:
+    if not request.scope.get('nicegui_page_path'):
+        raise exception  # Simply return "Internal Server Error", just like FastAPI would do
     log.exception(exception)
     with Client(page(''), request=request) as client:
         error_content(500, exception)
