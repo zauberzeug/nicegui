@@ -155,9 +155,9 @@ def register_esm(name: str, path: Path, *, max_time: float | None) -> None:
     esm_modules[compute_key(path, max_time=max_time)] = EsmModule(name=name, path=path)
 
 
-def register_importmap_override(name: str, url: str) -> None:
+def register_importmap_override(import_name: str, url: str) -> None:
     """Register an importmap override."""
-    importmap_overrides[name] = url
+    importmap_overrides[import_name] = url
 
 
 @functools.cache
