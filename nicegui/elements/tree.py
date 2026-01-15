@@ -3,21 +3,23 @@ from typing import Any, Literal, Optional
 
 from typing_extensions import Self
 
+from ..defaults import DEFAULT_PROP, resolve_defaults
 from ..events import GenericEventArguments, Handler, ValueChangeEventArguments, handle_event
 from .mixins.filter_element import FilterElement
 
 
 class Tree(FilterElement):
 
+    @resolve_defaults
     def __init__(self,
                  nodes: list[dict], *,
-                 node_key: str = 'id',
-                 label_key: str = 'label',
-                 children_key: str = 'children',
+                 node_key: str = DEFAULT_PROP | 'id',
+                 label_key: str = DEFAULT_PROP | 'label',
+                 children_key: str = DEFAULT_PROP | 'children',
                  on_select: Optional[Handler[ValueChangeEventArguments]] = None,
                  on_expand: Optional[Handler[ValueChangeEventArguments]] = None,
                  on_tick: Optional[Handler[ValueChangeEventArguments]] = None,
-                 tick_strategy: Optional[Literal['leaf', 'leaf-filtered', 'strict']] = None,
+                 tick_strategy: Optional[Literal['leaf', 'leaf-filtered', 'strict']] = DEFAULT_PROP | None,
                  ) -> None:
         """Tree
 

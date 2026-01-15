@@ -37,23 +37,4 @@ def tooltip_with_other_content():
             ui.image('https://picsum.photos/id/377/640/360').classes('w-64')
 
 
-@doc.demo('Tooltip on HTML and Markdown', '''
-    Some elements like `ui.html` and `ui.markdown` do not support nested elements.
-    In this case, you can nest such elements inside a container element with a tooltip.
-''')
-def tooltip_on_html_and_markdown():
-    with ui.element().tooltip('...with a tooltip!'):
-        ui.html('This is <u>HTML</u>...', sanitize=False)
-
-
-@doc.demo('Tooltip for the upload element', '''
-    Components like `ui.upload` do not support tooltips directly.
-    You can wrap them in a `ui.element` to add tooltips and props.
-''')
-def simple_upload_with_tooltip_demo():
-    with ui.element():
-        ui.upload(on_upload=lambda e: ui.notify(f'Uploaded {e.file.name}')).classes('w-72')
-        ui.tooltip('Upload files').props('delay=1000 transition-show=rotate')
-
-
 doc.reference(ui.tooltip)

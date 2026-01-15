@@ -193,7 +193,7 @@ async def _on_handshake(sid: str, data: dict[str, Any]) -> bool:
     if data.get('old_tab_id'):
         app.storage.copy_tab(data['old_tab_id'], data['tab_id'])
     client.tab_id = data['tab_id']
-    if sid[:5].startswith('test-'):
+    if sid.startswith('test-'):
         client.environ = {'asgi.scope': {'description': 'test client', 'type': 'test'}}
     else:
         client.environ = sio.get_environ(sid)

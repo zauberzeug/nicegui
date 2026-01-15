@@ -3,6 +3,8 @@ from typing import Literal
 _optional_features: set[str] = set()
 
 FEATURE = Literal[
+    'altair',
+    'anywidget',
     'highcharts',
     'matplotlib',
     'pandas',

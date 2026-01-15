@@ -2,6 +2,7 @@ import re
 from colorsys import rgb_to_yiq
 from typing import Any, Optional
 
+from ..defaults import DEFAULT_PROP, DEFAULT_PROPS, resolve_defaults
 from ..events import Handler, ValueChangeEventArguments
 from .button import Button as button
 from .color_picker import ColorPicker as color_picker
@@ -16,10 +17,11 @@ HEX_COLOR_PATTERN_3 = re.compile(r'^#([0-9a-fA-F]{3})$')
 class ColorInput(LabelElement, ValueElement, DisableableElement):
     LOOPBACK = False
 
+    @resolve_defaults
     def __init__(self,
-                 label: Optional[str] = None, *,
-                 placeholder: Optional[str] = None,
-                 value: str = '',
+                 label: Optional[str] = DEFAULT_PROP | None, *,
+                 placeholder: Optional[str] = DEFAULT_PROP | None,
+                 value: str = DEFAULT_PROPS['model-value'] | '',
                  on_change: Optional[Handler[ValueChangeEventArguments]] = None,
                  preview: bool = False,
                  ) -> None:
@@ -35,8 +37,7 @@ class ColorInput(LabelElement, ValueElement, DisableableElement):
         """
         super().__init__(tag='q-input', label=label, value=value, on_value_change=on_change)
         self._props['for'] = self.html_id
-        if placeholder is not None:
-            self._props['placeholder'] = placeholder
+        self._props.set_optional('placeholder', placeholder)
 
         with self.add_slot('append'):
             self.picker = color_picker(on_pick=lambda e: self.set_value(e.color))

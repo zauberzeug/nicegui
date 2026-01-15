@@ -71,3 +71,25 @@ def test_dialog_scroll_behavior(screen: Screen):
     screen.type(Keys.ESCAPE)
     screen.wait(0.2)
     assert screen.selenium.execute_script('return window.scrollY') == position
+
+
+def test_dialog_in_menu(screen: Screen):
+    @ui.page('/')
+    def page():
+        def create_dialog():
+            with ui.dialog(value=True), ui.card():
+                ui.label('Dialog content')
+                ui.button('Delete menu', on_click=menu.delete)
+
+        with ui.button('Open menu'):
+            with ui.menu() as menu:
+                ui.menu_item('Create dialog', on_click=create_dialog)
+
+    screen.open('/')
+    screen.click('Open menu')
+    screen.click('Create dialog')
+    screen.should_contain('Dialog content')  # even though the dialog is nested inside a hidden menu
+
+    screen.click('Delete menu')
+    screen.wait(0.5)
+    screen.should_not_contain('Dialog content')  # it has been deleted together with the menu

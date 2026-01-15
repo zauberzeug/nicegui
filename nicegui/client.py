@@ -40,6 +40,8 @@ HTML_ESCAPE_TABLE = str.maketrans({
     '$': '&#36;',
 })
 
+HEADWIND_CONTENT = (Path(__file__).parent / 'static' / 'headwind.css').read_text().strip()
+
 
 class ClientConnectionTimeout(TimeoutError):
     def __init__(self, client: Client) -> None:
@@ -179,6 +181,7 @@ class Client:
                 'translations': translations.get(self.page.resolve_language(), translations['en-US']),
                 'prefix': prefix,
                 'tailwind': core.app.config.tailwind,
+                'headwind_css': HEADWIND_CONTENT if core.app.config.tailwind else '',
                 'prod_js': core.app.config.prod_js,
                 'socket_io_js_query_params': socket_io_js_query_params,
                 'socket_io_js_extra_headers': core.app.config.socket_io_js_extra_headers,
@@ -301,6 +304,7 @@ class Client:
         document_id = self._socket_to_document_id.pop(socket_id)
         self._cancel_delete_task(document_id)
         self._num_connections[document_id] -= 1
+        tab_id_to_close = self.tab_id
         self.tab_id = None
 
         for t in self.disconnect_handlers:
@@ -313,6 +317,7 @@ class Client:
             if self._num_connections[document_id] == 0:
                 self._num_connections.pop(document_id)
                 self._delete_tasks.pop(document_id)
+                await core.app.storage.close_tab(tab_id_to_close)
                 self.delete()
         self._delete_tasks[document_id] = \
             background_tasks.create(delete_content(), name=f'delete content {document_id}')
@@ -385,6 +390,8 @@ class Client:
         self.outbox.stop()
         del Client.instances[self.id]
         self._deleted = True
+        self._connected.set()  # for terminating connected() waits
+        self._connected.clear()
 
     def check_existence(self) -> None:
         """Check if the client still exists and print a warning if it doesn't."""

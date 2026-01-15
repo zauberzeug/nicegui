@@ -1,6 +1,7 @@
 from typing import Any, Callable, Union
 from urllib.parse import urlparse
 
+from .. import json
 from ..client import Client
 from ..context import context
 from ..element import Element
@@ -90,7 +91,7 @@ class History:
 
         :param url: relative or absolute URL
         """
-        run_javascript(f'history.pushState({{}}, "", "{url}");')
+        run_javascript(f'history.pushState({{}}, "", {json.dumps(url)});')
 
     def replace(self, url: str) -> None:
         """Replace the current URL in the browser history.
@@ -101,7 +102,7 @@ class History:
 
         :param url: relative or absolute URL
         """
-        run_javascript(f'history.replaceState({{}}, "", "{url}");')
+        run_javascript(f'history.replaceState({{}}, "", {json.dumps(url)});')
 
 
 navigate = Navigate()

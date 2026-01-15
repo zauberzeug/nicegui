@@ -15,7 +15,6 @@ repos:
       - id: trailing-whitespace
         exclude: &exclusions |
           (?x)^(
-            nicegui/static/es-module-shims\.js|
             nicegui/static/fonts/.*|
             nicegui/static/fonts\.css|
             nicegui/static/lang/.*|
@@ -41,7 +40,6 @@ repos:
           (?x)^(
             .*/dist/.*|
             .*/package-lock.json|
-            nicegui/static/es-module-shims\.js|
             nicegui/static/vue\..*|
             nicegui/static/quasar\..*|
             nicegui/static/sass\..*|
