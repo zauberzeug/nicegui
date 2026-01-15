@@ -1,4 +1,5 @@
 import importlib.util
+import weakref
 from typing import TYPE_CHECKING, Literal, Optional, cast
 
 from typing_extensions import Self
@@ -41,6 +42,14 @@ class AgGrid(Element, component='aggrid.js', esm={'nicegui-aggrid': 'dist'}, def
         :param auto_size_columns: whether to automatically resize columns to fit the grid width (default: ``True``)
         """
         super().__init__()
+        if 'secondary-id' not in self._props:
+            with self.client.layout:
+                secondary_aggrid = SecondaryAgGrid(options,
+                                                   html_columns=html_columns,
+                                                   theme=theme,
+                                                   auto_size_columns=auto_size_columns)
+                self._props['secondary-id'] = secondary_aggrid.id
+                weakref.finalize(self, secondary_aggrid.delete)
         self._props['options'] = {
             'theme': theme or 'quartz',
             **({'autoSizeStrategy': {'type': 'fitGridWidth'}} if auto_size_columns else {}),
@@ -249,7 +258,7 @@ class AgGrid(Element, component='aggrid.js', esm={'nicegui-aggrid': 'dist'}, def
         }
         result = await self.client.run_javascript(f'''
             const rowData = [];
-            getElement({self.id}).api.{API_METHODS[method]}(node => rowData.push(node.data));
+            (getElement({self.id})?.api || getElement({self._props['secondary-id']})?.api).{API_METHODS[method]}(node => rowData.push(node.data));
             return rowData;
         ''', timeout=timeout)
         return cast(list[dict], result)
@@ -264,3 +273,7 @@ class AgGrid(Element, component='aggrid.js', esm={'nicegui-aggrid': 'dist'}, def
         """
         client_row_data = await self.get_client_data()
         self.options['rowData'] = client_row_data
+
+
+class SecondaryAgGrid(AgGrid, default_props='secondary-id=""'):
+    pass

@@ -4,6 +4,7 @@ import { convertDynamicProperties } from "../../static/utils/dynamic_properties.
 export default {
   template: "<div></div>",
   mounted() {
+    if (this.secondaryId) this.$nextTick(() => getElement(this.secondaryId).api.destroy());
     this.update_grid();
 
     const updateTheme = () =>
@@ -112,5 +113,6 @@ export default {
   props: {
     options: Object,
     htmlColumns: Array,
+    secondaryId: String,
   },
 };
