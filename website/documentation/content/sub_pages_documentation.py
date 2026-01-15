@@ -323,7 +323,7 @@ def nested_sub_pages_demo():
 
 @doc.demo('Error handling', '''
 While `ui.sub_pages` will block display of the underlying page on critical errors in sync sub page builders,
-the underlying client is still functional and the `__error__` event is emitted for both async and sync builders.
+the underlying client is still functional and the exception handler is called for both async and sync builders.
 
 Note: you may want to refer to the [error handling](section_action_events#error_handling) section for more context.
 ''')

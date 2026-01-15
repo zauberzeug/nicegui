@@ -126,7 +126,12 @@ There are 3 error handling means in NiceGUI:
   - Handler may use UI elements with the original client at `ui.context.client`.
   - Common sources: `ui.button(on_click=...)`, `ui.timer`, exceptions in async `@ui.page` functions after `await ui.context.client.connected()`
 
-An exception **always goes through (1)**. If it is in the UI-context then it mutually-exclusively goes through **either (2) or (3) but never both**.
+When an exception occurs:
+
+- All will be logged via `app.on_exception` (1)
+- UI-context exceptions go to _either_, but never both:
+  - `@app.on_page_exception` (2) if raised before client connection
+  - `ui.on_exception` (3) if raised after client connection
 ''')
 
 
