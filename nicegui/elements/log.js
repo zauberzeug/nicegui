@@ -7,13 +7,12 @@ export default {
     };
   },
   updated() {
-    if (this.$refs.qRef && this.shouldScroll) {
+    if (this.shouldScroll) {
       this.$nextTick(() => this.$refs.qRef.setScrollPosition("vertical", Number.MAX_SAFE_INTEGER));
     }
   },
   methods: {
     onScroll(info) {
-      if (!this.$refs.qRef) return;
       if (info.verticalContainerSize === 0 || info.horizontalContainerSize === 0) return;
       if (info.verticalContainerSize !== this.lastHeight) {
         this.lastHeight = info.verticalContainerSize;
