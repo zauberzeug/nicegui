@@ -30,7 +30,9 @@ class Dialog(ValueElement, component='dialog.js'):
         # create a canary element in the current context to trigger the deletion of the dialog when its parent is deleted
         canary = Element()
         canary.visible = False
-        weakref.finalize(canary, lambda: self.delete() if self._parent_slot and self._parent_slot() else None)
+        weakref.finalize(
+            canary, lambda: self.delete() if not self.is_deleted and self._parent_slot and self._parent_slot() else None
+        )
 
         self._result: Any = None
         self._submitted: Optional[asyncio.Event] = None
