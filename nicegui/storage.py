@@ -164,6 +164,11 @@ class Storage:
                 self._tabs[tab_id] = ObservableDict()
             self._tabs[tab_id].update(self._tabs[old_tab_id])
 
+    async def close_tab(self, tab_id: Optional[str]) -> None:
+        """Close the tab storage. (For internal use only.)"""
+        if tab_id and isinstance(tab := self._tabs.get(tab_id), PersistentDict):
+            await tab.close()
+
     def clear(self) -> None:
         """Clears all storage."""
         self._general.clear()

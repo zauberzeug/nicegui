@@ -274,8 +274,9 @@ class App(FastAPI):
         """
         @self.get(url_path.rstrip('/') + '/{filename:path}')  # NOTE: prevent double slashes in route pattern
         def read_item(request: Request, filename: str, nicegui_chunk_size: int = 8192) -> Response:
-            filepath = Path(local_directory) / filename
-            if not filepath.is_file():
+            local_dir = Path(local_directory).resolve()
+            filepath = (local_dir / filename).resolve()
+            if not filepath.is_relative_to(local_dir) or not filepath.is_file():
                 raise HTTPException(status_code=404, detail='Not Found')
             return get_range_response(filepath, request, chunk_size=nicegui_chunk_size)
 

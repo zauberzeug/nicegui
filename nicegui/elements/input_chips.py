@@ -1,5 +1,6 @@
 from typing import Any, Literal, Optional, Union
 
+from ..defaults import DEFAULT_PROP, DEFAULT_PROPS, resolve_defaults
 from ..events import GenericEventArguments, Handler, ValueChangeEventArguments
 from .mixins.disableable_element import DisableableElement
 from .mixins.label_element import LabelElement
@@ -8,13 +9,14 @@ from .mixins.validation_element import ValidationDict, ValidationElement, Valida
 
 class InputChips(LabelElement, ValidationElement, DisableableElement):
 
+    @resolve_defaults
     def __init__(self,
-                 label: Optional[str] = None,
+                 label: Optional[str] = DEFAULT_PROP | None,
                  *,
-                 value: Optional[list[str]] = None,
+                 value: Optional[list[str]] = DEFAULT_PROPS['model-value'] | None,
                  on_change: Optional[Handler[ValueChangeEventArguments]] = None,
-                 new_value_mode: Literal['add', 'add-unique', 'toggle'] = 'toggle',
-                 clearable: bool = False,
+                 new_value_mode: Literal['add', 'add-unique', 'toggle'] = DEFAULT_PROP | 'toggle',
+                 clearable: bool = DEFAULT_PROP | False,
                  validation: Optional[Union[ValidationFunction, ValidationDict]] = None,
                  ) -> None:
         """Input Chips
