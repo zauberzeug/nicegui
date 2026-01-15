@@ -159,12 +159,12 @@ def test_exception_after_connected(screen: Screen):
 def test_api_exception(screen: Screen):
     @app.get('/')
     def api_exception():
-        raise RuntimeError('some exception in api')
+        raise RuntimeError('some exception in a GET endpoint')
 
     screen.allowed_js_errors.append('/ - Failed to load resource')
     screen.open('/')
     screen.should_contain('Internal Server Error')
-    screen.assert_py_logger('ERROR', 'some exception in api')
+    screen.assert_py_logger('ERROR', 'some exception in a GET endpoint')
 
 
 def test_page_with_args(screen: Screen):
