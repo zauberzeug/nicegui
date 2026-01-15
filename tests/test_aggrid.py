@@ -1,12 +1,15 @@
+import inspect
 from datetime import datetime, timedelta, timezone
+from pathlib import Path
 
 import pandas as pd
 import polars as pl
 import pytest
+from fastapi import Response
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.keys import Keys
 
-from nicegui import ui
+from nicegui import app, ui
 from nicegui.testing import Screen
 
 
@@ -207,6 +210,35 @@ def test_api_method_after_creation(screen: Screen):
     screen.open('/')
     screen.click('Create')
     assert screen.find_by_class('ag-row-selected')
+
+
+def test_set_esm_module(screen: Screen):
+    visits = []
+
+    @app.get('/my-aggrid.js')
+    def my_aggrid():
+        visits.append(True)
+        ui_aggrid_path = inspect.getfile(ui.aggrid)
+        return Response((Path(ui_aggrid_path).parent / 'dist' / 'index.js').read_text(), media_type='application/javascript')
+
+    ui.aggrid.set_esm_module('/my-aggrid.js')
+
+    @ui.page('/')
+    def page():
+        myaggrid = ui.aggrid({
+            'columnDefs': [{'field': 'name'}, {'field': 'age'}],
+            'rowData': [{'name': 'Alice', 'age': 18}],
+        }, modules=['ClientSideRowModelModule', 'ColumnAutoSizeModule', 'EventApiModule'])
+
+        async def check_clipboard_module():
+            ui.notify(await ui.run_javascript(f'getElement({myaggrid.html_id}).api.isModuleRegistered("ClipboardModule")'))
+
+        ui.button('Check if ClipboardModule is registered', on_click=check_clipboard_module)
+
+    screen.open('/')
+    assert visits
+    screen.click('Check if ClipboardModule is registered')
+    screen.should_contain('False')
 
 
 @pytest.mark.parametrize('df_type', ['pandas', 'polars'])
