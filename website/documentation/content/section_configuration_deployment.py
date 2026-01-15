@@ -58,38 +58,37 @@ def native_mode_demo():
     ui.button('enlarge', on_click=lambda: ui.notify('window will be set to 1000x700 in native mode'))
 
 
-# Currently, options passed via app.native are not used if they are set behind a main guard
-# See discussion at: https://github.com/zauberzeug/nicegui/pull/4627
 doc.text('', '''
     Note that the native app is run in a separate
     [process](https://docs.python.org/3/library/multiprocessing.html#multiprocessing.Process).
-    Therefore any configuration changes from code run under a
-    [main guard](https://docs.python.org/3/library/__main__.html#idiomatic-usage) is ignored by the native app.
-    The following examples show the difference between a working and a non-working configuration.
+    Prior to NiceGUI 3.6.0, configuration changes from code run under a
+    [main guard](https://docs.python.org/3/library/__main__.html#idiomatic-usage) were ignored by the native app.
+
+    *Updated in version 3.6.0: Code run under a main guard now correctly applies the configuration changes.*
 ''')
 
 
 @doc.ui
 def native_main_guard():
     with ui.row().classes('w-full items-stretch'):
-        with python_window('good_example.py', classes='max-w-lg w-full'):
+        with python_window('example_a.py', classes='max-w-lg w-full'):
             ui.markdown('''
                 ```python
                 from nicegui import app, ui
 
-                app.native.window_args['resizable'] = False  # works
+                app.native.window_args['resizable'] = False
 
                 if __name__ == '__main__':
                     ui.run(native=True, reload=False)
                 ```
             ''')
-        with python_window('bad_example.py', classes='max-w-lg w-full'):
+        with python_window('example_b.py', classes='max-w-lg w-full'):
             ui.markdown('''
                 ```python
                 from nicegui import app, ui
 
                 if __name__ == '__main__':
-                    app.native.window_args['resizable'] = False  # ignored
+                    app.native.window_args['resizable'] = False
 
                     ui.run(native=True, reload=False)
                 ```
@@ -361,23 +360,6 @@ doc.text('', '''
     sys.stdout = open('logs.txt', 'w')
     ```
     See <https://github.com/zauberzeug/nicegui/issues/681> for more information.
-''')
-
-doc.text('', '''
-    **macOS Packaging**
-
-    Add the following snippet before anything else in your main app's file, to prevent new processes from being spawned in an endless loop:
-
-    ```python
-    # macOS packaging support
-    from multiprocessing import freeze_support  # noqa
-    freeze_support()  # noqa
-
-    # all your other imports and code
-    ```
-
-    The `# noqa` comment instructs Pylance or autopep8 to not apply any PEP rule on those two lines, guaranteeing they remain on top of anything else.
-    This is key to prevent process spawning.
 ''')
 
 doc.text('NiceGUI On Air', '''
