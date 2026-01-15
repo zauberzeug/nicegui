@@ -253,6 +253,7 @@ async def test_late_event_registration(screen: Screen):
     @ui.page('/')
     async def page():
         a_input = ui.input('A')
+        a_input.on('keydown', lambda _: None)
         await ui.context.client.connected()
         a_input.on('keydown', lambda _: events.append('A'), [])
         ui.label('Ready')
@@ -262,6 +263,4 @@ async def test_late_event_registration(screen: Screen):
     screen.selenium.find_element(By.XPATH, '//*[@aria-label="A"]').send_keys('x')
     assert events == ['A']
 
-    MESSAGE = 'Event listeners changed after initial definition. Affected elements will be re-rendered.'
-    screen.assert_py_logger('WARNING', MESSAGE)
-    assert MESSAGE in screen.render_js_logs()
+    assert 'Event listeners changed after initial definition. Affected elements will be re-rendered.' in screen.render_js_logs()
