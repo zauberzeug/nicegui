@@ -29,15 +29,14 @@ class BackgroundColorElement(Element):
     def __init__(self, *, background_color: Optional[str], **kwargs: Any) -> None:
         super().__init__(**kwargs)
         self.background_color = background_color
-        self._handle_background_color_change(background_color, _skip_clear=True)
+        self._handle_background_color_change(background_color)
 
     def set_background_color(self, background_color: Optional[str]) -> None:
         """Sets the background color"""
         self.background_color = background_color
 
-    def _handle_background_color_change(self, background_color: Optional[str], _skip_clear: bool = False) -> None:
-        if not _skip_clear:
-            self._clear_background_color()
+    def _handle_background_color_change(self, background_color: Optional[str]) -> None:
+        self._clear_background_color()
         if background_color in QUASAR_COLORS:
             self._props[self.BACKGROUND_COLOR_PROP] = background_color
         elif background_color in TAILWIND_COLORS:
@@ -127,15 +126,14 @@ class TextColorElement(Element):
     def __init__(self, *, text_color: Optional[str], **kwargs: Any) -> None:
         super().__init__(**kwargs)
         self.text_color = text_color
-        self._handle_text_color_change(text_color, _skip_clear=True)
+        self._handle_text_color_change(text_color)
 
     def set_text_color(self, text_color: Optional[str]) -> None:
         """Sets the text color"""
         self.text_color = text_color
 
-    def _handle_text_color_change(self, text_color: Optional[str], _skip_clear: bool = False) -> None:
-        if not _skip_clear:
-            self._clear_text_color()
+    def _handle_text_color_change(self, text_color: Optional[str]) -> None:
+        self._clear_text_color()
         if text_color in QUASAR_COLORS:
             self._props[self.TEXT_COLOR_PROP] = text_color
         elif text_color in TAILWIND_COLORS:
