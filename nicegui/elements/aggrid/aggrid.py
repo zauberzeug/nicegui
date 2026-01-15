@@ -68,7 +68,8 @@ class AgGrid(Element, component='aggrid.js', esm={'nicegui-aggrid': 'dist'}, def
                     html_columns: list[int] = [],  # noqa: B006
                     theme: Optional[Literal['quartz', 'balham', 'material', 'alpine']] = None,
                     auto_size_columns: bool = True,
-                    options: dict = {}) -> Self:  # noqa: B006
+                    options: dict = {},  # noqa: B006
+                    modules: Union[Literal['community', 'enterprise'], list[str]] = 'community',) -> Self:
         """Create an AG Grid from a Pandas DataFrame.
 
         Note:
@@ -82,6 +83,7 @@ class AgGrid(Element, component='aggrid.js', esm={'nicegui-aggrid': 'dist'}, def
         :param theme: AG Grid theme "quartz", "balham", "material", or "alpine" (default: ``options['theme']`` or "quartz")
         :param auto_size_columns: whether to automatically resize columns to fit the grid width (default: ``True``)
         :param options: dictionary of additional AG Grid options
+        :param modules: either "community", "enterprise", or a list of AG Grid modules from `AG Grid Modules <https://www.ag-grid.com/javascript-data-grid/modules/>`_ (default: "community")
         :return: AG Grid element
         """
         import pandas as pd  # pylint: disable=import-outside-toplevel
@@ -107,6 +109,7 @@ class AgGrid(Element, component='aggrid.js', esm={'nicegui-aggrid': 'dist'}, def
             'suppressFieldDotNotation': True,
             **options,
             'theme': theme or options.get('theme', 'quartz'),
+            'modules': modules,
         }, html_columns=html_columns, theme=theme, auto_size_columns=auto_size_columns)
 
     @classmethod
@@ -115,7 +118,8 @@ class AgGrid(Element, component='aggrid.js', esm={'nicegui-aggrid': 'dist'}, def
                     html_columns: list[int] = [],  # noqa: B006
                     theme: Optional[Literal['quartz', 'balham', 'material', 'alpine']] = None,
                     auto_size_columns: bool = True,
-                    options: dict = {}) -> Self:  # noqa: B006
+                    options: dict = {},  # noqa: B006
+                    modules: Union[Literal['community', 'enterprise'], list[str]] = 'community',) -> Self:
         """Create an AG Grid from a Polars DataFrame.
 
         If the DataFrame contains non-UTF-8 datatypes, they will be converted to strings.
@@ -128,6 +132,7 @@ class AgGrid(Element, component='aggrid.js', esm={'nicegui-aggrid': 'dist'}, def
         :param theme: AG Grid theme "quartz", "balham", "material", or "alpine" (default: ``options['theme']`` or "quartz")
         :param auto_size_columns: whether to automatically resize columns to fit the grid width (default: ``True``)
         :param options: dictionary of additional AG Grid options
+        :param modules: either "community", "enterprise", or a list of AG Grid modules from `AG Grid Modules <https://www.ag-grid.com/javascript-data-grid/modules/>`_ (default: "community")
         :return: AG Grid element
         """
         return cls({
@@ -136,6 +141,7 @@ class AgGrid(Element, component='aggrid.js', esm={'nicegui-aggrid': 'dist'}, def
             'suppressFieldDotNotation': True,
             **options,
             'theme': theme or options.get('theme', 'quartz'),
+            'modules': modules,
         }, html_columns=html_columns, theme=theme, auto_size_columns=auto_size_columns)
 
     @property
