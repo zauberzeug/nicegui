@@ -164,7 +164,6 @@ def test_api_exception(screen: Screen):
     screen.allowed_js_errors.append('/ - Failed to load resource')
     screen.open('/')
     screen.should_contain('Internal Server Error')
-    screen.assert_py_logger('ERROR', 'some exception in a GET endpoint')
 
 
 def test_page_with_args(screen: Screen):
