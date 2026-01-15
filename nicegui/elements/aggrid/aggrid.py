@@ -49,7 +49,8 @@ class AgGrid(Element, component='aggrid.js', esm={'nicegui-aggrid': 'dist'}, def
                                                    theme=theme,
                                                    auto_size_columns=auto_size_columns)
                 self._props['secondary-id'] = secondary_aggrid.id
-                weakref.finalize(self, secondary_aggrid.delete)
+                weakref.finalize(self, lambda: secondary_aggrid.delete() if not secondary_aggrid.is_deleted
+                                 and secondary_aggrid._parent_slot and secondary_aggrid._parent_slot() else None)  # pylint: disable=protected-access
         self._props['options'] = {
             'theme': theme or 'quartz',
             **({'autoSizeStrategy': {'type': 'fitGridWidth'}} if auto_size_columns else {}),
