@@ -18,7 +18,6 @@ from . import background_tasks, binding, core, helpers, json, storage
 from .awaitable_response import AwaitableResponse
 from .dependencies import generate_resources
 from .element import Element
-from .events import GenericEventArguments, handle_event
 from .favicon import get_favicon_url
 from .javascript_request import JavaScriptRequest
 from .logging import log
@@ -82,6 +81,7 @@ class Client:
         self._deleted = False
         self._socket_to_document_id: dict[str, str] = {}
         self.tab_id: str | None = None
+        self._exception_handlers: list[Callable[..., Any]] = []
 
         self.page = page
         self.outbox = Outbox(self)
@@ -283,6 +283,13 @@ class Client:
         """
         self.delete_handlers.append(handler)
 
+    def on_exception(self, handler: Callable) -> None:
+        """Add a callback to be invoked when non-critical exceptions occur in the client's UI context.
+
+        The callback has an optional parameter of `Exception`.
+        """
+        self._exception_handlers.append(handler)
+
     def handle_handshake(self, socket_id: str, document_id: str, next_message_id: int | None) -> None:
         """Cancel pending disconnect task and invoke connect handlers."""
         self._waiting_for_connection.clear()
@@ -373,15 +380,12 @@ class Client:
         """Remove all elements from the client."""
         self.remove_elements(self.elements.values())
 
-    def _emit_error(self, error: Exception, *, sender: Element | None = None) -> None:
-        """Emit an error event to be handled by callers of `ui.on_exception(...)`."""
-        if sender is None:
-            sender = self.content
-        target_type = helpers.event_type_to_camel_case('__error__')
-        for listener in self.content._event_listeners.values():  # pylint: disable=protected-access
-            if listener.type == target_type:
-                event_args = GenericEventArguments(sender=sender, client=self, args=error)
-                handle_event(listener.handler, event_args)
+    def handle_exception(self, exception: Exception) -> None:
+        """Handle a non-critical exception to be handled by callers of `ui.on_exception(...)`."""
+        for handler in self._exception_handlers:
+            result = handler() if not inspect.signature(handler).parameters else handler(exception)
+            if helpers.is_coroutine_function(handler):
+                background_tasks.create(result, name=f'UI exception {handler.__name__}')
 
     def delete(self) -> None:
         """Delete a client and all its elements.
