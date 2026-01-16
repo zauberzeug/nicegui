@@ -150,7 +150,6 @@ function throttle(callback, time, leading, trailing, id) {
     }
   }
 }
-
 function renderRecursively(elements, id, propsContext) {
   const element = elements[id];
   if (element === undefined) {
@@ -360,12 +359,13 @@ function createApp(elements, options) {
             return function (...args) {
               const msg = args[0];
               if (typeof msg === "string" && msg.length > MAX_WEBSOCKET_MESSAGE_SIZE) {
-                logAndEmit("error", `Payload size ${msg.length} exceeds the maximum allowed limit.`);
+                const errorMessage = `Payload size ${msg.length} exceeds the maximum allowed limit.`;
+                console.error(errorMessage);
+                args[0] = `42["log",{"level":"error","message":"${errorMessage}"}]`;
                 if (window.tooLongMessageTimerId) clearTimeout(window.tooLongMessageTimerId);
                 const popup = document.getElementById("too_long_message_popup");
                 popup.ariaHidden = false;
                 window.tooLongMessageTimerId = setTimeout(() => (popup.ariaHidden = true), 5000);
-                return;
               }
               return originalFunction.call(this, ...args);
             };
