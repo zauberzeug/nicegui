@@ -398,19 +398,16 @@ function createApp(elements, options) {
             .map(([_, element]) => loadDependencies(element, options.prefix, options.version));
           await Promise.all(loadPromises);
 
-          let needAwaitNextTick = false;
-
+          let eventListenersChanged = false;
           for (const [id, element] of Object.entries(msg)) {
             if (element === null) continue;
-
             const oldListenerIds = new Set((this.elements[id]?.events || []).map((ev) => ev.listener_id));
             if (element.events?.some((e) => !oldListenerIds.has(e.listener_id))) {
               delete this.elements[id];
-              needAwaitNextTick = true;
+              eventListenersChanged = true;
             }
           }
-
-          if (needAwaitNextTick) {
+          if (eventListenersChanged) {
             console.warn("Event listeners changed after initial definition. Affected elements will be re-rendered.");
             await this.$nextTick();
           }
