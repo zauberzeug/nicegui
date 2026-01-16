@@ -1,10 +1,10 @@
 from itertools import accumulate, chain, repeat
 from typing import Literal, Optional, get_args
 
-from nicegui.defaults import DEFAULT_PROP, resolve_defaults
-from nicegui.elements.mixins.disableable_element import DisableableElement
-from nicegui.elements.mixins.value_element import ValueElement
-from nicegui.events import GenericEventArguments, Handler, ValueChangeEventArguments
+from ...defaults import DEFAULT_PROP, resolve_defaults
+from ...elements.mixins.disableable_element import DisableableElement
+from ...elements.mixins.value_element import ValueElement
+from ...events import GenericEventArguments, Handler, ValueChangeEventArguments
 
 SUPPORTED_LANGUAGES = Literal[
     'Angular Template',

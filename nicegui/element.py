@@ -516,6 +516,9 @@ class Element(Visibility):
 
         This method can be overridden in subclasses to perform cleanup tasks.
         """
+        for slot in self.slots.values():
+            slot.children.clear()
+        self._event_listeners.clear()
 
     @property
     def is_deleted(self) -> bool:

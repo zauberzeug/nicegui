@@ -1,10 +1,11 @@
-import AgGrid from "nicegui-aggrid";
+import * as AgGrid from "nicegui-aggrid";
 import { convertDynamicProperties } from "../../static/utils/dynamic_properties.js";
 
 export default {
   template: "<div></div>",
   mounted() {
     if (this.secondaryId) this.$nextTick(() => getElement(this.secondaryId).api.destroy());
+    AgGrid.ModuleRegistry.registerModules(this.modules.map((moduleName) => AgGrid[moduleName]));
     this.update_grid();
 
     const updateTheme = () =>
@@ -14,6 +15,7 @@ export default {
     updateTheme();
   },
   unmounted() {
+    this.api?.destroy();
     this.themeObserver.disconnect();
   },
   methods: {
@@ -21,7 +23,12 @@ export default {
       this.$el.textContent = "";
       this.gridOptions = {
         ...this.options,
-        theme: AgGrid.themes[this.options.theme].withPart(AgGrid.colorSchemeVariable),
+        theme: {
+          quartz: AgGrid.themeQuartz,
+          balham: AgGrid.themeBalham,
+          material: AgGrid.themeMaterial,
+          alpine: AgGrid.themeAlpine,
+        }[this.options.theme].withPart(AgGrid.colorSchemeVariable),
       };
 
       for (const column of this.htmlColumns) {
@@ -64,6 +71,7 @@ export default {
           this.handle_event("gridReady", params);
         }
       };
+      this.api?.destroy();
       this.api = AgGrid.createGrid(this.$el, this.gridOptions);
       this.api.addGlobalListener(this.handle_event);
     },
@@ -114,5 +122,6 @@ export default {
     options: Object,
     htmlColumns: Array,
     secondaryId: String,
+    modules: Array,
   },
 };

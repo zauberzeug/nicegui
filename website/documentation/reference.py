@@ -52,6 +52,7 @@ def generate_class_doc(class_obj: type, part_title: str) -> None:
 
 def _render_section(class_obj: type, attributes: list[Attribute], *, method_section: bool) -> None:
     native_attributes = [attribute for attribute in attributes if attribute.base is class_obj]
+    native_attributes_names = {attribute.name for attribute in native_attributes}
     if native_attributes:
         with ui.column().classes('gap-2 w-full overflow-x-auto'):
             for native_attribute in native_attributes:
@@ -63,6 +64,8 @@ def _render_section(class_obj: type, attributes: list[Attribute], *, method_sect
                 .classes('w-full border border-gray-200 dark:border-gray-800 rounded-md') \
                 .props('header-class=text-gray-500'):
             for attribute in inherited_attributes:
+                if attribute.name in native_attributes_names:
+                    continue
                 _render_attribute(attribute, method_section=method_section)
 
 
@@ -78,7 +81,7 @@ def _render_attribute(item: Attribute, *, method_section: bool) -> None:
             .classes('w-full overflow-x-auto')
     else:
         ui.markdown(f'**`{item.name}`**`{_generate_property_signature_description(item.obj)}`')
-    docstring = getattr(item.obj, '__doc__', None)
+    docstring = inspect.getdoc(item.obj) or ''
     if item.obj is not None and docstring:
         _render_docstring(docstring).classes('ml-8')
 
