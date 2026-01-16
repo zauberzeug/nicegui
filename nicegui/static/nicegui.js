@@ -151,7 +151,7 @@ function throttle(callback, time, leading, trailing, id) {
   }
 }
 
-function renderRecursively(elements, id) {
+function renderRecursively(elements, id, propsContext) {
   const element = elements[id];
   if (element === undefined) {
     return;
@@ -172,7 +172,7 @@ function renderRecursively(elements, id) {
     if (key.startsWith(":")) {
       try {
         try {
-          props[key.substring(1)] = new Function(`return (${value})`)();
+          props[key.substring(1)] = new Function("props", `return (${value})`)(propsContext);
         } catch (e) {
           props[key.substring(1)] = eval(value);
         }
@@ -206,6 +206,7 @@ function renderRecursively(elements, id) {
 
     let handler;
     if (event.js_handler) {
+      const props = propsContext; // make `props` accessible from inside the event handler
       handler = eval(event.js_handler);
     } else {
       handler = emit;
@@ -240,7 +241,7 @@ function renderRecursively(elements, id) {
           )
         );
       }
-      const children = data.ids.map((id) => renderRecursively(elements, id));
+      const children = data.ids.map((id) => renderRecursively(elements, id, props || propsContext));
       if (name === "default" && element.text !== null) {
         children.unshift(element.text);
       }
@@ -436,7 +437,7 @@ function createApp(elements, options) {
           await this.$nextTick();
           for (const [id, element] of Object.entries(msg)) {
             if (element?.update_method) {
-              getElement(id)[element.update_method]();
+              getElement(id)?.[element.update_method]();
             }
           }
         },

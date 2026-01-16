@@ -34,6 +34,9 @@
     <script type="importmap">
       {"imports": {{ imports | safe }}}
     </script>
+    <script>
+      addStyle = (c) => document.head.append(Object.assign(document.createElement("style"), { textContent: c }));
+    </script>
     {{ head_html | safe }}
     <!-- prevent Prettier from removing this line -->
     {% for url in js_imports_urls %}

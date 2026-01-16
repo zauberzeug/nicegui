@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from ..defaults import DEFAULT_PROP, DEFAULT_PROPS, resolve_defaults
 from ..events import Handler, ValueChangeEventArguments
 from .button import Button as button
 from .date import Date as date
@@ -12,11 +13,12 @@ from .mixins.value_element import ValueElement
 class DateInput(LabelElement, ValueElement, DisableableElement):
     LOOPBACK = False
 
+    @resolve_defaults
     def __init__(self,
-                 label: str | None = None, *,
+                 label: str | None = DEFAULT_PROP | None, *,
                  range_input: bool = False,
-                 placeholder: str | None = None,
-                 value: str = '',
+                 placeholder: str | None = DEFAULT_PROP | None,
+                 value: str = DEFAULT_PROPS['model-value'] | '',
                  on_change: Handler[ValueChangeEventArguments] | None = None,
                  ) -> None:
         """Date Input
@@ -34,8 +36,7 @@ class DateInput(LabelElement, ValueElement, DisableableElement):
         self._range_input = range_input
         super().__init__(tag='q-input', label=label, value=value, on_value_change=on_change)
         self._props['for'] = self.html_id
-        if placeholder is not None:
-            self._props['placeholder'] = placeholder
+        self._props.set_optional('placeholder', placeholder)
 
         with self.add_slot('append'):
             with button(icon='edit_calendar', color=None).props('flat round').classes('cursor-pointer') as self.button:

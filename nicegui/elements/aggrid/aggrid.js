@@ -13,6 +13,7 @@ export default {
     updateTheme();
   },
   unmounted() {
+    this.api?.destroy();
     this.themeObserver.disconnect();
   },
   methods: {
@@ -23,7 +24,7 @@ export default {
         theme: AgGrid.themes[this.options.theme].withPart(AgGrid.colorSchemeVariable),
       };
 
-      for (const column of this.html_columns) {
+      for (const column of this.htmlColumns) {
         if (this.gridOptions.columnDefs[column].cellRenderer === undefined) {
           this.gridOptions.columnDefs[column].cellRenderer = (params) => (params.value ? params.value : "");
         }
@@ -63,6 +64,7 @@ export default {
           this.handle_event("gridReady", params);
         }
       };
+      this.api?.destroy();
       this.api = AgGrid.createGrid(this.$el, this.gridOptions);
       this.api.addGlobalListener(this.handle_event);
     },
@@ -111,6 +113,6 @@ export default {
   },
   props: {
     options: Object,
-    html_columns: Array,
+    htmlColumns: Array,
   },
 };

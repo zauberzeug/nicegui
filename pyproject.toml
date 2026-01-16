@@ -38,20 +38,25 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-native = ["pywebview>=5.0.1,<6"]
+# NOTE: These dependencies repeat in the dependency-groups section below.
+altair = ["altair>=6.0.0"]
+anywidget = ["anywidget>=0.9.21"]
+native = ["pywebview>=5.0.1,<7"]
 plotly = ["plotly>=5.13,<7.0"]
 matplotlib = ["matplotlib>=3.5.0,<4"]
 highcharts = ["nicegui-highcharts>=2.0.2,<3"]
 redis = ["redis>=4.0.0"]
 
-[project.urls]
-Repository = "https://github.com/zauberzeug/nicegui"
-
-[project.scripts]
-nicegui-pack = "nicegui.scripts.pack:main"
-
 [dependency-groups]
 dev = [
+    # NOTE: These dependencies repeat in the project.optional-dependencies section above.
+    "altair>=6.0.0",  # extra: altair
+    "anywidget>=0.9.21",  # extra: anywidget
+    "pywebview>=5.0.1,<7",  # extra: native
+    "plotly>=5.13,<7.0",  # extra: plotly
+    "matplotlib>=3.5.0,<4",  # extra: matplotlib
+    "nicegui-highcharts>=2.0.2,<3",  # extra: highcharts
+    "redis>=4.0.0",  # extra: redis
     {include-group = "types"},
     {include-group = "website"},
     "autopep8>=1.5.7,<3.0.0",
@@ -85,6 +90,7 @@ types = [
     "types-requests>=2.32.4",
 ]
 website = [
+    "dnspython>=2.4.0,<3",
     "html-sanitizer>=2.6.0,<3",
     "isort>=6.0.0,<7.0.0",
     "latex2mathml>=3.78.1,<4.0.0",
@@ -94,7 +100,14 @@ website = [
     "polars>=1.12.0,<2",
     "pyecharts>=2.0.4,<3",
     "slowapi>=0.1.9,<0.2.0",
+    "vega_datasets>=0.9.0,<0.10.0",
 ]
+
+[project.urls]
+Repository = "https://github.com/zauberzeug/nicegui"
+
+[project.scripts]
+nicegui-pack = "nicegui.scripts.pack:main"
 
 [build-system]
 requires = [
@@ -136,7 +149,6 @@ module = [
     "pyecharts.*",
     "scipy.*",
     "socketio.*",
-    "webview.*", # can be removed with next pywebview release
 ]
 ignore_missing_imports = true
 

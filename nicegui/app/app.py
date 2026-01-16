@@ -238,7 +238,7 @@ class App(FastAPI):
         :param local_file: local file to serve as static content
         :param url_path: string that starts with a slash "/" and identifies the path at which the file should be served (default: None -> auto-generated URL path)
         :param single_use: whether to remove the route after the file has been downloaded once (default: False)
-        :param strict: whether to raise a ``ValueError`` if the file does not exist (default: False, *added in version 2.12.0*)
+        :param strict: whether to raise a ``FileNotFoundError`` if the file does not exist (default: True, *added in version 2.12.0*)
         :param max_cache_age: value for max-age set in Cache-Control header (*added in version 2.8.0*)
         :return: encoded URL which can be used to access the file
         """
@@ -274,8 +274,9 @@ class App(FastAPI):
         """
         @self.get(url_path.rstrip('/') + '/{filename:path}')  # NOTE: prevent double slashes in route pattern
         def read_item(request: Request, filename: str, nicegui_chunk_size: int = 8192) -> Response:
-            filepath = Path(local_directory) / filename
-            if not filepath.is_file():
+            local_dir = Path(local_directory).resolve()
+            filepath = (local_dir / filename).resolve()
+            if not filepath.is_relative_to(local_dir) or not filepath.is_file():
                 raise HTTPException(status_code=404, detail='Not Found')
             return get_range_response(filepath, request, chunk_size=nicegui_chunk_size)
 
@@ -295,7 +296,7 @@ class App(FastAPI):
         :param local_file: local file to serve as media content
         :param url_path: string that starts with a slash "/" and identifies the path at which the file should be served (default: None -> auto-generated URL path)
         :param single_use: whether to remove the route after the media file has been downloaded once (default: False)
-        :param strict: whether to raise a ``ValueError`` if the file does not exist (default: False, *added in version 2.12.0*)
+        :param strict: whether to raise a ``FileNotFoundError`` if the file does not exist (default: True, *added in version 2.12.0*)
         :return: encoded URL which can be used to access the file
         """
         file = Path(local_file).resolve()
