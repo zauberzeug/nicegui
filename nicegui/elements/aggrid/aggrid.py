@@ -105,8 +105,7 @@ class AgGrid(Element, component='aggrid.js', esm={'nicegui-aggrid': 'dist'}, def
             'suppressFieldDotNotation': True,
             **options,
             'theme': theme or options.get('theme', 'quartz'),
-            'modules': modules,
-        }, html_columns=html_columns, theme=theme, auto_size_columns=auto_size_columns)
+        }, html_columns=html_columns, theme=theme, auto_size_columns=auto_size_columns, modules=modules)
 
     @classmethod
     def from_polars(cls,
@@ -138,8 +137,7 @@ class AgGrid(Element, component='aggrid.js', esm={'nicegui-aggrid': 'dist'}, def
             'suppressFieldDotNotation': True,
             **options,
             'theme': theme or options.get('theme', 'quartz'),
-            'modules': modules,
-        }, html_columns=html_columns, theme=theme, auto_size_columns=auto_size_columns)
+        }, html_columns=html_columns, theme=theme, auto_size_columns=auto_size_columns, modules=modules)
 
     @property
     def options(self) -> dict:
