@@ -7,7 +7,7 @@ import uuid
 from collections import defaultdict
 from collections.abc import Awaitable, Iterable
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Callable, ClassVar
+from typing import TYPE_CHECKING, Any, Callable, ClassVar, cast
 
 from fastapi import Request
 from fastapi.responses import Response
@@ -383,9 +383,15 @@ class Client:
     def handle_exception(self, exception: Exception) -> None:
         """Handle a non-critical exception to be handled by callers of `ui.on_exception(...)`."""
         for handler in self._exception_handlers:
-            result = handler() if not inspect.signature(handler).parameters else handler(exception)
+            if helpers.expects_arguments(handler):
+                result = cast(Callable[[Exception], Any], handler)(exception)
+            else:
+                result = cast(Callable[[], Any], handler)()
             if helpers.is_coroutine_function(handler):
-                background_tasks.create(result, name=f'UI exception {handler.__name__}')
+                async def wait_for_result(result: Any = result) -> None:
+                    with self.layout:
+                        await result
+                background_tasks.create(wait_for_result(), name=f'UI exception {handler.__name__}')
 
     def delete(self) -> None:
         """Delete a client and all its elements.
