@@ -108,30 +108,30 @@ doc.intro(clipboard_documentation)
 doc.intro(event_documentation)
 
 doc.text('Error handling', '''
-There are 3 error handling means in NiceGUI:
+    There are 3 error handling means in NiceGUI:
 
-1. [`app.on_exception`](#lifecycle_events): Global exception handler
-  - Works for all exceptions in the NiceGUI app.
-  - Applied app-wide.
-  - Handler has no UI context (cannot use `ui.*`).
-  - Common sources: `app.timer`, `background_tasks.create`, `run.io_bound`, `run.cpu_bound`.
-2. [`@app.on_page_exception`](#custom_error_page): Custom error page for critical exceptions
-  - Works for UI-context exceptions raised **before** the Python-side client is ready.
-  - Applied app-wide.
-  - Handler may use UI elements but in a new client.
-  - Common sources: sync `@ui.page` functions, exceptions in async `@ui.page` functions before `await ui.context.client.connected()`.
-3. [`ui.on_exception`](#ui_on_exception): Page exception handler for non-critical exceptions
-  - Works for UI-context exceptions raised **after** the Python-side client is ready.
-  - Applied per-page.
-  - Handler may use UI elements with the original client at `ui.context.client`.
-  - Common sources: `ui.button(on_click=...)`, `ui.timer`, exceptions in async `@ui.page` functions after `await ui.context.client.connected()`
+    1. [`app.on_exception`](#lifecycle_events): Global exception handler
+        - Works for all exceptions in the NiceGUI app.
+        - Applied app-wide.
+        - Handler has no UI context (cannot use `ui.*`).
+        - Common sources: `app.timer`, `background_tasks.create`, `run.io_bound`, `run.cpu_bound`.
+    2. [`@app.on_page_exception`](#custom_error_page): Custom error page for critical exceptions
+        - Works for UI-context exceptions raised **before** the Python-side client is ready.
+        - Applied app-wide.
+        - Handler may use UI elements but in a new client.
+        - Common sources: sync `@ui.page` functions, exceptions in async `@ui.page` functions before `await ui.context.client.connected()`.
+    3. [`ui.on_exception`](#ui_on_exception): Page exception handler for non-critical exceptions
+        - Works for UI-context exceptions raised **after** the Python-side client is ready.
+        - Applied per-page.
+        - Handler may use UI elements with the original client at `ui.context.client`.
+        - Common sources: `ui.button(on_click=...)`, `ui.timer`, exceptions in async `@ui.page` functions after `await ui.context.client.connected()`
 
-When an exception occurs:
+    When an exception occurs:
 
-- All will be logged via `app.on_exception` (1)
-- UI-context exceptions go to _either_, but never both:
-  - `@app.on_page_exception` (2) if raised before client connection
-  - `ui.on_exception` (3) if raised after client connection
+    - All will be logged via `app.on_exception` (1)
+    - UI-context exceptions go to _either_, but never both:
+        - `@app.on_page_exception` (2) if raised before client connection
+        - `ui.on_exception` (3) if raised after client connection
 ''')
 
 
@@ -211,11 +211,12 @@ def error_page_demo():
 
 @doc.auto_execute
 @doc.demo('ui.on_exception', '''
-    You can listen to the `ui.on_exception` event on the client side to handle errors that occur after the HTML response has been sent to the client.
+    You can register callback functions using `ui.on_exception` to handle errors
+    that occur after the HTML response has been sent to the client.
     This allows you to show a notification or dialog with the error details.
     The following example shows how to create a dialog that displays the error details when an error occurs.
 
-    *Added in version 3.5.0*
+    *Added in version 3.6.0*
 ''')
 def error_event_demo():
     import asyncio

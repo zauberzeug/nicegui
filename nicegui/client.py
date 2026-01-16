@@ -81,7 +81,7 @@ class Client:
         self._deleted = False
         self._socket_to_document_id: dict[str, str] = {}
         self.tab_id: str | None = None
-        self._exception_handlers: list[Callable[..., Any]] = []
+        self._exception_handlers: list[Callable[[Exception], Any] | Callable[[], Any]] = []
 
         self.page = page
         self.outbox = Outbox(self)
@@ -283,7 +283,7 @@ class Client:
         """
         self.delete_handlers.append(handler)
 
-    def on_exception(self, handler: Callable) -> None:
+    def on_exception(self, handler: Callable[[Exception], Any] | Callable[[], Any]) -> None:
         """Add a callback to be invoked when non-critical exceptions occur in the client's UI context.
 
         The callback has an optional parameter of `Exception`.
