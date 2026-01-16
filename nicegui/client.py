@@ -383,13 +383,14 @@ class Client:
     def handle_exception(self, exception: Exception) -> None:
         """Handle a non-critical exception to be handled by callers of `ui.on_exception(...)`."""
         for handler in self._exception_handlers:
-            if helpers.expects_arguments(handler):
-                result = cast(Callable[[Exception], Any], handler)(exception)
-            else:
-                result = cast(Callable[[], Any], handler)()
+            with self.content:
+                if helpers.expects_arguments(handler):
+                    result = cast(Callable[[Exception], Any], handler)(exception)
+                else:
+                    result = cast(Callable[[], Any], handler)()
             if helpers.is_coroutine_function(handler):
                 async def wait_for_result(result: Any = result) -> None:
-                    with self.layout:
+                    with self.content:
                         await result
                 background_tasks.create(wait_for_result(), name=f'UI exception {handler.__name__}')
 
