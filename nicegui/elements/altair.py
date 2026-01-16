@@ -14,7 +14,7 @@ if importlib.util.find_spec('altair'):
 
 class Altair(AnyWidget):
 
-    def __init__(self, chart: altair.Chart | altair.JupyterChart, *, throttle: float = 0) -> None:
+    def __init__(self, chart: altair.TopLevelSpec | altair.JupyterChart, *, throttle: float = 0) -> None:
         """Altair Chart
 
         Wrap an ``altair.Chart`` or ``altair.JupyterChart`` in NiceGUI via anywidget.
@@ -29,7 +29,7 @@ class Altair(AnyWidget):
         """
         import altair  # pylint: disable=import-outside-toplevel
 
-        if isinstance(chart, altair.Chart):
+        if isinstance(chart, altair.TopLevelSpec):
             chart = altair.JupyterChart(chart)
 
         super().__init__(chart, throttle=throttle)  # type: ignore[arg-type]
