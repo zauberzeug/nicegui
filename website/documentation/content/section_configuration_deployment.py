@@ -369,24 +369,24 @@ doc.text('', '''
 
     When packaging your app (using nicegui-pack, PyInstaller, py2exe, etc.),
     you need to call `freeze_support()` to prevent new processes from being spawned in an endless loop.
-    However, if you use `app.native` settings, they must be defined **before** calling `freeze_support()`:
+    It should be called as the first statement inside the main guard.
+
+    If you use `app.native` settings, they must be defined **outside** the main guard
+    so they are applied before `freeze_support()` intercepts the subprocess:
 
     ```python
-    from nicegui import app, ui
     from multiprocessing import freeze_support
+    from nicegui import app, ui
 
-    app.native.window_args['transparent'] = True
-
-    freeze_support()  # after any native settings
+    app.native.window_args['transparent'] = True  # outside main guard
 
     # any other code (page functions, etc.)
 
     if __name__ == '__main__':
+        freeze_support()  # first statement in main guard
         ui.run(native=True, reload=False)
     ```
 
-    This order is important because `freeze_support()` intercepts subprocess execution in packaged apps.
-    Any code after `freeze_support()` will not run in the subprocess, so native settings defined later would be ignored.
 ''')
 
 doc.text('NiceGUI On Air', '''
