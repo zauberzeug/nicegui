@@ -17,14 +17,14 @@ class Altair(AnyWidget):
     def __init__(self, chart: altair.TopLevelSpec | altair.JupyterChart, *, throttle: float = 0) -> None:
         """Altair Chart
 
-        Wrap an ``altair.Chart`` or ``altair.JupyterChart`` in NiceGUI via anywidget.
+        Wrap an Altair chart in NiceGUI via anywidget.
 
         Refer to the `altair documentation <https://altair-viz.github.io/user_guide/interactions/jupyter_chart.html#accessing-variable-params>`_
         for more information about synchronizing Altair parameters with Python.
 
         *Added in version 3.5.0*
 
-        :param chart: the ``altair.Chart`` or ``altair.JupyterChart`` to wrap
+        :param chart: the chart to wrap
         :param throttle: minimum time (in seconds) between widget updates to Python (default: 0.0)
         """
         import altair  # pylint: disable=import-outside-toplevel
