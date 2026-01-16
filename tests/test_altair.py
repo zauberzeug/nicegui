@@ -7,7 +7,8 @@ from nicegui.testing import Screen
 
 def test_construction(screen: Screen):
     def chart():
-        return alt.Chart(pd.DataFrame([{'x':1,'y':3},{'x':2,'y':5},{'x':3,'y':4},{'x':4,'y':6}])).mark_point().encode(alt.X('x:Q'), alt.Y('y:Q'))
+        df = pd.DataFrame([{'x': 1, 'y': 3}, {'x': 2, 'y': 5}, {'x': 3, 'y': 4}, {'x': 4, 'y': 6}])
+        return alt.Chart(df).mark_point().encode(alt.X('x:Q'), alt.Y('y:Q'))
 
     @ui.page('/')
     def page():
