@@ -212,7 +212,7 @@ def test_api_method_after_creation(screen: Screen):
     assert screen.find_by_class('ag-row-selected')
 
 
-def test_set_esm_module(screen: Screen):
+def test_set_module_source(screen: Screen):
     visits = []
 
     @app.get('/my-aggrid.js')
@@ -221,7 +221,7 @@ def test_set_esm_module(screen: Screen):
         ui_aggrid_path = inspect.getfile(ui.aggrid)
         return Response((Path(ui_aggrid_path).parent / 'dist' / 'index.js').read_text(), media_type='application/javascript')
 
-    ui.aggrid.set_esm_module('/my-aggrid.js')
+    ui.aggrid.set_module_source('/my-aggrid.js')
 
     @ui.page('/')
     def page():
