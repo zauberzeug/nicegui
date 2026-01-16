@@ -1,9 +1,10 @@
-import AgGrid from "nicegui-aggrid";
+import * as AgGrid from "nicegui-aggrid";
 import { convertDynamicProperties } from "../../static/utils/dynamic_properties.js";
 
 export default {
   template: "<div></div>",
   mounted() {
+    AgGrid.ModuleRegistry.registerModules(this.modules.map((moduleName) => AgGrid[moduleName]));
     this.update_grid();
 
     const updateTheme = () =>
@@ -21,7 +22,12 @@ export default {
       this.$el.textContent = "";
       this.gridOptions = {
         ...this.options,
-        theme: AgGrid.themes[this.options.theme].withPart(AgGrid.colorSchemeVariable),
+        theme: {
+          quartz: AgGrid.themeQuartz,
+          balham: AgGrid.themeBalham,
+          material: AgGrid.themeMaterial,
+          alpine: AgGrid.themeAlpine,
+        }[this.options.theme].withPart(AgGrid.colorSchemeVariable),
       };
 
       for (const column of this.htmlColumns) {
@@ -114,5 +120,6 @@ export default {
   props: {
     options: Object,
     htmlColumns: Array,
+    modules: Array,
   },
 };
