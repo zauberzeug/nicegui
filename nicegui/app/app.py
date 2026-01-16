@@ -14,6 +14,7 @@ from fastapi.responses import FileResponse
 
 from .. import background_tasks, core, helpers
 from ..client import Client
+from ..context import context
 from ..logging import log
 from ..native import NativeConfig
 from ..observables import ObservableSet
@@ -160,6 +161,8 @@ class App(FastAPI):
 
     def handle_exception(self, exception: Exception) -> None:
         """Handle an exception by invoking all registered exception handlers."""
+        if context.slot_stack and context.client is not None:
+            context.client.handle_exception(exception)
         for handler in self._exception_handlers:
             result = handler() if not inspect.signature(handler).parameters else handler(exception)
             if helpers.is_coroutine_function(handler):

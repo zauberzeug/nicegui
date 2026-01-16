@@ -321,6 +321,47 @@ def nested_sub_pages_demo():
     sub_pages.init()
 
 
+@doc.demo('Error handling', '''
+    While `ui.sub_pages` will block display of the sub page on page-blocking errors in sync sub page builders,
+    the underlying client is still functional and the in-page exception handler is called for both async and sync builders.
+
+    Note: You may want to refer to the [error handling](section_action_events#error_handling) section for more context.
+''')
+def error_handling_demo():
+    # def root():
+    #     ui.link('Go to main', '/')
+    #     ui.link('Go to /sync_error', '/sync_error')
+    #     ui.link('Go to /async_error', '/async_error')
+    #     ui.sub_pages({
+    #         '/': main,
+    #         '/sync_error': sync_error_page,
+    #         '/async_error': async_error_page,
+    #     })
+    #     ui.on_exception(lambda e: ui.notify(f'Caught exception: {e}'))
+
+    def main():
+        ui.label('Main page')
+
+    def sync_error_page():
+        # ui.label('Synchronous error page')
+        # raise RuntimeError('Synchronous error')
+        ui.label('500: sub page /sync_error produced an error')  # HIDE
+        ui.notify('Caught exception: Synchronous error')  # HIDE
+
+    async def async_error_page():
+        ui.label('Asynchronous error page')
+        # raise RuntimeError('Asynchronous error')
+        ui.notify('Caught exception: Asynchronous error')  # HIDE
+
+    # ui.run(root)
+    # END OF DEMO
+    sub_pages = FakeSubPages({'/': main, '/sync_error': sync_error_page, '/async_error': async_error_page})
+    sub_pages.link('Go to main', '/')
+    sub_pages.link('Go to /sync_error', '/sync_error')
+    sub_pages.link('Go to /async_error', '/async_error')
+    sub_pages.init()
+
+
 doc.reference(ui.sub_pages, title='Reference for ui.sub_pages')
 
 doc.reference(PageArguments, title='Reference for PageArguments')
