@@ -322,39 +322,43 @@ def nested_sub_pages_demo():
 
 
 @doc.demo('Error handling', '''
-While `ui.sub_pages` will block display of the underlying page on critical errors in sync sub page builders,
-the underlying client is still functional and the exception handler is called for both async and sync builders.
+    While `ui.sub_pages` will block display of the underlying page on critical errors in sync sub page builders,
+    the underlying client is still functional and the exception handler is called for both async and sync builders.
 
-Note: you may want to refer to the [error handling](section_action_events#error_handling) section for more context.
+    Note: You may want to refer to the [error handling](section_action_events#error_handling) section for more context.
 ''')
 def error_handling_demo():
     # def root():
-    #     ui.on_exception(lambda e: ui.notify(f'Caught error: {e.args}'))
     #     ui.link('Go to main', '/')
-    #     ui.link('Go to /error_sync', '/error_sync')
-    #     ui.link('Go to /error_async', '/error_async')
-    #     ui.sub_pages({'/': main, '/error_sync': error_sync, '/error_async': error_async})
+    #     ui.link('Go to /sync_error', '/sync_error')
+    #     ui.link('Go to /async_error', '/async_error')
+    #     ui.sub_pages({
+    #         '/': main,
+    #         '/sync_error': sync_error_page,
+    #         '/async_error': async_error_page,
+    #     })
+    #     ui.on_exception(lambda e: ui.notify(f'Caught exception: {e}'))
 
     def main():
-        ui.label('Main page content')
+        ui.label('Main page')
 
-    def error_sync():
-        # ui.label('Sync error page content')
+    def sync_error_page():
+        # ui.label('Synchronous error page')
         # raise RuntimeError('Synchronous error')
-        ui.label('500: sub page /error_sync produced an error')
-        ui.notify('Caught error: Synchronous error')  # HIDE
+        ui.label('500: sub page /sync_error produced an error')  # HIDE
+        ui.notify('Caught exception: Synchronous error')  # HIDE
 
-    async def error_async():
-        ui.label('Async error page content')
+    async def async_error_page():
+        ui.label('Asynchronous error page')
         # raise RuntimeError('Asynchronous error')
-        ui.notify('Caught error: Asynchronous error')  # HIDE
+        ui.notify('Caught exception: Asynchronous error')  # HIDE
 
     # ui.run(root)
     # END OF DEMO
-    sub_pages = FakeSubPages({'/': main, '/error_sync': error_sync, '/error_async': error_async})
+    sub_pages = FakeSubPages({'/': main, '/sync_error': sync_error_page, '/async_error': async_error_page})
     sub_pages.link('Go to main', '/')
-    sub_pages.link('Go to /error_sync', '/error_sync')
-    sub_pages.link('Go to /error_async', '/error_async')
+    sub_pages.link('Go to /sync_error', '/sync_error')
+    sub_pages.link('Go to /async_error', '/async_error')
     sub_pages.init()
 
 

@@ -980,12 +980,12 @@ def test_on_path_changed_event(screen: Screen):
 
 
 def test_exception_in_page_builder(screen: Screen):
-    errors = []
+    exceptions = []
 
     @ui.page('/')
     @ui.page('/{_:path}')
     def index():
-        ui.on_exception(errors.append)
+        ui.on_exception(exceptions.append)
         ui.link('Go to exception', '/')
         ui.link('Go to content with exception', '/content_with_exception')
         ui.link('Go to async exception', '/async')
@@ -1031,7 +1031,7 @@ def test_exception_in_page_builder(screen: Screen):
     screen.assert_py_logger('ERROR', msg_content)
     screen.should_not_contain('content before exception')
 
-    assert len(errors) == 4
+    assert len(exceptions) == 4
 
 
 def test_disabling_404(screen: Screen):
