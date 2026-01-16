@@ -1,3 +1,4 @@
+import weakref
 from pathlib import Path
 from typing import Any, Callable, Optional, cast
 
@@ -17,9 +18,16 @@ class SourceElement(Element):
 
     def __init__(self, *, source: Any, **kwargs: Any) -> None:
         super().__init__(**kwargs)
+        self._source_for_cleanup: Optional[Path] = None
         self.auto_route: Optional[str] = None
         self.source = source
         self._set_props(source)
+        weakref.finalize(self, self._cleanup_source)
+
+    def _cleanup_source(self) -> None:
+        if self._source_for_cleanup is not None:
+            self._source_for_cleanup.unlink(missing_ok=True)
+            self._source_for_cleanup = None
 
     def bind_source_to(self,
                        target_object: Any,
@@ -91,6 +99,7 @@ class SourceElement(Element):
 
         :param source: The new source.
         """
+        self._cleanup_source()
         self.source = source
 
     def _handle_source_change(self, source: Any) -> None:

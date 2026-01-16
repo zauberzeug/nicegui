@@ -11,7 +11,7 @@ from .. import helpers, optional_features
 from ..defaults import DEFAULT_PROP, resolve_defaults
 from ..events import GenericEventArguments, Handler, MouseEventArguments, handle_event
 from ..logging import log
-from .image import pil_to_base64
+from .image import pil_to_tempfile
 from .mixins.content_element import ContentElement
 from .mixins.source_element import SourceElement
 
@@ -102,8 +102,8 @@ class InteractiveImage(SourceElement, ContentElement, component='interactive_ima
 
     def _set_props(self, source: str | Path | PIL_Image) -> None:
         if optional_features.has('pillow') and isinstance(source, PIL_Image):
-            source = pil_to_base64(source, self.PIL_CONVERT_FORMAT)
-        super()._set_props(source)
+            self._source_for_cleanup = pil_to_tempfile(source, self.PIL_CONVERT_FORMAT)
+        super()._set_props(self._source_for_cleanup)
 
     def force_reload(self) -> None:
         """Force the image to reload from the source."""
@@ -156,8 +156,8 @@ class InteractiveImageLayer(SourceElement, ContentElement, component='interactiv
 
     def _set_props(self, source: str | Path | PIL_Image) -> None:
         if optional_features.has('pillow') and isinstance(source, PIL_Image):
-            source = pil_to_base64(source, self.PIL_CONVERT_FORMAT)
-        super()._set_props(source)
+            self._source_for_cleanup = pil_to_tempfile(source, self.PIL_CONVERT_FORMAT)
+        super()._set_props(self._source_for_cleanup)
 
     def _handle_content_change(self, content: str) -> None:
         if self._sanitize is None:
