@@ -238,9 +238,14 @@ def _on_ack(_: str, msg: dict) -> None:
     client.outbox.prune_history(msg['next_message_id'])
 
 
-@sio.on('too_long_message')
-def _on_too_long_message(_: str) -> None:
-    log.warning('Received a too long message from the client.')
+@sio.on('log')
+def _on_log(_: str, msg: dict) -> None:
+    {
+        'debug': log.debug,
+        'info': log.info,
+        'warning': log.warning,
+        'error': log.error,
+    }[msg['level']](msg['message'])
 
 
 async def prune_tab_storage(*, force: bool = False) -> None:

@@ -81,6 +81,17 @@ function emitEvent(event_name, ...args) {
   getElement(0).$emit(event_name, ...args);
 }
 
+function logAndEmit(level, message) {
+  if (level === "error") {
+    console.error(message);
+  } else if (level === "warning") {
+    console.warn(message);
+  } else {
+    console.log(message);
+  }
+  window.socket.emit("log", { level, message });
+}
+
 function stringifyEventArgs(args, event_args) {
   const result = [];
   args.forEach((arg, i) => {
@@ -139,6 +150,7 @@ function throttle(callback, time, leading, trailing, id) {
     }
   }
 }
+
 function renderRecursively(elements, id) {
   const element = elements[id];
   if (element === undefined) {
@@ -347,12 +359,12 @@ function createApp(elements, options) {
             return function (...args) {
               const msg = args[0];
               if (typeof msg === "string" && msg.length > MAX_WEBSOCKET_MESSAGE_SIZE) {
-                console.error(`Payload size ${msg.length} exceeds the maximum allowed limit.`);
-                args[0] = '42["too_long_message"]';
+                logAndEmit("error", `Payload size ${msg.length} exceeds the maximum allowed limit.`);
                 if (window.tooLongMessageTimerId) clearTimeout(window.tooLongMessageTimerId);
                 const popup = document.getElementById("too_long_message_popup");
                 popup.ariaHidden = false;
                 window.tooLongMessageTimerId = setTimeout(() => (popup.ariaHidden = true), 5000);
+                return;
               }
               return originalFunction.call(this, ...args);
             };
@@ -408,7 +420,7 @@ function createApp(elements, options) {
             }
           }
           if (eventListenersChanged) {
-            console.warn("Event listeners changed after initial definition. Affected elements will be re-rendered.");
+            logAndEmit("warning", "Event listeners changed after initial definition. Re-rendering affected elements.");
             await this.$nextTick();
           }
 
