@@ -3,6 +3,7 @@ from typing import Optional
 
 from typing_extensions import Self
 
+from ...defaults import DEFAULT_PROP, resolve_defaults
 from ...element import Element
 from ...events import (
     ClickEventArguments,
@@ -18,15 +19,16 @@ from .scene import Scene, SceneCamera
 class SceneView(Element, component='scene_view.js', default_classes='nicegui-scene-view'):
     # NOTE: The ESM is already registered in scene.py.
 
+    @resolve_defaults
     def __init__(self,
                  scene: Scene,
                  # DEPRECATED: enforce keyword-only arguments in NiceGUI 4.0
-                 width: int = 400,
-                 height: int = 300,
+                 width: int = DEFAULT_PROP | 400,
+                 height: int = DEFAULT_PROP | 300,
                  camera: Optional[SceneCamera] = None,
                  on_click: Optional[Handler[ClickEventArguments]] = None,
-                 fps: int = 20,
-                 show_stats: bool = False,
+                 fps: int = DEFAULT_PROP | 20,
+                 show_stats: bool = DEFAULT_PROP | False,
                  ) -> None:
         """Scene View
 
@@ -48,14 +50,19 @@ class SceneView(Element, component='scene_view.js', default_classes='nicegui-sce
         self._props['width'] = width
         self._props['height'] = height
         self._props['fps'] = fps
-        self._props['show_stats'] = show_stats
-        self._props['scene_id'] = scene.id
+        self._props['show-stats'] = show_stats
+        self._props['scene-id'] = scene.id
         self.camera = camera or Scene.perspective_camera()
-        self._props['camera_type'] = self.camera.type
-        self._props['camera_params'] = self.camera.params
+        self._props['camera-type'] = self.camera.type
+        self._props['camera-params'] = self.camera.params
         self._click_handlers = [on_click] if on_click else []
         self.on('init', self._handle_init)
         self.on('click3d', self._handle_click)
+
+        self._props.add_rename('camera_params', 'camera-params')  # DEPRECATED: remove in NiceGUI 4.0
+        self._props.add_rename('camera_type', 'camera-type')  # DEPRECATED: remove in NiceGUI 4.0
+        self._props.add_rename('scene_id', 'scene-id')  # DEPRECATED: remove in NiceGUI 4.0
+        self._props.add_rename('show_stats', 'show-stats')  # DEPRECATED: remove in NiceGUI 4.0
 
     def on_click(self, callback: Handler[ClickEventArguments]) -> Self:
         """Add a callback to be invoked when a 3D object is clicked."""

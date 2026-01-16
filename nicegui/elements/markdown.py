@@ -27,18 +27,21 @@ class Markdown(ContentElement, component='markdown.js', default_classes='nicegui
         self.extras = extras[:]
         super().__init__(content=content)
         if 'mermaid' in extras:
-            self._props['use_mermaid'] = True
+            self._props['use-mermaid'] = True
 
         codehilite = self._generate_codehilite_css()
-        self._props['resource_name'] = f'codehilite_{hashlib.sha256(codehilite.encode()).hexdigest()[:32]}.css'
+        self._props['resource-name'] = f'codehilite_{hashlib.sha256(codehilite.encode()).hexdigest()[:32]}.css'
         self.add_dynamic_resource(
-            self._props['resource_name'],
+            self._props['resource-name'],
             lambda: PlainTextResponse(
                 codehilite,
                 media_type='text/css',
                 headers={'Cache-Control': core.app.config.cache_control_directives},
             ),
         )
+
+        self._props.add_rename('resource_name', 'resource-name')  # DEPRECATED: remove in NiceGUI 4.0
+        self._props.add_rename('use_mermaid', 'use-mermaid')  # DEPRECATED: remove in NiceGUI 4.0
 
     @staticmethod
     @lru_cache(maxsize=1)

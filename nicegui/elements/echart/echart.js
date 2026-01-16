@@ -5,7 +5,7 @@ export default {
   template: "<div></div>",
   async mounted() {
     await new Promise((resolve) => setTimeout(resolve, 0)); // wait for Tailwind classes to be applied
-    if (this.enable_3d) {
+    if (this.enable3d) {
       await loadEchartsGL();
     }
 
@@ -108,7 +108,7 @@ export default {
   },
   props: {
     options: Object,
-    enable_3d: Boolean,
+    enable3d: Boolean,
     renderer: String,
     theme: String,
   },
