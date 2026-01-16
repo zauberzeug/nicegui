@@ -4,7 +4,7 @@ from ..context import context
 
 
 def on_exception(handler: Union[Callable[[Exception], Any], Callable[[], Any]]) -> None:
-    """Register a handler for non-critical exceptions occurring in the current page's UI context.
+    """Register a handler for in-page exceptions (after the page has been sent to the browser).
 
     The callback has an optional parameter of ``Exception``.
 

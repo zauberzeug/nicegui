@@ -284,7 +284,7 @@ class Client:
         self.delete_handlers.append(handler)
 
     def on_exception(self, handler: Callable[[Exception], Any] | Callable[[], Any]) -> None:
-        """Add a callback to be invoked when non-critical exceptions occur in the client's UI context.
+        """Add a callback to be invoked for in-page exceptions (after the page has been sent to the browser).
 
         The callback has an optional parameter of `Exception`.
         """
@@ -381,7 +381,7 @@ class Client:
         self.remove_elements(self.elements.values())
 
     def handle_exception(self, exception: Exception) -> None:
-        """Handle a non-critical exception to be handled by callers of `ui.on_exception(...)`."""
+        """Handle an in-page exception by invoking handlers registered via `ui.on_exception(...)`."""
         for handler in self._exception_handlers:
             with self.content:
                 if helpers.expects_arguments(handler):
