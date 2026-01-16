@@ -1,4 +1,4 @@
-from typing import Any, Callable, Optional, cast
+from typing import Any, Callable, Literal, Optional, cast
 
 from typing_extensions import Self
 
@@ -28,27 +28,34 @@ class BackgroundColorElement(Element):
 
     def __init__(self, *, background_color: Optional[str], **kwargs: Any) -> None:
         super().__init__(**kwargs)
+        self._background_color_state: tuple[Literal[None, 'prop', 'class', 'style'], str] = (None, '')
         self.background_color = background_color
         self._handle_background_color_change(background_color)
 
     def set_background_color(self, background_color: Optional[str]) -> None:
-        """Sets the background color"""
+        """Set the background color of this element."""
         self.background_color = background_color
 
     def _handle_background_color_change(self, background_color: Optional[str]) -> None:
-        self._clear_background_color()
+        # Clear previous color based on tracked state
+        color_type, value = self._background_color_state
+        if color_type == 'prop':
+            self._props.pop(self.BACKGROUND_COLOR_PROP, None)
+        elif color_type == 'class':
+            self._classes.remove(f'bg-{value}')
+        elif color_type == 'style':
+            self._style.pop('background-color', None)
+
+        # Set new color and track state
         if background_color in QUASAR_COLORS or background_color is None:
             self._props.set_optional(self.BACKGROUND_COLOR_PROP, background_color)
+            self._background_color_state = ('prop', background_color) if background_color else (None, '')
         elif background_color in TAILWIND_COLORS:
             self._classes.append(f'bg-{background_color}')
-        elif background_color is not None:
+            self._background_color_state = ('class', background_color)
+        else:
             self._style['background-color'] = background_color
-
-    def _clear_background_color(self) -> None:
-        """Clears the background color"""
-        self._props.pop(self.BACKGROUND_COLOR_PROP, None)
-        self._classes(remove=' '.join(f'bg-{t}' for t in TAILWIND_COLORS))
-        self._style.pop('background-color', None)
+            self._background_color_state = ('style', background_color)
 
     def bind_background_color_to(self,
                                  target_object: Any,
@@ -125,27 +132,34 @@ class TextColorElement(Element):
 
     def __init__(self, *, text_color: Optional[str], **kwargs: Any) -> None:
         super().__init__(**kwargs)
+        self._text_color_state: tuple[Literal[None, 'prop', 'class', 'style'], str] = (None, '')
         self.text_color = text_color
         self._handle_text_color_change(text_color)
 
     def set_text_color(self, text_color: Optional[str]) -> None:
-        """Sets the text color"""
+        """Set the text color of this element."""
         self.text_color = text_color
 
     def _handle_text_color_change(self, text_color: Optional[str]) -> None:
-        self._clear_text_color()
+        # Clear previous color based on tracked state
+        color_type, value = self._text_color_state
+        if color_type == 'prop':
+            self._props.pop(self.TEXT_COLOR_PROP, None)
+        elif color_type == 'class':
+            self._classes.remove(f'text-{value}')
+        elif color_type == 'style':
+            self._style.pop('color', None)
+
+        # Set new color and track state
         if text_color in QUASAR_COLORS or text_color is None:
             self._props.set_optional(self.TEXT_COLOR_PROP, text_color)
+            self._text_color_state = ('prop', text_color) if text_color else (None, '')
         elif text_color in TAILWIND_COLORS:
             self._classes.append(f'text-{text_color}')
-        elif text_color is not None:
+            self._text_color_state = ('class', text_color)
+        else:
             self._style['color'] = text_color
-
-    def _clear_text_color(self) -> None:
-        """Clears the text color"""
-        self._props.pop(self.TEXT_COLOR_PROP, None)
-        self._classes(remove=' '.join(f'text-{t}' for t in TAILWIND_COLORS))
-        self._style.pop('color', None)
+            self._text_color_state = ('style', text_color)
 
     def bind_text_color_to(self,
                            target_object: Any,
