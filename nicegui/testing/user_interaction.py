@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Generic, TypeVar
+from typing import TYPE_CHECKING, Any, Generic, TypeVar
 
 from typing_extensions import Self
 
@@ -29,11 +29,14 @@ class UserInteraction(Generic[T]):
         self.elements = elements
         self.target = target
 
-    def trigger(self, event: str) -> Self:
+    def trigger(self, event: str, args: Any = None) -> Self:
         """Trigger the given event on the elements selected by the simulated user.
 
-        Examples: "keydown.enter", "click", ...
+        :param event: the event type to trigger (e.g. "keydown.enter", "click", ...)
+        :param args: optional event arguments to pass to the handler (default: ``None``)
         """
+        if args is None:
+            args = {}
         assert self.user.client
         with self.user.client:
             for element in self.elements:
@@ -47,7 +50,7 @@ class UserInteraction(Generic[T]):
                 for listener in element._event_listeners.values():  # pylint: disable=protected-access
                     if listener.type != event:
                         continue
-                    event_arguments = events.GenericEventArguments(sender=element, client=self.user.client, args={})
+                    event_arguments = events.GenericEventArguments(sender=element, client=self.user.client, args=args)
                     events.handle_event(listener.handler, event_arguments)
         return self
 
@@ -70,6 +73,8 @@ class UserInteraction(Generic[T]):
         assert self.user.client
         with self.user.client:
             for element in self.elements:
+                if isinstance(element, DisableableElement) and not element.enabled:
+                    continue
                 if isinstance(element, ui.link):
                     href = element.props.get('href', '#')
                     background_tasks.create(self.user.open(href), name=f'open {href}')
@@ -132,11 +137,13 @@ class UserInteraction(Generic[T]):
     def clear(self) -> Self:
         """Clear the selected elements.
 
-        Note: All elements must have a ``value`` attribute).
+        Note: All elements must have a ``value`` attribute.
         """
         assert self.user.client
         with self.user.client:
             for element in self.elements:
+                if isinstance(element, DisableableElement) and not element.enabled:
+                    continue
                 assert isinstance(element, ValueElement)
                 element.value = None
         return self

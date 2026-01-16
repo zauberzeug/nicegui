@@ -5,17 +5,16 @@ default_stages: [pre-commit]
 
 repos:
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.12.7
+    rev: v0.14.5
     hooks:
-      - id: ruff
+      - id: ruff-check
         args: [--fix]
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v5.0.0
+    rev: v6.0.0
     hooks:
       - id: trailing-whitespace
         exclude: &exclusions |
           (?x)^(
-            nicegui/static/es-module-shims\.js|
             nicegui/static/fonts/.*|
             nicegui/static/fonts\.css|
             nicegui/static/lang/.*|
@@ -30,3 +29,22 @@ repos:
       - id: end-of-file-fixer
         exclude: *exclusions
       - id: double-quote-string-fixer
+  - repo: https://github.com/codespell-project/codespell
+    rev: v2.4.1
+    hooks:
+      - id: codespell
+        # most are excluded based on config in pyproject.toml
+        # but codespell fails to pick up some when ran from pre-commit, so
+        # annotated here explicitly, and above *exclusions aren't sufficient
+        exclude: |
+          (?x)^(
+            .*/dist/.*|
+            .*/package-lock.json|
+            nicegui/static/vue\..*|
+            nicegui/static/quasar\..*|
+            nicegui/static/sass\..*|
+            nicegui/translations\.py|
+            website/static/fuse\.js\@.*|
+          )$
+        additional_dependencies:
+          - tomli; python_version<'3.11'

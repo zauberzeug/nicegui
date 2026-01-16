@@ -14,7 +14,7 @@ from fastapi.responses import FileResponse, Response
 from . import air, background_tasks, binding, core, favicon, helpers, json, run, welcome
 from .app import App
 from .client import Client
-from .dependencies import dynamic_resources, esm_modules, js_components, libraries, resources
+from .dependencies import dynamic_resources, esm_modules, js_components, libraries, resources, vue_components
 from .error import error_content
 from .json import NiceGUIJSONResponse
 from .logging import log
@@ -77,9 +77,11 @@ def _get_library(key: str) -> FileResponse:
 
 
 @app.get(f'/_nicegui/{__version__}' + '/components/{key:path}')
-def _get_component(key: str) -> FileResponse:
+def _get_component(key: str) -> Response:
     if key in js_components and js_components[key].path.exists():
         return FileResponse(js_components[key].path, media_type='text/javascript')
+    elif key in vue_components:
+        return Response(vue_components[key].script, media_type='text/javascript')
     raise HTTPException(status_code=404, detail=f'component "{key}" not found')
 
 
@@ -166,7 +168,7 @@ async def _exception_handler_404(request: Request, exception: Exception) -> Resp
                 param.annotation,
             )
             for name, param in inspect.signature(root).parameters.items()
-            if name in request.query_params
+            if name in request.query_params and name != 'request'
         }
         return await page('')._wrap(root)(request=request, **kwargs)  # pylint: disable=protected-access
     log.warning(f'{request.url} not found')
@@ -177,6 +179,8 @@ async def _exception_handler_404(request: Request, exception: Exception) -> Resp
 
 @app.exception_handler(Exception)
 async def _exception_handler_500(request: Request, exception: Exception) -> Response:
+    if not request.scope.get('nicegui_page_path'):
+        raise exception  # Simply return "Internal Server Error", just like FastAPI would do
     log.exception(exception)
     with Client(page(''), request=request) as client:
         error_content(500, exception)
@@ -191,7 +195,7 @@ async def _on_handshake(sid: str, data: dict[str, Any]) -> bool:
     if data.get('old_tab_id'):
         app.storage.copy_tab(data['old_tab_id'], data['tab_id'])
     client.tab_id = data['tab_id']
-    if sid[:5].startswith('test-'):
+    if sid.startswith('test-'):
         client.environ = {'asgi.scope': {'description': 'test client', 'type': 'test'}}
     else:
         client.environ = sio.get_environ(sid)
@@ -234,6 +238,16 @@ def _on_ack(_: str, msg: dict) -> None:
     if not client:
         return
     client.outbox.prune_history(msg['next_message_id'])
+
+
+@sio.on('log')
+def _on_log(_: str, msg: dict) -> None:
+    {
+        'debug': log.debug,
+        'info': log.info,
+        'warning': log.warning,
+        'error': log.error,
+    }[msg['level']](msg['message'])
 
 
 async def prune_tab_storage(*, force: bool = False) -> None:

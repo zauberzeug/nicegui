@@ -105,6 +105,45 @@ def styling_demo():
     live_demo_ui()
 
 
+doc.text('', '''
+    **How to overrule Quasar with Tailwind classes or plain CSS**
+
+    Some Quasar classes (e.g. `bg-primary`) are marked as `!important` and, thus, would even overrule `!important` Tailwind classes.
+    At NiceGUI, we deviate from Quasar's design by moving Quasar's `!important` styles to a less powerful CSS layer.
+    While still important enough to ensure Quasar works as expected, you can now overrule Quasar for more customization.
+
+    Try out class `!bg-red-500` on a `ui.button` to see important Tailwind classes overruling Quasar.
+    Similarly, you can set the style `background-color:red !important` to achieve the same effect.
+''')
+
+
+@doc.demo('CSS Layers', '''
+    NiceGUI defines the following CSS layers (in order of increasing priority):
+    "theme", "base", "quasar", "nicegui", "components", "utilities", "overrides", and "quasar_importants".
+
+    You don't need to put your custom CSS into layers for basic styling.
+    However, to override Quasar's `!important` rules, you should define your CSS in an appropriate layer:
+    use "components" for component-specific styles or "utilities" for utility classes,
+    depending on the purpose of your custom styles.
+    Note that you need to use `!important` in your custom styles
+    because Quasar defines most of its CSS with `!important`,
+    which would otherwise take precedence.
+
+    In the example below, we override a button's background color using the "utilities" layer.
+
+    *Updated in NiceGUI 3.0.0: CSS layers have been introduced.*
+''')
+def css_layers():
+    ui.add_css('''
+        @layer utilities {
+           .red-background {
+               background-color: red !important;
+            }
+        }
+    ''')
+    ui.button('Red Button').classes('red-background')
+
+
 @doc.demo('Tailwind CSS Layers', '''
     Tailwind CSS' `@layer` directive allows you to define custom classes that can be used in your HTML.
     NiceGUI supports this feature by allowing you to add custom classes to the `components` layer.
@@ -170,7 +209,7 @@ def overwrite_tailwind_style_demo():
             }
         </style>
     ''')
-    ui.html('<h2>Hello world!</h2>')
+    ui.html('<h2>Hello world!</h2>', sanitize=False)
 
 
 doc.intro(dark_mode_documentation)
@@ -201,7 +240,7 @@ def other_vue_ui_frameworks_demo():
     # '''
 
     with ui.element('el-button').on('click', lambda: ui.notify('Hi!')):
-        ui.html('Element Plus button')
+        ui.html('Element Plus button', sanitize=False)
 
     ui.button('Quasar button', on_click=lambda: ui.notify('Ho!'))
 

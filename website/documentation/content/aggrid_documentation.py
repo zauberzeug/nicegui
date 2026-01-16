@@ -6,7 +6,6 @@ from . import doc
 @doc.demo(ui.aggrid)
 def main_demo() -> None:
     grid = ui.aggrid({
-        'defaultColDef': {'flex': 1},
         'columnDefs': [
             {'headerName': 'Name', 'field': 'name'},
             {'headerName': 'Age', 'field': 'age'},
@@ -26,6 +25,24 @@ def main_demo() -> None:
     ui.button('Update', on_click=update)
     ui.button('Select all', on_click=lambda: grid.run_grid_method('selectAll'))
     ui.button('Show parent', on_click=lambda: grid.run_grid_method('setColumnsVisible', ['parent'], True))
+
+
+@doc.demo('Adding rows', '''
+    It's simple to add new rows by updating the `options` property.
+    To scroll to the new row, use the AG Grid API method `ensureIndexVisible`.
+''')
+def adding_rows():
+    import random
+
+    def add():
+        grid.options['rowData'].append({'number': random.randint(0, 100)})
+        grid.run_grid_method('ensureIndexVisible', len(grid.options['rowData']) - 1)
+
+    grid = ui.aggrid({
+        'columnDefs': [{'field': 'number'}],
+        'rowData': [],
+    }).classes('h-52')
+    ui.button('Add row', on_click=add)
 
 
 @doc.demo('Select AG Grid Rows', '''
@@ -219,7 +236,7 @@ def aggrid_with_dynamic_row_height():
 def aggrid_run_row_method():
     grid = ui.aggrid({
         'columnDefs': [
-            {'field': 'name', 'checkboxSelection': True},
+            {'field': 'name'},
             {'field': 'age'},
         ],
         'rowData': [
@@ -251,19 +268,23 @@ def aggrid_filter_return_values():
 
 
 @doc.demo('Handle theme change', '''
-    You can change the theme of the AG Grid by adding or removing classes.
-    This demo shows how to change the theme using a switch.
+    You can change the theme of the AG Grid via the `theme` property.
+    Dark mode is applied automatically depending on the dark mode setting of the page.
 ''')
 def aggrid_handle_theme_change():
-    from nicegui import events
-
-    grid = ui.aggrid({})
-
-    def handle_theme_change(e: events.ValueChangeEventArguments):
-        grid.classes(add='ag-theme-balham-dark' if e.value else 'ag-theme-balham',
-                     remove='ag-theme-balham ag-theme-balham-dark')
-
-    ui.switch('Dark', on_change=handle_theme_change)
+    grid = ui.aggrid({
+        'columnDefs': [
+            {'headerName': 'Make', 'field': 'make'},
+            {'headerName': 'Country', 'field': 'country'},
+        ],
+        'rowData': [
+            {'make': 'Ford', 'country': 'USA'},
+            {'make': 'Toyota', 'country': 'Japan'},
+            {'make': 'Volkswagen', 'country': 'Germany'},
+        ],
+    })
+    ui.toggle(['quartz', 'balham', 'material', 'alpine']) \
+        .bind_value(grid, 'theme').props('flat size="sm"')
 
 
 doc.reference(ui.aggrid)

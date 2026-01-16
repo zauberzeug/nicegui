@@ -3,6 +3,7 @@ from typing import Optional
 from typing_extensions import Self
 
 from ...awaitable_response import AwaitableResponse
+from ...defaults import DEFAULT_PROP, resolve_defaults
 from ...element import Element
 from ...events import (
     GenericEventArguments,
@@ -15,17 +16,17 @@ from ...events import (
 
 class JsonEditor(Element, component='json_editor.js', esm={'nicegui-json-editor': 'dist'}):
 
+    @resolve_defaults
     def __init__(self,
                  properties: dict, *,
                  on_select: Optional[Handler[JsonEditorSelectEventArguments]] = None,
                  on_change: Optional[Handler[JsonEditorChangeEventArguments]] = None,
-                 schema: Optional[dict] = None,
+                 schema: Optional[dict] = DEFAULT_PROP | None,
                  ) -> None:
         """JSONEditor
 
         An element to create a JSON editor using `JSONEditor <https://github.com/josdejong/svelte-jsoneditor>`_.
         Updates can be pushed to the editor by changing the `properties` property.
-        After data has changed, call the `update` method to refresh the editor.
 
         :param properties: dictionary of JSONEditor properties
         :param on_select: callback which is invoked when some of the content has been selected
@@ -35,9 +36,7 @@ class JsonEditor(Element, component='json_editor.js', esm={'nicegui-json-editor'
         super().__init__()
         self._props['properties'] = properties
         self._update_method = 'update_editor'
-
-        if schema:
-            self._props['schema'] = schema
+        self._props.set_bool('schema', schema)
 
         if on_select:
             self.on_select(on_select)

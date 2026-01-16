@@ -45,7 +45,7 @@ def test_markdown_with_mermaid(screen: Screen):
         '''))
 
     screen.open('/')
-    screen.wait(0.5)  # wait for Mermaid to render
+    screen.wait(1.0)  # wait for Mermaid to render
     screen.should_contain('Mermaid')
     assert screen.find_by_tag('svg').get_attribute('id') == f'{m.html_id}_mermaid_0'
     assert screen.selenium.find_element(By.XPATH, '//span[p[contains(text(), "Node_A")]]').is_displayed()
@@ -91,8 +91,7 @@ def test_replace_markdown(screen: Screen):
             ui.markdown('A')
 
         def replace():
-            container.clear()
-            with container:
+            with container.clear():
                 ui.markdown('B')
         ui.button('Replace', on_click=replace)
 

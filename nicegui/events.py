@@ -4,7 +4,7 @@ import asyncio
 from collections.abc import Awaitable, Iterator
 from contextlib import nullcontext
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, Any, BinaryIO, Callable, Literal, TypeVar, Union, cast
+from typing import TYPE_CHECKING, Any, Callable, Literal, TypeVar, Union, cast
 
 from . import background_tasks, core, helpers
 from .awaitable_response import AwaitableResponse
@@ -15,6 +15,7 @@ if TYPE_CHECKING:
     from .client import Client
     from .element import Element
     from .elements.slide_item import SlideSide
+    from .elements.upload_files import FileUpload
     from .observables import ObservableCollection
 
 
@@ -50,16 +51,27 @@ class SlideEventArguments(UiEventArguments):
 
 
 @dataclass(**KWONLY_SLOTS)
+class EChartComponentClickEventArguments(UiEventArguments):
+    component_type: str
+    name: str | None
+
+
+@dataclass(**KWONLY_SLOTS)
 class EChartPointClickEventArguments(UiEventArguments):
     component_type: str
+    name: str
     series_type: str
     series_index: int
     series_name: str
-    name: str
     data_index: int
     data: float | int | str
-    data_type: str
+    data_type: str | None
     value: float | int | list
+
+
+@dataclass(**KWONLY_SLOTS)
+class MermaidNodeClickEventArguments(UiEventArguments):
+    node_id: str
 
 
 @dataclass(**KWONLY_SLOTS)
@@ -119,16 +131,12 @@ class JoystickEventArguments(UiEventArguments):
 
 @dataclass(**KWONLY_SLOTS)
 class UploadEventArguments(UiEventArguments):
-    content: BinaryIO
-    name: str
-    type: str
+    file: FileUpload
 
 
 @dataclass(**KWONLY_SLOTS)
 class MultiUploadEventArguments(UiEventArguments):
-    contents: list[BinaryIO]
-    names: list[str]
-    types: list[str]
+    files: list[FileUpload]
 
 
 @dataclass(**KWONLY_SLOTS)
@@ -397,6 +405,16 @@ class JsonEditorSelectEventArguments(UiEventArguments):
 class JsonEditorChangeEventArguments(UiEventArguments):
     content: dict
     errors: dict = field(default_factory=dict)
+
+
+@dataclass(**KWONLY_SLOTS)
+class XtermBellEventArguments(UiEventArguments):
+    pass
+
+
+@dataclass(**KWONLY_SLOTS)
+class XtermDataEventArguments(UiEventArguments):
+    data: str
 
 
 EventT = TypeVar('EventT', bound=EventArguments)

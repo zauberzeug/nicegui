@@ -6,6 +6,7 @@ from typing_extensions import Self
 
 from ... import binding
 from ...dataclasses import KWONLY_SLOTS
+from ...defaults import DEFAULT_PROP, resolve_defaults
 from ...element import Element
 from ...events import (
     GenericEventArguments,
@@ -58,17 +59,21 @@ class Scene(Element, component='scene.js', esm={'nicegui-scene': 'dist'}, defaul
     from .scene_objects import Text3d as text3d
     from .scene_objects import Texture as texture
 
+    @resolve_defaults
     def __init__(self,
-                 width: int = 400,
-                 height: int = 300,
-                 grid: Union[bool, tuple[int, int]] = True,
+                 width: int = DEFAULT_PROP | 400,
+                 height: int = DEFAULT_PROP | 300,
+                 # DEPRECATED: enforce keyword-only arguments in NiceGUI 4.0
+                 grid: Union[bool, tuple[int, int]] = DEFAULT_PROP | True,
                  camera: Optional[SceneCamera] = None,
                  on_click: Optional[Handler[SceneClickEventArguments]] = None,
-                 click_events: list[str] = ['click', 'dblclick'],  # noqa: B006
+                 click_events: list[str] = DEFAULT_PROP | ['click', 'dblclick'],
                  on_drag_start: Optional[Handler[SceneDragEventArguments]] = None,
                  on_drag_end: Optional[Handler[SceneDragEventArguments]] = None,
-                 drag_constraints: str = '',
-                 background_color: str = '#eee',
+                 drag_constraints: str = DEFAULT_PROP | '',
+                 background_color: str = DEFAULT_PROP | '#eee',
+                 fps: int = DEFAULT_PROP | 20,
+                 show_stats: bool = DEFAULT_PROP | False,
                  ) -> None:
         """3D Scene
 
@@ -87,26 +92,37 @@ class Scene(Element, component='scene.js', esm={'nicegui-scene': 'dist'}, defaul
         :param on_drag_end: callback to execute when a 3D object is dropped
         :param drag_constraints: comma-separated JavaScript expression for constraining positions of dragged objects (e.g. ``'x = 0, z = y / 2'``)
         :param background_color: background color of the scene (default: "#eee")
+        :param fps: target frame rate for the scene in frames per second (default: 20, *added in version 3.2.0*)
+        :param show_stats: whether to show performance stats (default: ``False``, *added in version 3.2.0*)
         """
         super().__init__()
         self._props['width'] = width
         self._props['height'] = height
+        self._props['fps'] = fps
+        self._props['show-stats'] = show_stats
         self._props['grid'] = grid
-        self._props['background_color'] = background_color
+        self._props['background-color'] = background_color
         self.camera = camera or self.perspective_camera()
-        self._props['camera_type'] = self.camera.type
-        self._props['camera_params'] = self.camera.params
+        self._props['camera-type'] = self.camera.type
+        self._props['camera-params'] = self.camera.params
         self.objects: dict[str, Object3D] = {}
         self.stack: list[Union[Object3D, SceneObject]] = [SceneObject()]
         self._click_handlers = [on_click] if on_click else []
-        self._props['click_events'] = click_events[:]
+        self._props['click-events'] = click_events[:]
         self._drag_start_handlers = [on_drag_start] if on_drag_start else []
         self._drag_end_handlers = [on_drag_end] if on_drag_end else []
         self.on('init', self._handle_init)
         self.on('click3d', self._handle_click)
         self.on('dragstart', self._handle_drag)
         self.on('dragend', self._handle_drag)
-        self._props['drag_constraints'] = drag_constraints
+        self._props['drag-constraints'] = drag_constraints
+
+        self._props.add_rename('background_color', 'background-color')  # DEPRECATED: remove in NiceGUI 4.0
+        self._props.add_rename('camera_params', 'camera-params')  # DEPRECATED: remove in NiceGUI 4.0
+        self._props.add_rename('camera_type', 'camera-type')  # DEPRECATED: remove in NiceGUI 4.0
+        self._props.add_rename('click_events', 'click-events')  # DEPRECATED: remove in NiceGUI 4.0
+        self._props.add_rename('drag_constraints', 'drag-constraints')  # DEPRECATED: remove in NiceGUI 4.0
+        self._props.add_rename('show_stats', 'show-stats')  # DEPRECATED: remove in NiceGUI 4.0
 
     def on_click(self, callback: Handler[SceneClickEventArguments]) -> Self:
         """Add a callback to be invoked when a 3D object is clicked."""
@@ -268,7 +284,8 @@ class Scene(Element, component='scene.js', esm={'nicegui-scene': 'dist'}, defaul
             if predicate(obj) and obj.id in self.objects:  # NOTE: object might have been deleted already by its parent
                 obj.delete()
 
-    def clear(self) -> None:
+    def clear(self) -> Self:
         """Remove all objects from the scene."""
         super().clear()
         self.delete_objects()
+        return self

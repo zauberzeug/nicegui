@@ -1,11 +1,11 @@
 from __future__ import annotations
 
-import asyncio
 import functools
 import hashlib
 import os
 import socket
 import struct
+import sys
 import threading
 import time
 import webbrowser
@@ -21,6 +21,11 @@ if TYPE_CHECKING:
     from .element import Element
 
 _shown_warnings: set[str] = set()
+
+if sys.version_info < (3, 13):
+    from asyncio import iscoroutinefunction
+else:
+    from inspect import iscoroutinefunction
 
 
 def warn_once(message: str, *, stack_info: bool = False) -> None:
@@ -48,7 +53,7 @@ def is_coroutine_function(obj: Any) -> bool:
     """
     while isinstance(obj, functools.partial):
         obj = obj.func
-    return asyncio.iscoroutinefunction(obj)
+    return iscoroutinefunction(obj)
 
 
 def expects_arguments(func: Callable) -> bool:
@@ -94,7 +99,7 @@ def is_port_open(host: str, port: int) -> bool:
         sock.close()
 
 
-def schedule_browser(protocol: str, host: str, port: int) -> tuple[threading.Thread, threading.Event]:
+def schedule_browser(protocol: str, host: str, port: int, path: str) -> tuple[threading.Thread, threading.Event]:
     """Wait non-blockingly for the port to be open, then start a webbrowser.
 
     This function launches a thread in order to be non-blocking.
@@ -110,15 +115,15 @@ def schedule_browser(protocol: str, host: str, port: int) -> tuple[threading.Thr
     """
     cancel = threading.Event()
 
-    def in_thread(protocol: str, host: str, port: int) -> None:
+    def in_thread(protocol: str, host: str, port: int, path: str) -> None:
         while not is_port_open(host, port):
             if cancel.is_set():
                 return
             time.sleep(0.1)
-        webbrowser.open(f'{protocol}://{host}:{port}/')
+        webbrowser.open(f'{protocol}://{host}:{port}/{path.lstrip("/")}')
 
     host = host if host != '0.0.0.0' else '127.0.0.1'
-    thread = threading.Thread(target=in_thread, args=(protocol, host, port), daemon=True)
+    thread = threading.Thread(target=in_thread, args=(protocol, host, port, path), daemon=True)
     thread.start()
     return thread, cancel
 

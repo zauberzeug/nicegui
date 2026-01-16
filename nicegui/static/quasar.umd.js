@@ -1,5 +1,5 @@
 /*!
- * Quasar Framework v2.18.2
+ * Quasar Framework v2.18.5
  * (c) 2015-present Razvan Stoenescu
  * Released under the MIT License.
  */
@@ -1391,7 +1391,7 @@
   }
   var install_quasar_default = false ? function(parentApp, opts = {}, ssrContext) {
     const $q = {
-      version: "2.18.2",
+      version: "2.18.5",
       config: opts.config || {}
     };
     Object.assign(ssrContext, {
@@ -1421,7 +1421,7 @@
       ssrContext
     });
   } : function(parentApp, opts = {}) {
-    const $q = { version: "2.18.2" };
+    const $q = { version: "2.18.5" };
     if (globalConfigIsFrozen === false) {
       if (opts.config !== void 0) {
         Object.assign(globalConfig, opts.config);
@@ -14717,6 +14717,11 @@
           state.getShadowControl()
         );
       }
+      hasLabel.value === true && node.push(
+        h("div", {
+          class: labelClass.value
+        }, hSlot(slots.label, props4.label))
+      );
       if (state.getControl !== void 0) {
         node.push(state.getControl());
       } else if (slots.rawControl !== void 0) {
@@ -14732,11 +14737,6 @@
           }, slots.control(controlSlotScope.value))
         );
       }
-      hasLabel.value === true && node.push(
-        h("div", {
-          class: labelClass.value
-        }, hSlot(slots.label, props4.label))
-      );
       props4.suffix !== void 0 && props4.suffix !== null && node.push(
         h("div", {
           class: "q-field__suffix no-pointer-events row items-center"
@@ -16211,7 +16211,7 @@
     phone: "(###) ### - ####",
     card: "#### #### #### ####"
   };
-  var TOKENS = {
+  var { tokenMap: DEFAULT_TOKEN_MAP, tokenKeys: DEFAULT_TOKEN_MAP_KEYS } = getTokenMap({
     "#": { pattern: "[\\d]", negate: "[^\\d]" },
     S: { pattern: "[a-zA-Z]", negate: "[^a-zA-Z]" },
     N: { pattern: "[0-9a-zA-Z]", negate: "[^0-9a-zA-Z]" },
@@ -16219,22 +16219,51 @@
     a: { pattern: "[a-zA-Z]", negate: "[^a-zA-Z]", transform: (v) => v.toLocaleLowerCase() },
     X: { pattern: "[0-9a-zA-Z]", negate: "[^0-9a-zA-Z]", transform: (v) => v.toLocaleUpperCase() },
     x: { pattern: "[0-9a-zA-Z]", negate: "[^0-9a-zA-Z]", transform: (v) => v.toLocaleLowerCase() }
-  };
-  var KEYS = Object.keys(TOKENS);
-  KEYS.forEach((key) => {
-    TOKENS[key].regex = new RegExp(TOKENS[key].pattern);
   });
-  var tokenRegexMask = new RegExp("\\\\([^.*+?^${}()|([\\]])|([.*+?^${}()|[\\]])|([" + KEYS.join("") + "])|(.)", "g");
+  function getTokenMap(tokens) {
+    const tokenKeys = Object.keys(tokens);
+    const tokenMap = {};
+    tokenKeys.forEach((key) => {
+      const entry = tokens[key];
+      tokenMap[key] = {
+        ...entry,
+        regex: new RegExp(entry.pattern)
+      };
+    });
+    return { tokenMap, tokenKeys };
+  }
+  function getTokenRegexMask(keys) {
+    return new RegExp("\\\\([^.*+?^${}()|([\\]])|([.*+?^${}()|[\\]])|([" + keys.join("") + "])|(.)", "g");
+  }
   var escRegex = /[.*+?^${}()|[\]\\]/g;
+  var DEFAULT_TOKEN_REGEX_MASK = getTokenRegexMask(DEFAULT_TOKEN_MAP_KEYS);
   var MARKER = String.fromCharCode(1);
   var useMaskProps = {
     mask: String,
     reverseFillMask: Boolean,
     fillMask: [Boolean, String],
-    unmaskedValue: Boolean
+    unmaskedValue: Boolean,
+    maskTokens: Object
   };
   function use_mask_default(props4, emit, emitValue, inputRef) {
     let maskMarked, maskReplaced, computedMask, computedUnmask, pastedTextStart, selectionAnchor;
+    const tokens = computed(() => {
+      if (props4.maskTokens === void 0 || props4.maskTokens === null) {
+        return {
+          tokenMap: DEFAULT_TOKEN_MAP,
+          tokenRegexMask: DEFAULT_TOKEN_REGEX_MASK
+        };
+      }
+      const { tokenMap: customTokens } = getTokenMap(props4.maskTokens);
+      const tokenMap = {
+        ...DEFAULT_TOKEN_MAP,
+        ...customTokens
+      };
+      return {
+        tokenMap,
+        tokenRegexMask: getTokenRegexMask(Object.keys(tokenMap))
+      };
+    });
     const hasMask = ref(null);
     const innerValue = ref(getInitialMaskedValue());
     function getIsTypeText() {
@@ -16288,9 +16317,9 @@
       }
       const localComputedMask = NAMED_MASKS[props4.mask] === void 0 ? props4.mask : NAMED_MASKS[props4.mask], fillChar = typeof props4.fillMask === "string" && props4.fillMask.length !== 0 ? props4.fillMask.slice(0, 1) : "_", fillCharEscaped = fillChar.replace(escRegex, "\\$&"), unmask = [], extract = [], mask = [];
       let firstMatch = props4.reverseFillMask === true, unmaskChar = "", negateChar = "";
-      localComputedMask.replace(tokenRegexMask, (_, char1, esc, token2, char2) => {
+      localComputedMask.replace(tokens.value.tokenRegexMask, (_, char1, esc, token2, char2) => {
         if (token2 !== void 0) {
-          const c = TOKENS[token2];
+          const c = tokens.value.tokenMap[token2];
           mask.push(c);
           negateChar = c.negate;
           if (firstMatch === true) {
@@ -16347,7 +16376,7 @@
     function updateMaskValue(rawVal, updateMaskInternalsFlag, inputType) {
       const inp = inputRef.value, end = inp.selectionEnd, endReverse = inp.value.length - end, unmasked = unmaskValue(rawVal);
       updateMaskInternalsFlag === true && updateMaskInternals();
-      const preMasked = maskValue(unmasked), masked = props4.fillMask !== false ? fillWithMask(preMasked) : preMasked, changed2 = innerValue.value !== masked;
+      const preMasked = maskValue(unmasked, updateMaskInternalsFlag), masked = props4.fillMask !== false ? fillWithMask(preMasked) : preMasked, changed2 = innerValue.value !== masked;
       inp.value !== masked && (inp.value = masked);
       changed2 === true && (innerValue.value = masked);
       document.activeElement === inp && nextTick(() => {
@@ -16502,12 +16531,12 @@
         inp.setSelectionRange(start, inp.selectionEnd, "forward");
       }
     }
-    function maskValue(val) {
+    function maskValue(val, updateMaskInternalsFlag) {
       if (val === void 0 || val === null || val === "") {
         return "";
       }
       if (props4.reverseFillMask === true) {
-        return maskValueReverse(val);
+        return maskValueReverse(val, updateMaskInternalsFlag);
       }
       const mask = computedMask;
       let valIndex = 0, output = "";
@@ -16515,6 +16544,9 @@
         const valChar = val[valIndex], maskDef = mask[maskIndex];
         if (typeof maskDef === "string") {
           output += maskDef;
+          if (updateMaskInternalsFlag === true && valChar === maskDef) {
+            valIndex++;
+          }
         } else if (valChar !== void 0 && maskDef.regex.test(valChar)) {
           output += maskDef.transform !== void 0 ? maskDef.transform(valChar) : valChar;
           valIndex++;
@@ -16524,7 +16556,7 @@
       }
       return output;
     }
-    function maskValueReverse(val) {
+    function maskValueReverse(val, updateMaskInternalsFlag) {
       const mask = computedMask, firstTokenIndex = maskMarked.indexOf(MARKER);
       let valIndex = val.length - 1, output = "";
       for (let maskIndex = mask.length - 1; maskIndex >= 0 && valIndex !== -1; maskIndex--) {
@@ -16532,6 +16564,9 @@
         let valChar = val[valIndex];
         if (typeof maskDef === "string") {
           output = maskDef + output;
+          if (updateMaskInternalsFlag === true && valChar === maskDef) {
+            valIndex--;
+          }
         } else if (valChar !== void 0 && maskDef.regex.test(valChar)) {
           do {
             output = (maskDef.transform !== void 0 ? maskDef.transform(valChar) : valChar) + output;
@@ -18318,21 +18353,17 @@
       function setByOffset(offset2) {
         model.value = model.value + offset2;
       }
-      const inputEvents = computed(() => {
-        function updateModel2() {
-          model.value = newPage.value;
-          newPage.value = null;
-        }
-        return {
-          "onUpdate:modelValue": (val) => {
-            newPage.value = val;
-          },
-          onKeyup: (e) => {
-            isKeyCode(e, 13) === true && updateModel2();
-          },
-          onBlur: updateModel2
-        };
-      });
+      function updateModel2() {
+        model.value = newPage.value;
+        newPage.value = null;
+        $q.platform.is.mobile === true && document.activeElement.blur();
+      }
+      function onInputValue(val) {
+        newPage.value = val;
+      }
+      function onKeyup2(e) {
+        isKeyCode(e, 13) === true && updateModel2();
+      }
       function getBtn2(cfg, page, active) {
         const data = {
           "aria-label": page,
@@ -18479,7 +18510,9 @@
               placeholder: inputPlaceholder.value,
               min: minProp.value,
               max: maxProp.value,
-              ...inputEvents.value
+              "onUpdate:modelValue": onInputValue,
+              onKeyup: onKeyup2,
+              onBlur: updateModel2
             }) : h("div", {
               class: "q-pagination__middle row justify-center"
             }, contentMiddle),
@@ -29833,7 +29866,7 @@
     console.error("[ Quasar ] Vue is required to run. Please add a script tag for it before loading Quasar.");
   }
   window.Quasar = {
-    version: "2.18.2",
+    version: "2.18.5",
     install(app2, opts) {
       install_quasar_default(app2, {
         components: components_exports,

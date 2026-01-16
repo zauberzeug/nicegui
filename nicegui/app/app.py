@@ -12,7 +12,7 @@ from typing import Any, Callable, Optional, Union
 from fastapi import FastAPI, HTTPException, Request, Response
 from fastapi.responses import FileResponse
 
-from .. import background_tasks, helpers
+from .. import background_tasks, core, helpers
 from ..client import Client
 from ..logging import log
 from ..native import NativeConfig
@@ -46,7 +46,8 @@ class App(FastAPI):
         self._shutdown_handlers: list[Union[Callable[..., Any], Awaitable]] = []
         self._connect_handlers: list[Union[Callable[..., Any], Awaitable]] = []
         self._disconnect_handlers: list[Union[Callable[..., Any], Awaitable]] = []
-        self._exception_handlers: list[Callable[..., Any]] = [lambda e: log.exception('observed exception', exc_info=e)]
+        self._delete_handlers: list[Union[Callable[..., Any], Awaitable]] = []
+        self._exception_handlers: list[Callable[..., Any]] = [log.exception]
         self._page_exception_handler: Optional[Callable[..., Any]] = None
 
     @property
@@ -118,8 +119,19 @@ class App(FastAPI):
         """Called every time a new client disconnects from NiceGUI.
 
         The callback has an optional parameter of `nicegui.Client`.
+
+        *Updated in version 3.0.0: The handler is also called when a client reconnects.*
         """
         self._disconnect_handlers.append(handler)
+
+    def on_delete(self, handler: Union[Callable, Awaitable]) -> None:
+        """Called when a client is deleted.
+
+        The callback has an optional parameter of `nicegui.Client`.
+
+        *Added in version 3.0.0*
+        """
+        self._delete_handlers.append(handler)
 
     def on_startup(self, handler: Union[Callable, Awaitable]) -> None:
         """Called when NiceGUI is started or restarted.
@@ -127,6 +139,8 @@ class App(FastAPI):
         Needs to be called before `ui.run()`.
         """
         if self.is_started:
+            if core.script_mode:
+                raise RuntimeError('Unable to register a startup in script mode. Use a `@ui.page` function instead.')
             raise RuntimeError('Unable to register another startup handler. NiceGUI has already been started.')
         self._startup_handlers.append(handler)
 
@@ -224,7 +238,7 @@ class App(FastAPI):
         :param local_file: local file to serve as static content
         :param url_path: string that starts with a slash "/" and identifies the path at which the file should be served (default: None -> auto-generated URL path)
         :param single_use: whether to remove the route after the file has been downloaded once (default: False)
-        :param strict: whether to raise a ``ValueError`` if the file does not exist (default: False, *added in version 2.12.0*)
+        :param strict: whether to raise a ``FileNotFoundError`` if the file does not exist (default: True, *added in version 2.12.0*)
         :param max_cache_age: value for max-age set in Cache-Control header (*added in version 2.8.0*)
         :return: encoded URL which can be used to access the file
         """
@@ -260,8 +274,9 @@ class App(FastAPI):
         """
         @self.get(url_path.rstrip('/') + '/{filename:path}')  # NOTE: prevent double slashes in route pattern
         def read_item(request: Request, filename: str, nicegui_chunk_size: int = 8192) -> Response:
-            filepath = Path(local_directory) / filename
-            if not filepath.is_file():
+            local_dir = Path(local_directory).resolve()
+            filepath = (local_dir / filename).resolve()
+            if not filepath.is_relative_to(local_dir) or not filepath.is_file():
                 raise HTTPException(status_code=404, detail='Not Found')
             return get_range_response(filepath, request, chunk_size=nicegui_chunk_size)
 
@@ -281,7 +296,7 @@ class App(FastAPI):
         :param local_file: local file to serve as media content
         :param url_path: string that starts with a slash "/" and identifies the path at which the file should be served (default: None -> auto-generated URL path)
         :param single_use: whether to remove the route after the media file has been downloaded once (default: False)
-        :param strict: whether to raise a ``ValueError`` if the file does not exist (default: False, *added in version 2.12.0*)
+        :param strict: whether to raise a ``FileNotFoundError`` if the file does not exist (default: True, *added in version 2.12.0*)
         :return: encoded URL which can be used to access the file
         """
         file = Path(local_file).resolve()
@@ -308,6 +323,7 @@ class App(FastAPI):
         self._shutdown_handlers.clear()
         self._connect_handlers.clear()
         self._disconnect_handlers.clear()
+        self._delete_handlers.clear()
         self._exception_handlers[:] = [log.exception]
         self.config = AppConfig()
 

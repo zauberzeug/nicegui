@@ -3,6 +3,30 @@
 We're thrilled that you're interested in contributing to NiceGUI!
 Here are some guidelines that will help you get started.
 
+## About This Project
+
+NiceGUI is a Python library for building web-based user interfaces with minimal code.
+It's designed to be simple, powerful, and fun to use.
+
+### Project Structure
+
+- `nicegui/` - Core library code (public API)
+- `nicegui/elements/` - Built-in UI elements
+- `nicegui/functions/` - Utility functions
+- `examples/` - Standalone example applications
+- `website/` - Documentation site (nicegui.io)
+- `tests/` - Test suite
+- `main.py` - Runs the documentation website locally
+
+### Tech Stack
+
+- **Python 3.9+** - Core language
+- **FastAPI/Starlette** - Web framework
+- **Vue 3** - Frontend framework
+- **Quasar** - UI component framework
+- **Tailwind CSS 4** - Styling
+- **pytest** - Testing framework
+
 ## Reporting issues
 
 If you encounter a bug or other issue with NiceGUI, the best way to report it is by opening a new issue on our [GitHub repository](https://github.com/zauberzeug/nicegui).
@@ -22,7 +46,23 @@ We're always looking for bug fixes, performance improvements, and new features.
 ### AI Assistant Integration
 
 This project is designed to work well with AI assistants like Cursor, GitHub Copilot, and others.
-The `.cursor/rules/` directory contains guidelines specifically for AI assistants that complement this contributing guide.
+See [AGENTS.md](AGENTS.md) for guidelines specifically for AI assistants that complement this contributing guide.
+
+We provide review instructions for PR reviews in [.github/copilot-instructions.md](.github/copilot-instructions.md).
+You should review your changes with an AI assistant before committing/pushing:
+
+In Cursor or VS Code with GitHub Copilot Chat:
+
+Select Agent Mode with claude-4.5-sonnet and write: `Review my current branch according to @.github/copilot-instructions.md`
+
+> [!TIP]
+> In Cursor, you can use these custom commands for easy access:
+>
+> - `/review-uncommitted` - Review your local uncommitted changes
+> - `/review-changes` - Review your current branch vs main
+
+Ensure to address any valid feedback.
+That will make your life and that of the maintainers much easier.
 
 ## Setup
 
@@ -38,12 +78,18 @@ The simplest way to setup a fully functioning development environment is to star
 
 ### Locally
 
-To set up a local development environment for NiceGUI, you'll need to have Python 3.9+ and pip installed.
+To set up a local development environment for NiceGUI, you'll need to have Python 3.9+ and [uv](https://docs.astral.sh/uv/) installed.
 
-You can then use the following command to install NiceGUI in editable mode:
+You can install uv using:
 
 ```bash
-python3 -m pip install -e .
+curl -LsSf https://astral.sh/uv/install.sh | sh
+```
+
+Then use the following command to install NiceGUI in editable mode with all dependencies:
+
+```bash
+uv sync
 ```
 
 This will install the `nicegui` package and all its dependencies, and link it to your local development environment so that changes you make to the code will be immediately reflected.
@@ -78,13 +124,17 @@ To view the log output, use the command
 
 ## Coding Style Guide
 
+This section covers our formatting conventions, style principles, workflow practices, and automated linting enforcement.
+
 ### Formatting
+
+We follow **PEP 8** with a few deviations (see Style Principles below).
 
 We use [autopep8](https://github.com/hhatto/autopep8) with a 120 character line length to format our code.
 Before submitting a pull request, please run
 
 ```bash
-autopep8 --max-line-length=120 --in-place --recursive .
+uv run autopep8 --max-line-length=120 --in-place --recursive .
 ```
 
 on your code to ensure that it meets our formatting guidelines.
@@ -96,15 +146,29 @@ There are cases where one or the other arrangement of, e.g., function arguments 
 Then we like the flexibility to either put all arguments on separate lines or only put the lengthy event handler
 on a second line and leave the other arguments as they are.
 
+**Fluent Interface Formatting:**
+When chaining methods (builder pattern), use backslash line continuation:
+
+```python
+ui.button('Click me') \
+    .classes('bg-green') \
+    .on('click', lambda: ui.notify('Hello'))
+```
+
 ### Style Principles
 
 - Always prefer simple solutions
 - Avoid having files over 200-300 lines of code. Refactor at that point
 - Use single quotes for strings in Python, double quotes in JavaScript
-- Use f-strings wherever possible for better readability (except in performance-critical sections which should be marked with "NOTE:" comments)
+- Use `# NOTE:` prefix for important implementation details and non-obvious code
+- Use f-strings wherever possible for better readability (except in performance-critical sections which should be marked with `# NOTE:` comments)
 - Follow autopep8 formatting with 120 character line length
+- Never use mutable defaults (`[]`, `{}`) without `# noqa: B006` and justification; prefer `None` as default
+- Put high-level/interesting code at the top of files; helper functions should be below their usage
 - Each sentence in documentation should be on a new line
-- Use ruff for linting and code checks
+- Ensure proper use of async (no blocking operations)
+- **Never use `asyncio.create_task()`**, because the garbage collector might remove unfinished tasks.
+  Always use `background_tasks.create()` which takes better care of task lifecycle management.
 
 ### Workflow Guidelines
 
@@ -114,29 +178,34 @@ on a second line and leave the other arguments as they are.
   - Ensure the code is not too complicated
   - Strive to have minimal maintenance burden and self explanatory code without the need of additional comments
 - Be careful to only make changes that are requested or are well understood and related to the change being requested
-- When fixing an issue or bug, do not introduce a new pattern or technology without first exhausting all options for the existing implementation. And if you finally do this, make sure to remove the old implementation afterwards so we don't have duplicate logic
+- When fixing an issue or bug, do not introduce a new pattern or technology without first exhausting all options for the existing implementation.
+  And if you finally do this, make sure to remove the old implementation afterwards so we don't have duplicate logic
 - Keep the codebase very clean and organized
-- Write tests for new features
+- Create tests for new features and bugfixes: use `Screen` fixture only when browser is involved (JavaScript etc.),
+  otherwise the `User` fixture should be preferred as it is much faster and simpler to use (test runs in same async context as NiceGUI)
 - Run tests before submitting any changes
 - Format code using autopep8 before submitting changes
 - Use pre-commit hooks to ensure coding style compliance
 - When adding new features, include corresponding tests
 - For documentation, ensure each sentence is on a new line
+- Discuss before implementing and if an approach is unclear, present options and trade-offs
+- Approach large changes step-by-step and get confirmation before drastic refactorings
+- Think from first principles: Always question your assumptions to find the true nature of problems
 
 ### Linting
 
 We use [pre-commit](https://github.com/pre-commit/pre-commit) to make sure the coding style is enforced.
-You first need to install pre-commit and the corresponding git commit hooks by running the following commands:
+If you used `uv sync` to install the dependencies, pre-commit should already have been installed then.
+Now run this command to install the git commit hooks used in this project:
 
 ```bash
-python3 -m pip install pre-commit
-pre-commit install
+uv run pre-commit install
 ```
 
 After that you can make sure your code satisfies the coding style by running the following command:
 
 ```bash
-pre-commit run --all-files
+uv run pre-commit run --all-files
 ```
 
 > [!TIP]
@@ -148,7 +217,7 @@ pre-commit run --all-files
 
 These checks will also run automatically before every commit:
 
-- Run `ruff check . --fix` to check the code and sort imports.
+- Run `uv run ruff check . --fix` to check the code and sort imports.
 - Remove trailing whitespace.
 - Fix end of files.
 - Enforce single quotes.
@@ -164,16 +233,72 @@ These checks will also run automatically before every commit:
 > There are only a few places in the code base where performance really matters and f-strings might not be the best choice.
 > These places should be marked with a `# NOTE: ...` comment when diverging from f-string usage.
 
+## NiceGUI-Specific Patterns
+
+Beyond standard Python conventions, NiceGUI has developed specific architectural patterns to handle its unique requirements:
+real-time UI synchronization between Python and Vue.js, efficient memory management with many short-lived objects, and a fluent API design.
+
+When contributing to the core library (`nicegui/` directory), you'll encounter these patterns.
+They may seem unusual at first, but they solve specific problems related to NiceGUI's architecture.
+Understanding these patterns will help you write code that fits naturally into the existing codebase.
+
+### Element Architecture
+
+- **Mixins**: Elements use mixin composition; inheritance order matters for Python's Method Resolution Order (MRO)
+- **Props vs. Attributes**: Use `self._props` for data that syncs to Vue/frontend; use instance attributes for Python-only state
+- **Context Managers**: Elements can be used as context managers (`with element:`) for slot/child management
+- **Component Registration**: Use class parameters for components: `component='file.js'`, `esm={'package': 'dist'}`, `default_classes='css-class'`
+
+### Memory Management
+
+- **Weakref Pattern**: Use `self._element = weakref.ref(element)` to avoid circular references
+  (which require more costly garbage collection).
+  When dereferencing, always check for `None`: `element = self._element(); if element is not None: element.update()`
+- **WeakValueDictionary**: Use for caches that shouldn't prevent garbage collection by means of the reference counting mechanism of CPython
+
+### Binding System
+
+- **BindableProperty**: Use with `cast(Self, sender)` in on-change handlers for type safety
+- **Triple Underscore Storage**: BindableProperty stores values in `___property_name` attributes
+- **Batch Updates**: Use `suspend_updates()` context manager when changing properties in `update()` method to avoid infinite cycles
+
+### Async and Background Tasks
+
+- Use `helpers.is_coroutine_function()` to check if a handler is async
+- Use `helpers.expects_arguments()` to check if a handler expects arguments
+- Use `core.app.handle_exception()` for handling exceptions in background tasks
+
+### Method Returns
+
+- Methods that support chaining (fluent interface) return `Self` from `typing_extensions`
+- This enables the builder pattern: `element.method1().method2().method3()`
+
+### Error Handling
+
+- Use assertions for internal invariants (e.g., `assert self.current_scene is not None`)
+- Raise descriptive exceptions (`ValueError`, `RuntimeError`) with helpful messages
+- Use `core.app.handle_exception()` for global exception handling in background tasks
+
+### Dataclasses
+
+- Use `@dataclass(**KWONLY_SLOTS)` for Python 3.9 compatibility (instead of `@dataclass(kw_only=True, slots=True)`)
+- This pattern is defined in `nicegui/dataclasses.py` and handles version differences automatically
+
 ## Running tests
 
 Our tests are built with pytest and require python-selenium with ChromeDriver.
 See [tests/README.md](https://github.com/zauberzeug/nicegui/blob/main/tests/README.md) for detailed installation instructions and more infos about the test infrastructure and tricks for daily usage.
 
+### User vs Screen Fixtures
+
+- **Use `User` fixture when possible**: Fast, runs in the same async context as NiceGUI, no browser needed
+- **Use `Screen` fixture only when necessary**: Required when testing browser/JavaScript interactions, but slower
+
 Before submitting a pull request, please make sure that all tests are passing.
 To run them all, use the following command in the root directory of NiceGUI:
 
 ```bash
-pytest
+uv run pytest
 ```
 
 ## Documentation
@@ -184,8 +309,8 @@ If you plan to implement a new element you can follow these suggestions:
 
 1. Ensure with the maintainers that the element is a good fit for NiceGUI core;
    otherwise it may be better to create a separate git repository for it.
-2. Clone the NiceGUI repository and launch `main.py` in the root directory.
-3. Run `python3 -m pip install -e .` in the repository as explained above.
+2. Clone the NiceGUI repository and install the requirements including the project itself with `uv sync`.
+3. Launch `main.py` in the root directory: `uv run main.py`.
 4. Create a `test.py` file or similar where you can experiment with your new element.
 5. Look at other similar elements and how they are implemented in `nicegui/elements`.
 6. Create a new file with your new element alongside the existing ones.
@@ -193,6 +318,7 @@ If you plan to implement a new element you can follow these suggestions:
 8. Add a documentation file in `website/documentation/content`.
    By calling the `@doc.demo(...)` function with an element as a parameter the docstring is used as a description.
    The docstrings are written in restructured-text.
+   Make sure to use the correct syntax (like double backticks for code).
    Refer to the new documentation page using `@doc.intro(...)` in any documentation section `website/documentation/content/section_*.py`.
 9. Create a pull-request (see below).
 
@@ -201,8 +327,8 @@ If you plan to implement a new element you can follow these suggestions:
 There is a separate page for each element where multiple interactive demos can be listed.
 Please help us grow the number of insightful demos by following these easy steps:
 
-1. Clone the NiceGUI repository and launch `main.py` in the root directory.
-2. Run `python3 -m pip install -e .` in the repository as explained above.
+1. Clone the NiceGUI repository and install the requirements including the project itself with `uv sync`.
+2. Launch `main.py` in the root directory with `uv run main.py`.
 3. In the newly opened browser window you can navigate to the documentation page where you want to change something.
 4. Open the code in your editor (for example [website/documentation/content/table_documentation.py](https://github.com/zauberzeug/nicegui/blob/main/website/documentation/content/table_documentation.py)).
 5. In the `more()` function insert an inner function containing your demo code.
@@ -212,9 +338,10 @@ Please help us grow the number of insightful demos by following these easy steps
 
 Your contributions are much appreciated.
 
-### Formatting
+### Documentation Formatting
 
 Because it has [numerous benefits](https://nick.groenen.me/notes/one-sentence-per-line/) we write each sentence in a new line.
+Use backslash at end of line for line breaks without paragraph breaks.
 
 ### Examples
 
@@ -251,9 +378,22 @@ The following tools are used to update other resources:
 
 ## Pull requests
 
-To get started, fork the repository on GitHub, clone it somewhere on your filesystem, commit and push your changes,
-and then open a pull request (PR) with a detailed description of the changes you've made
-(the PR button is shown on the GitHub website of your forked repository).
+To get started:
+
+1. **Fork** the repository on GitHub
+2. **Clone** your fork to your local filesystem
+3. **Create a feature branch** (e.g., `git checkout -b fix-button-alignment` or `git checkout -b add-dark-mode`)
+4. Make your changes, **commit** them to your branch
+5. **Push** your feature branch to your fork (e.g., `git push origin fix-button-alignment`)
+6. Open a **pull request (PR)** from your feature branch with a detailed description of your changes
+   (the PR button is shown on the GitHub website of your forked repository)
+
+> [!IMPORTANT]
+> Always work on a feature branch, never on `main`:
+>
+> 1. Working on `main` blocks you from contributing to multiple things simultaneously,
+> 2. It highly increases the chance of an unclean commit history,
+> 3. Your `main` branch should stay in sync with the upstream repository.
 
 When submitting a PR, please make sure that the code follows the existing coding style and that all tests are passing.
 If you're adding a new feature, please include tests that cover the new functionality.

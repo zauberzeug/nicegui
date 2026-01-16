@@ -6,6 +6,7 @@ from typing_extensions import Self
 
 from ... import binding
 from ...awaitable_response import AwaitableResponse, NullResponse
+from ...defaults import DEFAULT_PROP, resolve_defaults
 from ...element import Element
 from ...events import GenericEventArguments
 from .leaflet_layer import Layer
@@ -23,14 +24,15 @@ class Leaflet(Element, component='leaflet.js', esm={'nicegui-leaflet': 'dist'}, 
     center = binding.BindableProperty(lambda sender, value: cast(Leaflet, sender).set_center(value))
     zoom = binding.BindableProperty(lambda sender, value: cast(Leaflet, sender).set_zoom(value))
 
+    @resolve_defaults
     def __init__(self,
-                 center: tuple[float, float] = (0.0, 0.0),
-                 zoom: int = 13,
+                 center: tuple[float, float] = DEFAULT_PROP | (0.0, 0.0),
+                 zoom: int = DEFAULT_PROP | 13,
                  *,
-                 options: dict = {},  # noqa: B006
-                 draw_control: Union[bool, dict] = False,
-                 hide_drawn_items: bool = False,
-                 additional_resources: Optional[list[str]] = None,
+                 options: dict = DEFAULT_PROP | {},
+                 draw_control: Union[bool, dict] = DEFAULT_PROP | False,
+                 hide_drawn_items: bool = DEFAULT_PROP | False,
+                 additional_resources: Optional[list[str]] = DEFAULT_PROP | None,
                  ) -> None:
         """Leaflet map
 
@@ -49,18 +51,30 @@ class Leaflet(Element, component='leaflet.js', esm={'nicegui-leaflet': 'dist'}, 
         self.layers: list[Layer] = []
         self.is_initialized = False
 
+        # read-write public API
         self.center = center
         self.zoom = zoom
+
+        # internal state, mutates client state via _to_dict
         self._props['center'] = center
         self._props['zoom'] = zoom
+
+        # client state
+        self._client_center = center
+        self._client_zoom = zoom
+
         self._props['options'] = {**options}
-        self._props['draw_control'] = draw_control
-        self._props['hide_drawn_items'] = hide_drawn_items
-        self._props['additional_resources'] = additional_resources or []
+        self._props['draw-control'] = draw_control
+        self._props['hide-drawn-items'] = hide_drawn_items
+        self._props['additional-resources'] = additional_resources or []
+
+        self._props.add_rename('draw_control', 'draw-control')  # DEPRECATED: remove in NiceGUI 4.0
+        self._props.add_rename('hide_drawn_items', 'hide-drawn-items')  # DEPRECATED: remove in NiceGUI 4.0
+        self._props.add_rename('additional_resources', 'additional-resources')  # DEPRECATED: remove in NiceGUI 4.0
 
         self.on('init', self._handle_init)
-        self.on('map-moveend', self._handle_moveend)
-        self.on('map-zoomend', self._handle_zoomend)
+        self.on('map-moveend', self._handle_move_or_zoom_end)
+        self.on('map-zoomend', self._handle_move_or_zoom_end)
 
         self.tile_layer(
             url_template=r'https://{s}.tile.osm.org/{z}/{x}/{y}.png',
@@ -84,24 +98,17 @@ class Leaflet(Element, component='leaflet.js', esm={'nicegui-leaflet': 'dist'}, 
         for layer in self.layers:
             self.run_method('add_layer', layer.to_dict(), layer.id)
 
-    async def initialized(self, timeout: float = 3.0) -> None:
-        """Wait until the map is initialized.
-
-        :param timeout: timeout in seconds (default: 3 seconds)
-        """
+    async def initialized(self) -> None:
+        """Wait until the map is initialized."""
         event = asyncio.Event()
         self.on('init', event.set, [])
-        await self.client.connected(timeout=timeout)
+        await self.client.connected()
         await event.wait()
 
-    def _handle_moveend(self, e: GenericEventArguments) -> None:
+    def _handle_move_or_zoom_end(self, e: GenericEventArguments) -> None:
         self._send_update_on_value_change = False
-        self.center = e.args['center']
-        self._send_update_on_value_change = True
-
-    def _handle_zoomend(self, e: GenericEventArguments) -> None:
-        self._send_update_on_value_change = False
-        self.zoom = e.args['zoom']
+        self.center = self._client_center = e.args['center']
+        self.zoom = self._client_zoom = e.args['zoom']
         self._send_update_on_value_change = True
 
     def run_method(self, name: str, *args: Any, timeout: float = 1) -> AwaitableResponse:
@@ -114,16 +121,12 @@ class Leaflet(Element, component='leaflet.js', esm={'nicegui-leaflet': 'dist'}, 
         if self._props['center'] == center:
             return
         self._props['center'] = center
-        if self._send_update_on_value_change:
-            self.run_map_method('setView', center, self.zoom)
 
     def set_zoom(self, zoom: int) -> None:
         """Set the zoom level of the map."""
         if self._props['zoom'] == zoom:
             return
         self._props['zoom'] = zoom
-        if self._send_update_on_value_change:
-            self.run_map_method('setView', self.center, zoom)
 
     def remove_layer(self, layer: Layer) -> None:
         """Remove a layer from the map."""
@@ -169,3 +172,11 @@ class Leaflet(Element, component='leaflet.js', esm={'nicegui-leaflet': 'dist'}, 
     def _handle_delete(self) -> None:
         binding.remove(self.layers)
         super()._handle_delete()
+
+    def _to_dict(self):
+        if self._send_update_on_value_change and (
+            self._props['center'] != self._client_center or
+            self._props['zoom'] != self._client_zoom
+        ):
+            self.run_map_method('setView', self._props['center'], self._props['zoom'])
+        return super()._to_dict()

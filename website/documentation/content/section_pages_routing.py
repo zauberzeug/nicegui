@@ -21,6 +21,19 @@ doc.intro(page_layout_documentation)
 doc.intro(sub_pages_documentation)
 
 
+@doc.demo('Script Mode', '''
+    While generally you would either use `@ui.page` decorators or a root function to create pages,
+    it is cumbersome when making quick prototypes or demos.
+    In such cases, you can use "script mode" by simply writing code at the top level of a script.
+    The code will be executed once per client connection, and the interface will be created for that client.
+''')
+def script_mode_demo():
+    ui.label('No @ui.page, no root function, but still a working page!')
+
+
+doc.text('', 'Note: Many of the demos in this documentation are written in script mode for conciseness.')
+
+
 @doc.auto_execute
 @doc.demo('Parameter injection', '''
     Thanks to FastAPI, a page function accepts optional parameters to provide
@@ -49,7 +62,7 @@ doc.intro(navigate_documentation)
 
 doc.redirects['open'] = 'navigate#ui_navigate_to_(formerly_ui_open)'
 doc.text('ui.open', f'''
-    The `ui.open` function is deprecated.
+    The `ui.open` function has been removed.
     Use [`ui.navigate.to`]({doc.redirects["open"]}) instead.
 ''')
 

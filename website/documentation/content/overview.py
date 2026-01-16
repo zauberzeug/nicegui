@@ -143,7 +143,7 @@ tiles = [
 def create_tiles():
     with ui.row().classes('items-center content-between'):
         ui.label('If you like NiceGUI, go and become a')
-        ui.html('<iframe src="https://github.com/sponsors/zauberzeug/button" title="Sponsor zauberzeug" height="32" width="114" style="border: 0; border-radius: 6px;"></iframe>')
+        ui.html('<iframe src="https://github.com/sponsors/zauberzeug/button" title="Sponsor zauberzeug" height="32" width="114" style="border: 0; border-radius: 6px;"></iframe>', sanitize=False)
     for documentation, description in tiles:
         page = doc.get_page(documentation)
         with ui.link(target=f'/documentation/{page.name}') \
@@ -199,6 +199,8 @@ def map_of_nicegui():
                 - `is_deleted`: whether an element has been deleted
         - elements:
             - [`ui.aggrid`](/documentation/aggrid)
+            - [`ui.altair`](/documentation/altair)
+            - [`ui.anywidget`](/documentation/anywidget)
             - [`ui.audio`](/documentation/audio)
             - [`ui.avatar`](/documentation/avatar)
             - [`ui.badge`](/documentation/badge)
@@ -217,6 +219,7 @@ def map_of_nicegui():
             - [`ui.column`](/documentation/column)
             - [`ui.context_menu`](/documentation/context_menu)
             - [`ui.date`](/documentation/date)
+            - [`ui.date_input`](/documentation/date_input)
             - [`ui.dialog`](/documentation/dialog)
             - [`ui.dropdown_button`](/documentation/button_dropdown)
             - [`ui.echart`](/documentation/echart)
@@ -273,6 +276,7 @@ def map_of_nicegui():
             - [`ui.table`](/documentation/table)
             - [`ui.textarea`](/documentation/textarea)
             - [`ui.time`](/documentation/time)
+            - [`ui.time_input`](/documentation/time_input)
             - [`ui.timeline`](/documentation/timeline), `ui.timeline_entry`
             - [`ui.toggle`](/documentation/toggle)
             - [`ui.tooltip`](/documentation/tooltip)
@@ -284,12 +288,13 @@ def map_of_nicegui():
             - `ui.footer`
             - `ui.drawer`, `ui.left_drawer`, `ui.right_drawer`
             - `ui.page_sticky`
+            - `ui.page_scroller`
         - special functions and objects:
             - [`ui.add_body_html`](/documentation/section_pages_routing#add_html_to_the_page) and
                 [`ui.add_head_html`](/documentation/section_pages_routing#add_html_to_the_page): add HTML to the body and head of the page
             - [`ui.add_css`](/documentation/add_style#add_css_style_definitions_to_the_page),
-                [`ui.add_sass`](/documentation/add_style#add_sass_style_definitions_to_the_page) and
-                [`ui.add_scss`](/documentation/add_style#add_scss_style_definitions_to_the_page): add CSS, SASS and SCSS to the page
+                [`ui.add_sass`](/documentation/add_style#add_sass_style_definitions_to_the_page) (deprecated) and
+                [`ui.add_scss`](/documentation/add_style#add_scss_style_definitions_to_the_page) (deprecated): add CSS, SASS and SCSS to the page
             - [`ui.clipboard`](/documentation/clipboard): interact with the browser's clipboard
             - [`ui.colors`](/documentation/colors): define the main color theme for a page
             - `ui.context`: get the current UI context including the `client` and `request` objects
@@ -298,7 +303,7 @@ def map_of_nicegui():
             - [`ui.fullscreen`](/documentation/fullscreen): enter, exit and toggle fullscreen mode
             - [`ui.keyboard`](/documentation/keyboard): define keyboard event handlers
             - [`ui.navigate`](/documentation/navigate): let the browser navigate to another location
-            - [`ui.notify`](/documentation/notification): show a notification
+            - [`ui.notify`](/documentation/notify): show a notification
             - [`ui.on`](/documentation/generic_events#custom_events): register an event handler
             - [`ui.page_title`](/documentation/page_title): change the current page title
             - [`ui.query`](/documentation/query): query HTML elements on the client side to modify props, classes and style definitions
@@ -323,8 +328,9 @@ def map_of_nicegui():
             - `app.storage.general`: stored in a file on the server, shared across the entire app
             - `app.storage.browser`: stored in the browser's local storage, unique per browser
         - [lifecycle hooks](/documentation/section_action_events#events):
-            - `app.on_connect()`: called when a client connects
-            - `app.on_disconnect()`: called when a client disconnects
+            - `app.on_connect()`: called when a client connects (even when reconnecting)
+            - `app.on_disconnect()`: called when a client disconnects (even when reconnecting)
+            - `app.on_delete()`: called when a client is deleted (if it does not reconnect)
             - `app.on_startup()`: called when the app starts
             - `app.on_shutdown()`: called when the app shuts down
             - `app.on_exception()`: called when an exception occurs

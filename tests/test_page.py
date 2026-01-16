@@ -137,6 +137,7 @@ def test_exception(screen: Screen):
     def page():
         raise RuntimeError('some exception')
 
+    screen.allowed_js_errors.append('/ - Failed to load resource')
     screen.open('/')
     screen.should_contain('500')
     screen.should_contain('Server error')
@@ -155,6 +156,16 @@ def test_exception_after_connected(screen: Screen):
     screen.should_contain('some content before connected')
     screen.should_not_contain('some content after connected')
     screen.assert_py_logger('ERROR', 'some exception')
+
+
+def test_api_exception(screen: Screen):
+    @app.get('/')
+    def api_exception():
+        raise RuntimeError('some exception in a GET endpoint')
+
+    screen.allowed_js_errors.append('/ - Failed to load resource')
+    screen.open('/')
+    screen.should_contain('Internal Server Error')
 
 
 def test_page_with_args(screen: Screen):
@@ -312,5 +323,6 @@ def test_warning_if_response_takes_too_long(screen: Screen):
         await asyncio.sleep(1)
         ui.label('all done')
 
+    screen.allowed_js_errors.append('/ - Failed to load resource')
     screen.open('/')
     screen.assert_py_logger('WARNING', re.compile('Response for / not ready after 0.5 seconds'))

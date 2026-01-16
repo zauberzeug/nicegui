@@ -69,7 +69,7 @@ def test_missing_extra(screen: Screen):
     # NOTE: This test does not work after test_extra() has been run, because conftest won't reset libraries correctly.
     @ui.page('/')
     def page():
-        ui.highchart({'chart': {'type': 'solidgauge'}})
+        ui.highchart({'chart': {'type': 'solidgauge'}, 'series': {'data': [1.0]}})
 
     screen.open('/')
     assert not screen.selenium.find_elements(By.CSS_SELECTOR, '.highcharts-pane')
@@ -78,7 +78,7 @@ def test_missing_extra(screen: Screen):
 def test_extra(screen: Screen):
     @ui.page('/')
     def page():
-        ui.highchart({'chart': {'type': 'solidgauge'}}, extras=['solid-gauge'])
+        ui.highchart({'chart': {'type': 'solidgauge'}, 'series': {'data': [1.0]}}, extras=['solid-gauge'])
 
     screen.open('/')
     assert screen.selenium.find_elements(By.CSS_SELECTOR, '.highcharts-pane')
@@ -87,7 +87,7 @@ def test_extra(screen: Screen):
 def test_stock_chart(screen: Screen):
     @ui.page('/')
     def page():
-        ui.highchart({}, type='stockChart', extras=['stock'])
+        ui.highchart({'series': {'data': [1.0]}}, type='stockChart', extras=['stock'])
 
     screen.open('/')
     assert screen.selenium.find_elements(By.CSS_SELECTOR, '.highcharts-range-selector-buttons')
@@ -100,8 +100,7 @@ def test_replace_chart(screen: Screen):
             ui.highchart({'series': [{'name': 'A'}]})
 
         def replace():
-            container.clear()
-            with container:
+            with container.clear():
                 ui.highchart({'series': [{'name': 'B'}]})
         ui.button('Replace', on_click=replace)
 
@@ -134,7 +133,7 @@ def test_updating_stock_chart(screen: Screen):
 def test_create_dynamically(screen: Screen):
     @ui.page('/')
     def page():
-        ui.button('Create', on_click=lambda: ui.highchart({}))
+        ui.button('Create', on_click=lambda: ui.highchart({'series': {'data': [1.0]}}))
 
     screen.open('/')
     screen.click('Create')

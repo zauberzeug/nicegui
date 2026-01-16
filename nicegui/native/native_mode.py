@@ -5,7 +5,6 @@ import multiprocessing as mp
 import queue
 import socket
 import sys
-import tempfile
 import time
 import warnings
 from threading import Event, Thread
@@ -44,12 +43,11 @@ def _open_window(
     }
     webview.settings.update(**core.app.native.settings)
     window = webview.create_window(**window_kwargs)
+    assert window is not None
     closed = Event()
     window.events.closed += closed.set
     _start_window_method_executor(window, method_queue, response_queue, closed)
-    if not core.app.native.start_args.get('private_mode', True) and 'storage_path' not in core.app.native.start_args:
-        log.warning('Pass in a `storage_path` to properly disable `private_mode` for the native app.')
-    webview.start(**{'storage_path': tempfile.mkdtemp(), **core.app.native.start_args})
+    webview.start(**core.app.native.start_args)
 
 
 def _start_window_method_executor(window: webview.Window,

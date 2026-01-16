@@ -4,8 +4,8 @@ export default {
   template: `<div></div>`,
   async mounted() {
     await this.$nextTick(); // NOTE: wait for window.path_prefix to be set
-    await loadResource(window.path_prefix + `${this.dynamic_resource_path}/codehilite.css`);
-    if (this.use_mermaid) {
+    await loadResource(window.path_prefix + `${this.dynamicResourcePath}/${this.resourceName}`);
+    if (this.useMermaid) {
       this.mermaid = (await import("nicegui-mermaid")).mermaid;
       this.mermaid.initialize({ startOnLoad: false });
       this.renderMermaid();
@@ -22,6 +22,7 @@ export default {
   },
   methods: {
     renderMermaid() {
+      if (!this.useMermaid || !this.mermaid) return;
       // render new diagrams
       const usedKeys = new Set();
       this.$el.querySelectorAll(".mermaid-pre").forEach(async (pre, i) => {
@@ -52,8 +53,9 @@ export default {
     },
   },
   props: {
-    dynamic_resource_path: String,
-    use_mermaid: {
+    dynamicResourcePath: String,
+    resourceName: String,
+    useMermaid: {
       required: false,
       default: false,
       type: Boolean,

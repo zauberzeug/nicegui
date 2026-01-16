@@ -4,7 +4,7 @@ set -euo pipefail
 
 run() {
     pwd
-    output=$({ timeout 10 ./"$1" "${@:2}"; } 2>&1)
+    output=$({ timeout 10 uv run --no-sync ./"$1" "${@:2}"; } 2>&1)
     exitcode=$?
     [[ $exitcode -eq 124 ]] && exitcode=0 # exitcode 124 is coming from "timeout command above"
     echo "$output" | grep -qE "NiceGUI ready to go|Uvicorn running on http://127.0.0.1:8000" || exitcode=1
@@ -45,8 +45,13 @@ do
     fi
 
     # Skip examples/sqlite_database for Python 3.11 and 3.12
-    if [[ $(python3 --version | cut -d' ' -f2 | cut -d'.' -f1,2) =~ ^3.1[12]$ ]] && [[ $path == "examples/sqlite_database" ]]; then
+    if [[ $(uv run python3 --version | cut -d' ' -f2 | cut -d'.' -f1,2) =~ ^3.1[12]$ ]] && [[ $path == "examples/sqlite_database" ]]; then
         continue # until https://github.com/omnilib/aiosqlite/issues/241 is fixed
+    fi
+
+    # Skip examples/ai_interface for Python 3.14
+    if [[ $(uv run python3 --version | cut -d' ' -f2 | cut -d'.' -f1,2) =~ ^3.14$ ]] && [[ $path == "examples/ai_interface" ]]; then
+        continue # It still uses Pydantic V1, which breaks horribly with Python 3.14
     fi
 
     # skip if path is examples/pyserial
@@ -57,7 +62,7 @@ do
     # install all requirements except nicegui
     if test -f $path/requirements.txt; then
         sed '/^nicegui/d' $path/requirements.txt > $path/requirements.tmp.txt || exit 1 # remove nicegui from requirements.txt
-        python3 -m pip install -r $path/requirements.tmp.txt || exit 1
+        uv pip install -r $path/requirements.tmp.txt || exit 1
         rm $path/requirements.tmp.txt || exit 1
     fi
 
@@ -69,7 +74,7 @@ do
     fi
     if pytest -q --collect-only $path >/dev/null 2>&1; then
         echo "running tests for $path"
-        pytest $path || exit 1
+        uv run --no-sync pytest $path || exit 1
     fi
 done
 

@@ -7,7 +7,9 @@ from typing_extensions import Self
 
 from .context import context
 from .element import Element
+from .elements.chat_message import ChatMessage
 from .elements.choice_element import ChoiceElement
+from .elements.icon import Icon
 from .elements.mixins.content_element import ContentElement
 from .elements.mixins.source_element import SourceElement
 from .elements.mixins.text_element import TextElement
@@ -72,7 +74,7 @@ class ElementFilter(Generic[T]):
 
         :param kind: filter by element type; the iterator will be of type ``kind``
         :param marker: filter by element markers; can be a list of strings or a single string where markers are separated by whitespace
-        :param content: filter for elements which contain ``content`` in one of their content attributes like ``.text``, ``.value``, ``.source``, ...; can be a singe string or a list of strings which all must match
+        :param content: filter for elements which contain ``content`` in one of their content attributes like ``.text``, ``.value``, ``.source``, ...; can be a single string or a list of strings which all must match
         :param local_scope: if `True`, only elements within the current scope are returned; by default the whole page is searched (this default behavior can be changed with ``ElementFilter.DEFAULT_LOCAL_SCOPE = True``)
         """
         self._kind = kind
@@ -130,6 +132,8 @@ class ElementFilter(Generic[T]):
                 if isinstance(element, Tree):
                     LABEL_KEY = element.props.get('label-key')
                     element_contents.extend(node[LABEL_KEY] for node in element.nodes(visible=True))
+                if isinstance(element, (Icon, ChatMessage)):
+                    element_contents.append(element.props.get('name'))
                 if any(all(needle not in str(haystack) for haystack in element_contents) for needle in self._contents):
                     continue
                 if any(needle in str(haystack) for haystack in element_contents for needle in self._exclude_content):

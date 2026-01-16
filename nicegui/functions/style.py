@@ -1,16 +1,9 @@
 from pathlib import Path
 from typing import Union
 
-from .. import optional_features
-
-try:
-    import sass
-    optional_features.register('sass')
-except ImportError:
-    pass
-
-from .. import helpers
-from .html import add_head_html
+from .. import helpers, json
+from ..client import Client
+from ..context import context
 
 
 def add_css(content: Union[str, Path], *, shared: bool = False) -> None:
@@ -25,36 +18,52 @@ def add_css(content: Union[str, Path], *, shared: bool = False) -> None:
     """
     if helpers.is_file(content):
         content = Path(content).read_text(encoding='utf-8')
-    add_head_html(f'<style>{content}</style>', shared=shared)
+    safe_content = json.dumps(content).replace('<', r'\u003c')
+    _add_javascript(f'addStyle({safe_content});', shared=shared)
 
 
-def add_scss(content: Union[str, Path], *, indented: bool = False, shared: bool = False) -> None:
-    """Add SCSS style definitions to the page.
+def add_scss(content: Union[str, Path], *, indented: bool = False, shared: bool = False) -> None:  # DEPRECATED
+    """Add SCSS style definitions to the page (deprecated).
 
     This function can be used to add SCSS style definitions to the head of the HTML page.
 
     *Added in version 2.0.0*
 
+    **Note: This function is deprecated and will be removed in NiceGUI 4.0. Use add_css instead.**
+
     :param content: SCSS content (string or file path)
     :param indented: whether the content is indented (SASS) or not (SCSS) (default: `False`)
     :param shared: whether to add the code to all pages (default: ``False``, *added in version 2.14.0*)
     """
-    if not optional_features.has('sass'):
-        raise ImportError('Please run "pip install libsass" to use SASS or SCSS.')
+    content = Path(content).read_text(encoding='utf-8') if helpers.is_file(content) else str(content).strip()
+    syntax = 'indented' if indented else 'scss'
+    safe_content = json.dumps(content).replace('<', r'\u003c')
+    _add_javascript(f'''
+        import("sass").then(sass => addStyle(sass.compileString({safe_content}, {{syntax: "{syntax}"}}).css));
+    ''', shared=shared)
 
-    if helpers.is_file(content):
-        content = Path(content).read_text(encoding='utf-8')
-    add_css(sass.compile(string=str(content).strip(), indented=indented), shared=shared)
 
-
-def add_sass(content: Union[str, Path], *, shared: bool = False) -> None:
-    """Add SASS style definitions to the page.
+def add_sass(content: Union[str, Path], *, shared: bool = False) -> None:  # DEPRECATED
+    """Add SASS style definitions to the page (deprecated).
 
     This function can be used to add SASS style definitions to the head of the HTML page.
 
     *Added in version 2.0.0*
 
+    **Note: This function is deprecated and will be removed in NiceGUI 4.0. Use add_css instead.**
+
     :param content: SASS content (string or file path)
     :param shared: whether to add the code to all pages (default: ``False``, *added in version 2.14.0*)
     """
     add_scss(content, indented=True, shared=shared)
+
+
+def _add_javascript(code: str, *, shared: bool = False) -> None:
+    script_html = f'<script>{code}</script>'
+    client = context.client
+    if shared:
+        Client.shared_head_html += script_html + '\n'
+    else:
+        client._head_html += script_html + '\n'
+    if client.has_socket_connection:
+        client.run_javascript(code)

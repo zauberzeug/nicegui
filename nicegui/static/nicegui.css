@@ -18,20 +18,25 @@
 .nicegui-tab-panel,
 .nicegui-card,
 .nicegui-carousel-slide,
+.nicegui-expansion .q-expansion-item__content,
+.nicegui-scroll-area .q-scrollarea__content {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--nicegui-default-gap);
+  padding: var(--nicegui-default-padding);
+}
+.nicegui-splitter .q-splitter__panel,
 .nicegui-step .q-stepper__nav,
 .nicegui-step .q-stepper__step-inner,
-.nicegui-expansion .q-expansion-item__content,
-.nicegui-scroll-area .q-scrollarea__content,
-.nicegui-splitter .q-splitter__panel,
-.nicegui-sub-pages,
 .nicegui-timeline-entry .q-timeline__content,
+.nicegui-sub-pages,
 .nicegui-row,
 .nicegui-column {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   gap: var(--nicegui-default-gap);
-  padding: var(--nicegui-default-padding);
 }
 .nicegui-header,
 .nicegui-footer,
@@ -39,26 +44,9 @@
 .nicegui-row {
   flex-direction: row;
 }
-.nicegui-row,
-.nicegui-column,
-.nicegui-sub-pages {
-  padding: 0;
-}
 .nicegui-card-tight {
   padding: 0;
   gap: 0;
-}
-
-/* original padding for some Quasar elements */
-.nicegui-step .q-stepper__nav {
-  padding: 8px 0 0 0;
-  gap: 8px;
-}
-.nicegui-timeline-entry .q-timeline__content {
-  padding: 0 0 24px 0;
-}
-.nicegui-splitter .q-splitter__panel {
-  padding: 0;
 }
 
 /* let step content fill the whole stepper for easier layout manipulation (#1788) */
@@ -72,6 +60,10 @@
 .nicegui-stepper .q-stepper__step-content,
 .nicegui-stepper .q-stepper__step-inner {
   height: 100%;
+}
+.nicegui-step .q-stepper__nav {
+  padding-top: 8px;
+  gap: 8px;
 }
 
 /* HACK: avoid stutter when expansion item is toggled */
@@ -192,7 +184,7 @@
   padding: 0.5rem;
   border: 1px solid #8884;
 }
-.nicegui-markdown .codehilite pre {
+.nicegui-markdown pre {
   margin: 0.5rem 0;
 }
 .nicegui-markdown .mermaid-pre > .mermaid {
@@ -212,7 +204,7 @@
 .nicegui-link:active {
   opacity: 0.8;
 }
-.nicegui-separator {
+.nicegui-separator.q-separator--horizontal {
   width: 100%;
 }
 .nicegui-aggrid,
@@ -254,7 +246,7 @@ h6.q-timeline__title {
   box-shadow: 0 0 0.5em rgba(127, 159, 191, 0.05);
   border-radius: 0.25rem;
 }
-.nicegui-code .codehilite {
+.nicegui-code pre {
   padding: 0 0.5rem;
 }
 .nicegui-matplotlib > svg,
@@ -266,6 +258,11 @@ h6.q-timeline__title {
   width: 10em;
   height: 10em;
   background-color: AliceBlue;
+}
+.nicegui-joystick > div {
+  width: 100%;
+  height: 100%;
+  position: relative;
 }
 .nicegui-scene[data-initializing],
 .nicegui-scene-view[data-initializing] {
@@ -282,9 +279,12 @@ h6.q-timeline__title {
 .nicegui-codemirror .cm-editor.cm-focused {
   outline: none;
 }
+.js-plotly-plot {
+  box-sizing: content-box; /* HACK: fix overflow when adding borders to the Plotly plot */
+}
 
-/* connection popup */
-#popup {
+/* error popups */
+.nicegui-error-popup {
   position: fixed;
   bottom: 0;
   border: 1pt solid rgba(127, 159, 191, 0.25);
@@ -299,36 +299,38 @@ h6.q-timeline__title {
   pointer-events: none;
   z-index: 10000;
 }
-#popup:dir(ltr) {
+.nicegui-error-popup:dir(ltr) {
   left: 0;
 }
-#popup:dir(rtl) {
+.nicegui-error-popup:dir(rtl) {
   right: 0;
 }
-.body--dark #popup {
+.body--dark .nicegui-error-popup {
   background-color: black;
 }
-.body--light #popup {
+.body--light .nicegui-error-popup {
   background-color: white;
 }
-#popup[aria-hidden="true"] {
+.nicegui-error-popup[aria-hidden="true"] {
   opacity: 0;
   visibility: hidden;
 }
-#popup[aria-hidden="false"] {
+.nicegui-error-popup[aria-hidden="false"] {
   opacity: 1;
   visibility: visible;
+}
+#popup[aria-hidden="false"] {
   transition-delay: 2000ms;
 }
-#popup > span:first-child {
+.nicegui-error-popup > span:first-child {
   font-weight: bold;
 }
-#popup:dir(ltr) > span:first-child::before {
+.nicegui-error-popup:dir(ltr) > span:first-child::before {
   content: "⚠️";
   position: absolute;
   left: 1.5em;
 }
-#popup:dir(rtl) > span:first-child::before {
+.nicegui-error-popup:dir(rtl) > span:first-child::before {
   content: "⚠️";
   position: absolute;
   right: 1.5em;

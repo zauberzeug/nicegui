@@ -1,9 +1,10 @@
 import importlib.util
-from typing import TYPE_CHECKING, Literal, Optional, Union
+from typing import TYPE_CHECKING, Any, Literal, Optional, Union
 
 from typing_extensions import Self
 
 from .. import optional_features
+from ..defaults import DEFAULT_PROP, resolve_defaults
 from ..element import Element
 from ..events import (
     GenericEventArguments,
@@ -12,6 +13,7 @@ from ..events import (
     ValueChangeEventArguments,
     handle_event,
 )
+from ..logging import log
 from .mixins.filter_element import FilterElement
 
 if importlib.util.find_spec('pandas'):
@@ -27,14 +29,15 @@ if importlib.util.find_spec('polars'):
 
 class Table(FilterElement, component='table.js'):
 
+    @resolve_defaults
     def __init__(self,
                  *,
                  rows: list[dict],
                  columns: Optional[list[dict]] = None,
                  column_defaults: Optional[dict] = None,
-                 row_key: str = 'id',
-                 title: Optional[str] = None,
-                 selection: Literal[None, 'single', 'multiple'] = None,
+                 row_key: str = DEFAULT_PROP | 'id',
+                 title: Optional[str] = DEFAULT_PROP | None,
+                 selection: Literal[None, 'single', 'multiple'] = DEFAULT_PROP | None,
                  pagination: Optional[Union[int, dict]] = None,
                  on_select: Optional[Handler[TableSelectionEventArguments]] = None,
                  on_pagination_change: Optional[Handler[ValueChangeEventArguments]] = None,
@@ -42,6 +45,13 @@ class Table(FilterElement, component='table.js'):
         """Table
 
         A table based on Quasar's `QTable <https://quasar.dev/vue-components/table>`_ component.
+        Updates can be pushed to the table by updating the ``rows`` or ``columns`` properties.
+
+        If ``selection`` is "single" or "multiple", then a ``selected`` property is accessible containing the selected rows.
+
+        Note:
+        Cells in ``rows`` must not contain lists because they can cause the browser to crash.
+        To display complex data structures, convert them to strings first (e.g., using ``str()`` or custom formatting).
 
         :param rows: list of row objects
         :param columns: list of column objects (defaults to the columns of the first row *since version 2.0.0*)
@@ -52,8 +62,6 @@ class Table(FilterElement, component='table.js'):
         :param pagination: a dictionary correlating to a pagination object or number of rows per page (`None` hides the pagination, 0 means "infinite"; default: `None`).
         :param on_select: callback which is invoked when the selection changes
         :param on_pagination_change: callback which is invoked when the pagination changes
-
-        If selection is 'single' or 'multiple', then a `selected` property is accessible containing the selected rows.
         """
         super().__init__()
 
@@ -66,7 +74,7 @@ class Table(FilterElement, component='table.js'):
         self._props['columns'] = self._normalize_columns(columns)
         self._props['rows'] = rows
         self._props['row-key'] = row_key
-        self._props['title'] = title
+        self._props.set_optional('title', title)
         self._props['hide-pagination'] = pagination is None
         self._props['pagination'] = pagination if isinstance(pagination, dict) else {'rowsPerPage': pagination or 0}
         self._props['selection'] = selection or 'none'
@@ -95,6 +103,30 @@ class Table(FilterElement, component='table.js'):
             for handler in self._pagination_change_handlers:
                 handle_event(handler, arguments)
         self.on('update:pagination', handle_pagination_change)
+
+    def _to_dict(self) -> dict[str, Any]:
+        # scan rows for lists and add slot templates if needed
+        for column in self._props['columns']:
+            field = column.get('field')
+            name = column.get('name')
+            if not field or not name or f'body-cell-{name}' in self.slots:
+                continue
+            for row in self._props['rows']:
+                value = row.get(field)
+                if isinstance(value, (list, set, tuple)):
+                    log.warning(
+                        f'Found list in column "{name}": {value}.\n'
+                        'Unless there is slot template, table rows must not contain lists or the browser will crash.\n'
+                        'NiceGUI is intervening by adding a slot template to display the list as comma-separated values.'
+                    )
+                    self.add_slot(f'body-cell-{name}', '''
+                        <td class="text-right" :props="props">
+                            {{ Array.isArray(props.value) ? props.value.join(', ') : props.value }}
+                        </td>
+                    ''')
+                    break
+
+        return super()._to_dict()
 
     def on_select(self, callback: Handler[TableSelectionEventArguments]) -> Self:
         """Add a callback to be invoked when the selection changes."""
@@ -412,20 +444,30 @@ class Table(FilterElement, component='table.js'):
             """
             super().__init__('q-tr')
 
-    class header(Element):
+    class header(Element, default_classes='[&>*]:inline'):
 
-        def __init__(self) -> None:
+        def __init__(self, column_name: Optional[str] = None) -> None:
             """Header Element
 
             This element is based on Quasar's `QTh <https://quasar.dev/vue-components/table#qth-api>`_ component.
+
+            :param column_name: corresponding column to access alignment and other properties (*added in version 3.5.0*)
             """
             super().__init__('q-th')
+            if column_name is not None:
+                self._props[':props'] = 'props'
+                self._props['key'] = column_name
 
     class cell(Element):
 
-        def __init__(self) -> None:
+        def __init__(self, column_name: Optional[str] = None) -> None:
             """Cell Element
 
             This element is based on Quasar's `QTd <https://quasar.dev/vue-components/table#qtd-api>`_ component.
+
+            :param column_name: corresponding column to access alignment and other properties (*added in version 3.5.0*)
             """
             super().__init__('q-td')
+            if column_name is not None:
+                self._props[':props'] = 'props'
+                self._props['key'] = column_name

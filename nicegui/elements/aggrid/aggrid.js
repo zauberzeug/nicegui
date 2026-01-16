@@ -1,16 +1,36 @@
-import AgGrid from "nicegui-aggrid";
+import * as AgGrid from "nicegui-aggrid";
 import { convertDynamicProperties } from "../../static/utils/dynamic_properties.js";
 
 export default {
   template: "<div></div>",
   mounted() {
+    AgGrid.ModuleRegistry.registerModules(this.modules.map((moduleName) => AgGrid[moduleName]));
     this.update_grid();
+
+    const updateTheme = () =>
+      this.$el.setAttribute("data-ag-theme-mode", document.body.classList.contains("body--dark") ? "dark" : "light");
+    this.themeObserver = new MutationObserver(updateTheme);
+    this.themeObserver.observe(document.body, { attributes: true, attributeFilter: ["class"] });
+    updateTheme();
+  },
+  unmounted() {
+    this.api?.destroy();
+    this.themeObserver.disconnect();
   },
   methods: {
     update_grid() {
       this.$el.textContent = "";
-      this.gridOptions = { ...this.options };
-      for (const column of this.html_columns) {
+      this.gridOptions = {
+        ...this.options,
+        theme: {
+          quartz: AgGrid.themeQuartz,
+          balham: AgGrid.themeBalham,
+          material: AgGrid.themeMaterial,
+          alpine: AgGrid.themeAlpine,
+        }[this.options.theme].withPart(AgGrid.colorSchemeVariable),
+      };
+
+      for (const column of this.htmlColumns) {
         if (this.gridOptions.columnDefs[column].cellRenderer === undefined) {
           this.gridOptions.columnDefs[column].cellRenderer = (params) => (params.value ? params.value : "");
         }
@@ -44,9 +64,13 @@ export default {
 
       const originalOnGridReady = this.gridOptions.onGridReady;
       this.gridOptions.onGridReady = (params) => {
-        originalOnGridReady(params);
-        this.handle_event("gridReady", params);
+        try {
+          originalOnGridReady?.(params);
+        } finally {
+          this.handle_event("gridReady", params);
+        }
       };
+      this.api?.destroy();
       this.api = AgGrid.createGrid(this.$el, this.gridOptions);
       this.api.addGlobalListener(this.handle_event);
     },
@@ -59,9 +83,6 @@ export default {
       return runMethod(this.api.getRowNode(row_id), name, args);
     },
     handle_event(type, args) {
-      if (type === "gridSizeChanged" && this.auto_size_columns) {
-        this.api.sizeColumnsToFit();
-      }
       this.$emit(type, {
         value: args.value,
         oldValue: args.oldValue,
@@ -98,7 +119,7 @@ export default {
   },
   props: {
     options: Object,
-    html_columns: Array,
-    auto_size_columns: Boolean,
+    htmlColumns: Array,
+    modules: Array,
   },
 };

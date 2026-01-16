@@ -1,6 +1,6 @@
 import asyncio
 
-from nicegui import app, ui
+from nicegui import Client, app, ui
 from nicegui.testing import Screen
 
 
@@ -104,3 +104,56 @@ def test_startup_and_shutdown_handlers(screen: Screen):
     app.shutdown()
     screen.wait(0.5)
     assert events == ['startup', 'startup_async', 'startup_async', 'shutdown', 'shutdown_async', 'shutdown_async']
+
+
+def test_all_lifecycle_handlers_are_called(screen: Screen):
+    events: list[str] = []
+
+    app.on_connect(lambda: events.append('app connect'))
+    app.on_disconnect(lambda: events.append('app disconnect'))
+    app.on_delete(lambda: events.append('app delete'))
+
+    @ui.page('/')
+    def page():
+        ui.context.client.on_connect(lambda: events.append('page connect'))
+        ui.context.client.on_disconnect(lambda: events.append('page disconnect'))
+        ui.context.client.on_delete(lambda: events.append('page delete'))
+
+        ui.button('Delete', on_click=ui.context.client.delete)
+
+    screen.open('/')
+    screen.wait(0.5)
+    assert events == ['page connect', 'app connect']
+
+    screen.selenium.execute_script('window.socket.disconnect();')
+    screen.wait(0.5)
+    assert events == ['page connect', 'app connect',
+                      'page disconnect', 'app disconnect']
+
+    screen.selenium.execute_script('window.socket.connect();')
+    screen.wait(0.5)
+    assert events == ['page connect', 'app connect',
+                      'page disconnect', 'app disconnect',
+                      'page connect', 'app connect']
+
+    screen.click('Delete')
+    screen.wait(0.5)
+    assert events == ['page connect', 'app connect',
+                      'page disconnect', 'app disconnect',
+                      'page connect', 'app connect',
+                      'page delete', 'app delete']
+
+
+def test_no_double_delete(screen: Screen):
+    events: list[str] = []
+
+    @ui.page('/', reconnect_timeout=3)
+    def page():
+        ui.context.client.on_delete(lambda: events.append('delete'))
+
+    screen.open('/')
+    screen.wait(1)
+    screen.close()  # will trigger client.delete() after another 3 seconds
+    Client.prune_instances(client_age_threshold=0)  # should do nothing because client is still trying to reconnect
+    screen.wait(4)  # meanwhile client.delete() will be called without raising KeyError
+    assert len(events) == 1, 'delete event should be called only once'
