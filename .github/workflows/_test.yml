@@ -36,7 +36,7 @@ jobs:
       - name: ${{ matrix.python }} / ${{ matrix.scope }}
         if: matrix.scope == 'pytest'
         run: uv run pytest
-      - uses: actions/upload-artifact@v5
+      - uses: actions/upload-artifact@v6
         if: matrix.scope == 'pytest' && failure()
         with:
           name: screenshots-${{ matrix.python }}

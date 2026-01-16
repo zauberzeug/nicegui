@@ -1,5 +1,6 @@
 from typing import Optional
 
+from ..defaults import DEFAULT_PROP, DEFAULT_PROPS, resolve_defaults
 from ..events import Handler, ValueChangeEventArguments
 from .mixins.disableable_element import DisableableElement
 from .mixins.value_element import ValueElement
@@ -7,10 +8,11 @@ from .mixins.value_element import ValueElement
 
 class Pagination(ValueElement, DisableableElement):
 
+    @resolve_defaults
     def __init__(self,
                  min: int, max: int, *,  # pylint: disable=redefined-builtin
-                 direction_links: bool = False,
-                 value: Optional[int] = ...,  # type: ignore
+                 direction_links: bool = DEFAULT_PROP | False,
+                 value: Optional[int] = DEFAULT_PROPS['model-value'] | ...,  # type: ignore
                  on_change: Optional[Handler[ValueChangeEventArguments]] = None) -> None:
         """Pagination
 
