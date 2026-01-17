@@ -29,3 +29,4 @@ def test_prod_mode(screen: Screen):
     importmap = screen.selenium.find_element(By.XPATH, '//script[@type="importmap"]')
     assert f'/_nicegui/{__version__}/static/vue.esm-browser.prod.js' in (importmap.get_attribute('innerHTML') or '')
     screen.selenium.find_element(By.XPATH, f'//script[@src="/_nicegui/{__version__}/static/quasar.umd.prod.js"]')
+    assert 'Vue warn' not in screen.render_js_logs()
