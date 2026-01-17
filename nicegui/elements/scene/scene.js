@@ -71,6 +71,7 @@ export default {
       <canvas style="position:relative"></canvas>
       <div style="position:absolute;pointer-events:none;top:0"></div>
       <div style="position:absolute;pointer-events:none;top:0"></div>
+      <div style="position:absolute;display:none;top:0;left:0;width:100%;height:100%;color:black;background-color:#ffffffcc">WebGL context lost. Click to re-initialize.</div>
     </div>`,
 
   mounted() {
@@ -191,6 +192,16 @@ export default {
     this.drag_controls.addEventListener("dragend", handleDrag);
 
     const render = () => {
+      if (this.renderer.getContext().drawingBufferHeight === 0 && this.renderer.getContext().drawingBufferWidth === 0) {
+        this.$el.children[3].style.display = "block";
+        this.$el.addEventListener("click", () => {
+          const elementDefinition = mounted_app.elements[this.$el.id.slice(1)];
+          const originalTag = elementDefinition.tag;
+          elementDefinition.tag = "";
+          this.$nextTick(() => (elementDefinition.tag = originalTag));
+        });
+        return;
+      }
       requestAnimationFrame(() => setTimeout(() => render(), 1000 / this.fps));
       this.camera_tween?.update();
       this.renderer.render(this.scene, this.camera);
