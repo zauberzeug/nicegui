@@ -247,7 +247,7 @@ function renderRecursively(elements, id, propsContext) {
       return [...rendered, ...children];
     };
   });
-  return Vue.h(Vue.resolveComponent(element.tag), props, slots);
+  return Vue.h(app.config.isNativeTag(element.tag) ? element.tag : Vue.resolveComponent(element.tag), props, slots);
 }
 
 function runJavascript(code, request_id) {
