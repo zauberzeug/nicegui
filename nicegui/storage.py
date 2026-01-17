@@ -69,9 +69,9 @@ class Storage:
         self._tabs: dict[str, ObservableDict] = {}
 
     @staticmethod
-    def _create_persistent_dict(id: str, *, ttl: float | None = None) -> PersistentDict:  # pylint: disable=redefined-builtin
+    def _create_persistent_dict(id: str) -> PersistentDict:  # pylint: disable=redefined-builtin
         if Storage.redis_url:
-            return RedisPersistentDict(url=Storage.redis_url, id=id, key_prefix=Storage.redis_key_prefix, ttl=ttl)
+            return RedisPersistentDict(url=Storage.redis_url, id=id, key_prefix=Storage.redis_key_prefix)
         else:
             return FilePersistentDict(Storage.path / f'storage-{id}.json', encoding='utf-8')
 
@@ -148,7 +148,7 @@ class Storage:
         """Create tab storage for the given tab ID."""
         if tab_id not in self._tabs:
             if Storage.redis_url:
-                self._tabs[tab_id] = Storage._create_persistent_dict(f'tab-{tab_id}', ttl=Storage.max_tab_storage_age)
+                self._tabs[tab_id] = Storage._create_persistent_dict(f'tab-{tab_id}')
                 tab = self._tabs[tab_id]
                 assert isinstance(tab, PersistentDict)
                 await tab.initialize()
@@ -159,7 +159,7 @@ class Storage:
         """Copy the tab storage to a new tab. (For internal use only.)"""
         if old_tab_id in self._tabs:
             if Storage.redis_url:
-                self._tabs[tab_id] = Storage._create_persistent_dict(f'tab-{tab_id}', ttl=Storage.max_tab_storage_age)
+                self._tabs[tab_id] = Storage._create_persistent_dict(f'tab-{tab_id}')
             else:
                 self._tabs[tab_id] = ObservableDict()
             self._tabs[tab_id].update(self._tabs[old_tab_id])

@@ -13,7 +13,7 @@ except ImportError:
 
 class RedisPersistentDict(PersistentDict):
 
-    def __init__(self, *, url: str, id: str, key_prefix: str = 'nicegui:', ttl: float | None = None) -> None:  # pylint: disable=redefined-builtin
+    def __init__(self, *, url: str, id: str, key_prefix: str = 'nicegui:') -> None:  # pylint: disable=redefined-builtin
         if not optional_features.has('redis'):
             raise ImportError('Redis is not installed. Please run "pip install nicegui[redis]".')
         self.url = url
@@ -26,7 +26,7 @@ class RedisPersistentDict(PersistentDict):
         self.redis_client = redis.from_url(self.url, **self._redis_client_params)
         self.pubsub = self.redis_client.pubsub()
         self.key = key_prefix + id
-        self.ttl = ttl
+        self._is_tab_storage = id.startswith('tab-')
         self._should_listen = True
         super().__init__(data={}, on_change=self.publish)
 
@@ -83,8 +83,8 @@ class RedisPersistentDict(PersistentDict):
                 return
             pipeline = self.redis_client.pipeline()
             data = json.dumps(self)
-            if self.ttl is not None:
-                pipeline.setex(self.key, int(self.ttl), data)
+            if self._is_tab_storage:
+                pipeline.set(self.key, data, ex=int(core.app.storage.max_tab_storage_age))
             else:
                 pipeline.set(self.key, data)
             pipeline.publish(self.key + 'changes', data)
