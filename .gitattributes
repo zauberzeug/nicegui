@@ -1,5 +1,5 @@
 nicegui/elements/*/dist/**         linguist-vendored
-nicegui/static/es-module-shims.js  linguist-vendored
+nicegui/elements/anywidget/lib/**  linguist-vendored
 nicegui/static/fonts/**            linguist-vendored
 nicegui/static/fonts.css           linguist-vendored
 nicegui/static/lang/**             linguist-vendored

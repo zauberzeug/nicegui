@@ -5,7 +5,7 @@ from copy import copy
 
 from starlette.routing import Route
 
-from .. import app, binding, core, event, run, ui
+from .. import app, binding, core, dependencies, event, run, ui
 from ..client import Client
 
 
@@ -50,8 +50,11 @@ def nicegui_reset_globals():
     default_styles = {t: copy(t._default_style) for t in element_types}  # pylint: disable=protected-access
     default_props = {t: copy(t._default_props) for t in element_types}  # pylint: disable=protected-access
 
+    dependencies.importmap_overrides.clear()
     Client.instances.clear()
     Client.page_routes.clear()
+    Client.shared_head_html = ''
+    Client.shared_body_html = ''
     app.reset()
     binding.reset()
 

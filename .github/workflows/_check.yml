@@ -11,19 +11,20 @@ jobs:
           - name: pre-commit
             command: pre-commit run --all-files
           - name: mypy
-            command: mypy ./nicegui --non-interactive
+            command: mypy ./nicegui
           - name: pylint
             command: pylint ./nicegui
       fail-fast: false
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
-      - uses: abatilo/actions-poetry@v4
-      - uses: actions/setup-python@v6
+      - uses: actions/checkout@v6
+      - uses: astral-sh/setup-uv@v7
         with:
-          python-version: "3.9"
-          cache: "poetry"
+          enable-cache: true
+          cache-dependency-glob: "uv.lock"
+      - name: Install Python
+        run: uv python install 3.9
       - name: Install dependencies
-        run: poetry install --all-extras --with dev
+        run: uv sync
       - name: ${{ matrix.target.name }}
-        run: poetry run ${{ matrix.target.command }}
+        run: uv run ${{ matrix.target.command }}

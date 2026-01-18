@@ -7,6 +7,7 @@ from typing import Any, Callable, Literal, Optional, TypedDict, Union
 
 from fastapi.middleware.gzip import GZipMiddleware
 from starlette.routing import Route
+from starlette.types import ASGIApp
 from uvicorn.main import STARTUP_FAILURE
 from uvicorn.supervisors import ChangeReload, Multiprocess
 
@@ -55,12 +56,13 @@ def run(root: Optional[Callable] = None, *,
         favicon: Optional[Union[str, Path]] = None,
         dark: Optional[bool] = False,
         language: Language = 'en-US',
-        binding_refresh_interval: float = 0.1,
+        binding_refresh_interval: Optional[float] = 0.1,
         reconnect_timeout: float = 3.0,
         message_history_length: int = 1000,
         cache_control_directives: str = 'public, max-age=31536000, immutable, stale-while-revalidate=31536000',
+        gzip_middleware_factory: Optional[Callable[[ASGIApp], GZipMiddleware]] = GZipMiddleware,
         fastapi_docs: Union[bool, DocsConfig] = False,
-        show: bool = True,
+        show: Union[bool, str] = True,
         on_air: Optional[Union[str, Literal[True]]] = None,
         native: bool = False,
         window_size: Optional[tuple[int, int]] = None,
@@ -93,12 +95,13 @@ def run(root: Optional[Callable] = None, *,
     :param favicon: relative filepath, absolute URL to a favicon (default: `None`, NiceGUI icon will be used) or emoji (e.g. `'🚀'`, works for most browsers)
     :param dark: whether to use Quasar's dark mode (default: `False`, use `None` for "auto" mode)
     :param language: language for Quasar elements (default: `'en-US'`)
-    :param binding_refresh_interval: time between binding updates (default: `0.1` seconds, bigger is more CPU friendly)
+    :param binding_refresh_interval: interval for updating active links (default: 0.1 seconds, bigger is more CPU friendly, *since version 3.4.0*: can be ``None`` to disable update loop)
     :param reconnect_timeout: maximum time the server waits for the browser to reconnect (default: 3.0 seconds)
     :param message_history_length: maximum number of messages that will be stored and resent after a connection interruption (default: 1000, use 0 to disable, *added in version 2.9.0*)
     :param cache_control_directives: cache control directives for internal static files (default: `'public, max-age=31536000, immutable, stale-while-revalidate=31536000'`)
+    :param gzip_middleware_factory: GZipMiddleware factory function (e.g. ``lambda app: GZipMiddleware(app, minimum_size=500, compresslevel=9)``, defaults to Starlette's ``GZipMiddleware``, can be ``None`` to disable, *added in version 3.5.0*)
     :param fastapi_docs: enable FastAPI's automatic documentation with Swagger UI, ReDoc, and OpenAPI JSON (bool or dictionary as described `here <https://fastapi.tiangolo.com/tutorial/metadata/>`_, default: `False`, *updated in version 2.9.0*)
-    :param show: automatically open the UI in a browser tab (default: `True`)
+    :param show: automatically open the UI in a browser tab (default: `True`, opens "/", *since version 3.6.0*: you can pass a specific path like "/path/to/page")
     :param on_air: tech preview: `allows temporary remote access <https://nicegui.io/documentation/section_configuration_deployment#nicegui_on_air>`_ if set to `True` (default: disabled)
     :param native: open the UI in a native window of size 800x600 (default: `False`, deactivates `show`, automatically finds an open port)
     :param window_size: open the UI in a native window with the provided size (e.g. `(1024, 786)`, default: `None`, also activates `native`)
@@ -171,8 +174,8 @@ def run(root: Optional[Callable] = None, *,
     )
     core.root = root
     core.app.config.endpoint_documentation = endpoint_documentation
-    if not helpers.is_pytest():
-        core.app.add_middleware(GZipMiddleware)
+    if not helpers.is_pytest() and gzip_middleware_factory is not None:
+        core.app.add_middleware(gzip_middleware_factory)
     core.app.add_middleware(RedirectWithPrefixMiddleware)
     core.app.add_middleware(SetCacheControlMiddleware)
 
@@ -254,7 +257,7 @@ def run(root: Optional[Callable] = None, *,
     os.environ['NICEGUI_PROTOCOL'] = protocol
 
     if show:
-        helpers.schedule_browser(protocol, host, port)
+        helpers.schedule_browser(protocol, host, port, show if isinstance(show, str) else '/')
 
     def split_args(args: str) -> list[str]:
         return [a.strip() for a in args.split(',')]

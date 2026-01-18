@@ -18,15 +18,13 @@
         @import url("{{ prefix | safe }}/_nicegui/{{version}}/static/quasar.important.css") layer(quasar_importants);
       {% endif %}
       @import url("{{ prefix | safe }}/_nicegui/{{version}}/static/nicegui.css") layer(nicegui);
-      {% if tailwind %}
-      @import url("{{ prefix | safe }}/_nicegui/{{version}}/static/headwind.css") layer(overrides);
-      {% endif %}
       @layer quasar {
         blockquote, dd, dl, figure, h1, h2, h3, h4, h5, h6, hr, p, pre {
           margin: revert-layer; /* HACK: revert Quasar's margin styles */
         }
       }
       @layer overrides {
+        {{ headwind_css | safe }}
         .column.inline, .flex.inline, .row.inline {
           display: inline-flex;  /* HACK: re-apply Quasar's inline styles to override Tailwind */
         }
@@ -38,6 +36,9 @@
     </style>
     <script type="importmap">
       {"imports": {{ imports | safe }}}
+    </script>
+    <script>
+      addStyle = (c) => document.head.append(Object.assign(document.createElement("style"), { textContent: c }));
     </script>
     {{ head_html | safe }}
     <!-- prevent Prettier from removing this line -->
@@ -80,7 +81,6 @@
     {% endif %}
   </head>
   <body>
-    <script async src="{{ prefix | safe }}/_nicegui/{{version}}/static/es-module-shims.js"></script>
     <script defer src="{{ prefix | safe }}/_nicegui/{{version}}/static/socket.io.min.js"></script>
     {% if tailwind %}
     <script defer src="{{ prefix | safe }}/_nicegui/{{version}}/static/tailwindcss.min.js"></script>
