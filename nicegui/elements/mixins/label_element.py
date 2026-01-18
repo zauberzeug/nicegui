@@ -13,8 +13,7 @@ class LabelElement(Element):
     def __init__(self, *, label: Optional[str], **kwargs: Any) -> None:
         super().__init__(**kwargs)
         self.label = label
-        if label is not None:
-            self._props['label'] = label
+        self._props.set_optional('label', label)
 
     def bind_label_to(self,
                       target_object: Any,
@@ -93,7 +92,4 @@ class LabelElement(Element):
 
         :param label: The new label.
         """
-        if label is None:
-            del self._props['label']
-        else:
-            self._props['label'] = label
+        self._props.set_optional('label', label)

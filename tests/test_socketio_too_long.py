@@ -22,3 +22,6 @@ def test_socketio_too_long(screen: Screen, transport: Literal['websocket', 'poll
 
     assert events == ['changed'] * 2, 'two more characters are ok'
     assert len([log for log in screen.selenium.get_log('browser') if 'Payload size' in log['message']]) == 3
+    screen.assert_py_logger('ERROR', 'Payload size 999901 exceeds the maximum allowed limit.')
+    screen.assert_py_logger('ERROR', 'Payload size 999902 exceeds the maximum allowed limit.')
+    screen.assert_py_logger('ERROR', 'Payload size 999903 exceeds the maximum allowed limit.')

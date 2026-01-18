@@ -1,12 +1,15 @@
+import inspect
 from datetime import datetime, timedelta, timezone
+from pathlib import Path
 
 import pandas as pd
 import polars as pl
 import pytest
+from fastapi.responses import FileResponse
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.keys import Keys
 
-from nicegui import ui
+from nicegui import Event, app, ui
 from nicegui.testing import Screen
 
 
@@ -207,6 +210,34 @@ def test_api_method_after_creation(screen: Screen):
     screen.open('/')
     screen.click('Create')
     assert screen.find_by_class('ag-row-selected')
+
+
+def test_set_module_source(screen: Screen):
+    get_aggrid: Event[[]] = Event()
+
+    @app.get('/custom-aggrid.js')
+    def custom_aggrid():
+        get_aggrid.emit()
+        return FileResponse(Path(inspect.getfile(ui.aggrid)).parent / 'dist' / 'index.js')
+
+    ui.aggrid.set_module_source('/custom-aggrid.js')
+
+    @ui.page('/')
+    async def page():
+        get_aggrid.subscribe(lambda: ui.notify('Load custom bundle'))
+
+        aggrid = ui.aggrid({}, modules=['ClientSideRowModelModule', 'ColumnAutoSizeModule', 'EventApiModule'])
+
+        await ui.context.client.connected()
+        for module in ['ClipboardModule', 'ColumnAutoSizeModule', 'EventApiModule']:
+            is_registered = await ui.run_javascript(f'getElement({aggrid.id}).api.isModuleRegistered("{module}")')
+            ui.label(f'{module}: {is_registered}')
+
+    screen.open('/')
+    screen.should_contain('Load custom bundle')
+    screen.should_contain('ClipboardModule: False')
+    screen.should_contain('ColumnAutoSizeModule: True')
+    screen.should_contain('EventApiModule: True')
 
 
 @pytest.mark.parametrize('df_type', ['pandas', 'polars'])

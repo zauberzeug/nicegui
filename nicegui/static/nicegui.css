@@ -259,6 +259,11 @@ h6.q-timeline__title {
   height: 10em;
   background-color: AliceBlue;
 }
+.nicegui-joystick > div {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
 .nicegui-scene[data-initializing],
 .nicegui-scene-view[data-initializing] {
   visibility: hidden;
@@ -273,6 +278,9 @@ h6.q-timeline__title {
 }
 .nicegui-codemirror .cm-editor.cm-focused {
   outline: none;
+}
+.js-plotly-plot {
+  box-sizing: content-box; /* HACK: fix overflow when adding borders to the Plotly plot */
 }
 
 /* error popups */
