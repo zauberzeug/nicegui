@@ -26,7 +26,8 @@ def main_demo() -> None:
     Page routes can contain parameters like [FastAPI](https://fastapi.tiangolo.com/tutorial/path-params/).
     If type-annotated, they are automatically converted to bool, int, float and complex values.
     If the page function expects a `request` argument, the request object is automatically provided.
-    The `client` argument provides access to the websocket connection, layout, etc.
+    An optional `client` argument provides access to the websocket connection, layout, etc.
+    (same as `ui.context.client`).
 ''')
 def page_with_path_parameters_demo():
     @ui.page('/repeat/{word}/{count}')
@@ -41,8 +42,7 @@ def page_with_path_parameters_demo():
 
 @doc.auto_execute
 @doc.demo('Wait for Client Connection', '''
-    To wait for a client connection, you can add a `client` argument to the decorated page function
-    and await `client.connected()`.
+    To wait for a client connection, you can await `ui.context.client.connected()`.
     All code below that statement is executed after the websocket connection between server and client has been established.
 
     For example, this allows you to run JavaScript commands; which is only possible with a client connection (see [#112](https://github.com/zauberzeug/nicegui/issues/112)).

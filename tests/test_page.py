@@ -156,6 +156,16 @@ def test_exception_after_connected(screen: Screen):
     screen.assert_py_logger('ERROR', 'some exception')
 
 
+def test_api_exception(screen: Screen):
+    @app.get('/')
+    def api_exception():
+        raise RuntimeError('some exception in a GET endpoint')
+
+    screen.allowed_js_errors.append('/ - Failed to load resource')
+    screen.open('/')
+    screen.should_contain('Internal Server Error')
+
+
 def test_page_with_args(screen: Screen):
     @ui.page('/page/{id_}')
     def page(id_: int):

@@ -1,5 +1,6 @@
 from typing import Optional, Union
 
+from ..defaults import DEFAULT_PROP, DEFAULT_PROPS, resolve_defaults
 from ..events import Handler, ValueChangeEventArguments
 from .mixins.disableable_element import DisableableElement
 from .mixins.value_element import ValueElement
@@ -7,14 +8,15 @@ from .mixins.value_element import ValueElement
 
 class Rating(ValueElement, DisableableElement):
 
+    @resolve_defaults
     def __init__(self,
-                 value: Optional[float] = None,
-                 max: int = 5,  # pylint: disable=redefined-builtin
-                 icon: Optional[str] = None,
-                 icon_selected: Optional[str] = None,
-                 icon_half: Optional[str] = None,
-                 color: Optional[Union[str, list[str]]] = 'primary',
-                 size: Optional[str] = None,
+                 value: Optional[float] = DEFAULT_PROPS['model-value'] | None,
+                 max: int = DEFAULT_PROP | 5,  # pylint: disable=redefined-builtin
+                 icon: Optional[str] = DEFAULT_PROP | None,
+                 icon_selected: Optional[str] = DEFAULT_PROP | None,
+                 icon_half: Optional[str] = DEFAULT_PROP | None,
+                 color: Optional[Union[str, list[str]]] = DEFAULT_PROP | 'primary',
+                 size: Optional[str] = DEFAULT_PROP | None,
                  on_change: Optional[Handler[ValueChangeEventArguments]] = None,
                  ) -> None:
         """Rating
@@ -35,18 +37,8 @@ class Rating(ValueElement, DisableableElement):
         super().__init__(tag='q-rating', value=value, on_value_change=on_change)
 
         self._props['max'] = max
-
-        if icon:
-            self._props['icon'] = icon
-
-        if color:
-            self._props['color'] = color
-
-        if icon_selected:
-            self._props['icon-selected'] = icon_selected
-
-        if icon_half:
-            self._props['icon-half'] = icon_half
-
-        if size:
-            self._props['size'] = size
+        self._props.set_optional('icon', icon)
+        self._props.set_optional('color', color)
+        self._props.set_optional('icon-selected', icon_selected)
+        self._props.set_optional('icon-half', icon_half)
+        self._props.set_optional('size', size)
