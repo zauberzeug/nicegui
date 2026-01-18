@@ -87,7 +87,8 @@ class RedisPersistentDict(PersistentDict):
                 return
             pipeline = self.redis_client.pipeline()
             data = json.dumps(self)
-            pipeline.set(self.key, data, ex=int(core.app.storage.max_tab_storage_age) if self._is_tab_storage else None)
+            pipeline.set(self.key, data, ex=int(core.app.storage.max_tab_storage_age + 20)
+                         if self._is_tab_storage else None)
             pipeline.publish(self.key + 'changes', data)
             await pipeline.execute()
         if core.loop:
