@@ -33,7 +33,9 @@ class Image(SourceElement, component='image.js'):
     def _set_props(self, source: Union[str, Path, 'PIL_Image']) -> None:
         if optional_features.has('pillow') and isinstance(source, PIL_Image):
             self._source_for_cleanup = pil_to_tempfile(source, self.PIL_CONVERT_FORMAT)
-        super()._set_props(self._source_for_cleanup)
+            super()._set_props(self._source_for_cleanup)
+        else:
+            super()._set_props(source)
 
     def force_reload(self) -> None:
         """Force the image to reload from the source."""
