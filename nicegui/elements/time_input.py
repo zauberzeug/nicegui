@@ -10,7 +10,7 @@ from .mixins.value_element import ValueElement
 from .time import Time as time
 
 
-class TimeInput(LabelElement, ValueElement, DisableableElement, component='basic_input.js'):
+class TimeInput(LabelElement, ValueElement, DisableableElement):
     LOOPBACK = False
 
     @resolve_defaults
