@@ -4,6 +4,7 @@ from typing import Union
 from .. import helpers, json
 from ..client import Client
 from ..context import context
+from ..slot import Slot
 
 
 def add_css(content: Union[str, Path], *, shared: bool = False) -> None:
@@ -60,10 +61,11 @@ def add_sass(content: Union[str, Path], *, shared: bool = False) -> None:  # DEP
 
 def _add_javascript(code: str, *, shared: bool = False) -> None:
     script_html = f'<script>{code}</script>'
-    client = context.client
+    client = context.client if Slot.get_stack() else None
     if shared:
         Client.shared_head_html += script_html + '\n'
     else:
+        client = context.client
         client._head_html += script_html + '\n'
-    if client.has_socket_connection:
+    if client is not None and client.has_socket_connection:
         client.run_javascript(code)
