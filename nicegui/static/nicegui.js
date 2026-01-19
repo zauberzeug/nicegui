@@ -247,7 +247,7 @@ function renderRecursively(elements, id, propsContext) {
       return [...rendered, ...children];
     };
   });
-  return Vue.h(Vue.resolveComponent(element.tag), props, slots);
+  return Vue.h(app.config.isNativeTag(element.tag) ? element.tag : Vue.resolveComponent(element.tag), props, slots);
 }
 
 function runJavascript(code, request_id) {
@@ -414,6 +414,7 @@ function createApp(elements, options) {
           let eventListenersChanged = false;
           for (const [id, element] of Object.entries(msg)) {
             if (element === null) continue;
+            if (!(id in this.elements)) continue;
             const oldListenerIds = new Set((this.elements[id]?.events || []).map((ev) => ev.listener_id));
             if (element.events?.some((e) => !oldListenerIds.has(e.listener_id))) {
               delete this.elements[id];
