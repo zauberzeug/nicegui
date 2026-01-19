@@ -61,11 +61,11 @@ def add_sass(content: Union[str, Path], *, shared: bool = False) -> None:  # DEP
 
 def _add_javascript(code: str, *, shared: bool = False) -> None:
     script_html = f'<script>{code}</script>'
-    client = context.client if Slot.get_stack() else None
     if shared:
+        client = context.client if Slot.get_stack() else None  # NOTE: don't auto-create a client if shared=True
         Client.shared_head_html += script_html + '\n'
     else:
         client = context.client
         client._head_html += script_html + '\n'
-    if client is not None and client.has_socket_connection:
+    if client is not None and client.has_socket_connection:  # NOTE: no need to run JavaScript if there is no client yet
         client.run_javascript(code)
