@@ -53,7 +53,7 @@ class App(FastAPI):
         self._page_exception_handler: Optional[Callable[..., Any]] = None
 
         self._colors: dict[str, str] = {}
-        self.colors()  # populates self._colors with default colors
+        self.colors()  # populate self._colors with defaults
 
     @property
     def is_starting(self) -> bool:
@@ -334,7 +334,9 @@ class App(FastAPI):
 
         Sets the main colors (primary, secondary, accent, ...) used by `Quasar <https://quasar.dev/style/theme-builder>`_ on an application-wide basis.
 
-        NOTE: Use `ui.colors()` if you want to set colors after a page has been rendered on a per-page basis.
+        Note: Use ``ui.colors()`` if you want to set colors after a page has been rendered on a per-page basis.
+
+        *Added in version 3.6.0*
 
         :param primary: Primary color (default: "#5898d4")
         :param secondary: Secondary color (default: "#26a69a")
@@ -360,7 +362,10 @@ class App(FastAPI):
         QUASAR_COLORS.update({name.replace('_', '-') for name in custom_colors})
 
     def get_quasar_config(self) -> dict:
-        """Get the Quasar configuration dictionary."""
+        """Get the Quasar configuration dictionary.
+
+        *Added in version 3.6.0*
+        """
         quasar_config = self.config.quasar_config
         quasar_config['brand'] = self._colors.copy()
         return quasar_config
