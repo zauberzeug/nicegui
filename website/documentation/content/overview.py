@@ -320,8 +320,9 @@ def map_of_nicegui():
 
         #### `app`
 
-        App-wide storage, mount points and lifecycle hooks.
+        App-wide colors, storage, mount points and lifecycle hooks.
 
+        - [`app.colors()`](/documentation/colors): set the main color theme for the app
         - [`app.storage`](/documentation/storage):
             - `app.storage.tab`: stored in memory on the server, unique per tab
             - `app.storage.client`: stored in memory on the server, unique per client connected to a page
