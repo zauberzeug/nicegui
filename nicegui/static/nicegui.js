@@ -8,9 +8,10 @@ let mounted_app = undefined;
 const loaded_components = new Set();
 
 function applyColors(colors) {
+  const quasarColors = ["primary", "secondary", "accent", "dark", "dark-page", "positive", "negative", "info", "warning"];
   let customCSS = "";
   for (let color in colors) {
-    if (color in ["primary", "secondary", "accent", "dark", "dark-page", "positive", "negative", "info", "warning"])
+    if (quasarColors.includes(color))
       continue;
     const colorName = color.replaceAll("_", "-");
     const colorVar = "--q-" + colorName;
