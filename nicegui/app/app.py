@@ -52,8 +52,7 @@ class App(FastAPI):
         self._exception_handlers: list[Callable[..., Any]] = [log.exception]
         self._page_exception_handler: Optional[Callable[..., Any]] = None
 
-        self._colors: dict[str, str] = {}
-        self.colors()  # populate self._colors with defaults
+        self.colors()  # populate Quasar config with default colors
 
     @property
     def is_starting(self) -> bool:
@@ -349,26 +348,18 @@ class App(FastAPI):
         :param warning: Warning color (default: "#f2c037")
         :param custom_colors: Custom color definitions for branding (needs ``ui.colors`` to be called before custom color is ever used, *added in version 2.2.0*)
         """
-        self._colors['primary'] = primary
-        self._colors['secondary'] = secondary
-        self._colors['accent'] = accent
-        self._colors['dark'] = dark
-        self._colors['dark-page'] = dark_page
-        self._colors['positive'] = positive
-        self._colors['negative'] = negative
-        self._colors['info'] = info
-        self._colors['warning'] = warning
-        self._colors.update({name.replace('_', '-'): value for name, value in custom_colors.items()})
+        brand: dict[str, str] = self.config.quasar_config['brand']
+        brand['primary'] = primary
+        brand['secondary'] = secondary
+        brand['accent'] = accent
+        brand['dark'] = dark
+        brand['dark-page'] = dark_page
+        brand['positive'] = positive
+        brand['negative'] = negative
+        brand['info'] = info
+        brand['warning'] = warning
+        brand.update({name.replace('_', '-'): value for name, value in custom_colors.items()})
         QUASAR_COLORS.update({name.replace('_', '-') for name in custom_colors})
-
-    def get_quasar_config(self) -> dict:
-        """Get the Quasar configuration dictionary.
-
-        *Added in version 3.6.0*
-        """
-        quasar_config = self.config.quasar_config
-        quasar_config['brand'] = self._colors.copy()
-        return quasar_config
 
     def remove_route(self, path: str) -> None:
         """Remove routes with the given path."""
@@ -384,7 +375,6 @@ class App(FastAPI):
         self._delete_handlers.clear()
         self._exception_handlers[:] = [log.exception]
         self.config = AppConfig()
-        self._colors.clear()
         self.colors()  # reset colors to default
 
     @staticmethod

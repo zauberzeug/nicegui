@@ -15,7 +15,7 @@ class AppConfig:
         field(default_factory=lambda: ['websocket', 'polling'])  # NOTE: we favor websocket
     quasar_config: dict = \
         field(default_factory=lambda: {
-            'brand': 'NOTE: Please use app.colors() to set brand colors instead.',
+            'brand': {},
             'loadingBar': {
                 'color': 'primary',
                 'skipHijack': False,
