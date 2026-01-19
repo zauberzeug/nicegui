@@ -23,6 +23,7 @@ class AppConfig:
         })
     vue_config_script: str = r'''
         app.use(Quasar, {config: vue_config});
+        applyColors(vue_config.brand);
         Quasar.lang.set(Quasar.lang[language.replace('-', '')]);
         Quasar.Dark.set(dark === None ? "auto" : dark);
     '''
