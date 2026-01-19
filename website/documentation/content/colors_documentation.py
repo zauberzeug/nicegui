@@ -41,10 +41,10 @@ def app_colors_demo() -> None:
 
     # @ui.page('/')
     def page():
-        # ui.button('App-Wide Primary Color')
-        # ui.button('App-Wide Brand Color', color='brand')
-        ui.button('App-Wide Primary Color', color='#B0C4DE')  # HIDE
-        ui.button('App-Wide Brand Color', color='#FF6347')  # HIDE
+        # ui.button('App-wide primary color')
+        # ui.button('App-wide brand color', color='brand')
+        ui.button('App-wide primary color', color='#B0C4DE').classes('text-white')  # HIDE
+        ui.button('App-wide brand color', color='#FF6347').classes('text-white')  # HIDE
     page()  # HIDE
 
 
