@@ -79,6 +79,26 @@ async function generateStylesFromClasses() {
   unocssStyleMoved = true;
 }
 
+function applyColors(colors) {
+  const quasarColors = ["primary", "secondary", "accent", "dark", "dark-page", "positive", "negative", "info", "warning"];
+  let customCSS = "";
+  for (let color in colors) {
+    if (quasarColors.includes(color))
+      continue;
+    const colorName = color.replaceAll("_", "-");
+    const colorVar = "--q-" + colorName;
+    document.body.style.setProperty(colorVar, colors[color]);
+    customCSS += `.text-${colorName} { color: var(${colorVar}) !important; }\n`;
+    customCSS += `.bg-${colorName} { background-color: var(${colorVar}) !important; }\n`;
+  }
+  if (!customCSS) return;
+  const style = document.createElement("style");
+  style.innerHTML = customCSS;
+  style.dataset.niceguiCustomColors = "";
+  document.head.querySelectorAll("[data-nicegui-custom-colors]").forEach((el) => el.remove());
+  document.getElementsByTagName("head")[0].appendChild(style);
+}
+
 function parseElements(raw_elements) {
   return JSON.parse(
     raw_elements
@@ -319,7 +339,7 @@ function renderRecursively(elements, id, propsContext) {
       return [...rendered, ...children];
     };
   });
-  return Vue.h(Vue.resolveComponent(element.tag), props, slots);
+  return Vue.h(app.config.isNativeTag(element.tag) ? element.tag : Vue.resolveComponent(element.tag), props, slots);
 }
 
 function runJavascript(code, request_id) {
@@ -500,6 +520,7 @@ function createApp(elements, options) {
           let eventListenersChanged = false;
           for (const [id, element] of Object.entries(msg)) {
             if (element === null) continue;
+            if (!(id in this.elements)) continue;
             const oldListenerIds = new Set((this.elements[id]?.events || []).map((ev) => ev.listener_id));
             if (element.events?.some((e) => !oldListenerIds.has(e.listener_id))) {
               delete this.elements[id];

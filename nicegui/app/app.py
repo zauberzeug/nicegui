@@ -14,6 +14,8 @@ from fastapi.responses import FileResponse
 
 from .. import background_tasks, core, helpers
 from ..client import Client
+from ..context import context
+from ..elements.mixins.color_elements import QUASAR_COLORS
 from ..logging import log
 from ..native import NativeConfig
 from ..observables import ObservableSet
@@ -49,6 +51,8 @@ class App(FastAPI):
         self._delete_handlers: list[Union[Callable[..., Any], Awaitable]] = []
         self._exception_handlers: list[Callable[..., Any]] = [log.exception]
         self._page_exception_handler: Optional[Callable[..., Any]] = None
+
+        self.colors()  # populate Quasar config with default colors
 
     @property
     def is_starting(self) -> bool:
@@ -160,6 +164,8 @@ class App(FastAPI):
 
     def handle_exception(self, exception: Exception) -> None:
         """Handle an exception by invoking all registered exception handlers."""
+        if context.slot_stack and context.client is not None:
+            context.client.handle_exception(exception)
         for handler in self._exception_handlers:
             result = handler() if not inspect.signature(handler).parameters else handler(exception)
             if helpers.is_coroutine_function(handler):
@@ -312,6 +318,49 @@ class App(FastAPI):
 
         return urllib.parse.quote(path)
 
+    def colors(self, *,
+               primary: str = '#5898d4',
+               secondary: str = '#26a69a',
+               accent: str = '#9c27b0',
+               dark: str = '#1d1d1d',
+               dark_page: str = '#121212',
+               positive: str = '#21ba45',
+               negative: str = '#c10015',
+               info: str = '#31ccec',
+               warning: str = '#f2c037',
+               **custom_colors: str) -> None:
+        """Color Theming
+
+        Sets the main colors (primary, secondary, accent, ...) used by `Quasar <https://quasar.dev/style/theme-builder>`_ on an application-wide basis.
+
+        Note: Use ``ui.colors()`` if you want to set colors after a page has been rendered on a per-page basis.
+
+        *Added in version 3.6.0*
+
+        :param primary: Primary color (default: "#5898d4")
+        :param secondary: Secondary color (default: "#26a69a")
+        :param accent: Accent color (default: "#9c27b0")
+        :param dark: Dark color (default: "#1d1d1d")
+        :param dark_page: Dark page color (default: "#121212")
+        :param positive: Positive color (default: "#21ba45")
+        :param negative: Negative color (default: "#c10015")
+        :param info: Info color (default: "#31ccec")
+        :param warning: Warning color (default: "#f2c037")
+        :param custom_colors: Custom color definitions for branding
+        """
+        brand: dict[str, str] = self.config.quasar_config['brand']
+        brand['primary'] = primary
+        brand['secondary'] = secondary
+        brand['accent'] = accent
+        brand['dark'] = dark
+        brand['dark-page'] = dark_page
+        brand['positive'] = positive
+        brand['negative'] = negative
+        brand['info'] = info
+        brand['warning'] = warning
+        brand.update({name.replace('_', '-'): value for name, value in custom_colors.items()})
+        QUASAR_COLORS.update({name.replace('_', '-') for name in custom_colors})
+
     def remove_route(self, path: str) -> None:
         """Remove routes with the given path."""
         self.routes[:] = [r for r in self.routes if getattr(r, 'path', None) != path]
@@ -326,6 +375,7 @@ class App(FastAPI):
         self._delete_handlers.clear()
         self._exception_handlers[:] = [log.exception]
         self.config = AppConfig()
+        self.colors()  # reset colors to default
 
     @staticmethod
     def clients(path: str) -> Iterator[Client]:

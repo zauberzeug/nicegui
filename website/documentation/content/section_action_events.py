@@ -107,6 +107,33 @@ doc.intro(run_javascript_documentation)
 doc.intro(clipboard_documentation)
 doc.intro(event_documentation)
 
+doc.text('Error handling', '''
+    There are 3 error handling means in NiceGUI:
+
+    1. [`app.on_exception`](#lifecycle_events):
+        Global exception handler for **all** exceptions in the NiceGUI app.
+        - Applied app-wide.
+        - Handler has no UI context (cannot use `ui.*`).
+        - Common sources: `app.timer`, `background_tasks.create`, `run.io_bound`, `run.cpu_bound`.
+    2. [`@app.on_page_exception`](#custom_error_page):
+        Custom error page for page-blocking exceptions (**before** page sent to browser)
+        - Applied app-wide.
+        - Handler may use UI elements but in a new client.
+        - Common sources: sync `@ui.page` functions, exceptions in async `@ui.page` functions before `await ui.context.client.connected()`.
+    3. [`ui.on_exception`](#ui_on_exception):
+        Handler for in-page exceptions (**after** page sent to browser)
+        - Applied per-page.
+        - Handler may use UI elements with the original client at `ui.context.client`.
+        - Common sources: `ui.button(on_click=...)`, `ui.timer`, exceptions in async `@ui.page` functions after `await ui.context.client.connected()`
+
+    When an exception occurs:
+
+    - All will be logged via `app.on_exception` (1)
+    - UI-context exceptions go to _either_, but never both:
+        - `@app.on_page_exception` (2) if raised before client connection
+        - `ui.on_exception` (3) if raised after client connection
+''')
+
 
 @doc.demo('Lifecycle events', '''
     You can register coroutines or functions to be called for the following lifecycle events:
@@ -179,6 +206,73 @@ def error_page_demo():
     def page():
         ui.link('Raise timeout error (custom error page)', '/raise_timeout_error')
         ui.link('Raise runtime error (default error page)', '/raise_runtime_error')
+    page()  # HIDE
+
+
+@doc.auto_execute
+@doc.demo('ui.on_exception', '''
+    You can register callback functions using `ui.on_exception` to handle errors
+    that occur after the HTML response has been sent to the client.
+    This allows you to show a notification or dialog with the error details.
+    The following example shows how to create a dialog that displays the error details when an error occurs.
+
+    *Added in version 3.6.0*
+''')
+def error_event_demo():
+    import asyncio
+    import traceback
+
+    @ui.page('/error_dialog_page')
+    async def error_dialog_page():
+        with ui.page_sticky(x_offset=16, y_offset=16):
+            fab_error = ui.button(icon='error', color='negative').props('fab')
+            fab_error.set_visibility(False)
+
+        def show_error_dialog(error):
+            with ui.dialog() as error_dialog, ui.card():
+                render_error_details(error, 'max-w-[calc(560px-2rem)]')
+                ui.button('Close', on_click=error_dialog.close)
+            fab_error.on('click', error_dialog.open).set_visibility(True)
+
+        ui.on_exception(lambda e: show_error_dialog(e.args))
+        ui.label('This @ui.page errors out post-HTML-response in 3 seconds')
+        await ui.context.client.connected()
+        await asyncio.sleep(3)
+        raise ValueError('Test exception handling')
+
+    @ui.page('/clear_content_page')
+    async def clear_content_page():
+        # def clear_content_and_show_error(error):
+        #     with ui.context.client.content.clear():
+        #         render_error_details(error, 'w-full')
+        #         ui.link('Back to menu', '/')
+
+        # ui.on_exception(lambda e: clear_content_and_show_error(e.args))
+        # ui.label('This @ui.page errors out post-HTML-response in 3 seconds')
+        # await ui.context.client.connected()
+        # await asyncio.sleep(3)
+        # raise ValueError('Test exception handling')
+        with ui.column() as fake_column:  # HIDE
+            ui.label('This @ui.page errors out post-HTML-response in 3 seconds')  # HIDE
+            await ui.context.client.connected()  # HIDE
+            await asyncio.sleep(3)  # HIDE
+            fake_column.clear()  # HIDE
+            try:  # HIDE
+                raise ValueError('Test exception handling')  # HIDE
+            except Exception as e:  # HIDE
+                render_error_details(e, 'w-full')  # HIDE
+            ui.link('Back to menu', '/documentation/section_action_events#error_event')  # HIDE
+
+    def render_error_details(error, code_classes=''):
+        ui.label('Page error').classes('text-lg font-bold')
+        ui.label(f'{error} ({type(error).__name__})').classes('text-red-600')
+        # ui.code(traceback.format_exc(chain=False)).classes(code_classes)
+        ui.code(traceback.format_exc(chain=False).replace('# HIDE', '')).classes(code_classes)  # HIDE
+
+    # @ui.page('/')
+    def page():
+        ui.link('@ui.page raises error, shows error dialog', '/error_dialog_page')
+        ui.link('@ui.page raises error, clears the body and shows the error', '/clear_content_page')
     page()  # HIDE
 
 

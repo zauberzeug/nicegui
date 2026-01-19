@@ -15,9 +15,7 @@ class AppConfig:
         field(default_factory=lambda: ['websocket', 'polling'])  # NOTE: we favor websocket
     quasar_config: dict = \
         field(default_factory=lambda: {
-            'brand': {
-                'primary': '#5898d4',
-            },
+            'brand': {},
             'loadingBar': {
                 'color': 'primary',
                 'skipHijack': False,
@@ -25,6 +23,7 @@ class AppConfig:
         })
     vue_config_script: str = r'''
         app.use(Quasar, {config: vue_config});
+        applyColors(vue_config.brand);
         Quasar.lang.set(Quasar.lang[language.replace('-', '')]);
         Quasar.Dark.set(dark === None ? "auto" : dark);
     '''
