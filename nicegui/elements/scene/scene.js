@@ -71,7 +71,10 @@ export default {
       <canvas style="position:relative"></canvas>
       <div style="position:absolute;pointer-events:none;top:0"></div>
       <div style="position:absolute;pointer-events:none;top:0"></div>
-      <div style="position:absolute;display:none;top:0;left:0;width:100%;height:100%;color:black;background-color:#ffffffcc">WebGL context lost. Click to re-initialize.</div>
+      <div style="position:absolute;display:none;inset:0;padding:8px;color:black;background-color:#ffffffcc;cursor:pointer">
+        WebGL context lost.
+        Click to re-initialize.
+      </div>
     </div>`,
 
   mounted() {
