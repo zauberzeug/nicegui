@@ -409,12 +409,15 @@ function createApp(elements, options) {
         disconnect: () => {
           document.getElementById("popup").ariaHidden = false;
         },
-        load_js_components: async (msg) => {
-          const urls = msg.components.map((c) => `${options.prefix}/_nicegui/${options.version}/components/${c.key}`);
-          const imports = await Promise.all(urls.map((url) => import(url)));
-          msg.components.forEach((c, i) => app.component(c.tag, imports[i].default));
-        },
         update: async (msg) => {
+          // Load any new JS components before processing element updates
+          if (msg._new_js_components) {
+            const urls = msg._new_js_components.map((c) => `${options.prefix}/_nicegui/${options.version}/components/${c.key}`);
+            const imports = await Promise.all(urls.map((url) => import(url)));
+            msg._new_js_components.forEach((c, i) => app.component(c.tag, imports[i].default));
+            delete msg._new_js_components;
+          }
+
           let eventListenersChanged = false;
           for (const [id, element] of Object.entries(msg)) {
             if (element === null) continue;
