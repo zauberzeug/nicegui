@@ -107,13 +107,18 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
         except Exception as e:
             self.clear()  # NOTE: clear partial content created before the exception
             self._render_error(e)
+            self.client.handle_exception(e)
             return True
 
         self._handle_scrolling(match, behavior='instant')
         if asyncio.iscoroutine(result):
             async def background_task():
                 with self:
-                    await result
+                    try:
+                        await result
+                    except Exception as e:
+                        self.client.handle_exception(e)
+                        raise
 
             task = background_tasks.create(background_task(), name=f'building sub_page {match.pattern}')
             self._active_tasks.add(task)

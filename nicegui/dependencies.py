@@ -97,6 +97,7 @@ libraries: dict[str, Library] = {}
 resources: dict[str, Resource] = {}
 dynamic_resources: dict[str, DynamicResource] = {}
 esm_modules: dict[str, EsmModule] = {}
+importmap_overrides: dict[str, str] = {}
 
 
 def register_vue_component(path: Path, *, max_time: float | None) -> Component:
@@ -154,6 +155,11 @@ def register_esm(name: str, path: Path, *, max_time: float | None) -> None:
     esm_modules[compute_key(path, max_time=max_time)] = EsmModule(name=name, path=path)
 
 
+def register_importmap_override(import_name: str, url: str) -> None:
+    """Register an importmap override."""
+    importmap_overrides[import_name] = url
+
+
 @functools.cache
 def compute_key(path: Path, *, max_time: float | None) -> str:
     """Compute a key for a given path using a hash function.
@@ -205,6 +211,9 @@ def generate_resources(prefix: str, elements: Iterable[Element]) -> tuple[list[s
         imports[f'{esm_module.name}'] = f'{prefix}/_nicegui/{__version__}/esm/{key}/index.js'
         imports[f'{esm_module.name}/'] = f'{prefix}/_nicegui/{__version__}/esm/{key}/'
 
+    # update the importmap with the overrides
+    imports.update(importmap_overrides)
+
     # build the none-optimized component (i.e. the Vue component)
     for key, vue_component in vue_components.items():
         if key not in done_components:
@@ -227,4 +236,5 @@ def generate_resources(prefix: str, elements: Iterable[Element]) -> tuple[list[s
                 js_imports.append(f'app.component("{js_component.tag}", {js_component.name});')
                 js_imports_urls.append(url)
                 done_components.add(js_component.key)
+
     return vue_html, vue_styles, vue_scripts, imports, js_imports, js_imports_urls
