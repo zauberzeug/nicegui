@@ -116,8 +116,8 @@ class Outbox:
                     ]
                     if js_components:
                         coros.append(self._emit((client.id, 'load_js_components', {'components': js_components})))
+                        self._loaded_components.update(c['name'] for c in js_components)
                     coros.append(self._emit((client.id, 'update', data)))
-                    self._loaded_components.update(c['name'] for c in js_components)
                     self.updates.clear()
 
                 if self.messages:
