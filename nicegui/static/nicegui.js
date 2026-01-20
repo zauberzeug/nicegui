@@ -397,7 +397,7 @@ function createApp(elements, options) {
           if (transport?.ws?.send) transport.ws.send = wrapFunction(transport.ws.send);
           if (transport?.doWrite) transport.doWrite = wrapFunction(transport.doWrite);
 
-          function finshHandshake(ok) {
+          function finishHandshake(ok) {
             if (!ok) {
               console.log("reloading because handshake failed for clientId " + window.clientId);
               window.location.reload();
@@ -407,9 +407,9 @@ function createApp(elements, options) {
           }
 
           if (options.query.implicit_handshake) {
-            finshHandshake(true);
+            finishHandshake(true);
           } else {
-            window.socket.emit("handshake", options.query, finshHandshake);
+            window.socket.emit("handshake", options.query, finishHandshake);
           }
         },
         connect_error: (err) => {
