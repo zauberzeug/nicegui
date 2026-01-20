@@ -109,7 +109,7 @@ function logAndEmit(level, message) {
   } else {
     console.log(message);
   }
-  window.socket.emit("log", { level, message });
+  window.socket.emit("log", { client_id: window.clientId, level, message });
 }
 
 function stringifyEventArgs(args, event_args) {
@@ -381,7 +381,7 @@ function createApp(elements, options) {
               if (typeof msg === "string" && msg.length > MAX_WEBSOCKET_MESSAGE_SIZE) {
                 const errorMessage = `Payload size ${msg.length} exceeds the maximum allowed limit.`;
                 console.error(errorMessage);
-                args[0] = `42["log",{"level":"error","message":"${errorMessage}"}]`;
+                args[0] = `42["log",{"client_id":"${window.clientId}","level":"error","message":"${errorMessage}"}]`;
                 if (window.tooLongMessageTimerId) clearTimeout(window.tooLongMessageTimerId);
                 const popup = document.getElementById("too_long_message_popup");
                 popup.ariaHidden = false;

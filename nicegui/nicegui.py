@@ -226,28 +226,20 @@ def _on_event(_: str, msg: dict) -> None:
 
 @sio.on('javascript_response')
 def _on_javascript_response(_: str, msg: dict) -> None:
-    client = Client.instances.get(msg['client_id'])
-    if not client:
-        return
-    client.handle_javascript_response(msg)
+    if client := Client.instances.get(msg['client_id']):
+        client.handle_javascript_response(msg)
 
 
 @sio.on('ack')
 def _on_ack(_: str, msg: dict) -> None:
-    client = Client.instances.get(msg['client_id'])
-    if not client:
-        return
-    client.outbox.prune_history(msg['next_message_id'])
+    if client := Client.instances.get(msg['client_id']):
+        client.outbox.prune_history(msg['next_message_id'])
 
 
 @sio.on('log')
 def _on_log(_: str, msg: dict) -> None:
-    {
-        'debug': log.debug,
-        'info': log.info,
-        'warning': log.warning,
-        'error': log.error,
-    }[msg['level']](msg['message'])
+    if client := Client.instances.get(msg['client_id']):
+        client.handle_log_message(msg)
 
 
 async def prune_tab_storage(*, force: bool = False) -> None:
