@@ -143,25 +143,21 @@ class Air:
 
         @self.relay.on('handshake')
         def _handle_handshake(data: dict[str, Any]) -> bool:
-            client_id = data['client_id']
-            if client_id not in Client.instances:
-                return False
-            client = Client.instances[client_id]
-            client.environ = data['environ']
-            if data.get('old_tab_id'):
-                core.app.storage.copy_tab(data['old_tab_id'], data['tab_id'])
-            client.tab_id = data['tab_id']
-            client.on_air = True
-            client.handle_handshake(data['sid'], data['document_id'], data.get('next_message_id'))
-            return True
+            if client := Client.instances.get(data['client_id']):
+                client.environ = data['environ']
+                if data.get('old_tab_id'):
+                    core.app.storage.copy_tab(data['old_tab_id'], data['tab_id'])
+                client.tab_id = data['tab_id']
+                client.on_air = True
+                client.handle_handshake(data['sid'], data['document_id'], data.get('next_message_id'))
+                return True
+            return False
 
         @self.relay.on('client_disconnect')
         def _handle_client_disconnect(data: dict[str, Any]) -> None:
             self.log.debug('client disconnected.')
-            client_id = data['client_id']
-            if client_id not in Client.instances:
-                return
-            Client.instances[client_id].handle_disconnect(data['sid'])
+            if client := Client.instances.get(data['client_id']):
+                client.handle_disconnect(data['sid'])
 
         @self.relay.on('connect')
         async def _handle_connect() -> None:
@@ -184,32 +180,28 @@ class Air:
 
         @self.relay.on('event')
         def _handle_event(data: dict[str, Any]) -> None:
-            client_id = data['client_id']
-            if client_id not in Client.instances:
-                return
-            client = Client.instances[client_id]
-            args = data['msg']['args']
-            if args and isinstance(args[0], str) and args[0].startswith('{"socket_id":'):
-                arg0 = json.loads(args[0])
-                arg0['socket_id'] = client_id  # HACK: translate socket_id of ui.scene's init event
-                args[0] = json.dumps(arg0)
-            client.handle_event(data['msg'])
+            if client := Client.instances.get(data['client_id']):
+                args = data['msg']['args']
+                if args and isinstance(args[0], str) and args[0].startswith('{"socket_id":'):
+                    arg0 = json.loads(args[0])
+                    arg0['socket_id'] = client.id  # HACK: translate socket_id of ui.scene's init event
+                    args[0] = json.dumps(arg0)
+                client.handle_event(data['msg'])
+
+        @self.relay.on('log')
+        def _handle_log(data: dict[str, Any]) -> None:
+            if client := Client.instances.get(data['client_id']):
+                client.handle_log_message(data['msg'])
 
         @self.relay.on('javascript_response')
         def _handle_javascript_response(data: dict[str, Any]) -> None:
-            client_id = data['client_id']
-            if client_id not in Client.instances:
-                return
-            client = Client.instances[client_id]
-            client.handle_javascript_response(data['msg'])
+            if client := Client.instances.get(data['client_id']):
+                client.handle_javascript_response(data['msg'])
 
         @self.relay.on('ack')
         def _handle_ack(data: dict[str, Any]) -> None:
-            client_id = data['client_id']
-            if client_id not in Client.instances:
-                return
-            client = Client.instances[client_id]
-            client.outbox.prune_history(data['msg']['next_message_id'])
+            if client := Client.instances.get(data['client_id']):
+                client.outbox.prune_history(data['msg']['next_message_id'])
 
         @self.relay.on('out_of_time')
         async def _handle_out_of_time() -> None:

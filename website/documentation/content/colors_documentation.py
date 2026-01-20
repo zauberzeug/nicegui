@@ -27,4 +27,25 @@ def custom_color_demo() -> None:
               on_click=lambda: ui.colors(brand=f'#{randint(0, 0xffffff):06x}'))
 
 
+@doc.demo('App-wide colors', '''
+    You can set app-wide colors using `app.colors()`.
+
+    The API is same as the initializer of `ui.colors()`,
+    but the colors will be applied to all pages unless overridden by `ui.colors()` on a specific page.
+
+    *Added in version 3.6.0*
+''')
+def app_colors_demo() -> None:
+    # from nicegui import app
+    # app.colors(primary='#B0C4DE', brand='#FF6347')
+
+    # @ui.page('/')
+    def page():
+        # ui.button('App-wide primary color')
+        # ui.button('App-wide brand color', color='brand')
+        ui.button('App-wide primary color', color='#B0C4DE').classes('text-white')  # HIDE
+        ui.button('App-wide brand color', color='#FF6347').classes('text-white')  # HIDE
+    page()  # HIDE
+
+
 doc.reference(ui.colors)

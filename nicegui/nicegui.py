@@ -179,6 +179,8 @@ async def _exception_handler_404(request: Request, exception: Exception) -> Resp
 
 @app.exception_handler(Exception)
 async def _exception_handler_500(request: Request, exception: Exception) -> Response:
+    if not request.scope.get('nicegui_page_path'):
+        raise exception  # Simply return "Internal Server Error", just like FastAPI would do
     log.exception(exception)
     with Client(page(''), request=request) as client:
         error_content(500, exception)
@@ -200,7 +202,7 @@ async def _on_handshake(sid: str, data: dict[str, Any]) -> bool:
     if data.get('old_tab_id'):
         app.storage.copy_tab(data['old_tab_id'], data['tab_id'])
     client.tab_id = data['tab_id']
-    if sid[:5].startswith('test-'):
+    if sid.startswith('test-'):
         client.environ = {'asgi.scope': {'description': 'test client', 'type': 'test'}}
     else:
         client.environ = sio.get_environ(sid)
@@ -232,23 +234,20 @@ def _on_event(_: str, msg: dict) -> None:
 
 @sio.on('javascript_response')
 def _on_javascript_response(_: str, msg: dict) -> None:
-    client = Client.instances.get(msg['client_id'])
-    if not client:
-        return
-    client.handle_javascript_response(msg)
+    if client := Client.instances.get(msg['client_id']):
+        client.handle_javascript_response(msg)
 
 
 @sio.on('ack')
 def _on_ack(_: str, msg: dict) -> None:
-    client = Client.instances.get(msg['client_id'])
-    if not client:
-        return
-    client.outbox.prune_history(msg['next_message_id'])
+    if client := Client.instances.get(msg['client_id']):
+        client.outbox.prune_history(msg['next_message_id'])
 
 
-@sio.on('too_long_message')
-def _on_too_long_message(_: str) -> None:
-    log.warning('Received a too long message from the client.')
+@sio.on('log')
+def _on_log(_: str, msg: dict) -> None:
+    if client := Client.instances.get(msg['client_id']):
+        client.handle_log_message(msg)
 
 
 async def prune_tab_storage(*, force: bool = False) -> None:

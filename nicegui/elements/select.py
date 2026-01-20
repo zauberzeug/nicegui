@@ -2,6 +2,7 @@ from collections.abc import Generator, Iterable, Iterator
 from copy import deepcopy
 from typing import Any, Callable, Literal, Optional, Union
 
+from ..defaults import DEFAULT_PROP, DEFAULT_PROPS, resolve_defaults
 from ..events import GenericEventArguments, Handler, ValueChangeEventArguments
 from .choice_element import ChoiceElement
 from .mixins.disableable_element import DisableableElement
@@ -11,15 +12,16 @@ from .mixins.validation_element import ValidationDict, ValidationElement, Valida
 
 class Select(LabelElement, ValidationElement, ChoiceElement, DisableableElement, component='select.js'):
 
+    @resolve_defaults
     def __init__(self,
                  options: Union[list, dict], *,
-                 label: Optional[str] = None,
-                 value: Any = None,
+                 label: Optional[str] = DEFAULT_PROP | None,
+                 value: Any = DEFAULT_PROPS['model-value'] | None,
                  on_change: Optional[Handler[ValueChangeEventArguments]] = None,
                  with_input: bool = False,
-                 new_value_mode: Optional[Literal['add', 'add-unique', 'toggle']] = None,
-                 multiple: bool = False,
-                 clearable: bool = False,
+                 new_value_mode: Optional[Literal['add', 'add-unique', 'toggle']] = DEFAULT_PROP | None,
+                 multiple: bool = DEFAULT_PROP | False,
+                 clearable: bool = DEFAULT_PROP | False,
                  validation: Optional[Union[ValidationFunction, ValidationDict]] = None,
                  key_generator: Optional[Union[Callable[[Any], Any], Iterator[Any]]] = None,
                  ) -> None:
@@ -73,11 +75,11 @@ class Select(LabelElement, ValidationElement, ChoiceElement, DisableableElement,
         if with_input:
             self.original_options = deepcopy(options)
             self._props['use-input'] = True
-            self._props['hide-selected'] = not multiple
+            self._props.set_bool('hide-selected', not multiple)
             self._props['fill-input'] = True
             self._props['input-debounce'] = 0
-        self._props['multiple'] = multiple
-        self._props['clearable'] = clearable
+        self._props.set_bool('multiple', multiple)
+        self._props.set_bool('clearable', clearable)
 
         self._is_showing_popup = False
         self.on('popup-show', lambda e: setattr(e.sender, '_is_showing_popup', True))

@@ -1,5 +1,6 @@
 from typing import Optional
 
+from ..defaults import DEFAULT_PROP, resolve_defaults
 from ..events import Handler, ValueChangeEventArguments
 from .mixins.value_element import ValueElement
 
@@ -7,7 +8,11 @@ from .mixins.value_element import ValueElement
 class DarkMode(ValueElement, component='dark_mode.js'):
     VALUE_PROP = 'value'
 
-    def __init__(self, value: Optional[bool] = False, *, on_change: Optional[Handler[ValueChangeEventArguments]] = None) -> None:
+    @resolve_defaults
+    def __init__(self,
+                 value: Optional[bool] = DEFAULT_PROP | False, *,
+                 on_change: Optional[Handler[ValueChangeEventArguments]] = None,
+                 ) -> None:
         """Dark mode
 
         You can use this element to enable, disable or toggle dark mode on the page.

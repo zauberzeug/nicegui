@@ -7,6 +7,26 @@ let mounted_app = undefined;
 
 const loaded_components = new Set();
 
+function applyColors(colors) {
+  const quasarColors = ["primary", "secondary", "accent", "dark", "dark-page", "positive", "negative", "info", "warning"];
+  let customCSS = "";
+  for (let color in colors) {
+    if (quasarColors.includes(color))
+      continue;
+    const colorName = color.replaceAll("_", "-");
+    const colorVar = "--q-" + colorName;
+    document.body.style.setProperty(colorVar, colors[color]);
+    customCSS += `.text-${colorName} { color: var(${colorVar}) !important; }\n`;
+    customCSS += `.bg-${colorName} { background-color: var(${colorVar}) !important; }\n`;
+  }
+  if (!customCSS) return;
+  const style = document.createElement("style");
+  style.innerHTML = customCSS;
+  style.dataset.niceguiCustomColors = "";
+  document.head.querySelectorAll("[data-nicegui-custom-colors]").forEach((el) => el.remove());
+  document.getElementsByTagName("head")[0].appendChild(style);
+}
+
 function parseElements(raw_elements) {
   return JSON.parse(
     raw_elements
@@ -81,6 +101,17 @@ function emitEvent(event_name, ...args) {
   getElement(0).$emit(event_name, ...args);
 }
 
+function logAndEmit(level, message) {
+  if (level === "error") {
+    console.error(message);
+  } else if (level === "warning") {
+    console.warn(message);
+  } else {
+    console.log(message);
+  }
+  window.socket.emit("log", { client_id: window.clientId, level, message });
+}
+
 function stringifyEventArgs(args, event_args) {
   const result = [];
   args.forEach((arg, i) => {
@@ -139,7 +170,7 @@ function throttle(callback, time, leading, trailing, id) {
     }
   }
 }
-function renderRecursively(elements, id) {
+function renderRecursively(elements, id, propsContext) {
   const element = elements[id];
   if (element === undefined) {
     return;
@@ -160,7 +191,7 @@ function renderRecursively(elements, id) {
     if (key.startsWith(":")) {
       try {
         try {
-          props[key.substring(1)] = new Function(`return (${value})`)();
+          props[key.substring(1)] = new Function("props", `return (${value})`)(propsContext);
         } catch (e) {
           props[key.substring(1)] = eval(value);
         }
@@ -194,6 +225,7 @@ function renderRecursively(elements, id) {
 
     let handler;
     if (event.js_handler) {
+      const props = propsContext; // make `props` accessible from inside the event handler
       handler = eval(event.js_handler);
     } else {
       handler = emit;
@@ -228,14 +260,14 @@ function renderRecursively(elements, id) {
           )
         );
       }
-      const children = data.ids.map((id) => renderRecursively(elements, id));
+      const children = data.ids.map((id) => renderRecursively(elements, id, props || propsContext));
       if (name === "default" && element.text !== null) {
         children.unshift(element.text);
       }
       return [...rendered, ...children];
     };
   });
-  return Vue.h(Vue.resolveComponent(element.tag), props, slots);
+  return Vue.h(app.config.isNativeTag(element.tag) ? element.tag : Vue.resolveComponent(element.tag), props, slots);
 }
 
 function runJavascript(code, request_id) {
@@ -350,8 +382,9 @@ function createApp(elements, options) {
             return function (...args) {
               const msg = args[0];
               if (typeof msg === "string" && msg.length > MAX_WEBSOCKET_MESSAGE_SIZE) {
-                console.error(`Payload size ${msg.length} exceeds the maximum allowed limit.`);
-                args[0] = '42["too_long_message"]';
+                const errorMessage = `Payload size ${msg.length} exceeds the maximum allowed limit.`;
+                console.error(errorMessage);
+                args[0] = `42["log",{"client_id":"${window.clientId}","level":"error","message":"${errorMessage}"}]`;
                 if (window.tooLongMessageTimerId) clearTimeout(window.tooLongMessageTimerId);
                 const popup = document.getElementById("too_long_message_popup");
                 popup.ariaHidden = false;
@@ -400,6 +433,21 @@ function createApp(elements, options) {
             .map(([_, element]) => loadDependencies(element, options.prefix, options.version));
           await Promise.all(loadPromises);
 
+          let eventListenersChanged = false;
+          for (const [id, element] of Object.entries(msg)) {
+            if (element === null) continue;
+            if (!(id in this.elements)) continue;
+            const oldListenerIds = new Set((this.elements[id]?.events || []).map((ev) => ev.listener_id));
+            if (element.events?.some((e) => !oldListenerIds.has(e.listener_id))) {
+              delete this.elements[id];
+              eventListenersChanged = true;
+            }
+          }
+          if (eventListenersChanged) {
+            logAndEmit("warning", "Event listeners changed after initial definition. Re-rendering affected elements.");
+            await this.$nextTick();
+          }
+
           for (const [id, element] of Object.entries(msg)) {
             if (element === null) {
               delete this.elements[id];
@@ -412,7 +460,7 @@ function createApp(elements, options) {
           await this.$nextTick();
           for (const [id, element] of Object.entries(msg)) {
             if (element?.update_method) {
-              getElement(id)[element.update_method]();
+              getElement(id)?.[element.update_method]();
             }
           }
         },

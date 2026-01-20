@@ -2,7 +2,9 @@ from pathlib import Path
 from typing import Union
 
 from .. import helpers, json
-from .html import add_head_html
+from ..client import Client
+from ..context import context
+from ..slot import Slot
 
 
 def add_css(content: Union[str, Path], *, shared: bool = False) -> None:
@@ -17,7 +19,8 @@ def add_css(content: Union[str, Path], *, shared: bool = False) -> None:
     """
     if helpers.is_file(content):
         content = Path(content).read_text(encoding='utf-8')
-    add_head_html(f'<style>{content}</style>', shared=shared)
+    safe_content = json.dumps(content).replace('<', r'\u003c')
+    _add_javascript(f'addStyle({safe_content});', shared=shared)
 
 
 def add_scss(content: Union[str, Path], *, indented: bool = False, shared: bool = False) -> None:  # DEPRECATED
@@ -35,13 +38,9 @@ def add_scss(content: Union[str, Path], *, indented: bool = False, shared: bool 
     """
     content = Path(content).read_text(encoding='utf-8') if helpers.is_file(content) else str(content).strip()
     syntax = 'indented' if indented else 'scss'
-    add_head_html(f'''
-        <script type="module">
-            import * as sass from "sass";
-            const style = document.createElement("style");
-            style.textContent = sass.compileString({json.dumps(content)}, {{syntax: "{syntax}"}}).css;
-            document.head.appendChild(style);
-        </script>
+    safe_content = json.dumps(content).replace('<', r'\u003c')
+    _add_javascript(f'''
+        import("sass").then(sass => addStyle(sass.compileString({safe_content}, {{syntax: "{syntax}"}}).css));
     ''', shared=shared)
 
 
@@ -58,3 +57,15 @@ def add_sass(content: Union[str, Path], *, shared: bool = False) -> None:  # DEP
     :param shared: whether to add the code to all pages (default: ``False``, *added in version 2.14.0*)
     """
     add_scss(content, indented=True, shared=shared)
+
+
+def _add_javascript(code: str, *, shared: bool = False) -> None:
+    script_html = f'<script>{code}</script>'
+    if shared:
+        client = context.client if Slot.get_stack() else None  # NOTE: don't auto-create a client if shared=True
+        Client.shared_head_html += script_html + '\n'
+    else:
+        client = context.client
+        client._head_html += script_html + '\n'
+    if client is not None and client.has_socket_connection:  # NOTE: no need to run JavaScript if there is no client yet
+        client.run_javascript(code)

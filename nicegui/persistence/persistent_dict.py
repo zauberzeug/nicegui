@@ -1,6 +1,6 @@
 import abc
 
-from nicegui import observables
+from .. import observables
 
 
 class PersistentDict(observables.ObservableDict, abc.ABC):

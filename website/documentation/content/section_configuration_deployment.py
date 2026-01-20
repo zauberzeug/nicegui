@@ -37,6 +37,11 @@ doc.intro(run_documentation)
 
     In native mode the `app.native.main_window` object allows you to access the underlying window.
     It is an async version of [`Window` from pywebview](https://pywebview.flowrl.com/api/#webview-window).
+
+    On Windows, native mode requires the .NET Framework to be installed,
+    as pywebview uses it for the EdgeChromium backend.
+    This is typically pre-installed on standard Windows installations,
+    but may be missing on minimal or freshly installed systems.
 ''', tab=lambda: ui.label('NiceGUI'))
 def native_mode_demo():
     from nicegui import app
@@ -53,14 +58,15 @@ def native_mode_demo():
     ui.button('enlarge', on_click=lambda: ui.notify('window will be set to 1000x700 in native mode'))
 
 
-# Currently, options passed via app.native are not used if they are set behind a main guard
-# See discussion at: https://github.com/zauberzeug/nicegui/pull/4627
 doc.text('', '''
     Note that the native app is run in a separate
     [process](https://docs.python.org/3/library/multiprocessing.html#multiprocessing.Process).
     Therefore any configuration changes from code run under a
     [main guard](https://docs.python.org/3/library/__main__.html#idiomatic-usage) is ignored by the native app.
     The following examples show the difference between a working and a non-working configuration.
+
+    For packaged apps (nicegui-pack, PyInstaller, etc.), also see the "Packaging with Native Mode" section below
+    regarding the correct placement of `freeze_support()`.
 ''')
 
 
@@ -359,20 +365,28 @@ doc.text('', '''
 ''')
 
 doc.text('', '''
-    **macOS Packaging**
+    **Packaging with Native Mode**
 
-    Add the following snippet before anything else in your main app's file, to prevent new processes from being spawned in an endless loop:
+    When packaging your app (using nicegui-pack, PyInstaller, py2exe, etc.),
+    you need to call `freeze_support()` to prevent new processes from being spawned in an endless loop.
+    It should be called as the first statement inside the main guard.
+
+    If you use `app.native` settings, they must be defined **outside** the main guard
+    so they are applied before `freeze_support()` intercepts the subprocess:
 
     ```python
-    # macOS packaging support
-    from multiprocessing import freeze_support  # noqa
-    freeze_support()  # noqa
+    from multiprocessing import freeze_support
+    from nicegui import app, ui
 
-    # all your other imports and code
+    app.native.window_args['transparent'] = True  # outside main guard
+
+    # any other code (page functions, etc.)
+
+    if __name__ == '__main__':
+        freeze_support()  # first statement in main guard
+        ui.run(native=True, reload=False)
     ```
 
-    The `# noqa` comment instructs Pylance or autopep8 to not apply any PEP rule on those two lines, guaranteeing they remain on top of anything else.
-    This is key to prevent process spawning.
 ''')
 
 doc.text('NiceGUI On Air', '''
