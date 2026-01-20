@@ -226,11 +226,6 @@ class Element(Visibility):
                     'children': [child.id for child in self.default_slot.children],
                     'events': [listener.to_dict() for listener in self._event_listeners.values()],
                     'update_method': self._update_method,
-                    'component': {
-                        'key': self.component.key,
-                        'name': self.component.name,
-                        'tag': self.component.tag
-                    } if self.component else None,
                 }.items()
                 if value
             },
