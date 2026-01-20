@@ -324,12 +324,13 @@ function createApp(elements, options) {
     },
     mounted() {
       mounted_app = this;
-      window.documentId = options.query.document_id = createRandomUUID();
+      window.documentId = createRandomUUID();
       window.clientId = options.query.client_id;
       const url = window.location.protocol === "https:" ? "wss://" : "ws://" + window.location.host;
       window.path_prefix = options.prefix;
       window.nextMessageId = options.query.next_message_id;
       window.ackedMessageId = -1;
+      options.query.document_id = window.documentId;
       options.query.tab_id = TAB_ID;
       options.query.old_tab_id = OLD_TAB_ID;
       window.socket = io(url, {

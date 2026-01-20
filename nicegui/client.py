@@ -153,7 +153,7 @@ class Client:
             **core.app.config.socket_io_js_query_params,
             'client_id': self.id,
             'next_message_id': self.outbox.next_message_id,
-            'implicit_handshake': not self._is_prefetch(request),
+            'implicit_handshake': not _is_prefetch(request),
         }
         vue_html, vue_styles, vue_scripts, imports, js_imports, js_imports_urls = \
             generate_resources(prefix, self.elements.values())
@@ -193,11 +193,6 @@ class Client:
         """Return the title of the page."""
         return self.page.resolve_title() if self.title is None else self.title
 
-    @staticmethod
-    def _is_prefetch(request: Request) -> bool:
-        purpose = (request.headers.get('Sec-Purpose') or request.headers.get('Purpose') or '').lower()
-        return 'prefetch' in purpose and 'prerender' not in purpose
-
     async def connected(self, timeout: float | None = None) -> None:
         """Block execution until the client is connected.
 
@@ -208,7 +203,7 @@ class Client:
         self._waiting_for_connection.set()
         self._connected.clear()
         try:
-            await asyncio.wait_for(self._connected.wait(), timeout=None if self._is_prefetch(self.request) else timeout)
+            await asyncio.wait_for(self._connected.wait(), timeout=None if _is_prefetch(self.request) else timeout)
         except asyncio.TimeoutError as e:
             raise ClientConnectionTimeout(self) from e
 
@@ -417,3 +412,8 @@ class Client:
 
         except Exception:
             log.exception('Error while pruning clients')
+
+
+def _is_prefetch(request: Request) -> bool:
+    purpose = (request.headers.get('Sec-Purpose') or request.headers.get('Purpose') or '').lower()
+    return 'prefetch' in purpose and 'prerender' not in purpose
