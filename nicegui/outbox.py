@@ -108,15 +108,17 @@ class Outbox:
                         for element_id, element in self.updates.items()
                     }
                     js_components = [
-                        {'key': component.key, 'name': component.name, 'tag': component.tag}
+                        component
                         for element in self.updates.values()
                         if not isinstance(element, Deleted)
                         and isinstance((component := element.component), JsComponent)
                         and component.name not in self._loaded_components
                     ]
                     if js_components:
-                        coros.append(self._emit((client.id, 'load_js_components', {'components': js_components})))
-                        self._loaded_components.update(c['name'] for c in js_components)
+                        coros.append(self._emit((client.id, 'load_js_components', {
+                            'components': [{'key': c.key, 'tag': c.tag} for c in js_components],
+                        })))
+                        self._loaded_components.update(c.name for c in js_components)
                     coros.append(self._emit((client.id, 'update', data)))
                     self.updates.clear()
 

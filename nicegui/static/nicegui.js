@@ -43,7 +43,6 @@ function replaceUndefinedAttributes(element) {
   element.text ??= null;
   element.events ??= [];
   element.update_method ??= null;
-  element.component ??= null;
   element.slots = {
     default: { ids: element.children || [] },
     ...(element.slots ?? {}),
