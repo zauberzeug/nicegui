@@ -5,8 +5,6 @@ const None = undefined;
 let app = undefined;
 let mounted_app = undefined;
 
-const loaded_components = new Set();
-
 const allClasses = new Set();
 const renderedClasses = new Set();
 
@@ -117,7 +115,6 @@ function replaceUndefinedAttributes(element) {
   element.text ??= null;
   element.events ??= [];
   element.update_method ??= null;
-  element.component ??= null;
   element.slots = {
     default: { ids: element.children || [] },
     ...(element.slots ?? {}),
@@ -181,7 +178,7 @@ function logAndEmit(level, message) {
   } else {
     console.log(message);
   }
-  window.socket.emit("log", { level, message });
+  window.socket.emit("log", { client_id: window.clientId, level, message });
 }
 
 function stringifyEventArgs(args, event_args) {
@@ -247,9 +244,6 @@ function renderRecursively(elements, id, propsContext) {
   if (element === undefined) {
     return;
   }
-
-  // @todo: Try avoid this with better handling of initial page load.
-  if (element.component) loaded_components.add(element.component.name);
 
   const props = {
     id: "c" + id,
@@ -382,17 +376,6 @@ function ack() {
   window.ackedMessageId = window.nextMessageId;
 }
 
-async function loadDependencies(element, prefix, version) {
-  if (element.component) {
-    const { name, key, tag } = element.component;
-    if (!loaded_components.has(name) && !key.endsWith(".vue")) {
-      const component = await import(`${prefix}/_nicegui/${version}/components/${key}`);
-      app.component(tag, component.default);
-      loaded_components.add(name);
-    }
-  }
-}
-
 function createRandomUUID() {
   try {
     return crypto.randomUUID();
@@ -461,7 +444,7 @@ function createApp(elements, options) {
               if (typeof msg === "string" && msg.length > MAX_WEBSOCKET_MESSAGE_SIZE) {
                 const errorMessage = `Payload size ${msg.length} exceeds the maximum allowed limit.`;
                 console.error(errorMessage);
-                args[0] = `42["log",{"level":"error","message":"${errorMessage}"}]`;
+                args[0] = `42["log",{"client_id":"${window.clientId}","level":"error","message":"${errorMessage}"}]`;
                 if (window.tooLongMessageTimerId) clearTimeout(window.tooLongMessageTimerId);
                 const popup = document.getElementById("too_long_message_popup");
                 popup.ariaHidden = false;
@@ -505,12 +488,12 @@ function createApp(elements, options) {
         disconnect: () => {
           document.getElementById("popup").ariaHidden = false;
         },
+        load_js_components: async (msg) => {
+          const urls = msg.components.map((c) => `${options.prefix}/_nicegui/${options.version}/components/${c.key}`);
+          const imports = await Promise.all(urls.map((url) => import(url)));
+          msg.components.forEach((c, i) => app.component(c.tag, imports[i].default));
+        },
         update: async (msg) => {
-          const loadPromises = Object.entries(msg)
-            .filter(([_, element]) => element && element.component)
-            .map(([_, element]) => loadDependencies(element, options.prefix, options.version));
-          await Promise.all(loadPromises);
-
           if (window.__unocss_runtime !== undefined) {
             const originalClassesCount = allClasses.size;
             for (const el of Object.values(msg)) for (const c of el?.class || []) allClasses.add(c);
