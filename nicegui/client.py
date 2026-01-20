@@ -294,7 +294,7 @@ class Client:
         self._exception_handlers.append(handler)
 
     def handle_handshake(self, socket_id: str, document_id: str, next_message_id: int | None) -> None:
-        """Cancel pending disconnect task and invoke connect handlers."""
+        """Cancel pending disconnect task and invoke connect handlers. (For internal use only.)"""
         self._waiting_for_connection.clear()
         self._connected.set()
         self._socket_to_document_id[socket_id] = document_id
@@ -309,7 +309,7 @@ class Client:
             self.safe_invoke(t)
 
     def handle_disconnect(self, socket_id: str) -> None:
-        """Wait for the browser to reconnect; invoke deletion handlers if it doesn't."""
+        """Wait for the browser to reconnect; invoke deletion handlers if it doesn't. (For internal use only.)"""
         if socket_id not in self._socket_to_document_id:
             return
         document_id = self._socket_to_document_id.pop(socket_id)
@@ -338,7 +338,7 @@ class Client:
             self._delete_tasks.pop(document_id).cancel()
 
     def handle_event(self, msg: dict) -> None:
-        """Forward an event to the corresponding element."""
+        """Forward an event to the corresponding element. (For internal use only.)"""
         with self:
             sender = self.elements.get(msg['id'])
             if sender is not None and not sender.is_ignoring_events:
@@ -347,8 +347,17 @@ class Client:
                     msg['args'] = msg['args'][0]
                 sender._handle_event(msg)  # pylint: disable=protected-access
 
+    def handle_log_message(self, msg: dict) -> None:
+        """Log a message from the client. (For internal use only.)"""
+        {
+            'debug': log.debug,
+            'info': log.info,
+            'warning': log.warning,
+            'error': log.error,
+        }[msg['level']](msg['message'])
+
     def handle_javascript_response(self, msg: dict) -> None:
-        """Store the result of a JavaScript command."""
+        """Store the result of a JavaScript command. (For internal use only.)"""
         JavaScriptRequest.resolve(msg['request_id'], msg.get('result'))
 
     def safe_invoke(self, func: Callable[..., Any] | Awaitable) -> None:
