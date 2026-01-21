@@ -72,7 +72,7 @@ class UserInteraction(Generic[T]):
         """Click the selected elements."""
         assert self.user.client
         with self.user.client:
-            for element in self.elements:
+            for element in self.elements:  # pylint: disable=too-many-nested-blocks
                 if isinstance(element, DisableableElement) and not element.enabled:
                     continue
                 if isinstance(element, ui.link):
@@ -83,18 +83,21 @@ class UserInteraction(Generic[T]):
                 if isinstance(element, ui.select):
                     if element.is_showing_popup:
                         if isinstance(element.options, dict):
-                            target_value = next((k for k, v in element.options.items() if v == self.target), '')
+                            target_value = next((k for k, v in element.options.items() if v == self.target), None)
                         else:
-                            target_value = self.target
-                        if element.multiple:
-                            if target_value in element.value:
-                                element.value = [v for v in element.value if v != target_value]
-                            elif target_value in element._values:  # pylint: disable=protected-access
-                                element.value = [*element.value, target_value]
+                            target_value = self.target if self.target in element._values else None  # pylint: disable=protected-access
+                        if target_value is not None:
+                            # User clicked on a valid option: update the value and close the popup
+                            if element.multiple:
+                                if target_value in element.value:
+                                    element.value = [v for v in element.value if v != target_value]
+                                else:
+                                    element.value = [*element.value, target_value]
                             else:
+                                element.value = target_value
                                 element._is_showing_popup = False  # pylint: disable=protected-access
                         else:
-                            element.value = target_value
+                            # User clicked the select itself (not a valid option): just close the popup
                             element._is_showing_popup = False  # pylint: disable=protected-access
                     else:
                         element._is_showing_popup = True  # pylint: disable=protected-access
