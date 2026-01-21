@@ -188,10 +188,11 @@ async def _exception_handler_500(request: Request, exception: Exception) -> Resp
 
 
 @sio.on('connect')
-async def _on_connect(sid: str, data: dict[str, Any], _=None) -> None:
+async def _on_connect(sid: str, data: dict[str, Any], _=None) -> bool:
     query = {k: v[0] for k, v in urllib.parse.parse_qs(data.get('QUERY_STRING', '')).items()}
     if query.get('implicit_handshake', '') == 'true' and not await _on_handshake(sid, query):
-        raise ConnectionRefusedError('handshake failed')
+        return False
+    return True
 
 
 @sio.on('handshake')
