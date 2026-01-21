@@ -399,6 +399,9 @@ function createApp(elements, options) {
           if (err.message == "timeout") {
             console.log("reloading because connection timed out");
             window.location.reload(); // see https://github.com/zauberzeug/nicegui/issues/198
+          } else if (err.message == "Implicit handshake failed") {
+            console.log("reloading because implicit handshake failed for clientId " + window.clientId);
+            window.location.reload();
           }
         },
         try_reconnect: async () => {
