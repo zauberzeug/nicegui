@@ -103,11 +103,11 @@ class Select(LabelElement, ValidationElement, ChoiceElement, DisableableElement,
                             if arg1 == arg2['label']:
                                 e.args.remove(arg1)
                                 break
-                args = [self._values[arg['value']] if isinstance(arg, dict) else arg for arg in e.args]
+                args = [self._get_value_from_arg(arg) for arg in e.args]
                 for arg in e.args:
                     if isinstance(arg, str):
                         self._handle_new_value(arg)
-                return [arg for arg in args if arg in self._values]
+                return [arg for arg in args if arg is not None and arg in self._values]
         else:  # noqa: PLR5501
             if e.args is None:
                 return None
@@ -116,7 +116,44 @@ class Select(LabelElement, ValidationElement, ChoiceElement, DisableableElement,
                     new_value = self._handle_new_value(e.args)
                     return new_value if new_value in self._values else None
                 else:
-                    return self._values[e.args['value']]
+                    return self._get_value_from_arg(e.args)
+
+    def _get_value_from_arg(self, arg: Any) -> Any:
+        """Safely get value from event argument, handling dynamic option changes.
+
+        When options are dynamically modified (e.g., filtered), the index sent by
+        the frontend may no longer match the current options list. This method
+        handles such cases by:
+        1. First trying to use the index directly
+        2. Falling back to finding the value by label if the index is invalid
+        3. Returning None if the option cannot be found
+
+        This fixes issue #4420 where dynamic option loading causes index errors.
+        """
+        if isinstance(arg, str):
+            return arg
+        if not isinstance(arg, dict):
+            return None
+
+        index = arg.get('value')
+        label = arg.get('label')
+
+        # Try to get value by index first
+        if index is not None and 0 <= index < len(self._values):
+            # Verify the label matches to ensure we have the right option
+            if index < len(self._labels) and self._labels[index] == label:
+                return self._values[index]
+
+        # Fall back to finding by label if index is invalid or mismatched
+        # This handles cases where options were dynamically changed
+        if label is not None:
+            try:
+                label_index = self._labels.index(label)
+                return self._values[label_index]
+            except ValueError:
+                pass
+
+        return None
 
     def _value_to_model_value(self, value: Any) -> Any:
         # pylint: disable=no-else-return
