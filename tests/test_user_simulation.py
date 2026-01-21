@@ -511,6 +511,27 @@ async def test_select_multiple_values(user: User):
     assert select.value == ['B']
 
 
+async def test_select_keeps_value_when_toggling_popup(user: User):
+    @ui.page('/')
+    def page():
+        s = ui.select(['Apple', 'Banana', 'Cherry'], label='Fruit', value='Apple')
+        ui.label().bind_text_from(s, 'is_showing_popup', lambda v: 'open' if v else 'closed')
+        ui.label().bind_text_from(s, 'value', lambda v: f'value = {v}')
+
+    await user.open('/')
+    one = user.find('Fruit')
+    await user.should_see('closed')
+    await user.should_see('value = Apple')
+
+    one.click()
+    await user.should_see('open')
+    await user.should_see('value = Apple')
+
+    one.click()
+    await user.should_see('closed')
+    await user.should_see('value = Apple')
+
+
 async def test_upload_table(user: User) -> None:
     @ui.page('/')
     def page():

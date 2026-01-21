@@ -5,8 +5,6 @@ const None = undefined;
 let app = undefined;
 let mounted_app = undefined;
 
-const loaded_components = new Set();
-
 function applyColors(colors) {
   const quasarColors = ["primary", "secondary", "accent", "dark", "dark-page", "positive", "negative", "info", "warning"];
   let customCSS = "";
@@ -45,7 +43,6 @@ function replaceUndefinedAttributes(element) {
   element.text ??= null;
   element.events ??= [];
   element.update_method ??= null;
-  element.component ??= null;
   element.slots = {
     default: { ids: element.children || [] },
     ...(element.slots ?? {}),
@@ -175,9 +172,6 @@ function renderRecursively(elements, id, propsContext) {
   if (element === undefined) {
     return;
   }
-
-  // @todo: Try avoid this with better handling of initial page load.
-  if (element.component) loaded_components.add(element.component.name);
 
   const props = {
     id: "c" + id,
@@ -310,17 +304,6 @@ function ack() {
   window.ackedMessageId = window.nextMessageId;
 }
 
-async function loadDependencies(element, prefix, version) {
-  if (element.component) {
-    const { name, key, tag } = element.component;
-    if (!loaded_components.has(name) && !key.endsWith(".vue")) {
-      const component = await import(`${prefix}/_nicegui/${version}/components/${key}`);
-      app.component(tag, component.default);
-      loaded_components.add(name);
-    }
-  }
-}
-
 function createRandomUUID() {
   try {
     return crypto.randomUUID();
@@ -427,12 +410,12 @@ function createApp(elements, options) {
         disconnect: () => {
           document.getElementById("popup").ariaHidden = false;
         },
+        load_js_components: async (msg) => {
+          const urls = msg.components.map((c) => `${options.prefix}/_nicegui/${options.version}/components/${c.key}`);
+          const imports = await Promise.all(urls.map((url) => import(url)));
+          msg.components.forEach((c, i) => app.component(c.tag, imports[i].default));
+        },
         update: async (msg) => {
-          const loadPromises = Object.entries(msg)
-            .filter(([_, element]) => element && element.component)
-            .map(([_, element]) => loadDependencies(element, options.prefix, options.version));
-          await Promise.all(loadPromises);
-
           let eventListenersChanged = false;
           for (const [id, element] of Object.entries(msg)) {
             if (element === null) continue;
