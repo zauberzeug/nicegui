@@ -517,7 +517,6 @@ async def test_select_keeps_value_when_toggling_popup(user: User):
         s = ui.select(['Apple', 'Banana', 'Cherry'], label='Fruit', value='Apple')
         ui.label().bind_text_from(s, 'is_showing_popup', lambda v: 'open' if v else 'closed')
         ui.label().bind_text_from(s, 'value', lambda v: f'value = {v}')
-        s.move()
 
     await user.open('/')
     one = user.find('Fruit')
