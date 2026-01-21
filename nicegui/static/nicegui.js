@@ -377,14 +377,28 @@ function createApp(elements, options) {
           if (transport?.ws?.send) transport.ws.send = wrapFunction(transport.ws.send);
           if (transport?.doWrite) transport.doWrite = wrapFunction(transport.doWrite);
 
+          const mismatches = parseInt(sessionStorage.getItem("__mismatches") || "0", 10);
+
           const args = {
             client_id: window.clientId,
             document_id: window.documentId,
+            server_id: options.serverId,
+            mismatches: mismatches,
             tab_id: TAB_ID,
             old_tab_id: OLD_TAB_ID,
             next_message_id: window.nextMessageId,
           };
           window.socket.emit("handshake", args, (ok) => {
+            if (ok === "WRONG_SERVER_ID") {
+              console.log("reloading because server ID mismatch");
+              sessionStorage.setItem("__mismatches", mismatches + 1);
+              if (mismatches > 20 && !confirm("Unable to connect. Press OK to retry.")) {
+                return;
+              }
+              window.location.reload();
+              return;
+            }
+            sessionStorage.removeItem("__mismatches");
             if (!ok) {
               console.log("reloading because handshake failed for clientId " + window.clientId);
               window.location.reload();

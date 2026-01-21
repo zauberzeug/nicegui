@@ -8,7 +8,7 @@ from uuid import uuid4
 import httpx
 import socketio
 
-from nicegui import Client, ElementFilter, ui
+from nicegui import Client, ElementFilter, core, ui
 from nicegui.element import Element
 from nicegui.nicegui import _on_handshake
 from nicegui.outbox import Message
@@ -75,6 +75,7 @@ class User:
             'client_id': self.client.id,
             'tab_id': str(uuid4()),
             'document_id': str(uuid4()),
+            'server_id': core.app._uuid,
         })
         self.back_history.append(path)
         if clear_forward_history:

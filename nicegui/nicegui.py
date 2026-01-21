@@ -5,7 +5,7 @@ import time
 import urllib.parse
 from contextlib import asynccontextmanager
 from pathlib import Path
-from typing import Any
+from typing import Any, Literal, Union
 
 import socketio
 from fastapi import HTTPException, Request
@@ -188,7 +188,15 @@ async def _exception_handler_500(request: Request, exception: Exception) -> Resp
 
 
 @sio.on('handshake')
-async def _on_handshake(sid: str, data: dict[str, Any]) -> bool:
+async def _on_handshake(sid: str, data: dict[str, Any]) -> Union[bool, Literal['WRONG_SERVER_ID']]:
+    server_id = data.get('server_id')
+    if server_id != core.app._uuid:  # pylint: disable=protected-access
+        if data.get('mismatches', 0) > 3:
+            helpers.warn_once('Client reports that its HTML page is served '
+                              'by a different server than this server\n'
+                              'Are you using multiple workers without session affinity?\n'
+                              'Check https://github.com/zauberzeug/nicegui/issues/5395 for more details.')
+        return 'WRONG_SERVER_ID'
     client = Client.instances.get(data['client_id'])
     if not client:
         return False
