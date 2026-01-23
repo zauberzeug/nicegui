@@ -308,7 +308,7 @@ def project_code():
     #         {'version': 'Enterprise', 'description': 'Restricted, free to test locally.'},
     #     ],
     # }, modules='enterprise')
-    ui.label('This demo does not run online due to licensing restrictions.')
+    ui.label('This demo does not run online due to licensing restrictions.')  # HIDE
 
 
 doc.reference(ui.aggrid)
