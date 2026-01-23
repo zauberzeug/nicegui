@@ -133,8 +133,11 @@ def test_adding_elements_after_connected(screen: Screen):
 
 
 def test_exception(screen: Screen):
+    exceptions = []
+
     @ui.page('/')
     def page():
+        ui.on_exception(exceptions.append)
         raise RuntimeError('some exception')
 
     screen.allowed_js_errors.append('/ - Failed to load resource')
@@ -142,11 +145,15 @@ def test_exception(screen: Screen):
     screen.should_contain('500')
     screen.should_contain('Server error')
     screen.assert_py_logger('ERROR', 'some exception')
+    assert not exceptions, 'ui.on_exception is for in-page exceptions (after page sent to browser)'
 
 
 def test_exception_after_connected(screen: Screen):
+    exceptions = []
+
     @ui.page('/')
     async def page():
+        ui.on_exception(exceptions.append)
         await ui.context.client.connected()
         ui.label('this is shown')
         raise RuntimeError('some exception')
@@ -154,6 +161,7 @@ def test_exception_after_connected(screen: Screen):
     screen.open('/')
     screen.should_contain('this is shown')
     screen.assert_py_logger('ERROR', 'some exception')
+    assert exceptions, 'in-page exception should be caught by ui.on_exception'
 
 
 def test_api_exception(screen: Screen):

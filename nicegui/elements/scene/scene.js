@@ -71,6 +71,7 @@ export default {
       <canvas style="position:relative"></canvas>
       <div style="position:absolute;pointer-events:none;top:0"></div>
       <div style="position:absolute;pointer-events:none;top:0"></div>
+      <div style="position:absolute;display:none;inset:0;cursor:pointer">WebGL context lost. Click to re-initialize.</div>
     </div>`,
 
   mounted() {
@@ -133,6 +134,20 @@ export default {
     }
     this.renderer.setClearColor(this.backgroundColor);
     this.renderer.setSize(this.width, this.height);
+
+    this.renderer.domElement.addEventListener("webglcontextlost", (event) => {
+      event.preventDefault();
+      this.$el.children[0].style.visibility = "hidden";
+      this.$el.children[1].style.visibility = "hidden";
+      this.$el.children[2].style.visibility = "hidden";
+      this.$el.children[3].style.display = "block";
+      this.$el.addEventListener("click", () => {
+        const elementDefinition = mounted_app.elements[this.$el.id.slice(1)];
+        const originalTag = elementDefinition.tag;
+        elementDefinition.tag = "";
+        this.$nextTick(() => (elementDefinition.tag = originalTag));
+      }, { once: true });
+    });
 
     this.text_renderer = new CSS2DRenderer({
       element: this.$el.children[1],

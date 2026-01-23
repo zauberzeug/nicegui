@@ -7,7 +7,7 @@ import uuid
 from collections import defaultdict
 from collections.abc import Awaitable, Iterable
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Callable, ClassVar
+from typing import TYPE_CHECKING, Any, Callable, ClassVar, cast
 
 from fastapi import Request
 from fastapi.responses import Response
@@ -81,6 +81,7 @@ class Client:
         self._deleted = False
         self._socket_to_document_id: dict[str, str] = {}
         self.tab_id: str | None = None
+        self._exception_handlers: list[Callable[[Exception], Any] | Callable[[], Any]] = []
 
         self.page = page
         self.outbox = Outbox(self)
@@ -285,8 +286,15 @@ class Client:
         """
         self.delete_handlers.append(handler)
 
+    def on_exception(self, handler: Callable[[Exception], Any] | Callable[[], Any]) -> None:
+        """Add a callback to be invoked for in-page exceptions (after the page has been sent to the browser).
+
+        The callback has an optional parameter of `Exception`.
+        """
+        self._exception_handlers.append(handler)
+
     def handle_handshake(self, socket_id: str, document_id: str, next_message_id: int | None) -> None:
-        """Cancel pending disconnect task and invoke connect handlers."""
+        """Cancel pending disconnect task and invoke connect handlers. (For internal use only.)"""
         self._waiting_for_connection.clear()
         self._connected.set()
         self._socket_to_document_id[socket_id] = document_id
@@ -301,7 +309,7 @@ class Client:
             self.safe_invoke(t)
 
     def handle_disconnect(self, socket_id: str) -> None:
-        """Wait for the browser to reconnect; invoke deletion handlers if it doesn't."""
+        """Wait for the browser to reconnect; invoke deletion handlers if it doesn't. (For internal use only.)"""
         if socket_id not in self._socket_to_document_id:
             return
         document_id = self._socket_to_document_id.pop(socket_id)
@@ -330,7 +338,7 @@ class Client:
             self._delete_tasks.pop(document_id).cancel()
 
     def handle_event(self, msg: dict) -> None:
-        """Forward an event to the corresponding element."""
+        """Forward an event to the corresponding element. (For internal use only.)"""
         with self:
             sender = self.elements.get(msg['id'])
             if sender is not None and not sender.is_ignoring_events:
@@ -339,8 +347,17 @@ class Client:
                     msg['args'] = msg['args'][0]
                 sender._handle_event(msg)  # pylint: disable=protected-access
 
+    def handle_log_message(self, msg: dict) -> None:
+        """Log a message from the client. (For internal use only.)"""
+        {
+            'debug': log.debug,
+            'info': log.info,
+            'warning': log.warning,
+            'error': log.error,
+        }[msg['level']](msg['message'])
+
     def handle_javascript_response(self, msg: dict) -> None:
-        """Store the result of a JavaScript command."""
+        """Store the result of a JavaScript command. (For internal use only.)"""
         JavaScriptRequest.resolve(msg['request_id'], msg.get('result'))
 
     def safe_invoke(self, func: Callable[..., Any] | Awaitable) -> None:
@@ -376,6 +393,20 @@ class Client:
     def remove_all_elements(self) -> None:
         """Remove all elements from the client."""
         self.remove_elements(self.elements.values())
+
+    def handle_exception(self, exception: Exception) -> None:
+        """Handle an in-page exception by invoking handlers registered via `ui.on_exception(...)`."""
+        for handler in self._exception_handlers:
+            with self.content:
+                if helpers.expects_arguments(handler):
+                    result = cast(Callable[[Exception], Any], handler)(exception)
+                else:
+                    result = cast(Callable[[], Any], handler)()
+            if helpers.is_coroutine_function(handler):
+                async def wait_for_result(result: Any = result) -> None:
+                    with self.content:
+                        await result
+                background_tasks.create(wait_for_result(), name=f'UI exception {handler.__name__}')
 
     def delete(self) -> None:
         """Delete a client and all its elements.
