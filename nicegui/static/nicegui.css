@@ -18,7 +18,7 @@
 .nicegui-tab-panel,
 .nicegui-card,
 .nicegui-carousel-slide,
-.nicegui-expansion .q-expansion-item__content,
+.nicegui-expansion-content,
 .nicegui-scroll-area .q-scrollarea__content {
   display: flex;
   flex-direction: column;
@@ -64,15 +64,6 @@
 .nicegui-step .q-stepper__nav {
   padding-top: 8px;
   gap: 8px;
-}
-
-/* HACK: avoid stutter when expansion item is toggled */
-.nicegui-expansion .q-expansion-item__content {
-  padding: 0 var(--nicegui-default-padding);
-}
-.nicegui-expansion .q-expansion-item__content::before,
-.nicegui-expansion .q-expansion-item__content::after {
-  content: ""; /* the gap compensates for the missing vertical padding */
 }
 
 /* revert Tailwind's CSS reset for ui.editor and ui.markdown */
