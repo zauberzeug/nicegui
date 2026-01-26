@@ -38,6 +38,7 @@ export default {
       convertDynamicProperties(this.gridOptions, true);
 
       // Code for CheckboxRenderer https://blog.ag-grid.com/binding-boolean-values-to-checkboxes-in-ag-grid/
+      // DEPRECATED: remove in NiceGUI 4.0
       function CheckboxRenderer() {}
       CheckboxRenderer.prototype.init = function (params) {
         this.params = params;
