@@ -3,6 +3,7 @@ from __future__ import annotations
 import asyncio
 from typing import TYPE_CHECKING, Callable
 
+from fastapi import FastAPI
 from socketio import AsyncServer
 
 if TYPE_CHECKING:
@@ -11,6 +12,7 @@ if TYPE_CHECKING:
     from .client import Client
 
 app: App
+fastapi_app: FastAPI | None
 sio: AsyncServer
 loop: asyncio.AbstractEventLoop | None = None
 air: Air | None = None

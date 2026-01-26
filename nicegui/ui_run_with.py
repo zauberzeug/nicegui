@@ -92,3 +92,5 @@ def run_with(
         await _shutdown()
 
     app.router.lifespan_context = lifespan_wrapper
+
+    core.fastapi_app = app
