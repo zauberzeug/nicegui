@@ -1,11 +1,12 @@
 from __future__ import annotations
 
-from typing import Callable, Literal
+from typing import Callable, ClassVar, Literal
 
 from .mixins.content_element import ContentElement
 
 
 class Html(ContentElement):
+    default_cache_keys: ClassVar[list[list[str]]] = [['props', 'innerHTML']]
 
     def __init__(self, content: str = '', *, sanitize: Callable[[str], str] | Literal[False], tag: str = 'div') -> None:
         """HTML Element
