@@ -45,6 +45,9 @@ class AgGrid(Element, component='aggrid.js', esm={'nicegui-aggrid': 'dist'}, def
         """
         if not isinstance(modules, list):
             modules = [f'All{modules.capitalize()}Module']
+
+        self._migrate_deprecated_checkbox_renderer(options)  # DEPRECATED: remove in NiceGUI 4.0
+
         super().__init__()
         self._props['options'] = {
             'theme': theme or 'quartz',
@@ -57,21 +60,24 @@ class AgGrid(Element, component='aggrid.js', esm={'nicegui-aggrid': 'dist'}, def
 
         self._props.add_rename('html_columns', 'html-columns')  # DEPRECATED: remove in NiceGUI 4.0
 
-        self._check_deprecated_checkbox_renderer(options)  # DEPRECATED: remove in NiceGUI 4.0
-
     @staticmethod
-    def _check_deprecated_checkbox_renderer(options: dict) -> None:
-        """Check for deprecated checkboxRenderer usage and warn the user."""
+    def _migrate_deprecated_checkbox_renderer(options: dict) -> None:
+        """Migrate deprecated checkboxRenderer to agCheckboxCellRenderer and warn the user."""
+        migrated = False
         for col in options.get('columnDefs', []):
             if col.get('cellRenderer') == 'checkboxRenderer':
-                helpers.warn_once(
-                    'AG Grid: "checkboxRenderer" is deprecated and will be removed in NiceGUI 4.0. '
-                    'Use "cellDataType": "boolean" with "editable": True for interactive checkboxes, '
-                    'or "cellRenderer": "agCheckboxCellRenderer" with "cellRendererParams": {"disabled": False} '
-                    'to keep the current behavior.',
-                    stack_info=True,
-                )
-                break
+                col['cellRenderer'] = 'agCheckboxCellRenderer'
+                col.setdefault('cellRendererParams', {})['disabled'] = False
+                migrated = True
+        if migrated:
+            helpers.warn_once(
+                'AG Grid: "checkboxRenderer" is deprecated. '
+                'It has been auto-migrated to "agCheckboxCellRenderer" with "cellRendererParams": {"disabled": False}. '
+                'Consider using "cellDataType": "boolean" with "editable": True for the modern approach '
+                'with keyboard support and proper editing flow. '
+                'The automatic migration will be removed in NiceGUI 4.0.',
+                stack_info=True,
+            )
 
     @classmethod
     def from_pandas(cls,
