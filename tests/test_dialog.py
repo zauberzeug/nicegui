@@ -107,7 +107,7 @@ def test_dialog_in_menu(screen: Screen):
     (lambda: ui.time_input('Time'), '//*[@aria-label="Time"]', '12:34'),
     (lambda: ui.number('Number'), '//*[@aria-label="Number"]', '42'),
     (ui.editor, '//*[contains(@class, "q-editor__content")]', 'editor'),
-    # (lambda: ui.codemirror(), '//*[contains(@class, "cm-content")]', 'codemirror'),  # TODO still failing
+    (ui.codemirror, '//*[contains(@class, "cm-content")]', 'codemirror'),
 ])
 def test_reopening_dialog_with_various_inputs(element_factory: Callable, selector: str, text: str, screen: Screen):
     @ui.page('/')
