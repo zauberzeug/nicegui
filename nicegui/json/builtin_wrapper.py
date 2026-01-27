@@ -3,7 +3,7 @@ import json
 from datetime import date, datetime
 from typing import Any, Optional
 
-from fastapi import Response
+from fastapi.responses import JSONResponse
 
 HAS_NUMPY = importlib.util.find_spec('numpy') is not None
 
@@ -36,9 +36,8 @@ def loads(value: str) -> Any:
     return json.loads(value)
 
 
-class NiceGUIJSONResponse(Response):
+class NiceGUIJSONResponse(JSONResponse):
     """FastAPI response class to support our custom json serializer implementation."""
-    media_type = 'application/json'
 
     def render(self, content: Any) -> bytes:
         return dumps(content).encode('utf-8')
