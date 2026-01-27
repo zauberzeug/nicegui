@@ -1,5 +1,4 @@
 import asyncio
-import gc
 import inspect
 import os
 import platform
@@ -10,7 +9,6 @@ from enum import Enum
 from pathlib import Path
 from typing import Any, Callable, Optional, Union
 
-import uvicorn
 from fastapi import FastAPI, HTTPException, Request, Response
 from fastapi.responses import FileResponse
 
@@ -193,13 +191,8 @@ class App(FastAPI):
             self.native.main_window.destroy()
         if self.config.reload:
             os.kill(os.getppid(), getattr(signal, 'CTRL_C_EVENT' if platform.system() == 'Windows' else 'SIGINT'))
-            return
-        try:
+        else:
             Server.instance.should_exit = True
-        except AttributeError:
-            for obj in gc.get_objects():
-                if isinstance(obj, uvicorn.Server) and obj.config.app == core.fastapi_app:
-                    obj.should_exit = True
 
     def add_static_files(self,
                          url_path: str,
