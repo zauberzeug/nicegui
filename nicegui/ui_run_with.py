@@ -89,18 +89,16 @@ def run_with(
 
     @asynccontextmanager
     async def lifespan_wrapper(app):
-        for obj in gc.get_objects():
-            if isinstance(obj, uvicorn.Server):
-                wrapped = obj.config.loaded_app
-                while True:
+        def _get_server_instance() -> Optional[uvicorn.Server]:
+            for srv in (o for o in gc.get_objects() if isinstance(o, uvicorn.Server)):
+                wrapped = srv.config.loaded_app
+                while wrapped is not None:
                     if wrapped is app:
-                        Server.instance = obj
-                        break
-                    if not hasattr(wrapped, 'app'):
-                        break
-                    wrapped = wrapped.app
-                if hasattr(Server, 'instance'):
-                    break
+                        return srv
+                    wrapped = getattr(wrapped, 'app', None)
+            return None
+        if (instance := _get_server_instance()) is not None:
+            Server.instance = instance
         await _startup()
         async with main_app_lifespan(app) as state:
             yield state
