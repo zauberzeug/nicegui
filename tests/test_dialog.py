@@ -1,3 +1,7 @@
+from typing import Callable
+
+import pytest
+from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 
 from nicegui import ui
@@ -93,3 +97,39 @@ def test_dialog_in_menu(screen: Screen):
     screen.click('Delete menu')
     screen.wait(0.5)
     screen.should_not_contain('Dialog content')  # it has been deleted together with the menu
+
+
+@pytest.mark.parametrize('element_factory,selector,text', [
+    (lambda: ui.input('Input'), '//*[@aria-label="Input"]', 'input'),
+    (lambda: ui.textarea('Textarea'), '//*[@aria-label="Textarea"]', 'textarea'),
+    (lambda: ui.color_input('Color'), '//*[@aria-label="Color"]', '#ff0000'),
+    (lambda: ui.date_input('Date'), '//*[@aria-label="Date"]', '2025-12-31'),
+    (lambda: ui.time_input('Time'), '//*[@aria-label="Time"]', '12:34'),
+    (lambda: ui.number('Number'), '//*[@aria-label="Number"]', '42'),
+    (ui.editor, '//*[contains(@class, "q-editor__content")]', 'editor'),
+    (ui.codemirror, '//*[contains(@class, "cm-content")]', 'codemirror'),
+])
+def test_reopening_dialog_with_various_inputs(element_factory: Callable, selector: str, text: str, screen: Screen):
+    @ui.page('/')
+    def page():
+        with ui.dialog(value=True) as dialog, ui.card():
+            element_factory()
+            ui.button('Close', on_click=dialog.close)
+        ui.label().bind_text_from(dialog, 'value', lambda x: 'Dialog open' if x else 'Dialog closed')
+        ui.button('Edit', on_click=dialog.open)
+
+    screen.open('/')
+    element = screen.selenium.find_element(By.XPATH, selector)
+    element.click()
+    element.send_keys(text)
+
+    screen.click('Close')
+    screen.should_contain('Dialog closed')
+
+    screen.click('Edit')
+    screen.should_contain('Dialog open')
+
+    @screen.wait_for
+    def element_has_expected_content():
+        element = screen.selenium.find_element(By.XPATH, selector)
+        return element.get_attribute('value') or element.text == text

@@ -12,6 +12,7 @@ export default {
     disable: Boolean,
     indent: String,
     highlightWhitespace: Boolean,
+    id: String,
   },
   watch: {
     language(newLanguage) {
@@ -35,6 +36,11 @@ export default {
         this.resolveEditor = resolve;
       }),
     };
+  },
+  beforeUnmount() {
+    if (this.editor) {
+      mounted_app.elements[this.$props.id.slice(1)].props.value = this.editor.state.doc.toString();
+    }
   },
   methods: {
     // Find the language's extension by its name. Case insensitive.
@@ -127,7 +133,7 @@ export default {
             if (!self.emitting) return;
             self.$emit("update:value", update.changes);
           }
-        }
+        },
       );
 
       const extensions = [
