@@ -72,13 +72,13 @@ class AgGrid(Element, component='aggrid.js', esm={'nicegui-aggrid': 'dist'}, def
                 migrated = True
         if migrated:
             helpers.warn_once(
-                'AG Grid: "checkboxRenderer" is deprecated. '
-                'It has been auto-migrated to "agCheckboxCellRenderer" with "cellRendererParams": {"disabled": False}. '
-                'Consider using "cellDataType": "boolean" with "editable": True for the modern approach '
-                'with keyboard support and proper editing flow. '
-                'The automatic migration will be removed in NiceGUI 4.0.',
-                stack_info=True,
-            )
+                "AG Grid: 'checkboxRenderer' is deprecated.\n"
+                'Your code currently contain:\n'
+                "    'cellRenderer': 'checkboxRenderer',\n"
+                'But the native renderer is preferred for accessibility and styling:\n'
+                "    'cellDataType': 'boolean',\n"
+                "    'editable': True,\n"
+                'Please migrate ASAP as the backwards-compatibility will be removed in NiceGUI 4.0.')
 
     @classmethod
     def from_pandas(cls,
