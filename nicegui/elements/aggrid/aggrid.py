@@ -66,8 +66,9 @@ class AgGrid(Element, component='aggrid.js', esm={'nicegui-aggrid': 'dist'}, def
         migrated = False
         for col in options.get('columnDefs', []):
             if col.get('cellRenderer') == 'checkboxRenderer':
-                col['cellRenderer'] = 'agCheckboxCellRenderer'
-                col.setdefault('cellRendererParams', {})['disabled'] = False
+                del col['cellRenderer']
+                col['cellDataType'] = 'boolean'
+                col['editable'] = True
                 migrated = True
         if migrated:
             helpers.warn_once(
