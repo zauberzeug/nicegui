@@ -129,6 +129,7 @@ def test_reopening_dialog_with_various_inputs(element_factory: Callable, selecto
     screen.click('Edit')
     screen.should_contain('Dialog open')
 
-    element = screen.selenium.find_element(By.XPATH, selector)
-    actual = element.get_attribute('value') or element.text
-    assert actual == text, f'Value of {selector} did not persist: expected {text!r}, got {actual!r}'
+    @screen.wait_for
+    def element_has_expected_content():
+        element = screen.selenium.find_element(By.XPATH, selector)
+        return element.get_attribute('value') or element.text == text
