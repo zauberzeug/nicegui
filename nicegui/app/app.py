@@ -189,7 +189,7 @@ class App(FastAPI):
         """
         if self.native.main_window:
             self.native.main_window.destroy()
-        if self.config.reload:
+        if self.config.reload or Server.instance.config.should_reload:
             os.kill(os.getppid(), getattr(signal, 'CTRL_C_EVENT' if platform.system() == 'Windows' else 'SIGINT'))
         else:
             Server.instance.should_exit = True

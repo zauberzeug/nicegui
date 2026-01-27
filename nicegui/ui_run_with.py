@@ -1,7 +1,9 @@
+import gc
 from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import Any, Callable, Literal, Optional, Union
 
+import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.gzip import GZipMiddleware
 from starlette.types import ASGIApp
@@ -11,6 +13,7 @@ from .air import Air
 from .language import Language
 from .middlewares import RedirectWithPrefixMiddleware, SetCacheControlMiddleware
 from .nicegui import _shutdown, _startup
+from .server import Server
 
 
 def run_with(
@@ -86,6 +89,16 @@ def run_with(
 
     @asynccontextmanager
     async def lifespan_wrapper(app):
+        def _get_server_instance() -> Optional[uvicorn.Server]:
+            for server in (obj for obj in gc.get_objects() if isinstance(obj, uvicorn.Server)):
+                wrapped = server.config.loaded_app
+                while wrapped is not None:
+                    if wrapped is app:
+                        return server
+                    wrapped = getattr(wrapped, 'app', None)
+            return None
+        if (instance := _get_server_instance()) is not None:
+            Server.instance = instance
         await _startup()
         async with main_app_lifespan(app) as state:
             yield state
