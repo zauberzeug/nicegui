@@ -56,13 +56,15 @@
     <script src="{{ prefix | safe }}/_nicegui/{{version}}/static/unocss/preset-{{unocss}}.global.js"></script>
     <script>
       window.__unocss = {
-        presets: [() => window.__unocss_runtime.presets.preset{{unocss.title()}}({
-          dark: {
-            light: 'body.body--light',
-            dark: 'body.body--dark',
-          },
-          preflight: false,
-        })],
+        presets: [
+          () => window.__unocss_runtime.presets.preset{{unocss.title()}}({
+            dark: {
+              light: 'body.body--light',
+              dark: 'body.body--dark',
+            },
+            preflight: false,
+          }),
+        ],
         runtime: { ready: () => false },
         outputToCssLayers: {
           cssLayerName: (layer) => {

@@ -151,7 +151,7 @@ def css_layers():
     In the example below, we define a custom class `blue-box` and apply it to two labels.
     Note that the style tag is of type `text/tailwindcss` and not `text/css`.
 
-    **This does not work, if you use UnoCSS engine instead of Tailwind CSS engine**
+    Also note: This requires the default Tailwind CSS engine (not UnoCSS).
 ''')
 def tailwind_layers():
     ui.add_head_html('''
@@ -174,16 +174,16 @@ def tailwind_layers():
 
 @doc.demo('UnoCSS engine', '''
     As an alternative to using the [Tailwind CSS Play CDN engine](https://v3.tailwindcss.com/docs/installation/play-cdn),
-    you can also use the [UnoCSS engine](https://unocss.dev/)
-    to let Tailwind CSS classes take effect.
+    you can also use the [UnoCSS engine](https://unocss.dev/) to let Tailwind CSS classes take effect.
 
     Pass `tailwind=False` and `unocss_preset` to be one of the following:
 
-    - `mini`: [UnoCSS Mini preset](https://unocss.dev/presets/mini)
-    - `wind3`: [UnoCSS Wind3 preset](https://unocss.dev/presets/wind3)
-    - `wind4`: [UnoCSS Wind4 preset](https://unocss.dev/presets/wind4)
+    - "mini": [UnoCSS Mini preset](https://unocss.dev/presets/mini)
+    - "wind3": [UnoCSS Wind3 preset](https://unocss.dev/presets/wind3)
+    - "wind4": [UnoCSS Wind4 preset](https://unocss.dev/presets/wind4)
 
-    As we use the Mutation Observer API selectively and UnoCSS is a smaller library, it is more performant, especially on small pages.
+    As NiceGUI uses the Mutation Observer API selectively and UnoCSS is a smaller library,
+    it is more performant, especially on small pages.
 
     On "low-tier mobile" CPU throttling profile, load time for this page went from 3.0s down to 1.5s.
     However, full compatibility with Tailwind CSS is not guaranteed.
@@ -192,7 +192,7 @@ def tailwind_layers():
 
     - Tailwind CSS Layers do not work (see the above).
     - Adding classes via JavaScript will not be captured by NiceGUI and those classes will not be applied.
-      - You will need to "hoist" all classes you plan to use.
+        You will need to "hoist" all classes you plan to use.
 ''')
 def unocss_demo():
     ui.element('div').classes('text-green-500').set_visibility(False)
