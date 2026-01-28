@@ -354,6 +354,9 @@ function createApp(elements, options) {
       window.path_prefix = options.prefix;
       window.nextMessageId = options.query.next_message_id;
       window.ackedMessageId = -1;
+      options.query.document_id = window.documentId;
+      options.query.tab_id = TAB_ID;
+      options.query.old_tab_id = OLD_TAB_ID;
       window.socket = io(url, {
         path: `${options.prefix}/_nicegui_ws/socket.io`,
         query: options.query,
@@ -386,26 +389,28 @@ function createApp(elements, options) {
           if (transport?.ws?.send) transport.ws.send = wrapFunction(transport.ws.send);
           if (transport?.doWrite) transport.doWrite = wrapFunction(transport.doWrite);
 
-          const args = {
-            client_id: window.clientId,
-            document_id: window.documentId,
-            tab_id: TAB_ID,
-            old_tab_id: OLD_TAB_ID,
-            next_message_id: window.nextMessageId,
-          };
-          window.socket.emit("handshake", args, (ok) => {
+          function finishHandshake(ok) {
             if (!ok) {
               console.log("reloading because handshake failed for clientId " + window.clientId);
               window.location.reload();
             }
             window.did_handshake = true;
             document.getElementById("popup").ariaHidden = true;
-          });
+          }
+
+          if (options.query.implicit_handshake) {
+            finishHandshake(true);
+          } else {
+            window.socket.emit("handshake", options.query, finishHandshake);
+          }
         },
         connect_error: (err) => {
           if (err.message == "timeout") {
             console.log("reloading because connection timed out");
             window.location.reload(); // see https://github.com/zauberzeug/nicegui/issues/198
+          } else if (err.message == "Implicit handshake failed") {
+            console.log("reloading because implicit handshake failed for clientId " + window.clientId);
+            window.location.reload();
           }
         },
         try_reconnect: async () => {
