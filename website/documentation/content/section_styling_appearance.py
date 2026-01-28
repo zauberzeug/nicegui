@@ -182,20 +182,15 @@ def tailwind_layers():
     - "wind3": [UnoCSS Wind3 preset](https://unocss.dev/presets/wind3)
     - "wind4": [UnoCSS Wind4 preset](https://unocss.dev/presets/wind4)
 
-    As NiceGUI uses the Mutation Observer API selectively and UnoCSS is a smaller library,
-    it is more performant, especially on small pages.
+    UnoCSS is a smaller library and more performant, especially on small pages.
     On "low-tier mobile" CPU throttling profile, load time for this page went from 3.0s down to 1.5s.
 
     However, full compatibility with Tailwind CSS is not guaranteed.
     The following is known to break:
 
     - Tailwind CSS Layers do not work (see the above).
-    - Adding classes via JavaScript will not be captured by NiceGUI and those classes will not be applied.
-        You will need to pre-define all classes you plan to use, like `.text-red-500` in the example below.
 ''')
 def unocss_demo():
-    ui.element().classes('text-red-500').set_visibility(False)  # pre-define class
-
     label = ui.label('This label becomes red dynamically.')
 
     ui.button('Become red', on_click=lambda: ui.run_javascript(f'''

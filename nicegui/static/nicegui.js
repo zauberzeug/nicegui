@@ -5,76 +5,39 @@ const None = undefined;
 let app = undefined;
 let mounted_app = undefined;
 
-const allClasses = new Set();
-const renderedClasses = new Set();
-
-const elementObservers = new Map();
-
-function observeElement(id) {
+function initUnoCss() {
   if (window.__unocss_runtime === undefined) return;
-  if (elementObservers.has(id)) return;
-  const htmlElement = getHtmlElement(id);
-  if (!htmlElement) return;
 
-  function collectNewClasses(el) {
-    let added = false;
-    for (const c of el.classList) {
-      if (allClasses.has(c)) continue;
-      allClasses.add(c);
-      added = true;
-    }
-    return added;
-  }
+  const renderedClasses = new Set();
+  let queue = Promise.resolve();
+  let isInitialized = false;
 
-  if (collectNewClasses(htmlElement)) generateStylesFromClasses();
-
-  const observer = new MutationObserver((mutations) => {
-    let hasNew = false;
+  new MutationObserver((mutations) => {
+    const classes = new Set();
     for (const mutation of mutations) {
-      if (mutation.type !== "attributes" || mutation.attributeName !== "class") continue;
-      if (collectNewClasses(mutation.target)) hasNew = true;
+      if (mutation.type === "attributes") {
+        for (const className of mutation.target.classList) classes.add(className);
+      } else if (mutation.type === "childList") {
+        for (const node of mutation.addedNodes) {
+          if (node.nodeType !== Node.ELEMENT_NODE) continue;
+          for (const el of [node, ...node.querySelectorAll("*")]) {
+            for (const className of el.classList) classes.add(className);
+          }
+        }
+      }
     }
-    if (hasNew) generateStylesFromClasses();
-  });
-
-  observer.observe(htmlElement, {
-    attributes: true,
-    attributeFilter: ["class"],
-  });
-
-  elementObservers.set(id, observer);
-}
-
-function stopObservingElement(id) {
-  if (window.__unocss_runtime === undefined) return;
-  elementObservers.get(id)?.disconnect();
-  elementObservers.delete(id);
-}
-
-function addObservers(elements) {
-  if (window.__unocss_runtime === undefined) return;
-  for (const [id, element] of Object.entries(elements)) if (element?.component) observeElement(id);
-}
-
-function dropAllObservers() {
-  if (window.__unocss_runtime === undefined) return;
-  for (const id of elementObservers.keys()) stopObservingElement(id);
-}
-
-let unocssStyleMoved = false;
-
-async function generateStylesFromClasses() {
-  if (window.__unocss_runtime === undefined) return;
-  const newClasses = new Set();
-  for (const c of allClasses) if (!renderedClasses.has(c)) newClasses.add(c);
-  if (newClasses.size === 0) return;
-  for (const c of newClasses) renderedClasses.add(c);
-  const div = document.createElement("div");
-  div.className = Array.from(newClasses).join(" ");
-  await window.__unocss_runtime.extract(div.outerHTML);
-  if (unocssStyleMoved) return;
-  for (const style of document.querySelectorAll("style[data-unocss-runtime-layer]")) document.head.appendChild(style);
-  unocssStyleMoved = true;
+    const newClasses = [...classes].filter((c) => !renderedClasses.has(c));
+    if (newClasses.length === 0) return;
+    for (const c of newClasses) renderedClasses.add(c);
+    queue = queue.then(async () => {
+      await window.__unocss_runtime.extract(newClasses.join(" "));
+      if (isInitialized) return;
+      for (const style of document.querySelectorAll("style[data-unocss-runtime-layer]"))
+        document.head.appendChild(style);
+      document.getElementById("app").classList.remove("nicegui-unocss-loading");
+      isInitialized = true;
+    });
+  }).observe(document.body, { subtree: true, childList: true, attributes: true, attributeFilter: ["class"] });
 }
 
 function applyColors(colors) {
@@ -404,15 +367,12 @@ const TAB_ID =
 sessionStorage.__nicegui_tab_closed = "false";
 window.onbeforeunload = function () {
   sessionStorage.__nicegui_tab_closed = "true";
-  dropAllObservers();
 };
 
 function createApp(elements, options) {
   Object.entries(elements).forEach(([_, element]) => replaceUndefinedAttributes(element));
   setInterval(() => ack(), 3000);
-  if (window.__unocss_runtime !== undefined)
-    for (const el of Object.values(elements)) for (const c of el?.class || []) allClasses.add(c);
-  generateStylesFromClasses().then(() => document.getElementById("app").classList.remove("nicegui-unocss-loading"));
+  initUnoCss();
   return (app = Vue.createApp({
     data() {
       return {
@@ -421,9 +381,6 @@ function createApp(elements, options) {
     },
     render() {
       return renderRecursively(this.elements, 0);
-    },
-    beforeUnmount() {
-      dropAllObservers();
     },
     mounted() {
       mounted_app = this;
@@ -443,7 +400,6 @@ function createApp(elements, options) {
             : options.transports,
       });
       window.did_handshake = false;
-      addObservers(this.elements);
       const messageHandlers = {
         connect: () => {
           function wrapFunction(originalFunction) {
@@ -503,12 +459,6 @@ function createApp(elements, options) {
           msg.components.forEach((c, i) => app.component(c.tag, imports[i].default));
         },
         update: async (msg) => {
-          if (window.__unocss_runtime !== undefined) {
-            const originalClassesCount = allClasses.size;
-            for (const el of Object.values(msg)) for (const c of el?.class || []) allClasses.add(c);
-            if (allClasses.size > originalClassesCount) await generateStylesFromClasses();
-          }
-
           let eventListenersChanged = false;
           for (const [id, element] of Object.entries(msg)) {
             if (element === null) continue;
@@ -527,7 +477,6 @@ function createApp(elements, options) {
           for (const [id, element] of Object.entries(msg)) {
             if (element === null) {
               delete this.elements[id];
-              stopObservingElement(id);
               continue;
             }
             replaceUndefinedAttributes(element);
@@ -535,7 +484,6 @@ function createApp(elements, options) {
           }
 
           await this.$nextTick();
-          addObservers(msg);
           for (const [id, element] of Object.entries(msg)) {
             if (element?.update_method) {
               getElement(id)?.[element.update_method]();
