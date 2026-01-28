@@ -58,29 +58,23 @@ def test_input_chips_blur_adds_value(screen: Screen, new_value_mode: str):
     screen.open('/')
     screen.should_contain('value = []')
 
-    # Type a value and trigger blur by clicking elsewhere
-    input_field = screen.find_by_tag('input')
-    input_field.send_keys('chip1')
+    # Type 'x' and trigger blur
+    screen.find_by_tag('input').send_keys('x')
     screen.wait(0.5)
-
-    # Trigger blur by clicking on the label
     screen.click('value = []')
     screen.wait(0.5)
 
-    # Should have added chip1
-    screen.should_contain("value = ['chip1']")
+    # Type 'y' twice with blur each time (same as Enter test)
+    for _ in range(2):
+        screen.find_by_tag('input').send_keys('y')
+        screen.wait(0.5)
+        screen.click('value = ')  # Trigger blur
+        screen.wait(0.5)
 
-    # Type another value and blur again
-    input_field = screen.find_by_tag('input')
-    input_field.send_keys('chip2')
-    screen.wait(0.5)
-    screen.click('value = ')
-    screen.wait(0.5)
-
-    # Check based on new_value_mode
+    # Check based on new_value_mode (should match Enter behavior)
     if new_value_mode == 'add':
-        screen.should_contain("value = ['chip1', 'chip2']")
+        screen.should_contain("value = ['x', 'y', 'y']")
     elif new_value_mode == 'add-unique':
-        screen.should_contain("value = ['chip1', 'chip2']")
+        screen.should_contain("value = ['x', 'y']")
     elif new_value_mode == 'toggle':
-        screen.should_contain("value = ['chip1', 'chip2']")
+        screen.should_contain("value = ['x']")
