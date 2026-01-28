@@ -1,4 +1,5 @@
 import importlib.util
+import weakref
 from typing import TYPE_CHECKING, Literal, Optional, Union, cast
 
 from typing_extensions import Self
@@ -49,6 +50,15 @@ class AgGrid(Element, component='aggrid.js', esm={'nicegui-aggrid': 'dist'}, def
         self._migrate_deprecated_checkbox_renderer(options)  # DEPRECATED: remove in NiceGUI 4.0
 
         super().__init__()
+        if 'secondary-id' not in self._props:
+            with self.client.layout:
+                secondary_aggrid = SecondaryAgGrid(options,
+                                                   html_columns=html_columns,
+                                                   theme=theme,
+                                                   auto_size_columns=auto_size_columns)
+                self._props['secondary-id'] = secondary_aggrid.id
+                weakref.finalize(self, lambda: secondary_aggrid.delete() if not secondary_aggrid.is_deleted
+                                 and secondary_aggrid._parent_slot and secondary_aggrid._parent_slot() else None)  # pylint: disable=protected-access
         self._props['options'] = {
             'theme': theme or 'quartz',
             **({'autoSizeStrategy': {'type': 'fitGridWidth'}} if auto_size_columns else {}),
@@ -285,7 +295,7 @@ class AgGrid(Element, component='aggrid.js', esm={'nicegui-aggrid': 'dist'}, def
         }
         result = await self.client.run_javascript(f'''
             const rowData = [];
-            getElement({self.id}).api.{API_METHODS[method]}(node => rowData.push(node.data));
+            (getElement({self.id})?.api || getElement({self._props['secondary-id']})?.api).{API_METHODS[method]}(node => rowData.push(node.data));
             return rowData;
         ''', timeout=timeout)
         return cast(list[dict], result)
@@ -311,3 +321,7 @@ class AgGrid(Element, component='aggrid.js', esm={'nicegui-aggrid': 'dist'}, def
         :param url: the ESM module URL (e.g., "https://cdn.jsdelivr.net/npm/ag-grid-enterprise@34.2.0/+esm")
         """
         register_importmap_override('nicegui-aggrid', url)
+
+
+class SecondaryAgGrid(AgGrid, default_props='secondary-id=""'):
+    pass

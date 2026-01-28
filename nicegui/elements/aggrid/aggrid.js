@@ -4,6 +4,7 @@ import { convertDynamicProperties } from "../../static/utils/dynamic_properties.
 export default {
   template: "<div></div>",
   mounted() {
+    if (this.secondaryId) this.$nextTick(() => getElement(this.secondaryId).api.destroy());
     AgGrid.ModuleRegistry.registerModules(this.modules.map((moduleName) => AgGrid[moduleName]));
     this.update_grid();
 
@@ -95,6 +96,7 @@ export default {
   props: {
     options: Object,
     htmlColumns: Array,
+    secondaryId: String,
     modules: Array,
   },
 };
