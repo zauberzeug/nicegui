@@ -13,21 +13,7 @@ repos:
     rev: v6.0.0
     hooks:
       - id: trailing-whitespace
-        exclude: &exclusions |
-          (?x)^(
-            nicegui/static/fonts/.*|
-            nicegui/static/fonts\.css|
-            nicegui/static/lang/.*|
-            nicegui/static/quasar\..*|
-            nicegui/static/socket\..*|
-            nicegui/static/tailwindcss\..*|
-            nicegui/static/vue\..*|
-            website/static/fuse\.js\@.*|
-            examples/fullcalendar/lib/.*|
-            .*\.js\.map
-          )$
       - id: end-of-file-fixer
-        exclude: *exclusions
       - id: double-quote-string-fixer
   - repo: https://github.com/codespell-project/codespell
     rev: v2.4.1
