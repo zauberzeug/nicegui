@@ -1,17 +1,19 @@
 from pathlib import Path
 from typing import Union
 
+from ..defaults import DEFAULT_PROP, resolve_defaults
 from .mixins.source_element import SourceElement
 
 
 class Video(SourceElement, component='video.js'):
     SOURCE_IS_MEDIA_FILE = True
 
+    @resolve_defaults
     def __init__(self, src: Union[str, Path], *,
-                 controls: bool = True,
-                 autoplay: bool = False,
-                 muted: bool = False,
-                 loop: bool = False,
+                 controls: bool = DEFAULT_PROP | True,
+                 autoplay: bool = DEFAULT_PROP | False,
+                 muted: bool = DEFAULT_PROP | False,
+                 loop: bool = DEFAULT_PROP | False,
                  ) -> None:
         """Video
 
@@ -27,10 +29,10 @@ class Video(SourceElement, component='video.js'):
         for a list of events you can subscribe to using the generic event subscription `on()`.
         """
         super().__init__(source=src)
-        self._props['controls'] = controls
-        self._props['autoplay'] = autoplay
-        self._props['muted'] = muted
-        self._props['loop'] = loop
+        self._props.set_bool('controls', controls)
+        self._props.set_bool('autoplay', autoplay)
+        self._props.set_bool('muted', muted)
+        self._props.set_bool('loop', loop)
 
     def set_source(self, source: Union[str, Path]) -> None:
         return super().set_source(source)

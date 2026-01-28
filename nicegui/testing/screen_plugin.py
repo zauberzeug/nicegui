@@ -9,7 +9,6 @@ from selenium.webdriver.chrome.service import Service
 
 from .general_fixtures import (  # noqa: F401  # pylint: disable=unused-import
     nicegui_reset_globals,
-    prepare_simulation,
     pytest_addoption,
     pytest_configure,
 )
@@ -35,7 +34,11 @@ def nicegui_chrome_options(chrome_options: webdriver.ChromeOptions) -> webdriver
     chrome_options.add_argument('disable-search-engine-choice-screen')
     chrome_options.add_argument('no-sandbox')
     chrome_options.add_argument('headless')
-    chrome_options.add_argument('disable-gpu' if 'GITHUB_ACTIONS' in os.environ else '--use-gl=angle')
+    if 'GITHUB_ACTIONS' in os.environ:
+        chrome_options.add_argument('disable-gpu')
+        chrome_options.add_argument('enable-unsafe-swiftshader')
+    else:
+        chrome_options.add_argument('--use-gl=angle')
     chrome_options.add_argument('window-size=600x600')
     chrome_options.add_experimental_option('prefs', {
         'download.default_directory': str(DOWNLOAD_DIR),

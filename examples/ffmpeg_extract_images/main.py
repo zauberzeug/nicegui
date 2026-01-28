@@ -20,14 +20,12 @@ async def handle_upload(args: events.UploadEventArguments):
     video_path = DATA_DIR / args.file.name
     video_path.write_bytes(await args.file.read())
 
-    results.clear()
-    with results:
+    with results.clear():
         ui.spinner('dots', size='xl')
 
     await run.io_bound(subprocess.call, ['ffmpeg', '-i', video_path, '-vf', 'fps=1', str(DATA_DIR / 'out_%04d.jpg')])
 
-    results.clear()
-    with results:
+    with results.clear():
         for image_path in DATA_DIR.glob('*.jpg'):
             ui.image(image_path).classes('w-96 drop-shadow-md rounded')
 

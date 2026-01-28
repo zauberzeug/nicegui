@@ -3,9 +3,11 @@ import weakref
 import numpy as np
 from selenium.common.exceptions import JavascriptException
 
-from nicegui import ui
+from nicegui import app, ui
 from nicegui.elements.scene import Object3D
 from nicegui.testing import Screen
+
+from .test_helpers import TEST_DIR
 
 
 def test_moving_sphere_with_timer(screen: Screen):
@@ -107,8 +109,7 @@ def test_replace_scene(screen: Screen):
                 scene.sphere().with_name('sphere')
 
         def replace():
-            container.clear()
-            with container:
+            with container.clear():
                 nonlocal scene
                 with ui.scene() as scene:
                     scene.box().with_name('box')
@@ -196,8 +197,9 @@ def test_gltf(screen: Screen):
     @ui.page('/')
     def page():
         nonlocal scene
+        app.add_static_file(local_file=TEST_DIR / 'media' / 'box.glb', url_path='/box.glb')
         with ui.scene() as scene:
-            scene.gltf('https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/main/Models/Box/glTF-Binary/Box.glb')
+            scene.gltf('/box.glb')
 
     screen.open('/')
     screen.wait(1.0)

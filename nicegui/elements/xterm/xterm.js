@@ -18,7 +18,7 @@ export default {
       });
 
     // NOTE: wait for window.path_prefix to be set
-    this.$nextTick().then(() => loadResource(window.path_prefix + `${this.resource_path}/xterm.css`));
+    this.$nextTick().then(() => loadResource(window.path_prefix + `${this.resourcePath}/xterm.css`));
   },
   methods: {
     getRows() {
@@ -49,6 +49,6 @@ export default {
   },
   props: {
     options: Object,
-    resource_path: String,
+    resourcePath: String,
   },
 };

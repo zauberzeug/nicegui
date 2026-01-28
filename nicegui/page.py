@@ -10,6 +10,7 @@ from fastapi import HTTPException, Request, Response
 
 from . import background_tasks, binding, core, helpers
 from .client import Client, ClientConnectionTimeout
+from .error import error_content
 from .favicon import create_favicon_route
 from .language import Language
 from .logging import log
@@ -122,7 +123,7 @@ class page:
             except Exception as e:
                 core.app.handle_exception(e)
 
-        def create_error_page(e: Exception, request: Request) -> Response:
+        def create_500_error_page(e: Exception, request: Request) -> Response:
             page_exception_handler = core.app._page_exception_handler  # pylint: disable=protected-access
             if page_exception_handler is None:
                 raise e
@@ -158,14 +159,15 @@ class page:
                 try:
                     result = func(*dec_args, **dec_kwargs)
                 except Exception as e:
-                    return create_error_page(e, request)
+                    return create_500_error_page(e, request)
             if helpers.is_coroutine_function(func):
                 async def wait_for_result() -> Response | None:
                     with client:
                         try:
                             return await result
                         except Exception as e:
-                            return create_error_page(e, request)
+                            client.handle_exception(e)
+                            return create_500_error_page(e, request)
                 task = background_tasks.create(wait_for_result(),
                                                name=f'wait for result of page "{client.page.path}"',
                                                handle_exceptions=False)
@@ -188,7 +190,11 @@ class page:
                     task.add_done_callback(check_for_late_return_value)
 
             if not await client.sub_pages_router._can_resolve_full_path(client):  # pylint: disable=protected-access
-                return create_error_page(HTTPException(404, f'{client.sub_pages_router.current_path} not found'), request)
+                # Handle 404 gracefully without re-raising exception (similar to 404 handler when no root function)
+                log.warning(f'{request.url} not found')
+                with client:
+                    error_content(404, HTTPException(404, f'{client.sub_pages_router.current_path} not found'))
+                return client.build_response(request, 404)
 
             if isinstance(result, Response):  # NOTE if setup returns a response, we don't need to render the page
                 return result

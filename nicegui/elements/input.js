@@ -7,7 +7,6 @@ export default {
       :shadow-text="shadowText"
       @keydown.tab="perform_autocomplete"
       :list="id + '-datalist'"
-      :for="id"
     >
       <template v-for="(_, slot) in $slots" v-slot:[slot]="slotProps">
         <slot :name="slot" v-bind="slotProps || {}" />
@@ -18,15 +17,18 @@ export default {
     </datalist>
   `,
   props: {
-    id: String,
     _autocomplete: Array,
     value: String,
+    id: String,
   },
   data() {
     return {
       inputValue: this.value,
       emitting: true,
     };
+  },
+  beforeUnmount() {
+    mounted_app.elements[this.$props.id.slice(1)].props.value = this.inputValue;
   },
   watch: {
     value(newValue) {
@@ -43,7 +45,7 @@ export default {
     shadowText() {
       if (!this.inputValue) return "";
       const matchingOption = this._autocomplete.find((option) =>
-        option.toLowerCase().startsWith(this.inputValue.toLowerCase())
+        option.toLowerCase().startsWith(this.inputValue.toLowerCase()),
       );
       return matchingOption ? matchingOption.slice(this.inputValue.length) : "";
     },
