@@ -64,14 +64,17 @@ def test_input_chips_blur_adds_value(screen: Screen, new_value_mode: str):
     screen.click('value = []')
     screen.wait(0.5)
 
-    # Type 'y' twice with blur each time (same as Enter test)
+    # Type 'y' twice with blur each time to test new_value_mode behavior:
+    # - 'add' keeps both: ['x', 'y', 'y']
+    # - 'add-unique' deduplicates: ['x', 'y']
+    # - 'toggle' removes second 'y': ['x']
     for _ in range(2):
         screen.find_by_tag('input').send_keys('y')
         screen.wait(0.5)
         screen.click('value = ')  # Trigger blur
         screen.wait(0.5)
 
-    # Check based on new_value_mode (should match Enter behavior)
+    # Verify behavior matches new_value_mode setting
     if new_value_mode == 'add':
         screen.should_contain("value = ['x', 'y', 'y']")
     elif new_value_mode == 'add-unique':

@@ -20,8 +20,14 @@ class InputChips(LabelElement, ValidationElement, DisableableElement):
         """Input Chips
 
         An input field that manages a collection of values as visual "chips" or tags.
-        Users can type to add new chips and remove existing ones by clicking or using keyboard shortcuts.
-        Values are added by pressing Enter or when the input field loses focus (blur event).
+        Users can add new chips by pressing Enter or when the input field loses focus (Tab, click away).
+        Chips can be removed by clicking the "x" icon on each chip.
+
+        The ``new_value_mode`` parameter controls how duplicate values are handled:
+
+        - ``'add'``: Always adds the value (allows duplicates)
+        - ``'add-unique'``: Only adds if not already present
+        - ``'toggle'``: Adds if absent, removes if present
 
         This element is based on Quasar's `QSelect <https://quasar.dev/vue-components/select>`_ component.
         Unlike a traditional dropdown selection, this variant focuses on free-form text input with chips,
@@ -80,11 +86,11 @@ class InputChips(LabelElement, ValidationElement, DisableableElement):
         # Apply new-value-mode logic
         if self._new_value_mode == 'add':
             # Always add the value
-            new_value = current_value + [val]
+            new_value = [*current_value, val]
         elif self._new_value_mode == 'add-unique':
             # Only add if not already present
             if val not in current_value:
-                new_value = current_value + [val]
+                new_value = [*current_value, val]
             else:
                 return
         elif self._new_value_mode == 'toggle':
@@ -92,7 +98,7 @@ class InputChips(LabelElement, ValidationElement, DisableableElement):
             if val in current_value:
                 new_value = [v for v in current_value if v != val]
             else:
-                new_value = current_value + [val]
+                new_value = [*current_value, val]
         else:
             return
 
