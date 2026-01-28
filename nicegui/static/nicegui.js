@@ -13,24 +13,27 @@ function initUnoCss() {
   let isInitialized = false;
 
   new MutationObserver((mutations) => {
-    const classes = new Set();
+    let newClassesString = "";
+    function appendClass(className) {
+      if (renderedClasses.has(className)) return;
+      renderedClasses.add(className);
+      newClassesString += className + " ";
+    }
     for (const mutation of mutations) {
       if (mutation.type === "attributes") {
-        for (const className of mutation.target.classList) classes.add(className);
+        for (const className of mutation.target.classList) appendClass(className);
       } else if (mutation.type === "childList") {
         for (const node of mutation.addedNodes) {
           if (node.nodeType !== Node.ELEMENT_NODE) continue;
           for (const el of [node, ...node.querySelectorAll("*")]) {
-            for (const className of el.classList) classes.add(className);
+            for (const className of el.classList) appendClass(className);
           }
         }
       }
     }
-    const newClasses = [...classes].filter((c) => !renderedClasses.has(c));
-    if (newClasses.length === 0) return;
-    for (const c of newClasses) renderedClasses.add(c);
+    if (newClassesString.length === 0) return;
     queue = queue.then(async () => {
-      await window.__unocss_runtime.extract(newClasses.join(" "));
+      await window.__unocss_runtime.extract(newClassesString);
       if (isInitialized) return;
       for (const style of document.querySelectorAll("style[data-unocss-runtime-layer]"))
         document.head.appendChild(style);
