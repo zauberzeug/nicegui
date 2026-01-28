@@ -15,9 +15,7 @@ class AppConfig:
         field(default_factory=lambda: ['websocket', 'polling'])  # NOTE: we favor websocket
     quasar_config: dict = \
         field(default_factory=lambda: {
-            'brand': {
-                'primary': '#5898d4',
-            },
+            'brand': {},
             'loadingBar': {
                 'color': 'primary',
                 'skipHijack': False,
@@ -25,6 +23,7 @@ class AppConfig:
         })
     vue_config_script: str = r'''
         app.use(Quasar, {config: vue_config});
+        applyColors(vue_config.brand);
         Quasar.lang.set(Quasar.lang[language.replace('-', '')]);
         Quasar.Dark.set(dark === None ? "auto" : dark);
     '''
@@ -35,7 +34,7 @@ class AppConfig:
     favicon: Optional[Union[str, Path]] = field(init=False)
     dark: Optional[bool] = field(init=False)
     language: Language = field(init=False)
-    binding_refresh_interval: float = field(init=False)
+    binding_refresh_interval: Optional[float] = field(init=False)
     reconnect_timeout: float = field(init=False)
     message_history_length: int = field(init=False)
     cache_control_directives: str = field(init=False)
@@ -52,7 +51,7 @@ class AppConfig:
                        favicon: Optional[Union[str, Path]],
                        dark: Optional[bool],
                        language: Language,
-                       binding_refresh_interval: float,
+                       binding_refresh_interval: Optional[float],
                        reconnect_timeout: float,
                        message_history_length: int,
                        cache_control_directives: str = 'public, max-age=31536000, immutable, stale-while-revalidate=31536000',

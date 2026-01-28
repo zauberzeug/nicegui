@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING, Callable
 from fastapi import Request
 from starlette.routing import Match, Route
 
-from . import core
+from . import core, json
 from .context import context
 from .elements.sub_pages import SubPages
 from .functions.on import on
@@ -78,10 +78,11 @@ class SubPagesRouter:
             not has_any_unresolved_path(client) or  # path is handled by `ui.sub_pages`
             not self._other_page_builder_matches_path(path, client)  # `ui.sub_pages` is still responsible
         ):
+            current_path_string = json.dumps(self.current_path)
             client.run_javascript(f'''
-                const fullPath = (window.path_prefix || '') + "{self.current_path}";
+                const fullPath = (window.path_prefix || '') + {current_path_string};
                 if (window.location.pathname + window.location.search + window.location.hash !== fullPath) {{
-                    history.pushState({{page: "{self.current_path}"}}, "", fullPath);
+                    history.pushState({{page: {current_path_string}}}, "", fullPath);
                 }}
             ''')
         else:
@@ -89,7 +90,9 @@ class SubPagesRouter:
 
     def _other_page_builder_matches_path(self, path: str, client: Client) -> bool:
         """Check if there is any other matching page builder than the one for this client."""
-        client_route = client.request.scope['route']
+        client_route = client.request.scope.get('route')
+        if client_route is None:
+            return False  # NOTE: requests handled by 404 handler (e.g., root pages) have no route key
         client_func = getattr(client_route.endpoint, '__func__', client_route.endpoint)
 
         other_routes = [route for route in core.app.routes if isinstance(route, Route)]

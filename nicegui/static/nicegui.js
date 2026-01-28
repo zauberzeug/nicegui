@@ -5,7 +5,34 @@ const None = undefined;
 let app = undefined;
 let mounted_app = undefined;
 
-const loaded_components = new Set();
+function applyColors(colors) {
+  const quasarColors = [
+    "primary",
+    "secondary",
+    "accent",
+    "dark",
+    "dark-page",
+    "positive",
+    "negative",
+    "info",
+    "warning",
+  ];
+  let customCSS = "";
+  for (let color in colors) {
+    if (quasarColors.includes(color)) continue;
+    const colorName = color.replaceAll("_", "-");
+    const colorVar = "--q-" + colorName;
+    document.body.style.setProperty(colorVar, colors[color]);
+    customCSS += `.text-${colorName} { color: var(${colorVar}) !important; }\n`;
+    customCSS += `.bg-${colorName} { background-color: var(${colorVar}) !important; }\n`;
+  }
+  if (!customCSS) return;
+  const style = document.createElement("style");
+  style.innerHTML = customCSS;
+  style.dataset.niceguiCustomColors = "";
+  document.head.querySelectorAll("[data-nicegui-custom-colors]").forEach((el) => el.remove());
+  document.getElementsByTagName("head")[0].appendChild(style);
+}
 
 function parseElements(raw_elements) {
   return JSON.parse(
@@ -14,7 +41,7 @@ function parseElements(raw_elements) {
       .replace(/&#96;/g, "`")
       .replace(/&gt;/g, ">")
       .replace(/&lt;/g, "<")
-      .replace(/&amp;/g, "&")
+      .replace(/&amp;/g, "&"),
   );
 }
 
@@ -25,7 +52,6 @@ function replaceUndefinedAttributes(element) {
   element.text ??= null;
   element.events ??= [];
   element.update_method ??= null;
-  element.component ??= null;
   element.slots = {
     default: { ids: element.children || [] },
     ...(element.slots ?? {}),
@@ -79,6 +105,17 @@ function getComputedProp(target, prop_name) {
 
 function emitEvent(event_name, ...args) {
   getElement(0).$emit(event_name, ...args);
+}
+
+function logAndEmit(level, message) {
+  if (level === "error") {
+    console.error(message);
+  } else if (level === "warning") {
+    console.warn(message);
+  } else {
+    console.log(message);
+  }
+  window.socket.emit("log", { client_id: window.clientId, level, message });
 }
 
 function stringifyEventArgs(args, event_args) {
@@ -139,14 +176,11 @@ function throttle(callback, time, leading, trailing, id) {
     }
   }
 }
-function renderRecursively(elements, id) {
+function renderRecursively(elements, id, propsContext) {
   const element = elements[id];
   if (element === undefined) {
     return;
   }
-
-  // @todo: Try avoid this with better handling of initial page load.
-  if (element.component) loaded_components.add(element.component.name);
 
   const props = {
     id: "c" + id,
@@ -160,7 +194,7 @@ function renderRecursively(elements, id) {
     if (key.startsWith(":")) {
       try {
         try {
-          props[key.substring(1)] = new Function(`return (${value})`)();
+          props[key.substring(1)] = new Function("props", `return (${value})`)(propsContext);
         } catch (e) {
           props[key.substring(1)] = eval(value);
         }
@@ -194,6 +228,7 @@ function renderRecursively(elements, id) {
 
     let handler;
     if (event.js_handler) {
+      const props = propsContext; // make `props` accessible from inside the event handler
       handler = eval(event.js_handler);
     } else {
       handler = emit;
@@ -224,18 +259,18 @@ function renderRecursively(elements, id) {
             },
             {
               props: props,
-            }
-          )
+            },
+          ),
         );
       }
-      const children = data.ids.map((id) => renderRecursively(elements, id));
+      const children = data.ids.map((id) => renderRecursively(elements, id, props || propsContext));
       if (name === "default" && element.text !== null) {
         children.unshift(element.text);
       }
       return [...rendered, ...children];
     };
   });
-  return Vue.h(Vue.resolveComponent(element.tag), props, slots);
+  return Vue.h(app.config.isNativeTag(element.tag) ? element.tag : Vue.resolveComponent(element.tag), props, slots);
 }
 
 function runJavascript(code, request_id) {
@@ -278,24 +313,13 @@ function ack() {
   window.ackedMessageId = window.nextMessageId;
 }
 
-async function loadDependencies(element, prefix, version) {
-  if (element.component) {
-    const { name, key, tag } = element.component;
-    if (!loaded_components.has(name) && !key.endsWith(".vue")) {
-      const component = await import(`${prefix}/_nicegui/${version}/components/${key}`);
-      app.component(tag, component.default);
-      loaded_components.add(name);
-    }
-  }
-}
-
 function createRandomUUID() {
   try {
     return crypto.randomUUID();
   } catch (e) {
     // https://stackoverflow.com/a/2117523/3419103
     return "10000000-1000-4000-8000-100000000000".replace(/[018]/g, (c) =>
-      (+c ^ (crypto.getRandomValues(new Uint8Array(1))[0] & (15 >> (+c / 4)))).toString(16)
+      (+c ^ (crypto.getRandomValues(new Uint8Array(1))[0] & (15 >> (+c / 4)))).toString(16),
     );
   }
 }
@@ -342,6 +366,26 @@ function createApp(elements, options) {
       window.did_handshake = false;
       const messageHandlers = {
         connect: () => {
+          function wrapFunction(originalFunction) {
+            const MAX_WEBSOCKET_MESSAGE_SIZE = 1000000 - 100; // 1MB without 100 bytes of slack for the message header
+            return function (...args) {
+              const msg = args[0];
+              if (typeof msg === "string" && msg.length > MAX_WEBSOCKET_MESSAGE_SIZE) {
+                const errorMessage = `Payload size ${msg.length} exceeds the maximum allowed limit.`;
+                console.error(errorMessage);
+                args[0] = `42["log",{"client_id":"${window.clientId}","level":"error","message":"${errorMessage}"}]`;
+                if (window.tooLongMessageTimerId) clearTimeout(window.tooLongMessageTimerId);
+                const popup = document.getElementById("too_long_message_popup");
+                popup.ariaHidden = false;
+                window.tooLongMessageTimerId = setTimeout(() => (popup.ariaHidden = true), 5000);
+              }
+              return originalFunction.call(this, ...args);
+            };
+          }
+          const transport = window.socket.io.engine.transport;
+          if (transport?.ws?.send) transport.ws.send = wrapFunction(transport.ws.send);
+          if (transport?.doWrite) transport.doWrite = wrapFunction(transport.doWrite);
+
           const args = {
             client_id: window.clientId,
             document_id: window.documentId,
@@ -373,11 +417,26 @@ function createApp(elements, options) {
         disconnect: () => {
           document.getElementById("popup").ariaHidden = false;
         },
+        load_js_components: async (msg) => {
+          const urls = msg.components.map((c) => `${options.prefix}/_nicegui/${options.version}/components/${c.key}`);
+          const imports = await Promise.all(urls.map((url) => import(url)));
+          msg.components.forEach((c, i) => app.component(c.tag, imports[i].default));
+        },
         update: async (msg) => {
-          const loadPromises = Object.entries(msg)
-            .filter(([_, element]) => element && element.component)
-            .map(([_, element]) => loadDependencies(element, options.prefix, options.version));
-          await Promise.all(loadPromises);
+          let eventListenersChanged = false;
+          for (const [id, element] of Object.entries(msg)) {
+            if (element === null) continue;
+            if (!(id in this.elements)) continue;
+            const oldListenerIds = new Set((this.elements[id]?.events || []).map((ev) => ev.listener_id));
+            if (element.events?.some((e) => !oldListenerIds.has(e.listener_id))) {
+              delete this.elements[id];
+              eventListenersChanged = true;
+            }
+          }
+          if (eventListenersChanged) {
+            logAndEmit("warning", "Event listeners changed after initial definition. Re-rendering affected elements.");
+            await this.$nextTick();
+          }
 
           for (const [id, element] of Object.entries(msg)) {
             if (element === null) {
@@ -391,7 +450,7 @@ function createApp(elements, options) {
           await this.$nextTick();
           for (const [id, element] of Object.entries(msg)) {
             if (element?.update_method) {
-              getElement(id)[element.update_method]();
+              getElement(id)?.[element.update_method]();
             }
           }
         },

@@ -1,9 +1,10 @@
-import AgGrid from "nicegui-aggrid";
+import * as AgGrid from "nicegui-aggrid";
 import { convertDynamicProperties } from "../../static/utils/dynamic_properties.js";
 
 export default {
   template: "<div></div>",
   mounted() {
+    AgGrid.ModuleRegistry.registerModules(this.modules.map((moduleName) => AgGrid[moduleName]));
     this.update_grid();
 
     const updateTheme = () =>
@@ -13,6 +14,7 @@ export default {
     updateTheme();
   },
   unmounted() {
+    this.api?.destroy();
     this.themeObserver.disconnect();
   },
   methods: {
@@ -20,40 +22,20 @@ export default {
       this.$el.textContent = "";
       this.gridOptions = {
         ...this.options,
-        theme: AgGrid.themes[this.options.theme].withPart(AgGrid.colorSchemeVariable),
+        theme: {
+          quartz: AgGrid.themeQuartz,
+          balham: AgGrid.themeBalham,
+          material: AgGrid.themeMaterial,
+          alpine: AgGrid.themeAlpine,
+        }[this.options.theme].withPart(AgGrid.colorSchemeVariable),
       };
 
-      for (const column of this.html_columns) {
+      for (const column of this.htmlColumns) {
         if (this.gridOptions.columnDefs[column].cellRenderer === undefined) {
           this.gridOptions.columnDefs[column].cellRenderer = (params) => (params.value ? params.value : "");
         }
       }
       convertDynamicProperties(this.gridOptions, true);
-
-      // Code for CheckboxRenderer https://blog.ag-grid.com/binding-boolean-values-to-checkboxes-in-ag-grid/
-      function CheckboxRenderer() {}
-      CheckboxRenderer.prototype.init = function (params) {
-        this.params = params;
-        this.eGui = document.createElement("input");
-        this.eGui.type = "checkbox";
-        this.eGui.checked = params.value;
-        this.checkedHandler = this.checkedHandler.bind(this);
-        this.eGui.addEventListener("click", this.checkedHandler);
-      };
-      CheckboxRenderer.prototype.checkedHandler = function (e) {
-        let checked = e.target.checked;
-        let colId = this.params.column.colId;
-        this.params.node.setDataValue(colId, checked);
-      };
-      CheckboxRenderer.prototype.getGui = function (params) {
-        return this.eGui;
-      };
-      CheckboxRenderer.prototype.destroy = function (params) {
-        this.eGui.removeEventListener("click", this.checkedHandler);
-      };
-      this.gridOptions.components = {
-        checkboxRenderer: CheckboxRenderer,
-      };
 
       const originalOnGridReady = this.gridOptions.onGridReady;
       this.gridOptions.onGridReady = (params) => {
@@ -63,6 +45,7 @@ export default {
           this.handle_event("gridReady", params);
         }
       };
+      this.api?.destroy();
       this.api = AgGrid.createGrid(this.$el, this.gridOptions);
       this.api.addGlobalListener(this.handle_event);
     },
@@ -111,6 +94,7 @@ export default {
   },
   props: {
     options: Object,
-    html_columns: Array,
+    htmlColumns: Array,
+    modules: Array,
   },
 };

@@ -1,5 +1,6 @@
 from typing import Any, Optional, Union
 
+from ..defaults import DEFAULT_PROP, DEFAULT_PROPS, resolve_defaults
 from ..events import GenericEventArguments, Handler, ValueChangeEventArguments
 from .mixins.disableable_element import DisableableElement
 from .mixins.label_element import LabelElement
@@ -9,16 +10,17 @@ from .mixins.validation_element import ValidationDict, ValidationElement, Valida
 class Number(LabelElement, ValidationElement, DisableableElement):
     LOOPBACK = False
 
+    @resolve_defaults
     def __init__(self,
-                 label: Optional[str] = None, *,
-                 placeholder: Optional[str] = None,
-                 value: Optional[float] = None,
-                 min: Optional[float] = None,  # pylint: disable=redefined-builtin
-                 max: Optional[float] = None,  # pylint: disable=redefined-builtin
+                 label: Optional[str] = DEFAULT_PROP | None, *,
+                 placeholder: Optional[str] = DEFAULT_PROP | None,
+                 value: Optional[float] = DEFAULT_PROPS['model-value'] | None,
+                 min: Optional[float] = DEFAULT_PROP | None,  # pylint: disable=redefined-builtin
+                 max: Optional[float] = DEFAULT_PROP | None,  # pylint: disable=redefined-builtin
                  precision: Optional[int] = None,
-                 step: Optional[float] = None,
-                 prefix: Optional[str] = None,
-                 suffix: Optional[str] = None,
+                 step: Optional[float] = DEFAULT_PROP | None,
+                 prefix: Optional[str] = DEFAULT_PROP | None,
+                 suffix: Optional[str] = DEFAULT_PROP | None,
                  format: Optional[str] = None,  # pylint: disable=redefined-builtin
                  on_change: Optional[Handler[ValueChangeEventArguments]] = None,
                  validation: Optional[Union[ValidationFunction, ValidationDict]] = None,
@@ -48,20 +50,15 @@ class Number(LabelElement, ValidationElement, DisableableElement):
         """
         self.format = format
         super().__init__(tag='q-input', label=label, value=value, on_value_change=on_change, validation=validation)
+        self._props['for'] = self.html_id
         self._props['type'] = 'number'
-        if placeholder is not None:
-            self._props['placeholder'] = placeholder
-        if min is not None:
-            self._props['min'] = min
-        if max is not None:
-            self._props['max'] = max
+        self._props.set_optional('placeholder', placeholder)
+        self._props.set_optional('min', min)
+        self._props.set_optional('max', max)
         self._precision = precision
-        if step is not None:
-            self._props['step'] = step
-        if prefix is not None:
-            self._props['prefix'] = prefix
-        if suffix is not None:
-            self._props['suffix'] = suffix
+        self._props.set_optional('step', step)
+        self._props.set_optional('prefix', prefix)
+        self._props.set_optional('suffix', suffix)
         self.on('blur', self.sanitize, [])
 
     @property
@@ -73,7 +70,7 @@ class Number(LabelElement, ValidationElement, DisableableElement):
     def min(self, value: float) -> None:
         if self._props.get('min') == value:
             return
-        self._props['min'] = value
+        self._props.set_optional('min', value)
         self.sanitize()
 
     @property
@@ -85,7 +82,7 @@ class Number(LabelElement, ValidationElement, DisableableElement):
     def max(self, value: float) -> None:
         if self._props.get('max') == value:
             return
-        self._props['max'] = value
+        self._props.set_optional('max', value)
         self.sanitize()
 
     @property
@@ -97,6 +94,36 @@ class Number(LabelElement, ValidationElement, DisableableElement):
     def precision(self, value: Optional[int]) -> None:
         self._precision = value
         self.sanitize()
+
+    @property
+    def prefix(self) -> Optional[str]:
+        """The prefix to prepend to the displayed value.
+
+        *Added in version 3.5.0*
+        """
+        return self._props.get('prefix')
+
+    @prefix.setter
+    def prefix(self, value: Optional[str]) -> None:
+        if value is None:
+            self._props.pop('prefix', None)
+        else:
+            self._props['prefix'] = value
+
+    @property
+    def suffix(self) -> Optional[str]:
+        """The suffix to append to the displayed value.
+
+        *Added in version 3.5.0*
+        """
+        return self._props.get('suffix')
+
+    @suffix.setter
+    def suffix(self, value: Optional[str]) -> None:
+        if value is None:
+            self._props.pop('suffix', None)
+        else:
+            self._props['suffix'] = value
 
     @property
     def out_of_limits(self) -> bool:

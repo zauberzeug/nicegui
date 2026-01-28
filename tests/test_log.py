@@ -44,8 +44,7 @@ def test_replace_log(screen: Screen):
             ui.log().push('A')
 
         def replace():
-            container.clear()
-            with container:
+            with container.clear():
                 ui.log().push('B')
         ui.button('Replace', on_click=replace)
 

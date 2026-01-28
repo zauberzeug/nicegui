@@ -1,5 +1,6 @@
 from typing import Literal, Optional
 
+from ..defaults import DEFAULT_PROP, resolve_defaults
 from .mixins.color_elements import TextColorElement
 
 SpinnerTypes = Literal[
@@ -31,11 +32,12 @@ SpinnerTypes = Literal[
 
 class Spinner(TextColorElement):
 
+    @resolve_defaults
     def __init__(self,
                  type: Optional[SpinnerTypes] = 'default', *,  # pylint: disable=redefined-builtin
-                 size: str = '1em',
-                 color: Optional[str] = 'primary',
-                 thickness: float = 5.0,
+                 size: str = DEFAULT_PROP | '1em',
+                 color: Optional[str] = DEFAULT_PROP | 'primary',
+                 thickness: float = DEFAULT_PROP | 5.0,
                  ) -> None:
         """Spinner
 

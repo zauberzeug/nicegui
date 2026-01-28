@@ -1,3 +1,4 @@
+import hashlib
 import os
 from functools import lru_cache
 
@@ -5,6 +6,7 @@ import markdown2
 from fastapi.responses import PlainTextResponse
 from pygments.formatters import HtmlFormatter  # pylint: disable=no-name-in-module
 
+from .. import core
 from .mixins.content_element import ContentElement
 
 
@@ -25,15 +27,28 @@ class Markdown(ContentElement, component='markdown.js', default_classes='nicegui
         self.extras = extras[:]
         super().__init__(content=content)
         if 'mermaid' in extras:
-            self._props['use_mermaid'] = True
+            self._props['use-mermaid'] = True
 
+        codehilite = self._generate_codehilite_css()
+        self._props['resource-name'] = f'codehilite_{hashlib.sha256(codehilite.encode()).hexdigest()[:32]}.css'
         self.add_dynamic_resource(
-            'codehilite.css',
+            self._props['resource-name'],
             lambda: PlainTextResponse(
-                HtmlFormatter(nobackground=True).get_style_defs('.codehilite') +
-                HtmlFormatter(nobackground=True, style='github-dark').get_style_defs('.body--dark .codehilite'),
+                codehilite,
                 media_type='text/css',
+                headers={'Cache-Control': core.app.config.cache_control_directives},
             ),
+        )
+
+        self._props.add_rename('resource_name', 'resource-name')  # DEPRECATED: remove in NiceGUI 4.0
+        self._props.add_rename('use_mermaid', 'use-mermaid')  # DEPRECATED: remove in NiceGUI 4.0
+
+    @staticmethod
+    @lru_cache(maxsize=1)
+    def _generate_codehilite_css() -> str:
+        return (
+            HtmlFormatter(nobackground=True).get_style_defs('.codehilite') +
+            HtmlFormatter(nobackground=True, style='github-dark').get_style_defs('.body--dark .codehilite')
         )
 
     def _handle_content_change(self, content: str) -> None:

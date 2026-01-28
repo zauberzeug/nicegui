@@ -31,7 +31,7 @@ def test_navigate_to(screen: Screen, new_tab: bool):
 
 
 def test_navigate_to_absolute_url(screen: Screen):
-    external_url = 'https://nicegui.io'
+    external_url = 'https://www.google.com/'
 
     @ui.page('/')
     def page():
@@ -46,7 +46,8 @@ def test_navigate_to_absolute_url(screen: Screen):
 def test_navigate_to_relative_url(screen: Screen):
     @ui.page('/')
     def page():
-        ui.button('Go relative', on_click=lambda: ui.navigate.to('/test_page'))
+        ui.label('Index page')
+        ui.button('Go test page', on_click=lambda: ui.navigate.to('/test_page'))
 
     @ui.page('/test_page')
     def test_page():
@@ -54,13 +55,11 @@ def test_navigate_to_relative_url(screen: Screen):
         ui.button('Back', on_click=ui.navigate.back)
 
     screen.open('/')
-    screen.click('Go relative')
-    screen.wait(0.2)
-    assert screen.selenium.current_url == f'http://localhost:{Screen.PORT}/test_page'
+    screen.click('Go test page')
+    screen.should_contain('Test page')
 
     screen.click('Back')
-    screen.wait(0.2)
-    assert screen.selenium.current_url == f'http://localhost:{Screen.PORT}/'
+    screen.should_contain('Index page')
 
 
 @pytest.mark.parametrize('sub_pages', [False, True])
@@ -78,3 +77,14 @@ def test_navigate_to_mailto_url(screen: Screen, sub_pages: bool):
     screen.click('Send mail')
     screen.wait(0.5)
     assert screen.selenium.execute_script('return window.__open_calls') == [['mailto:test@example.com', '_self']]
+
+
+def test_xss_via_history_push(screen: Screen):
+    @ui.page('/')
+    def page():
+        ui.button('Push', on_click=lambda: ui.navigate.history.push('/");console.log("XSS");//'))
+
+    screen.open('/')
+    screen.click('Push')
+    screen.wait(1)
+    assert 'XSS' not in screen.render_js_logs()
