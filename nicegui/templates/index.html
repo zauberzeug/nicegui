@@ -6,9 +6,6 @@
     <link href="{{ favicon_url }}" rel="shortcut icon" />
     <style>
       @layer theme, base, quasar, nicegui, components, utilities, overrides, quasar_importants;
-      {% if unocss == 'wind3' %}
-      @import url("{{ prefix | safe }}/_nicegui/{{version}}/static/unocss/tailwind.css") layer(base);
-      {% endif %}
       @import url("{{ prefix | safe }}/_nicegui/{{version}}/static/fonts.css") layer(base);
       {% if prod_js %}
         @import url("{{ prefix | safe }}/_nicegui/{{version}}/static/quasar.unimportant.prod.css") layer(quasar);
@@ -66,7 +63,11 @@
         ],
         runtime: { ready: () => false },
         outputToCssLayers: {
-          cssLayerName: (layer) => layer === 'default' ? 'utilities' : undefined,
+          cssLayerName: (layer) => {
+            if (layer === 'default') return 'utilities';
+            if (layer === 'preflights') return 'base';
+            return undefined;
+          },
         },
       };
     </script>
