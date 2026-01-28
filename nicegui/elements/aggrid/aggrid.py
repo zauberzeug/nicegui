@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING, Literal, Optional, Union, cast
 
 from typing_extensions import Self
 
-from ... import optional_features
+from ... import helpers, optional_features
 from ...awaitable_response import AwaitableResponse
 from ...defaults import DEFAULT_PROP, resolve_defaults
 from ...dependencies import register_importmap_override
@@ -45,6 +45,9 @@ class AgGrid(Element, component='aggrid.js', esm={'nicegui-aggrid': 'dist'}, def
         """
         if not isinstance(modules, list):
             modules = [f'All{modules.capitalize()}Module']
+
+        self._migrate_deprecated_checkbox_renderer(options)  # DEPRECATED: remove in NiceGUI 4.0
+
         super().__init__()
         self._props['options'] = {
             'theme': theme or 'quartz',
@@ -56,6 +59,27 @@ class AgGrid(Element, component='aggrid.js', esm={'nicegui-aggrid': 'dist'}, def
         self._props['modules'] = modules[:]
 
         self._props.add_rename('html_columns', 'html-columns')  # DEPRECATED: remove in NiceGUI 4.0
+
+    @staticmethod
+    def _migrate_deprecated_checkbox_renderer(options: dict) -> None:
+        """Migrate deprecated checkboxRenderer to agCheckboxCellRenderer and warn the user."""
+        migrated = False
+        for col in options.get('columnDefs', []):
+            if col.get('cellRenderer') == 'checkboxRenderer':
+                del col['cellRenderer']
+                col['cellDataType'] = 'boolean'
+                col['editable'] = True
+                migrated = True
+        if migrated:
+            helpers.warn_once(
+                "AG Grid: 'checkboxRenderer' is deprecated.\n"
+                'Your code currently contains:\n'
+                "    'cellRenderer': 'checkboxRenderer',\n"
+                'But the native renderer is preferred for accessibility and styling:\n'
+                "    'cellDataType': 'boolean',\n"
+                "    'editable': True,\n"
+                'Please migrate ASAP as the backwards-compatibility will be removed in NiceGUI 4.0.'
+            )
 
     @classmethod
     def from_pandas(cls,

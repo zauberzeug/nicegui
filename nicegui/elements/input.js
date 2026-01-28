@@ -19,12 +19,16 @@ export default {
   props: {
     _autocomplete: Array,
     value: String,
+    id: String,
   },
   data() {
     return {
       inputValue: this.value,
       emitting: true,
     };
+  },
+  beforeUnmount() {
+    mounted_app.elements[this.$props.id.slice(1)].props.value = this.inputValue;
   },
   watch: {
     value(newValue) {

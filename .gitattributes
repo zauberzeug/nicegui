@@ -2,8 +2,10 @@ nicegui/elements/*/dist/**         linguist-vendored
 nicegui/elements/anywidget/lib/**  linguist-vendored
 nicegui/static/fonts/**            linguist-vendored
 nicegui/static/fonts.css           linguist-vendored
+nicegui/static/immutable.*         linguist-vendored
 nicegui/static/lang/**             linguist-vendored
 nicegui/static/quasar.*            linguist-vendored
+nicegui/static/sass.*              linguist-vendored
 nicegui/static/socket.*            linguist-vendored
 nicegui/static/tailwindcss.*       linguist-vendored
 nicegui/static/vue.*               linguist-vendored

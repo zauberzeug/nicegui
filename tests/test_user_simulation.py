@@ -511,6 +511,27 @@ async def test_select_multiple_values(user: User):
     assert select.value == ['B']
 
 
+async def test_select_keeps_value_when_toggling_popup(user: User):
+    @ui.page('/')
+    def page():
+        s = ui.select(['Apple', 'Banana', 'Cherry'], label='Fruit', value='Apple')
+        ui.label().bind_text_from(s, 'is_showing_popup', lambda v: 'open' if v else 'closed')
+        ui.label().bind_text_from(s, 'value', lambda v: f'value = {v}')
+
+    await user.open('/')
+    one = user.find('Fruit')
+    await user.should_see('closed')
+    await user.should_see('value = Apple')
+
+    one.click()
+    await user.should_see('open')
+    await user.should_see('value = Apple')
+
+    one.click()
+    await user.should_see('closed')
+    await user.should_see('value = Apple')
+
+
 async def test_upload_table(user: User) -> None:
     @ui.page('/')
     def page():
@@ -784,3 +805,20 @@ async def test_module_import_isolation_second_test(user: User, tmp_path) -> None
     """
     assert 'test_isolation_module' not in sys.modules, \
         'test_isolation_module from previous test should not be in sys.modules'
+
+
+async def test_storage_tab_persists_across_navigation(user: User) -> None:
+    @ui.page('/')
+    def root() -> None:
+        ui.button('Write value', on_click=lambda: app.storage.tab.update(value='ABC'))
+
+    @ui.page('/other')
+    def other() -> None:
+        ui.button('Read value', on_click=lambda: ui.notify(app.storage.tab['value']))
+
+    await user.open('/')
+    user.find('Write value').click()
+
+    await user.open('/other')
+    user.find('Read value').click()
+    await user.should_see('ABC')
