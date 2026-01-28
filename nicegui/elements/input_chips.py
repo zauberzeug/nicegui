@@ -21,6 +21,7 @@ class InputChips(LabelElement, ValidationElement, DisableableElement):
 
         An input field that manages a collection of values as visual "chips" or tags.
         Users can type to add new chips and remove existing ones by clicking or using keyboard shortcuts.
+        Values are added by pressing Enter or when the input field loses focus (blur event).
 
         This element is based on Quasar's `QSelect <https://quasar.dev/vue-components/select>`_ component.
         Unlike a traditional dropdown selection, this variant focuses on free-form text input with chips,
@@ -51,6 +52,19 @@ class InputChips(LabelElement, ValidationElement, DisableableElement):
         self._props['multiple'] = True
         self._props['hide-dropdown-icon'] = True
         self._props['clearable'] = clearable
+
+        # Add blur event handler to commit input value when field loses focus
+        # This respects the new-value-mode setting by using the existing addValue method
+        self._props['@blur'] = '''
+        function(event) {
+            const inputEl = event.target;
+            const val = inputEl?.value?.trim();
+            if (val && this.addValue) {
+                this.addValue(val);
+                inputEl.value = '';
+            }
+        }
+        '''
 
     def _event_args_to_value(self, e: GenericEventArguments) -> Any:
         return e.args or []
