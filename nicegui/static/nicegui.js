@@ -6,11 +6,20 @@ let app = undefined;
 let mounted_app = undefined;
 
 function applyColors(colors) {
-  const quasarColors = ["primary", "secondary", "accent", "dark", "dark-page", "positive", "negative", "info", "warning"];
+  const quasarColors = [
+    "primary",
+    "secondary",
+    "accent",
+    "dark",
+    "dark-page",
+    "positive",
+    "negative",
+    "info",
+    "warning",
+  ];
   let customCSS = "";
   for (let color in colors) {
-    if (quasarColors.includes(color))
-      continue;
+    if (quasarColors.includes(color)) continue;
     const colorName = color.replaceAll("_", "-");
     const colorVar = "--q-" + colorName;
     document.body.style.setProperty(colorVar, colors[color]);
@@ -32,7 +41,7 @@ function parseElements(raw_elements) {
       .replace(/&#96;/g, "`")
       .replace(/&gt;/g, ">")
       .replace(/&lt;/g, "<")
-      .replace(/&amp;/g, "&")
+      .replace(/&amp;/g, "&"),
   );
 }
 
@@ -250,8 +259,8 @@ function renderRecursively(elements, id, propsContext) {
             },
             {
               props: props,
-            }
-          )
+            },
+          ),
         );
       }
       const children = data.ids.map((id) => renderRecursively(elements, id, props || propsContext));
@@ -310,7 +319,7 @@ function createRandomUUID() {
   } catch (e) {
     // https://stackoverflow.com/a/2117523/3419103
     return "10000000-1000-4000-8000-100000000000".replace(/[018]/g, (c) =>
-      (+c ^ (crypto.getRandomValues(new Uint8Array(1))[0] & (15 >> (+c / 4)))).toString(16)
+      (+c ^ (crypto.getRandomValues(new Uint8Array(1))[0] & (15 >> (+c / 4)))).toString(16),
     );
   }
 }

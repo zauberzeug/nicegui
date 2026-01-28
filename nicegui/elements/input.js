@@ -45,7 +45,7 @@ export default {
     shadowText() {
       if (!this.inputValue) return "";
       const matchingOption = this._autocomplete.find((option) =>
-        option.toLowerCase().startsWith(this.inputValue.toLowerCase())
+        option.toLowerCase().startsWith(this.inputValue.toLowerCase()),
       );
       return matchingOption ? matchingOption.slice(this.inputValue.length) : "";
     },
