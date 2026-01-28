@@ -35,6 +35,7 @@ dependencies = [
     "aiohttp>=3.10.2",
     "certifi>=2024.07.04",
     "pydantic-core>=2.35.0",
+    "lazy-imports>=1.1.0",
 ]
 
 [project.optional-dependencies]
