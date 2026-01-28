@@ -53,7 +53,7 @@
     {% endif %}
     <!-- prevent Prettier from removing this line -->
     {% if unocss %}
-    <script src="{{ prefix | safe }}/_nicegui/{{version}}/static/unocss/preset-{{unocss}}.global.js"></script>
+    <script defer src="{{ prefix | safe }}/_nicegui/{{version}}/static/unocss/preset-{{unocss}}.global.js"></script>
     <script>
       window.__unocss = {
         presets: [
@@ -71,7 +71,7 @@
         },
       };
     </script>
-    <script src="{{ prefix | safe }}/_nicegui/{{version}}/static/unocss/core.global.js"></script>
+    <script defer src="{{ prefix | safe }}/_nicegui/{{version}}/static/unocss/core.global.js"></script>
     <style>
       #app.nicegui-unocss-loading {
         visibility: hidden;
