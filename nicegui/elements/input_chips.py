@@ -73,7 +73,7 @@ class InputChips(LabelElement, ValidationElement, DisableableElement):
         """Track the current input value as user types."""
         self._current_input_value = e.args if e.args else ''
 
-    def _handle_blur(self, e: GenericEventArguments) -> None:
+    def _handle_blur(self) -> None:
         """Add the current input value as a chip when field loses focus."""
         val = self._current_input_value.strip() if isinstance(self._current_input_value, str) else ''
 
