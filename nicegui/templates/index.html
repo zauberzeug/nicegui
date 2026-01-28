@@ -67,10 +67,7 @@
         ],
         runtime: { ready: () => false },
         outputToCssLayers: {
-          cssLayerName: (layer) => {
-            if (layer === 'default')
-              return 'utilities'
-          }
+          cssLayerName: (layer) => layer === 'default' ? 'utilities' : undefined,
         },
       };
     </script>
