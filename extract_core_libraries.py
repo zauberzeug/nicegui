@@ -80,7 +80,6 @@ _minify_js(NODE_MODULES / 'sass' / 'sass.dart.js', STATIC / 'sass.dart.js')
 _minify_js(NODE_MODULES / 'immutable' / 'dist' / 'immutable.es.js', STATIC / 'immutable.es.js')
 
 shutil.copy2(NODE_MODULES / '@unocss' / 'reset' / 'tailwind.css', STATIC / 'unocss' / 'tailwind.css')
-shutil.copy2(NODE_MODULES / '@unocss' / 'reset' / 'tailwind-v4.css', STATIC / 'unocss' / 'tailwind-v4.css')
 shutil.copy2(NODE_MODULES / '@unocss' / 'runtime' / 'core.global.js', STATIC / 'unocss' / 'core.global.js')
 shutil.copy2(NODE_MODULES / '@unocss' / 'runtime' / 'preset-mini.global.js',
              STATIC / 'unocss' / 'preset-mini.global.js')

@@ -6,8 +6,8 @@
     <link href="{{ favicon_url }}" rel="shortcut icon" />
     <style>
       @layer theme, base, quasar, nicegui, components, utilities, overrides, quasar_importants;
-      {% if unocss %}
-      @import url("{{ prefix | safe }}/_nicegui/{{version}}/static/unocss/{{ 'tailwind-v4' if unocss == 'wind4' else 'tailwind' }}.css") layer(base);
+      {% if unocss == 'wind3' %}
+      @import url("{{ prefix | safe }}/_nicegui/{{version}}/static/unocss/tailwind.css") layer(base);
       {% endif %}
       @import url("{{ prefix | safe }}/_nicegui/{{version}}/static/fonts.css") layer(base);
       {% if prod_js %}
@@ -62,7 +62,6 @@
               light: 'body.body--light',
               dark: 'body.body--dark',
             },
-            preflight: false,
           }),
         ],
         runtime: { ready: () => false },
