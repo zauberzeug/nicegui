@@ -5,6 +5,44 @@ const None = undefined;
 let app = undefined;
 let mounted_app = undefined;
 
+function initUnoCss() {
+  if (window.__unocss_runtime === undefined) return;
+
+  const renderedClasses = new Set();
+  let queue = Promise.resolve();
+  let isInitialized = false;
+
+  new MutationObserver((mutations) => {
+    let newClassesString = "";
+    function appendClass(className) {
+      if (renderedClasses.has(className)) return;
+      renderedClasses.add(className);
+      newClassesString += className + " ";
+    }
+    for (const mutation of mutations) {
+      if (mutation.type === "attributes") {
+        for (const className of mutation.target.classList) appendClass(className);
+      } else if (mutation.type === "childList") {
+        for (const node of mutation.addedNodes) {
+          if (node.nodeType !== Node.ELEMENT_NODE) continue;
+          for (const el of [node, ...node.querySelectorAll("*")]) {
+            for (const className of el.classList) appendClass(className);
+          }
+        }
+      }
+    }
+    if (newClassesString.length === 0) return;
+    queue = queue.then(async () => {
+      await window.__unocss_runtime.extract(newClassesString);
+      if (isInitialized) return;
+      for (const style of document.querySelectorAll("style[data-unocss-runtime-layer]"))
+        document.head.appendChild(style);
+      document.getElementById("app").classList.remove("nicegui-unocss-loading");
+      isInitialized = true;
+    });
+  }).observe(document.body, { subtree: true, childList: true, attributes: true, attributeFilter: ["class"] });
+}
+
 function applyColors(colors) {
   const quasarColors = [
     "primary",
@@ -337,6 +375,7 @@ window.onbeforeunload = function () {
 function createApp(elements, options) {
   Object.entries(elements).forEach(([_, element]) => replaceUndefinedAttributes(element));
   setInterval(() => ack(), 3000);
+  initUnoCss();
   return (app = Vue.createApp({
     data() {
       return {

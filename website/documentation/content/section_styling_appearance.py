@@ -150,6 +150,8 @@ def css_layers():
     This way, you can define your own classes and use them in your UI elements.
     In the example below, we define a custom class `blue-box` and apply it to two labels.
     Note that the style tag is of type `text/tailwindcss` and not `text/css`.
+
+    Also note: This requires the default Tailwind CSS engine (not UnoCSS).
 ''')
 def tailwind_layers():
     ui.add_head_html('''
@@ -163,8 +165,39 @@ def tailwind_layers():
     ''')
 
     with ui.row():
-        ui.label('Hello').classes('blue-box')
-        ui.label('world').classes('blue-box')
+        # ui.label('Hello').classes('blue-box')
+        # ui.label('world').classes('blue-box')
+        # END OF DEMO
+        ui.label('Hello').classes('bg-blue-500 p-12 text-center shadow-lg rounded-lg text-white')
+        ui.label('world').classes('bg-blue-500 p-12 text-center shadow-lg rounded-lg text-white')
+
+
+@doc.demo('UnoCSS engine', '''
+    As an alternative to using the [Tailwind CSS Play CDN engine](https://v3.tailwindcss.com/docs/installation/play-cdn),
+    you can also use the [UnoCSS engine](https://unocss.dev/) to let Tailwind CSS classes take effect.
+
+    Pass `tailwind=False` and `unocss_preset` to be one of the following:
+
+    - "mini": [UnoCSS Mini preset](https://unocss.dev/presets/mini)
+    - "wind3": [UnoCSS Wind3 preset](https://unocss.dev/presets/wind3)
+    - "wind4": [UnoCSS Wind4 preset](https://unocss.dev/presets/wind4)
+
+    UnoCSS is a smaller library and more performant, especially on small pages.
+    On "low-tier mobile" CPU throttling profile, load time for this page went from 3.0s down to 1.5s.
+
+    However, full compatibility with Tailwind CSS is not guaranteed.
+    The following is known to break:
+
+    - Tailwind CSS Layers do not work (see the above).
+''')
+def unocss_demo():
+    label = ui.label('This label becomes red dynamically.')
+
+    ui.button('Become red', on_click=lambda: ui.run_javascript(f'''
+        {label.html_id}.classList.add("text-red-500")
+    '''))
+
+    # ui.run(tailwind=False, unocss_preset='mini')
 
 
 doc.intro(element_filter_documentation)

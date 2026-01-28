@@ -2,6 +2,7 @@ import asyncio
 import re
 from typing import Optional
 
+import pytest
 from fastapi.responses import PlainTextResponse
 from selenium.webdriver.common.by import By
 
@@ -205,7 +206,11 @@ def test_async_connect_handler(screen: Screen):
     screen.should_contain('42')
 
 
-def test_dark_mode(screen: Screen):
+@pytest.mark.parametrize('use_tailwind', [False, True])
+def test_dark_mode(screen: Screen, use_tailwind: bool):
+    app.config.tailwind = use_tailwind
+    app.config.unocss_preset = None if use_tailwind else 'wind4'
+
     @ui.page('/auto', dark=None)
     def page():
         ui.label('A').classes('text-blue-400 dark:text-red-400')
