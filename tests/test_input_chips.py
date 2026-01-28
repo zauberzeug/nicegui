@@ -46,3 +46,41 @@ def test_input_chips_validation(auto_validation: bool, screen: Screen):
         screen.should_contain('Too many')
     else:
         screen.should_not_contain('Too many')
+
+
+@pytest.mark.parametrize('new_value_mode', ['add', 'add-unique', 'toggle'])
+def test_input_chips_blur_adds_value(screen: Screen, new_value_mode: str):
+    @ui.page('/')
+    def page():
+        chips = ui.input_chips(new_value_mode=new_value_mode)
+        ui.label().bind_text_from(chips, 'value', lambda v: f'value = {v}')
+
+    screen.open('/')
+    screen.should_contain('value = []')
+
+    # Type a value and trigger blur by clicking elsewhere
+    input_field = screen.find_by_tag('input')
+    input_field.send_keys('chip1')
+    screen.wait(0.5)
+
+    # Trigger blur by clicking on the label
+    screen.click('value = []')
+    screen.wait(0.5)
+
+    # Should have added chip1
+    screen.should_contain("value = ['chip1']")
+
+    # Type another value and blur again
+    input_field = screen.find_by_tag('input')
+    input_field.send_keys('chip2')
+    screen.wait(0.5)
+    screen.click('value = ')
+    screen.wait(0.5)
+
+    # Check based on new_value_mode
+    if new_value_mode == 'add':
+        screen.should_contain("value = ['chip1', 'chip2']")
+    elif new_value_mode == 'add-unique':
+        screen.should_contain("value = ['chip1', 'chip2']")
+    elif new_value_mode == 'toggle':
+        screen.should_contain("value = ['chip1', 'chip2']")

@@ -53,18 +53,51 @@ class InputChips(LabelElement, ValidationElement, DisableableElement):
         self._props['hide-dropdown-icon'] = True
         self._props['clearable'] = clearable
 
-        # Add blur event handler to commit input value when field loses focus
-        # This respects the new-value-mode setting by using the existing addValue method
-        self._props['@blur'] = '''
-        function(event) {
-            const inputEl = event.target;
-            const val = inputEl?.value?.trim();
-            if (val && this.addValue) {
-                this.addValue(val);
-                inputEl.value = '';
-            }
-        }
-        '''
+        # Track the current input value to add on blur
+        self._current_input_value = ''
+        self._new_value_mode = new_value_mode
+
+        # Listen to input-value changes to track what user is typing
+        self.on('input-value', self._handle_input_value_change)
+
+        # Listen to blur event to add the current input value as a chip
+        self.on('blur', self._handle_blur)
+
+    def _handle_input_value_change(self, e: GenericEventArguments) -> None:
+        """Track the current input value as user types."""
+        self._current_input_value = e.args if e.args else ''
+
+    def _handle_blur(self, e: GenericEventArguments) -> None:
+        """Add the current input value as a chip when field loses focus."""
+        val = self._current_input_value.strip() if isinstance(self._current_input_value, str) else ''
+
+        if not val:
+            return
+
+        # Get current chips
+        current_value = self.value if self.value else []
+
+        # Apply new-value-mode logic
+        if self._new_value_mode == 'add':
+            # Always add the value
+            new_value = current_value + [val]
+        elif self._new_value_mode == 'add-unique':
+            # Only add if not already present
+            if val not in current_value:
+                new_value = current_value + [val]
+            else:
+                return
+        elif self._new_value_mode == 'toggle':
+            # Toggle: add if not present, remove if present
+            if val in current_value:
+                new_value = [v for v in current_value if v != val]
+            else:
+                new_value = current_value + [val]
+        else:
+            return
+
+        # Update the value
+        self.value = new_value
 
     def _event_args_to_value(self, e: GenericEventArguments) -> Any:
         return e.args or []
