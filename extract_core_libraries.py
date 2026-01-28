@@ -3,7 +3,6 @@ from __future__ import annotations
 
 import copy
 import difflib
-import os
 import re
 import shutil
 import subprocess
@@ -79,8 +78,6 @@ shutil.copy2(NODE_MODULES / 'socket.io' / 'client-dist' / 'socket.io.min.js.map'
 _minify_js(NODE_MODULES / 'sass' / 'sass.default.js', STATIC / 'sass.default.js')
 _minify_js(NODE_MODULES / 'sass' / 'sass.dart.js', STATIC / 'sass.dart.js')
 _minify_js(NODE_MODULES / 'immutable' / 'dist' / 'immutable.es.js', STATIC / 'immutable.es.js')
-
-os.makedirs(STATIC / 'unocss', exist_ok=True)
 
 shutil.copy2(NODE_MODULES / '@unocss' / 'reset' / 'tailwind.css', STATIC / 'unocss' / 'tailwind.css')
 shutil.copy2(NODE_MODULES / '@unocss' / 'reset' / 'tailwind-v4.css', STATIC / 'unocss' / 'tailwind-v4.css')
