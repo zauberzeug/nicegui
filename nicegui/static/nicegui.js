@@ -34,6 +34,17 @@ function applyColors(colors) {
   document.getElementsByTagName("head")[0].appendChild(style);
 }
 
+let darkSetter = undefined;
+
+function setDark(dark) {
+  if (dark === null) dark = None;
+  if (darkSetter) darkSetter(dark);
+  document
+    .getElementById("nicegui-color-scheme")
+    .setAttribute("content", dark === None ? "normal" : dark ? "dark" : "light");
+  document.getElementById("nicegui-darkreader-lock").setAttribute("name", dark ? "darkreader-lock" : "");
+}
+
 function parseElements(raw_elements) {
   return JSON.parse(
     raw_elements

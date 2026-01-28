@@ -7,7 +7,7 @@ export default {
   },
   methods: {
     update() {
-      Quasar.Dark.set(this.value === null ? "auto" : this.value);
+      setDark(this.value);
     },
   },
   props: {
