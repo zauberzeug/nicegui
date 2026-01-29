@@ -8,8 +8,8 @@ class Date(ValueElement, DisableableElement):
 
     @resolve_defaults
     def __init__(self,
-                 value: None | (
-                     str | dict[str, str] | list[str] | list[str | dict[str, str]]
+                 value: (
+                     str | dict[str, str] | list[str] | list[str | dict[str, str]] | None
                  ) = DEFAULT_PROPS['model-value'] | None,
                  *,
                  mask: str = DEFAULT_PROP | 'YYYY-MM-DD',
