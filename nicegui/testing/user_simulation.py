@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 import os
 import runpy
 from collections.abc import AsyncGenerator, Callable

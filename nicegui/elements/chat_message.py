@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 import html
 from collections.abc import Callable
 from typing import Literal
