@@ -1,13 +1,14 @@
+from typing import Literal, Optional
+
 import pytest
 
 from nicegui import app, ui
 from nicegui.testing import Screen
 
 
-@pytest.mark.parametrize('use_tailwind', [False, True])
-def test_dark_mode(screen: Screen, use_tailwind: bool):
-    app.config.tailwind = use_tailwind
-    app.config.unocss = None if use_tailwind else 'wind4'
+@pytest.mark.parametrize('unocss', [None, 'mini', 'wind3', 'wind4'])
+def test_dark_mode(screen: Screen, unocss: Optional[Literal['mini', 'wind3', 'wind4']]):
+    app.config.unocss = unocss
 
     @ui.page('/')
     def page():
