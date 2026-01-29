@@ -1,7 +1,7 @@
 # pylint: disable=C0116
 import inspect
 import warnings
-from multiprocessing import Queue
+from multiprocessing import Pipe, Queue
 from typing import Any, Callable, Optional
 
 from .. import run
@@ -9,18 +9,23 @@ from ..logging import log
 
 method_queue: Optional[Queue] = None
 response_queue: Optional[Queue] = None
+event_queue: Optional[Queue] = None
+event_receiver = None
+event_sender = None
 
 
 def create_queues() -> None:
     """Create the message queues. (For internal use only.)"""
-    global method_queue, response_queue  # pylint: disable=global-statement # noqa: PLW0603
+    global method_queue, response_queue, event_queue, event_receiver, event_sender  # pylint: disable=global-statement # noqa: PLW0603
     method_queue = Queue()
     response_queue = Queue()
+    event_queue = Queue()
+    event_receiver, event_sender = Pipe(duplex=False)
 
 
 def remove_queues() -> None:
     """Remove the message queues by closing them and waiting for threads to finish. (For internal use only.)"""
-    global method_queue, response_queue  # pylint: disable=global-statement # noqa: PLW0603
+    global method_queue, response_queue, event_receiver, event_sender  # pylint: disable=global-statement # noqa: PLW0603
     if method_queue is not None:
         method_queue.close()
         method_queue.join_thread()
@@ -29,6 +34,8 @@ def remove_queues() -> None:
         response_queue.close()
         response_queue.join_thread()
         response_queue = None
+    event_receiver = None
+    event_sender = None
 
 
 try:
