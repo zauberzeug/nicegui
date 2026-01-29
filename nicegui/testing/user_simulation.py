@@ -2,10 +2,9 @@ from __future__ import annotations
 
 import os
 import runpy
-from collections.abc import AsyncGenerator
+from collections.abc import AsyncGenerator, Callable
 from contextlib import asynccontextmanager
 from pathlib import Path
-from typing import Callable
 
 import httpx
 
@@ -20,7 +19,7 @@ from .user import User
 @asynccontextmanager
 async def user_simulation(
     root: Callable | None = None, *, main_file: str | os.PathLike | None = None,
-) -> AsyncGenerator[User, None]:
+) -> AsyncGenerator[User]:
     """Context manager for test user simulation.
 
     This context manager yields a ``User`` connected to a NiceGUI app within an isolated test context.

@@ -1,4 +1,4 @@
-from typing import Literal, Optional
+from typing import Literal
 
 import pytest
 
@@ -7,7 +7,7 @@ from nicegui.testing import Screen
 
 
 @pytest.mark.parametrize('unocss', [None, 'mini', 'wind3', 'wind4'])
-def test_dynamic_classes(screen: Screen, unocss: Optional[Literal['mini', 'wind3', 'wind4']]):
+def test_dynamic_classes(screen: Screen, unocss: Literal['mini', 'wind3', 'wind4'] | None):
     app.config.unocss = unocss
 
     @ui.page('/')

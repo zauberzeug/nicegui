@@ -6,9 +6,9 @@ import dataclasses
 import time
 import weakref
 from collections import defaultdict
-from collections.abc import Iterable, Mapping
+from collections.abc import Callable, Iterable, Mapping
 from contextvars import ContextVar
-from typing import TYPE_CHECKING, Any, Callable, Literal, TypeVar
+from typing import TYPE_CHECKING, Any, Literal, TypeVar
 
 from typing_extensions import dataclass_transform
 

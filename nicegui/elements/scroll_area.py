@@ -1,4 +1,4 @@
-from typing import Literal, Optional
+from typing import Literal
 
 from typing_extensions import Self
 
@@ -8,7 +8,7 @@ from ..events import GenericEventArguments, Handler, ScrollEventArguments, handl
 
 class ScrollArea(Element, default_classes='nicegui-scroll-area'):
 
-    def __init__(self, *, on_scroll: Optional[Handler[ScrollEventArguments]] = None) -> None:
+    def __init__(self, *, on_scroll: Handler[ScrollEventArguments] | None = None) -> None:
         """Scroll Area
 
         A way of customizing the scrollbars by encapsulating your content.
@@ -35,7 +35,7 @@ class ScrollArea(Element, default_classes='nicegui-scroll-area'):
         ])
         return self
 
-    def _handle_scroll(self, handler: Optional[Handler[ScrollEventArguments]], e: GenericEventArguments) -> None:
+    def _handle_scroll(self, handler: Handler[ScrollEventArguments] | None, e: GenericEventArguments) -> None:
         handle_event(handler, ScrollEventArguments(
             sender=self,
             client=self.client,
@@ -50,8 +50,8 @@ class ScrollArea(Element, default_classes='nicegui-scroll-area'):
         ))
 
     def scroll_to(self, *,
-                  pixels: Optional[float] = None,
-                  percent: Optional[float] = None,
+                  pixels: float | None = None,
+                  percent: float | None = None,
                   axis: Literal['vertical', 'horizontal'] = 'vertical',
                   duration: float = 0.0,
                   ) -> None:

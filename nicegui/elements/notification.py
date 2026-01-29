@@ -1,4 +1,4 @@
-from typing import Any, Literal, Optional, Union
+from typing import Any, Literal, TypeAlias
 
 from typing_extensions import Self
 
@@ -18,13 +18,13 @@ NotificationPosition = Literal[
     'center',
 ]
 
-NotificationType = Optional[Literal[
+NotificationType: TypeAlias = Literal[
     'positive',
     'negative',
     'warning',
     'info',
     'ongoing',
-]]
+] | None
 
 
 class Notification(Element, component='notification.js'):
@@ -32,15 +32,15 @@ class Notification(Element, component='notification.js'):
     def __init__(self,
                  message: Any = '', *,
                  position: NotificationPosition = 'bottom',
-                 close_button: Union[bool, str] = False,
+                 close_button: bool | str = False,
                  type: NotificationType = None,  # pylint: disable=redefined-builtin
-                 color: Optional[str] = None,
+                 color: str | None = None,
                  multi_line: bool = False,
-                 icon: Optional[str] = None,
+                 icon: str | None = None,
                  spinner: bool = False,
-                 timeout: Optional[float] = 5.0,
-                 on_dismiss: Optional[Handler[UiEventArguments]] = None,
-                 options: Optional[dict] = None,
+                 timeout: float | None = 5.0,
+                 on_dismiss: Handler[UiEventArguments] | None = None,
+                 options: dict | None = None,
                  **kwargs: Any,
                  ) -> None:
         """Notification element
@@ -126,12 +126,12 @@ class Notification(Element, component='notification.js'):
             self._props['options']['type'] = value
 
     @property
-    def color(self) -> Optional[str]:
+    def color(self) -> str | None:
         """Color of the notification."""
         return self._props['options'].get('color')
 
     @color.setter
-    def color(self, value: Optional[str]) -> None:
+    def color(self, value: str | None) -> None:
         if value is None:
             self._props['options'].pop('color', None)
         else:
@@ -147,12 +147,12 @@ class Notification(Element, component='notification.js'):
         self._props['options']['multiLine'] = value
 
     @property
-    def icon(self) -> Optional[str]:
+    def icon(self) -> str | None:
         """Icon of the notification."""
         return self._props['options'].get('icon')
 
     @icon.setter
-    def icon(self, value: Optional[str]) -> None:
+    def icon(self, value: str | None) -> None:
         if value is None:
             self._props['options'].pop('icon', None)
         else:
@@ -176,16 +176,16 @@ class Notification(Element, component='notification.js'):
         return self._props['options']['timeout'] / 1000
 
     @timeout.setter
-    def timeout(self, value: Optional[float]) -> None:
+    def timeout(self, value: float | None) -> None:
         self._props['options']['timeout'] = (value or 0) * 1000
 
     @property
-    def close_button(self) -> Union[bool, str]:
+    def close_button(self) -> bool | str:
         """Whether the notification has a close button."""
         return self._props['options']['closeBtn']
 
     @close_button.setter
-    def close_button(self, value: Union[bool, str]) -> None:
+    def close_button(self, value: bool | str) -> None:
         self._props['options']['closeBtn'] = value
 
     def on_dismiss(self, callback: Handler[UiEventArguments]) -> Self:

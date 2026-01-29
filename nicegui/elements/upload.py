@@ -1,4 +1,4 @@
-from typing import Optional, cast
+from typing import cast
 
 from fastapi import Request
 from starlette.datastructures import UploadFile
@@ -19,13 +19,13 @@ class Upload(LabelElement, DisableableElement, component='upload.js'):
     @resolve_defaults
     def __init__(self, *,
                  multiple: bool = DEFAULT_PROP | False,
-                 max_file_size: Optional[int] = DEFAULT_PROP | None,
-                 max_total_size: Optional[int] = DEFAULT_PROP | None,
-                 max_files: Optional[int] = DEFAULT_PROP | None,
-                 on_begin_upload: Optional[Handler[UiEventArguments]] = None,
-                 on_upload: Optional[Handler[UploadEventArguments]] = None,
-                 on_multi_upload: Optional[Handler[MultiUploadEventArguments]] = None,
-                 on_rejected: Optional[Handler[UiEventArguments]] = None,
+                 max_file_size: int | None = DEFAULT_PROP | None,
+                 max_total_size: int | None = DEFAULT_PROP | None,
+                 max_files: int | None = DEFAULT_PROP | None,
+                 on_begin_upload: Handler[UiEventArguments] | None = None,
+                 on_upload: Handler[UploadEventArguments] | None = None,
+                 on_multi_upload: Handler[MultiUploadEventArguments] | None = None,
+                 on_rejected: Handler[UiEventArguments] | None = None,
                  label: str = DEFAULT_PROP | '',
                  auto_upload: bool = DEFAULT_PROP | False,
                  ) -> None:

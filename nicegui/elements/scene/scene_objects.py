@@ -1,5 +1,4 @@
 import math
-from typing import Optional
 
 from .scene_object3d import Object3D
 
@@ -266,7 +265,7 @@ class Texture(Object3D):
 
     def __init__(self,
                  url: str,
-                 coordinates: list[list[Optional[list[float]]]],
+                 coordinates: list[list[list[float] | None]],
                  ) -> None:
         """Texture
 
@@ -282,7 +281,7 @@ class Texture(Object3D):
         self.args[0] = url
         self.scene.run_method('set_texture_url', self.id, url)
 
-    def set_coordinates(self, coordinates: list[list[Optional[list[float]]]]) -> None:
+    def set_coordinates(self, coordinates: list[list[list[float] | None]]) -> None:
         """Change the texture coordinates."""
         self.args[1] = coordinates
         self.scene.run_method('set_texture_coordinates', self.id, coordinates)
@@ -317,7 +316,7 @@ class PointCloud(Object3D):
 
     def __init__(self,
                  points: list[list[float]],
-                 colors: Optional[list[list[float]]] = None,
+                 colors: list[list[float]] | None = None,
                  point_size: float = 1.0,
                  ) -> None:
         """Point Cloud
@@ -332,7 +331,7 @@ class PointCloud(Object3D):
         if colors is not None:
             self.material(color=None)
 
-    def set_points(self, points: list[list[float]], colors: Optional[list[list[float]]] = None) -> None:
+    def set_points(self, points: list[list[float]], colors: list[list[float]] | None = None) -> None:
         """Change the points and colors of the point cloud."""
         self.args[0] = points
         self.args[1] = colors

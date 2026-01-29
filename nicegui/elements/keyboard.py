@@ -1,4 +1,4 @@
-from typing import Literal, Optional
+from typing import Literal
 
 from typing_extensions import Self
 
@@ -21,7 +21,7 @@ class Keyboard(Element, component='keyboard.js'):
 
     @resolve_defaults
     def __init__(self,
-                 on_key: Optional[Handler[KeyEventArguments]] = None, *,
+                 on_key: Handler[KeyEventArguments] | None = None, *,
                  active: bool = True,
                  repeating: bool = DEFAULT_PROP | True,
                  ignore: list[Literal['input', 'select', 'button', 'textarea']] = DEFAULT_PROP | [

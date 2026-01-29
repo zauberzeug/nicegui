@@ -1,4 +1,4 @@
-from typing import Any, Literal, Optional, Union
+from typing import Any, Literal
 
 from ..defaults import DEFAULT_PROP, DEFAULT_PROPS, resolve_defaults
 from ..events import GenericEventArguments, Handler, ValueChangeEventArguments
@@ -11,13 +11,13 @@ class InputChips(LabelElement, ValidationElement, DisableableElement):
 
     @resolve_defaults
     def __init__(self,
-                 label: Optional[str] = DEFAULT_PROP | None,
+                 label: str | None = DEFAULT_PROP | None,
                  *,
-                 value: Optional[list[str]] = DEFAULT_PROPS['model-value'] | None,
-                 on_change: Optional[Handler[ValueChangeEventArguments]] = None,
+                 value: list[str] | None = DEFAULT_PROPS['model-value'] | None,
+                 on_change: Handler[ValueChangeEventArguments] | None = None,
                  new_value_mode: Literal['add', 'add-unique', 'toggle'] = DEFAULT_PROP | 'toggle',
                  clearable: bool = DEFAULT_PROP | False,
-                 validation: Optional[Union[ValidationFunction, ValidationDict]] = None,
+                 validation: ValidationFunction | ValidationDict | None = None,
                  ) -> None:
         """Input Chips
 

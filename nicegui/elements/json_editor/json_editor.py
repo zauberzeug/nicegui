@@ -1,5 +1,3 @@
-from typing import Optional
-
 from typing_extensions import Self
 
 from ...awaitable_response import AwaitableResponse
@@ -19,9 +17,9 @@ class JsonEditor(Element, component='json_editor.js', esm={'nicegui-json-editor'
     @resolve_defaults
     def __init__(self,
                  properties: dict, *,
-                 on_select: Optional[Handler[JsonEditorSelectEventArguments]] = None,
-                 on_change: Optional[Handler[JsonEditorChangeEventArguments]] = None,
-                 schema: Optional[dict] = DEFAULT_PROP | None,
+                 on_select: Handler[JsonEditorSelectEventArguments] | None = None,
+                 on_change: Handler[JsonEditorChangeEventArguments] | None = None,
+                 schema: dict | None = DEFAULT_PROP | None,
                  ) -> None:
         """JSONEditor
 

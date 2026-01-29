@@ -1,7 +1,8 @@
 from __future__ import annotations
 
 import html
-from typing import Callable, Literal
+from collections.abc import Callable
+from typing import Literal
 
 from ..defaults import DEFAULT_PROP, resolve_defaults
 from .html import Html

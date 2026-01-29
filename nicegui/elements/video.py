@@ -1,5 +1,4 @@
 from pathlib import Path
-from typing import Union
 
 from ..defaults import DEFAULT_PROP, resolve_defaults
 from .mixins.source_element import SourceElement
@@ -9,7 +8,7 @@ class Video(SourceElement, component='video.js'):
     SOURCE_IS_MEDIA_FILE = True
 
     @resolve_defaults
-    def __init__(self, src: Union[str, Path], *,
+    def __init__(self, src: str | Path, *,
                  controls: bool = DEFAULT_PROP | True,
                  autoplay: bool = DEFAULT_PROP | False,
                  muted: bool = DEFAULT_PROP | False,
@@ -34,7 +33,7 @@ class Video(SourceElement, component='video.js'):
         self._props.set_bool('muted', muted)
         self._props.set_bool('loop', loop)
 
-    def set_source(self, source: Union[str, Path]) -> None:
+    def set_source(self, source: str | Path) -> None:
         return super().set_source(source)
 
     def seek(self, seconds: float) -> None:

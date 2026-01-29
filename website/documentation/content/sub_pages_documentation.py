@@ -1,5 +1,6 @@
 import asyncio
-from typing import Any, Awaitable, Callable, Optional
+from typing import Any
+from collections.abc import Awaitable, Callable
 
 from nicegui import PageArguments, background_tasks, ui
 from nicegui.sub_pages_router import SubPagesRouter
@@ -13,9 +14,9 @@ class FakeSubPages(ui.column):
         super().__init__()
         self.routes = routes
         self.data = data
-        self.task: Optional[asyncio.Task] = None
+        self.task: asyncio.Task | None = None
         self.path_changed_handlers: list[Callable[[str], None]] = []
-        self.route: Optional[str] = None
+        self.route: str | None = None
 
     def on_path_changed(self, handler: Callable[[str], None]) -> None:
         self.path_changed_handlers.append(handler)

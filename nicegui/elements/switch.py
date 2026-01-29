@@ -1,5 +1,3 @@
-from typing import Optional
-
 from ..defaults import DEFAULT_PROPS, resolve_defaults
 from ..events import Handler, ValueChangeEventArguments
 from .mixins.disableable_element import DisableableElement
@@ -12,8 +10,8 @@ class Switch(TextElement, ValueElement, DisableableElement):
     @resolve_defaults
     def __init__(self,
                  text: str = '', *,
-                 value: Optional[bool] = DEFAULT_PROPS['model-value'] | False,
-                 on_change: Optional[Handler[ValueChangeEventArguments]] = None) -> None:
+                 value: bool | None = DEFAULT_PROPS['model-value'] | False,
+                 on_change: Handler[ValueChangeEventArguments] | None = None) -> None:
         """Switch
 
         This element is based on Quasar's `QToggle <https://quasar.dev/vue-components/toggle>`_ component.

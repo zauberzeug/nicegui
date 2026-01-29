@@ -1,5 +1,3 @@
-from typing import Optional
-
 from ..defaults import DEFAULT_PROP, DEFAULT_PROPS, resolve_defaults
 from ..events import Handler, ValueChangeEventArguments
 from .label import Label
@@ -17,12 +15,12 @@ class Knob(ValueElement, DisableableElement, TextColorElement):
                  min: float = DEFAULT_PROP | 0.0,  # pylint: disable=redefined-builtin
                  max: float = DEFAULT_PROP | 1.0,  # pylint: disable=redefined-builtin
                  step: float = DEFAULT_PROP | 0.01,
-                 color: Optional[str] = DEFAULT_PROP | 'primary',
-                 center_color: Optional[str] = DEFAULT_PROP | None,
-                 track_color: Optional[str] = DEFAULT_PROP | None,
-                 size: Optional[str] = DEFAULT_PROP | None,
+                 color: str | None = DEFAULT_PROP | 'primary',
+                 center_color: str | None = DEFAULT_PROP | None,
+                 track_color: str | None = DEFAULT_PROP | None,
+                 size: str | None = DEFAULT_PROP | None,
                  show_value: bool = False,
-                 on_change: Optional[Handler[ValueChangeEventArguments]] = None,
+                 on_change: Handler[ValueChangeEventArguments] | None = None,
                  ) -> None:
         """Knob
 
@@ -50,7 +48,7 @@ class Knob(ValueElement, DisableableElement, TextColorElement):
         self._props.set_optional('track-color', track_color)
         self._props.set_optional('size', size)
 
-        self.label: Optional[Label] = None
+        self.label: Label | None = None
         if show_value:
             with self:
                 self.label = Label().bind_text_from(self, 'value')

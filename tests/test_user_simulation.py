@@ -2,7 +2,8 @@ import csv
 import re
 import sys
 import textwrap
-from typing import Any, Callable, Union
+from collections.abc import Callable
+from typing import Any
 
 import pytest
 from fastapi.responses import PlainTextResponse
@@ -557,7 +558,7 @@ async def test_upload_table(user: User) -> None:
 
 
 @pytest.mark.parametrize('data', ['/data', b'Hello'])
-async def test_download_file(user: User, data: Union[str, bytes]) -> None:
+async def test_download_file(user: User, data: str | bytes) -> None:
     @app.get('/data')
     def get_data() -> PlainTextResponse:
         return PlainTextResponse('Hello')

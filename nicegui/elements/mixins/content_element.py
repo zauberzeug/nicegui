@@ -1,4 +1,5 @@
-from typing import Any, Callable, Optional, cast
+from collections.abc import Callable
+from typing import Any, cast
 
 from typing_extensions import Self
 
@@ -19,8 +20,8 @@ class ContentElement(Element):
     def bind_content_to(self,
                         target_object: Any,
                         target_name: str = 'content',
-                        forward: Optional[Callable[[Any], Any]] = None, *,
-                        strict: Optional[bool] = None,
+                        forward: Callable[[Any], Any] | None = None, *,
+                        strict: bool | None = None,
                         ) -> Self:
         """Bind the content of this element to the target object's target_name property.
 
@@ -39,8 +40,8 @@ class ContentElement(Element):
     def bind_content_from(self,
                           target_object: Any,
                           target_name: str = 'content',
-                          backward: Optional[Callable[[Any], Any]] = None, *,
-                          strict: Optional[bool] = None,
+                          backward: Callable[[Any], Any] | None = None, *,
+                          strict: bool | None = None,
                           ) -> Self:
         """Bind the content of this element from the target object's target_name property.
 
@@ -59,9 +60,9 @@ class ContentElement(Element):
     def bind_content(self,
                      target_object: Any,
                      target_name: str = 'content', *,
-                     forward: Optional[Callable[[Any], Any]] = None,
-                     backward: Optional[Callable[[Any], Any]] = None,
-                     strict: Optional[bool] = None,
+                     forward: Callable[[Any], Any] | None = None,
+                     backward: Callable[[Any], Any] | None = None,
+                     strict: bool | None = None,
                      ) -> Self:
         """Bind the content of this element to the target object's target_name property.
 

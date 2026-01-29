@@ -6,7 +6,8 @@ import types
 from copy import deepcopy
 from pathlib import Path
 from types import ModuleType
-from typing import Any, Callable, Generator, overload
+from typing import Any, overload
+from collections.abc import Callable, Generator
 from contextlib import contextmanager
 
 import nicegui
@@ -24,7 +25,7 @@ redirects: dict[str, str] = {}
 
 
 @contextmanager
-def dummy_client() -> Generator[Client, None, None]:
+def dummy_client() -> Generator[Client]:
     """Create a dummy client for pre-rendering UI."""
     try:
         with Client(nicegui_ui.page('')) as client:

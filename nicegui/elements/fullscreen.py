@@ -1,5 +1,3 @@
-from typing import Optional
-
 from ..defaults import DEFAULT_PROP, resolve_defaults
 from ..events import Handler, ValueChangeEventArguments
 from .mixins.value_element import ValueElement
@@ -11,7 +9,7 @@ class Fullscreen(ValueElement, component='fullscreen.js'):
     @resolve_defaults
     def __init__(self, *,
                  require_escape_hold: bool = DEFAULT_PROP | False,
-                 on_value_change: Optional[Handler[ValueChangeEventArguments]] = None) -> None:
+                 on_value_change: Handler[ValueChangeEventArguments] | None = None) -> None:
         """Fullscreen control element
 
         This element is based on Quasar's `AppFullscreen <https://quasar.dev/quasar-plugins/app-fullscreen>`_ plugin
