@@ -1,4 +1,4 @@
-from typing import Callable
+from collections.abc import Callable
 
 from nicegui.element import Element
 from nicegui.events import UiEventArguments, handle_event

@@ -1,5 +1,5 @@
 import importlib.util
-from typing import TYPE_CHECKING, Literal, Optional, Union, cast
+from typing import TYPE_CHECKING, Literal, cast
 
 from typing_extensions import Self
 
@@ -26,9 +26,9 @@ class AgGrid(Element, component='aggrid.js', esm={'nicegui-aggrid': 'dist'}, def
     def __init__(self,
                  options: dict, *,
                  html_columns: list[int] = DEFAULT_PROP | [],
-                 theme: Optional[Literal['quartz', 'balham', 'material', 'alpine']] = None,
+                 theme: Literal['quartz', 'balham', 'material', 'alpine'] | None = None,
                  auto_size_columns: bool = True,
-                 modules: Union[Literal['community', 'enterprise'], list[str]] = 'community',
+                 modules: Literal['community', 'enterprise'] | list[str] = 'community',
                  ) -> None:
         """AG Grid
 
@@ -85,10 +85,10 @@ class AgGrid(Element, component='aggrid.js', esm={'nicegui-aggrid': 'dist'}, def
     def from_pandas(cls,
                     df: 'pd.DataFrame', *,
                     html_columns: list[int] = [],  # noqa: B006
-                    theme: Optional[Literal['quartz', 'balham', 'material', 'alpine']] = None,
+                    theme: Literal['quartz', 'balham', 'material', 'alpine'] | None = None,
                     auto_size_columns: bool = True,
                     options: dict = {},  # noqa: B006
-                    modules: Union[Literal['community', 'enterprise'], list[str]] = 'community',
+                    modules: Literal['community', 'enterprise'] | list[str] = 'community',
                     ) -> Self:
         """Create an AG Grid from a Pandas DataFrame.
 
@@ -135,10 +135,10 @@ class AgGrid(Element, component='aggrid.js', esm={'nicegui-aggrid': 'dist'}, def
     def from_polars(cls,
                     df: 'pl.DataFrame', *,
                     html_columns: list[int] = [],  # noqa: B006
-                    theme: Optional[Literal['quartz', 'balham', 'material', 'alpine']] = None,
+                    theme: Literal['quartz', 'balham', 'material', 'alpine'] | None = None,
                     auto_size_columns: bool = True,
                     options: dict = {},  # noqa: B006
-                    modules: Union[Literal['community', 'enterprise'], list[str]] = 'community',
+                    modules: Literal['community', 'enterprise'] | list[str] = 'community',
                     ) -> Self:
         """Create an AG Grid from a Polars DataFrame.
 
@@ -182,12 +182,12 @@ class AgGrid(Element, component='aggrid.js', esm={'nicegui-aggrid': 'dist'}, def
         self._props['html-columns'] = value[:]
 
     @property
-    def theme(self) -> Optional[Literal['quartz', 'balham', 'material', 'alpine']]:
+    def theme(self) -> Literal['quartz', 'balham', 'material', 'alpine'] | None:
         """The AG Grid theme."""
         return self._props['options'].get('theme')
 
     @theme.setter
-    def theme(self, value: Optional[Literal['quartz', 'balham', 'material', 'alpine']]) -> None:
+    def theme(self, value: Literal['quartz', 'balham', 'material', 'alpine'] | None) -> None:
         self._props['options']['theme'] = value
 
     @property
@@ -247,7 +247,7 @@ class AgGrid(Element, component='aggrid.js', esm={'nicegui-aggrid': 'dist'}, def
         result = await self.run_grid_method('getSelectedRows')
         return cast(list[dict], result)
 
-    async def get_selected_row(self) -> Optional[dict]:
+    async def get_selected_row(self) -> dict | None:
         """Get the single currently selected row.
 
         This method is especially useful when the grid is configured with ``rowSelection: 'single'``.

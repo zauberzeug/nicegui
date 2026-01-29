@@ -1,4 +1,4 @@
-from typing import Any, Literal, Union
+from typing import Any, Literal
 
 from typing_extensions import Self
 
@@ -48,8 +48,8 @@ class LinePlot(Pyplot):
              x: list[float],
              Y: list[list[float]],
              *,
-             x_limits: Union[None, Literal['auto'], tuple[float, float]] = 'auto',
-             y_limits: Union[None, Literal['auto'], tuple[float, float]] = 'auto',
+             x_limits: None | Literal['auto'] | tuple[float, float] = 'auto',
+             y_limits: None | Literal['auto'] | tuple[float, float] = 'auto',
              ) -> None:
         """Push new data to the plot.
 

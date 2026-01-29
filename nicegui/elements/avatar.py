@@ -1,5 +1,3 @@
-from typing import Optional
-
 from ..defaults import DEFAULT_PROP, resolve_defaults
 from .mixins.color_elements import BackgroundColorElement, TextColorElement
 from .mixins.icon_element import IconElement
@@ -10,11 +8,11 @@ class Avatar(IconElement, BackgroundColorElement, TextColorElement):
 
     @resolve_defaults
     def __init__(self,
-                 icon: Optional[str] = None, *,
-                 color: Optional[str] = DEFAULT_PROP | 'primary',
-                 text_color: Optional[str] = DEFAULT_PROP | None,
-                 size: Optional[str] = DEFAULT_PROP | None,
-                 font_size: Optional[str] = DEFAULT_PROP | None,
+                 icon: str | None = None, *,
+                 color: str | None = DEFAULT_PROP | 'primary',
+                 text_color: str | None = DEFAULT_PROP | None,
+                 size: str | None = DEFAULT_PROP | None,
+                 font_size: str | None = DEFAULT_PROP | None,
                  square: bool = DEFAULT_PROP | False,
                  rounded: bool = DEFAULT_PROP | False,
                  ) -> None:

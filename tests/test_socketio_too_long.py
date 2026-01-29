@@ -1,6 +1,7 @@
+from typing import Literal
+
 import pytest
 from selenium.webdriver.common.keys import Keys
-from typing_extensions import Literal
 
 from nicegui import core, ui
 from nicegui.testing import Screen

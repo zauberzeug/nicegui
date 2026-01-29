@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 import weakref
 from abc import ABC, abstractmethod
 from collections.abc import AsyncIterator

@@ -1,4 +1,4 @@
-from typing import Literal, Optional
+from typing import Literal
 
 from typing_extensions import Self
 
@@ -18,7 +18,7 @@ class Fab(ValueElement, LabelElement, IconElement, BackgroundColorElement, Disab
                  icon: str, *,
                  value: bool = DEFAULT_PROPS['model-value'] | False,
                  label: str = DEFAULT_PROP | '',
-                 color: Optional[str] = DEFAULT_PROP | 'primary',
+                 color: str | None = DEFAULT_PROP | 'primary',
                  direction: Literal['up', 'down', 'left', 'right'] = DEFAULT_PROP | 'right',
                  ) -> None:
         """Floating Action Button (FAB)
@@ -54,8 +54,8 @@ class FabAction(LabelElement, IconElement, BackgroundColorElement, DisableableEl
     def __init__(self,
                  icon: str, *,
                  label: str = DEFAULT_PROP | '',
-                 on_click: Optional[Handler[ClickEventArguments]] = None,
-                 color: Optional[str] = DEFAULT_PROP | 'primary',
+                 on_click: Handler[ClickEventArguments] | None = None,
+                 color: str | None = DEFAULT_PROP | 'primary',
                  auto_close: bool = True,
                  ) -> None:
         """Floating Action Button Action

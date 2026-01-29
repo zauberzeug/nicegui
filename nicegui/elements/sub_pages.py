@@ -1,9 +1,8 @@
-from __future__ import annotations
-
 import asyncio
 import inspect
 import re
-from typing import Any, Callable
+from collections.abc import Callable
+from typing import Any
 from urllib.parse import urlparse
 
 from starlette.datastructures import QueryParams

@@ -1,5 +1,3 @@
-from typing import Optional
-
 from ..defaults import DEFAULT_PROP, resolve_defaults
 from .label import Label as label
 from .mixins.color_elements import TextColorElement
@@ -12,9 +10,9 @@ class LinearProgress(ValueElement, TextColorElement):
     @resolve_defaults
     def __init__(self,
                  value: float = DEFAULT_PROP | 0.0, *,
-                 size: Optional[str] = DEFAULT_PROP | None,
+                 size: str | None = DEFAULT_PROP | None,
                  show_value: bool = True,
-                 color: Optional[str] = DEFAULT_PROP | 'primary',
+                 color: str | None = DEFAULT_PROP | 'primary',
                  ) -> None:
         """Linear Progress
 
@@ -44,7 +42,7 @@ class CircularProgress(ValueElement, TextColorElement):
                  max: float = DEFAULT_PROP | 1.0,  # pylint: disable=redefined-builtin
                  size: str = DEFAULT_PROP | 'xl',
                  show_value: bool = True,
-                 color: Optional[str] = DEFAULT_PROP | 'primary',
+                 color: str | None = DEFAULT_PROP | 'primary',
                  ) -> None:
         """Circular Progress
 

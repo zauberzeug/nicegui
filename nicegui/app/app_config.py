@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Literal, Optional, Union
+from typing import Literal
 
 from ..dataclasses import KWONLY_SLOTS
 from ..language import Language
@@ -31,15 +31,15 @@ class AppConfig:
     reload: bool = field(init=False)
     title: str = field(init=False)
     viewport: str = field(init=False)
-    favicon: Optional[Union[str, Path]] = field(init=False)
-    dark: Optional[bool] = field(init=False)
+    favicon: str | Path | None = field(init=False)
+    dark: bool | None = field(init=False)
     language: Language = field(init=False)
-    binding_refresh_interval: Optional[float] = field(init=False)
+    binding_refresh_interval: float | None = field(init=False)
     reconnect_timeout: float = field(init=False)
     message_history_length: int = field(init=False)
     cache_control_directives: str = field(init=False)
     tailwind: bool = field(init=False)
-    unocss: Optional[Literal['mini', 'wind3', 'wind4']] = field(init=False)
+    unocss: Literal['mini', 'wind3', 'wind4'] | None = field(init=False)
     prod_js: bool = field(init=False)
     show_welcome_message: bool = field(init=False)
     _has_run_config: bool = False
@@ -49,15 +49,15 @@ class AppConfig:
                        reload: bool,
                        title: str,
                        viewport: str,
-                       favicon: Optional[Union[str, Path]],
-                       dark: Optional[bool],
+                       favicon: str | Path | None,
+                       dark: bool | None,
                        language: Language,
-                       binding_refresh_interval: Optional[float],
+                       binding_refresh_interval: float | None,
                        reconnect_timeout: float,
                        message_history_length: int,
                        cache_control_directives: str = 'public, max-age=31536000, immutable, stale-while-revalidate=31536000',
                        tailwind: bool,
-                       unocss: Optional[Literal['mini', 'wind3', 'wind4']],
+                       unocss: Literal['mini', 'wind3', 'wind4'] | None,
                        prod_js: bool,
                        show_welcome_message: bool,
                        ) -> None:

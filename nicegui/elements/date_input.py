@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 from ..defaults import DEFAULT_PROP, DEFAULT_PROPS, resolve_defaults
 from ..events import Handler, ValueChangeEventArguments
 from .button import Button as button

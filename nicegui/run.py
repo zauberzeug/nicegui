@@ -1,17 +1,18 @@
 import asyncio
 import logging
 import traceback
+from collections.abc import Callable
 from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
 from concurrent.futures.process import BrokenProcessPool
 from functools import partial
 from pickle import PicklingError
-from typing import Any, Callable, Optional, TypeVar
+from typing import Any, TypeVar
 
 from typing_extensions import ParamSpec
 
 from . import core, helpers
 
-process_pool: Optional[ProcessPoolExecutor] = None
+process_pool: ProcessPoolExecutor | None = None
 thread_pool = ThreadPoolExecutor()
 
 P = ParamSpec('P')

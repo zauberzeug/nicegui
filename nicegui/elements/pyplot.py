@@ -92,7 +92,7 @@ class Matplotlib(Element, default_classes='nicegui-matplotlib'):
             raise ImportError('Matplotlib is not installed. Please run "pip install matplotlib".')
 
         super().__init__('div')
-        self.figure = MatplotlibFigure(self, **kwargs)
+        self.figure = MatplotlibFigure(self, **kwargs)  # pylint: disable=possibly-used-before-assignment
         self._convert_to_html()
 
     def _convert_to_html(self) -> None:

@@ -1,9 +1,10 @@
-from typing import Any, Callable, Union
+from collections.abc import Callable
+from typing import Any
 
 from ..context import context
 
 
-def on_exception(handler: Union[Callable[[Exception], Any], Callable[[], Any]]) -> None:
+def on_exception(handler: Callable[[Exception], Any] | Callable[[], Any]) -> None:
     """Register a handler for in-page exceptions (after the page has been sent to the browser).
 
     The callback has an optional parameter of ``Exception``.
