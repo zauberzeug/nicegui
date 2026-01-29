@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import inspect
+import types
 from collections.abc import Callable
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Union, get_args, get_origin
@@ -127,6 +128,6 @@ class PageArguments:
     @staticmethod
     def _unwrap_optional(param_type: type) -> type:
         """Extract the base type from T|None -> T, or return the type as-is."""
-        if get_origin(param_type) is Union and type(None) in get_args(param_type):
-            return next(arg for arg in get_args(param_type) if arg is not type(None))
+        if get_origin(param_type) is Union and types.NoneType in get_args(param_type):
+            return next(arg for arg in get_args(param_type) if arg is not types.NoneType)
         return param_type
