@@ -3,7 +3,7 @@ name = "nicegui"
 dynamic = ["version"]
 description = "Create web-based user interfaces with Python. The nice way."
 authors = [{ name = "Zauberzeug GmbH", email = "info@zauberzeug.com" }]
-requires-python = ">=3.9,<4"
+requires-python = ">=3.10,<4"
 readme = "README.md"
 license = "MIT"
 keywords = [
@@ -136,7 +136,7 @@ filterwarnings = [
 ]
 
 [tool.mypy]
-python_version = "3.9"
+python_version = "3.10"
 check_untyped_defs = true
 
 [[tool.mypy.overrides]]
@@ -156,7 +156,7 @@ ignore_missing_imports = true
 max-line-length = 120
 
 [tool.ruff]
-target-version = "py39"
+target-version = "py310"
 indent-width = 4
 line-length = 120
 
