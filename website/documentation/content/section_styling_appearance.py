@@ -176,7 +176,7 @@ def tailwind_layers():
     As an alternative to using the [Tailwind CSS Play CDN engine](https://v3.tailwindcss.com/docs/installation/play-cdn),
     you can also use the [UnoCSS engine](https://unocss.dev/) to let Tailwind CSS classes take effect.
 
-    Pass `tailwind=False` and `unocss_preset` to be one of the following:
+    Pass `unocss` to be one of the following:
 
     - "mini": [UnoCSS Mini preset](https://unocss.dev/presets/mini)
     - "wind3": [UnoCSS Wind3 preset](https://unocss.dev/presets/wind3)
@@ -197,7 +197,7 @@ def unocss_demo():
         {label.html_id}.classList.add("text-red-500")
     '''))
 
-    # ui.run(tailwind=False, unocss_preset='mini')
+    # ui.run(unocss='mini')
 
 
 doc.intro(element_filter_documentation)

@@ -185,7 +185,7 @@ class Client:
                 'translations': translations.get(self.page.resolve_language(), translations['en-US']),
                 'prefix': prefix,
                 'tailwind': core.app.config.tailwind,
-                'unocss': core.app.config.unocss_preset,
+                'unocss': core.app.config.unocss,
                 'headwind_css': HEADWIND_CONTENT if core.app.config.tailwind else '',
                 'prod_js': core.app.config.prod_js,
                 'socket_io_js_query_params': socket_io_js_query_params,

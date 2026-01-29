@@ -7,7 +7,7 @@ from nicegui.testing import Screen
 @pytest.mark.parametrize('use_tailwind', [False, True])
 def test_dark_mode(screen: Screen, use_tailwind: bool):
     app.config.tailwind = use_tailwind
-    app.config.unocss_preset = None if use_tailwind else 'wind4'
+    app.config.unocss = None if use_tailwind else 'wind4'
 
     @ui.page('/')
     def page():

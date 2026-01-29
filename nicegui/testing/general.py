@@ -22,7 +22,7 @@ def prepare_simulation() -> None:
         reconnect_timeout=3.0,
         message_history_length=1000,
         tailwind=True,
-        unocss_preset=None,
+        unocss=None,
         prod_js=True,
         show_welcome_message=False,
     )

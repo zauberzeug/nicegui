@@ -39,7 +39,7 @@ class AppConfig:
     message_history_length: int = field(init=False)
     cache_control_directives: str = field(init=False)
     tailwind: bool = field(init=False)
-    unocss_preset: Optional[Literal['mini', 'wind3', 'wind4']] = field(init=False)
+    unocss: Optional[Literal['mini', 'wind3', 'wind4']] = field(init=False)
     prod_js: bool = field(init=False)
     show_welcome_message: bool = field(init=False)
     _has_run_config: bool = False
@@ -57,13 +57,11 @@ class AppConfig:
                        message_history_length: int,
                        cache_control_directives: str = 'public, max-age=31536000, immutable, stale-while-revalidate=31536000',
                        tailwind: bool,
-                       unocss_preset: Optional[Literal['mini', 'wind3', 'wind4']],
+                       unocss: Optional[Literal['mini', 'wind3', 'wind4']],
                        prod_js: bool,
                        show_welcome_message: bool,
                        ) -> None:
         """Add the run config to the app config."""
-        if unocss_preset is not None and tailwind:
-            raise ValueError('unocss_preset and tailwind are mutually exclusive')
         self.reload = reload
         self.title = title
         self.viewport = viewport
@@ -74,8 +72,8 @@ class AppConfig:
         self.reconnect_timeout = reconnect_timeout
         self.message_history_length = message_history_length
         self.cache_control_directives = cache_control_directives
-        self.tailwind = tailwind
-        self.unocss_preset = unocss_preset
+        self.tailwind = tailwind if unocss is None else False
+        self.unocss = unocss
         self.prod_js = prod_js
         self.show_welcome_message = show_welcome_message
         self._has_run_config = True
