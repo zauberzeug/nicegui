@@ -176,19 +176,19 @@ def tailwind_layers():
     As an alternative to using the [Tailwind CSS Play CDN engine](https://v3.tailwindcss.com/docs/installation/play-cdn),
     you can also use the [UnoCSS engine](https://unocss.dev/) to let Tailwind CSS classes take effect.
 
-    Pass `unocss` to be one of the following:
+    Pass one of the following presets to `ui.run(unocss=...)`:
 
     - "mini": [UnoCSS Mini preset](https://unocss.dev/presets/mini)
     - "wind3": [UnoCSS Wind3 preset](https://unocss.dev/presets/wind3)
     - "wind4": [UnoCSS Wind4 preset](https://unocss.dev/presets/wind4)
 
     UnoCSS is a smaller library and more performant, especially on small pages.
-    On "low-tier mobile" CPU throttling profile, load time for this page went from 3.0s down to 1.5s.
+    On "low-tier mobile" CPU throttling profile, load time for this page went from 1.1s down to 0.7s.
 
     However, full compatibility with Tailwind CSS is not guaranteed.
-    The following is known to break:
+    For example, Tailwind CSS Layers (see above) do not work with UnoCSS.
 
-    - Tailwind CSS Layers do not work (see the above).
+    *Added in NiceGUI 3.7.0*
 ''')
 def unocss_demo():
     label = ui.label('This label becomes red dynamically.')
