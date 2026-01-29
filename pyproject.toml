@@ -43,7 +43,10 @@ altair = ["altair>=6.0.0"]
 anywidget = ["anywidget>=0.9.21"]
 native = ["pywebview>=5.0.1,<7"]
 plotly = ["plotly>=5.13,<7.0"]
-matplotlib = ["matplotlib>=3.5.0,<4"]
+matplotlib = [
+    "matplotlib>=3.5.0,<4",
+    "fonttools>=4.60.2",  # https://github.com/zauberzeug/nicegui/security/dependabot/68, for matplotlib
+]
 highcharts = ["nicegui-highcharts>=2.0.2,<3"]
 redis = ["redis>=4.0.0"]
 
@@ -55,6 +58,7 @@ dev = [
     "pywebview>=5.0.1,<7",  # extra: native
     "plotly>=5.13,<7.0",  # extra: plotly
     "matplotlib>=3.5.0,<4",  # extra: matplotlib
+    "fonttools>=4.60.2",  # https://github.com/zauberzeug/nicegui/security/dependabot/68, for matplotlib
     "nicegui-highcharts>=2.0.2,<3",  # extra: highcharts
     "redis>=4.0.0",  # extra: redis
     {include-group = "types"},
