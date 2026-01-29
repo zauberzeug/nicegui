@@ -20,7 +20,7 @@ def test_dynamic_classes(screen: Screen, unocss: Literal['mini', 'wind3', 'wind4
         ui.button('Create blue', on_click=lambda: ui.label('Blue Label').classes('text-blue-500'))
 
     screen.open('/')
-    assert screen.find('Red slot').value_of_css_property('color') == 'oklch(0.637 0.237 25.331)'
+    screen.wait_for(lambda: screen.find('Red slot').value_of_css_property('color') == 'oklch(0.637 0.237 25.331)')
 
     screen.click('Make green')
     screen.wait_for(lambda: screen.find('Label').value_of_css_property('color') == 'oklch(0.723 0.219 149.579)')
@@ -29,4 +29,4 @@ def test_dynamic_classes(screen: Screen, unocss: Literal['mini', 'wind3', 'wind4
     screen.wait_for(lambda: screen.find('Label').value_of_css_property('color') == 'oklch(0.795 0.184 86.047)')
 
     screen.click('Create blue')
-    assert screen.find('Blue Label').value_of_css_property('color') == 'oklch(0.623 0.214 259.815)'
+    screen.wait_for(lambda: screen.find('Blue Label').value_of_css_property('color') == 'oklch(0.623 0.214 259.815)')

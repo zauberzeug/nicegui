@@ -10,7 +10,8 @@
   },
   "dependencies": {
     "ajv-formats": "^3.0.1",
-    "vanilla-jsoneditor": "^3.10.0"
+    "vanilla-jsoneditor": "^3.10.0",
+    "lodash-es": "^4.17.23"
   },
   "devDependencies": {
     "rollup": "^4.52.3",
