@@ -183,7 +183,7 @@ def tailwind_layers():
     - "wind4": [UnoCSS Wind4 preset](https://unocss.dev/presets/wind4)
 
     UnoCSS is a smaller library and more performant, especially on small pages.
-    On "low-tier mobile" CPU throttling profile, load time for this page went from 1.1s down to 0.7s.
+    In Lighthouse Desktop, load time for this page went from 1.1s down to 0.7s.
 
     However, full compatibility with Tailwind CSS is not guaranteed.
     For example, Tailwind CSS Layers (see above) do not work with UnoCSS.
