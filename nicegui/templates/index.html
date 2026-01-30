@@ -3,6 +3,11 @@
   <head>
     <title>{{ title }}</title>
     <meta name="viewport" content="{{ viewport }}" />
+    <meta
+      id="nicegui-color-scheme"
+      name="color-scheme"
+      content="{{ ({'True': 'dark', 'False': 'light'}).get(dark, 'normal') }}"
+    />
     <link href="{{ favicon_url }}" rel="shortcut icon" />
     <style>
       @layer theme, base, quasar, nicegui, components, utilities, overrides, quasar_importants;

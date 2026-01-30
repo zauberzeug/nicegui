@@ -72,6 +72,16 @@ function applyColors(colors) {
   document.getElementsByTagName("head")[0].appendChild(style);
 }
 
+let darkSetter = undefined;
+
+function setDark(dark) {
+  if (dark === null) dark = None;
+  darkSetter?.(dark);
+  document
+    .getElementById("nicegui-color-scheme")
+    .setAttribute("content", dark === None ? "normal" : dark ? "dark" : "light");
+}
+
 function parseElements(raw_elements) {
   return JSON.parse(
     raw_elements
