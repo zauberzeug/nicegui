@@ -134,8 +134,11 @@ class Screen:
         if callable(target):
             deadline = time.time() + self.IMPLICIT_WAIT
             while time.time() < deadline:
-                if target():
-                    return
+                try:
+                    if target():
+                        return
+                except StaleElementReferenceException:
+                    pass  # element became stale, retry
                 self.wait(0.1)
             raise AssertionError('Condition not met')
 
