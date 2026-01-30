@@ -76,7 +76,9 @@ def nicegui_reset_globals():
 
         for func in Client.page_routes:
             if not func.__module__.startswith('tests.'):
-                sys.modules.pop(func.__module__, None)
+                parts = func.__module__.split('.')
+                for i in range(len(parts)):
+                    sys.modules.pop('.'.join(parts[:i+1]), None)  # remove the module and all its parents
 
 
 def _find_all_subclasses(cls: type) -> list[type]:
