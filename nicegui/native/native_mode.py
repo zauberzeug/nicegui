@@ -27,14 +27,14 @@ except ModuleNotFoundError:
 
 
 def _open_window(
-    host: str, port: int, title: str, width: int, height: int, fullscreen: bool, frameless: bool,
+    protocol: str, host: str, port: int, title: str, width: int, height: int, fullscreen: bool, frameless: bool,
     method_queue: mp.Queue, response_queue: mp.Queue,
 ) -> None:
     while not helpers.is_port_open(host, port):
         time.sleep(0.1)
 
     window_kwargs = {
-        'url': f'http://{host}:{port}',
+        'url': f'{protocol}://{host}:{port}',
         'title': title,
         'width': width,
         'height': height,
@@ -96,7 +96,7 @@ def _start_window_method_executor(window: webview.Window,
     Thread(target=window_method_executor).start()
 
 
-def activate(host: str, port: int, title: str, width: int, height: int, fullscreen: bool, frameless: bool) -> None:
+def activate(protocol: str, host: str, port: int, title: str, width: int, height: int, fullscreen: bool, frameless: bool) -> None:
     """Activate native mode."""
     def check_shutdown() -> None:
         while process.is_alive():
@@ -114,7 +114,7 @@ def activate(host: str, port: int, title: str, width: int, height: int, fullscre
 
     mp.freeze_support()
     native.create_queues()
-    args = host, port, title, width, height, fullscreen, frameless, native.method_queue, native.response_queue
+    args = protocol, host, port, title, width, height, fullscreen, frameless, native.method_queue, native.response_queue
     process = mp.Process(target=_open_window, args=args, daemon=True)
     process.start()
 
