@@ -76,7 +76,7 @@ let darkSetter = undefined;
 
 function setDark(dark) {
   if (dark === null) dark = None;
-  if (darkSetter) darkSetter(dark);
+  darkSetter?.(dark);
   document
     .getElementById("nicegui-color-scheme")
     .setAttribute("content", dark === None ? "normal" : dark ? "dark" : "light");
