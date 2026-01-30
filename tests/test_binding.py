@@ -1,6 +1,5 @@
 import copy
 import weakref
-from typing import Optional
 
 import pytest
 from selenium.webdriver.common.keys import Keys
@@ -11,7 +10,7 @@ from nicegui.testing import Screen, User
 
 def test_ui_select_with_tuple_as_key(screen: Screen):
     class Model:
-        selection: Optional[tuple[int, int]] = None
+        selection: tuple[int, int] | None = None
     data = Model()
     options = {
         (2, 1): 'option A',
@@ -272,3 +271,19 @@ def test_binding_dict_is_not_strict(screen: Screen):
         binding.bind(data, 'non_existing_key', label, 'text')  # no exception
 
     screen.open('/')
+
+
+def test_binding_refresh_interval_none(screen: Screen):
+    class Model:
+        value = 0
+
+    @ui.page('/')
+    def page():
+        ui.label().bind_text_from(Model, 'value', lambda value: f'Value is {value}')
+
+    screen.ui_run_kwargs['binding_refresh_interval'] = None
+    screen.open('/')
+    screen.should_contain('Value is 0')
+    screen.assert_py_logger(
+        'WARNING', 'Starting active binding loop even though it was disabled via binding_refresh_interval=None.',
+    )

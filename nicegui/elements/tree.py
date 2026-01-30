@@ -1,23 +1,25 @@
 from collections.abc import Iterator
-from typing import Any, Literal, Optional
+from typing import Any, Literal
 
 from typing_extensions import Self
 
+from ..defaults import DEFAULT_PROP, resolve_defaults
 from ..events import GenericEventArguments, Handler, ValueChangeEventArguments, handle_event
 from .mixins.filter_element import FilterElement
 
 
 class Tree(FilterElement):
 
+    @resolve_defaults
     def __init__(self,
                  nodes: list[dict], *,
-                 node_key: str = 'id',
-                 label_key: str = 'label',
-                 children_key: str = 'children',
-                 on_select: Optional[Handler[ValueChangeEventArguments]] = None,
-                 on_expand: Optional[Handler[ValueChangeEventArguments]] = None,
-                 on_tick: Optional[Handler[ValueChangeEventArguments]] = None,
-                 tick_strategy: Optional[Literal['leaf', 'leaf-filtered', 'strict']] = None,
+                 node_key: str = DEFAULT_PROP | 'id',
+                 label_key: str = DEFAULT_PROP | 'label',
+                 children_key: str = DEFAULT_PROP | 'children',
+                 on_select: Handler[ValueChangeEventArguments] | None = None,
+                 on_expand: Handler[ValueChangeEventArguments] | None = None,
+                 on_tick: Handler[ValueChangeEventArguments] | None = None,
+                 tick_strategy: Literal['leaf', 'leaf-filtered', 'strict'] | None = DEFAULT_PROP | None,
                  ) -> None:
         """Tree
 
@@ -95,7 +97,7 @@ class Tree(FilterElement):
         self._select_handlers.append(callback)
         return self
 
-    def select(self, node_key: Optional[str]) -> Self:
+    def select(self, node_key: str | None) -> Self:
         """Select the given node.
 
         :param node_key: node key to select
@@ -122,7 +124,7 @@ class Tree(FilterElement):
         self._tick_handlers.append(callback)
         return self
 
-    def tick(self, node_keys: Optional[list[str]] = None) -> Self:
+    def tick(self, node_keys: list[str] | None = None) -> Self:
         """Tick the given nodes.
 
         :param node_keys: list of node keys to tick or ``None`` to tick all nodes (default: ``None``)
@@ -131,7 +133,7 @@ class Tree(FilterElement):
         self._props['ticked'][:] = self._find_node_keys(node_keys).union(self._props['ticked'])
         return self
 
-    def untick(self, node_keys: Optional[list[str]] = None) -> Self:
+    def untick(self, node_keys: list[str] | None = None) -> Self:
         """Remove tick from the given nodes.
 
         :param node_keys: list of node keys to untick or ``None`` to untick all nodes (default: ``None``)
@@ -140,7 +142,7 @@ class Tree(FilterElement):
         self._props['ticked'][:] = set(self._props['ticked']).difference(self._find_node_keys(node_keys))
         return self
 
-    def expand(self, node_keys: Optional[list[str]] = None) -> Self:
+    def expand(self, node_keys: list[str] | None = None) -> Self:
         """Expand the given nodes.
 
         :param node_keys: list of node keys to expand (default: all nodes)
@@ -149,7 +151,7 @@ class Tree(FilterElement):
         self._props['expanded'][:] = self._find_node_keys(node_keys).union(self._props['expanded'])
         return self
 
-    def collapse(self, node_keys: Optional[list[str]] = None) -> Self:
+    def collapse(self, node_keys: list[str] | None = None) -> Self:
         """Collapse the given nodes.
 
         :param node_keys: list of node keys to collapse (default: all nodes)
@@ -158,7 +160,7 @@ class Tree(FilterElement):
         self._props['expanded'][:] = set(self._props['expanded']).difference(self._find_node_keys(node_keys))
         return self
 
-    def nodes(self, *, visible: Optional[bool] = None) -> Iterator[dict]:
+    def nodes(self, *, visible: bool | None = None) -> Iterator[dict]:
         """Iterate over all nodes.
 
         :param visible: if ``True``, only visible nodes are returned; if ``False``, only invisible nodes are returned; if ``None``, all nodes are returned (default: ``None``)
@@ -174,7 +176,7 @@ class Tree(FilterElement):
                     yield from iterate_nodes(node.get(CHILDREN_KEY, []))
         return iterate_nodes(self._props['nodes'])
 
-    def _find_node_keys(self, node_keys: Optional[list[str]] = None) -> set[str]:
+    def _find_node_keys(self, node_keys: list[str] | None = None) -> set[str]:
         if node_keys is not None:
             return set(node_keys)
         return {node[self._props['node-key']] for node in self.nodes()}

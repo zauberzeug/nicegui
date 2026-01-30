@@ -1,3 +1,6 @@
+import asyncio
+import contextlib
+
 from .. import background_tasks, core, json, optional_features
 from ..logging import log
 from .persistent_dict import PersistentDict
@@ -5,7 +8,6 @@ from .persistent_dict import PersistentDict
 try:
     import redis as redis_sync
     import redis.asyncio as redis
-    import redis.exceptions as redis_exceptions
     optional_features.register('redis')
 except ImportError:
     pass
@@ -26,7 +28,7 @@ class RedisPersistentDict(PersistentDict):
         self.redis_client = redis.from_url(self.url, **self._redis_client_params)
         self.pubsub = self.redis_client.pubsub()
         self.key = key_prefix + id
-        self._should_listen = True
+        self._listener_task: asyncio.Task | None = None
         super().__init__(data={}, on_change=self.publish)
 
     async def initialize(self) -> None:
@@ -51,12 +53,7 @@ class RedisPersistentDict(PersistentDict):
     def _start_listening(self) -> None:
         async def listen():
             try:
-                if not self._should_listen:
-                    return
                 await self.pubsub.subscribe(self.key + 'changes')
-                if not self._should_listen:
-                    await self.pubsub.unsubscribe()
-                    return
                 async for message in self.pubsub.listen():
                     t = message['type']
                     if t == 'message':
@@ -65,15 +62,21 @@ class RedisPersistentDict(PersistentDict):
                             self.update(new_data)
                     elif t in ('unsubscribe', 'punsubscribe') and message.get('data') == 0:
                         break
-            except Exception as e:
-                if isinstance(e, redis_exceptions.ConnectionError) and not self._should_listen:
-                    return  # NOTE: on quick instantiation cycles, unsubscribe event might not be received before the connection is closed
+            except asyncio.CancelledError:
+                pass  # Expected during close()
+            except Exception:
                 log.exception(f'Unexpected error in Redis listener for {self.key}')
+            finally:
+                if self.pubsub.subscribed:
+                    await self.pubsub.unsubscribe()
+
+        def create_listener_task() -> None:
+            self._listener_task = background_tasks.create(listen(), name=f'redis-listen-{self.key}')
 
         if core.loop and core.loop.is_running():
-            background_tasks.create(listen(), name=f'redis-listen-{self.key}')
+            create_listener_task()
         else:
-            core.app.on_startup(listen())
+            core.app.on_startup(create_listener_task)
 
     def publish(self) -> None:
         """Publish the data to Redis and notify other instances."""
@@ -91,11 +94,12 @@ class RedisPersistentDict(PersistentDict):
 
     async def close(self) -> None:
         """Close Redis connection and subscription."""
-        self._should_listen = False
-        if self.pubsub.subscribed:
-            await self.pubsub.unsubscribe()
-        await self.pubsub.close()
-        await self.redis_client.close()
+        if self._listener_task and not self._listener_task.done():
+            self._listener_task.cancel()
+            with contextlib.suppress(asyncio.CancelledError):
+                await self._listener_task
+        await self.pubsub.aclose()
+        await self.redis_client.aclose()
 
     def clear(self) -> None:
         super().clear()

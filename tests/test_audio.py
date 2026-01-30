@@ -18,8 +18,7 @@ def test_replace_audio(screen: Screen):
             ui.audio(SONG1)
 
         def replace():
-            container.clear()
-            with container:
+            with container.clear():
                 ui.audio(SONG2)
         ui.button('Replace', on_click=replace)
 

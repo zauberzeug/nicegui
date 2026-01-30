@@ -3,10 +3,10 @@ from __future__ import annotations
 import inspect
 import re
 import weakref
-from collections.abc import Iterator, Sequence
+from collections.abc import Callable, Iterator, Sequence
 from copy import copy
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Callable, ClassVar, cast
+from typing import TYPE_CHECKING, Any, ClassVar, cast
 
 from typing_extensions import Self
 
@@ -86,6 +86,9 @@ class Element(Visibility):
         if self._parent_slot:
             client.outbox.enqueue_update(parent_slot.parent)
 
+        self._props.add_rename('resource_path', 'resource-path')  # DEPRECATED: remove in NiceGUI 4.0
+        self._props.add_rename('dynamic_resource_path', 'dynamic-resource-path')  # DEPRECATED: remove in NiceGUI 4.0
+
     def __init_subclass__(cls, *,
                           component: str | Path | None = None,
                           dependencies: list[str | Path] = [],  # noqa: B006
@@ -156,7 +159,7 @@ class Element(Visibility):
         """
         path_ = Path(path)
         resource = register_resource(path_, max_time=path_.stat().st_mtime)
-        self._props['resource_path'] = f'/_nicegui/{__version__}/resources/{resource.key}'
+        self._props['resource-path'] = f'/_nicegui/{__version__}/resources/{resource.key}'
 
     def add_dynamic_resource(self, name: str, function: Callable) -> None:
         """Add a dynamic resource to the element which returns the result of a function.
@@ -165,7 +168,7 @@ class Element(Visibility):
         :param function: function that returns the resource response
         """
         register_dynamic_resource(name, function)
-        self._props['dynamic_resource_path'] = f'/_nicegui/{__version__}/dynamic_resources'
+        self._props['dynamic-resource-path'] = f'/_nicegui/{__version__}/dynamic_resources'
 
     def add_slot(self, name: str, template: str | None = None) -> Slot:
         """Add a slot to the element.
@@ -223,11 +226,6 @@ class Element(Visibility):
                     'children': [child.id for child in self.default_slot.children],
                     'events': [listener.to_dict() for listener in self._event_listeners.values()],
                     'update_method': self._update_method,
-                    'component': {
-                        'key': self.component.key,
-                        'name': self.component.name,
-                        'tag': self.component.tag
-                    } if self.component else None,
                 }.items()
                 if value
             },
@@ -334,8 +332,7 @@ class Element(Visibility):
         :param text: text of the tooltip
         """
         from .elements.tooltip import Tooltip  # pylint: disable=import-outside-toplevel, cyclic-import
-        with self:
-            Tooltip(text)
+        Tooltip(text).props['target'] = f'#{self.html_id}'
         return self
 
     def on(self,
@@ -450,12 +447,13 @@ class Element(Visibility):
         for child in self:
             yield from child.descendants(include_self=True)
 
-    def clear(self) -> None:
+    def clear(self) -> Self:
         """Remove all child elements."""
         self.client.remove_elements(self.descendants())
         for slot in self.slots.values():
             slot.children.clear()
         self.update()
+        return self
 
     def move(self,
              target_container: Element | None = None,
@@ -513,6 +511,9 @@ class Element(Visibility):
 
         This method can be overridden in subclasses to perform cleanup tasks.
         """
+        for slot in self.slots.values():
+            slot.children.clear()
+        self._event_listeners.clear()
 
     @property
     def is_deleted(self) -> bool:
@@ -533,7 +534,7 @@ class Element(Visibility):
             additions.append(f'text={shorten(self._text)}')
         if hasattr(self, 'content') and self.content:  # pylint: disable=no-member
             additions.append(f'content={shorten(self.content)}')  # pylint: disable=no-member
-        IGNORED_PROPS = {'loopback', 'color', 'view', 'innerHTML', 'dynamic_resource_path'}
+        IGNORED_PROPS = {'loopback', 'color', 'view', 'innerHTML', 'dynamic-resource-path'}
         additions += [
             f'{key}={shorten(value)}'
             for key, value in self._props.items()

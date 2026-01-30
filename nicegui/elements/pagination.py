@@ -1,5 +1,4 @@
-from typing import Optional
-
+from ..defaults import DEFAULT_PROP, DEFAULT_PROPS, resolve_defaults
 from ..events import Handler, ValueChangeEventArguments
 from .mixins.disableable_element import DisableableElement
 from .mixins.value_element import ValueElement
@@ -7,11 +6,12 @@ from .mixins.value_element import ValueElement
 
 class Pagination(ValueElement, DisableableElement):
 
+    @resolve_defaults
     def __init__(self,
                  min: int, max: int, *,  # pylint: disable=redefined-builtin
-                 direction_links: bool = False,
-                 value: Optional[int] = ...,  # type: ignore
-                 on_change: Optional[Handler[ValueChangeEventArguments]] = None) -> None:
+                 direction_links: bool = DEFAULT_PROP | False,
+                 value: int | None = DEFAULT_PROPS['model-value'] | ...,  # type: ignore
+                 on_change: Handler[ValueChangeEventArguments] | None = None) -> None:
         """Pagination
 
         A pagination element wrapping Quasar's `QPagination <https://quasar.dev/vue-components/pagination>`_ component.

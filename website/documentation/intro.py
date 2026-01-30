@@ -1,5 +1,5 @@
 import random
-from typing import Callable
+from collections.abc import Callable
 
 from nicegui import ui
 
@@ -35,7 +35,8 @@ def create_intro() -> None:
                 {'name': 'New York', 'lat': 40.7119, 'lon': -74.0027},
                 {'name': 'London', 'lat': 51.5074, 'lon': -0.1278},
                 {'name': 'Tokyo', 'lat': 35.6863, 'lon': 139.7722},
-            ]).on('row-click', lambda e: sub_pages._render('/map/{lat}/{lon}', lat=e.args[1]['lat'], lon=e.args[1]['lon']))  # HIDE
+                # HIDE
+            ]).on('row-click', lambda e: sub_pages._render('/map/{lat}/{lon}', lat=e.args[1]['lat'], lon=e.args[1]['lon']))
             # ]).on('row-click', lambda e: ui.navigate.to(f'/map/{e.args[1]["lat"]}/{e.args[1]["lon"]}'))
 
         def map_page(lat: float, lon: float):

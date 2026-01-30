@@ -1,4 +1,6 @@
-from typing import Any, Literal, Union
+from typing import Any, Literal
+
+from typing_extensions import Self
 
 from .pyplot import Pyplot
 
@@ -46,8 +48,8 @@ class LinePlot(Pyplot):
              x: list[float],
              Y: list[list[float]],
              *,
-             x_limits: Union[None, Literal['auto'], tuple[float, float]] = 'auto',
-             y_limits: Union[None, Literal['auto'], tuple[float, float]] = 'auto',
+             x_limits: None | Literal['auto'] | tuple[float, float] = 'auto',
+             y_limits: None | Literal['auto'] | tuple[float, float] = 'auto',
              ) -> None:
         """Push new data to the plot.
 
@@ -90,7 +92,7 @@ class LinePlot(Pyplot):
 
         self._convert_to_html()
 
-    def clear(self) -> None:
+    def clear(self) -> Self:
         """Clear the line plot."""
         super().clear()
         self.x.clear()
@@ -99,3 +101,4 @@ class LinePlot(Pyplot):
         for line in self.lines:
             line.set_data([], [])
         self._convert_to_html()
+        return self

@@ -79,8 +79,7 @@ def test_replace_upload(screen: Screen):
             ui.upload(label='A')
 
         def replace():
-            container.clear()
-            with container:
+            with container.clear():
                 ui.upload(label='B')
         ui.button('Replace', on_click=replace)
 

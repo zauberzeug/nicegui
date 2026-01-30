@@ -2,11 +2,13 @@ import multiprocessing
 import os
 import runpy
 import sys
+from collections.abc import Callable
 from pathlib import Path
-from typing import Any, Callable, Literal, Optional, TypedDict, Union
+from typing import Any, Literal, TypedDict
 
 from fastapi.middleware.gzip import GZipMiddleware
 from starlette.routing import Route
+from starlette.types import ASGIApp
 from uvicorn.main import STARTUP_FAILURE
 from uvicorn.supervisors import ChangeReload, Multiprocess
 
@@ -26,44 +28,45 @@ APP_IMPORT_STRING = 'nicegui:app'
 
 
 class ContactDict(TypedDict):
-    name: Optional[str]
-    url: Optional[str]
-    email: Optional[str]
+    name: str | None
+    url: str | None
+    email: str | None
 
 
 class LicenseInfoDict(TypedDict):
     name: str
-    identifier: Optional[str]
-    url: Optional[str]
+    identifier: str | None
+    url: str | None
 
 
 class DocsConfig(TypedDict):
-    title: Optional[str]
-    summary: Optional[str]
-    description: Optional[str]
-    version: Optional[str]
-    terms_of_service: Optional[str]
-    contact: Optional[ContactDict]
-    license_info: Optional[LicenseInfoDict]
+    title: str | None
+    summary: str | None
+    description: str | None
+    version: str | None
+    terms_of_service: str | None
+    contact: ContactDict | None
+    license_info: LicenseInfoDict | None
 
 
-def run(root: Optional[Callable] = None, *,
-        host: Optional[str] = None,
-        port: Optional[int] = None,
+def run(root: Callable | None = None, *,
+        host: str | None = None,
+        port: int | None = None,
         title: str = 'NiceGUI',
         viewport: str = 'width=device-width, initial-scale=1',
-        favicon: Optional[Union[str, Path]] = None,
-        dark: Optional[bool] = False,
+        favicon: str | Path | None = None,
+        dark: bool | None = False,
         language: Language = 'en-US',
-        binding_refresh_interval: float = 0.1,
+        binding_refresh_interval: float | None = 0.1,
         reconnect_timeout: float = 3.0,
         message_history_length: int = 1000,
         cache_control_directives: str = 'public, max-age=31536000, immutable, stale-while-revalidate=31536000',
-        fastapi_docs: Union[bool, DocsConfig] = False,
-        show: bool = True,
-        on_air: Optional[Union[str, Literal[True]]] = None,
+        gzip_middleware_factory: Callable[[ASGIApp], GZipMiddleware] | None = GZipMiddleware,
+        fastapi_docs: bool | DocsConfig = False,
+        show: bool | str = True,
+        on_air: str | Literal[True] | None = None,
         native: bool = False,
-        window_size: Optional[tuple[int, int]] = None,
+        window_size: tuple[int, int] | None = None,
         fullscreen: bool = False,
         frameless: bool = False,
         reload: bool = True,
@@ -72,10 +75,11 @@ def run(root: Optional[Callable] = None, *,
         uvicorn_reload_includes: str = '*.py',
         uvicorn_reload_excludes: str = '.*, .py[cod], .sw.*, ~*',
         tailwind: bool = True,
+        unocss: Literal['mini', 'wind3', 'wind4'] | None = None,
         prod_js: bool = True,
         endpoint_documentation: Literal['none', 'internal', 'page', 'all'] = 'none',
-        storage_secret: Optional[str] = None,
-        session_middleware_kwargs: Optional[dict[str, Any]] = None,
+        storage_secret: str | None = None,
+        session_middleware_kwargs: dict[str, Any] | None = None,
         show_welcome_message: bool = True,
         **kwargs: Any,
         ) -> None:
@@ -92,12 +96,13 @@ def run(root: Optional[Callable] = None, *,
     :param favicon: relative filepath, absolute URL to a favicon (default: `None`, NiceGUI icon will be used) or emoji (e.g. `'🚀'`, works for most browsers)
     :param dark: whether to use Quasar's dark mode (default: `False`, use `None` for "auto" mode)
     :param language: language for Quasar elements (default: `'en-US'`)
-    :param binding_refresh_interval: time between binding updates (default: `0.1` seconds, bigger is more CPU friendly)
+    :param binding_refresh_interval: interval for updating active links (default: 0.1 seconds, bigger is more CPU friendly, *since version 3.4.0*: can be ``None`` to disable update loop)
     :param reconnect_timeout: maximum time the server waits for the browser to reconnect (default: 3.0 seconds)
     :param message_history_length: maximum number of messages that will be stored and resent after a connection interruption (default: 1000, use 0 to disable, *added in version 2.9.0*)
     :param cache_control_directives: cache control directives for internal static files (default: `'public, max-age=31536000, immutable, stale-while-revalidate=31536000'`)
+    :param gzip_middleware_factory: GZipMiddleware factory function (e.g. ``lambda app: GZipMiddleware(app, minimum_size=500, compresslevel=9)``, defaults to Starlette's ``GZipMiddleware``, can be ``None`` to disable, *added in version 3.5.0*)
     :param fastapi_docs: enable FastAPI's automatic documentation with Swagger UI, ReDoc, and OpenAPI JSON (bool or dictionary as described `here <https://fastapi.tiangolo.com/tutorial/metadata/>`_, default: `False`, *updated in version 2.9.0*)
-    :param show: automatically open the UI in a browser tab (default: `True`)
+    :param show: automatically open the UI in a browser tab (default: `True`, opens "/", *since version 3.6.0*: you can pass a specific path like "/path/to/page")
     :param on_air: tech preview: `allows temporary remote access <https://nicegui.io/documentation/section_configuration_deployment#nicegui_on_air>`_ if set to `True` (default: disabled)
     :param native: open the UI in a native window of size 800x600 (default: `False`, deactivates `show`, automatically finds an open port)
     :param window_size: open the UI in a native window with the provided size (e.g. `(1024, 786)`, default: `None`, also activates `native`)
@@ -108,7 +113,8 @@ def run(root: Optional[Callable] = None, *,
     :param uvicorn_reload_dirs: string with comma-separated list for directories to be monitored (default is current working directory only)
     :param uvicorn_reload_includes: string with comma-separated list of glob-patterns which trigger reload on modification (default: `'*.py'`)
     :param uvicorn_reload_excludes: string with comma-separated list of glob-patterns which should be ignored for reload (default: `'.*, .py[cod], .sw.*, ~*'`)
-    :param tailwind: whether to use Tailwind (experimental, default: `True`)
+    :param tailwind: whether to use Tailwind CSS (experimental, default: `True`)
+    :param unocss: use UnoCSS with the specified preset instead of Tailwind CSS (default: ``None``, options: "mini", "wind3", "wind4", *added in version 3.7.0*)
     :param prod_js: whether to use the production version of Vue and Quasar dependencies (default: `True`)
     :param endpoint_documentation: control what endpoints appear in the autogenerated OpenAPI docs (default: 'none', options: 'none', 'internal', 'page', 'all')
     :param storage_secret: secret key for browser-based storage (default: `None`, a value is required to enable ui.storage.individual and ui.storage.browser)
@@ -118,8 +124,18 @@ def run(root: Optional[Callable] = None, *,
     """
     if core.script_mode:
         if Client.page_routes:
-            raise RuntimeError('ui.page cannot be used in NiceGUI scripts where you define UI in the global scope. '
-                               'To use multiple pages, either move all UI into page functions or use ui.sub_pages.')
+            if core.script_client and not core.script_client.content.default_slot.children and (
+                core.script_client._head_html or core.script_client._body_html  # pylint: disable=protected-access
+            ):
+                raise RuntimeError(
+                    'ui.add_head_html, ui.add_body_html, or ui.add_css has been called inside the global scope while using ui.page.\n'
+                    'Consider using shared=True for this call to add the code to all pages.\n'
+                    'Alternatively, to add the code to a specific page, move the call into the page function.'
+                )
+            raise RuntimeError(
+                'ui.page cannot be used in NiceGUI scripts when UI is defined in the global scope.\n'
+                'To use multiple pages, either move all UI into page functions or use ui.sub_pages.'
+            )
 
         if helpers.is_pytest():
             raise RuntimeError('Script mode is not supported in pytest. '
@@ -153,13 +169,14 @@ def run(root: Optional[Callable] = None, *,
         message_history_length=message_history_length,
         cache_control_directives=cache_control_directives,
         tailwind=tailwind,
+        unocss=unocss,
         prod_js=prod_js,
         show_welcome_message=show_welcome_message,
     )
     core.root = root
     core.app.config.endpoint_documentation = endpoint_documentation
-    if not helpers.is_pytest():
-        core.app.add_middleware(GZipMiddleware)
+    if not helpers.is_pytest() and gzip_middleware_factory is not None:
+        core.app.add_middleware(gzip_middleware_factory)
     core.app.add_middleware(RedirectWithPrefixMiddleware)
     core.app.add_middleware(SetCacheControlMiddleware)
 
@@ -241,7 +258,7 @@ def run(root: Optional[Callable] = None, *,
     os.environ['NICEGUI_PROTOCOL'] = protocol
 
     if show:
-        helpers.schedule_browser(protocol, host, port)
+        helpers.schedule_browser(protocol, host, port, show if isinstance(show, str) else '/')
 
     def split_args(args: str) -> list[str]:
         return [a.strip() for a in args.split(',')]

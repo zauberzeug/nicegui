@@ -1,5 +1,3 @@
-from typing import Optional
-
 import pytest
 from selenium.webdriver import Keys
 
@@ -52,8 +50,7 @@ def test_replace_select(screen: Screen):
             ui.select(['A'], value='A')
 
         def replace():
-            container.clear()
-            with container:
+            with container.clear():
                 ui.select(['B'], value='B')
         ui.button('Replace', on_click=replace)
 
@@ -112,7 +109,7 @@ def test_set_options(screen:  Screen):
 @pytest.mark.parametrize('option_dict', [False, True])
 @pytest.mark.parametrize('multiple', [False, True])
 @pytest.mark.parametrize('new_value_mode', ['add', 'add-unique', 'toggle', None])
-def test_add_new_values(screen:  Screen, option_dict: bool, multiple: bool, new_value_mode: Optional[str]):
+def test_add_new_values(screen:  Screen, option_dict: bool, multiple: bool, new_value_mode: str | None):
     @ui.page('/')
     def page():
         options = {'a': 'A', 'b': 'B', 'c': 'C'} if option_dict else ['a', 'b', 'c']

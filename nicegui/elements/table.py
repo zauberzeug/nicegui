@@ -1,9 +1,10 @@
 import importlib.util
-from typing import TYPE_CHECKING, Any, Literal, Optional, Union
+from typing import TYPE_CHECKING, Any, Literal
 
 from typing_extensions import Self
 
 from .. import optional_features
+from ..defaults import DEFAULT_PROP, resolve_defaults
 from ..element import Element
 from ..events import (
     GenericEventArguments,
@@ -28,17 +29,18 @@ if importlib.util.find_spec('polars'):
 
 class Table(FilterElement, component='table.js'):
 
+    @resolve_defaults
     def __init__(self,
                  *,
                  rows: list[dict],
-                 columns: Optional[list[dict]] = None,
-                 column_defaults: Optional[dict] = None,
-                 row_key: str = 'id',
-                 title: Optional[str] = None,
-                 selection: Literal[None, 'single', 'multiple'] = None,
-                 pagination: Optional[Union[int, dict]] = None,
-                 on_select: Optional[Handler[TableSelectionEventArguments]] = None,
-                 on_pagination_change: Optional[Handler[ValueChangeEventArguments]] = None,
+                 columns: list[dict] | None = None,
+                 column_defaults: dict | None = None,
+                 row_key: str = DEFAULT_PROP | 'id',
+                 title: str | None = DEFAULT_PROP | None,
+                 selection: Literal[None, 'single', 'multiple'] = DEFAULT_PROP | None,
+                 pagination: int | dict | None = None,
+                 on_select: Handler[TableSelectionEventArguments] | None = None,
+                 on_pagination_change: Handler[ValueChangeEventArguments] | None = None,
                  ) -> None:
         """Table
 
@@ -72,7 +74,7 @@ class Table(FilterElement, component='table.js'):
         self._props['columns'] = self._normalize_columns(columns)
         self._props['rows'] = rows
         self._props['row-key'] = row_key
-        self._props['title'] = title
+        self._props.set_optional('title', title)
         self._props['hide-pagination'] = pagination is None
         self._props['pagination'] = pagination if isinstance(pagination, dict) else {'rowsPerPage': pagination or 0}
         self._props['selection'] = selection or 'none'
@@ -142,13 +144,13 @@ class Table(FilterElement, component='table.js'):
     @classmethod
     def from_pandas(cls,
                     df: 'pd.DataFrame', *,
-                    columns: Optional[list[dict]] = None,
-                    column_defaults: Optional[dict] = None,
+                    columns: list[dict] | None = None,
+                    column_defaults: dict | None = None,
                     row_key: str = 'id',
-                    title: Optional[str] = None,
-                    selection: Optional[Literal['single', 'multiple']] = None,
-                    pagination: Optional[Union[int, dict]] = None,
-                    on_select: Optional[Handler[TableSelectionEventArguments]] = None) -> Self:
+                    title: str | None = None,
+                    selection: Literal['single', 'multiple'] | None = None,
+                    pagination: int | dict | None = None,
+                    on_select: Handler[TableSelectionEventArguments] | None = None) -> Self:
         """Create a table from a Pandas DataFrame.
 
         Note:
@@ -186,13 +188,13 @@ class Table(FilterElement, component='table.js'):
     @classmethod
     def from_polars(cls,
                     df: 'pl.DataFrame', *,
-                    columns: Optional[list[dict]] = None,
-                    column_defaults: Optional[dict] = None,
+                    columns: list[dict] | None = None,
+                    column_defaults: dict | None = None,
                     row_key: str = 'id',
-                    title: Optional[str] = None,
-                    selection: Optional[Literal['single', 'multiple']] = None,
-                    pagination: Optional[Union[int, dict]] = None,
-                    on_select: Optional[Handler[TableSelectionEventArguments]] = None) -> Self:
+                    title: str | None = None,
+                    selection: Literal['single', 'multiple'] | None = None,
+                    pagination: int | dict | None = None,
+                    on_select: Handler[TableSelectionEventArguments] | None = None) -> Self:
         """Create a table from a Polars DataFrame.
 
         Note:
@@ -228,8 +230,8 @@ class Table(FilterElement, component='table.js'):
     def update_from_pandas(self,
                            df: 'pd.DataFrame', *,
                            clear_selection: bool = True,
-                           columns: Optional[list[dict]] = None,
-                           column_defaults: Optional[dict] = None) -> None:
+                           columns: list[dict] | None = None,
+                           column_defaults: dict | None = None) -> None:
         """Update the table from a Pandas DataFrame.
 
         See `from_pandas()` for more information about the conversion of non-serializable columns.
@@ -248,8 +250,8 @@ class Table(FilterElement, component='table.js'):
     def update_from_polars(self,
                            df: 'pl.DataFrame', *,
                            clear_selection: bool = True,
-                           columns: Optional[list[dict]] = None,
-                           column_defaults: Optional[dict] = None) -> None:
+                           columns: list[dict] | None = None,
+                           column_defaults: dict | None = None) -> None:
         """Update the table from a Polars DataFrame.
 
         :param df: Polars DataFrame
@@ -264,8 +266,8 @@ class Table(FilterElement, component='table.js'):
                       rows: list[dict],
                       columns_from_df: list[dict],
                       clear_selection: bool,
-                      columns: Optional[list[dict]],
-                      column_defaults: Optional[dict]) -> None:
+                      columns: list[dict] | None,
+                      column_defaults: dict | None) -> None:
         """Helper function to update the table."""
         self.rows[:] = rows
         if column_defaults is not None:
@@ -320,12 +322,12 @@ class Table(FilterElement, component='table.js'):
         self._props['columns'] = self._normalize_columns(value)
 
     @property
-    def column_defaults(self) -> Optional[dict]:
+    def column_defaults(self) -> dict | None:
         """Default column properties."""
         return self._column_defaults
 
     @column_defaults.setter
-    def column_defaults(self, value: Optional[dict]) -> None:
+    def column_defaults(self, value: dict | None) -> None:
         self._column_defaults = value
         self.columns = self.columns  # re-normalize columns
 
@@ -442,20 +444,30 @@ class Table(FilterElement, component='table.js'):
             """
             super().__init__('q-tr')
 
-    class header(Element):
+    class header(Element, default_classes='[&>*]:inline'):
 
-        def __init__(self) -> None:
+        def __init__(self, column_name: str | None = None) -> None:
             """Header Element
 
             This element is based on Quasar's `QTh <https://quasar.dev/vue-components/table#qth-api>`_ component.
+
+            :param column_name: corresponding column to access alignment and other properties (*added in version 3.5.0*)
             """
             super().__init__('q-th')
+            if column_name is not None:
+                self._props[':props'] = 'props'
+                self._props['key'] = column_name
 
     class cell(Element):
 
-        def __init__(self) -> None:
+        def __init__(self, column_name: str | None = None) -> None:
             """Cell Element
 
             This element is based on Quasar's `QTd <https://quasar.dev/vue-components/table#qtd-api>`_ component.
+
+            :param column_name: corresponding column to access alignment and other properties (*added in version 3.5.0*)
             """
             super().__init__('q-td')
+            if column_name is not None:
+                self._props[':props'] = 'props'
+                self._props['key'] = column_name

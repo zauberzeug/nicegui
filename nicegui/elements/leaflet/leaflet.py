@@ -1,11 +1,12 @@
 import asyncio
 from pathlib import Path
-from typing import Any, Optional, Union, cast
+from typing import Any, cast
 
 from typing_extensions import Self
 
 from ... import binding
 from ...awaitable_response import AwaitableResponse, NullResponse
+from ...defaults import DEFAULT_PROP, resolve_defaults
 from ...element import Element
 from ...events import GenericEventArguments
 from .leaflet_layer import Layer
@@ -23,14 +24,15 @@ class Leaflet(Element, component='leaflet.js', esm={'nicegui-leaflet': 'dist'}, 
     center = binding.BindableProperty(lambda sender, value: cast(Leaflet, sender).set_center(value))
     zoom = binding.BindableProperty(lambda sender, value: cast(Leaflet, sender).set_zoom(value))
 
+    @resolve_defaults
     def __init__(self,
-                 center: tuple[float, float] = (0.0, 0.0),
-                 zoom: int = 13,
+                 center: tuple[float, float] = DEFAULT_PROP | (0.0, 0.0),
+                 zoom: int = DEFAULT_PROP | 13,
                  *,
-                 options: dict = {},  # noqa: B006
-                 draw_control: Union[bool, dict] = False,
-                 hide_drawn_items: bool = False,
-                 additional_resources: Optional[list[str]] = None,
+                 options: dict = DEFAULT_PROP | {},
+                 draw_control: bool | dict = DEFAULT_PROP | False,
+                 hide_drawn_items: bool = DEFAULT_PROP | False,
+                 additional_resources: list[str] | None = DEFAULT_PROP | None,
                  ) -> None:
         """Leaflet map
 
@@ -62,9 +64,13 @@ class Leaflet(Element, component='leaflet.js', esm={'nicegui-leaflet': 'dist'}, 
         self._client_zoom = zoom
 
         self._props['options'] = {**options}
-        self._props['draw_control'] = draw_control
-        self._props['hide_drawn_items'] = hide_drawn_items
-        self._props['additional_resources'] = additional_resources or []
+        self._props['draw-control'] = draw_control
+        self._props['hide-drawn-items'] = hide_drawn_items
+        self._props['additional-resources'] = additional_resources or []
+
+        self._props.add_rename('draw_control', 'draw-control')  # DEPRECATED: remove in NiceGUI 4.0
+        self._props.add_rename('hide_drawn_items', 'hide-drawn-items')  # DEPRECATED: remove in NiceGUI 4.0
+        self._props.add_rename('additional_resources', 'additional-resources')  # DEPRECATED: remove in NiceGUI 4.0
 
         self.on('init', self._handle_init)
         self.on('map-moveend', self._handle_move_or_zoom_end)

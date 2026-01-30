@@ -1,9 +1,10 @@
-from typing import Optional, cast
+from typing import cast
 
 from fastapi import Request
 from starlette.datastructures import UploadFile
 from typing_extensions import Self
 
+from ..defaults import DEFAULT_PROP, resolve_defaults
 from ..events import Handler, MultiUploadEventArguments, UiEventArguments, UploadEventArguments, handle_event
 from ..nicegui import app
 from .mixins.disableable_element import DisableableElement
@@ -15,17 +16,18 @@ class Upload(LabelElement, DisableableElement, component='upload.js'):
     # pylint: disable=import-outside-toplevel
     from .upload_files import FileUpload, LargeFileUpload, SmallFileUpload
 
+    @resolve_defaults
     def __init__(self, *,
-                 multiple: bool = False,
-                 max_file_size: Optional[int] = None,
-                 max_total_size: Optional[int] = None,
-                 max_files: Optional[int] = None,
-                 on_begin_upload: Optional[Handler[UiEventArguments]] = None,
-                 on_upload: Optional[Handler[UploadEventArguments]] = None,
-                 on_multi_upload: Optional[Handler[MultiUploadEventArguments]] = None,
-                 on_rejected: Optional[Handler[UiEventArguments]] = None,
-                 label: str = '',
-                 auto_upload: bool = False,
+                 multiple: bool = DEFAULT_PROP | False,
+                 max_file_size: int | None = DEFAULT_PROP | None,
+                 max_total_size: int | None = DEFAULT_PROP | None,
+                 max_files: int | None = DEFAULT_PROP | None,
+                 on_begin_upload: Handler[UiEventArguments] | None = None,
+                 on_upload: Handler[UploadEventArguments] | None = None,
+                 on_multi_upload: Handler[MultiUploadEventArguments] | None = None,
+                 on_rejected: Handler[UiEventArguments] | None = None,
+                 label: str = DEFAULT_PROP | '',
+                 auto_upload: bool = DEFAULT_PROP | False,
                  ) -> None:
         """File Upload
 
@@ -53,18 +55,13 @@ class Upload(LabelElement, DisableableElement, component='upload.js'):
         :param auto_upload: automatically upload files when they are selected (default: `False`)
         """
         super().__init__(label=label)
-        self._props['multiple'] = multiple
-        self._props['auto-upload'] = auto_upload
+        self._props.set_bool('multiple', multiple)
+        self._props.set_bool('auto-upload', auto_upload)
         self._props['url'] = f'/_nicegui/client/{self.client.id}/upload/{self.id}'
 
-        if max_file_size is not None:
-            self._props['max-file-size'] = max_file_size
-
-        if max_total_size is not None:
-            self._props['max-total-size'] = max_total_size
-
-        if max_files is not None:
-            self._props['max-files'] = max_files
+        self._props.set_optional('max-file-size', max_file_size)
+        self._props.set_optional('max-total-size', max_total_size)
+        self._props.set_optional('max-files', max_files)
 
         if multiple and on_multi_upload:
             self._props['batch'] = True

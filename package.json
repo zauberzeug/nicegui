@@ -4,7 +4,8 @@
   },
   "dependencies": {
     "@tailwindcss/browser": "4.1.13",
-    "es-module-shims": "2.6.2",
+    "@unocss/reset": "^66.6.0",
+    "@unocss/runtime": "^66.6.0",
     "quasar": "2.18.5",
     "sass": "^1.94.0",
     "socket.io": "4.8.1",

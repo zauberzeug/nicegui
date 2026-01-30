@@ -287,4 +287,28 @@ def aggrid_handle_theme_change():
         .bind_value(grid, 'theme').props('flat size="sm"')
 
 
+@doc.demo('AG Grid Enterprise', '''
+    You can use AG Grid Enterprise by setting the module source to the Enterprise bundle
+    (either from a CDN or from a self-hosted bundle)
+    and passing `modules='enterprise'` to the `ui.aggrid` constructor.
+
+    *Added in version 3.6.0*
+''')
+def project_code():
+    # bundle_url = 'https://cdn.jsdelivr.net/npm/ag-grid-enterprise@34.2.0/+esm'
+    # ui.aggrid.set_module_source(bundle_url)
+
+    # ui.aggrid({
+    #     'columnDefs': [
+    #         {'field': 'version'},
+    #         {'field': 'description'},
+    #     ],
+    #     'rowData': [
+    #         {'version': 'Community', 'description': 'Free, no license required.'},
+    #         {'version': 'Enterprise', 'description': 'Restricted, free to test locally.'},
+    #     ],
+    # }, modules='enterprise')
+    ui.label('This demo does not run online due to licensing restrictions.')  # HIDE
+
+
 doc.reference(ui.aggrid)

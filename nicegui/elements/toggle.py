@@ -1,5 +1,6 @@
-from typing import Any, Optional, Union
+from typing import Any
 
+from ..defaults import DEFAULT_PROP, DEFAULT_PROPS, resolve_defaults
 from ..events import GenericEventArguments, Handler, ValueChangeEventArguments
 from .choice_element import ChoiceElement
 from .mixins.disableable_element import DisableableElement
@@ -7,11 +8,12 @@ from .mixins.disableable_element import DisableableElement
 
 class Toggle(ChoiceElement, DisableableElement):
 
+    @resolve_defaults
     def __init__(self,
-                 options: Union[list, dict], *,
-                 value: Any = None,
-                 on_change: Optional[Handler[ValueChangeEventArguments]] = None,
-                 clearable: bool = False,
+                 options: list | dict, *,
+                 value: Any = DEFAULT_PROPS['model-value'] | None,
+                 on_change: Handler[ValueChangeEventArguments] | None = None,
+                 clearable: bool = DEFAULT_PROP | False,
                  ) -> None:
         """Toggle
 
@@ -26,7 +28,7 @@ class Toggle(ChoiceElement, DisableableElement):
         :param clearable: whether the toggle can be cleared by clicking the selected option
         """
         super().__init__(tag='q-btn-toggle', options=options, value=value, on_change=on_change)
-        self._props['clearable'] = clearable
+        self._props.set_bool('clearable', clearable)
 
     def _event_args_to_value(self, e: GenericEventArguments) -> Any:
         return self._values[e.args] if e.args is not None else None

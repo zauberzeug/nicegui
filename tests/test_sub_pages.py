@@ -1,5 +1,4 @@
 import asyncio
-from typing import Optional
 
 import httpx
 import pytest
@@ -693,7 +692,8 @@ def test_async_sub_pages(screen: Screen):
 
 
 @pytest.mark.parametrize('use_page_arguments', [True, False])
-def test_sub_page_with_query_parameters(screen: Screen, use_page_arguments: bool):
+@pytest.mark.parametrize('show_404', [True, False])
+def test_sub_page_with_query_parameters(screen: Screen, use_page_arguments: bool, show_404: bool):
     calls = {'index': 0, 'main_content': 0}
 
     @ui.page('/')
@@ -701,7 +701,7 @@ def test_sub_page_with_query_parameters(screen: Screen, use_page_arguments: bool
         calls['index'] += 1
         ui.link('Link to main', '/?access=link')
         ui.button('Button to main', on_click=lambda: ui.navigate.to('/?access=button'))
-        ui.sub_pages({'/': with_page_arguments if use_page_arguments else with_parameter})
+        ui.sub_pages({'/': with_page_arguments if use_page_arguments else with_parameter}, show_404=show_404)
 
     def with_page_arguments(args: PageArguments):
         calls['main_content'] += 1
@@ -787,7 +787,7 @@ def test_optional_parameters(screen: Screen):
         name: str,
         count: int = 1,
         active: str = 'no',
-        source: Optional[str] = None,
+        source: str | None = None,
         missing: str = 'default',
     ):
         ui.label(f'name={name}, count={count}, active={active}, source={source}, missing={missing}')
@@ -813,7 +813,7 @@ def test_page_arguments_with_optional_parameters(screen: Screen):
         args: PageArguments,
         user_id: str,
         role: str = 'guest',
-        app_name: Optional[str] = None,
+        app_name: str | None = None,
     ):
         ui.label(f'path={args.path}, user_id={user_id}, role={role}, app={app_name}')
 
@@ -979,9 +979,12 @@ def test_on_path_changed_event(screen: Screen):
 
 
 def test_exception_in_page_builder(screen: Screen):
+    exceptions = []
+
     @ui.page('/')
     @ui.page('/{_:path}')
     def index():
+        ui.on_exception(exceptions.append)
         ui.link('Go to exception', '/')
         ui.link('Go to content with exception', '/content_with_exception')
         ui.link('Go to async exception', '/async')
@@ -1026,6 +1029,8 @@ def test_exception_in_page_builder(screen: Screen):
     screen.should_contain(f'500: {msg_content}')
     screen.assert_py_logger('ERROR', msg_content)
     screen.should_not_contain('content before exception')
+
+    assert len(exceptions) == 4
 
 
 def test_disabling_404(screen: Screen):
@@ -1155,6 +1160,17 @@ def test_http_404_on_initial_request_with_async_sub_page_builder(screen: Screen)
     screen.should_contain('HTTPException: 404: /bad_path not found')
 
 
+def test_http_404_with_root_function_and_sub_pages(screen: Screen):
+    def root():
+        ui.sub_pages({'/': lambda: ui.label('Home')})
+
+    screen.ui_run_kwargs['root'] = root
+    screen.open('/')
+    screen.should_contain('Home')
+
+    httpx.get(f'http://localhost:{Screen.PORT}/bad_path')  # should not print an exception
+
+
 def test_clearing_sub_pages_element(screen: Screen):
     @ui.page('/')
     @ui.page('/{_:path}')
@@ -1203,21 +1219,27 @@ def test_refresh_sub_page(screen: Screen):
         ui.button('Refresh inner other', on_click=args.frame.refresh)
 
     screen.open('/')
+    screen.wait(0.2)
     assert calls == {'index': 1, 'outer': 1, 'inner_main': 1, 'inner_other': 0}
 
     screen.click('Refresh inner main')
+    screen.wait(0.2)
     assert calls == {'index': 1, 'outer': 1, 'inner_main': 2, 'inner_other': 0}
 
     screen.click('Go to other')
+    screen.wait(0.2)
     assert calls == {'index': 1, 'outer': 1, 'inner_main': 2, 'inner_other': 1}
 
     screen.click('Refresh inner other')
+    screen.wait(0.2)
     assert calls == {'index': 1, 'outer': 1, 'inner_main': 2, 'inner_other': 2}
 
     screen.click('Refresh via Router')
+    screen.wait(0.2)
     assert calls == {'index': 1, 'outer': 2, 'inner_main': 2, 'inner_other': 3}
 
     screen.click('Refresh via SubPages')
+    screen.wait(0.2)
     assert calls == {'index': 1, 'outer': 3, 'inner_main': 2, 'inner_other': 4}
 
 
@@ -1234,3 +1256,58 @@ def test_navigation_not_crashing_for_root_pages_with_remaining_path(screen: Scre
     screen.open('/')
     screen.click('other/1')
     screen.should_contain('404: sub page /other/1 not found')
+
+
+def test_remaining_path_for_wildcard_routing(screen: Screen):
+    @ui.page('/')
+    @ui.page('/{_:path}')
+    def index():
+        ui.sub_pages({'/sub': sub_page}, show_404=False)
+
+    def sub_page(args: PageArguments):
+        ui.label(f'remaining={args.remaining_path}')
+
+    screen.open('/sub')
+    screen.should_contain('remaining=')
+
+    screen.open('/sub/x/2/a')
+    screen.should_contain('remaining=/x/2/a')
+
+
+def test_query_parameters_wildcard_routing(screen: Screen):
+    @ui.page('/')
+    @ui.page('/{_:path}')
+    def index():
+        ui.sub_pages({'/sub': sub_page}, show_404=False)
+
+    def sub_page(args: PageArguments):
+        ui.label(f'query_parameters: {args.query_parameters}')
+
+    screen.open('/sub?color=red')
+    screen.should_contain('query_parameters: color=red')
+
+    screen.open('/sub/x/2/a?color=blue')
+    screen.should_contain('query_parameters: color=blue')
+
+
+def test_sub_pages_against_xss_by_fragment(screen: Screen):
+    @ui.page('/')
+    @ui.page('/{_:path}')
+    def index():
+        ui.sub_pages({'/': lambda: ui.label('main page')})
+
+    screen.open('/')
+    screen.open('''/#x');console.error('XSS')//''')
+    assert 'XSS' not in screen.render_js_logs()
+
+
+def test_sub_pages_against_xss_by_path(screen: Screen):
+    @ui.page('/')
+    @ui.page('/{_:path}')
+    def index():
+        ui.sub_pages({'/': lambda: ui.link('Go to XSS', '/"+console.error("XSS")+"')})
+
+    screen.open('/')
+    screen.click('Go to XSS')
+    screen.wait(1)
+    assert 'XSS' not in screen.render_js_logs()

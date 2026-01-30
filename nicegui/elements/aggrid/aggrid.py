@@ -1,10 +1,12 @@
 import importlib.util
-from typing import TYPE_CHECKING, Literal, Optional, cast
+from typing import TYPE_CHECKING, Literal, cast
 
 from typing_extensions import Self
 
-from ... import optional_features
+from ... import helpers, optional_features
 from ...awaitable_response import AwaitableResponse
+from ...defaults import DEFAULT_PROP, resolve_defaults
+from ...dependencies import register_importmap_override
 from ...element import Element
 
 if importlib.util.find_spec('pandas'):
@@ -20,11 +22,13 @@ if importlib.util.find_spec('polars'):
 
 class AgGrid(Element, component='aggrid.js', esm={'nicegui-aggrid': 'dist'}, default_classes='nicegui-aggrid'):
 
+    @resolve_defaults
     def __init__(self,
                  options: dict, *,
-                 html_columns: list[int] = [],  # noqa: B006
-                 theme: Optional[Literal['quartz', 'balham', 'material', 'alpine']] = None,
+                 html_columns: list[int] = DEFAULT_PROP | [],
+                 theme: Literal['quartz', 'balham', 'material', 'alpine'] | None = None,
                  auto_size_columns: bool = True,
+                 modules: Literal['community', 'enterprise'] | list[str] = 'community',
                  ) -> None:
         """AG Grid
 
@@ -37,23 +41,55 @@ class AgGrid(Element, component='aggrid.js', esm={'nicegui-aggrid': 'dist'}, def
         :param html_columns: list of columns that should be rendered as HTML (default: ``[]``)
         :param theme: AG Grid theme "quartz", "balham", "material", or "alpine" (default: ``options['theme']`` or "quartz")
         :param auto_size_columns: whether to automatically resize columns to fit the grid width (default: ``True``)
+        :param modules: either "community", "enterprise", or a list of `AG Grid Modules <https://www.ag-grid.com/javascript-data-grid/modules/>`_ (default: "community")
         """
+        if not isinstance(modules, list):
+            modules = [f'All{modules.capitalize()}Module']
+
+        self._migrate_deprecated_checkbox_renderer(options)  # DEPRECATED: remove in NiceGUI 4.0
+
         super().__init__()
         self._props['options'] = {
             'theme': theme or 'quartz',
             **({'autoSizeStrategy': {'type': 'fitGridWidth'}} if auto_size_columns else {}),
             **options,
         }
-        self._props['html_columns'] = html_columns[:]
+        self._props['html-columns'] = html_columns[:]
         self._update_method = 'update_grid'
+        self._props['modules'] = modules[:]
+
+        self._props.add_rename('html_columns', 'html-columns')  # DEPRECATED: remove in NiceGUI 4.0
+
+    @staticmethod
+    def _migrate_deprecated_checkbox_renderer(options: dict) -> None:
+        """Migrate deprecated checkboxRenderer to agCheckboxCellRenderer and warn the user."""
+        migrated = False
+        for col in options.get('columnDefs', []):
+            if col.get('cellRenderer') == 'checkboxRenderer':
+                del col['cellRenderer']
+                col['cellDataType'] = 'boolean'
+                col['editable'] = True
+                migrated = True
+        if migrated:
+            helpers.warn_once(
+                "AG Grid: 'checkboxRenderer' is deprecated.\n"
+                'Your code currently contains:\n'
+                "    'cellRenderer': 'checkboxRenderer',\n"
+                'But the native renderer is preferred for accessibility and styling:\n'
+                "    'cellDataType': 'boolean',\n"
+                "    'editable': True,\n"
+                'Please migrate ASAP as the backwards-compatibility will be removed in NiceGUI 4.0.'
+            )
 
     @classmethod
     def from_pandas(cls,
                     df: 'pd.DataFrame', *,
                     html_columns: list[int] = [],  # noqa: B006
-                    theme: Optional[Literal['quartz', 'balham', 'material', 'alpine']] = None,
+                    theme: Literal['quartz', 'balham', 'material', 'alpine'] | None = None,
                     auto_size_columns: bool = True,
-                    options: dict = {}) -> Self:  # noqa: B006
+                    options: dict = {},  # noqa: B006
+                    modules: Literal['community', 'enterprise'] | list[str] = 'community',
+                    ) -> Self:
         """Create an AG Grid from a Pandas DataFrame.
 
         Note:
@@ -67,6 +103,7 @@ class AgGrid(Element, component='aggrid.js', esm={'nicegui-aggrid': 'dist'}, def
         :param theme: AG Grid theme "quartz", "balham", "material", or "alpine" (default: ``options['theme']`` or "quartz")
         :param auto_size_columns: whether to automatically resize columns to fit the grid width (default: ``True``)
         :param options: dictionary of additional AG Grid options
+        :param modules: either "community", "enterprise", or a list of `AG Grid Modules <https://www.ag-grid.com/javascript-data-grid/modules/>`_ (default: "community")
         :return: AG Grid element
         """
         import pandas as pd  # pylint: disable=import-outside-toplevel
@@ -92,15 +129,17 @@ class AgGrid(Element, component='aggrid.js', esm={'nicegui-aggrid': 'dist'}, def
             'suppressFieldDotNotation': True,
             **options,
             'theme': theme or options.get('theme', 'quartz'),
-        }, html_columns=html_columns, theme=theme, auto_size_columns=auto_size_columns)
+        }, html_columns=html_columns, theme=theme, auto_size_columns=auto_size_columns, modules=modules)
 
     @classmethod
     def from_polars(cls,
                     df: 'pl.DataFrame', *,
                     html_columns: list[int] = [],  # noqa: B006
-                    theme: Optional[Literal['quartz', 'balham', 'material', 'alpine']] = None,
+                    theme: Literal['quartz', 'balham', 'material', 'alpine'] | None = None,
                     auto_size_columns: bool = True,
-                    options: dict = {}) -> Self:  # noqa: B006
+                    options: dict = {},  # noqa: B006
+                    modules: Literal['community', 'enterprise'] | list[str] = 'community',
+                    ) -> Self:
         """Create an AG Grid from a Polars DataFrame.
 
         If the DataFrame contains non-UTF-8 datatypes, they will be converted to strings.
@@ -113,6 +152,7 @@ class AgGrid(Element, component='aggrid.js', esm={'nicegui-aggrid': 'dist'}, def
         :param theme: AG Grid theme "quartz", "balham", "material", or "alpine" (default: ``options['theme']`` or "quartz")
         :param auto_size_columns: whether to automatically resize columns to fit the grid width (default: ``True``)
         :param options: dictionary of additional AG Grid options
+        :param modules: either "community", "enterprise", or a list of `AG Grid Modules <https://www.ag-grid.com/javascript-data-grid/modules/>`_ (default: "community")
         :return: AG Grid element
         """
         return cls({
@@ -121,7 +161,7 @@ class AgGrid(Element, component='aggrid.js', esm={'nicegui-aggrid': 'dist'}, def
             'suppressFieldDotNotation': True,
             **options,
             'theme': theme or options.get('theme', 'quartz'),
-        }, html_columns=html_columns, theme=theme, auto_size_columns=auto_size_columns)
+        }, html_columns=html_columns, theme=theme, auto_size_columns=auto_size_columns, modules=modules)
 
     @property
     def options(self) -> dict:
@@ -135,19 +175,19 @@ class AgGrid(Element, component='aggrid.js', esm={'nicegui-aggrid': 'dist'}, def
     @property
     def html_columns(self) -> list[int]:
         """The list of columns that should be rendered as HTML."""
-        return self._props['html_columns']
+        return self._props['html-columns']
 
     @html_columns.setter
     def html_columns(self, value: list[int]) -> None:
-        self._props['html_columns'] = value[:]
+        self._props['html-columns'] = value[:]
 
     @property
-    def theme(self) -> Optional[Literal['quartz', 'balham', 'material', 'alpine']]:
+    def theme(self) -> Literal['quartz', 'balham', 'material', 'alpine'] | None:
         """The AG Grid theme."""
         return self._props['options'].get('theme')
 
     @theme.setter
-    def theme(self, value: Optional[Literal['quartz', 'balham', 'material', 'alpine']]) -> None:
+    def theme(self, value: Literal['quartz', 'balham', 'material', 'alpine'] | None) -> None:
         self._props['options']['theme'] = value
 
     @property
@@ -207,7 +247,7 @@ class AgGrid(Element, component='aggrid.js', esm={'nicegui-aggrid': 'dist'}, def
         result = await self.run_grid_method('getSelectedRows')
         return cast(list[dict], result)
 
-    async def get_selected_row(self) -> Optional[dict]:
+    async def get_selected_row(self) -> dict | None:
         """Get the single currently selected row.
 
         This method is especially useful when the grid is configured with ``rowSelection: 'single'``.
@@ -260,3 +300,14 @@ class AgGrid(Element, component='aggrid.js', esm={'nicegui-aggrid': 'dist'}, def
         """
         client_row_data = await self.get_client_data()
         self.options['rowData'] = client_row_data
+
+    @staticmethod
+    def set_module_source(url: str) -> None:
+        """Override the ESM module URL for all AG Grid elements.
+
+        This sets a global import map override, affecting all pages and clients.
+        Use this to switch to AG Grid Enterprise or a self-hosted bundle.
+
+        :param url: the ESM module URL (e.g., "https://cdn.jsdelivr.net/npm/ag-grid-enterprise@34.2.0/+esm")
+        """
+        register_importmap_override('nicegui-aggrid', url)

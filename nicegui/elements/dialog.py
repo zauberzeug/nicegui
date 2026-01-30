@@ -1,12 +1,17 @@
 import asyncio
-from typing import Any, Optional
+import weakref
+from typing import Any
 
+from ..context import context
+from ..defaults import DEFAULT_PROPS, resolve_defaults
+from ..element import Element
 from .mixins.value_element import ValueElement
 
 
 class Dialog(ValueElement, component='dialog.js'):
 
-    def __init__(self, *, value: bool = False) -> None:
+    @resolve_defaults
+    def __init__(self, *, value: bool = DEFAULT_PROPS['model-value'] | False) -> None:
         """Dialog
 
         Creates a dialog based on Quasar's `QDialog <https://quasar.dev/vue-components/dialog>`_ component.
@@ -19,9 +24,18 @@ class Dialog(ValueElement, component='dialog.js'):
 
         :param value: whether the dialog should be opened on creation (default: `False`)
         """
-        super().__init__(value=value, on_value_change=None)
+        with context.client.layout:
+            super().__init__(value=value, on_value_change=None)
+
+        # create a canary element in the current context to trigger the deletion of the dialog when its parent is deleted
+        canary = Element()
+        canary.visible = False
+        weakref.finalize(
+            canary, lambda: self.delete() if not self.is_deleted and self._parent_slot and self._parent_slot() else None
+        )
+
         self._result: Any = None
-        self._submitted: Optional[asyncio.Event] = None
+        self._submitted: asyncio.Event | None = None
 
     @property
     def submitted(self) -> asyncio.Event:

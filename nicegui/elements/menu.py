@@ -1,5 +1,4 @@
-from typing import Optional
-
+from ..defaults import DEFAULT_PROPS, resolve_defaults
 from ..events import ClickEventArguments, Handler
 from .context_menu import ContextMenu
 from .item import Item
@@ -8,7 +7,8 @@ from .mixins.value_element import ValueElement
 
 class Menu(ValueElement):
 
-    def __init__(self, *, value: bool = False) -> None:
+    @resolve_defaults
+    def __init__(self, *, value: bool = DEFAULT_PROPS['model-value'] | False) -> None:
         """Menu
 
         Creates a menu based on Quasar's `QMenu <https://quasar.dev/vue-components/menu>`_ component.
@@ -19,7 +19,7 @@ class Menu(ValueElement):
 
         :param value: whether the menu is already opened (default: `False`)
         """
-        super().__init__(tag='q-menu', value=value, on_value_change=None)
+        super().__init__(tag='q-menu', value=value)
 
         # https://github.com/zauberzeug/nicegui/issues/1738
         self._props.add_warning('touch-position',
@@ -43,7 +43,7 @@ class MenuItem(Item):
 
     def __init__(self,
                  text: str = '',
-                 on_click: Optional[Handler[ClickEventArguments]] = None, *,
+                 on_click: Handler[ClickEventArguments] | None = None, *,
                  auto_close: bool = True,
                  ) -> None:
         """Menu Item

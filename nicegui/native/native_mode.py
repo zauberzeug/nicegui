@@ -7,8 +7,9 @@ import socket
 import sys
 import time
 import warnings
+from collections.abc import Callable
 from threading import Event, Thread
-from typing import Any, Callable
+from typing import Any
 
 from .. import core, helpers, optional_features
 from ..logging import log

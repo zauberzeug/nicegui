@@ -1,21 +1,22 @@
-from __future__ import annotations
-
 import html
-from typing import Callable, Literal
+from collections.abc import Callable
+from typing import Literal
 
+from ..defaults import DEFAULT_PROP, resolve_defaults
 from .html import Html
 from .mixins.label_element import LabelElement
 
 
 class ChatMessage(LabelElement):
 
+    @resolve_defaults
     def __init__(self,
                  text: str | list[str] | None = None,
-                 name: str | None = None,
-                 label: str | None = None,
-                 stamp: str | None = None,
-                 avatar: str | None = None,
-                 sent: bool = False,
+                 name: str | None = DEFAULT_PROP | None,
+                 label: str | None = DEFAULT_PROP | None,
+                 stamp: str | None = DEFAULT_PROP | None,
+                 avatar: str | None = DEFAULT_PROP | None,
+                 sent: bool = DEFAULT_PROP | False,
                  text_html: bool = False,
                  sanitize: Callable[[str], str] | Literal[False] | None = None,
                  ) -> None:
@@ -52,12 +53,9 @@ class ChatMessage(LabelElement):
         if sanitize is None:
             raise ValueError('You must specify a sanitize function or sanitize=False when using text_html=True')
 
-        if name is not None:
-            self._props['name'] = name
-        if stamp is not None:
-            self._props['stamp'] = stamp
-        if avatar is not None:
-            self._props['avatar'] = avatar
+        self._props.set_optional('name', name)
+        self._props.set_optional('stamp', stamp)
+        self._props.set_optional('avatar', avatar)
         self._props['sent'] = sent
 
         with self:

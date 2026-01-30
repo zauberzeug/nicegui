@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
   <head>
     <title>{{ title }}</title>
@@ -21,15 +21,13 @@
         @import url("{{ prefix | safe }}/_nicegui/{{version}}/static/quasar.important.css") layer(quasar_importants);
       {% endif %}
       @import url("{{ prefix | safe }}/_nicegui/{{version}}/static/nicegui.css") layer(nicegui);
-      {% if tailwind %}
-      @import url("{{ prefix | safe }}/_nicegui/{{version}}/static/headwind.css") layer(overrides);
-      {% endif %}
       @layer quasar {
         blockquote, dd, dl, figure, h1, h2, h3, h4, h5, h6, hr, p, pre {
           margin: revert-layer; /* HACK: revert Quasar's margin styles */
         }
       }
       @layer overrides {
+        {{ headwind_css | safe }}
         .column.inline, .flex.inline, .row.inline {
           display: inline-flex;  /* HACK: re-apply Quasar's inline styles to override Tailwind */
         }
@@ -42,6 +40,9 @@
     <script type="importmap">
       {"imports": {{ imports | safe }}}
     </script>
+    <script>
+      addStyle = (c) => document.head.append(Object.assign(document.createElement("style"), { textContent: c }));
+    </script>
     {{ head_html | safe }}
     <!-- prevent Prettier from removing this line -->
     {% for url in js_imports_urls %}
@@ -53,9 +54,38 @@
       @custom-variant dark (&:where(body.body--dark, body.body--dark *));
     </style>
     {% endif %}
+    <!-- prevent Prettier from removing this line -->
+    {% if unocss %}
+    <script defer src="{{ prefix | safe }}/_nicegui/{{version}}/static/unocss/preset-{{unocss}}.global.js"></script>
+    <script>
+      window.__unocss = {
+        presets: [
+          () => window.__unocss_runtime.presets.preset{{unocss.title()}}({
+            dark: {
+              light: 'body.body--light',
+              dark: 'body.body--dark',
+            },
+          }),
+        ],
+        runtime: { ready: () => false },
+        outputToCssLayers: {
+          cssLayerName: (layer) => {
+            if (layer === 'default') return 'utilities';
+            if (layer === 'preflights') return 'base';
+            return undefined;
+          },
+        },
+      };
+    </script>
+    <script defer src="{{ prefix | safe }}/_nicegui/{{version}}/static/unocss/core.global.js"></script>
+    <style>
+      #app.nicegui-unocss-loading {
+        visibility: hidden;
+      }
+    </style>
+    {% endif %}
   </head>
   <body>
-    <script async src="{{ prefix | safe }}/_nicegui/{{version}}/static/es-module-shims.js"></script>
     <script defer src="{{ prefix | safe }}/_nicegui/{{version}}/static/socket.io.min.js"></script>
     {% if tailwind %}
     <script defer src="{{ prefix | safe }}/_nicegui/{{version}}/static/tailwindcss.min.js"></script>
@@ -74,7 +104,7 @@
     <script defer src="{{ prefix | safe }}/_nicegui/{{version}}/static/lang/{{ language }}.umd.prod.js"></script>
     {{ body_html | safe }}
 
-    <div id="app"></div>
+    <div id="app" {% if unocss %}class="nicegui-unocss-loading" {% endif %}></div>
     <div id="popup" class="nicegui-error-popup" aria-hidden="true">
       <span>{{ translations.connection_lost }}</span>
       <span>{{ translations.trying_to_reconnect }}</span>

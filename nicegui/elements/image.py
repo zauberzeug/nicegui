@@ -1,8 +1,9 @@
+from __future__ import annotations
+
 import base64
 import io
 import time
 from pathlib import Path
-from typing import Union
 
 from .. import optional_features
 from ..logging import log
@@ -18,7 +19,7 @@ except ImportError:
 class Image(SourceElement, component='image.js'):
     PIL_CONVERT_FORMAT = 'PNG'
 
-    def __init__(self, source: Union[str, Path, 'PIL_Image'] = '') -> None:
+    def __init__(self, source: str | Path | PIL_Image = '') -> None:
         """Image
 
         Displays an image.
@@ -28,10 +29,10 @@ class Image(SourceElement, component='image.js'):
         """
         super().__init__(source=source)
 
-    def set_source(self, source: Union[str, Path, 'PIL_Image']) -> None:
+    def set_source(self, source: str | Path | PIL_Image) -> None:
         return super().set_source(source)
 
-    def _set_props(self, source: Union[str, Path, 'PIL_Image']) -> None:
+    def _set_props(self, source: str | Path | PIL_Image) -> None:
         if optional_features.has('pillow') and isinstance(source, PIL_Image):
             source = pil_to_base64(source, self.PIL_CONVERT_FORMAT)
         super()._set_props(source)
@@ -44,7 +45,7 @@ class Image(SourceElement, component='image.js'):
         self._props['t'] = time.time()
 
 
-def pil_to_base64(pil_image: 'PIL_Image', image_format: str) -> str:
+def pil_to_base64(pil_image: PIL_Image, image_format: str) -> str:
     """Convert a PIL image to a base64 string which can be used as image source.
 
     :param pil_image: the PIL image

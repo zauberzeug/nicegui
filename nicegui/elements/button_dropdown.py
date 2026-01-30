@@ -1,7 +1,6 @@
-from typing import Optional
-
 from typing_extensions import Self
 
+from ..defaults import DEFAULT_PROP, resolve_defaults
 from ..events import ClickEventArguments, Handler, ValueChangeEventArguments, handle_event
 from .mixins.color_elements import BackgroundColorElement
 from .mixins.disableable_element import DisableableElement
@@ -12,15 +11,16 @@ from .mixins.value_element import ValueElement
 
 class DropdownButton(IconElement, TextElement, DisableableElement, BackgroundColorElement, ValueElement):
 
+    @resolve_defaults
     def __init__(self,
                  text: str = '', *,
                  value: bool = False,
-                 on_value_change: Optional[Handler[ValueChangeEventArguments]] = None,
-                 on_click: Optional[Handler[ClickEventArguments]] = None,
-                 color: Optional[str] = 'primary',
-                 icon: Optional[str] = None,
-                 auto_close: Optional[bool] = False,
-                 split: Optional[bool] = False,
+                 on_value_change: Handler[ValueChangeEventArguments] | None = None,
+                 on_click: Handler[ClickEventArguments] | None = None,
+                 color: str | None = DEFAULT_PROP | 'primary',
+                 icon: str | None = DEFAULT_PROP | None,
+                 auto_close: bool | None = DEFAULT_PROP | False,
+                 split: bool | None = DEFAULT_PROP | False,
                  ) -> None:
         """Dropdown Button
 
@@ -43,11 +43,8 @@ class DropdownButton(IconElement, TextElement, DisableableElement, BackgroundCol
         super().__init__(tag='q-btn-dropdown',
                          icon=icon, text=text, background_color=color, value=value, on_value_change=on_value_change)
 
-        if auto_close:
-            self._props['auto-close'] = True
-
-        if split:
-            self._props['split'] = True
+        self._props.set_bool('auto-close', auto_close)
+        self._props.set_bool('split', split)
 
         if on_click:
             self.on_click(on_click)

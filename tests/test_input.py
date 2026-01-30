@@ -1,5 +1,5 @@
 import asyncio
-from typing import Literal, Optional
+from typing import Literal
 
 import pytest
 from selenium.webdriver.common.by import By
@@ -77,7 +77,7 @@ def test_input_validation(method: Literal['dict', 'sync', 'async'], screen: Scre
             input_ = ui.input('Name',
                               validation={'Short': lambda x: len(x) >= 3, 'Still short': lambda x: len(x) >= 5})
         else:
-            async def validate(x: str) -> Optional[str]:
+            async def validate(x: str) -> str | None:
                 await asyncio.sleep(0.1)
                 return 'Short' if len(x) < 3 else 'Still short' if len(x) < 5 else None
             input_ = ui.input('Name', validation=validate)
@@ -216,3 +216,23 @@ def test_switching_focus(screen: Screen):
     screen.click('focus 2')
     screen.wait(0.3)
     assert elements[1] == screen.selenium.switch_to.active_element
+
+
+def test_prefix_and_suffix(screen: Screen):
+    @ui.page('/')
+    def page():
+        n = ui.input(prefix='MyPrefix', suffix='MySuffix')
+
+        def change_prefix_suffix():
+            n.prefix = 'NewPrefix'
+            n.suffix = 'NewSuffix'
+
+        ui.button('Change', on_click=change_prefix_suffix)
+
+    screen.open('/')
+    screen.should_contain('MyPrefix')
+    screen.should_contain('MySuffix')
+
+    screen.click('Change')
+    screen.should_contain('NewPrefix')
+    screen.should_contain('NewSuffix')

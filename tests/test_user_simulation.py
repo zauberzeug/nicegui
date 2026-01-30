@@ -2,7 +2,8 @@ import csv
 import re
 import sys
 import textwrap
-from typing import Any, Callable, Union
+from collections.abc import Callable
+from typing import Any
 
 import pytest
 from fastapi.responses import PlainTextResponse
@@ -378,22 +379,23 @@ async def test_page_to_string_output_used_in_error_messages(user: User) -> None:
 
     await user.open('/')
     output = str(user.current_layout)
-    assert output == '''
-q-layout
- q-page-container
-  q-page
-   div
-    Label [markers=first, text=Hello]
-    Row
-     Column
-      Button [markers=second, label=World]
-      Icon [markers=third, name=thumbs-up]
-    Avatar [icon=star]
-    Input [value=typed, label=some input, for=c10, placeholder=type here, type=text]
-    Markdown [content=## Markdown...]
-    Card
-     Image [src=/image.jpg]
-'''.strip()
+    pattern = textwrap.dedent(r'''
+        q-layout
+         q-page-container
+          q-page
+           div
+            Label \[markers=first, text=Hello\]
+            Row
+             Column
+              Button \[markers=second, label=World\]
+              Icon \[markers=third, name=thumbs-up\]
+            Avatar \[icon=star\]
+            Input \[value=typed, label=some input, for=c10, placeholder=type here, type=text\]
+            Markdown \[content=\#\# Markdown..., resource-name=[^\]]+\]
+            Card
+             Image \[src=/image.jpg\]
+    ''').strip()
+    assert re.fullmatch(pattern, output) is not None
 
 
 async def test_combined_filter_parameters(user: User) -> None:
@@ -510,6 +512,27 @@ async def test_select_multiple_values(user: User):
     assert select.value == ['B']
 
 
+async def test_select_keeps_value_when_toggling_popup(user: User):
+    @ui.page('/')
+    def page():
+        s = ui.select(['Apple', 'Banana', 'Cherry'], label='Fruit', value='Apple')
+        ui.label().bind_text_from(s, 'is_showing_popup', lambda v: 'open' if v else 'closed')
+        ui.label().bind_text_from(s, 'value', lambda v: f'value = {v}')
+
+    await user.open('/')
+    one = user.find('Fruit')
+    await user.should_see('closed')
+    await user.should_see('value = Apple')
+
+    one.click()
+    await user.should_see('open')
+    await user.should_see('value = Apple')
+
+    one.click()
+    await user.should_see('closed')
+    await user.should_see('value = Apple')
+
+
 async def test_upload_table(user: User) -> None:
     @ui.page('/')
     def page():
@@ -535,7 +558,7 @@ async def test_upload_table(user: User) -> None:
 
 
 @pytest.mark.parametrize('data', ['/data', b'Hello'])
-async def test_download_file(user: User, data: Union[str, bytes]) -> None:
+async def test_download_file(user: User, data: str | bytes) -> None:
     @app.get('/data')
     def get_data() -> PlainTextResponse:
         return PlainTextResponse('Hello')
@@ -626,14 +649,14 @@ async def test_page_to_string_output_for_invisible_elements(user: User) -> None:
 
     await user.open('/')
     output = str(user.current_layout)
-    assert output == '''
-q-layout
- q-page-container
-  q-page
-   div
-    Label [text=Visible]
-    Label [text=Hidden, visible=False]
-'''.strip()
+    assert output == textwrap.dedent('''
+        q-layout
+         q-page-container
+          q-page
+           div
+            Label [text=Visible]
+            Label [text=Hidden, visible=False]
+    ''').strip()
 
 
 async def test_typing_to_disabled_element(user: User) -> None:
@@ -783,3 +806,20 @@ async def test_module_import_isolation_second_test(user: User, tmp_path) -> None
     """
     assert 'test_isolation_module' not in sys.modules, \
         'test_isolation_module from previous test should not be in sys.modules'
+
+
+async def test_storage_tab_persists_across_navigation(user: User) -> None:
+    @ui.page('/')
+    def root() -> None:
+        ui.button('Write value', on_click=lambda: app.storage.tab.update(value='ABC'))
+
+    @ui.page('/other')
+    def other() -> None:
+        ui.button('Read value', on_click=lambda: ui.notify(app.storage.tab['value']))
+
+    await user.open('/')
+    user.find('Write value').click()
+
+    await user.open('/other')
+    user.find('Read value').click()
+    await user.should_see('ABC')
