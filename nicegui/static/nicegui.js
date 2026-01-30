@@ -80,7 +80,6 @@ function setDark(dark) {
   document
     .getElementById("nicegui-color-scheme")
     .setAttribute("content", dark === None ? "normal" : dark ? "dark" : "light");
-  document.getElementById("nicegui-darkreader-lock").setAttribute("name", dark ? "darkreader-lock" : "");
 }
 
 function parseElements(raw_elements) {
