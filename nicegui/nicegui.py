@@ -116,6 +116,14 @@ def _get_esm(key: str, path: str) -> FileResponse:
     raise HTTPException(status_code=404, detail=f'ESM module "{key}" not found')
 
 
+def _exception_handler(loop: asyncio.AbstractEventLoop, context: dict) -> None:
+    """Custom exception handler to suppress connection reset errors on Windows."""
+    e = context.get('exception')
+    if isinstance(e, ConnectionResetError) and getattr(e, 'winerror', None) == 10054:
+        return  # https://bugs.python.org/issue39010
+    loop.default_exception_handler(context)
+
+
 async def _startup() -> None:
     """Handle the startup event."""
     if not app.config.has_run_config:
@@ -138,6 +146,7 @@ async def _startup() -> None:
     else:
         app.add_route('/favicon.ico', lambda _: FileResponse(Path(__file__).parent / 'static' / 'favicon.ico'))
     core.loop = asyncio.get_running_loop()
+    core.loop.set_exception_handler(_exception_handler)
     run.setup()
     app.start()
     background_tasks.create(binding.refresh_loop(), name='refresh bindings')
