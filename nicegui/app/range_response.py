@@ -1,6 +1,6 @@
 import hashlib
 import mimetypes
-from collections.abc import Generator
+from collections.abc import AsyncGenerator
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -40,7 +40,7 @@ def get_range_response(file: Path, request: Request, chunk_size: int) -> Respons
         'Accept-Ranges': 'bytes',
     })
 
-    def content_reader(file: Path, start: int, end: int) -> Generator[bytes, None, None]:
+    async def content_reader(file: Path, start: int, end: int) -> AsyncGenerator[bytes, None]:
         with open(file, 'rb') as data:
             data.seek(start)
             remaining_bytes = end - start + 1
