@@ -152,8 +152,8 @@ async def _startup() -> None:
 
 def _exception_handler(loop: asyncio.AbstractEventLoop, context: dict) -> None:
     """Custom exception handler to suppress connection reset errors on Windows."""
-    e = context.get('exception')
-    if isinstance(e, ConnectionResetError) and getattr(e, 'winerror', None) == 10054:
+    exception = context.get('exception')
+    if isinstance(exception, ConnectionResetError) and getattr(exception, 'winerror', None) == 10054:
         return  # https://bugs.python.org/issue39010
     loop.default_exception_handler(context)
 
