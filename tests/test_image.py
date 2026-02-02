@@ -1,7 +1,15 @@
 from pathlib import Path
 
+import pytest
+
 from nicegui import app, ui
 from nicegui.testing import Screen
+
+try:
+    from PIL import Image
+    PIL_AVAILABLE = True
+except ImportError:
+    PIL_AVAILABLE = False
 
 example_file = Path(__file__).parent / '../examples/slideshow/slides/slide1.jpg'
 example_data = ('data:image/png;base64,'
@@ -109,3 +117,27 @@ def test_force_reload(screen: Screen):
     screen.click('Reload 2')
     screen.wait(0.5)
     screen.assert_py_logger('WARNING', 'ui.image: force_reload() only works with network sources (not data URIs)')
+
+
+@pytest.mark.skipif(not PIL_AVAILABLE, reason='PIL not available')
+def test_pil_image(screen: Screen):
+    """Test that PIL images work and temp files are cleaned up."""
+    temp_file = None
+
+    @ui.page('/')
+    def page():
+        nonlocal temp_file
+        pil_img = Image.new('RGB', (100, 100), color='red')
+        img = ui.image(pil_img)
+        temp_file = img._cleanup_holder[0]
+        assert temp_file.exists()
+        ui.button('Delete', on_click=img.delete)
+
+    screen.open('/')
+    screen.wait(0.2)
+    image = screen.find_by_class('q-img__image')
+    screen.should_load_image(image)
+
+    screen.click('Delete')
+    screen.wait(0.2)
+    assert not temp_file.exists()
