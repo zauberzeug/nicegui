@@ -116,14 +116,6 @@ def _get_esm(key: str, path: str) -> FileResponse:
     raise HTTPException(status_code=404, detail=f'ESM module "{key}" not found')
 
 
-def _exception_handler(loop: asyncio.AbstractEventLoop, context: dict) -> None:
-    """Custom exception handler to suppress connection reset errors on Windows."""
-    e = context.get('exception')
-    if isinstance(e, ConnectionResetError) and getattr(e, 'winerror', None) == 10054:
-        return  # https://bugs.python.org/issue39010
-    loop.default_exception_handler(context)
-
-
 async def _startup() -> None:
     """Handle the startup event."""
     if not app.config.has_run_config:
@@ -156,6 +148,14 @@ async def _startup() -> None:
     if app.storage.secret is not None:
         app.timer(10, prune_user_storage)
     air.connect()
+
+
+def _exception_handler(loop: asyncio.AbstractEventLoop, context: dict) -> None:
+    """Custom exception handler to suppress connection reset errors on Windows."""
+    e = context.get('exception')
+    if isinstance(e, ConnectionResetError) and getattr(e, 'winerror', None) == 10054:
+        return  # https://bugs.python.org/issue39010
+    loop.default_exception_handler(context)
 
 
 async def _shutdown() -> None:
