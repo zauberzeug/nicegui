@@ -316,7 +316,16 @@ export default {
         mesh = new THREE.Group();
         this.gltf_loader.load(
           url,
-          (gltf) => mesh.add(gltf.scene),
+          (gltf) => {
+            mesh.add(gltf.scene);
+            if (mesh.pendingMaterialInfo) {
+              const { color, opacity, side } = mesh.pendingMaterialInfo;
+              mesh.traverse((child) => {
+                if (child.isMesh && child.material) this.applyMaterialSettings(child.material, color, opacity, side);
+              });
+              delete mesh.pendingMaterialInfo;
+            }
+          },
           undefined,
           (error) => console.error(error),
         );
@@ -374,9 +383,7 @@ export default {
       if (!this.objects.has(object_id)) return;
       this.objects.get(object_id).name = name;
     },
-    material(object_id, color, opacity, side) {
-      if (!this.objects.has(object_id)) return;
-      const material = this.objects.get(object_id).material;
+    applyMaterialSettings(material, color, opacity, side) {
       if (!material) return;
       const vertexColors = color === null;
       material.color.set(vertexColors ? "#ffffff" : color);
@@ -386,6 +393,15 @@ export default {
       if (side == "front") material.side = THREE.FrontSide;
       else if (side == "back") material.side = THREE.BackSide;
       else material.side = THREE.DoubleSide;
+    },
+    material(object_id, color, opacity, side) {
+      const object = this.objects.get(object_id);
+      if (!object) return;
+      if (object.isGroup) {
+        object.pendingMaterialInfo = { color, opacity, side };
+      } else if (object.material) {
+        this.applyMaterialSettings(object.material, color, opacity, side);
+      }
     },
     move(object_id, x, y, z) {
       if (!this.objects.has(object_id)) return;
