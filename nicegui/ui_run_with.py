@@ -79,7 +79,7 @@ def run_with(
         cache_control_directives=cache_control_directives,
     )
     core.root = root
-    storage.set_storage_secret(storage_secret, session_middleware_kwargs)
+    storage.set_storage_secret(storage_secret, session_middleware_kwargs, parent_app=app)
     if not helpers.is_pytest() and gzip_middleware_factory is not None:
         core.app.add_middleware(gzip_middleware_factory)
     core.app.add_middleware(RedirectWithPrefixMiddleware)
