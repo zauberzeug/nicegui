@@ -82,7 +82,7 @@ class _NumpyLTTBDownsampler:
                 avg_x * (prev_y - bucket_y)
             )
 
-            max_area_idx = bucket_start + np.argmax(areas)
+            max_area_idx = bucket_start + int(np.argmax(areas))
             indices[i] = max_area_idx
             prev_idx = max_area_idx
 
