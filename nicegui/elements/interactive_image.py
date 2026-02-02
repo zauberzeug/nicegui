@@ -102,8 +102,8 @@ class InteractiveImage(SourceElement, ContentElement, component='interactive_ima
 
     def _set_props(self, source: str | Path | PIL_Image) -> None:
         if optional_features.has('pillow') and isinstance(source, PIL_Image):
-            self._source_for_cleanup = pil_to_tempfile(source, self.PIL_CONVERT_FORMAT)
-            super()._set_props(self._source_for_cleanup)
+            self._cleanup_holder[0] = pil_to_tempfile(source, self.PIL_CONVERT_FORMAT)
+            super()._set_props(self._cleanup_holder[0])
         else:
             super()._set_props(source)
 
@@ -158,8 +158,8 @@ class InteractiveImageLayer(SourceElement, ContentElement, component='interactiv
 
     def _set_props(self, source: str | Path | PIL_Image) -> None:
         if optional_features.has('pillow') and isinstance(source, PIL_Image):
-            self._source_for_cleanup = pil_to_tempfile(source, self.PIL_CONVERT_FORMAT)
-            super()._set_props(self._source_for_cleanup)
+            self._cleanup_holder[0] = pil_to_tempfile(source, self.PIL_CONVERT_FORMAT)
+            super()._set_props(self._cleanup_holder[0])
         else:
             super()._set_props(source)
 
