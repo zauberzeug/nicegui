@@ -41,7 +41,7 @@ class Image(SourceElement, component='image.js'):
     def force_reload(self) -> None:
         """Force the image to reload from the source."""
         if self._props['src'].startswith('data:'):
-            log.warning('ui.image: force_reload() only works with network sources (not base64)')
+            log.warning('ui.image: force_reload() only works with network sources (not data URIs)')
             return
         self._props['t'] = time.time()
 

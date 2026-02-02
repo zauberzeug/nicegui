@@ -108,4 +108,4 @@ def test_force_reload(screen: Screen):
 
     screen.click('Reload 2')
     screen.wait(0.5)
-    screen.assert_py_logger('WARNING', 'ui.image: force_reload() only works with network sources (not base64)')
+    screen.assert_py_logger('WARNING', 'ui.image: force_reload() only works with network sources (not data URIs)')
