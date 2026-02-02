@@ -187,6 +187,13 @@ async def _exception_handler_500(request: Request, exception: Exception) -> Resp
     return client.build_response(request, 500)
 
 
+@sio.on('connect')
+async def _on_connect(sid: str, data: dict[str, Any], _=None) -> None:
+    query = {k: v[0] for k, v in urllib.parse.parse_qs(data.get('QUERY_STRING', '')).items()}
+    if query.get('implicit_handshake', '') == 'true' and not await _on_handshake(sid, query):
+        raise socketio.exceptions.ConnectionRefusedError('Implicit handshake failed')
+
+
 @sio.on('handshake')
 async def _on_handshake(sid: str, data: dict[str, Any]) -> bool:
     client = Client.instances.get(data['client_id'])
@@ -200,7 +207,8 @@ async def _on_handshake(sid: str, data: dict[str, Any]) -> bool:
     else:
         client.environ = sio.get_environ(sid)
         await sio.enter_room(sid, client.id)
-    client.handle_handshake(sid, data['document_id'], data.get('next_message_id'))
+    client.handle_handshake(sid, data['document_id'],
+                            int(data['next_message_id']) if 'next_message_id' in data else None)
     assert client.tab_id is not None
     await core.app.storage._create_tab_storage(client.tab_id)  # pylint: disable=protected-access
     return True
@@ -226,28 +234,20 @@ def _on_event(_: str, msg: dict) -> None:
 
 @sio.on('javascript_response')
 def _on_javascript_response(_: str, msg: dict) -> None:
-    client = Client.instances.get(msg['client_id'])
-    if not client:
-        return
-    client.handle_javascript_response(msg)
+    if client := Client.instances.get(msg['client_id']):
+        client.handle_javascript_response(msg)
 
 
 @sio.on('ack')
 def _on_ack(_: str, msg: dict) -> None:
-    client = Client.instances.get(msg['client_id'])
-    if not client:
-        return
-    client.outbox.prune_history(msg['next_message_id'])
+    if client := Client.instances.get(msg['client_id']):
+        client.outbox.prune_history(msg['next_message_id'])
 
 
 @sio.on('log')
 def _on_log(_: str, msg: dict) -> None:
-    {
-        'debug': log.debug,
-        'info': log.info,
-        'warning': log.warning,
-        'error': log.error,
-    }[msg['level']](msg['message'])
+    if client := Client.instances.get(msg['client_id']):
+        client.handle_log_message(msg)
 
 
 async def prune_tab_storage(*, force: bool = False) -> None:

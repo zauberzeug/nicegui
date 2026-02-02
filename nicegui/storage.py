@@ -3,7 +3,7 @@ import os
 import uuid
 from datetime import timedelta
 from pathlib import Path
-from typing import Any, Optional, Union
+from typing import Any
 
 from starlette.middleware import Middleware
 from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
@@ -17,7 +17,7 @@ from .observables import ObservableDict
 from .persistence import FilePersistentDict, PersistentDict, ReadOnlyDict, RedisPersistentDict
 from .persistence.pseudo_persistent_dict import PseudoPersistentDict
 
-request_contextvar: contextvars.ContextVar[Optional[Request]] = contextvars.ContextVar('request_var', default=None)
+request_contextvar: contextvars.ContextVar[Request | None] = contextvars.ContextVar('request_var', default=None)
 
 
 class RequestTrackingMiddleware(BaseHTTPMiddleware):
@@ -35,8 +35,8 @@ class RequestTrackingMiddleware(BaseHTTPMiddleware):
         return response
 
 
-def set_storage_secret(storage_secret: Optional[str] = None,
-                       session_middleware_kwargs: Optional[dict[str, Any]] = None) -> None:
+def set_storage_secret(storage_secret: str | None = None,
+                       session_middleware_kwargs: dict[str, Any] | None = None) -> None:
     """Set storage_secret and add request tracking middleware."""
     if any(m.cls == SessionMiddleware for m in core.app.user_middleware):
         # NOTE not using "add_middleware" because it would be the wrong order
@@ -48,7 +48,7 @@ def set_storage_secret(storage_secret: Optional[str] = None,
 
 
 class Storage:
-    secret: Optional[str] = None
+    secret: str | None = None
     '''Secret key for session storage.'''
 
     path = Path(os.environ.get('NICEGUI_STORAGE_PATH', '.nicegui')).resolve()
@@ -76,7 +76,7 @@ class Storage:
             return FilePersistentDict(Storage.path / f'storage-{id}.json', encoding='utf-8')
 
     @property
-    def browser(self) -> Union[ReadOnlyDict, dict]:
+    def browser(self) -> ReadOnlyDict | dict:
         """Small storage that is saved directly within the user's browser (encrypted cookie).
 
         The data is shared between all browser tabs and can only be modified before the initial request has been submitted.
@@ -85,7 +85,7 @@ class Storage:
         """
         if core.is_script_mode_preflight():
             return {}
-        request: Optional[Request] = request_contextvar.get()
+        request: Request | None = request_contextvar.get()
         if request is None:
             if Storage.secret is None:
                 raise RuntimeError('app.storage.browser needs a storage_secret passed in ui.run()')
@@ -106,7 +106,7 @@ class Storage:
         """
         if core.is_script_mode_preflight():
             return PseudoPersistentDict()
-        request: Optional[Request] = request_contextvar.get()
+        request: Request | None = request_contextvar.get()
         if request is None:
             if Storage.secret is None:
                 raise RuntimeError('app.storage.user needs a storage_secret passed in ui.run()')
@@ -164,7 +164,7 @@ class Storage:
                 self._tabs[tab_id] = ObservableDict()
             self._tabs[tab_id].update(self._tabs[old_tab_id])
 
-    async def close_tab(self, tab_id: Optional[str]) -> None:
+    async def close_tab(self, tab_id: str | None) -> None:
         """Close the tab storage. (For internal use only.)"""
         if tab_id and isinstance(tab := self._tabs.get(tab_id), PersistentDict):
             await tab.close()

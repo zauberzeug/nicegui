@@ -1,4 +1,4 @@
-from typing import Any, Optional
+from typing import Any
 
 from typing_extensions import Self
 
@@ -9,9 +9,9 @@ from ...events import GenericEventArguments, Handler, JoystickEventArguments, ha
 class Joystick(Element, component='joystick.js', esm={'nicegui-joystick': 'dist'}, default_classes='nicegui-joystick'):
 
     def __init__(self, *,
-                 on_start: Optional[Handler[JoystickEventArguments]] = None,
-                 on_move: Optional[Handler[JoystickEventArguments]] = None,
-                 on_end: Optional[Handler[JoystickEventArguments]] = None,
+                 on_start: Handler[JoystickEventArguments] | None = None,
+                 on_move: Handler[JoystickEventArguments] | None = None,
+                 on_end: Handler[JoystickEventArguments] | None = None,
                  throttle: float = 0.05,
                  **options: Any) -> None:
         """Joystick

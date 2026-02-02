@@ -18,7 +18,7 @@ class CustomServerConfig(uvicorn.Config):
 
 
 class Server(uvicorn.Server):
-    instance: Server
+    instance: uvicorn.Server
 
     @classmethod
     def create_singleton(cls, config: CustomServerConfig) -> None:

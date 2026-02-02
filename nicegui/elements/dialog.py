@@ -1,6 +1,6 @@
 import asyncio
 import weakref
-from typing import Any, Optional
+from typing import Any
 
 from ..context import context
 from ..defaults import DEFAULT_PROPS, resolve_defaults
@@ -35,7 +35,7 @@ class Dialog(ValueElement, component='dialog.js'):
         )
 
         self._result: Any = None
-        self._submitted: Optional[asyncio.Event] = None
+        self._submitted: asyncio.Event | None = None
 
     @property
     def submitted(self) -> asyncio.Event:

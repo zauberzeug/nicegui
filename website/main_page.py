@@ -133,7 +133,7 @@ def create() -> None:
                 'generic [Vue](https://vuejs.org/) to Python bridge',
                 'dynamic GUI through [Quasar](https://quasar.dev/)',
                 'content is served with [FastAPI](https://fastapi.tiangolo.com/)',
-                'Python 3.9+',
+                'Python 3.10+',
             ])
 
     with ui.column().classes('w-full p-8 lg:p-16 max-w-[1600px] mx-auto'):
@@ -171,7 +171,14 @@ def create() -> None:
                     with ui.row().classes('gap-8 justify-center'):
                         for sponsor in SPONSORS['special']:
                             with ui.link(target=SPONSORS['special'][sponsor]):
-                                ui.interactive_image(f'/static/sponsors/{sponsor}.png').classes('h-12')
+                                img_path = Path(__file__).parent / 'static' / 'sponsors' / f'{sponsor}.webp'
+                                if img_path.exists():
+                                    ui.interactive_image(img_path).classes('h-12')
+                                else:
+                                    ui.interactive_image(img_path.with_suffix('.light.webp')) \
+                                        .classes('h-12 block dark:!hidden')
+                                    ui.interactive_image(img_path.with_suffix('.dark.webp')) \
+                                        .classes('h-12 hidden dark:!block')
                         for sponsor in SPONSORS['top']:
                             with ui.link(target=f'https://github.com/{sponsor}').classes('row items-center gap-2'):
                                 ui.image(f'https://github.com/{sponsor}.png').classes('w-12 h-12 border')

@@ -5,7 +5,82 @@ const None = undefined;
 let app = undefined;
 let mounted_app = undefined;
 
-const loaded_components = new Set();
+function initUnoCss() {
+  if (window.__unocss_runtime === undefined) return;
+
+  const renderedClasses = new Set();
+  let queue = Promise.resolve();
+  let isInitialized = false;
+
+  new MutationObserver((mutations) => {
+    let newClassesString = "";
+    function appendClass(className) {
+      if (renderedClasses.has(className)) return;
+      renderedClasses.add(className);
+      newClassesString += className + " ";
+    }
+    for (const mutation of mutations) {
+      if (mutation.type === "attributes") {
+        for (const className of mutation.target.classList) appendClass(className);
+      } else if (mutation.type === "childList") {
+        for (const node of mutation.addedNodes) {
+          if (node.nodeType !== Node.ELEMENT_NODE) continue;
+          for (const el of [node, ...node.querySelectorAll("*")]) {
+            for (const className of el.classList) appendClass(className);
+          }
+        }
+      }
+    }
+    if (newClassesString.length === 0) return;
+    queue = queue.then(async () => {
+      await window.__unocss_runtime.extract(newClassesString);
+      if (isInitialized) return;
+      for (const style of document.querySelectorAll("style[data-unocss-runtime-layer]"))
+        document.head.appendChild(style);
+      document.getElementById("app").classList.remove("nicegui-unocss-loading");
+      isInitialized = true;
+    });
+  }).observe(document.body, { subtree: true, childList: true, attributes: true, attributeFilter: ["class"] });
+}
+
+function applyColors(colors) {
+  const quasarColors = [
+    "primary",
+    "secondary",
+    "accent",
+    "dark",
+    "dark-page",
+    "positive",
+    "negative",
+    "info",
+    "warning",
+  ];
+  let customCSS = "";
+  for (let color in colors) {
+    if (quasarColors.includes(color)) continue;
+    const colorName = color.replaceAll("_", "-");
+    const colorVar = "--q-" + colorName;
+    document.body.style.setProperty(colorVar, colors[color]);
+    customCSS += `.text-${colorName} { color: var(${colorVar}) !important; }\n`;
+    customCSS += `.bg-${colorName} { background-color: var(${colorVar}) !important; }\n`;
+  }
+  if (!customCSS) return;
+  const style = document.createElement("style");
+  style.innerHTML = customCSS;
+  style.dataset.niceguiCustomColors = "";
+  document.head.querySelectorAll("[data-nicegui-custom-colors]").forEach((el) => el.remove());
+  document.getElementsByTagName("head")[0].appendChild(style);
+}
+
+let darkSetter = undefined;
+
+function setDark(dark) {
+  if (dark === null) dark = None;
+  darkSetter?.(dark);
+  document
+    .getElementById("nicegui-color-scheme")
+    .setAttribute("content", dark === None ? "normal" : dark ? "dark" : "light");
+}
 
 function parseElements(raw_elements) {
   return JSON.parse(
@@ -14,7 +89,7 @@ function parseElements(raw_elements) {
       .replace(/&#96;/g, "`")
       .replace(/&gt;/g, ">")
       .replace(/&lt;/g, "<")
-      .replace(/&amp;/g, "&")
+      .replace(/&amp;/g, "&"),
   );
 }
 
@@ -25,7 +100,6 @@ function replaceUndefinedAttributes(element) {
   element.text ??= null;
   element.events ??= [];
   element.update_method ??= null;
-  element.component ??= null;
   element.slots = {
     default: { ids: element.children || [] },
     ...(element.slots ?? {}),
@@ -89,7 +163,7 @@ function logAndEmit(level, message) {
   } else {
     console.log(message);
   }
-  window.socket.emit("log", { level, message });
+  window.socket.emit("log", { client_id: window.clientId, level, message });
 }
 
 function stringifyEventArgs(args, event_args) {
@@ -155,9 +229,6 @@ function renderRecursively(elements, id, propsContext) {
   if (element === undefined) {
     return;
   }
-
-  // @todo: Try avoid this with better handling of initial page load.
-  if (element.component) loaded_components.add(element.component.name);
 
   const props = {
     id: "c" + id,
@@ -236,8 +307,8 @@ function renderRecursively(elements, id, propsContext) {
             },
             {
               props: props,
-            }
-          )
+            },
+          ),
         );
       }
       const children = data.ids.map((id) => renderRecursively(elements, id, props || propsContext));
@@ -247,7 +318,7 @@ function renderRecursively(elements, id, propsContext) {
       return [...rendered, ...children];
     };
   });
-  return Vue.h(Vue.resolveComponent(element.tag), props, slots);
+  return Vue.h(app.config.isNativeTag(element.tag) ? element.tag : Vue.resolveComponent(element.tag), props, slots);
 }
 
 function runJavascript(code, request_id) {
@@ -290,24 +361,13 @@ function ack() {
   window.ackedMessageId = window.nextMessageId;
 }
 
-async function loadDependencies(element, prefix, version) {
-  if (element.component) {
-    const { name, key, tag } = element.component;
-    if (!loaded_components.has(name) && !key.endsWith(".vue")) {
-      const component = await import(`${prefix}/_nicegui/${version}/components/${key}`);
-      app.component(tag, component.default);
-      loaded_components.add(name);
-    }
-  }
-}
-
 function createRandomUUID() {
   try {
     return crypto.randomUUID();
   } catch (e) {
     // https://stackoverflow.com/a/2117523/3419103
     return "10000000-1000-4000-8000-100000000000".replace(/[018]/g, (c) =>
-      (+c ^ (crypto.getRandomValues(new Uint8Array(1))[0] & (15 >> (+c / 4)))).toString(16)
+      (+c ^ (crypto.getRandomValues(new Uint8Array(1))[0] & (15 >> (+c / 4)))).toString(16),
     );
   }
 }
@@ -325,6 +385,7 @@ window.onbeforeunload = function () {
 function createApp(elements, options) {
   Object.entries(elements).forEach(([_, element]) => replaceUndefinedAttributes(element));
   setInterval(() => ack(), 3000);
+  initUnoCss();
   return (app = Vue.createApp({
     data() {
       return {
@@ -342,6 +403,9 @@ function createApp(elements, options) {
       window.path_prefix = options.prefix;
       window.nextMessageId = options.query.next_message_id;
       window.ackedMessageId = -1;
+      options.query.document_id = window.documentId;
+      options.query.tab_id = TAB_ID;
+      options.query.old_tab_id = OLD_TAB_ID;
       window.socket = io(url, {
         path: `${options.prefix}/_nicegui_ws/socket.io`,
         query: options.query,
@@ -361,7 +425,7 @@ function createApp(elements, options) {
               if (typeof msg === "string" && msg.length > MAX_WEBSOCKET_MESSAGE_SIZE) {
                 const errorMessage = `Payload size ${msg.length} exceeds the maximum allowed limit.`;
                 console.error(errorMessage);
-                args[0] = `42["log",{"level":"error","message":"${errorMessage}"}]`;
+                args[0] = `42["log",{"client_id":"${window.clientId}","level":"error","message":"${errorMessage}"}]`;
                 if (window.tooLongMessageTimerId) clearTimeout(window.tooLongMessageTimerId);
                 const popup = document.getElementById("too_long_message_popup");
                 popup.ariaHidden = false;
@@ -374,26 +438,28 @@ function createApp(elements, options) {
           if (transport?.ws?.send) transport.ws.send = wrapFunction(transport.ws.send);
           if (transport?.doWrite) transport.doWrite = wrapFunction(transport.doWrite);
 
-          const args = {
-            client_id: window.clientId,
-            document_id: window.documentId,
-            tab_id: TAB_ID,
-            old_tab_id: OLD_TAB_ID,
-            next_message_id: window.nextMessageId,
-          };
-          window.socket.emit("handshake", args, (ok) => {
+          function finishHandshake(ok) {
             if (!ok) {
               console.log("reloading because handshake failed for clientId " + window.clientId);
               window.location.reload();
             }
             window.did_handshake = true;
             document.getElementById("popup").ariaHidden = true;
-          });
+          }
+
+          if (options.query.implicit_handshake) {
+            finishHandshake(true);
+          } else {
+            window.socket.emit("handshake", options.query, finishHandshake);
+          }
         },
         connect_error: (err) => {
           if (err.message == "timeout") {
             console.log("reloading because connection timed out");
             window.location.reload(); // see https://github.com/zauberzeug/nicegui/issues/198
+          } else if (err.message == "Implicit handshake failed") {
+            console.log("reloading because implicit handshake failed for clientId " + window.clientId);
+            window.location.reload();
           }
         },
         try_reconnect: async () => {
@@ -405,15 +471,16 @@ function createApp(elements, options) {
         disconnect: () => {
           document.getElementById("popup").ariaHidden = false;
         },
+        load_js_components: async (msg) => {
+          const urls = msg.components.map((c) => `${options.prefix}/_nicegui/${options.version}/components/${c.key}`);
+          const imports = await Promise.all(urls.map((url) => import(url)));
+          msg.components.forEach((c, i) => app.component(c.tag, imports[i].default));
+        },
         update: async (msg) => {
-          const loadPromises = Object.entries(msg)
-            .filter(([_, element]) => element && element.component)
-            .map(([_, element]) => loadDependencies(element, options.prefix, options.version));
-          await Promise.all(loadPromises);
-
           let eventListenersChanged = false;
           for (const [id, element] of Object.entries(msg)) {
             if (element === null) continue;
+            if (!(id in this.elements)) continue;
             const oldListenerIds = new Set((this.elements[id]?.events || []).map((ev) => ev.listener_id));
             if (element.events?.some((e) => !oldListenerIds.has(e.listener_id))) {
               delete this.elements[id];

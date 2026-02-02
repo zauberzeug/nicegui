@@ -1,4 +1,5 @@
-from typing import Any, Callable, Optional, cast
+from collections.abc import Callable
+from typing import Any, cast
 
 from typing_extensions import Self
 
@@ -14,7 +15,7 @@ class SelectableElement(Element):
     def __init__(self, *,
                  selectable: bool,
                  selected: bool,
-                 on_selection_change: Optional[Handler[ValueChangeEventArguments]] = None,
+                 on_selection_change: Handler[ValueChangeEventArguments] | None = None,
                  **kwargs: Any) -> None:
         super().__init__(**kwargs)
         if not selectable:
@@ -39,8 +40,8 @@ class SelectableElement(Element):
     def bind_selected_to(self,
                          target_object: Any,
                          target_name: str = 'selected',
-                         forward: Optional[Callable[[Any], Any]] = None, *,
-                         strict: Optional[bool] = None,
+                         forward: Callable[[Any], Any] | None = None, *,
+                         strict: bool | None = None,
                          ) -> Self:
         """Bind the selection state of this element to the target object's target_name property.
 
@@ -59,8 +60,8 @@ class SelectableElement(Element):
     def bind_selected_from(self,
                            target_object: Any,
                            target_name: str = 'selected',
-                           backward: Optional[Callable[[Any], Any]] = None, *,
-                           strict: Optional[bool] = None,
+                           backward: Callable[[Any], Any] | None = None, *,
+                           strict: bool | None = None,
                            ) -> Self:
         """Bind the selection state of this element from the target object's target_name property.
 
@@ -79,9 +80,9 @@ class SelectableElement(Element):
     def bind_selected(self,
                       target_object: Any,
                       target_name: str = 'selected', *,
-                      forward: Optional[Callable[[Any], Any]] = None,
-                      backward: Optional[Callable[[Any], Any]] = None,
-                      strict: Optional[bool] = None,
+                      forward: Callable[[Any], Any] | None = None,
+                      backward: Callable[[Any], Any] | None = None,
+                      strict: bool | None = None,
                       ) -> Self:
         """Bind the selection state of this element to the target object's target_name property.
 

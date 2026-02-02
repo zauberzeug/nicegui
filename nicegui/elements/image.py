@@ -1,7 +1,8 @@
+from __future__ import annotations
+
 import tempfile
 import time
 from pathlib import Path
-from typing import Union
 
 from .. import optional_features
 from ..logging import log
@@ -17,7 +18,7 @@ except ImportError:
 class Image(SourceElement, component='image.js'):
     PIL_CONVERT_FORMAT = 'PNG'
 
-    def __init__(self, source: Union[str, Path, 'PIL_Image'] = '') -> None:
+    def __init__(self, source: str | Path | PIL_Image = '') -> None:
         """Image
 
         Displays an image.
@@ -27,10 +28,10 @@ class Image(SourceElement, component='image.js'):
         """
         super().__init__(source=source)
 
-    def set_source(self, source: Union[str, Path, 'PIL_Image']) -> None:
+    def set_source(self, source: str | Path | PIL_Image) -> None:
         return super().set_source(source)
 
-    def _set_props(self, source: Union[str, Path, 'PIL_Image']) -> None:
+    def _set_props(self, source: str | Path | PIL_Image) -> None:
         if optional_features.has('pillow') and isinstance(source, PIL_Image):
             self._source_for_cleanup = pil_to_tempfile(source, self.PIL_CONVERT_FORMAT)
             super()._set_props(self._source_for_cleanup)
@@ -45,7 +46,7 @@ class Image(SourceElement, component='image.js'):
         self._props['t'] = time.time()
 
 
-def pil_to_tempfile(pil_image: 'PIL_Image', image_format: str) -> Path:
+def pil_to_tempfile(pil_image: PIL_Image, image_format: str) -> Path:
     """Save a PIL image to a temporary file.
 
     :param pil_image: the PIL image

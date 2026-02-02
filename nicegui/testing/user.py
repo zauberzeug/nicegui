@@ -2,7 +2,8 @@ from __future__ import annotations
 
 import asyncio
 import re
-from typing import Any, Callable, TypeVar, overload
+from collections.abc import Callable
+from typing import Any, TypeVar, overload
 from uuid import uuid4
 
 import httpx
@@ -36,6 +37,7 @@ class User:
         self.navigate = UserNavigate(self)
         self.notify = UserNotify()
         self.download = UserDownload(self)
+        self.tab_id = str(uuid4())
         self.javascript_rules: dict[re.Pattern, Callable[[re.Match], Any]] = {
             re.compile('.*__IS_DRAWER_OPEN__'): lambda _: True,  # see https://github.com/zauberzeug/nicegui/issues/4508
         }
@@ -73,7 +75,7 @@ class User:
         self.sio.on('connect')
         await _on_handshake(f'test-{uuid4()}', {
             'client_id': self.client.id,
-            'tab_id': str(uuid4()),
+            'tab_id': self.tab_id,
             'document_id': str(uuid4()),
         })
         self.back_history.append(path)

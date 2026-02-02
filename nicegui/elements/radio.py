@@ -1,4 +1,4 @@
-from typing import Any, Optional, Union
+from typing import Any
 
 from ..defaults import DEFAULT_PROPS, resolve_defaults
 from ..events import GenericEventArguments, Handler, ValueChangeEventArguments
@@ -10,9 +10,9 @@ class Radio(ChoiceElement, DisableableElement):
 
     @resolve_defaults
     def __init__(self,
-                 options: Union[list, dict], *,
+                 options: list | dict, *,
                  value: Any = DEFAULT_PROPS['model-value'] | None,
-                 on_change: Optional[Handler[ValueChangeEventArguments]] = None,
+                 on_change: Handler[ValueChangeEventArguments] | None = None,
                  ) -> None:
         """Radio Selection
 

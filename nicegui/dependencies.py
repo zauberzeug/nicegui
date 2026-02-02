@@ -1,10 +1,10 @@
 from __future__ import annotations
 
 import functools
-from collections.abc import Iterable
+from collections.abc import Callable, Iterable
 from dataclasses import dataclass
 from pathlib import Path
-from typing import TYPE_CHECKING, Callable, ClassVar
+from typing import TYPE_CHECKING, ClassVar
 
 from . import core
 from .dataclasses import KWONLY_SLOTS
