@@ -7,7 +7,7 @@ import numpy as np
 from ... import optional_features
 from ...element import Element
 from ...events import GenericEventArguments
-from ._resampling import HFTraceData, create_downsampler
+from ._resampling import Downsampler, HFTraceData, create_downsampler
 
 try:
     import plotly.graph_objects as go
@@ -42,14 +42,13 @@ class Plotly(Element, component='plotly.js', esm={'nicegui-plotly': 'dist'}):
         self.figure = figure
         self._n_samples = n_samples
         self._hf_data: dict[str, HFTraceData] = {}
+        self._downsampler: Downsampler | None = None
 
         if n_samples:
             self._downsampler = create_downsampler()
             self._extract_hf_data()
             self._apply_resampling()
             self.on('plotly_relayout', self._handle_relayout)
-        else:
-            self._downsampler = None
 
         self.update()
         self._classes.append('js-plotly-plot')

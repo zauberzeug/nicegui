@@ -18,7 +18,6 @@ class Downsampler(Protocol):
 
     def downsample(self, x: np.ndarray, y: np.ndarray, n_out: int) -> np.ndarray:
         """Downsample data to n_out points, returning indices of selected points."""
-        ...
 
 
 class _NumpyLTTBDownsampler:
