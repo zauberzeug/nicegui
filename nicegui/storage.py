@@ -69,7 +69,8 @@ def set_storage_secret(storage_secret: str | None = None,
     session_middleware_kwargs = session_middleware_kwargs or {}
     parent_middleware = _find_session_middleware(parent_app) if parent_app is not None else None
 
-    inherit_from_parent = False
+    use_existing_session_middleware = False
+
     if parent_middleware is not None:
         parent_secret = _get_secret(parent_middleware.kwargs)
         parent_cookie = _get_cookie(parent_middleware.kwargs)
@@ -85,21 +86,17 @@ def set_storage_secret(storage_secret: str | None = None,
                 '  - Pass `session_middleware_kwargs={"session_cookie": "your_unique_cookie_name"}` to ui.run_with()'
             )
         else:
-            inherit_from_parent = True
+            storage_secret = parent_secret
+            use_existing_session_middleware = True
 
-    if inherit_from_parent:
-        Storage.secret = _get_secret(parent_middleware.kwargs)
-    elif storage_secret is not None:
-        Storage.secret = storage_secret
-    else:
-        return
+    Storage.secret = storage_secret
 
-    if inherit_from_parent or _find_session_middleware(core.app) is not None:
+    if use_existing_session_middleware or _find_session_middleware(core.app) is not None:
         # NOTE: not using add_middleware because it would be the wrong order
         core.app.user_middleware.append(Middleware(RequestTrackingMiddleware))
-    else:
+    elif Storage.secret:
         core.app.add_middleware(RequestTrackingMiddleware)
-        core.app.add_middleware(SessionMiddleware, secret_key=storage_secret, **session_middleware_kwargs)
+        core.app.add_middleware(SessionMiddleware, secret_key=Storage.secret, **session_middleware_kwargs)
 
 
 class Storage:
