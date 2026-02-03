@@ -39,7 +39,7 @@ class Server(uvicorn.Server):
                 def monitor_shutdown_event() -> None:
                     event.wait()
                     self.should_exit = True
-                threading.Thread(target=monitor_shutdown_event).start()
+                threading.Thread(target=monitor_shutdown_event, daemon=True).start()
 
         storage.set_storage_secret(self.config.storage_secret, self.config.session_middleware_kwargs)
         super().run(sockets=sockets)
