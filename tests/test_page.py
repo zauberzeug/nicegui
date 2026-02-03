@@ -1,7 +1,8 @@
 import asyncio
 import re
-from typing import Optional
+from typing import Literal
 
+import pytest
 from fastapi.responses import PlainTextResponse
 from selenium.webdriver.common.by import By
 
@@ -64,7 +65,7 @@ def test_creating_new_page_after_startup(screen: Screen):
 
 
 def test_wait_for_connected(screen: Screen):
-    label: Optional[ui.label] = None
+    label: ui.label | None = None
 
     async def load() -> None:
         assert label
@@ -133,8 +134,11 @@ def test_adding_elements_after_connected(screen: Screen):
 
 
 def test_exception(screen: Screen):
+    exceptions = []
+
     @ui.page('/')
     def page():
+        ui.on_exception(exceptions.append)
         raise RuntimeError('some exception')
 
     screen.allowed_js_errors.append('/ - Failed to load resource')
@@ -142,11 +146,15 @@ def test_exception(screen: Screen):
     screen.should_contain('500')
     screen.should_contain('Server error')
     screen.assert_py_logger('ERROR', 'some exception')
+    assert not exceptions, 'ui.on_exception is for in-page exceptions (after page sent to browser)'
 
 
 def test_exception_after_connected(screen: Screen):
+    exceptions = []
+
     @ui.page('/')
     async def page():
+        ui.on_exception(exceptions.append)
         await ui.context.client.connected()
         ui.label('this is shown')
         raise RuntimeError('some exception')
@@ -154,6 +162,7 @@ def test_exception_after_connected(screen: Screen):
     screen.open('/')
     screen.should_contain('this is shown')
     screen.assert_py_logger('ERROR', 'some exception')
+    assert exceptions, 'in-page exception should be caught by ui.on_exception'
 
 
 def test_api_exception(screen: Screen):
@@ -197,7 +206,10 @@ def test_async_connect_handler(screen: Screen):
     screen.should_contain('42')
 
 
-def test_dark_mode(screen: Screen):
+@pytest.mark.parametrize('unocss', [None, 'mini', 'wind3', 'wind4'])
+def test_dark_mode(screen: Screen, unocss: Literal['mini', 'wind3', 'wind4'] | None):
+    app.config.unocss = unocss
+
     @ui.page('/auto', dark=None)
     def page():
         ui.label('A').classes('text-blue-400 dark:text-red-400')

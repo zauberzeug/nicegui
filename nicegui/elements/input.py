@@ -1,4 +1,4 @@
-from typing import Any, Optional, Union
+from typing import Any
 
 from ..defaults import DEFAULT_PROP, DEFAULT_PROPS, resolve_defaults
 from ..events import Handler, ValueChangeEventArguments
@@ -14,16 +14,16 @@ class Input(LabelElement, ValidationElement, DisableableElement, component='inpu
 
     @resolve_defaults
     def __init__(self,
-                 label: Optional[str] = DEFAULT_PROP | None, *,
-                 placeholder: Optional[str] = DEFAULT_PROP | None,
+                 label: str | None = DEFAULT_PROP | None, *,
+                 placeholder: str | None = DEFAULT_PROP | None,
                  value: str = DEFAULT_PROP | '',
                  password: bool = DEFAULT_PROP | False,
                  password_toggle_button: bool = False,
-                 prefix: Optional[str] = None,
-                 suffix: Optional[str] = None,
-                 on_change: Optional[Handler[ValueChangeEventArguments]] = None,
-                 autocomplete: Optional[list[str]] = DEFAULT_PROPS['_autocomplete'] | None,
-                 validation: Optional[Union[ValidationFunction, ValidationDict]] = None,
+                 prefix: str | None = None,
+                 suffix: str | None = None,
+                 on_change: Handler[ValueChangeEventArguments] | None = None,
+                 autocomplete: list[str] | None = DEFAULT_PROPS['_autocomplete'] | None,
+                 validation: ValidationFunction | ValidationDict | None = None,
                  ) -> None:
         """Text Input
 
@@ -76,12 +76,12 @@ class Input(LabelElement, ValidationElement, DisableableElement, component='inpu
         if suffix is not None:
             self._props['suffix'] = suffix
 
-    def set_autocomplete(self, autocomplete: Optional[list[str]]) -> None:
+    def set_autocomplete(self, autocomplete: list[str] | None) -> None:
         """Set the autocomplete list."""
         self._props['_autocomplete'] = autocomplete
 
     @property
-    def prefix(self) -> Optional[str]:
+    def prefix(self) -> str | None:
         """The prefix to prepend to the displayed value.
 
         *Added in version 3.5.0*
@@ -89,14 +89,14 @@ class Input(LabelElement, ValidationElement, DisableableElement, component='inpu
         return self._props.get('prefix')
 
     @prefix.setter
-    def prefix(self, value: Optional[str]) -> None:
+    def prefix(self, value: str | None) -> None:
         if value is None:
             self._props.pop('prefix', None)
         else:
             self._props['prefix'] = value
 
     @property
-    def suffix(self) -> Optional[str]:
+    def suffix(self) -> str | None:
         """The suffix to append to the displayed value.
 
         *Added in version 3.5.0*
@@ -104,7 +104,7 @@ class Input(LabelElement, ValidationElement, DisableableElement, component='inpu
         return self._props.get('suffix')
 
     @suffix.setter
-    def suffix(self, value: Optional[str]) -> None:
+    def suffix(self, value: str | None) -> None:
         if value is None:
             self._props.pop('suffix', None)
         else:

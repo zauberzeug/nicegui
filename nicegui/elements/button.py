@@ -1,5 +1,4 @@
 import asyncio
-from typing import Optional
 
 from typing_extensions import Self
 
@@ -16,9 +15,9 @@ class Button(IconElement, TextElement, DisableableElement, BackgroundColorElemen
     @resolve_defaults
     def __init__(self,
                  text: str = '', *,
-                 on_click: Optional[Handler[ClickEventArguments]] = None,
-                 color: Optional[str] = DEFAULT_PROP | 'primary',
-                 icon: Optional[str] = DEFAULT_PROP | None,
+                 on_click: Handler[ClickEventArguments] | None = None,
+                 color: str | None = DEFAULT_PROP | 'primary',
+                 icon: str | None = DEFAULT_PROP | None,
                  ) -> None:
         """Button
 

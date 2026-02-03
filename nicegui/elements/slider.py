@@ -1,5 +1,3 @@
-from typing import Optional
-
 from ..defaults import DEFAULT_PROP, DEFAULT_PROPS, resolve_defaults
 from ..events import Handler, ValueChangeEventArguments
 from .mixins.disableable_element import DisableableElement
@@ -13,8 +11,8 @@ class Slider(ValueElement, DisableableElement):
                  min: float,  # pylint: disable=redefined-builtin
                  max: float,  # pylint: disable=redefined-builtin
                  step: float = DEFAULT_PROP | 1.0,
-                 value: Optional[float] = DEFAULT_PROPS['model-value'] | None,
-                 on_change: Optional[Handler[ValueChangeEventArguments]] = None,
+                 value: float | None = DEFAULT_PROPS['model-value'] | None,
+                 on_change: Handler[ValueChangeEventArguments] | None = None,
                  ) -> None:
         """Slider
 

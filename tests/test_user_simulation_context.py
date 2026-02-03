@@ -100,3 +100,28 @@ async def test_adding_page_to_root_function():
 
         await user.open('/a')
         await user.should_see('Page A')
+
+
+@pytest.mark.parametrize('_first_run', [True, False])
+async def test_main_file_with_submodule_pages(tmp_path: Path, _first_run: bool):
+    (pages_dir := tmp_path / 'pages').mkdir()
+    (pages_dir / '__init__.py').write_text('from .dashboard import dashboard_page')
+    (pages_dir / 'dashboard.py').write_text(textwrap.dedent('''
+        from nicegui import ui
+        @ui.page('/dashboard')
+        def dashboard_page():
+            ui.label('Dashboard Content')
+    '''))
+
+    main_file = tmp_path / 'main.py'
+    main_file.write_text(textwrap.dedent('''
+        import sys
+        sys.path.insert(0, str(__file__).rsplit('/', 1)[0])
+        import pages
+        from nicegui import ui
+        ui.run()
+    '''))
+
+    async with user_simulation(main_file=main_file) as user:
+        await user.open('/dashboard')
+        await user.should_see('Dashboard Content')

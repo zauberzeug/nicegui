@@ -22,6 +22,7 @@ def prepare_simulation() -> None:
         reconnect_timeout=3.0,
         message_history_length=1000,
         tailwind=True,
+        unocss=None,
         prod_js=True,
         show_welcome_message=False,
     )
@@ -75,7 +76,9 @@ def nicegui_reset_globals():
 
         for func in Client.page_routes:
             if not func.__module__.startswith('tests.'):
-                sys.modules.pop(func.__module__, None)
+                parts = func.__module__.split('.')
+                for i in range(len(parts)):
+                    sys.modules.pop('.'.join(parts[:i+1]), None)  # remove the module and all its parents
 
 
 def _find_all_subclasses(cls: type) -> list[type]:

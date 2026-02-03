@@ -3,10 +3,10 @@ from __future__ import annotations
 import inspect
 import re
 import weakref
-from collections.abc import Iterator, Sequence
+from collections.abc import Callable, Iterator, Sequence
 from copy import copy
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Callable, ClassVar, cast
+from typing import TYPE_CHECKING, Any, ClassVar, cast
 
 from typing_extensions import Self
 
@@ -226,11 +226,6 @@ class Element(Visibility):
                     'children': [child.id for child in self.default_slot.children],
                     'events': [listener.to_dict() for listener in self._event_listeners.values()],
                     'update_method': self._update_method,
-                    'component': {
-                        'key': self.component.key,
-                        'name': self.component.name,
-                        'tag': self.component.tag
-                    } if self.component else None,
                 }.items()
                 if value
             },

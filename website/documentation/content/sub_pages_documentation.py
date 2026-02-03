@@ -1,7 +1,9 @@
 import asyncio
-from typing import Any, Awaitable, Callable, Optional
+from typing import Any
+from collections.abc import Awaitable, Callable
 
 from nicegui import PageArguments, background_tasks, ui
+from nicegui.sub_pages_router import SubPagesRouter
 
 from . import doc
 
@@ -12,7 +14,12 @@ class FakeSubPages(ui.column):
         super().__init__()
         self.routes = routes
         self.data = data
-        self.task: Optional[asyncio.Task] = None
+        self.task: asyncio.Task | None = None
+        self.path_changed_handlers: list[Callable[[str], None]] = []
+        self.route: str | None = None
+
+    def on_path_changed(self, handler: Callable[[str], None]) -> None:
+        self.path_changed_handlers.append(handler)
 
     def init(self) -> None:
         self._render('/')
@@ -24,6 +31,11 @@ class FakeSubPages(ui.column):
     def _render(self, route: str, **kwargs: Any) -> None:
         if self.task and not self.task.done():
             self.task.cancel()
+
+        if self.route is not None and self.route != route:
+            for handler in self.path_changed_handlers:
+                handler(route)
+        self.route = route
 
         async def render() -> None:
             with self.clear():
@@ -105,6 +117,33 @@ def parameters_demo():
         title = ui.label()
     ui.separator()
     sub_pages = FakeSubPages({'/': main, '/other': other}, data={'title': title})
+    sub_pages.init()
+
+
+@doc.demo('Path changed event', '''
+    You can use the current client's `sub_pages_router` to register a callback function to be called when the path changes.
+''')
+def path_changed_event_demo() -> None:
+    # def root():
+    #     ui.sub_pages({'/': main, '/other': other})
+    #     ui.context.client.sub_pages_router.on_path_changed(
+    #         lambda path: ui.notify(f'Navigated to {path}')
+    #     )
+
+    def main():
+        ui.label('Main page content')
+        # ui.link('Go to other page', '/other')
+        sub_pages.link('Go to other page', '/other')  # HIDE
+
+    def other():
+        ui.label('Another page content')
+        # ui.link('Go to main page', '/')
+        sub_pages.link('Go to main page', '/')  # HIDE
+
+    # ui.run(root)
+    # END OF DEMO
+    sub_pages = FakeSubPages({'/': main, '/other': other})
+    sub_pages.on_path_changed(lambda path: ui.notify(f'Navigated to {path}'))
     sub_pages.init()
 
 
@@ -321,6 +360,49 @@ def nested_sub_pages_demo():
     sub_pages.init()
 
 
+@doc.demo('Error handling', '''
+    While `ui.sub_pages` will block display of the sub page on page-blocking errors in sync sub page builders,
+    the underlying client is still functional and the in-page exception handler is called for both async and sync builders.
+
+    Note: You may want to refer to the [error handling](section_action_events#error_handling) section for more context.
+''')
+def error_handling_demo():
+    # def root():
+    #     ui.link('Go to main', '/')
+    #     ui.link('Go to /sync_error', '/sync_error')
+    #     ui.link('Go to /async_error', '/async_error')
+    #     ui.sub_pages({
+    #         '/': main,
+    #         '/sync_error': sync_error_page,
+    #         '/async_error': async_error_page,
+    #     })
+    #     ui.on_exception(lambda e: ui.notify(f'Caught exception: {e}'))
+
+    def main():
+        ui.label('Main page')
+
+    def sync_error_page():
+        # ui.label('Synchronous error page')
+        # raise RuntimeError('Synchronous error')
+        ui.label('500: sub page /sync_error produced an error')  # HIDE
+        ui.notify('Caught exception: Synchronous error')  # HIDE
+
+    async def async_error_page():
+        ui.label('Asynchronous error page')
+        # raise RuntimeError('Asynchronous error')
+        ui.notify('Caught exception: Asynchronous error')  # HIDE
+
+    # ui.run(root)
+    # END OF DEMO
+    sub_pages = FakeSubPages({'/': main, '/sync_error': sync_error_page, '/async_error': async_error_page})
+    sub_pages.link('Go to main', '/')
+    sub_pages.link('Go to /sync_error', '/sync_error')
+    sub_pages.link('Go to /async_error', '/async_error')
+    sub_pages.init()
+
+
 doc.reference(ui.sub_pages, title='Reference for ui.sub_pages')
 
 doc.reference(PageArguments, title='Reference for PageArguments')
+
+doc.reference(SubPagesRouter, title='Reference for SubPagesRouter')

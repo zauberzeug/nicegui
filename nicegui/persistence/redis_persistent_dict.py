@@ -1,6 +1,5 @@
 import asyncio
 import contextlib
-from typing import Optional
 
 from .. import background_tasks, core, json, optional_features
 from ..logging import log
@@ -30,7 +29,7 @@ class RedisPersistentDict(PersistentDict):
         self.pubsub = self.redis_client.pubsub()
         self.key = key_prefix + id
         self._is_tab_storage = id.startswith('tab-')
-        self._listener_task: Optional[asyncio.Task] = None
+        self._listener_task: asyncio.Task | None = None
         super().__init__(data={}, on_change=self.publish)
 
     async def initialize(self) -> None:

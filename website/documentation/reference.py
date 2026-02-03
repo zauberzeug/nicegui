@@ -1,6 +1,6 @@
 import inspect
+from collections.abc import Callable
 from dataclasses import dataclass
-from typing import Callable, Optional
 
 from nicegui import binding, ui
 from nicegui.dataclasses import KWONLY_SLOTS
@@ -13,7 +13,7 @@ from .custom_restructured_text import CustomRestructuredText as custom_restructu
 @dataclass(**KWONLY_SLOTS)
 class Attribute:
     name: str
-    obj: Optional[object]
+    obj: object | None
     base: type
 
 
@@ -100,7 +100,7 @@ def _is_method_or_property(cls: type, attribute_name: str) -> bool:
     )
 
 
-def _generate_property_signature_description(property_: Optional[property]) -> str:
+def _generate_property_signature_description(property_: property | None) -> str:
     description = ''
     if property_ is None:
         return ': BindableProperty'

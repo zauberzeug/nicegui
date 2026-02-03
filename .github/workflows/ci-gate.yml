@@ -20,14 +20,14 @@ jobs:
     if: github.event_name != 'merge_group'
     uses: ./.github/workflows/_test.yml
     with:
-      python-versions: '["3.9"]'
+      python-versions: '["3.10"]'
       scope: '["pytest"]'
 
   full-test:
     if: github.event_name == 'merge_group'
     uses: ./.github/workflows/_test.yml
     with:
-      python-versions: '["3.9", "3.10", "3.11", "3.12", "3.13", "3.14"]'
+      python-versions: '["3.10", "3.11", "3.12", "3.13", "3.14"]'
       scope: '["pytest", "startup"]'
 
   quick-test-gate:

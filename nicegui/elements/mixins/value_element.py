@@ -1,4 +1,5 @@
-from typing import Any, Callable, Optional, cast
+from collections.abc import Callable
+from typing import Any, cast
 
 from typing_extensions import Self
 
@@ -11,7 +12,7 @@ class ValueElement(Element):
     VALUE_PROP: str = 'model-value'
     '''Name of the prop that holds the value of the element'''
 
-    LOOPBACK: Optional[bool] = True
+    LOOPBACK: bool | None = True
     '''Whether to set the new value directly on the client or after getting an update from the server.
 
     - ``True``: The value is updated by sending a change event to the server which responds with an update.
@@ -24,7 +25,7 @@ class ValueElement(Element):
 
     def __init__(self, *,
                  value: Any,
-                 on_value_change: Optional[Handler[ValueChangeEventArguments]] = None,
+                 on_value_change: Handler[ValueChangeEventArguments] | None = None,
                  throttle: float = 0,
                  **kwargs: Any,
                  ) -> None:
@@ -49,8 +50,8 @@ class ValueElement(Element):
     def bind_value_to(self,
                       target_object: Any,
                       target_name: str = 'value',
-                      forward: Optional[Callable[[Any], Any]] = None, *,
-                      strict: Optional[bool] = None,
+                      forward: Callable[[Any], Any] | None = None, *,
+                      strict: bool | None = None,
                       ) -> Self:
         """Bind the value of this element to the target object's target_name property.
 
@@ -69,8 +70,8 @@ class ValueElement(Element):
     def bind_value_from(self,
                         target_object: Any,
                         target_name: str = 'value',
-                        backward: Optional[Callable[[Any], Any]] = None, *,
-                        strict: Optional[bool] = None,
+                        backward: Callable[[Any], Any] | None = None, *,
+                        strict: bool | None = None,
                         ) -> Self:
         """Bind the value of this element from the target object's target_name property.
 
@@ -89,9 +90,9 @@ class ValueElement(Element):
     def bind_value(self,
                    target_object: Any,
                    target_name: str = 'value', *,
-                   forward: Optional[Callable[[Any], Any]] = None,
-                   backward: Optional[Callable[[Any], Any]] = None,
-                   strict: Optional[bool] = None,
+                   forward: Callable[[Any], Any] | None = None,
+                   backward: Callable[[Any], Any] | None = None,
+                   strict: bool | None = None,
                    ) -> Self:
         """Bind the value of this element to the target object's target_name property.
 
