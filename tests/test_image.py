@@ -130,5 +130,4 @@ def test_pil_image_cleanup(screen: Screen):
     screen.should_load_image(image)
 
     screen.click('Delete')
-    screen.wait(0.2)
-    assert not Path(temp_path_str).exists()
+    screen.wait_for(lambda: not Path(temp_path_str).exists())
