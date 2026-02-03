@@ -18,7 +18,7 @@ from ..logging import log
 from ..server import Server
 from . import native
 
-with suppress(ModuleNotFoundError):
+with suppress(ImportError):
     with warnings.catch_warnings():
         # webview depends on bottle which uses the deprecated CGI function (https://github.com/bottlepy/bottle/issues/1403)
         warnings.filterwarnings('ignore', category=DeprecationWarning)

@@ -78,7 +78,7 @@ def main() -> None:
     if args.osx_bundle_identifier:
         command.extend(['--osx-bundle-identifier', args.osx_bundle_identifier])
 
-    with suppress(ModuleNotFoundError):
+    with suppress(ImportError):
         import pyecharts  # pylint: disable=import-outside-toplevel
         command.extend(['--add-data', f'{Path(pyecharts.__file__).parent}{os.pathsep}pyecharts'])
 
