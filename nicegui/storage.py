@@ -36,21 +36,6 @@ class RequestTrackingMiddleware(BaseHTTPMiddleware):
         return response
 
 
-def _find_session_middleware(app: FastAPI) -> Middleware | None:
-    """Find SessionMiddleware in an app's middleware and return it, or None if not found."""
-    return next((m for m in app.user_middleware if m.cls == SessionMiddleware), None)
-
-
-def _get_secret(kwargs: dict[str, Any]) -> str:
-    """Extract the secret key from SessionMiddleware kwargs, casting as str to handle Secret type."""
-    return str(kwargs['secret_key'])
-
-
-def _get_cookie(kwargs: dict[str, Any]) -> str:
-    """Extract the session cookie name from SessionMiddleware kwargs."""
-    return kwargs.get('session_cookie', 'session')
-
-
 def set_storage_secret(storage_secret: str | None = None,
                        session_middleware_kwargs: dict[str, Any] | None = None,
                        parent_app: FastAPI | None = None) -> None:
@@ -97,6 +82,21 @@ def set_storage_secret(storage_secret: str | None = None,
     elif Storage.secret:
         core.app.add_middleware(RequestTrackingMiddleware)
         core.app.add_middleware(SessionMiddleware, secret_key=Storage.secret, **session_middleware_kwargs)
+
+
+def _find_session_middleware(app: FastAPI) -> Middleware | None:
+    """Find SessionMiddleware in an app's middleware and return it, or None if not found."""
+    return next((m for m in app.user_middleware if m.cls == SessionMiddleware), None)
+
+
+def _get_secret(kwargs: dict[str, Any]) -> str:
+    """Extract the secret key from SessionMiddleware kwargs, casting as str to handle Secret type."""
+    return str(kwargs['secret_key'])
+
+
+def _get_cookie(kwargs: dict[str, Any]) -> str:
+    """Extract the session cookie name from SessionMiddleware kwargs."""
+    return kwargs.get('session_cookie', 'session')
 
 
 class Storage:
