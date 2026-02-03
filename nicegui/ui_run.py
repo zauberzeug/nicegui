@@ -232,13 +232,16 @@ def run(root: Callable | None = None, *,
         native = True
     if window_size:
         native = True
+    shutdown_event = None
     if native:
         show = False
         host = host or '127.0.0.1'
         port = port or native_module.find_open_port()
         width, height = window_size or (800, 600)
         native_host = '127.0.0.1' if host == '0.0.0.0' else host
-        native_module.activate(protocol, native_host, port, title, width, height, fullscreen, frameless)
+        if reload:
+            shutdown_event = multiprocessing.Event()
+        native_module.activate(protocol, native_host, port, title, width, height, fullscreen, frameless, shutdown_event)
     else:
         port = port or 8080
         host = host or '0.0.0.0'
@@ -283,6 +286,7 @@ def run(root: Callable | None = None, *,
     config.storage_secret = storage_secret
     config.method_queue = native_module.native.method_queue if native else None
     config.response_queue = native_module.native.response_queue if native else None
+    config.shutdown_event = shutdown_event
     config.session_middleware_kwargs = session_middleware_kwargs
     Server.create_singleton(config)
 
