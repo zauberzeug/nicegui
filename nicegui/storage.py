@@ -22,6 +22,7 @@ request_contextvar: contextvars.ContextVar[Request | None] = contextvars.Context
 GENERAL_ID = 'general'
 USER_PREFIX = 'user-'
 TAB_PREFIX = 'tab-'
+TTL_BUFFER_SECONDS = 20  # Buffer to avoid race with prune_tab_storage polling
 
 
 class RequestTrackingMiddleware(BaseHTTPMiddleware):
@@ -75,8 +76,7 @@ class Storage:
     @staticmethod
     def _create_persistent_dict(id: str) -> PersistentDict:  # pylint: disable=redefined-builtin
         if Storage.redis_url:
-            BUFFER_SECONDS = 20  # Buffer to avoid race with prune_tab_storage polling
-            ttl = int(core.app.storage.max_tab_storage_age + BUFFER_SECONDS) if id.startswith(TAB_PREFIX) else None
+            ttl = int(core.app.storage.max_tab_storage_age + TTL_BUFFER_SECONDS) if id.startswith(TAB_PREFIX) else None
             return RedisPersistentDict(url=Storage.redis_url, id=id, key_prefix=Storage.redis_key_prefix, ttl=ttl)
         else:
             return FilePersistentDict(Storage.path / f'storage-{id}.json', encoding='utf-8')
