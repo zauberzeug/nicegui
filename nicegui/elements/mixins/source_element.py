@@ -24,11 +24,12 @@ class SourceElement(Element):
 
     def __init__(self, *, source: Any, **kwargs: Any) -> None:
         super().__init__(**kwargs)
-        self._cleanup_holder: list[Path | None] = [None] # mutable container
+        self._cleanup_holder: list[Path | None] = [None]  # mutable container
         self.auto_route: str | None = None
         self.source = source
         self._set_props(source)
-        weakref.finalize(self, lambda holder=self._cleanup_holder: _cleanup_temp_file(holder[0]))
+        holder = self._cleanup_holder  # NOTE: avoid late binding in lambda
+        weakref.finalize(self, lambda: _cleanup_temp_file(holder[0]))
 
     def _cleanup_source(self) -> None:
         if self._cleanup_holder[0] is not None:
