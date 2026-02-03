@@ -12,8 +12,6 @@ from starlette.types import ASGIApp
 from uvicorn.main import STARTUP_FAILURE
 from uvicorn.supervisors import ChangeReload, Multiprocess
 
-import __main__
-
 from . import core, helpers
 from . import native as native_module
 from .air import Air
@@ -217,8 +215,9 @@ def run(root: Callable | None = None, *,
     if multiprocessing.current_process().name != 'MainProcess':
         return
 
-    if reload and not hasattr(__main__, '__file__'):
-        log.warning('disabling auto-reloading because is is only supported when running from a file')
+    is_repl = bool(getattr(sys, 'ps1', sys.flags.interactive))
+    if reload and is_repl:
+        log.warning('disabling auto-reloading because it is only supported when running from a file')
         core.app.config.reload = reload = False
 
     if kwargs.get('ssl_certfile') and kwargs.get('ssl_keyfile'):
