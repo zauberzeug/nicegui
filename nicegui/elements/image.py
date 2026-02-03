@@ -1,7 +1,6 @@
 from __future__ import annotations
 
-import base64
-import io
+import tempfile
 import time
 from pathlib import Path
 
@@ -34,26 +33,32 @@ class Image(SourceElement, component='image.js'):
 
     def _set_props(self, source: str | Path | PIL_Image) -> None:
         if optional_features.has('pillow') and isinstance(source, PIL_Image):
-            source = pil_to_base64(source, self.PIL_CONVERT_FORMAT)
+            source = pil_to_tempfile(source, self.PIL_CONVERT_FORMAT)
         super()._set_props(source)
 
     def force_reload(self) -> None:
         """Force the image to reload from the source."""
         if self._props['src'].startswith('data:'):
-            log.warning('ui.image: force_reload() only works with network sources (not base64)')
+            log.warning('ui.image: force_reload() only works with network sources (not data URIs)')
             return
         self._props['t'] = time.time()
 
 
-def pil_to_base64(pil_image: PIL_Image, image_format: str) -> str:
-    """Convert a PIL image to a base64 string which can be used as image source.
+def pil_to_tempfile(pil_image: PIL_Image, image_format: str) -> _TempPath:
+    """Save a PIL image to a temporary file.
 
     :param pil_image: the PIL image
     :param image_format: the image format
-    :return: the base64 string
+    :return: the path to the temporary file (auto-deletes when dereferenced)
     """
-    buffer = io.BytesIO()
-    pil_image.save(buffer, image_format)
-    base64_encoded = base64.b64encode(buffer.getvalue())
-    base64_string = base64_encoded.decode('utf-8')
-    return f'data:image/{image_format.lower()};base64,{base64_string}'
+    suffix = f'.{image_format.lower()}'
+    with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as temp_file:
+        pil_image.save(temp_file, image_format)
+        return _TempPath(temp_file.name)
+
+
+class _TempPath(type(Path())):  # type: ignore[misc]  # NOTE: Path is not subclassable before Python 3.12
+    """A Path subclass that deletes itself when garbage collected."""
+
+    def __del__(self) -> None:
+        self.unlink(missing_ok=True)
