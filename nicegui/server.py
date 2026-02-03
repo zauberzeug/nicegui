@@ -1,9 +1,9 @@
 from __future__ import annotations
 
 import multiprocessing
+import multiprocessing.synchronize
 import socket
 import threading
-from multiprocessing.synchronize import Event as EventClass
 from typing import Any
 
 import uvicorn
@@ -16,7 +16,7 @@ class CustomServerConfig(uvicorn.Config):
     storage_secret: str | None = None
     method_queue: multiprocessing.Queue | None = None
     response_queue: multiprocessing.Queue | None = None
-    shutdown_event: EventClass | None = None
+    shutdown_event: multiprocessing.synchronize.Event | None = None
     session_middleware_kwargs: dict[str, Any] | None = None
 
 

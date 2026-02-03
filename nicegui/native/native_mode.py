@@ -8,7 +8,7 @@ import sys
 import time
 import warnings
 from collections.abc import Callable
-from multiprocessing.synchronize import Event as EventClass
+from multiprocessing.synchronize import Event as MultiprocessingEvent
 from threading import Event, Thread
 from typing import Any
 
@@ -98,7 +98,7 @@ def _start_window_method_executor(window: webview.Window,
 
 
 def activate(protocol: str, host: str, port: int, title: str, width: int, height: int, fullscreen: bool, frameless: bool,
-             shutdown_event: EventClass | None = None) -> None:
+             shutdown_event: MultiprocessingEvent | None = None) -> None:
     """Activate native mode."""
     def check_shutdown() -> None:
         while process.is_alive():
