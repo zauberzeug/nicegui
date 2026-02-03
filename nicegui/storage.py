@@ -37,7 +37,7 @@ class RequestTrackingMiddleware(BaseHTTPMiddleware):
 
 
 def set_storage_secret(storage_secret: str | None = None,
-                       session_middleware_kwargs: dict[str, Any] | None = None,
+                       session_middleware_kwargs: dict[str, Any] | None = None, *,
                        parent_app: FastAPI | None = None) -> None:
     """Set storage_secret and add request tracking middleware.
 
