@@ -8,6 +8,7 @@ import sys
 import time
 import warnings
 from collections.abc import Callable
+from contextlib import suppress
 from multiprocessing.synchronize import Event as MultiprocessingEvent
 from threading import Event, Thread
 from typing import Any
@@ -17,14 +18,12 @@ from ..logging import log
 from ..server import Server
 from . import native
 
-try:
+with suppress(ModuleNotFoundError):
     with warnings.catch_warnings():
         # webview depends on bottle which uses the deprecated CGI function (https://github.com/bottlepy/bottle/issues/1403)
         warnings.filterwarnings('ignore', category=DeprecationWarning)
         import webview
     optional_features.register('webview')
-except ModuleNotFoundError:
-    pass
 
 
 def _open_window(
@@ -132,10 +131,8 @@ def find_open_port(start_port: int = 8000, end_port: int = 8999) -> int:
     This is better than, e.g., passing port=0 to uvicorn.
     """
     for port in range(start_port, end_port + 1):
-        try:
+        with suppress(OSError):
             with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
                 s.bind(('localhost', port))
                 return port
-        except OSError:
-            pass
     raise OSError('No open port found')

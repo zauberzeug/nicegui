@@ -1,16 +1,15 @@
 from __future__ import annotations
 
 import io
+from contextlib import suppress
 
 from .. import json, optional_features
 from ..logging import log
 from .javascript import run_javascript
 
-try:
+with suppress(ImportError):
     from PIL import Image as PIL_Image
     optional_features.register('pillow')
-except ImportError:
-    pass
 
 
 async def read() -> str | None:

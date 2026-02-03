@@ -3,6 +3,7 @@ import argparse
 import os
 import platform
 import subprocess
+from contextlib import suppress
 from pathlib import Path
 
 import nicegui
@@ -77,11 +78,9 @@ def main() -> None:
     if args.osx_bundle_identifier:
         command.extend(['--osx-bundle-identifier', args.osx_bundle_identifier])
 
-    try:
+    with suppress(ModuleNotFoundError):
         import pyecharts  # pylint: disable=import-outside-toplevel
         command.extend(['--add-data', f'{Path(pyecharts.__file__).parent}{os.pathsep}pyecharts'])
-    except ModuleNotFoundError:
-        pass
 
     command.extend([args.main])
 

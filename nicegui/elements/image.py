@@ -2,17 +2,16 @@ from __future__ import annotations
 
 import tempfile
 import time
+from contextlib import suppress
 from pathlib import Path
 
 from .. import optional_features
 from ..logging import log
 from .mixins.source_element import SourceElement
 
-try:
+with suppress(ImportError):
     from PIL.Image import Image as PIL_Image
     optional_features.register('pillow')
-except ImportError:
-    pass
 
 
 class Image(SourceElement, component='image.js'):
