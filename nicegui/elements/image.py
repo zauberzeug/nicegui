@@ -44,7 +44,7 @@ class Image(SourceElement, component='image.js'):
         self._props['t'] = time.time()
 
 
-def pil_to_tempfile(pil_image: PIL_Image, image_format: str) -> Path:
+def pil_to_tempfile(pil_image: PIL_Image, image_format: str) -> _TempPath:
     """Save a PIL image to a temporary file.
 
     :param pil_image: the PIL image
