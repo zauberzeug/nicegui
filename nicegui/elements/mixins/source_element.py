@@ -11,11 +11,6 @@ from ...element import Element
 from ...helpers import is_file
 
 
-def _cleanup_temp_file(path: Path | None) -> None:
-    if path is not None:
-        path.unlink(missing_ok=True)
-
-
 class SourceElement(Element):
     source = BindableProperty(
         on_change=lambda sender, source: cast(Self, sender)._handle_source_change(source))  # pylint: disable=protected-access
@@ -30,11 +25,6 @@ class SourceElement(Element):
         self._set_props(source)
         holder = self._cleanup_holder  # NOTE: avoid late binding in lambda
         weakref.finalize(self, lambda: _cleanup_temp_file(holder[0]))
-
-    def _cleanup_source(self) -> None:
-        if self._cleanup_holder[0] is not None:
-            self._cleanup_holder[0].unlink(missing_ok=True)
-            self._cleanup_holder[0] = None
 
     def bind_source_to(self,
                        target_object: Any,
@@ -134,3 +124,13 @@ class SourceElement(Element):
         if self.auto_route:
             core.app.remove_route(self.auto_route)
         return super()._handle_delete()
+
+    def _cleanup_source(self) -> None:
+        if self._cleanup_holder[0] is not None:
+            self._cleanup_holder[0].unlink(missing_ok=True)
+            self._cleanup_holder[0] = None
+
+
+def _cleanup_temp_file(path: Path | None) -> None:
+    if path is not None:
+        path.unlink(missing_ok=True)
