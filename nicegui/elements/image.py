@@ -33,10 +33,8 @@ class Image(SourceElement, component='image.js'):
 
     def _set_props(self, source: str | Path | PIL_Image) -> None:
         if optional_features.has('pillow') and isinstance(source, PIL_Image):
-            self._cleanup_holder[0] = pil_to_tempfile(source, self.PIL_CONVERT_FORMAT)
-            super()._set_props(self._cleanup_holder[0])
-        else:
-            super()._set_props(source)
+            source = pil_to_tempfile(source, self.PIL_CONVERT_FORMAT)
+        super()._set_props(source)
 
     def force_reload(self) -> None:
         """Force the image to reload from the source."""
@@ -51,9 +49,16 @@ def pil_to_tempfile(pil_image: PIL_Image, image_format: str) -> Path:
 
     :param pil_image: the PIL image
     :param image_format: the image format
-    :return: the path to the temporary file
+    :return: the path to the temporary file (auto-deletes when dereferenced)
     """
     suffix = f'.{image_format.lower()}'
     with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as temp_file:
         pil_image.save(temp_file, image_format)
-        return Path(temp_file.name)
+        return _TempPath(temp_file.name)
+
+
+class _TempPath(type(Path())):  # type: ignore[misc]  # NOTE: Path is not subclassable before Python 3.12
+    """A Path subclass that deletes itself when garbage collected."""
+
+    def __del__(self) -> None:
+        self.unlink(missing_ok=True)

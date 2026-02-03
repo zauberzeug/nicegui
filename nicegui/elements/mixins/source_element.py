@@ -1,4 +1,3 @@
-import weakref
 from collections.abc import Callable
 from pathlib import Path
 from typing import Any, cast
@@ -19,12 +18,10 @@ class SourceElement(Element):
 
     def __init__(self, *, source: Any, **kwargs: Any) -> None:
         super().__init__(**kwargs)
-        self._cleanup_holder: list[Path | None] = [None]  # mutable container
         self.auto_route: str | None = None
+        self._temp_path: Path | None = None
         self.source = source
         self._set_props(source)
-        holder = self._cleanup_holder  # NOTE: avoid late binding in lambda
-        weakref.finalize(self, lambda: _cleanup_temp_file(holder[0]))
 
     def bind_source_to(self,
                        target_object: Any,
@@ -103,11 +100,11 @@ class SourceElement(Element):
 
         :param source: The new source.
         """
-        self._cleanup_source()
         self._set_props(source)
 
     def _set_props(self, source: Any) -> None:
         if is_file(source):
+            self._temp_path = source  # prevent cleanup of _TempPath until source changes
             if self.auto_route:
                 core.app.remove_route(self.auto_route)
             if self.SOURCE_IS_MEDIA_FILE:
@@ -115,22 +112,14 @@ class SourceElement(Element):
             else:
                 source = core.app.add_static_file(local_file=source)
             self.auto_route = source
+        else:
+            self._temp_path = None
         if isinstance(source, Path) and not source.exists():
             raise FileNotFoundError(f'File not found: {source}')
         self._props['src'] = source
 
     def _handle_delete(self) -> None:
-        self._cleanup_source()
+        self._temp_path = None
         if self.auto_route:
             core.app.remove_route(self.auto_route)
         return super()._handle_delete()
-
-    def _cleanup_source(self) -> None:
-        if self._cleanup_holder[0] is not None:
-            self._cleanup_holder[0].unlink(missing_ok=True)
-            self._cleanup_holder[0] = None
-
-
-def _cleanup_temp_file(path: Path | None) -> None:
-    if path is not None:
-        path.unlink(missing_ok=True)

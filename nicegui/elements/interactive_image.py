@@ -102,10 +102,8 @@ class InteractiveImage(SourceElement, ContentElement, component='interactive_ima
 
     def _set_props(self, source: str | Path | PIL_Image) -> None:
         if optional_features.has('pillow') and isinstance(source, PIL_Image):
-            self._cleanup_holder[0] = pil_to_tempfile(source, self.PIL_CONVERT_FORMAT)
-            super()._set_props(self._cleanup_holder[0])
-        else:
-            super()._set_props(source)
+            source = pil_to_tempfile(source, self.PIL_CONVERT_FORMAT)
+        super()._set_props(source)
 
     def force_reload(self) -> None:
         """Force the image to reload from the source."""
@@ -158,10 +156,8 @@ class InteractiveImageLayer(SourceElement, ContentElement, component='interactiv
 
     def _set_props(self, source: str | Path | PIL_Image) -> None:
         if optional_features.has('pillow') and isinstance(source, PIL_Image):
-            self._cleanup_holder[0] = pil_to_tempfile(source, self.PIL_CONVERT_FORMAT)
-            super()._set_props(self._cleanup_holder[0])
-        else:
-            super()._set_props(source)
+            source = pil_to_tempfile(source, self.PIL_CONVERT_FORMAT)
+        super()._set_props(source)
 
     def _handle_content_change(self, content: str) -> None:
         if self._sanitize is None:
