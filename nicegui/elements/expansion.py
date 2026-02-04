@@ -1,5 +1,3 @@
-from typing import Optional
-
 from ..defaults import DEFAULT_PROP, DEFAULT_PROPS, resolve_defaults
 from ..events import Handler, ValueChangeEventArguments
 from .mixins.disableable_element import DisableableElement
@@ -8,16 +6,17 @@ from .mixins.text_element import TextElement
 from .mixins.value_element import ValueElement
 
 
-class Expansion(IconElement, TextElement, ValueElement, DisableableElement, default_classes='nicegui-expansion'):
+class Expansion(IconElement, TextElement, ValueElement, DisableableElement,
+                component='expansion.js', default_classes='nicegui-expansion'):
 
     @resolve_defaults
     def __init__(self,
                  text: str = DEFAULT_PROPS['label'] | '', *,
-                 caption: Optional[str] = DEFAULT_PROP | None,
-                 icon: Optional[str] = DEFAULT_PROP | None,
-                 group: Optional[str] = DEFAULT_PROP | None,
+                 caption: str | None = DEFAULT_PROP | None,
+                 icon: str | None = DEFAULT_PROP | None,
+                 group: str | None = DEFAULT_PROP | None,
                  value: bool = DEFAULT_PROPS['model-value'] | False,
-                 on_value_change: Optional[Handler[ValueChangeEventArguments]] = None
+                 on_value_change: Handler[ValueChangeEventArguments] | None = None
                  ) -> None:
         """Expansion Element
 
@@ -30,7 +29,7 @@ class Expansion(IconElement, TextElement, ValueElement, DisableableElement, defa
         :param value: whether the expansion should be opened on creation (default: `False`)
         :param on_value_change: callback to execute when value changes
         """
-        super().__init__(tag='q-expansion-item', icon=icon, text=text, value=value, on_value_change=on_value_change)
+        super().__init__(icon=icon, text=text, value=value, on_value_change=on_value_change)
         self._props.set_optional('caption', caption)
         self._props.set_optional('group', group)
 

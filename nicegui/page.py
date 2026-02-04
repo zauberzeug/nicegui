@@ -2,9 +2,10 @@ from __future__ import annotations
 
 import asyncio
 import inspect
+from collections.abc import Callable
 from functools import wraps
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Callable
+from typing import TYPE_CHECKING, Any
 
 from fastapi import HTTPException, Request, Response
 
@@ -166,6 +167,7 @@ class page:
                         try:
                             return await result
                         except Exception as e:
+                            client.handle_exception(e)
                             return create_500_error_page(e, request)
                 task = background_tasks.create(wait_for_result(),
                                                name=f'wait for result of page "{client.page.path}"',

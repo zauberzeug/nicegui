@@ -1,5 +1,7 @@
 from pathlib import Path
 
+from PIL import Image
+
 from nicegui import app, ui
 from nicegui.testing import Screen
 
@@ -108,4 +110,24 @@ def test_force_reload(screen: Screen):
 
     screen.click('Reload 2')
     screen.wait(0.5)
-    screen.assert_py_logger('WARNING', 'ui.image: force_reload() only works with network sources (not base64)')
+    screen.assert_py_logger('WARNING', 'ui.image: force_reload() only works with network sources (not data URIs)')
+
+
+def test_pil_image_cleanup(screen: Screen):
+    temp_path_str = ''
+
+    @ui.page('/')
+    def page():
+        nonlocal temp_path_str
+        pil_img = Image.new('RGB', (100, 100), color='red')
+        image = ui.image(pil_img)
+        temp_path_str = str(image._temp_path)  # pylint: disable=protected-access  # store string, not the _TempPath
+        assert Path(temp_path_str).exists()
+        ui.button('Delete', on_click=image.delete)
+
+    screen.open('/')
+    image = screen.find_by_class('q-img__image')
+    screen.should_load_image(image)
+
+    screen.click('Delete')
+    screen.wait_for(lambda: not Path(temp_path_str).exists())

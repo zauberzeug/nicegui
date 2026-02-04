@@ -1,4 +1,4 @@
-from typing import Callable, Optional, Union
+from collections.abc import Callable
 
 from nicegui import helpers, json, ui
 
@@ -7,7 +7,7 @@ from .intersection_observer import IntersectionObserver as intersection_observer
 from .windows import browser_window, python_window
 
 
-def demo(f: Callable, *, lazy: bool = True, tab: Optional[Union[str, Callable]] = None) -> Callable:
+def demo(f: Callable, *, lazy: bool = True, tab: str | Callable | None = None) -> Callable:
     """Render a callable as a demo with Python code and browser window."""
     with ui.column().classes('w-full items-stretch gap-8 no-wrap min-[1500px]:flex-row'):
         full_code = get_full_code(f)

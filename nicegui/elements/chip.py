@@ -1,5 +1,3 @@
-from typing import Optional
-
 from typing_extensions import Self
 
 from ..defaults import DEFAULT_PROP, resolve_defaults
@@ -19,15 +17,15 @@ class Chip(IconElement, ValueElement, TextElement, BackgroundColorElement, TextC
     def __init__(self,
                  text: str = '',
                  *,
-                 icon: Optional[str] = None,
-                 color: Optional[str] = DEFAULT_PROP | 'primary',
-                 text_color: Optional[str] = DEFAULT_PROP | None,
-                 on_click: Optional[Handler[ClickEventArguments]] = None,
+                 icon: str | None = None,
+                 color: str | None = DEFAULT_PROP | 'primary',
+                 text_color: str | None = DEFAULT_PROP | None,
+                 on_click: Handler[ClickEventArguments] | None = None,
                  selectable: bool = DEFAULT_PROP | False,
                  selected: bool = DEFAULT_PROP | False,
-                 on_selection_change: Optional[Handler[ValueChangeEventArguments]] = None,
+                 on_selection_change: Handler[ValueChangeEventArguments] | None = None,
                  removable: bool = DEFAULT_PROP | False,
-                 on_value_change: Optional[Handler[ValueChangeEventArguments]] = None,
+                 on_value_change: Handler[ValueChangeEventArguments] | None = None,
                  ) -> None:
         """Chip
 

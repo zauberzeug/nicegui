@@ -1,6 +1,7 @@
 import asyncio
+from collections.abc import Callable
 from dataclasses import dataclass
-from typing import Any, Callable, Literal, Optional, Union
+from typing import Any, Literal
 
 from typing_extensions import Self
 
@@ -64,12 +65,12 @@ class Scene(Element, component='scene.js', esm={'nicegui-scene': 'dist'}, defaul
                  width: int = DEFAULT_PROP | 400,
                  height: int = DEFAULT_PROP | 300,
                  # DEPRECATED: enforce keyword-only arguments in NiceGUI 4.0
-                 grid: Union[bool, tuple[int, int]] = DEFAULT_PROP | True,
-                 camera: Optional[SceneCamera] = None,
-                 on_click: Optional[Handler[SceneClickEventArguments]] = None,
+                 grid: bool | tuple[int, int] = DEFAULT_PROP | True,
+                 camera: SceneCamera | None = None,
+                 on_click: Handler[SceneClickEventArguments] | None = None,
                  click_events: list[str] = DEFAULT_PROP | ['click', 'dblclick'],
-                 on_drag_start: Optional[Handler[SceneDragEventArguments]] = None,
-                 on_drag_end: Optional[Handler[SceneDragEventArguments]] = None,
+                 on_drag_start: Handler[SceneDragEventArguments] | None = None,
+                 on_drag_end: Handler[SceneDragEventArguments] | None = None,
                  drag_constraints: str = DEFAULT_PROP | '',
                  background_color: str = DEFAULT_PROP | '#eee',
                  fps: int = DEFAULT_PROP | 20,
@@ -106,7 +107,7 @@ class Scene(Element, component='scene.js', esm={'nicegui-scene': 'dist'}, defaul
         self._props['camera-type'] = self.camera.type
         self._props['camera-params'] = self.camera.params
         self.objects: dict[str, Object3D] = {}
-        self.stack: list[Union[Object3D, SceneObject]] = [SceneObject()]
+        self.stack: list[Object3D | SceneObject] = [SceneObject()]
         self._click_handlers = [on_click] if on_click else []
         self._props['click-events'] = click_events[:]
         self._drag_start_handlers = [on_drag_start] if on_drag_start else []
@@ -226,15 +227,15 @@ class Scene(Element, component='scene.js', esm={'nicegui-scene': 'dist'}, defaul
         return len(self.objects)
 
     def move_camera(self,
-                    x: Optional[float] = None,
-                    y: Optional[float] = None,
-                    z: Optional[float] = None,
-                    look_at_x: Optional[float] = None,
-                    look_at_y: Optional[float] = None,
-                    look_at_z: Optional[float] = None,
-                    up_x: Optional[float] = None,
-                    up_y: Optional[float] = None,
-                    up_z: Optional[float] = None,
+                    x: float | None = None,
+                    y: float | None = None,
+                    z: float | None = None,
+                    look_at_x: float | None = None,
+                    look_at_y: float | None = None,
+                    look_at_z: float | None = None,
+                    up_x: float | None = None,
+                    up_y: float | None = None,
+                    up_z: float | None = None,
                     duration: float = 0.5) -> None:
         """Move the camera to a new position.
 

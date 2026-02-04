@@ -7,33 +7,34 @@ import socket
 import sys
 import time
 import warnings
+from collections.abc import Callable
+from contextlib import suppress
+from multiprocessing.synchronize import Event as MultiprocessingEvent
 from threading import Event, Thread
-from typing import Any, Callable
+from typing import Any
 
 from .. import core, helpers, optional_features
 from ..logging import log
 from ..server import Server
 from . import native
 
-try:
+with suppress(ImportError):
     with warnings.catch_warnings():
         # webview depends on bottle which uses the deprecated CGI function (https://github.com/bottlepy/bottle/issues/1403)
         warnings.filterwarnings('ignore', category=DeprecationWarning)
         import webview
     optional_features.register('webview')
-except ModuleNotFoundError:
-    pass
 
 
 def _open_window(
-    host: str, port: int, title: str, width: int, height: int, fullscreen: bool, frameless: bool,
+    protocol: str, host: str, port: int, title: str, width: int, height: int, fullscreen: bool, frameless: bool,
     method_queue: mp.Queue, response_queue: mp.Queue,
 ) -> None:
     while not helpers.is_port_open(host, port):
         time.sleep(0.1)
 
     window_kwargs = {
-        'url': f'http://{host}:{port}',
+        'url': f'{protocol}://{host}:{port}',
         'title': title,
         'width': width,
         'height': height,
@@ -95,11 +96,14 @@ def _start_window_method_executor(window: webview.Window,
     Thread(target=window_method_executor).start()
 
 
-def activate(host: str, port: int, title: str, width: int, height: int, fullscreen: bool, frameless: bool) -> None:
+def activate(protocol: str, host: str, port: int, title: str, width: int, height: int, fullscreen: bool, frameless: bool,
+             shutdown_event: MultiprocessingEvent | None = None) -> None:
     """Activate native mode."""
     def check_shutdown() -> None:
         while process.is_alive():
             time.sleep(0.1)
+        if shutdown_event is not None:
+            shutdown_event.set()
         Server.instance.should_exit = True
         while not core.app.is_stopped:
             time.sleep(0.1)
@@ -113,7 +117,7 @@ def activate(host: str, port: int, title: str, width: int, height: int, fullscre
 
     mp.freeze_support()
     native.create_queues()
-    args = host, port, title, width, height, fullscreen, frameless, native.method_queue, native.response_queue
+    args = protocol, host, port, title, width, height, fullscreen, frameless, native.method_queue, native.response_queue
     process = mp.Process(target=_open_window, args=args, daemon=True)
     process.start()
 
@@ -127,10 +131,8 @@ def find_open_port(start_port: int = 8000, end_port: int = 8999) -> int:
     This is better than, e.g., passing port=0 to uvicorn.
     """
     for port in range(start_port, end_port + 1):
-        try:
+        with suppress(OSError):
             with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
                 s.bind(('localhost', port))
                 return port
-        except OSError:
-            pass
     raise OSError('No open port found')

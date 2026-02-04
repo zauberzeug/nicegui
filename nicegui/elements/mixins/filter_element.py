@@ -1,4 +1,5 @@
-from typing import Any, Callable, Optional, cast
+from collections.abc import Callable
+from typing import Any, cast
 
 from typing_extensions import Self
 
@@ -11,7 +12,7 @@ class FilterElement(Element):
     filter = BindableProperty(
         on_change=lambda sender, filter: cast(Self, sender)._handle_filter_change(filter))  # pylint: disable=protected-access
 
-    def __init__(self, *, filter: Optional[str] = None, **kwargs: Any) -> None:  # pylint: disable=redefined-builtin
+    def __init__(self, *, filter: str | None = None, **kwargs: Any) -> None:  # pylint: disable=redefined-builtin
         super().__init__(**kwargs)
         self.filter = filter
         self._props[self.FILTER_PROP] = filter
@@ -19,8 +20,8 @@ class FilterElement(Element):
     def bind_filter_to(self,
                        target_object: Any,
                        target_name: str = 'filter',
-                       forward: Optional[Callable[[Any], Any]] = None, *,
-                       strict: Optional[bool] = None,
+                       forward: Callable[[Any], Any] | None = None, *,
+                       strict: bool | None = None,
                        ) -> Self:
         """Bind the filter of this element to the target object's target_name property.
 
@@ -39,8 +40,8 @@ class FilterElement(Element):
     def bind_filter_from(self,
                          target_object: Any,
                          target_name: str = 'filter',
-                         backward: Optional[Callable[[Any], Any]] = None, *,
-                         strict: Optional[bool] = None,
+                         backward: Callable[[Any], Any] | None = None, *,
+                         strict: bool | None = None,
                          ) -> Self:
         """Bind the filter of this element from the target object's target_name property.
 
@@ -59,9 +60,9 @@ class FilterElement(Element):
     def bind_filter(self,
                     target_object: Any,
                     target_name: str = 'filter', *,
-                    forward: Optional[Callable[[Any], Any]] = None,
-                    backward: Optional[Callable[[Any], Any]] = None,
-                    strict: Optional[bool] = None,
+                    forward: Callable[[Any], Any] | None = None,
+                    backward: Callable[[Any], Any] | None = None,
+                    strict: bool | None = None,
                     ) -> Self:
         """Bind the filter of this element to the target object's target_name property.
 

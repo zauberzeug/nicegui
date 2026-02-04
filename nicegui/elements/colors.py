@@ -19,7 +19,9 @@ class Colors(Element, component='colors.js'):
                  **custom_colors: str) -> None:
         """Color Theming
 
-        Sets the main colors (primary, secondary, accent, ...) used by `Quasar <https://quasar.dev/style/theme-builder>`_.
+        Sets the main colors (primary, secondary, accent, ...) used by `Quasar <https://quasar.dev/style/theme-builder>`_ on a per-page basis.
+
+        Note: This takes precedence over the global color configuration set via ``app.colors()``.
 
         :param primary: Primary color (default: "#5898d4")
         :param secondary: Secondary color (default: "#26a69a")

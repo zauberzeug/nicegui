@@ -71,6 +71,7 @@ export default {
       <canvas style="position:relative"></canvas>
       <div style="position:absolute;pointer-events:none;top:0"></div>
       <div style="position:absolute;pointer-events:none;top:0"></div>
+      <div style="position:absolute;display:none;inset:0;cursor:pointer">WebGL context lost. Click to re-initialize.</div>
     </div>`,
 
   mounted() {
@@ -94,7 +95,7 @@ export default {
         this.cameraParams.fov,
         this.width / this.height,
         this.cameraParams.near,
-        this.cameraParams.far
+        this.cameraParams.far,
       );
     } else {
       this.camera = new THREE.OrthographicCamera(
@@ -103,7 +104,7 @@ export default {
         this.cameraParams.size / 2,
         -this.cameraParams.size / 2,
         this.cameraParams.near,
-        this.cameraParams.far
+        this.cameraParams.far,
       );
     }
     this.look_at = new THREE.Vector3(0, 0, 0);
@@ -134,6 +135,24 @@ export default {
     this.renderer.setClearColor(this.backgroundColor);
     this.renderer.setSize(this.width, this.height);
 
+    this.renderer.domElement.addEventListener("webglcontextlost", (event) => {
+      event.preventDefault();
+      this.$el.children[0].style.visibility = "hidden";
+      this.$el.children[1].style.visibility = "hidden";
+      this.$el.children[2].style.visibility = "hidden";
+      this.$el.children[3].style.display = "block";
+      this.$el.addEventListener(
+        "click",
+        () => {
+          const elementDefinition = mounted_app.elements[this.$el.id.slice(1)];
+          const originalTag = elementDefinition.tag;
+          elementDefinition.tag = "";
+          this.$nextTick(() => (elementDefinition.tag = originalTag));
+        },
+        { once: true },
+      );
+    });
+
     this.text_renderer = new CSS2DRenderer({
       element: this.$el.children[1],
     });
@@ -153,7 +172,7 @@ export default {
     if (this.grid) {
       const ground = new THREE.Mesh(
         new THREE.PlaneGeometry(gridSize, gridSize),
-        new THREE.MeshPhongMaterial({ color: this.backgroundColor })
+        new THREE.MeshPhongMaterial({ color: this.backgroundColor }),
       );
       ground.translateZ(-0.01);
       ground.object_id = "ground";
@@ -257,7 +276,7 @@ export default {
           new THREE.Vector3(...args[0]),
           new THREE.Vector3(...args[1]),
           new THREE.Vector3(...args[2]),
-          new THREE.Vector3(...args[3])
+          new THREE.Vector3(...args[3]),
         );
         const points = curve.getPoints(args[4] - 1);
         const geometry = new THREE.BufferGeometry().setFromPoints(points);
@@ -299,7 +318,7 @@ export default {
           url,
           (gltf) => mesh.add(gltf.scene),
           undefined,
-          (error) => console.error(error)
+          (error) => console.error(error),
         );
       } else if (type == "axes_helper") {
         mesh = new THREE.AxesHelper(args[0]);
@@ -315,7 +334,7 @@ export default {
           const curve = new THREE.QuadraticBezierCurve3(
             new THREE.Vector3(...args[0]),
             new THREE.Vector3(...args[1]),
-            new THREE.Vector3(...args[2])
+            new THREE.Vector3(...args[2]),
           );
           geometry = new THREE.TubeGeometry(curve, ...args.slice(3));
         }
@@ -340,7 +359,7 @@ export default {
         if (wireframe) {
           mesh = new THREE.LineSegments(
             new THREE.EdgesGeometry(geometry),
-            new THREE.LineBasicMaterial({ transparent: true })
+            new THREE.LineBasicMaterial({ transparent: true }),
           );
         } else {
           material = new THREE.MeshPhongMaterial({ transparent: true });
@@ -381,7 +400,7 @@ export default {
       const R4 = new THREE.Matrix4().makeBasis(
         new THREE.Vector3(...R[0]),
         new THREE.Vector3(...R[1]),
-        new THREE.Vector3(...R[2])
+        new THREE.Vector3(...R[2]),
       );
       this.objects.get(object_id).rotation.setFromRotationMatrix(R4.transpose());
     },
@@ -469,7 +488,7 @@ export default {
             look_at_y === null ? this.look_at.y : look_at_y,
             look_at_z === null ? this.look_at.z : look_at_z,
           ],
-          duration * 1000
+          duration * 1000,
         )
         .onUpdate((p) => {
           this.camera.position.set(p[0], p[1], p[2]);

@@ -3,6 +3,7 @@ from __future__ import annotations
 import io
 import os
 import weakref
+from contextlib import suppress
 from typing import Any
 
 from typing_extensions import Self
@@ -10,7 +11,7 @@ from typing_extensions import Self
 from .. import optional_features
 from ..element import Element
 
-try:
+with suppress(ImportError):
     if os.environ.get('MATPLOTLIB', 'true').lower() == 'true':
         import matplotlib.figure
         import matplotlib.pyplot as plt
@@ -35,9 +36,6 @@ try:
 
             def __exit__(self, *_) -> None:
                 self.element.update()
-
-except ImportError:
-    pass
 
 
 class Pyplot(Element, default_classes='nicegui-pyplot'):
@@ -92,7 +90,7 @@ class Matplotlib(Element, default_classes='nicegui-matplotlib'):
             raise ImportError('Matplotlib is not installed. Please run "pip install matplotlib".')
 
         super().__init__('div')
-        self.figure = MatplotlibFigure(self, **kwargs)
+        self.figure = MatplotlibFigure(self, **kwargs)  # pylint: disable=possibly-used-before-assignment
         self._convert_to_html()
 
     def _convert_to_html(self) -> None:

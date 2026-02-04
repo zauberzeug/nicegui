@@ -1,4 +1,4 @@
-from typing import Any, Optional
+from typing import Any
 
 from ..defaults import DEFAULT_PROP, resolve_defaults
 from ..events import Handler, ValueChangeEventArguments
@@ -13,9 +13,9 @@ class Editor(ValueElement, DisableableElement, component='editor.js', default_cl
     @resolve_defaults
     def __init__(self,
                  *,
-                 placeholder: Optional[str] = DEFAULT_PROP | None,
+                 placeholder: str | None = DEFAULT_PROP | None,
                  value: str = DEFAULT_PROP | '',
-                 on_change: Optional[Handler[ValueChangeEventArguments]] = None,
+                 on_change: Handler[ValueChangeEventArguments] | None = None,
                  ) -> None:
         """Editor
 

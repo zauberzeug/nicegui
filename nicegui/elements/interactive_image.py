@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import time
 from collections.abc import Callable
+from contextlib import suppress
 from pathlib import Path
 from typing import Literal, cast
 
@@ -11,15 +12,13 @@ from .. import helpers, optional_features
 from ..defaults import DEFAULT_PROP, resolve_defaults
 from ..events import GenericEventArguments, Handler, MouseEventArguments, handle_event
 from ..logging import log
-from .image import pil_to_base64
+from .image import pil_to_tempfile
 from .mixins.content_element import ContentElement
 from .mixins.source_element import SourceElement
 
-try:
+with suppress(ImportError):
     from PIL.Image import Image as PIL_Image
     optional_features.register('pillow')
-except ImportError:
-    pass
 
 
 class InteractiveImage(SourceElement, ContentElement, component='interactive_image.js'):
@@ -102,13 +101,13 @@ class InteractiveImage(SourceElement, ContentElement, component='interactive_ima
 
     def _set_props(self, source: str | Path | PIL_Image) -> None:
         if optional_features.has('pillow') and isinstance(source, PIL_Image):
-            source = pil_to_base64(source, self.PIL_CONVERT_FORMAT)
+            source = pil_to_tempfile(source, self.PIL_CONVERT_FORMAT)
         super()._set_props(source)
 
     def force_reload(self) -> None:
         """Force the image to reload from the source."""
         if self._props['src'].startswith('data:'):
-            log.warning('ui.interactive_image: force_reload() only works with network sources (not base64)')
+            log.warning('ui.interactive_image: force_reload() only works with network sources (not data URIs)')
             return
         self._props['t'] = time.time()
 
@@ -156,7 +155,7 @@ class InteractiveImageLayer(SourceElement, ContentElement, component='interactiv
 
     def _set_props(self, source: str | Path | PIL_Image) -> None:
         if optional_features.has('pillow') and isinstance(source, PIL_Image):
-            source = pil_to_base64(source, self.PIL_CONVERT_FORMAT)
+            source = pil_to_tempfile(source, self.PIL_CONVERT_FORMAT)
         super()._set_props(source)
 
     def _handle_content_change(self, content: str) -> None:
