@@ -15,7 +15,12 @@ except ImportError:
 
 class RedisPersistentDict(PersistentDict):
 
-    def __init__(self, *, url: str, id: str, key_prefix: str = 'nicegui:') -> None:  # pylint: disable=redefined-builtin
+    def __init__(self, *,
+                 url: str,
+                 id: str,  # pylint: disable=redefined-builtin
+                 key_prefix: str = 'nicegui:',
+                 ttl: int | None = None
+                 ) -> None:
         if not optional_features.has('redis'):
             raise ImportError('Redis is not installed. Please run "pip install nicegui[redis]".')
         self.url = url
@@ -28,6 +33,7 @@ class RedisPersistentDict(PersistentDict):
         self.redis_client = redis.from_url(self.url, **self._redis_client_params)
         self.pubsub = self.redis_client.pubsub()
         self.key = key_prefix + id
+        self.ttl = ttl
         self._listener_task: asyncio.Task | None = None
         super().__init__(data={}, on_change=self.publish)
 
@@ -84,8 +90,9 @@ class RedisPersistentDict(PersistentDict):
             if not await self.redis_client.exists(self.key) and not self:
                 return
             pipeline = self.redis_client.pipeline()
-            pipeline.set(self.key, json.dumps(self))
-            pipeline.publish(self.key + 'changes', json.dumps(self))
+            data = json.dumps(self)
+            pipeline.set(self.key, data, ex=self.ttl)
+            pipeline.publish(self.key + 'changes', data)
             await pipeline.execute()
         if core.loop:
             background_tasks.create_lazy(backup(), name=f'redis-{self.key}')

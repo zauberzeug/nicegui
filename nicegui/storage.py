@@ -19,6 +19,11 @@ from .persistence.pseudo_persistent_dict import PseudoPersistentDict
 
 request_contextvar: contextvars.ContextVar[Request | None] = contextvars.ContextVar('request_var', default=None)
 
+GENERAL_ID = 'general'
+USER_PREFIX = 'user-'
+TAB_PREFIX = 'tab-'
+TTL_BUFFER_SECONDS = 20  # Buffer to avoid race with prune_tab_storage polling
+
 
 class RequestTrackingMiddleware(BaseHTTPMiddleware):
 
@@ -64,14 +69,15 @@ class Storage:
     '''Maximum age in seconds before tab storage is automatically purged. Defaults to 30 days.'''
 
     def __init__(self) -> None:
-        self._general = Storage._create_persistent_dict('general')
+        self._general = Storage._create_persistent_dict(GENERAL_ID)
         self._users: dict[str, PersistentDict] = {}
         self._tabs: dict[str, ObservableDict] = {}
 
     @staticmethod
     def _create_persistent_dict(id: str) -> PersistentDict:  # pylint: disable=redefined-builtin
         if Storage.redis_url:
-            return RedisPersistentDict(url=Storage.redis_url, id=id, key_prefix=Storage.redis_key_prefix)
+            ttl = int(core.app.storage.max_tab_storage_age + TTL_BUFFER_SECONDS) if id.startswith(TAB_PREFIX) else None
+            return RedisPersistentDict(url=Storage.redis_url, id=id, key_prefix=Storage.redis_key_prefix, ttl=ttl)
         else:
             return FilePersistentDict(Storage.path / f'storage-{id}.json', encoding='utf-8')
 
@@ -116,7 +122,7 @@ class Storage:
         return self._users[session_id]
 
     async def _create_user_storage(self, session_id: str) -> None:
-        self._users[session_id] = Storage._create_persistent_dict(f'user-{session_id}')
+        self._users[session_id] = Storage._create_persistent_dict(f'{USER_PREFIX}{session_id}')
         await self._users[session_id].initialize()
 
     @property
@@ -148,7 +154,7 @@ class Storage:
         """Create tab storage for the given tab ID."""
         if tab_id not in self._tabs:
             if Storage.redis_url:
-                self._tabs[tab_id] = Storage._create_persistent_dict(f'tab-{tab_id}')
+                self._tabs[tab_id] = Storage._create_persistent_dict(f'{TAB_PREFIX}{tab_id}')
                 tab = self._tabs[tab_id]
                 assert isinstance(tab, PersistentDict)
                 await tab.initialize()
@@ -159,7 +165,7 @@ class Storage:
         """Copy the tab storage to a new tab. (For internal use only.)"""
         if old_tab_id in self._tabs:
             if Storage.redis_url:
-                self._tabs[tab_id] = Storage._create_persistent_dict(f'tab-{tab_id}')
+                self._tabs[tab_id] = Storage._create_persistent_dict(f'{TAB_PREFIX}{tab_id}')
             else:
                 self._tabs[tab_id] = ObservableDict()
             self._tabs[tab_id].update(self._tabs[old_tab_id])
