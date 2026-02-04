@@ -1,5 +1,4 @@
 import importlib.util
-import weakref
 from typing import TYPE_CHECKING, Literal, cast
 
 from typing_extensions import Self
@@ -50,15 +49,16 @@ class AgGrid(Element, component='aggrid.js', esm={'nicegui-aggrid': 'dist'}, def
         self._migrate_deprecated_checkbox_renderer(options)  # DEPRECATED: remove in NiceGUI 4.0
 
         super().__init__()
-        if 'secondary-id' not in self._props:
+
+        self._phantom_grid: _PhantomAgGrid | None = None
+        if not isinstance(self, _PhantomAgGrid):
             with self.client.layout:
-                secondary_aggrid = SecondaryAgGrid(options,
-                                                   html_columns=html_columns,
-                                                   theme=theme,
-                                                   auto_size_columns=auto_size_columns)
-                self._props['secondary-id'] = secondary_aggrid.id
-                weakref.finalize(self, lambda: secondary_aggrid.delete() if not secondary_aggrid.is_deleted
-                                 and secondary_aggrid._parent_slot and secondary_aggrid._parent_slot() else None)  # pylint: disable=protected-access
+                self._phantom_grid = _PhantomAgGrid(
+                    options, html_columns=html_columns, theme=theme, auto_size_columns=auto_size_columns,
+                )
+                self._phantom_grid.visible = False
+        self.on('gridMounted', self._delete_phantom)
+
         self._props['options'] = {
             'theme': theme or 'quartz',
             **({'autoSizeStrategy': {'type': 'fitGridWidth'}} if auto_size_columns else {}),
@@ -69,6 +69,15 @@ class AgGrid(Element, component='aggrid.js', esm={'nicegui-aggrid': 'dist'}, def
         self._props['modules'] = modules[:]
 
         self._props.add_rename('html_columns', 'html-columns')  # DEPRECATED: remove in NiceGUI 4.0
+
+    def _delete_phantom(self) -> None:
+        if self._phantom_grid is not None and self._phantom_grid in self.client.layout:
+            self._phantom_grid.delete()
+            self._phantom_grid = None
+
+    def _handle_delete(self) -> None:
+        self._delete_phantom()
+        super()._handle_delete()
 
     @staticmethod
     def _migrate_deprecated_checkbox_renderer(options: dict) -> None:
@@ -293,9 +302,10 @@ class AgGrid(Element, component='aggrid.js', esm={'nicegui-aggrid': 'dist'}, def
             'filtered_sorted': 'forEachNodeAfterFilterAndSort',
             'leaf': 'forEachLeafNode',
         }
+        grid_id = self._phantom_grid.id if self._phantom_grid else self.id
         result = await self.client.run_javascript(f'''
             const rowData = [];
-            (getElement({self.id})?.api || getElement({self._props['secondary-id']})?.api).{API_METHODS[method]}(node => rowData.push(node.data));
+            getElement({grid_id}).api.{API_METHODS[method]}(node => rowData.push(node.data));
             return rowData;
         ''', timeout=timeout)
         return cast(list[dict], result)
@@ -323,5 +333,5 @@ class AgGrid(Element, component='aggrid.js', esm={'nicegui-aggrid': 'dist'}, def
         register_importmap_override('nicegui-aggrid', url)
 
 
-class SecondaryAgGrid(AgGrid, default_props='secondary-id=""'):
+class _PhantomAgGrid(AgGrid):
     pass

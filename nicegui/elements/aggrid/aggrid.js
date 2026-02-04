@@ -4,7 +4,6 @@ import { convertDynamicProperties } from "../../static/utils/dynamic_properties.
 export default {
   template: "<div></div>",
   mounted() {
-    if (this.secondaryId) this.$nextTick(() => getElement(this.secondaryId).api.destroy());
     AgGrid.ModuleRegistry.registerModules(this.modules.map((moduleName) => AgGrid[moduleName]));
     this.update_grid();
 
@@ -13,6 +12,8 @@ export default {
     this.themeObserver = new MutationObserver(updateTheme);
     this.themeObserver.observe(document.body, { attributes: true, attributeFilter: ["class"] });
     updateTheme();
+
+    this.$emit("gridMounted");
   },
   unmounted() {
     this.api?.destroy();
@@ -96,7 +97,6 @@ export default {
   props: {
     options: Object,
     htmlColumns: Array,
-    secondaryId: String,
     modules: Array,
   },
 };
