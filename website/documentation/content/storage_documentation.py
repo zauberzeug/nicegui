@@ -39,6 +39,21 @@ doc.title('Storage')
         By default, NiceGUI holds a unique identifier for the browser session in `app.storage.browser['id']`.
         This storage requires the `storage_secret` parameter in `ui.run()` to sign the browser session cookie.
 
+    **How Storage Initialization Works:**
+
+    - `app.storage.user` is automatically initialized when a user first connects, identified by a session cookie.
+      The data is loaded from persistent storage (file or Redis) and remains available across all their browser tabs.
+    - `app.storage.tab` is created when a tab establishes a WebSocket connection.
+      Each tab gets a unique identifier, and its storage persists as long as the tab remains open (unless using Redis, which persists across server restarts).
+    - `app.storage.general` is initialized once when the server starts and is shared across all users and sessions.
+    - `app.storage.browser` and `app.storage.client` are available immediately without special initialization.
+
+    **Multi-Tab Behavior:**
+    When a user opens multiple tabs, `app.storage.user` and `app.storage.browser` are shared across all tabs,
+    while `app.storage.tab` and `app.storage.client` are unique to each tab.
+    If you duplicate a tab (e.g., right-click → "Duplicate Tab"), the new tab will initially copy the data from the original tab's `app.storage.tab`,
+    but subsequent changes will be independent between the tabs.
+
     The following table will help you to choose storage.
 
     | Storage type                | `client` | `tab`  | `browser` | `user` | `general` |
@@ -46,12 +61,18 @@ doc.title('Storage')
     | Location                    | Server   | Server | Browser   | Server | Server    |
     | Across tabs                 | No       | No     | Yes       | Yes    | Yes       |
     | Across browsers             | No       | No     | No        | No     | Yes       |
-    | Across server restarts      | No       | Yes    | No        | Yes    | Yes       |
+    | Across server restarts      | No       | No*    | No        | Yes    | Yes       |
     | Across page reloads         | No       | Yes    | Yes       | Yes    | Yes       |
-    | Needs client connection     | No       | Yes    | No        | No     | No        |
+    | Needs client connection     | No       | Yes**  | No        | No     | No        |
     | Write only before response  | No       | No     | Yes       | No     | No        |
     | Needs serializable data     | No       | No     | Yes       | Yes    | Yes       |
     | Needs `storage_secret`      | No       | No     | Yes       | Yes    | No        |
+
+    \* Tab storage persists across server restarts only when using Redis (see [Redis storage](#redis_storage) below).
+    By default, tab storage is kept in memory and will be lost when the server restarts, as noted in the description above.
+
+    \*\* "Needs client connection" means you must use [`await client.connected()`](/documentation/page#wait_for_client_connection)
+    before accessing this storage type to ensure the WebSocket connection is established.
 ''')
 def storage_demo():
     from nicegui import app
