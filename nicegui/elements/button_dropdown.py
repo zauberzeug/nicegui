@@ -1,5 +1,3 @@
-from typing import Optional
-
 from typing_extensions import Self
 
 from ..defaults import DEFAULT_PROP, resolve_defaults
@@ -17,12 +15,12 @@ class DropdownButton(IconElement, TextElement, DisableableElement, BackgroundCol
     def __init__(self,
                  text: str = '', *,
                  value: bool = False,
-                 on_value_change: Optional[Handler[ValueChangeEventArguments]] = None,
-                 on_click: Optional[Handler[ClickEventArguments]] = None,
-                 color: Optional[str] = DEFAULT_PROP | 'primary',
-                 icon: Optional[str] = DEFAULT_PROP | None,
-                 auto_close: Optional[bool] = DEFAULT_PROP | False,
-                 split: Optional[bool] = DEFAULT_PROP | False,
+                 on_value_change: Handler[ValueChangeEventArguments] | None = None,
+                 on_click: Handler[ClickEventArguments] | None = None,
+                 color: str | None = DEFAULT_PROP | 'primary',
+                 icon: str | None = DEFAULT_PROP | None,
+                 auto_close: bool | None = DEFAULT_PROP | False,
+                 split: bool | None = DEFAULT_PROP | False,
                  ) -> None:
         """Dropdown Button
 

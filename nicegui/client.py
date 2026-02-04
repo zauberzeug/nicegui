@@ -5,9 +5,9 @@ import inspect
 import time
 import uuid
 from collections import defaultdict
-from collections.abc import Awaitable, Iterable
+from collections.abc import Awaitable, Callable, Iterable
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Callable, ClassVar, cast
+from typing import TYPE_CHECKING, Any, ClassVar, cast
 
 from fastapi import Request
 from fastapi.responses import Response
@@ -171,6 +171,7 @@ class Client:
             **core.app.config.socket_io_js_query_params,
             'client_id': self.id,
             'next_message_id': self.outbox.next_message_id,
+            'implicit_handshake': not _is_prefetch(request),
         }
         vue_html, vue_styles, vue_scripts, imports, js_imports, js_imports_urls = \
             generate_resources(prefix, self.elements.values())
@@ -197,6 +198,7 @@ class Client:
                 'translations': translations.get(self.page.resolve_language(), translations['en-US']),
                 'prefix': prefix,
                 'tailwind': core.app.config.tailwind,
+                'unocss': core.app.config.unocss,
                 'headwind_css': HEADWIND_CONTENT if core.app.config.tailwind else '',
                 'prod_js': core.app.config.prod_js,
                 'socket_io_js_query_params': socket_io_js_query_params,
@@ -220,10 +222,8 @@ class Client:
             return
         self._waiting_for_connection.set()
         self._connected.clear()
-        purpose = (self.request.headers.get('Sec-Purpose') or self.request.headers.get('Purpose') or '').lower()
-        is_prefetch = 'prefetch' in purpose and 'prerender' not in purpose
         try:
-            await asyncio.wait_for(self._connected.wait(), timeout=None if is_prefetch else timeout)
+            await asyncio.wait_for(self._connected.wait(), timeout=None if _is_prefetch(self.request) else timeout)
         except asyncio.TimeoutError as e:
             raise ClientConnectionTimeout(self) from e
 
@@ -466,3 +466,8 @@ class Client:
 
         except Exception:
             log.exception('Error while pruning clients')
+
+
+def _is_prefetch(request: Request) -> bool:
+    purpose = (request.headers.get('Sec-Purpose') or request.headers.get('Purpose') or '').lower()
+    return 'prefetch' in purpose and 'prerender' not in purpose

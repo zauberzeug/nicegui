@@ -1,5 +1,4 @@
 import asyncio
-from typing import Optional
 
 import httpx
 import pytest
@@ -788,7 +787,7 @@ def test_optional_parameters(screen: Screen):
         name: str,
         count: int = 1,
         active: str = 'no',
-        source: Optional[str] = None,
+        source: str | None = None,
         missing: str = 'default',
     ):
         ui.label(f'name={name}, count={count}, active={active}, source={source}, missing={missing}')
@@ -814,7 +813,7 @@ def test_page_arguments_with_optional_parameters(screen: Screen):
         args: PageArguments,
         user_id: str,
         role: str = 'guest',
-        app_name: Optional[str] = None,
+        app_name: str | None = None,
     ):
         ui.label(f'path={args.path}, user_id={user_id}, role={role}, app={app_name}')
 

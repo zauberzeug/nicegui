@@ -22,7 +22,7 @@ export default {
         this.cameraParams.fov,
         this.width / this.height,
         this.cameraParams.near,
-        this.cameraParams.far
+        this.cameraParams.far,
       );
     } else {
       this.camera = new THREE.OrthographicCamera(
@@ -31,7 +31,7 @@ export default {
         this.cameraParams.size / 2,
         -this.cameraParams.size / 2,
         this.cameraParams.near,
-        this.cameraParams.far
+        this.cameraParams.far,
       );
     }
     this.look_at = new THREE.Vector3(0, 0, 0);
@@ -136,7 +136,7 @@ export default {
             look_at_y === null ? this.look_at.y : look_at_y,
             look_at_z === null ? this.look_at.z : look_at_z,
           ],
-          duration * 1000
+          duration * 1000,
         )
         .onUpdate((p) => {
           this.camera.position.set(p[0], p[1], p[2]);

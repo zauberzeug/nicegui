@@ -1,7 +1,8 @@
 import asyncio
 import re
-from typing import Optional
+from typing import Literal
 
+import pytest
 from fastapi.responses import PlainTextResponse
 from selenium.webdriver.common.by import By
 
@@ -64,7 +65,7 @@ def test_creating_new_page_after_startup(screen: Screen):
 
 
 def test_wait_for_connected(screen: Screen):
-    label: Optional[ui.label] = None
+    label: ui.label | None = None
 
     async def load() -> None:
         assert label
@@ -205,7 +206,10 @@ def test_async_connect_handler(screen: Screen):
     screen.should_contain('42')
 
 
-def test_dark_mode(screen: Screen):
+@pytest.mark.parametrize('unocss', [None, 'mini', 'wind3', 'wind4'])
+def test_dark_mode(screen: Screen, unocss: Literal['mini', 'wind3', 'wind4'] | None):
+    app.config.unocss = unocss
+
     @ui.page('/auto', dark=None)
     def page():
         ui.label('A').classes('text-blue-400 dark:text-red-400')

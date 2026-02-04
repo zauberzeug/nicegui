@@ -1,5 +1,5 @@
 from itertools import accumulate, chain, repeat
-from typing import Literal, Optional, get_args
+from typing import Literal, get_args
 
 from ...defaults import DEFAULT_PROP, resolve_defaults
 from ...elements.mixins.disableable_element import DisableableElement
@@ -258,8 +258,8 @@ class CodeMirror(ValueElement, DisableableElement,
         self,
         value: str = '',
         *,
-        on_change: Optional[Handler[ValueChangeEventArguments]] = None,
-        language: Optional[SUPPORTED_LANGUAGES] = DEFAULT_PROP | None,
+        on_change: Handler[ValueChangeEventArguments] | None = None,
+        language: SUPPORTED_LANGUAGES | None = DEFAULT_PROP | None,
         theme: SUPPORTED_THEMES = DEFAULT_PROP | 'basicLight',
         indent: str = DEFAULT_PROP | ' ' * 4,
         line_wrapping: bool = DEFAULT_PROP | False,
@@ -325,10 +325,10 @@ class CodeMirror(ValueElement, DisableableElement,
         return self._props['language']
 
     @language.setter
-    def language(self, language: Optional[SUPPORTED_LANGUAGES] = None) -> None:
+    def language(self, language: SUPPORTED_LANGUAGES | None = None) -> None:
         self._props['language'] = language
 
-    def set_language(self, language: Optional[SUPPORTED_LANGUAGES] = None) -> None:
+    def set_language(self, language: SUPPORTED_LANGUAGES | None = None) -> None:
         """Sets the language of the editor (case-insensitive)."""
         self._props['language'] = language
 
@@ -381,7 +381,9 @@ class CodeMirror(ValueElement, DisableableElement,
         end_positions = accumulate(old_lengths)
         document_parts: list[str] = []
         codepoint_parts: list[bytes] = []
-        for end, old_len, new_len, insert in zip(end_positions, old_lengths, new_lengths, chain(inserted, repeat([]))):
+        for end, old_len, new_len, insert in zip(
+            end_positions, old_lengths, new_lengths, chain(inserted, repeat([])), strict=False,
+        ):
             if new_len == -1:
                 start = end - old_len
                 py_start = self._codepoints[:start].count(1)

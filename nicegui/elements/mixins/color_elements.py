@@ -1,4 +1,5 @@
-from typing import Any, Callable, Literal, Optional, cast
+from collections.abc import Callable
+from typing import Any, Literal, cast
 
 from typing_extensions import Self
 
@@ -26,17 +27,17 @@ class BackgroundColorElement(Element):
     background_color = BindableProperty(
         on_change=lambda sender, background_color: cast(Self, sender)._handle_background_color_change(background_color))  # pylint: disable=protected-access
 
-    def __init__(self, *, background_color: Optional[str], **kwargs: Any) -> None:
+    def __init__(self, *, background_color: str | None, **kwargs: Any) -> None:
         super().__init__(**kwargs)
         self._background_color_state: tuple[Literal[None, 'prop', 'class', 'style'], str] = (None, '')
         self.background_color = background_color
         self._handle_background_color_change(background_color)
 
-    def set_background_color(self, background_color: Optional[str]) -> None:
+    def set_background_color(self, background_color: str | None) -> None:
         """Set the background color of this element."""
         self.background_color = background_color
 
-    def _handle_background_color_change(self, background_color: Optional[str]) -> None:
+    def _handle_background_color_change(self, background_color: str | None) -> None:
         # Clear previous color based on tracked state
         color_type, value = self._background_color_state
         if color_type == 'prop':
@@ -60,8 +61,8 @@ class BackgroundColorElement(Element):
     def bind_background_color_to(self,
                                  target_object: Any,
                                  target_name: str = 'background_color',
-                                 forward: Optional[Callable[[Any], Any]] = None, *,
-                                 strict: Optional[bool] = None,
+                                 forward: Callable[[Any], Any] | None = None, *,
+                                 strict: bool | None = None,
                                  ) -> Self:
         """Bind the background color of this element to the target object's target_name property.
 
@@ -80,8 +81,8 @@ class BackgroundColorElement(Element):
     def bind_background_color_from(self,
                                    target_object: Any,
                                    target_name: str = 'background_color',
-                                   backward: Optional[Callable[[Any], Any]] = None, *,
-                                   strict: Optional[bool] = None,
+                                   backward: Callable[[Any], Any] | None = None, *,
+                                   strict: bool | None = None,
                                    ) -> Self:
         """Bind the background color of this element from the target object's target_name property.
 
@@ -101,9 +102,9 @@ class BackgroundColorElement(Element):
     def bind_background_color(self,
                               target_object: Any,
                               target_name: str = 'background_color', *,
-                              forward: Optional[Callable[[Any], Any]] = None,
-                              backward: Optional[Callable[[Any], Any]] = None,
-                              strict: Optional[bool] = None,
+                              forward: Callable[[Any], Any] | None = None,
+                              backward: Callable[[Any], Any] | None = None,
+                              strict: bool | None = None,
                               ) -> Self:
         """Bind the background color of this element to the target object's target_name property.
 
@@ -130,17 +131,17 @@ class TextColorElement(Element):
     text_color = BindableProperty(
         on_change=lambda sender, text_color: cast(Self, sender)._handle_text_color_change(text_color))  # pylint: disable=protected-access
 
-    def __init__(self, *, text_color: Optional[str], **kwargs: Any) -> None:
+    def __init__(self, *, text_color: str | None, **kwargs: Any) -> None:
         super().__init__(**kwargs)
         self._text_color_state: tuple[Literal[None, 'prop', 'class', 'style'], str] = (None, '')
         self.text_color = text_color
         self._handle_text_color_change(text_color)
 
-    def set_text_color(self, text_color: Optional[str]) -> None:
+    def set_text_color(self, text_color: str | None) -> None:
         """Set the text color of this element."""
         self.text_color = text_color
 
-    def _handle_text_color_change(self, text_color: Optional[str]) -> None:
+    def _handle_text_color_change(self, text_color: str | None) -> None:
         # Clear previous color based on tracked state
         color_type, value = self._text_color_state
         if color_type == 'prop':
@@ -164,8 +165,8 @@ class TextColorElement(Element):
     def bind_text_color_to(self,
                            target_object: Any,
                            target_name: str = 'text_color',
-                           forward: Optional[Callable[[Any], Any]] = None, *,
-                           strict: Optional[bool] = None,
+                           forward: Callable[[Any], Any] | None = None, *,
+                           strict: bool | None = None,
                            ) -> Self:
         """Bind the text color of this element to the target object's target_name property.
 
@@ -184,8 +185,8 @@ class TextColorElement(Element):
     def bind_text_color_from(self,
                              target_object: Any,
                              target_name: str = 'text_color',
-                             backward: Optional[Callable[[Any], Any]] = None, *,
-                             strict: Optional[bool] = None,
+                             backward: Callable[[Any], Any] | None = None, *,
+                             strict: bool | None = None,
                              ) -> Self:
         """Bind the text color of this element from the target object's target_name property.
 
@@ -205,9 +206,9 @@ class TextColorElement(Element):
     def bind_text_color(self,
                         target_object: Any,
                         target_name: str = 'text_color', *,
-                        forward: Optional[Callable[[Any], Any]] = None,
-                        backward: Optional[Callable[[Any], Any]] = None,
-                        strict: Optional[bool] = None,
+                        forward: Callable[[Any], Any] | None = None,
+                        backward: Callable[[Any], Any] | None = None,
+                        strict: bool | None = None,
                         ) -> Self:
         """Bind the text color of this element to the target object's target_name property.
 

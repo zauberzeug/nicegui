@@ -1,4 +1,4 @@
-from typing import Literal, Optional
+from typing import Literal
 
 from ..context import context
 from ..defaults import DEFAULT_PROP, DEFAULT_PROPS, resolve_defaults
@@ -13,7 +13,7 @@ class Drawer(ValueElement, default_classes='nicegui-drawer'):
     @resolve_defaults
     def __init__(self,
                  side: DrawerSides, *,
-                 value: Optional[bool] = DEFAULT_PROPS['model-value'] | None,
+                 value: bool | None = DEFAULT_PROPS['model-value'] | None,
                  fixed: bool = True,
                  bordered: bool = DEFAULT_PROP | False,
                  elevated: bool = DEFAULT_PROP | False,
@@ -86,7 +86,7 @@ class LeftDrawer(Drawer):
 
     @resolve_defaults
     def __init__(self, *,
-                 value: Optional[bool] = DEFAULT_PROPS['model-value'] | None,
+                 value: bool | None = DEFAULT_PROPS['model-value'] | None,
                  fixed: bool = True,
                  bordered: bool = DEFAULT_PROP | False,
                  elevated: bool = DEFAULT_PROP | False,
@@ -124,7 +124,7 @@ class RightDrawer(Drawer):
 
     @resolve_defaults
     def __init__(self, *,
-                 value: Optional[bool] = DEFAULT_PROPS['model-value'] | None,
+                 value: bool | None = DEFAULT_PROPS['model-value'] | None,
                  fixed: bool = True,
                  bordered: bool = DEFAULT_PROP | False,
                  elevated: bool = DEFAULT_PROP | False,

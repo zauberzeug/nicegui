@@ -1,4 +1,4 @@
-from typing import Any, Optional, Union
+from typing import Any
 
 from ..defaults import DEFAULT_PROP, DEFAULT_PROPS, resolve_defaults
 from ..events import GenericEventArguments, Handler, ValueChangeEventArguments
@@ -12,18 +12,18 @@ class Number(LabelElement, ValidationElement, DisableableElement):
 
     @resolve_defaults
     def __init__(self,
-                 label: Optional[str] = DEFAULT_PROP | None, *,
-                 placeholder: Optional[str] = DEFAULT_PROP | None,
-                 value: Optional[float] = DEFAULT_PROPS['model-value'] | None,
-                 min: Optional[float] = DEFAULT_PROP | None,  # pylint: disable=redefined-builtin
-                 max: Optional[float] = DEFAULT_PROP | None,  # pylint: disable=redefined-builtin
-                 precision: Optional[int] = None,
-                 step: Optional[float] = DEFAULT_PROP | None,
-                 prefix: Optional[str] = DEFAULT_PROP | None,
-                 suffix: Optional[str] = DEFAULT_PROP | None,
-                 format: Optional[str] = None,  # pylint: disable=redefined-builtin
-                 on_change: Optional[Handler[ValueChangeEventArguments]] = None,
-                 validation: Optional[Union[ValidationFunction, ValidationDict]] = None,
+                 label: str | None = DEFAULT_PROP | None, *,
+                 placeholder: str | None = DEFAULT_PROP | None,
+                 value: float | None = DEFAULT_PROPS['model-value'] | None,
+                 min: float | None = DEFAULT_PROP | None,  # pylint: disable=redefined-builtin
+                 max: float | None = DEFAULT_PROP | None,  # pylint: disable=redefined-builtin
+                 precision: int | None = None,
+                 step: float | None = DEFAULT_PROP | None,
+                 prefix: str | None = DEFAULT_PROP | None,
+                 suffix: str | None = DEFAULT_PROP | None,
+                 format: str | None = None,  # pylint: disable=redefined-builtin
+                 on_change: Handler[ValueChangeEventArguments] | None = None,
+                 validation: ValidationFunction | ValidationDict | None = None,
                  ) -> None:
         """Number Input
 
@@ -86,17 +86,17 @@ class Number(LabelElement, ValidationElement, DisableableElement):
         self.sanitize()
 
     @property
-    def precision(self) -> Optional[int]:
+    def precision(self) -> int | None:
         """The number of decimal places allowed (default: no limit, negative: decimal places before the dot)."""
         return self._precision
 
     @precision.setter
-    def precision(self, value: Optional[int]) -> None:
+    def precision(self, value: int | None) -> None:
         self._precision = value
         self.sanitize()
 
     @property
-    def prefix(self) -> Optional[str]:
+    def prefix(self) -> str | None:
         """The prefix to prepend to the displayed value.
 
         *Added in version 3.5.0*
@@ -104,14 +104,14 @@ class Number(LabelElement, ValidationElement, DisableableElement):
         return self._props.get('prefix')
 
     @prefix.setter
-    def prefix(self, value: Optional[str]) -> None:
+    def prefix(self, value: str | None) -> None:
         if value is None:
             self._props.pop('prefix', None)
         else:
             self._props['prefix'] = value
 
     @property
-    def suffix(self) -> Optional[str]:
+    def suffix(self) -> str | None:
         """The suffix to append to the displayed value.
 
         *Added in version 3.5.0*
@@ -119,7 +119,7 @@ class Number(LabelElement, ValidationElement, DisableableElement):
         return self._props.get('suffix')
 
     @suffix.setter
-    def suffix(self, value: Optional[str]) -> None:
+    def suffix(self, value: str | None) -> None:
         if value is None:
             self._props.pop('suffix', None)
         else:

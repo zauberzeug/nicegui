@@ -4,10 +4,10 @@ import os
 import platform
 import signal
 import urllib
-from collections.abc import Awaitable, Iterator
+from collections.abc import Awaitable, Callable, Iterator
 from enum import Enum
 from pathlib import Path
-from typing import Any, Callable, Optional, Union
+from typing import Any
 
 from fastapi import FastAPI, HTTPException, Request, Response
 from fastapi.responses import FileResponse
@@ -44,13 +44,13 @@ class App(FastAPI):
         self._state: State = State.STOPPED
         self.config = AppConfig()
 
-        self._startup_handlers: list[Union[Callable[..., Any], Awaitable]] = []
-        self._shutdown_handlers: list[Union[Callable[..., Any], Awaitable]] = []
-        self._connect_handlers: list[Union[Callable[..., Any], Awaitable]] = []
-        self._disconnect_handlers: list[Union[Callable[..., Any], Awaitable]] = []
-        self._delete_handlers: list[Union[Callable[..., Any], Awaitable]] = []
+        self._startup_handlers: list[Callable[..., Any] | Awaitable] = []
+        self._shutdown_handlers: list[Callable[..., Any] | Awaitable] = []
+        self._connect_handlers: list[Callable[..., Any] | Awaitable] = []
+        self._disconnect_handlers: list[Callable[..., Any] | Awaitable] = []
+        self._delete_handlers: list[Callable[..., Any] | Awaitable] = []
         self._exception_handlers: list[Callable[..., Any]] = [log.exception]
-        self._page_exception_handler: Optional[Callable[..., Any]] = None
+        self._page_exception_handler: Callable[..., Any] | None = None
 
         self.colors()  # populate Quasar config with default colors
 
@@ -95,7 +95,7 @@ class App(FastAPI):
                     await result
         self._state = State.STOPPED
 
-    def safe_invoke(self, func: Union[Callable[..., Any], Awaitable]) -> None:
+    def safe_invoke(self, func: Callable[..., Any] | Awaitable) -> None:
         """Invoke the potentially async function and catch any exceptions."""
         func_name = func.__name__ if hasattr(func, '__name__') else str(func)
         try:
@@ -112,14 +112,14 @@ class App(FastAPI):
         except Exception as e:
             self.handle_exception(e)
 
-    def on_connect(self, handler: Union[Callable, Awaitable]) -> None:
+    def on_connect(self, handler: Callable | Awaitable) -> None:
         """Called every time a new client connects to NiceGUI.
 
         The callback has an optional parameter of `nicegui.Client`.
         """
         self._connect_handlers.append(handler)
 
-    def on_disconnect(self, handler: Union[Callable, Awaitable]) -> None:
+    def on_disconnect(self, handler: Callable | Awaitable) -> None:
         """Called every time a new client disconnects from NiceGUI.
 
         The callback has an optional parameter of `nicegui.Client`.
@@ -128,7 +128,7 @@ class App(FastAPI):
         """
         self._disconnect_handlers.append(handler)
 
-    def on_delete(self, handler: Union[Callable, Awaitable]) -> None:
+    def on_delete(self, handler: Callable | Awaitable) -> None:
         """Called when a client is deleted.
 
         The callback has an optional parameter of `nicegui.Client`.
@@ -137,7 +137,7 @@ class App(FastAPI):
         """
         self._delete_handlers.append(handler)
 
-    def on_startup(self, handler: Union[Callable, Awaitable]) -> None:
+    def on_startup(self, handler: Callable | Awaitable) -> None:
         """Called when NiceGUI is started or restarted.
 
         Needs to be called before `ui.run()`.
@@ -148,7 +148,7 @@ class App(FastAPI):
             raise RuntimeError('Unable to register another startup handler. NiceGUI has already been started.')
         self._startup_handlers.append(handler)
 
-    def on_shutdown(self, handler: Union[Callable, Awaitable]) -> None:
+    def on_shutdown(self, handler: Callable | Awaitable) -> None:
         """Called when NiceGUI is shut down or restarted.
 
         When NiceGUI is shut down or restarted, all tasks still in execution will be automatically canceled.
@@ -189,14 +189,14 @@ class App(FastAPI):
         """
         if self.native.main_window:
             self.native.main_window.destroy()
-        if self.config.reload:
+        if self.config.reload or Server.instance.config.should_reload:
             os.kill(os.getppid(), getattr(signal, 'CTRL_C_EVENT' if platform.system() == 'Windows' else 'SIGINT'))
         else:
             Server.instance.should_exit = True
 
     def add_static_files(self,
                          url_path: str,
-                         local_directory: Union[str, Path],
+                         local_directory: str | Path,
                          *,
                          follow_symlink: bool = False,
                          max_cache_age: int = 3600) -> None:
@@ -228,8 +228,8 @@ class App(FastAPI):
             return await handler.get_response(path, request.scope)
 
     def add_static_file(self, *,
-                        local_file: Union[str, Path],
-                        url_path: Optional[str] = None,
+                        local_file: str | Path,
+                        url_path: str | None = None,
                         single_use: bool = False,
                         strict: bool = True,
                         max_cache_age: int = 3600) -> str:
@@ -264,7 +264,7 @@ class App(FastAPI):
 
         return urllib.parse.quote(path)
 
-    def add_media_files(self, url_path: str, local_directory: Union[str, Path]) -> None:
+    def add_media_files(self, url_path: str, local_directory: str | Path) -> None:
         """Add directory of media files.
 
         `add_media_files()` allows a local files to be streamed from a specified endpoint, e.g. `'/media'`.
@@ -287,8 +287,8 @@ class App(FastAPI):
             return get_range_response(filepath, request, chunk_size=nicegui_chunk_size)
 
     def add_media_file(self, *,
-                       local_file: Union[str, Path],
-                       url_path: Optional[str] = None,
+                       local_file: str | Path,
+                       url_path: str | None = None,
                        single_use: bool = False,
                        strict: bool = True) -> str:
         """Add a single media file.

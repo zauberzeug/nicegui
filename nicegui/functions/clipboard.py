@@ -1,21 +1,21 @@
+from __future__ import annotations
+
 import io
-from typing import Optional, Union
+from contextlib import suppress
 
 from .. import json, optional_features
 from ..logging import log
 from .javascript import run_javascript
 
-try:
+with suppress(ImportError):
     from PIL import Image as PIL_Image
     optional_features.register('pillow')
-except ImportError:
-    pass
 
 
 class Clipboard:
     """Wrapper for clipboard helper functions."""
 
-    async def read(self) -> Optional[str]:
+    async def read(self) -> str | None:
         """Read text from the clipboard.
 
         Note: This function only works in secure contexts (HTTPS or localhost).
@@ -48,7 +48,7 @@ class Clipboard:
             }}
         ''')
 
-    async def read_image(self) -> Union['PIL_Image.Image', None]:
+    async def read_image(self) -> PIL_Image.Image | None:
         """Read PIL images from the clipboard.
 
         Note: This function only works in secure contexts (HTTPS or localhost) and requires Pillow to be installed.

@@ -1,4 +1,4 @@
-from typing import Literal, Optional
+from typing import Literal
 
 from ..defaults import DEFAULT_PROP, resolve_defaults
 from ..element import Element
@@ -38,9 +38,9 @@ class Skeleton(Element):
                  animation_speed: float = 1.5,
                  square: bool = DEFAULT_PROP | False,
                  bordered: bool = DEFAULT_PROP | False,
-                 size: Optional[str] = DEFAULT_PROP | None,
-                 width: Optional[str] = DEFAULT_PROP | None,
-                 height: Optional[str] = DEFAULT_PROP | None,
+                 size: str | None = DEFAULT_PROP | None,
+                 width: str | None = DEFAULT_PROP | None,
+                 height: str | None = DEFAULT_PROP | None,
                  ) -> None:
         """Skeleton
 

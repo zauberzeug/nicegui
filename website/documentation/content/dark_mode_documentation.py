@@ -36,4 +36,19 @@ def bind_to_switch() -> None:
     ))
 
 
+@doc.demo('Disable Dark Reader extension', '''
+    NiceGUI sets a `<meta name="color-scheme">` tag to inform browsers and extensions about your app's color scheme.
+    However, the [Dark Reader](https://darkreader.org/) browser extension may still transform your page.
+    To prevent this, you can add a `<meta name="darkreader-lock">` tag using `ui.add_head_html`.
+    Use `shared=True` to apply it to all pages, not just the current one.
+    This is an [officially supported mechanism](https://github.com/darkreader/darkreader/blob/main/CONTRIBUTING.md#disabling-dark-reader-on-your-site).
+
+    Note: Users can still enable Dark Reader manually in their extension settings if they prefer it over your dark theme.
+''')
+def darkreader_lock() -> None:
+    # ui.add_head_html('<meta name="darkreader-lock">')
+
+    ui.label('Dark Reader is disabled on this page.')
+
+
 doc.reference(ui.dark_mode)

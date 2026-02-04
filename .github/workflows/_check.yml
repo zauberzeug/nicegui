@@ -23,7 +23,7 @@ jobs:
           enable-cache: true
           cache-dependency-glob: "uv.lock"
       - name: Install Python
-        run: uv python install 3.9
+        run: uv python install 3.10
       - name: Install dependencies
         run: uv sync
       - name: ${{ matrix.target.name }}

@@ -1,4 +1,4 @@
-from typing import Literal, Optional
+from typing import Literal
 
 from ..defaults import DEFAULT_PROP, resolve_defaults
 from ..element import Element
@@ -12,7 +12,7 @@ class Timeline(Element):
                  *,
                  side: Literal['left', 'right'] = DEFAULT_PROP | 'left',
                  layout: Literal['dense', 'comfortable', 'loose'] = DEFAULT_PROP | 'dense',
-                 color: Optional[str] = DEFAULT_PROP | None,
+                 color: str | None = DEFAULT_PROP | None,
                  ) -> None:
         """Timeline
 
@@ -32,16 +32,16 @@ class TimelineEntry(IconElement, default_classes='nicegui-timeline-entry'):
 
     @resolve_defaults
     def __init__(self,
-                 body: Optional[str] = DEFAULT_PROP | None,
+                 body: str | None = DEFAULT_PROP | None,
                  *,
                  side: Literal['left', 'right'] = DEFAULT_PROP | 'left',
                  heading: bool = DEFAULT_PROP | False,
-                 tag: Optional[str] = DEFAULT_PROP | None,
-                 icon: Optional[str] = DEFAULT_PROP | None,
-                 avatar: Optional[str] = DEFAULT_PROP | None,
-                 title: Optional[str] = DEFAULT_PROP | None,
-                 subtitle: Optional[str] = DEFAULT_PROP | None,
-                 color: Optional[str] = DEFAULT_PROP | None,
+                 tag: str | None = DEFAULT_PROP | None,
+                 icon: str | None = DEFAULT_PROP | None,
+                 avatar: str | None = DEFAULT_PROP | None,
+                 title: str | None = DEFAULT_PROP | None,
+                 subtitle: str | None = DEFAULT_PROP | None,
+                 color: str | None = DEFAULT_PROP | None,
                  ) -> None:
         """Timeline Entry
 
