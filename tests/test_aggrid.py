@@ -93,6 +93,7 @@ def test_dynamic_method(screen: Screen):
         })
 
     screen.open('/')
+    screen.should_contain('Alice')
     trs = screen.find_all_by_class('ag-row')
     assert len(trs) == 3
     heights = [int(tr.get_attribute('clientHeight')) for tr in trs]
