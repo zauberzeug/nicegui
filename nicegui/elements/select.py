@@ -1,4 +1,5 @@
 from collections.abc import Callable, Generator, Iterable, Iterator
+from contextlib import suppress
 from copy import deepcopy
 from typing import Any, Literal
 
@@ -123,11 +124,9 @@ class Select(LabelElement, ValidationElement, ChoiceElement, DisableableElement,
         if self.multiple:
             result = []
             for item in value or []:
-                try:
+                with suppress(ValueError):
                     index = self._values.index(item)
                     result.append({'value': index, 'label': self._labels[index]})
-                except ValueError:
-                    pass
             return result
         else:
             try:

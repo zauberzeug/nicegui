@@ -1,4 +1,5 @@
 from collections.abc import Callable
+from contextlib import suppress
 from typing import Literal
 
 from typing_extensions import Self
@@ -15,14 +16,12 @@ from ...events import (
     handle_event,
 )
 
-try:
+with suppress(ImportError):
     from pyecharts.charts.base import default, json
     from pyecharts.charts.chart import Base as Chart
     from pyecharts.commons.utils import JsCode
     JS_CODE_MARKER = JsCode('\n').js_code.split('\n')[0]
     optional_features.register('pyecharts')
-except ImportError:
-    pass
 
 
 class EChart(Element, component='echart.js', esm={'nicegui-echart': 'dist'}, default_classes='nicegui-echart'):

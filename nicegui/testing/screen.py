@@ -3,7 +3,7 @@ import runpy
 import threading
 import time
 from collections.abc import Callable, Generator
-from contextlib import contextmanager
+from contextlib import contextmanager, suppress
 from pathlib import Path
 from typing import Any, overload
 from urllib.parse import urlparse
@@ -205,11 +205,9 @@ class Screen:
             # HACK: repeat check after a short delay to avoid timing issue on fast machines
             for _ in range(5):
                 element = self.selenium.find_element(By.XPATH, query)
-                try:
+                with suppress(StaleElementReferenceException):
                     if element.is_displayed():
                         return element
-                except StaleElementReferenceException:
-                    pass
                 self.wait(0.2)
             raise AssertionError(f'Found "{text}" but it is hidden')
         except NoSuchElementException as e:

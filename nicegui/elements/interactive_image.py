@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import time
 from collections.abc import Callable
+from contextlib import suppress
 from pathlib import Path
 from typing import Literal, cast
 
@@ -15,11 +16,9 @@ from .image import pil_to_tempfile
 from .mixins.content_element import ContentElement
 from .mixins.source_element import SourceElement
 
-try:
+with suppress(ImportError):
     from PIL.Image import Image as PIL_Image
     optional_features.register('pillow')
-except ImportError:
-    pass
 
 
 class InteractiveImage(SourceElement, ContentElement, component='interactive_image.js'):

@@ -1,16 +1,14 @@
 import asyncio
-import contextlib
+from contextlib import suppress
 
 from .. import background_tasks, core, json, optional_features
 from ..logging import log
 from .persistent_dict import PersistentDict
 
-try:
+with suppress(ImportError):
     import redis as redis_sync
     import redis.asyncio as redis
     optional_features.register('redis')
-except ImportError:
-    pass
 
 
 class RedisPersistentDict(PersistentDict):
@@ -103,7 +101,7 @@ class RedisPersistentDict(PersistentDict):
         """Close Redis connection and subscription."""
         if self._listener_task and not self._listener_task.done():
             self._listener_task.cancel()
-            with contextlib.suppress(asyncio.CancelledError):
+            with suppress(asyncio.CancelledError):
                 await self._listener_task
         await self.pubsub.aclose()
         await self.redis_client.aclose()

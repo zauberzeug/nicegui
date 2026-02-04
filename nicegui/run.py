@@ -4,6 +4,7 @@ import traceback
 from collections.abc import Callable
 from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
 from concurrent.futures.process import BrokenProcessPool
+from contextlib import suppress
 from functools import partial
 from pickle import PicklingError
 from typing import Any, TypeVar
@@ -108,17 +109,13 @@ def reset() -> None:
     global process_pool, thread_pool  # pylint: disable=global-statement # noqa: PLW0603
 
     if process_pool is not None:
-        try:
+        with suppress(Exception):
             _kill_processes()
             process_pool.shutdown(wait=False, cancel_futures=True)
-        except Exception:  # pylint: disable=broad-except
-            pass
         process_pool = None
 
-    try:
+    with suppress(Exception):
         thread_pool.shutdown(wait=False, cancel_futures=True)
-    except Exception:  # pylint: disable=broad-except
-        pass
     thread_pool = ThreadPoolExecutor()
 
 
