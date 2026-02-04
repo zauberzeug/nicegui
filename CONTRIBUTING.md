@@ -169,6 +169,10 @@ ui.button('Click me') \
 - Ensure proper use of async (no blocking operations)
 - **Never use `asyncio.create_task()`**, because the garbage collector might remove unfinished tasks.
   Always use `background_tasks.create()` which takes better care of task lifecycle management.
+- **Prefer `contextlib.suppress` for ignoring exceptions**: Use `with contextlib.suppress(...):` instead of `try: ... except ...: pass` for cleaner and more declarative exception handling.
+  `contextlib` is part of Python's standard library.
+- **Standardize on `ImportError` for optional dependencies**: When attempting to import optional dependencies, catch `ImportError` instead of `ModuleNotFoundError`.
+  This is more defensive as it catches both "not installed" and "installed but broken" cases.
 
 ### Workflow Guidelines
 
