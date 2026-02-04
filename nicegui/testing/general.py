@@ -49,6 +49,7 @@ def nicegui_reset_globals():
     default_classes = {t: copy(t._default_classes) for t in element_types}  # pylint: disable=protected-access
     default_styles = {t: copy(t._default_style) for t in element_types}  # pylint: disable=protected-access
     default_props = {t: copy(t._default_props) for t in element_types}  # pylint: disable=protected-access
+    default_extras = ui.markdown.default_extras[:]
 
     dependencies.importmap_overrides.clear()
     Client.instances.clear()
@@ -73,6 +74,7 @@ def nicegui_reset_globals():
             t._default_classes = default_classes[t]  # pylint: disable=protected-access
             t._default_style = default_styles[t]  # pylint: disable=protected-access
             t._default_props = default_props[t]  # pylint: disable=protected-access
+        ui.markdown.default_extras = default_extras
 
         for func in Client.page_routes:
             if not func.__module__.startswith('tests.'):
