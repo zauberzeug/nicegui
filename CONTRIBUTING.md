@@ -169,6 +169,10 @@ ui.button('Click me') \
 - Ensure proper use of async (no blocking operations)
 - **Never use `asyncio.create_task()`**, because the garbage collector might remove unfinished tasks.
   Always use `background_tasks.create()` which takes better care of task lifecycle management.
+- **Use `with contextlib.suppress(...)`** from the standard library instead of try-except-pass blocks
+  for cleaner, more declarative exception handling.
+- **Catch `ImportError` for optional dependencies** instead of `ModuleNotFoundError`
+  to handle both missing and broken installations.
 
 ### Workflow Guidelines
 
