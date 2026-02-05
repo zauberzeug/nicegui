@@ -61,6 +61,11 @@
 .nicegui-stepper .q-stepper__step-inner {
   height: 100%;
 }
+/* fix vertical stepper animation jitter (#3881) */
+.nicegui-stepper.q-stepper--vertical .q-stepper__step-content,
+.nicegui-stepper.q-stepper--vertical .q-stepper__step-inner {
+  height: auto;
+}
 .nicegui-step .q-stepper__nav {
   padding-top: 8px;
   gap: 8px;
