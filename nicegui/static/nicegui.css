@@ -57,14 +57,9 @@
 .nicegui-stepper .q-stepper__content {
   flex-grow: 1;
 }
-.nicegui-stepper .q-stepper__step-content,
-.nicegui-stepper .q-stepper__step-inner {
+.nicegui-stepper.q-stepper--horizontal .q-stepper__step-content,
+.nicegui-stepper.q-stepper--horizontal .q-stepper__step-inner {
   height: 100%;
-}
-/* fix vertical stepper animation jitter (#3881) */
-.nicegui-stepper.q-stepper--vertical .q-stepper__step-content,
-.nicegui-stepper.q-stepper--vertical .q-stepper__step-inner {
-  height: auto;
 }
 .nicegui-step .q-stepper__nav {
   padding-top: 8px;
