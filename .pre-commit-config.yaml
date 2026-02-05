@@ -36,3 +36,11 @@ repos:
           )$
         additional_dependencies:
           - tomli; python_version<'3.11'
+  - repo: local
+    hooks:
+      - id: sync-agent-files
+        name: Ensure AGENTS.md and CLAUDE.md are identical
+        entry: python -c "import sys; a=open('AGENTS.md').read(); b=open('CLAUDE.md').read(); sys.exit(0 if a==b else print('AGENTS.md and CLAUDE.md differ') or 1)"
+        language: system
+        files: ^(AGENTS\.md|CLAUDE\.md)$
+        pass_filenames: false
