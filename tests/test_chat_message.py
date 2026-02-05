@@ -1,4 +1,3 @@
-import pytest
 from html_sanitizer import Sanitizer
 from selenium.webdriver.common.by import By
 
@@ -19,8 +18,8 @@ def test_text_vs_html(screen: Screen):
                         sanitize=lambda x: x.replace('&euro;', 'EUR'))
         ui.chat_message('<img src=x onerror=Quasar.Notify.create({message:"70&euro;"})>', text_html=True,
                         sanitize=Sanitizer().sanitize)
-        with pytest.raises(ValueError):
-            ui.chat_message('80&euro;', text_html=True)
+        ui.chat_message('80&euro;', text_html=True)
+        ui.chat_message('90&euro;', text_html=True, sanitize=False)
 
     screen.allowed_js_errors.append('/x - Failed to load resource')
     screen.open('/')
@@ -31,7 +30,8 @@ def test_text_vs_html(screen: Screen):
     screen.should_contain('50€')
     screen.should_contain('60EUR')
     screen.should_not_contain('70€')
-    screen.should_not_contain('80€')
+    screen.should_contain('80€')
+    screen.should_contain('90€')
 
 
 def test_newline(screen: Screen):
@@ -51,3 +51,13 @@ def test_slot(screen: Screen):
 
     screen.open('/')
     screen.should_contain('slot')
+
+
+def test_xss_sanitization(screen: Screen):
+    @ui.page('/')
+    def page():
+        ui.chat_message('<img src=x onerror="alert(\'XSS\')">', text_html=True)
+
+    screen.allowed_js_errors.append('/x - Failed to load resource')
+    screen.open('/')
+    assert screen.find_by_tag('img').get_attribute('onerror') is None

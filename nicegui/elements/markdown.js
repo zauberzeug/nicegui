@@ -5,6 +5,7 @@ export default {
   async mounted() {
     await this.$nextTick(); // NOTE: wait for window.path_prefix to be set
     await loadResource(window.path_prefix + `${this.dynamicResourcePath}/${this.resourceName}`);
+    this.renderContent();
     if (this.useMermaid) {
       this.mermaid = (await import("nicegui-mermaid")).mermaid;
       this.mermaid.initialize({ startOnLoad: false });
@@ -18,9 +19,17 @@ export default {
     };
   },
   updated() {
+    this.renderContent();
     this.renderMermaid();
   },
   methods: {
+    renderContent() {
+      if (this.sanitize) {
+        this.$el.setHTML(this.innerHTML);
+      } else {
+        this.$el.innerHTML = this.innerHTML;
+      }
+    },
     renderMermaid() {
       if (!this.useMermaid || !this.mermaid) return;
       // render new diagrams
@@ -53,8 +62,10 @@ export default {
     },
   },
   props: {
+    innerHTML: String,
     dynamicResourcePath: String,
     resourceName: String,
+    sanitize: Boolean,
     useMermaid: {
       required: false,
       default: false,

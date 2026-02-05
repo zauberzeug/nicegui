@@ -37,3 +37,13 @@ def test_sanitize(screen: Screen):
     screen.should_contain('B')
     screen.should_contain('C!')
     screen.should_not_contain('D')
+
+
+def test_xss_sanitization(screen: Screen):
+    @ui.page('/')
+    def page():
+        ui.html('<img src=x onerror="alert(\'XSS\')">')
+
+    screen.allowed_js_errors.append('/x - Failed to load resource')
+    screen.open('/')
+    assert screen.find_by_tag('img').get_attribute('onerror') is None
