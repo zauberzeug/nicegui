@@ -54,6 +54,7 @@ app.mount('/_nicegui_ws/', sio_app)
 
 
 mimetypes.add_type('text/javascript', '.js')
+mimetypes.add_type('text/javascript', '.mjs')
 mimetypes.add_type('text/css', '.css')
 
 static_files = CacheControlledStaticFiles(
