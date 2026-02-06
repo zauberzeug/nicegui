@@ -1,8 +1,8 @@
 from nicegui import ui
-from nicegui.testing import Screen
+from nicegui.testing import SharedScreen
 
 
-def test_button_group(screen: Screen):
+def test_button_group(shared_screen: SharedScreen):
     @ui.page('/')
     def page():
         with ui.button_group():
@@ -11,15 +11,15 @@ def test_button_group(screen: Screen):
             with ui.dropdown_button('Button 3', on_click=lambda: ui.label('Button 3 clicked')):
                 ui.item('Item', on_click=lambda: ui.label('Item clicked'))
 
-    screen.open('/')
-    screen.click('Button 1')
-    screen.should_contain('Button 1 clicked')
+    shared_screen.open('/')
+    shared_screen.click('Button 1')
+    shared_screen.should_contain('Button 1 clicked')
 
-    screen.click('Button 2')
-    screen.should_contain('Button 2 clicked')
+    shared_screen.click('Button 2')
+    shared_screen.should_contain('Button 2 clicked')
 
-    screen.click('Button 3')
-    screen.should_contain('Button 3 clicked')
+    shared_screen.click('Button 3')
+    shared_screen.should_contain('Button 3 clicked')
 
-    screen.click('Item')
-    screen.should_contain('Item clicked')
+    shared_screen.click('Item')
+    shared_screen.should_contain('Item clicked')

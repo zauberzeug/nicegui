@@ -1,8 +1,8 @@
 from nicegui import ui
-from nicegui.testing import Screen
+from nicegui.testing import SharedScreen
 
 
-def test_page_title(screen: Screen):
+def test_page_title(shared_screen: SharedScreen):
     @ui.page('/')
     def page():
         ui.page_title('Initial title')
@@ -12,14 +12,14 @@ def test_page_title(screen: Screen):
     def page_with_title(title: str):
         ui.page_title(f'Title: {title}')
 
-    screen.open('/')
-    screen.wait(0.5)
-    screen.should_contain('Initial title')
+    shared_screen.open('/')
+    shared_screen.wait(0.5)
+    shared_screen.should_contain('Initial title')
 
-    screen.click('Change title')
-    screen.wait(0.5)
-    screen.should_contain('"New title"')
+    shared_screen.click('Change title')
+    shared_screen.wait(0.5)
+    shared_screen.should_contain('"New title"')
 
-    screen.open('/test')
-    screen.wait(0.5)
-    screen.should_contain('Title: test')
+    shared_screen.open('/test')
+    shared_screen.wait(0.5)
+    shared_screen.should_contain('Title: test')

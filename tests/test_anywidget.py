@@ -2,10 +2,10 @@ import anywidget
 import traitlets
 
 from nicegui import ui
-from nicegui.testing import Screen
+from nicegui.testing import SharedScreen
 
 
-def test_anywidget(screen: Screen):
+def test_anywidget(shared_screen: SharedScreen):
     class CounterWidget(anywidget.AnyWidget):  # pylint: disable=abstract-method
         _esm = '''
             function render({ model, el }) {
@@ -31,13 +31,13 @@ def test_anywidget(screen: Screen):
         def increment_counter() -> None:
             counter.value += 1
 
-    screen.open('/')
-    screen.click('anywidget: 42')
-    screen.click('NiceGUI: 43')
-    screen.should_contain('anywidget: 44')
+    shared_screen.open('/')
+    shared_screen.click('anywidget: 42')
+    shared_screen.click('NiceGUI: 43')
+    shared_screen.should_contain('anywidget: 44')
 
 
-def test_nested_update(screen: Screen):
+def test_nested_update(shared_screen: SharedScreen):
     class UpdateWidget(anywidget.AnyWidget):  # pylint: disable=abstract-method
         _esm = '''
             function render({model, el}) {
@@ -65,5 +65,5 @@ def test_nested_update(screen: Screen):
         uw.observe(change_b, names=['a'])
         ui.anywidget(uw)
 
-    screen.open('/')
-    screen.should_contain('b=1')
+    shared_screen.open('/')
+    shared_screen.should_contain('b=1')

@@ -1,8 +1,8 @@
 from nicegui import ui
-from nicegui.testing import Screen
+from nicegui.testing import SharedScreen
 
 
-def test_clicking_items(screen: Screen):
+def test_clicking_items(shared_screen: SharedScreen):
     @ui.page('/')
     def page():
         with ui.list():
@@ -11,12 +11,12 @@ def test_clicking_items(screen: Screen):
                 with ui.item_section():
                     ui.button('Button').on('click.stop', lambda: ui.notify('Clicked button!'))
 
-    screen.open('/')
-    screen.click('Item 1')
-    screen.should_contain('Clicked item 1')
+    shared_screen.open('/')
+    shared_screen.click('Item 1')
+    shared_screen.should_contain('Clicked item 1')
 
-    screen.click('Item 2')
-    screen.should_contain('Clicked item 2')
+    shared_screen.click('Item 2')
+    shared_screen.should_contain('Clicked item 2')
 
-    screen.click('Button')
-    screen.should_contain('Clicked button!')
+    shared_screen.click('Button')
+    shared_screen.should_contain('Clicked button!')

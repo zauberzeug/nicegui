@@ -10,10 +10,10 @@ from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.keys import Keys
 
 from nicegui import Event, app, ui
-from nicegui.testing import Screen
+from nicegui.testing import SharedScreen
 
 
-def test_update_table(screen: Screen):
+def test_update_table(shared_screen: SharedScreen):
     @ui.page('/')
     def page():
         grid = ui.aggrid({
@@ -22,17 +22,17 @@ def test_update_table(screen: Screen):
         })
         ui.button('Change age', on_click=lambda: grid.options['rowData'][0].update(age=42))
 
-    screen.open('/')
-    screen.should_contain('Name')
-    screen.should_contain('Age')
-    screen.should_contain('Alice')
-    screen.should_contain('18')
+    shared_screen.open('/')
+    shared_screen.should_contain('Name')
+    shared_screen.should_contain('Age')
+    shared_screen.should_contain('Alice')
+    shared_screen.should_contain('18')
 
-    screen.click('Change age')
-    screen.should_contain('42')
+    shared_screen.click('Change age')
+    shared_screen.should_contain('42')
 
 
-def test_add_row(screen: Screen):
+def test_add_row(shared_screen: SharedScreen):
     @ui.page('/')
     def page():
         grid = ui.aggrid({
@@ -43,19 +43,19 @@ def test_add_row(screen: Screen):
         ui.button('Add Alice', on_click=lambda: grid.options['rowData'].append({'name': 'Alice', 'age': 18}))
         ui.button('Add Bob', on_click=lambda: grid.options['rowData'].append({'name': 'Bob', 'age': 21}))
 
-    screen.open('/')
-    screen.click('Add Alice')
-    screen.click('Update')
-    screen.should_contain('Alice')
-    screen.should_contain('18')
+    shared_screen.open('/')
+    shared_screen.click('Add Alice')
+    shared_screen.click('Update')
+    shared_screen.should_contain('Alice')
+    shared_screen.should_contain('18')
 
-    screen.click('Add Bob')
-    screen.click('Update')
-    screen.should_contain('Bob')
-    screen.should_contain('21')
+    shared_screen.click('Add Bob')
+    shared_screen.click('Update')
+    shared_screen.should_contain('Bob')
+    shared_screen.should_contain('21')
 
 
-def test_click_cell(screen: Screen):
+def test_click_cell(shared_screen: SharedScreen):
     @ui.page('/')
     def page():
         grid = ui.aggrid({
@@ -64,12 +64,12 @@ def test_click_cell(screen: Screen):
         })
         grid.on('cellClicked', lambda e: ui.label(f'{e.args["data"]["name"]} has been clicked!'))
 
-    screen.open('/')
-    screen.click('Alice')
-    screen.should_contain('Alice has been clicked!')
+    shared_screen.open('/')
+    shared_screen.click('Alice')
+    shared_screen.should_contain('Alice has been clicked!')
 
 
-def test_html_columns(screen: Screen):
+def test_html_columns(shared_screen: SharedScreen):
     @ui.page('/')
     def page():
         ui.aggrid({
@@ -77,13 +77,13 @@ def test_html_columns(screen: Screen):
             'rowData': [{'name': '<span class="text-bold">Alice</span>', 'age': 18}],
         }, html_columns=[0])
 
-    screen.open('/')
-    screen.should_contain('Alice')
-    screen.should_not_contain('<span')
-    assert 'text-bold' in screen.find('Alice').get_attribute('class')
+    shared_screen.open('/')
+    shared_screen.should_contain('Alice')
+    shared_screen.should_not_contain('<span')
+    assert 'text-bold' in shared_screen.find('Alice').get_attribute('class')
 
 
-def test_dynamic_method(screen: Screen):
+def test_dynamic_method(shared_screen: SharedScreen):
     @ui.page('/')
     def page():
         ui.aggrid({
@@ -92,8 +92,8 @@ def test_dynamic_method(screen: Screen):
             ':getRowHeight': 'params => params.data.age > 35 ? 50 : 25',
         })
 
-    screen.open('/')
-    trs = screen.find_all_by_class('ag-row')
+    shared_screen.open('/')
+    trs = shared_screen.find_all_by_class('ag-row')
     assert len(trs) == 3
     heights = [int(tr.get_attribute('clientHeight')) for tr in trs]
     assert 23 <= heights[0] <= 25
@@ -101,7 +101,7 @@ def test_dynamic_method(screen: Screen):
     assert 48 <= heights[2] <= 50
 
 
-def test_run_grid_method_with_argument(screen: Screen):
+def test_run_grid_method_with_argument(shared_screen: SharedScreen):
     @ui.page('/')
     def page():
         grid = ui.aggrid({
@@ -111,19 +111,19 @@ def test_run_grid_method_with_argument(screen: Screen):
         filter_model = {'name': {'filterType': 'text', 'type': 'equals', 'filter': 'Alice'}}
         ui.button('Filter', on_click=lambda: grid.run_grid_method('setFilterModel', filter_model))
 
-    screen.open('/')
-    screen.should_contain('Alice')
-    screen.should_contain('Bob')
-    screen.should_contain('Carol')
+    shared_screen.open('/')
+    shared_screen.should_contain('Alice')
+    shared_screen.should_contain('Bob')
+    shared_screen.should_contain('Carol')
 
-    screen.click('Filter')
-    screen.wait(0.5)
-    screen.should_contain('Alice')
-    screen.should_not_contain('Bob')
-    screen.should_not_contain('Carol')
+    shared_screen.click('Filter')
+    shared_screen.wait(0.5)
+    shared_screen.should_contain('Alice')
+    shared_screen.should_not_contain('Bob')
+    shared_screen.should_not_contain('Carol')
 
 
-def test_get_selected_rows(screen: Screen):
+def test_get_selected_rows(shared_screen: SharedScreen):
     @ui.page('/')
     def page():
         grid = ui.aggrid({
@@ -140,18 +140,18 @@ def test_get_selected_rows(screen: Screen):
             ui.label(str(await grid.get_selected_row()))
         ui.button('Get selected row', on_click=get_selected_row)
 
-    screen.open('/')
-    screen.click('Alice')
-    screen.find('Bob')
-    ActionChains(screen.selenium).key_down(Keys.SHIFT).click(screen.find('Bob')).key_up(Keys.SHIFT).perform()
-    screen.click('Get selected rows')
-    screen.should_contain("[{'name': 'Alice'}, {'name': 'Bob'}]")
+    shared_screen.open('/')
+    shared_screen.click('Alice')
+    shared_screen.find('Bob')
+    ActionChains(shared_screen.selenium).key_down(Keys.SHIFT).click(shared_screen.find('Bob')).key_up(Keys.SHIFT).perform()
+    shared_screen.click('Get selected rows')
+    shared_screen.should_contain("[{'name': 'Alice'}, {'name': 'Bob'}]")
 
-    screen.click('Get selected row')
-    screen.should_contain("{'name': 'Alice'}")
+    shared_screen.click('Get selected row')
+    shared_screen.should_contain("{'name': 'Alice'}")
 
 
-def test_replace_aggrid(screen: Screen):
+def test_replace_aggrid(shared_screen: SharedScreen):
     @ui.page('/')
     def page():
         with ui.row().classes('w-full') as container:
@@ -162,16 +162,16 @@ def test_replace_aggrid(screen: Screen):
                 ui.aggrid({'columnDefs': [{'field': 'name'}], 'rowData': [{'name': 'Bob'}]})
         ui.button('Replace', on_click=replace)
 
-    screen.open('/')
-    screen.should_contain('Alice')
+    shared_screen.open('/')
+    shared_screen.should_contain('Alice')
 
-    screen.click('Replace')
-    screen.should_contain('Bob')
-    screen.should_not_contain('Alice')
+    shared_screen.click('Replace')
+    shared_screen.should_contain('Bob')
+    shared_screen.should_not_contain('Alice')
 
 
 @pytest.mark.parametrize('df_type', ['pandas', 'polars'])
-def test_create_from_dataframe(screen: Screen, df_type: str):
+def test_create_from_dataframe(shared_screen: SharedScreen, df_type: str):
     @ui.page('/')
     def page():
         if df_type == 'pandas':
@@ -181,38 +181,38 @@ def test_create_from_dataframe(screen: Screen, df_type: str):
             df = pl.DataFrame({'name': ['Alice', 'Bob'], 'age': [18, 21], '42': 'answer'})
             ui.aggrid.from_polars(df)
 
-    screen.open('/')
-    screen.should_contain('Alice')
-    screen.should_contain('Bob')
-    screen.should_contain('18')
-    screen.should_contain('21')
-    screen.should_contain('42')
-    screen.should_contain('answer')
+    shared_screen.open('/')
+    shared_screen.should_contain('Alice')
+    shared_screen.should_contain('Bob')
+    shared_screen.should_contain('18')
+    shared_screen.should_contain('21')
+    shared_screen.should_contain('42')
+    shared_screen.should_contain('answer')
 
 
-def test_create_dynamically(screen: Screen):
+def test_create_dynamically(shared_screen: SharedScreen):
     @ui.page('/')
     def page():
         ui.button('Create',
                   on_click=lambda: ui.aggrid({'columnDefs': [{'field': 'name'}], 'rowData': [{'name': 'Alice'}]}))
 
-    screen.open('/')
-    screen.click('Create')
-    screen.should_contain('Alice')
+    shared_screen.open('/')
+    shared_screen.click('Create')
+    shared_screen.should_contain('Alice')
 
 
-def test_api_method_after_creation(screen: Screen):
+def test_api_method_after_creation(shared_screen: SharedScreen):
     @ui.page('/')
     def page():
         options = {'columnDefs': [{'field': 'name'}], 'rowData': [{'name': 'Ed'}], 'rowSelection': {'mode': 'multiRow'}}
         ui.button('Create', on_click=lambda: ui.aggrid(options).run_grid_method('selectAll'))
 
-    screen.open('/')
-    screen.click('Create')
-    assert screen.find_by_class('ag-row-selected')
+    shared_screen.open('/')
+    shared_screen.click('Create')
+    assert shared_screen.find_by_class('ag-row-selected')
 
 
-def test_set_module_source(screen: Screen):
+def test_set_module_source(shared_screen: SharedScreen):
     get_aggrid: Event[[]] = Event()
 
     @app.get('/custom-aggrid.js')
@@ -233,15 +233,15 @@ def test_set_module_source(screen: Screen):
             is_registered = await ui.run_javascript(f'getElement({aggrid.id}).api.isModuleRegistered("{module}")')
             ui.label(f'{module}: {is_registered}')
 
-    screen.open('/')
-    screen.should_contain('Load custom bundle')
-    screen.should_contain('ClipboardModule: False')
-    screen.should_contain('ColumnAutoSizeModule: True')
-    screen.should_contain('EventApiModule: True')
+    shared_screen.open('/')
+    shared_screen.should_contain('Load custom bundle')
+    shared_screen.should_contain('ClipboardModule: False')
+    shared_screen.should_contain('ColumnAutoSizeModule: True')
+    shared_screen.should_contain('EventApiModule: True')
 
 
 @pytest.mark.parametrize('df_type', ['pandas', 'polars'])
-def test_problematic_datatypes(screen: Screen, df_type: str):
+def test_problematic_datatypes(shared_screen: SharedScreen, df_type: str):
     @ui.page('/')
     def page():
         if df_type == 'pandas':
@@ -260,21 +260,21 @@ def test_problematic_datatypes(screen: Screen, df_type: str):
             })
             ui.aggrid.from_polars(df)
 
-    screen.open('/')
-    screen.should_contain('Datetime_col')
-    screen.should_contain('2020-01-01')
-    screen.should_contain('Datetime_col_tz')
-    screen.should_contain('2020-01-02')
+    shared_screen.open('/')
+    shared_screen.should_contain('Datetime_col')
+    shared_screen.should_contain('2020-01-01')
+    shared_screen.should_contain('Datetime_col_tz')
+    shared_screen.should_contain('2020-01-02')
     if df_type == 'pandas':
-        screen.should_contain('Timedelta_col')
-        screen.should_contain('5 days')
-        screen.should_contain('Complex_col')
-        screen.should_contain('(1+2j)')
-        screen.should_contain('Period_col')
-        screen.should_contain('2021-01')
+        shared_screen.should_contain('Timedelta_col')
+        shared_screen.should_contain('5 days')
+        shared_screen.should_contain('Complex_col')
+        shared_screen.should_contain('(1+2j)')
+        shared_screen.should_contain('Period_col')
+        shared_screen.should_contain('2021-01')
 
 
-def test_run_row_method(screen: Screen):
+def test_run_row_method(shared_screen: SharedScreen):
     @ui.page('/')
     def page():
         grid = ui.aggrid({
@@ -284,16 +284,16 @@ def test_run_row_method(screen: Screen):
         })
         ui.button('Update', on_click=lambda: grid.run_row_method('Alice', 'setDataValue', 'age', 42))
 
-    screen.open('/')
-    screen.should_contain('Alice')
-    screen.should_contain('18')
+    shared_screen.open('/')
+    shared_screen.should_contain('Alice')
+    shared_screen.should_contain('18')
 
-    screen.click('Update')
-    screen.should_contain('Alice')
-    screen.should_contain('42')
+    shared_screen.click('Update')
+    shared_screen.should_contain('Alice')
+    shared_screen.should_contain('42')
 
 
-def test_run_method_with_function(screen: Screen):
+def test_run_method_with_function(shared_screen: SharedScreen):
     @ui.page('/')
     def page():
         grid = ui.aggrid({'columnDefs': [{'field': 'name'}], 'rowData': [{'name': 'Alice'}, {'name': 'Bob'}]})
@@ -303,12 +303,12 @@ def test_run_method_with_function(screen: Screen):
 
         ui.button('Print Row 0', on_click=lambda: print_row(0))
 
-    screen.open('/')
-    screen.click('Print Row 0')
-    screen.should_contain("Row 0: {'name': 'Alice'}")
+    shared_screen.open('/')
+    shared_screen.click('Print Row 0')
+    shared_screen.should_contain("Row 0: {'name': 'Alice'}")
 
 
-def test_get_client_data(screen: Screen):
+def test_get_client_data(shared_screen: SharedScreen):
     data: list = []
 
     @ui.page('/')
@@ -333,11 +333,11 @@ def test_get_client_data(screen: Screen):
             data[:] = await grid.get_client_data(method='filtered_sorted')
         ui.button('Get Sorted Data', on_click=get_sorted_data)
 
-    screen.open('/')
-    screen.click('Get Data')
-    screen.wait(0.5)
+    shared_screen.open('/')
+    shared_screen.click('Get Data')
+    shared_screen.wait(0.5)
     assert data == [{'name': 'Alice', 'age': 18}, {'name': 'Bob', 'age': 21}, {'name': 'Carol', 'age': 42}]
 
-    screen.click('Get Sorted Data')
-    screen.wait(0.5)
+    shared_screen.click('Get Sorted Data')
+    shared_screen.wait(0.5)
     assert data == [{'name': 'Carol', 'age': 42}, {'name': 'Bob', 'age': 21}, {'name': 'Alice', 'age': 18}]

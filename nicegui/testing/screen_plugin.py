@@ -9,10 +9,11 @@ from selenium.webdriver.chrome.service import Service
 
 from .general_fixtures import (  # noqa: F401  # pylint: disable=unused-import
     nicegui_reset_globals,
+    nicegui_reset_globals_for_shared_server,
     pytest_addoption,
     pytest_configure,
 )
-from .screen import Screen
+from .screen import Screen, SharedScreen, stop_shared_server
 
 # pylint: disable=redefined-outer-name
 
@@ -90,6 +91,8 @@ def screen(nicegui_reset_globals,  # noqa: F811, pylint: disable=unused-argument
            caplog: pytest.LogCaptureFixture,
            ) -> Generator[Screen, None, None]:
     """Create a new SeleniumScreen fixture."""
+    # Stop any shared server that might be running from SharedScreen tests
+    stop_shared_server()
     os.environ['NICEGUI_SCREEN_TEST_PORT'] = str(Screen.PORT)
     screen_ = Screen(nicegui_driver, caplog, request)
     try:
@@ -109,5 +112,55 @@ def screen(nicegui_reset_globals,  # noqa: F811, pylint: disable=unused-argument
     finally:
         os.environ.pop('NICEGUI_SCREEN_TEST_PORT', None)
         screen_.stop_server()
+        if DOWNLOAD_DIR.exists():
+            shutil.rmtree(DOWNLOAD_DIR)
+
+
+@pytest.fixture(scope='session')
+def nicegui_shared_server_cleanup():
+    """Clean up the shared server at the end of the test session."""
+    yield
+    stop_shared_server()
+
+
+@pytest.fixture
+def shared_screen(nicegui_reset_globals_for_shared_server,  # noqa: F811, pylint: disable=unused-argument
+                  nicegui_remove_all_screenshots,  # pylint: disable=unused-argument
+                  nicegui_shared_server_cleanup,  # pylint: disable=unused-argument
+                  nicegui_driver: webdriver.Chrome,
+                  request: pytest.FixtureRequest,
+                  caplog: pytest.LogCaptureFixture,
+                  ) -> Generator[SharedScreen, None, None]:
+    """Create a SharedScreen fixture that reuses a single server across tests.
+
+    This is faster than the regular `screen` fixture because the server doesn't restart
+    for each test. Use this for tests that don't require server isolation (e.g., tests
+    that don't test startup/shutdown handlers or modify server state directly).
+
+    Tests that should NOT use shared_screen:
+    - Tests using @pytest.mark.nicegui_main_file
+    - Tests that call app.on_startup() or app.on_shutdown()
+    - Tests that call app.shutdown()
+    - Tests that directly manipulate Server.instance
+    """
+    os.environ['NICEGUI_SCREEN_TEST_PORT'] = str(Screen.PORT)
+    screen_ = SharedScreen(nicegui_driver, caplog, request)
+    try:
+        yield screen_
+
+        logs = [record for record in screen_.caplog.get_records('call') if record.levelname == 'ERROR']
+        if screen_.is_open:
+            test_failed = hasattr(request.node, 'rep_call') and request.node.rep_call.failed
+            screen_.shot(request.node.name, failed=test_failed or bool(logs))
+        if logs:
+            pytest.fail('There were unexpected ERROR logs.', pytrace=False)
+        if screen_.is_open and Screen.CATCH_JS_ERRORS:
+            for js_error in screen_.selenium.get_log('browser'):
+                if str(js_error.get('level', '')).upper() in ('SEVERE', 'ERROR') and \
+                        not any(allowed_error in js_error['message'] for allowed_error in screen_.allowed_js_errors):
+                    pytest.fail(f'JavaScript console error:\n{js_error}', pytrace=False)
+    finally:
+        os.environ.pop('NICEGUI_SCREEN_TEST_PORT', None)
+        screen_.stop_server()  # This just resets browser state, doesn't stop the shared server
         if DOWNLOAD_DIR.exists():
             shutil.rmtree(DOWNLOAD_DIR)

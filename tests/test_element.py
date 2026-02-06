@@ -6,10 +6,10 @@ from selenium.webdriver.common.by import By
 from nicegui import background_tasks, ui
 from nicegui.props import Props
 from nicegui.style import Style
-from nicegui.testing import Screen
+from nicegui.testing import SharedScreen
 
 
-def test_classes(screen: Screen):
+def test_classes(shared_screen: SharedScreen):
     label = None
 
     @ui.page('/')
@@ -18,11 +18,11 @@ def test_classes(screen: Screen):
         label = ui.label('Some label')
 
     def assert_classes(classes: str) -> None:
-        assert screen.selenium.find_element(By.XPATH,
+        assert shared_screen.selenium.find_element(By.XPATH,
                                             f'//*[normalize-space(@class)="{classes}" and text()="Some label"]')
 
-    screen.open('/')
-    screen.wait(0.5)
+    shared_screen.open('/')
+    shared_screen.wait(0.5)
     assert_classes('')
 
     label.classes('one')
@@ -92,7 +92,7 @@ def test_props_parsing(value: str | None, expected: dict[str, str]):
     assert Props.parse(value) == expected
 
 
-def test_style(screen: Screen):
+def test_style(shared_screen: SharedScreen):
     label = None
 
     @ui.page('/')
@@ -101,10 +101,10 @@ def test_style(screen: Screen):
         label = ui.label('Some label')
 
     def assert_style(style: str) -> None:
-        assert screen.selenium.find_element(By.XPATH, f'//*[normalize-space(@style)="{style}" and text()="Some label"]')
+        assert shared_screen.selenium.find_element(By.XPATH, f'//*[normalize-space(@style)="{style}" and text()="Some label"]')
 
-    screen.open('/')
-    screen.wait(0.5)
+    shared_screen.open('/')
+    shared_screen.wait(0.5)
     assert_style('')
 
     label.style('color: red')
@@ -132,7 +132,7 @@ def test_style(screen: Screen):
     assert_style('text-decoration: underline; color: red;')
 
 
-def test_props(screen: Screen):
+def test_props(shared_screen: SharedScreen):
     input_ = None
 
     @ui.page('/')
@@ -142,10 +142,10 @@ def test_props(screen: Screen):
 
     def assert_props(*props: str) -> None:
         class_conditions = [f'contains(@class, "q-field--{prop}")' for prop in props]
-        assert screen.selenium.find_element(By.XPATH, f'//label[{" and ".join(class_conditions)}]')
+        assert shared_screen.selenium.find_element(By.XPATH, f'//label[{" and ".join(class_conditions)}]')
 
-    screen.open('/')
-    screen.wait(0.5)
+    shared_screen.open('/')
+    shared_screen.wait(0.5)
     assert_props('standard')
 
     input_.props('dark')
@@ -161,7 +161,7 @@ def test_props(screen: Screen):
     assert_props('standard', 'dark')
 
 
-def test_move(screen: Screen):
+def test_move(shared_screen: SharedScreen):
     @ui.page('/')
     def page():
         with ui.card() as a:
@@ -175,23 +175,23 @@ def test_move(screen: Screen):
         ui.button('Move X to B', on_click=lambda: x.move(b))
         ui.button('Move X to top', on_click=lambda: x.move(target_index=0))
 
-    screen.open('/')
-    assert screen.find('A').location['y'] < screen.find('X').location['y'] < screen.find('B').location['y']
+    shared_screen.open('/')
+    assert shared_screen.find('A').location['y'] < shared_screen.find('X').location['y'] < shared_screen.find('B').location['y']
 
-    screen.click('Move X to B')
-    screen.wait(0.5)
-    assert screen.find('A').location['y'] < screen.find('B').location['y'] < screen.find('X').location['y']
+    shared_screen.click('Move X to B')
+    shared_screen.wait(0.5)
+    assert shared_screen.find('A').location['y'] < shared_screen.find('B').location['y'] < shared_screen.find('X').location['y']
 
-    screen.click('Move X to A')
-    screen.wait(0.5)
-    assert screen.find('A').location['y'] < screen.find('X').location['y'] < screen.find('B').location['y']
+    shared_screen.click('Move X to A')
+    shared_screen.wait(0.5)
+    assert shared_screen.find('A').location['y'] < shared_screen.find('X').location['y'] < shared_screen.find('B').location['y']
 
-    screen.click('Move X to top')
-    screen.wait(0.5)
-    assert screen.find('X').location['y'] < screen.find('A').location['y'] < screen.find('B').location['y']
+    shared_screen.click('Move X to top')
+    shared_screen.wait(0.5)
+    assert shared_screen.find('X').location['y'] < shared_screen.find('A').location['y'] < shared_screen.find('B').location['y']
 
 
-def test_move_slots(screen: Screen):
+def test_move_slots(shared_screen: SharedScreen):
     @ui.page('/')
     def page():
         with ui.expansion(value=True) as a:
@@ -207,23 +207,23 @@ def test_move_slots(screen: Screen):
         ui.button('Move X to B', on_click=lambda: x.move(b))
         ui.button('Move X to top', on_click=lambda: x.move(target_index=0))
 
-    screen.open('/')
-    assert screen.find('A').location['y'] < screen.find('X').location['y'], 'X is in A.default'
+    shared_screen.open('/')
+    assert shared_screen.find('A').location['y'] < shared_screen.find('X').location['y'], 'X is in A.default'
 
-    screen.click('Move X to header')
-    screen.wait(0.5)
-    assert screen.find('A').location['y'] == screen.find('X').location['y'], 'X is in A.header'
+    shared_screen.click('Move X to header')
+    shared_screen.wait(0.5)
+    assert shared_screen.find('A').location['y'] == shared_screen.find('X').location['y'], 'X is in A.header'
 
-    screen.click('Move X to top')
-    screen.wait(0.5)
-    assert screen.find('A').location['y'] < screen.find('X').location['y'], 'X is in A.default'
+    shared_screen.click('Move X to top')
+    shared_screen.wait(0.5)
+    assert shared_screen.find('A').location['y'] < shared_screen.find('X').location['y'], 'X is in A.default'
 
-    screen.click('Move X to B')
-    screen.wait(0.5)
-    assert screen.find('B').location['y'] < screen.find('X').location['y'], 'X is in B.default'
+    shared_screen.click('Move X to B')
+    shared_screen.wait(0.5)
+    assert shared_screen.find('B').location['y'] < shared_screen.find('X').location['y'], 'X is in B.default'
 
 
-def test_xss(screen: Screen):
+def test_xss(shared_screen: SharedScreen):
     @ui.page('/')
     def page():
         ui.label('</script><script>alert(1)</script>')
@@ -233,15 +233,15 @@ def test_xss(screen: Screen):
             ui.label('<b>Bold 2</b>, `code`, copy&paste, multi\nline'),
         ))
 
-    screen.open('/')
-    screen.click('Button')
-    screen.should_contain('</script><script>alert(1)</script>')
-    screen.should_contain('</script><script>alert(2)</script>')
-    screen.should_contain('<b>Bold 1</b>, `code`, copy&paste, multi\nline')
-    screen.should_contain('<b>Bold 2</b>, `code`, copy&paste, multi\nline')
+    shared_screen.open('/')
+    shared_screen.click('Button')
+    shared_screen.should_contain('</script><script>alert(1)</script>')
+    shared_screen.should_contain('</script><script>alert(2)</script>')
+    shared_screen.should_contain('<b>Bold 1</b>, `code`, copy&paste, multi\nline')
+    shared_screen.should_contain('<b>Bold 2</b>, `code`, copy&paste, multi\nline')
 
 
-def test_default_props(screen: Screen):
+def test_default_props(shared_screen: SharedScreen):
     @ui.page('/')
     def page():
         ui.button.default_props('rounded outline')
@@ -277,10 +277,10 @@ def test_default_props(screen: Screen):
         assert button_f.props.get('no-caps') is True
         assert button_f.props.get('no-wrap') is True
 
-    screen.open('/')
+    shared_screen.open('/')
 
 
-def test_default_classes(screen: Screen):
+def test_default_classes(shared_screen: SharedScreen):
     @ui.page('/')
     def page():
         ui.button.default_classes('bg-white text-green')
@@ -316,10 +316,10 @@ def test_default_classes(screen: Screen):
         assert 'h-40' in button_f.classes
         assert 'max-h-80' in button_f.classes
 
-    screen.open('/')
+    shared_screen.open('/')
 
 
-def test_default_style(screen: Screen):
+def test_default_style(shared_screen: SharedScreen):
     @ui.page('/')
     def page():
         ui.button.default_style('color: green; font-size: 200%')
@@ -355,10 +355,10 @@ def test_default_style(screen: Screen):
         assert button_f.style.get('border') == '2px'
         assert button_f.style.get('padding') == '30px'
 
-    screen.open('/')
+    shared_screen.open('/')
 
 
-def test_invalid_tags(screen: Screen):
+def test_invalid_tags(shared_screen: SharedScreen):
     @ui.page('/')
     def page():
         good_tags = ['div', 'div-1', 'DIV', 'däv', 'div_x']
@@ -369,19 +369,19 @@ def test_invalid_tags(screen: Screen):
             with pytest.raises(ValueError):
                 ui.element(tag)
 
-    screen.open('/')
+    shared_screen.open('/')
 
 
-def test_bad_characters(screen: Screen):
+def test_bad_characters(shared_screen: SharedScreen):
     @ui.page('/')
     def page():
         ui.label(r'& <test> ` ${foo}')
 
-    screen.open('/')
-    screen.should_contain(r'& <test> ` ${foo}')
+    shared_screen.open('/')
+    shared_screen.should_contain(r'& <test> ` ${foo}')
 
 
-def test_update_before_client_connection(screen: Screen):
+def test_update_before_client_connection(shared_screen: SharedScreen):
     @ui.page('/')
     def page():
         label = ui.label('Hello world!')
@@ -390,11 +390,11 @@ def test_update_before_client_connection(screen: Screen):
             label.text = 'Hello again!'
         background_tasks.create(update())
 
-    screen.open('/')
-    screen.should_contain('Hello again!')
+    shared_screen.open('/')
+    shared_screen.should_contain('Hello again!')
 
 
-def test_no_cyclic_references_when_deleting_elements(screen: Screen):
+def test_no_cyclic_references_when_deleting_elements(shared_screen: SharedScreen):
     elements: weakref.WeakSet = weakref.WeakSet()
 
     @ui.page('/')
@@ -406,28 +406,28 @@ def test_no_cyclic_references_when_deleting_elements(screen: Screen):
                 elements.add(ui.query('div'))
         ui.button('Clear', on_click=card.clear).on_click(lambda: ui.notify('Cleared'))
 
-    screen.open('/')
-    screen.click('Clear')
-    screen.should_contain('Cleared')
+    shared_screen.open('/')
+    shared_screen.click('Clear')
+    shared_screen.should_contain('Cleared')
     assert len(elements) == 0, 'all elements should be deleted immediately'
 
 
-def test_no_cyclic_references_when_deleting_clients(screen: Screen):
+def test_no_cyclic_references_when_deleting_clients(shared_screen: SharedScreen):
     labels = weakref.WeakSet()
 
     @ui.page('/', reconnect_timeout=1.0)
     def main():
         labels.add(ui.label())
 
-    screen.open('/')
+    shared_screen.open('/')
     assert len(labels) == 1
 
-    screen.close()
-    screen.wait(1.5)
+    shared_screen.close()
+    shared_screen.wait(1.5)
     assert len(labels) == 0
 
 
-def test_even_special_elements_have_an_html_id(screen: Screen):
+def test_even_special_elements_have_an_html_id(shared_screen: SharedScreen):
 
     @ui.page('/')
     def page():
@@ -455,6 +455,6 @@ def test_even_special_elements_have_an_html_id(screen: Screen):
                 assert await ui.run_javascript(f'document.getElementById("{element.html_id}") !== null')
             ui.notify('All IDs found')
 
-    screen.open('/')
-    screen.click('Check IDs')
-    screen.should_contain('All IDs found')
+    shared_screen.open('/')
+    shared_screen.click('Check IDs')
+    shared_screen.should_contain('All IDs found')

@@ -1,10 +1,10 @@
 import asyncio
 
 from nicegui import ui
-from nicegui.testing import Screen
+from nicegui.testing import SharedScreen
 
 
-def test_refreshable(screen: Screen) -> None:
+def test_refreshable(shared_screen: SharedScreen) -> None:
     numbers = []
 
     @ui.refreshable
@@ -16,23 +16,23 @@ def test_refreshable(screen: Screen) -> None:
         number_ui()
         ui.button('Refresh', on_click=number_ui.refresh)
 
-    screen.open('/')
-    screen.should_contain('[]')
+    shared_screen.open('/')
+    shared_screen.should_contain('[]')
 
     numbers.append(1)
-    screen.click('Refresh')
-    screen.should_contain('[1]')
+    shared_screen.click('Refresh')
+    shared_screen.should_contain('[1]')
 
     numbers.append(2)
-    screen.click('Refresh')
-    screen.should_contain('[1, 2]')
+    shared_screen.click('Refresh')
+    shared_screen.should_contain('[1, 2]')
 
     numbers.clear()
-    screen.click('Refresh')
-    screen.should_contain('[]')
+    shared_screen.click('Refresh')
+    shared_screen.should_contain('[]')
 
 
-def test_async_refreshable(screen: Screen) -> None:
+def test_async_refreshable(shared_screen: SharedScreen) -> None:
     numbers = []
 
     @ui.refreshable
@@ -46,25 +46,25 @@ def test_async_refreshable(screen: Screen) -> None:
             await number_ui()
         ui.button('Refresh', on_click=number_ui.refresh)
 
-    screen.open('/')
-    screen.should_contain('[]')
+    shared_screen.open('/')
+    shared_screen.should_contain('[]')
 
     numbers.append(1)
-    screen.click('Refresh')
-    screen.should_contain('[1]')
-    screen.should_not_contain('[]')  # ensure bug #863 is fixed
+    shared_screen.click('Refresh')
+    shared_screen.should_contain('[1]')
+    shared_screen.should_not_contain('[]')  # ensure bug #863 is fixed
 
     numbers.append(2)
-    screen.click('Refresh')
-    screen.should_contain('[1, 2]')
-    screen.should_not_contain('[]')
+    shared_screen.click('Refresh')
+    shared_screen.should_contain('[1, 2]')
+    shared_screen.should_not_contain('[]')
 
     numbers.clear()
-    screen.click('Refresh')
-    screen.should_contain('[]')
+    shared_screen.click('Refresh')
+    shared_screen.should_contain('[]')
 
 
-def test_multiple_targets(screen: Screen) -> None:
+def test_multiple_targets(shared_screen: SharedScreen) -> None:
     count = 0
 
     class MyClass:
@@ -92,20 +92,20 @@ def test_multiple_targets(screen: Screen) -> None:
         b = MyClass('B')
         b.create_ui()
 
-    screen.open('/')
-    screen.should_contain('A = 1 (1)')
-    screen.should_contain('B = 1 (2)')
+    shared_screen.open('/')
+    shared_screen.should_contain('A = 1 (1)')
+    shared_screen.should_contain('B = 1 (2)')
 
-    screen.click('increment A')
-    screen.should_contain('A = 2 (3)')
-    screen.should_contain('B = 1 (2)')
+    shared_screen.click('increment A')
+    shared_screen.should_contain('A = 2 (3)')
+    shared_screen.should_contain('B = 1 (2)')
 
-    screen.click('increment B')
-    screen.should_contain('A = 2 (3)')
-    screen.should_contain('B = 2 (4)')
+    shared_screen.click('increment B')
+    shared_screen.should_contain('A = 2 (3)')
+    shared_screen.should_contain('B = 2 (4)')
 
 
-def test_refresh_with_arguments(screen: Screen):
+def test_refresh_with_arguments(shared_screen: SharedScreen):
     count = 0
 
     @ui.refreshable
@@ -123,28 +123,28 @@ def test_refresh_with_arguments(screen: Screen):
         ui.button('refresh(2)', on_click=lambda: some_ui.refresh(2))
         ui.button('refresh(value=3)', on_click=lambda: some_ui.refresh(value=3))
 
-    screen.open('/')
-    screen.should_contain('count=1, value=0')
+    shared_screen.open('/')
+    shared_screen.should_contain('count=1, value=0')
 
-    screen.click('refresh')
-    screen.should_contain('count=2, value=0')
+    shared_screen.click('refresh')
+    shared_screen.should_contain('count=2, value=0')
 
-    screen.click('refresh()')
-    screen.should_contain('count=3, value=0')
+    shared_screen.click('refresh()')
+    shared_screen.should_contain('count=3, value=0')
 
-    screen.click('refresh(1)')
-    screen.should_contain('count=4, value=1')
+    shared_screen.click('refresh(1)')
+    shared_screen.should_contain('count=4, value=1')
 
-    screen.click('refresh(2)')
-    screen.should_contain('count=5, value=2')
+    shared_screen.click('refresh(2)')
+    shared_screen.should_contain('count=5, value=2')
 
-    screen.click('refresh(value=3)')
-    screen.wait(0.5)
-    screen.assert_py_logger(
+    shared_screen.click('refresh(value=3)')
+    shared_screen.wait(0.5)
+    shared_screen.assert_py_logger(
         'ERROR', "'value' needs to be consistently passed to some_ui() either as positional or as keyword argument")
 
 
-def test_refresh_deleted_element(screen: Screen):
+def test_refresh_deleted_element(shared_screen: SharedScreen):
     @ui.refreshable
     def some_ui():
         ui.label('some text')
@@ -159,14 +159,14 @@ def test_refresh_deleted_element(screen: Screen):
 
         some_ui()
 
-    screen.open('/')
-    screen.should_contain('some text')
+    shared_screen.open('/')
+    shared_screen.should_contain('some text')
 
-    screen.click('Clear')
-    screen.click('Refresh')
+    shared_screen.click('Clear')
+    shared_screen.click('Refresh')
 
 
-def test_refresh_with_function_reference(screen: Screen):
+def test_refresh_with_function_reference(shared_screen: SharedScreen):
     # https://github.com/zauberzeug/nicegui/issues/1283
     class Test:
 
@@ -186,16 +186,16 @@ def test_refresh_with_function_reference(screen: Screen):
         Test('A')
         Test('B')
 
-    screen.open('/')
-    screen.should_contain('Refreshing A (0)')
-    screen.should_contain('Refreshing B (0)')
-    screen.click('A')
-    screen.should_contain('Refreshing A (1)')
-    screen.click('B')
-    screen.should_contain('Refreshing B (1)')
+    shared_screen.open('/')
+    shared_screen.should_contain('Refreshing A (0)')
+    shared_screen.should_contain('Refreshing B (0)')
+    shared_screen.click('A')
+    shared_screen.should_contain('Refreshing A (1)')
+    shared_screen.click('B')
+    shared_screen.should_contain('Refreshing B (1)')
 
 
-def test_refreshable_with_state(screen: Screen):
+def test_refreshable_with_state(shared_screen: SharedScreen):
     @ui.refreshable
     def counter(title: str):
         count, set_count = ui.state(0)
@@ -207,22 +207,22 @@ def test_refreshable_with_state(screen: Screen):
         counter('A')
         counter('B')
 
-    screen.open('/')
-    screen.should_contain('A: 0')
-    screen.should_contain('B: 0')
+    shared_screen.open('/')
+    shared_screen.should_contain('A: 0')
+    shared_screen.should_contain('B: 0')
 
-    screen.click('Increment A')
-    screen.wait(0.5)
-    screen.should_contain('A: 1')
-    screen.should_contain('B: 0')
+    shared_screen.click('Increment A')
+    shared_screen.wait(0.5)
+    shared_screen.should_contain('A: 1')
+    shared_screen.should_contain('B: 0')
 
-    screen.click('Increment B')
-    screen.wait(0.5)
-    screen.should_contain('A: 1')
-    screen.should_contain('B: 1')
+    shared_screen.click('Increment B')
+    shared_screen.wait(0.5)
+    shared_screen.should_contain('A: 1')
+    shared_screen.should_contain('B: 1')
 
 
-def test_refreshable_with_return_value(screen: Screen):
+def test_refreshable_with_return_value(shared_screen: SharedScreen):
     @ui.refreshable
     def number_ui() -> int:
         ui.label('42')
@@ -233,11 +233,11 @@ def test_refreshable_with_return_value(screen: Screen):
         answer = number_ui()
         assert answer == 42
 
-    screen.open('/')
-    screen.should_contain('42')
+    shared_screen.open('/')
+    shared_screen.should_contain('42')
 
 
-def test_awaitable_refresh(screen: Screen):
+def test_awaitable_refresh(shared_screen: SharedScreen):
     events = []
 
     @ui.refreshable
@@ -262,16 +262,16 @@ def test_awaitable_refresh(screen: Screen):
         ui.button('Try 2', on_click=lambda: update(2))
         ui.button('Try 0', on_click=lambda: update(0))
 
-    screen.open('/')
-    screen.should_contain('1 / 1 = 1.0')
+    shared_screen.open('/')
+    shared_screen.should_contain('1 / 1 = 1.0')
     assert events == ['refresh started', 'refresh finished']
 
     events.clear()
-    screen.click('Try 2')
-    screen.should_contain('1 / 2 = 0.5')
+    shared_screen.click('Try 2')
+    shared_screen.should_contain('1 / 2 = 0.5')
     assert events == ['update started', 'refresh started', 'refresh finished', 'update finished']
 
     events.clear()
-    screen.click('Try 0')
-    screen.should_contain('error handled')
+    shared_screen.click('Try 0')
+    shared_screen.should_contain('error handled')
     assert events == ['update started', 'refresh started', 'refresh failed', 'update finished']

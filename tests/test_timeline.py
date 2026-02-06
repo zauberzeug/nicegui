@@ -1,8 +1,8 @@
 from nicegui import ui
-from nicegui.testing import Screen
+from nicegui.testing import SharedScreen
 
 
-def test_timeline(screen: Screen):
+def test_timeline(shared_screen: SharedScreen):
     @ui.page('/')
     def page():
         with ui.timeline():
@@ -10,8 +10,8 @@ def test_timeline(screen: Screen):
             with ui.timeline():
                 ui.label('Entry 2')
 
-    screen.open('/')
-    screen.should_contain('Entry 1')
-    screen.should_contain('Title 1')
-    screen.should_contain('Subtitle 1')
-    screen.should_contain('Entry 2')
+    shared_screen.open('/')
+    shared_screen.should_contain('Entry 1')
+    shared_screen.should_contain('Title 1')
+    shared_screen.should_contain('Subtitle 1')
+    shared_screen.should_contain('Entry 2')

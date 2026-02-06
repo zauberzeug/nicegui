@@ -1,8 +1,8 @@
 from nicegui import ui
-from nicegui.testing import Screen
+from nicegui.testing import SharedScreen
 
 
-def test_open_close_expansion(screen: Screen):
+def test_open_close_expansion(shared_screen: SharedScreen):
     @ui.page('/')
     def page():
         with ui.expansion('Expansion') as e:
@@ -10,38 +10,38 @@ def test_open_close_expansion(screen: Screen):
         ui.button('Open', on_click=e.open)
         ui.button('Close', on_click=e.close)
 
-    screen.open('/')
-    screen.should_contain('Expansion')
-    screen.should_not_contain('Content')
+    shared_screen.open('/')
+    shared_screen.should_contain('Expansion')
+    shared_screen.should_not_contain('Content')
 
-    screen.click('Open')
-    screen.wait(0.5)
-    screen.should_contain('Content')
+    shared_screen.click('Open')
+    shared_screen.wait(0.5)
+    shared_screen.should_contain('Content')
 
-    screen.click('Close')
-    screen.wait(0.5)
-    screen.should_not_contain('Content')
+    shared_screen.click('Close')
+    shared_screen.wait(0.5)
+    shared_screen.should_not_contain('Content')
 
 
-def test_caption(screen: Screen):
+def test_caption(shared_screen: SharedScreen):
     @ui.page('/')
     def page():
         with ui.expansion('Expansion', caption='Caption'):
             ui.label('Content')
 
-    screen.open('/')
-    screen.should_contain('Expansion')
-    screen.should_contain('Caption')
-    screen.should_not_contain('Content')
+    shared_screen.open('/')
+    shared_screen.should_contain('Expansion')
+    shared_screen.should_contain('Caption')
+    shared_screen.should_not_contain('Content')
 
-    screen.click('Expansion')
-    screen.wait(0.5)
-    screen.should_contain('Expansion')
-    screen.should_contain('Caption')
-    screen.should_contain('Content')
+    shared_screen.click('Expansion')
+    shared_screen.wait(0.5)
+    shared_screen.should_contain('Expansion')
+    shared_screen.should_contain('Caption')
+    shared_screen.should_contain('Content')
 
 
-def test_group(screen: Screen):
+def test_group(shared_screen: SharedScreen):
     @ui.page('/')
     def page():
         with ui.expansion('Expansion A', group='group'):
@@ -51,28 +51,28 @@ def test_group(screen: Screen):
         with ui.expansion('Expansion C', group='group'):
             ui.label('Content C')
 
-    screen.open('/')
-    screen.should_contain('Expansion A')
-    screen.should_contain('Expansion B')
-    screen.should_contain('Expansion C')
-    screen.should_not_contain('Content A')
-    screen.should_not_contain('Content B')
-    screen.should_not_contain('Content C')
+    shared_screen.open('/')
+    shared_screen.should_contain('Expansion A')
+    shared_screen.should_contain('Expansion B')
+    shared_screen.should_contain('Expansion C')
+    shared_screen.should_not_contain('Content A')
+    shared_screen.should_not_contain('Content B')
+    shared_screen.should_not_contain('Content C')
 
-    screen.click('Expansion A')
-    screen.wait(0.5)
-    screen.should_contain('Content A')
-    screen.should_not_contain('Content B')
-    screen.should_not_contain('Content C')
+    shared_screen.click('Expansion A')
+    shared_screen.wait(0.5)
+    shared_screen.should_contain('Content A')
+    shared_screen.should_not_contain('Content B')
+    shared_screen.should_not_contain('Content C')
 
-    screen.click('Expansion B')
-    screen.wait(0.5)
-    screen.should_not_contain('Content A')
-    screen.should_contain('Content B')
-    screen.should_not_contain('Content C')
+    shared_screen.click('Expansion B')
+    shared_screen.wait(0.5)
+    shared_screen.should_not_contain('Content A')
+    shared_screen.should_contain('Content B')
+    shared_screen.should_not_contain('Content C')
 
-    screen.click('Expansion C')
-    screen.wait(0.5)
-    screen.should_not_contain('Content A')
-    screen.should_not_contain('Content B')
-    screen.should_contain('Content C')
+    shared_screen.click('Expansion C')
+    shared_screen.wait(0.5)
+    shared_screen.should_not_contain('Content A')
+    shared_screen.should_not_contain('Content B')
+    shared_screen.should_contain('Content C')

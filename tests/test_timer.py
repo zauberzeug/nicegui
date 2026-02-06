@@ -5,7 +5,7 @@ import httpx
 import pytest
 
 from nicegui import Client, app, ui
-from nicegui.testing import Screen, User
+from nicegui.testing import SharedScreen, User
 
 
 class Counter:
@@ -15,7 +15,7 @@ class Counter:
         self.value += 1
 
 
-def test_timer(screen: Screen):
+def test_timer(shared_screen: SharedScreen):
     counter = Counter()
     t = None
 
@@ -25,31 +25,31 @@ def test_timer(screen: Screen):
         t = ui.timer(0.1, counter.increment)
 
     assert counter.value == 0, 'count is initially zero'
-    screen.wait(0.5)
+    shared_screen.wait(0.5)
     assert counter.value == 0, 'timer is not running'
 
-    screen.open('/')
-    screen.wait(0.5)
+    shared_screen.open('/')
+    shared_screen.wait(0.5)
     assert counter.value > 0, 'timer is running after opening the page'
 
     t.deactivate()
-    screen.wait(0.5)
+    shared_screen.wait(0.5)
     c = counter.value
-    screen.wait(0.5)
+    shared_screen.wait(0.5)
     assert counter.value == c, 'timer is not running anymore after deactivating it'
 
     t.activate()
-    screen.wait(0.5)
+    shared_screen.wait(0.5)
     assert counter.value > c, 'timer is running again after activating it'
 
     t.cancel()
-    screen.wait(0.5)
+    shared_screen.wait(0.5)
     c = counter.value
-    screen.wait(0.5)
+    shared_screen.wait(0.5)
     assert counter.value == c, 'timer is not running anymore after canceling it'
 
 
-def test_timer_on_private_page(screen: Screen):
+def test_timer_on_private_page(shared_screen: SharedScreen):
     counter = Counter()
 
     @ui.page('/', reconnect_timeout=0)
@@ -57,34 +57,34 @@ def test_timer_on_private_page(screen: Screen):
         ui.timer(0.1, counter.increment)
 
     assert counter.value == 0, 'count is initially zero'
-    screen.start_server()
-    screen.wait(0.5)
+    shared_screen.start_server()
+    shared_screen.wait(0.5)
     assert counter.value == 0, 'timer is not running even after starting the server'
 
-    screen.open('/')
-    screen.wait(0.5)
+    shared_screen.open('/')
+    shared_screen.wait(0.5)
     assert counter.value > 0, 'timer is running after opening the page'
 
-    screen.close()
+    shared_screen.close()
     count = counter.value
-    screen.wait(0.5)
+    shared_screen.wait(0.5)
     assert counter.value == count, 'timer is not running anymore after closing the page'
 
 
 @pytest.mark.parametrize('once', [True, False])
-def test_setting_visibility(screen: Screen, once: bool):
+def test_setting_visibility(shared_screen: SharedScreen, once: bool):
     """reproduction of https://github.com/zauberzeug/nicegui/issues/206"""
     @ui.page('/')
     def page():
         label = ui.label('Some Label')
         ui.timer(0.1, lambda: label.set_visibility(False), once=once)
 
-    screen.open('/')
-    screen.wait(0.5)
-    screen.should_not_contain('Some Label')
+    shared_screen.open('/')
+    shared_screen.wait(0.5)
+    shared_screen.should_not_contain('Some Label')
 
 
-def test_awaiting_coroutine(screen: Screen):
+def test_awaiting_coroutine(shared_screen: SharedScreen):
     user = {'name': 'Alice'}
 
     async def update_user():
@@ -95,12 +95,12 @@ def test_awaiting_coroutine(screen: Screen):
     def page():
         ui.timer(0.5, update_user)
 
-    screen.open('/')
-    screen.wait(1)
+    shared_screen.open('/')
+    shared_screen.wait(1)
     assert user['name'] == 'Bob'
 
 
-def test_timer_on_deleted_container(screen: Screen):
+def test_timer_on_deleted_container(shared_screen: SharedScreen):
     state = {'count': 0}
 
     @ui.page('/')
@@ -111,16 +111,16 @@ def test_timer_on_deleted_container(screen: Screen):
 
         ui.button('delete', on_click=outer_container.clear)
 
-    screen.open('/')
-    screen.wait(0.5)
-    screen.click('delete')
-    screen.wait(0.5)
+    shared_screen.open('/')
+    shared_screen.wait(0.5)
+    shared_screen.click('delete')
+    shared_screen.wait(0.5)
     count = state['count']
-    screen.wait(0.5)
+    shared_screen.wait(0.5)
     assert state['count'] == count, 'timer is not running anymore after deleting the container'
 
 
-def test_different_callbacks(screen: Screen):
+def test_different_callbacks(shared_screen: SharedScreen):
     def sync_function():
         ui.label('a synchronous function')
 
@@ -139,11 +139,11 @@ def test_different_callbacks(screen: Screen):
         ui.timer(0.1, lambda: ui.label('a synchronous lambda'), once=True)
         ui.timer(0.1, lambda: async_lambda('Hi!'), once=True)
 
-    screen.open('/')
-    screen.should_contain('a synchronous function')
-    screen.should_contain('an asynchronous function')
-    screen.should_contain('a synchronous lambda')
-    screen.should_contain('an asynchronous lambda: Hi!')
+    shared_screen.open('/')
+    shared_screen.should_contain('a synchronous function')
+    shared_screen.should_contain('an asynchronous function')
+    shared_screen.should_contain('a synchronous lambda')
+    shared_screen.should_contain('an asynchronous lambda: Hi!')
 
 
 async def test_cleanup(user: User):
@@ -163,7 +163,7 @@ async def test_cleanup(user: User):
     assert count() == 1, 'only current timer object is in memory'
 
 
-def test_app_timer(screen: Screen):
+def test_app_timer(shared_screen: SharedScreen):
     counter = Counter()
     timer = app.timer(0.1, counter.increment)
 
@@ -172,26 +172,26 @@ def test_app_timer(screen: Screen):
         ui.button('Activate', on_click=timer.activate)
         ui.button('Deactivate', on_click=timer.deactivate)
 
-    screen.open('/')
-    screen.wait(0.5)
+    shared_screen.open('/')
+    shared_screen.wait(0.5)
     assert counter.value > 0, 'timer is running after starting the server'
 
-    screen.click('Deactivate')
+    shared_screen.click('Deactivate')
     value = counter.value
-    screen.wait(0.5)
+    shared_screen.wait(0.5)
     assert counter.value == value, 'timer is not running anymore after deactivating it'
 
-    screen.click('Activate')
-    screen.wait(0.5)
+    shared_screen.click('Activate')
+    shared_screen.wait(0.5)
     assert counter.value > value, 'timer is running again after activating it'
     value = counter.value
 
-    screen.open('/')
-    screen.wait(0.5)
+    shared_screen.open('/')
+    shared_screen.wait(0.5)
     assert counter.value > value, 'timer is also incrementing when opening another page'
 
 
-def test_cancel_current_invocation(screen: Screen):
+def test_cancel_current_invocation(shared_screen: SharedScreen):
     counter = Counter()
 
     async def update():
@@ -203,15 +203,15 @@ def test_cancel_current_invocation(screen: Screen):
         t = ui.timer(0, update, once=True)
         ui.button('Cancel with current invocation', on_click=lambda: t.cancel(with_current_invocation=True))
 
-    screen.open('/')
-    screen.wait(0.2)
+    shared_screen.open('/')
+    shared_screen.wait(0.2)
 
-    screen.click('Cancel with current invocation')
-    screen.wait(1.2)
+    shared_screen.click('Cancel with current invocation')
+    shared_screen.wait(1.2)
     assert counter.value == 0
 
 
-def test_cancel_before_invocation_starts(screen: Screen):
+def test_cancel_before_invocation_starts(shared_screen: SharedScreen):
     counter = Counter()
 
     async def update():
@@ -224,34 +224,34 @@ def test_cancel_before_invocation_starts(screen: Screen):
         t = ui.timer(0.5, update, once=True)
         ui.button('Cancel with current invocation', on_click=lambda: t.cancel(with_current_invocation=True))
 
-    screen.open('/')
-    screen.wait(0.1)
+    shared_screen.open('/')
+    shared_screen.wait(0.1)
 
-    screen.click('Cancel with current invocation')
-    screen.wait(0.6)
+    shared_screen.click('Cancel with current invocation')
+    shared_screen.wait(0.6)
     assert counter.value == 0
 
 
-def test_error_in_callback(screen: Screen):
+def test_error_in_callback(shared_screen: SharedScreen):
     @ui.page('/')
     def index():
         ui.timer(0, lambda: print(1 / 0), once=True)
 
     app.on_exception(lambda e: ui.notification(f'Exception: {e}'))
 
-    screen.open('/')
-    screen.should_contain('Exception: division by zero')
-    screen.assert_py_logger('ERROR', 'division by zero')
+    shared_screen.open('/')
+    shared_screen.should_contain('Exception: division by zero')
+    shared_screen.assert_py_logger('ERROR', 'division by zero')
 
 
-def test_no_leak_when_client_deleted(screen: Screen):
+def test_no_leak_when_client_deleted(shared_screen: SharedScreen):
     @ui.page('/')
     def page():
         ui.timer(0.1, lambda: None)
 
-    screen.start_server()
-    httpx.get(screen.url)
-    screen.wait(1)
+    shared_screen.start_server()
+    httpx.get(shared_screen.url)
+    shared_screen.wait(1)
     Client.prune_instances(client_age_threshold=0)
-    screen.wait(1)
+    shared_screen.wait(1)
     assert not any(isinstance(obj, ui.timer) for obj in gc.get_objects())

@@ -1,20 +1,20 @@
 from nicegui import ui
-from nicegui.testing import Screen
+from nicegui.testing import SharedScreen
 
 
-def test_hello_world(screen: Screen):
+def test_hello_world(shared_screen: SharedScreen):
     @ui.page('/')
     def page():
         ui.label('Hello, world')
 
-    screen.open('/')
-    screen.should_contain('Hello, world')
+    shared_screen.open('/')
+    shared_screen.should_contain('Hello, world')
 
 
-def test_text_0(screen: Screen):
+def test_text_0(shared_screen: SharedScreen):
     @ui.page('/')
     def page():
         ui.label(0)
 
-    screen.open('/')
-    screen.should_contain('0')
+    shared_screen.open('/')
+    shared_screen.should_contain('0')

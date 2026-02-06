@@ -3,7 +3,7 @@ import copy
 
 from nicegui import ui
 from nicegui.observables import ObservableDict, ObservableList, ObservableSet
-from nicegui.testing import Screen, User
+from nicegui.testing import SharedScreen, User
 
 # pylint: disable=global-statement
 count = 0
@@ -130,7 +130,7 @@ def test_nested_observables():
     assert count == 6
 
 
-def test_async_handler(screen: Screen):
+def test_async_handler(shared_screen: SharedScreen):
     reset_counter()
     data = ObservableList(on_change=increment_counter_slowly)
 
@@ -138,11 +138,11 @@ def test_async_handler(screen: Screen):
     def page():
         ui.button('Append 42', on_click=lambda: data.append(42))
 
-    screen.open('/')
+    shared_screen.open('/')
     assert count == 0
 
-    screen.click('Append 42')
-    screen.wait(0.5)
+    shared_screen.click('Append 42')
+    shared_screen.wait(0.5)
     assert count == 1
 
 

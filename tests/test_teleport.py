@@ -1,8 +1,8 @@
 from nicegui import ui
-from nicegui.testing import Screen
+from nicegui.testing import SharedScreen
 
 
-def test_teleport(screen: Screen):
+def test_teleport(shared_screen: SharedScreen):
     @ui.page('/')
     def page():
         ui.card().classes('card')
@@ -13,12 +13,12 @@ def test_teleport(screen: Screen):
 
         ui.button('create', on_click=create_teleport)
 
-    screen.open('/')
-    screen.click('create')
-    assert screen.find_by_css('.card > div').text == 'Hello'
+    shared_screen.open('/')
+    shared_screen.click('create')
+    assert shared_screen.find_by_css('.card > div').text == 'Hello'
 
 
-def test_teleport_with_element(screen: Screen):
+def test_teleport_with_element(shared_screen: SharedScreen):
     @ui.page('/')
     def page():
         card = ui.card().classes('card')
@@ -29,12 +29,12 @@ def test_teleport_with_element(screen: Screen):
 
         ui.button('create', on_click=create_teleport)
 
-    screen.open('/')
-    screen.click('create')
-    assert screen.find_by_css('.card > div').text == 'Hello'
+    shared_screen.open('/')
+    shared_screen.click('create')
+    assert shared_screen.find_by_css('.card > div').text == 'Hello'
 
 
-def test_update(screen: Screen):
+def test_update(shared_screen: SharedScreen):
     @ui.page('/')
     def page():
         teleport: ui.teleport | None = None
@@ -57,9 +57,9 @@ def test_update(screen: Screen):
 
         ui.button('rebuild card', on_click=rebuild_card)
 
-    screen.open('/')
-    screen.click('create')
-    screen.should_contain('Hello')
-    screen.click('rebuild card')
-    screen.should_contain('Card rebuilt')
-    assert screen.find_by_css('.card > div').text == 'Hello'
+    shared_screen.open('/')
+    shared_screen.click('create')
+    shared_screen.should_contain('Hello')
+    shared_screen.click('rebuild card')
+    shared_screen.should_contain('Card rebuilt')
+    assert shared_screen.find_by_css('.card > div').text == 'Hello'

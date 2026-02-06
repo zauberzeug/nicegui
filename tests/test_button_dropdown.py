@@ -1,22 +1,22 @@
 from nicegui import ui
-from nicegui.testing import Screen
+from nicegui.testing import SharedScreen
 
 
-def test_dropdown_button(screen: Screen):
+def test_dropdown_button(shared_screen: SharedScreen):
     @ui.page('/')
     def page():
         with ui.dropdown_button('Button', on_click=lambda: ui.label('Button clicked')):
             ui.item('Item', on_click=lambda: ui.label('Item clicked'))
 
-    screen.open('/')
-    screen.click('Button')
-    screen.should_contain('Button clicked')
+    shared_screen.open('/')
+    shared_screen.click('Button')
+    shared_screen.should_contain('Button clicked')
 
-    screen.click('Item')
-    screen.should_contain('Item clicked')
+    shared_screen.click('Item')
+    shared_screen.should_contain('Item clicked')
 
 
-def test_auto_close(screen: Screen):
+def test_auto_close(shared_screen: SharedScreen):
     @ui.page('/')
     def page():
         with ui.dropdown_button('Button 1', auto_close=False):
@@ -24,13 +24,13 @@ def test_auto_close(screen: Screen):
         with ui.dropdown_button('Button 2', auto_close=True):
             ui.label('Item 2')
 
-    screen.open('/')
-    screen.click('Button 1')
-    screen.click('Item 1')
-    screen.wait(0.5)
-    screen.should_contain('Item 1')
+    shared_screen.open('/')
+    shared_screen.click('Button 1')
+    shared_screen.click('Item 1')
+    shared_screen.wait(0.5)
+    shared_screen.should_contain('Item 1')
 
-    screen.click('Button 2')
-    screen.click('Item 2')
-    screen.wait(0.5)
-    screen.should_not_contain('Item 2')
+    shared_screen.click('Button 2')
+    shared_screen.click('Item 2')
+    shared_screen.wait(0.5)
+    shared_screen.should_not_contain('Item 2')

@@ -4,10 +4,10 @@ import time
 from fastapi import Response
 
 from nicegui import app, ui
-from nicegui.testing import Screen
+from nicegui.testing import SharedScreen
 
 
-def test_leaflet(screen: Screen):
+def test_leaflet(shared_screen: SharedScreen):
     m = None
 
     @ui.page('/')
@@ -23,30 +23,30 @@ def test_leaflet(screen: Screen):
         ui.button('Berlin', on_click=lambda: m.set_center((52.520, 13.405)))
         ui.button('London', on_click=lambda: m.set_center((51.505, -0.090)))
 
-    screen.open('/')
-    assert screen.find_all_by_class('leaflet-pane')
-    assert screen.find_all_by_class('leaflet-control-container')
+    shared_screen.open('/')
+    assert shared_screen.find_all_by_class('leaflet-pane')
+    assert shared_screen.find_all_by_class('leaflet-control-container')
 
     deadline = time.time() + 3
     while not m.is_initialized and time.time() < deadline:
-        screen.wait(0.1)
-    screen.should_contain('Center: 51.505, -0.090')
-    screen.should_contain('Zoom: 13')
+        shared_screen.wait(0.1)
+    shared_screen.should_contain('Center: 51.505, -0.090')
+    shared_screen.should_contain('Zoom: 13')
 
-    screen.click('Zoom in')
-    screen.should_contain('Zoom: 14')
+    shared_screen.click('Zoom in')
+    shared_screen.should_contain('Zoom: 14')
 
-    screen.click('Zoom out')
-    screen.should_contain('Zoom: 13')
+    shared_screen.click('Zoom out')
+    shared_screen.should_contain('Zoom: 13')
 
-    screen.click('Berlin')
-    screen.should_contain('Center: 52.520, 13.405')
+    shared_screen.click('Berlin')
+    shared_screen.should_contain('Center: 52.520, 13.405')
 
-    screen.click('London')
-    screen.should_contain('Center: 51.505, -0.090')
+    shared_screen.click('London')
+    shared_screen.should_contain('Center: 51.505, -0.090')
 
 
-def test_leaflet_unhide(screen: Screen):
+def test_leaflet_unhide(shared_screen: SharedScreen):
     requested_tiles = set()
 
     @app.get('/mock_tile/{z}/{x}/{y}')
@@ -61,7 +61,7 @@ def test_leaflet_unhide(screen: Screen):
             card.visible = False
         ui.button('Show map card', on_click=lambda: card.set_visibility(True))
 
-    screen.open('/')
-    screen.click('Show map card')
-    screen.wait(0.5)
+    shared_screen.open('/')
+    shared_screen.click('Show map card')
+    shared_screen.wait(0.5)
     assert len(requested_tiles) == 8

@@ -4,7 +4,7 @@ import httpx
 import pytest
 
 from nicegui import Client, Event, app, ui
-from nicegui.testing import Screen, User
+from nicegui.testing import SharedScreen, User
 
 
 async def test_event(user: User):
@@ -119,7 +119,7 @@ async def test_chaining_events(user: User):
     await user.should_see('Hello')
 
 
-def test_reconnect(screen: Screen):
+def test_reconnect(shared_screen: SharedScreen):
     event = Event()
 
     @ui.page('/')
@@ -127,29 +127,29 @@ def test_reconnect(screen: Screen):
         button = ui.button('Click me', on_click=event.emit)
         event.subscribe(lambda: button.set_text(button.text + '!'))
 
-    screen.open('/')
-    screen.click('Click me')
-    screen.should_contain('Click me!')
+    shared_screen.open('/')
+    shared_screen.click('Click me')
+    shared_screen.should_contain('Click me!')
 
-    screen.selenium.execute_script('window.socket.disconnect();')
-    screen.wait(0.5)
+    shared_screen.selenium.execute_script('window.socket.disconnect();')
+    shared_screen.wait(0.5)
 
-    screen.selenium.execute_script('window.socket.connect();')
-    screen.wait(0.5)
+    shared_screen.selenium.execute_script('window.socket.connect();')
+    shared_screen.wait(0.5)
 
-    screen.click('Click me!')
-    screen.should_contain('Click me!!')
+    shared_screen.click('Click me!')
+    shared_screen.should_contain('Click me!!')
 
 
-async def test_event_memory_leak(screen: Screen):
+async def test_event_memory_leak(shared_screen: SharedScreen):
     event = Event()
 
     @ui.page('/memory_leak')
     def memory_leak():
         event.subscribe(ui.notify)
 
-    screen.start_server()
-    httpx.get(f'http://localhost:{Screen.PORT}/memory_leak', timeout=5)
+    shared_screen.start_server()
+    httpx.get(f'http://localhost:{SharedScreen.PORT}/memory_leak', timeout=5)
     await asyncio.sleep(1)
     Client.prune_instances(client_age_threshold=0)
     assert not event.callbacks, 'event callbacks should be cleared after pruning clients'

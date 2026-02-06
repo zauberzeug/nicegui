@@ -1,8 +1,8 @@
 from nicegui import ui
-from nicegui.testing import Screen
+from nicegui.testing import SharedScreen
 
 
-def test_preserve_borders(screen: Screen):
+def test_preserve_borders(shared_screen: SharedScreen):
     a = b = None
 
     @ui.page('/')
@@ -13,6 +13,6 @@ def test_preserve_borders(screen: Screen):
         with ui.card().tight():
             b = ui.table(rows=[]).props('bordered flat')
 
-    screen.open('/')
-    assert screen.find_element(a).value_of_css_property('border') == '1px solid rgba(0, 0, 0, 0.12)'
-    assert screen.find_element(b).value_of_css_property('border') == '0px none rgb(0, 0, 0)'
+    shared_screen.open('/')
+    assert shared_screen.find_element(a).value_of_css_property('border') == '1px solid rgba(0, 0, 0, 0.12)'
+    assert shared_screen.find_element(b).value_of_css_property('border') == '0px none rgb(0, 0, 0)'

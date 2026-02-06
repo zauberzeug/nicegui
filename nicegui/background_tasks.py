@@ -97,8 +97,11 @@ def _handle_exceptions(task: asyncio.Task) -> None:
 
 async def teardown() -> None:
     """Cancel all running tasks and coroutines on shutdown. (For internal use only.)"""
+    current_loop = asyncio.get_running_loop()
     while running_tasks or lazy_tasks_running:
-        tasks = running_tasks | set(lazy_tasks_running.values())
+        # Filter to only tasks from the current event loop
+        all_tasks = running_tasks | set(lazy_tasks_running.values())
+        tasks = {t for t in all_tasks if t.get_loop() is current_loop}
         for task in tasks:
             if task.done() or task.cancelled() or task in _await_tasks_on_shutdown:
                 continue
@@ -113,5 +116,31 @@ async def teardown() -> None:
                           ', '.join(t.get_name() for t in tasks if not t.done()))
             except Exception:
                 log.exception('Error while cancelling tasks')
+        # Remove tasks from other loops (they'll be cleaned up when their loop shuts down)
+        other_loop_tasks = all_tasks - tasks
+        for task in other_loop_tasks:
+            running_tasks.discard(task)
+            _await_tasks_on_shutdown.discard(task)
+        # Also clean up lazy_tasks_running from other loops
+        for name, task in list(lazy_tasks_running.items()):
+            if task.get_loop() is not current_loop:
+                lazy_tasks_running.pop(name, None)
+        # Exit if only tasks from other loops remain
+        if not tasks and (running_tasks or lazy_tasks_running):
+            break
     for coro in lazy_coroutines_waiting.values():
         coro.close()
+
+
+def reset() -> None:
+    """Clear all background task tracking. (For internal use only.)
+
+    This should be called when the event loop is being replaced (e.g., when
+    restarting the server after a User fixture reset core.loop).
+    """
+    running_tasks.clear()
+    lazy_tasks_running.clear()
+    for coro in lazy_coroutines_waiting.values():
+        coro.close()
+    lazy_coroutines_waiting.clear()
+    _await_tasks_on_shutdown.clear()

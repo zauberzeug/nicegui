@@ -1,8 +1,8 @@
 from nicegui import ui
-from nicegui.testing import Screen
+from nicegui.testing import SharedScreen
 
 
-def test_with_strings(screen: Screen):
+def test_with_strings(shared_screen: SharedScreen):
     @ui.page('/')
     def page():
         with ui.tabs() as tabs:
@@ -15,13 +15,13 @@ def test_with_strings(screen: Screen):
             with ui.tab_panel('Two'):
                 ui.label('Second tab')
 
-    screen.open('/')
-    screen.should_contain('First tab')
-    screen.click('Two')
-    screen.should_contain('Second tab')
+    shared_screen.open('/')
+    shared_screen.should_contain('First tab')
+    shared_screen.click('Two')
+    shared_screen.should_contain('Second tab')
 
 
-def test_with_tab_objects(screen: Screen):
+def test_with_tab_objects(shared_screen: SharedScreen):
     tab_events = []
     tab_panel_events = []
 
@@ -39,25 +39,25 @@ def test_with_tab_objects(screen: Screen):
 
         ui.button('Switch to Two', on_click=lambda: tab_panels.set_value(tab2))
 
-    screen.open('/')
-    screen.should_contain('One')
-    screen.should_contain('Two')
-    screen.should_contain('Second tab')
+    shared_screen.open('/')
+    shared_screen.should_contain('One')
+    shared_screen.should_contain('Two')
+    shared_screen.should_contain('Second tab')
     assert tab_events == ['Two']
     assert tab_panel_events == []
 
-    screen.click('One')
-    screen.should_contain('First tab')
+    shared_screen.click('One')
+    shared_screen.should_contain('First tab')
     assert tab_events == ['Two', 'One']
     assert tab_panel_events == ['One']
 
-    screen.click('Switch to Two')
-    screen.should_contain('Second tab')
+    shared_screen.click('Switch to Two')
+    shared_screen.should_contain('Second tab')
     assert tab_events == ['Two', 'One', 'Two']
     assert tab_panel_events == ['One', 'Two']
 
 
-def test_updating_offscreen_elements_with_update_method(screen: Screen):
+def test_updating_offscreen_elements_with_update_method(shared_screen: SharedScreen):
     @ui.page('/')
     def main_page():
         with ui.tabs() as tabs:
@@ -70,5 +70,5 @@ def test_updating_offscreen_elements_with_update_method(screen: Screen):
             with ui.tab_panel('Two'):
                 editor = ui.json_editor({})
 
-    screen.open('/')
-    screen.click('Update')
+    shared_screen.open('/')
+    shared_screen.click('Update')

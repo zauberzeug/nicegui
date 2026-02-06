@@ -6,7 +6,7 @@ import pytest
 from selenium.webdriver.common.by import By
 
 from nicegui import ui
-from nicegui.testing import Screen
+from nicegui.testing import SharedScreen
 
 
 def columns() -> list:
@@ -24,78 +24,78 @@ def rows() -> list:
     ]
 
 
-def test_table(screen: Screen):
+def test_table(shared_screen: SharedScreen):
     @ui.page('/')
     def page():
         ui.table(title='My Team', columns=columns(), rows=rows())
 
-    screen.open('/')
-    screen.should_contain('My Team')
-    screen.should_contain('Name')
-    screen.should_contain('Alice')
-    screen.should_contain('Bob')
-    screen.should_contain('Lionel')
+    shared_screen.open('/')
+    shared_screen.should_contain('My Team')
+    shared_screen.should_contain('Name')
+    shared_screen.should_contain('Alice')
+    shared_screen.should_contain('Bob')
+    shared_screen.should_contain('Lionel')
 
 
-def test_pagination_int(screen: Screen):
+def test_pagination_int(shared_screen: SharedScreen):
     @ui.page('/')
     def page():
         ui.table(columns=columns(), rows=rows(), pagination=2)
 
-    screen.open('/')
-    screen.should_contain('Alice')
-    screen.should_contain('Bob')
-    screen.should_not_contain('Lionel')
-    screen.should_contain('1-2 of 3')
+    shared_screen.open('/')
+    shared_screen.should_contain('Alice')
+    shared_screen.should_contain('Bob')
+    shared_screen.should_not_contain('Lionel')
+    shared_screen.should_contain('1-2 of 3')
 
 
-def test_pagination_dict(screen: Screen):
+def test_pagination_dict(shared_screen: SharedScreen):
     @ui.page('/')
     def page():
         ui.table(columns=columns(), rows=rows(), pagination={'rowsPerPage': 2})
 
-    screen.open('/')
-    screen.should_contain('Alice')
-    screen.should_contain('Bob')
-    screen.should_not_contain('Lionel')
-    screen.should_contain('1-2 of 3')
+    shared_screen.open('/')
+    shared_screen.should_contain('Alice')
+    shared_screen.should_contain('Bob')
+    shared_screen.should_not_contain('Lionel')
+    shared_screen.should_contain('1-2 of 3')
 
 
-def test_filter(screen: Screen):
+def test_filter(shared_screen: SharedScreen):
     @ui.page('/')
     def page():
         table = ui.table(columns=columns(), rows=rows())
         ui.input('Search by name').bind_value(table, 'filter')
 
-    screen.open('/')
-    screen.should_contain('Alice')
-    screen.should_contain('Bob')
-    screen.should_contain('Lionel')
+    shared_screen.open('/')
+    shared_screen.should_contain('Alice')
+    shared_screen.should_contain('Bob')
+    shared_screen.should_contain('Lionel')
 
-    element = screen.selenium.find_element(By.XPATH, '//*[@aria-label="Search by name"]')
+    element = shared_screen.selenium.find_element(By.XPATH, '//*[@aria-label="Search by name"]')
     element.send_keys('e')
-    screen.should_contain('Alice')
-    screen.should_not_contain('Bob')
-    screen.should_contain('Lionel')
+    shared_screen.should_contain('Alice')
+    shared_screen.should_not_contain('Bob')
+    shared_screen.should_contain('Lionel')
 
 
-def test_add_remove(screen: Screen):
+def test_add_remove(shared_screen: SharedScreen):
     @ui.page('/')
     def page():
         table = ui.table(columns=columns(), rows=rows())
         ui.button('Add', on_click=lambda: table.add_row({'id': 3, 'name': 'Carol', 'age': 32}))
         ui.button('Remove', on_click=lambda: table.remove_row(table.rows[0]))
 
-    screen.open('/')
-    screen.click('Add')
-    screen.should_contain('Carol')
+    shared_screen.open('/')
+    shared_screen.click('Add')
+    shared_screen.should_contain('Carol')
 
-    screen.click('Remove')
-    screen.wait(0.5)
-    screen.should_not_contain('Alice')
+    shared_screen.click('Remove')
+    shared_screen.wait(0.5)
+    shared_screen.should_not_contain('Alice')
 
 
-def test_slots(screen: Screen):
+def test_slots(shared_screen: SharedScreen):
     @ui.page('/')
     def page():
         with ui.table(columns=columns(), rows=rows()) as table:
@@ -113,14 +113,14 @@ def test_slots(screen: Screen):
                 </q-tr>
             ''')
 
-    screen.open('/')
-    screen.should_contain('This is the top slot.')
-    screen.should_not_contain('Alice')
-    screen.should_contain('overridden')
-    screen.should_contain('21')
+    shared_screen.open('/')
+    shared_screen.should_contain('This is the top slot.')
+    shared_screen.should_not_contain('Alice')
+    shared_screen.should_contain('overridden')
+    shared_screen.should_contain('21')
 
 
-def test_selection(screen: Screen):
+def test_selection(shared_screen: SharedScreen):
     table = None
 
     @ui.page('/')
@@ -130,56 +130,56 @@ def test_selection(screen: Screen):
         ui.radio({None: 'none', 'single': 'single', 'multiple': 'multiple'},
                  on_change=lambda e: table.set_selection(e.value))
 
-    screen.open('/')
-    screen.find('Alice').find_element(By.XPATH, 'preceding-sibling::td').click()
-    screen.wait(0.5)
-    screen.should_contain('1 record selected.')
+    shared_screen.open('/')
+    shared_screen.find('Alice').find_element(By.XPATH, 'preceding-sibling::td').click()
+    shared_screen.wait(0.5)
+    shared_screen.should_contain('1 record selected.')
 
-    screen.find('Bob').find_element(By.XPATH, 'preceding-sibling::td').click()
-    screen.wait(0.5)
-    screen.should_contain('1 record selected.')
+    shared_screen.find('Bob').find_element(By.XPATH, 'preceding-sibling::td').click()
+    shared_screen.wait(0.5)
+    shared_screen.should_contain('1 record selected.')
 
-    screen.click('multiple')
-    screen.wait(0.5)
+    shared_screen.click('multiple')
+    shared_screen.wait(0.5)
 
-    screen.find('Lionel').find_element(By.XPATH, 'preceding-sibling::td').click()
-    screen.wait(0.5)
-    screen.should_contain('2 records selected.')
+    shared_screen.find('Lionel').find_element(By.XPATH, 'preceding-sibling::td').click()
+    shared_screen.wait(0.5)
+    shared_screen.should_contain('2 records selected.')
     assert table.selection == 'multiple'
 
-    screen.click('none')
-    screen.wait(0.5)
-    screen.should_not_contain('1 record selected.')
+    shared_screen.click('none')
+    shared_screen.wait(0.5)
+    shared_screen.should_not_contain('1 record selected.')
     assert table.selection is None
 
 
-def test_dynamic_column_attributes(screen: Screen):
+def test_dynamic_column_attributes(shared_screen: SharedScreen):
     @ui.page('/')
     def page():
         ui.table(columns=[{'name': 'age', 'label': 'Age', 'field': 'age', ':format': 'value => value + " years"'}],
                  rows=[{'name': 'Alice', 'age': 18}])
 
-    screen.open('/')
-    screen.should_contain('18 years')
+    shared_screen.open('/')
+    shared_screen.should_contain('18 years')
 
 
-def test_remove_selection(screen: Screen):
+def test_remove_selection(shared_screen: SharedScreen):
     @ui.page('/')
     def page():
         t = ui.table(columns=columns(), rows=rows(), selection='single')
         ui.button('Remove first row', on_click=lambda: t.remove_row(t.rows[0]))
 
-    screen.open('/')
-    screen.find('Alice').find_element(By.XPATH, 'preceding-sibling::td').click()
-    screen.should_contain('1 record selected.')
+    shared_screen.open('/')
+    shared_screen.find('Alice').find_element(By.XPATH, 'preceding-sibling::td').click()
+    shared_screen.should_contain('1 record selected.')
 
-    screen.click('Remove first row')
-    screen.wait(0.5)
-    screen.should_not_contain('Alice')
-    screen.should_not_contain('1 record selected.')
+    shared_screen.click('Remove first row')
+    shared_screen.wait(0.5)
+    shared_screen.should_not_contain('Alice')
+    shared_screen.should_not_contain('1 record selected.')
 
 
-def test_replace_rows(screen: Screen):
+def test_replace_rows(shared_screen: SharedScreen):
     @ui.page('/')
     def page():
         t = ui.table(columns=columns(), rows=rows())
@@ -193,26 +193,26 @@ def test_replace_rows(screen: Screen):
         ui.button('Replace rows with C.', on_click=replace_rows_with_carol)
         ui.button('Replace rows with D.', on_click=replace_rows_with_daniel)
 
-    screen.open('/')
-    screen.should_contain('Alice')
-    screen.should_contain('Bob')
-    screen.should_contain('Lionel')
+    shared_screen.open('/')
+    shared_screen.should_contain('Alice')
+    shared_screen.should_contain('Bob')
+    shared_screen.should_contain('Lionel')
 
-    screen.click('Replace rows with C.')
-    screen.wait(0.5)
-    screen.should_not_contain('Alice')
-    screen.should_not_contain('Bob')
-    screen.should_not_contain('Lionel')
-    screen.should_contain('Carol')
+    shared_screen.click('Replace rows with C.')
+    shared_screen.wait(0.5)
+    shared_screen.should_not_contain('Alice')
+    shared_screen.should_not_contain('Bob')
+    shared_screen.should_not_contain('Lionel')
+    shared_screen.should_contain('Carol')
 
-    screen.click('Replace rows with D.')
-    screen.wait(0.5)
-    screen.should_not_contain('Carol')
-    screen.should_contain('Daniel')
+    shared_screen.click('Replace rows with D.')
+    shared_screen.wait(0.5)
+    shared_screen.should_not_contain('Carol')
+    shared_screen.should_contain('Daniel')
 
 
 @pytest.mark.parametrize('df_type', ['pandas', 'polars'])
-def test_create_and_update_from_df(screen: Screen, df_type: str):
+def test_create_and_update_from_df(shared_screen: SharedScreen, df_type: str):
     @ui.page('/')
     def page():
         if df_type == 'pandas':
@@ -228,19 +228,19 @@ def test_create_and_update_from_df(screen: Screen, df_type: str):
 
         ui.button('Update', on_click=lambda: update_from_df(DataFrame({'name': ['Lionel'], 'age': [19]})))
 
-    screen.open('/')
-    screen.should_contain('Alice')
-    screen.should_contain('Bob')
-    screen.should_contain('18')
-    screen.should_contain('21')
+    shared_screen.open('/')
+    shared_screen.should_contain('Alice')
+    shared_screen.should_contain('Bob')
+    shared_screen.should_contain('18')
+    shared_screen.should_contain('21')
 
-    screen.click('Update')
-    screen.should_contain('Lionel')
-    screen.should_contain('19')
+    shared_screen.click('Update')
+    shared_screen.should_contain('Lionel')
+    shared_screen.should_contain('19')
 
 
 @pytest.mark.parametrize('df_type', ['pandas', 'polars'])
-def test_problematic_datatypes(screen: Screen, df_type: str):
+def test_problematic_datatypes(shared_screen: SharedScreen, df_type: str):
     @ui.page('/')
     def page():
         if df_type == 'pandas':
@@ -259,21 +259,21 @@ def test_problematic_datatypes(screen: Screen, df_type: str):
             })
             ui.table.from_polars(df)
 
-    screen.open('/')
-    screen.should_contain('Datetime_col')
-    screen.should_contain('2020-01-01')
-    screen.should_contain('Datetime_col_tz')
-    screen.should_contain('2020-01-02')
+    shared_screen.open('/')
+    shared_screen.should_contain('Datetime_col')
+    shared_screen.should_contain('2020-01-01')
+    shared_screen.should_contain('Datetime_col_tz')
+    shared_screen.should_contain('2020-01-02')
     if df_type == 'pandas':
-        screen.should_contain('Timedelta_col')
-        screen.should_contain('5 days')
-        screen.should_contain('Complex_col')
-        screen.should_contain('(1+2j)')
-        screen.should_contain('Period_col')
-        screen.should_contain('2021-01')
+        shared_screen.should_contain('Timedelta_col')
+        shared_screen.should_contain('5 days')
+        shared_screen.should_contain('Complex_col')
+        shared_screen.should_contain('(1+2j)')
+        shared_screen.should_contain('Period_col')
+        shared_screen.should_contain('2021-01')
 
 
-def test_table_computed_props(screen: Screen):
+def test_table_computed_props(shared_screen: SharedScreen):
     all_rows = rows()
     filtered_rows = [row for row in all_rows if 'e' in row['name']]
     filtered_sorted_rows = sorted(filtered_rows, key=lambda row: row['age'], reverse=True)
@@ -293,13 +293,13 @@ def test_table_computed_props(screen: Screen):
         assert filtered_sorted_rows[:1] == await table.get_computed_rows()
         assert len(filtered_sorted_rows) == await table.get_computed_rows_number()
 
-    screen.open('/')
-    screen.should_contain('Lionel')
-    screen.should_not_contain('Alice')
-    screen.should_not_contain('Bob')
+    shared_screen.open('/')
+    shared_screen.should_contain('Lionel')
+    shared_screen.should_not_contain('Alice')
+    shared_screen.should_not_contain('Bob')
 
 
-def test_infer_columns(screen: Screen):
+def test_infer_columns(shared_screen: SharedScreen):
     @ui.page('/')
     def page():
         ui.table(rows=[
@@ -307,16 +307,16 @@ def test_infer_columns(screen: Screen):
             {'name': 'Bob', 'age': 21},
         ])
 
-    screen.open('/')
-    screen.should_contain('NAME')
-    screen.should_contain('AGE')
-    screen.should_contain('Alice')
-    screen.should_contain('Bob')
-    screen.should_contain('18')
-    screen.should_contain('21')
+    shared_screen.open('/')
+    shared_screen.should_contain('NAME')
+    shared_screen.should_contain('AGE')
+    shared_screen.should_contain('Alice')
+    shared_screen.should_contain('Bob')
+    shared_screen.should_contain('18')
+    shared_screen.should_contain('21')
 
 
-def test_default_column_parameters(screen: Screen):
+def test_default_column_parameters(shared_screen: SharedScreen):
     @ui.page('/')
     def page():
         ui.table(rows=[
@@ -328,20 +328,20 @@ def test_default_column_parameters(screen: Screen):
             {'name': 'city', 'label': 'City', 'field': 'city', 'sortable': False},
         ], column_defaults={'sortable': True})
 
-    screen.open('/')
-    screen.should_contain('Name')
-    screen.should_contain('Age')
-    screen.should_contain('Alice')
-    screen.should_contain('Bob')
-    screen.should_contain('18')
-    screen.should_contain('21')
-    screen.should_contain('London')
-    screen.should_contain('Paris')
-    assert len(screen.find_all_by_class('sortable')) == 2
+    shared_screen.open('/')
+    shared_screen.should_contain('Name')
+    shared_screen.should_contain('Age')
+    shared_screen.should_contain('Alice')
+    shared_screen.should_contain('Bob')
+    shared_screen.should_contain('18')
+    shared_screen.should_contain('21')
+    shared_screen.should_contain('London')
+    shared_screen.should_contain('Paris')
+    assert len(shared_screen.find_all_by_class('sortable')) == 2
 
 
 @pytest.mark.parametrize('df_type', ['pandas', 'polars'])
-def test_columns_from_df(screen: Screen, df_type: str):
+def test_columns_from_df(shared_screen: SharedScreen, df_type: str):
     @ui.page('/')
     def page():
         if df_type == 'pandas':
@@ -374,31 +374,31 @@ def test_columns_from_df(screen: Screen, df_type: str):
                                                        columns=[{'name': 'make', 'label': 'make', 'field': 'make'},
                                                                 {'name': 'model', 'label': 'model', 'field': 'model'}]))
 
-    screen.open('/')
-    screen.should_contain('name')
-    screen.should_contain('age')
-    screen.should_contain('make')
-    screen.should_not_contain('model')
+    shared_screen.open('/')
+    shared_screen.should_contain('name')
+    shared_screen.should_contain('age')
+    shared_screen.should_contain('make')
+    shared_screen.should_not_contain('model')
 
-    screen.click('Update persons without columns')  # infer columns (like during instantiation)
-    screen.should_contain('Dan')
-    screen.should_contain('5')
-    screen.should_contain('male')
+    shared_screen.click('Update persons without columns')  # infer columns (like during instantiation)
+    shared_screen.should_contain('Dan')
+    shared_screen.should_contain('5')
+    shared_screen.should_contain('male')
 
-    screen.click('Update persons with columns')  # updated columns via parameter
-    screen.should_contain('Stephen')
-    screen.should_not_contain('32')
+    shared_screen.click('Update persons with columns')  # updated columns via parameter
+    shared_screen.should_contain('Stephen')
+    shared_screen.should_not_contain('32')
 
-    screen.click('Update cars without columns')  # don't change columns
-    screen.should_contain('Honda')
-    screen.should_not_contain('Civic')
+    shared_screen.click('Update cars without columns')  # don't change columns
+    shared_screen.should_contain('Honda')
+    shared_screen.should_not_contain('Civic')
 
-    screen.click('Update cars with columns')  # updated columns via parameter
-    screen.should_contain('Hyundai')
-    screen.should_contain('i30')
+    shared_screen.click('Update cars with columns')  # updated columns via parameter
+    shared_screen.should_contain('Hyundai')
+    shared_screen.should_contain('i30')
 
 
-def test_new_slots(screen: Screen):
+def test_new_slots(shared_screen: SharedScreen):
     @ui.page('/')
     def page():
         table = ui.table(rows=[{'name': 'Alice'}, {'name': 'Bob'}, {'name': 'Carol'}])
@@ -407,8 +407,8 @@ def test_new_slots(screen: Screen):
                 ui.button().props(':label="props.value"') \
                     .on('click', js_handler='() => emit(props.value)', handler=lambda e: ui.notify(f'Clicked {e.args}'))
 
-    screen.open('/')
-    screen.should_contain('Alice')
+    shared_screen.open('/')
+    shared_screen.should_contain('Alice')
 
-    screen.click('Alice')
-    screen.should_contain('Clicked Alice')
+    shared_screen.click('Alice')
+    shared_screen.should_contain('Clicked Alice')

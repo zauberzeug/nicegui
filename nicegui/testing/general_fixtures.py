@@ -35,3 +35,10 @@ def nicegui_reset_globals():
     """Reset the global state of the NiceGUI package."""
     with general.nicegui_reset_globals():
         yield
+
+
+@pytest.fixture
+def nicegui_reset_globals_for_shared_server():
+    """Reset the global state while keeping the server running."""
+    with general.nicegui_reset_globals_for_shared_server():
+        yield

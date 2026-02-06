@@ -3,21 +3,21 @@ from unittest.mock import patch
 import pytest
 
 from nicegui import ui
-from nicegui.testing import Screen
+from nicegui.testing import SharedScreen
 
 
 @pytest.mark.parametrize('require_escape_hold', [True, False])
-def test_fullscreen_creation(screen: Screen, require_escape_hold: bool):
+def test_fullscreen_creation(shared_screen: SharedScreen, require_escape_hold: bool):
     @ui.page('/')
     def page():
         fullscreen = ui.fullscreen(require_escape_hold=require_escape_hold)
         assert not fullscreen.value
         assert fullscreen.require_escape_hold == require_escape_hold
 
-    screen.open('/')
+    shared_screen.open('/')
 
 
-def test_fullscreen_methods(screen: Screen):
+def test_fullscreen_methods(shared_screen: SharedScreen):
     values = []
     fullscreen = None
 
@@ -26,7 +26,7 @@ def test_fullscreen_methods(screen: Screen):
         nonlocal fullscreen
         fullscreen = ui.fullscreen(on_value_change=lambda e: values.append(e.value))
 
-    screen.open('/')
+    shared_screen.open('/')
 
     with patch.object(fullscreen, 'run_method') as mock_run:
         fullscreen.enter()
@@ -52,7 +52,7 @@ def test_fullscreen_methods(screen: Screen):
     assert values == [True, False, True, False, True]
 
 
-def test_fullscreen_button_click(screen: Screen):
+def test_fullscreen_button_click(shared_screen: SharedScreen):
     """Test that clicking a button to enter fullscreen creates the correct JavaScript call.
 
     Note: We cannot test actual fullscreen behavior as it requires user interaction,
@@ -66,11 +66,11 @@ def test_fullscreen_button_click(screen: Screen):
         ui.button('Enter Fullscreen', on_click=fullscreen.enter)
         ui.button('Exit Fullscreen', on_click=fullscreen.exit)
 
-    screen.open('/')
-    screen.click('Enter Fullscreen')
-    screen.wait(0.5)
+    shared_screen.open('/')
+    shared_screen.click('Enter Fullscreen')
+    shared_screen.wait(0.5)
     assert values == [True]
 
-    screen.click('Exit Fullscreen')
-    screen.wait(0.5)
+    shared_screen.click('Exit Fullscreen')
+    shared_screen.wait(0.5)
     assert values == [True, False]

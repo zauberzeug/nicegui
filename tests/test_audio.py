@@ -1,5 +1,5 @@
 from nicegui import app, ui
-from nicegui.testing import Screen
+from nicegui.testing import SharedScreen
 
 
 def _serve_empty_file(path: str):
@@ -8,7 +8,7 @@ def _serve_empty_file(path: str):
         return b''
 
 
-def test_replace_audio(screen: Screen):
+def test_replace_audio(shared_screen: SharedScreen):
     _serve_empty_file(SONG1 := '/audio1.wav')
     _serve_empty_file(SONG2 := '/audio2.wav')
 
@@ -22,15 +22,15 @@ def test_replace_audio(screen: Screen):
                 ui.audio(SONG2)
         ui.button('Replace', on_click=replace)
 
-    screen.open('/')
-    assert screen.find_by_tag('audio').get_attribute('src').endswith(SONG1)
+    shared_screen.open('/')
+    assert shared_screen.find_by_tag('audio').get_attribute('src').endswith(SONG1)
 
-    screen.click('Replace')
-    screen.wait(0.5)
-    assert screen.find_by_tag('audio').get_attribute('src').endswith(SONG2)
+    shared_screen.click('Replace')
+    shared_screen.wait(0.5)
+    assert shared_screen.find_by_tag('audio').get_attribute('src').endswith(SONG2)
 
 
-def test_change_source(screen: Screen):
+def test_change_source(shared_screen: SharedScreen):
     _serve_empty_file(SONG1 := '/audio1.wav')
     _serve_empty_file(SONG2 := '/audio2.wav')
 
@@ -39,9 +39,9 @@ def test_change_source(screen: Screen):
         audio = ui.audio(SONG1)
         ui.button('Change source', on_click=lambda: audio.set_source(SONG2))
 
-    screen.open('/')
-    assert screen.find_by_tag('audio').get_attribute('src').endswith(SONG1)
+    shared_screen.open('/')
+    assert shared_screen.find_by_tag('audio').get_attribute('src').endswith(SONG1)
 
-    screen.click('Change source')
-    screen.wait(0.5)
-    assert screen.find_by_tag('audio').get_attribute('src').endswith(SONG2)
+    shared_screen.click('Change source')
+    shared_screen.wait(0.5)
+    assert shared_screen.find_by_tag('audio').get_attribute('src').endswith(SONG2)

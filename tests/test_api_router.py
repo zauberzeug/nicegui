@@ -1,8 +1,8 @@
 from nicegui import APIRouter, app, ui
-from nicegui.testing import Screen
+from nicegui.testing import SharedScreen
 
 
-def test_prefix(screen: Screen):
+def test_prefix(shared_screen: SharedScreen):
     router = APIRouter(prefix='/some-prefix')
 
     @router.page('/')
@@ -11,12 +11,12 @@ def test_prefix(screen: Screen):
 
     app.include_router(router)
 
-    screen.open('/some-prefix')
-    screen.should_contain('NiceGUI')
-    screen.should_contain('Hello, world!')
+    shared_screen.open('/some-prefix')
+    shared_screen.should_contain('NiceGUI')
+    shared_screen.should_contain('Hello, world!')
 
 
-def test_passing_page_parameters(screen: Screen):
+def test_passing_page_parameters(shared_screen: SharedScreen):
     router = APIRouter()
 
     @router.page('/', title='My Custom Title')
@@ -25,5 +25,5 @@ def test_passing_page_parameters(screen: Screen):
 
     app.include_router(router)
 
-    screen.open('/')
-    screen.should_contain('My Custom Title')
+    shared_screen.open('/')
+    shared_screen.should_contain('My Custom Title')

@@ -1,10 +1,10 @@
 import asyncio
 
 from nicegui import app, ui
-from nicegui.testing import Screen
+from nicegui.testing import SharedScreen
 
 
-def test_removing_outbox_loops(screen: Screen):
+def test_removing_outbox_loops(shared_screen: SharedScreen):
     @ui.page('/')
     def page():
         ui.label('Index page')
@@ -17,12 +17,12 @@ def test_removing_outbox_loops(screen: Screen):
     app.timer(0.1, lambda: state.update(count=len([t for t in asyncio.all_tasks()
                                                    if t.get_name().startswith('outbox loop')])))
 
-    screen.open('/subpage')
-    screen.click('Click me')
-    screen.should_contain('Hello world!')
+    shared_screen.open('/subpage')
+    shared_screen.click('Click me')
+    shared_screen.should_contain('Hello world!')
     assert state['count'] == 1
 
-    screen.open('/')
-    screen.should_contain('Index page')
-    screen.wait(0.5)  # wait for the outbox loop to finish
+    shared_screen.open('/')
+    shared_screen.should_contain('Index page')
+    shared_screen.wait(0.5)  # wait for the outbox loop to finish
     assert state['count'] == 1

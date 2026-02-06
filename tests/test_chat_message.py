@@ -2,10 +2,10 @@ from html_sanitizer import Sanitizer
 from selenium.webdriver.common.by import By
 
 from nicegui import ui
-from nicegui.testing import Screen
+from nicegui.testing import SharedScreen
 
 
-def test_text_vs_html(screen: Screen):
+def test_text_vs_html(shared_screen: SharedScreen):
     @ui.page('/')
     def page():
         ui.chat_message('10&euro;')
@@ -21,43 +21,43 @@ def test_text_vs_html(screen: Screen):
         ui.chat_message('80&euro;', text_html=True)
         ui.chat_message('90&euro;', text_html=True, sanitize=False)
 
-    screen.allowed_js_errors.append('/x - Failed to load resource')
-    screen.open('/')
-    screen.should_contain('10&euro;')
-    screen.should_contain('20€')
-    screen.should_contain('30€')
-    screen.should_contain('40€')
-    screen.should_contain('50€')
-    screen.should_contain('60EUR')
-    screen.should_not_contain('70€')
-    screen.should_contain('80€')
-    screen.should_contain('90€')
+    shared_screen.allowed_js_errors.append('/x - Failed to load resource')
+    shared_screen.open('/')
+    shared_screen.should_contain('10&euro;')
+    shared_screen.should_contain('20€')
+    shared_screen.should_contain('30€')
+    shared_screen.should_contain('40€')
+    shared_screen.should_contain('50€')
+    shared_screen.should_contain('60EUR')
+    shared_screen.should_not_contain('70€')
+    shared_screen.should_contain('80€')
+    shared_screen.should_contain('90€')
 
 
-def test_newline(screen: Screen):
+def test_newline(shared_screen: SharedScreen):
     @ui.page('/')
     def page():
         ui.chat_message('Hello\nNiceGUI!')
 
-    screen.open('/')
-    assert screen.find('Hello').find_element(By.TAG_NAME, 'br')
+    shared_screen.open('/')
+    assert shared_screen.find('Hello').find_element(By.TAG_NAME, 'br')
 
 
-def test_slot(screen: Screen):
+def test_slot(shared_screen: SharedScreen):
     @ui.page('/')
     def page():
         with ui.chat_message():
             ui.label('slot')
 
-    screen.open('/')
-    screen.should_contain('slot')
+    shared_screen.open('/')
+    shared_screen.should_contain('slot')
 
 
-def test_xss_sanitization(screen: Screen):
+def test_xss_sanitization(shared_screen: SharedScreen):
     @ui.page('/')
     def page():
         ui.chat_message('<img src=x onerror="alert(\'XSS\')">', text_html=True)
 
-    screen.allowed_js_errors.append('/x - Failed to load resource')
-    screen.open('/')
-    assert screen.find_by_tag('img').get_attribute('onerror') is None
+    shared_screen.allowed_js_errors.append('/x - Failed to load resource')
+    shared_screen.open('/')
+    assert shared_screen.find_by_tag('img').get_attribute('onerror') is None

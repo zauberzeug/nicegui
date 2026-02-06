@@ -19,11 +19,15 @@ from selenium.webdriver import ActionChains
 from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webelement import WebElement
 
-from nicegui import app, core, ui
+from nicegui import app, background_tasks, core, ui
 from nicegui.server import Server
 
 from .general import prepare_simulation
 from .general_fixtures import get_path_to_main_file
+
+# Shared server state for SharedScreen
+_shared_server_thread: threading.Thread | None = None
+_shared_server_started = threading.Event()
 
 
 class Screen:
@@ -37,7 +41,7 @@ class Screen:
         self.caplog = caplog
         self.server_thread: threading.Thread | None = None
         self.pytest_request = request
-        self.ui_run_kwargs: dict[str, Any] = {'port': self.PORT, 'show': False, 'reload': False}
+        self.ui_run_kwargs: dict[str, Any] = {'port': self.PORT, 'show': False, 'reload': False, 'show_welcome_message': False}
         self.connected = threading.Event()
         app.on_connect(self.connected.set)
         self.url = f'http://localhost:{self.PORT}'
@@ -292,3 +296,79 @@ class Screen:
         if parsed.fragment:
             result += '#' + parsed.fragment
         return result
+
+
+class SharedScreen(Screen):
+    """A Screen variant that shares a single server across multiple tests.
+
+    This is faster than the regular Screen fixture because the server doesn't need
+    to restart for each test. Use this for tests that don't require server isolation
+    (e.g., tests that don't test startup/shutdown handlers or modify server state).
+    """
+
+    def __init__(self, selenium: webdriver.Chrome, caplog: pytest.LogCaptureFixture,
+                 request: pytest.FixtureRequest | None = None) -> None:
+        super().__init__(selenium, caplog, request)
+        # Use the shared server thread instead of creating a new one
+        self._uses_shared_server = True
+
+    def start_server(self) -> None:
+        """Start the shared webserver if not already running."""
+        global _shared_server_thread  # noqa: PLW0603
+
+        # Check if server is in a valid state (thread alive AND loop exists and not closed)
+        needs_restart = (
+            _shared_server_thread is None or
+            not _shared_server_thread.is_alive() or
+            core.loop is None or
+            core.loop.is_closed()
+        )
+
+        if needs_restart:
+            # Clean up any zombie state from previous runs (e.g., after User fixture reset core.loop)
+            if _shared_server_thread is not None:
+                stop_shared_server()
+
+            # Clear background tasks from the old event loop
+            background_tasks.reset()
+
+            _shared_server_started.clear()
+            prepare_simulation()
+            _shared_server_thread = threading.Thread(target=lambda: ui.run(**self.ui_run_kwargs))
+            _shared_server_thread.start()
+
+        self.server_thread = _shared_server_thread
+
+    def stop_server(self) -> None:
+        """Reset browser state without stopping the shared server."""
+        # Clear browser state but keep server running
+        if self.is_open:
+            # Navigate away and clear cookies to reset browser state
+            self.selenium.get('about:blank')
+            self.selenium.delete_all_cookies()
+        self.caplog.clear()
+        # Don't stop the server - it's shared across tests
+
+    def reset_for_next_test(self) -> None:
+        """Prepare the screen for the next test."""
+        self.connected.clear()
+        self.allowed_js_errors.clear()
+        if self.is_open:
+            self.selenium.get('about:blank')
+            self.selenium.delete_all_cookies()
+
+
+def stop_shared_server() -> None:
+    """Stop the shared server (called at session end or before Screen tests)."""
+    global _shared_server_thread  # noqa: PLW0603
+    if _shared_server_thread is not None and _shared_server_thread.is_alive():
+        if hasattr(Server, 'instance'):
+            Server.instance.should_exit = True
+        _shared_server_thread.join(timeout=10)
+        _shared_server_thread = None
+        _shared_server_started.clear()
+        # Wait for the event loop to close (matching Screen.stop_server behavior)
+        if core.loop:
+            deadline = time.time() + 5
+            while not core.loop.is_closed() and time.time() < deadline:
+                time.sleep(0.1)

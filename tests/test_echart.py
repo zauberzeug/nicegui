@@ -6,7 +6,7 @@ from pyecharts.charts import Bar
 from pyecharts.commons import utils
 
 from nicegui import app, ui
-from nicegui.testing import Screen
+from nicegui.testing import SharedScreen
 
 
 @pytest.fixture
@@ -16,7 +16,7 @@ def test_route() -> Generator[str, None, None]:
     app.remove_route(TEST_ROUTE)
 
 
-def test_create_dynamically(screen: Screen):
+def test_create_dynamically(shared_screen: SharedScreen):
     @ui.page('/')
     def page():
         def create():
@@ -27,12 +27,12 @@ def test_create_dynamically(screen: Screen):
             })
         ui.button('Create', on_click=create)
 
-    screen.open('/')
-    screen.click('Create')
-    assert screen.find_by_tag('canvas')
+    shared_screen.open('/')
+    shared_screen.click('Create')
+    assert shared_screen.find_by_tag('canvas')
 
 
-def test_update(screen: Screen):
+def test_update(shared_screen: SharedScreen):
     @ui.page('/')
     def page():
         def update():
@@ -42,14 +42,14 @@ def test_update(screen: Screen):
         chart = ui.echart({})
         ui.button('Update', on_click=update)
 
-    screen.open('/')
-    assert not screen.find_all_by_tag('canvas')
+    shared_screen.open('/')
+    assert not shared_screen.find_all_by_tag('canvas')
 
-    screen.click('Update')
-    assert screen.find_by_tag('canvas')
+    shared_screen.click('Update')
+    assert shared_screen.find_by_tag('canvas')
 
 
-def test_nested_card(screen: Screen):
+def test_nested_card(shared_screen: SharedScreen):
     @ui.page('/')
     def page():
         with ui.card().style('height: 200px; width: 600px'):
@@ -59,13 +59,13 @@ def test_nested_card(screen: Screen):
                 'series': [{'type': 'line', 'data': [0.1, 0.2, 0.3]}],
             })
 
-    screen.open('/')
-    canvas = screen.find_by_tag('canvas')
+    shared_screen.open('/')
+    canvas = shared_screen.find_by_tag('canvas')
     assert canvas.rect['height'] == 168
     assert canvas.rect['width'] == 568
 
 
-def test_nested_expansion(screen: Screen):
+def test_nested_expansion(shared_screen: SharedScreen):
     @ui.page('/')
     def page():
         with ui.expansion() as expansion:
@@ -78,15 +78,15 @@ def test_nested_expansion(screen: Screen):
                 })
         ui.button('Open', on_click=expansion.open)
 
-    screen.open('/')
-    screen.click('Open')
-    screen.wait(0.5)
-    canvas = screen.find_by_tag('canvas')
+    shared_screen.open('/')
+    shared_screen.click('Open')
+    shared_screen.wait(0.5)
+    canvas = shared_screen.find_by_tag('canvas')
     assert canvas.rect['height'] == 168
     assert canvas.rect['width'] == 568
 
 
-def test_run_method(screen: Screen):
+def test_run_method(shared_screen: SharedScreen):
     @ui.page('/')
     def page():
         echart = ui.echart({
@@ -99,12 +99,12 @@ def test_run_method(screen: Screen):
             ui.label(f'Width: {await echart.run_chart_method("getWidth")}px')
         ui.button('Get Width', on_click=get_width)
 
-    screen.open('/')
-    screen.click('Get Width')
-    screen.should_contain('Width: 600px')
+    shared_screen.open('/')
+    shared_screen.click('Get Width')
+    shared_screen.should_contain('Width: 600px')
 
 
-def test_create_from_pyecharts(screen: Screen):
+def test_create_from_pyecharts(shared_screen: SharedScreen):
     X_AXIS_FORMATTER = r'(val, idx) => `x for ${val}`'
     Y_AXIS_FORMATTER = r'(val, idx) => `${val} kg`'
 
@@ -120,16 +120,16 @@ def test_create_from_pyecharts(screen: Screen):
             )
         ).props('renderer=svg')
 
-    screen.open('/')
-    screen.should_contain('x for A')
-    screen.should_contain('x for B')
-    screen.should_contain('x for C')
-    screen.should_contain('0.1 kg')
-    screen.should_contain('0.2 kg')
-    screen.should_contain('0.3 kg')
+    shared_screen.open('/')
+    shared_screen.should_contain('x for A')
+    shared_screen.should_contain('x for B')
+    shared_screen.should_contain('x for C')
+    shared_screen.should_contain('0.1 kg')
+    shared_screen.should_contain('0.2 kg')
+    shared_screen.should_contain('0.3 kg')
 
 
-def test_chart_events(screen: Screen):
+def test_chart_events(shared_screen: SharedScreen):
     @ui.page('/')
     def page():
         ui.echart({
@@ -138,11 +138,11 @@ def test_chart_events(screen: Screen):
             'series': [{'type': 'line', 'data': [1, 2, 3]}],
         }).on('chart:rendered', lambda: ui.label('Chart rendered.'))
 
-    screen.open('/')
-    screen.should_contain('Chart rendered.')
+    shared_screen.open('/')
+    shared_screen.should_contain('Chart rendered.')
 
 
-def test_theme_dictionary(screen: Screen):
+def test_theme_dictionary(shared_screen: SharedScreen):
     @ui.page('/')
     def page():
         ui.echart({
@@ -151,11 +151,11 @@ def test_theme_dictionary(screen: Screen):
             'series': [{'type': 'line', 'data': [1, 2, 3]}],
         }, theme={'backgroundColor': 'rgba(254,248,239,1)'}, renderer='svg')
 
-    screen.open('/')
-    assert screen.find_by_tag('rect').value_of_css_property('fill') == 'rgb(254, 248, 239)'
+    shared_screen.open('/')
+    assert shared_screen.find_by_tag('rect').value_of_css_property('fill') == 'rgb(254, 248, 239)'
 
 
-def test_theme_url(screen: Screen, test_route: str):  # pylint: disable=redefined-outer-name
+def test_theme_url(shared_screen: SharedScreen, test_route: str):  # pylint: disable=redefined-outer-name
     @app.get(test_route)
     def theme():
         return {'backgroundColor': 'rgba(254,248,239,1)'}
@@ -168,11 +168,11 @@ def test_theme_url(screen: Screen, test_route: str):  # pylint: disable=redefine
             'series': [{'type': 'line', 'data': [1, 2, 3]}],
         }, theme=test_route, renderer='svg')
 
-    screen.open('/')
-    assert screen.find_by_tag('rect').value_of_css_property('fill') == 'rgb(254, 248, 239)'
+    shared_screen.open('/')
+    assert shared_screen.find_by_tag('rect').value_of_css_property('fill') == 'rgb(254, 248, 239)'
 
 
-def test_click(screen: Screen):
+def test_click(shared_screen: SharedScreen):
     events = []
 
     @ui.page('/')
@@ -193,11 +193,11 @@ def test_click(screen: Screen):
         }, on_point_click=lambda e: events.append(('point', e)), on_click=lambda e: events.append(('component', e))) \
             .style('width: 200px; height: 200px')
 
-    screen.open('/')
-    echart = screen.find_by_tag('canvas')
+    shared_screen.open('/')
+    echart = shared_screen.find_by_tag('canvas')
     for x, y in [(20, 20), (0, 70), (60, 30)]:
-        screen.click_at_position(echart, x, y)
-    screen.wait(0.5)
+        shared_screen.click_at_position(echart, x, y)
+    shared_screen.wait(0.5)
     assert [(source, event.component_type, event.name) for source, event in events] == [
         ('point', 'series', 'Test'),
         ('component', 'series', 'Test'),

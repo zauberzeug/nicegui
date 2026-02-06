@@ -6,17 +6,17 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 
 from nicegui import ui
-from nicegui.testing import Screen
+from nicegui.testing import SharedScreen
 
 
-def test_input(screen: Screen):
+def test_input(shared_screen: SharedScreen):
     @ui.page('/')
     def page():
         ui.input('Your name', value='John Doe')
 
-    screen.open('/')
-    screen.should_contain('Your name')
-    element = screen.selenium.find_element(By.XPATH, '//*[@aria-label="Your name"]')
+    shared_screen.open('/')
+    shared_screen.should_contain('Your name')
+    element = shared_screen.selenium.find_element(By.XPATH, '//*[@aria-label="Your name"]')
     assert element.get_attribute('type') == 'text'
     assert element.get_attribute('value') == 'John Doe'
 
@@ -24,47 +24,47 @@ def test_input(screen: Screen):
     assert element.get_attribute('value') == 'John Doe Jr.'
 
 
-def test_password(screen: Screen):
+def test_password(shared_screen: SharedScreen):
     @ui.page('/')
     def page():
         ui.input('Your password', value='123456', password=True)
 
-    screen.open('/')
-    screen.should_contain('Your password')
+    shared_screen.open('/')
+    shared_screen.should_contain('Your password')
 
-    element = screen.selenium.find_element(By.XPATH, '//*[@aria-label="Your password"]')
+    element = shared_screen.selenium.find_element(By.XPATH, '//*[@aria-label="Your password"]')
     assert element.get_attribute('type') == 'password'
     assert element.get_attribute('value') == '123456'
 
     element.send_keys('789')
-    screen.wait(0.5)
+    shared_screen.wait(0.5)
     assert element.get_attribute('value') == '123456789'
 
 
-def test_toggle_button(screen: Screen):
+def test_toggle_button(shared_screen: SharedScreen):
     @ui.page('/')
     def page():
         ui.input('Your password', value='123456', password=True, password_toggle_button=True)
 
-    screen.open('/')
-    screen.should_contain('Your password')
-    screen.should_contain('visibility_off')
+    shared_screen.open('/')
+    shared_screen.should_contain('Your password')
+    shared_screen.should_contain('visibility_off')
 
-    element = screen.selenium.find_element(By.XPATH, '//*[@aria-label="Your password"]')
+    element = shared_screen.selenium.find_element(By.XPATH, '//*[@aria-label="Your password"]')
     assert element.get_attribute('type') == 'password'
     assert element.get_attribute('value') == '123456'
 
-    screen.click('visibility_off')
-    screen.wait(0.5)
+    shared_screen.click('visibility_off')
+    shared_screen.wait(0.5)
     assert element.get_attribute('type') == 'text'
 
-    screen.click('visibility')
-    screen.wait(0.5)
+    shared_screen.click('visibility')
+    shared_screen.wait(0.5)
     assert element.get_attribute('type') == 'password'
 
 
 @pytest.mark.parametrize('method', ['dict', 'sync', 'async'])
-def test_input_validation(method: Literal['dict', 'sync', 'async'], screen: Screen):
+def test_input_validation(method: Literal['dict', 'sync', 'async'], shared_screen: SharedScreen):
     input_ = None
 
     @ui.page('/')
@@ -90,42 +90,42 @@ def test_input_validation(method: Literal['dict', 'sync', 'async'], screen: Scre
         else:
             assert input_.validate() == expected
 
-    screen.open('/')
-    screen.should_contain('Name')
+    shared_screen.open('/')
+    shared_screen.should_contain('Name')
 
-    element = screen.selenium.find_element(By.XPATH, '//*[@aria-label="Name"]')
+    element = shared_screen.selenium.find_element(By.XPATH, '//*[@aria-label="Name"]')
     element.send_keys('Jo')
-    screen.should_contain('Short')
+    shared_screen.should_contain('Short')
     assert input_.error == 'Short'
     assert_validation(False)
 
     element.send_keys('hn')
-    screen.should_contain('Still short')
+    shared_screen.should_contain('Still short')
     assert input_.error == 'Still short'
     assert_validation(False)
 
     element.send_keys(' Doe')
-    screen.wait(1.0)
-    screen.should_not_contain('Short')
-    screen.should_not_contain('Still short')
+    shared_screen.wait(1.0)
+    shared_screen.should_not_contain('Short')
+    shared_screen.should_not_contain('Still short')
     assert input_.error is None
     assert_validation(True)
 
 
-def test_input_with_multi_word_error_message(screen: Screen):
+def test_input_with_multi_word_error_message(shared_screen: SharedScreen):
     @ui.page('/')
     def page():
         input_ = ui.input(label='some input')
         ui.button('set error', on_click=lambda: input_.props('error error-message="Some multi word error message"'))
 
-    screen.open('/')
-    screen.should_not_contain('Some multi word error message')
+    shared_screen.open('/')
+    shared_screen.should_not_contain('Some multi word error message')
 
-    screen.click('set error')
-    screen.should_contain('Some multi word error message')
+    shared_screen.click('set error')
+    shared_screen.should_contain('Some multi word error message')
 
 
-def test_autocompletion(screen: Screen):
+def test_autocompletion(shared_screen: SharedScreen):
     input_ = None
 
     @ui.page('/')
@@ -133,20 +133,20 @@ def test_autocompletion(screen: Screen):
         nonlocal input_
         input_ = ui.input('Input', autocomplete=['foo', 'bar', 'baz'])
 
-    screen.open('/')
-    element = screen.selenium.find_element(By.XPATH, '//*[@aria-label="Input"]')
+    shared_screen.open('/')
+    element = shared_screen.selenium.find_element(By.XPATH, '//*[@aria-label="Input"]')
     element.send_keys('f')
-    screen.should_contain('oo')
+    shared_screen.should_contain('oo')
 
     element.send_keys('l')
-    screen.wait(0.5)
-    screen.should_not_contain('oo')
+    shared_screen.wait(0.5)
+    shared_screen.should_not_contain('oo')
 
     element.send_keys(Keys.BACKSPACE)
-    screen.should_contain('oo')
+    shared_screen.should_contain('oo')
 
     element.send_keys(Keys.TAB)
-    screen.wait(0.2)
+    shared_screen.wait(0.2)
     assert element.get_attribute('value') == 'foo'
     assert input_.value == 'foo'
 
@@ -154,31 +154,31 @@ def test_autocompletion(screen: Screen):
     element.send_keys(Keys.BACKSPACE)
     element.send_keys('x')
     element.send_keys(Keys.TAB)
-    screen.wait(0.5)
+    shared_screen.wait(0.5)
     assert element.get_attribute('value') == 'fx'
     assert input_.value == 'fx'
 
     input_.set_autocomplete(['once', 'twice'])
-    screen.wait(0.2)
+    shared_screen.wait(0.2)
     element.send_keys(Keys.BACKSPACE)
     element.send_keys(Keys.BACKSPACE)
     element.send_keys('o')
-    screen.should_contain('nce')
+    shared_screen.should_contain('nce')
 
 
-def test_clearable_input(screen: Screen):
+def test_clearable_input(shared_screen: SharedScreen):
     @ui.page('/')
     def page():
         input_ = ui.input(value='foo').props('clearable')
         ui.label().bind_text_from(input_, 'value', lambda value: f'value: {value}')
 
-    screen.open('/')
-    screen.should_contain('value: foo')
-    screen.click('cancel')
-    screen.should_contain('value: None')
+    shared_screen.open('/')
+    shared_screen.should_contain('value: foo')
+    shared_screen.click('cancel')
+    shared_screen.should_contain('value: None')
 
 
-def test_update_input(screen: Screen):
+def test_update_input(shared_screen: SharedScreen):
     input_ = None
 
     @ui.page('/')
@@ -186,20 +186,20 @@ def test_update_input(screen: Screen):
         nonlocal input_
         input_ = ui.input('Name', value='Pete')
 
-    screen.open('/')
-    element = screen.selenium.find_element(By.XPATH, '//*[@aria-label="Name"]')
+    shared_screen.open('/')
+    element = shared_screen.selenium.find_element(By.XPATH, '//*[@aria-label="Name"]')
     assert element.get_attribute('value') == 'Pete'
 
     element.send_keys('r')
-    screen.wait(0.5)
+    shared_screen.wait(0.5)
     assert element.get_attribute('value') == 'Peter'
 
     input_.value = 'Pete'
-    screen.wait(0.5)
+    shared_screen.wait(0.5)
     assert element.get_attribute('value') == 'Pete'
 
 
-def test_switching_focus(screen: Screen):
+def test_switching_focus(shared_screen: SharedScreen):
     @ui.page('/')
     def page():
         input1 = ui.input()
@@ -207,18 +207,18 @@ def test_switching_focus(screen: Screen):
         ui.button('focus 1', on_click=lambda: input1.run_method('focus'))
         ui.button('focus 2', on_click=lambda: input2.run_method('focus'))
 
-    screen.open('/')
-    elements = screen.selenium.find_elements(By.XPATH, '//input')
+    shared_screen.open('/')
+    elements = shared_screen.selenium.find_elements(By.XPATH, '//input')
     assert len(elements) == 2
-    screen.click('focus 1')
-    screen.wait(0.3)
-    assert elements[0] == screen.selenium.switch_to.active_element
-    screen.click('focus 2')
-    screen.wait(0.3)
-    assert elements[1] == screen.selenium.switch_to.active_element
+    shared_screen.click('focus 1')
+    shared_screen.wait(0.3)
+    assert elements[0] == shared_screen.selenium.switch_to.active_element
+    shared_screen.click('focus 2')
+    shared_screen.wait(0.3)
+    assert elements[1] == shared_screen.selenium.switch_to.active_element
 
 
-def test_prefix_and_suffix(screen: Screen):
+def test_prefix_and_suffix(shared_screen: SharedScreen):
     @ui.page('/')
     def page():
         n = ui.input(prefix='MyPrefix', suffix='MySuffix')
@@ -229,10 +229,10 @@ def test_prefix_and_suffix(screen: Screen):
 
         ui.button('Change', on_click=change_prefix_suffix)
 
-    screen.open('/')
-    screen.should_contain('MyPrefix')
-    screen.should_contain('MySuffix')
+    shared_screen.open('/')
+    shared_screen.should_contain('MyPrefix')
+    shared_screen.should_contain('MySuffix')
 
-    screen.click('Change')
-    screen.should_contain('NewPrefix')
-    screen.should_contain('NewSuffix')
+    shared_screen.click('Change')
+    shared_screen.should_contain('NewPrefix')
+    shared_screen.should_contain('NewSuffix')

@@ -422,7 +422,7 @@ class Client:
         self._deleted_event.set()
         self.remove_all_elements()
         self.outbox.stop()
-        del Client.instances[self.id]
+        Client.instances.pop(self.id, None)  # Use pop to avoid KeyError if already removed
         self._deleted = True
         self._connected.set()  # for terminating connected() waits
         self._connected.clear()

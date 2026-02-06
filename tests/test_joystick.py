@@ -1,10 +1,10 @@
 from selenium.webdriver.common.action_chains import ActionChains
 
 from nicegui import ui
-from nicegui.testing import Screen
+from nicegui.testing import SharedScreen
 
 
-def test_joystick(screen: Screen):
+def test_joystick(shared_screen: SharedScreen):
     j = None
 
     @ui.page('/')
@@ -14,28 +14,28 @@ def test_joystick(screen: Screen):
                         on_end=lambda _: coordinates.set_text('end 0, 0'))
         coordinates = ui.label('start 0, 0')
 
-    screen.open('/')
-    joystick = screen.find_element(j)
+    shared_screen.open('/')
+    joystick = shared_screen.find_element(j)
     assert joystick
-    screen.should_contain('start 0, 0')
+    shared_screen.should_contain('start 0, 0')
 
-    ActionChains(screen.selenium) \
+    ActionChains(shared_screen.selenium) \
         .move_to_element_with_offset(joystick, 25, 25) \
         .click_and_hold() \
         .pause(1) \
         .move_by_offset(20, 20) \
         .pause(1) \
         .perform()
-    screen.should_contain('move 0.400, -0.400')
+    shared_screen.should_contain('move 0.400, -0.400')
 
-    ActionChains(screen.selenium) \
+    ActionChains(shared_screen.selenium) \
         .move_to_element_with_offset(joystick, 25, 25) \
         .click() \
         .perform()
-    screen.should_contain('end 0, 0')
+    shared_screen.should_contain('end 0, 0')
 
 
-def test_styling_joystick(screen: Screen):
+def test_styling_joystick(shared_screen: SharedScreen):
     j = None
 
     @ui.page('/')
@@ -43,7 +43,7 @@ def test_styling_joystick(screen: Screen):
         nonlocal j
         j = ui.joystick().style('background-color: gray;').classes('shadow-lg')
 
-    screen.open('/')
-    joystick = screen.find_element(j)
+    shared_screen.open('/')
+    joystick = shared_screen.find_element(j)
     assert 'background-color: gray;' in joystick.get_attribute('style')
     assert 'shadow-lg' in joystick.get_attribute('class')

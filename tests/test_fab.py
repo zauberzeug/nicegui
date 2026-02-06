@@ -1,8 +1,8 @@
 from nicegui import ui
-from nicegui.testing import Screen
+from nicegui.testing import SharedScreen
 
 
-def test_fab(screen: Screen):
+def test_fab(shared_screen: SharedScreen):
     @ui.page('/')
     def page():
         with ui.fab('menu', label='FAB') as fab:
@@ -14,25 +14,25 @@ def test_fab(screen: Screen):
         ui.button('Toggle FAB', on_click=fab.toggle)
         ui.label().bind_text_from(fab, 'value', lambda v: 'FAB is open' if v else 'FAB is closed')
 
-    screen.open('/')
-    screen.click('FAB')
-    screen.click('Action 1')
-    screen.should_contain('Action 1 clicked')
-    screen.should_contain('FAB is closed')
+    shared_screen.open('/')
+    shared_screen.click('FAB')
+    shared_screen.click('Action 1')
+    shared_screen.should_contain('Action 1 clicked')
+    shared_screen.should_contain('FAB is closed')
 
-    screen.click('FAB')
-    screen.click('Action 2')
-    screen.should_contain('Action 2 clicked')
-    screen.should_contain('FAB is open')
+    shared_screen.click('FAB')
+    shared_screen.click('Action 2')
+    shared_screen.should_contain('Action 2 clicked')
+    shared_screen.should_contain('FAB is open')
 
-    screen.click('Close FAB')
-    screen.should_contain('FAB is closed')
+    shared_screen.click('Close FAB')
+    shared_screen.should_contain('FAB is closed')
 
-    screen.click('Open FAB')
-    screen.should_contain('FAB is open')
+    shared_screen.click('Open FAB')
+    shared_screen.should_contain('FAB is open')
 
-    screen.click('Toggle FAB')
-    screen.should_contain('FAB is closed')
+    shared_screen.click('Toggle FAB')
+    shared_screen.should_contain('FAB is closed')
 
-    screen.click('Toggle FAB')
-    screen.should_contain('FAB is open')
+    shared_screen.click('Toggle FAB')
+    shared_screen.should_contain('FAB is open')

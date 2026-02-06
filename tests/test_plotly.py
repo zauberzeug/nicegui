@@ -2,10 +2,10 @@ import numpy as np
 import plotly.graph_objects as go
 
 from nicegui import ui
-from nicegui.testing import Screen
+from nicegui.testing import SharedScreen
 
 
-def test_plotly(screen: Screen):
+def test_plotly(shared_screen: SharedScreen):
     @ui.page('/')
     def page():
         fig = go.Figure(go.Scatter(x=[1, 2, 3], y=[1, 2, 3], name='Trace 1'))
@@ -18,15 +18,15 @@ def test_plotly(screen: Screen):
             plot.update()
         ))
 
-    screen.open('/')
-    screen.should_contain('Test Figure')
+    shared_screen.open('/')
+    shared_screen.should_contain('Test Figure')
 
-    screen.click('Add trace')
-    screen.should_contain('Trace 1')
-    screen.should_contain('Trace 2')
+    shared_screen.click('Add trace')
+    shared_screen.should_contain('Trace 1')
+    shared_screen.should_contain('Trace 2')
 
 
-def test_replace_plotly(screen: Screen):
+def test_replace_plotly(shared_screen: SharedScreen):
     @ui.page('/')
     def page():
         with ui.row() as container:
@@ -37,19 +37,19 @@ def test_replace_plotly(screen: Screen):
                 ui.plotly(go.Figure(go.Scatter(x=[1], y=[1], text=['B'], mode='text')))
         ui.button('Replace', on_click=replace)
 
-    screen.open('/')
-    assert screen.find_by_tag('text').text == 'A'
+    shared_screen.open('/')
+    assert shared_screen.find_by_tag('text').text == 'A'
 
-    screen.click('Replace')
-    screen.wait(0.5)
-    assert screen.find_by_tag('text').text == 'B'
+    shared_screen.click('Replace')
+    shared_screen.wait(0.5)
+    assert shared_screen.find_by_tag('text').text == 'B'
 
 
-def test_create_dynamically(screen: Screen):
+def test_create_dynamically(shared_screen: SharedScreen):
     @ui.page('/')
     def page():
         ui.button('Create', on_click=lambda: ui.plotly(go.Figure(go.Scatter(x=[], y=[]))))
 
-    screen.open('/')
-    screen.click('Create')
-    assert screen.find_by_tag('svg')
+    shared_screen.open('/')
+    shared_screen.click('Create')
+    assert shared_screen.find_by_tag('svg')

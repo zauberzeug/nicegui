@@ -3,7 +3,7 @@ from pathlib import Path
 from PIL import Image
 
 from nicegui import app, ui
-from nicegui.testing import Screen
+from nicegui.testing import SharedScreen
 
 example_file = Path(__file__).parent / '../examples/slideshow/slides/slide1.jpg'
 example_data = ('data:image/png;base64,'
@@ -28,69 +28,69 @@ example_data = ('data:image/png;base64,'
                 'cHLlz0gP6T8lepD+xTQjvKnT/mXKlCmzAX8Dl7JCqRHaepQAAAAASUVORK5CYII=')
 
 
-def test_base64_image(screen: Screen):
+def test_base64_image(shared_screen: SharedScreen):
     @ui.page('/')
     def page():
         ui.image(example_data).style('width: 50px;')
 
-    screen.open('/')
-    screen.wait(0.2)
-    image = screen.find_by_class('q-img__image')
+    shared_screen.open('/')
+    shared_screen.wait(0.2)
+    image = shared_screen.find_by_class('q-img__image')
     assert 'data:image/png;base64,iVB' in image.get_attribute('src')
 
 
-def test_setting_local_file(screen: Screen):
+def test_setting_local_file(shared_screen: SharedScreen):
     @ui.page('/')
     def page():
         ui.image(example_file)
 
-    screen.open('/')
-    image = screen.find_by_class('q-img__image')
-    screen.should_load_image(image)
+    shared_screen.open('/')
+    image = shared_screen.find_by_class('q-img__image')
+    shared_screen.should_load_image(image)
 
 
-def test_binding_local_file(screen: Screen):
+def test_binding_local_file(shared_screen: SharedScreen):
     images = {'one': example_file}
 
     @ui.page('/')
     def page():
         ui.image().bind_source_from(images, 'one')
 
-    screen.open('/')
-    image = screen.find_by_class('q-img__image')
-    screen.should_load_image(image)
+    shared_screen.open('/')
+    image = shared_screen.find_by_class('q-img__image')
+    shared_screen.should_load_image(image)
 
 
-def test_set_source_with_local_file(screen: Screen):
+def test_set_source_with_local_file(shared_screen: SharedScreen):
     @ui.page('/')
     def page():
         ui.image().set_source(example_file)
 
-    screen.open('/')
-    image = screen.find_by_class('q-img__image')
-    screen.should_load_image(image)
+    shared_screen.open('/')
+    image = shared_screen.find_by_class('q-img__image')
+    shared_screen.should_load_image(image)
 
 
-def test_removal_of_generated_routes(screen: Screen):
+def test_removal_of_generated_routes(shared_screen: SharedScreen):
     @ui.page('/')
     def page():
         img = ui.image(example_file)
         ui.button('Slide 2', on_click=lambda: img.set_source(str(example_file).replace('slide1', 'slide2')))
         ui.button('Slide 3', on_click=lambda: img.set_source(str(example_file).replace('slide1', 'slide3')))
 
-    screen.open('/')
+    shared_screen.open('/')
     number_of_routes = len(app.routes)
 
-    screen.click('Slide 2')
-    screen.wait(0.5)
+    shared_screen.click('Slide 2')
+    shared_screen.wait(0.5)
     assert len(app.routes) == number_of_routes
 
-    screen.click('Slide 3')
-    screen.wait(0.5)
+    shared_screen.click('Slide 3')
+    shared_screen.wait(0.5)
     assert len(app.routes) == number_of_routes
 
 
-def test_force_reload(screen: Screen):
+def test_force_reload(shared_screen: SharedScreen):
     @ui.page('/')
     def page():
         img1 = ui.image(example_file)
@@ -99,21 +99,21 @@ def test_force_reload(screen: Screen):
         ui.button('Reload 1', on_click=img1.force_reload)
         ui.button('Reload 2', on_click=img2.force_reload)
 
-    screen.open('/')
-    images = screen.find_all_by_class('q-img__image')
-    screen.should_load_image(images[0])
-    screen.should_load_image(images[1])
+    shared_screen.open('/')
+    images = shared_screen.find_all_by_class('q-img__image')
+    shared_screen.should_load_image(images[0])
+    shared_screen.should_load_image(images[1])
 
-    screen.click('Reload 1')
-    screen.wait(0.5)
-    assert not screen.caplog.records
+    shared_screen.click('Reload 1')
+    shared_screen.wait(0.5)
+    assert not shared_screen.caplog.records
 
-    screen.click('Reload 2')
-    screen.wait(0.5)
-    screen.assert_py_logger('WARNING', 'ui.image: force_reload() only works with network sources (not data URIs)')
+    shared_screen.click('Reload 2')
+    shared_screen.wait(0.5)
+    shared_screen.assert_py_logger('WARNING', 'ui.image: force_reload() only works with network sources (not data URIs)')
 
 
-def test_pil_image_cleanup(screen: Screen):
+def test_pil_image_cleanup(shared_screen: SharedScreen):
     temp_path_str = ''
 
     @ui.page('/')
@@ -125,9 +125,9 @@ def test_pil_image_cleanup(screen: Screen):
         assert Path(temp_path_str).exists()
         ui.button('Delete', on_click=image.delete)
 
-    screen.open('/')
-    image = screen.find_by_class('q-img__image')
-    screen.should_load_image(image)
+    shared_screen.open('/')
+    image = shared_screen.find_by_class('q-img__image')
+    shared_screen.should_load_image(image)
 
-    screen.click('Delete')
-    screen.wait_for(lambda: not Path(temp_path_str).exists())
+    shared_screen.click('Delete')
+    shared_screen.wait_for(lambda: not Path(temp_path_str).exists())

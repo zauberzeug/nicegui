@@ -1,21 +1,21 @@
 import pytest
 
 from nicegui import ui
-from nicegui.testing import Screen
+from nicegui.testing import SharedScreen
 
 # pylint: disable=protected-access
 
 
-def test_codemirror(screen: Screen):
+def test_codemirror(shared_screen: SharedScreen):
     @ui.page('/')
     def page():
         ui.codemirror('Line 1\nLine 2\nLine 3')
 
-    screen.open('/')
-    screen.should_contain('Line 2')
+    shared_screen.open('/')
+    shared_screen.should_contain('Line 2')
 
 
-def test_supported_values(screen: Screen):
+def test_supported_values(shared_screen: SharedScreen):
     values: dict[str, list[str]] = {}
 
     @ui.page('/')
@@ -30,9 +30,9 @@ def test_supported_values(screen: Screen):
             ui.label('Done')
         ui.button('Fetch', on_click=fetch)
 
-    screen.open('/')
-    screen.click('Fetch')
-    screen.wait_for('Done')
+    shared_screen.open('/')
+    shared_screen.click('Fetch')
+    shared_screen.wait_for('Done')
     assert values['languages'] == values['supported_languages']
     assert values['themes'] == values['supported_themes']
 
@@ -50,7 +50,7 @@ def test_supported_values(screen: Screen):
     ('Hey! 🙂', [7, -1, 0, 4], [[], [' Ho!']], 'Hey! 🙂 Ho!'),
     ('Ha 🙂\nha 🙂', [3, -1, 2, 0, 4, -1, 2, 0], [[], [''], [], ['']], 'Ha \nha '),
 ])
-def test_change_set(screen: Screen, doc: str, sections: list[int], inserted: list[list[str]], expected: str):
+def test_change_set(shared_screen: SharedScreen, doc: str, sections: list[int], inserted: list[list[str]], expected: str):
     editor = None
 
     @ui.page('/')
@@ -58,7 +58,7 @@ def test_change_set(screen: Screen, doc: str, sections: list[int], inserted: lis
         nonlocal editor
         editor = ui.codemirror(doc)
 
-    screen.open('/')
+    shared_screen.open('/')
     assert editor._apply_change_set(sections, inserted) == expected
 
 

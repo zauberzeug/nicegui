@@ -1,10 +1,10 @@
 from pathlib import Path
 
 from nicegui import ui
-from nicegui.testing.screen import Screen
+from nicegui.testing import SharedScreen
 
 
-def test_vue_element(screen: Screen, tmp_path: Path):
+def test_vue_element(shared_screen: SharedScreen, tmp_path: Path):
     vue_component_path = tmp_path / 'component.vue'
     vue_component_path.write_text('''
         <template>
@@ -39,7 +39,7 @@ def test_vue_element(screen: Screen, tmp_path: Path):
         MyVueElement()
         ui.label('This is not red')
 
-    screen.open('/')
-    assert screen.find('Template shows up').value_of_css_property('color') == 'rgba(255, 0, 0, 1)'
-    assert screen.find('JavaScript runs').value_of_css_property('color') == 'rgba(255, 0, 0, 1)'
-    assert screen.find('This is not red').value_of_css_property('color') == 'rgba(0, 0, 0, 1)'
+    shared_screen.open('/')
+    assert shared_screen.find('Template shows up').value_of_css_property('color') == 'rgba(255, 0, 0, 1)'
+    assert shared_screen.find('JavaScript runs').value_of_css_property('color') == 'rgba(255, 0, 0, 1)'
+    assert shared_screen.find('This is not red').value_of_css_property('color') == 'rgba(0, 0, 0, 1)'

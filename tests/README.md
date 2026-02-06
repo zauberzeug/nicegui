@@ -68,3 +68,54 @@ Have a look at the existing tests for more examples.
 Internally we use selenium-fixture (see `conftest.py`).
 To access the webdriver directly you can use the `screen.selenium` property.
 Have a look at https://selenium-python.readthedocs.io/getting-started.html for documentation of the available method calls to the webdriver.
+
+## SharedScreen vs Screen
+
+For faster test execution, most tests use `SharedScreen` instead of `Screen`. SharedScreen reuses a single server across multiple tests, avoiding the overhead of starting/stopping the server for each test.
+
+### When to use SharedScreen
+
+Use `SharedScreen` for tests that:
+- Only define UI pages and interact with them via the browser
+- Don't require custom server configuration
+- Don't use lifecycle handlers
+
+```py
+from nicegui import ui
+from nicegui.testing import SharedScreen
+
+def test_hello_world(shared_screen: SharedScreen):
+    @ui.page('/')
+    def page():
+        ui.label('Hello, world')
+
+    shared_screen.open('/')
+    shared_screen.should_contain('Hello, world')
+```
+
+### When to use Screen
+
+Use the regular `Screen` fixture for tests that:
+- Modify `ui_run_kwargs` (e.g., `storage_secret`, `favicon`, `prod_js`, `root`)
+- Use `@pytest.mark.nicegui_main_file`
+- Use lifecycle handlers (`app.on_startup()`, `app.on_shutdown()`, `app.shutdown()`)
+- Directly manipulate `Server.instance`
+
+```py
+from nicegui import ui
+from nicegui.testing import Screen
+
+def test_with_storage(screen: Screen):
+    screen.ui_run_kwargs['storage_secret'] = 'test_secret'
+    # ... test code
+```
+
+### Mixing SharedScreen with User fixture
+
+`SharedScreen` and `User` fixtures can be freely mixed in the same pytest session. SharedScreen automatically detects when the event loop has been reset (e.g., by a previous User test) and recovers by restarting the shared server.
+
+This means you can run all tests together:
+
+```bash
+pytest tests/
+```

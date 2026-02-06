@@ -2,10 +2,10 @@ from selenium.webdriver import Keys
 from selenium.webdriver.common.action_chains import ActionChains
 
 from nicegui import ui
-from nicegui.testing import Screen
+from nicegui.testing import SharedScreen
 
 
-def test_init(screen: Screen) -> None:
+def test_init(shared_screen: SharedScreen) -> None:
     @ui.page('/')
     async def main():
         default_terminal = ui.xterm()
@@ -15,38 +15,38 @@ def test_init(screen: Screen) -> None:
         ui.label(f'Default terminal size: {await default_terminal.get_columns()}x{await default_terminal.get_rows()}')
         ui.label(f'Custom terminal size: {await custom_terminal.get_columns()}x{await custom_terminal.get_rows()}')
 
-    screen.open('/')
-    screen.should_contain('Default terminal size: 80x24')  # See https://softwareengineering.stackexchange.com/q/148754
-    screen.should_contain('Custom terminal size: 132x43')
+    shared_screen.open('/')
+    shared_screen.should_contain('Default terminal size: 80x24')  # See https://softwareengineering.stackexchange.com/q/148754
+    shared_screen.should_contain('Custom terminal size: 132x43')
 
 
-def test_write(screen: Screen) -> None:
+def test_write(shared_screen: SharedScreen) -> None:
     @ui.page('/')
     def main():
         terminal = ui.xterm()
         ui.button('Write Hello!', on_click=lambda: terminal.write('Hello!'))
         ui.button('Write 😎', on_click=lambda: terminal.write(b'\xf0\x9f\x98\x8e\n\r'))
-        ui.button('Write link', on_click=lambda: terminal.writeln(f'http://localhost:{screen.PORT}/subpage'))
+        ui.button('Write link', on_click=lambda: terminal.writeln(f'http://localhost:{shared_screen.PORT}/subpage'))
 
     @ui.page('/subpage')
     def subpage():
         ui.label('This is the subpage')
 
-    screen.open('/')
-    screen.click('Write Hello!')
-    screen.click('Write 😎')
-    screen.wait(0.1)
-    assert screen.find_by_class('xterm').text == 'Hello!😎\n '
+    shared_screen.open('/')
+    shared_screen.click('Write Hello!')
+    shared_screen.click('Write 😎')
+    shared_screen.wait(0.1)
+    assert shared_screen.find_by_class('xterm').text == 'Hello!😎\n '
 
     # `Ctrl`+ click on a link opens the link in a new tab
-    screen.click('Write link')
-    link = screen.find('subpage')
-    ActionChains(screen.selenium).key_down(Keys.CONTROL).click(link).key_up(Keys.CONTROL).perform()
-    screen.switch_to(1)  # Switch to the new tab opened by the link
-    screen.should_contain('This is the subpage')
+    shared_screen.click('Write link')
+    link = shared_screen.find('subpage')
+    ActionChains(shared_screen.selenium).key_down(Keys.CONTROL).click(link).key_up(Keys.CONTROL).perform()
+    shared_screen.switch_to(1)  # Switch to the new tab opened by the link
+    shared_screen.should_contain('This is the subpage')
 
 
-def test_bell_and_data_events(screen: Screen) -> None:
+def test_bell_and_data_events(shared_screen: SharedScreen) -> None:
     counts = {'bell': 0, 'data': 0}
 
     @ui.page('/')
@@ -57,20 +57,20 @@ def test_bell_and_data_events(screen: Screen) -> None:
         ui.button('Ring Bell', on_click=lambda: terminal.write('\x07'))
         ui.button('Input 456', on_click=lambda: terminal.input('456'))
 
-    screen.open('/')
-    screen.click('Ring Bell')
-    screen.wait(0.1)
+    shared_screen.open('/')
+    shared_screen.click('Ring Bell')
+    shared_screen.wait(0.1)
     assert counts == {'bell': 1, 'data': 0}
 
-    screen.find_by_class('xterm').click()
-    screen.type('123')
-    screen.click('Input 456')
-    screen.wait(0.1)
+    shared_screen.find_by_class('xterm').click()
+    shared_screen.type('123')
+    shared_screen.click('Input 456')
+    shared_screen.wait(0.1)
     assert counts == {'bell': 1, 'data': 4}  # The `input` method triggers a single data event
-    screen.should_not_contain('123456')  # Neither typing nor the `input` method write text on the terminal
+    shared_screen.should_not_contain('123456')  # Neither typing nor the `input` method write text on the terminal
 
 
-def test_fit_and_resize_event(screen: Screen) -> None:
+def test_fit_and_resize_event(shared_screen: SharedScreen) -> None:
     @ui.page('/')
     def main():
         with ui.card().classes('size-96'):
@@ -79,13 +79,13 @@ def test_fit_and_resize_event(screen: Screen) -> None:
         ui.button('Fill', on_click=lambda: terminal.classes('size-full'))
         ui.button('Fit', on_click=terminal.fit)
 
-    screen.open('/')
-    screen.click('Fill')
-    screen.click('Fit')
-    screen.should_contain('Size: 37x20')  # depends on size of the container (ui.card)
+    shared_screen.open('/')
+    shared_screen.click('Fill')
+    shared_screen.click('Fit')
+    shared_screen.should_contain('Size: 37x20')  # depends on size of the container (ui.card)
 
 
-def test_run_terminal_method(screen: Screen) -> None:
+def test_run_terminal_method(shared_screen: SharedScreen) -> None:
     @ui.page('/')
     async def main():
         terminal = ui.xterm({'rows': 4})
@@ -96,6 +96,6 @@ def test_run_terminal_method(screen: Screen) -> None:
         await terminal.run_terminal_method(':select', '8', 'this.rows', '10')  # 10 chars starting at column 8, row 4
         ui.label(f'Selected text: {await terminal.run_terminal_method("getSelection")}')
 
-    screen.open('/')
-    screen.should_contain('Hello NiceGUI!')
-    screen.should_contain('Selected text: nicegui.io')
+    shared_screen.open('/')
+    shared_screen.should_contain('Hello NiceGUI!')
+    shared_screen.should_contain('Selected text: nicegui.io')

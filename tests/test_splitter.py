@@ -1,8 +1,8 @@
 from nicegui import ui
-from nicegui.testing import Screen
+from nicegui.testing import SharedScreen
 
 
-def test_splitter(screen: Screen):
+def test_splitter(shared_screen: SharedScreen):
     @ui.page('/')
     def page():
         with ui.splitter() as splitter:
@@ -12,8 +12,8 @@ def test_splitter(screen: Screen):
                 ui.label('Right hand side.')
         ui.label().bind_text_from(splitter, 'value')
 
-    screen.open('/')
-    screen.should_contain('Left hand side.')
-    screen.should_contain('Right hand side.')
-    screen.should_contain('50')
+    shared_screen.open('/')
+    shared_screen.should_contain('Left hand side.')
+    shared_screen.should_contain('Right hand side.')
+    shared_screen.should_contain('50')
     # TODO: programmatically move splitter

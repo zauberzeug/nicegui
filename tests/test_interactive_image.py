@@ -4,19 +4,19 @@ import pytest
 from selenium.webdriver.common.action_chains import ActionChains
 
 from nicegui import app, ui
-from nicegui.testing import Screen
+from nicegui.testing import SharedScreen
 
 URL_PATH1 = '/test1.jpg'
 URL_PATH2 = '/test2.jpg'
 
 
 @pytest.fixture(autouse=True)
-def provide_image_files(nicegui_reset_globals):
+def provide_image_files(nicegui_reset_globals_for_shared_server):
     app.add_static_file(local_file=Path(__file__).parent / 'media' / 'test1.jpg', url_path=URL_PATH1)
     app.add_static_file(local_file=Path(__file__).parent / 'media' / 'test2.jpg', url_path=URL_PATH2)
 
 
-def test_set_source_in_tab(screen: Screen):
+def test_set_source_in_tab(shared_screen: SharedScreen):
     """https://github.com/zauberzeug/nicegui/issues/488"""
     @ui.page('/')
     async def page():
@@ -32,29 +32,29 @@ def test_set_source_in_tab(screen: Screen):
         await ui.context.client.connected()
         img.set_source(URL_PATH1)
 
-    screen.open('/')
-    screen.wait(0.5)
-    assert screen.find_by_tag('img').get_attribute('src').endswith(URL_PATH1)
-    screen.click('B')
-    screen.wait(0.5)
-    screen.click('A')
-    assert screen.find_by_tag('img').get_attribute('src').endswith(URL_PATH1)
+    shared_screen.open('/')
+    shared_screen.wait(0.5)
+    assert shared_screen.find_by_tag('img').get_attribute('src').endswith(URL_PATH1)
+    shared_screen.click('B')
+    shared_screen.wait(0.5)
+    shared_screen.click('A')
+    assert shared_screen.find_by_tag('img').get_attribute('src').endswith(URL_PATH1)
 
 
 @pytest.mark.parametrize('cross', [True, False])
-def test_with_cross(screen: Screen, cross: bool):
+def test_with_cross(shared_screen: SharedScreen, cross: bool):
     @ui.page('/')
     def page():
         ui.interactive_image(URL_PATH1, content='<circle cx="100" cy="100" r="15" />', cross=cross, sanitize=False)
 
-    screen.open('/')
-    screen.find_by_tag('svg')
-    with screen.implicitly_wait(0.5):
-        assert len(screen.find_all_by_tag('line')) == (2 if cross else 0)
-        assert len(screen.find_all_by_tag('circle')) == 1
+    shared_screen.open('/')
+    shared_screen.find_by_tag('svg')
+    with shared_screen.implicitly_wait(0.5):
+        assert len(shared_screen.find_all_by_tag('line')) == (2 if cross else 0)
+        assert len(shared_screen.find_all_by_tag('circle')) == 1
 
 
-def test_replace_interactive_image(screen: Screen):
+def test_replace_interactive_image(shared_screen: SharedScreen):
     @ui.page('/')
     def page():
         with ui.row() as container:
@@ -65,15 +65,15 @@ def test_replace_interactive_image(screen: Screen):
                 ui.interactive_image(URL_PATH2)
         ui.button('Replace', on_click=replace)
 
-    screen.open('/')
-    assert (screen.find_by_tag('img').get_attribute('src') or '').endswith(URL_PATH1)
-    screen.click('Replace')
-    screen.wait(0.5)
-    assert (screen.find_by_tag('img').get_attribute('src') or '').endswith(URL_PATH2)
+    shared_screen.open('/')
+    assert (shared_screen.find_by_tag('img').get_attribute('src') or '').endswith(URL_PATH1)
+    shared_screen.click('Replace')
+    shared_screen.wait(0.5)
+    assert (shared_screen.find_by_tag('img').get_attribute('src') or '').endswith(URL_PATH2)
 
 
 @pytest.mark.parametrize('cross', [True, False])
-def test_mousemove_event(screen: Screen, cross: bool):
+def test_mousemove_event(shared_screen: SharedScreen, cross: bool):
     counter = {'value': 0}
     ii = None
 
@@ -83,9 +83,9 @@ def test_mousemove_event(screen: Screen, cross: bool):
         ii = ui.interactive_image(URL_PATH1, cross=cross, events=['mousemove'],
                                   on_mouse=lambda: counter.update(value=counter['value'] + 1))
 
-    screen.open('/')
-    element = screen.find_element(ii)
-    ActionChains(screen.selenium) \
+    shared_screen.open('/')
+    element = shared_screen.find_element(ii)
+    ActionChains(shared_screen.selenium) \
         .move_to_element_with_offset(element, 0, 0) \
         .pause(0.5) \
         .move_by_offset(10, 10) \
@@ -94,37 +94,37 @@ def test_mousemove_event(screen: Screen, cross: bool):
     assert counter['value'] > 0
 
 
-def test_loaded_event(screen: Screen):
+def test_loaded_event(shared_screen: SharedScreen):
     @ui.page('/')
     def page():
         ii = ui.interactive_image(URL_PATH1)
         ii.on('loaded', lambda: ui.label('loaded'))
         ui.button('Change Source', on_click=lambda: ii.set_source(URL_PATH2))
 
-    screen.open('/')
-    screen.click('Change Source')
-    screen.should_contain('loaded')
-    assert (screen.find_by_tag('img').get_attribute('src') or '').endswith(URL_PATH2)
+    shared_screen.open('/')
+    shared_screen.click('Change Source')
+    shared_screen.should_contain('loaded')
+    assert (shared_screen.find_by_tag('img').get_attribute('src') or '').endswith(URL_PATH2)
 
 
-def test_add_layer(screen: Screen):
+def test_add_layer(shared_screen: SharedScreen):
     @ui.page('/')
     def page():
         ii = ui.interactive_image(
             URL_PATH1, content='<rect x="0" y="0" width="100" height="100" fill="red" />', sanitize=False)
         ii.add_layer(content='<circle cx="100" cy="100" r="15" />')
 
-    screen.open('/')
-    screen.find_by_tag('svg')
-    with screen.implicitly_wait(0.5):
-        assert len(screen.find_all_by_tag('rect')) == 1
-        assert len(screen.find_all_by_tag('circle')) == 1
+    shared_screen.open('/')
+    shared_screen.find_by_tag('svg')
+    with shared_screen.implicitly_wait(0.5):
+        assert len(shared_screen.find_all_by_tag('rect')) == 1
+        assert len(shared_screen.find_all_by_tag('circle')) == 1
 
 
-def test_xss_sanitization(screen: Screen):
+def test_xss_sanitization(shared_screen: SharedScreen):
     @ui.page('/')
     def page():
         ui.interactive_image(size=(100, 100), content='<rect width="100" height="100" onclick="alert(\'XSS\')" />')
 
-    screen.open('/')
-    assert screen.find_all_by_tag('rect')[0].get_attribute('onclick') is None
+    shared_screen.open('/')
+    assert shared_screen.find_all_by_tag('rect')[0].get_attribute('onclick') is None

@@ -1,8 +1,8 @@
 from nicegui import ui
-from nicegui.testing import Screen
+from nicegui.testing import SharedScreen
 
 
-def test_tree(screen: Screen):
+def test_tree(shared_screen: SharedScreen):
     @ui.page('/')
     def page():
         ui.tree([
@@ -10,21 +10,21 @@ def test_tree(screen: Screen):
             {'id': 'letters', 'children': [{'id': 'A'}, {'id': 'B'}]},
         ], label_key='id')
 
-    screen.open('/')
-    screen.should_contain('numbers')
-    screen.should_contain('letters')
-    screen.should_not_contain('1')
-    screen.should_not_contain('2')
-    screen.should_not_contain('A')
-    screen.should_not_contain('B')
+    shared_screen.open('/')
+    shared_screen.should_contain('numbers')
+    shared_screen.should_contain('letters')
+    shared_screen.should_not_contain('1')
+    shared_screen.should_not_contain('2')
+    shared_screen.should_not_contain('A')
+    shared_screen.should_not_contain('B')
 
-    screen.find_by_class('q-icon').click()
-    screen.wait(0.5)
-    screen.should_contain('1')
-    screen.should_contain('2')
+    shared_screen.find_by_class('q-icon').click()
+    shared_screen.wait(0.5)
+    shared_screen.should_contain('1')
+    shared_screen.should_contain('2')
 
 
-def test_expand_and_collapse_nodes(screen: Screen):
+def test_expand_and_collapse_nodes(shared_screen: SharedScreen):
     @ui.page('/')
     def page():
         tree = ui.tree([
@@ -37,38 +37,38 @@ def test_expand_and_collapse_nodes(screen: Screen):
         ui.button('Expand numbers', on_click=lambda: tree.expand(['numbers']))
         ui.button('Collapse numbers', on_click=lambda: tree.collapse(['numbers']))
 
-    screen.open('/')
-    screen.click('Expand all')
-    screen.wait(0.5)
-    screen.should_contain('1')
-    screen.should_contain('2')
-    screen.should_contain('A')
-    screen.should_contain('B')
+    shared_screen.open('/')
+    shared_screen.click('Expand all')
+    shared_screen.wait(0.5)
+    shared_screen.should_contain('1')
+    shared_screen.should_contain('2')
+    shared_screen.should_contain('A')
+    shared_screen.should_contain('B')
 
-    screen.click('Collapse all')
-    screen.wait(0.5)
-    screen.should_not_contain('1')
-    screen.should_not_contain('2')
-    screen.should_not_contain('A')
-    screen.should_not_contain('B')
+    shared_screen.click('Collapse all')
+    shared_screen.wait(0.5)
+    shared_screen.should_not_contain('1')
+    shared_screen.should_not_contain('2')
+    shared_screen.should_not_contain('A')
+    shared_screen.should_not_contain('B')
 
-    screen.click('Expand numbers')
-    screen.wait(0.5)
-    screen.should_contain('1')
-    screen.should_contain('2')
-    screen.should_not_contain('A')
-    screen.should_not_contain('B')
+    shared_screen.click('Expand numbers')
+    shared_screen.wait(0.5)
+    shared_screen.should_contain('1')
+    shared_screen.should_contain('2')
+    shared_screen.should_not_contain('A')
+    shared_screen.should_not_contain('B')
 
-    screen.click('Expand all')
-    screen.click('Collapse numbers')
-    screen.wait(0.5)
-    screen.should_not_contain('1')
-    screen.should_not_contain('2')
-    screen.should_contain('A')
-    screen.should_contain('B')
+    shared_screen.click('Expand all')
+    shared_screen.click('Collapse numbers')
+    shared_screen.wait(0.5)
+    shared_screen.should_not_contain('1')
+    shared_screen.should_not_contain('2')
+    shared_screen.should_contain('A')
+    shared_screen.should_contain('B')
 
 
-def test_select_deselect_node(screen: Screen):
+def test_select_deselect_node(shared_screen: SharedScreen):
     @ui.page('/')
     def page():
         tree = ui.tree([
@@ -80,15 +80,15 @@ def test_select_deselect_node(screen: Screen):
         ui.button('Deselect', on_click=tree.deselect)
         ui.label().bind_text_from(tree.props, 'selected', lambda x: f'Selected: {x}')
 
-    screen.open('/')
-    screen.click('Select')
-    screen.should_contain('Selected: 2')
+    shared_screen.open('/')
+    shared_screen.click('Select')
+    shared_screen.should_contain('Selected: 2')
 
-    screen.click('Deselect')
-    screen.should_contain('Selected: None')
+    shared_screen.click('Deselect')
+    shared_screen.should_contain('Selected: None')
 
 
-def test_tick_untick_node_or_nodes(screen: Screen):
+def test_tick_untick_node_or_nodes(shared_screen: SharedScreen):
     @ui.page('/')
     def page():
         tree = ui.tree([
@@ -102,23 +102,23 @@ def test_tick_untick_node_or_nodes(screen: Screen):
         ui.button('Untick all', on_click=tree.untick)
         ui.label().bind_text_from(tree.props, 'ticked', lambda x: f'Ticked: {sorted(x)}')
 
-    screen.open('/')
-    screen.should_contain('Ticked: []')
+    shared_screen.open('/')
+    shared_screen.should_contain('Ticked: []')
 
-    screen.click('Tick some')
-    screen.should_contain("Ticked: ['1', '2', 'B']")
+    shared_screen.click('Tick some')
+    shared_screen.should_contain("Ticked: ['1', '2', 'B']")
 
-    screen.click('Untick some')
-    screen.should_contain("Ticked: ['2']")
+    shared_screen.click('Untick some')
+    shared_screen.should_contain("Ticked: ['2']")
 
-    screen.click('Tick all')
-    screen.should_contain("Ticked: ['1', '2', 'A', 'B', 'letters', 'numbers']")
+    shared_screen.click('Tick all')
+    shared_screen.should_contain("Ticked: ['1', '2', 'A', 'B', 'letters', 'numbers']")
 
-    screen.click('Untick all')
-    screen.should_contain('Ticked: []')
+    shared_screen.click('Untick all')
+    shared_screen.should_contain('Ticked: []')
 
 
-def test_filter(screen: Screen):
+def test_filter(shared_screen: SharedScreen):
     @ui.page('/')
     def page():
         t = ui.tree([
@@ -126,12 +126,12 @@ def test_filter(screen: Screen):
         ], label_key='id', tick_strategy='leaf-filtered').expand()
         ui.button('Filter', on_click=lambda: t.set_filter('a'))
 
-    screen.open('/')
-    screen.should_contain('Apple')
-    screen.should_contain('Banana')
-    screen.should_contain('Cherry')
+    shared_screen.open('/')
+    shared_screen.should_contain('Apple')
+    shared_screen.should_contain('Banana')
+    shared_screen.should_contain('Cherry')
 
-    screen.click('Filter')
-    screen.should_contain('Apple')
-    screen.should_contain('Banana')
-    screen.should_not_contain('Cherry')
+    shared_screen.click('Filter')
+    shared_screen.should_contain('Apple')
+    shared_screen.should_contain('Banana')
+    shared_screen.should_not_contain('Cherry')

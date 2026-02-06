@@ -2,24 +2,24 @@ import pytest
 from selenium.webdriver.common.by import By
 
 from nicegui import ui
-from nicegui.testing import Screen, User
+from nicegui.testing import SharedScreen, User
 
 
-def test_date_input(screen: Screen):
+def test_date_input(shared_screen: SharedScreen):
     @ui.page('/')
     def page():
         date_input = ui.date_input('Date')
         ui.label().bind_text_from(date_input, 'value', lambda value: f'date: {value}')
 
-    screen.open('/')
-    screen.should_contain('Date')
-    element = screen.selenium.find_element(By.XPATH, '//*[@aria-label="Date"]')
+    shared_screen.open('/')
+    shared_screen.should_contain('Date')
+    element = shared_screen.selenium.find_element(By.XPATH, '//*[@aria-label="Date"]')
     element.send_keys('2025-01-01')
-    screen.should_contain('date: 2025-01-01')
+    shared_screen.should_contain('date: 2025-01-01')
 
-    screen.click('edit_calendar')
-    screen.should_contain('Sat')
-    screen.should_contain('Jan 1')
+    shared_screen.click('edit_calendar')
+    shared_screen.should_contain('Sat')
+    shared_screen.should_contain('Jan 1')
 
 
 @pytest.mark.parametrize('range_input', [False, True])

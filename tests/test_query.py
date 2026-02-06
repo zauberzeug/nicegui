@@ -1,8 +1,8 @@
 from nicegui import ui
-from nicegui.testing import Screen
+from nicegui.testing import SharedScreen
 
 
-def test_query_body(screen: Screen):
+def test_query_body(shared_screen: SharedScreen):
     @ui.page('/')
     def page():
         ui.label('Hello')
@@ -15,56 +15,56 @@ def test_query_body(screen: Screen):
         ui.button('Data X = 2', on_click=lambda: ui.query('body').props('data-x=2'))
 
     def get_bg_classes() -> list[str]:
-        return [c for c in (screen.find_by_tag('body').get_attribute('class') or '').split() if c.startswith('bg-')]
+        return [c for c in (shared_screen.find_by_tag('body').get_attribute('class') or '').split() if c.startswith('bg-')]
 
-    screen.open('/')
-    screen.should_contain('Hello')
+    shared_screen.open('/')
+    shared_screen.should_contain('Hello')
     assert get_bg_classes() == ['bg-orange-100']
 
-    screen.click('Red background')
-    screen.wait(0.5)
+    shared_screen.click('Red background')
+    shared_screen.wait(0.5)
     assert get_bg_classes() == ['bg-red-100']
 
-    screen.click('Blue background')
-    screen.wait(0.5)
+    shared_screen.click('Blue background')
+    shared_screen.wait(0.5)
     assert get_bg_classes() == ['bg-blue-100']
 
-    screen.click('Small padding')
-    screen.wait(0.5)
-    assert screen.find_by_tag('body').value_of_css_property('padding') == '1px'
+    shared_screen.click('Small padding')
+    shared_screen.wait(0.5)
+    assert shared_screen.find_by_tag('body').value_of_css_property('padding') == '1px'
 
-    screen.click('Large padding')
-    screen.wait(0.5)
-    assert screen.find_by_tag('body').value_of_css_property('padding') == '10px'
+    shared_screen.click('Large padding')
+    shared_screen.wait(0.5)
+    assert shared_screen.find_by_tag('body').value_of_css_property('padding') == '10px'
 
-    screen.click('Data X = 1')
-    screen.wait(0.5)
-    assert screen.find_by_tag('body').get_attribute('data-x') == '1'
+    shared_screen.click('Data X = 1')
+    shared_screen.wait(0.5)
+    assert shared_screen.find_by_tag('body').get_attribute('data-x') == '1'
 
-    screen.click('Data X = 2')
-    screen.wait(0.5)
-    assert screen.find_by_tag('body').get_attribute('data-x') == '2'
+    shared_screen.click('Data X = 2')
+    shared_screen.wait(0.5)
+    assert shared_screen.find_by_tag('body').get_attribute('data-x') == '2'
 
 
-def test_query_multiple_divs(screen: Screen):
+def test_query_multiple_divs(shared_screen: SharedScreen):
     @ui.page('/')
     def page():
         ui.label('A')
         ui.label('B')
         ui.button('Add border', on_click=lambda: ui.query('div').style('border: 1px solid black'))
 
-    screen.open('/')
-    screen.click('Add border')
-    screen.wait(0.5)
-    assert screen.find('A').value_of_css_property('border') == '1px solid rgb(0, 0, 0)'
-    assert screen.find('B').value_of_css_property('border') == '1px solid rgb(0, 0, 0)'
+    shared_screen.open('/')
+    shared_screen.click('Add border')
+    shared_screen.wait(0.5)
+    assert shared_screen.find('A').value_of_css_property('border') == '1px solid rgb(0, 0, 0)'
+    assert shared_screen.find('B').value_of_css_property('border') == '1px solid rgb(0, 0, 0)'
 
 
-def test_query_with_css_variables(screen: Screen):
+def test_query_with_css_variables(shared_screen: SharedScreen):
     @ui.page('/')
     def page():
         ui.add_body_html('<div id="element">Test</div>')
         ui.query('#element').style('--color: red; color: var(--color)')
 
-    screen.open('/')
-    assert screen.find('Test').value_of_css_property('color') == 'rgba(255, 0, 0, 1)'
+    shared_screen.open('/')
+    assert shared_screen.find('Test').value_of_css_property('color') == 'rgba(255, 0, 0, 1)'
