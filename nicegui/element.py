@@ -4,7 +4,7 @@ import inspect
 import re
 import weakref
 from collections.abc import Callable, Iterator, Sequence
-from copy import copy
+from copy import copy, deepcopy
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, ClassVar, cast
 
@@ -43,37 +43,22 @@ def _compute_diff(current: dict[str, Any], previous: dict[str, Any]) -> dict[str
     """Compute the difference between current and previous element state.
 
     Returns a dict containing only changed properties, or None if nothing changed.
-    For nested dicts, only changed keys are included.
+    For nested dicts, recursively computes diff at arbitrary depth.
     For other values (lists, strings, etc.), the entire value is included if changed.
-    Uses None values to signal that a property should be reset to default.
+    Uses None values to signal that a property should be deleted.
     """
     diff: dict[str, Any] = {}
-
-    all_keys = set(current.keys()) | set(previous.keys())
-
-    for key in all_keys:
-        curr_val = current.get(key)
-        prev_val = previous.get(key)
-
+    for key in current.keys() | previous.keys():
+        curr_val, prev_val = current.get(key), previous.get(key)
         if curr_val == prev_val:
             continue
-
-        if isinstance(curr_val, dict) or isinstance(prev_val, dict):
-            curr_dict = curr_val or {}
-            prev_dict = prev_val or {}
-            nested_diff: dict[str, Any] = {}
-            nested_keys = set(curr_dict.keys()) | set(prev_dict.keys())
-            for nested_key in nested_keys:
-                nested_curr = curr_dict.get(nested_key)
-                nested_prev = prev_dict.get(nested_key)
-                if nested_curr != nested_prev:
-                    nested_diff[nested_key] = nested_curr
-            if nested_diff:
-                diff[key] = nested_diff
+        if isinstance(curr_val, dict):
+            nested = _compute_diff(curr_val, prev_val if isinstance(prev_val, dict) else {})
+            if nested:
+                diff[key] = nested
         else:
             diff[key] = curr_val
-
-    return diff if diff else None
+    return diff or None
 
 
 class Element(Visibility):
@@ -446,7 +431,7 @@ class Element(Visibility):
         """
         if self._last_sent is not None:
             if 'props' in self._last_sent:
-                self._last_sent['props'][prop] = json.loads(json.dumps(value))
+                self._last_sent['props'][prop] = deepcopy(value)
 
     def _to_dict_full(self) -> dict[str, Any]:
         """Return full element dict and update _last_sent.
@@ -454,7 +439,7 @@ class Element(Visibility):
         Calls _to_dict() exactly once. Use for initial element transmission.
         """
         current = self._to_dict()
-        self._last_sent = json.loads(json.dumps(current))
+        self._last_sent = deepcopy(current)
         return current
 
     def _to_dict_diff(self) -> dict[str, Any] | None:
@@ -465,7 +450,7 @@ class Element(Visibility):
         """
         current = self._to_dict()
         previous = self._last_sent
-        self._last_sent = json.loads(json.dumps(current))
+        self._last_sent = deepcopy(current)
 
         if previous is None:
             return current

@@ -106,24 +106,18 @@ function replaceUndefinedAttributes(element) {
 
 function deepMergeElement(target, source) {
   const result = { ...target };
-
   for (const key of Object.keys(source)) {
     const sourceVal = source[key];
-
-    if (sourceVal !== null && typeof sourceVal === "object" && !Array.isArray(sourceVal)) {
-      result[key] = { ...(target[key] || {}) };
-      for (const [nestedKey, nestedVal] of Object.entries(sourceVal)) {
-        if (nestedVal === null) {
-          delete result[key][nestedKey];
-        } else {
-          result[key][nestedKey] = nestedVal;
-        }
-      }
+    if (sourceVal === null) {
+      delete result[key];
+    } else if (typeof sourceVal === "object" && !Array.isArray(sourceVal)) {
+      const targetVal = target[key];
+      const isObj = targetVal !== null && typeof targetVal === "object" && !Array.isArray(targetVal);
+      result[key] = deepMergeElement(isObj ? targetVal : {}, sourceVal);
     } else {
       result[key] = sourceVal;
     }
   }
-
   return result;
 }
 
