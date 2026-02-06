@@ -446,7 +446,7 @@ class Element(Visibility):
         """Return diff from last sent state and update _last_sent.
 
         Calls _to_dict() exactly once. Use for differential updates.
-        Returns None if nothing changed.
+        Returns None if nothing changed (unless element has update_method).
         """
         current = self._to_dict()
         previous = self._last_sent
@@ -454,7 +454,10 @@ class Element(Visibility):
 
         if previous is None:
             return current
-        return _compute_diff(current, previous)
+        diff = _compute_diff(current, previous)
+        if diff is None and self._update_method:
+            return {}  # ensure element is included so Vue update method gets called
+        return diff
 
     def run_method(self, name: str, *args: Any, timeout: float = 1) -> AwaitableResponse:
         """Run a method on the client side.
