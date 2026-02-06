@@ -39,6 +39,43 @@ TAG_CHAR = TAG_START_CHAR + r'|-|\.|[0-9]|\u00B7|[\u0300-\u036F]|[\u203F-\u2040]
 TAG_PATTERN = re.compile(fr'^({TAG_START_CHAR})({TAG_CHAR})*$')
 
 
+def _compute_diff(current: dict[str, Any], previous: dict[str, Any]) -> dict[str, Any] | None:
+    """Compute the difference between current and previous element state.
+
+    Returns a dict containing only changed properties, or None if nothing changed.
+    For nested dicts, only changed keys are included.
+    For other values (lists, strings, etc.), the entire value is included if changed.
+    Uses None values to signal that a property should be reset to default.
+    """
+    diff: dict[str, Any] = {}
+
+    all_keys = set(current.keys()) | set(previous.keys())
+
+    for key in all_keys:
+        curr_val = current.get(key)
+        prev_val = previous.get(key)
+
+        if curr_val == prev_val:
+            continue
+
+        if isinstance(curr_val, dict) or isinstance(prev_val, dict):
+            curr_dict = curr_val or {}
+            prev_dict = prev_val or {}
+            nested_diff: dict[str, Any] = {}
+            nested_keys = set(curr_dict.keys()) | set(prev_dict.keys())
+            for nested_key in nested_keys:
+                nested_curr = curr_dict.get(nested_key)
+                nested_prev = prev_dict.get(nested_key)
+                if nested_curr != nested_prev:
+                    nested_diff[nested_key] = nested_curr
+            if nested_diff:
+                diff[key] = nested_diff
+        else:
+            diff[key] = curr_val
+
+    return diff if diff else None
+
+
 class Element(Visibility):
     component: Component | None = None
     exposed_libraries: ClassVar[list[Library]] = []
@@ -73,6 +110,7 @@ class Element(Visibility):
         self.default_slot = self.add_slot('default')
         self._update_method: str | None = None
         self._deleted: bool = False
+        self._last_sent: dict[str, Any] | None = None
 
         client.elements[self.id] = self
         self._parent_slot: weakref.ref[Slot] | None = None
@@ -399,6 +437,39 @@ class Element(Visibility):
         if self.is_deleted:
             return
         self.client.outbox.enqueue_update(self)
+
+    def _set_client_prop(self, prop: str, value: Any) -> None:
+        """Mark a prop as already known by the client, avoiding unnecessary transmission.
+
+        This is used for LOOPBACK=False value elements where the client updates the value
+        locally without waiting for server confirmation.
+        """
+        if self._last_sent is not None:
+            if 'props' in self._last_sent:
+                self._last_sent['props'][prop] = json.loads(json.dumps(value))
+
+    def _to_dict_full(self) -> dict[str, Any]:
+        """Return full element dict and update _last_sent.
+
+        Calls _to_dict() exactly once. Use for initial element transmission.
+        """
+        current = self._to_dict()
+        self._last_sent = json.loads(json.dumps(current))
+        return current
+
+    def _to_dict_diff(self) -> dict[str, Any] | None:
+        """Return diff from last sent state and update _last_sent.
+
+        Calls _to_dict() exactly once. Use for differential updates.
+        Returns None if nothing changed.
+        """
+        current = self._to_dict()
+        previous = self._last_sent
+        self._last_sent = json.loads(json.dumps(current))
+
+        if previous is None:
+            return current
+        return _compute_diff(current, previous)
 
     def run_method(self, name: str, *args: Any, timeout: float = 1) -> AwaitableResponse:
         """Run a method on the client side.

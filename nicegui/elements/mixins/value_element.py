@@ -40,6 +40,10 @@ class ValueElement(Element):
             self._send_update_on_value_change = self.LOOPBACK is True
             self.set_value(self._event_args_to_value(e))
             self._send_update_on_value_change = True
+            if self.LOOPBACK is False:
+                model_value = self._props.get(self.VALUE_PROP)
+                if model_value == e.args or str(model_value) == str(e.args):
+                    self._set_client_prop(self.VALUE_PROP, model_value)
         self.on(f'update:{self.VALUE_PROP}', handle_change, [None], throttle=throttle)
 
     def on_value_change(self, callback: Handler[ValueChangeEventArguments]) -> Self:
