@@ -99,9 +99,16 @@ class Screen:
                     raise RuntimeError('The NiceGUI server has stopped running') from e
 
     def close(self) -> None:
-        """Close the browser."""
+        """Close the browser tab.
+
+        When the driver is session-scoped, closing the last window would invalidate
+        the session. Instead, we navigate to about:blank to trigger disconnection.
+        """
         if self.is_open:
-            self.selenium.close()
+            if len(self.selenium.window_handles) > 1:
+                self.selenium.close()
+            else:
+                self.selenium.get('about:blank')
 
     def switch_to(self, tab_id: int) -> None:
         """Switch to the tab with the given index, or create it if it does not exist."""
