@@ -98,6 +98,7 @@ class Client:
 
         self._head_html = ''
         self._body_html = ''
+        self._csp_nonce = ''  # Store CSP nonce for the lifetime of the client
 
         self.storage = ObservableDict()
 
@@ -163,6 +164,18 @@ class Client:
         }
         vue_html, vue_styles, vue_scripts, imports, js_imports, js_imports_urls = \
             generate_resources(prefix, self.elements.values())
+
+        # Get CSP nonce from request state (set by CSPMiddleware) and store it in the client
+        csp_nonce = getattr(request.state, 'csp_nonce', '')
+        self._csp_nonce = csp_nonce
+
+        # Import helper to inject nonces into HTML
+        from .functions.html import _inject_nonce_to_html
+
+        # Inject nonces into ALL head and body HTML (shared and instance-specific)
+        head_html_with_nonce = _inject_nonce_to_html(self.head_html, csp_nonce)
+        body_html_with_nonce = _inject_nonce_to_html(self.body_html, csp_nonce)
+
         return templates.TemplateResponse(
             request=request,
             name='index.html',
@@ -170,8 +183,8 @@ class Client:
                 'request': request,
                 'version': __version__,
                 'elements': elements.translate(HTML_ESCAPE_TABLE),
-                'head_html': self.head_html,
-                'body_html': '<style>' + '\n'.join(vue_styles) + '</style>\n' + self.body_html + '\n' + '\n'.join(vue_html),
+                'head_html': head_html_with_nonce,
+                'body_html': '<style>' + '\n'.join(vue_styles) + '</style>\n' + body_html_with_nonce + '\n' + '\n'.join(vue_html),
                 'vue_scripts': '\n'.join(vue_scripts),
                 'imports': json.dumps(imports),
                 'js_imports': '\n'.join(js_imports),
@@ -192,6 +205,7 @@ class Client:
                 'socket_io_js_query_params': socket_io_js_query_params,
                 'socket_io_js_extra_headers': core.app.config.socket_io_js_extra_headers,
                 'socket_io_js_transports': core.app.config.socket_io_js_transports,
+                'csp_nonce': csp_nonce,
             },
             status_code=status_code,
             headers={'Cache-Control': 'no-store', 'X-NiceGUI-Content': 'page'},

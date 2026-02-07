@@ -9,7 +9,7 @@
       content="{{ ({'True': 'dark', 'False': 'light'}).get(dark, 'normal') }}"
     />
     <link href="{{ favicon_url }}" rel="shortcut icon" />
-    <style>
+    <style{% if csp_nonce %} nonce="{{ csp_nonce }}"{% endif %}>
       @layer theme, base, quasar, nicegui, components, utilities, overrides, quasar_importants;
       @import url("{{ prefix | safe }}/_nicegui/{{version}}/static/fonts.css") layer(base);
       {% if prod_js %}
@@ -36,11 +36,11 @@
         }
       }
     </style>
-    <script type="importmap">
+    <script{% if csp_nonce %} nonce="{{ csp_nonce }}"{% endif %} type="importmap">
       {"imports": {{ imports | safe }}}
     </script>
-    <script>
-      addStyle = (c) => document.head.append(Object.assign(document.createElement("style"), { textContent: c }));
+    <script{% if csp_nonce %} nonce="{{ csp_nonce }}"{% endif %}>
+      addStyle = (c) => document.head.append(Object.assign(document.createElement("style"), { textContent: c, {% if csp_nonce %}nonce: "{{ csp_nonce }}"{% endif %} }));
     </script>
     {{ head_html | safe }}
     <!-- prevent Prettier from removing this line -->
@@ -49,14 +49,14 @@
     {% endfor %}
     <!-- prevent Prettier from removing this line -->
     {% if tailwind %}
-    <style type="text/tailwindcss">
+    <style{% if csp_nonce %} nonce="{{ csp_nonce }}"{% endif %} type="text/tailwindcss">
       @custom-variant dark (&:where(body.body--dark, body.body--dark *));
     </style>
     {% endif %}
     <!-- prevent Prettier from removing this line -->
     {% if unocss %}
-    <script defer src="{{ prefix | safe }}/_nicegui/{{version}}/static/unocss/preset-{{unocss}}.global.js"></script>
-    <script>
+    <script{% if csp_nonce %} nonce="{{ csp_nonce }}"{% endif %} defer src="{{ prefix | safe }}/_nicegui/{{version}}/static/unocss/preset-{{unocss}}.global.js"></script>
+    <script{% if csp_nonce %} nonce="{{ csp_nonce }}"{% endif %}>
       window.__unocss = {
         presets: [
           () => window.__unocss_runtime.presets.preset{{unocss.title()}}({
@@ -76,8 +76,8 @@
         },
       };
     </script>
-    <script defer src="{{ prefix | safe }}/_nicegui/{{version}}/static/unocss/core.global.js"></script>
-    <style>
+    <script{% if csp_nonce %} nonce="{{ csp_nonce }}"{% endif %} defer src="{{ prefix | safe }}/_nicegui/{{version}}/static/unocss/core.global.js"></script>
+    <style{% if csp_nonce %} nonce="{{ csp_nonce }}"{% endif %}>
       #app.nicegui-unocss-loading {
         visibility: hidden;
       }
@@ -85,22 +85,22 @@
     {% endif %}
   </head>
   <body>
-    <script defer src="{{ prefix | safe }}/_nicegui/{{version}}/static/socket.io.min.js"></script>
+    <script{% if csp_nonce %} nonce="{{ csp_nonce }}"{% endif %} defer src="{{ prefix | safe }}/_nicegui/{{version}}/static/socket.io.min.js"></script>
     {% if tailwind %}
-    <script defer src="{{ prefix | safe }}/_nicegui/{{version}}/static/tailwindcss.min.js"></script>
+    <script{% if csp_nonce %} nonce="{{ csp_nonce }}"{% endif %} defer src="{{ prefix | safe }}/_nicegui/{{version}}/static/tailwindcss.min.js"></script>
     {% endif %}
-    <script type="module">
+    <script{% if csp_nonce %} nonce="{{ csp_nonce }}"{% endif %} type="module">
       import * as Vue from "vue";
       globalThis.Vue = Vue;
     </script>
     {% if prod_js %}
-    <script defer src="{{ prefix | safe }}/_nicegui/{{version}}/static/quasar.umd.prod.js"></script>
+    <script{% if csp_nonce %} nonce="{{ csp_nonce }}"{% endif %} defer src="{{ prefix | safe }}/_nicegui/{{version}}/static/quasar.umd.prod.js"></script>
     {% else %}
-    <script defer src="{{ prefix | safe }}/_nicegui/{{version}}/static/quasar.umd.js"></script>
+    <script{% if csp_nonce %} nonce="{{ csp_nonce }}"{% endif %} defer src="{{ prefix | safe }}/_nicegui/{{version}}/static/quasar.umd.js"></script>
     {% endif %}
-    <script defer src="{{ prefix | safe }}/_nicegui/{{version}}/static/nicegui.js"></script>
+    <script{% if csp_nonce %} nonce="{{ csp_nonce }}"{% endif %} defer src="{{ prefix | safe }}/_nicegui/{{version}}/static/nicegui.js"></script>
 
-    <script defer src="{{ prefix | safe }}/_nicegui/{{version}}/static/lang/{{ language }}.umd.prod.js"></script>
+    <script{% if csp_nonce %} nonce="{{ csp_nonce }}"{% endif %} defer src="{{ prefix | safe }}/_nicegui/{{version}}/static/lang/{{ language }}.umd.prod.js"></script>
     {{ body_html | safe }}
 
     <div id="app" {% if unocss %}class="nicegui-unocss-loading" {% endif %}></div>
@@ -112,7 +112,7 @@
       <span>{{ translations.message_too_long }}</span>
       <span>{{ translations.message_too_long_body }}</span>
     </div>
-    <script type="module">
+    <script{% if csp_nonce %} nonce="{{ csp_nonce }}"{% endif %} type="module">
       // Load DOMPurify for HTML sanitization, polyfill for browsers without native setHTML
       if (typeof Element.prototype.setHTML !== "function") {
         const { default: DOMPurify } = await import("dompurify");

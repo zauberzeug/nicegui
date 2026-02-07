@@ -9,6 +9,8 @@ from ..language import Language
 @dataclass(**KWONLY_SLOTS)
 class AppConfig:
     endpoint_documentation: Literal['none', 'internal', 'page', 'all'] = 'none'
+    csp_enabled: bool = False  # Disabled by default due to limitations with dynamic HTML injection
+    csp_extra_directives: list[str] = field(default_factory=list)
     socket_io_js_query_params: dict = field(default_factory=dict)
     socket_io_js_extra_headers: dict = field(default_factory=dict)
     socket_io_js_transports: list[Literal['websocket', 'polling']] = \
