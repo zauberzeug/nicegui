@@ -7,17 +7,17 @@ doc.title('Security Best Practices')
 
 doc.text('Security Model', '''
     NiceGUI provides secure defaults and built-in protections, but **developers must write secure code**.
-    
+
     While most can, not all UI components can safely handle untrusted input. Understanding which ones require validation is essential.
 
     **Framework provides:**
-    
-    - Secure defaults if possible, 
-    - Protection mechanisms, 
+
+    - Secure defaults if possible,
+    - Protection mechanisms,
     - Prompt vulnerability fixes
 
     **Developers must:**
-    
+
     - Use Common Sense,
     - Keep sanitization enabled for untrusted content,
     - Validate user input if necessitated,
@@ -35,7 +35,7 @@ doc.text('Security Model', '''
 def common_sense_demo():
     import ast
 
-    user_input = ui.input('Enter a Python literal', placeholder="[1,2]")
+    user_input = ui.input('Enter a Python literal', placeholder='[1,2]')
     result = ui.label()
 
     def safe_evaluate():
@@ -58,24 +58,24 @@ doc.text('', '''
 
 @doc.demo('Component Selection', '''
     Pick the most secure element to have NiceGUI work for you as much as possible.
-         
-    **Secure by default** (considering `sanitize=True` if applicable): 
-    
-    - `ui.html()`, 
-    - `ui.markdown()`, 
-    - `ui.chat_message()`, 
+
+    **Secure by default** (considering `sanitize=True` if applicable):
+
+    - `ui.html()`,
+    - `ui.markdown()`,
+    - `ui.chat_message()`,
     - `ui.interactive_image()`
-    - Any other element which serves a dedicated purpose, for which it is easy for NiceGUI to defend arbitrary user input. 
+    - Any other element which serves a dedicated purpose, for which it is easy for NiceGUI to defend arbitrary user input.
 
     **You must validate, as the library can't distinguish the good and the bad**:
-    
-    - `ui.navigate.to()`, 
-    - `ui.link()`, 
+
+    - `ui.navigate.to()`,
+    - `ui.link()`,
     - `element.style()`
 
-    **Never with user input, unless you know what you are doing**: 
-    
-    - `ui.add_head_html()`, 
+    **Never with user input, unless you know what you are doing**:
+
+    - `ui.add_head_html()`,
     - `ui.add_body_html()`,
     - `ui.add_css()`
 ''')
@@ -96,9 +96,9 @@ doc.text('', '''
 
 
 @doc.demo('URL Validation', '''
-    As `javascript:` URLs have their legitimate purpose in allowing a link to 
-    execute JavaScript without round-trip server involvement, NiceGUI does not validate URL schemes. 
-    
+    As `javascript:` URLs have their legitimate purpose in allowing a link to
+    execute JavaScript without round-trip server involvement, NiceGUI does not validate URL schemes.
+
     You must validate user URLs to prevent `javascript:` URL injection.
 ''')
 def url_validation_demo():
@@ -145,9 +145,9 @@ doc.text('', '''
 
 
 @doc.demo('CSS Injection', '''
-    As legitimate CSS, [CSS data exfiltration techniques](https://portswigger.net/research/blind-css-exfiltration) 
-    and malicious CSS cannot be distinguished by the library, element style properties are NOT escaped. 
-    
+    As legitimate CSS, [CSS data exfiltration techniques](https://portswigger.net/research/blind-css-exfiltration)
+    and malicious CSS cannot be distinguished by the library, element style properties are NOT escaped.
+
     Validate style values before applying user input:
 ''')
 def css_injection_demo():
