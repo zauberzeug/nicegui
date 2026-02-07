@@ -3,6 +3,16 @@ import plotly.graph_objects as go
 
 from nicegui import ui
 from nicegui.testing import Screen
+import pytest
+
+
+
+@pytest.fixture(autouse=True)
+def enable_csp_for_module(enable_csp):
+    """Enable CSP for all tests in this module to verify CSP compatibility."""
+    yield
+
+
 
 
 def test_plotly(screen: Screen):

@@ -5,6 +5,7 @@ Need to ensure that we get the same output regardless of the serializer used.
 """
 
 import sys
+import pytest
 from datetime import date, datetime
 
 import numpy as np
@@ -15,6 +16,12 @@ try:
     import orjson  # noqa: F401
 except ImportError:
     pass
+
+
+@pytest.fixture(autouse=True)
+def enable_csp_for_module(enable_csp):
+    """Enable CSP for all tests in this module to verify CSP compatibility."""
+    yield
 
 
 @pytest.mark.skipif('orjson' not in sys.modules, reason='requires the orjson library.')

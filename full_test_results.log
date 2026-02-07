@@ -1,0 +1,18 @@
+........................................................................ [  9%]
+........................................................................ [ 18%]
+........................................................................ [ 27%]
+........................................................................ [ 37%]
+.................................................................xx..... [ 46%]
+..............E
+==================================== ERRORS ====================================
+______________ ERROR at teardown of test_navigate_to_absolute_url ______________
+JavaScript console error:
+{'level': 'SEVERE', 'message': "https://www.google.com/ - Network location provider at 'https://www.googleapis.com/' : Returned error code 400.", 'source': 'network', 'timestamp': 1770482803707}
+----------------------------- Captured stdout call -----------------------------
+NiceGUI ready to go on http://localhost:3392, and http://192.168.215.4:3392
+--------------------------- Captured stdout teardown ---------------------------
+Storing screenshot to screenshots/test_navigate_to_absolute_url.png
+=========================== short test summary info ============================
+ERROR tests/test_navigate.py::test_navigate_to_absolute_url - Failed: JavaScr...
+!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!!
+372 passed, 2 xfailed, 1 error in 699.14s (0:11:39)

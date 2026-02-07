@@ -6,6 +6,14 @@ from selenium.webdriver.common.action_chains import ActionChains
 from nicegui import app, ui
 from nicegui.testing import Screen
 
+
+@pytest.fixture(autouse=True)
+def enable_csp_for_module(enable_csp):
+    """Enable CSP for all tests in this module to verify CSP compatibility."""
+    yield
+
+
+
 URL_PATH1 = '/test1.jpg'
 URL_PATH2 = '/test2.jpg'
 

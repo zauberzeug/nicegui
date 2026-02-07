@@ -9,6 +9,14 @@ from nicegui import app, ui
 from nicegui.testing import Screen
 
 
+@pytest.fixture(autouse=True)
+def enable_csp_for_module(enable_csp):
+    """Enable CSP for all tests in this module to verify CSP compatibility."""
+    yield
+
+
+
+
 @pytest.fixture
 def test_route() -> Generator[str, None, None]:
     TEST_ROUTE = '/theme.json'

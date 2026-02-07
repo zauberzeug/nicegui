@@ -9,6 +9,14 @@ from nicegui.style import Style
 from nicegui.testing import Screen
 
 
+@pytest.fixture(autouse=True)
+def enable_csp_for_module(enable_csp):
+    """Enable CSP for all tests in this module to verify CSP compatibility."""
+    yield
+
+
+
+
 def test_classes(screen: Screen):
     label = None
 

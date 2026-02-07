@@ -1,7 +1,16 @@
 from collections import namedtuple
 
+import pytest
+
 from nicegui import ui
 from nicegui.testing import Screen
+
+
+@pytest.fixture(autouse=True)
+def enable_csp_for_module(enable_csp):
+    """Enable CSP for all tests in this module to verify CSP compatibility."""
+    yield
+
 
 ColorCase = namedtuple('ColorCase', ['label', 'color', 'result'])
 

@@ -9,6 +9,14 @@ from nicegui.events import ClickEventArguments
 from nicegui.testing import Screen
 
 
+@pytest.fixture(autouse=True)
+def enable_csp_for_module(enable_csp):
+    """Enable CSP for all tests in this module to verify CSP compatibility."""
+    yield
+
+
+
+
 def click_sync_no_args():
     ui.label('click_sync_no_args')
 

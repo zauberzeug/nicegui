@@ -4,6 +4,16 @@ from PIL import Image
 
 from nicegui import app, ui
 from nicegui.testing import Screen
+import pytest
+
+
+
+@pytest.fixture(autouse=True)
+def enable_csp_for_module(enable_csp):
+    """Enable CSP for all tests in this module to verify CSP compatibility."""
+    yield
+
+
 
 example_file = Path(__file__).parent / '../examples/slideshow/slides/slide1.jpg'
 example_data = ('data:image/png;base64,'

@@ -8,6 +8,22 @@ from nicegui import ui
 from nicegui.testing import Screen
 
 
+@pytest.fixture(autouse=True)
+def enable_csp_for_module(enable_csp):
+    """Enable CSP for all tests in this module to verify CSP compatibility."""
+    yield
+
+
+@pytest.fixture
+def disable_csp():
+    """Temporarily disable CSP for tests that use dynamic CSS (ui.add_css)."""
+    from nicegui import core
+    original_value = core.app.config.csp_enabled
+    core.app.config.csp_enabled = False
+    yield
+    core.app.config.csp_enabled = original_value
+
+
 def test_open_close_dialog(screen: Screen):
     @ui.page('/')
     def page():
@@ -56,7 +72,8 @@ def test_await_dialog(screen: Screen):
     screen.should_contain('Result: None')
 
 
-def test_dialog_scroll_behavior(screen: Screen):
+def test_dialog_scroll_behavior(screen: Screen, disable_csp):
+    """This test uses ui.add_css() which is incompatible with CSP."""
     @ui.page('/')
     def page():
         ui.add_css('html { scroll-behavior: smooth }')
