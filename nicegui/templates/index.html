@@ -113,13 +113,20 @@
       <span>{{ translations.message_too_long_body }}</span>
     </div>
     <script type="module">
-      // Load DOMPurify for HTML sanitization, polyfill for browsers without native setHTML
+      {% if has_sethtml %}
       if (typeof Element.prototype.setHTML !== "function") {
-        const { default: DOMPurify } = await import("dompurify");
-        Element.prototype.setHTML = function (html) {
-          this.innerHTML = DOMPurify.sanitize(html);
-        };
+        document.cookie = "nicegui_has_sethtml=0; path=/; SameSite=Strict; max-age=0";
+        location.reload();
+        throw new Error("Reloading page to reset nicegui_has_sethtml cookie");
       }
+      {% else %}
+      import DOMPurify from "dompurify";
+      if (typeof Element.prototype.setHTML !== "function") {
+        Element.prototype.setHTML = function (html) {this.innerHTML = DOMPurify.sanitize(html)};
+      } else {
+        document.cookie = "nicegui_has_sethtml=1; path=/; SameSite=Strict; max-age=31536000";
+      }
+      {% endif %}
 
       const app = createApp(parseElements(String.raw`{{ elements | safe }}`), {
         version: "{{ version }}",
