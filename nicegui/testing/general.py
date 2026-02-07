@@ -26,6 +26,8 @@ def prepare_simulation() -> None:
         prod_js=True,
         show_welcome_message=False,
     )
+    # CSP is disabled by default in app_config.py
+    # Tests that want to test with CSP should explicitly enable it
 
 
 @contextlib.contextmanager

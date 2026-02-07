@@ -35,3 +35,28 @@ def nicegui_reset_globals():
     """Reset the global state of the NiceGUI package."""
     with general.nicegui_reset_globals():
         yield
+
+
+@pytest.fixture
+def enable_csp():
+    """Enable CSP for a specific test to verify CSP-compatible functionality.
+
+    By default, CSP is disabled in tests because many NiceGUI features (like ui.add_css())
+    use dynamic style injection which is incompatible with strict CSP. Use this fixture
+    for tests that verify core functionality works with CSP enabled.
+
+    Example:
+        def test_basic_elements(screen: Screen, enable_csp):
+            # Test that basic UI elements work with CSP
+            @ui.page('/')
+            def page():
+                ui.label('Test')
+                ui.button('Click me')
+            screen.open('/')
+            screen.should_contain('Test')
+    """
+    from .. import core
+    original_value = core.app.config.csp_enabled
+    core.app.config.csp_enabled = True
+    yield
+    core.app.config.csp_enabled = original_value

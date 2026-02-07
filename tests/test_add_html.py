@@ -5,6 +5,7 @@ from nicegui.testing import Screen
 
 
 def test_add_head_html(screen: Screen) -> None:
+    """Test dynamic HTML injection."""
     @ui.page('/')
     def page():
         ui.add_head_html(r'<style>.my-label {background: rgb(0, 0, 255)}</style>')
@@ -22,6 +23,8 @@ def test_add_head_html(screen: Screen) -> None:
 @pytest.mark.parametrize('shared', [False, True])
 @pytest.mark.parametrize('delayed', [False, True])
 def test_css(screen: Screen, shared: bool, delayed: bool):
+    """Test CSS injection."""
+
     @ui.page('/')
     async def page():
         if delayed:
@@ -42,6 +45,8 @@ def test_css(screen: Screen, shared: bool, delayed: bool):
 @pytest.mark.parametrize('shared', [False, True])
 @pytest.mark.parametrize('delayed', [False, True])
 def test_scss(screen: Screen, shared: bool, delayed: bool):
+    """Test SCSS injection."""
+
     @ui.page('/')
     async def page():
         if delayed:
@@ -66,6 +71,8 @@ def test_scss(screen: Screen, shared: bool, delayed: bool):
 @pytest.mark.parametrize('shared', [False, True])
 @pytest.mark.parametrize('delayed', [False, True])
 def test_sass(screen: Screen, shared: bool, delayed: bool):
+    """Test SASS injection."""
+
     @ui.page('/')
     async def page():
         if delayed:
