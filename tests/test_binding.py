@@ -2,6 +2,7 @@ import copy
 import weakref
 
 import pytest
+from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 
 from nicegui import binding, ui
@@ -413,19 +414,18 @@ def test_nested_strict_mode_validation(screen: Screen):
 
     @ui.page('/')
     def page():
-        with pytest.raises(KeyError, match='nested key'):
+        with pytest.raises(KeyError, match=r'non-existing key "a->b->c"'):
             ui.input().bind_value(data, ('a', 'b', 'c'), strict=True)
 
     screen.open('/')
 
 
 def test_single_key_strict_mode_validation(screen: Screen):
-    """Test that strict mode error messages distinguish single keys from nested keys."""
+    """Test that strict mode validates single keys correctly."""
     data = {}
 
     @ui.page('/')
     def page():
-        # Single key should say "key" not "nested key"
         with pytest.raises(KeyError, match=r'non-existing key "missing"'):
             ui.input().bind_value(data, 'missing', strict=True)
 
@@ -460,18 +460,23 @@ def test_nested_visibility_binding(screen: Screen):
 
     @ui.page('/')
     def page():
-        with ui.column().bind_visibility_from(data, ('ui', 'sidebar', 'visible')):
-            ui.label('Content').classes('test-label')
+        with ui.column().bind_visibility_from(data, ('ui', 'sidebar', 'visible')).classes('test-column'):
+            ui.label('Content')
 
     screen.open('/')
     screen.should_contain('Content')
+    # Verify the column is initially visible (no 'hidden' class)
+    columns = screen.selenium.find_elements(By.CSS_SELECTOR, '.test-column.hidden')
+    assert len(columns) == 0, 'Column should be visible when visibility is True'
 
-    # Verify the column is visible (no 'hidden' class)
+    # Change visibility to False and verify
     data['ui']['sidebar']['visible'] = False
     screen.wait(0.5)
+    # Content should still exist in DOM but be hidden
+    screen.should_not_contain('Content')
     # Verify the 'hidden' class is applied when visibility is False
-    assert screen.selenium.find_elements('css selector', '.hidden .test-label'), \
-        'Label should be hidden when visibility is False'
+    columns = screen.selenium.find_elements(By.CSS_SELECTOR, '.test-column.hidden')
+    assert len(columns) > 0, 'Column should be hidden when visibility is False'
 
 
 def test_generic_bind_with_tuple(screen: Screen):
@@ -513,9 +518,16 @@ def test_nested_enabled_binding(screen: Screen):
     screen.open('/')
     screen.wait(0.1)
     # Verify the button is disabled initially
-    button = screen.selenium.find_element('css selector', '.test-button')
+    button = screen.selenium.find_element(By.CSS_SELECTOR, '.test-button')
     assert button.get_attribute('aria-disabled') == 'true' or button.get_attribute('disabled') is not None, \
         'Button should be disabled when enabled is False'
+
+    # Change to enabled and verify
+    data['ui']['button']['enabled'] = True
+    screen.wait(0.5)
+    button = screen.selenium.find_element(By.CSS_SELECTOR, '.test-button')
+    assert button.get_attribute('aria-disabled') != 'true' and button.get_attribute('disabled') is None, \
+        'Button should be enabled when enabled is True'
 
 
 def test_default_parameter_still_works(screen: Screen):
