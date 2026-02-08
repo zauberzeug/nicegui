@@ -374,6 +374,28 @@ async def test_user_storage_is_pruned(screen: Screen):
     assert len(app.storage._users) == 0
 
 
+async def test_prune_user_storage_with_module_level_ui(tmp_path):
+    # https://github.com/zauberzeug/nicegui/issues/5480#issuecomment-3862254308
+    from nicegui.testing.user_simulation import user_simulation
+
+    (tmp_path / 'myplugin.py').write_text('from nicegui import ui\nui.button()\n')
+    (tmp_path / 'main.py').write_text(
+        'import importlib, sys\n'
+        'sys.path.insert(0, __import__("os").path.dirname(__file__))\n'
+        'from fastapi import FastAPI\n'
+        'from nicegui import ui\n'
+        'importlib.import_module("myplugin")\n'
+        'ui.run_with(FastAPI(), storage_secret="test")\n'
+    )
+
+    async with user_simulation(main_file=tmp_path / 'main.py'):
+        assert any(c._request is None for c in Client.instances.values())  # pylint: disable=protected-access
+        await nicegui.prune_user_storage(force=True)
+        if core.script_client is not None:
+            core.script_client.delete()
+            await asyncio.sleep(0)
+
+
 async def test_awaiting_backup_scheduled_during_teardown(user: User, tmp_path):
     @ui.page('/')
     def page():
