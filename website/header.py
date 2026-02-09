@@ -16,11 +16,11 @@ def add_head_html() -> None:
     ui.add_head_html(HEADER_HTML + f'<style>{STYLE_CSS}</style>')
     ui.add_head_html('''
         <script>
-            document.addEventListener('click', function(e) {
-                const link = e.target.closest('a[href]');
+            document.addEventListener("click", function(e) {
+                const link = e.target.closest("a[href]");
                 if (link && link.hostname && link.hostname !== location.hostname) {
-                    link.target = '_blank';
-                    link.rel = 'noopener';
+                    link.target = "_blank";
+                    link.rel = "noopener";
                 }
             });
         </script>

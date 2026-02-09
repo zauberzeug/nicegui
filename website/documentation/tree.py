@@ -7,7 +7,10 @@ nodes: list[dict[str, Any]] = []
 
 
 def build_tree() -> None:
-    """Build tree by recursively collecting documentation pages and parts."""
+    """Build tree by recursively collecting documentation pages and parts.
+
+    NOTE: Also sorts intro parts in-place so both the tree and page rendering use alphabetical order.
+    """
     nodes.clear()
     for module, _ in tiles:
         page = registry[module.__name__.rsplit('.', 1)[-1]]
