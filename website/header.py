@@ -14,6 +14,17 @@ STYLE_CSS = (Path(__file__).parent / 'static' / 'style.css').read_text(encoding=
 def add_head_html() -> None:
     """Add the code from header.html and reference style.css."""
     ui.add_head_html(HEADER_HTML + f'<style>{STYLE_CSS}</style>')
+    ui.add_head_html('''
+        <script>
+            document.addEventListener('click', function(e) {
+                const link = e.target.closest('a[href]');
+                if (link && link.hostname && link.hostname !== location.hostname) {
+                    link.target = '_blank';
+                    link.rel = 'noopener';
+                }
+            });
+        </script>
+    ''')
     if os.environ.get('ENABLE_ANALYTICS', 'false').lower() == 'true':
         ui.add_head_html(
             '<script defer data-domain="nicegui.io" src="https://plausible.io/js/script.hash.outbound-links.js">'
