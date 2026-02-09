@@ -11,11 +11,26 @@ def build_tree() -> None:
     nodes.clear()
     for module, _ in tiles:
         page = registry[module.__name__.rsplit('.', 1)[-1]]
+        _sort_intro_parts(page)
         nodes.append({
             'id': page.name,
             'title': _plain(page.title),
             'children': _children(page),
         })
+
+
+def _sort_intro_parts(page: DocumentationPage) -> None:
+    """Sort contiguous groups of intro parts alphabetically by title."""
+    parts = page.parts
+    i = 0
+    while i < len(parts):
+        if parts[i].link is not None:
+            start = i
+            while i < len(parts) and parts[i].link is not None:
+                i += 1
+            parts[start:i] = sorted(parts[start:i], key=lambda p: (p.title or '').lower())
+        else:
+            i += 1
 
 
 def _children(page: DocumentationPage) -> list[dict[str, Any]]:
