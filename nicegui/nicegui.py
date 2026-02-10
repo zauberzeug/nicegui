@@ -11,12 +11,13 @@ import socketio
 from fastapi import HTTPException, Request
 from fastapi.responses import FileResponse, Response
 
-from . import air, background_tasks, binding, core, favicon, helpers, json, run, welcome
+from . import air, background_tasks, binding, core, favicon, helpers, run, welcome
 from .app import App
 from .client import Client
 from .dependencies import dynamic_resources, esm_modules, js_components, libraries, resources, vue_components
 from .error import error_content
 from .json import NiceGUIJSONResponse
+from .json.orjson_wrapper import HAS_NUMPY
 from .logging import log
 from .page import page
 from .page_arguments import PageArguments
@@ -46,9 +47,27 @@ class SocketIoApp(socketio.ASGIApp):
         return await super().__call__(scope, receive, send)
 
 
+def _make_msgpack_packet_class():
+    """Create a MsgPackPacket subclass that handles custom types like NumPy arrays and Decimals."""
+    from decimal import Decimal
+
+    from socketio.msgpack_packet import MsgPackPacket
+
+    def _msgpack_default(obj):
+        if HAS_NUMPY:
+            import numpy as np  # pylint: disable=import-outside-toplevel
+            if isinstance(obj, (np.ndarray, np.generic)):
+                return obj.tolist()
+        if isinstance(obj, Decimal):
+            return float(obj)
+        raise TypeError(f'Object of type {obj.__class__.__name__} is not msgpack serializable')
+
+    return MsgPackPacket.configure(dumps_default=_msgpack_default)
+
+
 core.app = app = App(default_response_class=NiceGUIJSONResponse, lifespan=_lifespan)
 core.app.storage.general.initialize_sync()
-core.sio = sio = socketio.AsyncServer(async_mode='asgi', cors_allowed_origins='*', json=json)  # custom orjson wrapper
+core.sio = sio = socketio.AsyncServer(async_mode='asgi', cors_allowed_origins='*', serializer=_make_msgpack_packet_class())
 sio_app = SocketIoApp(socketio_server=sio, socketio_path='/socket.io')
 app.mount('/_nicegui_ws/', sio_app)
 

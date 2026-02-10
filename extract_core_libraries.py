@@ -70,8 +70,8 @@ _extract_headwind_css(NODE_MODULES / 'quasar' / 'dist' / 'quasar.rtl.css')
 
 shutil.copy2(NODE_MODULES / '@tailwindcss' / 'browser' / 'dist' / 'index.global.js', STATIC / 'tailwindcss.min.js')
 
-shutil.copy2(NODE_MODULES / 'socket.io' / 'client-dist' / 'socket.io.min.js', STATIC / 'socket.io.min.js')
-shutil.copy2(NODE_MODULES / 'socket.io' / 'client-dist' / 'socket.io.min.js.map', STATIC / 'socket.io.min.js.map')
+shutil.copy2(NODE_MODULES / 'socket.io' / 'client-dist' / 'socket.io.msgpack.min.js', STATIC / 'socket.io.min.js')
+shutil.copy2(NODE_MODULES / 'socket.io' / 'client-dist' / 'socket.io.msgpack.min.js.map', STATIC / 'socket.io.min.js.map')
 
 _minify_js(NODE_MODULES / 'sass' / 'sass.default.js', STATIC / 'sass.default.js')
 _minify_js(NODE_MODULES / 'sass' / 'sass.dart.js', STATIC / 'sass.dart.js')
