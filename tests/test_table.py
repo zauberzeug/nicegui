@@ -66,6 +66,7 @@ def test_filter(screen: Screen):
     def page():
         table = ui.table(columns=columns(), rows=rows())
         ui.input('Search by name').bind_value(table, 'filter')
+        ui.label().bind_text_from(table, 'filter', lambda value: f'Filter: {value}')
 
     screen.open('/')
     screen.should_contain('Alice')
@@ -74,6 +75,7 @@ def test_filter(screen: Screen):
 
     element = screen.selenium.find_element(By.XPATH, '//*[@aria-label="Search by name"]')
     element.send_keys('e')
+    screen.should_contain('Filter: e')
     screen.should_contain('Alice')
     screen.should_not_contain('Bob')
     screen.should_contain('Lionel')
