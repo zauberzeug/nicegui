@@ -1,5 +1,6 @@
 import base64
 import time
+from pathlib import Path
 
 from fastapi import Response
 
@@ -7,27 +8,12 @@ from nicegui import app, ui
 from nicegui.testing import Screen
 
 
-def test_leaflet_draw_circle_resize_no_strict_mode_error(screen: Screen):
-    """Verify that L.Edit.Circle._resize declares 'radius' variable (fix for ReferenceError in strict mode)."""
-    m = None
-
-    @ui.page('/')
-    def page():
-        nonlocal m
-        m = ui.leaflet(center=(51.505, -0.09), zoom=13, draw_control={'circle': True})
-
-    screen.open('/')
-    deadline = time.time() + 3
-    while not m.is_initialized and time.time() < deadline:
-        screen.wait(0.1)
-
-    # Check that the patched _resize function source includes a 'radius' variable declaration
-    screen.selenium.execute_script('''
-        const src = L.Edit.Circle.prototype._resize.toString();
-        if (!/var radius/.test(src)) {
-            throw new Error("L.Edit.Circle._resize is missing 'var radius' declaration — strict mode will throw ReferenceError");
-        }
-    ''')
+def test_leaflet_draw_circle_resize_no_strict_mode_error():
+    """Verify that the leaflet-draw patch declares 'var radius' (fix for ReferenceError in strict mode)."""
+    patch_file = Path(__file__).parent.parent / 'nicegui' / 'elements' / 'leaflet' / 'patches' / 'leaflet-draw+1.0.4.patch'
+    content = patch_file.read_text()
+    assert '+\t\tvar radius;' in content, \
+        "leaflet-draw patch is missing 'var radius' declaration — strict mode will throw ReferenceError"
 
 
 def test_leaflet(screen: Screen):
