@@ -49,9 +49,9 @@ class SocketIoApp(socketio.ASGIApp):
 
 def _make_msgpack_packet_class():
     """Create a MsgPackPacket subclass that handles custom types like NumPy arrays and Decimals."""
-    from decimal import Decimal
+    from decimal import Decimal  # pylint: disable=import-outside-toplevel
 
-    from socketio.msgpack_packet import MsgPackPacket
+    from socketio.msgpack_packet import MsgPackPacket  # pylint: disable=import-outside-toplevel
 
     def _msgpack_default(obj):
         if HAS_NUMPY:
