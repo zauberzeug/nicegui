@@ -101,8 +101,8 @@ class Screen:
     def close(self) -> None:
         """Close the browser tab.
 
-        When the driver is session-scoped, closing the last window would invalidate
-        the session. Instead, we navigate to about:blank to trigger disconnection.
+        When the driver is session-scoped, closing the last window would invalidate the session.
+        Instead, we navigate to about:blank to trigger disconnection.
         """
         if self.is_open:
             if len(self.selenium.window_handles) > 1:
