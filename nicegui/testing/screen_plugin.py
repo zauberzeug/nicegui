@@ -77,20 +77,6 @@ def nicegui_driver(nicegui_chrome_options: webdriver.ChromeOptions) -> Generator
     driver_.quit()
 
 
-def _reset_browser_state(driver: webdriver.Chrome) -> None:
-    """Reset browser state between tests when reusing the driver."""
-    while len(driver.window_handles) > 1:
-        driver.switch_to.window(driver.window_handles[-1])
-        driver.close()
-    driver.switch_to.window(driver.window_handles[0])
-    driver.execute_cdp_cmd('Storage.clearDataForOrigin', {
-        'origin': f'http://localhost:{Screen.PORT}',
-        'storageTypes': 'cookies,local_storage,session_storage',
-    })
-    driver.get('about:blank')
-    driver.get_log('browser')
-
-
 @pytest.fixture
 def screen(nicegui_reset_globals,  # noqa: F811, pylint: disable=unused-argument
            nicegui_remove_all_screenshots,  # pylint: disable=unused-argument
@@ -121,3 +107,17 @@ def screen(nicegui_reset_globals,  # noqa: F811, pylint: disable=unused-argument
         screen_.stop_server()
         if DOWNLOAD_DIR.exists():
             shutil.rmtree(DOWNLOAD_DIR)
+
+
+def _reset_browser_state(driver: webdriver.Chrome) -> None:
+    """Reset browser state between tests when reusing the driver."""
+    while len(driver.window_handles) > 1:
+        driver.switch_to.window(driver.window_handles[-1])
+        driver.close()
+    driver.switch_to.window(driver.window_handles[0])
+    driver.execute_cdp_cmd('Storage.clearDataForOrigin', {
+        'origin': f'http://localhost:{Screen.PORT}',
+        'storageTypes': 'cookies,local_storage,session_storage',
+    })
+    driver.get('about:blank')
+    driver.get_log('browser')
