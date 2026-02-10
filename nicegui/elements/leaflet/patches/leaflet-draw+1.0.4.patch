@@ -1,0 +1,12 @@
+diff --git a/node_modules/leaflet-draw/dist/leaflet.draw-src.js b/node_modules/leaflet-draw/dist/leaflet.draw-src.js
+index 8f42752..d9f43b8 100644
+--- a/node_modules/leaflet-draw/dist/leaflet.draw-src.js
++++ b/node_modules/leaflet-draw/dist/leaflet.draw-src.js
+@@ -2745,6 +2745,7 @@ L.Edit.Circle = L.Edit.CircleMarker.extend({
+ 
+ 	_resize: function (latlng) {
+ 		var moveLatLng = this._moveMarker.getLatLng();
++		var radius;
+ 
+ 		// Calculate the radius based on the version
+ 		if (L.GeometryUtil.isVersion07x()) {
