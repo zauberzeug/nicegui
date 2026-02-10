@@ -12,6 +12,8 @@ export default {
     this.themeObserver = new MutationObserver(updateTheme);
     this.themeObserver.observe(document.body, { attributes: true, attributeFilter: ["class"] });
     updateTheme();
+
+    this.$emit("gridMounted");
   },
   unmounted() {
     this.api?.destroy();
