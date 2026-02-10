@@ -173,11 +173,11 @@ def create() -> None:
                             with ui.link(target=SPONSORS['special'][sponsor]):
                                 img_path = Path(__file__).parent / 'static' / 'sponsors' / f'{sponsor}.webp'
                                 if img_path.exists():
-                                    ui.interactive_image(img_path).classes('h-12')
+                                    ui.interactive_image(f'/static/sponsors/{sponsor}.webp').classes('h-12')
                                 else:
-                                    ui.interactive_image(img_path.with_suffix('.light.webp')) \
+                                    ui.interactive_image(f'/static/sponsors/{sponsor}.light.webp') \
                                         .classes('h-12 block dark:!hidden')
-                                    ui.interactive_image(img_path.with_suffix('.dark.webp')) \
+                                    ui.interactive_image(f'/static/sponsors/{sponsor}.dark.webp') \
                                         .classes('h-12 hidden dark:!block')
                         for sponsor in SPONSORS['top']:
                             with ui.link(target=f'https://github.com/{sponsor}').classes('row items-center gap-2'):
