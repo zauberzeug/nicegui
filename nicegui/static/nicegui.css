@@ -57,8 +57,8 @@
 .nicegui-stepper .q-stepper__content {
   flex-grow: 1;
 }
-.nicegui-stepper .q-stepper__step-content,
-.nicegui-stepper .q-stepper__step-inner {
+.nicegui-stepper.q-stepper--horizontal .q-stepper__step-content,
+.nicegui-stepper.q-stepper--horizontal .q-stepper__step-inner {
   height: 100%;
 }
 .nicegui-step .q-stepper__nav {

@@ -292,10 +292,13 @@ def aggrid_handle_theme_change():
     (either from a CDN or from a self-hosted bundle)
     and passing `modules='enterprise'` to the `ui.aggrid` constructor.
 
+    Use `ui.aggrid.VERSION` (*since version 3.8.0*) to programmatically reference the AG Grid version used by NiceGUI.
+    This ensures compatibility when building custom CDN URLs.
+
     *Added in version 3.6.0*
 ''')
 def project_code():
-    # bundle_url = 'https://cdn.jsdelivr.net/npm/ag-grid-enterprise@34.2.0/+esm'
+    # bundle_url = f'https://cdn.jsdelivr.net/npm/ag-grid-enterprise@{ui.aggrid.VERSION}/+esm'
     # ui.aggrid.set_module_source(bundle_url)
 
     # ui.aggrid({

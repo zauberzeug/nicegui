@@ -27,9 +27,10 @@ def pytest_runtest_makereport(item, call):  # pylint: disable=unused-argument
     setattr(item, f'rep_{rep.when}', rep)
 
 
-@pytest.fixture
-def nicegui_chrome_options(chrome_options: webdriver.ChromeOptions) -> webdriver.ChromeOptions:
+@pytest.fixture(scope='session')
+def nicegui_chrome_options() -> webdriver.ChromeOptions:
     """Configure the Chrome options for the NiceGUI tests."""
+    chrome_options = webdriver.ChromeOptions()
     chrome_options.add_argument('disable-dev-shm-usage')
     chrome_options.add_argument('disable-search-engine-choice-screen')
     chrome_options.add_argument('no-sandbox')
@@ -45,16 +46,10 @@ def nicegui_chrome_options(chrome_options: webdriver.ChromeOptions) -> webdriver
         'download.prompt_for_download': False,  # To auto download the file
         'download.directory_upgrade': True,
     })
+    chrome_options.set_capability('goog:loggingPrefs', {'browser': 'ALL'})
     if 'CHROME_BINARY_LOCATION' in os.environ:
         chrome_options.binary_location = os.environ['CHROME_BINARY_LOCATION']
     return chrome_options
-
-
-@pytest.fixture
-def capabilities(capabilities: dict) -> dict:
-    """Configure the Chrome driver capabilities."""
-    capabilities['goog:loggingPrefs'] = {'browser': 'ALL'}
-    return capabilities
 
 
 @pytest.fixture(scope='session')
@@ -64,9 +59,9 @@ def nicegui_remove_all_screenshots() -> None:
         name.unlink()
 
 
-@pytest.fixture()
+@pytest.fixture(scope='session')
 def nicegui_driver(nicegui_chrome_options: webdriver.ChromeOptions) -> Generator[webdriver.Chrome, None, None]:
-    """Create a new Chrome driver instance."""
+    """Create a new Chrome driver instance (reused across tests in the session)."""
     for executable_path in (None, shutil.which('chromedriver'), 'chromedriver'):  # Required for ARM devcontainers
         try:
             s = Service(executable_path=executable_path)
@@ -90,6 +85,7 @@ def screen(nicegui_reset_globals,  # noqa: F811, pylint: disable=unused-argument
            caplog: pytest.LogCaptureFixture,
            ) -> Generator[Screen, None, None]:
     """Create a new SeleniumScreen fixture."""
+    _reset_browser_state(nicegui_driver)
     os.environ['NICEGUI_SCREEN_TEST_PORT'] = str(Screen.PORT)
     screen_ = Screen(nicegui_driver, caplog, request)
     try:
@@ -111,3 +107,17 @@ def screen(nicegui_reset_globals,  # noqa: F811, pylint: disable=unused-argument
         screen_.stop_server()
         if DOWNLOAD_DIR.exists():
             shutil.rmtree(DOWNLOAD_DIR)
+
+
+def _reset_browser_state(driver: webdriver.Chrome) -> None:
+    """Reset browser state between tests when reusing the driver."""
+    while len(driver.window_handles) > 1:
+        driver.switch_to.window(driver.window_handles[-1])
+        driver.close()
+    driver.switch_to.window(driver.window_handles[0])
+    driver.execute_cdp_cmd('Storage.clearDataForOrigin', {
+        'origin': f'http://localhost:{Screen.PORT}',
+        'storageTypes': 'cookies,local_storage,session_storage',
+    })
+    driver.get('about:blank')
+    driver.get_log('browser')

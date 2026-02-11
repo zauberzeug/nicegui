@@ -9,7 +9,7 @@
     "clean": "rimraf ./dist/*"
   },
   "dependencies": {
-    "mermaid": "^11.12.0"
+    "mermaid": "^11.12.2"
   },
   "overrides": {
     "lodash-es": "^4.17.23"

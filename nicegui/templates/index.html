@@ -113,6 +113,14 @@
       <span>{{ translations.message_too_long_body }}</span>
     </div>
     <script type="module">
+      // Load DOMPurify for HTML sanitization, polyfill for browsers without native setHTML
+      if (typeof Element.prototype.setHTML !== "function") {
+        const { default: DOMPurify } = await import("dompurify");
+        Element.prototype.setHTML = function (html) {
+          this.innerHTML = DOMPurify.sanitize(html);
+        };
+      }
+
       const app = createApp(parseElements(String.raw`{{ elements | safe }}`), {
         version: "{{ version }}",
         prefix: "{{ prefix | safe }}",
@@ -129,6 +137,14 @@
       {{ vue_scripts | safe }}
 
       app.mount("#app");
+
+      // Scroll to fragment after Vue mounts (browser's native scroll may have failed if element wasn't ready)
+      if (window.location.hash) {
+        Vue.nextTick(() => {
+          const fragment = window.location.hash.substring(1);
+          (document.getElementById(fragment) || document.querySelector(`a[name="${fragment}"]`))?.scrollIntoView();
+        });
+      }
     </script>
   </body>
 </html>

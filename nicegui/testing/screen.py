@@ -97,11 +97,19 @@ class Screen:
                 assert self.server_thread is not None
                 if not self.server_thread.is_alive():
                     raise RuntimeError('The NiceGUI server has stopped running') from e
+        self._wait_for_socket_idle()
 
     def close(self) -> None:
-        """Close the browser."""
+        """Close the browser tab.
+
+        When the driver is session-scoped, closing the last window would invalidate the session.
+        Instead, we navigate to about:blank to trigger disconnection.
+        """
         if self.is_open:
-            self.selenium.close()
+            if len(self.selenium.window_handles) > 1:
+                self.selenium.close()
+            else:
+                self.selenium.get('about:blank')
 
     def switch_to(self, tab_id: int) -> None:
         """Switch to the tab with the given index, or create it if it does not exist."""
@@ -250,6 +258,28 @@ class Screen:
     def wait(self, t: float) -> None:
         """Wait for the given number of seconds."""
         time.sleep(t)
+
+    def _wait_for_socket_idle(self) -> None:
+        """Wait until no new Socket.IO messages have been received for 100ms."""
+        self.selenium.execute_async_script(f'''
+            const callback = arguments[arguments.length - 1];
+            const deadline = Date.now() + {Screen.IMPLICIT_WAIT * 1000};
+            let lastId = window.nextMessageId || 0;
+            let stableSince = Date.now();
+            const check = () => {{
+                const currentId = window.nextMessageId || 0;
+                if (currentId !== lastId) {{
+                    lastId = currentId;
+                    stableSince = Date.now();
+                }}
+                if (Date.now() - stableSince >= 100 || Date.now() >= deadline) {{
+                    callback();
+                }} else {{
+                    setTimeout(check, 20);
+                }}
+            }};
+            setTimeout(check, 20);
+        ''')
 
     def shot(self, name: str, *, failed: bool) -> None:
         """Take a screenshot and store it in the screenshots directory."""
