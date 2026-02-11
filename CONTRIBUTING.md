@@ -409,16 +409,16 @@ This helps maintainers understand the origin of changes and smooths the review p
 
 Some agents add a `Co-authored-by` trailer automatically, but others do not.
 Some even silently **remove** existing co-authorship lines when amending or rebasing commits.
-If you find it missing, please include the appropriate line in your commit message:
+If you find it missing, please include the appropriate line for your agent in your commit message (pick one):
 
 ```
 Co-authored-by: copilot-swe-agent[bot] <198982749+Copilot@users.noreply.github.com>
 Co-authored-by: Claude Opus 4.6 <noreply@anthropic.com>
-Co-Authored-By: opencode <noreply@opencode.ai>
+Co-authored-by: opencode <noreply@opencode.ai>
 ```
 
 > [!TIP]
-> Edits are welcome to add new co-authorship lines for other coding agents not yet listed here.
+> PRs are welcome to add co-authorship lines for other coding agents not yet listed here.
 
 ## YouTube
 
