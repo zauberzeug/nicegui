@@ -2,6 +2,7 @@ import asyncio
 import re
 from typing import Literal
 
+import httpx
 import pytest
 from fastapi.responses import PlainTextResponse
 from selenium.webdriver.common.by import By
@@ -336,3 +337,22 @@ def test_warning_if_response_takes_too_long(screen: Screen):
     screen.allowed_js_errors.append('/ - Failed to load resource')
     screen.open('/')
     screen.assert_py_logger('WARNING', re.compile('Response for / not ready after 0.5 seconds'))
+
+
+def test_status_code(screen: Screen):
+    @ui.page('/')
+    def page():
+        ui.status_code(404)
+        ui.label('not found')
+
+    screen.start_server()
+    assert httpx.get(f'http://localhost:{Screen.PORT}/').status_code == 404
+
+
+def test_status_code_default(screen: Screen):
+    @ui.page('/')
+    def page():
+        ui.label('hello')
+
+    screen.start_server()
+    assert httpx.get(f'http://localhost:{Screen.PORT}/').status_code == 200
