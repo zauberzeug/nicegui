@@ -402,6 +402,24 @@ To get started:
 When submitting a PR, please make sure that the code follows the existing coding style and that all tests are passing.
 If you're adding a new feature, please include tests that cover the new functionality.
 
+### AI Co-Authorship
+
+If you used an AI coding agent to help write your PR, please check for co-authorship attribution in your commit messages.
+This helps maintainers understand the origin of changes and smooths the review process.
+
+Some agents add a `Co-authored-by` trailer automatically, but others do not.
+Some even silently **remove** existing co-authorship lines when amending or rebasing commits.
+If you find it missing, please include the appropriate line for your agent in your commit message (pick one):
+
+```
+Co-authored-by: copilot-swe-agent[bot] <198982749+Copilot@users.noreply.github.com>
+Co-authored-by: Claude Opus 4.6 <noreply@anthropic.com>
+Co-authored-by: opencode <noreply@opencode.ai>
+```
+
+> [!TIP]
+> PRs are welcome to add co-authorship lines for other coding agents not yet listed here.
+
 ## YouTube
 
 We welcome and support video and tutorial contributions to the NiceGUI community!
