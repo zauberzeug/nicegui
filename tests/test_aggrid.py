@@ -341,3 +341,12 @@ def test_get_client_data(screen: Screen):
     screen.click('Get Sorted Data')
     screen.wait(0.5)
     assert data == [{'name': 'Carol', 'age': 42}, {'name': 'Bob', 'age': 21}, {'name': 'Alice', 'age': 18}]
+
+
+def test_version_matches_js(screen: Screen):
+    @ui.page('/')
+    async def page():
+        ui.label(await ui.run_javascript('return (await import("nicegui-aggrid")).AllCommunityModule.version'))
+
+    screen.open('/')
+    screen.should_contain(ui.aggrid.VERSION)
