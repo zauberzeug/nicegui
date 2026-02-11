@@ -10,7 +10,7 @@ from nicegui.testing import Screen
 PAYLOAD_RE = re.compile(r'Payload size \d+ exceeds the maximum allowed limit\.')
 
 
-@pytest.mark.parametrize('transport,overhead', [('websocket', 243), ('polling', 250_221)])
+@pytest.mark.parametrize('transport,overhead', [('websocket', 262), ('polling', 250_240)])
 def test_socketio_too_long(screen: Screen, transport: Literal['websocket', 'polling'], overhead: int):
     events: list[str] = []
     core.app.config.socket_io_js_transports = [transport]

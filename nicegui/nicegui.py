@@ -49,6 +49,7 @@ class SocketIoApp(socketio.ASGIApp):
 
 def _make_msgpack_packet_class():
     """Create a MsgPackPacket subclass that handles custom types like NumPy arrays and Decimals."""
+    import datetime  # pylint: disable=import-outside-toplevel
     from decimal import Decimal  # pylint: disable=import-outside-toplevel
 
     from socketio.msgpack_packet import MsgPackPacket  # pylint: disable=import-outside-toplevel
@@ -60,6 +61,10 @@ def _make_msgpack_packet_class():
                 return obj.tolist()
         if isinstance(obj, Decimal):
             return float(obj)
+        if isinstance(obj, (datetime.datetime, datetime.date, datetime.time)):
+            return obj.isoformat()
+        if isinstance(obj, datetime.timedelta):
+            return str(obj)
         raise TypeError(f'Object of type {obj.__class__.__name__} is not msgpack serializable')
 
     return MsgPackPacket.configure(dumps_default=_msgpack_default)
