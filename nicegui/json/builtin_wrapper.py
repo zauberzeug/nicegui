@@ -1,11 +1,14 @@
-import importlib.util
 import json
 from datetime import date, datetime
 from typing import Any
 
 from fastapi.responses import JSONResponse
 
-HAS_NUMPY = importlib.util.find_spec('numpy') is not None
+try:
+    import numpy as np
+    HAS_NUMPY = True
+except ImportError:
+    HAS_NUMPY = False
 
 
 def dumps(obj: Any,
@@ -48,7 +51,6 @@ class NumpyJsonEncoder(json.JSONEncoder):
 
     def default(self, o):
         if HAS_NUMPY:
-            import numpy as np  # pylint: disable=import-outside-toplevel
             if isinstance(o, np.integer):
                 return int(o)
             if isinstance(o, np.floating):
