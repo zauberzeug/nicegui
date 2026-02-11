@@ -342,7 +342,8 @@ class Client:
         with self:
             sender = self.elements.get(msg['id'])
             if sender is not None and not sender.is_ignoring_events:
-                msg['args'] = [None if arg is None else json.loads(arg) for arg in msg.get('args', [])]
+                msg['args'] = [None if arg is None else json.loads(arg) if isinstance(arg, str) else arg
+                               for arg in msg.get('args', [])]
                 if len(msg['args']) == 1:
                     msg['args'] = msg['args'][0]
                 sender._handle_event(msg)  # pylint: disable=protected-access

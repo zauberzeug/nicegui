@@ -422,14 +422,17 @@ function createApp(elements, options) {
             const MAX_WEBSOCKET_MESSAGE_SIZE = 1000000 - 100; // 1MB without 100 bytes of slack for the message header
             return function (...args) {
               const msg = args[0];
-              if (typeof msg === "string" && msg.length > MAX_WEBSOCKET_MESSAGE_SIZE) {
-                const errorMessage = `Payload size ${msg.length} exceeds the maximum allowed limit.`;
+              const size = typeof msg === "string" ? msg.length : msg?.byteLength;
+              if (size !== undefined && size > MAX_WEBSOCKET_MESSAGE_SIZE) {
+                const errorMessage = `Payload size ${size} exceeds the maximum allowed limit.`;
                 console.error(errorMessage);
-                args[0] = `42["log",{"client_id":"${window.clientId}","level":"error","message":"${errorMessage}"}]`;
+                window.socket.emit("log", { client_id: window.clientId, level: "error", message: errorMessage });
                 if (window.tooLongMessageTimerId) clearTimeout(window.tooLongMessageTimerId);
                 const popup = document.getElementById("too_long_message_popup");
                 popup.ariaHidden = false;
                 window.tooLongMessageTimerId = setTimeout(() => (popup.ariaHidden = true), 5000);
+                if (typeof args[1] === "function") args[1](); // call callback for polling transport
+                return;
               }
               return originalFunction.call(this, ...args);
             };
