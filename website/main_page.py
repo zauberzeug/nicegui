@@ -5,6 +5,7 @@ from nicegui import ui
 
 from . import documentation, example_card, svg
 from .examples import examples
+from .seo import DEFAULT_DESCRIPTION, noscript_fallback, page_seo_html
 from .style import example_link, features, heading, link_target, section_heading, subtitle, title
 
 SPONSORS = json.loads((Path(__file__).parent / 'sponsors.json').read_text(encoding='utf-8'))
@@ -12,6 +13,11 @@ SPONSORS = json.loads((Path(__file__).parent / 'sponsors.json').read_text(encodi
 
 def create() -> None:
     """Create the content of the main page."""
+    _title = 'NiceGUI - Easy-to-Use Python-Based UI Framework'
+    _description = DEFAULT_DESCRIPTION
+    ui.page_title(_title)
+    ui.add_head_html(page_seo_html(title=_title, description=_description, path='/'))
+    ui.add_body_html(noscript_fallback(title=_title, description=_description))
     with ui.row().classes('w-full h-screen items-center gap-8 pr-4 no-wrap into-section'):
         svg.face(half=True).classes('stroke-black dark:stroke-white w-[200px] md:w-[230px] lg:w-[300px]')
         with ui.column().classes('gap-4 md:gap-8 pt-32'):

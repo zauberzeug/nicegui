@@ -374,6 +374,7 @@ class App(FastAPI):
         self._disconnect_handlers.clear()
         self._delete_handlers.clear()
         self._exception_handlers[:] = [log.exception]
+        self._page_exception_handler = None
         self.config = AppConfig()
         self.colors()  # reset colors to default
 
