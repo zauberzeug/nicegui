@@ -224,10 +224,43 @@ function throttle(callback, time, leading, trailing, id) {
     }
   }
 }
+
+const vnodeCache = new Map();
+
+function invalidateVnodeCache(elements, changedIds) {
+  const parentOf = new Map();
+  for (const [id, el] of Object.entries(elements)) {
+    if (!el) continue;
+    for (const childId of el.children || []) {
+      parentOf.set(childId, Number(id));
+    }
+    if (el.slots) {
+      for (const slot of Object.values(el.slots)) {
+        for (const childId of slot.ids || []) {
+          parentOf.set(childId, Number(id));
+        }
+      }
+    }
+  }
+  for (const id of changedIds) {
+    vnodeCache.delete(id);
+    let cur = id;
+    while (parentOf.has(cur)) {
+      cur = parentOf.get(cur);
+      vnodeCache.delete(cur);
+    }
+  }
+}
+
 function renderRecursively(elements, id, propsContext) {
   const element = elements[id];
   if (element === undefined) {
     return;
+  }
+
+  const cached = vnodeCache.get(id);
+  if (cached && cached.propsContext === propsContext) {
+    return cached.vnode;
   }
 
   const props = {
@@ -318,7 +351,9 @@ function renderRecursively(elements, id, propsContext) {
       return [...rendered, ...children];
     };
   });
-  return Vue.h(app.config.isNativeTag(element.tag) ? element.tag : Vue.resolveComponent(element.tag), props, slots);
+  const vnode = Vue.h(app.config.isNativeTag(element.tag) ? element.tag : Vue.resolveComponent(element.tag), props, slots);
+  vnodeCache.set(id, { vnode, propsContext });
+  return vnode;
 }
 
 function runJavascript(code, request_id) {
@@ -484,6 +519,7 @@ function createApp(elements, options) {
             const oldListenerIds = new Set((this.elements[id]?.events || []).map((ev) => ev.listener_id));
             if (element.events?.some((e) => !oldListenerIds.has(e.listener_id))) {
               delete this.elements[id];
+              vnodeCache.delete(Number(id));
               eventListenersChanged = true;
             }
           }
@@ -495,11 +531,14 @@ function createApp(elements, options) {
           for (const [id, element] of Object.entries(msg)) {
             if (element === null) {
               delete this.elements[id];
+              vnodeCache.delete(Number(id));
               continue;
             }
             replaceUndefinedAttributes(element);
             this.elements[id] = element;
           }
+
+          invalidateVnodeCache(this.elements, Object.keys(msg).map(Number));
 
           await this.$nextTick();
           for (const [id, element] of Object.entries(msg)) {
