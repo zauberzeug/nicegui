@@ -344,13 +344,9 @@ def test_get_client_data(screen: Screen):
 
 
 def test_version_matches_js(screen: Screen):
-    js_version = []
-
     @ui.page('/')
     async def page():
-        await ui.context.client.connected()
-        js_version.append(await ui.run_javascript('const m = await import("nicegui-aggrid"); return m.AllCommunityModule.version;'))
+        ui.label(await ui.run_javascript('return (await import("nicegui-aggrid")).AllCommunityModule.version'))
 
     screen.open('/')
-    screen.wait(0.5)
-    assert js_version[0] == ui.aggrid.VERSION
+    screen.should_contain(ui.aggrid.VERSION)
