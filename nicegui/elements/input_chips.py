@@ -22,7 +22,14 @@ class InputChips(LabelElement, ValidationElement, DisableableElement):
         """Input Chips
 
         An input field that manages a collection of values as visual "chips" or tags.
-        Users can type to add new chips and remove existing ones by clicking or using keyboard shortcuts.
+        Users can add new chips by pressing Enter or when the input field loses focus (Tab, click away).
+        Chips can be removed by clicking the "x" icon on each chip.
+
+        The ``new_value_mode`` parameter controls how duplicate values are handled:
+
+        - ``'add'``: Always adds the value (allows duplicates)
+        - ``'add-unique'``: Only adds if not already present
+        - ``'toggle'``: Adds if absent, removes if present
 
         This element is based on Quasar's `QSelect <https://quasar.dev/vue-components/select>`_ component.
         Unlike a traditional dropdown selection, this variant focuses on free-form text input with chips,
@@ -54,6 +61,52 @@ class InputChips(LabelElement, ValidationElement, DisableableElement):
         self._props['multiple'] = True
         self._props['hide-dropdown-icon'] = True
         self._props['clearable'] = clearable
+
+        # Track the current input value to add on blur
+        self._current_input_value = ''
+        self._new_value_mode = new_value_mode
+
+        # Listen to input-value changes to track what user is typing
+        self.on('input-value', self._handle_input_value_change)
+
+        # Listen to blur event to add the current input value as a chip
+        self.on('blur', self._handle_blur)
+
+    def _handle_input_value_change(self, e: GenericEventArguments) -> None:
+        """Track the current input value as user types."""
+        self._current_input_value = e.args if e.args else ''
+
+    def _handle_blur(self) -> None:
+        """Add the current input value as a chip when field loses focus."""
+        val = self._current_input_value.strip() if isinstance(self._current_input_value, str) else ''
+
+        if not val:
+            return
+
+        # Get current chips
+        current_value = self.value if self.value else []
+
+        # Apply new-value-mode logic
+        if self._new_value_mode == 'add':
+            # Always add the value
+            new_value = [*current_value, val]
+        elif self._new_value_mode == 'add-unique':
+            # Only add if not already present
+            if val not in current_value:
+                new_value = [*current_value, val]
+            else:
+                return
+        elif self._new_value_mode == 'toggle':
+            # Toggle: add if not present, remove if present
+            if val in current_value:
+                new_value = [v for v in current_value if v != val]
+            else:
+                new_value = [*current_value, val]
+        else:
+            return
+
+        # Update the value
+        self.value = new_value
 
     def _event_args_to_value(self, e: GenericEventArguments) -> Any:
         return e.args or []
