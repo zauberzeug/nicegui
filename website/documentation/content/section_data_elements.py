@@ -1,53 +1,16 @@
-from nicegui import optional_features
-
 from . import (
-    aggrid_documentation,
-    altair_documentation,
-    anywidget_documentation,
-    circular_progress_documentation,
-    code_documentation,
     doc,
-    echart_documentation,
-    editor_documentation,
-    highchart_documentation,
-    json_editor_documentation,
-    leaflet_documentation,
-    line_plot_documentation,
-    linear_progress_documentation,
-    log_documentation,
-    matplotlib_documentation,
-    plotly_documentation,
-    pyplot_documentation,
-    scene_documentation,
-    spinner_documentation,
-    table_documentation,
-    tree_documentation,
+    subsection_charts_plots,
+    subsection_editors_data,
+    subsection_progress_status,
+    subsection_spatial_trees,
+    subsection_tables_grids,
 )
 
 doc.title('*Data* Elements')
 
-doc.intro(table_documentation)
-doc.intro(aggrid_documentation)
-if optional_features.has('highcharts'):
-    doc.intro(highchart_documentation)
-doc.intro(echart_documentation)
-if optional_features.has('matplotlib'):
-    doc.intro(pyplot_documentation)
-    doc.intro(matplotlib_documentation)
-    doc.intro(line_plot_documentation)
-if optional_features.has('plotly'):
-    doc.intro(plotly_documentation)
-if optional_features.has('altair'):
-    doc.intro(altair_documentation)
-if optional_features.has('anywidget'):
-    doc.intro(anywidget_documentation)
-doc.intro(linear_progress_documentation)
-doc.intro(circular_progress_documentation)
-doc.intro(spinner_documentation)
-doc.intro(scene_documentation)
-doc.intro(leaflet_documentation)
-doc.intro(tree_documentation)
-doc.intro(log_documentation)
-doc.intro(editor_documentation)
-doc.intro(code_documentation)
-doc.intro(json_editor_documentation)
+doc.intro_group(subsection_tables_grids)
+doc.intro_group(subsection_charts_plots)
+doc.intro_group(subsection_progress_status)
+doc.intro_group(subsection_spatial_trees)
+doc.intro_group(subsection_editors_data)

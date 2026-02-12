@@ -64,9 +64,25 @@ def _main_page() -> None:
     with ui.left_drawer() \
             .classes('column no-wrap gap-1 bg-[#eee] dark:bg-[#1b1b1b] mt-[-20px] px-8 py-20') \
             .style('height: calc(100% + 20px) !important') as menu:
+        def _on_tree_select(e) -> None:
+            if e.value in documentation.tree.group_ids:
+                ui.navigate.to(documentation.tree.group_ids[e.value])
+            else:
+                ui.navigate.to(f'/documentation/{e.value}')
+
+        def _on_tree_expand(e) -> None:
+            missing = documentation.tree.group_ids.keys() - set(e.value)
+            if missing:
+                e.sender.expand(list(missing))
+
         tree = ui.tree(documentation.tree.nodes, label_key='title',
-                       on_select=lambda e: ui.navigate.to(f'/documentation/{e.value}')) \
+                       on_select=_on_tree_select, on_expand=_on_tree_expand) \
             .classes('w-full').props('accordion no-connectors no-selection-unset')
+        # Hide expand arrows on sub-section group nodes (depth 1 in the tree)
+        ui.add_css('''
+            .q-tree > .q-tree__node > .q-tree__node-collapsible > .q-tree__children
+            > .q-tree__node--parent > .q-tree__node-header > .q-tree__arrow { display: none !important; }
+        ''')
     menu_button = header.add_header(menu)
 
     window_state = {'is_desktop': None}
@@ -100,7 +116,11 @@ def _main_page() -> None:
 
 
 def _documentation_detail_page(name: str, tree: ui.tree) -> None:
-    tree.props.update(expanded=documentation.tree.ancestors(name))
+    if name in documentation.tree.group_ids:
+        ui.navigate.to(documentation.tree.group_ids[name])
+        return
+    expanded = [*documentation.tree.ancestors(name), *documentation.tree.group_ids]
+    tree.props.update(expanded=expanded)
     tree.update()
     if name in documentation.registry:
         documentation.render_page(documentation.registry[name])

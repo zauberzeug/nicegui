@@ -1,6 +1,6 @@
-from dataclasses import dataclass
-from typing import Literal
 from collections.abc import Callable
+from dataclasses import dataclass, field
+from typing import Literal
 
 from nicegui.dataclasses import KWONLY_SLOTS
 
@@ -24,6 +24,7 @@ class DocumentationPart:
     demo: Demo | None = None
     reference: type | None = None
     search_text: str | None = None
+    children: list['DocumentationPart'] = field(default_factory=list)
 
     @property
     def link_target(self) -> str | None:

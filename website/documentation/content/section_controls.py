@@ -1,64 +1,20 @@
 from . import (
-    badge_documentation,
-    button_documentation,
-    button_dropdown_documentation,
-    button_group_documentation,
-    checkbox_documentation,
-    codemirror_documentation,
-    chip_documentation,
-    color_input_documentation,
-    color_picker_documentation,
-    date_documentation,
-    date_input_documentation,
     doc,
-    fab_documentation,
-    input_chips_documentation,
-    input_documentation,
-    joystick_documentation,
-    knob_documentation,
-    number_documentation,
-    radio_documentation,
-    range_documentation,
-    rating_documentation,
-    select_documentation,
-    slider_documentation,
-    switch_documentation,
-    textarea_documentation,
-    time_documentation,
-    time_input_documentation,
-    toggle_documentation,
-    upload_documentation,
-    xterm_documentation,
+    subsection_buttons,
+    subsection_chips,
+    subsection_choices,
+    subsection_inputs,
+    subsection_pickers,
+    subsection_special_controls,
+    subsection_value_interaction,
 )
 
 doc.title('*Controls*')
 
-doc.intro(button_documentation)
-doc.intro(button_group_documentation)
-doc.intro(button_dropdown_documentation)
-doc.intro(fab_documentation)
-doc.intro(badge_documentation)
-doc.intro(chip_documentation)
-doc.intro(toggle_documentation)
-doc.intro(radio_documentation)
-doc.intro(select_documentation)
-doc.intro(input_chips_documentation)
-doc.intro(checkbox_documentation)
-doc.intro(switch_documentation)
-doc.intro(slider_documentation)
-doc.intro(range_documentation)
-doc.intro(rating_documentation)
-doc.intro(joystick_documentation)
-doc.intro(input_documentation)
-doc.intro(textarea_documentation)
-doc.intro(codemirror_documentation)
-doc.intro(xterm_documentation)
-doc.intro(number_documentation)
-doc.intro(knob_documentation)
-doc.intro(color_input_documentation)
-doc.intro(color_picker_documentation)
-doc.intro(date_input_documentation)
-doc.intro(date_documentation)
-doc.intro(time_input_documentation)
-doc.intro(time_documentation)
-doc.intro(upload_documentation)
+doc.intro_group(subsection_buttons)
+doc.intro_group(subsection_chips)
+doc.intro_group(subsection_choices)
+doc.intro_group(subsection_inputs)
+doc.intro_group(subsection_pickers)
+doc.intro_group(subsection_value_interaction)
+doc.intro_group(subsection_special_controls)
