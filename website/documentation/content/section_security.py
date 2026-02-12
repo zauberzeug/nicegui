@@ -107,34 +107,23 @@ def url_validation_demo():
     from urllib.parse import urlparse
 
     def is_safe_url(url: str) -> bool:
-        """Validate that URL uses safe protocols."""
-        try:
-            parsed = urlparse(url.strip())
-            if parsed.scheme and parsed.scheme not in ('http', 'https'):
-                return False  # Only allow http/https, no javascript: URLs
-            return True
-        except Exception:
-            return False
+        return urlparse(url.strip()).scheme in ('', 'http', 'https')
 
-    def safe_navigate(url: str):
+    def open_link(url: str) -> None:
         if is_safe_url(url):
             ui.navigate.to(url)
         else:
             ui.notify('Invalid or unsafe URL', type='negative')
 
-    dialog = ui.dialog()
-
-    def safe_show_link(url: str):
+    def show_link(url: str) -> None:
         if is_safe_url(url):
-            with dialog.clear(), ui.card():
-                ui.link(target=url)
-            dialog.open()
+            ui.link(target=url)
         else:
             ui.notify('Invalid or unsafe URL', type='negative')
 
     user_url = ui.input('Enter URL', placeholder='javascript:alert(1)')
-    ui.button('Navigate', on_click=lambda: safe_navigate(user_url.value))
-    ui.button('Show link', on_click=lambda: safe_show_link(user_url.value))
+    ui.button('Navigate', on_click=lambda: open_link(user_url.value))
+    ui.button('Show link', on_click=lambda: show_link(user_url.value))
 
 
 doc.text('', '''
