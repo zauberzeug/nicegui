@@ -77,7 +77,8 @@ doc.text('', '''
 
     - `ui.add_head_html()`,
     - `ui.add_body_html()`,
-    - `ui.add_css()`
+    - `ui.add_css()`,
+    - `ui.add_javascript()`
 ''')
 def component_security_overview_demo():
     username = ui.input('Enter your name')
