@@ -247,6 +247,9 @@ function renderRecursively(elements, id, propsContext) {
 
   const cached = vNodeCache.get(id);
   if (cached && cached.propsContext === propsContext) {
+    if (cached.vnode.children && !Array.isArray(cached.vnode.children)) {
+      cached.vnode.children.$stable = true;
+    }
     return cached.vnode;
   }
 
