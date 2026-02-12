@@ -19,7 +19,7 @@ from .awaitable_response import AwaitableResponse
 from .dependencies import generate_resources
 from .element import Element
 
-# HACK: Hoist all importmap-based elements here to fix lazy import
+# HACK: Eagerly import importmap-based elements so their __init_subclass__ registers ESM modules before any client page is served.
 from .elements.aggrid.aggrid import AgGrid  # noqa: F401 # pylint: disable=unused-import
 from .elements.codemirror.codemirror import CodeMirror  # noqa: F401 # pylint: disable=unused-import
 from .elements.echart.echart import EChart  # noqa: F401 # pylint: disable=unused-import
