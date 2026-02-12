@@ -1,19 +1,17 @@
 from nicegui import ui
 
-from . import (
-    doc,
-    section_action_events,
-    section_audiovisual_elements,
-    section_binding_properties,
-    section_configuration_deployment,
-    section_controls,
-    section_data_elements,
-    section_page_layout,
-    section_pages_routing,
-    section_styling_appearance,
-    section_testing,
-    section_text_elements,
-)
+from . import doc
+from .action_events import section_action_events
+from .audiovisual_elements import section_audiovisual_elements
+from .binding_properties import section_binding_properties
+from .configuration_deployment import section_configuration_deployment
+from .controls import section_controls
+from .data_elements import section_data_elements
+from .page_layout import section_page_layout
+from .pages_routing import section_pages_routing
+from .styling_appearance import section_styling_appearance
+from .testing import section_testing
+from .text_elements import section_text_elements
 from ...style import subheading
 
 doc.title('*NiceGUI* Documentation', 'Reference, Demos and more')
