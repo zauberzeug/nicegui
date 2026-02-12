@@ -1,3 +1,4 @@
+import builtins
 import importlib
 import sys
 from typing import TYPE_CHECKING
@@ -417,15 +418,17 @@ if TYPE_CHECKING:
     from .page import page
     from .ui_run import run
     from .ui_run_with import run_with
-else:
-    def __dir__() -> list[str]:
-        return __all__
 
-    def __getattr__(name: str):
-        if name in _LAZY_IMPORTS:
-            module_path, attr_name = _LAZY_IMPORTS[name]
-            module = importlib.import_module(module_path, package='nicegui')
-            value = getattr(module, attr_name) if attr_name else module
-            setattr(sys.modules[__name__], name, value)
-            return value
-        raise AttributeError(f"module 'nicegui.ui' has no attribute {name!r}")
+
+def __dir__() -> builtins.list[str]:
+    return __all__
+
+
+def __getattr__(name: str) -> object:
+    if name in _LAZY_IMPORTS:
+        module_path, attr_name = _LAZY_IMPORTS[name]
+        module = importlib.import_module(module_path, package='nicegui')
+        value = getattr(module, attr_name) if attr_name else module
+        setattr(sys.modules[__name__], name, value)
+        return value
+    raise AttributeError(f"module 'nicegui.ui' has no attribute {name!r}")
