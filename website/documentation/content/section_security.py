@@ -7,32 +7,29 @@ doc.title('Security Best Practices')
 
 doc.text('Security Model', '''
     NiceGUI provides secure defaults and built-in protections, but **developers must write secure code**.
+    Not all UI components can safely handle untrusted input,
+    so understanding which ones require validation is essential.
 
-    While most can, not all UI components can safely handle untrusted input.
-    Understanding which ones require validation is essential.
+    **The framework provides:**
 
-    **Framework provides:**
+    - Secure defaults where possible
+    - Built-in protection mechanisms
+    - Timely vulnerability fixes
 
-    - Secure defaults if possible,
-    - Protection mechanisms,
-    - Prompt vulnerability fixes
+    **Developers are responsible for:**
 
-    **Developers must:**
-
-    - Use Common Sense,
-    - Keep sanitization enabled for untrusted content,
-    - Validate user input if necessitated,
-    - Install the latest NiceGUI version
+    - Reviewing application logic for unsafe patterns
+    - Keeping sanitization enabled for untrusted content
+    - Validating user input where necessary
+    - Keeping NiceGUI up to date
 ''')
 
 
 @doc.demo('Common Sense', '''
-    At the end of the day, NiceGUI is Python.
-    Do read through the application logic to see if it makes common sense.
+    NiceGUI applications are Python code, and many security issues stem from unsafe Python patterns.
+    Reviewing your application logic can reveal vulnerabilities that should never reach production.
 
-    You may find that some security vulnerabilities are obvious and should never happen in production code.
-
-    Here is a safe way to parse user input into Python data structures using `ast.literal_eval()`:
+    For example, use `ast.literal_eval()` to safely parse user input into Python data structures:
 ''')
 def common_sense_demo():
     import ast
@@ -49,36 +46,36 @@ def common_sense_demo():
 
 
 doc.text('', '''
-    **Avoid at all costs:**
+    **Never do this:**
     ```python
-    value = eval(user_input.value)  # Can execute ANY Python code!
+    value = eval(user_input.value)  # Can execute arbitrary Python code!
     ```
 ''')
 
 
 @doc.demo('Component Selection', '''
-    Pick the most secure element to have NiceGUI work for you as much as possible.
+    Choosing the right component reduces the need for manual validation.
 
-    **Secure by default** (considering `sanitize=True` if applicable):
+    **Secure by default** (with `sanitize=True`, which is the default where applicable):
 
     - `ui.html()`,
     - `ui.markdown()`,
     - `ui.chat_message()`,
     - `ui.interactive_image()`
-    - Any other element which serves a dedicated purpose, for which it is easy for NiceGUI to defend arbitrary user input.
+    - Other elements with a well-defined purpose that the framework can protect automatically.
 
-    **You must validate, as the library can't distinguish the good and the bad**:
+    **Require developer validation** (the framework cannot distinguish safe from unsafe values):
 
     - `ui.navigate.to()`,
     - `ui.link()`,
     - `element.style()`
 
-    **Never with user input, unless you know what you are doing**:
+    **Never use with untrusted input:**
 
     - `ui.add_head_html()`,
     - `ui.add_body_html()`,
     - `ui.add_css()`,
-    - `ui.add_javascript()`
+    - `ui.run_javascript()`
 ''')
 def component_security_overview_demo():
     username = ui.input('Enter your name')
@@ -88,7 +85,7 @@ def component_security_overview_demo():
 
 
 doc.text('', '''
-    **Avoid at all costs:**
+    **Never do this:**
     ```python
     ui.add_body_html(f"<div>Welcome {username}</div>")  # XSS: "<img src=x onerror=alert(1)>"
     ui.add_head_html(f"<script>alert('{username}')</script>")  # XSS: "');alert(1);//"
@@ -97,10 +94,8 @@ doc.text('', '''
 
 
 @doc.demo('URL Validation', '''
-    As `javascript:` URLs have their legitimate purpose in allowing a link to execute JavaScript
-    without round-trip server involvement, NiceGUI does not validate URL schemes.
-
-    You must validate user URLs to prevent `javascript:` URL injection.
+    NiceGUI does not validate URL schemes because `javascript:` URLs have legitimate uses.
+    When accepting URLs from user input, validate the scheme to prevent `javascript:` injection:
 ''')
 def url_validation_demo():
     from urllib.parse import urlparse
@@ -126,18 +121,17 @@ def url_validation_demo():
 
 
 doc.text('', '''
-    **Avoid at all costs:**
+    **Never do this:**
     ```python
     ui.navigate.to(user_url.value)  # Allows javascript: URL injection!
-    ui.link(user_url.value)  # Opens javascript: URLs without validation!
+    ui.link(user_url.value)  # Renders javascript: URLs without validation!
     ```
 ''')
 
 
 @doc.demo('CSS Injection', '''
-    As legitimate CSS, [CSS data exfiltration techniques](https://portswigger.net/research/blind-css-exfiltration)
-    and malicious CSS cannot be distinguished by the library, element style properties are NOT escaped.
-
+    Element style properties are not escaped because the framework cannot distinguish legitimate CSS
+    from [CSS data exfiltration techniques](https://portswigger.net/research/blind-css-exfiltration).
     Validate style values before applying user input:
 ''')
 def css_injection_demo():
@@ -160,10 +154,9 @@ def css_injection_demo():
 
 
 doc.text('', '''
-    **Avoid at all costs:**
+    **Never do this:**
     ```python
-    # Allows CSS injection and data exfiltration:
-    label.style['color'] = user_color.value
+    label.style['color'] = user_color.value  # Allows CSS injection and data exfiltration
     ```
 ''')
 
@@ -173,7 +166,7 @@ def additional_resources():
     ui.markdown('''
         ##### Security Advisories
 
-        [NiceGUI Security Advisories](https://github.com/zauberzeug/nicegui/security/advisories) - Keep NiceGUI updated for latest fixes.
+        [NiceGUI Security Advisories](https://github.com/zauberzeug/nicegui/security/advisories)
 
         ##### External Resources
 
@@ -184,12 +177,10 @@ def additional_resources():
 
         ##### Key Principles
 
-        1. Keep sanitization enabled (secure by default)
-        2. Validate URLs (framework doesn't validate schemes)
-        3. Validate CSS values (not escaped by framework)
-        4. Only disable sanitization for trusted application content
-        5. Use defense-in-depth (headers, CSP, validation)
-        6. Keep NiceGUI updated
-
-        **Remember: NiceGUI provides tools, developers must write secure code.**
+        1. Keep sanitization enabled (the default)
+        2. Validate URL schemes (the framework does not restrict them)
+        3. Validate CSS values (the framework does not escape them)
+        4. Only disable sanitization for trusted content you control
+        5. Apply defense in depth (headers, CSP, input validation)
+        6. Keep NiceGUI up to date
     ''')
