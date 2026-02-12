@@ -39,7 +39,8 @@ export default {
   },
   beforeUnmount() {
     if (this.editor) {
-      mounted_app.elements[this.$props.id.slice(1)].props.value = this.editor.state.doc.toString();
+      const element = mounted_app.elements[this.$props.id.slice(1)];
+      if (element) element.props.value = this.editor.state.doc.toString();
     }
   },
   methods: {
