@@ -1,19 +1,19 @@
 import inspect
 import sys
 import types
+from collections.abc import Callable, Generator
+from contextlib import contextmanager
 from copy import deepcopy
 from pathlib import Path
 from types import ModuleType
 from typing import Any, overload
-from collections.abc import Callable, Generator
-from contextlib import contextmanager
 
 import nicegui
-from nicegui import app as nicegui_app
 from nicegui import Client
+from nicegui import app as nicegui_app
 from nicegui import ui as nicegui_ui
-from nicegui.functions.navigate import Navigate
 from nicegui.elements.markdown import remove_indentation
+from nicegui.functions.navigate import Navigate
 
 from .page import DocumentationPage
 from .part import Demo, DocumentationPart
@@ -164,6 +164,21 @@ def intro(documentation: types.ModuleType) -> None:
     part = deepcopy(target_page.parts[0])
     part.link = target_page.name
     current_page.parts.append(part)
+
+
+def intro_group(documentation: types.ModuleType) -> None:
+    """Add a grouped intro section that shows all sub-elements on the current page.
+
+    Creates a group header linked to the sub-section page, with all element intros
+    rendered inline as children. The tree builder uses the children for 3-level nesting.
+    """
+    current_page = _get_current_page()
+    target_page = get_page(documentation)
+    target_page.back_link = current_page.name
+    group_part = DocumentationPart(title=target_page.title, link=target_page.name)
+    for child_part in target_page.parts:
+        group_part.children.append(deepcopy(child_part))
+    current_page.parts.append(group_part)
 
 
 def reference(element: type, *,
