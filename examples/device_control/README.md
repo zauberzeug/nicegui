@@ -1,4 +1,4 @@
-# Device Control Example
+# Device Control
 
 Demonstrate how to control an IoT device like a lightbulb.
 The dashboard UI is bound to the device's properties and events, allowing real-time interaction and logging.
