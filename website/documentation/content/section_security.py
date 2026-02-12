@@ -39,9 +39,9 @@ def safe_input_parsing_demo():
             value = ast.literal_eval(user_input.value)
             ui.notify(f'Result: {value}')
         except (ValueError, SyntaxError):
-            ui.notify('Invalid literal', type='negative')
+            ui.notify('Invalid Python literal', type='negative')
 
-    user_input = ui.input('Enter a Python literal', placeholder='[1, 2]')
+    user_input = ui.input('Enter Python literal', placeholder='[1, 2]')
     ui.button('Parse', on_click=evaluate_safely)
 
 
@@ -78,7 +78,7 @@ doc.text('', '''
     - `ui.run_javascript()`
 ''')
 def component_security_overview_demo():
-    username = ui.input('Enter your name')
+    username = ui.input('Enter name')
 
     ui.label().bind_text_from(username, 'value')
     ui.markdown().bind_content_from(username, 'value')
@@ -148,7 +148,7 @@ def css_injection_demo():
         else:
             ui.notify('Invalid color', type='negative')
 
-    user_color = ui.input('Enter color (e.g., #ff0000)', value='#0000ff')
+    user_color = ui.input('Enter color', placeholder='#0000ff')
     label = ui.label('Sample text')
     ui.button('Apply Color', on_click=apply_color)
 
