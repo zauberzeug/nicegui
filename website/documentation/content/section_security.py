@@ -25,13 +25,13 @@ doc.text('Security Model', '''
 ''')
 
 
-@doc.demo('Common Sense', '''
+@doc.demo('Safe Input Parsing', '''
     NiceGUI applications are Python code, and many security issues stem from unsafe Python patterns.
     Reviewing your application logic can reveal vulnerabilities that should never reach production.
 
     For example, use `ast.literal_eval()` to safely parse user input into Python data structures:
 ''')
-def common_sense_demo():
+def safe_input_parsing_demo():
     import ast
 
     def evaluate_safely():
