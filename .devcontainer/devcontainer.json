@@ -37,7 +37,7 @@
   "remoteUser": "vscode",
   "mounts": [
     {
-      "source": "gh-config",
+      "source": "nicegui-gh-config",
       "target": "/home/vscode/.config/gh",
       "type": "volume"
     }
