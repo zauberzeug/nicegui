@@ -304,6 +304,7 @@ function renderRecursively(elements, id, propsContext) {
       throttle(delayed_emitter, event.throttle, event.leading_events, event.trailing_events, event.listener_id);
       if (element.props["loopback"] === False && event.type == "update:modelValue") {
         element.props["model-value"] = args;
+        invalidateVnodeCache(elements, [id]);
       }
     };
 
@@ -518,8 +519,8 @@ function createApp(elements, options) {
             if (!(id in this.elements)) continue;
             const oldListenerIds = new Set((this.elements[id]?.events || []).map((ev) => ev.listener_id));
             if (element.events?.some((e) => !oldListenerIds.has(e.listener_id))) {
+              invalidateVnodeCache(this.elements, [Number(id)]);
               delete this.elements[id];
-              vnodeCache.delete(Number(id));
               eventListenersChanged = true;
             }
           }
