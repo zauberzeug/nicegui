@@ -226,21 +226,9 @@ function throttle(callback, time, leading, trailing, id) {
 }
 
 const vNodeCache = new Map();
+const parentOf = new Map();
 
-function invalidateVnodeCache(elements, changedIds) {
-  const parentOf = new Map();
-  for (const [id, el] of Object.entries(elements)) {
-    if (!el) continue;
-    for (const childId of el.children || []) {
-      parentOf.set(childId, Number(id));
-    }
-    if (!el.slots) continue;
-    for (const slot of Object.values(el.slots)) {
-      for (const childId of slot.ids || []) {
-        parentOf.set(childId, Number(id));
-      }
-    }
-  }
+function invalidateVnodeCache(changedIds) {
   for (const id of changedIds) {
     vNodeCache.delete(id);
     let current_id = id;
@@ -303,7 +291,7 @@ function renderRecursively(elements, id, propsContext) {
       throttle(delayed_emitter, event.throttle, event.leading_events, event.trailing_events, event.listener_id);
       if (element.props["loopback"] === False && event.type == "update:modelValue") {
         element.props["model-value"] = args;
-        invalidateVnodeCache(elements, [id]);
+        invalidateVnodeCache([id]);
       }
     };
 
@@ -344,7 +332,10 @@ function renderRecursively(elements, id, propsContext) {
           ),
         );
       }
-      const children = data.ids.map((id) => renderRecursively(elements, id, props || propsContext));
+      const children = data.ids.map((childId) => {
+        parentOf.set(childId, id);
+        return renderRecursively(elements, childId, props || propsContext);
+      });
       if (name === "default" && element.text !== null) {
         children.unshift(element.text);
       }
@@ -519,7 +510,7 @@ function createApp(elements, options) {
             if (!(id in this.elements)) continue;
             const oldListenerIds = new Set((this.elements[id]?.events || []).map((ev) => ev.listener_id));
             if (element.events?.some((e) => !oldListenerIds.has(e.listener_id))) {
-              invalidateVnodeCache(this.elements, [Number(id)]);
+              invalidateVnodeCache([Number(id)]);
               delete this.elements[id];
               eventListenersChanged = true;
             }
@@ -532,14 +523,14 @@ function createApp(elements, options) {
           for (const [id, element] of Object.entries(msg)) {
             if (element === null) {
               delete this.elements[id];
-              vNodeCache.delete(Number(id));
+              parentOf.delete(Number(id));
               continue;
             }
             replaceUndefinedAttributes(element);
             this.elements[id] = element;
           }
 
-          invalidateVnodeCache(this.elements, Object.keys(msg).map(Number));
+          invalidateVnodeCache(Object.keys(msg).map(Number));
 
           await this.$nextTick();
           for (const [id, element] of Object.entries(msg)) {
