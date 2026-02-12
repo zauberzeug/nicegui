@@ -109,7 +109,7 @@ def url_validation_demo():
     def is_safe_url(url: str) -> bool:
         """Validate that URL uses safe protocols."""
         try:
-            parsed = urlparse(url)
+            parsed = urlparse(url.strip())
             if parsed.scheme and parsed.scheme not in ('http', 'https'):
                 return False  # Only allow http/https, no javascript: URLs
             return True
