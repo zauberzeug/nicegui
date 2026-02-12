@@ -143,22 +143,19 @@ doc.text('', '''
 def css_injection_demo():
     import re
 
-    def validate_color(color: str) -> bool:
-        """Validate color is safe (hex or rgb format only)."""
-        hex_pattern = r'^#[0-9a-fA-F]{3,6}$'
-        rgb_pattern = r'^rgb\(\s*\d{1,3}\s*,\s*\d{1,3}\s*,\s*\d{1,3}\s*\)$'
+    def is_safe_color(color: str) -> bool:
+        hex_pattern = r'^#[0-9a-fA-F]+$'
+        rgb_pattern = r'^rgb\(\s*\d+\s*,\s*\d+\s*,\s*\d+\s*\)$'
         return bool(re.match(hex_pattern, color) or re.match(rgb_pattern, color))
+
+    def apply_color():
+        if is_safe_color(user_color.value):
+            label.style['color'] = user_color.value
+        else:
+            ui.notify('Invalid color', type='negative')
 
     user_color = ui.input('Enter color (e.g., #ff0000)', value='#0000ff')
     label = ui.label('Sample text')
-
-    def apply_color():
-        if validate_color(user_color.value):
-            label.style['color'] = user_color.value
-            ui.notify('Color applied', type='positive')
-        else:
-            ui.notify('Invalid color format', type='negative')
-
     ui.button('Apply Color', on_click=apply_color)
 
 
