@@ -225,7 +225,7 @@ function throttle(callback, time, leading, trailing, id) {
   }
 }
 
-const vnodeCache = new Map();
+const vNodeCache = new Map();
 
 function invalidateVnodeCache(elements, changedIds) {
   const parentOf = new Map();
@@ -234,20 +234,19 @@ function invalidateVnodeCache(elements, changedIds) {
     for (const childId of el.children || []) {
       parentOf.set(childId, Number(id));
     }
-    if (el.slots) {
-      for (const slot of Object.values(el.slots)) {
-        for (const childId of slot.ids || []) {
-          parentOf.set(childId, Number(id));
-        }
+    if (!el.slots) continue;
+    for (const slot of Object.values(el.slots)) {
+      for (const childId of slot.ids || []) {
+        parentOf.set(childId, Number(id));
       }
     }
   }
   for (const id of changedIds) {
-    vnodeCache.delete(id);
-    let cur = id;
-    while (parentOf.has(cur)) {
-      cur = parentOf.get(cur);
-      vnodeCache.delete(cur);
+    vNodeCache.delete(id);
+    let current_id = id;
+    while (parentOf.has(current_id)) {
+      current_id = parentOf.get(current_id);
+      vNodeCache.delete(current_id);
     }
   }
 }
@@ -258,7 +257,7 @@ function renderRecursively(elements, id, propsContext) {
     return;
   }
 
-  const cached = vnodeCache.get(id);
+  const cached = vNodeCache.get(id);
   if (cached && cached.propsContext === propsContext) {
     return cached.vnode;
   }
@@ -352,9 +351,10 @@ function renderRecursively(elements, id, propsContext) {
       return [...rendered, ...children];
     };
   });
-  const vnode = Vue.h(app.config.isNativeTag(element.tag) ? element.tag : Vue.resolveComponent(element.tag), props, slots);
-  vnodeCache.set(id, { vnode, propsContext });
-  return vnode;
+  const tag = app.config.isNativeTag(element.tag) ? element.tag : Vue.resolveComponent(element.tag);
+  const vNode = Vue.h(tag, props, slots);
+  vNodeCache.set(id, { vnode: vNode, propsContext });
+  return vNode;
 }
 
 function runJavascript(code, request_id) {
@@ -532,7 +532,7 @@ function createApp(elements, options) {
           for (const [id, element] of Object.entries(msg)) {
             if (element === null) {
               delete this.elements[id];
-              vnodeCache.delete(Number(id));
+              vNodeCache.delete(Number(id));
               continue;
             }
             replaceUndefinedAttributes(element);
