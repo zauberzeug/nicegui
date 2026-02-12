@@ -37,17 +37,15 @@ doc.text('Security Model', '''
 def common_sense_demo():
     import ast
 
-    user_input = ui.input('Enter a Python literal', placeholder='[1,2]')
-    result = ui.label()
-
-    def safe_evaluate():
+    def evaluate_safely():
         try:
             value = ast.literal_eval(user_input.value)
-            result.text = f'Result: {value}'
+            ui.notify(f'Result: {value}')
         except (ValueError, SyntaxError):
-            result.text = 'Invalid literal'
+            ui.notify('Invalid literal', type='negative')
 
-    ui.button('Parse', on_click=safe_evaluate)
+    user_input = ui.input('Enter a Python literal', placeholder='[1, 2]')
+    ui.button('Parse', on_click=evaluate_safely)
 
 
 doc.text('', '''
