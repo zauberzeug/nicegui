@@ -282,6 +282,8 @@ __all__ = [
     'xterm',
 ]
 
+assert set(__all__) == set(_LAZY_IMPORTS), 'All public names must be in _LAZY_IMPORTS'
+
 if TYPE_CHECKING:
     from .context import context
     from .element import Element as element
