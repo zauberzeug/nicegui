@@ -127,7 +127,7 @@ def url_validation_demo():
     def safe_show_link(url: str):
         if is_safe_url(url):
             with dialog.clear(), ui.card():
-                ui.link(url)
+                ui.link(target=url)
             dialog.open()
         else:
             ui.notify('Invalid or unsafe URL', type='negative')
