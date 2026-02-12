@@ -8,7 +8,8 @@ doc.title('Security Best Practices')
 doc.text('Security Model', '''
     NiceGUI provides secure defaults and built-in protections, but **developers must write secure code**.
 
-    While most can, not all UI components can safely handle untrusted input. Understanding which ones require validation is essential.
+    While most can, not all UI components can safely handle untrusted input.
+    Understanding which ones require validation is essential.
 
     **Framework provides:**
 
@@ -26,7 +27,8 @@ doc.text('Security Model', '''
 
 
 @doc.demo('Common Sense', '''
-    At the end of the day, NiceGUI is Python. Do read through the application logic to see if it makes common sense.
+    At the end of the day, NiceGUI is Python.
+    Do read through the application logic to see if it makes common sense.
 
     You may find that some security vulnerabilities are obvious and should never happen in production code.
 
@@ -96,8 +98,8 @@ doc.text('', '''
 
 
 @doc.demo('URL Validation', '''
-    As `javascript:` URLs have their legitimate purpose in allowing a link to
-    execute JavaScript without round-trip server involvement, NiceGUI does not validate URL schemes.
+    As `javascript:` URLs have their legitimate purpose in allowing a link to execute JavaScript
+    without round-trip server involvement, NiceGUI does not validate URL schemes.
 
     You must validate user URLs to prevent `javascript:` URL injection.
 ''')
