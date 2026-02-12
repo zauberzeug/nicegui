@@ -418,6 +418,9 @@ if TYPE_CHECKING:
     from .ui_run import run
     from .ui_run_with import run_with
 else:
+    def __dir__() -> list[str]:
+        return __all__
+
     def __getattr__(name: str):
         if name in _LAZY_IMPORTS:
             module_path, attr_name = _LAZY_IMPORTS[name]
