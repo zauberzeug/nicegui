@@ -161,26 +161,24 @@ doc.text('', '''
 ''')
 
 
-@doc.part('Additional Resources')
-def additional_resources():
-    ui.markdown('''
-        ##### Security Advisories
+doc.text('Additional Resources', '''
+    **Security Advisories:**
 
-        [NiceGUI Security Advisories](https://github.com/zauberzeug/nicegui/security/advisories)
+    - [NiceGUI Security Advisories](https://github.com/zauberzeug/nicegui/security/advisories)
 
-        ##### External Resources
+    **External Resources:**
 
-        - [OWASP Top 10](https://owasp.org/www-project-top-ten/)
-        - [OWASP XSS Prevention](https://cheatsheetseries.owasp.org/cheatsheets/Cross_Site_Scripting_Prevention_Cheat_Sheet.html)
-        - [Content Security Policy](https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP)
-        - [DOMPurify](https://github.com/cure53/DOMPurify)
+    - [OWASP Top 10](https://owasp.org/www-project-top-ten/)
+    - [OWASP XSS Prevention](https://cheatsheetseries.owasp.org/cheatsheets/Cross_Site_Scripting_Prevention_Cheat_Sheet.html)
+    - [Content Security Policy](https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP)
+    - [DOMPurify](https://github.com/cure53/DOMPurify)
 
-        ##### Key Principles
+    **Key Principles:**
 
-        1. Keep sanitization enabled (the default)
-        2. Validate URL schemes (the framework does not restrict them)
-        3. Validate CSS values (the framework does not escape them)
-        4. Only disable sanitization for trusted content you control
-        5. Apply defense in depth (headers, CSP, input validation)
-        6. Keep NiceGUI up to date
-    ''')
+    1. Keep sanitization enabled (the default)
+    2. Validate URL schemes (the framework does not restrict them)
+    3. Validate CSS values (the framework does not escape them)
+    4. Only disable sanitization for trusted content you control
+    5. Apply defense in depth (headers, CSP, input validation)
+    6. Keep NiceGUI up to date
+''')
