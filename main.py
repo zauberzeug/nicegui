@@ -1,15 +1,18 @@
 #!/usr/bin/env python3
 import os
+from datetime import date
 from pathlib import Path
+from xml.sax.saxutils import escape as xml_escape
 
 from fastapi import Request
+from fastapi.responses import PlainTextResponse
 from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
 from starlette.middleware.sessions import SessionMiddleware
 from starlette.responses import Response
 
 from nicegui import app, core, ui
 from nicegui.page_arguments import RouteMatch
-from website import documentation, examples_page, fly, header, imprint_privacy, main_page, rate_limits, svg
+from website import documentation, examples_page, fly, header, imprint_privacy, main_page, rate_limits, seo, svg
 
 
 @app.add_middleware
@@ -38,6 +41,44 @@ app.add_static_file(local_file=svg.PATH / 'logo_square.png', url_path='/logo_squ
 
 documentation.build_search_index()
 documentation.build_tree()
+
+
+@app.get('/robots.txt')
+def _robots_txt() -> PlainTextResponse:
+    return PlainTextResponse(
+        f'User-agent: *\nAllow: /\n\nSitemap: {seo.SITE_URL}/sitemap.xml\n',
+        media_type='text/plain',
+    )
+
+
+@app.get('/sitemap.xml')
+def _sitemap_xml() -> Response:
+    today = date.today().isoformat()
+    urls = [
+        ('/', '1.0', 'weekly'),
+        ('/documentation', '0.9', 'weekly'),
+        ('/examples', '0.8', 'monthly'),
+        ('/imprint_privacy', '0.3', 'yearly'),
+    ]
+    for name in documentation.registry:
+        if name:  # skip the overview page (already added as /documentation)
+            urls.append((f'/documentation/{name}', '0.7', 'monthly'))
+    xml_urls = '\n'.join(
+        f'  <url>\n'
+        f'    <loc>{xml_escape(seo.SITE_URL + path)}</loc>\n'
+        f'    <lastmod>{today}</lastmod>\n'
+        f'    <changefreq>{freq}</changefreq>\n'
+        f'    <priority>{priority}</priority>\n'
+        f'  </url>'
+        for path, priority, freq in urls
+    )
+    xml = (
+        '<?xml version="1.0" encoding="UTF-8"?>\n'
+        '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
+        f'{xml_urls}\n'
+        '</urlset>\n'
+    )
+    return Response(content=xml, media_type='application/xml')
 
 
 @app.post('/dark_mode')
@@ -107,6 +148,7 @@ def _documentation_detail_page(name: str, tree: ui.tree) -> None:
     elif name in documentation.redirects:
         ui.navigate.to('/documentation/' + documentation.redirects[name])
     else:
+        ui.status_code(404)
         ui.label(f'Documentation for "{name}" could not be found.').classes('absolute-center')
 
 
