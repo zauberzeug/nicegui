@@ -35,7 +35,6 @@ dependencies = [
     "aiohttp>=3.13.3",  # https://github.com/zauberzeug/nicegui/security/dependabot/72
     "certifi>=2024.07.04",
     "pydantic-core>=2.35.0",
-    "lazy-imports>=1.1.0",
 ]
 
 [project.optional-dependencies]
