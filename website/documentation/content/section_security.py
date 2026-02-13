@@ -170,7 +170,6 @@ doc.text('Additional Resources', '''
 
     - [OWASP Top 10](https://owasp.org/www-project-top-ten/)
     - [OWASP XSS Prevention](https://cheatsheetseries.owasp.org/cheatsheets/Cross_Site_Scripting_Prevention_Cheat_Sheet.html)
-    - [Content Security Policy](https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP)
     - [DOMPurify](https://github.com/cure53/DOMPurify)
 
     **Key Principles:**
