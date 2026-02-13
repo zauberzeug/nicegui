@@ -64,8 +64,12 @@ class UserInteraction(Generic[T]):
             for element in self.elements:
                 if isinstance(element, DisableableElement) and not element.enabled:
                     continue
-                assert isinstance(element, (ui.input, ui.editor, ui.codemirror))
-                element.value = (element.value or '') + text
+                if isinstance(element, ui.number):
+                    element.value = float(text)
+                elif isinstance(element, (ui.input, ui.editor, ui.codemirror)):
+                    element.value = (element.value or '') + text
+                else:
+                    raise TypeError(f'Element of type {type(element)} does not support typing')
         return self
 
     def click(self) -> Self:
