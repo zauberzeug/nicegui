@@ -25,25 +25,29 @@ export default {
       if (!window.niceguiBridge || !window.niceguiBridge.onUpload) return { url: this.computed_url };
       const elementId = this.$el.id?.replace(/^c/, "");
       if (!elementId) return { url: this.computed_url };
-      const promises = files.map(
-        (file) =>
-          new Promise((resolve) => {
-            const reader = new FileReader();
-            reader.onload = () => {
-              const base64 = reader.result.split(",")[1];
-              resolve({ name: file.name, type: file.type, data: base64 });
-            };
-            reader.readAsDataURL(file);
-          })
-      );
-      // Handle the upload via the bridge, then reset the uploader
-      Promise.all(promises).then((fileDataArray) => {
-        const msg = JSON.stringify({ id: elementId, files: fileDataArray });
-        window.niceguiBridge.onUpload(msg);
-        setTimeout(() => this.$refs.qRef?.reset(), 100);
+      // Read files, send via bridge, then let QUploader finish cleanly
+      return Promise.all(
+        files.map(
+          (file) =>
+            new Promise((resolve) => {
+              const reader = new FileReader();
+              reader.onload = () => {
+                const base64 = reader.result.split(",")[1];
+                resolve({ name: file.name, type: file.type, data: base64 });
+              };
+              reader.readAsDataURL(file);
+            })
+        )
+      ).then((fileDataArray) => {
+        window.niceguiBridge.onUpload(JSON.stringify({ id: elementId, files: fileDataArray }));
+        const qRef = this.$refs.qRef;
+        if (qRef) {
+          qRef.uploadedFiles = qRef.uploadedFiles.concat(files);
+          files.forEach((f) => qRef.updateFileStatus(f, "uploaded"));
+        }
+        // Empty URL makes performUpload skip XHR and just decrement workingThreads
+        return { url: "" };
       });
-      // Return a never-resolving Promise to prevent QUploader from sending an XHR POST
-      return new Promise(() => {});
     },
   },
   props: {

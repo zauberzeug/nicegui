@@ -242,7 +242,7 @@ def page_io():
             data = await e.file.read()
             upload_info.text = f'Received "{e.file.name}" ({len(data)} bytes)'
 
-        ui.upload(on_upload=handle_upload, auto_upload=True).classes('w-full')
+        ui.upload(on_upload=handle_upload, multiple=True).classes('w-full')
 
 
 # ── Build the UI ──────────────────────────────────────────────────────
