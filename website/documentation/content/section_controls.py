@@ -2,6 +2,7 @@ from . import (
     badge_documentation,
     button_documentation,
     button_dropdown_documentation,
+    popup_edit_documentation,
     button_group_documentation,
     checkbox_documentation,
     codemirror_documentation,
@@ -51,6 +52,7 @@ doc.intro(rating_documentation)
 doc.intro(joystick_documentation)
 doc.intro(input_documentation)
 doc.intro(textarea_documentation)
+doc.intro(popup_edit_documentation)
 doc.intro(codemirror_documentation)
 doc.intro(xterm_documentation)
 doc.intro(number_documentation)

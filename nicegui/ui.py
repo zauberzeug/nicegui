@@ -87,6 +87,7 @@ __all__ = [
     'page_title',
     'pagination',
     'plotly',
+    'popup_edit',
     'pyplot',
     'query',
     'radio',
@@ -211,6 +212,7 @@ from .elements.page_scroller import PageScroller as page_scroller
 from .elements.page_sticky import PageSticky as page_sticky
 from .elements.pagination import Pagination as pagination
 from .elements.plotly import Plotly as plotly
+from .elements.popup_edit import PopupEdit as popup_edit
 from .elements.progress import CircularProgress as circular_progress
 from .elements.progress import LinearProgress as linear_progress
 from .elements.pyplot import Matplotlib as matplotlib
