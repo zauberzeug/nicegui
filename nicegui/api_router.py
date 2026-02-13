@@ -1,12 +1,20 @@
 from collections.abc import Callable
 from pathlib import Path
 
-import fastapi
+from .pyodide_compat import IS_PYODIDE
 
-from .page import page as ui_page
+try:
+    import fastapi
+    _APIRouterBase = fastapi.APIRouter
+except ImportError:
+    fastapi = None  # type: ignore
+    _APIRouterBase = object  # type: ignore
+
+if not IS_PYODIDE:
+    from .page import page as ui_page
 
 
-class APIRouter(fastapi.APIRouter):
+class APIRouter(_APIRouterBase):
 
     def page(self,
              path: str, *,

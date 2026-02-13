@@ -18,7 +18,11 @@ class Context:
         if not stack and not core.script_mode and not core.app.is_started:
             # create a pseudo client to "survive" until reaching `ui.run()`
             from .client import Client  # pylint: disable=import-outside-toplevel,cyclic-import
-            from .page import page  # pylint: disable=import-outside-toplevel,cyclic-import
+            from .pyodide_compat import IS_PYODIDE  # pylint: disable=import-outside-toplevel
+            if IS_PYODIDE:
+                from .page_pyodide import page  # pylint: disable=import-outside-toplevel
+            else:
+                from .page import page  # pylint: disable=import-outside-toplevel,cyclic-import
             if not Client.instances:  # in case some kind of dummy client is already created
                 core.script_mode = True
                 core.script_client = Client(page('/')).__enter__()  # pylint: disable=unnecessary-dunder-call

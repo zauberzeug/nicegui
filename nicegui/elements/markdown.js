@@ -4,7 +4,10 @@ export default {
   template: `<div></div>`,
   async mounted() {
     await this.$nextTick(); // NOTE: wait for window.path_prefix to be set
-    await loadResource(window.path_prefix + `${this.dynamicResourcePath}/${this.resourceName}`);
+    const resourceUrl = window.niceguiBridge
+      ? `./dynamic_resources/${this.resourceName}`
+      : window.path_prefix + `${this.dynamicResourcePath}/${this.resourceName}`;
+    await loadResource(resourceUrl);
     this.renderContent();
     if (this.useMermaid) {
       this.mermaid = (await import("nicegui-mermaid")).mermaid;
