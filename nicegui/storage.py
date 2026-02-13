@@ -5,6 +5,7 @@ from datetime import timedelta
 from pathlib import Path
 from typing import Any
 
+from fastapi import FastAPI
 from starlette.middleware import Middleware
 from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
 from starlette.middleware.sessions import SessionMiddleware
@@ -41,15 +42,66 @@ class RequestTrackingMiddleware(BaseHTTPMiddleware):
 
 
 def set_storage_secret(storage_secret: str | None = None,
-                       session_middleware_kwargs: dict[str, Any] | None = None) -> None:
-    """Set storage_secret and add request tracking middleware."""
-    if any(m.cls == SessionMiddleware for m in core.app.user_middleware):
-        # NOTE not using "add_middleware" because it would be the wrong order
-        core.app.user_middleware.append(Middleware(RequestTrackingMiddleware))
-    elif storage_secret is not None:
-        core.app.add_middleware(RequestTrackingMiddleware)
-        core.app.add_middleware(SessionMiddleware, secret_key=storage_secret, **(session_middleware_kwargs or {}))
+                       session_middleware_kwargs: dict[str, Any] | None = None, *,
+                       parent_app: FastAPI | None = None) -> None:
+    """Set storage_secret and add request tracking middleware.
+
+    If a parent_app with SessionMiddleware is provided:
+
+    - Tries to inherit its secret if the middlewares are compatible (same secret / different cookie names)
+    - Otherwise, intervenes by renaming NiceGUI's cookie name
+
+    Note: Does nothing if:
+
+    - No secret is available from either source
+    - Conflicting SessionMiddleware already added directly to NiceGUI's app (at ``from nicegui import app``)
+    """
+    session_middleware_kwargs = session_middleware_kwargs or {}
+    parent_middleware = _find_session_middleware(parent_app) if parent_app is not None else None
+
+    use_existing_session_middleware = False
+
+    if parent_middleware is not None:
+        parent_secret = _get_secret(parent_middleware.kwargs)
+        parent_cookie = _get_cookie(parent_middleware.kwargs)
+        has_conflict = (storage_secret is not None and
+                        storage_secret != parent_secret and
+                        _get_cookie(session_middleware_kwargs) == parent_cookie)
+        if has_conflict:
+            session_middleware_kwargs['session_cookie'] = f'nicegui_{parent_cookie}'
+            helpers.warn_once(
+                "Intervention applied to prevent conflict between parent app's SessionMiddleware and NiceGUI's\n"
+                'To suppress this warning, either:\n'
+                '  - Stop providing storage_secret or provide the same one as the parent app, or\n'
+                '  - Pass `session_middleware_kwargs={"session_cookie": "your_unique_cookie_name"}` to ui.run_with()'
+            )
+        else:
+            storage_secret = parent_secret
+            use_existing_session_middleware = True
+
     Storage.secret = storage_secret
+
+    if use_existing_session_middleware or _find_session_middleware(core.app) is not None:
+        # NOTE: not using add_middleware because it would be the wrong order
+        core.app.user_middleware.append(Middleware(RequestTrackingMiddleware))
+    elif Storage.secret:
+        core.app.add_middleware(RequestTrackingMiddleware)
+        core.app.add_middleware(SessionMiddleware, secret_key=Storage.secret, **session_middleware_kwargs)
+
+
+def _find_session_middleware(app: FastAPI) -> Middleware | None:
+    """Find SessionMiddleware in an app's middleware and return it, or None if not found."""
+    return next((m for m in app.user_middleware if m.cls == SessionMiddleware), None)
+
+
+def _get_secret(kwargs: dict[str, Any]) -> str:
+    """Extract the secret key from SessionMiddleware kwargs, casting as str to handle Secret type."""
+    return str(kwargs['secret_key'])
+
+
+def _get_cookie(kwargs: dict[str, Any]) -> str:
+    """Extract the session cookie name from SessionMiddleware kwargs."""
+    return kwargs.get('session_cookie', 'session')
 
 
 class Storage:
