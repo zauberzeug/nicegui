@@ -18,18 +18,6 @@ from . import background_tasks, binding, core, helpers, json, storage
 from .awaitable_response import AwaitableResponse
 from .dependencies import generate_resources
 from .element import Element
-
-# HACK: Eagerly import importmap-based elements so their __init_subclass__ registers ESM modules before any client page is served.
-from .elements.aggrid.aggrid import AgGrid  # noqa: F401 # pylint: disable=unused-import
-from .elements.codemirror.codemirror import CodeMirror  # noqa: F401 # pylint: disable=unused-import
-from .elements.echart.echart import EChart  # noqa: F401 # pylint: disable=unused-import
-from .elements.joystick.joystick import Joystick  # noqa: F401 # pylint: disable=unused-import
-from .elements.json_editor.json_editor import JsonEditor  # noqa: F401 # pylint: disable=unused-import
-from .elements.leaflet.leaflet import Leaflet  # noqa: F401 # pylint: disable=unused-import
-from .elements.mermaid.mermaid import Mermaid  # noqa: F401 # pylint: disable=unused-import
-from .elements.plotly.plotly import Plotly  # noqa: F401 # pylint: disable=unused-import
-from .elements.scene.scene import Scene  # noqa: F401 # pylint: disable=unused-import
-from .elements.xterm.xterm import Xterm  # noqa: F401 # pylint: disable=unused-import
 from .favicon import get_favicon_url
 from .javascript_request import JavaScriptRequest
 from .logging import log

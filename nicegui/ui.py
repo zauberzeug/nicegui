@@ -1,6 +1,7 @@
 import builtins
 import importlib
 import sys
+from pathlib import Path
 from typing import TYPE_CHECKING
 
 _LAZY_IMPORTS = {
@@ -432,3 +433,11 @@ def __getattr__(name: str) -> object:
         setattr(sys.modules[__name__], name, value)
         return value
     raise AttributeError(f"module 'nicegui.ui' has no attribute {name!r}")
+
+
+# Eagerly import element packages with 'dist' dirs so their __init__.py registers ESM modules in the importmap.
+for _module_path in {mp for mp, _ in _LAZY_IMPORTS.values()}:
+    _pkg_dir = Path(__file__).parent / _module_path.lstrip('.').replace('.', '/')
+    if _pkg_dir.is_dir() and (_pkg_dir / 'dist').is_dir():
+        importlib.import_module(_module_path, package='nicegui')
+del _module_path, _pkg_dir
