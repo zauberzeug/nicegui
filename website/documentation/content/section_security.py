@@ -179,6 +179,6 @@ doc.text('Additional Resources', '''
     2. Validate URL schemes (the framework does not restrict them)
     3. Validate CSS values (the framework does not escape them)
     4. Only disable sanitization for trusted content you control
-    5. Apply defense in depth (headers, CSP, input validation)
+    5. Apply defense in depth (iframe-blocking headers, input validation)
     6. Keep NiceGUI up to date
 ''')
