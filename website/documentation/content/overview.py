@@ -10,6 +10,7 @@ from . import (
     section_data_elements,
     section_page_layout,
     section_pages_routing,
+    section_security,
     section_styling_appearance,
     section_testing,
     section_text_elements,
@@ -136,6 +137,9 @@ tiles = [
     (section_testing, '''
         Write automated UI tests which run in a headless browser (slow) or fully simulated in Python (fast).
      '''),
+    (section_security, '''
+        Learn about security best practices, common vulnerabilities, and how to write secure NiceGUI applications.
+    '''),
 ]
 
 
