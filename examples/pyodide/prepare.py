@@ -269,7 +269,10 @@ def prepare_dynamic_resources() -> None:
     # Generate codehilite CSS for syntax-highlighted code blocks (e.g. ui.markdown with code)
     try:
         from pygments.formatters import HtmlFormatter  # pylint: disable=import-outside-toplevel
-        css = HtmlFormatter(style='default').get_style_defs('.codehilite')
+        css = (
+            HtmlFormatter(nobackground=True).get_style_defs('.codehilite') +
+            HtmlFormatter(nobackground=True, style='github-dark').get_style_defs('.body--dark .codehilite')
+        )
         resource_name = f'codehilite_{hashlib.sha256(css.encode()).hexdigest()[:32]}.css'
         resources_dir = DEMO_DIR / 'dynamic_resources'
         resources_dir.mkdir(parents=True, exist_ok=True)
