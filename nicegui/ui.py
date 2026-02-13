@@ -440,4 +440,4 @@ for _module_path in {mp for mp, _ in _LAZY_IMPORTS.values()}:
     _pkg_dir = Path(__file__).parent / _module_path.lstrip('.').replace('.', '/')
     if _pkg_dir.is_dir() and (_pkg_dir / 'dist').is_dir():
         importlib.import_module(_module_path, package='nicegui')
-del _module_path, _pkg_dir
+del _module_path, _pkg_dir  # pylint: disable=undefined-loop-variable
