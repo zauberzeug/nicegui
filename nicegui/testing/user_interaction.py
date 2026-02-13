@@ -65,7 +65,8 @@ class UserInteraction(Generic[T]):
                 if isinstance(element, DisableableElement) and not element.enabled:
                     continue
                 if isinstance(element, ui.number):
-                    element.value = float(text)
+                    current = element._value_to_model_value(element.value) or ''  # pylint: disable=protected-access
+                    element.value = float(current + text)
                 elif isinstance(element, (ui.input, ui.editor, ui.codemirror)):
                     element.value = (element.value or '') + text
                 else:

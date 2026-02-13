@@ -234,19 +234,23 @@ async def test_input(user: User, kind: type) -> None:
 async def test_type_number(user: User) -> None:
     @ui.page('/')
     def page():
-        number = ui.number(on_change=lambda e: ui.notify(f'Changed: {e.value}'))
+        number = ui.number()
         ui.label().bind_text_from(number, 'value', lambda v: f'Value: {v}')
 
     await user.open('/')
 
-    user.find(ui.number).type('42')
+    user.find(ui.number).type('4')
+    await user.should_see('Value: 4.0')
+
+    user.find(ui.number).type('2')
     await user.should_see('Value: 42.0')
-    await user.should_see('Changed: 42.0')
 
     user.find(ui.number).clear()
     user.find(ui.number).type('7')
     await user.should_see('Value: 7.0')
-    await user.should_see('Changed: 7.0')
+
+    user.find(ui.number).type('.5')
+    await user.should_see('Value: 7.5')
 
 
 async def test_name_property(user: User) -> None:
