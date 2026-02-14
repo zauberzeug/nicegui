@@ -11,7 +11,7 @@ from .mixins.label_element import LabelElement
 from .mixins.value_element import ValueElement
 
 
-class Fab(ValueElement, LabelElement, IconElement, BackgroundColorElement, DisableableElement):
+class Fab(ValueElement[bool], LabelElement, IconElement, BackgroundColorElement, DisableableElement):
 
     @resolve_defaults
     def __init__(self,

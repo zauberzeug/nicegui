@@ -6,7 +6,7 @@ from .mixins.text_element import TextElement
 from .mixins.value_element import ValueElement
 
 
-class Expansion(IconElement, TextElement, ValueElement, DisableableElement,
+class Expansion(IconElement, TextElement, ValueElement[bool], DisableableElement,
                 component='expansion.js', default_classes='nicegui-expansion'):
 
     @resolve_defaults
@@ -16,7 +16,7 @@ class Expansion(IconElement, TextElement, ValueElement, DisableableElement,
                  icon: str | None = DEFAULT_PROP | None,
                  group: str | None = DEFAULT_PROP | None,
                  value: bool = DEFAULT_PROPS['model-value'] | False,
-                 on_value_change: Handler[ValueChangeEventArguments] | None = None
+                 on_value_change: Handler[ValueChangeEventArguments[bool]] | None = None
                  ) -> None:
         """Expansion Element
 

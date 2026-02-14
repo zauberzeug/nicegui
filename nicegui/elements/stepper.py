@@ -11,12 +11,12 @@ from .mixins.icon_element import IconElement
 from .mixins.value_element import ValueElement
 
 
-class Stepper(ValueElement, default_classes='nicegui-stepper'):
+class Stepper(ValueElement[Any], default_classes='nicegui-stepper'):
 
     @resolve_defaults
     def __init__(self, *,
                  value: str | Step | None = DEFAULT_PROPS['model-value'] | None,
-                 on_value_change: Handler[ValueChangeEventArguments] | None = None,
+                 on_value_change: Handler[ValueChangeEventArguments[Any]] | None = None,
                  keep_alive: bool = DEFAULT_PROP | True,
                  ) -> None:
         """Stepper

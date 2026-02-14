@@ -5,7 +5,7 @@ from .item import Item
 from .mixins.value_element import ValueElement
 
 
-class Menu(ValueElement):
+class Menu(ValueElement[bool]):
 
     @resolve_defaults
     def __init__(self, *, value: bool = DEFAULT_PROPS['model-value'] | False) -> None:

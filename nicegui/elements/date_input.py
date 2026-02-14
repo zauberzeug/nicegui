@@ -8,7 +8,7 @@ from .mixins.label_element import LabelElement
 from .mixins.value_element import ValueElement
 
 
-class DateInput(LabelElement, ValueElement, DisableableElement):
+class DateInput(LabelElement, ValueElement[str], DisableableElement):
     LOOPBACK = False
 
     @resolve_defaults
@@ -17,7 +17,7 @@ class DateInput(LabelElement, ValueElement, DisableableElement):
                  range_input: bool = False,
                  placeholder: str | None = DEFAULT_PROP | None,
                  value: str = DEFAULT_PROPS['model-value'] | '',
-                 on_change: Handler[ValueChangeEventArguments] | None = None,
+                 on_change: Handler[ValueChangeEventArguments[str]] | None = None,
                  ) -> None:
         """Date Input
 

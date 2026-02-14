@@ -40,7 +40,7 @@ class Table(FilterElement, component='table.js'):
                  selection: Literal[None, 'single', 'multiple'] = DEFAULT_PROP | None,
                  pagination: int | dict | None = None,
                  on_select: Handler[TableSelectionEventArguments] | None = None,
-                 on_pagination_change: Handler[ValueChangeEventArguments] | None = None,
+                 on_pagination_change: Handler[ValueChangeEventArguments[Any]] | None = None,
                  ) -> None:
         """Table
 
@@ -133,7 +133,7 @@ class Table(FilterElement, component='table.js'):
         self._selection_handlers.append(callback)
         return self
 
-    def on_pagination_change(self, callback: Handler[ValueChangeEventArguments]) -> Self:
+    def on_pagination_change(self, callback: Handler[ValueChangeEventArguments[Any]]) -> Self:
         """Add a callback to be invoked when the pagination changes."""
         self._pagination_change_handlers.append(callback)
         return self
