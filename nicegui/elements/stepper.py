@@ -11,7 +11,7 @@ from .mixins.icon_element import IconElement
 from .mixins.value_element import ValueElement
 
 
-class Stepper(ValueElement, default_classes='nicegui-stepper'):
+class Stepper(ValueElement[Any], default_classes='nicegui-stepper'):
 
     @resolve_defaults
     def __init__(self, *,

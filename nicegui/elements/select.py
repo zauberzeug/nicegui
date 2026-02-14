@@ -11,7 +11,7 @@ from .mixins.label_element import LabelElement
 from .mixins.validation_element import ValidationDict, ValidationElement, ValidationFunction
 
 
-class Select(LabelElement, ValidationElement, ChoiceElement, DisableableElement, component='select.js'):
+class Select(LabelElement, ValidationElement[Any], ChoiceElement, DisableableElement, component='select.js'):
 
     @resolve_defaults
     def __init__(self,

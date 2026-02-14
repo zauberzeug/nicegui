@@ -8,7 +8,7 @@ from .mixins.value_element import ValueElement
 DrawerSides = Literal['left', 'right']
 
 
-class Drawer(ValueElement, default_classes='nicegui-drawer'):
+class Drawer(ValueElement[bool | None], default_classes='nicegui-drawer'):
 
     @resolve_defaults
     def __init__(self,

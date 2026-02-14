@@ -3,7 +3,7 @@ from ..events import Handler, ValueChangeEventArguments
 from .mixins.value_element import ValueElement
 
 
-class DarkMode(ValueElement, component='dark_mode.js'):
+class DarkMode(ValueElement[bool | None], component='dark_mode.js'):
     VALUE_PROP = 'value'
 
     @resolve_defaults

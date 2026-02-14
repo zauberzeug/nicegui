@@ -8,7 +8,7 @@ from .mixins.value_element import ValueElement
 from .time import Time as time
 
 
-class TimeInput(LabelElement, ValueElement, DisableableElement):
+class TimeInput(LabelElement, ValueElement[str], DisableableElement):
     LOOPBACK = False
 
     @resolve_defaults

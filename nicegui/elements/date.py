@@ -1,10 +1,12 @@
+from typing import Any
+
 from ..defaults import DEFAULT_PROP, DEFAULT_PROPS, resolve_defaults
 from ..events import Handler, ValueChangeEventArguments
 from .mixins.disableable_element import DisableableElement
 from .mixins.value_element import ValueElement
 
 
-class Date(ValueElement, DisableableElement):
+class Date(ValueElement[Any], DisableableElement):
 
     @resolve_defaults
     def __init__(self,

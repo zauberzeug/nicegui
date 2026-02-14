@@ -9,7 +9,7 @@ from .mixins.disableable_element import DisableableElement
 from .mixins.value_element import ValueElement
 
 
-class Carousel(ValueElement):
+class Carousel(ValueElement[Any]):
 
     @resolve_defaults
     def __init__(self, *,

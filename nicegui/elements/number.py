@@ -7,7 +7,7 @@ from .mixins.label_element import LabelElement
 from .mixins.validation_element import ValidationDict, ValidationElement, ValidationFunction
 
 
-class Number(LabelElement, ValidationElement, DisableableElement):
+class Number(LabelElement, ValidationElement[float | None], DisableableElement):
     LOOPBACK = False
 
     @resolve_defaults

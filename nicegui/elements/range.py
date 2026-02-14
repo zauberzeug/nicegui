@@ -4,7 +4,7 @@ from .mixins.disableable_element import DisableableElement
 from .mixins.value_element import ValueElement
 
 
-class Range(ValueElement, DisableableElement):
+class Range(ValueElement[dict[str, float] | None], DisableableElement):
 
     @resolve_defaults
     def __init__(self, *,

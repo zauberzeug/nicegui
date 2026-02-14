@@ -10,7 +10,7 @@ from .mixins.text_element import TextElement
 from .mixins.value_element import ValueElement
 
 
-class Chip(IconElement, ValueElement, TextElement, BackgroundColorElement, TextColorElement, DisableableElement, SelectableElement):
+class Chip(IconElement, ValueElement[bool], TextElement, BackgroundColorElement, TextColorElement, DisableableElement, SelectableElement):
     TEXT_COLOR_PROP = 'text-color'
 
     @resolve_defaults

@@ -17,7 +17,7 @@ if importlib.util.find_spec('anywidget'):
 UNDEFINED = object()
 
 
-class AnyWidget(ValueElement, component='anywidget.js', dependencies=['lib/widget.js']):
+class AnyWidget(ValueElement[Any], component='anywidget.js', dependencies=['lib/widget.js']):
     VALUE_PROP: str = 'traits'
 
     def __init__(self, widget: anywidget.AnyWidget, *, throttle: float = 0) -> None:

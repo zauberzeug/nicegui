@@ -4,7 +4,7 @@ from .mixins.disableable_element import DisableableElement
 from .mixins.value_element import ValueElement
 
 
-class Splitter(ValueElement, DisableableElement, default_classes='nicegui-splitter'):
+class Splitter(ValueElement[float | None], DisableableElement, default_classes='nicegui-splitter'):
 
     @resolve_defaults
     def __init__(self, *,

@@ -4,7 +4,7 @@ from .mixins.disableable_element import DisableableElement
 from .mixins.value_element import ValueElement
 
 
-class Slider(ValueElement, DisableableElement):
+class Slider(ValueElement[float | None], DisableableElement):
 
     @resolve_defaults
     def __init__(self, *,

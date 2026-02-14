@@ -14,7 +14,7 @@ HEX_COLOR_PATTERN_6 = re.compile(r'^#([0-9a-fA-F]{6})$')
 HEX_COLOR_PATTERN_3 = re.compile(r'^#([0-9a-fA-F]{3})$')
 
 
-class ColorInput(LabelElement, ValueElement, DisableableElement):
+class ColorInput(LabelElement, ValueElement[str], DisableableElement):
     LOOPBACK = False
 
     @resolve_defaults

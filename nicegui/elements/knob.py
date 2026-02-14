@@ -6,7 +6,7 @@ from .mixins.disableable_element import DisableableElement
 from .mixins.value_element import ValueElement
 
 
-class Knob(ValueElement, DisableableElement, TextColorElement):
+class Knob(ValueElement[float], DisableableElement, TextColorElement):
 
     @resolve_defaults
     def __init__(self,

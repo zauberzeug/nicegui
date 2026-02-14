@@ -7,7 +7,7 @@ from .mixins.label_element import LabelElement
 from .mixins.validation_element import ValidationDict, ValidationElement, ValidationFunction
 
 
-class InputChips(LabelElement, ValidationElement, DisableableElement):
+class InputChips(LabelElement, ValidationElement[list[str] | None], DisableableElement):
 
     @resolve_defaults
     def __init__(self,

@@ -246,7 +246,7 @@ SUPPORTED_THEMES = Literal[
 ]
 
 
-class CodeMirror(ValueElement, DisableableElement,
+class CodeMirror(ValueElement[str], DisableableElement,
                  component='codemirror.js',
                  esm={'nicegui-codemirror': 'dist'},
                  default_classes='nicegui-codemirror'):

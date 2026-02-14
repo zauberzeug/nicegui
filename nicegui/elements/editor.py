@@ -6,7 +6,7 @@ from .mixins.disableable_element import DisableableElement
 from .mixins.value_element import ValueElement
 
 
-class Editor(ValueElement, DisableableElement, component='editor.js', default_classes='nicegui-editor'):
+class Editor(ValueElement[str], DisableableElement, component='editor.js', default_classes='nicegui-editor'):
     VALUE_PROP: str = 'value'
     LOOPBACK = False
 

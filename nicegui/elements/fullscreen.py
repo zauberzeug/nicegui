@@ -3,7 +3,7 @@ from ..events import Handler, ValueChangeEventArguments
 from .mixins.value_element import ValueElement
 
 
-class Fullscreen(ValueElement, component='fullscreen.js'):
+class Fullscreen(ValueElement[bool], component='fullscreen.js'):
     LOOPBACK = None
 
     @resolve_defaults

@@ -11,7 +11,7 @@ from .mixins.label_element import LabelElement
 from .mixins.value_element import ValueElement
 
 
-class Tabs(ValueElement):
+class Tabs(ValueElement[Any]):
 
     def __init__(self, *,
                  value: Tab | TabPanel | None = None,
@@ -53,7 +53,7 @@ class Tab(LabelElement, IconElement, DisableableElement):
         self.tabs = context.slot.parent
 
 
-class TabPanels(ValueElement):
+class TabPanels(ValueElement[Any]):
 
     @resolve_defaults
     def __init__(self,

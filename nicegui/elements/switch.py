@@ -5,7 +5,7 @@ from .mixins.text_element import TextElement
 from .mixins.value_element import ValueElement
 
 
-class Switch(TextElement, ValueElement, DisableableElement):
+class Switch(TextElement, ValueElement[bool | None], DisableableElement):
 
     @resolve_defaults
     def __init__(self,

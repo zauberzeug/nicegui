@@ -4,7 +4,7 @@ from .mixins.disableable_element import DisableableElement
 from .mixins.value_element import ValueElement
 
 
-class Pagination(ValueElement, DisableableElement):
+class Pagination(ValueElement[int | None], DisableableElement):
 
     @resolve_defaults
     def __init__(self,

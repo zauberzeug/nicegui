@@ -4,7 +4,7 @@ from ..events import Handler, ValueChangeEventArguments
 from .mixins.value_element import ValueElement
 
 
-class ChoiceElement(ValueElement):
+class ChoiceElement(ValueElement[Any]):
 
     def __init__(self, *,
                  tag: str | None = None,

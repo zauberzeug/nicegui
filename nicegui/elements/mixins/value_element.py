@@ -1,5 +1,5 @@
 from collections.abc import Callable
-from typing import Any, cast
+from typing import TYPE_CHECKING, Any, Generic, TypeVar, cast
 
 from typing_extensions import Self
 
@@ -7,8 +7,10 @@ from ...binding import BindableProperty, bind, bind_from, bind_to
 from ...element import Element
 from ...events import GenericEventArguments, Handler, ValueChangeEventArguments, handle_event
 
+V = TypeVar('V')
 
-class ValueElement(Element):
+
+class ValueElement(Element, Generic[V]):
     VALUE_PROP: str = 'model-value'
     '''Name of the prop that holds the value of the element'''
 
@@ -23,8 +25,11 @@ class ValueElement(Element):
     value = BindableProperty(
         on_change=lambda sender, value: cast(Self, sender)._handle_value_change(value))  # pylint: disable=protected-access
 
+    if TYPE_CHECKING:
+        value: V  # type: ignore[assignment]
+
     def __init__(self, *,
-                 value: Any,
+                 value: V,
                  on_value_change: Handler[ValueChangeEventArguments] | None = None,
                  throttle: float = 0,
                  **kwargs: Any,
@@ -50,7 +55,7 @@ class ValueElement(Element):
     def bind_value_to(self,
                       target_object: Any,
                       target_name: str = 'value',
-                      forward: Callable[[Any], Any] | None = None, *,
+                      forward: Callable[[V], Any] | None = None, *,
                       strict: bool | None = None,
                       ) -> Self:
         """Bind the value of this element to the target object's target_name property.
@@ -70,7 +75,7 @@ class ValueElement(Element):
     def bind_value_from(self,
                         target_object: Any,
                         target_name: str = 'value',
-                        backward: Callable[[Any], Any] | None = None, *,
+                        backward: Callable[[Any], V] | None = None, *,
                         strict: bool | None = None,
                         ) -> Self:
         """Bind the value of this element from the target object's target_name property.
@@ -90,8 +95,8 @@ class ValueElement(Element):
     def bind_value(self,
                    target_object: Any,
                    target_name: str = 'value', *,
-                   forward: Callable[[Any], Any] | None = None,
-                   backward: Callable[[Any], Any] | None = None,
+                   forward: Callable[[V], Any] | None = None,
+                   backward: Callable[[Any], V] | None = None,
                    strict: bool | None = None,
                    ) -> Self:
         """Bind the value of this element to the target object's target_name property.
@@ -112,14 +117,14 @@ class ValueElement(Element):
              self_strict=False, other_strict=strict)
         return self
 
-    def set_value(self, value: Any) -> None:
+    def set_value(self, value: V) -> None:
         """Set the value of this element.
 
         :param value: The value to set.
         """
         self.value = value
 
-    def _handle_value_change(self, value: Any) -> None:
+    def _handle_value_change(self, value: V) -> None:
         previous_value = self._props.get(self.VALUE_PROP)
         with self._props.suspend_updates():
             self._props[self.VALUE_PROP] = self._value_to_model_value(value)
@@ -131,11 +136,11 @@ class ValueElement(Element):
         for handler in self._change_handlers:
             handle_event(handler, args)
 
-    def _event_args_to_value(self, e: GenericEventArguments) -> Any:
+    def _event_args_to_value(self, e: GenericEventArguments) -> V:
         return e.args
 
-    def _value_to_model_value(self, value: Any) -> Any:
+    def _value_to_model_value(self, value: V) -> Any:
         return value
 
-    def _value_to_event_value(self, value: Any) -> Any:
+    def _value_to_event_value(self, value: V) -> Any:
         return value
