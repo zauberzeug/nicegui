@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import functools
+import importlib
+import sys
 from collections.abc import Callable, Iterable
 from dataclasses import dataclass
 from pathlib import Path
@@ -152,7 +154,46 @@ def register_dynamic_resource(name: str, function: Callable) -> DynamicResource:
 
 def register_esm(name: str, path: Path, *, max_time: float | None) -> None:
     """Register an ESM module."""
-    esm_modules[compute_key(path, max_time=max_time)] = EsmModule(name=name, path=path)
+    key = compute_key(path, max_time=max_time)
+    if key in esm_modules:
+        if esm_modules[key].name == name:
+            return
+        raise ValueError(f'Conflicting ESM registration for key "{key}": '
+                         f'"{esm_modules[key].name}" vs "{name}"')
+    esm_modules[key] = EsmModule(name=name, path=path)
+
+
+def setup_esm_package(package_file: str, package_name: str, esm_name: str,
+                      exports: dict[str, str]) -> tuple[Callable[[str], object], Callable[[], list[str]]]:
+    """Register an ESM module and return ``__getattr__`` and ``__dir__`` for lazy class loading.
+
+    Each ESM element package can use this in its ``__init__.py``::
+
+        from ...dependencies import setup_esm_package
+        __getattr__, __dir__ = setup_esm_package(__file__, __name__, 'nicegui-aggrid', {'AgGrid': '.aggrid'})
+        __all__ = ['AgGrid']
+    """
+    dist = Path(package_file).parent / 'dist'
+    register_esm(esm_name, dist, max_time=dist.stat().st_mtime)
+
+    by_submodule: dict[str, list[str]] = {}
+    for attr, submod in exports.items():
+        by_submodule.setdefault(submod, []).append(attr)
+
+    def __getattr__(name: str) -> object:
+        if name not in exports:
+            raise AttributeError(name)
+        submod = exports[name]
+        module = importlib.import_module(submod, package=package_name)
+        pkg = sys.modules[package_name]
+        for attr in by_submodule[submod]:
+            setattr(pkg, attr, getattr(module, attr))
+        return getattr(module, name)
+
+    def __dir__() -> list[str]:
+        return list(exports)
+
+    return __getattr__, __dir__
 
 
 def register_importmap_override(import_name: str, url: str) -> None:

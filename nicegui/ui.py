@@ -1,3 +1,149 @@
+import builtins
+import importlib
+import sys
+from pathlib import Path
+from typing import TYPE_CHECKING
+
+_LAZY_IMPORTS = {
+    'context': ('.context', 'context'),
+    'element': ('.element', 'Element'),
+    'aggrid': ('.elements.aggrid', 'AgGrid'),
+    'altair': ('.elements.altair', 'Altair'),
+    'anywidget': ('.elements.anywidget', 'AnyWidget'),
+    'audio': ('.elements.audio', 'Audio'),
+    'avatar': ('.elements.avatar', 'Avatar'),
+    'badge': ('.elements.badge', 'Badge'),
+    'button': ('.elements.button', 'Button'),
+    'dropdown_button': ('.elements.button_dropdown', 'DropdownButton'),
+    'button_group': ('.elements.button_group', 'ButtonGroup'),
+    'card': ('.elements.card', 'Card'),
+    'card_actions': ('.elements.card', 'CardActions'),
+    'card_section': ('.elements.card', 'CardSection'),
+    'carousel': ('.elements.carousel', 'Carousel'),
+    'carousel_slide': ('.elements.carousel', 'CarouselSlide'),
+    'chat_message': ('.elements.chat_message', 'ChatMessage'),
+    'checkbox': ('.elements.checkbox', 'Checkbox'),
+    'chip': ('.elements.chip', 'Chip'),
+    'code': ('.elements.code', 'Code'),
+    'codemirror': ('.elements.codemirror', 'CodeMirror'),
+    'color_input': ('.elements.color_input', 'ColorInput'),
+    'color_picker': ('.elements.color_picker', 'ColorPicker'),
+    'colors': ('.elements.colors', 'Colors'),
+    'column': ('.elements.column', 'Column'),
+    'context_menu': ('.elements.context_menu', 'ContextMenu'),
+    'dark_mode': ('.elements.dark_mode', 'DarkMode'),
+    'date': ('.elements.date', 'Date'),
+    'date_input': ('.elements.date_input', 'DateInput'),
+    'dialog': ('.elements.dialog', 'Dialog'),
+    'drawer': ('.elements.drawer', 'Drawer'),
+    'left_drawer': ('.elements.drawer', 'LeftDrawer'),
+    'right_drawer': ('.elements.drawer', 'RightDrawer'),
+    'echart': ('.elements.echart', 'EChart'),
+    'editor': ('.elements.editor', 'Editor'),
+    'expansion': ('.elements.expansion', 'Expansion'),
+    'fab': ('.elements.fab', 'Fab'),
+    'fab_action': ('.elements.fab', 'FabAction'),
+    'footer': ('.elements.footer', 'Footer'),
+    'fullscreen': ('.elements.fullscreen', 'Fullscreen'),
+    'grid': ('.elements.grid', 'Grid'),
+    'header': ('.elements.header', 'Header'),
+    'highchart': ('.elements.highchart', 'highchart'),
+    'html': ('.elements.html', 'Html'),
+    'icon': ('.elements.icon', 'Icon'),
+    'image': ('.elements.image', 'Image'),
+    'input': ('.elements.input', 'Input'),
+    'input_chips': ('.elements.input_chips', 'InputChips'),
+    'interactive_image': ('.elements.interactive_image', 'InteractiveImage'),
+    'item': ('.elements.item', 'Item'),
+    'item_label': ('.elements.item', 'ItemLabel'),
+    'item_section': ('.elements.item', 'ItemSection'),
+    'joystick': ('.elements.joystick', 'Joystick'),
+    'json_editor': ('.elements.json_editor', 'JsonEditor'),
+    'keyboard': ('.elements.keyboard', 'Keyboard'),
+    'knob': ('.elements.knob', 'Knob'),
+    'label': ('.elements.label', 'Label'),
+    'leaflet': ('.elements.leaflet', 'Leaflet'),
+    'line_plot': ('.elements.line_plot', 'LinePlot'),
+    'link': ('.elements.link', 'Link'),
+    'link_target': ('.elements.link', 'LinkTarget'),
+    'list': ('.elements.list', 'List'),
+    'log': ('.elements.log', 'Log'),
+    'markdown': ('.elements.markdown', 'Markdown'),
+    'menu': ('.elements.menu', 'Menu'),
+    'menu_item': ('.elements.menu', 'MenuItem'),
+    'mermaid': ('.elements.mermaid', 'Mermaid'),
+    'notification': ('.elements.notification', 'Notification'),
+    'number': ('.elements.number', 'Number'),
+    'page_scroller': ('.elements.page_scroller', 'PageScroller'),
+    'page_sticky': ('.elements.page_sticky', 'PageSticky'),
+    'pagination': ('.elements.pagination', 'Pagination'),
+    'plotly': ('.elements.plotly', 'Plotly'),
+    'circular_progress': ('.elements.progress', 'CircularProgress'),
+    'linear_progress': ('.elements.progress', 'LinearProgress'),
+    'matplotlib': ('.elements.pyplot', 'Matplotlib'),
+    'pyplot': ('.elements.pyplot', 'Pyplot'),
+    'query': ('.elements.query', 'Query'),
+    'radio': ('.elements.radio', 'Radio'),
+    'range': ('.elements.range', 'Range'),
+    'rating': ('.elements.rating', 'Rating'),
+    'restructured_text': ('.elements.restructured_text', 'ReStructuredText'),
+    'row': ('.elements.row', 'Row'),
+    'scene': ('.elements.scene', 'Scene'),
+    'scene_view': ('.elements.scene', 'SceneView'),
+    'scroll_area': ('.elements.scroll_area', 'ScrollArea'),
+    'select': ('.elements.select', 'Select'),
+    'separator': ('.elements.separator', 'Separator'),
+    'skeleton': ('.elements.skeleton', 'Skeleton'),
+    'slide_item': ('.elements.slide_item', 'SlideItem'),
+    'slider': ('.elements.slider', 'Slider'),
+    'space': ('.elements.space', 'Space'),
+    'spinner': ('.elements.spinner', 'Spinner'),
+    'splitter': ('.elements.splitter', 'Splitter'),
+    'step': ('.elements.stepper', 'Step'),
+    'stepper': ('.elements.stepper', 'Stepper'),
+    'stepper_navigation': ('.elements.stepper', 'StepperNavigation'),
+    'sub_pages': ('.elements.sub_pages', 'SubPages'),
+    'switch': ('.elements.switch', 'Switch'),
+    'table': ('.elements.table', 'Table'),
+    'tab': ('.elements.tabs', 'Tab'),
+    'tab_panel': ('.elements.tabs', 'TabPanel'),
+    'tab_panels': ('.elements.tabs', 'TabPanels'),
+    'tabs': ('.elements.tabs', 'Tabs'),
+    'teleport': ('.elements.teleport', 'Teleport'),
+    'textarea': ('.elements.textarea', 'Textarea'),
+    'time': ('.elements.time', 'Time'),
+    'time_input': ('.elements.time_input', 'TimeInput'),
+    'timeline': ('.elements.timeline', 'Timeline'),
+    'timeline_entry': ('.elements.timeline', 'TimelineEntry'),
+    'timer': ('.elements.timer', 'Timer'),
+    'toggle': ('.elements.toggle', 'Toggle'),
+    'tooltip': ('.elements.tooltip', 'Tooltip'),
+    'tree': ('.elements.tree', 'Tree'),
+    'upload': ('.elements.upload', 'Upload'),
+    'video': ('.elements.video', 'Video'),
+    'xterm': ('.elements.xterm', 'Xterm'),
+    'clipboard': ('.functions.clipboard', None),
+    'download': ('.functions.download', 'download'),
+    'add_body_html': ('.functions.html', 'add_body_html'),
+    'add_head_html': ('.functions.html', 'add_head_html'),
+    'run_javascript': ('.functions.javascript', 'run_javascript'),
+    'navigate': ('.functions.navigate', 'navigate'),
+    'notify': ('.functions.notify', 'notify'),
+    'on': ('.functions.on', 'on'),
+    'on_exception': ('.functions.on_exception', 'on_exception'),
+    'page_title': ('.functions.page_title', 'page_title'),
+    'refreshable': ('.functions.refreshable', 'refreshable'),
+    'refreshable_method': ('.functions.refreshable', 'refreshable_method'),
+    'state': ('.functions.refreshable', 'state'),
+    'add_css': ('.functions.style', 'add_css'),
+    'add_sass': ('.functions.style', 'add_sass'),
+    'add_scss': ('.functions.style', 'add_scss'),
+    'update': ('.functions.update', 'update'),
+    'page': ('.page', 'page'),
+    'run': ('.ui_run', 'run'),
+    'run_with': ('.ui_run_with', 'run_with'),
+}
+
 __all__ = [
     'add_body_html',
     'add_css',
@@ -138,135 +284,160 @@ __all__ = [
     'xterm',
 ]
 
-from .context import context
-from .element import Element as element
-from .elements.aggrid import AgGrid as aggrid
-from .elements.altair import Altair as altair
-from .elements.anywidget import AnyWidget as anywidget
-from .elements.audio import Audio as audio
-from .elements.avatar import Avatar as avatar
-from .elements.badge import Badge as badge
-from .elements.button import Button as button
-from .elements.button_dropdown import DropdownButton as dropdown_button
-from .elements.button_group import ButtonGroup as button_group
-from .elements.card import Card as card
-from .elements.card import CardActions as card_actions
-from .elements.card import CardSection as card_section
-from .elements.carousel import Carousel as carousel
-from .elements.carousel import CarouselSlide as carousel_slide
-from .elements.chat_message import ChatMessage as chat_message
-from .elements.checkbox import Checkbox as checkbox
-from .elements.chip import Chip as chip
-from .elements.code import Code as code
-from .elements.codemirror import CodeMirror as codemirror
-from .elements.color_input import ColorInput as color_input
-from .elements.color_picker import ColorPicker as color_picker
-from .elements.colors import Colors as colors
-from .elements.column import Column as column
-from .elements.context_menu import ContextMenu as context_menu
-from .elements.dark_mode import DarkMode as dark_mode
-from .elements.date import Date as date
-from .elements.date_input import DateInput as date_input
-from .elements.dialog import Dialog as dialog
-from .elements.drawer import Drawer as drawer
-from .elements.drawer import LeftDrawer as left_drawer
-from .elements.drawer import RightDrawer as right_drawer
-from .elements.echart import EChart as echart
-from .elements.editor import Editor as editor
-from .elements.expansion import Expansion as expansion
-from .elements.fab import Fab as fab
-from .elements.fab import FabAction as fab_action
-from .elements.footer import Footer as footer
-from .elements.fullscreen import Fullscreen as fullscreen
-from .elements.grid import Grid as grid
-from .elements.header import Header as header
-from .elements.highchart import highchart
-from .elements.html import Html as html
-from .elements.icon import Icon as icon
-from .elements.image import Image as image
-from .elements.input import Input as input  # pylint: disable=redefined-builtin
-from .elements.input_chips import InputChips as input_chips
-from .elements.interactive_image import InteractiveImage as interactive_image
-from .elements.item import Item as item
-from .elements.item import ItemLabel as item_label
-from .elements.item import ItemSection as item_section
-from .elements.joystick import Joystick as joystick
-from .elements.json_editor import JsonEditor as json_editor
-from .elements.keyboard import Keyboard as keyboard
-from .elements.knob import Knob as knob
-from .elements.label import Label as label
-from .elements.leaflet import Leaflet as leaflet
-from .elements.line_plot import LinePlot as line_plot
-from .elements.link import Link as link
-from .elements.link import LinkTarget as link_target
-from .elements.list import List as list  # pylint: disable=redefined-builtin
-from .elements.log import Log as log
-from .elements.markdown import Markdown as markdown
-from .elements.menu import Menu as menu
-from .elements.menu import MenuItem as menu_item
-from .elements.mermaid import Mermaid as mermaid
-from .elements.notification import Notification as notification
-from .elements.number import Number as number
-from .elements.page_scroller import PageScroller as page_scroller
-from .elements.page_sticky import PageSticky as page_sticky
-from .elements.pagination import Pagination as pagination
-from .elements.plotly import Plotly as plotly
-from .elements.progress import CircularProgress as circular_progress
-from .elements.progress import LinearProgress as linear_progress
-from .elements.pyplot import Matplotlib as matplotlib
-from .elements.pyplot import Pyplot as pyplot
-from .elements.query import Query as query
-from .elements.radio import Radio as radio
-from .elements.range import Range as range  # pylint: disable=redefined-builtin
-from .elements.rating import Rating as rating
-from .elements.restructured_text import ReStructuredText as restructured_text
-from .elements.row import Row as row
-from .elements.scene import Scene as scene
-from .elements.scene import SceneView as scene_view
-from .elements.scroll_area import ScrollArea as scroll_area
-from .elements.select import Select as select
-from .elements.separator import Separator as separator
-from .elements.skeleton import Skeleton as skeleton
-from .elements.slide_item import SlideItem as slide_item
-from .elements.slider import Slider as slider
-from .elements.space import Space as space
-from .elements.spinner import Spinner as spinner
-from .elements.splitter import Splitter as splitter
-from .elements.stepper import Step as step
-from .elements.stepper import Stepper as stepper
-from .elements.stepper import StepperNavigation as stepper_navigation
-from .elements.sub_pages import SubPages as sub_pages
-from .elements.switch import Switch as switch
-from .elements.table import Table as table
-from .elements.tabs import Tab as tab
-from .elements.tabs import TabPanel as tab_panel
-from .elements.tabs import TabPanels as tab_panels
-from .elements.tabs import Tabs as tabs
-from .elements.teleport import Teleport as teleport
-from .elements.textarea import Textarea as textarea
-from .elements.time import Time as time
-from .elements.time_input import TimeInput as time_input
-from .elements.timeline import Timeline as timeline
-from .elements.timeline import TimelineEntry as timeline_entry
-from .elements.timer import Timer as timer
-from .elements.toggle import Toggle as toggle
-from .elements.tooltip import Tooltip as tooltip
-from .elements.tree import Tree as tree
-from .elements.upload import Upload as upload
-from .elements.video import Video as video
-from .elements.xterm import Xterm as xterm
-from .functions import clipboard
-from .functions.download import download
-from .functions.html import add_body_html, add_head_html
-from .functions.javascript import run_javascript
-from .functions.navigate import navigate
-from .functions.notify import notify
-from .functions.on import on
-from .functions.on_exception import on_exception
-from .functions.page_title import page_title
-from .functions.refreshable import refreshable, refreshable_method, state
-from .functions.style import add_css, add_sass, add_scss
-from .functions.update import update
-from .page import page
-from .ui_run import run
-from .ui_run_with import run_with
+assert set(__all__) == set(_LAZY_IMPORTS), 'All public names must be in _LAZY_IMPORTS'
+
+if TYPE_CHECKING:
+    from .context import context
+    from .element import Element as element
+    from .elements.aggrid import AgGrid as aggrid
+    from .elements.altair import Altair as altair
+    from .elements.anywidget import AnyWidget as anywidget
+    from .elements.audio import Audio as audio
+    from .elements.avatar import Avatar as avatar
+    from .elements.badge import Badge as badge
+    from .elements.button import Button as button
+    from .elements.button_dropdown import DropdownButton as dropdown_button
+    from .elements.button_group import ButtonGroup as button_group
+    from .elements.card import Card as card
+    from .elements.card import CardActions as card_actions
+    from .elements.card import CardSection as card_section
+    from .elements.carousel import Carousel as carousel
+    from .elements.carousel import CarouselSlide as carousel_slide
+    from .elements.chat_message import ChatMessage as chat_message
+    from .elements.checkbox import Checkbox as checkbox
+    from .elements.chip import Chip as chip
+    from .elements.code import Code as code
+    from .elements.codemirror import CodeMirror as codemirror
+    from .elements.color_input import ColorInput as color_input
+    from .elements.color_picker import ColorPicker as color_picker
+    from .elements.colors import Colors as colors
+    from .elements.column import Column as column
+    from .elements.context_menu import ContextMenu as context_menu
+    from .elements.dark_mode import DarkMode as dark_mode
+    from .elements.date import Date as date
+    from .elements.date_input import DateInput as date_input
+    from .elements.dialog import Dialog as dialog
+    from .elements.drawer import Drawer as drawer
+    from .elements.drawer import LeftDrawer as left_drawer
+    from .elements.drawer import RightDrawer as right_drawer
+    from .elements.echart import EChart as echart
+    from .elements.editor import Editor as editor
+    from .elements.expansion import Expansion as expansion
+    from .elements.fab import Fab as fab
+    from .elements.fab import FabAction as fab_action
+    from .elements.footer import Footer as footer
+    from .elements.fullscreen import Fullscreen as fullscreen
+    from .elements.grid import Grid as grid
+    from .elements.header import Header as header
+    from .elements.highchart import highchart
+    from .elements.html import Html as html
+    from .elements.icon import Icon as icon
+    from .elements.image import Image as image
+    from .elements.input import Input as input  # pylint: disable=redefined-builtin
+    from .elements.input_chips import InputChips as input_chips
+    from .elements.interactive_image import InteractiveImage as interactive_image
+    from .elements.item import Item as item
+    from .elements.item import ItemLabel as item_label
+    from .elements.item import ItemSection as item_section
+    from .elements.joystick import Joystick as joystick
+    from .elements.json_editor import JsonEditor as json_editor
+    from .elements.keyboard import Keyboard as keyboard
+    from .elements.knob import Knob as knob
+    from .elements.label import Label as label
+    from .elements.leaflet import Leaflet as leaflet
+    from .elements.line_plot import LinePlot as line_plot
+    from .elements.link import Link as link
+    from .elements.link import LinkTarget as link_target
+    from .elements.list import List as list  # pylint: disable=redefined-builtin
+    from .elements.log import Log as log
+    from .elements.markdown import Markdown as markdown
+    from .elements.menu import Menu as menu
+    from .elements.menu import MenuItem as menu_item
+    from .elements.mermaid import Mermaid as mermaid
+    from .elements.notification import Notification as notification
+    from .elements.number import Number as number
+    from .elements.page_scroller import PageScroller as page_scroller
+    from .elements.page_sticky import PageSticky as page_sticky
+    from .elements.pagination import Pagination as pagination
+    from .elements.plotly import Plotly as plotly
+    from .elements.progress import CircularProgress as circular_progress
+    from .elements.progress import LinearProgress as linear_progress
+    from .elements.pyplot import Matplotlib as matplotlib
+    from .elements.pyplot import Pyplot as pyplot
+    from .elements.query import Query as query
+    from .elements.radio import Radio as radio
+    from .elements.range import Range as range  # pylint: disable=redefined-builtin
+    from .elements.rating import Rating as rating
+    from .elements.restructured_text import ReStructuredText as restructured_text
+    from .elements.row import Row as row
+    from .elements.scene import Scene as scene
+    from .elements.scene import SceneView as scene_view
+    from .elements.scroll_area import ScrollArea as scroll_area
+    from .elements.select import Select as select
+    from .elements.separator import Separator as separator
+    from .elements.skeleton import Skeleton as skeleton
+    from .elements.slide_item import SlideItem as slide_item
+    from .elements.slider import Slider as slider
+    from .elements.space import Space as space
+    from .elements.spinner import Spinner as spinner
+    from .elements.splitter import Splitter as splitter
+    from .elements.stepper import Step as step
+    from .elements.stepper import Stepper as stepper
+    from .elements.stepper import StepperNavigation as stepper_navigation
+    from .elements.sub_pages import SubPages as sub_pages
+    from .elements.switch import Switch as switch
+    from .elements.table import Table as table
+    from .elements.tabs import Tab as tab
+    from .elements.tabs import TabPanel as tab_panel
+    from .elements.tabs import TabPanels as tab_panels
+    from .elements.tabs import Tabs as tabs
+    from .elements.teleport import Teleport as teleport
+    from .elements.textarea import Textarea as textarea
+    from .elements.time import Time as time
+    from .elements.time_input import TimeInput as time_input
+    from .elements.timeline import Timeline as timeline
+    from .elements.timeline import TimelineEntry as timeline_entry
+    from .elements.timer import Timer as timer
+    from .elements.toggle import Toggle as toggle
+    from .elements.tooltip import Tooltip as tooltip
+    from .elements.tree import Tree as tree
+    from .elements.upload import Upload as upload
+    from .elements.video import Video as video
+    from .elements.xterm import Xterm as xterm
+    from .functions import clipboard
+    from .functions.download import download
+    from .functions.html import add_body_html, add_head_html
+    from .functions.javascript import run_javascript
+    from .functions.navigate import navigate
+    from .functions.notify import notify
+    from .functions.on import on
+    from .functions.on_exception import on_exception
+    from .functions.page_title import page_title
+    from .functions.refreshable import refreshable, refreshable_method, state
+    from .functions.style import add_css, add_sass, add_scss
+    from .functions.update import update
+    from .page import page
+    from .ui_run import run
+    from .ui_run_with import run_with
+
+
+def __dir__() -> builtins.list[str]:
+    return __all__
+
+
+def __getattr__(name: str) -> object:
+    if name in _LAZY_IMPORTS:
+        module_path, attr_name = _LAZY_IMPORTS[name]
+        module = importlib.import_module(module_path, package='nicegui')
+        value = getattr(module, attr_name) if attr_name else module
+        setattr(sys.modules[__name__], name, value)
+        return value
+    raise AttributeError(f"module 'nicegui.ui' has no attribute {name!r}")
+
+
+# Eagerly import element packages with 'dist' dirs so their __init__.py registers ESM modules in the importmap.
+for _module_path in {mp for mp, _ in _LAZY_IMPORTS.values()}:
+    _pkg_dir = Path(__file__).parent / _module_path.lstrip('.').replace('.', '/')
+    if _pkg_dir.is_dir() and (_pkg_dir / 'dist').is_dir():
+        importlib.import_module(_module_path, package='nicegui')
+del _module_path, _pkg_dir  # pylint: disable=undefined-loop-variable
