@@ -192,6 +192,7 @@ class Client:
                 'socket_io_js_query_params': socket_io_js_query_params,
                 'socket_io_js_extra_headers': core.app.config.socket_io_js_extra_headers,
                 'socket_io_js_transports': core.app.config.socket_io_js_transports,
+                'reconnect_timeout': self.page.resolve_reconnect_timeout(),
             },
             status_code=status_code,
             headers={'Cache-Control': 'no-store', 'X-NiceGUI-Content': 'page'},
@@ -332,6 +333,11 @@ class Client:
                 self.delete()
         self._delete_tasks[document_id] = \
             background_tasks.create(delete_content(), name=f'delete content {document_id}')
+
+    def _handle_heartbeat(self) -> None:
+        """Cancel pending delete tasks to keep the client alive during blocking browser dialogs."""
+        for document_id in list(self._delete_tasks):
+            self._cancel_delete_task(document_id)
 
     def _cancel_delete_task(self, document_id: str) -> None:
         if document_id in self._delete_tasks:
