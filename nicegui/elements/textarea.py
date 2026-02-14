@@ -12,7 +12,7 @@ class Textarea(Input, component='input.js'):
                  label: str | None = DEFAULT_PROP | None, *,
                  placeholder: str | None = DEFAULT_PROP | None,
                  value: str = DEFAULT_PROPS['model-value'] | '',
-                 on_change: Handler[ValueChangeEventArguments] | None = None,
+                 on_change: Handler[ValueChangeEventArguments[str]] | None = None,
                  validation: Callable[..., str | None] | dict[str, Callable[..., bool]] | None = None,
                  ) -> None:
         """Textarea

@@ -10,7 +10,7 @@ class ChoiceElement(ValueElement[Any]):
                  tag: str | None = None,
                  options: list | dict,
                  value: Any,
-                 on_change: Handler[ValueChangeEventArguments] | None = None,
+                 on_change: Handler[ValueChangeEventArguments[Any]] | None = None,
                  ) -> None:
         self.options = options
         self._values: list[str] = []

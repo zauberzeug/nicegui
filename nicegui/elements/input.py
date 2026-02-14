@@ -21,7 +21,7 @@ class Input(LabelElement, ValidationElement[str], DisableableElement, component=
                  password_toggle_button: bool = False,
                  prefix: str | None = None,
                  suffix: str | None = None,
-                 on_change: Handler[ValueChangeEventArguments] | None = None,
+                 on_change: Handler[ValueChangeEventArguments[str]] | None = None,
                  autocomplete: list[str] | None = DEFAULT_PROPS['_autocomplete'] | None,
                  validation: ValidationFunction | ValidationDict | None = None,
                  ) -> None:

@@ -30,7 +30,7 @@ class ValueElement(Element, Generic[V]):
 
     def __init__(self, *,
                  value: V,
-                 on_value_change: Handler[ValueChangeEventArguments] | None = None,
+                 on_value_change: Handler[ValueChangeEventArguments[V]] | None = None,
                  throttle: float = 0,
                  **kwargs: Any,
                  ) -> None:
@@ -39,7 +39,7 @@ class ValueElement(Element, Generic[V]):
         self.set_value(value)
         self._props[self.VALUE_PROP] = self._value_to_model_value(value)
         self._props['loopback'] = self.LOOPBACK
-        self._change_handlers: list[Handler[ValueChangeEventArguments]] = [on_value_change] if on_value_change else []
+        self._change_handlers: list[Handler[ValueChangeEventArguments[V]]] = [on_value_change] if on_value_change else []
 
         def handle_change(e: GenericEventArguments) -> None:
             self._send_update_on_value_change = self.LOOPBACK is True
@@ -47,7 +47,7 @@ class ValueElement(Element, Generic[V]):
             self._send_update_on_value_change = True
         self.on(f'update:{self.VALUE_PROP}', handle_change, [None], throttle=throttle)
 
-    def on_value_change(self, callback: Handler[ValueChangeEventArguments]) -> Self:
+    def on_value_change(self, callback: Handler[ValueChangeEventArguments[V]]) -> Self:
         """Add a callback to be invoked when the value changes."""
         self._change_handlers.append(callback)
         return self

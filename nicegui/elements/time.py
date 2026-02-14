@@ -10,7 +10,7 @@ class Time(ValueElement[str | None], DisableableElement):
     def __init__(self,
                  value: str | None = DEFAULT_PROPS['model-value'] | None, *,
                  mask: str = DEFAULT_PROP | 'HH:mm',
-                 on_change: Handler[ValueChangeEventArguments] | None = None,
+                 on_change: Handler[ValueChangeEventArguments[str | None]] | None = None,
                  ) -> None:
         """Time Picker
 

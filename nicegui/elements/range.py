@@ -12,7 +12,7 @@ class Range(ValueElement[dict[str, float] | None], DisableableElement):
                  max: float,  # pylint: disable=redefined-builtin
                  step: float = DEFAULT_PROP | 1.0,
                  value: dict[str, float] | None = DEFAULT_PROPS['model-value'] | None,
-                 on_change: Handler[ValueChangeEventArguments] | None = None,
+                 on_change: Handler[ValueChangeEventArguments[dict[str, float] | None]] | None = None,
                  ) -> None:
         """Range
 

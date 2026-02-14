@@ -12,7 +12,7 @@ class Slider(ValueElement[float | None], DisableableElement):
                  max: float,  # pylint: disable=redefined-builtin
                  step: float = DEFAULT_PROP | 1.0,
                  value: float | None = DEFAULT_PROPS['model-value'] | None,
-                 on_change: Handler[ValueChangeEventArguments] | None = None,
+                 on_change: Handler[ValueChangeEventArguments[float | None]] | None = None,
                  ) -> None:
         """Slider
 

@@ -22,7 +22,7 @@ class ColorInput(LabelElement, ValueElement[str], DisableableElement):
                  label: str | None = DEFAULT_PROP | None, *,
                  placeholder: str | None = DEFAULT_PROP | None,
                  value: str = DEFAULT_PROPS['model-value'] | '',
-                 on_change: Handler[ValueChangeEventArguments] | None = None,
+                 on_change: Handler[ValueChangeEventArguments[str]] | None = None,
                  preview: bool = False,
                  ) -> None:
         """Color Input

@@ -12,7 +12,7 @@ class Splitter(ValueElement[float | None], DisableableElement, default_classes='
                  reverse: bool | None = DEFAULT_PROP | False,
                  limits: tuple[float, float] | None = DEFAULT_PROP | (0, 100),
                  value: float | None = DEFAULT_PROPS['model-value'] | 50,
-                 on_change: Handler[ValueChangeEventArguments] | None = None,
+                 on_change: Handler[ValueChangeEventArguments[float | None]] | None = None,
                  ) -> None:
         """Splitter
 

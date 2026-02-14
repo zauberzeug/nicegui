@@ -18,7 +18,7 @@ class Select(LabelElement, ValidationElement[Any], ChoiceElement, DisableableEle
                  options: list | dict, *,
                  label: str | None = DEFAULT_PROP | None,
                  value: Any = DEFAULT_PROPS['model-value'] | None,
-                 on_change: Handler[ValueChangeEventArguments] | None = None,
+                 on_change: Handler[ValueChangeEventArguments[Any]] | None = None,
                  with_input: bool = False,
                  new_value_mode: Literal['add', 'add-unique', 'toggle'] | None = DEFAULT_PROP | None,
                  multiple: bool = DEFAULT_PROP | False,

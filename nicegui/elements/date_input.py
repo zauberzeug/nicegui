@@ -17,7 +17,7 @@ class DateInput(LabelElement, ValueElement[str], DisableableElement):
                  range_input: bool = False,
                  placeholder: str | None = DEFAULT_PROP | None,
                  value: str = DEFAULT_PROPS['model-value'] | '',
-                 on_change: Handler[ValueChangeEventArguments] | None = None,
+                 on_change: Handler[ValueChangeEventArguments[str]] | None = None,
                  ) -> None:
         """Date Input
 

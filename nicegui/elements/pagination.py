@@ -11,7 +11,7 @@ class Pagination(ValueElement[int | None], DisableableElement):
                  min: int, max: int, *,  # pylint: disable=redefined-builtin
                  direction_links: bool = DEFAULT_PROP | False,
                  value: int | None = DEFAULT_PROPS['model-value'] | ...,  # type: ignore
-                 on_change: Handler[ValueChangeEventArguments] | None = None) -> None:
+                 on_change: Handler[ValueChangeEventArguments[int | None]] | None = None) -> None:
         """Pagination
 
         A pagination element wrapping Quasar's `QPagination <https://quasar.dev/vue-components/pagination>`_ component.

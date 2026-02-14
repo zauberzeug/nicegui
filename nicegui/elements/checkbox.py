@@ -11,7 +11,7 @@ class Checkbox(TextElement, ValueElement[bool | None], DisableableElement):
     def __init__(self,
                  text: str = '', *,
                  value: bool | None = DEFAULT_PROPS['model-value'] | False,
-                 on_change: Handler[ValueChangeEventArguments] | None = None) -> None:
+                 on_change: Handler[ValueChangeEventArguments[bool | None]] | None = None) -> None:
         """Checkbox
 
         This element is based on Quasar's `QCheckbox <https://quasar.dev/vue-components/checkbox>`_ component.

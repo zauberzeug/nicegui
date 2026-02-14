@@ -15,7 +15,7 @@ class Tabs(ValueElement[Any]):
 
     def __init__(self, *,
                  value: Tab | TabPanel | None = None,
-                 on_change: Handler[ValueChangeEventArguments] | None = None,
+                 on_change: Handler[ValueChangeEventArguments[Any]] | None = None,
                  ) -> None:
         """Tabs
 
@@ -59,7 +59,7 @@ class TabPanels(ValueElement[Any]):
     def __init__(self,
                  tabs: Tabs | None = None, *,
                  value: Tab | TabPanel | str | None = None,
-                 on_change: Handler[ValueChangeEventArguments] | None = None,
+                 on_change: Handler[ValueChangeEventArguments[Any]] | None = None,
                  animated: bool = DEFAULT_PROP | True,
                  keep_alive: bool = DEFAULT_PROP | True,
                  ) -> None:

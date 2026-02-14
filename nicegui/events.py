@@ -4,7 +4,7 @@ import asyncio
 from collections.abc import Awaitable, Callable, Iterator
 from contextlib import nullcontext
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, Any, Literal, TypeAlias, TypeVar, cast
+from typing import TYPE_CHECKING, Any, Generic, Literal, TypeAlias, TypeVar, cast
 
 from . import background_tasks, core, helpers
 from .awaitable_response import AwaitableResponse
@@ -139,10 +139,13 @@ class MultiUploadEventArguments(UiEventArguments):
     files: list[FileUpload]
 
 
+ValueT = TypeVar('ValueT')
+
+
 @dataclass(**KWONLY_SLOTS)
-class ValueChangeEventArguments(UiEventArguments):
-    value: Any
-    previous_value: Any = ...
+class ValueChangeEventArguments(UiEventArguments, Generic[ValueT]):
+    value: ValueT
+    previous_value: ValueT = ...  # type: ignore[assignment]
 
     def __post_init__(self):
         # DEPRECATED: previous_value will be required in NiceGUI 4.0

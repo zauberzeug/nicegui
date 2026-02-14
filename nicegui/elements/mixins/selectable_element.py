@@ -15,7 +15,7 @@ class SelectableElement(Element):
     def __init__(self, *,
                  selectable: bool,
                  selected: bool,
-                 on_selection_change: Handler[ValueChangeEventArguments] | None = None,
+                 on_selection_change: Handler[ValueChangeEventArguments[bool]] | None = None,
                  **kwargs: Any) -> None:
         super().__init__(**kwargs)
         if not selectable:
@@ -28,11 +28,11 @@ class SelectableElement(Element):
         self.set_selected(selected)
         self.on('update:selected', lambda e: self.set_selected(e.args))
 
-        self._selection_change_handlers: list[Handler[ValueChangeEventArguments]] = []
+        self._selection_change_handlers: list[Handler[ValueChangeEventArguments[bool]]] = []
         if on_selection_change:
             self.on_selection_change(on_selection_change)
 
-    def on_selection_change(self, callback: Handler[ValueChangeEventArguments]) -> Self:
+    def on_selection_change(self, callback: Handler[ValueChangeEventArguments[bool]]) -> Self:
         """Add a callback to be invoked when the selection state changes."""
         self._selection_change_handlers.append(callback)
         return self

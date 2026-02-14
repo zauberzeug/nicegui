@@ -9,7 +9,7 @@ class DarkMode(ValueElement[bool | None], component='dark_mode.js'):
     @resolve_defaults
     def __init__(self,
                  value: bool | None = DEFAULT_PROP | False, *,
-                 on_change: Handler[ValueChangeEventArguments] | None = None,
+                 on_change: Handler[ValueChangeEventArguments[bool | None]] | None = None,
                  ) -> None:
         """Dark mode
 

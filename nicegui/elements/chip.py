@@ -23,9 +23,9 @@ class Chip(IconElement, ValueElement[bool], TextElement, BackgroundColorElement,
                  on_click: Handler[ClickEventArguments] | None = None,
                  selectable: bool = DEFAULT_PROP | False,
                  selected: bool = DEFAULT_PROP | False,
-                 on_selection_change: Handler[ValueChangeEventArguments] | None = None,
+                 on_selection_change: Handler[ValueChangeEventArguments[bool]] | None = None,
                  removable: bool = DEFAULT_PROP | False,
-                 on_value_change: Handler[ValueChangeEventArguments] | None = None,
+                 on_value_change: Handler[ValueChangeEventArguments[bool]] | None = None,
                  ) -> None:
         """Chip
 

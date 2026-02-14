@@ -15,7 +15,7 @@ class DropdownButton(IconElement, TextElement, DisableableElement, BackgroundCol
     def __init__(self,
                  text: str = '', *,
                  value: bool = False,
-                 on_value_change: Handler[ValueChangeEventArguments] | None = None,
+                 on_value_change: Handler[ValueChangeEventArguments[bool]] | None = None,
                  on_click: Handler[ClickEventArguments] | None = None,
                  color: str | None = DEFAULT_PROP | 'primary',
                  icon: str | None = DEFAULT_PROP | None,
