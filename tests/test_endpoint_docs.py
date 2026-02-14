@@ -48,6 +48,7 @@ def test_endpoint_documentation_internal_only(screen: Screen):
         f'/_nicegui/{__version__}/resources/{{key}}/{{path}}',
         f'/_nicegui/{__version__}/dynamic_resources/{{name}}',
         f'/_nicegui/{__version__}/esm/{{key}}/{{path}}',
+        '/_nicegui/heartbeat',
     }
 
 
@@ -66,4 +67,5 @@ def test_endpoint_documentation_all(screen: Screen):
         f'/_nicegui/{__version__}/resources/{{key}}/{{path}}',
         f'/_nicegui/{__version__}/dynamic_resources/{{name}}',
         f'/_nicegui/{__version__}/esm/{{key}}/{{path}}',
+        '/_nicegui/heartbeat',
     }
