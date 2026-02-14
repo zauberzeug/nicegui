@@ -1,0 +1,4 @@
+packages = ["micropip"]
+
+[files]
+"./app.py" = "./app.py"

@@ -4,7 +4,11 @@ from collections.abc import Callable
 from functools import lru_cache
 
 import markdown2
-from fastapi.responses import PlainTextResponse
+
+try:
+    from fastapi.responses import PlainTextResponse
+except ImportError:
+    PlainTextResponse = None  # type: ignore
 from pygments.formatters import HtmlFormatter  # pylint: disable=no-name-in-module
 
 from .. import core

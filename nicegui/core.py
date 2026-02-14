@@ -2,9 +2,12 @@ from __future__ import annotations
 
 import asyncio
 from collections.abc import Callable
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
-from socketio import AsyncServer
+try:
+    from socketio import AsyncServer
+except ImportError:
+    AsyncServer = None  # type: ignore
 
 if TYPE_CHECKING:
     from .air import Air
@@ -12,7 +15,7 @@ if TYPE_CHECKING:
     from .client import Client
 
 app: App
-sio: AsyncServer
+sio: Any  # AsyncServer in server mode, PyodideBridge in Pyodide mode
 loop: asyncio.AbstractEventLoop | None = None
 air: Air | None = None
 root: Callable | None = None

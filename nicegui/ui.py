@@ -267,6 +267,13 @@ from .functions.page_title import page_title
 from .functions.refreshable import refreshable, refreshable_method, state
 from .functions.style import add_css, add_sass, add_scss
 from .functions.update import update
-from .page import page
-from .ui_run import run
-from .ui_run_with import run_with
+from .pyodide_compat import IS_PYODIDE
+
+if not IS_PYODIDE:
+    from .page import page
+    from .ui_run import run
+    from .ui_run_with import run_with
+else:
+    from .page_pyodide import page  # type: ignore
+    run = None  # type: ignore
+    run_with = None  # type: ignore

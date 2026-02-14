@@ -79,7 +79,7 @@ function setDark(dark) {
   darkSetter?.(dark);
   document
     .getElementById("nicegui-color-scheme")
-    .setAttribute("content", dark === None ? "normal" : dark ? "dark" : "light");
+    ?.setAttribute("content", dark === None ? "normal" : dark ? "dark" : "light");
 }
 
 function parseElements(raw_elements) {
@@ -163,6 +163,7 @@ function logAndEmit(level, message) {
   } else {
     console.log(message);
   }
+  if (window.niceguiBridge) return; // no log emission in Pyodide mode
   window.socket.emit("log", { client_id: window.clientId, level, message });
 }
 
@@ -257,13 +258,19 @@ function renderRecursively(elements, id, propsContext) {
     event.specials.forEach((s) => (event_name += s[0].toLocaleUpperCase() + s.substring(1)));
 
     const emit = (...args) => {
-      const emitter = () =>
-        window.socket?.emit("event", {
+      const emitter = () => {
+        const payload = {
           id: id,
           client_id: window.clientId,
           listener_id: event.listener_id,
           args: stringifyEventArgs(args, event.args),
-        });
+        };
+        if (window.niceguiBridge?.onEvent) {
+          window.niceguiBridge.onEvent(JSON.stringify(payload));
+        } else {
+          window.socket?.emit("event", payload);
+        }
+      };
       const delayed_emitter = () => {
         if (window.did_handshake) emitter();
         else setTimeout(delayed_emitter, 10);
@@ -329,7 +336,12 @@ function runJavascript(code, request_id) {
     })
     .then((result) => {
       if (request_id) {
-        window.socket.emit("javascript_response", { request_id, client_id: window.clientId, result });
+        const payload = { request_id, client_id: window.clientId, result };
+        if (window.niceguiBridge?.onJavascriptResponse) {
+          window.niceguiBridge.onJavascriptResponse(JSON.stringify(payload));
+        } else {
+          window.socket.emit("javascript_response", payload);
+        }
       }
     });
 }
@@ -384,7 +396,10 @@ window.onbeforeunload = function () {
 
 function createApp(elements, options) {
   Object.entries(elements).forEach(([_, element]) => replaceUndefinedAttributes(element));
-  setInterval(() => ack(), 3000);
+  const isPyodide = !!window.niceguiBridge;
+  if (!isPyodide) {
+    setInterval(() => ack(), 3000);
+  }
   initUnoCss();
   return (app = Vue.createApp({
     data() {
@@ -398,84 +413,12 @@ function createApp(elements, options) {
     mounted() {
       mounted_app = this;
       window.documentId = createRandomUUID();
-      window.clientId = options.query.client_id;
-      const url = (window.location.protocol === "https:" ? "wss://" : "ws://") + window.location.host;
-      window.path_prefix = options.prefix;
-      window.nextMessageId = options.query.next_message_id;
+      window.path_prefix = options.prefix || "";
+      window.nextMessageId = options.query?.next_message_id || 0;
       window.ackedMessageId = -1;
-      options.query.document_id = window.documentId;
-      options.query.tab_id = TAB_ID;
-      options.query.old_tab_id = OLD_TAB_ID;
-      window.socket = io(url, {
-        path: `${options.prefix}/_nicegui_ws/socket.io`,
-        query: options.query,
-        extraHeaders: options.extraHeaders,
-        transports:
-          "prerendering" in document && document.prerendering === true
-            ? ["polling", ...options.transports]
-            : options.transports,
-      });
-      window.did_handshake = false;
+
+      // Message handlers shared by both socket.io and Pyodide modes
       const messageHandlers = {
-        connect: () => {
-          function wrapFunction(originalFunction) {
-            const MAX_WEBSOCKET_MESSAGE_SIZE = 1000000 - 100; // 1MB without 100 bytes of slack for the message header
-            return function (...args) {
-              const msg = args[0];
-              if (typeof msg === "string" && msg.length > MAX_WEBSOCKET_MESSAGE_SIZE) {
-                const errorMessage = `Payload size ${msg.length} exceeds the maximum allowed limit.`;
-                console.error(errorMessage);
-                args[0] = `42["log",{"client_id":"${window.clientId}","level":"error","message":"${errorMessage}"}]`;
-                if (window.tooLongMessageTimerId) clearTimeout(window.tooLongMessageTimerId);
-                const popup = document.getElementById("too_long_message_popup");
-                popup.ariaHidden = false;
-                window.tooLongMessageTimerId = setTimeout(() => (popup.ariaHidden = true), 5000);
-              }
-              return originalFunction.call(this, ...args);
-            };
-          }
-          const transport = window.socket.io.engine.transport;
-          if (transport?.ws?.send) transport.ws.send = wrapFunction(transport.ws.send);
-          if (transport?.doWrite) transport.doWrite = wrapFunction(transport.doWrite);
-
-          function finishHandshake(ok) {
-            if (!ok) {
-              console.log("reloading because handshake failed for clientId " + window.clientId);
-              window.location.reload();
-            }
-            window.did_handshake = true;
-            document.getElementById("popup").ariaHidden = true;
-          }
-
-          if (options.query.implicit_handshake) {
-            finishHandshake(true);
-          } else {
-            window.socket.emit("handshake", options.query, finishHandshake);
-          }
-        },
-        connect_error: (err) => {
-          if (err.message == "timeout") {
-            console.log("reloading because connection timed out");
-            window.location.reload(); // see https://github.com/zauberzeug/nicegui/issues/198
-          } else if (err.message == "Implicit handshake failed") {
-            console.log("reloading because implicit handshake failed for clientId " + window.clientId);
-            window.location.reload();
-          }
-        },
-        try_reconnect: async () => {
-          document.getElementById("popup").ariaHidden = false;
-          await fetch(window.location.href, { headers: { "NiceGUI-Check": "try_reconnect" } });
-          console.log("reloading because reconnect was requested");
-          window.location.reload();
-        },
-        disconnect: () => {
-          document.getElementById("popup").ariaHidden = false;
-        },
-        load_js_components: async (msg) => {
-          const urls = msg.components.map((c) => `${options.prefix}/_nicegui/${options.version}/components/${c.key}`);
-          const imports = await Promise.all(urls.map((url) => import(url)));
-          msg.components.forEach((c, i) => app.component(c.tag, imports[i].default));
-        },
         update: async (msg) => {
           let eventListenersChanged = false;
           for (const [id, element] of Object.entries(msg)) {
@@ -510,49 +453,201 @@ function createApp(elements, options) {
         },
         run_javascript: (msg) => runJavascript(msg.code, msg.request_id),
         open: (msg) => {
-          const url = msg.path.startsWith("/") ? options.prefix + msg.path : msg.path;
+          const url = msg.path.startsWith("/") ? (options.prefix || "") + msg.path : msg.path;
           const target = msg.new_tab ? "_blank" : "_self";
           window.open(url, target);
         },
-        download: (msg) => download(msg.src, msg.filename, msg.media_type, options.prefix),
+        download: (msg) => download(msg.src, msg.filename, msg.media_type, options.prefix || ""),
         notify: (msg) => Quasar.Notify.create(msg),
       };
-      const socketMessageQueue = [];
-      let isProcessingSocketMessage = false;
-      for (const [event, handler] of Object.entries(messageHandlers)) {
-        window.socket.on(event, async (...args) => {
-          if (args.length > 0 && args[0]._id !== undefined) {
-            const message_id = args[0]._id;
-            if (message_id < window.nextMessageId) return;
-            window.nextMessageId = message_id + 1;
-            delete args[0]._id;
+
+      if (isPyodide) {
+        // Pyodide mode: no socket.io, use bridge for message handling
+        window.clientId = options.query?.client_id || "pyodide";
+        window.did_handshake = true;
+
+        // Add component loading to message handlers for dynamic updates after mount
+        messageHandlers.load_js_components = async (msg) => {
+          const imports = await Promise.all(msg.components.map((c) => import(c.url)));
+          msg.components.forEach((c, i) => app.component(c.tag, imports[i].default));
+        };
+
+        // Set up bridge to handle messages from Python
+        window.niceguiBridge.handleMessage = (type, dataJson) => {
+          const data = JSON.parse(dataJson);
+          if (data._id !== undefined) {
+            window.nextMessageId = data._id + 1;
+            delete data._id;
           }
-          socketMessageQueue.push(() => handler(...args));
-          if (!isProcessingSocketMessage) {
-            while (socketMessageQueue.length > 0) {
-              const handler = socketMessageQueue.shift();
-              isProcessingSocketMessage = true;
-              try {
-                await handler();
-              } catch (e) {
-                console.error(e);
-              }
-              isProcessingSocketMessage = false;
-            }
+          const handler = messageHandlers[type];
+          if (handler) {
+            return handler(data);
+          } else {
+            console.warn("Unknown message type:", type);
           }
+        };
+      } else {
+        // Standard socket.io mode
+        window.clientId = options.query.client_id;
+        const url = window.location.protocol === "https:" ? "wss://" : "ws://" + window.location.host;
+        options.query.document_id = window.documentId;
+        options.query.tab_id = TAB_ID;
+        options.query.old_tab_id = OLD_TAB_ID;
+        window.socket = io(url, {
+          path: `${options.prefix}/_nicegui_ws/socket.io`,
+          query: options.query,
+          extraHeaders: options.extraHeaders,
+          transports:
+            "prerendering" in document && document.prerendering === true
+              ? ["polling", ...options.transports]
+              : options.transports,
         });
+        window.did_handshake = false;
+
+        const socketOnlyHandlers = {
+          connect: () => {
+            function wrapFunction(originalFunction) {
+              const MAX_WEBSOCKET_MESSAGE_SIZE = 1000000 - 100;
+              return function (...args) {
+                const msg = args[0];
+                if (typeof msg === "string" && msg.length > MAX_WEBSOCKET_MESSAGE_SIZE) {
+                  const errorMessage = `Payload size ${msg.length} exceeds the maximum allowed limit.`;
+                  console.error(errorMessage);
+                  args[0] = `42["log",{"client_id":"${window.clientId}","level":"error","message":"${errorMessage}"}]`;
+                  if (window.tooLongMessageTimerId) clearTimeout(window.tooLongMessageTimerId);
+                  const popup = document.getElementById("too_long_message_popup");
+                  popup.ariaHidden = false;
+                  window.tooLongMessageTimerId = setTimeout(() => (popup.ariaHidden = true), 5000);
+                }
+                return originalFunction.call(this, ...args);
+              };
+            }
+            const transport = window.socket.io.engine.transport;
+            if (transport?.ws?.send) transport.ws.send = wrapFunction(transport.ws.send);
+            if (transport?.doWrite) transport.doWrite = wrapFunction(transport.doWrite);
+
+            function finishHandshake(ok) {
+              if (!ok) {
+                console.log("reloading because handshake failed for clientId " + window.clientId);
+                window.location.reload();
+              }
+              window.did_handshake = true;
+              document.getElementById("popup").ariaHidden = true;
+            }
+
+            if (options.query.implicit_handshake) {
+              finishHandshake(true);
+            } else {
+              window.socket.emit("handshake", options.query, finishHandshake);
+            }
+          },
+          connect_error: (err) => {
+            if (err.message == "timeout") {
+              console.log("reloading because connection timed out");
+              window.location.reload();
+            } else if (err.message == "Implicit handshake failed") {
+              console.log("reloading because implicit handshake failed for clientId " + window.clientId);
+              window.location.reload();
+            }
+          },
+          try_reconnect: async () => {
+            document.getElementById("popup").ariaHidden = false;
+            await fetch(window.location.href, { headers: { "NiceGUI-Check": "try_reconnect" } });
+            console.log("reloading because reconnect was requested");
+            window.location.reload();
+          },
+          disconnect: () => {
+            document.getElementById("popup").ariaHidden = false;
+          },
+          load_js_components: async (msg) => {
+            const urls = msg.components.map((c) => `${options.prefix}/_nicegui/${options.version}/components/${c.key}`);
+            const imports = await Promise.all(urls.map((url) => import(url)));
+            msg.components.forEach((c, i) => app.component(c.tag, imports[i].default));
+          },
+          ...messageHandlers,
+        };
+        const socketMessageQueue = [];
+        let isProcessingSocketMessage = false;
+        for (const [event, handler] of Object.entries(socketOnlyHandlers)) {
+          window.socket.on(event, async (...args) => {
+            if (args.length > 0 && args[0]._id !== undefined) {
+              const message_id = args[0]._id;
+              if (message_id < window.nextMessageId) return;
+              window.nextMessageId = message_id + 1;
+              delete args[0]._id;
+            }
+            socketMessageQueue.push(() => handler(...args));
+            if (!isProcessingSocketMessage) {
+              while (socketMessageQueue.length > 0) {
+                const handler = socketMessageQueue.shift();
+                isProcessingSocketMessage = true;
+                try {
+                  await handler();
+                } catch (e) {
+                  console.error(e);
+                }
+                isProcessingSocketMessage = false;
+              }
+            }
+          });
+        }
       }
     },
   }));
 }
 
+// Global entry point for Pyodide mode
+window.createNiceGUIApp = async function (elementsJson, configJson, componentsJson) {
+  const elements = JSON.parse(elementsJson);
+  const config = configJson ? JSON.parse(configJson) : {};
+  const components = componentsJson ? JSON.parse(componentsJson) : [];
+  const brand = {
+    primary: "#5898d4",
+    secondary: "#26a69a",
+    accent: "#9c27b0",
+    dark: "#1d1d1d",
+    "dark-page": "#121212",
+    positive: "#21ba45",
+    negative: "#c10015",
+    info: "#31ccec",
+    warning: "#f2c037",
+    ...(config.brand || {}),
+  };
+  const quasarConfig = { brand, loadingBar: { color: "primary", skipHijack: false } };
+  const vueApp = createApp(elements, { prefix: "", query: { client_id: "pyodide", next_message_id: 0 } });
+  vueApp.use(Quasar, { config: quasarConfig });
+
+  // Load and register custom Vue components BEFORE mounting
+  if (components.length > 0) {
+    const imports = await Promise.all(components.map((c) => import(c.url)));
+    components.forEach((c, i) => vueApp.component(c.tag, imports[i].default));
+  }
+
+  vueApp.mount("#app");
+  applyColors(brand);
+  Quasar.lang.set(Quasar.lang[((config.language || "en-US").replace("-", ""))]);
+  darkSetter = (dark) => Quasar.Dark.set(dark === None ? "auto" : dark);
+  // Ensure color-scheme meta exists (normally in server-rendered template)
+  if (!document.getElementById("nicegui-color-scheme")) {
+    const meta = document.createElement("meta");
+    meta.id = "nicegui-color-scheme";
+    meta.name = "color-scheme";
+    document.head.appendChild(meta);
+  }
+  setDark(config.dark !== undefined ? config.dark : false);
+};
+
 // HACK: remove Quasar's rules for divs in QCard (#2265, #2301)
-for (const importRule of document.styleSheets[0].cssRules) {
-  if (importRule instanceof CSSImportRule && /quasar/.test(importRule.styleSheet?.href)) {
-    for (const rule of Array.from(importRule.styleSheet.cssRules)) {
-      if (rule instanceof CSSStyleRule && /\.q-card > div/.test(rule.selectorText)) {
-        if (/\.q-card > div/.test(rule.selectorText)) rule.selectorText = ".nicegui-card-tight" + rule.selectorText;
+try {
+  for (const importRule of document.styleSheets[0].cssRules) {
+    if (importRule instanceof CSSImportRule && /quasar/.test(importRule.styleSheet?.href)) {
+      for (const rule of Array.from(importRule.styleSheet.cssRules)) {
+        if (rule instanceof CSSStyleRule && /\.q-card > div/.test(rule.selectorText)) {
+          if (/\.q-card > div/.test(rule.selectorText)) rule.selectorText = ".nicegui-card-tight" + rule.selectorText;
+        }
       }
     }
   }
+} catch (e) {
+  // May fail with cross-origin stylesheets (e.g., CDN-loaded Quasar in Pyodide mode)
 }

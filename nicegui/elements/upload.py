@@ -1,12 +1,22 @@
 from typing import cast
 
-from fastapi import Request
-from starlette.datastructures import UploadFile
+try:
+    from fastapi import Request
+    from starlette.datastructures import UploadFile
+except ImportError:
+    Request = None  # type: ignore
+    UploadFile = None  # type: ignore
 from typing_extensions import Self
 
 from ..defaults import DEFAULT_PROP, resolve_defaults
 from ..events import Handler, MultiUploadEventArguments, UiEventArguments, UploadEventArguments, handle_event
-from ..nicegui import app
+from ..pyodide_compat import IS_PYODIDE
+
+if not IS_PYODIDE:
+    from ..nicegui import app as _app
+else:
+    _app = None  # type: ignore
+
 from .mixins.disableable_element import DisableableElement
 from .mixins.label_element import LabelElement
 from .upload_files import create_file_upload
@@ -70,14 +80,15 @@ class Upload(LabelElement, DisableableElement, component='upload.js'):
         self._upload_handlers = [on_upload] if on_upload else []
         self._multi_upload_handlers = [on_multi_upload] if on_multi_upload else []
 
-        @app.post(self._props['url'])
-        async def upload_route(request: Request) -> dict[str, str]:
-            for begin_upload_handler in self._begin_upload_handlers:
-                handle_event(begin_upload_handler, UiEventArguments(sender=self, client=self.client))
-            async with request.form() as form:
-                files = [await create_file_upload(cast(UploadFile, data)) for data in form.values()]
-            await self.handle_uploads(files)
-            return {'upload': 'success'}
+        if not IS_PYODIDE:
+            @_app.post(self._props['url'])
+            async def upload_route(request: Request) -> dict[str, str]:
+                for begin_upload_handler in self._begin_upload_handlers:
+                    handle_event(begin_upload_handler, UiEventArguments(sender=self, client=self.client))
+                async with request.form() as form:
+                    files = [await create_file_upload(cast(UploadFile, data)) for data in form.values()]
+                await self.handle_uploads(files)
+                return {'upload': 'success'}
 
         if on_rejected:
             self.on_rejected(on_rejected)
@@ -121,5 +132,6 @@ class Upload(LabelElement, DisableableElement, component='upload.js'):
         self.run_method('reset')
 
     def _handle_delete(self) -> None:
-        app.remove_route(self._props['url'])
+        if not IS_PYODIDE:
+            _app.remove_route(self._props['url'])
         super()._handle_delete()

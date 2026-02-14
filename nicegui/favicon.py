@@ -6,7 +6,12 @@ import urllib.parse
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from fastapi.responses import FileResponse, Response, StreamingResponse
+try:
+    from fastapi.responses import FileResponse, Response, StreamingResponse
+except ImportError:
+    FileResponse = None  # type: ignore
+    Response = None  # type: ignore
+    StreamingResponse = None  # type: ignore
 
 from . import core
 from .helpers import is_file

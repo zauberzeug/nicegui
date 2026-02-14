@@ -1,9 +1,14 @@
+from __future__ import annotations
+
 import uuid
 from collections.abc import Callable, Sequence
 from dataclasses import dataclass, field
 from typing import Any
 
-from fastapi import Request
+try:
+    from fastapi import Request
+except ImportError:
+    Request = None  # type: ignore
 
 from .dataclasses import KWONLY_SLOTS
 

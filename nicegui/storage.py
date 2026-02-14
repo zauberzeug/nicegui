@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import contextvars
 import os
 import uuid
@@ -5,11 +7,19 @@ from datetime import timedelta
 from pathlib import Path
 from typing import Any
 
-from starlette.middleware import Middleware
-from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
-from starlette.middleware.sessions import SessionMiddleware
-from starlette.requests import Request
-from starlette.responses import Response
+try:
+    from starlette.middleware import Middleware
+    from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
+    from starlette.middleware.sessions import SessionMiddleware
+    from starlette.requests import Request
+    from starlette.responses import Response
+except ImportError:
+    Middleware = None  # type: ignore
+    BaseHTTPMiddleware = object  # type: ignore
+    RequestResponseEndpoint = None  # type: ignore
+    SessionMiddleware = None  # type: ignore
+    Request = None  # type: ignore
+    Response = None  # type: ignore
 
 from . import core, helpers, observables
 from .context import context
