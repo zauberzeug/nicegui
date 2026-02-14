@@ -415,6 +415,18 @@ function createApp(elements, options) {
             ? ["polling", ...options.transports]
             : options.transports,
       });
+      if (window.Worker) {
+        window.heartbeatWorker = new Worker(
+          `${options.prefix}/_nicegui/${options.version}/static/nicegui-heartbeat.js`,
+        );
+        window.heartbeatWorker.postMessage({
+          type: "start",
+          url: `${window.location.origin}${options.prefix}/_nicegui/heartbeat`,
+          clientId: window.clientId,
+          interval: Math.max(options.reconnect_timeout * 0.5, 0.5) * 1000,
+        });
+      }
+
       window.did_handshake = false;
       const messageHandlers = {
         connect: () => {
@@ -470,6 +482,7 @@ function createApp(elements, options) {
         },
         disconnect: () => {
           document.getElementById("popup").ariaHidden = false;
+          options.query.next_message_id = window.nextMessageId;
         },
         load_js_components: async (msg) => {
           const urls = msg.components.map((c) => `${options.prefix}/_nicegui/${options.version}/components/${c.key}`);
