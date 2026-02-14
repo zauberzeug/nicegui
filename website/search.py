@@ -85,5 +85,5 @@ class Search:
         background_tasks.create_lazy(handle_input(), name='handle_search_input')
 
     def open_dialog(self) -> None:
-        ui.run_javascript(f'{self.input.html_id}.select()')
+        self.input.run_method('select')
         self.dialog.open()
