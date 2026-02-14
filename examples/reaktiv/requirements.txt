@@ -1,0 +1,2 @@
+nicegui>=3.0
+reaktiv>=0.21.1
