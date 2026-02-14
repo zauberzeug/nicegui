@@ -100,10 +100,25 @@ function replaceUndefinedAttributes(element) {
   element.text ??= null;
   element.events ??= [];
   element.update_method ??= null;
-  element.slots = {
-    default: { ids: element.children || [] },
-    ...(element.slots ?? {}),
-  };
+  element.children ??= [];
+  element.slots = { ...(element.slots ?? {}), default: { ids: element.children } };
+}
+
+function deepMergeElement(target, source) {
+  const result = { ...target };
+  for (const key of Object.keys(source)) {
+    const sourceVal = source[key];
+    if (sourceVal === null) {
+      delete result[key];
+    } else if (typeof sourceVal === "object" && !Array.isArray(sourceVal)) {
+      const targetVal = target[key];
+      const isObj = targetVal !== null && typeof targetVal === "object" && !Array.isArray(targetVal);
+      result[key] = deepMergeElement(isObj ? targetVal : {}, sourceVal);
+    } else {
+      result[key] = sourceVal;
+    }
+  }
+  return result;
 }
 
 function getElement(id) {
@@ -478,11 +493,13 @@ function createApp(elements, options) {
         },
         update: async (msg) => {
           let eventListenersChanged = false;
+          const savedForRerender = {};
           for (const [id, element] of Object.entries(msg)) {
             if (element === null) continue;
             if (!(id in this.elements)) continue;
             const oldListenerIds = new Set((this.elements[id]?.events || []).map((ev) => ev.listener_id));
             if (element.events?.some((e) => !oldListenerIds.has(e.listener_id))) {
+              savedForRerender[id] = this.elements[id];
               delete this.elements[id];
               eventListenersChanged = true;
             }
@@ -497,12 +514,15 @@ function createApp(elements, options) {
               delete this.elements[id];
               continue;
             }
-            replaceUndefinedAttributes(element);
-            this.elements[id] = element;
+            const base = savedForRerender[id] ?? this.elements[id];
+            const merged = base ? deepMergeElement(base, element) : element;
+            replaceUndefinedAttributes(merged);
+            this.elements[id] = merged;
           }
 
           await this.$nextTick();
-          for (const [id, element] of Object.entries(msg)) {
+          for (const id of Object.keys(msg)) {
+            const element = this.elements[id];
             if (element?.update_method) {
               getElement(id)?.[element.update_method]();
             }

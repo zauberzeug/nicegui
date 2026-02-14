@@ -153,7 +153,7 @@ class Client:
         self.outbox.updates.clear()
         prefix = request.headers.get('X-Forwarded-Prefix', '') + request.scope.get('root_path', '')
         elements = json.dumps({
-            id: element._to_dict() for id, element in self.elements.items()  # pylint: disable=protected-access
+            id: element._to_dict_full() for id, element in self.elements.items()  # pylint: disable=protected-access
         })
         socket_io_js_query_params = {
             **core.app.config.socket_io_js_query_params,
