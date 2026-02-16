@@ -39,7 +39,7 @@ with ui.row():
             tax: float = 0.0
             total: float = 0.0
 
-            def __post_init__(self):
+            def __post_init__(self) -> None:
                 binding.bind_to(self, 'price', self, 'subtotal', lambda price: price * self.quantity)
                 binding.bind_to(self, 'quantity', self, 'subtotal', lambda quantity: self.price * quantity)
                 binding.bind_to(self, 'tax_rate', self, 'tax', lambda tax_rate: tax_rate * self.subtotal / 100)
