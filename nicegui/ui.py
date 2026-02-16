@@ -129,6 +129,7 @@ __all__ = [
     'timeline',
     'timeline_entry',
     'timer',
+    'tiptap',
     'toggle',
     'tooltip',
     'tree',
@@ -249,6 +250,7 @@ from .elements.time_input import TimeInput as time_input
 from .elements.timeline import Timeline as timeline
 from .elements.timeline import TimelineEntry as timeline_entry
 from .elements.timer import Timer as timer
+from .elements.tiptap import Tiptap as tiptap
 from .elements.toggle import Toggle as toggle
 from .elements.tooltip import Tooltip as tooltip
 from .elements.tree import Tree as tree

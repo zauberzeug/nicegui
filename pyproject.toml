@@ -49,6 +49,8 @@ matplotlib = [
 ]
 highcharts = ["nicegui-highcharts>=2.0.2,<3"]
 redis = ["redis>=4.0.0"]
+y-py = ["y-py==0.6.2"]
+
 
 [dependency-groups]
 dev = [
@@ -61,6 +63,7 @@ dev = [
     "fonttools>=4.60.2",  # https://github.com/zauberzeug/nicegui/security/dependabot/68, for matplotlib
     "nicegui-highcharts>=2.0.2,<3",  # extra: highcharts
     "redis>=4.0.0",  # extra: redis
+    "y-py==0.6.2",  # extra: y-py
     {include-group = "types"},
     {include-group = "website"},
     "autopep8>=1.5.7,<3.0.0",
@@ -207,6 +210,7 @@ exclude = [
 ]
 
 [tool.pylint]
+extension-pkg-allow-list = ["y_py"]
 disable = [
     "C0103", # Invalid name (e.g., variable/function/class naming conventions)
     "C0114", # Missing module docstring

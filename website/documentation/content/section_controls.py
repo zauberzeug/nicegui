@@ -20,6 +20,7 @@ from . import (
     radio_documentation,
     range_documentation,
     rating_documentation,
+    tiptap_documentation,
     select_documentation,
     slider_documentation,
     switch_documentation,
@@ -52,6 +53,7 @@ doc.intro(joystick_documentation)
 doc.intro(input_documentation)
 doc.intro(textarea_documentation)
 doc.intro(codemirror_documentation)
+doc.intro(tiptap_documentation)
 doc.intro(xterm_documentation)
 doc.intro(number_documentation)
 doc.intro(knob_documentation)

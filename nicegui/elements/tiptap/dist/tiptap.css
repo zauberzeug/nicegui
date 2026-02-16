@@ -1,0 +1,86 @@
+.nicegui-tiptap .ProseMirror {
+  padding: 8px 12px; outline: none; min-height: 4em; height: 100%; box-sizing: border-box;
+}
+.nicegui-tiptap .ProseMirror > * + * { margin-top: 0.5em; }
+.nicegui-tiptap .ProseMirror h1 { font-size: 2em;    font-weight: bold; }
+.nicegui-tiptap .ProseMirror h2 { font-size: 1.5em;  font-weight: bold; }
+.nicegui-tiptap .ProseMirror h3 { font-size: 1.17em; font-weight: bold; }
+.nicegui-tiptap .ProseMirror ul { list-style-type: disc;    padding-left: 1.5em; }
+.nicegui-tiptap .ProseMirror ol { list-style-type: decimal; padding-left: 1.5em; }
+.nicegui-tiptap .ProseMirror blockquote {
+  border-left: 3px solid rgba(0,0,0,0.2); padding-left: 1em; color: #555;
+}
+.nicegui-tiptap .ProseMirror code {
+  background: rgba(0,0,0,0.06); padding: 0.15em 0.3em; border-radius: 3px;
+  font-family: monospace; font-size: 0.9em;
+}
+.nicegui-tiptap .ProseMirror pre {
+  background: #1e1e1e; color: #d4d4d4; padding: 0.75em 1em;
+  border-radius: 4px; overflow-x: auto;
+}
+.nicegui-tiptap .ProseMirror pre code { background: none; color: inherit; padding: 0; }
+.nicegui-tiptap .ProseMirror table {
+  border-collapse: collapse; table-layout: fixed; width: 100%; overflow: hidden;
+}
+.nicegui-tiptap .ProseMirror td,
+.nicegui-tiptap .ProseMirror th {
+  border: 1px solid rgba(0,0,0,0.24); padding: 4px 8px;
+  min-width: 2em; vertical-align: top; box-sizing: border-box; position: relative;
+}
+.nicegui-tiptap .ProseMirror th {
+  background: rgba(0,0,0,0.05); font-weight: 600;
+}
+.nicegui-tiptap .ProseMirror .selectedCell::after {
+  z-index: 2; position: absolute; content: '';
+  left: 0; right: 0; top: 0; bottom: 0;
+  background: rgba(66,153,225,0.15); pointer-events: none;
+}
+.nicegui-tiptap .ProseMirror .column-resize-handle {
+  position: absolute; right: -2px; top: 0; bottom: 0;
+  width: 4px; background: rgba(66,153,225,0.5); pointer-events: none;
+}
+/* Toolbar */
+.nicegui-tiptap .nicegui-tiptap-toolbar {
+  flex-wrap: wrap;
+  gap: 2px;
+  border-bottom: 1px solid rgba(0,0,0,0.16);
+}
+body.body--dark .nicegui-tiptap .nicegui-tiptap-toolbar {
+  border-bottom-color: rgba(255,255,255,0.16);
+}
+
+/* Table context toolbar */
+.nicegui-tiptap .nicegui-tiptap-table-toolbar {
+  flex-wrap: wrap;
+  gap: 2px;
+  border-bottom: 1px solid rgba(0,0,0,0.16);
+  background: rgba(66,153,225,0.06);
+}
+body.body--dark .nicegui-tiptap .nicegui-tiptap-table-toolbar {
+  border-bottom-color: rgba(255,255,255,0.16);
+  background: rgba(66,153,225,0.12);
+}
+
+/* Dark mode overrides */
+body.body--dark .nicegui-tiptap .ProseMirror blockquote {
+  border-left-color: rgba(255,255,255,0.2);
+  color: rgba(255,255,255,0.6);
+}
+body.body--dark .nicegui-tiptap .ProseMirror td,
+body.body--dark .nicegui-tiptap .ProseMirror th {
+  border-color: rgba(255,255,255,0.2);
+}
+body.body--dark .nicegui-tiptap .ProseMirror th {
+  background: rgba(255,255,255,0.08);
+}
+
+.nicegui-tiptap.resize-cursor { cursor: col-resize; }
+.nicegui-tiptap .collaboration-cursor__caret {
+  border-left: 1px solid; border-right: 1px solid;
+  margin-left: -1px; margin-right: -1px; pointer-events: none; position: relative;
+}
+.nicegui-tiptap .collaboration-cursor__label {
+  border-radius: 3px 3px 3px 0; color: #fff; font-size: 12px; font-weight: 600;
+  left: -1px; line-height: normal; padding: 0.1rem 0.3rem;
+  position: absolute; top: -1.4em; user-select: none; white-space: nowrap;
+}
