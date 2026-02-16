@@ -21,6 +21,8 @@ from .part import Demo, DocumentationPart
 registry: dict[str, DocumentationPage] = {}
 redirects: dict[str, str] = {}
 
+TRUE_EXCEPT_FIRST_DEMO = True
+
 
 @contextmanager
 def dummy_client() -> Generator[Client]:
@@ -74,7 +76,7 @@ def text(title_: str, description: str) -> None:
 def demo(title_: str,
          description: str, /, *,
          tab: str | Callable | None = None,
-         lazy: bool = True,
+         lazy: bool = TRUE_EXCEPT_FIRST_DEMO,
          ) -> Callable[[Callable], Callable]:
     ...
 
@@ -82,7 +84,7 @@ def demo(title_: str,
 @overload
 def demo(element: type, /,
          tab: str | Callable | None = None,
-         lazy: bool = True,
+         lazy: bool = TRUE_EXCEPT_FIRST_DEMO,
          ) -> Callable[[Callable], Callable]:
     ...
 
@@ -90,13 +92,15 @@ def demo(element: type, /,
 @overload
 def demo(function: Callable | Navigate, /,
          tab: str | Callable | None = None,
-         lazy: bool = True,
+         lazy: bool = TRUE_EXCEPT_FIRST_DEMO,
          ) -> Callable[[Callable], Callable]:
     ...
 
 
 def demo(*args, **kwargs) -> Callable[[Callable], Callable]:
-    """Add a demo section to the current documentation page."""
+    """Add a demo section to the current documentation page.
+
+    NOTE: For SEO and UX, ``lazy=False`` is the default for the first demo."""
     if len(args) == 2:
         element = None
         title_, description = args
@@ -126,8 +130,9 @@ def demo(*args, **kwargs) -> Callable[[Callable], Callable]:
             title=title_,
             description=description,
             description_format='md' if is_markdown else 'rst',
-            demo=Demo(function=function, lazy=kwargs.get('lazy', True), tab=kwargs.get('tab')),
+            demo=Demo(function=function, lazy=kwargs.get('lazy', page.has_demo), tab=kwargs.get('tab')),
         ))
+        page.has_demo = True
         return function
     return decorator
 

@@ -14,6 +14,7 @@ class DocumentationPage:
     back_link: str | None = None
     parts: list[DocumentationPart] = field(default_factory=list)
     extra_column: Callable | None = None
+    has_demo: bool = False
 
     @property
     def heading(self) -> str:
