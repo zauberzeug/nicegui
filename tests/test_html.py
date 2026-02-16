@@ -47,3 +47,21 @@ def test_xss_sanitization(screen: Screen):
     screen.allowed_js_errors.append('/x - Failed to load resource')
     screen.open('/')
     assert screen.find_by_tag('img').get_attribute('onerror') is None
+
+
+def test_html_manipulation(screen: Screen):
+    @ui.page('/')
+    def page():
+        html_element = ui.html('Old HTML')
+        ui.button('1. Manipulate HTML', on_click=lambda: ui.run_javascript(f'''
+            getHtmlElement({html_element.id}).innerHTML = "New HTML";
+        '''))
+        label = ui.label('Hi')
+        ui.button('2. Manipulate Label', on_click=lambda: label.set_text('Ho'))
+
+    screen.open('/')
+    screen.click('1. Manipulate HTML')
+    screen.should_contain('New HTML')
+    screen.click('2. Manipulate Label')
+    screen.should_contain('Ho')
+    screen.should_not_contain('Old HTML')
