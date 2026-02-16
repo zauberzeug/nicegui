@@ -41,10 +41,11 @@ with ui.row():
 
             def __post_init__(self):
                 binding.bind_to(self, 'price', self, 'subtotal', lambda price: price * self.quantity)
-                binding.bind_to(self, 'quantity', self, 'subtotal', lambda quantity: quantity * self.price)
+                binding.bind_to(self, 'quantity', self, 'subtotal', lambda quantity: self.price * quantity)
                 binding.bind_to(self, 'tax_rate', self, 'tax', lambda tax_rate: tax_rate * self.subtotal / 100)
-                binding.bind_to(self, 'subtotal', self, 'total', lambda subtotal: subtotal + self.tax)
+                binding.bind_to(self, 'subtotal', self, 'tax', lambda subtotal: self.tax_rate * subtotal / 100)
                 binding.bind_to(self, 'tax', self, 'total', lambda tax: self.subtotal + tax)
+                binding.bind_to(self, 'subtotal', self, 'total', lambda subtotal: self.tax + subtotal)
 
         order = Order()
         ui.number('Price ($)', value=order.price, min=0, format='%.2f').bind_value_to(order, 'price')
