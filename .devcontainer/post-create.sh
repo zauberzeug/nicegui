@@ -9,4 +9,4 @@ uv sync
 uv run pre-commit install
 
 # Authenticate with GitHub CLI if not already logged in
-gh auth status >/dev/null 2>&1 || gh auth login -h github.com -p https -w
+gh auth status >/dev/null 2>&1 || gh auth login -h github.com -p https -w || true
