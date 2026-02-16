@@ -32,18 +32,19 @@ with ui.row():
 
         @binding.bindable_dataclass
         class Order:
-            price = 25.0
-            quantity = 2
-            tax_rate = 10.0
-            subtotal = 0.0
-            tax = 0.0
-            total = 0.0
+            price: float = 25.0
+            quantity: int = 2
+            tax_rate: float = 10.0
+            subtotal: float = 0.0
+            tax: float = 0.0
+            total: float = 0.0
 
-            def __init__(self):
+            def __post_init__(self):
                 binding.bind_to(self, 'price', self, 'subtotal', lambda price: price * self.quantity)
                 binding.bind_to(self, 'quantity', self, 'subtotal', lambda quantity: quantity * self.price)
                 binding.bind_to(self, 'tax_rate', self, 'tax', lambda tax_rate: tax_rate * self.subtotal / 100)
                 binding.bind_to(self, 'subtotal', self, 'total', lambda subtotal: subtotal + self.tax)
+                binding.bind_to(self, 'tax', self, 'total', lambda tax: self.subtotal + tax)
 
         order = Order()
         ui.number('Price ($)', value=order.price, min=0, format='%.2f').bind_value_to(order, 'price')
