@@ -40,10 +40,15 @@ with ui.row():
             total: float = 0.0
 
             def __post_init__(self) -> None:
+                # multi-input binding for subtotal = price * quantity
                 binding.bind_to(self, 'price', self, 'subtotal', lambda price: price * self.quantity)
                 binding.bind_to(self, 'quantity', self, 'subtotal', lambda quantity: self.price * quantity)
+
+                # multi-input binding for tax = tax_rate * subtotal / 100
                 binding.bind_to(self, 'tax_rate', self, 'tax', lambda tax_rate: tax_rate * self.subtotal / 100)
                 binding.bind_to(self, 'subtotal', self, 'tax', lambda subtotal: self.tax_rate * subtotal / 100)
+
+                # multi-input binding for total = subtotal + tax
                 binding.bind_to(self, 'tax', self, 'total', lambda tax: self.subtotal + tax)
                 binding.bind_to(self, 'subtotal', self, 'total', lambda subtotal: self.tax + subtotal)
 
