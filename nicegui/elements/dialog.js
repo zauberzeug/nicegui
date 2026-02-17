@@ -1,6 +1,6 @@
 export default {
   template: `
-    <q-dialog @show="addClass" @hide="removeClass">
+    <q-dialog ref="qRef" @show="addClass" @hide="removeClass">
       <slot />
     </q-dialog>
   `,

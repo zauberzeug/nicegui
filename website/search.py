@@ -43,17 +43,28 @@ class Search:
                     .props('padding="2px 8px" outline size=sm color=grey-5').classes('shadow')
             ui.separator()
             self.results = ui.element('q-list').classes('w-full').props('separator')
-        ui.keyboard().on('key', self.open_dialog, js_handler='''(e) => {
+        ui.keyboard().on('key', js_handler=f'''(e) => {{
             if (e.action !== 'keydown') return;
-            if (e.key === '/' || (e.key === 'k' && (e.ctrlKey || e.metaKey))) {
-                emit(e);
+            if (e.key === '/' || (e.key === 'k' && (e.ctrlKey || e.metaKey))) {{
+                getElement({self.dialog.id}).$refs.qRef.show();
                 e.event.preventDefault();
-            }
-        }''')
+            }}
+        }}''')
+
+        # Handle closing dialog without server involvement
+        self.dialog.on('update:model-value',
+                       js_handler=f'(v) => {{if (!v && !window.searchDialogManipulating)'
+                       f'{{window.searchDialogManipulating=true;'
+                       f'getElement({self.dialog.id}).$refs.qRef.hide();'
+                       f'window.searchDialogManipulating=false;}}}}')
+
+        # Select the input without server involvement
+        self.dialog.on('show', js_handler=f'() => {{{self.input.html_id}.select();}}')
 
     def create_button(self) -> ui.button:
-        return ui.button(on_click=self.open_dialog, icon='search').props('flat color=white') \
-            .tooltip('Press Ctrl+K or / to search the documentation')
+        return ui.button(icon='search').props('flat color=white') \
+            .tooltip('Press Ctrl+K or / to search the documentation') \
+            .on('click', js_handler=f'''() => {{getElement({self.dialog.id}).$refs.qRef.show();}}''')
 
     def handle_input(self, e: events.ValueChangeEventArguments) -> None:
         async def handle_input() -> None:
@@ -83,7 +94,3 @@ class Search:
                                             element = custom_restructured_text(intro)
                                         element.classes('text-grey line-clamp-1')
         background_tasks.create_lazy(handle_input(), name='handle_search_input')
-
-    def open_dialog(self) -> None:
-        self.input.run_method('select')
-        self.dialog.open()

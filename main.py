@@ -60,12 +60,26 @@ class custom_sub_pages(ui.sub_pages):
 def _main_page() -> None:
     ui.context.client.content.classes('p-0 gap-0')
     header.add_head_html()
+    ui.run_javascript('''
+        let _loadingBarActive = false;
+        window.setLoadingBar = function(active) {
+            if (active === _loadingBarActive) return;
+            _loadingBarActive = active;
+            Quasar.LoadingBar[active ? 'start' : 'stop']();
+        };
+        Quasar.LoadingBar.setDefaults({ color: 'white', size: '1px' });
+    ''')
+
+    for sub_page_event_name in ('sub_pages_open', 'sub_pages_navigate'):
+        ui.context.client.layout.on(sub_page_event_name, js_handler='() => setLoadingBar(true)')
+    ui.context.client.sub_pages_router.on_path_changed(lambda _: ui.run_javascript('setLoadingBar(false)'))
 
     with ui.left_drawer() \
             .classes('column no-wrap gap-1 bg-[#eee] dark:bg-[#1b1b1b] mt-[-20px] px-8 py-20') \
             .style('height: calc(100% + 20px) !important') as menu:
         tree = ui.tree(documentation.tree.nodes, label_key='title',
                        on_select=lambda e: ui.navigate.to(f'/documentation/{e.value}')) \
+            .on('update:selected', js_handler='() => setLoadingBar(true)') \
             .classes('w-full').props('accordion no-connectors no-selection-unset')
     menu_button = header.add_header(menu)
 
