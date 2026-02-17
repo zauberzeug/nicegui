@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import uuid
+from dataclasses import dataclass
 from pathlib import Path
 
 from ... import tiptap_room
@@ -9,10 +10,42 @@ from ...elements.mixins.disableable_element import DisableableElement
 from ...elements.mixins.value_element import ValueElement
 from ...events import GenericEventArguments, Handler, ValueChangeEventArguments
 
+DEFAULT_TOOLBAR_BUTTONS: list[list[str]] = [
+    ['bold', 'italic', 'underline', 'strike', 'code'],
+    ['heading'],
+    ['bullet_list', 'ordered_list'],
+    ['blockquote', 'code_block'],
+    ['undo', 'redo'],
+]
+
+
+@dataclass
+class Toolbar:
+    """Tiptap editor toolbar configuration.
+
+    :param buttons: nested list of button groups, e.g. ``[['bold', 'italic'], ['undo', 'redo']]``.
+        If None, uses the default button layout.
+
+        Available button IDs: ``bold``, ``italic``, ``underline``, ``strike``, ``code``,
+        ``heading`` (dropdown showing Normal/H1/H2/H3), ``h1``, ``h2``, ``h3``,
+        ``bullet_list``, ``ordered_list``, ``blockquote``, ``code_block``,
+        ``table``, ``undo``, ``redo``, ``hr``.
+
+    # Future extensions: preset, position, sticky, style, compact, etc.
+    """
+
+    buttons: list[list[str]] | None = None
+
+    def _resolve_buttons(self) -> list[list[str]]:
+        """Return buttons or default if None."""
+        return self.buttons if self.buttons is not None else DEFAULT_TOOLBAR_BUTTONS
+
 
 class Tiptap(ValueElement, DisableableElement, component='tiptap.js',
              esm={'nicegui-tiptap': 'dist'}, default_classes='nicegui-tiptap'):
     """Collaborative rich-text editor backed by Tiptap + Yjs.
+
+    Access the ``Toolbar`` class via ``ui.tiptap.Toolbar``.
 
     Multiple browser clients sharing the same ``doc_id`` edit the same document
     in real time using CRDT conflict-free merging.  The NiceGUI Python server
@@ -26,13 +59,10 @@ class Tiptap(ValueElement, DisableableElement, component='tiptap.js',
     :param user: cursor identity shown to collaborators,
         e.g. ``{'name': 'Alice', 'color': '#3b82f6'}``.
         Defaults to an anonymous user with a random colour.
-    :param toolbar: ``True`` (default) shows the full toolbar, ``False`` hides it,
-        or pass a list of lists to define custom button groups, e.g.
-        ``[['bold', 'italic'], ['h1', 'h2'], ['undo', 'redo']]``.
-        Available IDs: ``bold``, ``italic``, ``underline``, ``strike``, ``code``,
-        ``heading`` (dropdown showing Normal/H1/H2/H3), ``h1``, ``h2``, ``h3``,
-        ``bullet_list``, ``ordered_list``,
-        ``blockquote``, ``code_block``, ``table``, ``undo``, ``redo``, ``hr``.
+    :param toolbar: toolbar configuration. Defaults to ``Toolbar()`` which shows
+        the standard toolbar. Use ``None`` to hide the toolbar, or
+        ``Toolbar(buttons=[...])`` for custom button groups.
+        See ``Toolbar`` for available button IDs.
     :param on_change: callback invoked with a ``ValueChangeEventArguments`` whenever the HTML
         content changes.
     """
@@ -41,7 +71,7 @@ class Tiptap(ValueElement, DisableableElement, component='tiptap.js',
     LOOPBACK = None  # Yjs (in the Vue component) owns document state; no server echo needed.
 
     def __init__(self, value: str = '', *, doc_id: str | None = None, user: dict[str, str] | None = None,
-                 toolbar: bool | list[list[str]] = True,
+                 toolbar: Toolbar | None = Toolbar(),
                  on_change: Handler[ValueChangeEventArguments] | None = None) -> None:
         """Create a collaborative Tiptap rich-text editor."""
         self._doc_id = doc_id if doc_id is not None else str(uuid.uuid4())
@@ -51,7 +81,7 @@ class Tiptap(ValueElement, DisableableElement, component='tiptap.js',
             self.on_value_change(on_change)
         self._props['doc-id'] = self._doc_id
         self._props['user'] = user or {}
-        self._props['toolbar'] = toolbar
+        self._props['toolbar'] = toolbar._resolve_buttons() if toolbar is not None else False
         self._update_method = 'setContentFromProps'
 
     def _event_args_to_value(self, e: GenericEventArguments) -> str:
@@ -73,7 +103,7 @@ class Tiptap(ValueElement, DisableableElement, component='tiptap.js',
 
         Works correctly even when no clients are currently connected to the room.
 
-        :raises ImportError: if ``y-py`` is not installed (``pip install y-py``).
+        :raises ImportError: if ``pycrdt`` is not installed (``pip install pycrdt``).
         """
         return tiptap_room.get_state(self._doc_id)
 
@@ -85,7 +115,11 @@ class Tiptap(ValueElement, DisableableElement, component='tiptap.js',
         their local Yjs document from the snapshot.
 
         :param data: raw Yjs state bytes as returned by ``get_state()``.
-        :raises ImportError: if ``y-py`` is not installed
-            (``pip install y-py``).
+        :raises ImportError: if ``pycrdt`` is not installed
+            (``pip install pycrdt``).
         """
         tiptap_room.set_state(self._doc_id, data)
+
+
+# Expose Toolbar as ui.tiptap.Toolbar for convenient access
+Tiptap.Toolbar = Toolbar  # type: ignore[attr-defined]

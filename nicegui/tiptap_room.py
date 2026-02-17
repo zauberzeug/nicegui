@@ -1,8 +1,8 @@
 """Server-side Yjs room manager for ui.tiptap.
 
-Maintains one Y.Doc per doc_id and relays Yjs binary update / awareness
+Maintains one Doc per doc_id and relays Yjs binary update / awareness
 messages between all connected Socket.IO clients that share that doc_id.
-y-py is an optional dependency; its absence is reported with a clear message.
+pycrdt is an optional dependency; its absence is reported with a clear message.
 """
 from __future__ import annotations
 
@@ -13,35 +13,33 @@ from typing import TYPE_CHECKING
 from . import background_tasks, core
 
 if TYPE_CHECKING:
-    from y_py import YDoc
+    from pycrdt import Doc
 
 try:
-    import y_py as Y
-    HAS_Y_PY = True
-    if not hasattr(Y, 'encode_state_as_update') or not hasattr(Y, 'apply_update'):
-        HAS_Y_PY = False
+    from pycrdt import Doc
+    PYCRDT_AVAILABLE = True
 except ImportError:
-    HAS_Y_PY = False
+    PYCRDT_AVAILABLE = False
 
 _log = logging.getLogger(__name__)
 
 # Process-lifetime stores — access is always from the asyncio event loop.
-_docs: dict[str, YDoc] = {}        # doc_id → Y.YDoc
+_docs: dict[str, Doc] = {}        # doc_id → Doc
 _rooms: dict[str, set[str]] = {}   # doc_id → set of socket-IDs
 
 
-def _require_y_py() -> None:
-    if not HAS_Y_PY:
+def _require_pycrdt() -> None:
+    if not PYCRDT_AVAILABLE:
         raise ImportError(
-            'y-py is required for ui.tiptap state persistence. '
-            'Install it with: pip install y-py'
+            'pycrdt is required for ui.tiptap state persistence. '
+            'Install it with: pip install pycrdt'
         )
 
 
-def _get_or_create_doc(doc_id: str) -> YDoc:
-    _require_y_py()
+def _get_or_create_doc(doc_id: str) -> Doc:
+    _require_pycrdt()
     if doc_id not in _docs:
-        _docs[doc_id] = Y.YDoc()
+        _docs[doc_id] = Doc()
     return _docs[doc_id]
 
 
@@ -52,29 +50,29 @@ def get_state(doc_id: str) -> bytes:
     field) and later restored with :func:`set_state`.  Works correctly even
     when no clients are currently connected.
 
-    :raises ImportError: if ``y-py`` is not installed.
+    :raises ImportError: if ``pycrdt`` is not installed.
     """
     doc = _get_or_create_doc(doc_id)
-    return bytes(Y.encode_state_as_update(doc))
+    return bytes(doc.get_update())
 
 
 def set_state(doc_id: str, data: bytes) -> None:
     """Replace the Yjs document state and broadcast it to connected clients.
 
-    The document is replaced with a fresh Y.Doc populated from *data*, rather
+    The document is replaced with a fresh Doc populated from *data*, rather
     than CRDT-merged.  A plain merge cannot restore deleted content because
     CRDT deletions are permanent; a fresh document avoids this.
 
     Connected clients receive a ``yjs_reset`` event which causes them to
-    recreate their local Y.Doc so their deletion history is also cleared.
+    recreate their local Doc so their deletion history is also cleared.
 
     :param data: raw Yjs state bytes as returned by :func:`get_state`.
-    :raises ImportError: if ``y-py`` is not installed.
+    :raises ImportError: if ``pycrdt`` is not installed.
     """
-    _require_y_py()
+    _require_pycrdt()
     # Replace — not merge — so CRDT deletions in the old doc do not block restore.
-    _docs[doc_id] = Y.YDoc()
-    Y.apply_update(_docs[doc_id], data)
+    _docs[doc_id] = Doc()
+    _docs[doc_id].apply_update(data)
     background_tasks.create(
         _broadcast_reset(doc_id, list(data)),
         name=f'yjs_set_state_{doc_id}',
@@ -86,7 +84,7 @@ async def _broadcast_reset(doc_id: str, update: list[int]) -> None:
     """Broadcast a full state reset to all clients in the room.
 
     Unlike ``yjs_init`` (which clients CRDT-merge), ``yjs_reset`` signals that
-    clients must recreate their local Y.Doc from scratch so deletion history
+    clients must recreate their local Doc from scratch so deletion history
     is cleared.
     """
     payload = {'doc_id': doc_id, 'update': update}
@@ -98,7 +96,7 @@ def remove_sid(sid: str) -> None:
     """Remove a disconnected socket-ID from all rooms.
 
     Called by ``_on_disconnect`` in ``nicegui.py`` on every client disconnect.
-    Safe to call even when y-py is not installed.
+    Safe to call even when pycrdt is not installed.
     """
     for room_sids in _rooms.values():
         room_sids.discard(sid)
@@ -116,11 +114,11 @@ def setup() -> None:
         if not doc_id:
             return
         _rooms.setdefault(doc_id, set()).add(sid)
-        if not HAS_Y_PY:
+        if not PYCRDT_AVAILABLE:
             return
         try:
             doc = _get_or_create_doc(doc_id)
-            update = bytes(Y.encode_state_as_update(doc))
+            update = bytes(doc.get_update())
             if len(update) > 2:  # Yjs empty-state sentinel is exactly 2 bytes
                 await core.sio.emit(
                     'yjs_init',
@@ -141,9 +139,9 @@ def setup() -> None:
         raw: list = data.get('update', [])
         if not doc_id or not raw:
             return
-        if HAS_Y_PY:
+        if PYCRDT_AVAILABLE:
             try:
-                Y.apply_update(_get_or_create_doc(doc_id), bytes(raw))
+                _get_or_create_doc(doc_id).apply_update(bytes(raw))
             except Exception:
                 _log.exception('yjs_update: apply failed for doc_id=%s', doc_id)
                 return
@@ -168,11 +166,11 @@ def _clear_doc(doc_id: str) -> None:
 
 
 def shutdown() -> None:
-    """Clean up all YDocs."""
+    """Clean up all Docs."""
     _docs.clear()
 
 
 def reset() -> None:
-    """Clear all YDocs and rooms. Called during test teardown."""
+    """Clear all Docs and rooms. Called during test teardown."""
     _docs.clear()
     _rooms.clear()

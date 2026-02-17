@@ -1,3 +1,3 @@
-from .tiptap import Tiptap
+from .tiptap import Tiptap, Toolbar
 
-__all__ = ['Tiptap']
+__all__ = ['Tiptap', 'Toolbar']

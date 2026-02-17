@@ -8,16 +8,16 @@ def main_demo() -> None:
 
 
 @doc.demo('Custom toolbar', '''
-Pass a list of lists to ``toolbar`` to control which buttons appear and how
-they are grouped (each inner list becomes a button group with a separator).
-Use ``toolbar=False`` to hide the toolbar entirely.
+Use ``ui.tiptap.Toolbar(buttons=[[...], [...]])`` to define custom button groups.
+Each inner list becomes a button group with a separator between groups.
+Use ``toolbar=None`` to hide the toolbar.
 ''')
 def toolbar_demo() -> None:
-    ui.tiptap('<p>Minimal toolbar</p>', toolbar=[
+    ui.tiptap('<p>Minimal toolbar</p>', toolbar=ui.tiptap.Toolbar(buttons=[
         ['bold', 'italic', 'underline'],
         ['bullet_list', 'ordered_list'],
         ['undo', 'redo'],
-    ]).classes('h-full w-full border')
+    ])).classes('h-full w-full border')
 
 
 @doc.demo('Available toolbar buttons', '''
@@ -35,14 +35,14 @@ The editor below shows all of them at once.
 **History** — ``undo``, ``redo``
 ''')
 def all_buttons_demo() -> None:
-    ui.tiptap('<p>Try every button above.</p>', toolbar=[
+    ui.tiptap('<p>Try every button above.</p>', toolbar=ui.tiptap.Toolbar(buttons=[
         ['bold', 'italic', 'underline', 'strike', 'code'],
         ['heading', 'h1', 'h2', 'h3'],
         ['bullet_list', 'ordered_list'],
         ['blockquote', 'code_block'],
         ['table', 'hr'],
         ['undo', 'redo'],
-    ]).classes('h-full w-full border')
+    ])).classes('h-full w-full border')
 
 
 @doc.demo('Collaborative editing', '''
@@ -73,7 +73,7 @@ def table_demo() -> None:
         '<tr><td>Bob</td><td>Designer</td><td>On leave</td></tr>'
         '</tbody>'
         '</table>',
-        toolbar=[['bold', 'italic'], ['table'], ['undo', 'redo']],
+        toolbar=ui.tiptap.Toolbar(buttons=[['bold', 'italic'], ['table'], ['undo', 'redo']]),
         doc_id='shared-table'
     ).classes('h-full w-full border')
 
@@ -92,7 +92,7 @@ def user_demo() -> None:
     ui.button('join room').on_click(lambda: join_room(name.value, color.value))
 
 
-# NOTE The states requires the ``y-py`` package: ``pip install y-py``
+# NOTE The states requires the ``pycrdt`` package: ``pip install pycrdt``
 @doc.demo('Persistence with get_state / set_state', '''
 ``get_state()`` returns raw Yjs binary bytes that can be stored in any database
 (e.g. MongoDB, Redis, or a file).  ``set_state()`` restores and broadcasts the

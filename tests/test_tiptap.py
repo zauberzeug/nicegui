@@ -83,8 +83,8 @@ async def test_disable(user: User) -> None:
     assert results['editor']._props.get('disable') is True
 
 
-async def test_get_state_requires_y_py(user: User) -> None:
-    """get_state raises ImportError with a helpful message when y-py is absent."""
+async def test_get_state_requires_pycrdt(user: User) -> None:
+    """get_state raises ImportError with a helpful message when pycrdt is absent."""
     from nicegui import tiptap_room
 
     results: dict = {}
@@ -95,17 +95,17 @@ async def test_get_state_requires_y_py(user: User) -> None:
 
     await user.open('/')
     editor = results['editor']
-    original = tiptap_room.HAS_Y_PY
+    original = tiptap_room.PYCRDT_AVAILABLE
     try:
-        tiptap_room.HAS_Y_PY = False
-        with pytest.raises(ImportError, match='y-py'):
+        tiptap_room.PYCRDT_AVAILABLE = False
+        with pytest.raises(ImportError, match='pycrdt'):
             editor.get_state()
     finally:
-        tiptap_room.HAS_Y_PY = original
+        tiptap_room.PYCRDT_AVAILABLE = original
 
 
-async def test_set_state_requires_y_py(user: User) -> None:
-    """set_state raises ImportError with a helpful message when y-py is absent."""
+async def test_set_state_requires_pycrdt(user: User) -> None:
+    """set_state raises ImportError with a helpful message when pycrdt is absent."""
     from nicegui import tiptap_room
 
     results: dict = {}
@@ -116,18 +116,18 @@ async def test_set_state_requires_y_py(user: User) -> None:
 
     await user.open('/')
     editor = results['editor']
-    original = tiptap_room.HAS_Y_PY
+    original = tiptap_room.PYCRDT_AVAILABLE
     try:
-        tiptap_room.HAS_Y_PY = False
-        with pytest.raises(ImportError, match='y-py'):
+        tiptap_room.PYCRDT_AVAILABLE = False
+        with pytest.raises(ImportError, match='pycrdt'):
             editor.set_state(b'')
     finally:
-        tiptap_room.HAS_Y_PY = original
+        tiptap_room.PYCRDT_AVAILABLE = original
 
 
 async def test_room_state_is_initially_bytes(user: User) -> None:
     """get_state returns bytes (empty Yjs state) even before any client connects."""
-    pytest.importorskip('y_py')
+    pytest.importorskip('pycrdt')
 
     doc_id = f'initial-state-{id(object())}'
     results: dict = {}
@@ -144,8 +144,8 @@ async def test_room_state_is_initially_bytes(user: User) -> None:
 
 
 async def test_room_state_roundtrip(user: User) -> None:
-    """get_state / set_state roundtrip does not corrupt the doc (requires y-py)."""
-    pytest.importorskip('y_py')
+    """get_state / set_state roundtrip does not corrupt the doc (requires pycrdt)."""
+    pytest.importorskip('pycrdt')
     from nicegui import tiptap_room
 
     doc_id = f'roundtrip-{id(object())}'
@@ -166,8 +166,8 @@ async def test_room_state_roundtrip(user: User) -> None:
 
 async def test_single_persistence_state_preserved(user: User) -> None:
     """Restored state is byte-for-byte equivalent to the saved snapshot."""
-    pytest.importorskip('y_py')
-    import y_py as Y
+    pytest.importorskip('pycrdt')
+    from pycrdt import Doc, Map
 
     from nicegui import tiptap_room
 
@@ -181,18 +181,18 @@ async def test_single_persistence_state_preserved(user: User) -> None:
     await user.open('/')
     editor = results['editor']
 
-    # Write known content into the server-side Y.Doc.
+    # Write known content into the server-side Doc.
     doc = tiptap_room._get_or_create_doc(doc_id)
-    ymap = doc.get_map('meta')
-    with doc.begin_transaction() as txn:
-        ymap.set(txn, 'version', '1')
+    doc['meta'] = Map()
+    with doc.transaction():
+        doc['meta']['version'] = '1'
 
     snapshot = editor.get_state()
     assert len(snapshot) > 2  # non-empty (Yjs empty-state sentinel is exactly 2 bytes)
 
     # Apply more edits — simulates user activity after the save point.
-    with doc.begin_transaction() as txn:
-        ymap.set(txn, 'version', '2')
+    with doc.transaction():
+        doc['meta']['version'] = '2'
 
     after_edit = editor.get_state()
     assert after_edit != snapshot  # confirm the state actually changed
@@ -202,22 +202,22 @@ async def test_single_persistence_state_preserved(user: User) -> None:
     restored = editor.get_state()
 
     # Build the canonical reference bytes: fresh doc + snapshot applied.
-    ref_doc = Y.YDoc()
-    Y.apply_update(ref_doc, snapshot)
-    ref_bytes = bytes(Y.encode_state_as_update(ref_doc))
+    ref_doc = Doc()
+    ref_doc.apply_update(snapshot)
+    ref_bytes = bytes(ref_doc.get_update())
 
     assert restored == ref_bytes
 
-    # Release YDocs on this thread to avoid y-py "unsendable" Rust panic on GC.
+    # Release Docs on this thread.
     del ref_doc
     tiptap_room._clear_doc(doc_id)
-    del ymap, doc
+    del doc
 
 
 async def test_debounce_unsaved_edits_excluded_from_restore(user: User) -> None:
     """Edits within the debounce window (not yet auto-saved) are absent after restore."""
-    pytest.importorskip('y_py')
-    import y_py as Y
+    pytest.importorskip('pycrdt')
+    from pycrdt import Doc, Map
 
     from nicegui import tiptap_room
 
@@ -233,15 +233,15 @@ async def test_debounce_unsaved_edits_excluded_from_restore(user: User) -> None:
 
     # Establish the "auto-saved" snapshot — the state the debounce timer captured.
     doc = tiptap_room._get_or_create_doc(doc_id)
-    ymap = doc.get_map('content')
-    with doc.begin_transaction() as txn:
-        ymap.set(txn, 'saved', 'yes')
+    doc['content'] = Map()
+    with doc.transaction():
+        doc['content']['saved'] = 'yes'
 
     snapshot = editor.get_state()  # what the debounce timer would have stored
 
     # Simulate user typing within the 2 s debounce window — NOT auto-saved yet.
-    with doc.begin_transaction() as txn:
-        ymap.set(txn, 'unsaved', 'yes')
+    with doc.transaction():
+        doc['content']['unsaved'] = 'yes'
 
     unsaved_state = editor.get_state()
     assert unsaved_state != snapshot  # confirm unsaved edits changed the state
@@ -251,17 +251,17 @@ async def test_debounce_unsaved_edits_excluded_from_restore(user: User) -> None:
     restored = editor.get_state()
 
     # Restored state must equal the snapshot, not the unsaved edits.
-    ref_doc = Y.YDoc()
-    Y.apply_update(ref_doc, snapshot)
-    ref_bytes = bytes(Y.encode_state_as_update(ref_doc))
+    ref_doc = Doc()
+    ref_doc.apply_update(snapshot)
+    ref_bytes = bytes(ref_doc.get_update())
 
     assert restored == ref_bytes      # matches the auto-saved snapshot
     assert restored != unsaved_state  # unsaved content is gone
 
-    # Release YDocs on this thread to avoid y-py "unsendable" Rust panic on GC.
+    # Release Docs on this thread.
     del ref_doc
     tiptap_room._clear_doc(doc_id)
-    del ymap, doc
+    del doc
 
 
 def test_remove_sid_cleans_rooms():
@@ -276,8 +276,10 @@ def test_remove_sid_cleans_rooms():
     assert 'sid-1' not in tiptap_room._rooms['room-b']
 
 
-async def test_toolbar_default_true(user: User) -> None:
-    """toolbar prop defaults to True."""
+async def test_toolbar_default_shows_buttons(user: User) -> None:
+    """toolbar defaults to Toolbar() which shows the standard toolbar buttons."""
+    from nicegui.elements.tiptap.tiptap import DEFAULT_TOOLBAR_BUTTONS
+
     results: dict = {}
 
     @ui.page('/')
@@ -285,29 +287,29 @@ async def test_toolbar_default_true(user: User) -> None:
         results['editor'] = ui.tiptap()
 
     await user.open('/')
-    assert results['editor']._props.get('toolbar') is True
+    assert results['editor']._props.get('toolbar') == DEFAULT_TOOLBAR_BUTTONS
 
 
-async def test_toolbar_disabled(user: User) -> None:
-    """toolbar=False is forwarded to the Vue component."""
+async def test_toolbar_none_hides_toolbar(user: User) -> None:
+    """toolbar=None hides the toolbar."""
     results: dict = {}
 
     @ui.page('/')
     def page():
-        results['editor'] = ui.tiptap(toolbar=False)
+        results['editor'] = ui.tiptap(toolbar=None)
 
     await user.open('/')
     assert results['editor']._props.get('toolbar') is False
 
 
 async def test_toolbar_custom_groups(user: User) -> None:
-    """A 2D list toolbar is forwarded to the Vue component unchanged."""
+    """Toolbar(buttons=...) forwards custom button groups to the Vue component."""
     groups = [['bold', 'italic'], ['undo', 'redo']]
     results: dict = {}
 
     @ui.page('/')
     def page():
-        results['editor'] = ui.tiptap(toolbar=groups)
+        results['editor'] = ui.tiptap(toolbar=ui.tiptap.Toolbar(buttons=groups))
 
     await user.open('/')
     assert results['editor']._props.get('toolbar') == groups
@@ -333,7 +335,7 @@ def test_value_prop_name():
 
 async def test_shared_doc_id_returns_identical_state(user: User) -> None:
     """Two editors with the same doc_id read from the same server-side Yjs room."""
-    pytest.importorskip('y_py')
+    pytest.importorskip('pycrdt')
 
     doc_id = f'shared-{id(object())}'
     results: dict = {}

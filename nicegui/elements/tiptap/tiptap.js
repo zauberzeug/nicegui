@@ -161,6 +161,8 @@ export default {
     // Called by NiceGUI via _update_method when Python sets .value.
     setContentFromProps() {
       if (!this.editor) return;
+      // Block during initial sync — we only apply initial value after checking server state.
+      if (!this._initialSyncComplete) return;
       if (this.editor.getHTML() === this.value) return;
       this._applyingServerContent = true;
       this.editor.commands.setContent(this.value || '', false);
@@ -336,12 +338,18 @@ export default {
     };
     this._onYjsInit = (data) => {
       if (data.doc_id !== this.docId) return;
+      this._hasReceivedServerState = true;
       RTE.Y.applyUpdate(this.ydoc, new Uint8Array(data.update), 'server');
     };
     this._onYjsReset = (data) => {
       if (data.doc_id !== this.docId) return;
       this._resetToState(new Uint8Array(data.update));
     };
+
+    // Track whether we receive server state (set by _onYjsInit).
+    this._hasReceivedServerState = false;
+    // Block setContentFromProps() until initial sync is complete.
+    this._initialSyncComplete = false;
 
     // Register inbound listeners once the socket is ready.
     // We poll with nextTick until window.socket is available (set by root Vue mounted()).
@@ -355,6 +363,15 @@ export default {
       window.socket.on('yjs_reset', this._onYjsReset);
       // Join the room — server replies with yjs_init if the doc has existing state.
       window.socket.emit('yjs_join', { client_id: window.clientId, doc_id: this.docId });
+
+      // Wait briefly for yjs_init, then apply initial value only if server doc was empty.
+      await new Promise((resolve) => setTimeout(resolve, 100));
+      this._initialSyncComplete = true;
+      if (!this._hasReceivedServerState && this.value) {
+        this._applyingServerContent = true;
+        this.editor.commands.setContent(this.value || '', false);
+        this._applyingServerContent = false;
+      }
     };
     registerSocketListeners();
 
@@ -402,8 +419,8 @@ export default {
       },
     });
 
-    // Apply any initial HTML value passed from Python.
-    if (this.value) this.setContentFromProps();
+    // NOTE: Initial value is applied in registerSocketListeners() after checking
+    // whether the server has existing state (to avoid content duplication).
 
     this.resolveEditor(this.editor);
   },
