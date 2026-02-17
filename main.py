@@ -83,6 +83,12 @@ def _main_page() -> None:
             .classes('w-full').props('accordion no-connectors no-selection-unset')
     menu_button = header.add_header(menu)
 
+    menu.on('update:model-value',
+            js_handler=f'(v) => {{if (!v && !window.menuManipulating)'
+            f'{{window.menuManipulating=true;'
+            f'getElement({menu.id}).hide();'
+            f'window.menuManipulating=false;}}}}')
+
     window_state = {'is_desktop': None}
     ui.on('is_desktop', lambda v: window_state.update(is_desktop=v.args))
     ui.add_head_html('''

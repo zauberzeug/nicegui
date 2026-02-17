@@ -41,7 +41,8 @@ def add_header(menu: ui.left_drawer) -> ui.button:
     with ui.header() \
             .classes('items-center duration-200 p-0 px-4 no-wrap') \
             .style('box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1)'):
-        menu_button = ui.button(on_click=menu.toggle, icon='menu').props('flat color=white round').classes('lg:hidden')
+        menu_button = ui.button(icon='menu').props('flat color=white round').classes('lg:hidden')\
+            .on('click', js_handler=f'() => {{getElement({menu.id}).toggle();}}')
         with ui.link(target='/').classes('row gap-4 items-center no-wrap mr-auto'):
             svg.face().classes('w-8 stroke-white stroke-2 max-[610px]:hidden')
             svg.word().classes('w-24')
