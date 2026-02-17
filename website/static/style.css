@@ -21,7 +21,7 @@ html {
 }
 .fancy-em em {
   font-style: normal;
-  color: #5898d4;
+  color: var(--q-primary);
 }
 a:link:not(.browser-window *),
 a:visited:not(.browser-window *) {
@@ -57,12 +57,12 @@ a:active:not(.browser-window *) {
 
 .q-header {
   height: 70px;
-  background-color: #5898d4;
+  background-color: var(--q-primary);
 }
 .q-header.fade {
   padding-top: 20px;
   transform: translateY(-20px);
-  background-color: #5898d4d0;
+  background-color: color-mix(in srgb, var(--q-primary) 82%, transparent);
   backdrop-filter: blur(5px);
 }
 .body--dark .q-header {
@@ -134,8 +134,12 @@ dl.docinfo p {
   margin: 0;
 }
 
+.bg-primary-alpha {
+  background-color: color-mix(in srgb, var(--q-primary) 12.5%, transparent);
+}
+
 .dark-box {
-  background-color: #5898d4;
+  background-color: var(--q-primary);
   width: 100%;
 }
 .body--dark .dark-box {
