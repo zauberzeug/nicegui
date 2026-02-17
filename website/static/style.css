@@ -62,8 +62,12 @@ a:active:not(.browser-window *) {
 .q-header.fade {
   padding-top: 20px;
   transform: translateY(-20px);
-  background-color: color-mix(in srgb, var(--q-primary) 82%, transparent);
-  backdrop-filter: blur(5px);
+}
+@media (prefers-reduced-transparency: no-preference) {
+  .q-header.fade {
+    background-color: color-mix(in srgb, var(--q-primary) 82%, transparent);
+    backdrop-filter: blur(5px);
+  }
 }
 .body--dark .q-header {
   background-color: #3e6a94;
