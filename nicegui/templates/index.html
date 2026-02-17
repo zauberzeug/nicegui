@@ -31,8 +31,7 @@
           display: inline-flex;  /* HACK: re-apply Quasar's inline styles to override Tailwind */
         }
         .nicegui-dialog-open,
-        .nicegui-select-popup-open,
-        .nicegui-table-fullscreen {
+        .nicegui-select-popup-open {
           scroll-behavior: auto !important; /* HACK: avoid smooth-scrolling when dialogs or select popups close */
         }
       }
@@ -114,6 +113,7 @@
       <span>{{ translations.message_too_long_body }}</span>
     </div>
     <script type="module">
+      // Load DOMPurify for HTML sanitization, polyfill for browsers without native setHTML
       import DOMPurify from "dompurify";
       if (typeof Element.prototype.setHTML !== "function") {
         Element.prototype.setHTML = function (html) {
