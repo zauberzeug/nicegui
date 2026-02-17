@@ -77,7 +77,7 @@ def subheading(text: str, *, link: str | None = None, major: bool = False, ancho
         else:
             ui.label(text).classes(classes)
         with ui.link(target=f'#{name}').classes('absolute').style('transform: translateX(-150%)'):
-            ui.icon('link', size='sm').classes('opacity-10 hover:opacity-80')
+            ui.icon('link', size='sm').classes('hover-opacity')
 
 
 def create_anchor_name(text: str) -> str:

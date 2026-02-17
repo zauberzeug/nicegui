@@ -211,3 +211,17 @@ dl.docinfo p {
     /* Modern Browsers */ url("/fonts/fira-mono-v14-latin-regular.ttf") format("truetype"),
     /* Safari, Android, iOS */ url("/fonts/fira-mono-v14-latin-regular.svg#FiraMono") format("svg"); /* Legacy iOS */
 }
+.hover-opacity {
+  opacity: 10%;
+}
+.hover-opacity:hover {
+  opacity: 80%;
+}
+@media (forced-colors: active) {
+  .hover-opacity {
+    opacity: 60%;
+  }
+  .hover-opacity:hover {
+    opacity: 100%;
+  }
+}

@@ -234,6 +234,6 @@ def create() -> None:
                         [Uvicorn](https://www.uvicorn.org/)
                         because of their great performance and ease of use.
                     ''')
-            svg.face().classes('stroke-white shrink-0 w-[200px] md:w-[300px] lg:w-[450px]')
+            svg.face().classes('stroke-white forced-colors:invert shrink-0 w-[200px] md:w-[300px] lg:w-[450px]')
         with ui.column().classes('w-full p-4 items-end text-white self-end'):
             ui.link('Imprint & Privacy', '/imprint_privacy').classes('text-sm')

@@ -14,7 +14,7 @@ def demo(f: Callable, *, lazy: bool = True, tab: str | Callable | None = None) -
         with python_window(classes='w-full max-w-[44rem]'):
             ui.markdown(f'````python\n{full_code}\n````')
             ui.icon('content_copy', size='xs') \
-                .classes('absolute right-2 top-10 opacity-10 hover:opacity-80 cursor-pointer') \
+                .classes('absolute right-2 top-10 hover-opacity cursor-pointer') \
                 .on('click', js_handler=f'() => navigator.clipboard.writeText({json.dumps(full_code)})') \
                 .on('click', lambda: ui.notify('Copied to clipboard', type='positive', color='primary'), [])
         with browser_window(title=tab,
