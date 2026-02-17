@@ -84,3 +84,5 @@ shutil.copy2(NODE_MODULES / '@unocss' / 'runtime' / 'preset-wind3.global.js',
              STATIC / 'unocss' / 'preset-wind3.global.js')
 shutil.copy2(NODE_MODULES / '@unocss' / 'runtime' / 'preset-wind4.global.js',
              STATIC / 'unocss' / 'preset-wind4.global.js')
+
+_minify_js(NODE_MODULES / 'dompurify' / 'dist' / 'purify.es.mjs', STATIC / 'dompurify.mjs')

@@ -21,6 +21,7 @@ if importlib.util.find_spec('polars'):
 
 
 class AgGrid(Element, component='aggrid.js', esm={'nicegui-aggrid': 'dist'}, default_classes='nicegui-aggrid'):
+    VERSION = '34.2.0'  # AG Grid version used by NiceGUI
 
     @resolve_defaults
     def __init__(self,

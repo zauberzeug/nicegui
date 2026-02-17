@@ -1,5 +1,6 @@
 nicegui/elements/*/dist/**         linguist-vendored
 nicegui/elements/anywidget/lib/**  linguist-vendored
+nicegui/static/dompurify.*         linguist-vendored
 nicegui/static/fonts/**            linguist-vendored
 nicegui/static/fonts.css           linguist-vendored
 nicegui/static/immutable.*         linguist-vendored

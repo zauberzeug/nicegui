@@ -12,6 +12,7 @@ from starlette.types import ASGIApp
 from . import core, helpers, storage
 from .air import Air
 from .language import Language
+from .logging import log
 from .middlewares import RedirectWithPrefixMiddleware, SetCacheControlMiddleware
 from .nicegui import _shutdown, _startup
 from .server import Server
@@ -62,6 +63,17 @@ def run_with(
     :param session_middleware_kwargs: additional keyword arguments passed to SessionMiddleware that creates the session cookies used for browser-based storage
     :param show_welcome_message: whether to show the welcome message (default: `True`)
     """
+    if core.script_mode:
+        log.warning(
+            'NiceGUI elements were created outside of a page context before ui.run_with() was called.\n'
+            'This is not supported and the elements will be discarded.\n'
+            'Move UI element creation into a @ui.page function or an app.on_startup handler.'
+        )
+        if core.script_client is not None:
+            core.script_client.delete()
+            core.script_client = None
+        core.script_mode = False
+
     core.app.config.add_run_config(
         reload=False,
         title=title,

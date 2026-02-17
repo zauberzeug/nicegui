@@ -73,7 +73,7 @@ The simplest way to setup a fully functioning development environment is to star
 1. Ensure you have VS Code, Docker and the Dev Containers extension installed.
 2. Open the project root directory in VS Code.
 3. Press `F1`, type `Dev Containers: Open Folder in Container`, and hit enter (or use the bottom-left corner icon in VS Code to reopen in container).
-4. Wait until image has been build.
+4. Wait until the image has been built. (On first launch, watch the terminal for a GitHub authentication prompt.)
 5. Happy coding.
 
 ### Locally
@@ -401,6 +401,24 @@ To get started:
 
 When submitting a PR, please make sure that the code follows the existing coding style and that all tests are passing.
 If you're adding a new feature, please include tests that cover the new functionality.
+
+### AI Co-Authorship
+
+If you used an AI coding agent to help write your PR, please check for co-authorship attribution in your commit messages.
+This helps maintainers understand the origin of changes and smooths the review process.
+
+Some agents add a `Co-authored-by` trailer automatically, but others do not.
+Some even silently **remove** existing co-authorship lines when amending or rebasing commits.
+If you find it missing, please include the appropriate line for your agent in your commit message (pick one):
+
+```
+Co-authored-by: copilot-swe-agent[bot] <198982749+Copilot@users.noreply.github.com>
+Co-authored-by: Claude Opus 4.6 <noreply@anthropic.com>
+Co-authored-by: opencode <noreply@opencode.ai>
+```
+
+> [!TIP]
+> PRs are welcome to add co-authorship lines for other coding agents not yet listed here.
 
 ## YouTube
 

@@ -12,7 +12,7 @@ SPONSORS = json.loads((Path(__file__).parent / 'sponsors.json').read_text(encodi
 
 def create() -> None:
     """Create the content of the main page."""
-    with ui.row().classes('w-full h-screen items-center gap-8 pr-4 no-wrap into-section'):
+    with ui.row().classes('w-full h-screen max-h-[200vw] items-center gap-8 pr-4 no-wrap into-section'):
         svg.face(half=True).classes('stroke-black dark:stroke-white w-[200px] md:w-[230px] lg:w-[300px]')
         with ui.column().classes('gap-4 md:gap-8 pt-32'):
             title('Meet the *NiceGUI*.')
@@ -173,11 +173,11 @@ def create() -> None:
                             with ui.link(target=SPONSORS['special'][sponsor]):
                                 img_path = Path(__file__).parent / 'static' / 'sponsors' / f'{sponsor}.webp'
                                 if img_path.exists():
-                                    ui.interactive_image(img_path).classes('h-12')
+                                    ui.interactive_image(f'/static/sponsors/{sponsor}.webp').classes('h-12')
                                 else:
-                                    ui.interactive_image(img_path.with_suffix('.light.webp')) \
+                                    ui.interactive_image(f'/static/sponsors/{sponsor}.light.webp') \
                                         .classes('h-12 block dark:!hidden')
-                                    ui.interactive_image(img_path.with_suffix('.dark.webp')) \
+                                    ui.interactive_image(f'/static/sponsors/{sponsor}.dark.webp') \
                                         .classes('h-12 hidden dark:!block')
                         for sponsor in SPONSORS['top']:
                             with ui.link(target=f'https://github.com/{sponsor}').classes('row items-center gap-2'):

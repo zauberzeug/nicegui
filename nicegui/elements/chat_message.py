@@ -1,7 +1,7 @@
 import html
 from collections.abc import Callable
-from typing import Literal
 
+from .. import helpers
 from ..defaults import DEFAULT_PROP, resolve_defaults
 from .html import Html
 from .mixins.label_element import LabelElement
@@ -18,17 +18,11 @@ class ChatMessage(LabelElement):
                  avatar: str | None = DEFAULT_PROP | None,
                  sent: bool = DEFAULT_PROP | False,
                  text_html: bool = False,
-                 sanitize: Callable[[str], str] | Literal[False] | None = None,
+                 sanitize: Callable[[str], str] | bool | None = True,  # DEPRECATED: remove `None` in version 4.0.0
                  ) -> None:
         """Chat Message
 
         Based on Quasar's `Chat Message <https://quasar.dev/vue-components/chat/>`_ component.
-
-        Note that since NiceGUI 3.0, you need to specify how to ``sanitize`` the HTML content
-        if you activate HTML via ``text_html=True``.
-        Especially if you are displaying user input, you should sanitize the content to prevent XSS attacks.
-        We recommend ``Sanitizer().sanitize`` which requires the html-sanitizer package to be installed.
-        If you are not displaying user input, you can pass ``False`` to disable sanitization.
 
         :param text: the message body (can be a list of strings for multiple message parts)
         :param name: the name of the message author
@@ -36,10 +30,17 @@ class ChatMessage(LabelElement):
         :param stamp: timestamp of the message
         :param avatar: URL to an avatar
         :param sent: render as a sent message (so from current user) (default: ``False``)
-        :param text_html: render text as HTML (consider using a ``sanitize`` function to prevent XSS attacks) (default: ``False``)
-        :param sanitize: a sanitize function to be applied to HTML content or ``False`` to deactivate sanitization (*added in version 3.0.0*)
+        :param text_html: render text as HTML (default: ``False``)
+        :param sanitize: sanitization mode (only relevant when ``text_html=True``):
+            ``True`` (default) uses client-side sanitization via setHTML or DOMPurify,
+            ``False`` disables sanitization (use only with trusted content),
+            or pass a callable to apply server-side sanitization
         """
         super().__init__(tag='q-chat-message', label=label)
+
+        if sanitize is None:
+            helpers.warn_once('`sanitize=None` is deprecated, defaults to `True` and will be removed in version 4.0.0.')
+            sanitize = True  # DEPRECATED: remove this block in version 4.0.0
 
         if text is None:
             text = []
@@ -49,9 +50,6 @@ class ChatMessage(LabelElement):
             text = [html.escape(part) for part in text]
             text = [part.replace('\n', '<br />') for part in text]
             sanitize = False
-
-        if sanitize is None:
-            raise ValueError('You must specify a sanitize function or sanitize=False when using text_html=True')
 
         self._props.set_optional('name', name)
         self._props.set_optional('stamp', stamp)

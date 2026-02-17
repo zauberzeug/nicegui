@@ -6,6 +6,7 @@
     "@tailwindcss/browser": "4.1.13",
     "@unocss/reset": "^66.6.0",
     "@unocss/runtime": "^66.6.0",
+    "dompurify": "^3.3.1",
     "quasar": "2.18.5",
     "sass": "^1.94.0",
     "socket.io": "4.8.1",

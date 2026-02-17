@@ -1,4 +1,4 @@
-import { leaflet as L, loadLeafletDraw } from "nicegui-leaflet";
+import { leaflet as L } from "nicegui-leaflet";
 import { loadResource } from "../../static/utils/resources.js";
 import { cleanObject } from "../../static/utils/json.js";
 
@@ -21,7 +21,7 @@ export default {
     if (this.drawControl) {
       await Promise.all([
         loadResource(window.path_prefix + `${this.resourcePath}/leaflet-draw/leaflet.draw.css`),
-        loadLeafletDraw(),
+        loadResource(window.path_prefix + `${this.resourcePath}/leaflet-draw/leaflet.draw.js`),
       ]);
     }
     this.map = L.map(this.$el, {

@@ -31,7 +31,8 @@
           display: inline-flex;  /* HACK: re-apply Quasar's inline styles to override Tailwind */
         }
         .nicegui-dialog-open,
-        .nicegui-select-popup-open {
+        .nicegui-select-popup-open,
+        .nicegui-table-fullscreen {
           scroll-behavior: auto !important; /* HACK: avoid smooth-scrolling when dialogs or select popups close */
         }
       }
@@ -113,6 +114,14 @@
       <span>{{ translations.message_too_long_body }}</span>
     </div>
     <script type="module">
+      // Load DOMPurify for HTML sanitization, polyfill for browsers without native setHTML
+      import DOMPurify from "dompurify";
+      if (typeof Element.prototype.setHTML !== "function") {
+        Element.prototype.setHTML = function (html) {
+          this.innerHTML = DOMPurify.sanitize(html);
+        };
+      }
+
       const app = createApp(parseElements(String.raw`{{ elements | safe }}`), {
         version: "{{ version }}",
         prefix: "{{ prefix | safe }}",
@@ -129,6 +138,14 @@
       {{ vue_scripts | safe }}
 
       app.mount("#app");
+
+      // Scroll to fragment after Vue mounts (browser's native scroll may have failed if element wasn't ready)
+      if (window.location.hash) {
+        Vue.nextTick(() => {
+          const fragment = window.location.hash.substring(1);
+          (document.getElementById(fragment) || document.querySelector(`a[name="${fragment}"]`))?.scrollIntoView();
+        });
+      }
     </script>
   </body>
 </html>

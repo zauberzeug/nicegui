@@ -17,7 +17,8 @@ export default {
     };
   },
   beforeUnmount() {
-    mounted_app.elements[this.$props.id.slice(1)].props.value = this.inputValue;
+    const element = mounted_app.elements[this.$props.id.slice(1)];
+    if (element) element.props.value = this.inputValue;
   },
   watch: {
     value(newValue) {

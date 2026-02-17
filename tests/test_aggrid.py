@@ -355,3 +355,12 @@ def test_get_client_data_offscreen(screen: Screen):
     screen.open('/')
     screen.click('Get Data')
     screen.wait_for(lambda: data == [{'name': 'Alice'}])
+
+
+def test_version_matches_js(screen: Screen):
+    @ui.page('/')
+    async def page():
+        ui.label(await ui.run_javascript('return (await import("nicegui-aggrid")).AllCommunityModule.version'))
+
+    screen.open('/')
+    screen.should_contain(ui.aggrid.VERSION)

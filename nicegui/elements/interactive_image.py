@@ -4,7 +4,7 @@ import time
 from collections.abc import Callable
 from contextlib import suppress
 from pathlib import Path
-from typing import Literal, cast
+from typing import cast
 
 from typing_extensions import Self
 
@@ -33,7 +33,7 @@ class InteractiveImage(SourceElement, ContentElement, component='interactive_ima
                  on_mouse: Handler[MouseEventArguments] | None = None,
                  events: list[str] = DEFAULT_PROP | ['click'],
                  cross: bool | str = DEFAULT_PROP | False,
-                 sanitize: Callable[[str], str] | Literal[False] | None = None,
+                 sanitize: Callable[[str], str] | bool | None = True,  # DEPRECATED: remove `None` in version 4.0.0
                  ) -> None:
         """Interactive Image
 
@@ -53,24 +53,27 @@ class InteractiveImage(SourceElement, ContentElement, component='interactive_ima
         You can also pass a tuple of width and height instead of an image source.
         This will create an empty image with the given size.
 
-        Note that since NiceGUI 3.4.0, you need to specify how to ``sanitize`` the SVG content (if any).
-        Especially if you are displaying user input, you should sanitize the content to prevent XSS attacks.
-        We recommend ``Sanitizer().sanitize`` which requires the html-sanitizer package to be installed.
-        If you are not displaying user input, you can pass ``False`` to disable sanitization.
-
         :param source: the source of the image; can be an URL, local file path, a base64 string or just an image size
         :param content: SVG content which should be overlaid; viewport has the same dimensions as the image
         :param size: size of the image (width, height) in pixels; only used if `source` is not set
         :param on_mouse: callback for mouse events (contains image coordinates `image_x` and `image_y` in pixels)
         :param events: list of JavaScript events to subscribe to (default: `['click']`)
         :param cross: whether to show crosshairs or a color string (default: `False`)
-        :param sanitize: a sanitize function to be applied to the content, ``False`` to deactivate sanitization (default ``None``: warns if content is provided, *added in version 3.4.0*)
+        :param sanitize: sanitization mode:
+            ``True`` (default) uses client-side sanitization via DOMPurify,
+            ``False`` disables sanitization (use only with trusted content),
+            or pass a callable to apply server-side sanitization
         """
+        if sanitize is None:
+            helpers.warn_once('`sanitize=None` is deprecated, defaults to `True` and will be removed in version 4.0.0.')
+            sanitize = True
+
         self._sanitize = sanitize
         super().__init__(source=source, content=content)
         self._props['events'] = events[:]
         self._props['cross'] = cross
         self._props['size'] = size
+        self._props['sanitize'] = sanitize is True
 
         if on_mouse:
             self.on_mouse(on_mouse)
@@ -127,10 +130,9 @@ class InteractiveImage(SourceElement, ContentElement, component='interactive_ima
             return layer
 
     def _handle_content_change(self, content: str) -> None:
-        if content and self._sanitize is None:
-            helpers.warn_once('ui.interactive_image: content provided but no explicit sanitize function set; '
-                              'to avoid XSS vulnerabilities, please provide a sanitize function or set sanitize=False')
-        return super()._handle_content_change(self._sanitize(content) if self._sanitize else content)
+        if callable(self._sanitize):
+            content = self._sanitize(content)
+        return super()._handle_content_change(content)
 
 
 class InteractiveImageLayer(SourceElement, ContentElement, component='interactive_image.js'):
@@ -141,7 +143,7 @@ class InteractiveImageLayer(SourceElement, ContentElement, component='interactiv
                  source: str,
                  content: str,
                  size: tuple[float, float] | None,
-                 sanitize: Callable[[str], str] | Literal[False] | None = None,
+                 sanitize: Callable[[str], str] | bool | None = True,  # DEPRECATED: remove `None` in version 4.0.0
                  ) -> None:
         """Interactive Image Layer
 
@@ -149,9 +151,13 @@ class InteractiveImageLayer(SourceElement, ContentElement, component='interactiv
 
         *Added in version 2.17.0*
         """
+        if sanitize is None:
+            helpers.warn_once('`sanitize=None` is deprecated, defaults to `True` and will be removed in version 4.0.0.')
+            sanitize = True
         self._sanitize = sanitize
         super().__init__(source=source, content=content)
         self._props['size'] = size
+        self._props['sanitize'] = sanitize is True
 
     def _set_props(self, source: str | Path | PIL_Image) -> None:
         if optional_features.has('pillow') and isinstance(source, PIL_Image):
@@ -159,7 +165,6 @@ class InteractiveImageLayer(SourceElement, ContentElement, component='interactiv
         super()._set_props(source)
 
     def _handle_content_change(self, content: str) -> None:
-        if self._sanitize is None:
-            helpers.warn_once('ui.interactive_image layer: content provided but no explicit sanitize function set; '
-                              'to avoid XSS vulnerabilities, please provide a sanitize function or set sanitize=False')
-        return super()._handle_content_change(self._sanitize(content) if self._sanitize else content)
+        if callable(self._sanitize):
+            content = self._sanitize(content)
+        return super()._handle_content_change(content)

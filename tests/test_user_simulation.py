@@ -231,6 +231,28 @@ async def test_input(user: User, kind: type) -> None:
     await user.should_see('Changed: Test')
 
 
+async def test_type_number(user: User) -> None:
+    @ui.page('/')
+    def page():
+        number = ui.number()
+        ui.label().bind_text_from(number, 'value', lambda v: f'Value: {v}')
+
+    await user.open('/')
+
+    user.find(ui.number).type('4')
+    await user.should_see('Value: 4.0')
+
+    user.find(ui.number).type('2')
+    await user.should_see('Value: 42.0')
+
+    user.find(ui.number).clear()
+    user.find(ui.number).type('7')
+    await user.should_see('Value: 7.0')
+
+    user.find(ui.number).type('.5')
+    await user.should_see('Value: 7.5')
+
+
 async def test_name_property(user: User) -> None:
     @ui.page('/')
     def page():
@@ -391,7 +413,7 @@ async def test_page_to_string_output_used_in_error_messages(user: User) -> None:
               Icon \[markers=third, name=thumbs-up\]
             Avatar \[icon=star\]
             Input \[value=typed, label=some input, for=c10, placeholder=type here, type=text\]
-            Markdown \[content=\#\# Markdown..., resource-name=[^\]]+\]
+            Markdown \[content=\#\# Markdown..., sanitize=True, resource-name=[^\]]+\]
             Card
              Image \[src=/image.jpg\]
     ''').strip()
