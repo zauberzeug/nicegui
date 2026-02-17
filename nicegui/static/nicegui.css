@@ -326,3 +326,11 @@ h6.q-timeline__title {
   position: absolute;
   right: 1.5em;
 }
+@media (prefers-reduced-motion: reduce) {
+  html,
+  body * {
+    transition: none !important;
+    animation: none !important;
+    scroll-behavior: auto !important;
+  }
+}
