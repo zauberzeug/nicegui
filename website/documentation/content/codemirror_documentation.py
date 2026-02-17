@@ -1,3 +1,4 @@
+from docutils.nodes import description
 from nicegui import ui
 
 from . import doc
@@ -12,6 +13,5 @@ def main_demo() -> None:
         .classes('w-32').bind_value(editor, 'theme')
     ui.checkbox('Wrap Lines', value=editor.line_wrapping,
                 on_change=lambda e: editor.set_line_wrapping(e.value))
-
 
 doc.reference(ui.codemirror)
