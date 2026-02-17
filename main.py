@@ -58,6 +58,7 @@ class custom_sub_pages(ui.sub_pages):
 @ui.page('/documentation/{path:path}')
 @ui.page('/imprint_privacy')
 def _main_page() -> None:
+    ui.colors(primary='#317ABE', at_rule='@media (prefers-contrast: more)')
     ui.context.client.content.classes('p-0 gap-0')
     header.add_head_html()
 

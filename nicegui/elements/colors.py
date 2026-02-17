@@ -16,6 +16,7 @@ class Colors(Element, component='colors.js'):
                  negative: str = DEFAULT_PROP | '#c10015',
                  info: str = DEFAULT_PROP | '#31ccec',
                  warning: str = DEFAULT_PROP | '#f2c037',
+                 at_rule: str = '',
                  **custom_colors: str) -> None:
         """Color Theming
 
@@ -32,6 +33,7 @@ class Colors(Element, component='colors.js'):
         :param negative: Negative color (default: "#c10015")
         :param info: Info color (default: "#31ccec")
         :param warning: Warning color (default: "#f2c037")
+        :param at_rule: CSS at-rule to limit when the colors apply (e.g. ``"@media (prefers-color-scheme: dark)"``)
         :param custom_colors: Custom color definitions for branding (needs ``ui.colors`` to be called before custom color is ever used, *added in version 2.2.0*)
         """
         super().__init__()
@@ -44,6 +46,7 @@ class Colors(Element, component='colors.js'):
         self._props['negative'] = negative
         self._props['info'] = info
         self._props['warning'] = warning
+        self._props['at-rule'] = at_rule
         self._props['custom-colors'] = custom_colors
         QUASAR_COLORS.update({name.replace('_', '-') for name in custom_colors})
 
