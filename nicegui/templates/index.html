@@ -31,7 +31,8 @@
           display: inline-flex;  /* HACK: re-apply Quasar's inline styles to override Tailwind */
         }
         .nicegui-dialog-open,
-        .nicegui-select-popup-open {
+        .nicegui-select-popup-open,
+        .nicegui-table-fullscreen {
           scroll-behavior: auto !important; /* HACK: avoid smooth-scrolling when dialogs or select popups close */
         }
       }
@@ -113,20 +114,12 @@
       <span>{{ translations.message_too_long_body }}</span>
     </div>
     <script type="module">
-      {% if has_sethtml %}
-      if (typeof Element.prototype.setHTML !== "function") {
-        document.cookie = "nicegui_has_sethtml=0; path=/; SameSite=Strict; max-age=0";
-        location.reload();
-        throw new Error("Reloading page to reset nicegui_has_sethtml cookie");
-      }
-      {% else %}
       import DOMPurify from "dompurify";
       if (typeof Element.prototype.setHTML !== "function") {
-        Element.prototype.setHTML = function (html) {this.innerHTML = DOMPurify.sanitize(html)};
-      } else {
-        document.cookie = "nicegui_has_sethtml=1; path=/; SameSite=Strict; max-age=31536000";
+        Element.prototype.setHTML = function (html) {
+          this.innerHTML = DOMPurify.sanitize(html);
+        };
       }
-      {% endif %}
 
       const app = createApp(parseElements(String.raw`{{ elements | safe }}`), {
         version: "{{ version }}",
