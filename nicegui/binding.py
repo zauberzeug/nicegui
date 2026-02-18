@@ -309,7 +309,7 @@ def bindable_dataclass(cls: type[T] | None = None, /, *,
         if kwargs.get(unsupported_option):
             raise ValueError(f'`{unsupported_option}=True` is not supported with bindable_dataclass')
 
-    dataclass: type[DataclassInstance] = dataclasses.dataclass(**kwargs)(cls)
+    dataclass: type[T] = dataclasses.dataclass(**kwargs)(cls)
     field_names = {field.name for field in dataclasses.fields(dataclass)}
     if bindable_fields is None:
         bindable_fields = field_names
