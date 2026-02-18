@@ -7,7 +7,7 @@ from fastapi.responses import PlainTextResponse
 from selenium.webdriver.common.by import By
 
 from nicegui import app, background_tasks, ui
-from nicegui.testing import Screen
+from nicegui.testing import Screen, User
 
 
 def test_page(screen: Screen):
@@ -336,3 +336,26 @@ def test_warning_if_response_takes_too_long(screen: Screen):
     screen.allowed_js_errors.append('/ - Failed to load resource')
     screen.open('/')
     screen.assert_py_logger('WARNING', re.compile('Response for / not ready after 0.5 seconds'))
+
+
+async def test_async_page_does_not_leak_event_wait_tasks(user: User):
+    @ui.page('/')
+    async def page():
+        ui.label('Hello')
+
+    def count_event_wait_tasks() -> int:
+        # NOTE: uses asyncio.all_tasks() with coroutine __qualname__ filtering to identify
+        # leaked Event.wait tasks from page.py's task_wait_for_connection that are never cancelled.
+        return sum(
+            1
+            for t in asyncio.all_tasks()
+            if not t.done() and getattr(t.get_coro(), '__qualname__', '') == 'Event.wait'
+        )
+
+    before = count_event_wait_tasks()
+    for _ in range(5):
+        await user.open('/')
+    after = count_event_wait_tasks()
+    leaked = after - before
+
+    assert leaked == 0, f'async page leaked {leaked} Event.wait tasks (before={before}, after={after})'
