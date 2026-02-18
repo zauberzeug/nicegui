@@ -8,7 +8,7 @@ import weakref
 from collections import defaultdict
 from collections.abc import Callable, Iterable, Mapping
 from contextvars import ContextVar
-from typing import TYPE_CHECKING, Any, Literal, TypeVar
+from typing import TYPE_CHECKING, Any, Literal, TypeVar, overload
 
 from typing_extensions import dataclass_transform
 
@@ -271,11 +271,20 @@ def reset() -> None:
     bindable_properties.clear()
     active_links.clear()
 
+@overload
+def bindable_dataclass(cls: type[T], /, *,
+                       bindable_fields: Iterable[str] | None = ...,
+                       **kwargs: Any) -> type[T]: ...
+
+@overload
+def bindable_dataclass(cls: None = ..., /, *,
+                       bindable_fields: Iterable[str] | None = ...,
+                       **kwargs: Any) -> IdentityFunction: ...
 
 @dataclass_transform()
-def bindable_dataclass(cls: TC | None = None, /, *,
+def bindable_dataclass(cls: type[T] | None = None, /, *,
                        bindable_fields: Iterable[str] | None = None,
-                       **kwargs: Any) -> type[DataclassInstance] | IdentityFunction:
+                       **kwargs: Any) -> type[T] | IdentityFunction:
     """A decorator that transforms a class into a dataclass with bindable fields.
 
     This decorator extends the functionality of ``dataclasses.dataclass`` by making specified fields bindable.
