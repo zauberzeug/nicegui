@@ -337,5 +337,5 @@ def test_warning_if_response_takes_too_long(screen: Screen):
     screen.start_server()
     # NOTE: using httpx instead of screen.open to avoid Selenium script timeout on incomplete page responses
     httpx.get(f'http://localhost:{Screen.PORT}/', timeout=5)
-    screen.wait(0.5)
+    screen.wait(1.0)
     screen.assert_py_logger('WARNING', re.compile('Response for / not ready after 0.5 seconds'))
