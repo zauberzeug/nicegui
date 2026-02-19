@@ -63,6 +63,8 @@ class User:
 
     async def open(self, path: str, *, clear_forward_history: bool = True) -> Client:
         """Open the given path."""
+        if self.client is not None:
+            self.client.delete()
         response = await self.http_client.get(path, follow_redirects=True)
         assert response.status_code == 200, f'Expected status code 200, got {response.status_code}'
         if response.headers.get('X-Nicegui-Content') != 'page':
