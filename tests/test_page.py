@@ -355,6 +355,8 @@ async def test_async_page_does_not_leak_event_wait_tasks(user: User):
     before = count_event_wait_tasks()
     for _ in range(5):
         await user.open('/')
+
+    await asyncio.sleep(2)
     after = count_event_wait_tasks()
     leaked = after - before
 
