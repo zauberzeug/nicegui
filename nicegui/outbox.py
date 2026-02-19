@@ -183,3 +183,4 @@ class Outbox:
     def stop(self) -> None:
         """Stop the outbox loop."""
         self._should_stop = True
+        self._set_enqueue_event()  # wake the loop so it checks _should_stop immediately
