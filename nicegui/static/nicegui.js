@@ -420,9 +420,11 @@ function createApp(elements, options) {
     data() {
       return {
         elements,
+        renderToggle: false,
       };
     },
     render() {
+      void this.renderToggle; // NOTE: subscribe to renderToggle so the update handler can trigger re-renders
       return renderRecursively(this.elements, 0);
     },
     mounted() {
@@ -534,6 +536,7 @@ function createApp(elements, options) {
           }
 
           invalidateVnodeCache(Object.keys(msg).map(Number));
+          this.renderToggle = !this.renderToggle; // NOTE: trigger re-render since vnode cache prevents Vue's dependency tracking from capturing all elements
 
           await this.$nextTick();
           for (const [id, element] of Object.entries(msg)) {
