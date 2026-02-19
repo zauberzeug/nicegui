@@ -133,7 +133,7 @@ addopts = "--driver Chrome"
 asyncio_mode = "auto"
 asyncio_default_fixture_loop_scope = "function"
 main_file = ""
-testpaths = ["tests"]
+testpaths = ["tests", "website/tests"]
 filterwarnings = [
   'error',
   "ignore:'asyncio\\.iscoroutinefunction' is deprecated and slated for removal:DeprecationWarning",

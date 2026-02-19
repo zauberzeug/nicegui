@@ -1,3 +1,4 @@
+import json
 import os
 from pathlib import Path
 
@@ -5,15 +6,52 @@ from nicegui import app, ui
 
 from . import svg
 from .search import Search
+from .seo import DEFAULT_DESCRIPTION, SITE_URL
 from .star import add_star
 
 HEADER_HTML = (Path(__file__).parent / 'static' / 'header.html').read_text(encoding='utf-8')
 STYLE_CSS = (Path(__file__).parent / 'static' / 'style.css').read_text(encoding='utf-8')
 
+JSON_LD_ORGANIZATION = json.dumps({
+    '@context': 'https://schema.org',
+    '@type': 'Organization',
+    'name': 'Zauberzeug GmbH',
+    'url': SITE_URL,
+    'logo': f'{SITE_URL}/logo_square.png',
+    'sameAs': [
+        'https://github.com/zauberzeug/nicegui',
+        'https://discord.gg/TEpFeAaF4f',
+        'https://www.reddit.com/r/nicegui/',
+    ],
+}, separators=(',', ':')).replace('</', '<\\/')
+
+JSON_LD_SOFTWARE = json.dumps({
+    '@context': 'https://schema.org',
+    '@type': 'SoftwareApplication',
+    'name': 'NiceGUI',
+    'applicationCategory': 'DeveloperApplication',
+    'operatingSystem': 'Any',
+    'description': DEFAULT_DESCRIPTION,
+    'url': SITE_URL,
+    'offers': {
+        '@type': 'Offer',
+        'price': '0',
+        'priceCurrency': 'USD',
+    },
+    'author': {
+        '@type': 'Organization',
+        'name': 'Zauberzeug GmbH',
+    },
+}, separators=(',', ':')).replace('</', '<\\/')
+
 
 def add_head_html() -> None:
     """Add the code from header.html and reference style.css."""
     ui.add_head_html(HEADER_HTML + f'<style>{STYLE_CSS}</style>')
+    ui.add_head_html(
+        f'<script type="application/ld+json">{JSON_LD_ORGANIZATION}</script>'
+        f'<script type="application/ld+json">{JSON_LD_SOFTWARE}</script>'
+    )
     if os.environ.get('ENABLE_ANALYTICS', 'false').lower() == 'true':
         ui.add_head_html(
             '<script defer data-domain="nicegui.io" src="https://plausible.io/js/script.hash.outbound-links.js">'
