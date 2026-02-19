@@ -271,20 +271,23 @@ def reset() -> None:
     bindable_properties.clear()
     active_links.clear()
 
-@overload
-def bindable_dataclass(cls: type[T], /, *,
-                       bindable_fields: Iterable[str] | None = ...,
-                       **kwargs: Any) -> type[T]: ...
 
 @overload
 def bindable_dataclass(cls: None = ..., /, *,
                        bindable_fields: Iterable[str] | None = ...,
+                       **kwargs: Any) -> type[DataclassInstance]: ...
+
+
+@overload
+def bindable_dataclass(cls: TC, /, *,
+                       bindable_fields: Iterable[str] | None = ...,
                        **kwargs: Any) -> IdentityFunction: ...
 
+
 @dataclass_transform()
-def bindable_dataclass(cls: type[T] | None = None, /, *,
+def bindable_dataclass(cls: TC | None = None, /, *,
                        bindable_fields: Iterable[str] | None = None,
-                       **kwargs: Any) -> type[T] | IdentityFunction:
+                       **kwargs: Any) -> type[DataclassInstance] | IdentityFunction:
     """A decorator that transforms a class into a dataclass with bindable fields.
 
     This decorator extends the functionality of ``dataclasses.dataclass`` by making specified fields bindable.
@@ -309,7 +312,7 @@ def bindable_dataclass(cls: type[T] | None = None, /, *,
         if kwargs.get(unsupported_option):
             raise ValueError(f'`{unsupported_option}=True` is not supported with bindable_dataclass')
 
-    dataclass: type[T] = dataclasses.dataclass(**kwargs)(cls)
+    dataclass: type[DataclassInstance] = dataclasses.dataclass(**kwargs)(cls)
     field_names = {field.name for field in dataclasses.fields(dataclass)}
     if bindable_fields is None:
         bindable_fields = field_names
