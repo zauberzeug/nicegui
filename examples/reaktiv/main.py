@@ -23,9 +23,10 @@ with ui.row():
         tax_label = ui.label()
         total_label = ui.label().classes('text-bold')
 
-        Effect(lambda: subtotal_label.set_text(f'Subtotal: ${subtotal():.2f}'))
-        Effect(lambda: tax_label.set_text(f'Tax: ${tax():.2f}'))
-        Effect(lambda: total_label.set_text(f'Total: ${total():.2f}'))
+        # NOTE: Effects must be assigned to variables to prevent garbage collection
+        subtotal_effect = Effect(lambda: subtotal_label.set_text(f'Subtotal: ${subtotal():.2f}'))
+        tax_effect = Effect(lambda: tax_label.set_text(f'Tax: ${tax():.2f}'))
+        total_effect = Effect(lambda: total_label.set_text(f'Total: ${total():.2f}'))
 
     with ui.card().classes('w-72 items-stretch'):
         ui.markdown('### Bindable dataclass')
