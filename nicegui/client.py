@@ -95,6 +95,7 @@ class Client:
                     self.content = Element('div').classes('nicegui-content')
 
         self.title: str | None = None
+        self.status_code: int | None = None
 
         self._head_html = ''
         self._body_html = ''
@@ -193,7 +194,7 @@ class Client:
                 'socket_io_js_extra_headers': core.app.config.socket_io_js_extra_headers,
                 'socket_io_js_transports': core.app.config.socket_io_js_transports,
             },
-            status_code=status_code,
+            status_code=self.status_code if self.status_code is not None else status_code,
             headers={'Cache-Control': 'no-store', 'X-NiceGUI-Content': 'page'},
         )
 
