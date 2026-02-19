@@ -148,11 +148,6 @@ dl.docinfo p {
   margin: 0;
 }
 
-@media (max-width: 1023px) {
-  .nav-tree .q-tree__node-collapsible {
-    transition: none !important;
-  }
-}
 
 .dark-box {
   background-color: #5898d4;
