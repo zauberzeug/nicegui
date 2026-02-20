@@ -16,6 +16,7 @@ export default {
     return {
       mermaid: null,
       diagrams: {},
+      previousInnerHTML: null,
     };
   },
   updated() {
@@ -24,6 +25,8 @@ export default {
   },
   methods: {
     renderContent() {
+      if (this.innerHTML === this.previousInnerHTML) return;
+      this.previousInnerHTML = this.innerHTML;
       if (this.sanitize) {
         this.$el.setHTML(this.innerHTML);
       } else {

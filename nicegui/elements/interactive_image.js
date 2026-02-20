@@ -33,6 +33,7 @@ export default {
       waiting_source: undefined,
       loading: false,
       DOMPurify: null,
+      previousContent: null,
     };
   },
   mounted() {
@@ -75,6 +76,8 @@ export default {
   methods: {
     renderContent() {
       const content = this.content || "";
+      if (content === this.previousContent) return;
+      this.previousContent = content;
       if (this.sanitize) {
         if (!this.DOMPurify) return;
         const sanitized = this.DOMPurify.sanitize(`<svg>${content}</svg>`, {
