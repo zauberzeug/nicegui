@@ -597,7 +597,8 @@ label.style['color'] = user_color.value  # 允许 CSS 注入和数据外泄
     - Keeping sanitization enabled for untrusted content
     - Validating user input where necessary
     - Keeping NiceGUI up to date
-","NiceGUI 提供了安全的默认设置和内置保护机制，但**开发者必须编写安全的代码**。
+","
+    NiceGUI 提供了安全的默认设置和内置保护机制，但**开发者必须编写安全的代码**。
     并非所有 UI 组件都能安全处理不受信任的输入，
     因此了解哪些组件需要进行验证至关重要。
 
