@@ -15,6 +15,9 @@ from pathlib import Path
 
 CSV_FILE = Path(__file__).parent / 'website' / 'translate.csv'
 
+# Matches exactly two backticks (RST inline literal), not three (markdown code fence)
+_RST_DOUBLE_BACKTICK_RE = re.compile(r'(?<!`)``(?!`)')
+
 # Matches API identifiers that must NOT be translated:
 #   ui.*button*          (bold markdown API name)
 #   ui.button            (plain API name)
@@ -34,6 +37,28 @@ _API_ID_RE = re.compile(
 def is_untranslatable(english: str) -> bool:
     """Return True if the English key is an API identifier that must not be translated."""
     return bool(_API_ID_RE.match(english))
+
+
+def is_rst_text(english: str) -> bool:
+    """Heuristic: English text containing RST double-backtick literals (not triple) is RST."""
+    return bool(_RST_DOUBLE_BACKTICK_RE.search(english))
+
+
+def check_rst_syntax(text: str) -> list[str]:
+    """Parse text as RST and return any warning/error messages."""
+    from io import StringIO
+
+    from docutils.core import publish_parts
+
+    warning_stream = StringIO()
+    try:
+        publish_parts(text, writer_name='html4', settings_overrides={
+            'warning_stream': warning_stream,
+        })
+    except Exception as e:
+        return [str(e)]
+    output = warning_stream.getvalue().strip()
+    return output.splitlines() if output else []
 
 
 def _indent_set(text: str) -> set[int]:
@@ -211,6 +236,53 @@ def main() -> None:
         if len(indent_bad) > 20:
             print(f'  ... and {len(indent_bad) - 20} more')
 
+    # --- Check 3: backtick count mismatch ---
+    backtick_bad: list[tuple[int, str, str, int, int]] = []
+    for i, row in enumerate(rows):
+        english = row['en']
+        en_count = english.count('`')
+        if en_count == 0:
+            continue
+        for lang in check_languages:
+            translation = row.get(lang, '')
+            if not translation.strip():
+                continue
+            tr_count = translation.count('`')
+            if en_count != tr_count:
+                preview = english[:50].replace('\n', ' ').strip()
+                backtick_bad.append((i + 2, lang, preview, en_count, tr_count))
+
+    if backtick_bad:
+        print(f'\nBacktick count mismatch: {len(backtick_bad)} violation(s)')
+        for row_idx, lang, preview, en_count, tr_count in backtick_bad[:20]:
+            print(f'  row {row_idx} {lang}: EN has {en_count}, translation has {tr_count}  "{preview}..."')
+        if len(backtick_bad) > 20:
+            print(f'  ... and {len(backtick_bad) - 20} more')
+
+    # --- Check 4: RST syntax in translations ---
+    rst_bad: list[tuple[int, str, str, str]] = []
+    for i, row in enumerate(rows):
+        english = row['en']
+        if not is_rst_text(english):
+            continue
+        for lang in check_languages:
+            translation = row.get(lang, '')
+            if not translation.strip():
+                continue
+            warnings = check_rst_syntax(translation)
+            if warnings:
+                preview = english[:50].replace('\n', ' ').strip()
+                rst_bad.append((i + 2, lang, preview, '; '.join(warnings)))
+
+    if rst_bad:
+        print(f'\nRST syntax warnings in translations: {len(rst_bad)} issue(s)')
+        for row_idx, lang, preview, detail in rst_bad[:20]:
+            print(f'  row {row_idx} {lang}: "{preview}..."')
+            for line in detail.split('; '):
+                print(f'    {line}')
+        if len(rst_bad) > 20:
+            print(f'  ... and {len(rst_bad) - 20} more')
+
     # --- Write fixes ---
     if args.fix and needs_write:
         with CSV_FILE.open('w', encoding='utf-8', newline='') as f:
@@ -220,7 +292,7 @@ def main() -> None:
         fixed_total = len(api_bad) + len(indent_bad)
         print(f'\nFixed {fixed_total} issue(s) in {CSV_FILE}')
 
-    # --- Check 3: missing translations ---
+    # --- Check 5: missing translations ---
     total = len(rows)
     any_missing = False
 
@@ -237,7 +309,7 @@ def main() -> None:
         else:
             print(f'{lang}: all {total} translations present')
 
-    if args.strict and (any_missing or api_bad or indent_bad):
+    if args.strict and (any_missing or api_bad or indent_bad or backtick_bad or rst_bad):
         sys.exit(1)
 
 
