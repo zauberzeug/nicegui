@@ -348,7 +348,7 @@ async def test_async_page_does_not_leak_event_wait_tasks(user: User):
 
     for _ in range(5):
         await user.open('/')
-    await asyncio.sleep(1.0)
+    await asyncio.sleep(0.1)
     assert sum(
         1
         for t in asyncio.all_tasks()
