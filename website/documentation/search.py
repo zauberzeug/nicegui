@@ -1,6 +1,5 @@
-from pathlib import Path
-
 from fastapi.responses import JSONResponse
+from rapidfuzz import fuzz, process
 
 from nicegui import app
 
@@ -8,17 +7,12 @@ from ..examples import examples
 from .code_extraction import get_full_code
 from .content import registry
 
-PATH = Path(__file__).parent.parent / 'static' / 'search_index.json'
 search_index: list[dict[str, str]] = []
 sitewide_index: list[dict[str, str]] = []
 examples_index: list[dict[str, str]] = []
 
-
-@app.get('/static/search_index.json')
-def _get_search_index() -> JSONResponse:
-    response = JSONResponse(search_index)
-    response.headers['Cache-Control'] = 'public, max-age=86400, immutable'
-    return response
+_titles: list[str] = []
+_contents: list[str] = []
 
 
 @app.get('/static/sitewide_index.json')
@@ -36,6 +30,24 @@ def build_search_index() -> None:
     search_index[:] = _collect_documentation_parts(include_code=False) + _collect_examples()
     sitewide_index[:] = _collect_documentation_parts(include_code=True)
     examples_index[:] = _collect_examples()
+    _titles[:] = [item['title'] for item in search_index]
+    _contents[:] = [item['content'] for item in search_index]
+
+
+def search(query: str, *, limit: int = 100) -> list[dict[str, str]]:
+    """Search the documentation index using fuzzy matching."""
+    if not query or not search_index:
+        return []
+    title_results = process.extract(query, _titles, scorer=fuzz.WRatio, limit=len(search_index))
+    content_results = process.extract(query, _contents, scorer=fuzz.WRatio, limit=len(search_index))
+    content_scores = {idx: score for _, score, idx in content_results}
+    scored = []
+    for _, title_score, idx in title_results:
+        combined = title_score * 0.7 + content_scores.get(idx, 0) * 0.3
+        if combined >= 40:
+            scored.append((combined, idx))
+    scored.sort(key=lambda x: x[0], reverse=True)
+    return [search_index[idx] for _, idx in scored[:limit]]
 
 
 def _collect_documentation_parts(*, include_code: bool = False) -> list[dict[str, str]]:

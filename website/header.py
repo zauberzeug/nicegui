@@ -21,7 +21,7 @@ def add_head_html() -> None:
         )
 
 
-def add_header(menu: ui.left_drawer) -> ui.button:
+def add_header(menu: ui.left_drawer, *, window_state: dict) -> ui.button:
     """Create the page header."""
     menu_items = {
         'Installation': '/#installation',
@@ -50,7 +50,7 @@ def add_header(menu: ui.left_drawer) -> ui.button:
             for title_, target in menu_items.items():
                 ui.link(title_, target).classes(replace='text-lg text-white')
 
-        search = Search()
+        search = Search(window_state)
         search.create_button()
 
         with ui.element().classes('max-[420px]:hidden').tooltip('Cycle theme mode through dark, light, and system/auto.'):
