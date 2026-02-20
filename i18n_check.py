@@ -5,7 +5,7 @@ Usage:
     python i18n_check.py              # report missing, exit 0
     python i18n_check.py --strict     # exit 1 if any missing
     python i18n_check.py --language de # check only German
-    python i18n_check.py --fix        # auto-correct untranslatable keys
+    python i18n_check.py --fix        # auto-correct issues in-place
 """
 import argparse
 import csv
@@ -36,11 +36,104 @@ def is_untranslatable(english: str) -> bool:
     return bool(_API_ID_RE.match(english))
 
 
+def _indent_set(text: str) -> set[int]:
+    """Return the set of leading-whitespace widths among non-empty lines."""
+    result: set[int] = set()
+    for line in text.split('\n'):
+        stripped = line.lstrip()
+        if stripped:
+            result.add(len(line) - len(stripped))
+    return result
+
+
+def _has_leading_newline(text: str) -> bool:
+    return text.startswith('\n')
+
+
+def _trailing_line(text: str) -> str | None:
+    """Return the trailing whitespace-only line if present, else None."""
+    lines = text.split('\n')
+    if len(lines) > 1 and not lines[-1].strip():
+        return lines[-1]
+    return None
+
+
+def check_indent(en_text: str, translation: str) -> bool:
+    """Return True if the translation has inconsistent indentation vs the English text."""
+    if '\n' not in en_text and '\n' not in translation:
+        return False
+    en_indents = _indent_set(en_text)
+    tr_indents = _indent_set(translation)
+    if not en_indents or not tr_indents:
+        return False
+    # Base indent differs
+    if min(en_indents) != min(tr_indents):
+        return True
+    # Translation uses indent levels not present in EN
+    if tr_indents - en_indents:
+        return True
+    # Leading newline mismatch
+    if _has_leading_newline(en_text) != _has_leading_newline(translation):
+        return True
+    # Trailing whitespace-only line mismatch
+    en_trail = _trailing_line(en_text)
+    tr_trail = _trailing_line(translation)
+    if (en_trail is not None) != (tr_trail is not None):
+        return True
+    return False
+
+
+def fix_indent(en_text: str, translation: str) -> str:
+    """Adjust the translation's indentation to match the English text's indent levels."""
+    en_indents = _indent_set(en_text)
+    tr_indents = _indent_set(translation)
+    if not en_indents or not tr_indents:
+        return translation
+
+    en_base = min(en_indents)
+    tr_base = min(tr_indents)
+    shift = en_base - tr_base
+
+    fixed_lines = []
+    for line in translation.split('\n'):
+        stripped = line.lstrip()
+        if not stripped:
+            fixed_lines.append(line)
+            continue
+        current = len(line) - len(stripped)
+        shifted = max(0, current + shift)
+        # Snap to nearest valid EN indent level if shifted value is foreign
+        if shifted not in en_indents:
+            shifted = min(en_indents, key=lambda x: abs(x - shifted))
+        fixed_lines.append(' ' * shifted + stripped)
+    result = '\n'.join(fixed_lines)
+
+    # Match leading newline
+    if _has_leading_newline(en_text) and not _has_leading_newline(result):
+        result = '\n' + result
+    elif not _has_leading_newline(en_text) and _has_leading_newline(result):
+        result = result.lstrip('\n')
+
+    # Match trailing whitespace-only line
+    en_trail = _trailing_line(en_text)
+    tr_trail = _trailing_line(result)
+    if en_trail is not None and tr_trail is None:
+        result = result + '\n' + en_trail
+    elif en_trail is None and tr_trail is not None:
+        # Strip trailing whitespace-only line
+        lines = result.split('\n')
+        while lines and not lines[-1].strip():
+            lines.pop()
+        result = '\n'.join(lines)
+
+    return result
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description='Check translation CSV for completeness.')
     parser.add_argument('--strict', action='store_true', help='Exit with code 1 if any translations are missing')
     parser.add_argument('--language', action='append', default=[], help='Check only specific language(s)')
-    parser.add_argument('--fix', action='store_true', help='Auto-correct untranslatable API identifiers in-place')
+    parser.add_argument('--fix', action='store_true', help='Auto-correct issues in-place')
     args = parser.parse_args()
 
     if not CSV_FILE.exists():
@@ -64,9 +157,10 @@ def main() -> None:
 
         rows = list(reader)
 
-    # Check and optionally fix untranslatable API identifiers
-    fix_count = 0
-    bad_rows: list[tuple[str, str, str]] = []  # (english, lang, translation)
+    needs_write = False
+
+    # --- Check 1: untranslatable API identifiers ---
+    api_bad: list[tuple[str, str, str]] = []
     for row in rows:
         english = row['en']
         if not is_untranslatable(english):
@@ -74,26 +168,59 @@ def main() -> None:
         for lang in all_languages:
             translation = row.get(lang, '').strip()
             if translation and translation != english:
-                bad_rows.append((english, lang, translation))
+                api_bad.append((english, lang, translation))
                 if args.fix:
                     row[lang] = english
-                    fix_count += 1
+                    needs_write = True
 
-    if bad_rows:
-        print(f'\nAPI identifiers that should not be translated: {len(bad_rows)} violation(s)')
-        for english, lang, translation in bad_rows[:20]:
+    if api_bad:
+        print(f'\nAPI identifiers that should not be translated: {len(api_bad)} violation(s)')
+        for english, lang, translation in api_bad[:20]:
             print(f'  {lang}: "{english}" was translated as "{translation}"')
-        if len(bad_rows) > 20:
-            print(f'  ... and {len(bad_rows) - 20} more')
+        if len(api_bad) > 20:
+            print(f'  ... and {len(api_bad) - 20} more')
 
-    if args.fix and fix_count:
+    # --- Check 2: inconsistent indentation / envelope ---
+    indent_bad: list[tuple[int, str, str, str]] = []  # (row_idx, lang, en_preview, detail)
+    for i, row in enumerate(rows):
+        english = row['en']
+        for lang in all_languages:
+            translation = row.get(lang, '')
+            if not translation.strip():
+                continue
+            if check_indent(english, translation):
+                issues = []
+                en_indents = sorted(_indent_set(english))
+                tr_indents = sorted(_indent_set(translation))
+                if en_indents != tr_indents:
+                    issues.append(f'indent EN={en_indents} TR={tr_indents}')
+                if _has_leading_newline(english) != _has_leading_newline(translation):
+                    issues.append(f'lead \\n: EN={_has_leading_newline(english)} TR={_has_leading_newline(translation)}')
+                if (_trailing_line(english) is not None) != (_trailing_line(translation) is not None):
+                    issues.append(f'trail \\n: EN={_trailing_line(english) is not None} TR={_trailing_line(translation) is not None}')
+                preview = english[:50].replace('\n', ' ').strip()
+                indent_bad.append((i + 2, lang, preview, '; '.join(issues)))
+                if args.fix:
+                    row[lang] = fix_indent(english, translation)
+                    needs_write = True
+
+    if indent_bad:
+        print(f'\nInconsistent indentation/envelope: {len(indent_bad)} violation(s)')
+        for row_idx, lang, preview, detail in indent_bad[:20]:
+            print(f'  row {row_idx} {lang}: {detail}  "{preview}..."')
+        if len(indent_bad) > 20:
+            print(f'  ... and {len(indent_bad) - 20} more')
+
+    # --- Write fixes ---
+    if args.fix and needs_write:
         with CSV_FILE.open('w', encoding='utf-8', newline='') as f:
             writer = csv.DictWriter(f, fieldnames=fieldnames, lineterminator='\n')
             writer.writeheader()
             writer.writerows(rows)
-        print(f'\nFixed {fix_count} untranslatable API identifier(s) in {CSV_FILE}')
+        fixed_total = len(api_bad) + len(indent_bad)
+        print(f'\nFixed {fixed_total} issue(s) in {CSV_FILE}')
 
-    # Check for missing translations
+    # --- Check 3: missing translations ---
     total = len(rows)
     any_missing = False
 
@@ -110,7 +237,7 @@ def main() -> None:
         else:
             print(f'{lang}: all {total} translations present')
 
-    if args.strict and (any_missing or bad_rows):
+    if args.strict and (any_missing or api_bad or indent_bad):
         sys.exit(1)
 
 
