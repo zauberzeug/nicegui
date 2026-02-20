@@ -180,11 +180,10 @@ class page:
                     task_wait_for_connection,
                 ], timeout=self.response_timeout, return_when=asyncio.FIRST_COMPLETED)
                 if not task_wait_for_connection.done() and not task.done():
-                    task_wait_for_connection.cancel()
                     task.cancel()
                     log.warning(f'Response for {client.page.path} not ready after {self.response_timeout} seconds')
                     client.delete()
-                elif not task_wait_for_connection.done():
+                if not task_wait_for_connection.done():
                     task_wait_for_connection.cancel()
                 if task.done():
                     result = task.result()
