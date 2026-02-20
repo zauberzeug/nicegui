@@ -38,8 +38,8 @@ def search(query: str, *, limit: int = 100) -> list[dict[str, str]]:
     """Search the documentation index using fuzzy matching."""
     if not query or not search_index:
         return []
-    title_results = process.extract(query, _titles, scorer=fuzz.WRatio, limit=len(search_index))
-    content_results = process.extract(query, _contents, scorer=fuzz.WRatio, limit=len(search_index))
+    title_results = process.extract(query, _titles, scorer=fuzz.WRatio, limit=limit)
+    content_results = process.extract(query, _contents, scorer=fuzz.WRatio, limit=limit)
     content_scores = {idx: score for _, score, idx in content_results}
     scored = []
     for _, title_score, idx in title_results:
