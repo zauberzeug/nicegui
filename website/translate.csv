@@ -1891,6 +1891,7 @@ An order calculator using reactive signals from the [reaktiv](https://github.com
 Works in Chrome, Firefox and Safari.","并可直接使用 SVG 作为图标。
 在 Chrome、Firefox 和 Safari 中均可工作。"
 And let any browser be the frontend of your Python code.,让任意浏览器成为您 Python 代码的前端交互界面。
+And tell others about NiceGUI.,并將 NiceGUI 告诉其他人。
 AnyWidget,任何 Widget
 Apache EChart,Apache EChart
 API Requests,API 请求
@@ -3883,6 +3884,7 @@ Specifying event attributes,指定事件属性
 Spinner,加载动画
 Splitter,分割面板
 SQLite Database,SQLite 数据库
+Star us on GitHub!,在 GitHub 上给我们点星！
 Stepper,步骤条
 Steps can be added dynamically and positioned via `ui.move()`.,步骤可以动态添加并使用 `ui.move()` 进行定位。
 Storage,存储
