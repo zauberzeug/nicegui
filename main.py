@@ -9,7 +9,7 @@ from starlette.responses import Response
 
 from nicegui import app, core, ui
 from nicegui.page_arguments import RouteMatch
-from website import documentation, examples_page, fly, header, imprint_privacy, main_page, rate_limits, svg
+from website import documentation, examples_page, fly, header, i18n, imprint_privacy, main_page, rate_limits, svg
 
 
 @app.add_middleware
@@ -38,11 +38,17 @@ app.add_static_file(local_file=svg.PATH / 'logo_square.png', url_path='/logo_squ
 
 documentation.build_search_index()
 documentation.build_tree()
+i18n.load()
 
 
 @app.post('/dark_mode')
 async def _post_dark_mode(request: Request) -> None:
     app.storage.browser['dark_mode'] = (await request.json()).get('value')
+
+
+@app.post('/language')
+async def _post_language(request: Request) -> None:
+    app.storage.browser['language'] = (await request.json()).get('value')
 
 
 class custom_sub_pages(ui.sub_pages):
@@ -64,7 +70,7 @@ def _main_page() -> None:
     with ui.left_drawer() \
             .classes('column no-wrap gap-1 bg-[#eee] dark:bg-[#1b1b1b] mt-[-20px] px-8 py-20') \
             .style('height: calc(100% + 20px) !important') as menu:
-        tree = ui.tree(documentation.tree.nodes, label_key='title',
+        tree = ui.tree(documentation.tree.translated_nodes(), label_key='title',
                        on_select=lambda e: ui.navigate.to(f'/documentation/{e.value}')) \
             .classes('w-full').props('accordion no-connectors no-selection-unset')
     menu_button = header.add_header(menu)
@@ -116,4 +122,4 @@ def _status():
 
 
 # NOTE: do not reload on fly.io (see https://github.com/zauberzeug/nicegui/discussions/1720#discussioncomment-7288741)
-ui.run(uvicorn_reload_includes='*.py, *.css, *.html', reload=not on_fly, reconnect_timeout=10.0)
+ui.run(uvicorn_reload_includes='*.py, *.css, *.html, *.csv', reload=not on_fly, reconnect_timeout=10.0)

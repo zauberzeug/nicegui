@@ -2,6 +2,7 @@ from nicegui import __version__, background_tasks, events, ui
 
 from .documentation import CustomRestructuredText as custom_restructured_text
 from .documentation.search import search_index
+from .i18n import get_language, t
 
 
 class Search:
@@ -10,7 +11,7 @@ class Search:
         ui.add_head_html(r'''
             <script>
             async function loadSearchData() {
-                const response = await fetch("/static/search_index.json?version=''' + __version__ + r'''");
+                const response = await fetch("/static/search_index.json?version=''' + __version__ + '&lang=' + get_language() + r'''");
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
@@ -37,7 +38,7 @@ class Search:
         with ui.dialog() as self.dialog, ui.card().tight().classes('w-[800px] h-[600px]'):
             with ui.row().classes('w-full items-center px-4'):
                 ui.icon('search', size='2em')
-                self.input = ui.input(placeholder='Search documentation', on_change=self.handle_input) \
+                self.input = ui.input(placeholder=t('Search documentation'), on_change=self.handle_input) \
                     .classes('flex-grow').props('borderless autofocus')
                 ui.button('ESC', on_click=self.dialog.close) \
                     .props('padding="2px 8px" outline size=sm color=grey-5').classes('shadow')
@@ -53,7 +54,7 @@ class Search:
 
     def create_button(self) -> ui.button:
         return ui.button(on_click=self.open_dialog, icon='search').props('flat color=white') \
-            .tooltip('Press Ctrl+K or / to search the documentation')
+            .tooltip(t('Press Ctrl+K or / to search the documentation'))
 
     def handle_input(self, e: events.ValueChangeEventArguments) -> None:
         async def handle_input() -> None:
@@ -64,11 +65,12 @@ class Search:
                     return window.fuse.search("{e.value}", {{ limit }}).map(result => result.refIndex);
                 ''', timeout=6)
                 self.results.clear()
+                entries = search_index.get(get_language(), search_index['en'])
                 with ui.list().props('bordered separator'):
                     for index in indices:
-                        if not 0 <= index < len(search_index):
+                        if not 0 <= index < len(entries):
                             continue
-                        result_item = search_index[index]
+                        result_item = entries[index]
                         if not result_item['content']:
                             continue
                         with ui.item().props('clickable'):

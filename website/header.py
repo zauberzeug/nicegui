@@ -4,11 +4,25 @@ from pathlib import Path
 from nicegui import app, ui
 
 from . import svg
+from .i18n import languages, t
 from .search import Search
 from .star import add_star
 
 HEADER_HTML = (Path(__file__).parent / 'static' / 'header.html').read_text(encoding='utf-8')
 STYLE_CSS = (Path(__file__).parent / 'static' / 'style.css').read_text(encoding='utf-8')
+
+LANGUAGE_NAMES = {
+    'en': 'English',
+    'de': 'Deutsch',
+    'es': 'Espanol',
+    'fr': 'Francais',
+    'ja': 'Japanese',
+    'ko': 'Korean',
+    'pt': 'Portugues',
+    'ru': 'Russian',
+    'zh-CN': 'Chinese',
+    'zh-TW': 'Traditional Chinese',
+}
 
 
 def add_head_html() -> None:
@@ -21,15 +35,25 @@ def add_head_html() -> None:
         )
 
 
+def _change_language(lang: str) -> None:
+    ui.run_javascript(f'''
+        fetch('/language', {{
+            method: 'POST',
+            headers: {{'Content-Type': 'application/json'}},
+            body: JSON.stringify({{value: "{lang}"}}),
+        }}).then(() => location.reload());
+    ''')
+
+
 def add_header(menu: ui.left_drawer) -> ui.button:
     """Create the page header."""
     menu_items = {
-        'Installation': '/#installation',
-        'Features': '/#features',
-        'Demos': '/#demos',
-        'Documentation': '/documentation',
-        'Examples': '/examples',
-        'Why?': '/#why',
+        t('Installation'): '/#installation',
+        t('Features'): '/#features',
+        t('Demos'): '/#demos',
+        t('Documentation'): '/documentation',
+        t('Examples'): '/examples',
+        t('Why?'): '/#why',
     }
     dark_mode = ui.dark_mode(value=app.storage.browser.get('dark_mode'), on_change=lambda e: ui.run_javascript(f'''
         fetch('/dark_mode', {{
@@ -53,13 +77,21 @@ def add_header(menu: ui.left_drawer) -> ui.button:
         search = Search()
         search.create_button()
 
-        with ui.element().classes('max-[420px]:hidden').tooltip('Cycle theme mode through dark, light, and system/auto.'):
+        with ui.element().classes('max-[420px]:hidden').tooltip(t('Cycle theme mode through dark, light, and system/auto.')):
             ui.button(icon='dark_mode', on_click=lambda: dark_mode.set_value(None)) \
                 .props('flat fab-mini color=white').bind_visibility_from(dark_mode, 'value', value=True)
             ui.button(icon='light_mode', on_click=lambda: dark_mode.set_value(True)) \
                 .props('flat fab-mini color=white').bind_visibility_from(dark_mode, 'value', value=False)
             ui.button(icon='brightness_auto', on_click=lambda: dark_mode.set_value(False)) \
                 .props('flat fab-mini color=white').bind_visibility_from(dark_mode, 'value', lambda mode: mode is None)
+
+        available = languages()
+        if len(available) > 1:
+            with ui.button(icon='language').props('flat color=white round').classes('max-[470px]:hidden'):
+                with ui.menu().classes('bg-primary text-white'):
+                    for lang in available:
+                        name = LANGUAGE_NAMES.get(lang, lang)
+                        ui.menu_item(name, on_click=lambda lang=lang: _change_language(lang))
 
         with ui.link(target='https://discord.gg/TEpFeAaF4f').classes('max-[515px]:hidden').tooltip('Discord'):
             svg.discord().classes('fill-white scale-125 m-1')

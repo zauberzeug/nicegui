@@ -15,6 +15,7 @@ from . import (
     section_testing,
     section_text_elements,
 )
+from ...i18n import t
 from ...style import subheading
 
 doc.title('*NiceGUI* Documentation', 'Reference, Demos and more')
@@ -104,49 +105,49 @@ doc.text('Testing', '''
 ''')
 
 tiles = [
-    (section_text_elements, '''
+    (section_text_elements, t('''
         Elements like `ui.label`, `ui.markdown`, `ui.restructured_text` and `ui.html` can be used to display text and other content.
-    '''),
-    (section_controls, '''
+    ''')),
+    (section_controls, t('''
         NiceGUI provides a variety of elements for user interaction, e.g. `ui.button`, `ui.slider`, `ui.inputs`, etc.
-    '''),
-    (section_audiovisual_elements, '''
+    ''')),
+    (section_audiovisual_elements, t('''
         You can use elements like `ui.image`, `ui.audio`, `ui.video`, etc. to display audiovisual content.
-    '''),
-    (section_data_elements, '''
+    ''')),
+    (section_data_elements, t('''
         There are several elements for displaying data, e.g. `ui.table`, `ui.aggrid`, `ui.highchart`, `ui.echart`, etc.
-    '''),
-    (section_binding_properties, '''
+    ''')),
+    (section_binding_properties, t('''
         To update UI elements automatically, you can bind them to each other or to your data model.
-    '''),
-    (section_page_layout, '''
+    ''')),
+    (section_page_layout, t('''
         This section covers fundamental techniques as well as several elements to structure your UI.
-    '''),
-    (section_styling_appearance, '''
+    ''')),
+    (section_styling_appearance, t('''
         NiceGUI allows to customize the appearance of UI elements in various ways, including CSS, Tailwind CSS and Quasar properties.
-    '''),
-    (section_action_events, '''
+    ''')),
+    (section_action_events, t('''
         This section covers timers, UI events, and the lifecycle of NiceGUI apps.
-    '''),
-    (section_pages_routing, '''
+    ''')),
+    (section_pages_routing, t('''
         A NiceGUI app can consist of multiple pages and other FastAPI endpoints.
-    '''),
-    (section_configuration_deployment, '''
+    ''')),
+    (section_configuration_deployment, t('''
         Whether you want to run your app locally or on a server, native or in a browser, we got you covered.
-    '''),
-    (section_testing, '''
+    ''')),
+    (section_testing, t('''
         Write automated UI tests which run in a headless browser (slow) or fully simulated in Python (fast).
-     '''),
-    (section_security, '''
+     ''')),
+    (section_security, t('''
         Learn about security best practices, common vulnerabilities, and how to write secure NiceGUI applications.
-    '''),
+    ''')),
 ]
 
 
 @doc.extra_column
 def create_tiles():
     with ui.row().classes('items-center content-between'):
-        ui.label('If you like NiceGUI, go and become a')
+        ui.label(t('If you like NiceGUI, go and become a'))
         ui.html('<iframe src="https://github.com/sponsors/zauberzeug/button" title="Sponsor zauberzeug" height="32" width="114"'
                 ' class="border-0 outline-[1px] outline-offset-[-1px] outline-[#d1d9e0] dark:outline-[#3d444d] rounded"></iframe>', sanitize=False)
     for documentation, description in tiles:
@@ -155,14 +156,14 @@ def create_tiles():
                 .classes('bg-[#5898d420] p-4 self-stretch rounded flex flex-col gap-2') \
                 .style('box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1)'):
             if page.title:
-                ui.label(page.title.replace('*', '')).classes(replace='text-2xl')
-            ui.markdown(description).classes(replace='bold-links arrow-links')
+                ui.label(t(page.title.replace('*', ''))).classes(replace='text-2xl')
+            ui.markdown(t(description)).classes(replace='bold-links arrow-links')
 
 
 @doc.ui
 def map_of_nicegui():
     ui.separator().classes('mt-6')
-    subheading('Map of NiceGUI', anchor_name='map-of-nicegui')
+    subheading(t('Map of NiceGUI'), anchor_name='map-of-nicegui')
     ui.add_css('''
         .map-of-nicegui a code {
             font-weight: bold;

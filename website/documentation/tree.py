@@ -1,5 +1,6 @@
 from typing import Any
 
+from ..i18n import t
 from .content import DocumentationPage, registry
 from .content.overview import tiles
 
@@ -33,6 +34,17 @@ def _children(page: DocumentationPage) -> list[dict[str, Any]]:
 def _plain(string: str | None) -> str:
     assert string is not None
     return string.replace('*', '')
+
+
+def translated_nodes() -> list[dict[str, Any]]:
+    """Return tree nodes with titles translated for the current language."""
+    def _translate(node: dict[str, Any]) -> dict[str, Any]:
+        return {
+            **node,
+            'title': t(node['title']),
+            'children': [_translate(c) for c in node.get('children', [])],
+        }
+    return [_translate(n) for n in nodes]
 
 
 def ancestors(node_id: str) -> list[str]:

@@ -3,13 +3,14 @@ from collections.abc import Callable
 
 from nicegui import ui
 
+from ..i18n import t
 from ..style import subheading
 from .content.sub_pages_documentation import FakeSubPages
 from .demo import demo
 
 
 def create_intro() -> None:
-    @_main_page_demo('Single-Page Applications', '''
+    @_main_page_demo(t('Single-Page Applications'), t('''
         Build applications with fast client-side routing using [`ui.sub_pages`](/documentation/sub_pages)
         and a `root` function as single entry point.
         For each visitor, the `root` function is executed and generates the interface.
@@ -17,7 +18,7 @@ def create_intro() -> None:
 
         If you do not want a single-page application, you can also use [`@ui.page('/your/path')`](/documentation/page)
         to define standalone content available at a specific path.
-    ''')
+    '''))
     def spa_demo():
         sub_pages = None  # HIDE
 
@@ -46,12 +47,12 @@ def create_intro() -> None:
 
         return root
 
-    @_main_page_demo('Reactive Transformations', '''
+    @_main_page_demo(t('Reactive Transformations'), t('''
         Create real-time interfaces with automatic updates.
         Type and watch text flow in both directions.
         When input changes, the [binding](/documentation/section_binding_properties) transforms the text
         with a custom Python function and updates the label.
-    ''')
+    '''))
     def binding_demo():
         def root():
             user_input = ui.input(value='Hello')
@@ -62,12 +63,12 @@ def create_intro() -> None:
 
         return root
 
-    @_main_page_demo('Event System', '''
+    @_main_page_demo(t('Event System'), t('''
         Use an [Event](/documentation/event) to trigger actions and pass data.
         Here we have an IoT temperature sensor submitting its readings
         to a [FastAPI endpoint](/documentation/section_pages_routing#api_responses) with path "/sensor".
         When a new value arrives, it emits an event for the chart to be updated.
-    ''')
+    '''))
     def event_system_demo():
         import time
 

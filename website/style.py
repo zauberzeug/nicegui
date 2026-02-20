@@ -3,6 +3,7 @@ import re
 from nicegui import ui
 
 from .examples import Example
+from .i18n import t
 
 SPECIAL_CHARACTERS = re.compile('[^(a-z)(A-Z)(0-9)-]')
 
@@ -41,8 +42,8 @@ def example_link(example: Example | None = None) -> ui.link:
     with ui.link(target=example.url if example else '/examples') \
             .classes('bg-[#5898d420] p-4 self-stretch rounded flex flex-col gap-2') \
             .style('box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1)') as link:
-        ui.label(example.title if example else '...and many more').classes(replace='font-bold')
-        ui.markdown(example.description if example else 'Browse through plenty of examples.') \
+        ui.label(t(example.title) if example else t('...and many more')).classes(replace='font-bold')
+        ui.markdown(t(example.description) if example else t('Browse through plenty of examples.')) \
             .classes(replace='bold-links arrow-links')
         if example:
             ui.space()
