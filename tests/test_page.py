@@ -346,21 +346,11 @@ async def test_async_page_does_not_leak_event_wait_tasks(user: User):
     async def page():
         ui.label('Hello')
 
-    def count_event_wait_tasks() -> int:
-        # NOTE: uses asyncio.all_tasks() with coroutine __qualname__ filtering to identify
-        # leaked Event.wait tasks from page.py's task_wait_for_connection that are never cancelled.
-        return sum(
-            1
-            for t in asyncio.all_tasks()
-            if not t.done() and getattr(t.get_coro(), '__qualname__', '') == 'Event.wait'
-        )
-
-    before = count_event_wait_tasks()
     for _ in range(5):
         await user.open('/')
-
-    await asyncio.sleep(2)
-    after = count_event_wait_tasks()
-    leaked = after - before
-
-    assert leaked <= 1, f'async page leaked {leaked} Event.wait tasks (before={before}, after={after})'
+    await asyncio.sleep(1.0)
+    assert sum(
+        1
+        for t in asyncio.all_tasks()
+        if not t.done() and getattr(t.get_coro(), '__qualname__', '') == 'Event.wait'
+    ) == 1, 'only the Event.wait task for the last opened page should remain, all previous ones should be cleaned up'
