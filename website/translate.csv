@@ -2761,9 +2761,7 @@ This demo is based on the [official datepicker example](/documentation/date#inpu
 Here we are using the automatically available browser-stored session ID to count the number of unique page visits.,这里我们使用自动可用的浏览器存储会话 ID 来统计唯一页面访问次数。
 Highcharts chart,Highcharts 图表
 How to use this guide,如何使用本指南
-HTML Element,"HTML 元素
-
-[emsp] HTML 文本"
+HTML Element,HTML 元素
 HTML text,HTML 文本
 Icon,图标
 Icons,图标
