@@ -68,15 +68,20 @@ def side_menu() -> ui.left_drawer:
 
 
 def subheading(text: str, *, link: str | None = None, major: bool = False, anchor_name: str | None = None) -> None:
-    """Render a subheading with an anchor that can be linked to with a hash."""
+    """Render a subheading with an anchor that can be linked to with a hash.
+
+    The ``text`` is automatically passed through ``t()`` for translation,
+    while the anchor name is always derived from the original (English) text.
+    """
     name = anchor_name or create_anchor_name(text)
+    display_text = t(text)
     ui.html(f'<div id="{name}"></div>', sanitize=False).style('position: relative; top: -90px')
     with ui.row().classes('gap-2 items-center relative'):
         classes = 'text-3xl' if major else 'text-2xl'
         if link:
-            ui.link(text, link).classes(classes)
+            ui.link(display_text, link).classes(classes)
         else:
-            ui.label(text).classes(classes)
+            ui.label(display_text).classes(classes)
         with ui.link(target=f'#{name}').classes('absolute').style('transform: translateX(-150%)'):
             ui.icon('link', size='sm').classes('opacity-10 hover:opacity-80')
 

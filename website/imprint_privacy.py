@@ -9,7 +9,7 @@ def create():
 
     with ui.column().classes('w-full p-8 lg:p-16 max-w-[1250px] mx-auto'):
         section_heading('', t('Imprint'))
-        subheading(t('Zauberzeug GmbH'))
+        subheading('Zauberzeug GmbH')
         ui.markdown(t('''
             Hohenholter Str. 43, 48329 Havixbeck, Germany
 
@@ -18,12 +18,12 @@ def create():
             Phone: +49 2507 3817, Email: info@zauberzeug.com
         '''))
 
-        subheading(t('Registry entry'))
+        subheading('Registry entry')
         ui.markdown(t('''
             Registry court: Amtsgericht Coesfeld, Registry number: HRB 14215
         '''))
 
-        subheading(t('Tax'))
+        subheading('Tax')
         ui.markdown(t('''
             Sales tax identification number according to §27a Sales Tax Act: DE286384205
         '''))

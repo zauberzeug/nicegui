@@ -21,7 +21,7 @@ def render_page(documentation: DocumentationPage) -> None:
             if part.title:
                 if part.link_target:
                     ui.link_target(part.link_target)
-                subheading(t(part.title),
+                subheading(part.title,
                            link=f'/documentation/{part.link}' if part.link else None,
                            major=part.reference is not None)
             if part.description:

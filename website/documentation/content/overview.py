@@ -163,7 +163,7 @@ def create_tiles():
 @doc.ui
 def map_of_nicegui():
     ui.separator().classes('mt-6')
-    subheading(t('Map of NiceGUI'), anchor_name='map-of-nicegui')
+    subheading('Map of NiceGUI', anchor_name='map-of-nicegui')
     ui.add_css('''
         .map-of-nicegui a code {
             font-weight: bold;

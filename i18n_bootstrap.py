@@ -21,8 +21,11 @@ EXAMPLES_DIR = Path(__file__).parent / 'examples'
 CSV_FILE = WEBSITE_DIR / 'translate.csv'
 
 
+TRANSLATING_FUNCTIONS = {'t', 'subheading', '_main_page_demo'}
+
+
 def extract_t_strings(directory: Path) -> set[str]:
-    """Extract all string arguments from t() calls in Python files."""
+    """Extract all string arguments from t() and other auto-translating calls in Python files."""
     strings: set[str] = set()
     for py_file in sorted(directory.rglob('*.py')):
         try:
@@ -33,7 +36,7 @@ def extract_t_strings(directory: Path) -> set[str]:
             if (
                 isinstance(node, ast.Call)
                 and isinstance(node.func, ast.Name)
-                and node.func.id == 't'
+                and node.func.id in TRANSLATING_FUNCTIONS
                 and node.args
                 and isinstance(node.args[0], ast.Constant)
                 and isinstance(node.args[0].value, str)

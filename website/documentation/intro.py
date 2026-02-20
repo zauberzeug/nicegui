@@ -10,7 +10,7 @@ from .demo import demo
 
 
 def create_intro() -> None:
-    @_main_page_demo(t('Single-Page Applications'), t('''
+    @_main_page_demo('Single-Page Applications', t('''
         Build applications with fast client-side routing using [`ui.sub_pages`](/documentation/sub_pages)
         and a `root` function as single entry point.
         For each visitor, the `root` function is executed and generates the interface.
@@ -47,7 +47,7 @@ def create_intro() -> None:
 
         return root
 
-    @_main_page_demo(t('Reactive Transformations'), t('''
+    @_main_page_demo('Reactive Transformations', t('''
         Create real-time interfaces with automatic updates.
         Type and watch text flow in both directions.
         When input changes, the [binding](/documentation/section_binding_properties) transforms the text
@@ -63,7 +63,7 @@ def create_intro() -> None:
 
         return root
 
-    @_main_page_demo(t('Event System'), t('''
+    @_main_page_demo('Event System', t('''
         Use an [Event](/documentation/event) to trigger actions and pass data.
         Here we have an IoT temperature sensor submitting its readings
         to a [FastAPI endpoint](/documentation/section_pages_routing#api_responses) with path "/sensor".
