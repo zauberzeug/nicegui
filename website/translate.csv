@@ -464,10 +464,10 @@ en,zh-CN
 
     **核心原则：**
 
-    1. 保持清理功能开启（默认状态）
+    1. 保持净化功能开启（默认状态）
     2. 验证 URL 方案（框架不对此进行限制）
     3. 验证 CSS 值（框架不对此进行转义）
-    4. 仅对受信任的、你控制的内容禁用清理
+    4. 仅对受信任的、你控制的内容禁用净化
     5. 采用纵深防御（如阻止 iframe 的头部、输入验证）
     6. 保持 NiceGUI 保持最新版本
 "
@@ -695,7 +695,7 @@ en,zh-CN
     **开发者需负责：**
 
     - 审查应用程序逻辑以查找不安全模式
-    - 保持对不受信任内容的清理功能启用
+    - 保持对不受信任内容的净化功能启用
     - 在必要时验证用户输入
     - 保持 NiceGUI 保持最新版本
 "
@@ -5610,7 +5610,7 @@ Try moving the camera around to see the sphere following it.","使用 `get_camer
 尝试移动摄像机观察球体随之移动。"
 "Using the `text_html` parameter, you can send HTML text to the chat.
 Note that you should specify a sanitize function when displaying user input as HTML to prevent XSS attacks.","使用 `text_html` 参数，您可以向聊天发送 HTML 文本。
-请注意，当将用户输入作为 HTML 显示时，您应指定一个清理函数以防止 XSS 攻击。"
+请注意，当将用户输入作为 HTML 显示时，您应指定一个净化函数以防止 XSS 攻击。"
 Utilize the [replicate](https://replicate.com) library to perform voice-to-text transcription,利用 [replicate](https://replicate.com) 库进行语音转文字转录
 Validation,验证
 Vector Layers,"向量图层
