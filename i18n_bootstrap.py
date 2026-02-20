@@ -13,6 +13,8 @@ Usage:
 import argparse
 import ast
 import csv
+import inspect
+import re
 import sys
 from pathlib import Path
 
@@ -60,6 +62,57 @@ def extract_example_strings(examples_dir: Path) -> set[str]:
     return strings
 
 
+_PARAM_RE = re.compile(r'\s*:param \w+:\s*(.*)')
+
+
+def extract_docstring_parts(doc: str) -> set[str]:
+    """Extract translatable parts from a docstring: intro text and individual :param descriptions."""
+    strings: set[str] = set()
+    if ':param' not in doc:
+        strings.add(doc)
+        return strings
+    intro_lines: list[str] = []
+    for line in doc.splitlines():
+        m = _PARAM_RE.match(line)
+        if m:
+            desc = m.group(1).strip()
+            if desc:
+                strings.add(desc)
+        else:
+            intro_lines.append(line)
+    intro = '\n'.join(intro_lines).strip()
+    if intro:
+        strings.add(intro)
+    return strings
+
+
+def _extract_reference_strings(class_obj: type, strings: set[str]) -> None:
+    """Extract translatable strings from a class's reference documentation."""
+    from nicegui import binding
+
+    doc = class_obj.__doc__ or class_obj.__init__.__doc__
+    if doc and ':param' in doc:
+        from nicegui.elements.markdown import remove_indentation
+        description = remove_indentation(doc.split('\n', 1)[-1])
+        strings |= extract_docstring_parts(description)
+
+    mro = [base for base in class_obj.__mro__ if base.__module__.startswith('nicegui.')]
+    for base in mro:
+        for name in dir(base):
+            if name.startswith('_'):
+                continue
+            attr = base.__dict__.get(name)
+            if not (inspect.isfunction(attr) or inspect.ismethod(attr) or
+                    isinstance(attr, (staticmethod, classmethod, property, binding.BindableProperty))):
+                continue
+            obj = getattr(base, name, None)
+            if obj is None:
+                continue
+            docstring = inspect.getdoc(obj)
+            if docstring:
+                strings |= extract_docstring_parts(docstring)
+
+
 def extract_doc_strings() -> set[str]:
     """Import the documentation registry and extract translatable strings."""
     strings: set[str] = set()
@@ -76,7 +129,9 @@ def extract_doc_strings() -> set[str]:
                 if part.title:
                     strings.add(part.title)
                 if part.description:
-                    strings.add(part.description)
+                    strings |= extract_docstring_parts(part.description)
+                if part.reference:
+                    _extract_reference_strings(part.reference, strings)
     except Exception as e:
         print(f'Warning: could not import documentation registry: {e}')
         print('Only t() strings from source code will be included.')

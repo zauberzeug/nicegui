@@ -221,7 +221,7 @@ class TextColorElement(Element):
         :param forward: A function to apply to the value before applying it to the target (default: identity).
         :param backward: A function to apply to the value before applying it to this element (default: identity).
         :param strict: Whether to check (and raise) if the target object has the specified property (default: None,
-              performs a check if the object is not a dictionary, *added in version 3.0.0*).
+            performs a check if the object is not a dictionary, *added in version 3.0.0*).
         """
         bind(self, 'text_color', target_object, target_name,
              forward=forward, backward=backward,

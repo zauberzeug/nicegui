@@ -6,7 +6,7 @@ from fastapi.responses import JSONResponse
 from nicegui import app
 
 from ..examples import examples
-from ..i18n import language, t
+from ..i18n import language, t, translate_docstring
 from .code_extraction import get_full_code
 from .content import registry
 
@@ -67,7 +67,7 @@ def _collect_documentation_parts(*, include_code: bool = False) -> list[dict[str
     return [
         {
             'title': f'{t(documentation.heading.replace("*", ""))}: {t(part.title or "")}',
-            'content': t(part.description or part.search_text or ''),
+            'content': translate_docstring(part.description or part.search_text or ''),
             'format': part.description_format,
             **({'demo': get_full_code(part.demo.function) if part.demo is not None else ''} if include_code else {}),
             'url': f'/documentation/{documentation.name}#{part.link_target}',

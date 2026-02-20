@@ -1,4 +1,5 @@
 import csv
+import re
 from contextlib import contextmanager
 from contextvars import ContextVar
 from pathlib import Path
@@ -68,3 +69,34 @@ def t(english: str) -> str:
     if lang == 'en':
         return english
     return _translations.get(english, {}).get(lang) or english
+
+
+_PARAM_RE = re.compile(r'(\s*:param \w+:\s*)(.*)')
+
+
+def translate_docstring(doc: str) -> str:
+    """Translate a docstring, translating intro text and :param descriptions individually."""
+    if ':param' not in doc:
+        return t(doc)
+    lines = doc.splitlines()
+    intro_lines: list[str] = []
+    param_lines: list[str] = []
+    for line in lines:
+        if _PARAM_RE.match(line):
+            param_lines.append(line)
+        else:
+            intro_lines.append(line)
+    intro = '\n'.join(intro_lines).strip()
+    translated_params = []
+    for line in param_lines:
+        m = _PARAM_RE.match(line)
+        if m:
+            translated_params.append(f'{m.group(1)}{t(m.group(2))}')
+        else:
+            translated_params.append(line)
+    parts = []
+    if intro:
+        parts.append(t(intro))
+    if translated_params:
+        parts.append('\n'.join(translated_params))
+    return '\n\n'.join(parts)

@@ -1,6 +1,6 @@
 from nicegui import ui
 
-from ..i18n import t
+from ..i18n import t, translate_docstring
 from ..style import section_heading, subheading
 from .content import DocumentationPage
 from .custom_restructured_text import CustomRestructuredText as custom_restructured_text
@@ -25,10 +25,11 @@ def render_page(documentation: DocumentationPage) -> None:
                            link=f'/documentation/{part.link}' if part.link else None,
                            major=part.reference is not None)
             if part.description:
-                description = t(part.description)
                 if part.description_format == 'rst':
+                    description = translate_docstring(part.description)
                     element = custom_restructured_text(description.replace(':param ', ':'))
                 else:
+                    description = t(part.description)
                     element = ui.markdown(description)
                 element.classes('bold-links arrow-links w-full overflow-x-auto')
                 if ':param' in part.description:
