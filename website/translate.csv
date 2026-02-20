@@ -3749,6 +3749,7 @@ Search documentation,搜索文档
 Search-as-you-type,输入即搜索
 Security Best Practices,安全最佳实践
 Security Model,安全模型
+See [more...](/documentation/{link}),查看[更多...](/documentation/{link})
 "See the [sphinx documentation](https://www.sphinx-doc.org/en/master/usage/restructuredtext/basics.html#tables)
 for more information about reStructuredText tables.",有关 reStructuredText 表格的更多信息，请参阅 [Sphinx 文档](https://www.sphinx-doc.org/en/master/usage/restructuredtext/basics.html#tables)。
 Select AG Grid Rows,选择 AG Grid 行
