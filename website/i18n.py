@@ -24,11 +24,11 @@ def load() -> None:
             return
         _languages = list(reader.fieldnames)
         for row in reader:
-            english = row.get('en', '').replace('\r\n', '\n')
+            english = row.get('en', '')
             if not english:
                 continue
             _translations[english] = {
-                lang: row.get(lang, '').replace('\r\n', '\n')
+                lang: row.get(lang, '')
                 for lang in _languages if lang != 'en'
             }
 
