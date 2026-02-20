@@ -1,5 +1,6 @@
 from nicegui import ui
 from nicegui.testing import Screen
+from website.i18n import t
 
 from ..windows import python_window
 from . import doc
@@ -7,14 +8,14 @@ from . import doc
 
 @doc.part('Screen Fixture')
 def screen_fixture():
-    ui.markdown('''
+    ui.markdown(t('''
         The `screen` fixture starts a real (headless) browser to interact with your application.
         This is only necessary if you have browser-specific behavior to test.
         NiceGUI itself is thoroughly tested with this fixture to ensure each component works as expected.
         Therefore we recommend to only use it if you absolutely have to.
-    ''').classes('bold-links arrow-links')
+    ''')).classes('bold-links arrow-links')
 
-    with python_window(classes='w-[600px]', title='example'):
+    with python_window(classes='w-[600px]', title=t('example')):
         ui.markdown('''
             ```python
             from selenium.webdriver.common.keys import Keys
@@ -44,11 +45,11 @@ doc.text('Configuration', '''
 
 @doc.part('Web driver')
 def web_driver():
-    ui.markdown('''
+    ui.markdown(t('''
         The `screen` fixture uses Selenium under the hood.
         Currently it is only tested with the Chrome driver.
         To automatically use it for the tests we suggest to add the option `--driver Chrome` to your `pytest.ini`:
-    ''').classes('bold-links arrow-links')
+    ''')).classes('bold-links arrow-links')
 
     with python_window(classes='w-[600px] h-42', title='pytest.ini'):
         ui.markdown('''

@@ -1,5 +1,6 @@
 from nicegui import ui
 from nicegui.testing import User, UserInteraction
+from website.i18n import t
 
 from ..windows import python_window
 from . import doc
@@ -7,7 +8,7 @@ from . import doc
 
 @doc.part('User Fixture')
 def user_fixture():
-    ui.markdown('''
+    ui.markdown(t('''
         We recommend utilizing the `user` fixture instead of the [`screen` fixture](/documentation/screen) wherever possible
         because execution is as fast as unit tests and it does not need Selenium as a dependency.
         The `user` fixture cuts away the browser and replaces it by a lightweight simulation.
@@ -16,9 +17,9 @@ def user_fixture():
         We aimed for a nice API to write acceptance tests which read like a story and are easy to understand.
         Due to the fast execution, the classical [test pyramid](https://martinfowler.com/bliki/TestPyramid.html),
         where UI tests are considered to be slow, error prone and expensive, does not apply anymore 🚀.
-    ''').classes('bold-links arrow-links')
+    ''')).classes('bold-links arrow-links')
 
-    with python_window(classes='w-[600px]', title='example'):
+    with python_window(classes='w-[600px]', title=t('example')):
         ui.markdown('''
             ```python
             await user.open('/')
@@ -30,16 +31,16 @@ def user_fixture():
             ```
         ''')
 
-    ui.markdown('''
+    ui.markdown(t('''
         **NOTE:** The `user` fixture might still miss some features.
         Please let us know in separate feature requests
         [over on GitHub](https://github.com/zauberzeug/nicegui/discussions/new?category=ideas-feature-requests).
-    ''').classes('bold-links arrow-links')
+    ''')).classes('bold-links arrow-links')
 
 
 @doc.part('Async execution')
 def async_execution():
-    ui.markdown('''
+    ui.markdown(t('''
         The user simulation runs in the same async context as your app
         to make querying and interaction as easy as possible.
         But that also means that your tests must be `async`.
@@ -50,7 +51,7 @@ def async_execution():
         **Note:** Do not set `asyncio_default_fixture_loop_scope` to anything other than `function` (the default).
         Using `module`, `session`, or other scopes can interfere with NiceGUI's background tasks
         and cause issues like binding updates not being reflected in tests.
-    ''').classes('bold-links arrow-links')
+    ''')).classes('bold-links arrow-links')
 
     with ui.row(wrap=False).classes('gap-4 items-center'):
         with python_window(classes='w-[300px] h-42', title='pytest.ini'):
@@ -60,7 +61,7 @@ def async_execution():
                 asyncio_mode = auto
                 ```
             ''')
-        ui.label('or').classes('text-2xl')
+        ui.label(t('or')).classes('text-2xl')
         with python_window(classes='w-[300px] h-42', title='pyproject.toml'):
             ui.markdown('''
                 ```toml
@@ -81,7 +82,7 @@ doc.text('Querying', '''
 @doc.ui
 def querying():
     with ui.row().classes('gap-4 items-stretch'):
-        with python_window(classes='w-[400px]', title='some UI code'):
+        with python_window(classes='w-[400px]', title=t('some UI code')):
             ui.markdown('''
                 ```python
                 with ui.row():
@@ -93,7 +94,7 @@ def querying():
                 ```
             ''')
 
-        with python_window(classes='w-[600px]', title='user assertions'):
+        with python_window(classes='w-[600px]', title=t('user assertions')):
             ui.markdown('''
                 ```python
                 await user.should_see('greeting')
@@ -119,14 +120,14 @@ doc.text('User Interaction', '''
 @doc.ui
 def trigger_events():
     with ui.row().classes('gap-4 items-stretch'):
-        with python_window(classes='w-[500px]', title='some UI code'):
+        with python_window(classes='w-[500px]', title=t('some UI code')):
             ui.markdown('''
                 ```python
                 fruits = ['apple', 'banana', 'cherry']
                 ui.input(label='fruit', autocomplete=fruits)
                 ```
             ''')
-        with python_window(classes='w-[500px]', title='user assertions'):
+        with python_window(classes='w-[500px]', title=t('user assertions')):
             ui.markdown('''
                 ```python
                 await user.open('/')
@@ -151,7 +152,7 @@ doc.text('Selecting options', '''
 @doc.ui
 def selecting_options_in_a_select():
     with ui.row().classes('gap-4 items-stretch'):
-        with python_window(classes='w-[500px]', title='UI code'):
+        with python_window(classes='w-[500px]', title=t('UI code')):
             ui.markdown('''
                 ```python
                 ui.select(
@@ -163,7 +164,7 @@ def selecting_options_in_a_select():
                 ```
             ''')
 
-        with python_window(classes='w-[500px]', title='user assertions'):
+        with python_window(classes='w-[500px]', title=t('user assertions')):
             ui.markdown('''
                 ```python
                 user.find('Fruits').click()
@@ -188,7 +189,7 @@ doc.text('Using an ElementFilter', '''
 @doc.ui
 def using_an_elementfilter():
     with ui.row().classes('gap-4 items-stretch'):
-        with python_window(classes='w-[400px]', title='UI code'):
+        with python_window(classes='w-[400px]', title=t('UI code')):
             ui.markdown('''
                 ```python
                 ui.label('1').mark('number')
@@ -197,7 +198,7 @@ def using_an_elementfilter():
                 ```
             ''')
 
-        with python_window(classes='w-[600px]', title='user assertions'):
+        with python_window(classes='w-[600px]', title=t('user assertions')):
             ui.markdown('''
                 ```python
                 with user:
@@ -220,7 +221,7 @@ doc.text('Complex elements', '''
 @doc.ui
 def upload_table():
     with ui.row().classes('gap-4 items-stretch'):
-        with python_window(classes='w-[500px]', title='some UI code'):
+        with python_window(classes='w-[500px]', title=t('some UI code')):
             ui.markdown('''
                 ```python
                 async def receive_file(e: events.UploadEventArguments):
@@ -239,7 +240,7 @@ def upload_table():
                 ```
             ''')
 
-        with python_window(classes='w-[500px]', title='user assertions'):
+        with python_window(classes='w-[500px]', title=t('user assertions')):
             ui.markdown('''
                 ```python
                 from nicegui import ui
@@ -273,7 +274,7 @@ doc.text('Test Downloads', '''
 @doc.ui
 def check_outbox():
     with ui.row().classes('gap-4 items-stretch'):
-        with python_window(classes='w-[500px]', title='some UI code'):
+        with python_window(classes='w-[500px]', title=t('some UI code')):
             ui.markdown('''
                 ```python
                 @ui.page('/')
@@ -285,7 +286,7 @@ def check_outbox():
                 ```
             ''')
 
-        with python_window(classes='w-[500px]', title='user assertions'):
+        with python_window(classes='w-[500px]', title=t('user assertions')):
             ui.markdown('''
                 ```python
                 await user.open('/')
@@ -308,7 +309,7 @@ doc.text('Multiple Users', '''
 
 @doc.ui
 def multiple_users():
-    with python_window(classes='w-[600px]', title='example'):
+    with python_window(classes='w-[600px]', title=t('example')):
         ui.markdown('''
             ```python
             async def test_chat(create_user: Callable[[], User]) -> None:
@@ -338,7 +339,7 @@ doc.text('Simulate JavasScript', '''
 @doc.ui
 def simulate_javascript():
     with ui.row().classes('gap-4 items-stretch'):
-        with python_window(classes='w-[500px]', title='some UI code'):
+        with python_window(classes='w-[500px]', title=t('some UI code')):
             ui.markdown('''
                 ```python
                 @ui.page('/')
@@ -349,7 +350,7 @@ def simulate_javascript():
                 ```
             ''')
 
-        with python_window(classes='w-[500px]', title='user assertions'):
+        with python_window(classes='w-[500px]', title=t('user assertions')):
             ui.markdown('''
                 ```python
                 user.javascript_rules[re.compile(r'Math.sqrt\\((\\d+)\\)')] = \\
@@ -390,7 +391,7 @@ doc.text('User Simulation Context', '''
 @doc.ui
 def user_simulation_examples():
     with ui.row().classes('gap-4 items-stretch'):
-        with python_window(classes='w-[700px]', title='script mode with root'):
+        with python_window(classes='w-[700px]', title=t('script mode with root')):
             ui.markdown('''
                 ```python
                 from nicegui.testing import user_simulation
@@ -407,7 +408,7 @@ def user_simulation_examples():
                 ```
             ''')
 
-        with python_window(classes='w-[700px]', title='main file via path'):
+        with python_window(classes='w-[700px]', title=t('main file via path')):
             ui.markdown('''
                 ```python
                 from nicegui.testing import user_simulation
@@ -419,7 +420,7 @@ def user_simulation_examples():
                 ```
             ''')
 
-        with python_window(classes='w-[700px]', title='inline UI definitions'):
+        with python_window(classes='w-[700px]', title=t('inline UI definitions')):
             ui.markdown('''
                 ```python
                 from nicegui.testing import user_simulation
