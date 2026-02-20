@@ -18,6 +18,11 @@ CSV_FILE = Path(__file__).parent / 'website' / 'translate.csv'
 # Matches exactly two backticks (RST inline literal), not three (markdown code fence)
 _RST_DOUBLE_BACKTICK_RE = re.compile(r'(?<!`)``(?!`)')
 
+# RST link: `text <URL>`_
+_RST_LINK_RE = re.compile(r'`[^`]+<[^>]+>`_')
+# Markdown link: [text](URL)
+_MD_LINK_RE = re.compile(r'\[[^\]]+\]\([^)]+\)')
+
 # Matches API identifiers that must NOT be translated:
 #   ui.*button*          (bold markdown API name)
 #   ui.button            (plain API name)
@@ -259,7 +264,37 @@ def main() -> None:
         if len(backtick_bad) > 20:
             print(f'  ... and {len(backtick_bad) - 20} more')
 
-    # --- Check 4: RST syntax in translations ---
+    # --- Check 4: link count mismatch (RST and Markdown) ---
+    link_bad: list[tuple[int, str, str, str]] = []
+    for i, row in enumerate(rows):
+        english = row['en']
+        en_rst = len(_RST_LINK_RE.findall(english))
+        en_md = len(_MD_LINK_RE.findall(english))
+        if en_rst == 0 and en_md == 0:
+            continue
+        for lang in check_languages:
+            translation = row.get(lang, '')
+            if not translation.strip():
+                continue
+            tr_rst = len(_RST_LINK_RE.findall(translation))
+            tr_md = len(_MD_LINK_RE.findall(translation))
+            issues = []
+            if en_rst != tr_rst:
+                issues.append(f'RST links EN={en_rst} TR={tr_rst}')
+            if en_md != tr_md:
+                issues.append(f'MD links EN={en_md} TR={tr_md}')
+            if issues:
+                preview = english[:50].replace('\n', ' ').strip()
+                link_bad.append((i + 2, lang, preview, '; '.join(issues)))
+
+    if link_bad:
+        print(f'\nLink count mismatch: {len(link_bad)} violation(s)')
+        for row_idx, lang, preview, detail in link_bad[:20]:
+            print(f'  row {row_idx} {lang}: {detail}  "{preview}..."')
+        if len(link_bad) > 20:
+            print(f'  ... and {len(link_bad) - 20} more')
+
+    # --- Check 5: RST syntax in translations ---
     rst_bad: list[tuple[int, str, str, str]] = []
     for i, row in enumerate(rows):
         english = row['en']
@@ -292,7 +327,7 @@ def main() -> None:
         fixed_total = len(api_bad) + len(indent_bad)
         print(f'\nFixed {fixed_total} issue(s) in {CSV_FILE}')
 
-    # --- Check 5: missing translations ---
+    # --- Check 6: missing translations ---
     total = len(rows)
     any_missing = False
 
@@ -309,7 +344,7 @@ def main() -> None:
         else:
             print(f'{lang}: all {total} translations present')
 
-    if args.strict and (any_missing or api_bad or indent_bad or backtick_bad or rst_bad):
+    if args.strict and (any_missing or api_bad or indent_bad or backtick_bad or link_bad or rst_bad):
         sys.exit(1)
 
 

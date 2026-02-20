@@ -17,8 +17,8 @@ class Link(TextElement, component='link.js', default_classes='nicegui-link'):
 
         Create a hyperlink.
 
-        To jump to a specific location within a page you can place linkable anchors with `ui.link_target("name")`
-        and link to it with `ui.link(target="#name")`.
+        To jump to a specific location within a page you can place linkable anchors with ``ui.link_target("name")``
+        and link to it with ``ui.link(target="#name")``.
 
         :param text: display text
         :param target: page function, NiceGUI element on the same page or string that is a an absolute URL or relative path from base URL
