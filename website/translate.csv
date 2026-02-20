@@ -971,7 +971,7 @@ label.style['color'] = user_color.value  # 允许 CSS 注入和数据外泄
     With this command you can launch the script `main.py` in the current directory on the public port 80:
 ","要在服务器上部署您的 NiceGUI 应用程序，您需要在云端基础设施上执行您的 `main.py`（或包含 `ui.run(...)` 的任何文件）。
     例如，您可以仅通过 pip 安装 [NiceGUI Python 包](https://pypi.org/project/nicegui/)，并使用 systemd 或类似服务启动主脚本。
-    在大多数情况下，您将使用 `ui.run` 命令将端口设置为 �80（或 443，如果您希望使用 HTTPS），以便从外部轻松访问。
+    在大多数情况下，您将使用 `ui.run` 命令将端口设置为 80（或 443，如果您希望使用 HTTPS），以便从外部轻松访问。
 
     一个方便的替代方案是使用我们预构建的多架构 Docker 镜像 [https://hub.docker.com/r/zauberzeug/nicegui](https://hub.docker.com/r/zauberzeug/nicegui)，其中包含所有必需的依赖项。
     使用此命令，您可以在当前目录的公共端口 80 上启动脚本 `main.py`："
@@ -3010,7 +3010,7 @@ Here you can find more information about the events that are supported:
 
 例如，你可以为 `mousemove` 事件（如 ""C""）注册处理器，即使 `ui.button` 没有 `on_mousemove` 参数。
 某些事件（如 `mousemove`）触发频率很高。
-为了避免性能问题，你可以使用 `throttle` 参数，仅每 `th�throttle` 秒调用一次处理器（""D""）。
+为了避免性能问题，你可以使用 `throttle` 参数，仅每 `throttle` 秒调用一次处理器（""D""）。
 
 通用事件处理器可以是同步或异步的，并且可选地接受 `GenericEventArguments` 作为参数（""E""）。
 你还可以指定哪些 JavaScript 或 Quasar 事件的属性应传递给处理器（""F""）。
@@ -3756,9 +3756,7 @@ Table from Pandas DataFrame,从 Pandas DataFrame 生成表格
 Table from Polars DataFrame,来自 Polars 数据框的表格
 Table with buttons,带按钮的表格
 Table with drop down selection,带下拉选择的表格
-Table with expandable rows,"带可展开行的表格
-
-[�] 带马赛克式网格的表格"
+Table with expandable rows,带可展开行的表格
 Table with masonry-like grid,具有类似马赛克网格的表格
 Tabs,标签页
 Tailwind CSS Layers,Tailwind CSS 层级
@@ -5374,9 +5372,7 @@ UserInteraction Reference,用户交互引用
 The following demo shows how to get the current location of the user.","使用 `run_javascript` 你还可以在浏览器中运行异步代码。
 以下演示展示了如何获取用户当前位置。"
 Using an ElementFilter,使用 ElementFilter
-Using ANSI escape codes,"使用 ANSI 转义序列
-
-[�] 使用其他 Vue UI 框架"
+Using ANSI escape codes,使用 ANSI 转义序列
 Using other Vue UI frameworks,使用其他 Vue UI 框架
 Using PageArguments,使用页面参数
 "Using the `get_camera` method you can get a dictionary of current camera parameters like position, rotation, field of view and more.
@@ -5859,9 +5855,7 @@ The tree will only show nodes that match the filter.",你可以通过设置 `fil
 "You can filter the return values of method calls by passing string that defines a JavaScript function.
 This demo runs the grid method ""getDisplayedRowAtIndex"" and returns the ""data"" property of the result.","你可以通过传递一个定义 JavaScript 函数的字符串来过滤方法调用的返回值。此演示运行网格方法 ""getDisplayedRowAtIndex""，并返回结果的 ""data"" 属性。"
 "You can force an image to reload by calling the `force_reload` method.
-It will append a timestamp to the image URL, which will make the browser reload the image.","你可以通过调用 `force_reload` 方法强制图片重新加载。它会在图片 URL 后附加时间戳，使浏览器重新加载图片。
-
-[�] 你可以通过监听 `error` 事件来处理错误。该事件 `args` 包含属性 `hash`、`message`、`str`，以及一个包含附加信息的 `error` 对象。"
+It will append a timestamp to the image URL, which will make the browser reload the image.","你可以通过调用 `force_reload` 方法强制图片重新加载。它会在图片 URL 后附加时间戳，使浏览器重新加载图片。"
 "You can handle errors by listening to the `error` event.
 The event `args` contain the properties `hash`, `message`, `str` and an `error` object with additional information.","你可以通过监听 `error` 事件来处理错误。
 事件 `args` 包含属性 `hash`、`message`、`str`，以及一个包含附加信息的 `error` 对象。"
