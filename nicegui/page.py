@@ -174,6 +174,7 @@ class page:
                                                handle_exceptions=False)
                 task_wait_for_connection = background_tasks.create(
                     client._waiting_for_connection.wait(),  # pylint: disable=protected-access
+                    name=f'wait for connection {client.page.path}',
                 )
                 done, _ = await asyncio.wait([
                     task,

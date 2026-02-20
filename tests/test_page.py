@@ -349,8 +349,7 @@ async def test_async_page_does_not_leak_event_wait_tasks(user: User):
     for _ in range(5):
         await user.open('/')
     await asyncio.sleep(0.1)
-    assert sum(
-        1
+    assert not any(
+        t.get_name().startswith('wait for connection') and not t.done()
         for t in asyncio.all_tasks()
-        if not t.done() and getattr(t.get_coro(), '__qualname__', '') == 'Event.wait'
-    ) == 1, 'only the Event.wait task for the last opened page should remain, all previous ones should be cleaned up'
+    ), 'connection-wait tasks should be cancelled after page coroutine completes'
