@@ -33,6 +33,7 @@ repos:
             nicegui/static/unocss/.*|
             nicegui/translations\.py|
             website/static/fuse\.js\@.*|
+            website/translations/.*\.csv|
           )$
         additional_dependencies:
           - tomli; python_version<'3.11'
