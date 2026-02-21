@@ -1,18 +1,21 @@
 #!/usr/bin/env python3
-"""Bootstrap and update website/translate.csv from t() calls, documentation registry, and examples.
+"""Bootstrap and update website/translations/ from t() calls, documentation registry, and examples.
 
 Extracts translatable strings from three sources:
 1. Static: AST parsing of t() calls in website/**/*.py
 2. Runtime: importing the documentation registry to enumerate page titles, subtitles, and part descriptions
 3. Static: titles and descriptions from examples/*/README.md files
 
+Each language is stored in a separate CSV file linked by SHA-256 hash of the English text.
+
 Usage:
-    python i18n_bootstrap.py                    # sync CSV with code
-    python i18n_bootstrap.py --add-language de   # add a new language column
+    python i18n_bootstrap.py                    # sync CSVs with code
+    python i18n_bootstrap.py --add-language ja  # add a new language CSV
 """
 import argparse
 import ast
 import csv
+import hashlib
 import inspect
 import re
 import sys
@@ -20,10 +23,14 @@ from pathlib import Path
 
 WEBSITE_DIR = Path(__file__).parent / 'website'
 EXAMPLES_DIR = Path(__file__).parent / 'examples'
-CSV_FILE = WEBSITE_DIR / 'translate.csv'
-
+TRANSLATIONS_DIR = WEBSITE_DIR / 'translations'
 
 TRANSLATING_FUNCTIONS = {'t', 'subheading', '_main_page_demo'}
+
+
+def _sha256(text: str) -> str:
+    """Compute the SHA-256 hex digest of a UTF-8 encoded string."""
+    return hashlib.sha256(text.encode('utf-8')).hexdigest()
 
 
 def extract_t_strings(directory: Path) -> set[str]:
@@ -138,39 +145,52 @@ def extract_doc_strings() -> set[str]:
     return strings
 
 
-def read_csv(path: Path) -> tuple[list[str], dict[str, dict[str, str]]]:
-    """Read existing CSV and return (languages, {english: {lang: translation}})."""
+def read_en_csv(path: Path) -> dict[str, str]:
+    """Read en.csv and return {sha256: english_text}."""
+    result: dict[str, str] = {}
     if not path.exists():
-        return ['en'], {}
+        return result
     with path.open(encoding='utf-8', newline='') as f:
         reader = csv.DictReader(f)
-        if not reader.fieldnames:
-            return ['en'], {}
-        languages = list(reader.fieldnames)
-        rows: dict[str, dict[str, str]] = {}
         for row in reader:
-            english = row.get('en', '')
-            if english:
-                rows[english] = {lang: row.get(lang, '') for lang in languages if lang != 'en'}
-        return languages, rows
+            h = row.get('sha256', '')
+            text = row.get('text', '')
+            if h and text:
+                result[h] = text
+    return result
 
 
-def write_csv(path: Path, languages: list[str], rows: dict[str, dict[str, str]]) -> None:
-    """Write the CSV file sorted by English text."""
+def read_lang_csv(path: Path) -> dict[str, str]:
+    """Read a language CSV and return {sha256: translation}."""
+    result: dict[str, str] = {}
+    if not path.exists():
+        return result
+    with path.open(encoding='utf-8', newline='') as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            h = row.get('sha256', '')
+            text = row.get('text', '')
+            if h:
+                result[h] = text
+    return result
+
+
+def write_csv(path: Path, rows: list[tuple[str, str]]) -> None:
+    """Write a CSV with sha256,text columns, sorted by sha256."""
     with path.open('w', encoding='utf-8', newline='') as f:
-        writer = csv.DictWriter(f, fieldnames=languages)
+        writer = csv.DictWriter(f, fieldnames=['sha256', 'text'])
         writer.writeheader()
-        for english in sorted(rows, key=lambda s: (s.casefold(), s)):
-            row = {'en': english}
-            row.update(rows[english])
-            writer.writerow(row)
+        for sha, text in sorted(rows, key=lambda r: r[0]):
+            writer.writerow({'sha256': sha, 'text': text})
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description='Bootstrap/update website translation CSV.')
-    parser.add_argument('--add-language', action='append', default=[], help='Add a new language column')
+    parser = argparse.ArgumentParser(description='Bootstrap/update website translation CSVs.')
+    parser.add_argument('--add-language', action='append', default=[], help='Add a new language CSV')
     parser.add_argument('--no-registry', action='store_true', help='Skip documentation registry enumeration')
     args = parser.parse_args()
+
+    TRANSLATIONS_DIR.mkdir(exist_ok=True)
 
     code_strings = extract_t_strings(WEBSITE_DIR)
     example_strings = extract_example_strings(EXAMPLES_DIR)
@@ -182,38 +202,51 @@ def main() -> None:
         all_strings = code_strings | example_strings
         print(f'Found {len(code_strings)} t() strings + {len(example_strings)} example strings (registry skipped)')
 
-    languages, existing_rows = read_csv(CSV_FILE)
-
-    for lang in args.add_language:
-        if lang not in languages:
-            languages.append(lang)
-
-    if 'en' not in languages:
-        languages.insert(0, 'en')
-
-    new_rows: dict[str, dict[str, str]] = {}
-    added = 0
-    removed = 0
+    # Compute hashes for all current strings
+    current_hashes: dict[str, str] = {}  # sha256 -> english
     for english in all_strings:
-        if english in existing_rows:
-            new_rows[english] = existing_rows[english]
-        else:
-            new_rows[english] = {lang: '' for lang in languages if lang != 'en'}
-            added += 1
+        current_hashes[_sha256(english)] = english
 
-    for english in existing_rows:
-        if english not in all_strings:
-            removed += 1
+    # Read existing en.csv
+    en_file = TRANSLATIONS_DIR / 'en.csv'
+    existing_en = read_en_csv(en_file)
 
-    for _english, translations in new_rows.items():
-        for lang in languages:
-            if lang != 'en' and lang not in translations:
-                translations[lang] = ''
+    # Determine added/removed
+    new_hashes = set(current_hashes.keys()) - set(existing_en.keys())
+    removed_hashes = set(existing_en.keys()) - set(current_hashes.keys())
 
-    write_csv(CSV_FILE, languages, new_rows)
+    # Write en.csv
+    en_rows = [(h, current_hashes[h]) for h in current_hashes]
+    write_csv(en_file, en_rows)
 
-    total = len(new_rows)
-    print(f'Wrote {CSV_FILE}: {total} strings, {added} added, {removed} removed, {len(languages)} languages')
+    # Discover existing language CSVs
+    existing_langs: list[str] = []
+    for lang_file in sorted(TRANSLATIONS_DIR.glob('*.csv')):
+        lang = lang_file.stem
+        if lang != 'en':
+            existing_langs.append(lang)
+
+    # Add new languages
+    for lang in args.add_language:
+        if lang not in existing_langs:
+            existing_langs.append(lang)
+
+    # Update each language CSV
+    for lang in existing_langs:
+        lang_file = TRANSLATIONS_DIR / f'{lang}.csv'
+        existing_translations = read_lang_csv(lang_file)
+
+        # Build updated rows: keep existing translations, add empty rows for new hashes
+        lang_rows: list[tuple[str, str]] = []
+        for h in current_hashes:
+            translation = existing_translations.get(h, '')
+            lang_rows.append((h, translation))
+
+        write_csv(lang_file, lang_rows)
+
+    total = len(current_hashes)
+    print(f'Wrote {TRANSLATIONS_DIR}: {total} strings, {len(new_hashes)} added, {len(removed_hashes)} removed, '
+          f'{len(existing_langs)} language(s): {", ".join(existing_langs)}')
 
 
 if __name__ == '__main__':

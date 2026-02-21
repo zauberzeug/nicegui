@@ -51,6 +51,11 @@ async def _post_language(request: Request) -> None:
     app.storage.browser['language'] = (await request.json()).get('value')
 
 
+@app.post('/reload-translations')
+async def _reload_translations() -> None:
+    i18n.load()
+
+
 class custom_sub_pages(ui.sub_pages):
     def _render_page(self, match: RouteMatch) -> bool:
         if match.path == '/' and match.remaining_path:
