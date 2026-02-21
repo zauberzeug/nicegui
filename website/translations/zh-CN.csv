@@ -39,7 +39,6 @@ fb62431f0b8e0ee070e7365a570292243430d98c1ac3de26a5c0dff296542321,"
                 "
 c6ffbe4385dca8a4a8cef9852e855378cd57271572d376a214cb12e2a736c26d,"
             德国哈维克斯贝克市霍恩霍尔特街 43 号，邮编 48329
-            Hohenholter Str. 43, 48329 Havixbeck, Germany
 
             法定代表人：Rodion (Rodja) Trappe
 
@@ -47,7 +46,6 @@ c6ffbe4385dca8a4a8cef9852e855378cd57271572d376a214cb12e2a736c26d,"
         "
 094e1515882b886321c61bd21928cb7e19c8759b7f3fdf8fb7f8d15760aa44ee,"
             注册法院：科斯费尔德地方法院，注册号：HRB 14215
-            Registry court: Amtsgericht Coesfeld, Registry number: HRB 14215
         "
 14d4b4d2a598b32467f420aed4e204e4533acefa1661790ad3d01ee3c7064262,"
             根据《销售税法》第 27a 条的销售税识别号：DE286384205
@@ -570,7 +568,7 @@ f80775796380e171ae9df28410bec84fb4608686c4fc10b2d2d70c75a6424e48,"
 4519d16ce9a4e605dc2cd42e106e0d1287621e0380bb22ae48247ae37aa28a6e,"
     尝试看看
     [Tailwind CSS 类](https://tailwindcss.com/)，
-    [Quasar 属性](https://justpy.io/quasar_tutorial/introduction/#quasar组件的属性)，
+    [Quasar 属性](https://justpy.io/quasar_tutorial/introduction/#props-of-quasar-components)，
     和 CSS 样式如何影响 NiceGUI 元素。
 "
 8fd49ce09316ead3fa1cb71fbc11ca623cac28b785aa1e533151e44a2ff9a935,"
@@ -2234,7 +2232,7 @@ c4bb9bbd8f9468a1a00c9a2fa954b48d6e4016d34d21528186f080d8be7f241d,"Leaflet 支持
 我们乐于审查任何拉取请求，以添加更多特定图层，简化使用方式。"
 5c93d090a1104de16d13d4949d7ef5a2a9977e5c4f7fac23b13a17c22d81fbb6,生命周期事件
 92a401f233aa81df8c58de061b3bdca65d59b2656c9e693150f64bcfe323997e,图片弹窗
-fd83b6ebe8905b40f55bd221e64955ed17833d38d74d614041a721a52547bc1f,"如 [Quasar 的垂直标签页示例](https://quimar.dev/vue-components/tabs#vertical) 所示，
+fd83b6ebe8905b40f55bd221e64955ed17833d38d74d614041a721a52547bc1f,"如 [Quasar 的垂直标签页示例](https://quasar.dev/vue-components/tabs#vertical) 所示，
 我们可以结合 `ui.splitter` 和标签页元素来创建垂直标签页布局。"
 6989cf5360fd1f03d1368715be1524e4a53c2a04c839e4750e2a15a741261a7d,线图
 eca16f5f984e1327eb7d620ff7de9edb67c5082d1a6abff4ccbbc82bce8e273e,线性进度条
@@ -3130,7 +3128,7 @@ da7bb8852d8863a08adf2eb44cf76f9bec1f8b909bde5017284258f6709c0efd,"感谢 FastAPI
 [查询参数](https://fastapi.tiangolo.com/tutorial/query-params/) 或整个传入
 [请求](https://fastapi.tiangolo.com/advanced/using-request-directly/) 以访问
 请求体、头信息、Cookie 等内容。"
-827e64c7bffccb9b7437a9c11b4f47a77d1b9447be285fa18971771c2a498c6f,借助 [`ui.teleport` 元素](#)，您可以为单选按钮选项使用任意内容。
+827e64c7bffccb9b7437a9c11b4f47a77d1b9447be285fa18971771c2a498c6f,借助 [`ui.teleport` 元素](teleport)，您可以为单选按钮选项使用任意内容。
 8821c66978ee8ab644d0853f94cf03cbacacd4804e6640c38d0a0b1a103cb9a1,"``@ui.refreshable`` 装饰器允许你创建具有 ``refresh`` 方法的函数。
 该方法将自动删除函数创建的所有元素，并重新创建它们。
 
@@ -4036,9 +4034,7 @@ eedf85e23bce77ef6f446d2af0efb9e8f14e3e5ca83d4ebe3822d4d57cf0ddb6,URL 验证
 d376308ad9b7822f931713adce31e4c0fba8f62c416369edf50d2a9d84d85e5b,使用 FFmpeg 从视频文件中提取图像
 084d224993558aa627c94dfd93cf8542d9a4d3e527c3259ee3a4fbe17bc71923,在 NiceGUI 应用中使用多个第三方 NPM 模块作为依赖
 ccbfca91dceb910ba6d35decb8b3e5b03da5001de63580082ba49e0a5b10429e,使用 NiceGUI 作为 ROS2 机器人的 Web 界面
-d13c27d9ca073224ab2664104224077e3075d92cfd4e9f63b63660d67371bcd8,"使用 OpenAI 的 Assistant API 并结合 async/await
-
-[ipel] 使用 OpenCV 从网络摄像头捕获图像"
+d13c27d9ca073224ab2664104224077e3075d92cfd4e9f63b63660d67371bcd8,使用 OpenAI 的 Assistant API 并结合 async/await
 e6b1e9724a1d2547dfa4f05a28c61f8790a374a6c2cb7647343daa4e173a2fcb,使用 OpenCV 从网络摄像头捕获图像
 8c91cb243afcee71391eb159554efc52f4f4f708c64c810b2f90704f22393e54,使用 Quasar 创建可折叠的菜单和标签页，位于页眉栏内
 157ebdbd6f2172bdeef3079ac378cd27bee81befa31e2bf7cb55fbf10bd3dc7a,使用 Redis 存储在反向代理或负载均衡器后的多个实例之间共享数据
