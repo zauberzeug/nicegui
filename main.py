@@ -70,8 +70,11 @@ def _main_page() -> None:
             .classes('w-full').props('accordion no-connectors no-selection-unset')
         spinner = ui.image('/static/loading.gif').classes('w-8 h-8 m-auto').props('no-spinner no-transition')
 
+        tree.set_visibility(False)
+
         def update_tree() -> None:
             tree.props['nodes'] = documentation.tree.nodes
+            tree.set_visibility(True)
             spinner.delete()
         intersection_observer(on_intersection=update_tree)
     menu_button = header.add_header(menu)
