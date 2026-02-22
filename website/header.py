@@ -19,6 +19,7 @@ def add_head_html() -> None:
             '<script defer data-domain="nicegui.io" src="https://plausible.io/js/script.hash.outbound-links.js">'
             '</script>'
         )
+        ui.context.client.sub_pages_router.on_path_changed(lambda _: ui.run_javascript('plausible("pageview")'))
 
 
 def add_header(menu: ui.left_drawer) -> ui.button:
