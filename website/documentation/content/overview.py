@@ -7,6 +7,7 @@ from . import (
     section_binding_properties,
     section_configuration_deployment,
     section_controls,
+    section_foundations,
     section_data_elements,
     section_page_layout,
     section_pages_routing,
@@ -139,6 +140,9 @@ tiles = [
      '''),
     (section_security, '''
         Learn about security best practices, common vulnerabilities, and how to write secure NiceGUI applications.
+    '''),
+    (section_foundations, '''
+        Why Vue, Quasar, FastAPI, and Tailwind CSS — and how they fit together.
     '''),
 ]
 
