@@ -3,7 +3,7 @@ export default {
   mounted() {
     this.interval = setInterval(() => {
       const rect = this.$el.getBoundingClientRect();
-      if (rect.bottom > -window.innerHeight && rect.top < 2 * window.innerHeight) {
+      if (rect.x > 0 && rect.bottom > -window.innerHeight && rect.top < 2 * window.innerHeight) {
         this.$emit("intersection");
       }
     }, 100);
