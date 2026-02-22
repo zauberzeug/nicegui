@@ -212,11 +212,11 @@
 }
 .nicegui-log {
   outline: 1px solid rgba(127, 159, 191, 0.15);
+  background-color: rgba(127, 159, 191, 0.05);
 }
 .nicegui-log .q-scrollarea__container {
   scroll-padding-bottom: 0.5rem;
   scroll-snap-type: y proximity;
-  background-color: rgba(127, 159, 191, 0.05);
 }
 .nicegui-log .q-scrollarea__content {
   white-space: pre;
