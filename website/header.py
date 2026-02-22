@@ -16,7 +16,7 @@ def add_head_html() -> None:
     ui.add_head_html(HEADER_HTML + f'<style>{STYLE_CSS}</style>')
     if os.environ.get('ENABLE_ANALYTICS', 'false').lower() == 'true':
         ui.add_head_html(
-            '<script defer data-domain="nicegui.io" src="https://plausible.io/js/script.hash.outbound-links.js">'
+            '<script defer data-domain="nicegui.io" src="https://plausible.io/js/script.outbound-links.js">'
             '</script>'
         )
         ui.context.client.sub_pages_router.on_path_changed(lambda _: ui.run_javascript('plausible("pageview")'))
