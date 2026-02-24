@@ -178,7 +178,7 @@ def read_lang_csv(path: Path) -> dict[str, str]:
 def write_csv(path: Path, rows: list[tuple[str, str]]) -> None:
     """Write a CSV with sha256,text columns, sorted by sha256."""
     with path.open('w', encoding='utf-8', newline='') as f:
-        writer = csv.DictWriter(f, fieldnames=['sha256', 'text'])
+        writer = csv.DictWriter(f, fieldnames=['sha256', 'text'], quoting=csv.QUOTE_MINIMAL)
         writer.writeheader()
         for sha, text in sorted(rows, key=lambda r: r[0]):
             writer.writerow({'sha256': sha, 'text': text})

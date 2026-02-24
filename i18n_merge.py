@@ -57,9 +57,9 @@ def main() -> None:
 
     # Write back
     with lang_file.open('w', encoding='utf-8', newline='') as f:
-        writer = csv.DictWriter(f, fieldnames=['sha256', 'text'])
+        writer = csv.DictWriter(f, fieldnames=['sha256', 'text'], quoting=csv.QUOTE_MINIMAL)
         writer.writeheader()
-        for h, _ in en_entries:
+        for h, _ in sorted(en_entries, key=lambda r: r[0]):
             writer.writerow({'sha256': h, 'text': existing.get(h, '')})
 
     print(f'Applied {applied} translations to {lang_file}')

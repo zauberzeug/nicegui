@@ -175,12 +175,12 @@ def read_lang_csv(lang: str) -> dict[str, str]:
 
 
 def save_lang_csv(lang: str, translations: dict[str, str], en_entries: list[tuple[str, str]]) -> None:
-    """Write a language CSV preserving the order from en.csv."""
+    """Write a language CSV sorted by sha256."""
     lang_file = TRANSLATIONS_DIR / f'{lang}.csv'
     with lang_file.open('w', encoding='utf-8', newline='') as f:
-        writer = csv.DictWriter(f, fieldnames=['sha256', 'text'])
+        writer = csv.DictWriter(f, fieldnames=['sha256', 'text'], quoting=csv.QUOTE_MINIMAL)
         writer.writeheader()
-        for h, _ in en_entries:
+        for h, _ in sorted(en_entries, key=lambda r: r[0]):
             writer.writerow({'sha256': h, 'text': translations.get(h, '')})
 
 
