@@ -61,11 +61,23 @@ _SYSTEM_PROMPTS_BASE: dict[str, str] = {
         '- 自然な日本語を使用する\n'
         '- 翻訳結果のみを出力し、説明や注釈は付けないこと。'
     ),
+    'ko': (
+        '당신은 전문 소프트웨어 문서 번역가입니다. 영어를 한국어로 번역해 주세요.\n'
+        '규칙:\n'
+        '- 모든 markdown 서식, HTML 태그, URL, 코드 블록, 인라인 코드를 그대로 유지할 것\n'
+        '- 원문의 앞뒤 공백과 들여쓰기를 그대로 유지할 것\n'
+        '- 원문의 줄바꿈을 그대로 유지할 것\n'
+        '- 코드, 변수명, URL, 브랜드명(NiceGUI, Quasar, Vue, FastAPI 등)은 번역하지 말 것\n'
+        '- 백틱 안의 텍스트(`...`)는 번역하지 말 것\n'
+        '- 자연스러운 한국어를 사용할 것\n'
+        '- 번역 결과만 출력하고 설명이나 주석은 달지 말 것.'
+    ),
 }
 
 # Reference-language hint appended when --reference-language is used
 _REF_HINT: dict[str, str] = {
     'ja': '\n中国語(zh-CN)の参考訳が「REF:」で提供される場合があります。参考にしつつ、日本語で出力してください。',
+    'ko': '\n참고 번역(REF:)이 제공될 수 있습니다. 참고하되 한국어로만 출력해 주세요.',
 }
 _REF_HINT_DEFAULT = '\nA reference translation (REF:) may be provided for each string. Use it as a hint but output only {lang_name}.'
 
@@ -108,10 +120,30 @@ _BATCH_SYSTEM_PROMPTS_BASE: dict[str, str] = {
         '[1] こんにちは世界\n\n'
         '[2] ここをクリック'
     ),
+    'ko': (
+        '당신은 전문 소프트웨어 문서 번역가입니다. 영어를 한국어로 번역해 주세요.\n'
+        '규칙:\n'
+        '- 모든 markdown 서식, HTML 태그, URL, 코드 블록, 인라인 코드를 그대로 유지할 것\n'
+        '- 원문의 앞뒤 공백과 들여쓰기를 그대로 유지할 것\n'
+        '- 원문의 줄바꿈을 그대로 유지할 것\n'
+        '- 코드, 변수명, URL, 브랜드명(NiceGUI, Quasar, Vue, FastAPI 등)은 번역하지 말 것\n'
+        '- 백틱 안의 텍스트(`...`)는 번역하지 말 것\n'
+        '- 자연스러운 한국어를 사용할 것\n\n'
+        '번호가 매겨진 여러 문자열이 전송됩니다. 동일한 번호 형식으로 번역을 반환해 주세요.\n'
+        '형식: 각 번역은 [번호]로 시작하고 공백 뒤에 번역 내용을 작성합니다.\n'
+        '번역 사이는 빈 줄로 구분합니다. 설명이나 주석은 달지 마세요.\n'
+        '입력 예시:\n'
+        '[1] Hello World\n\n'
+        '[2] Click here\n\n'
+        '출력 예시:\n'
+        '[1] 안녕하세요 세계\n\n'
+        '[2] 여기를 클릭하세요'
+    ),
 }
 
 _BATCH_REF_HINT: dict[str, str] = {
     'ja': '\n各文字列には「EN:」(英語原文)と「REF:」(中文参考訳)があります。参考にしつつ、日本語のみを出力してください。',
+    'ko': '\n각 문자열에는 EN(영어 원문)과 REF(참고 번역)가 있습니다. 참고하되 한국어만 출력해 주세요.',
 }
 _BATCH_REF_HINT_DEFAULT = '\nEach item has EN (English) and REF (reference translation). Use REF as a hint but output only {lang_name}.'
 
@@ -161,11 +193,13 @@ LANG_NAMES: dict[str, str] = {
 TRANSLATE_INSTRUCTION: dict[str, str] = {
     'zh-CN': '请翻译成简体中文：\n\n',  # noqa: RUF001
     'ja': '日本語に翻訳してください：\n\n',  # noqa: RUF001
+    'ko': '한국어로 번역해 주세요:\n\n',
 }
 
 BATCH_TRANSLATE_INSTRUCTION: dict[str, str] = {
     'zh-CN': '请翻译以下编号字符串成简体中文：\n\n',  # noqa: RUF001
     'ja': '以下の番号付き文字列を日本語に翻訳してください：\n\n',  # noqa: RUF001
+    'ko': '다음 번호가 매겨진 문자열을 한국어로 번역해 주세요:\n\n',
 }
 
 
