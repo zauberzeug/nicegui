@@ -53,10 +53,16 @@ def _open_window(
     if sys.platform == 'win32' and helpers.is_file(favicon):
         def on_window_shown() -> None:
             hwnd = window_icon.find_window_by_title(title)
-            if hwnd and not window_icon.set_window_icon_windows(hwnd, str(Path(favicon).resolve())):
-                log.warning('Could not set native window icon (unsupported format?)')
-            elif not hwnd:
+            if not hwnd:
                 log.warning('Could not find native window by title to set icon')
+                return
+            icon_path = str(Path(favicon).resolve())
+            # Set window icon for title bar and Alt+Tab
+            if not window_icon.set_window_icon_windows(hwnd, icon_path):
+                log.warning('Could not set native window icon (unsupported format?)')
+            # Set property store for taskbar icon
+            app_id = f'nicegui.{title.replace(" ", "_")}'
+            window_icon.set_window_property_store(hwnd, app_id, icon_path)
         window.events.shown += on_window_shown
 
     _start_window_method_executor(window, method_queue, response_queue, closed)
