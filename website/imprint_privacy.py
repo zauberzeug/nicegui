@@ -1,9 +1,15 @@
 from nicegui import ui
-from website.documentation.rendering import section_heading, subheading
+
+from .documentation.rendering import section_heading, subheading
+from .seo import breadcrumb_jsonld, page_seo_html
 
 
 def create():
+    _title = 'Imprint & Privacy Policy - NiceGUI'
+    _description = 'Legal information, imprint, and privacy policy for NiceGUI by Zauberzeug GmbH.'
     ui.page_title('Imprint & Privacy | NiceGUI')
+    ui.add_head_html(page_seo_html(title=_title, description=_description, path='/imprint_privacy'))
+    ui.add_head_html(breadcrumb_jsonld([('Home', '/'), ('Imprint & Privacy', '/imprint_privacy')]))
 
     with ui.column().classes('w-full p-8 lg:p-16 max-w-[1250px] mx-auto'):
         section_heading('', 'Imprint')
