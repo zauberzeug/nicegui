@@ -103,6 +103,7 @@ website = [
     "pandas>=2.3.3,<3 ; python_version >= '3.14'",
     "polars>=1.12.0,<2",
     "pyecharts>=2.0.4,<3",
+    "rapidfuzz>=3.0.0,<4",
     "slowapi>=0.1.9,<0.2.0",
     "vega_datasets>=0.9.0,<0.10.0",
 ]

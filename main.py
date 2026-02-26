@@ -67,8 +67,6 @@ def _main_page() -> None:
         tree = ui.tree(documentation.tree.nodes, label_key='title',
                        on_select=lambda e: ui.navigate.to(f'/documentation/{e.value}')) \
             .classes('w-full').props('accordion no-connectors no-selection-unset')
-    menu_button = header.add_header(menu)
-
     window_state = {'is_desktop': None}
     ui.on('is_desktop', lambda v: window_state.update(is_desktop=v.args))
     ui.add_head_html('''
@@ -78,6 +76,7 @@ def _main_page() -> None:
             window.addEventListener('load', () => emitEvent('is_desktop', mediaQuery.matches));
         </script>
     ''')
+    menu_button = header.add_header(menu, window_state=window_state)
 
     custom_sub_pages({
         '/': main_page.create,
