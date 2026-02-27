@@ -8,7 +8,9 @@ export default {
   },
   updated() {
     if (this.shouldScroll) {
-      this.$nextTick(() => this.$refs.qRef.setScrollPosition("vertical", Number.MAX_SAFE_INTEGER));
+      this.$nextTick(() =>
+        this.$refs.qRef.setScrollPosition("vertical", this.$refs.qRef.getScrollTarget().scrollHeight),
+      );
     }
   },
   methods: {
