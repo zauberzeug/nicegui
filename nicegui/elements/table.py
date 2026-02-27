@@ -16,15 +16,21 @@ from ..events import (
 from ..logging import log
 from .mixins.filter_element import FilterElement
 
-if importlib.util.find_spec('pandas'):
-    optional_features.register('pandas')
-    if TYPE_CHECKING:
-        import pandas as pd
+try:
+    if importlib.util.find_spec('pandas'):
+        optional_features.register('pandas')
+except (ModuleNotFoundError, ValueError):
+    pass
+if TYPE_CHECKING:
+    import pandas as pd
 
-if importlib.util.find_spec('polars'):
-    optional_features.register('polars')
-    if TYPE_CHECKING:
-        import polars as pl
+try:
+    if importlib.util.find_spec('polars'):
+        optional_features.register('polars')
+except (ModuleNotFoundError, ValueError):
+    pass
+if TYPE_CHECKING:
+    import polars as pl
 
 
 class Table(FilterElement, component='table.js'):

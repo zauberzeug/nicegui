@@ -9,10 +9,13 @@ from typing import TYPE_CHECKING, Any
 from ... import helpers, optional_features
 from ..mixins.value_element import ValueElement
 
-if importlib.util.find_spec('anywidget'):
-    optional_features.register('anywidget')
-    if TYPE_CHECKING:
-        import anywidget
+try:
+    if importlib.util.find_spec('anywidget'):
+        optional_features.register('anywidget')
+except (ModuleNotFoundError, ValueError):
+    pass
+if TYPE_CHECKING:
+    import anywidget
 
 UNDEFINED = object()
 

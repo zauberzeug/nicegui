@@ -6,10 +6,13 @@ from typing import TYPE_CHECKING
 from .. import optional_features
 from .anywidget import AnyWidget
 
-if importlib.util.find_spec('altair'):
-    optional_features.register('altair')
-    if TYPE_CHECKING:
-        import altair
+try:
+    if importlib.util.find_spec('altair'):
+        optional_features.register('altair')
+except (ModuleNotFoundError, ValueError):
+    pass
+if TYPE_CHECKING:
+    import altair
 
 
 class Altair(AnyWidget):

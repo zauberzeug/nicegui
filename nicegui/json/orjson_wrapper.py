@@ -1,3 +1,4 @@
+import importlib.util
 from decimal import Decimal
 from typing import Any
 
@@ -6,9 +7,8 @@ import orjson
 from fastapi.responses import JSONResponse
 
 try:
-    import numpy as np
-    HAS_NUMPY = True
-except ImportError:
+    HAS_NUMPY = importlib.util.find_spec('numpy') is not None
+except (ModuleNotFoundError, ValueError):
     HAS_NUMPY = False
 
 ORJSON_OPTS = orjson.OPT_SERIALIZE_NUMPY | orjson.OPT_NON_STR_KEYS
@@ -54,6 +54,7 @@ def loads(value: str) -> Any:
 def _orjson_converter(obj):
     """Custom serializer/converter, e.g. for NumPy object arrays."""
     if HAS_NUMPY:
+        import numpy as np  # pylint: disable=import-outside-toplevel
         if isinstance(obj, np.ndarray) and obj.dtype == np.object_:
             return obj.tolist()
     if isinstance(obj, Decimal):

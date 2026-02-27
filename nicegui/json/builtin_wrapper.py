@@ -1,3 +1,4 @@
+import importlib.util
 import json
 from datetime import date, datetime
 from typing import Any
@@ -5,9 +6,8 @@ from typing import Any
 from fastapi.responses import JSONResponse
 
 try:
-    import numpy as np
-    HAS_NUMPY = True
-except ImportError:
+    HAS_NUMPY = importlib.util.find_spec('numpy') is not None
+except (ModuleNotFoundError, ValueError):
     HAS_NUMPY = False
 
 
@@ -51,6 +51,7 @@ class NumpyJsonEncoder(json.JSONEncoder):
 
     def default(self, o):
         if HAS_NUMPY:
+            import numpy as np  # pylint: disable=import-outside-toplevel
             if isinstance(o, np.integer):
                 return int(o)
             if isinstance(o, np.floating):

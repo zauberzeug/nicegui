@@ -9,15 +9,21 @@ from ...defaults import DEFAULT_PROP, resolve_defaults
 from ...dependencies import register_importmap_override
 from ...element import Element
 
-if importlib.util.find_spec('pandas'):
-    optional_features.register('pandas')
-    if TYPE_CHECKING:
-        import pandas as pd
+try:
+    if importlib.util.find_spec('pandas'):
+        optional_features.register('pandas')
+except (ModuleNotFoundError, ValueError):
+    pass
+if TYPE_CHECKING:
+    import pandas as pd
 
-if importlib.util.find_spec('polars'):
-    optional_features.register('polars')
-    if TYPE_CHECKING:
-        import polars as pl
+try:
+    if importlib.util.find_spec('polars'):
+        optional_features.register('polars')
+except (ModuleNotFoundError, ValueError):
+    pass
+if TYPE_CHECKING:
+    import polars as pl
 
 
 class AgGrid(Element, component='aggrid.js', esm={'nicegui-aggrid': 'dist'}, default_classes='nicegui-aggrid'):
