@@ -23,10 +23,10 @@ def register(feature: FEATURE) -> None:
     _optional_features.add(feature)
 
 
-def try_register(feature: FEATURE) -> None:
+def try_register(feature: FEATURE, *, package: str | None = None) -> None:
     """Register an optional feature if the corresponding package is installed."""
     try:
-        if importlib.util.find_spec(feature):
+        if importlib.util.find_spec(package or feature):
             _optional_features.add(feature)
     except (ModuleNotFoundError, ValueError):
         pass
