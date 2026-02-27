@@ -72,6 +72,20 @@ a:active:not(.browser-window *) {
   background-color: #3e6a94d0;
 }
 
+@media (max-width: 1023px) {
+  .q-header {
+    padding-top: 20px;
+    transform: translateY(-20px);
+  }
+  .q-header.fade {
+    background-color: #77aadb;
+    backdrop-filter: none;
+  }
+  .body--dark .q-header.fade {
+    background-color: #365a7c;
+  }
+}
+
 .scroll-indicator:after {
   content: "";
   display: block;
@@ -133,6 +147,7 @@ dl.field-list p,
 dl.docinfo p {
   margin: 0;
 }
+
 
 .dark-box {
   background-color: #5898d4;

@@ -43,7 +43,7 @@ def add_header(menu: ui.left_drawer) -> ui.button:
         }});
     '''))
     with ui.header() \
-            .classes('items-center duration-200 p-0 px-4 no-wrap') \
+            .classes('items-center duration-200 max-[1023px]:transition-colors p-0 px-4 no-wrap') \
             .style('box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1)'):
         menu_button = ui.button(on_click=menu.toggle, icon='menu').props('flat color=white round').classes('lg:hidden')
         with ui.link(target='/').classes('row gap-4 items-center no-wrap mr-auto'):

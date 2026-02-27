@@ -34,7 +34,7 @@ class Search:
             }
             </script>
         ''')
-        with ui.dialog() as self.dialog, ui.card().tight().classes('w-[800px] h-[600px]'):
+        with ui.dialog().props(''':transition-show="Quasar.Screen.lt.md ? 'fade' : undefined" :transition-hide="Quasar.Screen.lt.md ? 'fade' : undefined"''') as self.dialog, ui.card().tight().classes('w-[800px] h-[600px]'):
             with ui.row().classes('w-full items-center px-4'):
                 ui.icon('search', size='2em')
                 self.input = ui.input(placeholder='Search documentation', on_change=self.handle_input) \
