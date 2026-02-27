@@ -32,7 +32,16 @@ repos:
             nicegui/static/dompurify\..*|
             nicegui/static/unocss/.*|
             nicegui/translations\.py|
+            website/translations/.*|
             website/static/fuse\.js\@.*|
           )$
         additional_dependencies:
           - tomli; python_version<'3.11'
+  - repo: local
+    hooks:
+      - id: check-translations
+        name: check translation keys
+        entry: python website/check_translations.py
+        language: python
+        pass_filenames: false
+        files: ^website/

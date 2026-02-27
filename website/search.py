@@ -2,6 +2,7 @@ from nicegui import __version__, background_tasks, events, ui
 
 from .documentation import CustomRestructuredText as custom_restructured_text
 from .documentation.search import search_index
+from .i18n import t
 
 
 class Search:
@@ -37,7 +38,7 @@ class Search:
         with ui.dialog() as self.dialog, ui.card().tight().classes('w-[800px] h-[600px]'):
             with ui.row().classes('w-full items-center px-4'):
                 ui.icon('search', size='2em')
-                self.input = ui.input(placeholder='Search documentation', on_change=self.handle_input) \
+                self.input = ui.input(placeholder=t('Search documentation'), on_change=self.handle_input) \
                     .classes('flex-grow').props('borderless autofocus')
                 ui.button('ESC', on_click=self.dialog.close) \
                     .props('padding="2px 8px" outline size=sm color=grey-5').classes('shadow')
@@ -53,7 +54,7 @@ class Search:
 
     def create_button(self) -> ui.button:
         return ui.button(on_click=self.open_dialog, icon='search').props('flat color=white') \
-            .tooltip('Press Ctrl+K or / to search the documentation')
+            .tooltip(t('Press Ctrl+K or / to search the documentation'))
 
     def handle_input(self, e: events.ValueChangeEventArguments) -> None:
         async def handle_input() -> None:

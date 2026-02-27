@@ -1,6 +1,7 @@
 from nicegui import ui
 from nicegui.element import Element
 from website import svg
+from website.i18n import t
 
 STYLE = '''
     @keyframes star-tumble {
@@ -41,6 +42,6 @@ def add_star() -> ui.link:
             with ui.row().classes('items-center no-wrap'):
                 svg.face().classes('w-14 stroke-white stroke-[1pt]')
                 with ui.column().classes('p-2 gap-2'):
-                    ui.label('Star us on GitHub!').classes('text-[180%]')
-                    ui.label('And tell others about NiceGUI.').classes('text-[140%]')
+                    ui.label(t('Star us on GitHub!')).classes('text-[180%]')
+                    ui.label(t('And tell others about NiceGUI.')).classes('text-[140%]')
     return link

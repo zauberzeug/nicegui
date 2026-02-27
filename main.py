@@ -10,6 +10,7 @@ from starlette.responses import Response
 from nicegui import app, core, ui
 from nicegui.page_arguments import RouteMatch
 from website import documentation, examples_page, fly, header, imprint_privacy, main_page, rate_limits, svg
+from website.i18n import SUPPORTED_LANGUAGES, get_url_prefix, set_language
 
 
 @app.add_middleware
@@ -52,12 +53,11 @@ class custom_sub_pages(ui.sub_pages):
         return super()._render_page(match)
 
 
-@ui.page('/')
-@ui.page('/examples')
-@ui.page('/documentation')
-@ui.page('/documentation/{path:path}')
-@ui.page('/imprint_privacy')
-def _main_page() -> None:
+def _build_page(lang: str = 'en') -> None:
+    """Build the page content for a given language."""
+    set_language(lang)
+    prefix = get_url_prefix()
+
     ui.context.client.content.classes('p-0 gap-0')
     header.add_head_html()
 
@@ -65,7 +65,7 @@ def _main_page() -> None:
             .classes('column no-wrap gap-1 bg-[#eee] dark:bg-[#1b1b1b] mt-[-20px] px-8 py-20') \
             .style('height: calc(100% + 20px) !important') as menu:
         tree = ui.tree(documentation.tree.nodes, label_key='title',
-                       on_select=lambda e: ui.navigate.to(f'/documentation/{e.value}')) \
+                       on_select=lambda e: ui.navigate.to(f'{prefix}/documentation/{e.value}')) \
             .classes('w-full').props('accordion no-connectors no-selection-unset')
     menu_button = header.add_header(menu)
 
@@ -83,9 +83,9 @@ def _main_page() -> None:
         '/': main_page.create,
         '/examples': examples_page.create,
         '/documentation': lambda: documentation.render_page(documentation.registry['']),
-        '/documentation/{name}': lambda name: _documentation_detail_page(name, tree),
+        '/documentation/{name}': lambda name: _documentation_detail_page(name, tree, prefix),
         '/imprint_privacy': imprint_privacy.create,
-    }, show_404=False).classes('w-full')
+    }, root_path=prefix or None, show_404=False).classes('w-full')
 
     def _update_menu(path: str):
         if path.startswith('/documentation/'):
@@ -99,13 +99,45 @@ def _main_page() -> None:
     _update_menu(ui.context.client.sub_pages_router.current_path)
 
 
-def _documentation_detail_page(name: str, tree: ui.tree) -> None:
+@ui.page('/')
+@ui.page('/examples')
+@ui.page('/documentation')
+@ui.page('/documentation/{path:path}')
+@ui.page('/imprint_privacy')
+def _main_page() -> None:
+    _build_page('en')
+
+
+# Register language-prefixed routes for each supported language (except English).
+for _lang in SUPPORTED_LANGUAGES:
+    if _lang == 'en':
+        continue
+
+    def _make_i18n_handler(lang: str):
+        def handler() -> None:
+            _build_page(lang)
+        handler.__name__ = f'_i18n_page_{lang}'
+        handler.__qualname__ = f'_i18n_page_{lang}'
+        return handler
+
+    _handler = _make_i18n_handler(_lang)
+    for _route in [
+        f'/{_lang}',
+        f'/{_lang}/examples',
+        f'/{_lang}/documentation',
+        f'/{_lang}/documentation/{{path:path}}',
+        f'/{_lang}/imprint_privacy',
+    ]:
+        _handler = ui.page(_route)(_handler)
+
+
+def _documentation_detail_page(name: str, tree: ui.tree, prefix: str) -> None:
     tree.props.update(expanded=documentation.tree.ancestors(name))
     tree.update()
     if name in documentation.registry:
         documentation.render_page(documentation.registry[name])
     elif name in documentation.redirects:
-        ui.navigate.to('/documentation/' + documentation.redirects[name])
+        ui.navigate.to(f'{prefix}/documentation/' + documentation.redirects[name])
     else:
         ui.label(f'Documentation for "{name}" could not be found.').classes('absolute-center')
 
@@ -116,4 +148,4 @@ def _status():
 
 
 # NOTE: do not reload on fly.io (see https://github.com/zauberzeug/nicegui/discussions/1720#discussioncomment-7288741)
-ui.run(uvicorn_reload_includes='*.py, *.css, *.html', reload=not on_fly, reconnect_timeout=10.0)
+ui.run(uvicorn_reload_includes='*.py, *.css, *.html, *.json', reload=not on_fly, reconnect_timeout=10.0)

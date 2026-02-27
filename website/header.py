@@ -1,9 +1,11 @@
+import json
 import os
 from pathlib import Path
 
 from nicegui import app, ui
 
 from . import svg
+from .i18n import SUPPORTED_LANGUAGES, get_url_prefix, t
 from .search import Search
 from .star import add_star
 
@@ -23,13 +25,14 @@ def add_head_html() -> None:
 
 def add_header(menu: ui.left_drawer) -> ui.button:
     """Create the page header."""
+    prefix = get_url_prefix()
     menu_items = {
-        'Installation': '/#installation',
-        'Features': '/#features',
-        'Demos': '/#demos',
-        'Documentation': '/documentation',
-        'Examples': '/examples',
-        'Why?': '/#why',
+        t('Installation'): f'{prefix}/#installation',
+        t('Features'): f'{prefix}/#features',
+        t('Demos'): f'{prefix}/#demos',
+        t('Documentation'): f'{prefix}/documentation',
+        t('Examples'): f'{prefix}/examples',
+        t('Why?'): f'{prefix}/#why',
     }
     dark_mode = ui.dark_mode(value=app.storage.browser.get('dark_mode'), on_change=lambda e: ui.run_javascript(f'''
         fetch('/dark_mode', {{
@@ -42,7 +45,7 @@ def add_header(menu: ui.left_drawer) -> ui.button:
             .classes('items-center duration-200 p-0 px-4 no-wrap') \
             .style('box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1)'):
         menu_button = ui.button(on_click=menu.toggle, icon='menu').props('flat color=white round').classes('lg:hidden')
-        with ui.link(target='/').classes('row gap-4 items-center no-wrap mr-auto'):
+        with ui.link(target=f'{prefix}/').classes('row gap-4 items-center no-wrap mr-auto'):
             svg.face().classes('w-8 stroke-white stroke-2 max-[610px]:hidden')
             svg.word().classes('w-24')
 
@@ -53,7 +56,7 @@ def add_header(menu: ui.left_drawer) -> ui.button:
         search = Search()
         search.create_button()
 
-        with ui.element().classes('max-[420px]:hidden').tooltip('Cycle theme mode through dark, light, and system/auto.'):
+        with ui.element().classes('max-[420px]:hidden').tooltip(t('Cycle theme mode through dark, light, and system/auto.')):
             ui.button(icon='dark_mode', on_click=lambda: dark_mode.set_value(None)) \
                 .props('flat fab-mini color=white').bind_visibility_from(dark_mode, 'value', value=True)
             ui.button(icon='light_mode', on_click=lambda: dark_mode.set_value(True)) \
@@ -70,6 +73,8 @@ def add_header(menu: ui.left_drawer) -> ui.button:
 
         add_star().classes('max-[550px]:hidden')
 
+        _add_language_selector()
+
         with ui.row().classes('min-[1051px]:hidden'):
             with ui.button(icon='more_vert').props('flat color=white round'):
                 with ui.menu().classes('bg-primary text-white text-lg'):
@@ -77,3 +82,30 @@ def add_header(menu: ui.left_drawer) -> ui.button:
                         ui.menu_item(title_, on_click=lambda target=target: ui.navigate.to(target))
 
     return menu_button
+
+
+def _add_language_selector() -> None:
+    """Add a language selector dropdown to the header."""
+
+    def switch_language(lang: str) -> None:
+        new_prefix = f'/{lang}' if lang != 'en' else ''
+        prefixes_js = json.dumps([f'/{code}' for code in SUPPORTED_LANGUAGES if code != 'en'])
+        new_prefix_js = json.dumps(new_prefix)
+        ui.run_javascript(f'''
+            const path = window.location.pathname;
+            const prefixes = {prefixes_js};
+            const newPrefix = {new_prefix_js};
+            let basePath = path;
+            for (const p of prefixes) {{
+                if (path.startsWith(p + '/') || path === p) {{
+                    basePath = path.substring(p.length) || '/';
+                    break;
+                }}
+            }}
+            window.location.href = newPrefix + basePath;
+        ''')
+
+    with ui.button(icon='language').props('flat color=white round').classes('max-[470px]:hidden'):
+        with ui.menu().classes('bg-primary text-white'):
+            for lang, name in SUPPORTED_LANGUAGES.items():
+                ui.menu_item(name, on_click=lambda lang=lang: switch_language(lang))
