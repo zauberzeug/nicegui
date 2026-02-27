@@ -65,16 +65,14 @@ def _main_page() -> None:
     with ui.left_drawer() \
             .classes('column no-wrap gap-1 bg-[#eee] dark:bg-[#1b1b1b] mt-[-20px] px-8 py-20') \
             .style('height: calc(100% + 20px) !important') as menu:
-        tree = ui.tree([], label_key='title',
-                       on_select=lambda e: ui.navigate.to(f'/documentation/{e.value}')) \
+        tree = ui.tree([], label_key='title', on_select=lambda e: ui.navigate.to(f'/documentation/{e.value}')) \
             .classes('w-full').props('accordion no-connectors no-selection-unset')
+        tree.visible = False
         spinner = ui.image('/static/loading.gif').classes('w-8 h-8 m-auto').props('no-spinner no-transition')
-
-        tree.set_visibility(False)
 
         def update_tree() -> None:
             tree.props['nodes'] = documentation.tree.nodes
-            tree.set_visibility(True)
+            tree.visible = True
             spinner.delete()
         intersection_observer(on_intersection=update_tree)
     menu_button = header.add_header(menu)
