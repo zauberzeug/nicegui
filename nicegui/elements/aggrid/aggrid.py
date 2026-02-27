@@ -1,4 +1,3 @@
-import importlib.util
 from typing import TYPE_CHECKING, Literal, cast
 
 from typing_extensions import Self
@@ -9,19 +8,11 @@ from ...defaults import DEFAULT_PROP, resolve_defaults
 from ...dependencies import register_importmap_override
 from ...element import Element
 
-try:
-    if importlib.util.find_spec('pandas'):
-        optional_features.register('pandas')
-except (ModuleNotFoundError, ValueError):
-    pass
+optional_features.try_register('pandas')
 if TYPE_CHECKING:
     import pandas as pd
 
-try:
-    if importlib.util.find_spec('polars'):
-        optional_features.register('polars')
-except (ModuleNotFoundError, ValueError):
-    pass
+optional_features.try_register('polars')
 if TYPE_CHECKING:
     import polars as pl
 

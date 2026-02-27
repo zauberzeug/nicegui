@@ -1,4 +1,3 @@
-import importlib.util
 from typing import TYPE_CHECKING, Any, Literal
 
 from typing_extensions import Self
@@ -16,19 +15,11 @@ from ..events import (
 from ..logging import log
 from .mixins.filter_element import FilterElement
 
-try:
-    if importlib.util.find_spec('pandas'):
-        optional_features.register('pandas')
-except (ModuleNotFoundError, ValueError):
-    pass
+optional_features.try_register('pandas')
 if TYPE_CHECKING:
     import pandas as pd
 
-try:
-    if importlib.util.find_spec('polars'):
-        optional_features.register('polars')
-except (ModuleNotFoundError, ValueError):
-    pass
+optional_features.try_register('polars')
 if TYPE_CHECKING:
     import polars as pl
 

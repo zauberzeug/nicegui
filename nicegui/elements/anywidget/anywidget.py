@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import importlib.util
 import inspect
 import math
 from pathlib import Path
@@ -9,11 +8,7 @@ from typing import TYPE_CHECKING, Any
 from ... import helpers, optional_features
 from ..mixins.value_element import ValueElement
 
-try:
-    if importlib.util.find_spec('anywidget'):
-        optional_features.register('anywidget')
-except (ModuleNotFoundError, ValueError):
-    pass
+optional_features.try_register('anywidget')
 if TYPE_CHECKING:
     import anywidget
 
