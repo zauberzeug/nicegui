@@ -5,32 +5,33 @@ import sys
 from ctypes import wintypes
 from pathlib import Path
 
-user32 = ctypes.windll.user32 if sys.platform == 'win32' else None  # type: ignore[assignment]
-shell32 = ctypes.windll.shell32 if sys.platform == 'win32' else None  # type: ignore[assignment]
+user32 = ctypes.windll.user32 if sys.platform == 'win32' else None  # type: ignore[attr-defined]
+shell32 = ctypes.windll.shell32 if sys.platform == 'win32' else None  # type: ignore[attr-defined]
 WM_SETICON, ICON_BIG, ICON_SMALL = 0x0080, 1, 0
 IMAGE_ICON, LR_LOADFROMFILE = 1, 0x00000010
 
-# COM GUIDs for IPropertyStore
-if sys.platform == 'win32':
-    class GUID(ctypes.Structure):
-        _fields_ = [('Data1', ctypes.c_ulong), ('Data2', ctypes.c_ushort),  # noqa: RUF012
-                    ('Data3', ctypes.c_ushort), ('Data4', ctypes.c_ubyte * 8)]
+# COM GUIDs for IPropertyStore (defined unconditionally for mypy on non-Windows)
+class GUID(ctypes.Structure):
+    _fields_ = [('Data1', ctypes.c_ulong), ('Data2', ctypes.c_ushort),  # noqa: RUF012
+                ('Data3', ctypes.c_ushort), ('Data4', ctypes.c_ubyte * 8)]
 
-    class PROPERTYKEY(ctypes.Structure):
-        _fields_ = [('fmtid', GUID), ('pid', ctypes.c_ulong)]  # noqa: RUF012
 
-    # PKEY_AppUserModel_ID = {9F4C2855-9F79-4B39-A8D0-E1D42DE1D5F3}, 5
-    PKEY_AppUserModel_ID = PROPERTYKEY(
-        GUID(0x9F4C2855, 0x9F79, 0x4B39, (0xA8, 0xD0, 0xE1, 0xD4, 0x2D, 0xE1, 0xD5, 0xF3)), 5)
+class PROPERTYKEY(ctypes.Structure):
+    _fields_ = [('fmtid', GUID), ('pid', ctypes.c_ulong)]  # noqa: RUF012
 
-    # PKEY_AppUserModel_RelaunchIconResource = {9F4C2855-9F79-4B39-A8D0-E1D42DE1D5F3}, 2
-    PKEY_AppUserModel_RelaunchIconResource = PROPERTYKEY(
-        GUID(0x9F4C2855, 0x9F79, 0x4B39, (0xA8, 0xD0, 0xE1, 0xD4, 0x2D, 0xE1, 0xD5, 0xF3)), 2)
+
+# PKEY_AppUserModel_ID = {9F4C2855-9F79-4B39-A8D0-E1D42DE1D5F3}, 5
+PKEY_AppUserModel_ID = PROPERTYKEY(
+    GUID(0x9F4C2855, 0x9F79, 0x4B39, (0xA8, 0xD0, 0xE1, 0xD4, 0x2D, 0xE1, 0xD5, 0xF3)), 5)
+
+# PKEY_AppUserModel_RelaunchIconResource = {9F4C2855-9F79-4B39-A8D0-E1D42DE1D5F3}, 2
+PKEY_AppUserModel_RelaunchIconResource = PROPERTYKEY(
+    GUID(0x9F4C2855, 0x9F79, 0x4B39, (0xA8, 0xD0, 0xE1, 0xD4, 0x2D, 0xE1, 0xD5, 0xF3)), 2)
 
 
 def find_window_by_title(title: str) -> int | None:
     """Find HWND by exact title. None on non-Windows or not found."""
-    if sys.platform != 'win32':
+    if sys.platform != 'win32' or user32 is None:
         return None
     result: list[int] = []
 
@@ -50,7 +51,7 @@ def find_window_by_title(title: str) -> int | None:
 
 def set_window_icon_windows(hwnd: int, icon_path: str) -> bool:
     """Set window icon via LoadImageW/WM_SETICON for title bar and Alt+Tab."""
-    if sys.platform != 'win32' or not Path(icon_path).is_file():
+    if sys.platform != 'win32' or user32 is None or not Path(icon_path).is_file():
         return False
     path = str(Path(icon_path).resolve())
     hicon = user32.LoadImageW(None, path, IMAGE_ICON, 0, 0, LR_LOADFROMFILE)
@@ -63,7 +64,7 @@ def set_window_icon_windows(hwnd: int, icon_path: str) -> bool:
 
 def set_window_property_store(hwnd: int, app_id: str, icon_path: str) -> bool:
     """Set window properties via IPropertyStore for proper taskbar icon on Windows 7+."""
-    if sys.platform != 'win32':
+    if sys.platform != 'win32' or shell32 is None:
         return False
 
     try:
@@ -108,17 +109,13 @@ def set_window_property_store(hwnd: int, app_id: str, icon_path: str) -> bool:
         # Release is at index 2
         Release = ctypes.WINFUNCTYPE(ctypes.c_ulong, ctypes.c_void_p)(vtable[2])
 
-        # Set AppUserModelID
-        pv_id = PROPVARIANT()
-        pv_id.vt = VT_LPWSTR
-        pv_id.pwszVal = app_id
+        # Set AppUserModelID (vt=VT_LPWSTR, reserved=0, pwszVal=app_id)
+        pv_id = PROPVARIANT(VT_LPWSTR, 0, 0, 0, app_id, 0)
         SetValue(pps, ctypes.byref(PKEY_AppUserModel_ID), ctypes.byref(pv_id))
 
         # Set RelaunchIconResource (format: "path,index")
         icon_resource = f'{icon_path},0'
-        pv_icon = PROPVARIANT()
-        pv_icon.vt = VT_LPWSTR
-        pv_icon.pwszVal = icon_resource
+        pv_icon = PROPVARIANT(VT_LPWSTR, 0, 0, 0, icon_resource, 0)
         SetValue(pps, ctypes.byref(PKEY_AppUserModel_RelaunchIconResource), ctypes.byref(pv_icon))
 
         # Commit changes

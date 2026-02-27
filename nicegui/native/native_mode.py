@@ -50,13 +50,15 @@ def _open_window(
     closed = Event()
     window.events.closed += closed.set
 
-    if sys.platform == 'win32' and helpers.is_file(favicon):
+    if sys.platform == 'win32' and favicon is not None and helpers.is_file(favicon):
+        favicon_path = Path(favicon)
+
         def on_window_shown() -> None:
             hwnd = window_icon.find_window_by_title(title)
             if not hwnd:
                 log.warning('Could not find native window by title to set icon')
                 return
-            icon_path = str(Path(favicon).resolve())
+            icon_path = str(favicon_path.resolve())
             # Set window icon for title bar and Alt+Tab
             if not window_icon.set_window_icon_windows(hwnd, icon_path):
                 log.warning('Could not set native window icon (unsupported format?)')
