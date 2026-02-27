@@ -101,9 +101,8 @@ def create() -> None:
                 ui.markdown('Or, let your AI do it') \
                     .classes('text-white text-2xl md:text-3xl font-medium fancy-em')
                 ui.markdown('''
-                    **Most LLMs already know NiceGUI** — but when that isn't enough, \
-                    our data-rich documentation index has everything in the documentation (API, description, code examples) \
-                    in a single JSON file.
+                    **Most LLMs already know NiceGUI** — but when that isn't enough,
+                    our data-rich documentation index puts the full API reference, descriptions, and code examples into a single JSON file.
 
                     Ideal for **RAG pipelines**, **custom AI tooling**, or just exploring the possibilities with your favorite model.
                 ''').classes('text-white text-lg md:text-xl')
