@@ -57,7 +57,7 @@ class Chip(IconElement, ValueElement, TextElement, BackgroundColorElement, TextC
         """Add a callback to be invoked when the chip is clicked."""
         self._props['clickable'] = True
         if has_js_action(callback):
-            self.on('click', callback, [])
+            self.on('click', callback, [])  # type: ignore[arg-type]
         else:
             self.on('click', lambda _: handle_event(callback, ClickEventArguments(sender=self, client=self.client)), [])
         return self
