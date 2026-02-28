@@ -88,16 +88,14 @@ class _JsActionFactory:
         """Create a decorator that sets the model-value prop to the given value."""
         js_bool = 'true' if v else 'false'
         return self(lambda el: (
-            f'(...args) => {{ elements[{el.id}].props["model-value"] = {js_bool}; '
-            f'invalidateVnodeCache([{el.id}]); mounted_app?.$forceUpdate(); emit(...args); }}'
+            f'(...args) => {{ elements[{el.id}].props["model-value"] = {js_bool}; emit(...args); }}'
         ))
 
     def toggle(self) -> Callable[[_F], _F]:
         """Create a decorator that toggles the model-value prop."""
         return self(lambda el: (
             f'(...args) => {{ const e = elements[{el.id}]; '
-            f'e.props["model-value"] = !e.props["model-value"]; '
-            f'invalidateVnodeCache([{el.id}]); mounted_app?.$forceUpdate(); emit(...args); }}'
+            f'e.props["model-value"] = !e.props["model-value"]; emit(...args); }}'
         ))
 
 

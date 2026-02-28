@@ -110,7 +110,6 @@ def test_js_handler_is_installed_on_event_listener(screen: Screen):
         assert len(click_listeners) == 1
         assert click_listeners[0].js_handler is not None
         assert 'model-value' in click_listeners[0].js_handler
-        assert 'invalidateVnodeCache' in click_listeners[0].js_handler
 
     screen.open('/')
 

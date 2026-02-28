@@ -11,6 +11,7 @@ from .mixins.value_element import ValueElement
 
 
 class DropdownButton(IconElement, TextElement, DisableableElement, BackgroundColorElement, ValueElement):
+    LOOPBACK = False
 
     @resolve_defaults
     def __init__(self,

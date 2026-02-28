@@ -10,6 +10,7 @@ from .mixins.value_element import ValueElement
 
 
 class Dialog(ValueElement, component='dialog.js'):
+    LOOPBACK = False
 
     @resolve_defaults
     def __init__(self, *, value: bool = DEFAULT_PROPS['model-value'] | False) -> None:

@@ -13,6 +13,7 @@ from .mixins.value_element import ValueElement
 
 
 class Fab(ValueElement, LabelElement, IconElement, BackgroundColorElement, DisableableElement):
+    LOOPBACK = False
 
     @resolve_defaults
     def __init__(self,
