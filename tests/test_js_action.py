@@ -1,3 +1,5 @@
+from selenium.webdriver import ActionChains
+
 from nicegui import ui
 from nicegui.js_action import JsAction, has_js_action, js_action
 from nicegui.testing import Screen
@@ -268,3 +270,28 @@ def test_custom_js_action_decorator(screen: Screen):
 
     screen.open('/')
     screen.should_contain('OK')
+
+
+def test_dialog_reopen_after_backdrop_close(screen: Screen):
+    """Test that a dialog can be reopened after closing via backdrop click."""
+    @ui.page('/')
+    def page():
+        with ui.dialog() as dialog, ui.card():
+            ui.label('Hello world!')
+            ui.button('Close', on_click=dialog.close)
+        ui.button('Open', on_click=dialog.open)
+
+    screen.open('/')
+    screen.should_not_contain('Hello world!')
+
+    screen.click('Open')
+    screen.wait(0.5)
+    screen.should_contain('Hello world!')
+
+    ActionChains(screen.selenium).move_by_offset(5, 5).click().perform()
+    screen.wait(0.5)
+    screen.should_not_contain('Hello world!')
+
+    screen.click('Open')
+    screen.wait(0.5)
+    screen.should_contain('Hello world!')

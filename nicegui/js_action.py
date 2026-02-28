@@ -89,7 +89,7 @@ class _JsActionFactory:
         js_bool = 'true' if v else 'false'
         return self(lambda el: (
             f'(...args) => {{ elements[{el.id}].props["model-value"] = {js_bool}; '
-            f'invalidateVnodeCache([{el.id}]); emit(...args); }}'
+            f'invalidateVnodeCache([{el.id}]); mounted_app?.$forceUpdate(); emit(...args); }}'
         ))
 
     def toggle(self) -> Callable[[_F], _F]:
@@ -97,7 +97,7 @@ class _JsActionFactory:
         return self(lambda el: (
             f'(...args) => {{ const e = elements[{el.id}]; '
             f'e.props["model-value"] = !e.props["model-value"]; '
-            f'invalidateVnodeCache([{el.id}]); emit(...args); }}'
+            f'invalidateVnodeCache([{el.id}]); mounted_app?.$forceUpdate(); emit(...args); }}'
         ))
 
 
