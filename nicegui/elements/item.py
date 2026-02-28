@@ -33,7 +33,7 @@ class Item(DisableableElement):
         """Add a callback to be invoked when the List Item is clicked."""
         self._props['clickable'] = True  # idempotent
         if has_js_action(callback):
-            self.on('click', callback)  # type: ignore[arg-type]
+            self.on('click', callback)
         else:
             self.on('click', lambda _: handle_event(callback, ClickEventArguments(sender=self, client=self.client)))
         return self

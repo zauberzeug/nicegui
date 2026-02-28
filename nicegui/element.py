@@ -338,7 +338,7 @@ class Element(Visibility):
 
     def on(self,
            type: str,  # pylint: disable=redefined-builtin
-           handler: events.Handler[events.GenericEventArguments] | None = None,
+           handler: events.Handler[events.GenericEventArguments] | JsAction | None = None,
            args: None | Sequence[str] | Sequence[Sequence[str] | None] = None,
            *,
            throttle: float = 0.0,

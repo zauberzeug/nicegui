@@ -2,14 +2,12 @@ from __future__ import annotations
 
 import functools
 from collections.abc import Callable
-from typing import TYPE_CHECKING, Any, TypeVar
+from typing import TYPE_CHECKING, Any, TypeGuard
 
 from .helpers import is_coroutine_function
 
 if TYPE_CHECKING:
     from .element import Element
-
-_F = TypeVar('_F', bound=Callable)
 
 
 class JsAction:
@@ -58,7 +56,14 @@ class _JsActionDescriptor:
             raise TypeError(f'@js_action does not support async methods (got {method!r})')
         self._method = method
         self._js_handler_factory = js_handler_factory
-        functools.update_wrapper(self, method)  # type: ignore[arg-type]
+        for attr in functools.WRAPPER_ASSIGNMENTS:
+            try:
+                value = getattr(method, attr)
+            except AttributeError:
+                pass
+            else:
+                setattr(self, attr, value)
+        self.__wrapped__ = method
 
     def __get__(self, obj: Any, objtype: type | None = None) -> Any:
         if obj is None:
@@ -78,19 +83,19 @@ class _JsActionFactory:
     for common model-value operations.
     """
 
-    def __call__(self, js_handler_factory: Callable[[Any], str]) -> Callable[[_F], _F]:
-        def decorator(method: _F) -> _F:
-            return _JsActionDescriptor(method, js_handler_factory)  # type: ignore[return-value]
-        return decorator  # type: ignore[return-value]
+    def __call__(self, js_handler_factory: Callable[[Any], str]) -> Callable[[Callable[..., Any]], _JsActionDescriptor]:
+        def decorator(method: Callable[..., Any]) -> _JsActionDescriptor:
+            return _JsActionDescriptor(method, js_handler_factory)
+        return decorator
 
-    def value(self, v: bool) -> Callable[[_F], _F]:
+    def value(self, v: bool) -> Callable[[Callable[..., Any]], _JsActionDescriptor]:
         """Create a decorator that sets the model-value prop to the given value."""
         js_bool = 'true' if v else 'false'
         return self(lambda el: (
             f'(...args) => {{ elements[{el.id}].props["model-value"] = {js_bool}; emit(...args); }}'
         ))
 
-    def toggle(self) -> Callable[[_F], _F]:
+    def toggle(self) -> Callable[[Callable[..., Any]], _JsActionDescriptor]:
         """Create a decorator that toggles the model-value prop."""
         return self(lambda el: (
             f'(...args) => {{ const e = elements[{el.id}]; '
@@ -101,6 +106,6 @@ class _JsActionFactory:
 js_action = _JsActionFactory()
 
 
-def has_js_action(handler: Any) -> bool:
+def has_js_action(handler: Any) -> TypeGuard[JsAction]:
     """Check if a handler is a JsAction."""
     return isinstance(handler, JsAction)
