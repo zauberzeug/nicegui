@@ -86,7 +86,7 @@ class FabAction(LabelElement, IconElement, BackgroundColorElement, DisableableEl
     def on_click(self, callback: Handler[ClickEventArguments]) -> Self:
         """Add a callback to be invoked when the action element is clicked."""
         if has_js_action(callback):
-            self.on('click', callback, [])
+            self.on('click', callback, [])  # type: ignore[arg-type]
         else:
             self.on('click', lambda _: handle_event(callback, ClickEventArguments(sender=self, client=self.client)), [])
         return self

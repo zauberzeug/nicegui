@@ -39,9 +39,8 @@ class JsAction:
 
         Used when the action was already applied on the client via JavaScript.
         """
-        from .elements.mixins.value_element import ValueElement  # pylint: disable=import-outside-toplevel
         element = self._element
-        if isinstance(element, ValueElement):
+        if hasattr(element, '_send_update_on_value_change'):
             prev = element._send_update_on_value_change  # pylint: disable=protected-access
             element._send_update_on_value_change = False  # pylint: disable=protected-access
             try:
@@ -59,7 +58,7 @@ class _JsActionDescriptor:
             raise TypeError(f'@js_action does not support async methods (got {method!r})')
         self._method = method
         self._js_handler_factory = js_handler_factory
-        functools.update_wrapper(self, method)
+        functools.update_wrapper(self, method)  # type: ignore[arg-type]
 
     def __get__(self, obj: Any, objtype: type | None = None) -> Any:
         if obj is None:
