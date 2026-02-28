@@ -5,6 +5,7 @@ from typing import Any
 from ..context import context
 from ..defaults import DEFAULT_PROPS, resolve_defaults
 from ..element import Element
+from ..js_action import js_action
 from .mixins.value_element import ValueElement
 
 
@@ -44,10 +45,12 @@ class Dialog(ValueElement, component='dialog.js'):
             self._submitted = asyncio.Event()
         return self._submitted
 
+    @js_action.value(True)
     def open(self) -> None:
         """Open the dialog."""
         self.value = True
 
+    @js_action.value(False)
     def close(self) -> None:
         """Close the dialog."""
         self.value = False

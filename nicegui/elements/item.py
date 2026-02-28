@@ -1,6 +1,7 @@
 from typing_extensions import Self
 
 from ..events import ClickEventArguments, Handler, handle_event
+from ..js_action import has_js_action
 from .mixins.disableable_element import DisableableElement
 from .mixins.text_element import TextElement
 
@@ -31,7 +32,10 @@ class Item(DisableableElement):
     def on_click(self, callback: Handler[ClickEventArguments]) -> Self:
         """Add a callback to be invoked when the List Item is clicked."""
         self._props['clickable'] = True  # idempotent
-        self.on('click', lambda _: handle_event(callback, ClickEventArguments(sender=self, client=self.client)))
+        if has_js_action(callback):
+            self.on('click', callback)
+        else:
+            self.on('click', lambda _: handle_event(callback, ClickEventArguments(sender=self, client=self.client)))
         return self
 
 

@@ -5,6 +5,7 @@ from .client import Client
 from .context import context
 from .element_filter import ElementFilter
 from .event import Event
+from .js_action import JsAction, js_action
 from .nicegui import app
 from .page_arguments import PageArguments
 from .version import __version__
@@ -15,6 +16,7 @@ __all__ = [
     'Client',
     'ElementFilter',
     'Event',
+    'JsAction',
     'PageArguments',
     '__version__',
     'app',
@@ -22,6 +24,7 @@ __all__ = [
     'context',
     'elements',
     'html',
+    'js_action',
     'run',
     'storage',
     'ui',

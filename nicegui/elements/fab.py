@@ -4,6 +4,7 @@ from typing_extensions import Self
 
 from ..defaults import DEFAULT_PROP, DEFAULT_PROPS, resolve_defaults
 from ..events import ClickEventArguments, Handler, handle_event
+from ..js_action import has_js_action, js_action
 from .mixins.color_elements import BackgroundColorElement
 from .mixins.disableable_element import DisableableElement
 from .mixins.icon_element import IconElement
@@ -35,14 +36,17 @@ class Fab(ValueElement, LabelElement, IconElement, BackgroundColorElement, Disab
         super().__init__(tag='q-fab', value=value, label=label, background_color=color, icon=icon)
         self._props['direction'] = direction
 
+    @js_action.value(True)
     def open(self) -> None:
         """Open the FAB."""
         self.value = True
 
+    @js_action.value(False)
     def close(self) -> None:
         """Close the FAB."""
         self.value = False
 
+    @js_action.toggle()
     def toggle(self) -> None:
         """Toggle the FAB."""
         self.value = not self.value
@@ -80,5 +84,8 @@ class FabAction(LabelElement, IconElement, BackgroundColorElement, DisableableEl
 
     def on_click(self, callback: Handler[ClickEventArguments]) -> Self:
         """Add a callback to be invoked when the action element is clicked."""
-        self.on('click', lambda _: handle_event(callback, ClickEventArguments(sender=self, client=self.client)), [])
+        if has_js_action(callback):
+            self.on('click', callback, [])
+        else:
+            self.on('click', lambda _: handle_event(callback, ClickEventArguments(sender=self, client=self.client)), [])
         return self
