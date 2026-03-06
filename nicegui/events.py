@@ -417,6 +417,15 @@ class XtermDataEventArguments(UiEventArguments):
     data: str
 
 
+@dataclass(**KWONLY_SLOTS)
+class SortableEventArguments(UiEventArguments):
+    old_index: int
+    new_index: int
+    item: Element
+    source: Element
+    target: Element
+
+
 EventT = TypeVar('EventT', bound=EventArguments)
 Handler: TypeAlias = Callable[[EventT], Any] | Callable[[], Any]
 
