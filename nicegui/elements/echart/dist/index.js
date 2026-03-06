@@ -1,6 +1,6 @@
-import { a7, a6 } from "./index-CIyxDY2d.js";
+import { a6, a7 } from "./index-B3fNX5h6.js";
 export {
-  a7 as echarts,
-  a6 as loadEchartsGL
+  a6 as echarts,
+  a7 as loadEchartsGL
 };
 //# sourceMappingURL=index.js.map
