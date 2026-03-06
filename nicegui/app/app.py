@@ -380,7 +380,7 @@ class App(FastAPI):
 
     @staticmethod
     def clients(path: str | None = None) -> Iterator[Client]:
-        """Iterate over connected clients.
+        """Iterate over connected clients, with a matching path if provided.
 
         When using `@ui.page("/path")` each client gets a private view of this page.
         Updates must be sent to each client individually, which this iterator simplifies.
