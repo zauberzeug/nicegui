@@ -328,6 +328,25 @@ def test_multicast(screen: Screen):
     screen.should_contain('added')
 
 
+def test_multicast_all_clients(screen: Screen):
+    def update():
+        for client in app.clients():
+            with client:
+                ui.label('added')
+
+    @ui.page('/')
+    def page():
+        ui.button('add label', on_click=update)
+
+    screen.open('/')
+    screen.switch_to(1)
+    screen.open('/')
+    screen.click('add label')
+    screen.should_contain('added')
+    screen.switch_to(0)
+    screen.should_contain('added')
+
+
 def test_warning_if_response_takes_too_long(screen: Screen):
     @ui.page('/', response_timeout=0.5)
     async def page():
