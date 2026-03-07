@@ -9,13 +9,9 @@ def build_svg() -> str:
 
         Original was borrowed from https://de.m.wikipedia.org/wiki/Datei:Station_Clock.svg.
     """
-    continuous_minute = True
-
     now = datetime.now()
     seconds_angle = now.second / 60 * 360
     minutes_angle = now.minute / 60 * 360
-    if continuous_minute:
-        minutes_angle += seconds_angle / 60
     hours_angle = now.hour / 12 * 360 + minutes_angle / 12
     return f'''
         <svg width="100%" height="100%" viewBox="0 0 800 800" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
