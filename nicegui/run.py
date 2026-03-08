@@ -1,20 +1,29 @@
+from __future__ import annotations
+
 import asyncio
 import logging
 import traceback
 from collections.abc import Callable
-from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
-from concurrent.futures.process import BrokenProcessPool
 from contextlib import suppress
 from functools import partial
-from pickle import PicklingError
 from typing import Any, TypeVar
+
+try:
+    from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
+    from concurrent.futures.process import BrokenProcessPool
+    from pickle import PicklingError
+except ImportError:
+    ProcessPoolExecutor = None  # type: ignore
+    ThreadPoolExecutor = None  # type: ignore
+    BrokenProcessPool = Exception  # type: ignore
+    PicklingError = Exception  # type: ignore
 
 from typing_extensions import ParamSpec
 
 from . import core, helpers
 
 process_pool: ProcessPoolExecutor | None = None
-thread_pool = ThreadPoolExecutor()
+thread_pool = ThreadPoolExecutor() if ThreadPoolExecutor is not None else None  # type: ignore
 
 P = ParamSpec('P')
 R = TypeVar('R')

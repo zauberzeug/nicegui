@@ -1,6 +1,9 @@
 from pathlib import Path
 
-import aiofiles
+try:
+    import aiofiles
+except ImportError:
+    aiofiles = None  # type: ignore
 
 from .. import background_tasks, core, json
 from ..logging import log

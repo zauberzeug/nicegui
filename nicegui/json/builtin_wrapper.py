@@ -3,7 +3,10 @@ import json
 from datetime import date, datetime
 from typing import Any
 
-from fastapi.responses import JSONResponse
+try:
+    from fastapi.responses import JSONResponse
+except ImportError:
+    JSONResponse = object  # type: ignore
 
 try:
     HAS_NUMPY = importlib.util.find_spec('numpy') is not None

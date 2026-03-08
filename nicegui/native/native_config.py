@@ -1,8 +1,12 @@
+from __future__ import annotations
+
 from dataclasses import dataclass, field
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from ..dataclasses import KWONLY_SLOTS
-from .native import WindowProxy
+
+if TYPE_CHECKING:
+    from .native import WindowProxy
 
 
 @dataclass(**KWONLY_SLOTS)

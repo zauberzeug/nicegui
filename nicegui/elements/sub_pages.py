@@ -5,7 +5,10 @@ from collections.abc import Callable
 from typing import Any
 from urllib.parse import urlparse
 
-from starlette.datastructures import QueryParams
+try:
+    from starlette.datastructures import QueryParams
+except ImportError:
+    QueryParams = dict  # type: ignore
 from typing_extensions import Self
 
 from .. import background_tasks, json

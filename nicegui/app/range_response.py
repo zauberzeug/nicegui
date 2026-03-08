@@ -4,9 +4,17 @@ from collections.abc import AsyncGenerator
 from datetime import datetime, timezone
 from pathlib import Path
 
-import aiofiles
-from fastapi import Request
-from fastapi.responses import Response, StreamingResponse
+try:
+    import aiofiles
+except ImportError:
+    aiofiles = None  # type: ignore
+try:
+    from fastapi import Request
+    from fastapi.responses import Response, StreamingResponse
+except ImportError:
+    Request = None  # type: ignore
+    Response = None  # type: ignore
+    StreamingResponse = None  # type: ignore
 
 mimetypes.init()
 

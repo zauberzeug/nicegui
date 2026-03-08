@@ -1,6 +1,9 @@
 import os
 
-import ifaddr
+try:
+    import ifaddr
+except ImportError:
+    ifaddr = None  # type: ignore
 
 from . import core, run
 

@@ -5,10 +5,16 @@ from dataclasses import dataclass
 from io import BytesIO
 from pathlib import Path, PurePosixPath
 
-import aiofiles
-import anyio
-from starlette.datastructures import UploadFile
-from starlette.formparsers import MultiPartParser
+try:
+    import aiofiles
+    import anyio
+    from starlette.datastructures import UploadFile
+    from starlette.formparsers import MultiPartParser
+except ImportError:
+    aiofiles = None  # type: ignore
+    anyio = None  # type: ignore
+    UploadFile = None  # type: ignore
+    MultiPartParser = None  # type: ignore
 
 from .. import json, run
 

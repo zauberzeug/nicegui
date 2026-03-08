@@ -9,9 +9,14 @@ from collections.abc import Awaitable, Callable, Iterable
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, ClassVar, cast
 
-from fastapi import Request
-from fastapi.responses import Response
-from fastapi.templating import Jinja2Templates
+try:
+    from fastapi import Request
+    from fastapi.responses import Response
+    from fastapi.templating import Jinja2Templates
+except ImportError:
+    Request = None  # type: ignore
+    Response = None  # type: ignore
+    Jinja2Templates = None  # type: ignore
 from typing_extensions import Self
 
 from . import background_tasks, binding, core, helpers, json, storage
@@ -30,7 +35,7 @@ from .version import __version__
 if TYPE_CHECKING:
     from .page import page
 
-templates = Jinja2Templates(Path(__file__).parent / 'templates')
+templates = Jinja2Templates(Path(__file__).parent / 'templates') if Jinja2Templates is not None else None
 
 HTML_ESCAPE_TABLE = str.maketrans({
     '&': '&amp;',

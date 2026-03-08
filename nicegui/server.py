@@ -6,13 +6,23 @@ import socket
 import threading
 from typing import Any
 
-import uvicorn
+try:
+    import uvicorn
+except ImportError:
+    uvicorn = None  # type: ignore
 
 from . import core, storage
 from .native import native
 
+if uvicorn is not None:
+    _ConfigBase = uvicorn.Config
+    _ServerBase = uvicorn.Server
+else:
+    _ConfigBase = object
+    _ServerBase = object
 
-class CustomServerConfig(uvicorn.Config):
+
+class CustomServerConfig(_ConfigBase):
     storage_secret: str | None = None
     method_queue: multiprocessing.Queue | None = None
     response_queue: multiprocessing.Queue | None = None
@@ -20,7 +30,7 @@ class CustomServerConfig(uvicorn.Config):
     session_middleware_kwargs: dict[str, Any] | None = None
 
 
-class Server(uvicorn.Server):
+class Server(_ServerBase):
     instance: uvicorn.Server
 
     @classmethod
