@@ -308,29 +308,10 @@ def test_ip(screen: Screen):
     screen.open('/')
     screen.should_contain('127.0.0.1')
 
-
-def test_multicast(screen: Screen):
+@pytest.mark.parametrize('path', ['/', None])
+def test_multicast(screen: Screen, path: str | None):
     def update():
-        for client in app.clients('/'):
-            with client:
-                ui.label('added')
-
-    @ui.page('/')
-    def page():
-        ui.button('add label', on_click=update)
-
-    screen.open('/')
-    screen.switch_to(1)
-    screen.open('/')
-    screen.click('add label')
-    screen.should_contain('added')
-    screen.switch_to(0)
-    screen.should_contain('added')
-
-
-def test_multicast_all_clients(screen: Screen):
-    def update():
-        for client in app.clients():
+        for client in app.clients(path):
             with client:
                 ui.label('added')
 
