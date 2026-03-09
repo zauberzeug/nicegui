@@ -419,11 +419,11 @@ class XtermDataEventArguments(UiEventArguments):
 
 @dataclass(**KWONLY_SLOTS)
 class SortableEventArguments(UiEventArguments):
-    old_index: int
-    new_index: int
     item: Element
     source: Element
     target: Element
+    old_index: int
+    new_index: int
 
 
 EventT = TypeVar('EventT', bound=EventArguments)

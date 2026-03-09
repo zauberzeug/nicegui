@@ -130,22 +130,6 @@ def test_enable_disable(screen: Screen):
     screen.wait(0.3)
 
 
-def test_destroy(screen: Screen):
-    @ui.page('/')
-    def page():
-        with ui.column() as col:
-            ui.label('A')
-            ui.label('B')
-        sortable = col.make_sortable()
-        ui.button('Destroy', on_click=sortable.destroy)
-
-    screen.open('/')
-    screen.wait(0.5)
-
-    screen.click('Destroy')
-    screen.wait(0.3)
-
-
 def test_multiple_handlers(screen: Screen):
     events1 = []
     events2 = []

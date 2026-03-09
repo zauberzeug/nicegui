@@ -1,3 +1,3 @@
-import Sortable from 'sortablejs';
+import Sortable from "sortablejs";
 
 export { Sortable };
