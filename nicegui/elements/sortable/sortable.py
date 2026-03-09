@@ -8,7 +8,7 @@ from ... import core, json
 from ...events import Handler, SortableEventArguments, handle_event
 
 if TYPE_CHECKING:
-    from ...element import Element
+    from ..mixins.sortable_element import SortableElement
 
 
 class Sortable:
@@ -16,7 +16,7 @@ class Sortable:
 
     def __init__(
         self,
-        element: Element,
+        element: SortableElement,
         options: dict[str, Any] | None = None,
         *,
         on_end: Handler[SortableEventArguments] | None = None,
@@ -98,3 +98,9 @@ class Sortable:
         self._element.client.run_javascript(f'''
             {self._element.html_id}._sortable.option({json.dumps(key)}, {json.dumps(value)})
         ''')
+
+    def destroy(self) -> None:
+        """Destroy the SortableJS instance."""
+        if not core.loop:
+            return  # this must be a script mode preflight run, so we skip initializing the SortableJS instance
+        self._element.client.run_javascript(f'{self._element.html_id}._sortable?.destroy()')

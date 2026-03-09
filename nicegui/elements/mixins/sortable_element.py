@@ -11,8 +11,12 @@ if TYPE_CHECKING:
 
 class SortableElement(Element):
 
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        super().__init__(*args, **kwargs)
+        self._sortable: Sortable | None = None
+
     def make_sortable(
-        self: Element,
+        self,
         options: dict[str, Any] | None = None,
         *,
         on_end: Handler[SortableEventArguments] | None = None,
@@ -34,7 +38,9 @@ class SortableElement(Element):
         :param ghost_class: CSS class applied to the drop placeholder (default: "opacity-50")
         """
         from ..sortable import Sortable  # pylint: disable=import-outside-toplevel
-        return Sortable(
+        if self._sortable is not None:
+            raise RuntimeError('This element is already sortable.')
+        self._sortable = Sortable(
             self,
             options,
             on_end=on_end,
@@ -43,3 +49,9 @@ class SortableElement(Element):
             group=group,
             ghost_class=ghost_class,
         )
+        return self._sortable
+
+    def _handle_delete(self) -> None:
+        if self._sortable is not None:
+            self._sortable.destroy()
+        super()._handle_delete()
