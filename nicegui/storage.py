@@ -51,7 +51,7 @@ def set_storage_secret(storage_secret: str | None = None,
     A warning is issued if a different ``storage_secret`` was provided explicitly.
     """
     if parent_app and (parent_sm := next((m for m in parent_app.user_middleware if m.cls == SessionMiddleware), None)):
-        parent_secret = str(parent_sm.kwargs.get('secret_key') or parent_sm.args[0])
+        parent_secret = str(parent_sm.kwargs['secret_key'] if 'secret_key' in parent_sm.kwargs else parent_sm.args[0])
         if storage_secret is not None and storage_secret != parent_secret:
             helpers.warn_once('Ignoring storage_secret because the parent app already has SessionMiddleware')
         if session_middleware_kwargs:
