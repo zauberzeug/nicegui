@@ -416,7 +416,7 @@ class XtermDataEventArguments(UiEventArguments):
     data: str
 
 
-@dataclass(**KWONLY_SLOTS)
+@dataclass(kw_only=True, slots=True)
 class XtermResizeEventArguments(UiEventArguments):
     cols: int
     rows: int
