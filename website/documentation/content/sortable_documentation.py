@@ -4,16 +4,15 @@ from . import doc
 
 
 @doc.demo('Sortable', '''
-    Container elements like `ui.column`, `ui.row`, and `ui.card` can be made sortable
-    via drag-and-drop using the `make_sortable()` method.
-    It returns a `Sortable` controller for enabling, disabling, or destroying the sort behavior.
+    Container elements like `ui.column`, `ui.row`, and `ui.card` can be made sortable via drag-and-drop
+    using the `make_sortable()` method.
+    It returns a `Sortable` controller for enabling, disabling, or changing the sort behavior.
 ''')
 def main_demo() -> None:
-    with ui.column() as column:
+    with ui.card() as card:
         for name in ['Alice', 'Bob', 'Carol']:
-            with ui.card().classes('w-full p-2'):
-                ui.label(name)
-    column.make_sortable(on_end=lambda e: ui.notify(f'Moved from {e.old_index} to {e.new_index}'))
+            ui.label(name).classes('cursor-pointer')
+    card.make_sortable(on_end=lambda e: ui.notify(f'Moved from {e.old_index} to {e.new_index}'))
 
 
 @doc.demo('Cross-Container Dragging', '''
@@ -22,18 +21,16 @@ def main_demo() -> None:
 ''')
 def cross_container() -> None:
     with ui.row():
-        with ui.column().classes('border p-4') as col1:
-            ui.label('Column 1').classes('font-bold')
-            for name in ['Alice', 'Bob']:
-                with ui.card().classes('w-full p-2'):
-                    ui.label(name)
-        with ui.column().classes('border p-4') as col2:
-            ui.label('Column 2').classes('font-bold')
-            for name in ['Carol', 'Dave']:
-                with ui.card().classes('w-full p-2'):
-                    ui.label(name)
-    col1.make_sortable(group='shared')
-    col2.make_sortable(group='shared')
+        with ui.card() as card1:
+            ui.label('Card 1').classes('font-bold')
+            for name in ['Alice', 'Bob', 'Carol']:
+                ui.label(name).classes('cursor-pointer')
+        with ui.card() as card2:
+            ui.label('Card 2').classes('font-bold')
+            for name in ['Dave', 'Eve', 'Frank']:
+                ui.label(name).classes('cursor-pointer')
+    card1.make_sortable(group='shared')
+    card2.make_sortable(group='shared')
 
 
 @doc.demo('Drag Handle', '''
@@ -41,24 +38,22 @@ def cross_container() -> None:
     Only the handle element can initiate a drag operation.
 ''')
 def drag_handle() -> None:
-    with ui.column() as column:
+    with ui.card() as card:
         for name in ['Alice', 'Bob', 'Carol']:
-            with ui.row().classes('items-center w-full'):
-                ui.icon('drag_indicator').classes('handle cursor-move text-gray-400')
+            with ui.row().classes('items-center gap-2'):
+                ui.icon('drag_indicator').classes('handle cursor-pointer')
                 ui.label(name)
-    column.make_sortable(handle='.handle')
+    card.make_sortable(handle='.handle')
 
 
 @doc.demo('Enable / Disable', '''
-    The `Sortable` controller returned by `make_sortable()` provides
-    `enable()` and `disable()` methods to toggle sorting at runtime.
+    The `Sortable` controller returned by `make_sortable()` provides `enable()` and `disable()` methods to toggle
+    sorting at runtime.
 ''')
 def enable_disable() -> None:
-    with ui.column() as column:
+    with ui.card() as card:
         for name in ['Alice', 'Bob', 'Carol']:
-            with ui.card().classes('w-full p-2'):
-                ui.label(name)
-    sortable = column.make_sortable()
-    with ui.row():
-        ui.button('Disable', on_click=sortable.disable)
-        ui.button('Enable', on_click=sortable.enable)
+            ui.label(name).classes('cursor-pointer')
+    sortable = card.make_sortable()
+    ui.switch('Enable', value=True,
+              on_change=lambda e: sortable.enable() if e.value else sortable.disable())

@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING, Any
 
 from typing_extensions import Self
 
-from ... import json
+from ... import core, json
 from ...events import Handler, SortableEventArguments, handle_event
 
 if TYPE_CHECKING:
@@ -31,6 +31,8 @@ class Sortable:
         if on_end:
             self.on_end(on_end)
 
+        if not core.loop:
+            return  # this must be a script mode preflight run, so we skip initializing the SortableJS instance
         element.client.run_javascript(f'''
             (async () => {{
                 const {{ Sortable }} = await import('nicegui-sortable');
