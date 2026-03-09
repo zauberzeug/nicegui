@@ -141,9 +141,3 @@ class Sortable:
     def disable(self) -> None:
         """Disable sorting on the container."""
         self._options['disabled'] = True
-
-    def destroy(self) -> None:
-        """Destroy the SortableJS instance."""
-        if not core.loop:
-            return  # this must be a script mode preflight run, so we skip initializing the SortableJS instance
-        self._element.client.run_javascript(f'{self._element.html_id}._sortable?.destroy()')

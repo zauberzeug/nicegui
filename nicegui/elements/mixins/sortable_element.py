@@ -14,6 +14,7 @@ class SortableElement(Element):
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
         self._sortable: Sortable | None = None
+        self.client.on_delete(self._handle_client_delete)
 
     def make_sortable(
         self,
@@ -53,5 +54,9 @@ class SortableElement(Element):
 
     def _handle_delete(self) -> None:
         if self._sortable is not None:
-            self._sortable.destroy()
+            self.client.run_javascript(f'{self.html_id}._sortable?.destroy()')
+        self._sortable = None
         super()._handle_delete()
+
+    def _handle_client_delete(self) -> None:
+        self._sortable = None
