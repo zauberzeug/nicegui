@@ -54,6 +54,8 @@ def set_storage_secret(storage_secret: str | None = None,
         parent_secret = str(parent_sm.kwargs.get('secret_key') or parent_sm.args[0])
         if storage_secret is not None and storage_secret != parent_secret:
             helpers.warn_once('Ignoring storage_secret because the parent app already has SessionMiddleware')
+        if session_middleware_kwargs:
+            helpers.warn_once('Ignoring session_middleware_kwargs because the parent app already has SessionMiddleware')
         Storage.secret = parent_secret
         core.app.user_middleware.append(Middleware(RequestTrackingMiddleware))
     else:
