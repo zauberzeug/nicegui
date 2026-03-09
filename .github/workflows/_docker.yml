@@ -30,7 +30,7 @@ jobs:
           echo "docker_image=${DOCKER_IMAGE}" >> $GITHUB_OUTPUT
           echo "version=${VERSION}" >> $GITHUB_OUTPUT
       - uses: docker/setup-qemu-action@v3
-      - uses: docker/login-action@v3
+      - uses: docker/login-action@v4
         if: github.event_name != 'pull_request'
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
