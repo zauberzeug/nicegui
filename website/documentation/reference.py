@@ -3,14 +3,13 @@ from collections.abc import Callable
 from dataclasses import dataclass
 
 from nicegui import binding, ui
-from nicegui.dataclasses import KWONLY_SLOTS
 from nicegui.elements.markdown import remove_indentation
 
 from ..style import create_anchor_name, subheading
 from .custom_restructured_text import CustomRestructuredText as custom_restructured_text
 
 
-@dataclass(**KWONLY_SLOTS)
+@dataclass(kw_only=True, slots=True)
 class Attribute:
     name: str
     obj: object | None
