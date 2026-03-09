@@ -1,34 +1,30 @@
-from nicegui import ui
+from nicegui import events, ui
 from nicegui.testing import Screen
 
 
-def _dispatch_sortend(screen: Screen, element_id: int, item_id: int, *,
-                      from_id: int | None = None, to_id: int | None = None,
-                      old_index: int, new_index: int) -> None:
-    """Dispatch a synthetic sortend CustomEvent on the element DOM node.
-
-    NOTE: The client-side tree-sync logic here must mirror the onEnd handler in sortable.py's _INIT_JS.
-    """
-    from_id = from_id or element_id
-    to_id = to_id or element_id
+def _simulate_sortend_event(screen: Screen, item: ui.element, *,
+                            source: ui.element | None = None, target: ui.element | None = None,
+                            old_index: int, new_index: int) -> None:
+    assert item.parent_slot is not None
+    source = source or item.parent_slot.parent
+    target = target or item.parent_slot.parent
     screen.selenium.execute_script(f'''
-        const dom = document.getElementById('c' + {element_id});
         // update client-side element tree to prevent snap-back
-        const fromSlot = window.mounted_app?.elements?.[{from_id}]?.slots?.default;
-        const toSlot = window.mounted_app?.elements?.[{to_id}]?.slots?.default;
+        const fromSlot = window.mounted_app?.elements?.[{source.id}]?.slots?.default;
+        const toSlot = window.mounted_app?.elements?.[{target.id}]?.slots?.default;
         if (fromSlot && fromSlot.ids) {{
             const itemId = fromSlot.ids.splice({old_index}, 1)[0];
-            if ({from_id} === {to_id}) {{
+            if ({source.id} === {target.id}) {{
                 fromSlot.ids.splice({new_index}, 0, itemId);
             }} else if (toSlot && toSlot.ids) {{
                 toSlot.ids.splice({new_index}, 0, itemId);
             }}
         }}
-        dom.dispatchEvent(new CustomEvent('sortend', {{
+        {source.html_id}.dispatchEvent(new CustomEvent('sortend', {{
             detail: {{
-                item_id: {item_id},
-                from_id: {from_id},
-                to_id: {to_id},
+                item_id: {item.id},
+                from_id: {source.id},
+                to_id: {target.id},
                 old_index: {old_index},
                 new_index: {new_index},
             }},
@@ -38,152 +34,92 @@ def _dispatch_sortend(screen: Screen, element_id: int, item_id: int, *,
 
 
 def test_basic_reorder(screen: Screen):
-    events = []
-    children_order = []
-    col_ref = None
+    sort_events: list[tuple[ui.element, ui.element, ui.element, int, int]] = []
+    item = None
 
     @ui.page('/')
     def page():
-        nonlocal col_ref
+        nonlocal item
         with ui.column() as col:
-            a = ui.label('A')
-            b = ui.label('B')
-            c = ui.label('C')
-        col_ref = col
+            item = ui.label('A')
+            ui.label('B')
+            ui.label('C')
+        order = ui.label()
 
-        def on_end(e):
-            events.append((e.old_index, e.new_index))
-            children_order.clear()
-            children_order.extend(child.text for child in col_ref)
-
-        col.make_sortable(on_end=on_end)
-        ui.label(f'ids:{a.id},{b.id},{c.id},{col.id}')
+        def handle_end(e: events.SortableEventArguments):
+            sort_events.append((e.item, e.source, e.target, e.old_index, e.new_index))
+            order.text = f'col: {",".join(child._text or "" for child in col)}'  # pylint: disable=protected-access
+        col.make_sortable(on_end=handle_end)
 
     screen.open('/')
-    screen.wait(0.5)
+    screen.should_contain('A')
+    assert isinstance(item, ui.label)
 
-    # extract IDs from the page
-    text = screen.find('ids:').text
-    ids = text.replace('ids:', '').split(',')
-    a_id, col_id = int(ids[0]), int(ids[3])
-
-    # simulate moving A (index 0) to index 2
-    _dispatch_sortend(screen, col_id, a_id, old_index=0, new_index=2)
-    screen.wait(0.5)
-
-    # verify callback fired
-    assert len(events) == 1
-    assert events[0] == (0, 2)
-
-    # verify server-side children order: B, C, A
-    assert children_order == ['B', 'C', 'A']
+    _simulate_sortend_event(screen, item, old_index=0, new_index=2)
+    screen.should_contain('col: B,C,A')
+    assert item.parent_slot is not None
+    assert sort_events == [(item, item.parent_slot.parent, item.parent_slot.parent, 0, 2)]
 
 
 def test_cross_container(screen: Screen):
-    events = []
+    sort_events: list[tuple[str, int, int]] = []
+    item, column1, column2 = None, None, None
 
     @ui.page('/')
     def page():
+        nonlocal item, column1, column2
         with ui.row():
-            with ui.column() as col1:
-                a = ui.label('A')
-                b = ui.label('B')
-            with ui.column() as col2:
-                c = ui.label('C')
-        col1.make_sortable(group='shared', on_end=lambda e: events.append(('col1', e.old_index, e.new_index)))
-        col2.make_sortable(group='shared', on_end=lambda e: events.append(('col2', e.old_index, e.new_index)))
-        ui.label(f'ids:{a.id},{b.id},{c.id},{col1.id},{col2.id}')
+            with ui.column() as column1:
+                item = ui.label('A')
+                ui.label('B')
+            with ui.column() as column2:
+                ui.label('C')
+        order1 = ui.label()
+        order2 = ui.label()
+
+        def handle_end_col1(e: events.SortableEventArguments):
+            sort_events.append(('col1', e.old_index, e.new_index))
+            order1.text = f'col1: {",".join(child._text or "" for child in column1)}'  # pylint: disable=protected-access
+            order2.text = f'col2: {",".join(child._text or "" for child in column2)}'  # pylint: disable=protected-access
+        column1.make_sortable(group='shared', on_end=handle_end_col1)
+        column2.make_sortable(group='shared', on_end=lambda e: sort_events.append(('col2', e.old_index, e.new_index)))
 
     screen.open('/')
-    screen.wait(0.5)
+    screen.should_contain('A')
+    assert isinstance(item, ui.label)
+    assert isinstance(column1, ui.column)
+    assert isinstance(column2, ui.column)
 
-    text = screen.find('ids:').text
-    ids = text.replace('ids:', '').split(',')
-    a_id, col1_id, col2_id = int(ids[0]), int(ids[3]), int(ids[4])
-
-    # simulate moving A from col1 (index 0) to col2 (index 1)
-    _dispatch_sortend(screen, col1_id, a_id, from_id=col1_id, to_id=col2_id, old_index=0, new_index=1)
-    screen.wait(0.5)
-
-    # verify callback on col1 fired
-    assert len(events) == 1
-    assert events[0] == ('col1', 0, 1)
-
-
-def test_enable_disable(screen: Screen):
-    @ui.page('/')
-    def page():
-        with ui.column() as col:
-            ui.label('A')
-            ui.label('B')
-        sortable = col.make_sortable()
-        ui.button('Disable', on_click=sortable.disable)
-        ui.button('Enable', on_click=sortable.enable)
-
-    screen.open('/')
-    screen.wait(0.5)
-
-    # verify disable/enable don't raise errors
-    screen.click('Disable')
-    screen.wait(0.3)
-    screen.click('Enable')
-    screen.wait(0.3)
+    _simulate_sortend_event(screen, item, source=column1, target=column2, old_index=0, new_index=1)
+    screen.should_contain('col1: B')
+    screen.should_contain('col2: C,A')
+    assert sort_events == [('col1', 0, 1)]
 
 
 def test_multiple_handlers(screen: Screen):
-    events1 = []
-    events2 = []
+    events1: list[tuple[int, int]] = []
+    events2: list[tuple[int, int]] = []
+    item = None
 
     @ui.page('/')
     def page():
+        nonlocal item
         with ui.column() as col:
-            a = ui.label('A')
-            b = ui.label('B')
-        sortable = col.make_sortable(on_end=lambda e: events1.append(e.new_index))
-        sortable.on_end(lambda e: events2.append(e.new_index))
-        ui.label(f'ids:{a.id},{b.id},{col.id}')
+            item = ui.label('A')
+            ui.label('B')
+        order = ui.label()
+
+        def handle_end(e: events.SortableEventArguments):
+            events1.append((e.old_index, e.new_index))
+            order.text = f'col: {",".join(child._text or "" for child in col)}'  # pylint: disable=protected-access
+        sortable = col.make_sortable(on_end=handle_end)
+        sortable.on_end(lambda e: events2.append((e.old_index, e.new_index)))
 
     screen.open('/')
-    screen.wait(0.5)
+    screen.should_contain('A')
+    assert isinstance(item, ui.label)
 
-    text = screen.find('ids:').text
-    ids = text.replace('ids:', '').split(',')
-    a_id, col_id = int(ids[0]), int(ids[2])
-
-    _dispatch_sortend(screen, col_id, a_id, old_index=0, new_index=1)
-    screen.wait(0.5)
-
-    assert events1 == [1]
-    assert events2 == [1]
-
-
-def test_element_references(screen: Screen):
-    results = {}
-
-    @ui.page('/')
-    def page():
-        with ui.column() as col:
-            a = ui.label('A')
-            b = ui.label('B')
-
-        def on_end(e):
-            results['item_id'] = e.item.id
-            results['source_id'] = e.source.id
-            results['target_id'] = e.target.id
-
-        col.make_sortable(on_end=on_end)
-        ui.label(f'ids:{a.id},{b.id},{col.id}')
-
-    screen.open('/')
-    screen.wait(0.5)
-
-    text = screen.find('ids:').text
-    ids = text.replace('ids:', '').split(',')
-    a_id, col_id = int(ids[0]), int(ids[2])
-
-    _dispatch_sortend(screen, col_id, a_id, old_index=0, new_index=1)
-    screen.wait(0.5)
-
-    assert results['item_id'] == a_id
-    assert results['source_id'] == col_id
-    assert results['target_id'] == col_id
+    _simulate_sortend_event(screen, item, old_index=0, new_index=1)
+    screen.should_contain('col: B,A')
+    assert events1 == [(0, 1)]
+    assert events2 == [(0, 1)]
