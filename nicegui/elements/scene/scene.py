@@ -6,7 +6,6 @@ from typing import Any, Literal
 from typing_extensions import Self
 
 from ... import binding
-from ...dataclasses import KWONLY_SLOTS
 from ...defaults import DEFAULT_PROP, resolve_defaults
 from ...element import Element
 from ...events import (
@@ -20,7 +19,7 @@ from ...events import (
 from .scene_object3d import Object3D
 
 
-@dataclass(**KWONLY_SLOTS)
+@dataclass(kw_only=True, slots=True)
 class SceneCamera:
     type: Literal['perspective', 'orthographic']
     params: dict[str, float]
@@ -35,7 +34,7 @@ class SceneCamera:
     up_z: float = 1
 
 
-@dataclass(**KWONLY_SLOTS)
+@dataclass(kw_only=True, slots=True)
 class SceneObject:
     id: str = 'scene'
 

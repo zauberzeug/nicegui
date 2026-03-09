@@ -3,11 +3,10 @@ from typing import Any
 
 from typing_extensions import Self
 
-from ...dataclasses import KWONLY_SLOTS
 from .leaflet_layer import Layer
 
 
-@dataclass(**KWONLY_SLOTS)
+@dataclass(kw_only=True, slots=True)
 class GenericLayer(Layer):
     name: str
     args: list[Any] = field(default_factory=list)
@@ -19,7 +18,7 @@ class GenericLayer(Layer):
         }
 
 
-@dataclass(**KWONLY_SLOTS)
+@dataclass(kw_only=True, slots=True)
 class TileLayer(Layer):
     url_template: str
     options: dict = field(default_factory=dict)
@@ -31,7 +30,7 @@ class TileLayer(Layer):
         }
 
 
-@dataclass(**KWONLY_SLOTS)
+@dataclass(kw_only=True, slots=True)
 class WmsLayer(Layer):
     url_template: str
     options: dict = field(default_factory=dict)
@@ -43,7 +42,7 @@ class WmsLayer(Layer):
         }
 
 
-@dataclass(**KWONLY_SLOTS)
+@dataclass(kw_only=True, slots=True)
 class ImageOverlay(Layer):
     url: str
     bounds: list[list[float]]
@@ -56,7 +55,7 @@ class ImageOverlay(Layer):
         }
 
 
-@dataclass(**KWONLY_SLOTS)
+@dataclass(kw_only=True, slots=True)
 class VideoOverlay(Layer):
     url: str | list[str]
     bounds: list[list[float]]
@@ -69,7 +68,7 @@ class VideoOverlay(Layer):
         }
 
 
-@dataclass(**KWONLY_SLOTS)
+@dataclass(kw_only=True, slots=True)
 class Marker(Layer):
     latlng: tuple[float, float]
     options: dict = field(default_factory=dict)

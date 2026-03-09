@@ -9,7 +9,6 @@ from typing_extensions import ParamSpec, Self
 
 from .. import background_tasks, core
 from ..awaitable_response import AwaitableResponse
-from ..dataclasses import KWONLY_SLOTS
 from ..element import Element
 from ..helpers import is_coroutine_function
 
@@ -18,7 +17,7 @@ _T = TypeVar('_T')
 _P = ParamSpec('_P')
 
 
-@dataclass(**KWONLY_SLOTS)
+@dataclass(kw_only=True, slots=True)
 class RefreshableTarget:
     container: RefreshableContainer
     refreshable: refreshable

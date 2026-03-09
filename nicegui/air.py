@@ -15,7 +15,6 @@ import socketio.exceptions
 
 from . import background_tasks, core, helpers
 from .client import Client
-from .dataclasses import KWONLY_SLOTS
 from .logging import log
 from .timer import Timer as timer
 
@@ -25,7 +24,7 @@ if TYPE_CHECKING:
 RELAY_HOST = 'https://on-air.nicegui.io/'
 
 
-@dataclass(**KWONLY_SLOTS)
+@dataclass(kw_only=True, slots=True)
 class Stream:
     data: AsyncIterator[bytes]
     response: httpx.Response
