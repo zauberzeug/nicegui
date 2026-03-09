@@ -6,6 +6,7 @@ from typing_extensions import Self
 
 from ... import core, json
 from ...events import Handler, SortableEventArguments, handle_event
+from ...observables import ObservableDict
 
 if TYPE_CHECKING:
     from ..mixins.sortable_element import SortableElement
@@ -27,6 +28,17 @@ class Sortable:
     ) -> None:
         self._element = element
 
+        self._options = ObservableDict({
+            'animation': animation * 1000,
+            'ghostClass': ghost_class,
+            **({} if handle is None else {'handle': handle}),
+            **({} if group is None else {'group': group}),
+            **(options or {}),
+        }, on_change=lambda: self._element.client.run_javascript(';'.join(
+            f'{self._element.html_id}._sortable.option({json.dumps(k)}, {json.dumps(v)})'
+            for k, v in self._options.items()
+        )))
+
         self.on_end(lambda e: e.item.move(target_container=e.target, target_index=e.new_index))
         if on_end:
             self.on_end(on_end)
@@ -37,11 +49,7 @@ class Sortable:
             (async () => {{
                 const {{ Sortable }} = await import('nicegui-sortable');
                 const sortable = Sortable.create({element.html_id}, {{
-                    animation: {animation * 1000},
-                    ghostClass: {json.dumps(ghost_class)},
-                    handle: {json.dumps(handle)},
-                    group: {json.dumps(group)},
-                    ...{json.dumps(options or {})},
+                    ...{json.dumps(self._options)},
                     onEnd: (evt) => {{
                         // sync client-side element tree to prevent snap-back on next server update
                         const fromId = parseInt(evt.from.id.substring(1));
@@ -85,19 +93,54 @@ class Sortable:
         )), js_handler='(event) => emit(event.detail)')
         return self
 
+    @property
+    def options(self) -> ObservableDict:
+        """The SortableJS options dictionary."""
+        return self._options
+
+    @property
+    def animation(self) -> float:
+        """Animation duration in seconds."""
+        return self._options.get('animation', 150) / 1000
+
+    @animation.setter
+    def animation(self, value: float) -> None:
+        self._options['animation'] = value * 1000
+
+    @property
+    def handle(self) -> str | None:
+        """CSS selector for drag handle elements."""
+        return self._options.get('handle')
+
+    @handle.setter
+    def handle(self, value: str | None) -> None:
+        self._options['handle'] = value
+
+    @property
+    def group(self) -> str | dict[str, Any] | None:
+        """Shared group name or config dict for cross-container dragging."""
+        return self._options.get('group')
+
+    @group.setter
+    def group(self, value: str | dict[str, Any] | None) -> None:
+        self._options['group'] = value
+
+    @property
+    def ghost_class(self) -> str:
+        """CSS class applied to the drop placeholder."""
+        return self._options.get('ghostClass', 'opacity-50')
+
+    @ghost_class.setter
+    def ghost_class(self, value: str) -> None:
+        self._options['ghostClass'] = value
+
     def enable(self) -> None:
         """Enable sorting on the container."""
-        self.set_option('disabled', False)
+        self._options['disabled'] = False
 
     def disable(self) -> None:
         """Disable sorting on the container."""
-        self.set_option('disabled', True)
-
-    def set_option(self, key: str, value: Any) -> None:
-        """Set a SortableJS option."""
-        self._element.client.run_javascript(f'''
-            {self._element.html_id}._sortable.option({json.dumps(key)}, {json.dumps(value)})
-        ''')
+        self._options['disabled'] = True
 
     def destroy(self) -> None:
         """Destroy the SortableJS instance."""
