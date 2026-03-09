@@ -5,7 +5,14 @@ from typing_extensions import Self
 from ...awaitable_response import AwaitableResponse
 from ...defaults import DEFAULT_PROP, resolve_defaults
 from ...element import Element
-from ...events import GenericEventArguments, Handler, XtermBellEventArguments, XtermDataEventArguments, handle_event
+from ...events import (
+    GenericEventArguments,
+    Handler,
+    XtermBellEventArguments,
+    XtermDataEventArguments,
+    XtermResizeEventArguments,
+    handle_event,
+)
 
 
 class Xterm(Element, component='xterm.js', esm={'nicegui-xterm': 'dist'}):
@@ -58,6 +65,16 @@ class Xterm(Element, component='xterm.js', esm={'nicegui-xterm': 'dist'}):
         def handle_data(e: GenericEventArguments) -> None:
             handle_event(callback, XtermDataEventArguments(sender=self, client=self.client, data=e.args))
         self.on('data', handle_data)
+        return self
+
+    def on_resize(self, callback: Handler[XtermResizeEventArguments]) -> Self:
+        """Add a callback to be invoked when the terminal is resized."""
+        def handle_resize(e: GenericEventArguments) -> None:
+            handle_event(callback, XtermResizeEventArguments(
+                sender=self, client=self.client,
+                cols=e.args['cols'], rows=e.args['rows'],
+            ))
+        self.on('resize', handle_resize)
         return self
 
     def input(self, data: str, *, was_user_input: bool = True) -> AwaitableResponse:

@@ -416,6 +416,12 @@ class XtermDataEventArguments(UiEventArguments):
     data: str
 
 
+@dataclass(**KWONLY_SLOTS)
+class XtermResizeEventArguments(UiEventArguments):
+    cols: int
+    rows: int
+
+
 EventT = TypeVar('EventT', bound=EventArguments)
 Handler: TypeAlias = Callable[[EventT], Any] | Callable[[], Any]
 

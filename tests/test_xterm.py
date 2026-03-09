@@ -47,26 +47,29 @@ def test_write(screen: Screen) -> None:
 
 
 def test_bell_and_data_events(screen: Screen) -> None:
-    counts = {'bell': 0, 'data': 0}
+    counts = {'bell': 0, 'data': 0, 'resize': 0}
 
     @ui.page('/')
     def main():
         terminal = ui.xterm()
         terminal.on_bell(lambda: counts.update(bell=counts['bell'] + 1))
         terminal.on_data(lambda: counts.update(data=counts['data'] + 1))
+        # never called, no resize happening here
+        terminal.on_resize(lambda: counts.update(data=counts['resize'] + 1))
+
         ui.button('Ring Bell', on_click=lambda: terminal.write('\x07'))
         ui.button('Input 456', on_click=lambda: terminal.input('456'))
 
     screen.open('/')
     screen.click('Ring Bell')
     screen.wait(0.1)
-    assert counts == {'bell': 1, 'data': 0}
+    assert counts == {'bell': 1, 'data': 0, 'resize': 0}
 
     screen.find_by_class('xterm').click()
     screen.type('123')
     screen.click('Input 456')
     screen.wait(0.1)
-    assert counts == {'bell': 1, 'data': 4}  # The `input` method triggers a single data event
+    assert counts == {'bell': 1, 'data': 4, 'resize': 0}  # The `input` method triggers a single data event
     screen.should_not_contain('123456')  # Neither typing nor the `input` method write text on the terminal
 
 
@@ -75,7 +78,8 @@ def test_fit_and_resize_event(screen: Screen) -> None:
     def main():
         with ui.card().classes('size-96'):
             terminal = ui.xterm()
-            terminal.on('resize', lambda e: ui.notify(f'Size: {e.args["cols"]}x{e.args["rows"]}'))
+            terminal.on_resize(lambda e: ui.notify(f'Size: {e.cols}x{e.rows}'))
+
         ui.button('Fill', on_click=lambda: terminal.classes('size-full'))
         ui.button('Fit', on_click=terminal.fit)
 
