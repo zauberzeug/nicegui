@@ -25,6 +25,7 @@ with suppress(ImportError):
         # webview depends on bottle which uses the deprecated CGI function (https://github.com/bottlepy/bottle/issues/1403)
         warnings.filterwarnings('ignore', category=DeprecationWarning)
         import webview
+        import webview.dom
     optional_features.register('webview')
 
 
@@ -61,8 +62,15 @@ def _bind_pywebview_events(window: webview.Window, event_sender: Connection) -> 
         except OSError:
             pass
 
+    def bind_drop() -> None:
+        window.dom.document.events.dragover += webview.dom.DOMEventHandler(lambda _: 0, True, False)  # prevent_default
+        window.dom.document.events.drop += webview.dom.DOMEventHandler(lambda e: send('drop', files=[
+            file_.get('pywebviewFullPath', '') for file_ in e.get('dataTransfer', {}).get('files', [])
+        ]), True, False)
+
     window.events.shown += lambda: send('shown')
     window.events.loaded += lambda: send('loaded')
+    window.events.loaded += bind_drop
     window.events.minimized += lambda: send('minimized')
     window.events.maximized += lambda: send('maximized')
     window.events.restored += lambda: send('restored')
