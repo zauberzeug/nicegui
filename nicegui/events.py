@@ -24,6 +24,12 @@ class EventArguments:
 
 
 @dataclass(kw_only=True, slots=True)
+class NativeEventArguments(EventArguments):
+    type: str
+    args: dict[str, Any]
+
+
+@dataclass(kw_only=True, slots=True)
 class ObservableChangeEventArguments(EventArguments):
     sender: ObservableCollection
 
