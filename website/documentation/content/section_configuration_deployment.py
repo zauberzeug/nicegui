@@ -1,7 +1,7 @@
 from nicegui import ui
 
 from ..windows import bash_window, python_window
-from . import doc, run_documentation
+from . import diagnostics_view_documentation, doc, run_documentation
 
 doc.title('Configuration & Deployment')
 
@@ -153,6 +153,8 @@ def background_tasks_demo():
     ui.button('Compute', on_click=lambda: background_tasks.create(compute()))
     ui.button('Backup', on_click=lambda: background_tasks.create(backup()))
 
+
+doc.intro(diagnostics_view_documentation)
 
 doc.text('Custom Vue Components', '''
     You can create custom components by subclassing `ui.element` and implementing a corresponding Vue component.

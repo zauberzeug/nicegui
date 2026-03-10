@@ -33,6 +33,7 @@ __all__ = [
     'dark_mode',
     'date',
     'date_input',
+    'diagnostics_view',
     'dialog',
     'download',
     'drawer',
@@ -167,6 +168,7 @@ from .elements.context_menu import ContextMenu as context_menu
 from .elements.dark_mode import DarkMode as dark_mode
 from .elements.date import Date as date
 from .elements.date_input import DateInput as date_input
+from .elements.diagnostics_view import DiagnosticsView as diagnostics_view
 from .elements.dialog import Dialog as dialog
 from .elements.drawer import Drawer as drawer
 from .elements.drawer import LeftDrawer as left_drawer

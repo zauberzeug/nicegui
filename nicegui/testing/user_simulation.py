@@ -3,6 +3,7 @@ import runpy
 from collections.abc import AsyncGenerator, Callable
 from contextlib import asynccontextmanager
 from pathlib import Path
+from typing import Any
 
 import httpx
 
@@ -16,7 +17,7 @@ from .user import User
 
 @asynccontextmanager
 async def user_simulation(
-    root: Callable | None = None, *, main_file: str | os.PathLike | None = None,
+    root: Callable | None = None, *, main_file: str | os.PathLike | None = None, **run_kwargs: Any,
 ) -> AsyncGenerator[User]:
     """Context manager for test user simulation.
 
@@ -24,9 +25,13 @@ async def user_simulation(
 
     :param root: root function which is passed directly to ``ui.run``; mutually exclusive with ``main_file`` argument.
     :param main_file: path to a NiceGUI main file executed via ``runpy.run_path``; mutually exclusive with ``root`` argument.
+    :param run_kwargs: additional keyword arguments forwarded to ``ui.run``; mutually exclusive with ``main_file``.
     """
     if main_file is not None and root is not None:
         raise ValueError('Cannot specify both `main_file` and `root` function simultaneously.')
+    if main_file is not None and run_kwargs:
+        raise ValueError(
+            'Cannot specify both `main_file` and `run_kwargs`; kwargs are ignored when `main_file` is provided.')
 
     with nicegui_reset_globals():
         os.environ['NICEGUI_USER_SIMULATION'] = 'true'
@@ -37,7 +42,7 @@ async def user_simulation(
                 runpy.run_path(str(main_file), run_name='__main__')
             else:
                 prepare_simulation()
-                ui.run(root, storage_secret='simulated secret')
+                ui.run(root, storage_secret='simulated secret', **run_kwargs)
 
             async with core.app.router.lifespan_context(core.app):
                 async with httpx.AsyncClient(transport=httpx.ASGITransport(core.app), base_url='http://test') as client:
