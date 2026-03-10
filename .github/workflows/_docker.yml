@@ -36,7 +36,7 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
       - uses: docker/setup-buildx-action@v4
-      - uses: docker/build-push-action@v6
+      - uses: docker/build-push-action@v7
         with:
           context: .
           file: ./release.dockerfile
@@ -47,7 +47,7 @@ jobs:
           cache-from: |
             type=registry,ref=${{ steps.prep.outputs.docker_image }}:buildcache-amd64
             type=registry,ref=${{ steps.prep.outputs.docker_image }}:buildcache-arm64
-      - uses: docker/build-push-action@v6
+      - uses: docker/build-push-action@v7
         with:
           context: .
           file: ./release.dockerfile
@@ -56,7 +56,7 @@ jobs:
           push: false
           cache-from: type=registry,ref=${{ steps.prep.outputs.docker_image }}:buildcache-amd64
           cache-to: type=registry,ref=${{ steps.prep.outputs.docker_image }}:buildcache-amd64,mode=max
-      - uses: docker/build-push-action@v6
+      - uses: docker/build-push-action@v7
         with:
           context: .
           file: ./release.dockerfile
