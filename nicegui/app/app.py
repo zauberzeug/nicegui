@@ -390,7 +390,7 @@ class App(FastAPI):
 
         :param path: string to filter clients by (or None to get all clients)
         """
-        
+
         for client in Client.instances.values():
             if path is None or client.page.path == path:
                 yield client
