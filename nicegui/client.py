@@ -7,7 +7,7 @@ import uuid
 from collections import defaultdict
 from collections.abc import Callable, Iterable
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, ClassVar
+from typing import TYPE_CHECKING, Any, ClassVar, cast
 
 from fastapi import Request
 from fastapi.responses import Response
@@ -397,7 +397,10 @@ class Client:
         """Handle an in-page exception by invoking handlers registered via `ui.on_exception(...)`."""
         for handler in self._exception_handlers:
             with self.content:
-                result = handler(exception) if helpers.expects_arguments(handler) else handler()
+                if helpers.expects_arguments(handler):
+                    result = cast(Callable[[Exception], Any], handler)(exception)
+                else:
+                    result = cast(Callable[[], Any], handler)()
 
             if helpers.should_await(result):
                 background_tasks.create(

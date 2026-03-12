@@ -40,7 +40,7 @@ class RefreshableTarget:
                 result = func(self.instance, *self.args, **self.kwargs)
 
         if helpers.should_await(result):
-            return helpers.await_with_context(result, self.container)
+            return cast(_T, helpers.await_with_context(result, self.container))
 
         return result
 

@@ -123,7 +123,7 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
             self._active_tasks.add(task)
 
             def _close_if_canceled(t: asyncio.Task) -> None:
-                if t.cancelled():
+                if t.cancelled() and asyncio.iscoroutine(result):
                     result.close()
                 self._active_tasks.discard(t)
 

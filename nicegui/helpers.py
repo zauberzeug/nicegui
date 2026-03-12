@@ -13,8 +13,9 @@ from collections.abc import Awaitable, Callable
 from contextlib import AbstractContextManager
 from inspect import Parameter, signature
 from pathlib import Path
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, TypeGuard, TypeVar
 
+from .awaitable_response import AwaitableResponse
 from .context import context
 from .logging import log
 
@@ -22,6 +23,7 @@ if TYPE_CHECKING:
     from .element import Element
 
 _shown_warnings: set[str] = set()
+_T = TypeVar('_T')
 
 
 def warn_once(message: str, *, stack_info: bool = False) -> None:
@@ -123,7 +125,7 @@ def event_type_to_camel_case(string: str) -> str:
     return '.'.join(kebab_to_camel_case(part) if part != '-' else part for part in string.split('.'))
 
 
-def should_await(result: Any) -> bool:
+def should_await(result: Any) -> TypeGuard[Awaitable[Any]]:
     """Determine if a result should be awaited.
 
     Returns ``True`` for awaitables that are not already managed
@@ -132,21 +134,19 @@ def should_await(result: Any) -> bool:
     Note: We want to await an awaitable result even if the handler is not an async function (like a lambda statement).
     """
 
-    from .awaitable_response import AwaitableResponse
-
     return isinstance(result, Awaitable) and not isinstance(result, (AwaitableResponse, asyncio.Task))
 
 
-async def await_with_context(awaitable: Awaitable[Any], ctx: AbstractContextManager) -> Any:
+async def await_with_context(awaitable: Awaitable[_T], ctx: AbstractContextManager) -> _T:
     """Await an awaitable within a context manager."""
     with ctx:
         return await awaitable
 
 
 def wrap_with_deprecated_awaitable_handler(
-    handler: Callable[..., Any] | Awaitable[Any],
-    *,
-    registration: str,
+        handler: Callable[..., Any] | Awaitable[Any],
+        *,
+        registration: str,
 ) -> Callable[..., Any]:
     """Wrap a direct awaitable registration in a callable and emit a deprecation warning."""
     if callable(handler):

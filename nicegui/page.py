@@ -140,7 +140,8 @@ class page:
                     if key == 500 or (isinstance(key, type) and isinstance(e, key)):
                         result = handler(request, e)
                         if helpers.should_await(result):
-                            background_tasks.create(result, name=f'exception handler {handler.__name__}')
+                            background_tasks.create(
+                                result, name=f'exception handler {handler.__name__}')
 
                 # NiceGUI exception handlers
                 core.app.handle_exception(e)

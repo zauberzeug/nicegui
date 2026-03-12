@@ -3,7 +3,7 @@ from __future__ import annotations
 from collections.abc import Callable, Iterator
 from contextlib import nullcontext
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, Any, Literal, TypeAlias, TypeVar
+from typing import TYPE_CHECKING, Any, Literal, TypeAlias, TypeVar, cast
 
 from . import background_tasks, core, helpers
 from .slot import Slot
@@ -440,9 +440,9 @@ def handle_event(handler: Handler[EventT] | None, arguments: EventT) -> None:
 
         with parent_slot:
             if helpers.expects_arguments(handler):
-                result = handler(arguments)
+                result = cast(Callable[[EventT], Any], handler)(arguments)
             else:
-                result = handler()
+                result = cast(Callable[[], Any], handler)()
         if helpers.should_await(result):
             background_tasks.create_or_defer(
                 helpers.await_with_context(result, parent_slot), name=str(handler))

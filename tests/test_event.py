@@ -27,7 +27,7 @@ async def test_event_with_args(user: User):
     def page():
         ui.button('Click me', on_click=lambda: event.emit(42))
         event.subscribe(lambda: ui.notify('clicked'))
-        event.subscribe(lambda x: ui.notify(f'{x=}'))
+        event.subscribe(lambda x: ui.notify(f'{x = }'))
 
     await user.open('/')
     user.find('Click me').click()

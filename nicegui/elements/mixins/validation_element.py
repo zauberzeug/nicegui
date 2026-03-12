@@ -1,5 +1,6 @@
+import asyncio
 from collections.abc import Awaitable, Callable
-from typing import Any, TypeAlias
+from typing import Any, TypeAlias, cast
 
 from typing_extensions import Self
 
@@ -66,6 +67,8 @@ class ValidationElement(ValueElement):
             result = self._validation(self.value)
             if helpers.should_await(result):
                 if return_result:
+                    if asyncio.iscoroutine(result):
+                        result.close()
                     raise NotImplementedError(
                         'The validate method cannot return results for async validation functions.')
 
@@ -73,7 +76,7 @@ class ValidationElement(ValueElement):
                     self.error = await result
                 background_tasks.create(await_error(), name=f'validate {self.id}')
                 return True
-            self.error = result
+            self.error = cast(str | None, result)
             return self.error is None
 
         if isinstance(self._validation, dict):
