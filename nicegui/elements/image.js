@@ -1,10 +1,6 @@
 export default {
   template: `
-    <component
-      :is="is_parallax ? 'q-parallax' : 'q-img'"
-      ref="qRef"
-      :src="computed_src"
-    >
+    <component :is="tag || 'q-img'" ref="qRef" :src="computed_src">
       <template v-for="(_, slot) in $slots" v-slot:[slot]="slotProps">
         <slot :name="slot" v-bind="slotProps || {}" />
       </template>
@@ -13,10 +9,7 @@ export default {
   props: {
     src: String,
     t: String,
-    is_parallax: {
-      type: Boolean,
-      default: false,
-    },
+    tag: String,
   },
   data: function () {
     return {
