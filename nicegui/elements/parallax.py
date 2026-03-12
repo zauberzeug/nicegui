@@ -1,15 +1,12 @@
 from __future__ import annotations
 
 from pathlib import Path
+from typing import TYPE_CHECKING
 
-from .. import optional_features
 from .image import Image
 
-try:
+if TYPE_CHECKING:
     from PIL.Image import Image as PIL_Image
-    optional_features.register('pillow')
-except ImportError:
-    pass
 
 
 class Parallax(Image, component='image.js'):
