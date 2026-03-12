@@ -84,10 +84,10 @@ def move_markers() -> None:
     *Added in version 2.17.0*
 ''')
 def overlay_image():
-    m = ui.leaflet(center=(40.74, -74.18), zoom=11)
+    m = ui.leaflet(center=(52.5165, 13.4047), zoom=13)
     m.image_overlay(
-        url='https://maps.lib.utexas.edu/maps/historical/newark_nj_1922.jpg',
-        bounds=[[40.712216, -74.22655], [40.773941, -74.12544]],
+        url='https://images.squarespace-cdn.com/content/v1/5b3e152e620b8559f2edcf7d/1613743643304-Y7SLCT43BQ2N8C2QA3JN/1660+berlin+%28Custom%29.jpg',
+        bounds=[[52.5088, 13.3877], [52.5242, 13.4218]],
         options={'opacity': 0.8},
     )
 

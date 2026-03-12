@@ -1,5 +1,7 @@
 from pathlib import Path
 
+from PIL import Image
+
 from nicegui import app, ui
 from nicegui.testing import Screen
 
@@ -27,7 +29,9 @@ example_data = ('data:image/png;base64,'
 
 
 def test_base64_image(screen: Screen):
-    ui.image(example_data).style('width: 50px;')
+    @ui.page('/')
+    def page():
+        ui.image(example_data).style('width: 50px;')
 
     screen.open('/')
     screen.wait(0.2)
@@ -36,7 +40,9 @@ def test_base64_image(screen: Screen):
 
 
 def test_setting_local_file(screen: Screen):
-    ui.image(example_file)
+    @ui.page('/')
+    def page():
+        ui.image(example_file)
 
     screen.open('/')
     image = screen.find_by_class('q-img__image')
@@ -45,7 +51,10 @@ def test_setting_local_file(screen: Screen):
 
 def test_binding_local_file(screen: Screen):
     images = {'one': example_file}
-    ui.image().bind_source_from(images, 'one')
+
+    @ui.page('/')
+    def page():
+        ui.image().bind_source_from(images, 'one')
 
     screen.open('/')
     image = screen.find_by_class('q-img__image')
@@ -53,7 +62,9 @@ def test_binding_local_file(screen: Screen):
 
 
 def test_set_source_with_local_file(screen: Screen):
-    ui.image().set_source(example_file)
+    @ui.page('/')
+    def page():
+        ui.image().set_source(example_file)
 
     screen.open('/')
     image = screen.find_by_class('q-img__image')
@@ -61,9 +72,11 @@ def test_set_source_with_local_file(screen: Screen):
 
 
 def test_removal_of_generated_routes(screen: Screen):
-    img = ui.image(example_file)
-    ui.button('Slide 2', on_click=lambda: img.set_source(str(example_file).replace('slide1', 'slide2')))
-    ui.button('Slide 3', on_click=lambda: img.set_source(str(example_file).replace('slide1', 'slide3')))
+    @ui.page('/')
+    def page():
+        img = ui.image(example_file)
+        ui.button('Slide 2', on_click=lambda: img.set_source(str(example_file).replace('slide1', 'slide2')))
+        ui.button('Slide 3', on_click=lambda: img.set_source(str(example_file).replace('slide1', 'slide3')))
 
     screen.open('/')
     number_of_routes = len(app.routes)
@@ -78,11 +91,13 @@ def test_removal_of_generated_routes(screen: Screen):
 
 
 def test_force_reload(screen: Screen):
-    img1 = ui.image(example_file)
-    img2 = ui.image(example_data)
+    @ui.page('/')
+    def page():
+        img1 = ui.image(example_file)
+        img2 = ui.image(example_data)
 
-    ui.button('Reload 1', on_click=img1.force_reload)
-    ui.button('Reload 2', on_click=img2.force_reload)
+        ui.button('Reload 1', on_click=img1.force_reload)
+        ui.button('Reload 2', on_click=img2.force_reload)
 
     screen.open('/')
     images = screen.find_all_by_class('q-img__image')
@@ -95,4 +110,24 @@ def test_force_reload(screen: Screen):
 
     screen.click('Reload 2')
     screen.wait(0.5)
-    screen.assert_py_logger('WARNING', 'ui.image: force_reload() only works with network sources (not base64)')
+    screen.assert_py_logger('WARNING', 'ui.image: force_reload() only works with network sources (not data URIs)')
+
+
+def test_pil_image_cleanup(screen: Screen):
+    temp_path_str = ''
+
+    @ui.page('/')
+    def page():
+        nonlocal temp_path_str
+        pil_img = Image.new('RGB', (100, 100), color='red')
+        image = ui.image(pil_img)
+        temp_path_str = str(image._temp_path)  # pylint: disable=protected-access  # store string, not the _TempPath
+        assert Path(temp_path_str).exists()
+        ui.button('Delete', on_click=image.delete)
+
+    screen.open('/')
+    image = screen.find_by_class('q-img__image')
+    screen.should_load_image(image)
+
+    screen.click('Delete')
+    screen.wait_for(lambda: not Path(temp_path_str).exists())

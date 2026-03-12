@@ -5,14 +5,14 @@ from . import doc
 
 @doc.demo(ui.html)
 def main_demo() -> None:
-    ui.html('This is <strong>HTML</strong>.')
+    ui.html('This is <strong>HTML</strong>.', sanitize=False)
 
 
 @doc.demo('Producing in-line elements', '''
     Use the `tag` parameter to produce something other than a div.
 ''')
 def demo_inline() -> None:
-    ui.html('This is <u>emphasized</u>.', tag='em')
+    ui.html('This is <u>emphasized</u>.', tag='em', sanitize=False)
 
 
 @doc.demo(other_html_elements_title := 'Other HTML Elements', other_html_elements_description := '''

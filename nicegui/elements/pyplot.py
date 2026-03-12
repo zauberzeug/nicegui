@@ -1,17 +1,17 @@
 from __future__ import annotations
 
-import asyncio
 import io
 import os
+import weakref
+from contextlib import suppress
 from typing import Any
 
 from typing_extensions import Self
 
-from .. import background_tasks, optional_features
-from ..client import Client
+from .. import optional_features
 from ..element import Element
 
-try:
+with suppress(ImportError):
     if os.environ.get('MATPLOTLIB', 'true').lower() == 'true':
         import matplotlib.figure
         import matplotlib.pyplot as plt
@@ -21,16 +21,21 @@ try:
 
             def __init__(self, element: Matplotlib, *args: Any, **kwargs: Any) -> None:
                 super().__init__(*args, **kwargs)
-                self.element = element
+                self._element = weakref.ref(element)
+
+            @property
+            def element(self) -> Matplotlib:
+                """The element this matplotlib figure belongs to."""
+                element = self._element()
+                if element is None:
+                    raise RuntimeError('The element this matplotlib figure belongs to has been deleted.')
+                return element
 
             def __enter__(self) -> Self:
                 return self
 
             def __exit__(self, *_) -> None:
                 self.element.update()
-
-except ImportError:
-    pass
 
 
 class Pyplot(Element, default_classes='nicegui-pyplot'):
@@ -51,9 +56,6 @@ class Pyplot(Element, default_classes='nicegui-pyplot'):
         self.fig = plt.figure(**kwargs)  # pylint: disable=possibly-used-before-assignment
         self._convert_to_html()
 
-        if not self.client.shared:
-            background_tasks.create(self._auto_close(), name='auto-close plot figure')
-
     def _convert_to_html(self) -> None:
         with io.StringIO() as output:
             self.fig.savefig(output, format='svg')
@@ -69,10 +71,9 @@ class Pyplot(Element, default_classes='nicegui-pyplot'):
             plt.close(self.fig)
         self.update()
 
-    async def _auto_close(self) -> None:
-        while self.client.id in Client.instances:
-            await asyncio.sleep(1.0)
+    def _handle_delete(self) -> None:
         plt.close(self.fig)
+        super()._handle_delete()
 
 
 class Matplotlib(Element, default_classes='nicegui-matplotlib'):
@@ -89,7 +90,7 @@ class Matplotlib(Element, default_classes='nicegui-matplotlib'):
             raise ImportError('Matplotlib is not installed. Please run "pip install matplotlib".')
 
         super().__init__('div')
-        self.figure = MatplotlibFigure(self, **kwargs)
+        self.figure = MatplotlibFigure(self, **kwargs)  # pylint: disable=possibly-used-before-assignment
         self._convert_to_html()
 
     def _convert_to_html(self) -> None:
@@ -98,5 +99,6 @@ class Matplotlib(Element, default_classes='nicegui-matplotlib'):
             self._props['innerHTML'] = output.getvalue()
 
     def update(self) -> None:
-        self._convert_to_html()
-        return super().update()
+        with self._props.suspend_updates():
+            self._convert_to_html()
+        super().update()

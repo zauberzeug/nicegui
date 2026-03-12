@@ -12,6 +12,7 @@ export default {
         if (evt.repeat && !this.repeating) return;
 
         this.$emit("key", {
+          event: evt,
           action: event,
           altKey: evt.altKey,
           ctrlKey: evt.ctrlKey,

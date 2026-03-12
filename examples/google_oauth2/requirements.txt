@@ -1,1 +1,2 @@
-authlib
+authlib>=1.0
+nicegui>=3.0

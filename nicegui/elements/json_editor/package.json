@@ -1,0 +1,28 @@
+{
+  "name": "nicegui-json-editor-bundle",
+  "version": "1.0.0",
+  "description": "JSON Editor bundling for NiceGUI",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "rollup -c rollup.config.mjs --validate",
+    "clean": "rimraf ./dist/*"
+  },
+  "dependencies": {
+    "ajv-formats": "^3.0.1",
+    "vanilla-jsoneditor": "^3.10.0"
+  },
+  "overrides": {
+    "ajv": ">=8.18.0",
+    "lodash-es": "^4.17.23",
+    "svelte": ">=5.53.5"
+  },
+  "devDependencies": {
+    "rollup": "^4.59.0",
+    "@rollup/plugin-commonjs": "^29.0.0",
+    "@rollup/plugin-json": "^6.1.0",
+    "@rollup/plugin-node-resolve": "^16.0.1",
+    "@rollup/plugin-terser": "^1.0.0",
+    "rimraf": "^6.1.3"
+  }
+}

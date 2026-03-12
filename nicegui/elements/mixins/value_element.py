@@ -1,4 +1,5 @@
-from typing import Any, Callable, List, Optional, cast
+from collections.abc import Callable
+from typing import Any, cast
 
 from typing_extensions import Self
 
@@ -11,7 +12,7 @@ class ValueElement(Element):
     VALUE_PROP: str = 'model-value'
     '''Name of the prop that holds the value of the element'''
 
-    LOOPBACK: Optional[bool] = True
+    LOOPBACK: bool | None = True
     '''Whether to set the new value directly on the client or after getting an update from the server.
 
     - ``True``: The value is updated by sending a change event to the server which responds with an update.
@@ -24,7 +25,7 @@ class ValueElement(Element):
 
     def __init__(self, *,
                  value: Any,
-                 on_value_change: Optional[Handler[ValueChangeEventArguments]] = None,
+                 on_value_change: Handler[ValueChangeEventArguments] | None = None,
                  throttle: float = 0,
                  **kwargs: Any,
                  ) -> None:
@@ -33,7 +34,7 @@ class ValueElement(Element):
         self.set_value(value)
         self._props[self.VALUE_PROP] = self._value_to_model_value(value)
         self._props['loopback'] = self.LOOPBACK
-        self._change_handlers: List[Handler[ValueChangeEventArguments]] = [on_value_change] if on_value_change else []
+        self._change_handlers: list[Handler[ValueChangeEventArguments]] = [on_value_change] if on_value_change else []
 
         def handle_change(e: GenericEventArguments) -> None:
             self._send_update_on_value_change = self.LOOPBACK is True
@@ -49,7 +50,8 @@ class ValueElement(Element):
     def bind_value_to(self,
                       target_object: Any,
                       target_name: str = 'value',
-                      forward: Callable[..., Any] = lambda x: x,
+                      forward: Callable[[Any], Any] | None = None, *,
+                      strict: bool | None = None,
                       ) -> Self:
         """Bind the value of this element to the target object's target_name property.
 
@@ -58,15 +60,18 @@ class ValueElement(Element):
 
         :param target_object: The object to bind to.
         :param target_name: The name of the property to bind to.
-        :param forward: A function to apply to the value before applying it to the target.
+        :param forward: A function to apply to the value before applying it to the target (default: identity).
+        :param strict: Whether to check (and raise) if the target object has the specified property (default: None,
+            performs a check if the object is not a dictionary, *added in version 3.0.0*).
         """
-        bind_to(self, 'value', target_object, target_name, forward)
+        bind_to(self, 'value', target_object, target_name, forward, self_strict=False, other_strict=strict)
         return self
 
     def bind_value_from(self,
                         target_object: Any,
                         target_name: str = 'value',
-                        backward: Callable[..., Any] = lambda x: x,
+                        backward: Callable[[Any], Any] | None = None, *,
+                        strict: bool | None = None,
                         ) -> Self:
         """Bind the value of this element from the target object's target_name property.
 
@@ -75,16 +80,19 @@ class ValueElement(Element):
 
         :param target_object: The object to bind from.
         :param target_name: The name of the property to bind from.
-        :param backward: A function to apply to the value before applying it to this element.
+        :param backward: A function to apply to the value before applying it to this element (default: identity).
+        :param strict: Whether to check (and raise) if the target object has the specified property (default: None,
+            performs a check if the object is not a dictionary, *added in version 3.0.0*).
         """
-        bind_from(self, 'value', target_object, target_name, backward)
+        bind_from(self, 'value', target_object, target_name, backward, self_strict=False, other_strict=strict)
         return self
 
     def bind_value(self,
                    target_object: Any,
                    target_name: str = 'value', *,
-                   forward: Callable[..., Any] = lambda x: x,
-                   backward: Callable[..., Any] = lambda x: x,
+                   forward: Callable[[Any], Any] | None = None,
+                   backward: Callable[[Any], Any] | None = None,
+                   strict: bool | None = None,
                    ) -> Self:
         """Bind the value of this element to the target object's target_name property.
 
@@ -94,10 +102,14 @@ class ValueElement(Element):
 
         :param target_object: The object to bind to.
         :param target_name: The name of the property to bind to.
-        :param forward: A function to apply to the value before applying it to the target.
-        :param backward: A function to apply to the value before applying it to this element.
+        :param forward: A function to apply to the value before applying it to the target (default: identity).
+        :param backward: A function to apply to the value before applying it to this element (default: identity).
+        :param strict: Whether to check (and raise) if the target object has the specified property (default: None,
+            performs a check if the object is not a dictionary, *added in version 3.0.0*).
         """
-        bind(self, 'value', target_object, target_name, forward=forward, backward=backward)
+        bind(self, 'value', target_object, target_name,
+             forward=forward, backward=backward,
+             self_strict=False, other_strict=strict)
         return self
 
     def set_value(self, value: Any) -> None:
@@ -108,10 +120,14 @@ class ValueElement(Element):
         self.value = value
 
     def _handle_value_change(self, value: Any) -> None:
-        self._props[self.VALUE_PROP] = self._value_to_model_value(value)
+        previous_value = self._props.get(self.VALUE_PROP)
+        with self._props.suspend_updates():
+            self._props[self.VALUE_PROP] = self._value_to_model_value(value)
         if self._send_update_on_value_change:
             self.update()
-        args = ValueChangeEventArguments(sender=self, client=self.client, value=self._value_to_event_value(value))
+        args = ValueChangeEventArguments(sender=self, client=self.client,
+                                         value=self._value_to_event_value(value),
+                                         previous_value=self._value_to_event_value(previous_value))
         for handler in self._change_handlers:
             handle_event(handler, args)
 

@@ -1,15 +1,22 @@
+import weakref
+
 from nicegui import binding, ui
 from nicegui.testing import Screen
 
 
 def test_remove_element_by_reference(screen: Screen):
     texts = {'a': 'Label A', 'b': 'Label B', 'c': 'Label C'}
-    with ui.row() as row:
-        ui.label().bind_text_from(texts, 'a')
-        b = ui.label().bind_text_from(texts, 'b')
-        ui.label().bind_text_from(texts, 'c')
+    b = row = None
 
-    ui.button('Remove', on_click=lambda: row.remove(b))
+    @ui.page('/')
+    def page():
+        nonlocal b, row
+        with ui.row() as row:
+            ui.label().bind_text_from(texts, 'a')
+            b = ui.label().bind_text_from(texts, 'b')
+            ui.label().bind_text_from(texts, 'c')
+
+        ui.button('Remove', on_click=lambda: row.remove(b))
 
     screen.open('/')
     screen.click('Remove')
@@ -25,12 +32,17 @@ def test_remove_element_by_reference(screen: Screen):
 
 def test_remove_element_by_index(screen: Screen):
     texts = {'a': 'Label A', 'b': 'Label B', 'c': 'Label C'}
-    with ui.row() as row:
-        ui.label().bind_text_from(texts, 'a')
-        b = ui.label().bind_text_from(texts, 'b')
-        ui.label().bind_text_from(texts, 'c')
+    b = row = None
 
-    ui.button('Remove', on_click=lambda: row.remove(1))
+    @ui.page('/')
+    def page():
+        nonlocal b, row
+        with ui.row() as row:
+            ui.label().bind_text_from(texts, 'a')
+            b = ui.label().bind_text_from(texts, 'b')
+            ui.label().bind_text_from(texts, 'c')
+
+        ui.button('Remove', on_click=lambda: row.remove(1))
 
     screen.open('/')
     screen.click('Remove')
@@ -46,12 +58,17 @@ def test_remove_element_by_index(screen: Screen):
 
 def test_clear(screen: Screen):
     texts = {'a': 'Label A', 'b': 'Label B', 'c': 'Label C'}
-    with ui.row() as row:
-        a = ui.label().bind_text_from(texts, 'a')
-        b = ui.label().bind_text_from(texts, 'b')
-        c = ui.label().bind_text_from(texts, 'c')
+    a = b = c = row = None
 
-    ui.button('Clear', on_click=row.clear)
+    @ui.page('/')
+    def page():
+        nonlocal a, b, c, row
+        with ui.row() as row:
+            a = ui.label().bind_text_from(texts, 'a')
+            b = ui.label().bind_text_from(texts, 'b')
+            c = ui.label().bind_text_from(texts, 'c')
+
+        ui.button('Clear', on_click=row.clear)
 
     screen.open('/')
     screen.click('Clear')
@@ -69,13 +86,18 @@ def test_clear(screen: Screen):
 
 def test_remove_parent(screen: Screen):
     texts = {'a': 'Label A', 'b': 'Label B', 'c': 'Label C'}
-    with ui.element() as container:
-        with ui.row() as row:
-            a = ui.label().bind_text_from(texts, 'a')
-            b = ui.label().bind_text_from(texts, 'b')
-            c = ui.label().bind_text_from(texts, 'c')
+    a = b = c = row = container = None
 
-    ui.button('Remove parent', on_click=lambda: container.remove(row))
+    @ui.page('/')
+    def page():
+        nonlocal a, b, c, row, container
+        with ui.element() as container:
+            with ui.row() as row:
+                a = ui.label().bind_text_from(texts, 'a')
+                b = ui.label().bind_text_from(texts, 'b')
+                c = ui.label().bind_text_from(texts, 'c')
+
+        ui.button('Remove parent', on_click=lambda: container.remove(row))
 
     screen.open('/')
     screen.click('Remove parent')
@@ -96,12 +118,17 @@ def test_remove_parent(screen: Screen):
 
 def test_delete_element(screen: Screen):
     texts = {'a': 'Label A', 'b': 'Label B', 'c': 'Label C'}
-    with ui.row() as row:
-        ui.label().bind_text_from(texts, 'a')
-        b = ui.label().bind_text_from(texts, 'b')
-        ui.label().bind_text_from(texts, 'c')
+    b = row = None
 
-    ui.button('Delete', on_click=b.delete)
+    @ui.page('/')
+    def page():
+        nonlocal b, row
+        with ui.row() as row:
+            ui.label().bind_text_from(texts, 'a')
+            b = ui.label().bind_text_from(texts, 'b')
+            ui.label().bind_text_from(texts, 'c')
+
+        ui.button('Delete', on_click=b.delete)
 
     screen.open('/')
     screen.click('Delete')
@@ -127,14 +154,19 @@ def test_on_delete(screen: Screen):
             deleted_labels.append(self.text)
             super()._handle_delete()
 
-    with ui.row() as row:
-        CustomLabel('Label A')
-        b = CustomLabel('Label B')
-        CustomLabel('Label C')
+    b = row = None
 
-    ui.button('Delete C', on_click=lambda: row.remove(2))
-    ui.button('Delete B', on_click=lambda: row.remove(b))
-    ui.button('Clear row', on_click=row.clear)
+    @ui.page('/')
+    def page():
+        nonlocal b, row
+        with ui.row() as row:
+            CustomLabel('Label A')
+            b = CustomLabel('Label B')
+            CustomLabel('Label C')
+
+        ui.button('Delete C', on_click=lambda: row.remove(2))
+        ui.button('Delete B', on_click=lambda: row.remove(b))
+        ui.button('Clear row', on_click=row.clear)
 
     screen.open('/')
     screen.click('Delete C')
@@ -142,3 +174,41 @@ def test_on_delete(screen: Screen):
     screen.click('Clear row')
     screen.wait(0.5)
     assert deleted_labels == ['Label C', 'Label B', 'Label A']
+
+
+def test_slot_children_cleared_on_delete(screen: Screen):
+    """Slot children are cleared when parent is deleted and no cyclic references are left behind (issue #5110)."""
+    labels = weakref.WeakSet[ui.label]()
+
+    @ui.page('/')
+    def page():
+        with ui.splitter() as splitter:
+            labels.add(ui.label('Default'))
+            with splitter.before:
+                labels.add(ui.label('Before'))
+            with splitter.after:
+                labels.add(ui.label('After'))
+        ui.button('Delete', on_click=splitter.delete).on_click(lambda: ui.notify('Deleted'))
+
+    screen.open('/')
+    screen.click('Delete')
+    screen.should_contain('Deleted')
+    assert len(labels) == 0, 'all labels should be deleted immediately'
+
+
+def test_event_listeners_cleared_on_delete(screen: Screen):
+    """Event listeners are cleared when element is deleted and no cyclic references are left behind (issue #5110)."""
+    buttons = weakref.WeakSet[ui.button]()
+
+    @ui.page('/')
+    def page():
+        with ui.card() as card:
+            button = ui.button('Click me')
+            button.on('click', lambda: button.set_text('clicked'))  # cycle: button → listener → lambda → button
+            buttons.add(button)
+        ui.button('Delete', on_click=card.clear).on_click(lambda: ui.notify('Deleted'))
+
+    screen.open('/')
+    screen.click('Delete')
+    screen.should_contain('Deleted')
+    assert len(buttons) == 0, 'all buttons should be deleted immediately'

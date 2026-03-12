@@ -19,7 +19,6 @@ def main_demo() -> None:
 
     def update():
         echart.options['series'][0]['data'][0] = random()
-        echart.update()
 
     ui.button('Update', on_click=update)
 
@@ -33,6 +32,31 @@ def clickable_points() -> None:
         'yAxis': {'type': 'value'},
         'series': [{'type': 'line', 'data': [20, 10, 30, 50, 40, 30]}],
     }, on_point_click=ui.notify)
+
+
+@doc.demo('EChart with clickable components', '''
+    Besides series points, you can register a callback for an event
+    when any component registered with `triggerEvent=True` is clicked.
+
+    Hint: Check if that component is a point by checking `e.component_type == 'series'`
+    to avoid double-processing with `on_point_click`.
+
+    *Added in version 3.5.0*
+''')
+def clickable_components() -> None:
+    ui.echart({
+        'legend': {
+            'triggerEvent': True,
+        },
+        'radar': {
+            'triggerEvent': True,
+            'indicator': [{'name': name, 'max': 100} for name in ['A', 'B', 'C']],
+        },
+        'series': [{
+            'type': 'radar',
+            'data': [{'name': 'Test', 'value': [77.0, 50.0, 90.0]}],
+        }],
+    }, on_click=ui.notify)
 
 
 @doc.demo('EChart with dynamic properties', '''
@@ -98,30 +122,25 @@ def echart_from_pyecharts_demo():
 
     The colon ":" in front of the method name "setOption" indicates that the argument is a JavaScript expression
     that is evaluated on the client before it is passed to the method.
-
-    Note that requesting data from the client is only supported for page functions, not for the shared auto-index page.
 ''')
 def methods_demo() -> None:
-    # @ui.page('/')
-    def page():
-        echart = ui.echart({
-            'xAxis': {'type': 'category', 'data': ['Mon', 'Tue', 'Wed', 'Thu', 'Fri']},
-            'yAxis': {'type': 'value'},
-            'series': [{'type': 'line', 'data': [150, 230, 224, 218, 135]}],
-        })
+    echart = ui.echart({
+        'xAxis': {'type': 'category', 'data': ['Mon', 'Tue', 'Wed', 'Thu', 'Fri']},
+        'yAxis': {'type': 'value'},
+        'series': [{'type': 'line', 'data': [150, 230, 224, 218, 135]}],
+    })
 
-        ui.button('Show Loading', on_click=lambda: echart.run_chart_method('showLoading'))
-        ui.button('Hide Loading', on_click=lambda: echart.run_chart_method('hideLoading'))
+    ui.button('Show Loading', on_click=lambda: echart.run_chart_method('showLoading'))
+    ui.button('Hide Loading', on_click=lambda: echart.run_chart_method('hideLoading'))
 
-        async def get_width():
-            width = await echart.run_chart_method('getWidth')
-            ui.notify(f'Width: {width}')
-        ui.button('Get Width', on_click=get_width)
+    async def get_width():
+        width = await echart.run_chart_method('getWidth')
+        ui.notify(f'Width: {width}')
+    ui.button('Get Width', on_click=get_width)
 
-        ui.button('Set Tooltip', on_click=lambda: echart.run_chart_method(
-            ':setOption', r'{tooltip: {formatter: params => "$" + params.value}}',
-        ))
-    page()  # HIDE
+    ui.button('Set Tooltip', on_click=lambda: echart.run_chart_method(
+        ':setOption', r'{tooltip: {formatter: params => "$" + params.value}}',
+    ))
 
 
 @doc.demo('Arbitrary chart events', '''

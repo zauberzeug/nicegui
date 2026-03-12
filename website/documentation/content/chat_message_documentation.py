@@ -13,10 +13,14 @@ def main_demo() -> None:
 
 @doc.demo('HTML text', '''
     Using the `text_html` parameter, you can send HTML text to the chat.
+    Note that you should specify a sanitize function when displaying user input as HTML to prevent XSS attacks.
 ''')
 def html_text():
+    from html_sanitizer import Sanitizer
+
     ui.chat_message('Without <strong>HTML</strong>')
-    ui.chat_message('With <strong>HTML</strong>', text_html=True)
+    ui.chat_message('With <strong>HTML</strong>',
+                    text_html=True, sanitize=Sanitizer().sanitize)
 
 
 @doc.demo('Newline', '''
@@ -30,8 +34,7 @@ def newline():
     You can send multiple message parts by passing a list of strings.
 ''')
 def multiple_messages():
-    ui.chat_message(['Hi! 😀', 'How are you?']
-                    )
+    ui.chat_message(['Hi! 😀', 'How are you?'])
 
 
 @doc.demo('Chat message with child elements', '''

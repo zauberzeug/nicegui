@@ -9,4 +9,3 @@ class CustomRestructuredText(ui.restructured_text):
         html = prepare_content('__PLACEHOLDER__\n\n' + content).replace('<p>__PLACEHOLDER__</p>\n', '')
         if self._props.get('innerHTML') != html:
             self._props['innerHTML'] = html
-            self.update()

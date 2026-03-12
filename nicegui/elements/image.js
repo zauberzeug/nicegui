@@ -3,7 +3,6 @@ export default {
     <component
       :is="is_parallax ? 'q-parallax' : 'q-img'"
       ref="qRef"
-      v-bind="$attrs"
       :src="computed_src"
     >
       <template v-for="(_, slot) in $slots" v-slot:[slot]="slotProps">

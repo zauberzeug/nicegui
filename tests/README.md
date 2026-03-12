@@ -14,9 +14,7 @@ If you have a different version of Chrome installed, you may need to install a d
 ### Mac
 
 ```bash
-cd nicegui # enter the project root dir
 brew install cask chromedriver
-python3 -m pip install -r tests/requirements.txt
 ```
 
 Note: The above instructions assume that you have already installed Homebrew (a package manager for macOS) on your system.
@@ -25,9 +23,7 @@ If you haven't, you can follow the instructions on https://brew.sh/ to install i
 ### Windows
 
 ```powershell
-cd nicegui # enter the project root dir
 choco install chromedriver
-python3 -m pip install -r tests/requirements.txt
 ```
 
 Note: The above instructions assume that you have already installed Chocolatey (a package manager for Windows) on your system.
@@ -36,10 +32,8 @@ If you haven't, you can follow the instructions on https://chocolatey.org/instal
 ### Linux
 
 ```bash
-cd nicegui # enter the project root dir
 sudo apt-get update
 sudo apt-get install chromium-chromedriver
-python3 -m pip install -r tests/requirements.txt
 ```
 
 Note: The above instructions assume that you are using a Debian-based Linux distribution.

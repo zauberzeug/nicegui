@@ -10,13 +10,13 @@ export default {
         v-on="onUserEvents"
         draggable="false"
       />
-      <svg ref="svg" style="position:absolute;top:0;left:0;pointer-events:none" :viewBox="viewBox">
+      <svg ref="svg" style="position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none" :viewBox="viewBox" preserveAspectRatio="none">
         <g :style="{ display: showCross ? 'block' : 'none' }">
           <line v-if="cross" :x1="x" y1="0" :x2="x" y2="100%" :stroke="cross === true ? 'black' : cross" />
           <line v-if="cross" x1="0" :y1="y" x2="100%" :y2="y" :stroke="cross === true ? 'black' : cross" />
           <slot name="cross" :x="x" :y="y"></slot>
         </g>
-        <g v-html="content"></g>
+        <g ref="contentGroup"></g>
       </svg>
       <slot></slot>
     </div>
@@ -32,9 +32,19 @@ export default {
       computed_src: undefined,
       waiting_source: undefined,
       loading: false,
+      DOMPurify: null,
+      previousContent: null,
     };
   },
   mounted() {
+    if (this.sanitize) {
+      import("dompurify").then(({ default: DOMPurify }) => {
+        this.DOMPurify = DOMPurify;
+        this.renderContent();
+      });
+    } else {
+      this.renderContent();
+    }
     setTimeout(() => this.compute_src(), 0); // NOTE: wait for window.path_prefix to be set in app.mounted()
     const handle_completion = () => {
       if (this.waiting_source) {
@@ -60,9 +70,25 @@ export default {
     }
   },
   updated() {
+    this.renderContent();
     this.compute_src();
   },
   methods: {
+    renderContent() {
+      const content = this.content || "";
+      if (content === this.previousContent) return;
+      if (this.sanitize) {
+        if (!this.DOMPurify) return;
+        const sanitized = this.DOMPurify.sanitize(`<svg>${content}</svg>`, {
+          USE_PROFILES: { svg: true, svgFilters: true },
+        });
+        const match = sanitized.match(/^<svg>(.*)<\/svg>$/is);
+        this.$refs.contentGroup.innerHTML = match ? match[1] : "";
+      } else {
+        this.$refs.contentGroup.innerHTML = content;
+      }
+      this.previousContent = content;
+    },
     compute_src() {
       const suffix = this.t ? (this.src.includes("?") ? "&" : "?") + "_nicegui_t=" + this.t : "";
       const new_src = (this.src.startsWith("/") ? window.path_prefix : "") + this.src + suffix;
@@ -131,7 +157,7 @@ export default {
     },
     onUserEvents() {
       const events = {};
-      for (const type of this.events) {
+      for (const type of this.events || []) {
         events[type] = (event) => this.onMouseEvent(type, event);
       }
       return events;
@@ -144,5 +170,6 @@ export default {
     events: Array,
     cross: Boolean,
     t: String,
+    sanitize: Boolean,
   },
 };

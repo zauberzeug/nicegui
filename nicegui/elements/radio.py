@@ -1,5 +1,6 @@
-from typing import Any, Dict, List, Optional, Union
+from typing import Any
 
+from ..defaults import DEFAULT_PROPS, resolve_defaults
 from ..events import GenericEventArguments, Handler, ValueChangeEventArguments
 from .choice_element import ChoiceElement
 from .mixins.disableable_element import DisableableElement
@@ -7,14 +8,15 @@ from .mixins.disableable_element import DisableableElement
 
 class Radio(ChoiceElement, DisableableElement):
 
+    @resolve_defaults
     def __init__(self,
-                 options: Union[List, Dict], *,
-                 value: Any = None,
-                 on_change: Optional[Handler[ValueChangeEventArguments]] = None,
+                 options: list | dict, *,
+                 value: Any = DEFAULT_PROPS['model-value'] | None,
+                 on_change: Handler[ValueChangeEventArguments] | None = None,
                  ) -> None:
         """Radio Selection
 
-        This element is based on Quasar's `QRadio <https://quasar.dev/vue-components/radio>`_ component.
+        This element is based on Quasar's `QOptionGroup <https://quasar.dev/vue-components/option-group>`_ component.
 
         The options can be specified as a list of values, or as a dictionary mapping values to labels.
         After manipulating the options, call `update()` to update the options in the UI.

@@ -1,21 +1,23 @@
 ---
-description: General overview and context
-globs:
 alwaysApply: true
 ---
-# Project Description
 
-This is the official NiceGUI repository. With NiceGUI you can write graphical user interfaces which run in the browser. It has a very gentle learning curve while still offering the option for advanced customizations. NiceGUI follows a backend-first philosophy: it handles all the web development details for the developer, so they can focus on writing Python code. This makes it ideal for a wide range of projects including short scripts, dashboards, robotics projects, IoT solutions, smart home automation, and machine learning.
+# Cursor AI Quick Reference
 
-# Technical Stack
+**Read these files before working:**
 
-- Python/FastAPI for the backend
-- Vue/Quasar in the frontend
-- socket.io for communication between frontend and backend
+1. [README.md](../../README.md) - Project overview and setup
+2. [AGENTS.md](../../AGENTS.md) - AI agent guidelines and code review instructions
+3. [CONTRIBUTING.md](../../CONTRIBUTING.md) - Coding standards and workflow
 
-# Design Decisions
+## Quick Reference
 
-- All user interactions are send to the backend and invoke the proper Python functions.
-- Unlike Streamlit the framework took much care to allow easy integration with any other Python libraries.
-- NiceGUI only uses one uvicorn worker (to not have to implement/support tricky synchronization).
-- The socket.io library is used for managing web sockets. After the initial content is loaded a web socket connection is established and kept open for communication as long as the web page is shown.
+- Use single quotes in Python
+- 120 character line length
+- Never block the event loop – use `run.cpu_bound()`, `run.io_bound()`, or `background_tasks.create()`
+- Never use `asyncio.create_task()` – use `background_tasks.create()` instead
+- Think from first principles
+- Discuss significant changes before implementing
+- Keep code simple and self-explanatory
+- Write tests for new features (use `User` fixture when possible, `Screen` only when browser/JS needed)
+- Public API (`nicegui.*`) requires backward compatibility
