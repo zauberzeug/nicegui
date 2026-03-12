@@ -1,3 +1,4 @@
-from .plotly import Plotly
+from ...dependencies import setup_esm_package
 
-__all__ = ['Plotly']
+__getattr__, __dir__ = setup_esm_package(__file__, __name__, 'nicegui-plotly', {'Plotly': '.plotly'})
+__all__ = ['Plotly']  # pylint: disable=undefined-all-variable
