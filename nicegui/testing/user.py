@@ -241,7 +241,7 @@ class User:
             elements = set(ElementFilter(marker=target)).union(ElementFilter(content=target))
         else:
             elements = set(ElementFilter(kind=target))
-        return {e for e in elements if e.visible}  # type: ignore
+        return elements  # type: ignore
 
     def _build_error_message(self,
                              target: str | type[T] | None = None,

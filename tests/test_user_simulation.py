@@ -624,25 +624,33 @@ async def test_trigger_autocomplete(user: User) -> None:
 
 
 async def test_seeing_invisible_elements(user: User) -> None:
-    visible_label = hidden_label = None
+    visible_label = hidden_label = hidden_card = None
 
     @ui.page('/')
     def page():
-        nonlocal visible_label, hidden_label
+        nonlocal visible_label, hidden_label, hidden_card
         visible_label = ui.label('Visible')
         hidden_label = ui.label('Hidden')
         hidden_label.visible = False
+
+        with ui.card() as hidden_card:
+            ui.label('Inside hidden card')
+        hidden_card.visible = False
 
     await user.open('/')
     with pytest.raises(AssertionError):
         await user.should_see('Hidden')
     with pytest.raises(AssertionError):
         await user.should_not_see('Visible')
+    with pytest.raises(AssertionError):
+        await user.should_see('Inside hidden card')
 
     visible_label.visible = False
     hidden_label.visible = True
+    hidden_card.visible = True
     await user.should_see('Hidden')
     await user.should_not_see('Visible')
+    await user.should_see('Inside hidden card')
 
 
 async def test_finding_invisible_elements(user: User) -> None:
