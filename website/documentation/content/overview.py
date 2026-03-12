@@ -334,7 +334,7 @@ def map_of_nicegui():
             - `app.storage.user`: stored in a file on the server, unique per browser
             - `app.storage.general`: stored in a file on the server, shared across the entire app
             - `app.storage.browser`: stored in the browser's local storage, unique per browser
-        - [lifecycle hooks](/documentation/section_action_events#events):
+        - [lifecycle hooks](/documentation/section_action_events#events) for synchronous or asynchronous functions:
             - `app.on_connect()`: called when a client connects (even when reconnecting)
             - `app.on_disconnect()`: called when a client disconnects (even when reconnecting)
             - `app.on_delete()`: called when a client is deleted (if it does not reconnect)
@@ -462,7 +462,7 @@ def map_of_nicegui():
 
         - `create()`: create a background task
         - `create_lazy()`: prevent two tasks with the same name from running at the same time
-        - `await_on_shutdown`: mark a coroutine function to be awaited during shutdown (by default all background tasks are cancelled)
+        - `await_on_shutdown`: mark an async function to be awaited during shutdown (by default all background tasks are cancelled)
 
         #### `run`
 

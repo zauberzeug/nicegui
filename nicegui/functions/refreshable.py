@@ -7,10 +7,9 @@ from typing import Any, ClassVar, Concatenate, Generic, TypeVar, cast
 
 from typing_extensions import ParamSpec, Self
 
-from .. import background_tasks, core
+from .. import background_tasks, helpers
 from ..awaitable_response import AwaitableResponse
 from ..element import Element
-from ..helpers import is_coroutine_function
 
 _S = TypeVar('_S')
 _T = TypeVar('_T')
@@ -33,23 +32,17 @@ class RefreshableTarget:
         """Run the function and return the result."""
         RefreshableTarget.current_target = self
         self.next_index = 0
-        # pylint: disable=no-else-return
-        if is_coroutine_function(func):
-            async def wait_for_result() -> Any:
-                with self.container:
-                    if self.instance is None:
-                        result = func(*self.args, **self.kwargs)
-                    else:
-                        result = func(self.instance, *self.args, **self.kwargs)
-                    assert isinstance(result, Awaitable)
-                    return await result
-            return wait_for_result()  # type: ignore
-        else:
-            with self.container:
-                if self.instance is None:
-                    return func(*self.args, **self.kwargs)
-                else:
-                    return func(self.instance, *self.args, **self.kwargs)
+
+        with self.container:
+            if self.instance is None:
+                result = func(*self.args, **self.kwargs)
+            else:
+                result = func(self.instance, *self.args, **self.kwargs)
+
+        if helpers.should_await(result):
+            return helpers.await_with_context(result, self.container)
+
+        return result
 
 
 class RefreshableContainer(Element, component='refreshable.js'):
@@ -81,6 +74,7 @@ class refreshable(Generic[_P, _T]):
             def refresh(*args: Any, _instance=self.instance, **kwargs: Any) -> AwaitableResponse:
                 self.instance = _instance
                 return attribute(*args, **kwargs)
+
             return refresh
         return attribute
 
@@ -103,21 +97,18 @@ class refreshable(Generic[_P, _T]):
         self.prune()
 
         def fire_and_forget() -> None:
-            if coroutines := self._execute_refresh(args, kwargs):
-                if core.loop and core.loop.is_running():
-                    background_tasks.create(asyncio.gather(*coroutines), name=f'refresh {self.func.__name__}')
-                else:
-                    core.app.on_startup(asyncio.gather(*coroutines))
+            if awaitables := self._execute_refresh(args, kwargs):
+                background_tasks.create_or_defer(asyncio.gather(*awaitables), name=f'refresh {self.func.__name__}')
 
         async def wait_for_completion() -> None:
-            if coroutines := self._execute_refresh(args, kwargs):
-                await asyncio.gather(*coroutines)
+            if awaitables := self._execute_refresh(args, kwargs):
+                await asyncio.gather(*awaitables)
 
         return AwaitableResponse(fire_and_forget, wait_for_completion)
 
     def _execute_refresh(self, args: tuple[Any, ...], kwargs: dict[str, Any]) -> list[Awaitable[Any]]:
-        """Execute the refresh and return a list of coroutines for async functions."""
-        coroutines: list[Awaitable[Any]] = []
+        """Execute the refresh and return a list of awaitables for async functions."""
+        awaitables: list[Awaitable[Any]] = []
         for target in self.targets:
             if target.instance != self.instance:
                 continue
@@ -133,10 +124,10 @@ class refreshable(Generic[_P, _T]):
                     raise TypeError(f'{parameter} needs to be consistently passed to {function} '
                                     'either as positional or as keyword argument') from e
                 raise
-            if is_coroutine_function(self.func):
-                assert isinstance(result, Awaitable)
-                coroutines.append(result)
-        return coroutines
+            if helpers.should_await(result):
+                awaitables.append(result)
+
+        return awaitables
 
     def prune(self) -> None:
         """Remove all targets that are no longer on a page with a client connection.

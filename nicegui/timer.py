@@ -1,11 +1,11 @@
 import asyncio
 import time
-from collections.abc import Awaitable, Callable
+from collections.abc import Callable
 from contextlib import AbstractContextManager, nullcontext
 from typing import Any
 
-from . import background_tasks, core
-from .awaitable_response import AwaitableResponse
+from . import core, helpers
+from .background_tasks import create_or_defer
 from .binding import BindableProperty
 
 
@@ -27,7 +27,7 @@ class Timer:
         A timer will execute a callback repeatedly with a given interval.
 
         :param interval: the interval in which the timer is called (can be changed during runtime)
-        :param callback: function or coroutine to execute when interval elapses
+        :param callback: synchronous or asynchronous function to execute when interval elapses
         :param active: whether the callback should be executed or not (can be changed during runtime)
         :param once: whether the callback is only executed once after a delay specified by `interval` (default: `False`)
         :param immediate: whether the callback should be executed immediately (default: `True`, ignored if `once` is `True`, *added in version 2.9.0*)
@@ -43,10 +43,7 @@ class Timer:
         coroutine = self._run_once if once else self._run_in_loop
         if core.is_script_mode_preflight():
             return
-        if core.app.is_started:
-            background_tasks.create(coroutine(), name=str(callback))
-        else:
-            core.app.on_startup(coroutine)
+        create_or_defer(coroutine(), name=str(callback))
 
     def _get_context(self) -> AbstractContextManager:
         return nullcontext()
@@ -109,7 +106,7 @@ class Timer:
             try:
                 assert self.callback is not None
                 result = self.callback()
-                if isinstance(result, Awaitable) and not isinstance(result, AwaitableResponse):
+                if helpers.should_await(result):
                     await result
             except Exception as e:
                 core.app.handle_exception(e)

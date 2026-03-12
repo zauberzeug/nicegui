@@ -12,30 +12,43 @@ lazy_coroutines_waiting: dict[str, Coroutine[Any, Any, Any]] = {}
 _await_tasks_on_shutdown: set[asyncio.Task] = set()
 
 
-def create(coroutine: Awaitable, *, name: str = 'unnamed task', handle_exceptions: bool = True) -> asyncio.Task:
+def create(awaitable: Awaitable, *, name: str = 'unnamed task', handle_exceptions: bool = True) -> asyncio.Task:
     """Wraps a loop.create_task call and ensures there is an exception handler added to the task.
 
     Also a reference to the task is kept until it is done, so that the task is not garbage collected mid-execution.
     See https://docs.python.org/3/library/asyncio-task.html#asyncio.create_task.
 
-    :param coroutine: the coroutine or awaitable to wrap
+    :param awaitable: the awaitable to wrap
     :param name: the name of the task which is helpful for debugging (default: "unnamed task")
     :param handle_exceptions: if ``True`` (default) possible exceptions are forwarded to the global exception handlers
     """
     assert core.loop is not None
-    real_coroutine = coroutine if asyncio.iscoroutine(coroutine) else asyncio.wait_for(coroutine, None)
-    task: asyncio.Task = core.loop.create_task(real_coroutine, name=name)
+    coroutine = _ensure_coroutine(awaitable)
+    task: asyncio.Task = core.loop.create_task(coroutine, name=name)
     if handle_exceptions:
         task.add_done_callback(_handle_exceptions)
     running_tasks.add(task)
     task.add_done_callback(running_tasks.discard)
-    if isinstance(coroutine, _AwaitOnShutdown):
+    if isinstance(awaitable, _AwaitOnShutdown):
         _await_tasks_on_shutdown.add(task)
         task.add_done_callback(_await_tasks_on_shutdown.discard)
     return task
 
 
-def create_lazy(coroutine: Awaitable, *, name: str) -> None:
+def create_or_defer(awaitable: Awaitable, *, name: str = 'unnamed task') -> asyncio.Task | None:
+    """Create a background task, or defer to app startup if the event loop isn't running yet.
+
+    :param awaitable: the awaitable to schedule
+    :param name: the name of the task which is helpful for debugging (default: "unnamed task")
+    :return: the created task, or ``None`` if deferred to startup
+    """
+    if core.can_schedule_task():
+        return create(awaitable, name=name)
+    core.app.on_startup(lambda: create(awaitable, name=name))
+    return None
+
+
+def create_lazy(awaitable: Awaitable, *, name: str) -> None:
     """Wraps a create call and ensures a second task with the same name is delayed until the first one is done.
 
     If a third task with the same name is created while the first one is still running, the second one is discarded.
@@ -43,16 +56,26 @@ def create_lazy(coroutine: Awaitable, *, name: str) -> None:
     if name in lazy_tasks_running:
         if name in lazy_coroutines_waiting:
             lazy_coroutines_waiting[name].close()
-        lazy_coroutines_waiting[name] = _ensure_coroutine(coroutine)
+        lazy_coroutines_waiting[name] = _ensure_coroutine(awaitable)
         return
 
-    def finalize(name: str) -> None:
+    def finalize(_) -> None:
         lazy_tasks_running.pop(name)
         if name in lazy_coroutines_waiting:
             create_lazy(lazy_coroutines_waiting.pop(name), name=name)
-    task = create(coroutine, name=name)
+
+    task = create(awaitable, name=name)
     lazy_tasks_running[name] = task
-    task.add_done_callback(lambda _: finalize(name))
+    task.add_done_callback(finalize)
+
+
+def create_lazy_or_defer(awaitable: Awaitable, *, name: str) -> None:
+    """Create a lazy task, or defer to app startup if the event loop isn't running yet."""
+    if core.can_schedule_task():
+        return create_lazy(awaitable, name=name)
+
+    core.app.on_startup(lambda: create_lazy(awaitable, name=name))
+    return None
 
 
 class _AwaitOnShutdown:
@@ -67,12 +90,14 @@ F = TypeVar('F', bound=Callable[..., Awaitable[Any]])
 
 
 def await_on_shutdown(func: F) -> F:
-    """Tag a coroutine function so tasks created from it won't be cancelled during shutdown.
+    """Tag an async function so tasks created from it won't be cancelled during shutdown.
 
     *Added in version 2.16.0*
     """
+
     def wrapper(*args: Any, **kwargs: Any) -> Awaitable[Any]:
         return _AwaitOnShutdown(lambda: func(*args, **kwargs))
+
     return cast(F, wrapper)
 
 
@@ -83,6 +108,7 @@ def _ensure_coroutine(awaitable: Awaitable[Any]) -> Coroutine[Any, Any, Any]:
 
     async def wrapper() -> Any:
         return await awaitable
+
     return wrapper()
 
 

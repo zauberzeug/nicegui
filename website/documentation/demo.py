@@ -25,20 +25,20 @@ def demo(f: Callable, *, lazy: bool = True, tab: str | Callable | None = None) -
                 @intersection_observer
                 async def handle_intersection():
                     window.remove(spinner)
-                    if helpers.is_coroutine_function(f):
-                        result = await f()
-                    else:
-                        result = f()
+                    result = f()
+                    if helpers.should_await(result):
+                        await result
+
                     if callable(result):
-                        if helpers.is_coroutine_function(result):
-                            await result()
-                        else:
-                            result()
+                        inner_result = result()
+                        if helpers.should_await(inner_result):
+                            await inner_result
+
             else:
                 result = f()
                 if callable(result):
-                    assert not helpers.is_coroutine_function(result), \
+                    inner_result = result()
+                    assert not helpers.should_await(inner_result), \
                         'async functions are not supported in non-lazy demos'
-                    result()
 
     return f

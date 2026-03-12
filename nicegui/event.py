@@ -12,7 +12,6 @@ from weakref import WeakSet
 from typing_extensions import ParamSpec
 
 from . import background_tasks, core, helpers
-from .awaitable_response import AwaitableResponse
 from .client import Client
 from .context import context
 from .slot import Slot
@@ -23,6 +22,7 @@ P = ParamSpec('P')
 @dataclass(kw_only=True, slots=True)
 class Callback(Generic[P]):
     func: Callable[P, Any] | Callable[[], Any]
+    expect_args: bool
     filepath: str
     line: int
     slot: weakref.ref[Slot] | None = None
@@ -30,14 +30,9 @@ class Callback(Generic[P]):
     def run(self, *args: P.args, **kwargs: P.kwargs) -> Any:
         """Run the callback."""
         with (self.slot and self.slot()) or nullcontext():
-            expect_args = helpers.expects_arguments(self.func)
-            expect_args |= (
-                isinstance(getattr(self.func, '__self__', None), Event) and
-                getattr(self.func, '__name__', None) in {'emit', 'call'}
-            )
-            return self.func(*args, **kwargs) if expect_args else self.func()  # type: ignore[call-arg]
+            return self.func(*args, **kwargs) if self.expect_args else self.func()  # type: ignore[call-arg]
 
-    async def await_result(self, result: Awaitable | AwaitableResponse | asyncio.Task) -> Any:
+    async def await_result(self, result: Awaitable) -> Any:
         """Await the result of the callback."""
         with (self.slot and self.slot()) or nullcontext():
             return await result
@@ -77,7 +72,15 @@ class Event(Generic[P]):
         assert frame is not None
         frame = frame.f_back
         assert frame is not None
-        callback_ = Callback[P](func=callback, filepath=frame.f_code.co_filename, line=frame.f_lineno)
+
+        expect_args = helpers.expects_arguments(callback)
+        expect_args |= (
+            isinstance(getattr(callback, '__self__', None), Event) and
+            getattr(callback, '__name__', None) in {'emit', 'call'}
+        )
+
+        callback_ = Callback[P](func=callback, expect_args=expect_args, filepath=frame.f_code.co_filename,
+                                line=frame.f_lineno)
         client: Client | None = None
         if Slot.get_stack():  # NOTE: additional check before accessing `context.slot` which would enter script mode
             callback_.slot = weakref.ref(context.slot)
@@ -131,28 +134,18 @@ class Event(Generic[P]):
 def _invoke_and_forget(callback: Callback[P], *args: P.args, **kwargs: P.kwargs) -> Any:
     try:
         result = callback.run(*args, **kwargs)
-        if _should_await(result):
-            if core.loop and core.loop.is_running():
-                background_tasks.create(callback.await_result(result), name=f'{callback.filepath}:{callback.line}')
-            else:
-                core.app.on_startup(callback.await_result(result))
+        if helpers.should_await(result):
+            background_tasks.create_or_defer(
+                callback.await_result(result), name=f'{callback.filepath}:{callback.line}')
     except Exception as e:
         core.app.handle_exception(e)
 
 
 async def _invoke_and_await(callback: Callback[P], *args: P.args, **kwargs: P.kwargs) -> Any:
     result = callback.run(*args, **kwargs)
-    if _should_await(result):
+    if helpers.should_await(result):
         result = await callback.await_result(result)
     return result
-
-
-def _should_await(result: Any) -> bool:
-    """Determine if a result should be awaited.
-
-    Note: We want to await an awaitable result even if the handler is not a coroutine (like a lambda statement).
-    """
-    return isinstance(result, Awaitable) and not isinstance(result, AwaitableResponse) and not isinstance(result, asyncio.Task)
 
 
 def reset() -> None:

@@ -4,7 +4,7 @@ from collections.abc import Callable
 
 import pytest
 
-from nicegui import app, background_tasks, ui
+from nicegui import app, background_tasks, core, ui
 from nicegui.testing import User
 
 # pylint: disable=missing-function-docstring
@@ -97,3 +97,30 @@ async def test_inner_async_function_is_awaited_on_shutdown(user: User, create: C
 
     await background_tasks.teardown()
     assert events == ['inner ran']
+
+
+def test_create_or_defer_with_loop_not_running(monkeypatch: pytest.MonkeyPatch) -> None:
+    startup_handlers = []
+    created = []
+    loop = asyncio.new_event_loop()
+
+    async def coroutine() -> None:
+        pass
+
+    task = coroutine()
+
+    try:
+        monkeypatch.setattr(core, 'loop', loop)
+        monkeypatch.setattr(app, 'on_startup', startup_handlers.append)
+        monkeypatch.setattr(background_tasks, 'create',
+                            lambda awaitable, *, name: created.append((awaitable, name)))
+
+        assert background_tasks.create_or_defer(task, name='deferred') is None
+        assert len(startup_handlers) == 1
+        assert callable(startup_handlers[0])
+
+        startup_handlers[0]()
+        assert created == [(task, 'deferred')]
+    finally:
+        task.close()
+        loop.close()

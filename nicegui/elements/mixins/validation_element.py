@@ -62,20 +62,17 @@ class ValidationElement(ValueElement):
         :param return_result: whether to return the result of the validation (default: ``True``)
         :return: whether the validation was successful (always ``True`` for async validation functions)
         """
-        if helpers.is_coroutine_function(self._validation):
-            async def await_error():
-                assert callable(self._validation)
-                result = self._validation(self.value)
-                assert isinstance(result, Awaitable)
-                self.error = await result
-            if return_result:
-                raise NotImplementedError('The validate method cannot return results for async validation functions.')
-            background_tasks.create(await_error(), name=f'validate {self.id}')
-            return True
-
         if callable(self._validation):
             result = self._validation(self.value)
-            assert not isinstance(result, Awaitable)
+            if helpers.should_await(result):
+                if return_result:
+                    raise NotImplementedError(
+                        'The validate method cannot return results for async validation functions.')
+
+                async def await_error():
+                    self.error = await result
+                background_tasks.create(await_error(), name=f'validate {self.id}')
+                return True
             self.error = result
             return self.error is None
 

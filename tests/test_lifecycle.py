@@ -1,5 +1,7 @@
 import asyncio
 
+import pytest
+
 from nicegui import Client, app, ui
 from nicegui.testing import Screen
 
@@ -88,10 +90,8 @@ def test_startup_and_shutdown_handlers(screen: Screen):
 
     app.on_startup(startup)
     app.on_startup(startup_async)
-    app.on_startup(startup_async())
     app.on_shutdown(shutdown)
     app.on_shutdown(shutdown_async)
-    app.on_shutdown(shutdown_async())
 
     @ui.page('/')
     def page():
@@ -99,11 +99,38 @@ def test_startup_and_shutdown_handlers(screen: Screen):
 
     screen.open('/')
     screen.wait(0.5)
-    assert events == ['startup', 'startup_async', 'startup_async']
+    assert events == ['startup', 'startup_async']
 
     app.shutdown()
     screen.wait(0.5)
-    assert events == ['startup', 'startup_async', 'startup_async', 'shutdown', 'shutdown_async', 'shutdown_async']
+    assert events == ['startup', 'startup_async', 'shutdown', 'shutdown_async']
+
+
+def test_direct_awaitable_startup_and_shutdown_handlers_are_deprecated(screen: Screen):
+    events: list[str] = []
+
+    async def startup_async():
+        events.append('startup_async')
+
+    async def shutdown_async():
+        events.append('shutdown_async')
+
+    with pytest.deprecated_call(match=r'Passing an awaitable directly to app\.on_startup\(\) is deprecated'):
+        app.on_startup(startup_async())  # type: ignore[arg-type]
+    with pytest.deprecated_call(match=r'Passing an awaitable directly to app\.on_shutdown\(\) is deprecated'):
+        app.on_shutdown(shutdown_async())  # type: ignore[arg-type]
+
+    @ui.page('/')
+    def page():
+        ui.label('Hello')
+
+    screen.open('/')
+    screen.wait(0.5)
+    assert events == ['startup_async']
+
+    app.shutdown()
+    screen.wait(0.5)
+    assert events == ['startup_async', 'shutdown_async']
 
 
 def test_all_lifecycle_handlers_are_called(screen: Screen):
@@ -157,3 +184,22 @@ def test_no_double_delete(screen: Screen):
     Client.prune_instances(client_age_threshold=0)  # should do nothing because client is still trying to reconnect
     screen.wait(4)  # meanwhile client.delete() will be called without raising KeyError
     assert len(events) == 1, 'delete event should be called only once'
+
+
+def test_direct_awaitable_client_delete_handler_is_deprecated(screen: Screen):
+    events: list[str] = []
+
+    async def delete_async():
+        events.append('delete')
+
+    @ui.page('/')
+    def page():
+        ui.button('Delete', on_click=ui.context.client.delete)
+        ui.context.client.on_delete(delete_async())  # type: ignore[arg-type]
+
+    with pytest.deprecated_call(match=r'Passing an awaitable directly to client\.on_delete\(\) is deprecated'):
+        screen.open('/')
+
+    screen.click('Delete')
+    screen.wait(0.5)
+    assert events == ['delete']

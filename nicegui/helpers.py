@@ -1,15 +1,16 @@
 from __future__ import annotations
 
-import functools
+import asyncio
 import hashlib
 import os
 import socket
 import struct
-import sys
 import threading
 import time
+import warnings
 import webbrowser
-from collections.abc import Callable
+from collections.abc import Awaitable, Callable
+from contextlib import AbstractContextManager
 from inspect import Parameter, signature
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
@@ -21,11 +22,6 @@ if TYPE_CHECKING:
     from .element import Element
 
 _shown_warnings: set[str] = set()
-
-if sys.version_info < (3, 13):
-    from asyncio import iscoroutinefunction
-else:
-    from inspect import iscoroutinefunction
 
 
 def warn_once(message: str, *, stack_info: bool = False) -> None:
@@ -43,17 +39,6 @@ def is_pytest() -> bool:
 def is_user_simulation() -> bool:
     """Check if the code is running in with user simulation (see https://nicegui.io/documentation/user)."""
     return 'NICEGUI_USER_SIMULATION' in os.environ
-
-
-def is_coroutine_function(obj: Any) -> bool:
-    """Check if the object is a coroutine function.
-
-    This function is needed because functools.partial is not a coroutine function, but its func attribute is.
-    Note: It will return false for coroutine objects.
-    """
-    while isinstance(obj, functools.partial):
-        obj = obj.func
-    return iscoroutinefunction(obj)
 
 
 def expects_arguments(func: Callable) -> bool:
@@ -136,6 +121,51 @@ def kebab_to_camel_case(string: str) -> str:
 def event_type_to_camel_case(string: str) -> str:
     """Convert an event type string to camelCase."""
     return '.'.join(kebab_to_camel_case(part) if part != '-' else part for part in string.split('.'))
+
+
+def should_await(result: Any) -> bool:
+    """Determine if a result should be awaited.
+
+    Returns ``True`` for awaitables that are not already managed
+    (i.e. not an ``AwaitableResponse`` or an ``asyncio.Task``).
+
+    Note: We want to await an awaitable result even if the handler is not an async function (like a lambda statement).
+    """
+
+    from .awaitable_response import AwaitableResponse
+
+    return isinstance(result, Awaitable) and not isinstance(result, (AwaitableResponse, asyncio.Task))
+
+
+async def await_with_context(awaitable: Awaitable[Any], ctx: AbstractContextManager) -> Any:
+    """Await an awaitable within a context manager."""
+    with ctx:
+        return await awaitable
+
+
+def wrap_with_deprecated_awaitable_handler(
+    handler: Callable[..., Any] | Awaitable[Any],
+    *,
+    registration: str,
+) -> Callable[..., Any]:
+    """Wrap a direct awaitable registration in a callable and emit a deprecation warning."""
+    if callable(handler):
+        return handler
+    if not isinstance(handler, Awaitable):
+        raise TypeError(f'{registration} expects a synchronous or asynchronous function.')
+
+    warnings.warn(
+        f'Passing an awaitable directly to {registration} is deprecated; '
+        'pass a synchronous or asynchronous function instead.',
+        DeprecationWarning,
+        stacklevel=3,
+    )
+
+    def wrapped_handler() -> Awaitable[Any]:
+        return handler
+
+    wrapped_handler.__name__ = f'deprecated {registration} awaitable'
+    return wrapped_handler
 
 
 def require_top_level_layout(element: Element) -> None:
