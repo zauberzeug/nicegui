@@ -187,7 +187,7 @@ export default {
       grid.rotateX(Math.PI / 2);
       this.scene.add(grid);
     }
-    this.controlClass = { trackball: TrackballControls, map: MapControls, orbit: OrbitControls }[this.controlType];
+    this.controlClass = { trackball: TrackballControls, map: MapControls }[this.controlType] || OrbitControls;
     this.controls = new this.controlClass(this.camera, this.renderer.domElement);
     this.drag_controls = new DragControls(this.draggable_objects, this.camera, this.renderer.domElement);
     this.drag_controls.transformGroup = true;
