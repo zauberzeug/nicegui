@@ -193,16 +193,16 @@ async def wait_for_init() -> None:
 ''')
 def change_controls() -> None:
     ui.label('Orbit controls (default)')
-    with ui.scene(width=285, height=220) as scene_default:
-        scene_default.sphere()
+    with ui.scene(width=285, height=220):
+        ui.scene.sphere()
 
     ui.label('Trackball controls')
-    with ui.scene(width=285, height=220, control_type='trackball') as scene_trackball:
-        scene_trackball.sphere()
+    with ui.scene(width=285, height=220, control_type='trackball'):
+        ui.scene.sphere()
 
     ui.label('Map controls')
-    with ui.scene(width=285, height=220, control_type='map') as scene_map:
-        scene_map.sphere()
+    with ui.scene(width=285, height=220, control_type='map'):
+        ui.scene.sphere()
 
 
 @doc.demo(ui.scene_view)
