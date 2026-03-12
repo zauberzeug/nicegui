@@ -50,7 +50,7 @@ def base64_favicon():
             <circle cx="120" cy="85" r="8" />
             <path d="m60,120 C75,150 125,150 140,120" style="fill:none; stroke:black; stroke-width:8; stroke-linecap:round" />
         </svg>
-    ''').classes('w-4 h-4'),
+    ''', sanitize=False).classes('w-4 h-4'),
     ui.label('NiceGUI'),
 ))
 def svg_favicon():

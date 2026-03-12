@@ -1,17 +1,21 @@
+import asyncio
 import inspect
 import os
 import platform
 import signal
 import urllib
+from collections.abc import Awaitable, Callable, Iterator
 from enum import Enum
 from pathlib import Path
-from typing import Any, Awaitable, Callable, Iterator, List, Optional, Union
+from typing import Any
 
 from fastapi import FastAPI, HTTPException, Request, Response
 from fastapi.responses import FileResponse
 
-from .. import background_tasks, helpers
+from .. import background_tasks, core, helpers
 from ..client import Client
+from ..context import context
+from ..elements.mixins.color_elements import QUASAR_COLORS
 from ..logging import log
 from ..native import NativeConfig
 from ..observables import ObservableSet
@@ -40,11 +44,15 @@ class App(FastAPI):
         self._state: State = State.STOPPED
         self.config = AppConfig()
 
-        self._startup_handlers: List[Union[Callable[..., Any], Awaitable]] = []
-        self._shutdown_handlers: List[Union[Callable[..., Any], Awaitable]] = []
-        self._connect_handlers: List[Union[Callable[..., Any], Awaitable]] = []
-        self._disconnect_handlers: List[Union[Callable[..., Any], Awaitable]] = []
-        self._exception_handlers: List[Callable[..., Any]] = [log.exception]
+        self._startup_handlers: list[Callable[..., Any] | Awaitable] = []
+        self._shutdown_handlers: list[Callable[..., Any] | Awaitable] = []
+        self._connect_handlers: list[Callable[..., Any] | Awaitable] = []
+        self._disconnect_handlers: list[Callable[..., Any] | Awaitable] = []
+        self._delete_handlers: list[Callable[..., Any] | Awaitable] = []
+        self._exception_handlers: list[Callable[..., Any]] = [log.exception]
+        self._page_exception_handler: Callable[..., Any] | None = None
+
+        self.colors()  # populate Quasar config with default colors
 
     @property
     def is_starting(self) -> bool:
@@ -70,7 +78,7 @@ class App(FastAPI):
         """Start NiceGUI. (For internal use only.)"""
         self._state = State.STARTING
         for t in self._startup_handlers:
-            Client.auto_index_client.safe_invoke(t)
+            self.safe_invoke(t)
         self.on_shutdown(self.storage.on_shutdown)
         self.on_shutdown(background_tasks.teardown)
         self._state = State.STARTED
@@ -78,40 +86,69 @@ class App(FastAPI):
     async def stop(self) -> None:
         """Stop NiceGUI. (For internal use only.)"""
         self._state = State.STOPPING
-        with Client.auto_index_client:
-            for t in self._shutdown_handlers:
-                if isinstance(t, Awaitable):
-                    await t
-                else:
-                    result = t(self) if len(inspect.signature(t).parameters) == 1 else t()
-                    if helpers.is_coroutine_function(t):
-                        await result
+        for t in self._shutdown_handlers:
+            if isinstance(t, Awaitable):
+                await t
+            else:
+                result = t(self) if len(inspect.signature(t).parameters) == 1 else t()
+                if helpers.is_coroutine_function(t):
+                    await result
         self._state = State.STOPPED
 
-    def on_connect(self, handler: Union[Callable, Awaitable]) -> None:
+    def safe_invoke(self, func: Callable[..., Any] | Awaitable) -> None:
+        """Invoke the potentially async function and catch any exceptions."""
+        func_name = func.__name__ if hasattr(func, '__name__') else str(func)
+        try:
+            if isinstance(func, Awaitable):
+                async def await_func():
+                    await func
+                background_tasks.create(await_func(), name=f'func {func_name}')
+            else:
+                result = func()
+                if helpers.is_coroutine_function(func) and not isinstance(result, asyncio.Task):
+                    async def await_result():
+                        await result
+                    background_tasks.create(await_result(), name=f'result {func_name}')
+        except Exception as e:
+            self.handle_exception(e)
+
+    def on_connect(self, handler: Callable | Awaitable) -> None:
         """Called every time a new client connects to NiceGUI.
 
         The callback has an optional parameter of `nicegui.Client`.
         """
         self._connect_handlers.append(handler)
 
-    def on_disconnect(self, handler: Union[Callable, Awaitable]) -> None:
+    def on_disconnect(self, handler: Callable | Awaitable) -> None:
         """Called every time a new client disconnects from NiceGUI.
 
         The callback has an optional parameter of `nicegui.Client`.
+
+        *Updated in version 3.0.0: The handler is also called when a client reconnects.*
         """
         self._disconnect_handlers.append(handler)
 
-    def on_startup(self, handler: Union[Callable, Awaitable]) -> None:
+    def on_delete(self, handler: Callable | Awaitable) -> None:
+        """Called when a client is deleted.
+
+        The callback has an optional parameter of `nicegui.Client`.
+
+        *Added in version 3.0.0*
+        """
+        self._delete_handlers.append(handler)
+
+    def on_startup(self, handler: Callable | Awaitable) -> None:
         """Called when NiceGUI is started or restarted.
 
         Needs to be called before `ui.run()`.
         """
         if self.is_started:
+            if core.script_mode:
+                raise RuntimeError('Unable to register a startup in script mode. Use a `@ui.page` function instead.')
             raise RuntimeError('Unable to register another startup handler. NiceGUI has already been started.')
         self._startup_handlers.append(handler)
 
-    def on_shutdown(self, handler: Union[Callable, Awaitable]) -> None:
+    def on_shutdown(self, handler: Callable | Awaitable) -> None:
         """Called when NiceGUI is shut down or restarted.
 
         When NiceGUI is shut down or restarted, all tasks still in execution will be automatically canceled.
@@ -127,10 +164,23 @@ class App(FastAPI):
 
     def handle_exception(self, exception: Exception) -> None:
         """Handle an exception by invoking all registered exception handlers."""
+        if context.slot_stack and context.client is not None:
+            context.client.handle_exception(exception)
         for handler in self._exception_handlers:
             result = handler() if not inspect.signature(handler).parameters else handler(exception)
             if helpers.is_coroutine_function(handler):
                 background_tasks.create(result, name=f'exception {handler.__name__}')
+
+    def on_page_exception(self, handler: Callable) -> None:
+        """Called when an exception occurs in a page and allows to create a custom error page.
+
+        The callback can accept an optional ``Exception`` as argument.
+        All UI elements created in the callback are displayed on the error page.
+        Asynchronous handlers are currently not supported.
+
+        *Added in version 2.20.0*
+        """
+        self._page_exception_handler = handler
 
     def shutdown(self) -> None:
         """Shut down NiceGUI.
@@ -139,14 +189,14 @@ class App(FastAPI):
         """
         if self.native.main_window:
             self.native.main_window.destroy()
-        if self.config.reload:
+        if self.config.reload or Server.instance.config.should_reload:
             os.kill(os.getppid(), getattr(signal, 'CTRL_C_EVENT' if platform.system() == 'Windows' else 'SIGINT'))
         else:
             Server.instance.should_exit = True
 
     def add_static_files(self,
                          url_path: str,
-                         local_directory: Union[str, Path],
+                         local_directory: str | Path,
                          *,
                          follow_symlink: bool = False,
                          max_cache_age: int = 3600) -> None:
@@ -173,13 +223,13 @@ class App(FastAPI):
         handler = CacheControlledStaticFiles(
             directory=local_directory, follow_symlink=follow_symlink, max_cache_age=max_cache_age)
 
-        @self.get(url_path + '/{path:path}')
+        @self.get(url_path.rstrip('/') + '/{path:path}')  # NOTE: prevent double slashes in route pattern
         async def static_file(request: Request, path: str = '') -> Response:
             return await handler.get_response(path, request.scope)
 
     def add_static_file(self, *,
-                        local_file: Union[str, Path],
-                        url_path: Optional[str] = None,
+                        local_file: str | Path,
+                        url_path: str | None = None,
                         single_use: bool = False,
                         strict: bool = True,
                         max_cache_age: int = 3600) -> str:
@@ -191,13 +241,10 @@ class App(FastAPI):
         To make a whole folder of files accessible, use `add_static_files()` instead.
         For media files which should be streamed, you can use `add_media_files()` or `add_media_file()` instead.
 
-        Deprecation warning:
-        Non-existing files will raise a ``FileNotFoundError`` rather than a ``ValueError`` in version 3.0 if ``strict`` is ``True``.
-
         :param local_file: local file to serve as static content
         :param url_path: string that starts with a slash "/" and identifies the path at which the file should be served (default: None -> auto-generated URL path)
         :param single_use: whether to remove the route after the file has been downloaded once (default: False)
-        :param strict: whether to raise a ``ValueError`` if the file does not exist (default: False, *added in version 2.12.0*)
+        :param strict: whether to raise a ``FileNotFoundError`` if the file does not exist (default: True, *added in version 2.12.0*)
         :param max_cache_age: value for max-age set in Cache-Control header (*added in version 2.8.0*)
         :return: encoded URL which can be used to access the file
         """
@@ -206,7 +253,7 @@ class App(FastAPI):
 
         file = Path(local_file).resolve()
         if strict and not file.is_file():
-            raise ValueError(f'File not found: {file}')  # DEPRECATED: will raise a ``FileNotFoundError`` in version 3.0
+            raise FileNotFoundError(f'File not found: {file}')
         path = f'/_nicegui/auto/static/{helpers.hash_file_path(file)}/{file.name}' if url_path is None else url_path
 
         @self.get(path)
@@ -217,7 +264,7 @@ class App(FastAPI):
 
         return urllib.parse.quote(path)
 
-    def add_media_files(self, url_path: str, local_directory: Union[str, Path]) -> None:
+    def add_media_files(self, url_path: str, local_directory: str | Path) -> None:
         """Add directory of media files.
 
         `add_media_files()` allows a local files to be streamed from a specified endpoint, e.g. `'/media'`.
@@ -231,16 +278,17 @@ class App(FastAPI):
         :param url_path: string that starts with a slash "/" and identifies the path at which the files should be served
         :param local_directory: local folder with files to serve as media content
         """
-        @self.get(url_path + '/{filename:path}')
+        @self.get(url_path.rstrip('/') + '/{filename:path}')  # NOTE: prevent double slashes in route pattern
         def read_item(request: Request, filename: str, nicegui_chunk_size: int = 8192) -> Response:
-            filepath = Path(local_directory) / filename
-            if not filepath.is_file():
+            local_dir = Path(local_directory).resolve()
+            filepath = (local_dir / filename).resolve()
+            if not filepath.is_relative_to(local_dir) or not filepath.is_file():
                 raise HTTPException(status_code=404, detail='Not Found')
             return get_range_response(filepath, request, chunk_size=nicegui_chunk_size)
 
     def add_media_file(self, *,
-                       local_file: Union[str, Path],
-                       url_path: Optional[str] = None,
+                       local_file: str | Path,
+                       url_path: str | None = None,
                        single_use: bool = False,
                        strict: bool = True) -> str:
         """Add a single media file.
@@ -251,18 +299,15 @@ class App(FastAPI):
         To make a whole folder of media files accessible via streaming, use `add_media_files()` instead.
         For small static files, you can use `add_static_files()` or `add_static_file()` instead.
 
-        Deprecation warning:
-        Non-existing files will raise a ``FileNotFoundError`` rather than a ``ValueError`` in version 3.0 if ``strict`` is ``True``.
-
         :param local_file: local file to serve as media content
         :param url_path: string that starts with a slash "/" and identifies the path at which the file should be served (default: None -> auto-generated URL path)
         :param single_use: whether to remove the route after the media file has been downloaded once (default: False)
-        :param strict: whether to raise a ``ValueError`` if the file does not exist (default: False, *added in version 2.12.0*)
+        :param strict: whether to raise a ``FileNotFoundError`` if the file does not exist (default: True, *added in version 2.12.0*)
         :return: encoded URL which can be used to access the file
         """
         file = Path(local_file).resolve()
         if strict and not file.is_file():
-            raise ValueError(f'File not found: {file}')  # DEPRECATED: will raise a ``FileNotFoundError`` in version 3.0
+            raise FileNotFoundError(f'File not found: {file}')
         path = f'/_nicegui/auto/media/{helpers.hash_file_path(file)}/{file.name}' if url_path is None else url_path
 
         @self.get(path)
@@ -272,6 +317,49 @@ class App(FastAPI):
             return get_range_response(file, request, chunk_size=nicegui_chunk_size)
 
         return urllib.parse.quote(path)
+
+    def colors(self, *,
+               primary: str = '#5898d4',
+               secondary: str = '#26a69a',
+               accent: str = '#9c27b0',
+               dark: str = '#1d1d1d',
+               dark_page: str = '#121212',
+               positive: str = '#21ba45',
+               negative: str = '#c10015',
+               info: str = '#31ccec',
+               warning: str = '#f2c037',
+               **custom_colors: str) -> None:
+        """Color Theming
+
+        Sets the main colors (primary, secondary, accent, ...) used by `Quasar <https://quasar.dev/style/theme-builder>`_ on an application-wide basis.
+
+        Note: Use ``ui.colors()`` if you want to set colors after a page has been rendered on a per-page basis.
+
+        *Added in version 3.6.0*
+
+        :param primary: Primary color (default: "#5898d4")
+        :param secondary: Secondary color (default: "#26a69a")
+        :param accent: Accent color (default: "#9c27b0")
+        :param dark: Dark color (default: "#1d1d1d")
+        :param dark_page: Dark page color (default: "#121212")
+        :param positive: Positive color (default: "#21ba45")
+        :param negative: Negative color (default: "#c10015")
+        :param info: Info color (default: "#31ccec")
+        :param warning: Warning color (default: "#f2c037")
+        :param custom_colors: Custom color definitions for branding
+        """
+        brand: dict[str, str] = self.config.quasar_config['brand']
+        brand['primary'] = primary
+        brand['secondary'] = secondary
+        brand['accent'] = accent
+        brand['dark'] = dark
+        brand['dark-page'] = dark_page
+        brand['positive'] = positive
+        brand['negative'] = negative
+        brand['info'] = info
+        brand['warning'] = warning
+        brand.update({name.replace('_', '-'): value for name, value in custom_colors.items()})
+        QUASAR_COLORS.update({name.replace('_', '-') for name in custom_colors})
 
     def remove_route(self, path: str) -> None:
         """Remove routes with the given path."""
@@ -284,19 +372,24 @@ class App(FastAPI):
         self._shutdown_handlers.clear()
         self._connect_handlers.clear()
         self._disconnect_handlers.clear()
+        self._delete_handlers.clear()
         self._exception_handlers[:] = [log.exception]
+        self._page_exception_handler = None
+        self.config = AppConfig()
+        self.colors()  # reset colors to default
 
     @staticmethod
-    def clients(path: str) -> Iterator[Client]:
-        """Iterate over all connected clients with a matching path.
+    def clients(path: str | None = None) -> Iterator[Client]:
+        """Iterate over clients, with a matching path if provided.
 
-        When using `@ui.page("/path")` each client gets a private view of this page.
+        When using ``@ui.page("/path")``, each client gets a private view of this page.
         Updates must be sent to each client individually, which this iterator simplifies.
+        If ``path`` is ``None`` (default), it yields all clients regardless of their path.
 
         *Added in version 2.7.0*
 
-        :param path: string to filter clients by
+        :param path: string to filter clients by (or ``None`` to get all clients, *added in version 3.9.0*)
         """
         for client in Client.instances.values():
-            if client.page.path == path:
+            if path is None or client.page.path == path:
                 yield client

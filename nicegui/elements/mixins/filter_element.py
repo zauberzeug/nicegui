@@ -1,4 +1,5 @@
-from typing import Any, Callable, Optional, cast
+from collections.abc import Callable
+from typing import Any, cast
 
 from typing_extensions import Self
 
@@ -11,7 +12,7 @@ class FilterElement(Element):
     filter = BindableProperty(
         on_change=lambda sender, filter: cast(Self, sender)._handle_filter_change(filter))  # pylint: disable=protected-access
 
-    def __init__(self, *, filter: Optional[str] = None, **kwargs: Any) -> None:  # pylint: disable=redefined-builtin
+    def __init__(self, *, filter: str | None = None, **kwargs: Any) -> None:  # pylint: disable=redefined-builtin
         super().__init__(**kwargs)
         self.filter = filter
         self._props[self.FILTER_PROP] = filter
@@ -19,7 +20,8 @@ class FilterElement(Element):
     def bind_filter_to(self,
                        target_object: Any,
                        target_name: str = 'filter',
-                       forward: Callable[..., Any] = lambda x: x,
+                       forward: Callable[[Any], Any] | None = None, *,
+                       strict: bool | None = None,
                        ) -> Self:
         """Bind the filter of this element to the target object's target_name property.
 
@@ -28,15 +30,18 @@ class FilterElement(Element):
 
         :param target_object: The object to bind to.
         :param target_name: The name of the property to bind to.
-        :param forward: A function to apply to the value before applying it to the target.
+        :param forward: A function to apply to the value before applying it to the target (default: identity).
+        :param strict: Whether to check (and raise) if the target object has the specified property (default: None,
+            performs a check if the object is not a dictionary, *added in version 3.0.0*).
         """
-        bind_to(self, 'filter', target_object, target_name, forward)
+        bind_to(self, 'filter', target_object, target_name, forward, self_strict=False, other_strict=strict)
         return self
 
     def bind_filter_from(self,
                          target_object: Any,
                          target_name: str = 'filter',
-                         backward: Callable[..., Any] = lambda x: x,
+                         backward: Callable[[Any], Any] | None = None, *,
+                         strict: bool | None = None,
                          ) -> Self:
         """Bind the filter of this element from the target object's target_name property.
 
@@ -45,16 +50,19 @@ class FilterElement(Element):
 
         :param target_object: The object to bind from.
         :param target_name: The name of the property to bind from.
-        :param backward: A function to apply to the value before applying it to this element.
+        :param backward: A function to apply to the value before applying it to this element (default: identity).
+        :param strict: Whether to check (and raise) if the target object has the specified property (default: None,
+            performs a check if the object is not a dictionary, *added in version 3.0.0*).
         """
-        bind_from(self, 'filter', target_object, target_name, backward)
+        bind_from(self, 'filter', target_object, target_name, backward, self_strict=False, other_strict=strict)
         return self
 
     def bind_filter(self,
                     target_object: Any,
                     target_name: str = 'filter', *,
-                    forward: Callable[..., Any] = lambda x: x,
-                    backward: Callable[..., Any] = lambda x: x,
+                    forward: Callable[[Any], Any] | None = None,
+                    backward: Callable[[Any], Any] | None = None,
+                    strict: bool | None = None,
                     ) -> Self:
         """Bind the filter of this element to the target object's target_name property.
 
@@ -64,10 +72,14 @@ class FilterElement(Element):
 
         :param target_object: The object to bind to.
         :param target_name: The name of the property to bind to.
-        :param forward: A function to apply to the value before applying it to the target.
-        :param backward: A function to apply to the value before applying it to this element.
+        :param forward: A function to apply to the value before applying it to the target (default: identity).
+        :param backward: A function to apply to the value before applying it to this element (default: identity).
+        :param strict: Whether to check (and raise) if the target object has the specified property (default: None,
+            performs a check if the object is not a dictionary, *added in version 3.0.0*).
         """
-        bind(self, 'filter', target_object, target_name, forward=forward, backward=backward)
+        bind(self, 'filter', target_object, target_name,
+             forward=forward, backward=backward,
+             self_strict=False, other_strict=strict)
         return self
 
     def set_filter(self, filter_: str) -> None:
@@ -83,4 +95,3 @@ class FilterElement(Element):
         :param filter: The new filter.
         """
         self._props[self.FILTER_PROP] = filter_
-        self.update()

@@ -1,5 +1,5 @@
+from collections.abc import Callable
 from pathlib import Path
-from typing import Callable, Optional, Union
 
 import fastapi
 
@@ -10,10 +10,10 @@ class APIRouter(fastapi.APIRouter):
 
     def page(self,
              path: str, *,
-             title: Optional[str] = None,
-             viewport: Optional[str] = None,
-             favicon: Optional[Union[str, Path]] = None,
-             dark: Optional[bool] = ...,  # type: ignore
+             title: str | None = None,
+             viewport: str | None = None,
+             favicon: str | Path | None = None,
+             dark: bool | None = ...,  # type: ignore
              response_timeout: float = 3.0,
              **kwargs,
              ) -> Callable:
@@ -21,8 +21,7 @@ class APIRouter(fastapi.APIRouter):
 
         Creates a new page at the given route.
         Each user will see a new instance of the page.
-        This means it is private to the user and not shared with others
-        (as it is done `when placing elements outside of a page decorator <https://nicegui.io/documentation/section_pages_routing#auto-index_page>`_).
+        This means it is private to the user and not shared with others.
 
         :param path: route of the new page (path must start with '/')
         :param title: optional page title

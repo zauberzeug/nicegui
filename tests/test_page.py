@@ -1,27 +1,20 @@
 import asyncio
 import re
-from typing import Optional
-from uuid import uuid4
+from typing import Literal
 
+import httpx
+import pytest
 from fastapi.responses import PlainTextResponse
 from selenium.webdriver.common.by import By
 
 from nicegui import app, background_tasks, ui
-from nicegui.testing import Screen
+from nicegui.testing import Screen, User
 
 
 def test_page(screen: Screen):
     @ui.page('/')
     def page():
         ui.label('Hello, world!')
-
-    screen.open('/')
-    screen.should_contain('NiceGUI')
-    screen.should_contain('Hello, world!')
-
-
-def test_auto_index_page(screen: Screen):
-    ui.label('Hello, world!')
 
     screen.open('/')
     screen.should_contain('NiceGUI')
@@ -47,24 +40,14 @@ def test_route_with_custom_path(screen: Screen):
     screen.should_contain('page with custom path')
 
 
-def test_auto_index_page_with_link_to_subpage(screen: Screen):
-    ui.link('link to subpage', '/subpage')
-
-    @ui.page('/subpage')
-    def page():
-        ui.label('the subpage')
-
-    screen.open('/')
-    screen.click('link to subpage')
-    screen.should_contain('the subpage')
-
-
 def test_link_to_page_by_passing_function(screen: Screen):
     @ui.page('/subpage')
-    def page():
+    def subpage():
         ui.label('the subpage')
 
-    ui.link('link to subpage', page)
+    @ui.page('/')
+    def page():
+        ui.link('link to subpage', subpage)
 
     screen.open('/')
     screen.click('link to subpage')
@@ -82,28 +65,8 @@ def test_creating_new_page_after_startup(screen: Screen):
     screen.should_contain('page created after startup')
 
 
-def test_shared_and_private_pages(screen: Screen):
-    @ui.page('/private_page')
-    def private_page():
-        ui.label(f'private page with uuid {uuid4()}')
-
-    ui.label(f'shared page with uuid {uuid4()}')
-
-    screen.open('/private_page')
-    uuid1 = screen.find('private page').text.split()[-1]
-    screen.open('/private_page')
-    uuid2 = screen.find('private page').text.split()[-1]
-    assert uuid1 != uuid2
-
-    screen.open('/')
-    uuid1 = screen.find('shared page').text.split()[-1]
-    screen.open('/')
-    uuid2 = screen.find('shared page').text.split()[-1]
-    assert uuid1 == uuid2
-
-
 def test_wait_for_connected(screen: Screen):
-    label: Optional[ui.label] = None
+    label: ui.label | None = None
 
     async def load() -> None:
         assert label
@@ -172,19 +135,27 @@ def test_adding_elements_after_connected(screen: Screen):
 
 
 def test_exception(screen: Screen):
+    exceptions = []
+
     @ui.page('/')
     def page():
+        ui.on_exception(exceptions.append)
         raise RuntimeError('some exception')
 
+    screen.allowed_js_errors.append('/ - Failed to load resource')
     screen.open('/')
     screen.should_contain('500')
     screen.should_contain('Server error')
     screen.assert_py_logger('ERROR', 'some exception')
+    assert not exceptions, 'ui.on_exception is for in-page exceptions (after page sent to browser)'
 
 
 def test_exception_after_connected(screen: Screen):
+    exceptions = []
+
     @ui.page('/')
     async def page():
+        ui.on_exception(exceptions.append)
         await ui.context.client.connected()
         ui.label('this is shown')
         raise RuntimeError('some exception')
@@ -192,6 +163,17 @@ def test_exception_after_connected(screen: Screen):
     screen.open('/')
     screen.should_contain('this is shown')
     screen.assert_py_logger('ERROR', 'some exception')
+    assert exceptions, 'in-page exception should be caught by ui.on_exception'
+
+
+def test_api_exception(screen: Screen):
+    @app.get('/')
+    def api_exception():
+        raise RuntimeError('some exception in a GET endpoint')
+
+    screen.allowed_js_errors.append('/ - Failed to load resource')
+    screen.open('/')
+    screen.should_contain('Internal Server Error')
 
 
 def test_page_with_args(screen: Screen):
@@ -225,7 +207,10 @@ def test_async_connect_handler(screen: Screen):
     screen.should_contain('42')
 
 
-def test_dark_mode(screen: Screen):
+@pytest.mark.parametrize('unocss', [None, 'mini', 'wind3', 'wind4'])
+def test_dark_mode(screen: Screen, unocss: Literal['mini', 'wind3', 'wind4'] | None):
+    app.config.unocss = unocss
+
     @ui.page('/auto', dark=None)
     def page():
         ui.label('A').classes('text-blue-400 dark:text-red-400')
@@ -238,8 +223,8 @@ def test_dark_mode(screen: Screen):
     def dark_page():
         ui.label('C').classes('text-blue-400 dark:text-red-400')
 
-    blue = 'rgba(96, 165, 250, 1)'
-    red = 'rgba(248, 113, 113, 1)'
+    blue = 'oklch(0.707 0.165 254.624)'
+    red = 'oklch(0.704 0.191 22.216)'
     white = 'rgba(0, 0, 0, 0)'
     black = 'rgba(18, 18, 18, 1)'
 
@@ -323,10 +308,10 @@ def test_ip(screen: Screen):
     screen.open('/')
     screen.should_contain('127.0.0.1')
 
-
-def test_multicast(screen: Screen):
+@pytest.mark.parametrize('path', ['/', None])
+def test_multicast(screen: Screen, path: str | None):
     def update():
-        for client in app.clients('/'):
+        for client in app.clients(path):
             with client:
                 ui.label('added')
 
@@ -341,3 +326,30 @@ def test_multicast(screen: Screen):
     screen.should_contain('added')
     screen.switch_to(0)
     screen.should_contain('added')
+
+
+def test_warning_if_response_takes_too_long(screen: Screen):
+    @ui.page('/', response_timeout=0.5)
+    async def page():
+        await asyncio.sleep(1)
+        ui.label('all done')
+
+    screen.start_server()
+    # NOTE: using httpx instead of screen.open to avoid Selenium script timeout on incomplete page responses
+    httpx.get(f'http://localhost:{Screen.PORT}/', timeout=5)
+    screen.wait(1)
+    screen.assert_py_logger('WARNING', re.compile('Response for / not ready after 0.5 seconds'))
+
+
+async def test_async_page_does_not_leak_event_wait_tasks(user: User):
+    @ui.page('/')
+    async def page():
+        ui.label('Hello')
+
+    for _ in range(5):
+        await user.open('/')
+    await asyncio.sleep(0.1)
+    assert not any(
+        t.get_name().startswith('wait for connection') and not t.done()
+        for t in asyncio.all_tasks()
+    ), 'connection-wait tasks should be cancelled after page coroutine completes'

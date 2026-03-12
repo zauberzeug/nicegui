@@ -1,30 +1,31 @@
-from typing import Any, Awaitable, Callable, Dict, Optional, Union
+from collections.abc import Awaitable, Callable
+from typing import Any, TypeAlias
 
 from typing_extensions import Self
 
 from ... import background_tasks, helpers
 from .value_element import ValueElement
 
-ValidationFunction = Callable[[Any], Union[Optional[str], Awaitable[Optional[str]]]]
-ValidationDict = Dict[str, Callable[[Any], bool]]
+ValidationFunction: TypeAlias = Callable[[Any], str | None | Awaitable[str | None]]
+ValidationDict = dict[str, Callable[[Any], bool]]
 
 
 class ValidationElement(ValueElement):
 
-    def __init__(self, validation: Optional[Union[ValidationFunction, ValidationDict]], **kwargs: Any) -> None:
+    def __init__(self, validation: ValidationFunction | ValidationDict | None, **kwargs: Any) -> None:
         self._validation = validation
         self._auto_validation = True
-        self._error: Optional[str] = None
+        self._error: str | None = None
         super().__init__(**kwargs)
         self._props['error'] = None if validation is None else False  # NOTE: reserve bottom space for error message
 
     @property
-    def validation(self) -> Optional[Union[ValidationFunction, ValidationDict]]:
+    def validation(self) -> ValidationFunction | ValidationDict | None:
         """The validation function or dictionary of validation functions."""
         return self._validation
 
     @validation.setter
-    def validation(self, validation: Optional[Union[ValidationFunction, ValidationDict]]) -> None:
+    def validation(self, validation: ValidationFunction | ValidationDict | None) -> None:
         """Sets the validation function or dictionary of validation functions.
 
         :param validation: validation function or dictionary of validation functions (``None`` to disable validation)
@@ -33,12 +34,12 @@ class ValidationElement(ValueElement):
         self.validate(return_result=False)
 
     @property
-    def error(self) -> Optional[str]:
+    def error(self) -> str | None:
         """The latest error message from the validation functions."""
         return self._error
 
     @error.setter
-    def error(self, error: Optional[str]) -> None:
+    def error(self, error: str | None) -> None:
         """Sets the error message.
 
         :param error: The optional error message
@@ -49,7 +50,6 @@ class ValidationElement(ValueElement):
         self._error = error
         self._props['error'] = new_error_prop
         self._props['error-message'] = error
-        self.update()
 
     def validate(self, *, return_result: bool = True) -> bool:
         """Validate the current value and set the error message if necessary.

@@ -1,36 +1,39 @@
 from __future__ import annotations
 
 import time
+from collections.abc import Callable
+from contextlib import suppress
 from pathlib import Path
-from typing import List, Optional, Tuple, Union, cast
+from typing import cast
 
 from typing_extensions import Self
 
-from .. import optional_features
+from .. import helpers, optional_features
+from ..defaults import DEFAULT_PROP, resolve_defaults
 from ..events import GenericEventArguments, Handler, MouseEventArguments, handle_event
 from ..logging import log
-from .image import pil_to_base64
+from .image import pil_to_tempfile
 from .mixins.content_element import ContentElement
 from .mixins.source_element import SourceElement
 
-try:
+with suppress(ImportError):
     from PIL.Image import Image as PIL_Image
     optional_features.register('pillow')
-except ImportError:
-    pass
 
 
 class InteractiveImage(SourceElement, ContentElement, component='interactive_image.js'):
     CONTENT_PROP = 'content'
     PIL_CONVERT_FORMAT = 'PNG'
 
+    @resolve_defaults
     def __init__(self,
-                 source: Union[str, Path, 'PIL_Image'] = '', *,  # noqa: UP037
+                 source: str | Path | PIL_Image = '', *,
                  content: str = '',
-                 size: Optional[Tuple[float, float]] = None,
-                 on_mouse: Optional[Handler[MouseEventArguments]] = None,
-                 events: List[str] = ['click'],  # noqa: B006
-                 cross: Union[bool, str] = False,
+                 size: tuple[float, float] | None = DEFAULT_PROP | None,
+                 on_mouse: Handler[MouseEventArguments] | None = None,
+                 events: list[str] = DEFAULT_PROP | ['click'],
+                 cross: bool | str = DEFAULT_PROP | False,
+                 sanitize: Callable[[str], str] | bool | None = True,  # DEPRECATED: remove `None` in version 4.0.0
                  ) -> None:
         """Interactive Image
 
@@ -56,16 +59,26 @@ class InteractiveImage(SourceElement, ContentElement, component='interactive_ima
         :param on_mouse: callback for mouse events (contains image coordinates `image_x` and `image_y` in pixels)
         :param events: list of JavaScript events to subscribe to (default: `['click']`)
         :param cross: whether to show crosshairs or a color string (default: `False`)
+        :param sanitize: sanitization mode:
+            ``True`` (default) uses client-side sanitization via DOMPurify,
+            ``False`` disables sanitization (use only with trusted content),
+            or pass a callable to apply server-side sanitization
         """
+        if sanitize is None:
+            helpers.warn_once('`sanitize=None` is deprecated, defaults to `True` and will be removed in version 4.0.0.')
+            sanitize = True
+
+        self._sanitize = sanitize
         super().__init__(source=source, content=content)
         self._props['events'] = events[:]
         self._props['cross'] = cross
         self._props['size'] = size
+        self._props['sanitize'] = sanitize is True
 
         if on_mouse:
             self.on_mouse(on_mouse)
 
-    def set_source(self, source: Union[str, Path, 'PIL_Image']) -> None:  # noqa: UP037
+    def set_source(self, source: str | Path | PIL_Image) -> None:
         return super().set_source(source)
 
     def on_mouse(self, on_mouse: Handler[MouseEventArguments]) -> Self:
@@ -89,18 +102,17 @@ class InteractiveImage(SourceElement, ContentElement, component='interactive_ima
         self.on('mouse', handle_mouse)
         return self
 
-    def _set_props(self, source: Union[str, Path, 'PIL_Image']) -> None:  # noqa: UP037
+    def _set_props(self, source: str | Path | PIL_Image) -> None:
         if optional_features.has('pillow') and isinstance(source, PIL_Image):
-            source = pil_to_base64(source, self.PIL_CONVERT_FORMAT)
+            source = pil_to_tempfile(source, self.PIL_CONVERT_FORMAT)
         super()._set_props(source)
 
     def force_reload(self) -> None:
         """Force the image to reload from the source."""
         if self._props['src'].startswith('data:'):
-            log.warning('ui.interactive_image: force_reload() only works with network sources (not base64)')
+            log.warning('ui.interactive_image: force_reload() only works with network sources (not data URIs)')
             return
         self._props['t'] = time.time()
-        self.update()
 
     def add_layer(self, *, content: str = '') -> InteractiveImageLayer:
         """Add a new layer with its own content.
@@ -108,27 +120,51 @@ class InteractiveImage(SourceElement, ContentElement, component='interactive_ima
         *Added in version 2.17.0*
         """
         with self:
-            layer = InteractiveImageLayer(source=self.source, content=content, size=self._props['size']) \
-                .classes('nicegui-interactive-image-layer')
+            layer = InteractiveImageLayer(
+                source=self.source,
+                content=content,
+                size=self._props['size'],
+                sanitize=self._sanitize,
+            ).classes('nicegui-interactive-image-layer')
             self.on('loaded', lambda e: layer.run_method('updateViewbox', e.args['width'], e.args['height']))
             return layer
+
+    def _handle_content_change(self, content: str) -> None:
+        if callable(self._sanitize):
+            content = self._sanitize(content)
+        return super()._handle_content_change(content)
 
 
 class InteractiveImageLayer(SourceElement, ContentElement, component='interactive_image.js'):
     CONTENT_PROP = 'content'
     PIL_CONVERT_FORMAT = 'PNG'
 
-    def __init__(self, *, source: str, content: str, size: Optional[Tuple[float, float]]) -> None:
+    def __init__(self, *,
+                 source: str,
+                 content: str,
+                 size: tuple[float, float] | None,
+                 sanitize: Callable[[str], str] | bool | None = True,  # DEPRECATED: remove `None` in version 4.0.0
+                 ) -> None:
         """Interactive Image Layer
 
         This element is created when adding a layer to an ``InteractiveImage``.
 
         *Added in version 2.17.0*
         """
+        if sanitize is None:
+            helpers.warn_once('`sanitize=None` is deprecated, defaults to `True` and will be removed in version 4.0.0.')
+            sanitize = True
+        self._sanitize = sanitize
         super().__init__(source=source, content=content)
         self._props['size'] = size
+        self._props['sanitize'] = sanitize is True
 
-    def _set_props(self, source: Union[str, Path, 'PIL_Image']) -> None:  # noqa: UP037
+    def _set_props(self, source: str | Path | PIL_Image) -> None:
         if optional_features.has('pillow') and isinstance(source, PIL_Image):
-            source = pil_to_base64(source, self.PIL_CONVERT_FORMAT)
+            source = pil_to_tempfile(source, self.PIL_CONVERT_FORMAT)
         super()._set_props(source)
+
+    def _handle_content_change(self, content: str) -> None:
+        if callable(self._sanitize):
+            content = self._sanitize(content)
+        return super()._handle_content_change(content)

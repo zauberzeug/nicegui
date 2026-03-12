@@ -1,10 +1,9 @@
 import asyncio
 import copy
-import sys
 
 from nicegui import ui
 from nicegui.observables import ObservableDict, ObservableList, ObservableSet
-from nicegui.testing import Screen
+from nicegui.testing import Screen, User
 
 # pylint: disable=global-statement
 count = 0
@@ -43,9 +42,8 @@ def test_observable_dict():
     assert count == 6
     data.setdefault('a', 1)
     assert count == 7
-    if sys.version_info >= (3, 9):
-        data |= {'b': 2}
-        assert count == 8
+    data |= {'b': 2}
+    assert count == 8
 
 
 def test_observable_list():
@@ -135,7 +133,10 @@ def test_nested_observables():
 def test_async_handler(screen: Screen):
     reset_counter()
     data = ObservableList(on_change=increment_counter_slowly)
-    ui.button('Append 42', on_click=lambda: data.append(42))
+
+    @ui.page('/')
+    def page():
+        ui.button('Append 42', on_click=lambda: data.append(42))
 
     screen.open('/')
     assert count == 0
@@ -166,3 +167,14 @@ def test_copy():
     assert a == [[0, 2, 3], [4, 5, 6], [7, 8, 9]]
     assert b == [[0, 2, 3], [4, 5, 6]]
     assert c == [[1, 2, 3], [4, 5, 6]]
+
+
+async def test_no_infinite_recursion(user: User):
+    @ui.page('/')
+    def page():
+        list_ = ObservableList([1, 2, 3])
+        list_ += list_
+        ui.label(str(list_))
+
+    await user.open('/')
+    await user.should_see('[1, 2, 3, 1, 2, 3]')

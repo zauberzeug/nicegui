@@ -11,7 +11,7 @@ with ui.row().classes('w-full flex items-center'):
     ui.label('+').style('font-size: 18em')
     ui.image(mask_src).style('width: 25%')
     ui.label('=').style('font-size: 18em')
-    image = ui.interactive_image(img_src).style('width: 25%')
+    image = ui.interactive_image(img_src, sanitize=False).style('width: 25%')
     image.content = f'''
         <image xlink:href="{mask_src}" width="100%" height="100%" x="0" y="0" filter="url(#mask)" />
         <filter id="mask">

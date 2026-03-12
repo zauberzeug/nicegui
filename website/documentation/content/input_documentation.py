@@ -48,6 +48,11 @@ def styling():
     - by passing a callable that returns an error message or `None`, or
     - by passing a dictionary that maps error messages to callables that return `True` if the input is valid.
 
+    Both of these validations **run on Python-side**,
+    bringing security against client-side circumventions and flexibility in validation logic.
+    However they do not correspond to Quasar's validation-related props and methods,
+    and require server communication and processing.
+
     *Since version 2.7.0:*
     The callable validation function can also be an async coroutine.
     In this case, the validation is performed asynchronously in the background.
@@ -59,6 +64,39 @@ def styling():
 def validation():
     ui.input('Name', validation=lambda value: 'Too short' if len(value) < 5 else None)
     ui.input('Name', validation={'Too short': lambda value: len(value) >= 5})
+
+
+@doc.demo('Lazy validation', '''
+    To run validation lazily, you can consider:
+
+    - adding a debounce with the `debounce` prop,
+      so that validation is only triggered after the user stops typing for a certain amount of time,
+    - disabling automatic validation with `without_auto_validation()`
+      and calling the `validate` method manually whenever appropriate, e.g., on blur or on form submission,
+    - or using a combination of both approaches.
+''')
+def lazy_validation():
+    ui.input('name (debounce)', validation={'Too short': lambda v: len(v) > 5}) \
+        .props('debounce=1000')
+
+    name = ui.input('name (on blur)', validation={'Too short': lambda v: len(v) > 5}) \
+        .without_auto_validation()
+    name.on('blur', name.validate)
+
+
+@doc.demo('Client-side validation', '''
+    Sacrificing security and flexibility for performance, you can also use Quasar's client-side validation
+    by passing the `rules` prop with Quasar-compatible rules.
+
+    This way the Quasar props such as `lazy-rules` and methods such as `resetValidation` can also be used.
+
+    Note the use of `:` prefix to denote a JavaScript expression string,
+    and treating `props` as a dictionary to simplify string-escaping.
+''')
+def client_side_validation():
+    name = ui.input('name (client-side)').props('lazy-rules')
+    name.props[':rules'] = '[ val => val.length > 5 || "Too short" ]'
+    ui.button('Reset Validation', on_click=lambda: name.run_method('resetValidation'))
 
 
 doc.reference(ui.input)

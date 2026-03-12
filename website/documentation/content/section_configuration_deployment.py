@@ -29,14 +29,19 @@ doc.intro(run_documentation)
     You can enable native mode for NiceGUI by specifying `native=True` in the `ui.run` function.
     To customize the initial window size and display mode, use the `window_size` and `fullscreen` parameters respectively.
     Additionally, you can provide extra keyword arguments via `app.native.window_args` and `app.native.start_args`.
-    Pick any parameter as it is defined by the internally used [pywebview module](https://pywebview.flowrl.com/guide/api.html)
+    Pick any parameter as it is defined by the internally used [pywebview module](https://pywebview.flowrl.com/api)
     for the `webview.create_window` and `webview.start` functions.
     Note that these keyword arguments will take precedence over the parameters defined in `ui.run`.
 
     Additionally, you can change `webview.settings` via `app.native.settings`.
 
     In native mode the `app.native.main_window` object allows you to access the underlying window.
-    It is an async version of [`Window` from pywebview](https://pywebview.flowrl.com/guide/api.html#window-object).
+    It is an async version of [`Window` from pywebview](https://pywebview.flowrl.com/api/#webview-window).
+
+    On Windows, native mode requires the .NET Framework to be installed,
+    as pywebview uses it for the EdgeChromium backend.
+    This is typically pre-installed on standard Windows installations,
+    but may be missing on minimal or freshly installed systems.
 ''', tab=lambda: ui.label('NiceGUI'))
 def native_mode_demo():
     from nicegui import app
@@ -53,14 +58,15 @@ def native_mode_demo():
     ui.button('enlarge', on_click=lambda: ui.notify('window will be set to 1000x700 in native mode'))
 
 
-# Currently, options passed via app.native are not used if they are set behind a main guard
-# See discussion at: https://github.com/zauberzeug/nicegui/pull/4627
 doc.text('', '''
     Note that the native app is run in a separate
     [process](https://docs.python.org/3/library/multiprocessing.html#multiprocessing.Process).
     Therefore any configuration changes from code run under a
     [main guard](https://docs.python.org/3/library/__main__.html#idiomatic-usage) is ignored by the native app.
     The following examples show the difference between a working and a non-working configuration.
+
+    For packaged apps (nicegui-pack, PyInstaller, etc.), also see the "Packaging with Native Mode" section below
+    regarding the correct placement of `freeze_support()`.
 ''')
 
 
@@ -153,12 +159,12 @@ doc.text('Custom Vue Components', '''
     The ["Custom Vue components" example](https://github.com/zauberzeug/nicegui/tree/main/examples/custom_vue_component)
     demonstrates how to create a custom counter component which emits events and receives updates from the server.
 
-    The ["Signature pad" example](https://github.com/zauberzeug/nicegui/blob/main/examples/signature_pad)
-    shows how to define dependencies for a custom component using a `package.json` file.
-    This allows you to use third-party libraries via NPM in your component.
-
-    Last but not least, the ["Node module integration" example](https://github.com/zauberzeug/nicegui/blob/main/examples/node_module_integration)
-    demonstrates how to create a package.json file and a webpack.config.js file to bundle a custom Vue component with its dependencies.
+    The ["Signature pad" example](https://github.com/zauberzeug/nicegui/blob/main/examples/signature_pad) and
+    the ["Node module integration" example](https://github.com/zauberzeug/nicegui/blob/main/examples/node_module_integration)
+    demonstrate how to bundle a custom Vue component with its dependencies defined in a `package.json` file.
+    In Python we can use the `esm` parameter when subclassing `ui.element`
+    to specify the ESM module name and the path to the bundled component.
+    This adds the ESM module to the import map of the page and makes it available in the Vue component.
 ''')
 
 doc.text('Server Hosting', '''
@@ -254,7 +260,11 @@ doc.text('Package for Installation', '''
     NiceGUI apps can also be bundled into an executable with `nicegui-pack` which is based on [PyInstaller](https://www.pyinstaller.org/).
     This allows you to distribute your app as a single file that can be executed on any computer.
 
-    Just make sure to call `ui.run` with `reload=False` in your main script to disable the auto-reload feature.
+    Just make sure
+
+    - to call `ui.run` with `reload=False` in your main script to disable the auto-reload feature, and
+    - to pass a `root` page function to `ui.run` or define at least one decorated `@page` function.
+
     Running the `nicegui-pack` command below will create an executable `myapp` in the `dist` folder:
 ''')
 
@@ -267,9 +277,10 @@ def pyinstaller():
                 ```python
                 from nicegui import native, ui
 
-                ui.label('Hello from PyInstaller')
+                def root():
+                    ui.label('Hello from PyInstaller')
 
-                ui.run(reload=False, port=native.find_open_port())
+                ui.run(root, reload=False, port=native.find_open_port())
                 ```
             ''')
         with bash_window(classes='max-w-lg w-full'):
@@ -305,6 +316,14 @@ doc.text('', '''
     and zip up the generated `dist` directory yourself, distribute it,
     and your end users can unzip once and be good to go,
     without the constant expansion of files due to the `--onefile` flag.
+
+    - Specifying `--onedir` to `nicegui-pack` will create an executable with all supporting files in a directory.
+    This starts faster than "--onefile" because it skips the unpacking step.
+    For distribution, package the directory into an archive file (e.g., .zip or .7z).
+
+    - Specifying `--clean` to `nicegui-pack` will clean the PyInstaller cache (in `./build` folder) and remove temporary files before building.
+
+    - Specifying `--noconfirm` to `nicegui-pack` will replace the output directory (`./dist/SPECNAME`) without asking for confirmation.
 
     - Summary of user experience for different options:
 
@@ -346,20 +365,28 @@ doc.text('', '''
 ''')
 
 doc.text('', '''
-    **macOS Packaging**
+    **Packaging with Native Mode**
 
-    Add the following snippet before anything else in your main app's file, to prevent new processes from being spawned in an endless loop:
+    When packaging your app (using nicegui-pack, PyInstaller, py2exe, etc.),
+    you need to call `freeze_support()` to prevent new processes from being spawned in an endless loop.
+    It should be called as the first statement inside the main guard.
+
+    If you use `app.native` settings, they must be defined **outside** the main guard
+    so they are applied before `freeze_support()` intercepts the subprocess:
 
     ```python
-    # macOS packaging support
-    from multiprocessing import freeze_support  # noqa
-    freeze_support()  # noqa
+    from multiprocessing import freeze_support
+    from nicegui import app, ui
 
-    # all your other imports and code
+    app.native.window_args['transparent'] = True  # outside main guard
+
+    # any other code (page functions, etc.)
+
+    if __name__ == '__main__':
+        freeze_support()  # first statement in main guard
+        ui.run(native=True, reload=False)
     ```
 
-    The `# noqa` comment instructs Pylance or autopep8 to not apply any PEP rule on those two lines, guaranteeing they remain on top of anything else.
-    This is key to prevent process spawning.
 ''')
 
 doc.text('NiceGUI On Air', '''

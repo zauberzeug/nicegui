@@ -41,7 +41,7 @@ def lottie():
     ui.add_body_html('<script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>')
 
     src = 'https://assets1.lottiefiles.com/datafiles/HN7OcWNnoqje6iXIiZdWzKxvLIbfeCGTmvXmEm1h/data.json'
-    ui.html(f'<lottie-player src="{src}" loop autoplay />').classes('w-full')
+    ui.html(f'<lottie-player src="{src}" loop autoplay />', sanitize=False).classes('w-full')
 
 
 @doc.demo('Image link', '''

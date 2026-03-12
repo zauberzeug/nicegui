@@ -1,4 +1,4 @@
-from nicegui import ui, ElementFilter
+from nicegui import ui
 
 from . import doc
 
@@ -6,7 +6,6 @@ from . import doc
 @doc.demo(ui.aggrid)
 def main_demo() -> None:
     grid = ui.aggrid({
-        'defaultColDef': {'flex': 1},
         'columnDefs': [
             {'headerName': 'Name', 'field': 'name'},
             {'headerName': 'Age', 'field': 'age'},
@@ -17,16 +16,33 @@ def main_demo() -> None:
             {'name': 'Bob', 'age': 21, 'parent': 'Eve'},
             {'name': 'Carol', 'age': 42, 'parent': 'Frank'},
         ],
-        'rowSelection': 'multiple',
-    }).classes('max-h-40')
+        'rowSelection': {'mode': 'multiRow'},
+    })
 
     def update():
         grid.options['rowData'][0]['age'] += 1
-        grid.update()
 
     ui.button('Update', on_click=update)
     ui.button('Select all', on_click=lambda: grid.run_grid_method('selectAll'))
     ui.button('Show parent', on_click=lambda: grid.run_grid_method('setColumnsVisible', ['parent'], True))
+
+
+@doc.demo('Adding rows', '''
+    It's simple to add new rows by updating the `options` property.
+    To scroll to the new row, use the AG Grid API method `ensureIndexVisible`.
+''')
+def adding_rows():
+    import random
+
+    def add():
+        grid.options['rowData'].append({'number': random.randint(0, 100)})
+        grid.run_grid_method('ensureIndexVisible', len(grid.options['rowData']) - 1)
+
+    grid = ui.aggrid({
+        'columnDefs': [{'field': 'number'}],
+        'rowData': [],
+    }).classes('h-52')
+    ui.button('Add row', on_click=add)
 
 
 @doc.demo('Select AG Grid Rows', '''
@@ -42,39 +58,36 @@ def main_demo() -> None:
     See the [AG Grid documentation](https://www.ag-grid.com/javascript-data-grid/row-selection/#example-single-row-selection) for more information.
 ''')
 def aggrid_with_selectable_rows():
-    # @ui.page('/')
-    def page():
-        grid = ui.aggrid({
-            'columnDefs': [
-                {'headerName': 'Name', 'field': 'name', 'checkboxSelection': True},
-                {'headerName': 'Age', 'field': 'age'},
-            ],
-            'rowData': [
-                {'name': 'Alice', 'age': 18},
-                {'name': 'Bob', 'age': 21},
-                {'name': 'Carol', 'age': 42},
-            ],
-            'rowSelection': 'multiple',
-        }).classes('max-h-40')
+    grid = ui.aggrid({
+        'columnDefs': [
+            {'headerName': 'Name', 'field': 'name'},
+            {'headerName': 'Age', 'field': 'age'},
+        ],
+        'rowData': [
+            {'name': 'Alice', 'age': 18},
+            {'name': 'Bob', 'age': 21},
+            {'name': 'Carol', 'age': 42},
+        ],
+        'rowSelection': {'mode': 'multiRow'},
+    })
 
-        async def output_selected_rows():
-            rows = await grid.get_selected_rows()
-            if rows:
-                for row in rows:
-                    ui.notify(f"{row['name']}, {row['age']}")
-            else:
-                ui.notify('No rows selected.')
-
-        async def output_selected_row():
-            row = await grid.get_selected_row()
-            if row:
+    async def output_selected_rows():
+        rows = await grid.get_selected_rows()
+        if rows:
+            for row in rows:
                 ui.notify(f"{row['name']}, {row['age']}")
-            else:
-                ui.notify('No row selected!')
+        else:
+            ui.notify('No rows selected.')
 
-        ui.button('Output selected rows', on_click=output_selected_rows)
-        ui.button('Output selected row', on_click=output_selected_row)
-    page()  # HIDE
+    async def output_selected_row():
+        row = await grid.get_selected_row()
+        if row:
+            ui.notify(f"{row['name']}, {row['age']}")
+        else:
+            ui.notify('No row selected!')
+
+    ui.button('Output selected rows', on_click=output_selected_rows)
+    ui.button('Output selected row', on_click=output_selected_row)
 
 
 @doc.demo('Filter Rows using Mini Filters', '''
@@ -95,7 +108,7 @@ def aggrid_with_minifilters():
             {'name': 'Bob', 'age': 21},
             {'name': 'Carol', 'age': 42},
         ],
-    }).classes('max-h-40')
+    })
 
 
 @doc.demo('AG Grid with Conditional Cell Formatting', '''
@@ -193,7 +206,7 @@ def aggrid_with_complex_objects():
             {'name': {'first': 'Bob', 'last': 'Brown'}, 'age': 21},
             {'name': {'first': 'Carol', 'last': 'Clark'}, 'age': 42},
         ],
-    }).classes('max-h-40')
+    })
 
 
 @doc.demo('AG Grid with dynamic row height', '''
@@ -208,7 +221,7 @@ def aggrid_with_dynamic_row_height():
             {'name': 'Carol', 'age': '42'},
         ],
         ':getRowHeight': 'params => params.data.age > 35 ? 50 : 25',
-    }).classes('max-h-40')
+    })
 
 
 @doc.demo('Run row methods', '''
@@ -223,7 +236,7 @@ def aggrid_with_dynamic_row_height():
 def aggrid_run_row_method():
     grid = ui.aggrid({
         'columnDefs': [
-            {'field': 'name', 'checkboxSelection': True},
+            {'field': 'name'},
             {'field': 'age'},
         ],
         'rowData': [
@@ -237,42 +250,75 @@ def aggrid_run_row_method():
               on_click=lambda: grid.run_row_method('Alice', 'setDataValue', 'age', 99))
 
 
-@doc.demo('Filter return values', '''
-    You can filter the return values of method calls by passing string that defines a JavaScript function.
-    This demo runs the grid method "getDisplayedRowAtIndex" and returns the "data" property of the result.
-
-    Note that requesting data from the client is only supported for page functions, not for the shared auto-index page.
-''')
+@doc.ui
 def aggrid_filter_return_values():
-    # @ui.page('/')
-    def page():
-        grid = ui.aggrid({
-            'columnDefs': [{'field': 'name'}],
-            'rowData': [{'name': 'Alice'}, {'name': 'Bob'}],
-        })
+    ui.link_target('filter_return_values')
 
-        async def get_first_name() -> None:
-            row = await grid.run_grid_method('g => g.getDisplayedRowAtIndex(0).data')
-            ui.notify(row['name'])
 
-        ui.button('Get First Name', on_click=get_first_name)
-    page()  # HIDE
+@doc.demo('Access grid API via JavaScript', '''
+    You can access the AG Grid API directly via `ui.run_javascript()` for more complex operations.
+    This demo accesses the grid API to get the first displayed row's data.
+''')
+def aggrid_access_api_via_javascript():
+    grid = ui.aggrid({
+        'columnDefs': [{'field': 'name'}],
+        'rowData': [{'name': 'Alice'}, {'name': 'Bob'}],
+    })
+
+    async def get_first_name() -> None:
+        row = await ui.run_javascript(
+            f'return getElement({grid.id}).api.getDisplayedRowAtIndex(0).data',
+        )
+        ui.notify(row['name'])
+
+    ui.button('Get First Name', on_click=get_first_name)
 
 
 @doc.demo('Handle theme change', '''
-    You can change the theme of the AG Grid by adding or removing classes.
-    This demo shows how to change the theme using a switch.
+    You can change the theme of the AG Grid via the `theme` property.
+    Dark mode is applied automatically depending on the dark mode setting of the page.
 ''')
 def aggrid_handle_theme_change():
-    from nicegui import events
+    grid = ui.aggrid({
+        'columnDefs': [
+            {'headerName': 'Make', 'field': 'make'},
+            {'headerName': 'Country', 'field': 'country'},
+        ],
+        'rowData': [
+            {'make': 'Ford', 'country': 'USA'},
+            {'make': 'Toyota', 'country': 'Japan'},
+            {'make': 'Volkswagen', 'country': 'Germany'},
+        ],
+    })
+    ui.toggle(['quartz', 'balham', 'material', 'alpine']) \
+        .bind_value(grid, 'theme').props('flat size="sm"')
 
-    grid = ui.aggrid({})
 
-    def handle_theme_change(e: events.ValueChangeEventArguments):
-        grid.classes(add='ag-theme-balham-dark' if e.value else 'ag-theme-balham',
-                     remove='ag-theme-balham ag-theme-balham-dark')
+@doc.demo('AG Grid Enterprise', '''
+    You can use AG Grid Enterprise by setting the module source to the Enterprise bundle
+    (either from a CDN or from a self-hosted bundle)
+    and passing `modules='enterprise'` to the `ui.aggrid` constructor.
 
-    ui.switch('Dark', on_change=handle_theme_change)
+    Use `ui.aggrid.VERSION` (*since version 3.8.0*) to programmatically reference the AG Grid version used by NiceGUI.
+    This ensures compatibility when building custom CDN URLs.
+
+    *Added in version 3.6.0*
+''')
+def project_code():
+    # bundle_url = f'https://cdn.jsdelivr.net/npm/ag-grid-enterprise@{ui.aggrid.VERSION}/+esm'
+    # ui.aggrid.set_module_source(bundle_url)
+
+    # ui.aggrid({
+    #     'columnDefs': [
+    #         {'field': 'version'},
+    #         {'field': 'description'},
+    #     ],
+    #     'rowData': [
+    #         {'version': 'Community', 'description': 'Free, no license required.'},
+    #         {'version': 'Enterprise', 'description': 'Restricted, free to test locally.'},
+    #     ],
+    # }, modules='enterprise')
+    ui.label('This demo does not run online due to licensing restrictions.')  # HIDE
 
 
 doc.reference(ui.aggrid)

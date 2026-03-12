@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 import random
-from typing import Optional, cast
+from typing import cast
 
 from typing_extensions import Self
 
@@ -17,13 +17,12 @@ class colorful_label(ui.label):
 
     def __init__(self, text: str = '') -> None:
         super().__init__(text)
-        self.background: Optional[str] = None  # initialize the background property
+        self.background: str | None = None  # initialize the background property
 
     def _handle_background_change(self, bg_class: str) -> None:
         """Update the classes of the label when the background property changes."""
         self._classes = [c for c in self._classes if not c.startswith('bg-')]
         self._classes.append(bg_class)
-        self.update()
 
 
 temperatures = {'Berlin': 5, 'New York': 15, 'Tokio': 25}

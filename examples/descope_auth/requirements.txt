@@ -1,1 +1,2 @@
 descope
+nicegui>=3.0

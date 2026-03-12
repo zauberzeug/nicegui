@@ -18,7 +18,7 @@ doc.title('Styling & Appearance')
     Each NiceGUI element provides a `props` method whose content is passed [to the Quasar component](https://justpy.io/quasar_tutorial/introduction/#props-of-quasar-components):
     Have a look at [the Quasar documentation](https://quasar.dev/vue-components/button#design) for all styling props.
     Props with a leading `:` can contain JavaScript expressions that are evaluated on the client.
-    You can also apply [Tailwind CSS](https://v3.tailwindcss.com/) utility classes with the `classes` method.
+    You can also apply [Tailwind CSS](https://tailwindcss.com/) utility classes with the `classes` method.
 
     If you really need to apply CSS, you can use the `style` method. Here the delimiter is `;` instead of a blank space.
 
@@ -32,7 +32,7 @@ def design_demo():
 
 doc.text('Try styling NiceGUI elements!', '''
     Try out how
-    [Tailwind CSS classes](https://v3.tailwindcss.com/),
+    [Tailwind CSS classes](https://tailwindcss.com/),
     [Quasar props](https://justpy.io/quasar_tutorial/introduction/#props-of-quasar-components),
     and CSS styles affect NiceGUI elements.
 ''')
@@ -83,7 +83,6 @@ def styling_demo():
                                 element.props(e.value)
                             except ValueError:
                                 pass
-                            element.update()
                         ui.markdown("`element.props('`")
                         ui.input(on_change=handle_props).classes('text-mono grow').props('dense hide-bottom-space')
                         ui.markdown("`')`")
@@ -106,31 +105,43 @@ def styling_demo():
     live_demo_ui()
 
 
-@doc.demo('Tailwind CSS', '''
-    [Tailwind CSS](https://v3.tailwindcss.com/) is a CSS framework for rapidly building custom user interfaces.
-    NiceGUI provides a fluent, auto-complete friendly interface for adding Tailwind classes to UI elements.
+doc.text('', '''
+    **How to overrule Quasar with Tailwind classes or plain CSS**
 
-    You can discover available classes by navigating the methods of the `tailwind` property.
-    The builder pattern allows you to chain multiple classes together (as shown with "Label A").
-    You can also call the `tailwind` property with a list of classes (as shown with "Label B").
+    Some Quasar classes (e.g. `bg-primary`) are marked as `!important` and, thus, would even overrule `!important` Tailwind classes.
+    At NiceGUI, we deviate from Quasar's design by moving Quasar's `!important` styles to a less powerful CSS layer.
+    While still important enough to ensure Quasar works as expected, you can now overrule Quasar for more customization.
 
-    Although this is very similar to using the `classes` method, it is more convenient for Tailwind classes due to auto-completion.
-
-    Last but not least, you can also predefine a style and apply it to multiple elements (labels C and D).
-
-    Note that sometimes Tailwind is overruled by Quasar styles, e.g. when using `ui.button('Button').tailwind('bg-red-500')`.
-    This is a known limitation and not fully in our control.
-    But we try to provide solutions like the `color` parameter: `ui.button('Button', color='red-500')`.
+    Try out class `!bg-red-500` on a `ui.button` to see important Tailwind classes overruling Quasar.
+    Similarly, you can set the style `background-color:red !important` to achieve the same effect.
 ''')
-def tailwind_demo():
-    from nicegui import Tailwind
-    ui.label('Label A').tailwind.font_weight('extrabold').text_color('blue-600').background_color('orange-200')
-    ui.label('Label B').tailwind('drop-shadow', 'font-bold', 'text-green-600')
 
-    red_style = Tailwind().text_color('red-600').font_weight('bold')
-    label_c = ui.label('Label C')
-    red_style.apply(label_c)
-    ui.label('Label D').tailwind(red_style)
+
+@doc.demo('CSS Layers', '''
+    NiceGUI defines the following CSS layers (in order of increasing priority):
+    "theme", "base", "quasar", "nicegui", "components", "utilities", "overrides", and "quasar_importants".
+
+    You don't need to put your custom CSS into layers for basic styling.
+    However, to override Quasar's `!important` rules, you should define your CSS in an appropriate layer:
+    use "components" for component-specific styles or "utilities" for utility classes,
+    depending on the purpose of your custom styles.
+    Note that you need to use `!important` in your custom styles
+    because Quasar defines most of its CSS with `!important`,
+    which would otherwise take precedence.
+
+    In the example below, we override a button's background color using the "utilities" layer.
+
+    *Updated in NiceGUI 3.0.0: CSS layers have been introduced.*
+''')
+def css_layers():
+    ui.add_css('''
+        @layer utilities {
+           .red-background {
+               background-color: red !important;
+            }
+        }
+    ''')
+    ui.button('Red Button').classes('red-background')
 
 
 @doc.demo('Tailwind CSS Layers', '''
@@ -139,6 +150,8 @@ def tailwind_demo():
     This way, you can define your own classes and use them in your UI elements.
     In the example below, we define a custom class `blue-box` and apply it to two labels.
     Note that the style tag is of type `text/tailwindcss` and not `text/css`.
+
+    Also note: This requires the default Tailwind CSS engine (not UnoCSS).
 ''')
 def tailwind_layers():
     ui.add_head_html('''
@@ -152,8 +165,39 @@ def tailwind_layers():
     ''')
 
     with ui.row():
-        ui.label('Hello').classes('blue-box')
-        ui.label('world').classes('blue-box')
+        # ui.label('Hello').classes('blue-box')
+        # ui.label('world').classes('blue-box')
+        # END OF DEMO
+        ui.label('Hello').classes('bg-blue-500 p-12 text-center shadow-lg rounded-lg text-white')
+        ui.label('world').classes('bg-blue-500 p-12 text-center shadow-lg rounded-lg text-white')
+
+
+@doc.demo('UnoCSS engine', '''
+    As an alternative to using the [Tailwind CSS Play CDN engine](https://v3.tailwindcss.com/docs/installation/play-cdn),
+    you can also use the [UnoCSS engine](https://unocss.dev/) to let Tailwind CSS classes take effect.
+
+    Pass one of the following presets to `ui.run(unocss=...)`:
+
+    - "mini": [UnoCSS Mini preset](https://unocss.dev/presets/mini)
+    - "wind3": [UnoCSS Wind3 preset](https://unocss.dev/presets/wind3)
+    - "wind4": [UnoCSS Wind4 preset](https://unocss.dev/presets/wind4)
+
+    UnoCSS is a smaller library and more performant, especially on small pages.
+    In Lighthouse Desktop, load time for this page went from 1.1s down to 0.7s.
+
+    However, full compatibility with Tailwind CSS is not guaranteed.
+    For example, Tailwind CSS Layers (see above) do not work with UnoCSS.
+
+    *Added in NiceGUI 3.7.0*
+''')
+def unocss_demo():
+    label = ui.label('This label becomes red dynamically.')
+
+    ui.button('Become red', on_click=lambda: ui.run_javascript(f'''
+        {label.html_id}.classList.add("text-red-500")
+    '''))
+
+    # ui.run(unocss='mini')
 
 
 doc.intro(element_filter_documentation)
@@ -186,7 +230,7 @@ def css_variables_demo():
 
 
 @doc.demo("Overwrite Tailwind's Default Style", '''
-    Tailwind resets the default style of HTML elements, like the font size of `h2` elements in this example.
+    Tailwind CSS resets the default style of HTML elements, like the font size of `h2` elements in this example.
     You can overwrite these defaults by adding a style tag with type `text/tailwindcss`.
     Without this type, the style will be evaluated too early and will be overwritten by Tailwind.
 ''')
@@ -198,8 +242,72 @@ def overwrite_tailwind_style_demo():
             }
         </style>
     ''')
-    ui.html('<h2>Hello world!</h2>')
+    ui.html('<h2>Hello world!</h2>', sanitize=False)
 
 
 doc.intro(dark_mode_documentation)
 doc.intro(add_style_documentation)
+
+
+@doc.demo('Using other Vue UI frameworks', '''
+    **This is an experimental feature.**
+    **Many NiceGUI elements are likely to break, and the API is subject to change.**
+
+    NiceGUI uses the [Quasar Framework](https://quasar.dev/) by default.
+    However, you can also try to use other Vue UI frameworks
+    like [Element Plus](https://element-plus.org/en-US/) or [Vuetify](https://vuetifyjs.com/en/).
+    To do so, you need to add the framework's JavaScript and CSS file to the head of your HTML document
+    and configure NiceGUI accordingly by extending or replacing `app.config.vue_config_script`.
+
+    *Added in NiceGUI 2.21.0*
+''')
+def other_vue_ui_frameworks_demo():
+    from nicegui import app
+
+    # ui.add_body_html('''
+    #     <link rel="stylesheet" href="//unpkg.com/element-plus/dist/index.css" />
+    #     <script defer src="https://unpkg.com/element-plus"></script>
+    # ''')
+    # app.config.vue_config_script += '''
+    #     app.use(ElementPlus);
+    # '''
+
+    with ui.element('el-button').on('click', lambda: ui.notify('Hi!')):
+        ui.html('Element Plus button', sanitize=False)
+
+    ui.button('Quasar button', on_click=lambda: ui.notify('Ho!'))
+
+    # END OF DEMO
+    ui.add_css('''
+        el-button {
+            border: 1px solid #dcdfe6;
+            border-radius: 4px;
+            color: #606266;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 14px;
+            height: 32px;
+            line-height: 1;
+            padding: 8px 15px;
+        }
+        el-button:hover {
+            background-color: rgb(235.9,245.3,255);
+            border-color: rgb(197.7,225.9,255);
+            color: rgb(64,158,255);
+        }
+        el-button:active {
+            border-color: rgb(64,158,255);
+        }
+        body.dark el-button {
+            border-color: #4c4d4f;
+            color: #cfd3dc;
+        }
+        body.dark el-button:hover {
+            background-color: rgb(24.4, 33.8, 43.5);
+            border-color: rgb(33.2, 61.4, 90.5);
+            color: rgb(64, 158, 255);
+        }
+        body.dark el-button:active {
+            border-color: rgb(64, 158, 255);
+        }
+    ''')

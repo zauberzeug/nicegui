@@ -35,5 +35,12 @@
   },
   // More info: https://aka.ms/dev-containers-non-root.
   "remoteUser": "vscode",
-  "postCreateCommand": "poetry install --all-extras"
+  "mounts": [
+    {
+      "source": "nicegui-gh-config",
+      "target": "/home/vscode/.config/gh",
+      "type": "volume"
+    }
+  ],
+  "postCreateCommand": "bash .devcontainer/post-create.sh"
 }

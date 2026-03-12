@@ -11,6 +11,19 @@ def main_demo() -> None:
     ], label_key='id', on_select=lambda e: ui.notify(e.value))
 
 
+@doc.demo('Updating nodes', '''
+    It's simple to update nodes via the `nodes` property.
+''')
+def adding_nodes():
+    import random
+
+    def add_node():
+        tree.props['nodes'].append({'id': random.choice('ABCDEFGHIJKLMNOPQRSTUVWXYZ')})
+
+    tree = ui.tree([], label_key='id', tick_strategy='leaf')
+    ui.button('Add node', on_click=add_node)
+
+
 @doc.demo('Tree with custom header and body', '''
     Scoped slots can be used to insert custom content into the header and body of a tree node.
     See the [Quasar documentation](https://quasar.dev/vue-components/tree#customize-content) for more information.

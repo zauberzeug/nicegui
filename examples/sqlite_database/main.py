@@ -1,22 +1,10 @@
 #!/usr/bin/env python3
-from typing import List
-
 import models
-from tortoise import Tortoise
+from tortoise.contrib.fastapi import register_tortoise
 
 from nicegui import app, ui
 
-
-async def init_db() -> None:
-    await Tortoise.init(db_url='sqlite://db.sqlite3', modules={'models': ['models']})
-    await Tortoise.generate_schemas()
-
-
-async def close_db() -> None:
-    await Tortoise.close_connections()
-
-app.on_startup(init_db)
-app.on_shutdown(close_db)
+register_tortoise(app, db_url='sqlite://db.sqlite3', modules={'models': ['models']}, generate_schemas=True)
 
 
 @ui.refreshable
@@ -25,7 +13,7 @@ async def list_of_users() -> None:
         await user.delete()
         list_of_users.refresh()
 
-    users: List[models.User] = await models.User.all()
+    users: list[models.User] = await models.User.all()
     for user in reversed(users):
         with ui.card():
             with ui.row().classes('items-center'):

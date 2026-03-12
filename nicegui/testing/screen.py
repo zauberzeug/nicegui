@@ -1,10 +1,12 @@
-import os
 import re
+import runpy
 import threading
 import time
-from contextlib import contextmanager
+from collections.abc import Callable, Generator
+from contextlib import contextmanager, suppress
 from pathlib import Path
-from typing import Callable, Generator, List, Optional, Union, overload
+from typing import Any, overload
+from urllib.parse import urlparse
 
 import pytest
 from selenium import webdriver
@@ -20,24 +22,35 @@ from selenium.webdriver.remote.webelement import WebElement
 from nicegui import app, core, ui
 from nicegui.server import Server
 
+from .general import prepare_simulation
+from .general_fixtures import get_path_to_main_file
+
 
 class Screen:
     PORT = 3392
     IMPLICIT_WAIT = 4
     SCREENSHOT_DIR = Path('screenshots')
+    CATCH_JS_ERRORS = True
 
-    def __init__(self, selenium: webdriver.Chrome, caplog: pytest.LogCaptureFixture) -> None:
+    def __init__(self, selenium: webdriver.Chrome, caplog: pytest.LogCaptureFixture, request: pytest.FixtureRequest | None = None) -> None:
         self.selenium = selenium
         self.caplog = caplog
-        self.server_thread: Optional[threading.Thread] = None
-        self.ui_run_kwargs = {'port': self.PORT, 'show': False, 'reload': False}
+        self.server_thread: threading.Thread | None = None
+        self.pytest_request = request
+        self.ui_run_kwargs: dict[str, Any] = {'port': self.PORT, 'show': False, 'reload': False}
         self.connected = threading.Event()
         app.on_connect(self.connected.set)
         self.url = f'http://localhost:{self.PORT}'
+        self.allowed_js_errors: list[str] = []
 
     def start_server(self) -> None:
-        """Start the webserver in a separate thread. This is the equivalent of `ui.run()` in a normal script."""
-        self.server_thread = threading.Thread(target=ui.run, kwargs=self.ui_run_kwargs)
+        """Start the webserver in a separate thread."""
+        main_path = get_path_to_main_file(self.pytest_request) if self.pytest_request else None
+        if main_path is None:
+            prepare_simulation()
+            self.server_thread = threading.Thread(target=lambda: ui.run(**self.ui_run_kwargs))
+        else:
+            self.server_thread = threading.Thread(target=lambda: runpy.run_path(str(main_path), run_name='__main__'))
         self.server_thread.start()
 
     @property
@@ -55,7 +68,8 @@ class Screen:
         """Stop the webserver."""
         self.close()
         self.caplog.clear()
-        Server.instance.should_exit = True
+        if hasattr(Server, 'instance'):
+            Server.instance.should_exit = True
         if self.server_thread:
             self.server_thread.join()
         if core.loop:
@@ -83,11 +97,19 @@ class Screen:
                 assert self.server_thread is not None
                 if not self.server_thread.is_alive():
                     raise RuntimeError('The NiceGUI server has stopped running') from e
+        self._wait_for_socket_idle()
 
     def close(self) -> None:
-        """Close the browser."""
+        """Close the browser tab.
+
+        When the driver is session-scoped, closing the last window would invalidate the session.
+        Instead, we navigate to about:blank to trigger disconnection.
+        """
         if self.is_open:
-            self.selenium.close()
+            if len(self.selenium.window_handles) > 1:
+                self.selenium.close()
+            else:
+                self.selenium.get('about:blank')
 
     def switch_to(self, tab_id: int) -> None:
         """Switch to the tab with the given index, or create it if it does not exist."""
@@ -113,15 +135,18 @@ class Screen:
     def wait_for(self, target: Callable[..., bool]) -> None:
         """Wait until the given condition is met."""
 
-    def wait_for(self, target: Union[str, Callable[..., bool]]) -> None:
+    def wait_for(self, target: str | Callable[..., bool]) -> None:
         """Wait until the page contains the given text or the given condition is met."""
         if isinstance(target, str):
             self.should_contain(target)
         if callable(target):
             deadline = time.time() + self.IMPLICIT_WAIT
             while time.time() < deadline:
-                if target():
-                    return
+                try:
+                    if target():
+                        return
+                except StaleElementReferenceException:
+                    pass  # element became stale, retry
                 self.wait(0.1)
             raise AssertionError('Condition not met')
 
@@ -185,20 +210,18 @@ class Screen:
         """Find the element containing the given text."""
         try:
             query = f'//*[not(self::script) and not(self::style) and text()[contains(., "{text}")]]'
-            element = self.selenium.find_element(By.XPATH, query)
             # HACK: repeat check after a short delay to avoid timing issue on fast machines
             for _ in range(5):
-                try:
+                element = self.selenium.find_element(By.XPATH, query)
+                with suppress(StaleElementReferenceException):
                     if element.is_displayed():
                         return element
-                except StaleElementReferenceException:
-                    pass
                 self.wait(0.2)
             raise AssertionError(f'Found "{text}" but it is hidden')
         except NoSuchElementException as e:
             raise AssertionError(f'Could not find "{text}"') from e
 
-    def find_all(self, text: str) -> List[WebElement]:
+    def find_all(self, text: str) -> list[WebElement]:
         """Find all elements containing the given text."""
         query = f'//*[not(self::script) and not(self::style) and text()[contains(., "{text}")]]'
         return self.selenium.find_elements(By.XPATH, query)
@@ -211,7 +234,7 @@ class Screen:
         """Find the element with the given CSS class."""
         return self.selenium.find_element(By.CLASS_NAME, name)
 
-    def find_all_by_class(self, name: str) -> List[WebElement]:
+    def find_all_by_class(self, name: str) -> list[WebElement]:
         """Find all elements with the given CSS class."""
         return self.selenium.find_elements(By.CLASS_NAME, name)
 
@@ -219,7 +242,7 @@ class Screen:
         """Find the element with the given HTML tag."""
         return self.selenium.find_element(By.TAG_NAME, name)
 
-    def find_all_by_tag(self, name: str) -> List[WebElement]:
+    def find_all_by_tag(self, name: str) -> list[WebElement]:
         """Find all elements with the given HTML tag."""
         return self.selenium.find_elements(By.TAG_NAME, name)
 
@@ -236,14 +259,38 @@ class Screen:
         """Wait for the given number of seconds."""
         time.sleep(t)
 
-    def shot(self, name: str) -> None:
+    def _wait_for_socket_idle(self) -> None:
+        """Wait until no new Socket.IO messages have been received for 100ms."""
+        self.selenium.execute_async_script(f'''
+            const callback = arguments[arguments.length - 1];
+            const deadline = Date.now() + {Screen.IMPLICIT_WAIT * 1000};
+            let lastId = window.nextMessageId || 0;
+            let stableSince = Date.now();
+            const check = () => {{
+                const currentId = window.nextMessageId || 0;
+                if (currentId !== lastId) {{
+                    lastId = currentId;
+                    stableSince = Date.now();
+                }}
+                if (Date.now() - stableSince >= 100 || Date.now() >= deadline) {{
+                    callback();
+                }} else {{
+                    setTimeout(check, 20);
+                }}
+            }};
+            setTimeout(check, 20);
+        ''')
+
+    def shot(self, name: str, *, failed: bool) -> None:
         """Take a screenshot and store it in the screenshots directory."""
-        os.makedirs(self.SCREENSHOT_DIR, exist_ok=True)
-        filename = f'{self.SCREENSHOT_DIR}/{name}.png'
+        self.SCREENSHOT_DIR.mkdir(parents=True, exist_ok=True)
+        if failed:
+            name = f'{name}.failed'
+        filename = self.SCREENSHOT_DIR / f'{name}.png'
         print(f'Storing screenshot to {filename}')
         self.selenium.get_screenshot_as_file(filename)
 
-    def assert_py_logger(self, level: str, message: Union[str, re.Pattern]) -> None:
+    def assert_py_logger(self, level: str, message: str | re.Pattern) -> None:
         """Assert that the Python logger has received a message with the given level and text or regex pattern."""
         try:
             assert self.caplog.records, 'Expected a log message'
@@ -256,7 +303,7 @@ class Screen:
             else:
                 assert record.message.strip() == message, f'Expected "{message}" but got "{record.message}"'
         finally:
-            self.caplog.records.clear()
+            self.caplog.records.pop(0)
 
     @contextmanager
     def implicitly_wait(self, t: float) -> Generator[None, None, None]:
@@ -264,3 +311,14 @@ class Screen:
         self.selenium.implicitly_wait(t)
         yield
         self.selenium.implicitly_wait(self.IMPLICIT_WAIT)
+
+    @property
+    def current_path(self) -> str:
+        """The current path of the browser."""
+        parsed = urlparse(self.selenium.current_url)
+        result = parsed.path
+        if parsed.query:
+            result += '?' + parsed.query
+        if parsed.fragment:
+            result += '#' + parsed.fragment
+        return result

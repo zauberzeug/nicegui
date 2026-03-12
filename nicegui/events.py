@@ -1,82 +1,79 @@
 from __future__ import annotations
 
 import asyncio
+from collections.abc import Awaitable, Callable, Iterator
 from contextlib import nullcontext
-from dataclasses import dataclass
-from inspect import Parameter, signature
-from typing import (
-    TYPE_CHECKING,
-    Any,
-    Awaitable,
-    BinaryIO,
-    Callable,
-    Dict,
-    Iterator,
-    List,
-    Literal,
-    Optional,
-    TypeVar,
-    Union,
-    cast,
-)
+from dataclasses import dataclass, field
+from typing import TYPE_CHECKING, Any, Literal, TypeAlias, TypeVar, cast
 
-from . import background_tasks, core
+from . import background_tasks, core, helpers
 from .awaitable_response import AwaitableResponse
-from .dataclasses import KWONLY_SLOTS
 from .slot import Slot
 
 if TYPE_CHECKING:
     from .client import Client
     from .element import Element
     from .elements.slide_item import SlideSide
+    from .elements.upload_files import FileUpload
     from .observables import ObservableCollection
 
 
-@dataclass(**KWONLY_SLOTS)
+@dataclass(kw_only=True, slots=True)
 class EventArguments:
     pass
 
 
-@dataclass(**KWONLY_SLOTS)
+@dataclass(kw_only=True, slots=True)
 class ObservableChangeEventArguments(EventArguments):
     sender: ObservableCollection
 
 
-@dataclass(**KWONLY_SLOTS)
+@dataclass(kw_only=True, slots=True)
 class UiEventArguments(EventArguments):
     sender: Element
     client: Client
 
 
-@dataclass(**KWONLY_SLOTS)
+@dataclass(kw_only=True, slots=True)
 class GenericEventArguments(UiEventArguments):
     args: Any
 
 
-@dataclass(**KWONLY_SLOTS)
+@dataclass(kw_only=True, slots=True)
 class ClickEventArguments(UiEventArguments):
     pass
 
 
-@dataclass(**KWONLY_SLOTS)
+@dataclass(kw_only=True, slots=True)
 class SlideEventArguments(UiEventArguments):
     side: SlideSide
 
 
-@dataclass(**KWONLY_SLOTS)
+@dataclass(kw_only=True, slots=True)
+class EChartComponentClickEventArguments(UiEventArguments):
+    component_type: str
+    name: str | None
+
+
+@dataclass(kw_only=True, slots=True)
 class EChartPointClickEventArguments(UiEventArguments):
     component_type: str
+    name: str
     series_type: str
     series_index: int
     series_name: str
-    name: str
     data_index: int
-    data: Union[float, int, str]
-    data_type: str
-    value: Union[float, int, list]
+    data: float | int | str
+    data_type: str | None
+    value: float | int | list
 
 
-@dataclass(**KWONLY_SLOTS)
+@dataclass(kw_only=True, slots=True)
+class MermaidNodeClickEventArguments(UiEventArguments):
+    node_id: str
+
+
+@dataclass(kw_only=True, slots=True)
 class SceneClickHit:
     object_id: str
     object_name: str
@@ -85,7 +82,7 @@ class SceneClickHit:
     z: float
 
 
-@dataclass(**KWONLY_SLOTS)
+@dataclass(kw_only=True, slots=True)
 class SceneClickEventArguments(ClickEventArguments):
     click_type: str
     button: int
@@ -93,10 +90,10 @@ class SceneClickEventArguments(ClickEventArguments):
     ctrl: bool
     meta: bool
     shift: bool
-    hits: List[SceneClickHit]
+    hits: list[SceneClickHit]
 
 
-@dataclass(**KWONLY_SLOTS)
+@dataclass(kw_only=True, slots=True)
 class SceneDragEventArguments(ClickEventArguments):
     type: Literal['dragstart', 'dragend']
     object_id: str
@@ -106,12 +103,12 @@ class SceneDragEventArguments(ClickEventArguments):
     z: float
 
 
-@dataclass(**KWONLY_SLOTS)
+@dataclass(kw_only=True, slots=True)
 class ColorPickEventArguments(UiEventArguments):
     color: str
 
 
-@dataclass(**KWONLY_SLOTS)
+@dataclass(kw_only=True, slots=True)
 class MouseEventArguments(UiEventArguments):
     type: str
     image_x: float
@@ -124,45 +121,48 @@ class MouseEventArguments(UiEventArguments):
     shift: bool
 
 
-@dataclass(**KWONLY_SLOTS)
+@dataclass(kw_only=True, slots=True)
 class JoystickEventArguments(UiEventArguments):
     action: str
-    x: Optional[float] = None
-    y: Optional[float] = None
+    x: float | None = None
+    y: float | None = None
 
 
-@dataclass(**KWONLY_SLOTS)
+@dataclass(kw_only=True, slots=True)
 class UploadEventArguments(UiEventArguments):
-    content: BinaryIO
-    name: str
-    type: str
+    file: FileUpload
 
 
-@dataclass(**KWONLY_SLOTS)
+@dataclass(kw_only=True, slots=True)
 class MultiUploadEventArguments(UiEventArguments):
-    contents: List[BinaryIO]
-    names: List[str]
-    types: List[str]
+    files: list[FileUpload]
 
 
-@dataclass(**KWONLY_SLOTS)
+@dataclass(kw_only=True, slots=True)
 class ValueChangeEventArguments(UiEventArguments):
     value: Any
+    previous_value: Any = ...
+
+    def __post_init__(self):
+        # DEPRECATED: previous_value will be required in NiceGUI 4.0
+        if self.previous_value is ...:
+            helpers.warn_once('The new event argument `ValueChangeEventArguments.previous_value` is not set. '
+                              'In NiceGUI 4.0 this will raise an error.')
 
 
-@dataclass(**KWONLY_SLOTS)
+@dataclass(kw_only=True, slots=True)
 class TableSelectionEventArguments(UiEventArguments):
-    selection: List[Any]
+    selection: list[Any]
 
 
-@dataclass(**KWONLY_SLOTS)
+@dataclass(kw_only=True, slots=True)
 class KeyboardAction:
     keydown: bool
     keyup: bool
     repeat: bool
 
 
-@dataclass(**KWONLY_SLOTS)
+@dataclass(kw_only=True, slots=True)
 class KeyboardModifiers:
     alt: bool
     ctrl: bool
@@ -176,7 +176,7 @@ class KeyboardModifiers:
         return sum(self)
 
 
-@dataclass(**KWONLY_SLOTS)
+@dataclass(kw_only=True, slots=True)
 class KeyboardKey:
     name: str
     code: str
@@ -186,8 +186,11 @@ class KeyboardKey:
         if isinstance(other, str):
             return other in {self.name, self.code}
         if isinstance(other, KeyboardKey):
-            return self == other
+            return (self.name, self.code, self.location) == (other.name, other.code, other.location)
         return False
+
+    def __hash__(self) -> int:
+        return hash((self.name, self.code, self.location))
 
     def __repr__(self):
         return str(self.name)
@@ -198,7 +201,7 @@ class KeyboardKey:
         return self.code.startswith('Arrow')
 
     @property
-    def number(self) -> Optional[int]:
+    def number(self) -> int | None:
         """Integer value of a number key."""
         return int(self.code[len('Digit'):]) if self.code.startswith('Digit') else None
 
@@ -250,7 +253,7 @@ class KeyboardKey:
     @property
     def space(self) -> bool:
         """Whether the key is the space key."""
-        return self.name == 'Space'
+        return self.name == ' '
 
     @property
     def page_up(self) -> bool:
@@ -373,14 +376,14 @@ class KeyboardKey:
         return self.name == 'F12'
 
 
-@dataclass(**KWONLY_SLOTS)
+@dataclass(kw_only=True, slots=True)
 class KeyEventArguments(UiEventArguments):
     action: KeyboardAction
     key: KeyboardKey
     modifiers: KeyboardModifiers
 
 
-@dataclass(**KWONLY_SLOTS)
+@dataclass(kw_only=True, slots=True)
 class ScrollEventArguments(UiEventArguments):
     vertical_position: float
     vertical_percentage: float
@@ -392,22 +395,32 @@ class ScrollEventArguments(UiEventArguments):
     horizontal_container_size: float
 
 
-@dataclass(**KWONLY_SLOTS)
+@dataclass(kw_only=True, slots=True)
 class JsonEditorSelectEventArguments(UiEventArguments):
-    selection: Dict
+    selection: dict
 
 
-@dataclass(**KWONLY_SLOTS)
+@dataclass(kw_only=True, slots=True)
 class JsonEditorChangeEventArguments(UiEventArguments):
-    content: Dict
-    errors: Dict
+    content: dict
+    errors: dict = field(default_factory=dict)
+
+
+@dataclass(kw_only=True, slots=True)
+class XtermBellEventArguments(UiEventArguments):
+    pass
+
+
+@dataclass(kw_only=True, slots=True)
+class XtermDataEventArguments(UiEventArguments):
+    data: str
 
 
 EventT = TypeVar('EventT', bound=EventArguments)
-Handler = Union[Callable[[EventT], Any], Callable[[], Any]]
+Handler: TypeAlias = Callable[[EventT], Any] | Callable[[], Any]
 
 
-def handle_event(handler: Optional[Handler[EventT]], arguments: EventT) -> None:
+def handle_event(handler: Handler[EventT] | None, arguments: EventT) -> None:
     """Call the given event handler.
 
     The handler is called within the context of the parent slot of the sender.
@@ -421,19 +434,14 @@ def handle_event(handler: Optional[Handler[EventT]], arguments: EventT) -> None:
     if handler is None:
         return
     try:
-        expects_arguments = any(p.default is Parameter.empty and
-                                p.kind is not Parameter.VAR_POSITIONAL and
-                                p.kind is not Parameter.VAR_KEYWORD
-                                for p in signature(handler).parameters.values())
-
-        parent_slot: Union[Slot, nullcontext]
+        parent_slot: Slot | nullcontext
         if isinstance(arguments, UiEventArguments):
             parent_slot = arguments.sender.parent_slot or arguments.sender.client.layout.default_slot
         else:
             parent_slot = nullcontext()
 
         with parent_slot:
-            if expects_arguments:
+            if helpers.expects_arguments(handler):
                 result = cast(Callable[[EventT], Any], handler)(arguments)
             else:
                 result = cast(Callable[[], Any], handler)()

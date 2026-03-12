@@ -1,18 +1,26 @@
-from nicegui import ui
+from typing import Literal
+
+import pytest
+
+from nicegui import app, ui
 from nicegui.testing import Screen
 
 
-def test_dark_mode(screen: Screen):
-    ui.label('Hello')
-    dark = ui.dark_mode()
-    ui.button('Dark', on_click=dark.enable)
-    ui.button('Light', on_click=dark.disable)
-    ui.button('Auto', on_click=dark.auto)
-    ui.button('Toggle', on_click=dark.toggle)
+@pytest.mark.parametrize('unocss', [None, 'mini', 'wind3', 'wind4'])
+def test_dark_mode(screen: Screen, unocss: Literal['mini', 'wind3', 'wind4'] | None):
+    app.config.unocss = unocss
+
+    @ui.page('/')
+    def page():
+        ui.label('Hello')
+        dark = ui.dark_mode()
+        ui.button('Dark', on_click=dark.enable)
+        ui.button('Light', on_click=dark.disable)
+        ui.button('Auto', on_click=dark.auto)
+        ui.button('Toggle', on_click=dark.toggle)
 
     def assert_dark(value: bool) -> None:
         classes = (screen.find_by_tag('body').get_attribute('class') or '').split()
-        assert ('dark' in classes) == value
         assert ('body--dark' in classes) == value
         assert ('body--light' in classes) != value
 

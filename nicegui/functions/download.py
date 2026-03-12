@@ -1,8 +1,8 @@
 from pathlib import Path
-from typing import Optional, Union
 
 from .. import core, helpers
 from ..context import context
+from ..logging import log
 
 
 class Download:
@@ -13,12 +13,12 @@ class Download:
     *Added in version 2.14.0*
     """
 
-    def __call__(self, src: Union[str, Path, bytes], filename: Optional[str] = None, media_type: str = '') -> None:
+    def __call__(self, src: str | Path | bytes, filename: str | None = None, media_type: str = '') -> None:
         """Download
 
         Function to trigger the download of a file, URL or bytes.
 
-        :param src: target URL, local path of a file or raw data which should be downloaded
+        :param src: relative target URL, local path of a file or raw data which should be downloaded
         :param filename: name of the file to download (default: name of the file on the server)
         :param media_type: media type of the file to download (default: "")
         """
@@ -30,7 +30,7 @@ class Download:
             src = str(src)
             self.from_url(src, filename, media_type)
 
-    def file(self, path: Union[str, Path], filename: Optional[str] = None, media_type: str = '') -> None:
+    def file(self, path: str | Path, filename: str | None = None, media_type: str = '') -> None:
         """Download file from local path
 
         Function to trigger the download of a file.
@@ -44,20 +44,35 @@ class Download:
         src = core.app.add_static_file(local_file=path, single_use=True)
         context.client.download(src, filename, media_type)
 
-    def from_url(self, url: str, filename: Optional[str] = None, media_type: str = '') -> None:
-        """Download from a URL
+    def from_url(self, url: str, filename: str | None = None, media_type: str = '') -> None:
+        """Download from a relative URL
 
-        Function to trigger the download from a URL.
+        Function to trigger the download from a relative URL.
+
+        Note:
+        This function is intended to be used with relative URLs only.
+        For absolute URLs, the browser ignores the download instruction and tries to view the file in a new tab
+        if possible, such as images, PDFs, etc.
+        Therefore, the download may only work for some file types such as .zip, .db, etc.
+        Furthermore, the browser ignores filename and media_type parameters,
+        respecting the origin server's headers instead.
+        Either replace the absolute URL with a relative one, or use ``ui.navigate.to(url, new_tab=True)`` instead.
 
         *Added in version 2.14.0*
+
+        *Updated in version 2.19.0: Added warning for cross-origin downloads*
 
         :param url: URL
         :param filename: name of the file to download (default: name of the file on the server)
         :param media_type: media type of the file to download (default: "")
         """
+        is_relative = url.startswith('/') or url.startswith('./') or url.startswith('../')
+        if not is_relative:
+            log.warning('Using `ui.download.from_url` with absolute URLs is not recommended.\n'
+                        'Please refer to the documentation for more details.')
         context.client.download(url, filename, media_type)
 
-    def content(self, content: Union[bytes, str], filename: Optional[str] = None, media_type: str = '') -> None:
+    def content(self, content: bytes | str, filename: str | None = None, media_type: str = '') -> None:
         """Download raw bytes or string content
 
         Function to trigger the download of raw data.

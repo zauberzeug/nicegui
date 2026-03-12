@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 import base64
 import signal
-import time
 
 import cv2
 import numpy as np
@@ -42,12 +41,12 @@ def setup() -> None:
         jpeg = await run.cpu_bound(convert, frame)
         return Response(content=jpeg, media_type='image/jpeg')
 
-    # For non-flickering image updates and automatic bandwidth adaptation an interactive image is much better than `ui.image()`.
-    video_image = ui.interactive_image().classes('w-full h-full')
-    # A timer constantly updates the source of the image.
-    # Because data from same paths is cached by the browser,
-    # we must force an update by adding the current timestamp to the source.
-    ui.timer(interval=0.1, callback=lambda: video_image.set_source(f'/video/frame?{time.time()}'))
+    @ui.page('/')
+    def page():
+        # For non-flickering image updates and automatic bandwidth adaptation an interactive image is much better than `ui.image()`.
+        video_image = ui.interactive_image('/video/frame').classes('w-full h-full')
+        # A timer constantly updates the source of the image.
+        ui.timer(interval=0.1, callback=video_image.force_reload)
 
     async def disconnect() -> None:
         """Disconnect all clients from current running server."""

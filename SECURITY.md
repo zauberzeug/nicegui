@@ -13,7 +13,11 @@ This way you will benefit from the latest features, bug fixes, and **security fi
 
 ## Reporting a Vulnerability
 
-If you think you found a vulnerability, and even if you are not sure about it, please report it right away by sending an email to: nicegui@zauberzeug.com.
+If you think you found a vulnerability, and even if you are not sure about it, please report it right away
+by creating a private security advisory (GitHub → Security → Report a vulnerability)
+so we can discuss and patch the issue in a secure workspace.
+If you cannot use GitHub, you can also send an email to: nicegui@zauberzeug.com.
+
 Please try to be as explicit as possible, describing all the steps and example code to reproduce the security issue.
 
 We (the team at Zauberzeug) will review it thoroughly and get back to you.
